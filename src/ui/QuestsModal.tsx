@@ -562,7 +562,7 @@ const QuestItem = memo(
                       (quest.label ? t(quest.label) : 'quest')
                   })
             }
-            className='min-w-[44px] min-h-[44px] text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
+            className='min-w-11 min-h-11 text-xs text-ash-gray/70 hover:text-toxic-green font-mono flex items-center gap-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green'
           >
             {showDetails ? (
               <IconChevronUp className='w-3 h-3' />

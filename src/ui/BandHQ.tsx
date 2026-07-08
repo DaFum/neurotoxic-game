@@ -76,7 +76,7 @@ export const BandHQ = ({ onClose, className = '' }: BandHQProps) => {
             >
               {t('ui:hq.title', { defaultValue: 'BAND HQ' })}
             </h2>
-            <p className='text-ash-gray text-xs sm:text-sm font-mono uppercase tracking-widest break-words'>
+            <p className='text-ash-gray text-xs sm:text-sm font-mono uppercase tracking-widest wrap-break-word'>
               {t('venues:stendal_proberaum.name')} |{' '}
               {t('ui:ui.day', { defaultValue: 'Day' })} {playerDay}
             </p>

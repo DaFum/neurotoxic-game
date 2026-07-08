@@ -16,12 +16,6 @@ vi.mock('../../src/components/hud/ComboDisplay', () => ({
   )
 }))
 
-vi.mock('../../src/components/hud/OverloadMeter', () => ({
-  OverloadMeter: ({ overload }) => (
-    <div data-testid='overload-meter'>Overload: {overload}</div>
-  )
-}))
-
 vi.mock('../../src/ui/shared/Icons', () => ({
   UIFrameCorner: ({ className }) => (
     <div data-testid='ui-frame-corner' className={className} />
@@ -32,8 +26,7 @@ test('StatsOverlay renders all child components with correct props', () => {
   const props = {
     score: 12345,
     combo: 42,
-    accuracy: 98,
-    overload: 15
+    accuracy: 98
   }
 
   render(<StatsOverlay {...props} />)
@@ -48,17 +41,13 @@ test('StatsOverlay renders all child components with correct props', () => {
 
   const comboDisplay = screen.getByTestId('combo-display')
   expect(comboDisplay).toHaveTextContent('Combo: 42, Acc: 98')
-
-  const overloadMeter = screen.getByTestId('overload-meter')
-  expect(overloadMeter).toHaveTextContent('Overload: 15')
 })
 
 test('StatsOverlay handles accuracy edge cases', () => {
   const propsZero = {
     score: 0,
     combo: 0,
-    accuracy: 0,
-    overload: 0
+    accuracy: 0
   }
 
   const { rerender } = render(<StatsOverlay {...propsZero} />)
@@ -68,8 +57,7 @@ test('StatsOverlay handles accuracy edge cases', () => {
   const propsHundred = {
     score: 0,
     combo: 0,
-    accuracy: 100,
-    overload: 0
+    accuracy: 100
   }
 
   rerender(<StatsOverlay {...propsHundred} />)
@@ -81,8 +69,7 @@ test('StatsOverlay renders four UIFrameCorner icons with correct classes', () =>
   const props = {
     score: 0,
     combo: 0,
-    accuracy: 100,
-    overload: 0
+    accuracy: 100
   }
 
   render(<StatsOverlay {...props} />)

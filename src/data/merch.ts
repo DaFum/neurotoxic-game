@@ -3,23 +3,13 @@
  */
 
 export type CityGenre =
-  | 'punk'
-  | 'metal'
-  | 'goth'
-  | 'indie'
-  | 'synth'
-  | 'noise'
-  | 'hardcore'
+  'punk' | 'metal' | 'goth' | 'indie' | 'synth' | 'noise' | 'hardcore'
 
 /**
  * City spending profile used to scale merch demand.
  */
 export type SpendingProfile =
-  | 'stingy'
-  | 'average'
-  | 'generous'
-  | 'drunkards'
-  | 'merch-hungry'
+  'stingy' | 'average' | 'generous' | 'drunkards' | 'merch-hungry'
 
 /**
  * Demand and pricing configuration for one merch item.

@@ -6,7 +6,7 @@ test('AnimatedDivider renders with default props', () => {
   const { container } = render(<AnimatedDivider />)
   const div = container.querySelector('div')
   expect(div).toBeInTheDocument()
-  expect(div.className).toContain('h-[2px]')
+  expect(div.className).toContain('h-0.5')
 })
 
 test('AnimatedDivider renders with custom width and class', () => {

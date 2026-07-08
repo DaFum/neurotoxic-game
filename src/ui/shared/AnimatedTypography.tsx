@@ -19,7 +19,7 @@ export const AnimatedDivider = ({
     initial={{ width: 0 }}
     animate={{ width }}
     transition={transition}
-    className={`h-[2px] ${className}`}
+    className={`h-0.5 ${className}`}
   />
 )
 type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'

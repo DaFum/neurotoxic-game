@@ -301,7 +301,7 @@ const _GameError = class GameError extends Error {}
 mock.module(new URL('../../src/utils/errorHandler.ts', import.meta.url).href, {
   namedExports: {
     handleError: mock.fn(),
-    toastTypeFromSeverity: mock.fn((severity) =>
+    toastTypeFromSeverity: mock.fn(severity =>
       severity === 'critical' || severity === 'high' ? 'error' : 'warning'
     ),
     GameError: _GameError,

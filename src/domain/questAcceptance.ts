@@ -1,7 +1,7 @@
 import type { GameState, QuestKind, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
-import { finiteNumberOr } from '../utils/gameState'
+import { finiteNumberOr, hasStateItem } from '../utils/gameState'
 import { getRegionKeyForLocation } from '../utils/mapUtils'
 
 /**
@@ -22,8 +22,7 @@ export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
  */
 const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
   const definition = getQuestDefinition(quest.id ?? '') as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   return quest.kind ?? definition?.kind ?? 'side'
 }
 
@@ -104,8 +103,7 @@ export const canAcceptQuest = (
     return { ok: false, reason: 'active' }
   }
   const definition = getQuestDefinition(questId) as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   const merged: Partial<QuestState> =
     typeof questOrId === 'string'
       ? { id: questId, ...(definition ?? {}) }
@@ -122,29 +120,10 @@ export const canAcceptQuest = (
       ...(merged.completionFlags ?? []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
-    // ⚡ BOLT OPTIMIZATION: Dynamically use Set for O(1) lookups on large intersections
-    if (activeFlags.length * completionFlags.length > 50) {
-      const smaller =
-        activeFlags.length > completionFlags.length
-          ? completionFlags
-          : activeFlags
-      const larger =
-        activeFlags.length > completionFlags.length
-          ? activeFlags
-          : completionFlags
-      const set = new Set(smaller)
-      for (let i = 0; i < larger.length; i++) {
-        const flag = larger[i]
-        if (typeof flag === 'string' && set.has(flag)) {
-          return { ok: false, reason: 'flag' }
-        }
-      }
-    } else {
-      for (let i = 0; i < completionFlags.length; i++) {
-        const flag = completionFlags[i]
-        if (typeof flag === 'string' && activeFlags.includes(flag)) {
-          return { ok: false, reason: 'flag' }
-        }
+    for (let i = 0; i < completionFlags.length; i++) {
+      const flag = completionFlags[i]
+      if (typeof flag === 'string' && hasStateItem(activeFlags, flag)) {
+        return { ok: false, reason: 'flag' }
       }
     }
   }

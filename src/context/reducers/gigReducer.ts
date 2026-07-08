@@ -108,8 +108,7 @@ export const handleSetSetlist = (
 export const handleSetGigModifiers = (
   state: GameState,
   payload:
-    | Partial<GigModifiers>
-    | ((prev: GigModifiers) => Partial<GigModifiers>)
+    Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
 ): GameState => {
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ??

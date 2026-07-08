@@ -112,8 +112,7 @@ const matchesOfferCondition = (
 export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
     const definition = getQuestDefinition(questId) as
-      | (Partial<QuestState> & { offer?: QuestOfferDefinition })
-      | undefined
+      (Partial<QuestState> & { offer?: QuestOfferDefinition }) | undefined
     if (!definition?.offer) return canAcceptQuest(state, questId).ok
     return (
       canAcceptQuest(state, questId).ok &&

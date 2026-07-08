@@ -77,7 +77,7 @@ describe('checkTraitUnlocks', () => {
     })
 
     it('does not unlock Grudge Holder for Matze if relationships is not a loose record', () => {
-      const matze = createMember('Matze', {}, "invalid")
+      const matze = createMember('Matze', {}, 'invalid')
       const state = createState([matze])
       const context = { type: 'EVENT_RESOLVED' }
 

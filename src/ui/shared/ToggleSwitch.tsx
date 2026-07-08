@@ -42,7 +42,7 @@ const ToggleSwitchComponent = ({
       <button
         type='button'
         onClick={handleToggle}
-        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isGlitching ? 'translate-x-[1px] translate-y-[1px]' : ''}`}
+        className={`relative w-16 h-8 border-2 border-toxic-green flex items-center p-1 transition-colors duration-75 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${isGlitching ? 'translate-x-px translate-y-px' : ''}`}
         aria-checked={isOn}
         role='switch'
         {...(labelId
@@ -56,7 +56,7 @@ const ToggleSwitchComponent = ({
           /* Exception: component-internal z-index stacking */
           className={`w-5 h-full bg-toxic-green transition-transform duration-100 relative z-10 ${isOn ? 'translate-x-8' : 'translate-x-0'}`}
         >
-          <div className='w-[2px] h-full bg-void-black mx-auto opacity-50'></div>
+          <div className='w-0.5 h-full bg-void-black mx-auto opacity-50'></div>
         </div>
         <span
           /* Exception: component-internal z-index stacking */

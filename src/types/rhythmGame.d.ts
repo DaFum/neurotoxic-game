@@ -132,6 +132,8 @@ export type RhythmGameRefState = {
   /** Guards so the in-gig `gig_intro`/`gig_mid` events fire at most once each per gig. */
   gigIntroFired?: boolean
   gigMidFired?: boolean
+  /** Setlist song index during which the last in-gig event fired; limits events to one per song. */
+  lastGigEventSongIndex?: number
   songTransitioning: boolean
   songStats: RhythmSongStatsEntry[]
   /** Index of the most recent setlist song that completed playback. */

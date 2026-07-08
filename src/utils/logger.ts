@@ -250,5 +250,4 @@ export type LogEntry = {
  * Subscription event emitted when log history changes.
  */
 export type LogEvent =
-  | { type: 'add'; entry: LogEntry }
-  | { type: 'clear'; entry?: undefined }
+  { type: 'add'; entry: LogEntry } | { type: 'clear'; entry?: undefined }

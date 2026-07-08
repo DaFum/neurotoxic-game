@@ -17,7 +17,7 @@ export const OverloadMeter = memo(function OverloadMeter({
 }: OverloadMeterProps) {
   const { t } = useTranslation()
   return (
-    <div className='mt-3 w-48 bg-void-black/90 p-3 border-2 border-toxic-green/50 shadow-[4px_4px_0px_var(--color-toxic-green-20)] backdrop-blur-md'>
+    <div className='w-48 bg-void-black/90 p-3 border-2 border-toxic-green/50 shadow-[4px_4px_0px_var(--color-toxic-green-20)] backdrop-blur-md'>
       <BlockMeter
         label={t('ui:overload.toxic', 'TOXIC OVERLOAD')}
         value={normalizePercentageToScale(overload, 10)}

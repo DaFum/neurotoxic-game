@@ -32,8 +32,7 @@ import {
 import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
 export type MemberUpdaterResult =
-  | { updatedMember: BandMember; toastArgs?: unknown[] }
-  | BandMember
+  { updatedMember: BandMember; toastArgs?: unknown[] } | BandMember
 
 /**
  * Finds a band member by ID within a member array.
@@ -423,7 +422,9 @@ export const handleGraftNeuroOverclock = (
     ...state,
     player: {
       ...state.player,
-      money: clampPlayerMoney(finiteNumberOr(state.player?.money, 0) - CLINIC_GRAFT_COST)
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player?.money, 0) - CLINIC_GRAFT_COST
+      )
     },
     band: {
       ...state.band,

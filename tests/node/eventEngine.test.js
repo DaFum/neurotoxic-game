@@ -100,9 +100,7 @@ test('eventEngine.filterEvents respects conditions', () => {
 })
 
 test('eventEngine.filterEvents respects condition truthy evaluation', () => {
-  const events = [
-    { id: 'truthy', trigger: 'travel', condition: () => true }
-  ]
+  const events = [{ id: 'truthy', trigger: 'travel', condition: () => true }]
   const result = eventEngine.filterEvents(events, 'travel', {})
   assert.equal(result.length, 1)
   assert.equal(result[0].id, 'truthy')
@@ -125,10 +123,7 @@ test('eventEngine.filterEvents allows trigger:random events at any trigger point
 })
 
 test('eventEngine.filterEvents handles sparse array entries without throwing', () => {
-  const events = [
-    undefined,
-    { id: '1', trigger: 'travel' }
-  ]
+  const events = [undefined, { id: '1', trigger: 'travel' }]
   const result = eventEngine.filterEvents(events, 'travel', {})
   assert.equal(result.length, 1)
   assert.equal(result[0].id, '1')
@@ -167,7 +162,11 @@ test('eventEngine.filterEvents handles condition errors with missing event id', 
     }
   }
 
-  const result = eventEngine.filterEvents([throwingEventWithoutId], 'random', {})
+  const result = eventEngine.filterEvents(
+    [throwingEventWithoutId],
+    'random',
+    {}
+  )
 
   assert.deepEqual(
     result,

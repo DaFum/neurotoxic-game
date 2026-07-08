@@ -39,7 +39,10 @@ describe('gigStats', () => {
         maxCombo: 5,
         peakHype: 20
       }
-      const updated = updateGigPerformanceStats(stats, { combo: 8, overload: 15 })
+      const updated = updateGigPerformanceStats(stats, {
+        combo: 8,
+        overload: 15
+      })
       expect(updated.maxCombo).toBe(8)
       expect(updated.peakHype).toBe(20)
     })
@@ -51,7 +54,10 @@ describe('gigStats', () => {
         maxCombo: 10,
         peakHype: 20
       }
-      const updated = updateGigPerformanceStats(stats, { combo: 5, overload: 25 })
+      const updated = updateGigPerformanceStats(stats, {
+        combo: 5,
+        overload: 25
+      })
       expect(updated.maxCombo).toBe(10)
       expect(updated.peakHype).toBe(25)
     })
@@ -63,7 +69,10 @@ describe('gigStats', () => {
         maxCombo: 10,
         peakHype: 20
       }
-      const updated = updateGigPerformanceStats(stats, { combo: 5, overload: 15 })
+      const updated = updateGigPerformanceStats(stats, {
+        combo: 5,
+        overload: 15
+      })
       expect(updated.maxCombo).toBe(10)
       expect(updated.peakHype).toBe(20)
     })
@@ -75,7 +84,10 @@ describe('gigStats', () => {
         maxCombo: 5,
         peakHype: 5
       }
-      const updated = updateGigPerformanceStats(stats, { combo: 10, overload: 10 })
+      const updated = updateGigPerformanceStats(stats, {
+        combo: 10,
+        overload: 10
+      })
       expect(stats.maxCombo).toBe(5)
       expect(stats.peakHype).toBe(5)
       expect(updated).not.toBe(stats)

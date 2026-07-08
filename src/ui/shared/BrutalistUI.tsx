@@ -110,18 +110,18 @@ export const UplinkButton = memo(
           <div className='ml-1 sm:ml-6 flex-1 min-w-0 pr-1 sm:pr-2'>
             <div className='flex flex-col gap-1 items-start justify-start'>
               <h2
-                className='font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text break-words [overflow-wrap:anywhere] w-full leading-snug'
+                className='font-bold tracking-[0.08em] sm:tracking-[0.2em] text-sm sm:text-lg uppercase glitch-text wrap-break-word w-full leading-snug'
                 data-text={title}
               >
                 {title}
               </h2>
               <span
-                className={`text-[8px] sm:text-xxs tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal break-words [overflow-wrap:anywhere] max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
+                className={`text-[8px] sm:text-xxs tracking-[0.12em] sm:tracking-widest px-2 py-1 border transition-colors whitespace-normal wrap-break-word max-w-full ${isHovered ? 'border-toxic-green text-toxic-green' : 'border-transparent text-toxic-green/50'}`}
               >
                 {type}
               </span>
             </div>
-            <p className='text-xxs sm:text-xs opacity-70 mt-1 font-mono tracking-wide break-words [overflow-wrap:anywhere] whitespace-normal leading-[1.35] pb-[2px]'>
+            <p className='text-xxs sm:text-xs opacity-70 mt-1 font-mono tracking-wide wrap-break-word whitespace-normal leading-[1.35] pb-0.5'>
               {subtitle}
             </p>
           </div>
@@ -424,7 +424,7 @@ export const CrisisModal = memo(
               <div>
                 <h2
                   id={titleId}
-                  className='text-2xl font-bold tracking-[0.1em] uppercase glitch-text'
+                  className='text-2xl font-bold tracking-widest uppercase glitch-text'
                   data-text={modalTitle}
                 >
                   {modalTitle}

@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
-import { getUnlocks, addUnlock, __testInternals } from '../../src/utils/unlockManager'
+import {
+  getUnlocks,
+  addUnlock,
+  __testInternals
+} from '../../src/utils/unlockManager'
 
 describe('unlockManager', () => {
   let mockStorage: Record<string, string>
@@ -24,7 +28,6 @@ describe('unlockManager', () => {
     }
 
     vi.stubGlobal('localStorage', localStorageMock)
-
   })
 
   afterEach(() => {
@@ -58,7 +61,12 @@ describe('unlockManager', () => {
     })
 
     it('filters out non-string elements', () => {
-      mockStorage['neurotoxic_unlocks'] = JSON.stringify(['valid', 123, null, 'also_valid'])
+      mockStorage['neurotoxic_unlocks'] = JSON.stringify([
+        'valid',
+        123,
+        null,
+        'also_valid'
+      ])
       const result = getUnlocks()
       expect(result).toEqual(['valid', 'also_valid'])
     })
@@ -94,8 +102,13 @@ describe('unlockManager', () => {
       const success = addUnlock('new_unlock')
       expect(success).toBe(true)
 
-      expect(localStorage.setItem).toHaveBeenCalledWith('neurotoxic_unlocks', JSON.stringify(['new_unlock']))
-      expect(mockStorage['neurotoxic_unlocks']).toBe(JSON.stringify(['new_unlock']))
+      expect(localStorage.setItem).toHaveBeenCalledWith(
+        'neurotoxic_unlocks',
+        JSON.stringify(['new_unlock'])
+      )
+      expect(mockStorage['neurotoxic_unlocks']).toBe(
+        JSON.stringify(['new_unlock'])
+      )
 
       // Cache should be updated, getUnlocks should return it
       expect(getUnlocks()).toEqual(['new_unlock'])

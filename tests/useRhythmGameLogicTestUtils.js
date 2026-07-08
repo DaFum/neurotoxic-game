@@ -156,7 +156,7 @@ export const mockRhythmGameLogicModules = () => {
   mock.module('../src/utils/errorHandler', {
     namedExports: {
       ...mockErrorHandler,
-      toastTypeFromSeverity: (severity) =>
+      toastTypeFromSeverity: severity =>
         severity === 'critical' || severity === 'high' ? 'error' : 'warning',
       GameError: MockGameError,
       StateError: class MockStateError extends MockGameError {},

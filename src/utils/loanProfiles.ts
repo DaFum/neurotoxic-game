@@ -2,11 +2,7 @@
  * Supported loan product identifiers.
  */
 export type LoanProfileId =
-  | 'shortTerm'
-  | 'mediumTerm'
-  | 'longTerm'
-  | 'loanShark'
-  | 'coop'
+  'shortTerm' | 'mediumTerm' | 'longTerm' | 'loanShark' | 'coop'
 
 /**
  * Loan term, interest, label, and eligibility thresholds.

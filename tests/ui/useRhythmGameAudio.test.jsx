@@ -62,7 +62,7 @@ vi.mock('../../src/utils/errorHandler', () => ({
     HIGH: 'high',
     CRITICAL: 'critical'
   },
-  toastTypeFromSeverity: vi.fn((severity) =>
+  toastTypeFromSeverity: vi.fn(severity =>
     severity === 'critical' || severity === 'high' ? 'error' : 'warning'
   ),
   AudioError: class AudioError extends Error {}

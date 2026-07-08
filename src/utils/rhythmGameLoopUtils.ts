@@ -219,6 +219,37 @@ export const processMissedNotes = (
   }
 }
 
+/**
+ * Fires the in-gig narrative events (`gig_intro`, then `gig_mid`) off gig
+ * progress, limited to at most one shown event per setlist song: only a
+ * successful `triggerEvent` consumes the song's slot, so a missed chance roll
+ * does not block the other event from attempting in the same song. Nothing
+ * fires during song transitions (progress is stale from the previous song
+ * there) or after the gig has been finalized.
+ *
+ * @param stateRef - High-frequency rhythm game state carrying progress and guards.
+ * @param triggerEvent - Event-system dispatcher for the `gig` category.
+ */
+export const maybeFireGigProgressEvent = (
+  stateRef: RhythmGameRefState,
+  triggerEvent: (category: string, triggerPoint?: string | null) => boolean
+): void => {
+  if (stateRef.hasSubmittedResults || stateRef.songTransitioning) return
+  const currentSongIndex = finiteNumberOr(stateRef.lastEndedSongIndex, -1) + 1
+  if (stateRef.lastGigEventSongIndex === currentSongIndex) return
+  if (!stateRef.gigIntroFired && stateRef.progress > 0) {
+    stateRef.gigIntroFired = true
+    if (triggerEvent('gig', 'gig_intro')) {
+      stateRef.lastGigEventSongIndex = currentSongIndex
+    }
+  } else if (!stateRef.gigMidFired && stateRef.progress >= 50) {
+    stateRef.gigMidFired = true
+    if (triggerEvent('gig', 'gig_mid')) {
+      stateRef.lastGigEventSongIndex = currentSongIndex
+    }
+  }
+}
+
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
   setLastGigStats: SetLastGigStats,

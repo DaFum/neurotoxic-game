@@ -137,7 +137,7 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
             })}
             aspectRatio='1:1'
             variant='inline'
-            className='w-full h-full object-contain !border-0 !shadow-none'
+            className='w-full h-full object-contain border-0! shadow-none!'
           />
         </div>
       )}

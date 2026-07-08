@@ -2,8 +2,7 @@ import type { TFunction } from 'i18next'
 import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 
 type BrandDealTranslator =
-  | TFunction
-  | ((key: string, options?: Record<string, unknown>) => string)
+  TFunction | ((key: string, options?: Record<string, unknown>) => string)
 
 interface BrandDealDisplayInput {
   id?: unknown

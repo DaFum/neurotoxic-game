@@ -431,8 +431,7 @@ export const createRemoveToastAction = (
  */
 export const createSetGigModifiersAction = (
   payload:
-    | Partial<GigModifiers>
-    | ((prev: GigModifiers) => Partial<GigModifiers>)
+    Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
 ): Extract<GameAction, { type: typeof ActionTypes.SET_GIG_MODIFIERS }> => ({
   type: ActionTypes.SET_GIG_MODIFIERS,
   payload:
