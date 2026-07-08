@@ -153,7 +153,3 @@
 
 **Learning:** Checking the number of keys on an object using `Object.keys(obj).length` causes unnecessary array allocation in memory, particularly in hot-path reducers.
 **Action:** Use the `countKeys(obj)` or `isEmptyObject(obj)` utility from `src/utils/gameState/checks.ts` instead of `Object.keys(obj).length` to count keys using a procedural loop with zero allocation.
-
-## 2025-05-18 - Avoid array mapping overhead in targeted state mutations
-**Learning:** In state reducers like `clinicReducer.ts` where a single object in an array is deeply modified based on its index (e.g., grafting a trait on one specific band member), using `.map` with a ternary/if to return unchanged objects introduces unnecessary closure allocation and loop overhead for elements that aren't being mutated.
-**Action:** When mutating a specific, known index in an array state, copy the array, modify the target element directly by its index, and return the mutated array. This avoids recreating objects and minimizes GC pressure.

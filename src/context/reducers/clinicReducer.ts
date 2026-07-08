@@ -432,11 +432,7 @@ export const handleGraftNeuroOverclock = (
       // Why: Avoids recreating objects for unmodified items in the array.
       members: (() => {
         const newMembers = [...state.band.members];
-        const m = newMembers[memberIndex] as import('../../types/band').BandMember & {
-          health?: number
-          stress?: number
-          traits?: Record<string, import('../../types/traits').TraitDef>
-        };
+        const m = newMembers[memberIndex];
         if (m) {
           newMembers[memberIndex] = {
             ...m,
