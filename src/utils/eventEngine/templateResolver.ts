@@ -41,8 +41,8 @@ const resolveTemplateString = (
       lowerKeysMap = Object.create(null)
       const lowerMap = lowerKeysMap as Record<string, string>
 
-      for (const k of Object.keys(context)) {
-        if (isForbiddenKey(k)) {
+      for (const k in context) {
+        if (!Object.hasOwn(context, k) || isForbiddenKey(k)) {
           continue
         }
 
@@ -86,8 +86,8 @@ export const buildTemplateContext = (
 ): TemplateContext => {
   if (!input) return {}
   const output: TemplateContext = Object.create(null)
-  for (const key of Object.keys(input)) {
-    if (isForbiddenKey(key)) continue
+  for (const key in input) {
+    if (!Object.hasOwn(input, key) || isForbiddenKey(key)) continue
     const value = input[key]
     if (typeof value === 'string') output[key] = value
   }

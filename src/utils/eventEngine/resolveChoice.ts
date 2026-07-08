@@ -6,6 +6,18 @@ import { StateError } from '../errorHandler'
 import { asNumber } from './helpers'
 import type { EffectShape, EngineGameState, EventChoice } from './types'
 
+const tagsCache = new WeakMap<readonly string[], Set<string>>()
+
+const hasCachedTag = (tags: readonly string[] | undefined, tag: string): boolean => {
+  if (!tags || !Array.isArray(tags)) return false
+  let set = tagsCache.get(tags)
+  if (!set) {
+    set = new Set(tags)
+    tagsCache.set(tags, set)
+  }
+  return set.has(tag)
+}
+
 /**
  * Computes the effective skill value for a skill check.
  *
@@ -58,7 +70,7 @@ const resolveSkillCheckFailure = (
 ): EffectShape => {
   // Pre-consume RNG for determinism regardless of trait presence
   const bandleaderRoll = rng()
-  const isConflict = gameState.activeEvent?.tags?.includes('conflict') ?? false
+  const isConflict = hasCachedTag(gameState.activeEvent?.tags, 'conflict')
   const hasBandleader =
     isConflict && gameState.band && bandHasTrait(gameState.band, 'bandleader')
 
@@ -108,7 +120,7 @@ export const resolveChoice = (
     // Track conflict resolution for unlocking 'bandleader'
     if (
       result.outcome === 'success' &&
-      gameState.activeEvent?.tags?.includes('conflict')
+      hasCachedTag(gameState.activeEvent?.tags, 'conflict')
     ) {
       if (result.type === 'composite') {
         // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
@@ -143,7 +155,7 @@ export const resolveChoice = (
   // Moved outside of skillCheck block because this choice is direct
   if (
     gameState.activeEvent?.id === 'gig_mid_stage_diver' &&
-    choice.flags?.includes('stageDive')
+    hasCachedTag(choice.flags, 'stageDive')
   ) {
     if (result.type === 'composite') {
       result = { ...result, effects: [...(result.effects ?? [])] }

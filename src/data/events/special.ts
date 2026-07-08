@@ -195,9 +195,17 @@ export const SPECIAL_EVENTS = [
     chance: 0.04,
     // Fires only when the band owns a DIY-flavor asset (lower reliability is
     // the intentional tradeoff DIY took during acquisition).
-    condition: (state: GameState) =>
-      Array.isArray(state.assets) &&
-      state.assets.some(a => a.chassisFlavor === 'diy'),
+    condition: (state: GameState) => {
+      if (!Array.isArray(state.assets)) return false
+      let found = false
+      for (let i = 0; i < state.assets.length; i++) {
+        if (state.assets[i]?.chassisFlavor === 'diy') {
+          found = true
+          break
+        }
+      }
+      return found
+    },
     options: [
       {
         label: 'events:diy_chassis_consequence.opt1.label',

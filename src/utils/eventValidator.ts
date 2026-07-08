@@ -6,6 +6,7 @@ import { EVENT_CATEGORIES } from '../data/events/categories'
 
 const VALID_CATEGORIES = new Set<string>(EVENT_CATEGORIES)
 const VALID_TRIGGERS = ['post_gig', 'travel', 'random']
+const VALID_TRIGGERS_SET = new Set(VALID_TRIGGERS)
 
 /**
  * Validates a single crisis event object.
@@ -119,11 +120,12 @@ export const validateCrisisEvent = (event: unknown): boolean => {
     )
   }
 
-  if (!Array.isArray(e.tags) || !(e.tags as unknown[]).includes('crisis')) {
+  const tagsSet = new Set(e.tags as unknown[])
+  if (!Array.isArray(e.tags) || !tagsSet.has('crisis')) {
     throw new Error('Event ' + String(e.id) + ' must have "crisis" tag')
   }
 
-  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS.includes(e.trigger)) {
+  if (typeof e.trigger !== 'string' || !VALID_TRIGGERS_SET.has(e.trigger)) {
     throw new Error(
       'Invalid trigger: ' + String(e.trigger) + ' for event ' + String(e.id)
     )
@@ -324,7 +326,7 @@ export const validateGameEvent = (event: unknown): boolean => {
   }
 
   // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
-  if (Array.isArray(e.tags) && (e.tags as string[]).includes('crisis')) {
+  if (Array.isArray(e.tags) && new Set(e.tags as string[]).has('crisis')) {
     if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
       throw new Error(
         `Crisis-tagged event id must start with 'crisis_' (got: ${JSON.stringify(e.id)})`

@@ -9,6 +9,8 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { useOverworldUrls } from './hooks'
 import { getNodeIconUrl } from './utils'
 
+const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
+
 import type {
   MapNode as GameMapNode,
   GameMap,
@@ -125,6 +127,7 @@ export const OverworldMap = React.memo(
     const renderedNodes = useMemo(() => {
       if (!gameMap) return null
       const nodes: React.ReactNode[] = []
+      const activeStoryFlagsSet = new Set(activeStoryFlags || [])
       for (const key in gameMap.nodes) {
         if (!Object.hasOwn(gameMap.nodes, key)) continue
         const node = gameMap.nodes[key as keyof typeof gameMap.nodes]
@@ -143,9 +146,7 @@ export const OverworldMap = React.memo(
         const effectivePrice = calculateEffectiveTicketPrice(
           node.venue ?? { id: node.id, name: node.id, price: 0 },
           {
-            discountedTickets: activeStoryFlags?.includes(
-              'discounted_tickets_active'
-            )
+            discountedTickets: activeStoryFlagsSet.has('discounted_tickets_active')
           }
         )
 
@@ -164,7 +165,7 @@ export const OverworldMap = React.memo(
               vanUrl={vanUrl}
               ticketPrice={effectivePrice}
               harmony={
-                ['GIG', 'FESTIVAL', 'FINALE'].includes(node.type)
+                HARMONY_NODE_TYPES.has(node.type)
                   ? band.harmony
                   : undefined
               }
