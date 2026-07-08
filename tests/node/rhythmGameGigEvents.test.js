@@ -65,4 +65,59 @@ describe('maybeFireGigProgressEvent', () => {
 
     assert.deepStrictEqual(calls, [])
   })
+
+  test('a missed chance roll does not consume the song slot', () => {
+    const calls = []
+    const failThenSucceed = (category, triggerPoint) => {
+      calls.push([category, triggerPoint])
+      return calls.length > 1
+    }
+    const ref = makeRef({ progress: 1 })
+
+    // Intro roll misses: the attempt is spent, but not the song's event slot.
+    maybeFireGigProgressEvent(ref, failThenSucceed)
+    assert.strictEqual(ref.gigIntroFired, true)
+    assert.strictEqual(ref.lastGigEventSongIndex, undefined)
+
+    // Mid may still attempt (and succeed) within the same song.
+    ref.progress = 60
+    maybeFireGigProgressEvent(ref, failThenSucceed)
+    assert.deepStrictEqual(calls, [
+      ['gig', 'gig_intro'],
+      ['gig', 'gig_mid']
+    ])
+    assert.strictEqual(ref.lastGigEventSongIndex, 0)
+  })
+
+  test('does not fire during song transitions (stale previous-song progress)', () => {
+    const calls = []
+    const ref = makeRef({
+      progress: 97,
+      lastEndedSongIndex: 0,
+      gigIntroFired: true,
+      songTransitioning: true
+    })
+
+    maybeFireGigProgressEvent(ref, makeTrigger(calls))
+
+    assert.deepStrictEqual(calls, [])
+  })
+
+  test('single-song setlist: gig_mid does not fire after the gig is finalized', () => {
+    const calls = []
+    const trigger = makeTrigger(calls)
+    const ref = makeRef({ progress: 1 })
+
+    // Song 0: intro fires, mid blocked (same song).
+    maybeFireGigProgressEvent(ref, trigger)
+    ref.progress = 75
+    maybeFireGigProgressEvent(ref, trigger)
+    assert.deepStrictEqual(calls, [['gig', 'gig_intro']])
+
+    // Song 0 ends and the gig finalizes — gig_mid must not fire.
+    ref.lastEndedSongIndex = 0
+    ref.hasSubmittedResults = true
+    maybeFireGigProgressEvent(ref, trigger)
+    assert.deepStrictEqual(calls, [['gig', 'gig_intro']])
+  })
 })
