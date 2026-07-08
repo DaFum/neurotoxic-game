@@ -1,6 +1,8 @@
 import { test, describe } from 'vitest'
 import assert from 'node:assert/strict'
 import { calculateFuelCost } from '../../../src/utils/economy/logisticsLogic'
+import type { PlayerState, BandState } from '../../../src/types'
+import type { AssetModifiers } from '../../../src/types/assets'
 
 describe('logisticsLogic', () => {
   describe('calculateFuelCost', () => {
@@ -15,7 +17,7 @@ describe('logisticsLogic', () => {
     })
 
     test('applies van_tuning upgrade to reduce fuel consumption by 20%', () => {
-      const playerState = { van: { upgrades: ['van_tuning'] } } as any
+      const playerState = { van: { upgrades: ['van_tuning'] } } as unknown as Pick<PlayerState, 'van'>
       const result = calculateFuelCost(100, playerState)
       assert.deepEqual(result, { fuelLiters: 8, fuelCost: 14 })
     })
@@ -25,25 +27,25 @@ describe('logisticsLogic', () => {
         members: [
           { traits: [{ id: 'road_warrior' }] }
         ]
-      } as any
+      } as unknown as Pick<BandState, 'members'>
       const result = calculateFuelCost(100, null, bandState)
       assert.deepEqual(result, { fuelLiters: 8.5, fuelCost: 14 })
     })
 
     test('applies fuelMultiplier of 0.5 from asset modifiers', () => {
-      const assetModifiers = { fuelMultiplier: 0.5 } as any
+      const assetModifiers = { fuelMultiplier: 0.5 } as unknown as AssetModifiers
       const result = calculateFuelCost(100, null, null, assetModifiers)
       assert.deepEqual(result, { fuelLiters: 5, fuelCost: 8 })
     })
 
     test('combines van_tuning, road_warrior, and fuelMultiplier multiplicatively', () => {
-      const playerState = { van: { upgrades: ['van_tuning'] } } as any
+      const playerState = { van: { upgrades: ['van_tuning'] } } as unknown as Pick<PlayerState, 'van'>
       const bandState = {
         members: [
           { traits: [{ id: 'road_warrior' }] }
         ]
-      } as any
-      const assetModifiers = { fuelMultiplier: 0.5 } as any
+      } as unknown as Pick<BandState, 'members'>
+      const assetModifiers = { fuelMultiplier: 0.5 } as unknown as AssetModifiers
 
       const result = calculateFuelCost(100, playerState, bandState, assetModifiers)
 
