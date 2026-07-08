@@ -82,6 +82,21 @@ test('QuestOfferEngine', async t => {
     )
   })
 
+  await t.test(
+    'handles optimized story flag sets when checking completion flags',
+    () => {
+      const state = {
+        ...baseState(),
+        activeStoryFlags: new Set(['ego_crisis_resolved'])
+      }
+
+      assert.equal(
+        QuestOfferEngine.canOfferQuest(state, 'quest_ego_management'),
+        false
+      )
+    }
+  )
+
   await t.test('returns available offers for a trigger', () => {
     const offerIds = QuestOfferEngine.getAvailableOffers(
       baseState(),
