@@ -64,16 +64,19 @@ export function getGigTimeMs() {
  */
 const handleGigSourceEnded = (source: AudioBufferSourceNode): void => {
   if (audioState.gigSource !== source || audioState.gigIsPaused) return
-  if (audioState.gigOnEnded) {
-    audioState.gigOnEnded({
-      filename: audioState.gigFilename,
-      durationMs: audioState.gigDurationMs,
-      offsetMs: audioState.gigBaseOffsetMs
-    })
+  const onEnded = audioState.gigOnEnded
+  const endInfo = {
+    filename: audioState.gigFilename,
+    durationMs: audioState.gigDurationMs,
+    offsetMs: audioState.gigBaseOffsetMs
   }
   audioState.gigSeekOffsetMs = getGigTimeMs()
   audioState.gigStartCtxTime = null
   audioState.gigSource = null
+  audioState.gigOnEnded = null
+  if (onEnded) {
+    onEnded(endInfo)
+  }
 }
 
 const createGigBufferSource = ({

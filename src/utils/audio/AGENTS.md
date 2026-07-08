@@ -9,6 +9,10 @@ Roles:
 - `audioManager` (stateful class instance) — for non-React contexts: Pixi stage controllers, hook lifecycle, imperative timing.
 - `audioService` (React-safe adapter) — for React components and hooks that need `useSyncExternalStore`-style reactivity.
 
+## Gig playback sequencing
+
+- In `gigPlayback.ts`, natural source-end cleanup must clear the ended source state before invoking `gigOnEnded`. Setlist chaining can synchronously start the next song clock; clearing after the callback erases that next-song state.
+
 ## Snapshots and subscription
 
 - Snapshot consumers must call `getStateSnapshot()` when that method exists; use `getState()` only as a compatibility fallback. Always normalize partial snapshots to complete `AudioSnapshot` shapes.
