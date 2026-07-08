@@ -4,19 +4,38 @@ import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared'
 import { GlitchButton } from '../../ui/GlitchButton'
 
+/**
+ * Properties for the MainMenuNameInputPrompt component.
+ */
+export interface MainMenuNameInputPromptProps {
+  /** The current value of the player name input field. */
+  playerNameInput: string
+  /** Function to update the player name input state. */
+  setPlayerNameInput: (value: string) => void
+  /** Callback executed when the name is successfully submitted. */
+  handleNameSubmit: (name?: string) => void
+  /** Callback executed when the modal is requested to close. */
+  onClose: () => void
+  /** Optional reference to the HTML input element for focus management. */
+  inputRef?: RefObject<HTMLInputElement | null>
+}
+
+/**
+ * Renders a modal prompt that requires the user to input their player alias.
+ *
+ * @remarks
+ * This component utilizes React 19's `useActionState` for form submission handling
+ * and input validation before confirming the player's identity.
+ *
+ * @returns The rendered name input modal component.
+ */
 export const MainMenuNameInputPrompt = ({
   playerNameInput,
   setPlayerNameInput,
   handleNameSubmit,
   onClose,
   inputRef
-}: {
-  playerNameInput: string
-  setPlayerNameInput: (value: string) => void
-  handleNameSubmit: (name?: string) => void
-  onClose: () => void
-  inputRef?: RefObject<HTMLInputElement | null>
-}) => {
+}: MainMenuNameInputPromptProps) => {
   const { t } = useTranslation()
 
   // React 19 Action State Paradigm
