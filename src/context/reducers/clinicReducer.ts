@@ -428,17 +428,17 @@ export const handleGraftNeuroOverclock = (
     },
     band: {
       ...state.band,
-      members: state.band.members.map(
-        (
-          m: import('../../types/band').BandMember & {
-            health?: number
-            stress?: number
-            traits?: string[]
-          },
-          i: number
-        ) => {
-          if (i !== memberIndex) return m
-          return {
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with targeted array indexing.
+      // Why: Avoids recreating objects for unmodified items in the array.
+      members: (() => {
+        const newMembers = [...state.band.members];
+        const m = newMembers[memberIndex] as import('../../types/band').BandMember & {
+          health?: number
+          stress?: number
+          traits?: Record<string, import('../../types/traits').TraitDef>
+        };
+        if (m) {
+          newMembers[memberIndex] = {
             ...m,
             health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
             stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
@@ -455,9 +455,10 @@ export const handleGraftNeuroOverclock = (
                 }
               }
             }
-          }
+          };
         }
-      )
+        return newMembers;
+      })()
     },
     toasts: [
       ...(state.toasts || []),
