@@ -1,30 +1,27 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, vi, afterEach } from 'vitest'
 import { StageResizeHandler } from '../../../../src/components/stage/StageResizeHandler'
 
 describe('StageResizeHandler', () => {
-  let originalResizeObserver: any
-
-  beforeEach(() => {
-    originalResizeObserver = global.ResizeObserver
-  })
-
   afterEach(() => {
-    global.ResizeObserver = originalResizeObserver
+    vi.unstubAllGlobals()
     vi.restoreAllMocks()
   })
 
   it('should use ResizeObserver when available', () => {
     const mockObserve = vi.fn()
     const mockDisconnect = vi.fn()
+    let capturedCallback: (() => void) | undefined
 
-    // We need to implement it as a class to be used with 'new'
-    class MockResizeObserver {
+    class MockResizeObserver implements ResizeObserver {
       observe = mockObserve
       disconnect = mockDisconnect
-      constructor(public callback: any) {}
+      unobserve = vi.fn()
+      constructor(callback: ResizeObserverCallback) {
+        capturedCallback = callback as unknown as () => void
+      }
     }
 
-    global.ResizeObserver = MockResizeObserver as any
+    vi.stubGlobal('ResizeObserver', MockResizeObserver)
 
     const handleResize = vi.fn()
     const handler = new StageResizeHandler(handleResize)
@@ -34,10 +31,8 @@ describe('StageResizeHandler', () => {
 
     expect(mockObserve).toHaveBeenCalledWith(element)
 
-    // Trigger the callback
-    // Access the instance of MockResizeObserver created by handler
-    const observerInstance = (handler as any).resizeObserver
-    observerInstance.callback()
+    // Trigger the callback via the captured reference without accessing private properties
+    capturedCallback?.()
 
     expect(handleResize).toHaveBeenCalled()
 
@@ -46,7 +41,7 @@ describe('StageResizeHandler', () => {
   })
 
   it('should fallback to window resize when ResizeObserver is not available', () => {
-    global.ResizeObserver = undefined as any
+    vi.stubGlobal('ResizeObserver', undefined)
     const addEventListenerSpy = vi.spyOn(window, 'addEventListener')
     const removeEventListenerSpy = vi.spyOn(window, 'removeEventListener')
 
@@ -56,13 +51,13 @@ describe('StageResizeHandler', () => {
 
     handler.setup(element)
 
-    expect(addEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+    expect(addEventListenerSpy).toHaveBeenCalledWith('resize', handleResize)
 
     // Trigger window resize
     window.dispatchEvent(new Event('resize'))
     expect(handleResize).toHaveBeenCalled()
 
     handler.cleanup()
-    expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', expect.any(Function))
+    expect(removeEventListenerSpy).toHaveBeenCalledWith('resize', handleResize)
   })
 })
