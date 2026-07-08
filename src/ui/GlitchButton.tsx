@@ -74,7 +74,7 @@ export const GlitchButton = ({
       className={`
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
         font-display font-bold uppercase tracking-widest
-        touch-manipulation text-center leading-tight max-w-full whitespace-normal wrap-anywhere
+        touch-manipulation text-center leading-tight max-w-full whitespace-normal wrap-break-word
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
         ${getVariantClasses()}
@@ -83,7 +83,7 @@ export const GlitchButton = ({
       {...props}
     >
       <span
-        className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal wrap-anywhere ${
+        className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal wrap-break-word ${
           isIntervention ? '' : 'motion-safe:group-hover:animate-pulse'
         } ${effectiveLoading ? 'opacity-0' : 'opacity-100'}`}
       >

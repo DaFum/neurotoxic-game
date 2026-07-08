@@ -95,7 +95,7 @@ describe('GlitchButton', () => {
 
     expect(button.className).toContain('max-w-full')
     expect(button.className).toContain('whitespace-normal')
-    expect(button.className).toContain('wrap-anywhere')
+    expect(button.className).toContain('wrap-break-word')
   })
 
   it('applies owned variant style correctly', () => {
