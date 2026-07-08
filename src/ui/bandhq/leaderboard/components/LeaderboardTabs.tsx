@@ -24,11 +24,12 @@ export const LeaderboardTabs = ({
           aria-selected={view === id}
           aria-controls={`panel-${id}`}
           id={`tab-${id}`}
+          size='sm'
           onClick={() => {
             if (view !== id) setView(id)
           }}
           disabled={view === id}
-          className={`whitespace-nowrap ${view === id ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
+          className={`whitespace-nowrap shrink-0 ${view === id ? 'opacity-50 cursor-default' : 'cursor-pointer'}`}
         >
           {label}
         </GlitchButton>
