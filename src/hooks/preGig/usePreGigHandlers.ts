@@ -55,8 +55,7 @@ export interface UsePreGigHandlersProps {
   setSetlist: (setlist: RhythmSetlistEntry[]) => void
   setGigModifiers: (
     mods:
-      | Partial<GigModifiers>
-      | ((prev: GigModifiers) => Partial<GigModifiers>)
+      Partial<GigModifiers> | ((prev: GigModifiers) => Partial<GigModifiers>)
   ) => void
   addToast: (message: string, type: 'success' | 'error' | 'info') => void
   startRoadieMinigame: (gigId: string) => void

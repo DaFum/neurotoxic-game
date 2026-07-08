@@ -219,6 +219,31 @@ export const processMissedNotes = (
   }
 }
 
+/**
+ * Fires the in-gig narrative events (`gig_intro`, then `gig_mid`) off gig
+ * progress, limited to at most one event per setlist song: once an event has
+ * fired during the current song, further events wait for the next song.
+ *
+ * @param stateRef - High-frequency rhythm game state carrying progress and guards.
+ * @param triggerEvent - Event-system dispatcher for the `gig` category.
+ */
+export const maybeFireGigProgressEvent = (
+  stateRef: RhythmGameRefState,
+  triggerEvent: (category: string, triggerPoint?: string | null) => boolean
+): void => {
+  const currentSongIndex = stateRef.lastEndedSongIndex + 1
+  if (stateRef.lastGigEventSongIndex === currentSongIndex) return
+  if (!stateRef.gigIntroFired && stateRef.progress > 0) {
+    stateRef.gigIntroFired = true
+    stateRef.lastGigEventSongIndex = currentSongIndex
+    triggerEvent('gig', 'gig_intro')
+  } else if (!stateRef.gigMidFired && stateRef.progress >= 50) {
+    stateRef.gigMidFired = true
+    stateRef.lastGigEventSongIndex = currentSongIndex
+    triggerEvent('gig', 'gig_mid')
+  }
+}
+
 export const finalizeGig = (
   stateRef: RhythmGameRefState,
   setLastGigStats: SetLastGigStats,

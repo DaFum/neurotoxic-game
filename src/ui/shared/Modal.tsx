@@ -116,7 +116,7 @@ export const Modal = ({
           {title && (
             <h2
               id={titleId}
-              className='text-2xl sm:text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center pr-10 sm:pr-0 break-words'
+              className='text-2xl sm:text-3xl font-display text-toxic-green mb-4 uppercase tracking-widest text-center pr-10 sm:pr-0 wrap-break-word'
             >
               {title}
             </h2>

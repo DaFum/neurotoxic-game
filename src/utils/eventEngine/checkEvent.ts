@@ -19,8 +19,7 @@ export const checkEvent = (
   rng: () => number = secureRandom
 ): GameEvent | null => {
   const pool = EVENTS_DB[category as keyof typeof EVENTS_DB] as
-    | EngineEvent[]
-    | undefined
+    EngineEvent[] | undefined
   if (!pool) return null
   return selectEvent(
     pool,

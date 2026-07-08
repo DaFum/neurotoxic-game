@@ -106,7 +106,10 @@ formatCurrencyCases.forEach(({ label, value, locale, expected }) => {
 
 test('formatCurrency - handles edge cases gracefully', () => {
   assert.equal(formatCurrency(NaN, 'en').replace(/\s+/g, ' '), '€NaN')
-  assert.equal(formatCurrency('not a number', 'en').replace(/\s+/g, ' '), '€NaN')
+  assert.equal(
+    formatCurrency('not a number', 'en').replace(/\s+/g, ' '),
+    '€NaN'
+  )
   assert.equal(formatCurrency(null, 'en').replace(/\s+/g, ' '), '€0')
   assert.equal(formatCurrency(undefined, 'en').replace(/\s+/g, ' '), '€NaN')
 })

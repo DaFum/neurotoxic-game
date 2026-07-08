@@ -54,7 +54,7 @@ test('generateEffectText formats valid delta inputs properly', () => {
     }
   }
 
-  const result = generateEffectText(delta, mockT)
+  const result = generateEffectText(delta, mockT, 'en')
 
   expect(result).toContain('Effects:')
   expect(result).toContain('Money: -€50')

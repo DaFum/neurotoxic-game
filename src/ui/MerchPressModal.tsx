@@ -75,7 +75,7 @@ export const MerchPressModal = ({
               mixBlendMode: 'screen'
             }}
           />
-          <div className='absolute inset-0 bg-gradient-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
+          <div className='absolute inset-0 bg-linear-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
 
           <div className='relative z-10 p-6'>
             <MerchPressHeader onClose={onClose} />

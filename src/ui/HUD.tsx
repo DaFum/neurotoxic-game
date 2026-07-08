@@ -23,6 +23,7 @@ import {
 } from './shared'
 import { BandMemberRow } from './hud/BandMemberRow'
 import { translateLocation } from '../utils/locationI18n'
+import { GAME_PHASES } from '../context/gameConstants'
 
 /**
  * Heads-Up Display overlay showing player stats, band status, and volume controls.
@@ -46,6 +47,12 @@ export const HUD = memo(() => {
     state => !!state.band?.inventory?.neurotoxicPedal
   )
   const band = useGameSelector(state => state.band)
+  // PRACTICE (Bandprobe) renders the same Gig view, so it hides the same panels.
+  const isGigScene = useGameSelector(
+    state =>
+      state.currentScene === GAME_PHASES.GIG ||
+      state.currentScene === GAME_PHASES.PRACTICE
+  )
 
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
@@ -61,93 +68,95 @@ export const HUD = memo(() => {
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
-      {/* Left Panel - Player Info */}
+      {/* Left Panel - Player Info (hidden during gigs) */}
       <div className='flex flex-col gap-2'>
-        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
-          <div className='flex items-center gap-2 mb-1.5'>
-            <DollarSign
-              size={14}
-              className={
-                playerMoney < 40 ? 'text-blood-red' : 'text-warning-yellow'
-              }
-            />
-            <span
-              className={`text-sm font-bold tabular-nums ${playerMoney < 40 ? 'text-blood-red' : ''}`}
-            >
-              {formatCurrency(playerMoney, i18n.language)}
-            </span>
-          </div>
-          <div className='flex items-center gap-2 mb-2'>
-            <MapIcon size={14} />
-            <span className='text-star-white/80'>
-              {t('ui:hud.day', { defaultValue: 'Day' })} {playerDay} —{' '}
-              {locationName}
-            </span>
-          </div>
+        {!isGigScene && (
+          <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
+            <div className='flex items-center gap-2 mb-1.5'>
+              <DollarSign
+                size={14}
+                className={
+                  playerMoney < 40 ? 'text-blood-red' : 'text-warning-yellow'
+                }
+              />
+              <span
+                className={`text-sm font-bold tabular-nums ${playerMoney < 40 ? 'text-blood-red' : ''}`}
+              >
+                {formatCurrency(playerMoney, i18n.language)}
+              </span>
+            </div>
+            <div className='flex items-center gap-2 mb-2'>
+              <MapIcon size={14} />
+              <span className='text-star-white/80'>
+                {t('ui:hud.day', { defaultValue: 'Day' })} {playerDay} —{' '}
+                {locationName}
+              </span>
+            </div>
 
-          {/* Van Status Mini Bars */}
-          <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
-            <Tooltip
-              content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
-              position='bottom'
-            >
-              <div className='flex items-end gap-1.5 pointer-events-auto'>
-                <Fuel
-                  size={12}
-                  className='text-warning-yellow shrink-0 mb-0.5'
-                />
-
-                <div className='min-w-0 flex-1'>
-                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                    {Math.floor(playerVanFuel)}%
-                  </div>
-
-                  <ProgressBar
-                    value={playerVanFuel}
-                    max={100}
-                    color='bg-warning-yellow'
-                    warn={playerVanFuel < 20}
-                    size='mini'
-                    aria-label={t('ui:hud.fuelLevel', {
-                      defaultValue: 'Fuel Level'
-                    })}
+            {/* Van Status Mini Bars */}
+            <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
+              <Tooltip
+                content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+                position='bottom'
+              >
+                <div className='flex items-end gap-1.5 pointer-events-auto'>
+                  <Fuel
+                    size={12}
+                    className='text-warning-yellow shrink-0 mb-0.5'
                   />
-                </div>
-              </div>
-            </Tooltip>
 
-            <Tooltip
-              content={t('ui:hud.vanCondition', {
-                defaultValue: 'Van Condition'
-              })}
-              position='bottom'
-            >
-              <div className='flex items-end gap-1.5 pointer-events-auto'>
-                <Wrench
-                  size={12}
-                  className='text-condition-blue shrink-0 mb-0.5'
-                />
+                  <div className='min-w-0 flex-1'>
+                    <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                      {Math.floor(playerVanFuel)}%
+                    </div>
 
-                <div className='min-w-0 flex-1'>
-                  <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                    {Math.floor(playerVanCondition)}%
+                    <ProgressBar
+                      value={playerVanFuel}
+                      max={100}
+                      color='bg-warning-yellow'
+                      warn={playerVanFuel < 20}
+                      size='mini'
+                      aria-label={t('ui:hud.fuelLevel', {
+                        defaultValue: 'Fuel Level'
+                      })}
+                    />
                   </div>
-
-                  <ProgressBar
-                    value={playerVanCondition}
-                    max={100}
-                    color='bg-condition-blue'
-                    warn={playerVanCondition < 25}
-                    size='mini'
-                    aria-label={t('ui:hud.vanCondition', {
-                      defaultValue: 'Van Condition'
-                    })}
-                  />
                 </div>
-              </div>
-            </Tooltip>
+              </Tooltip>
+
+              <Tooltip
+                content={t('ui:hud.vanCondition', {
+                  defaultValue: 'Van Condition'
+                })}
+                position='bottom'
+              >
+                <div className='flex items-end gap-1.5 pointer-events-auto'>
+                  <Wrench
+                    size={12}
+                    className='text-condition-blue shrink-0 mb-0.5'
+                  />
+
+                  <div className='min-w-0 flex-1'>
+                    <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                      {Math.floor(playerVanCondition)}%
+                    </div>
+
+                    <ProgressBar
+                      value={playerVanCondition}
+                      max={100}
+                      color='bg-condition-blue'
+                      warn={playerVanCondition < 25}
+                      size='mini'
+                      aria-label={t('ui:hud.vanCondition', {
+                        defaultValue: 'Van Condition'
+                      })}
+                    />
+                  </div>
+                </div>
+              </Tooltip>
+            </div>
           </div>
-        </div>
+        )}
 
         <div className='flex gap-1.5'>
           <Tooltip
@@ -205,8 +214,11 @@ export const HUD = memo(() => {
         <KeyboardShortcutsPanel showHelp={showHelp} className='w-52' />
       </div>
 
-      {/* Right Panel - Band Status */}
-      <div className='flex flex-col gap-2 items-end'>
+      {/* Right Panel - Band Status. During gigs only the decimator/pedal
+          controls stay visible, pushed below the GigHUD top-edge meter bar. */}
+      <div
+        className={`flex flex-col gap-2 items-end ${isGigScene ? 'mt-24' : ''}`}
+      >
         {hasNeuroDecimator && (
           <button
             onClick={() => {
@@ -228,7 +240,9 @@ export const HUD = memo(() => {
             <Skull size={14} className='inline mr-2' />
             <span className='font-black uppercase tracking-wider text-xs'>
               {neuroDecimatorActive
-                ? t('ui:hud.decimatorActive', { defaultValue: 'DECIMATOR: ON' })
+                ? t('ui:hud.decimatorActive', {
+                    defaultValue: 'DECIMATOR: ON'
+                  })
                 : t('ui:hud.decimatorInactive', {
                     defaultValue: 'DECIMATOR: OFF'
                   })}
@@ -245,51 +259,55 @@ export const HUD = memo(() => {
             </span>
           </div>
         )}
-        <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
-          <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
-            {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
-          </div>
-          <div className='w-52'>
-            {(band?.members ?? []).map((m: BandMember, idx: number) => (
-              <BandMemberRow
-                key={m?.id ?? m?.name ?? `member-${idx}`}
-                m={m}
-                idx={idx}
-                t={t}
-              />
-            ))}
-          </div>
-          <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between'>
-            <span className='text-xs text-ash-gray mb-0.5'>
-              {t('ui:harmony', { defaultValue: 'HARMONY' })}
-            </span>
+        {!isGigScene && (
+          <div className='bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'>
+            <div className='text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'>
+              {t('ui:bandStatus', { defaultValue: 'BAND STATUS' })}
+            </div>
+            <div className='w-52'>
+              {(band?.members ?? []).map((m: BandMember, idx: number) => (
+                <BandMemberRow
+                  key={m?.id ?? m?.name ?? `member-${idx}`}
+                  m={m}
+                  idx={idx}
+                  t={t}
+                />
+              ))}
+            </div>
+            <div className='mt-2 pt-1.5 border-t border-toxic-green/20 flex items-end justify-between'>
+              <span className='text-xs text-ash-gray mb-0.5'>
+                {t('ui:harmony', { defaultValue: 'HARMONY' })}
+              </span>
 
-            <div className='w-20'>
-              <div
-                className={`text-xs tabular-nums mb-0.5 leading-none ${
-                  (band?.harmony ?? 0) < 40
-                    ? 'text-blood-red'
-                    : 'text-toxic-green'
-                }`}
-              >
-                {Math.floor(band?.harmony ?? 0)}%
+              <div className='w-20'>
+                <div
+                  className={`text-xs tabular-nums mb-0.5 leading-none ${
+                    (band?.harmony ?? 0) < 40
+                      ? 'text-blood-red'
+                      : 'text-toxic-green'
+                  }`}
+                >
+                  {Math.floor(band?.harmony ?? 0)}%
+                </div>
+
+                <ProgressBar
+                  value={band?.harmony ?? 0}
+                  max={100}
+                  color={
+                    (band?.harmony ?? 0) < 40
+                      ? 'bg-blood-red'
+                      : 'bg-toxic-green'
+                  }
+                  size='mini'
+                  showValue={false}
+                  aria-label={t('ui:hud.bandHarmony', {
+                    defaultValue: 'Band Harmony'
+                  })}
+                />
               </div>
-
-              <ProgressBar
-                value={band?.harmony ?? 0}
-                max={100}
-                color={
-                  (band?.harmony ?? 0) < 40 ? 'bg-blood-red' : 'bg-toxic-green'
-                }
-                size='mini'
-                showValue={false}
-                aria-label={t('ui:hud.bandHarmony', {
-                  defaultValue: 'Band Harmony'
-                })}
-              />
             </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   )

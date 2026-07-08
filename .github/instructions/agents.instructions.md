@@ -312,8 +312,8 @@ All aliases are case-insensitive:
 **GitHub MCP Server**:
 
 ```yaml
-tools: ['github/*']  # All GitHub tools
-tools: ['github/get_file_contents', 'github/search_repositories']  # Specific tools
+tools: ['github/*'] # All GitHub tools
+tools: ['github/get_file_contents', 'github/search_repositories'] # Specific tools
 ```
 
 - All read-only tools available by default
@@ -322,8 +322,8 @@ tools: ['github/get_file_contents', 'github/search_repositories']  # Specific to
 **Playwright MCP Server**:
 
 ```yaml
-tools: ['playwright/*']  # All Playwright tools
-tools: ['playwright/navigate', 'playwright/screenshot']  # Specific tools
+tools: ['playwright/*'] # All Playwright tools
+tools: ['playwright/navigate', 'playwright/screenshot'] # Specific tools
 ```
 
 - Configured to access localhost only

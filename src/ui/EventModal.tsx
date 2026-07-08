@@ -99,7 +99,7 @@ const EventHeader = ({
     <div>
       <h2
         id='event-title'
-        className='text-2xl font-bold tracking-[0.1em] uppercase text-toxic-green'
+        className='text-2xl font-bold tracking-widest uppercase text-toxic-green'
       >
         {t(titleKey, {
           defaultValue: event.title ?? t('ui:event.untitled'),
@@ -197,7 +197,11 @@ const EventOptionsList = ({
         // from the option's effect (null money → 0) so the formatted
         // amount matches the mechanical effect and localizes per locale.
         const previewMoney = getOptionPreviewMoney(option, gameState)
-        const amount = formatCurrency(previewMoney ?? 0, i18n.language, 'always')
+        const amount = formatCurrency(
+          previewMoney ?? 0,
+          i18n.language,
+          'always'
+        )
         return (
           <EventOptionButton
             key={key}

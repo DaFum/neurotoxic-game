@@ -78,10 +78,7 @@ export interface CityTraitState {
  * Identifiers for active overlay minigames.
  */
 export type MinigameType =
-  | 'TOURBUS'
-  | 'ROADIE'
-  | 'KABELSALAT'
-  | 'AMP_CALIBRATION'
+  'TOURBUS' | 'ROADIE' | 'KABELSALAT' | 'AMP_CALIBRATION'
 
 /**
  * Persisted state for the currently active minigame overlay.

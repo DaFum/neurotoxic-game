@@ -102,10 +102,12 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
           </button>
         </div>
 
-        <Tooltip content={t('ui:pregig.merchStrategy.restockCost', {
-          amount: item.restockAmount,
-          cost: formatCurrency(item.restockCost, language)
-        })}>
+        <Tooltip
+          content={t('ui:pregig.merchStrategy.restockCost', {
+            amount: item.restockAmount,
+            cost: formatCurrency(item.restockCost, language)
+          })}
+        >
           <button
             type='button'
             onClick={() => {

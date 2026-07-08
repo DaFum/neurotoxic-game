@@ -98,15 +98,13 @@ export interface MerchPressPayload {
  * Player update payload or reducer-time updater.
  */
 export type UpdatePlayerPayload =
-  | Partial<PlayerState>
-  | ((player: PlayerState) => Partial<PlayerState>)
+  Partial<PlayerState> | ((player: PlayerState) => Partial<PlayerState>)
 
 /**
  * Band update payload or reducer-time updater.
  */
 export type UpdateBandPayload =
-  | Partial<BandState>
-  | ((band: BandState) => Partial<BandState>)
+  Partial<BandState> | ((band: BandState) => Partial<BandState>)
 
 /**
  * Payload used when resetting state while preserving selected settings.

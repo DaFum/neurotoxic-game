@@ -74,7 +74,7 @@ export const GlitchButton = ({
       className={`
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
         font-display font-bold uppercase tracking-widest
-        touch-manipulation text-center leading-tight max-w-full whitespace-normal break-words [overflow-wrap:anywhere]
+        touch-manipulation text-center leading-tight max-w-full whitespace-normal wrap-anywhere
         transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
         group
         ${getVariantClasses()}
@@ -83,7 +83,7 @@ export const GlitchButton = ({
       {...props}
     >
       <span
-        className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal break-words [overflow-wrap:anywhere] ${
+        className={`relative z-(--z-hud) flex min-w-0 max-w-full items-center justify-center gap-2 whitespace-normal wrap-anywhere ${
           isIntervention ? '' : 'motion-safe:group-hover:animate-pulse'
         } ${effectiveLoading ? 'opacity-0' : 'opacity-100'}`}
       >
@@ -115,7 +115,7 @@ export const GlitchButton = ({
             className='absolute inset-0 overflow-hidden pointer-events-none'
             aria-hidden='true'
           >
-            <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-gradient-to-r from-transparent via-star-white/20 to-transparent skew-x-[-12deg] motion-safe:group-hover:animate-[shimmer_700ms_ease-out]' />
+            <span className='absolute top-0 left-0 h-full w-1/3 -translate-x-full bg-linear-to-r from-transparent via-star-white/20 to-transparent -skew-x-12 motion-safe:group-hover:animate-[shimmer_700ms_ease-out]' />
           </span>
           <span
             aria-hidden='true'

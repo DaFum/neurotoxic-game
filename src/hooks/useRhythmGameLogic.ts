@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
 import { stopAudio } from '../utils/audio/audioEngine'
+import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { hasTrait } from '../utils/traitUtils'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
@@ -91,24 +92,27 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
 
   // Fold temporary band effects (contraband/equipment) into the static
   // performance values the scoring hook consumes.
-  const scoringPerformance = useMemo(
-    () => {
-      const members = band?.members
-      const hasNeuroOverclock = Array.isArray(members)
-        ? members.some((m: BandMember) => hasTrait(m, 'neuro_overclock'))
-        : false
-      const baseTempo = finiteNumberOr(band?.tempo, 0)
-      const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
+  const scoringPerformance = useMemo(() => {
+    const members = band?.members
+    const hasNeuroOverclock = Array.isArray(members)
+      ? members.some((m: BandMember) => hasTrait(m, 'neuro_overclock'))
+      : false
+    const baseTempo = finiteNumberOr(band?.tempo, 0)
+    const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
 
-      return {
-        ...band?.performance,
-        tempo: finalTempo,
-        critChance: finiteNumberOr(band?.crit, 0),
-        crowdControl: finiteNumberOr(band?.crowdControl, 0)
-      }
-    },
-    [band?.performance, band?.tempo, band?.crit, band?.crowdControl, band?.members]
-  )
+    return {
+      ...band?.performance,
+      tempo: finalTempo,
+      critChance: finiteNumberOr(band?.crit, 0),
+      crowdControl: finiteNumberOr(band?.crowdControl, 0)
+    }
+  }, [
+    band?.performance,
+    band?.tempo,
+    band?.crit,
+    band?.crowdControl,
+    band?.members
+  ])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
@@ -149,20 +153,15 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // Fire the in-gig narrative events off gig progress, which is kept on the ref
   // (not React state) for perf. `gig_intro` fires once the gig is underway and
   // `gig_mid` at the halfway mark; the rhythm loop pauses audio while the
-  // resulting event modal is open (see processRhythmGameTick), and the ref
-  // guards keep each event to at most one firing per gig.
+  // resulting event modal is open (see processRhythmGameTick). The ref guards
+  // keep each event to at most one firing per gig and at most one event per
+  // setlist song (see maybeFireGigProgressEvent).
   const update = useCallback(
     (deltaMS: number) => {
       rawUpdate(deltaMS)
       const ref = gameStateRef.current
       if (!ref || activeEvent) return
-      if (!ref.gigIntroFired && ref.progress > 0) {
-        ref.gigIntroFired = true
-        triggerEvent('gig', 'gig_intro')
-      } else if (!ref.gigMidFired && ref.progress >= 50) {
-        ref.gigMidFired = true
-        triggerEvent('gig', 'gig_mid')
-      }
+      maybeFireGigProgressEvent(ref, triggerEvent)
     },
     [rawUpdate, gameStateRef, activeEvent, triggerEvent]
   )

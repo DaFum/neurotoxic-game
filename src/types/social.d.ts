@@ -162,12 +162,7 @@ export interface SocialPostOption {
  * Brand alignment categories used for reputation and rival logic.
  */
 export type BrandAlignment =
-  | 'EVIL'
-  | 'CORPORATE'
-  | 'INDIE'
-  | 'SUSTAINABLE'
-  | 'GOOD'
-  | 'NEUTRAL'
+  'EVIL' | 'CORPORATE' | 'INDIE' | 'SUSTAINABLE' | 'GOOD' | 'NEUTRAL'
 
 /**
  * Persisted rival band state on the overworld map.
@@ -224,5 +219,4 @@ export interface PostResult {
  * Reducer payload accepted by the social update action.
  */
 export type UpdateSocialPayload =
-  | Partial<SocialState>
-  | ((social: SocialState) => Partial<SocialState>)
+  Partial<SocialState> | ((social: SocialState) => Partial<SocialState>)

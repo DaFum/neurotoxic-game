@@ -22,8 +22,7 @@ export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
  */
 const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
   const definition = getQuestDefinition(quest.id ?? '') as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   return quest.kind ?? definition?.kind ?? 'side'
 }
 
@@ -104,8 +103,7 @@ export const canAcceptQuest = (
     return { ok: false, reason: 'active' }
   }
   const definition = getQuestDefinition(questId) as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   const merged: Partial<QuestState> =
     typeof questOrId === 'string'
       ? { id: questId, ...(definition ?? {}) }

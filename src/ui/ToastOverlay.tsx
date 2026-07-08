@@ -95,7 +95,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
           {String(renderToastMessage(toast, t) ?? '')}
         </p>
       </div>
-      <div className={`h-[2px] w-full ${style.border} border-t`} />
+      <div className={`h-0.5 w-full ${style.border} border-t`} />
     </motion.div>
   )
 })

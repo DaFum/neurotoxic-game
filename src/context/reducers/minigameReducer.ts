@@ -262,8 +262,7 @@ export const handleCompleteTravelMinigame = (
       const preStashItem =
         newState.band?.stash && Object.hasOwn(newState.band.stash, contrabandId)
           ? (newState.band.stash[contrabandId] as
-              | Record<string, unknown>
-              | undefined)
+              Record<string, unknown> | undefined)
           : undefined
       const preStacks = preStashItem
         ? finiteNumberOr(preStashItem.stacks, 0)

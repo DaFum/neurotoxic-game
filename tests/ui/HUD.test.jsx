@@ -5,6 +5,7 @@ const mockToggleNeuroDecimator = vi.hoisted(() => vi.fn())
 const mockUpdateBand = vi.hoisted(() => vi.fn())
 const mockSetNeuroDecimator = vi.hoisted(() => vi.fn())
 const mockGameState = vi.hoisted(() => ({
+  currentScene: 'OVERWORLD',
   player: {
     money: 100,
     day: 1,
@@ -67,6 +68,7 @@ describe('HUD', () => {
     mockSetNeuroDecimator.mockClear()
     mockGameState.band.members = []
     mockGameState.band.neuroDecimatorActive = false
+    mockGameState.currentScene = 'OVERWORLD'
   })
 
   test('dispatches the dedicated decimator toggle action from the HUD button', async () => {
@@ -87,5 +89,52 @@ describe('HUD', () => {
     render(<HUD />)
 
     expect(screen.getByText('Member')).toBeInTheDocument()
+  })
+
+  test('shows player info and band status outside the gig scene', async () => {
+    render(<HUD />)
+
+    expect(screen.getByLabelText('Fuel Level')).toBeInTheDocument()
+    expect(screen.getByLabelText('Van Condition')).toBeInTheDocument()
+    expect(
+      screen.getByText(/venues:stendal_proberaum\.name/)
+    ).toBeInTheDocument()
+    expect(screen.getByText('BAND STATUS')).toBeInTheDocument()
+  })
+
+  test('hides the player info and band status panels during the practice scene', async () => {
+    mockGameState.currentScene = 'PRACTICE'
+
+    render(<HUD />)
+
+    expect(screen.queryByLabelText('Fuel Level')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/venues:stendal_proberaum\.name/)
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('BAND STATUS')).not.toBeInTheDocument()
+  })
+
+  test('hides the player info and band status panels during the gig scene', async () => {
+    mockGameState.currentScene = 'GIG'
+
+    render(<HUD />)
+
+    expect(screen.queryByLabelText('Fuel Level')).not.toBeInTheDocument()
+    expect(screen.queryByLabelText('Van Condition')).not.toBeInTheDocument()
+    expect(
+      screen.queryByText(/venues:stendal_proberaum\.name/)
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('BAND STATUS')).not.toBeInTheDocument()
+  })
+
+  test('keeps the decimator toggle clickable during the gig scene', async () => {
+    mockGameState.currentScene = 'GIG'
+
+    render(<HUD />)
+
+    fireEvent.click(screen.getByRole('button', { name: /toggle decimator/i }))
+
+    expect(mockToggleNeuroDecimator).toHaveBeenCalledWith(true)
+    expect(mockSetNeuroDecimator).toHaveBeenCalledWith(true)
   })
 })

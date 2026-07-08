@@ -90,8 +90,7 @@ export type BaseGameDispatchActions = {
   ) => void
   updateSocial: (
     updates:
-      | Partial<SocialState>
-      | ((prev: SocialState) => Partial<SocialState>)
+      Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
   ) => void
   setGameMap: (mapData: Parameters<typeof createSetMapAction>[0]) => void
   setCurrentGig: (gig: Parameters<typeof createSetGigAction>[0]) => void
@@ -283,8 +282,7 @@ export function useGameDispatchActions({
   const updateSocial = useCallback(
     (
       updates:
-        | Partial<SocialState>
-        | ((prev: SocialState) => Partial<SocialState>)
+        Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
     ) => dispatch(createUpdateSocialAction(updates)),
     [dispatch]
   )

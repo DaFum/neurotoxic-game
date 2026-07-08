@@ -25,8 +25,7 @@ type ChatterPoolItem = {
   text: string
   weight?: number
   condition?:
-    | ((state: ChatterState, memo: Record<string, number>) => boolean)
-    | null
+    ((state: ChatterState, memo: Record<string, number>) => boolean) | null
   speaker?: string | null
   type?: string
 }
@@ -80,8 +79,7 @@ const getVenueChatter = (state: ChatterState): ChatterPoolItem[] => {
 
   if (venueId) {
     const venueEntry = VENUE_CHATTER_LOOKUP[venueId] as
-      | VenueChatterEntry
-      | undefined
+      VenueChatterEntry | undefined
 
     if (venueEntry?.linesByScene) {
       const scene = state.currentScene as ChatterScene

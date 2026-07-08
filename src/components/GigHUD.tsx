@@ -9,6 +9,8 @@ import { GameOverOverlay } from './hud/GameOverOverlay'
 import { StatsOverlay } from './hud/StatsOverlay'
 import { ToxicHazardTicker } from './hud/ToxicHazardTicker'
 import { OverloadWarning } from './hud/OverloadWarning'
+import { OverloadMeter } from './hud/OverloadMeter'
+import { CorruptionMeter } from './hud/CorruptionMeter'
 
 interface GigHUDStats {
   /** The player's current accumulated score for the active gig. */
@@ -80,14 +82,16 @@ export const GigHUD = memo(function GigHUD({
 
       <OverloadWarning overload={overload} isToxicMode={isToxicMode} />
 
-      <StatsOverlay
-        score={score}
-        combo={combo}
-        accuracy={accuracy}
-        overload={overload}
-        corruptionLevel={corruptionLevel}
-        isCorruptionBurstActive={isCorruptionBurstActive}
-      />
+      {/* Top-edge meter bar; the global HUD hides its band-status panel during gigs to free this space. */}
+      <div className='absolute top-3 right-20 z-(--z-stage-overlay) flex items-start gap-3 pointer-events-none max-sm:right-16 max-sm:flex-col max-sm:items-end max-sm:scale-75 max-sm:origin-top-right'>
+        <OverloadMeter overload={overload} />
+        <CorruptionMeter
+          corruptionLevel={corruptionLevel}
+          isCorruptionBurstActive={isCorruptionBurstActive}
+        />
+      </div>
+
+      <StatsOverlay score={score} combo={combo} accuracy={accuracy} />
 
       <HealthBar health={health} isToxicMode={isToxicMode} />
 

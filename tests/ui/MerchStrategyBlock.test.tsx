@@ -40,9 +40,7 @@ describe('MerchStrategyBlock', () => {
     const restockButtons = screen.getAllByRole('button', { name: 'Restock' })
     fireEvent.mouseEnter(restockButtons[1])
 
-    expect(
-      screen.getByText('Cost: 30 EUR (+5)')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Cost: 30 EUR (+5)')).toBeInTheDocument()
   })
 
   it('disables restock controls when no capacity remains', () => {
@@ -73,8 +71,6 @@ describe('MerchStrategyBlock', () => {
     const wrapper = restockButtons[0].parentElement
     if (wrapper) fireEvent.mouseEnter(wrapper)
 
-    expect(
-      screen.getByText('Cost: 0 EUR (+0)')
-    ).toBeInTheDocument()
+    expect(screen.getByText('Cost: 0 EUR (+0)')).toBeInTheDocument()
   })
 })

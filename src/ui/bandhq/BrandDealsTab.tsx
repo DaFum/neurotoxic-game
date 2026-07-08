@@ -80,7 +80,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
               {displayDeal?.name || deal.name}
             </h3>
 
-            <p className='text-sm text-ash-gray mb-4 flex-grow'>
+            <p className='text-sm text-ash-gray mb-4 grow'>
               {displayDeal?.description || deal.description}
             </p>
 

@@ -12,13 +12,13 @@ import {
 import { calculateTravelExpenses } from '../../src/utils/economyEngine'
 import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
 
-vi.mock('../../src/utils/economyEngine', async (importOriginal) => ({
-  ...await importOriginal(),
+vi.mock('../../src/utils/economyEngine', async importOriginal => ({
+  ...(await importOriginal()),
   calculateTravelExpenses: vi.fn()
 }))
 
-vi.mock('../../src/utils/assetSelectors', async (importOriginal) => ({
-  ...await importOriginal(),
+vi.mock('../../src/utils/assetSelectors', async importOriginal => ({
+  ...(await importOriginal()),
   getTotalDailyObligations: vi.fn()
 }))
 
@@ -307,7 +307,10 @@ describe('travelUtils', () => {
         totalCashImpact: 70
       })
 
-      assert.strictEqual(vi.mocked(calculateTravelExpenses).mock.calls.length, 1)
+      assert.strictEqual(
+        vi.mocked(calculateTravelExpenses).mock.calls.length,
+        1
+      )
       assert.deepStrictEqual(vi.mocked(calculateTravelExpenses).mock.calls[0], [
         mockNode,
         mockCurrentStartNode,
@@ -316,14 +319,22 @@ describe('travelUtils', () => {
         mockAssetModifiers
       ])
 
-      assert.strictEqual(vi.mocked(getTotalDailyObligations).mock.calls.length, 1)
-      assert.deepStrictEqual(vi.mocked(getTotalDailyObligations).mock.calls[0], [{
-        player: mockPlayer,
-        band: mockBand,
-        social: mockSocial,
-        assets: mockAssets,
-        liabilities: mockLiabilities
-      }])
+      assert.strictEqual(
+        vi.mocked(getTotalDailyObligations).mock.calls.length,
+        1
+      )
+      assert.deepStrictEqual(
+        vi.mocked(getTotalDailyObligations).mock.calls[0],
+        [
+          {
+            player: mockPlayer,
+            band: mockBand,
+            social: mockSocial,
+            assets: mockAssets,
+            liabilities: mockLiabilities
+          }
+        ]
+      )
     })
   })
 })

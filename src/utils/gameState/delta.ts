@@ -815,8 +815,7 @@ export const applyEventDelta = (
           // leaves the stash; confiscation must not orphan the band-stat buff
           // (the effect was never tracked in activeContrabandEffects).
           const entry = nextBand.stash[itemId] as
-            | Record<string, unknown>
-            | undefined
+            Record<string, unknown> | undefined
           if (
             entry &&
             typeof entry === 'object' &&

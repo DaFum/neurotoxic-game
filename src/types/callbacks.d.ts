@@ -15,9 +15,7 @@ export type RandomFn = () => number
  * through a promise.
  */
 export type AsyncCallback<TResult = void> = () =>
-  | TResult
-  | void
-  | Promise<TResult | void>
+  TResult | void | Promise<TResult | void>
 /**
  * Asynchronous callback that resolves without a value.
  */

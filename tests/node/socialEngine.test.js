@@ -473,12 +473,24 @@ test('calculateSocialGrowth applies viral bonus', () => {
 
 test('checkViralEvent returns true for high accuracy', () => {
   assert.equal(checkViralEvent({ accuracy: 96, maxCombo: 10 }), true)
-  assert.equal(checkViralEvent({ accuracy: 95, maxCombo: 10 }, { modifiers: 0, roll: 0.9 }), false)
+  assert.equal(
+    checkViralEvent(
+      { accuracy: 95, maxCombo: 10 },
+      { modifiers: 0, roll: 0.9 }
+    ),
+    false
+  )
 })
 
 test('checkViralEvent returns true for high combo', () => {
   assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 51 }), true)
-  assert.equal(checkViralEvent({ accuracy: 80, maxCombo: 50 }, { modifiers: 0, roll: 0.9 }), false)
+  assert.equal(
+    checkViralEvent(
+      { accuracy: 80, maxCombo: 50 },
+      { modifiers: 0, roll: 0.9 }
+    ),
+    false
+  )
 })
 
 test('checkViralEvent handles random roll with modifiers', () => {

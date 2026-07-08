@@ -8,8 +8,7 @@ export const getQuestWithDefinition = (
   quest: QuestState | ActiveQuestState
 ): QuestState => {
   const definition = getQuestDefinition(quest.id) as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   return definition ? { ...definition, ...quest } : quest
 }
 

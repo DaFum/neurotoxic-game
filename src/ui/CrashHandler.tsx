@@ -61,7 +61,7 @@ class ErrorBoundaryComponent extends React.Component<
       const { t } = this.props
       return (
         <div
-          className='flex flex-col items-center justify-center fixed inset-0 bg-void-black text-blood-red p-8 relative'
+          className='flex flex-col items-center justify-center fixed inset-0 bg-void-black text-blood-red p-8'
           style={{ zIndex: 'var(--z-crash)' }}
         >
           <VoidSkullIcon className='w-32 h-32 text-blood-red animate-pulse mb-6' />

@@ -68,7 +68,7 @@ const ProfitRow = ({
       <span className='text-toxic-green font-mono uppercase tracking-widest text-xs sm:text-sm'>
         {t('ui:blood_bank.gain', { defaultValue: 'PROFIT' })}
       </span>
-      <span className={`${valueClass} text-right break-words`}>
+      <span className={`${valueClass} text-right wrap-break-word`}>
         {formatCurrency(moneyGain, language, 'always')}
       </span>
     </div>
@@ -254,7 +254,7 @@ export const BloodBankModal = ({
               >
                 {t('ui:blood_bank.title', { defaultValue: 'THE VOID CLINIC' })}
               </h2>
-              <p className='text-ash-gray text-xs sm:text-sm font-mono uppercase tracking-widest mt-1 break-words'>
+              <p className='text-ash-gray text-xs sm:text-sm font-mono uppercase tracking-widest mt-1 wrap-break-word'>
                 {t('ui:blood_bank.subtitle', {
                   defaultValue: 'BLOOD FOR CASH'
                 })}

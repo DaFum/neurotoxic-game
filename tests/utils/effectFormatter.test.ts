@@ -7,8 +7,8 @@ describe('generateEffectText', () => {
     options?.defaultValue ?? key
 
   it('returns empty string if no delta is provided', () => {
-    assert.equal(generateEffectText(undefined, t), '')
-    assert.equal(generateEffectText(null, t), '')
+    assert.equal(generateEffectText(undefined, t, 'en'), '')
+    assert.equal(generateEffectText(null, t, 'en'), '')
   })
 
   it('formats player stats', () => {
@@ -23,7 +23,7 @@ describe('generateEffectText', () => {
         }
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(
       result,
       'Effects: Money: +€100, Fame: -10, Time: +2h, Fuel: -5, Van Condition: +10'
@@ -38,7 +38,7 @@ describe('generateEffectText', () => {
         loyalty: 15
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Controversy: +5, Viral: -2, Loyalty: +15')
   })
 
@@ -46,7 +46,7 @@ describe('generateEffectText', () => {
     const delta = {
       score: 1000
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Score: +1000')
   })
 
@@ -58,7 +58,7 @@ describe('generateEffectText', () => {
         skill: 1
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Harmony: +5, Luck: -3, Skill: +1')
   })
 
@@ -72,7 +72,7 @@ describe('generateEffectText', () => {
         ]
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Mood: +3, Stamina: -5')
   })
 
@@ -82,7 +82,7 @@ describe('generateEffectText', () => {
         membersDelta: { moodChange: 10, staminaChange: 20 }
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Mood: +10, Stamina: +20')
   })
 
@@ -98,7 +98,7 @@ describe('generateEffectText', () => {
         }
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(
       result,
       'Effects: guitar: +1, broken_strings: -2, +vip_pass, -fake_id'
@@ -111,7 +111,7 @@ describe('generateEffectText', () => {
         addQuest: 'find_guitar'
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: New Quest: find_guitar')
   })
 
@@ -125,7 +125,7 @@ describe('generateEffectText', () => {
         ]
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(
       result,
       'Effects: New Quest: Quest 1, New Quest: Quest 2, New Quest: Quest 3'
@@ -138,7 +138,7 @@ describe('generateEffectText', () => {
         queueEvent: 'some_event'
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Story Updated')
 
     const delta2 = {
@@ -146,7 +146,7 @@ describe('generateEffectText', () => {
         addStoryFlag: 'some_flag'
       }
     }
-    const result2 = generateEffectText(delta2, t)
+    const result2 = generateEffectText(delta2, t, 'en')
     assert.equal(result2, 'Effects: Story Updated')
   })
 
@@ -156,7 +156,7 @@ describe('generateEffectText', () => {
         gameOver: true
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Game Over')
   })
 
@@ -169,7 +169,7 @@ describe('generateEffectText', () => {
         gameOver: true
       }
     }
-    const result = generateEffectText(delta, t)
+    const result = generateEffectText(delta, t, 'en')
     assert.equal(result, 'Effects: Money: +€50, Game Over')
   })
 })

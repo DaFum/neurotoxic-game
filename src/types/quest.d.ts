@@ -136,10 +136,7 @@ export interface QuestEvent {
  * Mode for deriving progress increments from quest events.
  */
 export type QuestProgressAmountMode =
-  | 'fixed'
-  | 'event.amount'
-  | 'event.score'
-  | 'threshold'
+  'fixed' | 'event.amount' | 'event.score' | 'threshold'
 
 /**
  * Optional filters that narrow which quest events match a rule.

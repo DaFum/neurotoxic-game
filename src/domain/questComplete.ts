@@ -117,8 +117,7 @@ export const completeQuest = (
 
   // Cooldown-policy quests start a re-add cooldown on completion.
   const definition = getQuestDefinition(quest.id) as
-    | Partial<QuestState>
-    | undefined
+    Partial<QuestState> | undefined
   const repeatPolicy = quest.repeatPolicy ?? definition?.repeatPolicy
   const cooldownDays = finiteNumberOr(
     quest.cooldownDays ?? definition?.cooldownDays,

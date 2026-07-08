@@ -104,7 +104,7 @@ const MenuCategoryList = React.memo(
       {menuCategories.map(c => (
         <GlitchButton
           key={c.id}
-          className='menu-cat-btn w-full border-ash-gray/15 !px-3.5 !py-2.5'
+          className='menu-cat-btn w-full border-ash-gray/15 px-3.5! py-2.5!'
           disabled={isTraveling}
           onClick={() => setActiveCat(c.id)}
           size='sm'
@@ -164,7 +164,7 @@ const MenuSubmenu = React.memo(
   }) => (
     <div className='menu-sub flex flex-col'>
       <GlitchButton
-        className='menu-back-btn !text-left'
+        className='menu-back-btn text-left!'
         size='sm'
         variant='primary'
         onClick={handleBack}
@@ -178,7 +178,7 @@ const MenuSubmenu = React.memo(
         {cat.items.map(item => (
           <GlitchButton
             key={item.action}
-            className={`menu-sub-item hover:enabled:-translate-x-[2px] ${item.v === 'p' ? 'v-p' : item.v === 'w' ? 'v-w' : 'v-d'}`}
+            className={`menu-sub-item hover:enabled:-translate-x-0.5 ${item.v === 'p' ? 'v-p' : item.v === 'w' ? 'v-w' : 'v-d'}`}
             disabled={isDisabled(item)}
             onClick={() => {
               actions[item.action]()
@@ -188,14 +188,14 @@ const MenuSubmenu = React.memo(
           >
             <div className='flex w-full justify-between items-center text-left'>
               <div className='menu-sub-item-left flex items-center gap-2.5'>
-                <span className='menu-sub-icon text-[14px] w-[18px] text-center'>
+                <span className='menu-sub-icon text-[14px] w-4.5 text-center'>
                   {item.icon}
                 </span>
                 <div className='text-left'>
                   <div className='menu-sub-label font-display text-[13px] tracking-[1px]'>
                     [{item.label}]
                   </div>
-                  <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-[1px]'>
+                  <div className='menu-sub-desc text-[8px] opacity-55 font-mono tracking-[0.5px] mt-px'>
                     {item.desc}
                   </div>
                 </div>
