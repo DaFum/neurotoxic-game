@@ -1,4 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
 import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStartButton'
 
@@ -10,20 +11,45 @@ import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStart
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, className }: any) => <div data-testid="motion-div" className={className}>{children}</div>
+    div: ({
+      children,
+      className
+    }: {
+      children?: ReactNode
+      className?: string
+    }) => (
+      <div data-testid='motion-div' className={className}>
+        {children}
+      </div>
+    )
   }
 }))
 
 vi.mock('../../../../src/ui/shared', () => ({
-  ActionButton: ({ children, onClick, disabled, className }: any) => (
-    <button onClick={onClick} disabled={disabled} className={className} data-testid="action-button">
+  ActionButton: ({
+    children,
+    onClick,
+    disabled,
+    className
+  }: {
+    children?: ReactNode
+    onClick?: () => void
+    disabled?: boolean
+    className?: string
+  }) => (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={className}
+      data-testid='action-button'
+    >
       {children}
     </button>
   )
 }))
 
 vi.mock('../../../../src/ui/shared/Icons', () => ({
-  RazorPlayIcon: () => <svg data-testid="razor-play-icon" />
+  RazorPlayIcon: () => <svg data-testid='razor-play-icon' />
 }))
 
 describe('PreGigStartButton', () => {
