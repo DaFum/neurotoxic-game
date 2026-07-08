@@ -8,8 +8,10 @@ vi.mock('../../src/utils/numberUtils', () => ({
 }))
 
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    i18n: { language: 'en' }
+    i18n: { language: 'en' },
+    t: (key: string) => key
   })
 }))
 
@@ -19,7 +21,7 @@ describe('GigModifiersBlock', () => {
     gigModifierOptions: [
       { key: 'pyrotechnics', label: 'Pyrotechnics', cost: 100, desc: 'Fire!' },
       { key: 'lightShow', label: 'Light Show', cost: 50, desc: 'Lights!' }
-    ] as unknown as ModifierOption[],
+    ] as ModifierOption[],
     gigModifiers: { pyrotechnics: true, lightShow: false },
     toggleModifier: vi.fn(),
     handleBandMeeting: vi.fn(),
@@ -78,6 +80,8 @@ describe('GigModifiersBlock', () => {
 
     expect(screen.getByText('effect1')).toBeInTheDocument()
     expect(screen.getByText('Effect Two')).toBeInTheDocument()
+    // Verify that sanitizeEffectOptions correctly filtered out non-finite and complex object values
+    expect(props.t).toHaveBeenCalledWith('effect2', { amount: 5, booleanVal: true, nullVal: null, defaultValue: 'Effect Two' })
   })
 
   it('renders fallback when no active modifiers are present', () => {
