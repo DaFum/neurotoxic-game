@@ -35,3 +35,4 @@
 | 2026-07-02 | src/components/hud/StatsOverlay.tsx | StatsOverlayProps, StatsOverlay |
 | 2026-07-06 | src/components/MapNodeView.tsx | MapNodeData, MapNodeTooltipProps, MapNodeProps, getPinAltText, getNodeTypeLabel, CancellationBadge, MapNodeTooltip, MapNodeView |
 | 2026-07-07 | src/components/clinic/GraftModal.tsx | GraftModalProps, GraftModal |
+| 2026-07-08 | src/scenes/mainmenu/MainMenuNameInputPrompt.tsx | MainMenuNameInputPromptProps, MainMenuNameInputPrompt |
