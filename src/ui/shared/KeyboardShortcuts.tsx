@@ -88,7 +88,7 @@ export function KeyboardShortcutsPanel({
                 defaultValue: label.split('.').pop()
               })}
             </span>
-            <kbd className='bg-ash-gray text-void-black px-1.5 rounded font-bold min-w-[20px] text-center uppercase shadow-[1px_1px_0px_var(--color-star-white)]'>
+            <kbd className='bg-ash-gray text-void-black px-1.5 rounded font-bold min-w-5 text-center uppercase shadow-[1px_1px_0px_var(--color-star-white)]'>
               {key}
             </kbd>
           </div>
