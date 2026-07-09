@@ -25,5 +25,5 @@ export const createCorporateQuest = (
       { type: 'social.loyalty', amount: -5 }
     ],
     ...config
-  } as const satisfies QuestDefinition
+  }
 }

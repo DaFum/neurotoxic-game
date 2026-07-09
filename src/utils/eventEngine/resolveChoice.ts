@@ -93,27 +93,20 @@ export const appendEffectToResult = (
   result: EffectShape,
   effectToAppend: EffectShape
 ): EffectShape => {
-  let newResult: EffectShape
   if (result.type === 'composite') {
-    // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
-    newResult = { ...result, effects: [...(result.effects ?? [])] }
-  } else {
-    // Convert simple result to composite to add stat tracking
-    const originalEffect = { ...result }
-    delete originalEffect.outcome
-    delete originalEffect.description
-    newResult = {
-      type: 'composite',
-      effects: [originalEffect],
-      outcome: result.outcome,
-      description: result.description
-    }
+    return { ...result, effects: [...(result.effects ?? []), effectToAppend] }
   }
 
-  const effects = newResult.effects ?? []
-  newResult.effects = effects
-  effects.push(effectToAppend)
-  return newResult
+  const originalEffect = { ...result }
+  delete originalEffect.outcome
+  delete originalEffect.description
+
+  return {
+    type: 'composite',
+    effects: [originalEffect, effectToAppend],
+    outcome: result.outcome,
+    description: result.description
+  }
 }
 
 export const resolveChoice = (
