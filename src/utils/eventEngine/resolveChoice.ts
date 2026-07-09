@@ -85,6 +85,37 @@ const resolveSkillCheckFailure = (
  * @param rng - Random number generator. Defaults to `secureRandom`.
  * @returns Effect payload, including any skill-check outcome or next-event id.
  */
+/**
+ * Ensures the result is a composite effect and appends a new effect to it safely,
+ * without mutating the global events DB.
+ */
+export const appendEffectToResult = (
+  result: EffectShape,
+  effectToAppend: EffectShape
+): EffectShape => {
+  let newResult: EffectShape
+  if (result.type === 'composite') {
+    // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
+    newResult = { ...result, effects: [...(result.effects ?? [])] }
+  } else {
+    // Convert simple result to composite to add stat tracking
+    const originalEffect = { ...result }
+    delete originalEffect.outcome
+    delete originalEffect.description
+    newResult = {
+      type: 'composite',
+      effects: [originalEffect],
+      outcome: result.outcome,
+      description: result.description
+    }
+  }
+
+  const effects = newResult.effects ?? []
+  newResult.effects = effects
+  effects.push(effectToAppend)
+  return newResult
+}
+
 export const resolveChoice = (
   choice: EventChoice,
   gameState: EngineGameState,
@@ -110,26 +141,7 @@ export const resolveChoice = (
       result.outcome === 'success' &&
       gameState.activeEvent?.tags?.includes('conflict')
     ) {
-      if (result.type === 'composite') {
-        // DEEP CLONE: Break array reference to prevent mutating global EVENTS_DB
-        result = { ...result, effects: [...(result.effects ?? [])] }
-      } else {
-        // Convert simple result to composite to add stat tracking
-        const originalEffect = { ...result }
-        delete originalEffect.outcome
-        delete originalEffect.description
-        result = {
-          type: 'composite',
-          effects: [originalEffect],
-          outcome: 'success',
-          description: result.description
-        }
-      }
-
-      // Add the stat increment safely (array is now a fresh copy)
-      const effects = result.effects ?? []
-      result.effects = effects
-      effects.push({
+      result = appendEffectToResult(result, {
         type: 'stat_increment',
         stat: 'conflictsResolved',
         value: 1
@@ -145,22 +157,7 @@ export const resolveChoice = (
     gameState.activeEvent?.id === 'gig_mid_stage_diver' &&
     choice.flags?.includes('stageDive')
   ) {
-    if (result.type === 'composite') {
-      result = { ...result, effects: [...(result.effects ?? [])] }
-    } else {
-      const originalEffect = { ...result }
-      delete originalEffect.outcome
-      delete originalEffect.description
-      result = {
-        type: 'composite',
-        effects: [originalEffect],
-        outcome: result.outcome,
-        description: result.description
-      }
-    }
-    const effects = result.effects ?? []
-    result.effects = effects
-    effects.push({
+    result = appendEffectToResult(result, {
       type: 'stat_increment',
       stat: 'stageDives',
       value: 1
