@@ -39,14 +39,14 @@ export const AssetsScene = () => {
     >
       <AssetsStatusStrip />
 
-      <div className='flex items-center justify-between gap-2 px-2 py-2 sm:px-4'>
-        <p className='assets-hub-control min-w-0 truncate text-xs uppercase opacity-70'>
+      <div className='assets-hub-topbar flex items-center justify-between gap-2 px-2 py-2 sm:px-4'>
+        <p className='assets-hub-control assets-hub-description min-w-0 truncate text-xs uppercase'>
           {t(`assets:section.${activeTab.shortLabel}.description`)}
         </p>
         <button
           type='button'
           onClick={() => changeScene(GAME_PHASES.OVERWORLD)}
-          className='assets-hub-control min-h-11 shrink-0 border-2 px-3 py-2 text-xs uppercase'
+          className='assets-hub-control assets-hub-back-button min-h-11 shrink-0 border-2 px-3 py-2 text-xs uppercase'
           style={{
             borderColor: 'var(--section-accent)',
             color: 'var(--section-accent)'

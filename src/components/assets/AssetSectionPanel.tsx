@@ -77,7 +77,7 @@ export const AssetSectionPanel = ({
               <button
                 type='button'
                 disabled={true}
-                className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
+                className='assets-hub-control assets-hub-primary-button mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
                 style={{
                   borderColor:
                     'var(--section-accent, var(--color-toxic-green))',
@@ -93,7 +93,7 @@ export const AssetSectionPanel = ({
               type='button'
               onClick={() => setAcquireOpen(true)}
               disabled={false}
-              className='assets-hub-control mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
+              className='assets-hub-control assets-hub-primary-button mt-3 min-h-11 border-2 px-4 py-2 text-xs uppercase disabled:opacity-40'
               style={{
                 borderColor: 'var(--section-accent, var(--color-toxic-green))',
                 background: 'var(--section-accent, var(--color-toxic-green))',

@@ -2,8 +2,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Modal } from '../../ui/shared/Modal'
 import { Tooltip } from '../../ui/shared/Tooltip'
-import { CancelButton } from './shared/CancelButton'
-import { ConfirmButton } from './shared/ConfirmButton'
+import { ActionButton } from '../../ui/shared/ActionButton'
 import { CrowdfundSetupModal } from './CrowdfundSetupModal'
 import { LoanProfileChoiceGrid } from './LoanProfileModal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
@@ -83,7 +82,7 @@ export const ChassisAcquisitionModal = ({ kind, isOpen, onClose }: Props) => {
         title={t('assets:actions.purchase')}
         className='assets-modal-sheet max-w-2xl'
       >
-        <div className='flex flex-col gap-3 p-4 font-mono text-sm'>
+        <div className='assets-modal-body flex flex-col gap-3 p-4 font-mono text-sm'>
           <GeneratedImagePanel
             prompt={getChassisImagePrompt(kind, flavor, tier)}
             alt={t(`assets:kind.${kind}`)}
@@ -182,7 +181,9 @@ const ChoiceGroup = <T extends string | number>({
   disabledReason
 }: ChoiceGroupProps<T>) => (
   <div className='flex min-w-0 flex-1 flex-col gap-1'>
-    <span className='text-xs uppercase opacity-60'>{label}</span>
+    <span className='assets-choice-label text-xs uppercase opacity-60'>
+      {label}
+    </span>
     <div className='flex flex-wrap gap-1'>
       {options.map(opt => {
         const isActive = opt === value
@@ -191,9 +192,10 @@ const ChoiceGroup = <T extends string | number>({
           <button
             key={String(opt)}
             type='button'
+            aria-pressed={isActive}
             onClick={() => onChange(opt)}
             disabled={isDisabled}
-            className='min-h-11 border-2 px-2 py-2 disabled:opacity-30'
+            className='assets-choice-button min-h-11 border-2 px-2 py-2 disabled:opacity-30'
             style={{
               background: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'
@@ -239,16 +241,22 @@ const ChassisAcquisitionFooter = ({
   const { t, i18n } = useTranslation(['assets', 'ui'])
   return (
     <div
-      className='flex flex-col items-stretch gap-2 border-t-2 pt-2 sm:flex-row sm:items-center sm:justify-between'
+      className='assets-modal-footer flex flex-col items-stretch gap-2 border-t-2 pt-2 sm:flex-row sm:items-center sm:justify-between'
       style={{
         borderColor: 'var(--section-accent, var(--color-toxic-green))'
       }}
     >
-      <span className='text-base sm:text-sm'>
+      <span className='assets-modal-price text-base sm:text-sm'>
         {formatCurrency(price, i18n.language)}
       </span>
       <div className='flex gap-2'>
-        <CancelButton onClick={onClose} />
+        <ActionButton
+          onClick={onClose}
+          variant='custom'
+          className='bg-void-black text-ash-gray border-2 border-ash-gray px-3 py-2 text-sm hover:bg-ash-gray hover:text-void-black'
+        >
+          {t('ui:action_cancel')}
+        </ActionButton>
         <Tooltip
           content={
             acquisitionBlocked
@@ -260,7 +268,7 @@ const ChassisAcquisitionFooter = ({
                   : undefined
           }
         >
-          <ConfirmButton
+          <ActionButton
             onClick={onConfirm}
             disabled={
               acquisitionBlocked ||
@@ -268,9 +276,15 @@ const ChassisAcquisitionFooter = ({
               insufficient ||
               price === 0
             }
+            variant='custom'
+            className='px-3 py-2 text-sm disabled:opacity-40'
+            style={{
+              background: 'var(--section-accent, var(--color-toxic-green))',
+              color: 'var(--color-void-black)'
+            }}
           >
             {t('assets:actions.purchase')}
-          </ConfirmButton>
+          </ActionButton>
         </Tooltip>
       </div>
     </div>
