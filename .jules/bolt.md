@@ -153,7 +153,12 @@
 
 **Learning:** Checking the number of keys on an object using `Object.keys(obj).length` causes unnecessary array allocation in memory, particularly in hot-path reducers.
 **Action:** Use the `countKeys(obj)` or `isEmptyObject(obj)` utility from `src/utils/gameState/checks.ts` instead of `Object.keys(obj).length` to count keys using a procedural loop with zero allocation.
-## 2026-08-01 - Avoid IIFEs when replacing Array methods
+## 2026-07-09 - Avoid IIFEs when replacing Array methods
 
 **Learning:** When replacing array methods like `.map()` with procedural loops to avoid closure allocations, wrapping the loop in an Immediately Invoked Function Expression (IIFE) (e.g., `(() => { ... })()`) creates a new closure anyway, defeating the purpose of the optimization while also hurting readability.
 **Action:** Refactor the surrounding function to use an explicit block body and compute the array procedurally before the `return` statement.
+
+## 2026-07-09 - Explicit types for Array instantiation
+
+**Learning:** Pre-allocating an array with `new Array(length)` returns `any[]` and breaks type safety.
+**Action:** Always provide an explicit type argument like `new Array<T>(length)` to ensure the array stays strictly typed.

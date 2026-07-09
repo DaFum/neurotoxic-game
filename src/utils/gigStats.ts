@@ -40,6 +40,8 @@ export const updateGigPerformanceStats = (
  * @param songStats - Array of stats for individual songs completed in the gig. Defaults to `[]`.
  * @returns Gig stats snapshot.
  */
+import { finiteNumberOr } from './gameState'
+
 export const buildGigStatsSnapshot = (
   score: number,
   stats: RhythmLiveStats,
@@ -67,24 +69,34 @@ export const buildGigStatsSnapshot = (
   }>
 } => {
   // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with procedural loop to avoid closure allocation
-  const nextSongStats = new Array(songStats.length)
-  for (let i = 0; i < songStats.length; i++) {
+  const len = songStats ? songStats.length : 0
+  const nextSongStats = new Array<{
+    songId: string
+    score: number
+    accuracy: number
+    index: number
+  }>(len)
+  for (let i = 0; i < len; i++) {
     const s = songStats[i]
     nextSongStats[i] = s ? { ...s } : s
   }
 
+  const misses = finiteNumberOr(stats?.misses, 0)
+  const perfectHits = finiteNumberOr(stats?.perfectHits, 0)
+  const maxCombo = finiteNumberOr(stats?.maxCombo, 0)
+  const peakHype = finiteNumberOr(stats?.peakHype, 0)
+  const corruptionLevel = finiteNumberOr(stats?.corruptionLevel, 0)
+  const hits = finiteNumberOr(stats?.hits, 0)
+
   return {
     score,
-    misses: stats.misses,
-    perfectHits: stats.perfectHits,
-    maxCombo: stats.maxCombo,
-    peakHype: stats.peakHype,
-    corruptionLevel: stats.corruptionLevel ?? 0,
+    misses,
+    perfectHits,
+    maxCombo,
+    peakHype,
+    corruptionLevel,
     toxicTimeTotal,
-    accuracy: calculateAccuracy(
-      stats.perfectHits + (stats.hits ?? 0),
-      stats.misses
-    ),
+    accuracy: calculateAccuracy(perfectHits + hits, misses),
     songStats: nextSongStats
   }
 }
