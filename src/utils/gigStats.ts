@@ -65,17 +65,26 @@ export const buildGigStatsSnapshot = (
     accuracy: number
     index: number
   }>
-} => ({
-  score,
-  misses: stats.misses,
-  perfectHits: stats.perfectHits,
-  maxCombo: stats.maxCombo,
-  peakHype: stats.peakHype,
-  corruptionLevel: stats.corruptionLevel ?? 0,
-  toxicTimeTotal,
-  accuracy: calculateAccuracy(
-    stats.perfectHits + (stats.hits ?? 0),
-    stats.misses
-  ),
-  songStats: songStats.map(s => ({ ...s }))
-})
+} => {
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with procedural loop to avoid closure allocation
+  const nextSongStats = new Array(songStats.length)
+  for (let i = 0; i < songStats.length; i++) {
+    const s = songStats[i]
+    nextSongStats[i] = s ? { ...s } : s
+  }
+
+  return {
+    score,
+    misses: stats.misses,
+    perfectHits: stats.perfectHits,
+    maxCombo: stats.maxCombo,
+    peakHype: stats.peakHype,
+    corruptionLevel: stats.corruptionLevel ?? 0,
+    toxicTimeTotal,
+    accuracy: calculateAccuracy(
+      stats.perfectHits + (stats.hits ?? 0),
+      stats.misses
+    ),
+    songStats: nextSongStats
+  }
+}
