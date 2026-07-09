@@ -97,15 +97,13 @@ export const appendEffectToResult = (
     return { ...result, effects: [...(result.effects ?? []), effectToAppend] }
   }
 
-  const originalEffect = { ...result }
-  delete originalEffect.outcome
-  delete originalEffect.description
+  const { outcome, description, ...originalEffect } = result
 
   return {
     type: 'composite',
     effects: [originalEffect, effectToAppend],
-    outcome: result.outcome,
-    description: result.description
+    outcome,
+    description
   }
 }
 

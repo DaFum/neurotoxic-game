@@ -12,6 +12,7 @@ export const createCorporateQuest = (
   >
 ): QuestDefinition => {
   return {
+    ...config,
     kind: 'repeatable',
     deadlineOffset: 20,
     repeatPolicy: 'cooldown',
@@ -23,7 +24,6 @@ export const createCorporateQuest = (
     failurePenalties: [
       { type: 'brand.trust', alignment: 'corporate', amount: -5 },
       { type: 'social.loyalty', amount: -5 }
-    ],
-    ...config
+    ]
   }
 }
