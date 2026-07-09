@@ -663,12 +663,15 @@ test('calculateTravelExpenses handles fame, money, band size, and edge cases', a
     assert.ok(Math.abs(result.fuelLiters - 1.0) < 0.001)
   })
 
-  await t.test('gracefully handles missing or undefined state parameters', () => {
-    const result = calculateTravelExpenses(baseNode, null, {}, {})
+  await t.test(
+    'gracefully handles missing or undefined state parameters',
+    () => {
+      const result = calculateTravelExpenses(baseNode, null, {}, {})
 
-    // Fallback to 3 band members (24 food) and 0 fame/money (18 logistics)
-    assert.equal(result.totalCost, 42)
-  })
+      // Fallback to 3 band members (24 food) and 0 fame/money (18 logistics)
+      assert.equal(result.totalCost, 42)
+    }
+  )
 })
 
 test('calculateFuelCost applies van tuning upgrade', () => {

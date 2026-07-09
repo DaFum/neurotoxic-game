@@ -146,7 +146,9 @@ export const OverworldMap = React.memo(
         const effectivePrice = calculateEffectiveTicketPrice(
           node.venue ?? { id: node.id, name: node.id, price: 0 },
           {
-            discountedTickets: activeStoryFlagsSet.has('discounted_tickets_active')
+            discountedTickets: activeStoryFlagsSet.has(
+              'discounted_tickets_active'
+            )
           }
         )
 
@@ -165,9 +167,7 @@ export const OverworldMap = React.memo(
               vanUrl={vanUrl}
               ticketPrice={effectivePrice}
               harmony={
-                HARMONY_NODE_TYPES.has(node.type)
-                  ? band.harmony
-                  : undefined
+                HARMONY_NODE_TYPES.has(node.type) ? band.harmony : undefined
               }
               cityTraits={cityTraits}
             />

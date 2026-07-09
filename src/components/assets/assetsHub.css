@@ -97,7 +97,8 @@
   box-shadow:
     var(--asset-panel-offset) var(--asset-panel-offset) 0
       var(--section-accent, var(--color-toxic-green)),
-    0 0 1.4rem color-mix(
+    0 0 1.4rem
+      color-mix(
         in srgb,
         var(--section-accent, var(--color-toxic-green)) 28%,
         transparent
@@ -138,34 +139,31 @@
 }
 
 .assets-hub-primary-button {
-  box-shadow:
-    var(--asset-panel-offset) var(--asset-panel-offset) 0
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 45%,
-        transparent
-      );
+  box-shadow: var(--asset-panel-offset) var(--asset-panel-offset) 0
+    color-mix(
+      in srgb,
+      var(--section-accent, var(--color-toxic-green)) 45%,
+      transparent
+    );
 }
 
 .assets-hub-secondary-button {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--color-star-white-rgb) / 5%),
-      rgb(var(--color-void-black-rgb) / 42%)
-    );
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-star-white-rgb) / 5%),
+    rgb(var(--color-void-black-rgb) / 42%)
+  );
 }
 
 .assets-bottom-tabs {
   position: relative;
   z-index: 20;
   padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--color-void-black-rgb) / 76%),
-      rgb(var(--color-void-black-rgb) / 98%)
-    );
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-void-black-rgb) / 76%),
+    rgb(var(--color-void-black-rgb) / 98%)
+  );
   border-top: 2px solid var(--section-accent, var(--color-toxic-green));
   box-shadow: 0 -1rem 2rem rgb(0 0 0 / 58%);
 }
@@ -176,25 +174,23 @@
 }
 
 .assets-status-strip__header {
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 18%,
-        transparent
-      ),
-      transparent 66%
-    );
+  background: linear-gradient(
+    90deg,
+    color-mix(
+      in srgb,
+      var(--section-accent, var(--color-toxic-green)) 18%,
+      transparent
+    ),
+    transparent 66%
+  );
 }
 
 .assets-status-cell {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--color-star-white-rgb) / 4%),
-      transparent
-    );
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-star-white-rgb) / 4%),
+    transparent
+  );
 }
 
 .assets-status-cell--featured {
@@ -214,7 +210,8 @@
 
 .assets-bottom-tab[aria-selected='true'] {
   box-shadow:
-    0 0 1rem color-mix(
+    0 0 1rem
+      color-mix(
         in srgb,
         var(--section-accent, var(--color-toxic-green)) 38%,
         transparent
@@ -224,12 +221,11 @@
 
 .assets-slot-row,
 .assets-liability-row {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--color-void-black-rgb) / 78%),
-      rgb(var(--color-void-black-rgb) / 92%)
-    );
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-void-black-rgb) / 78%),
+    rgb(var(--color-void-black-rgb) / 92%)
+  );
   transition:
     box-shadow 120ms ease-out,
     transform 120ms ease-out;
@@ -241,7 +237,8 @@
   box-shadow:
     var(--asset-panel-offset) var(--asset-panel-offset) 0
       var(--section-accent, var(--color-toxic-green)),
-    0 0 1rem color-mix(
+    0 0 1rem
+      color-mix(
         in srgb,
         var(--section-accent, var(--color-toxic-green)) 34%,
         transparent
@@ -275,7 +272,8 @@
     );
   box-shadow:
     0.5rem 0.5rem 0 var(--section-accent, var(--color-toxic-green)),
-    0 0 3rem color-mix(
+    0 0 3rem
+      color-mix(
         in srgb,
         var(--section-accent, var(--color-toxic-green)) 34%,
         transparent
@@ -300,16 +298,15 @@
 }
 
 .assets-modal-footer {
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 12%,
-        transparent
-      ),
-      transparent 72%
-    );
+  background: linear-gradient(
+    90deg,
+    color-mix(
+      in srgb,
+      var(--section-accent, var(--color-toxic-green)) 12%,
+      transparent
+    ),
+    transparent 72%
+  );
 }
 
 .assets-modal-price {
@@ -326,12 +323,11 @@
 
 .assets-choice-button,
 .assets-module-card {
-  background:
-    linear-gradient(
-      180deg,
-      rgb(var(--color-star-white-rgb) / 5%),
-      rgb(var(--color-void-black-rgb) / 48%)
-    );
+  background: linear-gradient(
+    180deg,
+    rgb(var(--color-star-white-rgb) / 5%),
+    rgb(var(--color-void-black-rgb) / 48%)
+  );
 }
 
 .assets-choice-button {
@@ -342,13 +338,12 @@
 }
 
 .assets-choice-button[aria-pressed='true'] {
-  box-shadow:
-    var(--asset-panel-offset) var(--asset-panel-offset) 0
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 45%,
-        transparent
-      );
+  box-shadow: var(--asset-panel-offset) var(--asset-panel-offset) 0
+    color-mix(
+      in srgb,
+      var(--section-accent, var(--color-toxic-green)) 45%,
+      transparent
+    );
 }
 
 .assets-choice-button:hover:not(:disabled) {
