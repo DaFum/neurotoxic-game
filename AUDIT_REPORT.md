@@ -7,8 +7,6 @@
   * *Recommended Action*: MERGE into a single utility function for evaluating effect bounds.
 * **Quest Configuration Clones**: `src/data/quests/quest_alchemist.ts` (13-22) and `src/data/quests/quest_crisis_manager.ts` (20-29) contain duplicated structural shapes.
   * *Recommended Action*: MERGE by extracting a shared quest-node builder utility.
-* **Minigame Hook Duplication**: `src/hooks/minigames/useAmpLogic.ts` repeats the exact same 28-line block for calibration checks (38-65 and 497-524).
-  * *Recommended Action*: MERGE into a shared internal helper function.
 
 **MEDIUM SEVERITY**
 * **Duplicate CSS Rules**: `src/components/assets/assetsHub.css` has duplicated layout rules across blocks (78:21 vs 255:17, 95:21 vs 236:27, 141:28 vs 340:44).
@@ -58,6 +56,7 @@
 * **State Updates**: Some action creators validate parameters, but reducers don't consistently re-validate, creating a risk if state updates are called directly.
   * *Recommended Action*: FIX by ensuring reducers enforce the final bounds (e.g. `Math.max(0, ...)` for money).
 * **Missing TSDoc**: Many interfaces do not use TSDoc properly as per the style guidelines `@remarks` / `@returns` without types.
+  * *Recommended Action*: FIX by adding proper TSDoc tags.
 
 ## 4. DEAD / UNREACHABLE CODE
 
@@ -67,13 +66,13 @@
 
 **MEDIUM SEVERITY**
 * **Legacy Event Engine Shapes**: The `EngineGameState` and `TemplateContext` in `src/utils/eventEngine/index.ts` seem largely unintegrated with the modern React context-driven game loop, though occasionally cast via `unknown`.
-  * *Recommended Action*: Refactor to use the standard Redux-like context state instead of parallel models.
+  * *Recommended Action*: FIX by refactoring to use the standard Redux-like context state instead of parallel models.
 
 ## 5. MISSING INTEGRATION
 
 **HIGH SEVERITY**
-* **Asset Foreclosure Loop**: `ActionTypes.ASSET_FORECLOSED` and `ActionTypes.DISMISS_FORECLOSURE_NOTICE` are defined and handled in the reducer, but there is no mechanism triggering them in the main game loop / tick processing based on loans/payments.
-  * *Recommended Action*: INTEGRATE by adding a check in the `advanceDay` or gig-completion logic to evaluate loan delinquency and dispatch foreclosure actions.
+* **Asset Foreclosure Loop**: While condition-based foreclosure is already integrated (triggering `ActionTypes.ASSET_FORECLOSED` when asset condition reaches 0), there is no mechanism triggering it based on loans/payments delinquency, and `ActionTypes.DISMISS_FORECLOSURE_NOTICE` remains unintegrated.
+  * *Recommended Action*: INTEGRATE by adding a check in the `advanceDay` or gig-completion logic to evaluate loan delinquency and dispatch foreclosure and dismiss actions as needed.
 * **Risk Events**: `ActionTypes.SET_PENDING_RISK_EVENT` exists in the reducer, and a `RiskEventModal` exists in `src/components/assets/`, but the trigger to actually roll for and apply a risk event to an asset seems unintegrated into the main loop.
   * *Recommended Action*: INTEGRATE into the `advanceDay` or `processCrowdfundTick` / post-gig logic.
 * **Rival Band Interactions**: `SPAWN_RIVAL_BAND`, `MOVE_RIVAL_BAND`, `UPDATE_RIVAL_BAND` are in the action types and type definitions, but appear missing from the actual UI event choices or overworld interactions.
