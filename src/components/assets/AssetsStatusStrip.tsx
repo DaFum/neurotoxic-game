@@ -9,11 +9,13 @@ import { formatCurrency } from '../../utils/numberUtils'
 const StatusCell = ({
   label,
   value,
-  tone = 'neutral'
+  tone = 'neutral',
+  featured = false
 }: {
   label: string
   value: string | number
   tone?: 'neutral' | 'good' | 'warning' | 'danger'
+  featured?: boolean
 }) => {
   const color =
     tone === 'danger'
@@ -25,7 +27,11 @@ const StatusCell = ({
           : 'var(--color-star-white)'
 
   return (
-    <div className='min-w-0 border-l-2 px-2 py-1 first:border-l-0 sm:px-3'>
+    <div
+      className={`assets-status-cell min-w-0 border-l-2 px-2 py-1 first:border-l-0 sm:px-3 ${
+        featured ? 'assets-status-cell--featured' : ''
+      }`}
+    >
       <span className='block truncate text-xxs uppercase opacity-60'>
         {label}
       </span>
@@ -52,8 +58,8 @@ export const AssetsStatusStrip = () => {
   )
 
   return (
-    <header className='assets-hub-panel assets-hub-reveal mx-2 mt-2 overflow-hidden sm:mx-4'>
-      <div className='flex items-center justify-between border-b-2 px-2 py-1 sm:px-3'>
+    <header className='assets-hub-panel assets-hub-reveal assets-status-strip mx-2 mt-2 overflow-hidden sm:mx-4'>
+      <div className='assets-status-strip__header flex items-center justify-between border-b-2 px-2 py-1 sm:px-3'>
         <h1 className='assets-hub-title truncate text-lg uppercase sm:text-2xl'>
           {t('assets:scene.title')}
         </h1>
@@ -66,6 +72,7 @@ export const AssetsStatusStrip = () => {
           label={t('assets:hub.status.cash')}
           value={formatCurrency(money, i18n.language)}
           tone={money < 0 ? 'danger' : 'good'}
+          featured
         />
         <StatusCell
           label={t('assets:hub.status.daily')}

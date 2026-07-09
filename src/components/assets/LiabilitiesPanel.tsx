@@ -41,7 +41,7 @@ export const LiabilitiesPanel = () => {
 
   return (
     <>
-      <ul className='flex flex-col gap-1 font-mono text-xs'>
+      <ul className='assets-liability-list flex flex-col gap-1 font-mono text-xs'>
         {liabilities.map(l => {
           const refinanceFee = calculateRefinanceFee(l.principalRemaining)
           const defaultCounter = finiteNumberOr(l.defaultCounter, 0)
@@ -49,7 +49,7 @@ export const LiabilitiesPanel = () => {
           return (
             <li
               key={l.id}
-              className='flex flex-wrap items-center justify-between gap-2 border-2 px-2 py-1'
+              className='assets-liability-row flex flex-wrap items-center justify-between gap-2 border-2 px-2 py-1'
               style={{
                 borderColor: 'var(--section-accent, var(--color-toxic-green))'
               }}
@@ -80,7 +80,7 @@ export const LiabilitiesPanel = () => {
                 <button
                   type='button'
                   onClick={() => setRefinanceTargetId(l.id)}
-                  className='border px-2 py-1 uppercase focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-void-black'
+                  className='assets-hub-secondary-button border px-2 py-1 uppercase'
                   style={{
                     borderColor:
                       'var(--section-accent, var(--color-toxic-green))'

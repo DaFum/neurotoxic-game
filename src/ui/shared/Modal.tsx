@@ -74,6 +74,7 @@ export const Modal = ({
   return (
     <div
       className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
+      style={{ zIndex: 'var(--z-modal)' }}
       onClick={(e: MouseEvent<HTMLDivElement>) => {
         if (e.target === e.currentTarget) onClose()
       }}
