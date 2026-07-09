@@ -550,7 +550,7 @@ export const OverworldMenu = React.memo(
         className='ow-menu absolute bottom-8 right-8 z-(--z-hud) pointer-events-auto flex flex-col gap-2 items-end'
       >
         {isMenuOpen && (
-          <div className='menu-panel'>
+          <div className='menu-panel' id='overworld-menu-panel'>
             <MenuHeader cat={cat} t={t} />
 
             {!activeCat && (
@@ -584,6 +584,8 @@ export const OverworldMenu = React.memo(
           }}
           variant='primary'
           size='sm'
+          aria-expanded={isMenuOpen}
+          aria-controls={isMenuOpen ? 'overworld-menu-panel' : undefined}
         >
           {isMenuOpen
             ? `[${t('ui:menu.close', { defaultValue: 'CLOSE MENU' })}]`
