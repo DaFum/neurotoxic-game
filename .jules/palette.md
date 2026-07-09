@@ -159,3 +159,8 @@
 
 **Learning:** Custom toggle groups in settings (like the Language selector) use standard `<button>` elements (via `ActionButton`) instead of semantic radio inputs. Without explicit state attributes, screen reader users cannot identify which language is currently active when navigating the settings.
 **Action:** When using multiple `ActionButton` components to act as a mutually exclusive toggle group, always supply `aria-pressed={isActiveCondition}` to explicitly convey the selected state to assistive technologies.
+
+## 2026-07-02 - ARIA Expanded on Accordion Buttons
+
+**Learning:** Buttons that act as accordions or expandable menus (like the main OverworldMenu toggle) often visually indicate their state using text changes (e.g. "[OPEN MENU]" vs "[CLOSE MENU]"), but screen readers lack the semantic linkage connecting the button's toggle state to the visibility of the controlled content panel.
+**Action:** When a button toggles the visibility of a container, always use `aria-expanded={isOpen}` to announce its current state and `aria-controls={containerId}` to programmatically link the button to the expanded content. Pass `undefined` to `aria-controls` if the target element is conditionally unmounted from the DOM when closed.
