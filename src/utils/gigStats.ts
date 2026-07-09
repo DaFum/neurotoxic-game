@@ -78,7 +78,9 @@ export const buildGigStatsSnapshot = (
   }>(len)
   for (let i = 0; i < len; i++) {
     const s = songStats[i]
-    nextSongStats[i] = s ? { ...s } : s
+    if (s) {
+      nextSongStats[i] = { ...s }
+    }
   }
 
   const misses = finiteNumberOr(stats?.misses, 0)
