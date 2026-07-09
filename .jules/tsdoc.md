@@ -36,4 +36,4 @@
 | 2026-07-06        | src/components/MapNodeView.tsx                       | MapNodeData, MapNodeTooltipProps, MapNodeProps, getPinAltText, getNodeTypeLabel, CancellationBadge, MapNodeTooltip, MapNodeView                          |
 | 2026-07-07        | src/components/clinic/GraftModal.tsx                 | GraftModalProps, GraftModal                                                                                                                              |
 | 2026-07-08        | src/scenes/mainmenu/MainMenuNameInputPrompt.tsx      | MainMenuNameInputPromptProps, MainMenuNameInputPrompt                                                                                                    |
-| 2026-07-09 | src/components/assets/sectionTabs.ts | ASSET_SECTION_TABS_MAP |
+| 2026-07-09        | src/components/assets/sectionTabs.ts                 | ASSET_SECTION_TABS_MAP                                                                                                                                   |

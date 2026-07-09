@@ -59,7 +59,9 @@ describe('GigModifiersBlock', () => {
   it('calls handleBandMeeting when band meeting button is clicked', () => {
     render(<GigModifiersBlock {...defaultProps} />)
 
-    const meetingButton = screen.getByRole('button', { name: /ui:pregig.bandMeeting.label/i })
+    const meetingButton = screen.getByRole('button', {
+      name: /ui:pregig.bandMeeting.label/i
+    })
     fireEvent.click(meetingButton)
 
     expect(defaultProps.handleBandMeeting).toHaveBeenCalledTimes(1)
@@ -71,7 +73,17 @@ describe('GigModifiersBlock', () => {
       currentModifiers: {
         activeEffects: [
           'effect1',
-          { key: 'effect2', fallback: 'Effect Two', options: { amount: 5, infinity: Infinity, booleanVal: true, nullVal: null, obj: {} } }
+          {
+            key: 'effect2',
+            fallback: 'Effect Two',
+            options: {
+              amount: 5,
+              infinity: Infinity,
+              booleanVal: true,
+              nullVal: null,
+              obj: {}
+            }
+          }
         ]
       }
     }
@@ -81,7 +93,12 @@ describe('GigModifiersBlock', () => {
     expect(screen.getByText('effect1')).toBeInTheDocument()
     expect(screen.getByText('Effect Two')).toBeInTheDocument()
     // Verify that sanitizeEffectOptions correctly filtered out non-finite and complex object values
-    expect(props.t).toHaveBeenCalledWith('effect2', { amount: 5, booleanVal: true, nullVal: null, defaultValue: 'Effect Two' })
+    expect(props.t).toHaveBeenCalledWith('effect2', {
+      amount: 5,
+      booleanVal: true,
+      nullVal: null,
+      defaultValue: 'Effect Two'
+    })
   })
 
   it('renders fallback when no active modifiers are present', () => {

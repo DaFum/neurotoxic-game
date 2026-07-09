@@ -431,8 +431,8 @@ export const handleGraftNeuroOverclock = (
       // ⚡ BOLT OPTIMIZATION: Replaced .map() with targeted array indexing.
       // Why: Avoids recreating objects for unmodified items in the array.
       members: (() => {
-        const newMembers = [...state.band.members];
-        const m = newMembers[memberIndex];
+        const newMembers = [...state.band.members]
+        const m = newMembers[memberIndex]
         newMembers[memberIndex] = {
           ...m,
           health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
@@ -450,8 +450,8 @@ export const handleGraftNeuroOverclock = (
               }
             }
           }
-        };
-        return newMembers;
+        }
+        return newMembers
       })()
     },
     toasts: [

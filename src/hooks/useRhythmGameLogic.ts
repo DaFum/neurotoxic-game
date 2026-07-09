@@ -102,9 +102,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       critChance: finiteNumberOr(band?.crit, 0),
       crowdControl: finiteNumberOr(band?.crowdControl, 0)
     }
-  }, [
-    band
-  ])
+  }, [band])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
