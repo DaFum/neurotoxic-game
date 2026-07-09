@@ -34,6 +34,7 @@ output.txt
 output/playwright/**/*.png
 screenshots/
 coverage/
+e2e/visual.spec.js-snapshots/
 
 # PID files
 *.pid
