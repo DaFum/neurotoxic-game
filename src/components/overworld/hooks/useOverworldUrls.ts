@@ -75,6 +75,10 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
   return fallback
 }
 
+export const resetSvgTokenStyleCacheForTesting = () => {
+  svgTokenCache.clear()
+}
+
 const createSvgTokenStyle = (): string => {
   const tokenDefinitions = SVG_TOKEN_NAMES.map(
     tokenName => `${tokenName}:${resolveSvgTokenValue(tokenName)}`

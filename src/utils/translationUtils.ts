@@ -1,20 +1,20 @@
 import { isForbiddenKey } from './objectUtils'
 
-const VALID_NAMESPACES = [
+const VALID_NAMESPACES = new Set([
   'ui',
   'events',
   'venues',
   'items',
   'economy',
   'traits'
-]
+])
 
 const isTranslatableKey = (key: unknown): boolean => {
   if (typeof key !== 'string') return false
   const parts = key.split(':')
   if (parts.length > 1) {
     const ns = parts[0] ?? ''
-    return VALID_NAMESPACES.includes(ns)
+    return VALID_NAMESPACES.has(ns)
   }
   return false
 }

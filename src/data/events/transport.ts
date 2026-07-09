@@ -796,14 +796,23 @@ export const TRANSPORT_EVENTS = [
     trigger: 'random',
     chance: 0.05,
     // Fires only when the tourbus has at least one installed module.
-    condition: (state: GameState) =>
-      Array.isArray(state.assets) &&
-      state.assets.some(
-        a =>
-          a.kind === 'tourbus_chassis' &&
-          Array.isArray(a.slots) &&
-          a.slots.some(s => s.installedModuleId)
-      ),
+    condition: (state: GameState) => {
+      if (!Array.isArray(state.assets)) return false
+      let found = false
+      for (let i = 0; i < state.assets.length; i++) {
+        const a = state.assets[i]
+        if (a && a.kind === 'tourbus_chassis' && Array.isArray(a.slots)) {
+          for (let j = 0; j < a.slots.length; j++) {
+            if (a.slots[j]?.installedModuleId) {
+              found = true
+              break
+            }
+          }
+        }
+        if (found) break
+      }
+      return found
+    },
     options: [
       {
         label: 'events:module_saves_the_run.opt1.label',
@@ -825,9 +834,17 @@ export const TRANSPORT_EVENTS = [
     description: 'events:tourbus_maintenance_check.desc',
     trigger: 'random',
     chance: 0.05,
-    condition: (state: GameState) =>
-      Array.isArray(state.assets) &&
-      state.assets.some(a => a.kind === 'tourbus_chassis'),
+    condition: (state: GameState) => {
+      if (!Array.isArray(state.assets)) return false
+      let hasChassis = false
+      for (let i = 0; i < state.assets.length; i++) {
+        if (state.assets[i]?.kind === 'tourbus_chassis') {
+          hasChassis = true
+          break
+        }
+      }
+      return hasChassis
+    },
     options: [
       {
         label: 'events:tourbus_maintenance_check.opt1.label',

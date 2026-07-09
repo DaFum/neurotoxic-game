@@ -346,13 +346,20 @@ export const ModulePickerModal = memo(
     const removalRefund = installedModule
       ? installedModule.cost * installedModule.removalRefundFraction
       : 0
-    const removalBlocked =
-      installedModuleId !== null &&
-      asset.slots.some(
-        assetSlot =>
+    let removalBlocked = false
+    if (installedModuleId !== null) {
+      for (let i = 0; i < asset.slots.length; i++) {
+        const assetSlot = asset.slots[i]
+        if (
+          assetSlot &&
           assetSlot.addedByModuleId === installedModuleId &&
           assetSlot.installedModuleId !== null
-      )
+        ) {
+          removalBlocked = true
+          break
+        }
+      }
+    }
 
     return (
       <Modal

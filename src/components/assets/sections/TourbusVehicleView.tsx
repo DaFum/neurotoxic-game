@@ -17,9 +17,13 @@ interface Props {
  */
 export const TourbusVehicleView = ({ asset, onSlotClick }: Props) => {
   const { t } = useTranslation(['assets'])
-  const hasTrailer = asset.slots.some(
-    s => s.installedModuleId === 'tb_trailer_hitch'
-  )
+  let hasTrailer = false
+  for (let i = 0; i < asset.slots.length; i++) {
+    if (asset.slots[i]?.installedModuleId === 'tb_trailer_hitch') {
+      hasTrailer = true
+      break
+    }
+  }
   return (
     <div className='asset-hero-visual flex flex-col gap-3 md:relative md:block md:gap-0'>
       {/* Van body — own relative container so hotspots are scoped to it,
