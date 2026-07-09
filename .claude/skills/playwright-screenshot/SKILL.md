@@ -248,7 +248,7 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 > Cleanly injectable: **MENU, OVERWORLD, PREGIG, GIG, GAMEOVER, CLINIC, BAND HQ, event-modal**
 > (each fixture's `currentGig` must use the real `Venue` shape — `id`/`name`/`capacity`,
 > not `venueId`/`venueName` — or `sanitizeVenue` nulls it and the scene bounces to OVERWORLD).
-> **POSTGIG** reaches the right scene but shows only the report *shell*
+> **POSTGIG** reaches the right scene but shows only the report _shell_
 > ("TALLYING RECEIPTS…"); the final figures are computed by the live END_GIG flow
 > that injection bypasses — capture POSTGIG via the live golden-path
 > `screenshot-game-flow.js` when you need the fully-rendered report.

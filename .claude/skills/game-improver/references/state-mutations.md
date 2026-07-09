@@ -310,12 +310,13 @@ case ActionTypes.APPLY_EVENT_DELTA: {
 ```
 
 **Bounds Reference**:
-| Resource | Min | Max | Clamp Helper |
-|----------|-----|-----|---|
-| `money` | 0 | ∞ | `clampMoney()` |
-| `harmony` | 1 | 100 | `clampHarmony()` |
-| `fuel` | 0 | 100 | Manual: `Math.max(0, Math.min(100, ...))` |
-| `condition` | 0 | 100 | Manual: `Math.max(0, Math.min(100, ...))` |
+
+| Resource    | Min | Max | Clamp Helper                              |
+| ----------- | --- | --- | ----------------------------------------- |
+| `money`     | 0   | ∞   | `clampMoney()`                            |
+| `harmony`   | 1   | 100 | `clampHarmony()`                          |
+| `fuel`      | 0   | 100 | Manual: `Math.max(0, Math.min(100, ...))` |
+| `condition` | 0   | 100 | Manual: `Math.max(0, Math.min(100, ...))` |
 
 ---
 
