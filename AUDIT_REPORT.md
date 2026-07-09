@@ -29,8 +29,6 @@
 ## 2. ORPHANED / UNINTEGRATED CODE
 
 **HIGH SEVERITY**
-* **Audio Engine Methods**: Functions like `startMetalGenerator`, `playSongFromData`, `playMidiFile`, `buildMidiTrackEvents`, and `getNoteName` are exported from `src/utils/audio/audioEngine.ts` but never called in src.
-  * *Recommended Action*: DELETE unused legacy midi/generator code.
 * **`useTourbusLogic` Constants**: `BASE_SPEED` and `TARGET_DISTANCE` in `src/hooks/minigames/useTourbusLogic.ts` are exported but unused anywhere else.
   * *Recommended Action*: FIX by removing export modifier.
 * **Overworld SVG Caching Test Util**: `__resetBaseAssetPathCache` exported from `src/utils/audio/playbackUtils.ts` is only used for tests (if at all) but exported alongside runtime code.
@@ -39,8 +37,6 @@
 **MEDIUM SEVERITY**
 * **Orphaned Types**: Types like `CalculatePostGigStateParams`, `ResolvedPostResult`, `SpinStoryMoneyUpdate` from `src/utils/postGig/index.ts` and `HandlerDispatchers`, `ProcessingGuardReturn` from `src/hooks/postGig/handlers/index.ts` are exported but unused outside their index file.
   * *Recommended Action*: FIX by removing the `export` keyword if they are purely internal, or moving them to a `.d.ts` file if they are meant to be public APIs.
-* **Kabelsalat Components**: Components in `src/scenes/kabelsalat/components/` (like `ConnectionPath`, `LightningEffects`, `ConnectorGraphics`) are exported but appear unused in the rest of `src`.
-  * *Recommended Action*: INTEGRATE if the minigame is active, otherwise ensure they are imported in the main minigame view, or DELETE if replaced.
 * **BandHQ Detailed Stats Types**: `CharacterDefinition`, `PlayerData`, `SocialData` etc in `src/ui/bandhq/detailedStats/index.ts` are exported but unused.
   * *Recommended Action*: FIX by removing the export or using them to type the props of the components correctly.
 
@@ -71,9 +67,7 @@
 ## 5. MISSING INTEGRATION
 
 **HIGH SEVERITY**
-* **Asset Foreclosure Loop**: While condition-based foreclosure is already integrated (triggering `ActionTypes.ASSET_FORECLOSED` when asset condition reaches 0), there is no mechanism triggering it based on loans/payments delinquency, and `ActionTypes.DISMISS_FORECLOSURE_NOTICE` remains unintegrated.
-  * *Recommended Action*: INTEGRATE by adding a check in the `advanceDay` or gig-completion logic to evaluate loan delinquency and dispatch foreclosure and dismiss actions as needed.
+* **Asset Foreclosure Loop**: While asset foreclosure via zero-condition is integrated with `ADVANCE_DAY`, loan/payment delinquency logic and `ActionTypes.DISMISS_FORECLOSURE_NOTICE` remain unintegrated.
+  * *Recommended Action*: INTEGRATE a check for missing payments into the `advanceDay` or post-gig logic to trigger foreclosure, and integrate the dismiss action to allow the user to clear notices.
 * **Risk Events**: `ActionTypes.SET_PENDING_RISK_EVENT` exists in the reducer, and a `RiskEventModal` exists in `src/components/assets/`, but the trigger to actually roll for and apply a risk event to an asset seems unintegrated into the main loop.
   * *Recommended Action*: INTEGRATE into the `advanceDay` or `processCrowdfundTick` / post-gig logic.
-* **Rival Band Interactions**: `SPAWN_RIVAL_BAND`, `MOVE_RIVAL_BAND`, `UPDATE_RIVAL_BAND` are in the action types and type definitions, but appear missing from the actual UI event choices or overworld interactions.
-  * *Recommended Action*: INTEGRATE into the `checkRivalEncounter` flow or overworld map click handlers.
