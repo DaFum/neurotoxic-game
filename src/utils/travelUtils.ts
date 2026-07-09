@@ -162,9 +162,7 @@ export const checkVenueAccess = ({
     }
   }
 
-  const blacklistSet = new Set(venueBlacklist)
-
-  if (venueId && blacklistSet.has(venueId)) {
+  if (venueId && venueBlacklist.includes(venueId)) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.bookingRefusedBlacklisted',
