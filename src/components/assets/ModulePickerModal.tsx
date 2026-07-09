@@ -266,7 +266,13 @@ export const ModulePickerModal = memo(
                           style={{ color: 'var(--color-warning-yellow)' }}
                         >
                           {t('assets:modulePicker.exclusivityConflict', {
-                            otherName: conflict.conflictingModuleIds.join(', ')
+                            otherName: conflict.conflictingModuleIds
+                              .map(id =>
+                                t(`assets:module.${id}.name`, {
+                                  defaultValue: id
+                                })
+                              )
+                              .join(', ')
                           })}
                         </span>
                       )}
