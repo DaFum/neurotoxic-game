@@ -75,6 +75,13 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
   return fallback
 }
 
+/**
+ * Clears the internal token cache used for SVG generation.
+ *
+ * @remarks
+ * This function is intended exclusively for testing environments to ensure a clean state
+ * between test runs and prevent cache pollution.
+ */
 export const resetSvgTokenStyleCacheForTesting = () => {
   svgTokenCache.clear()
 }
