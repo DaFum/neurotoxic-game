@@ -1,10 +1,8 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
-import { CONTRABAND_BY_ID } from '../../src/data/contraband'
+import { _CONTRABAND_DB_FOR_TESTING as CONTRABAND_DB } from '../../src/data/contraband'
 import { CRAFTING_RECIPES } from '../../src/data/craftingRecipes'
-
-const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
 
 const readItemsLocale = async locale => {
   const raw = await readFile(`public/locales/${locale}/items.json`, 'utf8')
