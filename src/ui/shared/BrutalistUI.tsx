@@ -21,6 +21,8 @@ interface BlockMeterProps {
   value: number
   max?: number
   isDanger?: boolean
+  /** Hides the numeric `value / max` readout when the blocks alone suffice. */
+  showValue?: boolean
 }
 
 interface UplinkButtonProps {
@@ -301,7 +303,13 @@ const WarningStripe = memo(() => {
  * @param props - Meter label, current value, maximum value, and danger-state flag.
  */
 export const BlockMeter = memo(
-  ({ label, value, max = 10, isDanger = false }: BlockMeterProps) => {
+  ({
+    label,
+    value,
+    max = 10,
+    isDanger = false,
+    showValue = true
+  }: BlockMeterProps) => {
     const blocks = Array.from({ length: max }, (_, i) => i)
     return (
       <div
@@ -316,11 +324,13 @@ export const BlockMeter = memo(
           <span className='text-xs tracking-widest uppercase opacity-80'>
             {label}
           </span>
-          <span
-            className={`text-sm font-bold ${isDanger ? 'text-blood-red animate-fuel-warning' : 'text-toxic-green'}`}
-          >
-            {value} / {max}
-          </span>
+          {showValue && (
+            <span
+              className={`text-sm font-bold ${isDanger ? 'text-blood-red animate-fuel-warning' : 'text-toxic-green'}`}
+            >
+              {value} / {max}
+            </span>
+          )}
         </div>
         <div className='flex gap-1 h-6'>
           {blocks.map(block => {

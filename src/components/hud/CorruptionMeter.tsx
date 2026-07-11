@@ -30,6 +30,7 @@ export const CorruptionMeter = memo(function CorruptionMeter({
           value={normalizePercentageToScale(corruptionLevel, 10)}
           max={10}
           isDanger={corruptionLevel > 80}
+          showValue={false}
         />
       )}
     </div>

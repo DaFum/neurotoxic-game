@@ -18,7 +18,7 @@ export const ScoreDisplay = memo(function ScoreDisplay({
       <div className='text-xs text-ash-gray tracking-widest mb-0.5'>
         {t('ui:gig.score', 'SCORE')}
       </div>
-      <div className='text-4xl font-bold font-display text-toxic-green drop-shadow-[0_0_10px_var(--color-toxic-green)] tracking-widest tabular-nums animate-pulse'>
+      <div className='text-2xl font-bold font-display text-toxic-green drop-shadow-[0_0_10px_var(--color-toxic-green)] tracking-widest tabular-nums animate-pulse'>
         {Math.floor(score).toString().padStart(7, '0')}
       </div>
     </div>
