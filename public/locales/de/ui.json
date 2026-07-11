@@ -891,6 +891,7 @@
   "game_over": "GAME OVER: {{description}}",
   "gig.audioOverride": "Audio-Interface erfordert manuelle Überschreibung.",
   "gig.combo": "KOMBO",
+  "gig.controlsAria": "Spielsteuerung ein- oder ausblenden",
   "gig.controlsHint": "Spielsteuerung",
   "gig.crowdEnergy": "PUBLIKUMSENERGIE",
   "gig.initializeAudio": "AUDIO INITIALISIEREN",

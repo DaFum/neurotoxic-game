@@ -56,10 +56,14 @@ export const HUD = memo(() => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   // Global keyboard shortcuts
-  useKeyboardShortcuts({
-    setShowHelp,
-    onToggleMute: handleAudioChange.toggleMute
-  })
+  useKeyboardShortcuts(
+    isGigScene
+      ? { setShowHelp: () => {} }
+      : {
+          setShowHelp,
+          onToggleMute: handleAudioChange.toggleMute
+        }
+  )
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
@@ -97,60 +101,66 @@ export const HUD = memo(() => {
           </div>
         )}
 
-        <div className='flex gap-1.5'>
-          <Tooltip
-            content={
-              audioState.isMuted
-                ? t('ui:button.unmute', { defaultValue: 'Unmute (M)' })
-                : t('ui:button.mute', { defaultValue: 'Mute (M)' })
-            }
-          >
-            <button
-              type='button'
-              onClick={handleAudioChange.toggleMute}
-              aria-label={t('ui:aria.toggleMuteSystem', {
-                defaultValue: 'Toggle mute system'
-              })}
-              aria-pressed={audioState.isMuted}
-              className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+        {/* During gigs these controls live in the GigHUD's collapsed
+            controls cluster; keyboard shortcuts stay registered above. */}
+        {!isGigScene && (
+          <div className='flex gap-1.5'>
+            <Tooltip
+              content={
                 audioState.isMuted
-                  ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
-                  : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-              }`}
+                  ? t('ui:button.unmute', { defaultValue: 'Unmute (M)' })
+                  : t('ui:button.mute', { defaultValue: 'Mute (M)' })
+              }
             >
-              {audioState.isMuted ? (
-                <VolumeX size={20} />
-              ) : (
-                <Volume2 size={20} />
-              )}
-            </button>
-          </Tooltip>
-          <Tooltip
-            content={t('ui:button.shortcuts', {
-              defaultValue: 'Shortcuts (?, h)'
-            })}
-          >
-            <button
-              type='button'
-              onClick={() => setShowHelp(prev => !prev)}
-              aria-expanded={showHelp}
-              aria-controls='shortcuts-panel'
-              aria-label={t('ui:aria.shortcutsHelp', {
-                defaultValue: 'Toggle keyboard shortcuts help'
+              <button
+                type='button'
+                onClick={handleAudioChange.toggleMute}
+                aria-label={t('ui:aria.toggleMuteSystem', {
+                  defaultValue: 'Toggle mute system'
+                })}
+                aria-pressed={audioState.isMuted}
+                className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  audioState.isMuted
+                    ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
+                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
+                }`}
+              >
+                {audioState.isMuted ? (
+                  <VolumeX size={20} />
+                ) : (
+                  <Volume2 size={20} />
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={t('ui:button.shortcuts', {
+                defaultValue: 'Shortcuts (?, h)'
               })}
-              className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
-                showHelp
-                  ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
-                  : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-              }`}
             >
-              <HelpCircle size={20} />
-            </button>
-          </Tooltip>
-        </div>
+              <button
+                type='button'
+                onClick={() => setShowHelp(prev => !prev)}
+                aria-expanded={showHelp}
+                aria-controls='shortcuts-panel'
+                aria-label={t('ui:aria.shortcutsHelp', {
+                  defaultValue: 'Toggle keyboard shortcuts help'
+                })}
+                className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+                  showHelp
+                    ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
+                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
+                }`}
+              >
+                <HelpCircle size={20} />
+              </button>
+            </Tooltip>
+          </div>
+        )}
 
         {/* Keyboard Shortcuts Overlay */}
-        <KeyboardShortcutsPanel showHelp={showHelp} className='w-52' />
+        {!isGigScene && (
+          <KeyboardShortcutsPanel showHelp={showHelp} className='w-52' />
+        )}
       </div>
 
       {/* Right Panel - Band Status. During gigs only the decimator/pedal

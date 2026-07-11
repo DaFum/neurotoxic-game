@@ -44,11 +44,11 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
   })
 
   return (
-    <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs'>
+    <div className='absolute top-0 left-0 w-full p-4 pointer-events-none z-(--z-hud) flex justify-between items-start font-mono text-xs max-sm:relative max-sm:order-2 max-sm:p-0 max-sm:flex-col max-sm:items-stretch max-sm:gap-2'>
       {/* Left Panel - Player Status */}
       <div className='flex flex-col gap-2'>
         <div className='bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm min-w-50 pointer-events-auto transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'>
-          <div className='flex items-center gap-2 mb-2'>
+          <div className='flex items-center gap-2 mb-2 max-sm:flex-wrap'>
             <DollarSign
               size={16}
               className={money < 40 ? 'text-blood-red' : 'text-warning-yellow'}
@@ -122,9 +122,9 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
       <BandStatusPanel
         band={band}
         t={t}
-        wrapperClassName='pointer-events-auto bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none'
-        titleClassName='text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90'
-        membersWrapperClassName='w-56 space-y-0.5'
+        wrapperClassName='pointer-events-auto bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none max-sm:w-full'
+        titleClassName='text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90 max-sm:text-left'
+        membersWrapperClassName='w-56 space-y-0.5 max-sm:w-full'
         harmonyLabelClassName='text-xs font-bold text-ash-gray/90 mb-0.5'
         harmonyValueClassName='text-xs font-bold tabular-nums mb-0.5 leading-none'
         barWrapperClassName='w-24'

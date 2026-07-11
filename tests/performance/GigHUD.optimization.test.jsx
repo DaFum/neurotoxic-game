@@ -50,9 +50,9 @@ const ControlsHintSpy = vi.hoisted(() =>
     </div>
   ))
 )
-const PauseButtonSpy = vi.hoisted(() =>
+const GigControlsClusterSpy = vi.hoisted(() =>
   vi.fn(({ children, ...props }) => (
-    <div data-testid='pause-button' {...props}>
+    <div data-testid='gig-controls-cluster' {...props}>
       {children}
     </div>
   ))
@@ -108,8 +108,8 @@ vi.mock(
   makeReactMemoMock('ControlsHint', ControlsHintSpy)
 )
 vi.mock(
-  '../../src/components/hud/PauseButton.tsx',
-  makeReactMemoMock('PauseButton', PauseButtonSpy)
+  '../../src/components/hud/GigControlsCluster.tsx',
+  makeReactMemoMock('GigControlsCluster', GigControlsClusterSpy)
 )
 vi.mock(
   '../../src/components/hud/ToxicModeFlash.tsx',

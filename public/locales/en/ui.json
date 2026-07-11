@@ -891,6 +891,7 @@
   "game_over": "GAME OVER: {{description}}",
   "gig.audioOverride": "Audio Interface requires manual override.",
   "gig.combo": "COMBO",
+  "gig.controlsAria": "Toggle game controls",
   "gig.controlsHint": "Game Controls",
   "gig.crowdEnergy": "CROWD ENERGY",
   "gig.initializeAudio": "INITIALIZE AUDIO",

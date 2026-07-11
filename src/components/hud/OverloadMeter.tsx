@@ -23,6 +23,7 @@ export const OverloadMeter = memo(function OverloadMeter({
         value={normalizePercentageToScale(overload, 10)}
         max={10}
         isDanger={overload > 80}
+        showValue={false}
       />
     </div>
   )
