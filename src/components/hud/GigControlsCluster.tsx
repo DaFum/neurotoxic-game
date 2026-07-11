@@ -36,7 +36,15 @@ export const GigControlsCluster = memo(function GigControlsCluster({
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
 
-  useKeyboardShortcuts({ setShowHelp, onToggleMute: handleAudioChange.toggleMute })
+  useKeyboardShortcuts({
+    setShowHelp: (value) => {
+      setShowHelp(value)
+      if (value) {
+        setIsOpen(true)
+      }
+    },
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
   return (
     <div className='absolute top-4 left-4 z-(--z-hud) pointer-events-none'>
@@ -134,9 +142,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
         )}
       </div>
 
-      {isOpen && (
-        <KeyboardShortcutsPanel showHelp={showHelp} className='w-52 mt-2' />
-      )}
+      <KeyboardShortcutsPanel showHelp={showHelp} className='w-52 mt-2' />
     </div>
   )
 })
