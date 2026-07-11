@@ -12,8 +12,8 @@ export const VanStatusMiniBars = memo(
     condition,
     t
   }: {
-    fuel: number
-    condition: number
+    fuel?: number | null
+    condition?: number | null
     t: TFunction
   }) => {
     const safeFuel = finiteNumberOr(fuel, 0)
