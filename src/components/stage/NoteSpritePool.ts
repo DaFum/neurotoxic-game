@@ -1,6 +1,7 @@
 import { Container, Sprite, Texture } from 'pixi.js'
 import { BaseSpritePool } from './pool/BaseSpritePool'
 import { getSafeRandom } from '../../utils/crypto'
+import type { NoteTextures } from './NoteTextureManager'
 
 const NOTE_JITTER_RANGE = 10
 const NOTE_SPRITE_SIZE = 80
@@ -24,11 +25,6 @@ type LaneData = {
 export type NoteSprite = Sprite & {
   isFallback: boolean
   jitterOffset: number
-}
-
-type NoteTextures = {
-  skull: Texture | null
-  lightning: Texture | null
 }
 
 /**

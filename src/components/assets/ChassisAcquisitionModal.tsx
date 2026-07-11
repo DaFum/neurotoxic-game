@@ -18,12 +18,11 @@ import type {
   AssetKind,
   ChassisTier
 } from '../../types/assets'
+import type { BaseModalProps } from '../../types/ui'
 
-interface Props {
+interface Props extends BaseModalProps {
   /** Pre-selected kind (section views open the modal scoped to their kind). */
   kind: AssetKind
-  isOpen: boolean
-  onClose: () => void
 }
 
 const TIERS: readonly ChassisTier[] = [1, 2, 3]

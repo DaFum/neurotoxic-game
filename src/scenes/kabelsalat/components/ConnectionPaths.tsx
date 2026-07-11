@@ -2,8 +2,7 @@ import type { JSX } from 'react'
 import { ConnectionPath } from './ConnectionPath.tsx'
 import type { ConnectionPathProps } from './ConnectionPath.tsx'
 import type { SocketId } from '../../../types/kabelsalat'
-
-type CableId = ConnectionPathProps['cabId']
+import type { CableId } from '../kabelsalatConstants'
 
 type ConnectionPathsProps = {
   connections: Partial<Record<SocketId, CableId>>

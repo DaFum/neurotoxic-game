@@ -9,12 +9,7 @@ import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { getAssetSaleQuote } from '../../utils/assetSelectors'
 import type { LongTermAsset } from '../../types/assets'
-
-interface Props {
-  asset: LongTermAsset
-  isOpen: boolean
-  onClose: () => void
-}
+import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**
  * Sell confirmation. Mirrors the reducer's depreciation formula to give the

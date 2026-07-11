@@ -10,14 +10,13 @@ import { resolveCrowdfundProbability } from '../../utils/assetTicks'
 import { mulberry32 } from '../../utils/seededRng'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { AssetFlavor, AssetKind, ChassisTier } from '../../types/assets'
+import type { BaseModalProps } from '../../types/ui'
 
-interface Props {
+interface Props extends BaseModalProps {
   kind: AssetKind
   flavor: AssetFlavor
   tier: ChassisTier
   targetAmount: number
-  isOpen: boolean
-  onClose: () => void
 }
 
 /**
