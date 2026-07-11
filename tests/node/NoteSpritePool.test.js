@@ -262,8 +262,8 @@ describe('NoteSpritePool', () => {
 
   test('releaseSpriteToPool respects MAX_POOL_SIZE', () => {
     // Override MAX_POOL_SIZE for this test
-    const originalMax = NoteSpritePool.MAX_POOL_SIZE
-    NoteSpritePool.MAX_POOL_SIZE = 2
+    const originalMax = pool.maxPoolSize
+    pool.maxPoolSize = 2
 
     try {
       pool.spritePool = []
@@ -283,7 +283,7 @@ describe('NoteSpritePool', () => {
       assert.equal(sprite3.destroy.mock.calls.length, 1)
       assert.equal(sprite1.destroy.mock.calls.length, 0)
     } finally {
-      NoteSpritePool.MAX_POOL_SIZE = originalMax
+      pool.maxPoolSize = originalMax
     }
   })
 
