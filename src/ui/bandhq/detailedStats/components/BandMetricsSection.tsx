@@ -1,14 +1,13 @@
-import type { SocialData } from '../types'
 import type { BasicTProps } from '../types'
 import { Panel, ProgressBar } from '../../../shared'
 import { DetailRow } from './DetailRow'
-import type { BandData } from '../types'
+import type { BandState, SocialState } from '../../../../types'
 
 export const BandMetricsSection = ({
   band,
   social,
   t
-}: { band: BandData; social: SocialData } & BasicTProps) => (
+}: { band: BandState; social: SocialState } & BasicTProps) => (
   <Panel title={t('ui:stats.band_metrics', { defaultValue: 'Band Metrics' })}>
     <div className='mb-4'>
       <ProgressBar

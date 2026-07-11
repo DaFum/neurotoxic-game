@@ -115,13 +115,6 @@ export const getBaseAssetPath = (): {
 }
 
 /**
- * Resets the cached base asset path between tests.
- */
-export const __resetBaseAssetPathCache = (): void => {
-  cachedAssetPaths = null
-}
-
-/**
  * Encodes a public asset path segment-by-segment while preserving slashes.
  *
  * Primarily used by `resolveAssetUrl`; exported for direct testing.

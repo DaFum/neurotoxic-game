@@ -18,4 +18,6 @@ export interface CharacterTrait {
   name: string
   desc: string
   unlockHint: string
+  effect?: string
+  exclusiveWith?: string[]
 }

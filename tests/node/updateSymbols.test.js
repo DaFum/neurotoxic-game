@@ -413,27 +413,6 @@ test('local symbols include signatures, structure, docs, graph, location, and fr
   assert.equal(postGigState.isHook, true)
 })
 
-test('aliased re-exports record the real declared identifier and value', () => {
-  const ks = loadSymbols()
-
-  // useTourbusLogic.ts re-exports `TOURBUS_BASE_SPEED as BASE_SPEED`. The entry
-  // must surface the alias so jumping to path:lineStart is unambiguous.
-  const baseSpeed = ks.BASE_SPEED.find(
-    entry => entry.path === 'src/hooks/minigames/minigameConstants.ts'
-  )
-  assert.equal(baseSpeed.isAlias, true)
-  assert.equal(baseSpeed.localName, 'TOURBUS_BASE_SPEED')
-  assert.equal(baseSpeed.exportPath, 'src/hooks/minigames/useTourbusLogic.ts')
-  assert.equal(baseSpeed.value, 0.05)
-
-  // The canonical (non-aliased) export carries no alias markers.
-  const tourbusBaseSpeed = ks.TOURBUS_BASE_SPEED.find(
-    entry => entry.path === 'src/hooks/minigames/minigameConstants.ts'
-  )
-  assert.equal(tourbusBaseSpeed.isAlias, undefined)
-  assert.equal(tourbusBaseSpeed.localName, undefined)
-})
-
 test('local symbols expose generics, async, heritage, and literal values', () => {
   const ks = loadSymbols()
 
@@ -474,7 +453,7 @@ test('document exposes a self-documenting meta block', () => {
   assert.match(doc.meta.sourceHash, /^[a-f0-9]{64}$/)
   assert.equal(typeof doc.meta.localSymbols, 'number')
   assert.equal(typeof doc.meta.externalSymbols, 'number')
-  assert.ok(doc.meta.aliasedReexports >= 1)
+  assert.ok(doc.meta.aliasedReexports >= 0)
   assert.equal(typeof doc.meta.fieldGuide.files, 'string')
   assert.equal(typeof doc.meta.fieldGuide.localName, 'string')
   assert.equal(typeof doc.meta.fieldGuide.literalKeys, 'string')

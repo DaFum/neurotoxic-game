@@ -33,15 +33,6 @@ type UiState = {
   isGameOver: boolean
 }
 
-// Aliased re-export kept intentionally: it is the canonical aliased-re-export
-// fixture that `tests/node/updateSymbols.test.js` asserts against (it expects
-// `ks.BASE_SPEED` with `isAlias`/`localName` and `meta.aliasedReexports >= 1`).
-// Do not remove without updating that symbol-index test.
-export {
-  TOURBUS_BASE_SPEED as BASE_SPEED,
-  TOURBUS_TARGET_DISTANCE as TARGET_DISTANCE
-} from './minigameConstants'
-
 /** Damage from a standard obstacle hit with no mitigation upgrades. */
 export const HIT_DAMAGE_BASE = 10
 /** Damage from a standard obstacle hit when van armor is installed. */

@@ -1,10 +1,10 @@
 import { useTranslation } from 'react-i18next'
 import type {
-  PlayerData,
-  BandData,
-  SocialData,
-  ActiveQuest
-} from './detailedStats/types'
+  PlayerState,
+  BandState,
+  SocialState,
+  QuestState
+} from '../../types'
 import {
   CareerOverviewSection,
   SocialReachSection,
@@ -28,10 +28,10 @@ export const DetailedStatsTab = ({
   onCraft,
   onConsumeItem
 }: {
-  player: PlayerData
-  band: BandData
-  social: SocialData
-  activeQuests?: ActiveQuest[]
+  player: PlayerState
+  band: BandState
+  social: SocialState
+  activeQuests?: QuestState[]
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
   onMakeAmends?: (venueId: string) => void

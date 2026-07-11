@@ -1,4 +1,4 @@
-import type { SocialData } from '../types'
+import type { SocialState } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { DetailRow } from './DetailRow'
 import { getTranslatedBrandDealDisplay } from '../../../../utils/brandDealI18n'
@@ -8,7 +8,7 @@ import { isUnlocked } from '../helpers'
 export const SocialReachSection = ({
   social,
   t
-}: { social: SocialData } & BasicTProps) => {
+}: { social: SocialState } & BasicTProps) => {
   const activeDeals = social?.activeDeals ?? []
   const activeDealDisplays = activeDeals.flatMap((deal, index) => {
     const display = getTranslatedBrandDealDisplay(deal, t, index)

@@ -1,12 +1,12 @@
-import type { ActiveQuest } from '../types'
+import type { QuestState } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { Panel, ProgressBar } from '../../../shared'
 
 export const ActiveQuestsSection = ({
   activeQuests,
   t
-}: { activeQuests: ActiveQuest[] } & BasicTProps) => {
-  const getQuestLabel = (quest: ActiveQuest) =>
+}: { activeQuests: QuestState[] } & BasicTProps) => {
+  const getQuestLabel = (quest: QuestState) =>
     t(quest.label ?? quest.id, { defaultValue: quest.id })
 
   return (

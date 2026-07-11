@@ -1,12 +1,12 @@
 import { DetailRow } from './DetailRow'
-import type { PlayerData } from '../types'
+import type { PlayerState } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { Panel, ProgressBar } from '../../../shared'
 
 export const VanConditionSection = ({
   player,
   t
-}: { player: PlayerData } & BasicTProps) => (
+}: { player: PlayerState } & BasicTProps) => (
   <Panel title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}>
     {/* jscpd:ignore-start */}
     <div className='mb-4 space-y-2'>

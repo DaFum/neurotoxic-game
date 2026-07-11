@@ -538,6 +538,9 @@ export const CONTRABAND_BY_RARITY: Record<
 }
 
 for (const item of CONTRABAND_DB) {
+  if (CONTRABAND_BY_ID.has(item.id)) {
+    logger.warn('ContrabandData', `Duplicate item ID found: ${item.id}`)
+  }
   CONTRABAND_BY_ID.set(item.id, item)
   const rarityGroup = CONTRABAND_BY_RARITY[item.rarity as Rarity]
   if (rarityGroup) {
