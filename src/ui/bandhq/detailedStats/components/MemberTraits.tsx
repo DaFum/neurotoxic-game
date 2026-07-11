@@ -33,7 +33,7 @@ export const MemberTraits = ({
     }
 
     // Otherwise, perform the merge
-    const merged = [...baseTraits]
+    const merged: CharacterTrait[] = [...baseTraits]
     const seen = new Set<string>()
     for (let i = 0; i < baseTraits.length; i++) {
       const bt = baseTraits[i]

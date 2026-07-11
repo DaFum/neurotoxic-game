@@ -550,8 +550,3 @@ for (const item of CONTRABAND_DB) {
   }
 }
 
-/**
- * Internal DB export for schema and integrity tests only.
- * DO NOT USE in application logic. Use CONTRABAND_BY_ID or CONTRABAND_BY_RARITY instead.
- */
-export { CONTRABAND_DB as _CONTRABAND_DB_FOR_TESTING }

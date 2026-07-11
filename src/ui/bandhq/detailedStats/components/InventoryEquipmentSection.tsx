@@ -1,6 +1,6 @@
 import type { BasicTProps } from '../types'
 import { DetailRow } from './DetailRow'
-import type { BandData } from '../types'
+import type { BandState } from '../../../../types'
 import { Panel } from '../../../shared'
 import { isUnlocked } from '../helpers'
 import { USABLE_BOOLEAN_INVENTORY_ITEMS } from '../helpers'
@@ -10,7 +10,7 @@ export const InventoryEquipmentSection = ({
   onConsumeItem,
   t
 }: {
-  band: BandData
+  band: BandState
   onConsumeItem?: (itemId: string) => void
 } & BasicTProps) => (
   <Panel

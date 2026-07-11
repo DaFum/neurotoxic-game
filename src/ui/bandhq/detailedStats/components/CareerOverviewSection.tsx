@@ -2,7 +2,7 @@ import type { BasicTProps } from '../types'
 import { translateLocation } from '../../../../utils/locationI18n'
 import { DetailRow } from './DetailRow'
 import { isUnlocked } from '../helpers'
-import type { PlayerData } from '../types'
+import type { PlayerState } from '../../../../types'
 import { Panel } from '../../../shared'
 import { finiteNumberOr, wrapClockHour } from '../../../../utils/gameState'
 import { useTranslation } from 'react-i18next'
@@ -11,7 +11,7 @@ import { formatCurrency } from '../../../../utils/numberUtils'
 export const CareerOverviewSection = ({
   player,
   t
-}: { player: PlayerData } & BasicTProps) => {
+}: { player: PlayerState } & BasicTProps) => {
   const { i18n } = useTranslation()
   const locationName = translateLocation(
     t,
