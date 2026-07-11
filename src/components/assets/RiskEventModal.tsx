@@ -3,11 +3,10 @@ import { Modal } from '../../ui/shared/Modal'
 import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getRiskEventImagePrompt } from '../../utils/imageGen'
 import type { RiskEventType } from '../../types/assets'
+import type { BaseModalProps } from '../../types/ui'
 
-interface Props {
+interface Props extends BaseModalProps {
   eventType: RiskEventType
-  isOpen: boolean
-  onClose: () => void
 }
 
 /**

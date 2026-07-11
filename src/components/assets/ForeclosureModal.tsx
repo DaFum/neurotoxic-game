@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next'
 import { CrisisModal } from '../../ui/shared'
+import type { BaseModalProps } from '../../types/ui'
 
-interface Props {
+interface Props extends BaseModalProps {
   // Optional kind label — sections may pass a pre-resolved
   // `assets:kind.<kind>`-translated string here.
   assetLabel?: string
-  isOpen: boolean
-  onClose: () => void
 }
 
 /**

@@ -12,13 +12,7 @@ import {
 } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { LongTermAsset } from '../../types/assets'
-
-interface Props {
-  asset: LongTermAsset
-  isOpen: boolean
-  onClose: () => void
-}
+import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**
  * Confirms chassis tier upgrade cost and action for one asset.

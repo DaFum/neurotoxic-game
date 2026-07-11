@@ -6,10 +6,9 @@ import {
   LOAN_PROFILES_ARRAY,
   type LoanProfileId
 } from '../../utils/loanProfiles'
+import type { BaseModalProps } from '../../types/ui'
 
-interface Props {
-  isOpen: boolean
-  onClose: () => void
+interface Props extends BaseModalProps {
   onSelect: (profile: LoanProfileId) => void
   title?: string
 }

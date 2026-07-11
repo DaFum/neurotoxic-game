@@ -13,13 +13,10 @@ import {
   type LockReason
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { LongTermAsset } from '../../types/assets'
+import type { AssetConfirmModalProps } from '../../types/ui'
 
-interface Props {
-  asset: LongTermAsset
+interface Props extends AssetConfirmModalProps {
   slotId: string | null
-  isOpen: boolean
-  onClose: () => void
 }
 
 const formatLockReason = (
