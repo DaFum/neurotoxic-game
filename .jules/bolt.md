@@ -162,3 +162,8 @@
 
 **Learning:** Pre-allocating an array with `new Array(length)` returns `any[]` and breaks type safety.
 **Action:** Always provide an explicit type argument like `new Array<T>(length)` to ensure the array stays strictly typed.
+
+## 2024-07-11 - Procedural loop in Action Creators payload sanitization
+
+**Learning:** Action payloads (like `EventDeltaPayload` which contains `relationshipChange`) are heavily processed. Using `Array.some` followed by `Array.map` to detect and stamp timestamps allocates closures and intermediate arrays on every high-frequency `APPLY_EVENT_DELTA` dispatch.
+**Action:** Replace `Array.some` and `Array.map` in action creator payload sanitisers with procedural loops and explicitly typed pre-allocated arrays (e.g., `new Array<unknown>(length)`).
