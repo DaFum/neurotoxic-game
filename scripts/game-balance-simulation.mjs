@@ -461,7 +461,7 @@ const simulateGigsToReachFameTarget = (targetFame, performanceScore) => {
     gigs += 1
   }
 
-  return { gigs, finalFame: fame, rawGigFame }
+  return { gigs: Math.ceil(gigs), finalFame: fame, rawGigFame }
 }
 
 const simulateFameCatalogClear = (catalog, performanceScore) => {
@@ -500,7 +500,7 @@ const simulateFameCatalogClear = (catalog, performanceScore) => {
     gigs += 1
   }
 
-  return { gigs, finalFame: fame, rawGigFame }
+  return { gigs: Math.ceil(gigs), finalFame: fame, rawGigFame }
 }
 
 const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
