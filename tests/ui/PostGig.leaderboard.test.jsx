@@ -430,7 +430,7 @@ describe('PostGig Leaderboard Submission', () => {
   it('submits mixed songStats list, processing knowns and skipping unknowns', async () => {
     global.fetch.mockClear()
     mockFetch.mockClear()
-    mockFetch.mockClear()
+    vi.clearAllMocks()
     const base = getBaseState()
     useGameActions.mockReturnValue({
       ...base,
