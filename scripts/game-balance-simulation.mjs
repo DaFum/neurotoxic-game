@@ -9,9 +9,11 @@ import { BRAND_DEALS } from '../src/data/brandDeals.js'
 import { POST_OPTIONS } from '../src/data/postOptions.js'
 import { ALLOWED_TRENDS } from '../src/data/socialTrends.js'
 import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
-import { _CONTRABAND_DB_FOR_TESTING } from '../src/data/contraband.js'
+import { CONTRABAND_BY_ID } from '../src/data/contraband.js'
 import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
+
+const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
 import {
   eventEngine,
   resolveEventChoice
@@ -843,8 +845,8 @@ const maybeApplyPostPulse = (
 const maybeApplyContrabandDrop = (state, rng, counters) => {
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
   const item =
-    _CONTRABAND_DB_FOR_TESTING[
-      Math.floor(rng() * _CONTRABAND_DB_FOR_TESTING.length)
+    CONTRABAND_DB[
+      Math.floor(rng() * CONTRABAND_DB.length)
     ]
   if (!item) return
 
@@ -1063,7 +1065,7 @@ const buildAppFeatureSnapshot = () => {
     postOptions: POST_OPTIONS.length,
     trends: trendList,
     socialPlatforms: platformList,
-    contrabandItems: _CONTRABAND_DB_FOR_TESTING.length,
+    contrabandItems: CONTRABAND_DB.length,
     upgradeCatalogEntries: UPGRADE_CATALOG.length
   }
 }

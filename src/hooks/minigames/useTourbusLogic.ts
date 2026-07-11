@@ -33,7 +33,6 @@ type UiState = {
   isGameOver: boolean
 }
 
-
 /** Damage from a standard obstacle hit with no mitigation upgrades. */
 export const HIT_DAMAGE_BASE = 10
 /** Damage from a standard obstacle hit when van armor is installed. */
