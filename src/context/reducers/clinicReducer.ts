@@ -366,20 +366,14 @@ export const handleBloodBankDonate = (
 }
 
 /**
- * Handles trait enhancement or other cybernetic grafts in the clinic.
- *
- * @param state - Game state before enhancement.
- * @param payload - Clinic enhancement request.
- * - `payload.memberId` - The ID of the band member.
- * - `payload.type` - Must be `'enhance'`; used to compute cost from `CLINIC_CONFIG`.
- * - `payload.trait` - The trait to add or upgrade.
- * @returns State with the trait grafted and clinic cost applied, or the
- * original state when validation fails.
- */
-/**
  * Handles grafting the Neuro-Overclock trait onto a band member.
- * Costs money and permanently mutates the member's traits.
- * Enforces state safety boundaries.
+ *
+ * @remarks
+ * Costs money and permanently mutates the member's traits by reducing health, increasing stress, and adding the neuro_overclock trait. Enforces state safety boundaries to ensure the player can afford the cost and the member exists.
+ *
+ * @param state - Game state before the enhancement.
+ * @param payload - Request payload containing the target member ID.
+ * @returns The updated state with the graft applied, or the original state if validation fails.
  */
 export const handleGraftNeuroOverclock = (
   state: GameState,
@@ -465,6 +459,16 @@ export const handleGraftNeuroOverclock = (
   }
 }
 
+/**
+ * Handles trait enhancement or other cybernetic grafts in the clinic.
+ *
+ * @param state - Game state before enhancement.
+ * @param payload - Clinic enhancement request containing member ID and trait.
+ * - `payload.memberId` - The ID of the band member.
+ * - `payload.type` - Must be `'enhance'`; used to compute cost from `CLINIC_CONFIG`.
+ * - `payload.trait` - The trait to add or upgrade.
+ * @returns The state with the trait grafted and clinic cost applied, or the original state when validation fails.
+ */
 export const handleClinicEnhance = (
   state: GameState,
   payload: ClinicActionPayload
