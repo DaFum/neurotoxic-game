@@ -8,7 +8,6 @@ import { getChassisImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { getAssetSaleQuote } from '../../utils/assetSelectors'
-import type { LongTermAsset } from '../../types/assets'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**

@@ -8,7 +8,6 @@ import { getRepairImagePrompt } from '../../utils/imageGen'
 import { calculateChassisRepairCost } from '../../utils/assetConfig'
 import { formatCurrency } from '../../utils/numberUtils'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { LongTermAsset } from '../../types/assets'
 import type { AssetConfirmModalProps as Props } from '../../types/ui'
 
 /**

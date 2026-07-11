@@ -13,7 +13,6 @@ import {
   type LockReason
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
-import type { LongTermAsset } from '../../types/assets'
 import type { AssetConfirmModalProps } from '../../types/ui'
 
 interface Props extends AssetConfirmModalProps {
