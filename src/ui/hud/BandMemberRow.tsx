@@ -36,6 +36,10 @@ export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
             <AlertCircle
               size={12}
               className={`shrink-0 pointer-events-auto ${isStaminaLow ? 'text-blood-red' : 'text-warning-yellow'}`}
+              role='img'
+              aria-label={t('ui:overworld.memberWarning', {
+                defaultValue: 'Member needs attention'
+              })}
             />
           </Tooltip>
         )}
