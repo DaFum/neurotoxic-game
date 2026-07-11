@@ -472,14 +472,35 @@ const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
   if (!rawRC) return delta
   const needsStamp = (rc: unknown): rc is RelationshipChange =>
     isLooseRecord(rc) && rc.source === 'banter' && !isFiniteNumber(rc.timestamp)
-  const hasUnstamped = Array.isArray(rawRC)
-    ? rawRC.some(needsStamp)
-    : needsStamp(rawRC)
+
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() and Array.map() with a single procedural loop to avoid closure and array allocations.
+  let hasUnstamped = false
+  if (Array.isArray(rawRC)) {
+    for (let i = 0; i < rawRC.length; i++) {
+      if (needsStamp(rawRC[i])) {
+        hasUnstamped = true
+        break
+      }
+    }
+  } else {
+    hasUnstamped = needsStamp(rawRC)
+  }
+
   if (!hasUnstamped) return delta
   const now = Date.now()
-  const stamp = (rc: unknown): unknown =>
-    needsStamp(rc) ? { ...rc, timestamp: now } : rc
-  const stamped = Array.isArray(rawRC) ? rawRC.map(stamp) : stamp(rawRC)
+
+  let stamped: unknown
+  if (Array.isArray(rawRC)) {
+    const stampedArray = new Array<unknown>(rawRC.length)
+    for (let i = 0; i < rawRC.length; i++) {
+      const rc = rawRC[i]
+      stampedArray[i] = needsStamp(rc) ? { ...rc, timestamp: now } : rc
+    }
+    stamped = stampedArray
+  } else {
+    stamped = needsStamp(rawRC) ? { ...rawRC, timestamp: now } : rawRC
+  }
+
   return {
     ...delta,
     band: {
