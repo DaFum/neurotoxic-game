@@ -1,4 +1,5 @@
 import { Container, Sprite, Texture } from 'pixi.js'
+import { BaseSpritePool } from './pool/BaseSpritePool'
 import { getSafeRandom } from '../../utils/crypto'
 
 const NOTE_JITTER_RANGE = 10
@@ -137,15 +138,12 @@ export class NoteSpriteFactory {
 /**
  * Pools reusable Pixi note sprites for rhythm rendering.
  */
-export class NoteSpritePool {
-  static MAX_POOL_SIZE = 64
-  container: Container | null
-  spritePool: NoteSprite[]
+export class NoteSpritePool extends BaseSpritePool<NoteSprite> {
+  protected maxPoolSize = 64
   factory: NoteSpriteFactory
 
   constructor(container: Container | null) {
-    this.container = container
-    this.spritePool = []
+    super(container)
     this.factory = new NoteSpriteFactory()
   }
 
@@ -157,13 +155,6 @@ export class NoteSpritePool {
     this.factory.noteTextures = value
   }
 
-  /**
-   * Retrieves an active note sprite from the pool or creates one if empty.
-   *
-   * @param lane - Visual data for the target lane.
-   * @param laneIndex - The index of the rhythm lane.
-   * @returns A ready-to-render note sprite.
-   */
   acquireSpriteFromPool(lane: LaneData, laneIndex: number): NoteSprite {
     const sprite =
       this.spritePool.pop() ?? this.factory.createNoteSprite(laneIndex)
@@ -171,11 +162,6 @@ export class NoteSpritePool {
     return sprite
   }
 
-  /**
-   * Returns an active sprite to the pool and removes it from the display list.
-   *
-   * @param sprite - The sprite to release.
-   */
   destroyNoteSprite(sprite: NoteSprite | null | undefined): void {
     if (!sprite) return
 
@@ -183,33 +169,6 @@ export class NoteSpritePool {
       this.container.removeChild(sprite)
     }
 
-    // Release to pool instead of destroying
     this.releaseSpriteToPool(sprite)
-  }
-
-  /**
-   * Enqueues a sprite back into the internal pool or destroys it if full.
-   *
-   * @param sprite - The sprite to pool.
-   */
-  releaseSpriteToPool(sprite: NoteSprite): void {
-    sprite.visible = false
-    if (this.spritePool.length < NoteSpritePool.MAX_POOL_SIZE) {
-      this.spritePool.push(sprite)
-    } else {
-      sprite.destroy({ children: true, texture: false, textureSource: false })
-    }
-  }
-
-  /**
-   * Destroys all pooled sprites and references to prepare for garbage collection.
-   */
-  dispose(): void {
-    // Destroy pooled sprites
-    for (let i = 0; i < this.spritePool.length; i++) {
-      this.spritePool[i]?.destroy()
-    }
-    this.spritePool = []
-    this.container = null
   }
 }

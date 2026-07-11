@@ -1,8 +1,8 @@
 import { memo } from 'react'
 import { Fuel, Wrench } from 'lucide-react'
-import { Tooltip, ProgressBar } from './index'
-import { BandMemberRow } from '../hud/BandMemberRow'
-import type { BandMember, BandState } from '../../types/band'
+import { Tooltip, ProgressBar } from '../../shared/index'
+import { BandMemberRow } from '../BandMemberRow'
+import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
 
 export const VanStatusMiniBars = memo(

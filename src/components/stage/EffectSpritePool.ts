@@ -1,28 +1,16 @@
-import { Container, Sprite, Texture } from 'pixi.js'
+import { Sprite, Texture } from 'pixi.js'
+import { BaseSpritePool } from './pool/BaseSpritePool'
 
-/**
- * Particle/effect sprite instance managed by the stage effect pool.
- */
 export type EffectSprite = Sprite & {
   isSprite: boolean
   life: number
 }
 
-/**
- * Pools reusable Pixi effect sprites for hit feedback.
- */
-export class EffectSpritePool {
-  static MAX_POOL_SIZE = 50
-  spritePool: EffectSprite[]
-  container: Container | null
+export class EffectSpritePool extends BaseSpritePool<EffectSprite> {
+  protected maxPoolSize = 50
 
   constructor() {
-    this.spritePool = []
-    this.container = null
-  }
-
-  setContainer(container: Container): void {
-    this.container = container
+    super()
   }
 
   getSprite(texture: Texture | null): EffectSprite {
@@ -33,8 +21,6 @@ export class EffectSpritePool {
       return sprite
     }
 
-    // Create sprite, using generic texture if specific one is missing/not loaded
-    // If texture is still null (generation failed), use Texture.WHITE as absolute fallback
     const effect = new Sprite(texture || Texture.WHITE) as EffectSprite
     effect.isSprite = true
     effect.life = 1
@@ -49,26 +35,10 @@ export class EffectSpritePool {
       this.container.removeChild(effect)
     }
 
-    effect.visible = false
-
-    // Only pool Sprites (legacy graphics would be destroyed if they existed)
     if (effect.isSprite) {
-      if (this.spritePool.length < EffectSpritePool.MAX_POOL_SIZE) {
-        this.spritePool.push(effect)
-      } else {
-        effect.destroy()
-      }
+      this.releaseSpriteToPool(effect)
     } else {
       effect.destroy()
     }
-  }
-
-  dispose(): void {
-    // Destroy pool
-    for (let i = 0; i < this.spritePool.length; i++) {
-      this.spritePool[i]?.destroy()
-    }
-    this.spritePool = []
-    this.container = null
   }
 }
