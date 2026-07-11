@@ -164,3 +164,7 @@
 
 **Learning:** Buttons that act as accordions or expandable menus (like the main OverworldMenu toggle) often visually indicate their state using text changes (e.g. "[OPEN MENU]" vs "[CLOSE MENU]"), but screen readers lack the semantic linkage connecting the button's toggle state to the visibility of the controlled content panel.
 **Action:** When a button toggles the visibility of a container, always use `aria-expanded={isOpen}` to announce its current state and `aria-controls={containerId}` to programmatically link the button to the expanded content. Pass `undefined` to `aria-controls` if the target element is conditionally unmounted from the DOM when closed.
+
+## 2024-07-11 - Add ARIA label to Warning Icon in BandMemberRow
+**Learning:** Icon-only warning states in HUD components (`AlertCircle` in `BandMemberRow`) lacked implicit accessibility context. Relying solely on `Tooltip` wrappers fails for screen readers since `lucide-react` icons aren`t inherently accessible.
+**Action:** Always add `role="img"` and a localized `aria-label` directly to `lucide-react` SVG components when used as status indicators, even if wrapped in a Tooltip.
