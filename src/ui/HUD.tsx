@@ -58,7 +58,7 @@ export const HUD = memo(() => {
   // Global keyboard shortcuts
   useKeyboardShortcuts(
     isGigScene
-      ? {}
+      ? { setShowHelp: () => {} }
       : {
           setShowHelp,
           onToggleMute: handleAudioChange.toggleMute
