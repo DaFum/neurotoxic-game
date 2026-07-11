@@ -145,6 +145,7 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
     init: vi.fn().mockResolvedValue(undefined),
     ensureAudioContext: vi.fn().mockResolvedValue(true),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
     play: vi.fn(),
     stop: vi.fn(),
     stopMusic: vi.fn(),

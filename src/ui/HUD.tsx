@@ -56,10 +56,14 @@ export const HUD = memo(() => {
   const { audioState, handleAudioChange } = useAudioControl()
 
   // Global keyboard shortcuts
-  useKeyboardShortcuts({
-    setShowHelp,
-    onToggleMute: handleAudioChange.toggleMute
-  })
+  useKeyboardShortcuts(
+    isGigScene
+      ? { setShowHelp: () => {} }
+      : {
+          setShowHelp,
+          onToggleMute: handleAudioChange.toggleMute
+        }
+  )
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>

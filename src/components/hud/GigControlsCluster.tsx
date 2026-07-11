@@ -1,7 +1,7 @@
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Menu, X, Volume2, VolumeX, HelpCircle, Pause } from 'lucide-react'
-import { Tooltip, KeyboardShortcutsPanel } from '../../ui/shared'
+import { Tooltip, KeyboardShortcutsPanel, useKeyboardShortcuts } from '../../ui/shared'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
 /**
@@ -35,6 +35,16 @@ export const GigControlsCluster = memo(function GigControlsCluster({
   const [isOpen, setIsOpen] = useState(false)
   const [showHelp, setShowHelp] = useState(false)
   const { audioState, handleAudioChange } = useAudioControl()
+
+  useKeyboardShortcuts({
+    setShowHelp: (value) => {
+      setShowHelp(value)
+      if (value) {
+        setIsOpen(true)
+      }
+    },
+    onToggleMute: handleAudioChange.toggleMute
+  })
 
   return (
     <div className='absolute top-4 left-4 z-(--z-hud) pointer-events-none'>
@@ -114,7 +124,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
             >
               <button
                 type='button'
-                onClick={onTogglePause}
+                onClick={() => onTogglePause?.()}
                 aria-label={t('ui:gig.pauseAria', {
                   defaultValue: 'Pause Game'
                 })}
@@ -132,9 +142,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
         )}
       </div>
 
-      {isOpen && (
-        <KeyboardShortcutsPanel showHelp={showHelp} className='w-52 mt-2' />
-      )}
+      <KeyboardShortcutsPanel showHelp={showHelp} className='w-52 mt-2' />
     </div>
   )
 })
