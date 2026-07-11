@@ -35,6 +35,8 @@ export class EffectSpritePool extends BaseSpritePool<EffectSprite> {
       this.container.removeChild(effect)
     }
 
+    effect.visible = false
+
     if (effect.isSprite) {
       this.releaseSpriteToPool(effect)
     } else {

@@ -9,7 +9,7 @@ export const MainMenuFooter = () => {
 
   return (
     <MainMenuMotionContainer
-      className='absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-10 px-4'
+      className='absolute bottom-4 sm:bottom-6 flex w-full flex-col items-center gap-1 z-(--z-crt) px-4'
       delay={1.5}
     >
       <div className='w-32 h-px bg-gradient-to-r from-transparent via-ash-gray/50 to-transparent' />
