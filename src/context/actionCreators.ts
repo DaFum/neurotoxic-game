@@ -491,13 +491,14 @@ const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
 
   let stamped: unknown
   if (Array.isArray(rawRC)) {
-    stamped = new Array<unknown>(rawRC.length)
+    const stampedArray = new Array<unknown>(rawRC.length)
     for (let i = 0; i < rawRC.length; i++) {
       const rc = rawRC[i]
-      ;(stamped as unknown[])[i] = needsStamp(rc) ? { ...(rc as object), timestamp: now } : rc
+      stampedArray[i] = needsStamp(rc) ? { ...rc, timestamp: now } : rc
     }
+    stamped = stampedArray
   } else {
-    stamped = needsStamp(rawRC) ? { ...(rawRC as object), timestamp: now } : rawRC
+    stamped = needsStamp(rawRC) ? { ...rawRC, timestamp: now } : rawRC
   }
 
   return {
