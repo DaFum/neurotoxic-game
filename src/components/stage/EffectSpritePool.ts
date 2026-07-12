@@ -17,7 +17,7 @@ export type EffectSprite = Sprite & {
  * Manages a reusable pool of effect sprites to minimize memory allocation overhead.
  *
  * @remarks
- * Pre-allocates and recycles `EffectSprite` instances. By pulling from this pool instead
+ * Reuses `EffectSprite` instances and creates them on demand. By pulling from this pool instead
  * of instantiating new sprites for every visual effect, garbage collection pressure is
  * significantly reduced during high-intensity sequences.
  */
@@ -34,8 +34,12 @@ export class EffectSpritePool extends BaseSpritePool<EffectSprite> {
   /**
    * Retrieves an available effect sprite from the pool or creates a new one if the pool is empty.
    *
+   * @remarks
+   * Note that pooled lifecycle state (such as `life`) must be reset by callers, as this method
+   * only updates the texture and anchor for pooled sprites.
+   *
    * @param texture - The texture to apply to the sprite, or null to use a default white texture.
-   * @returns An initialized effect sprite ready for rendering.
+   * @returns An effect sprite from the pool or newly created on demand.
    */
   getSprite(texture: Texture | null): EffectSprite {
     if (this.spritePool.length > 0) {
