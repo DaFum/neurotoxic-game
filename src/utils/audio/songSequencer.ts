@@ -19,21 +19,21 @@ const handleSongEnded = (
   const currentState = gameStateRef.current
   if (!currentState) return
 
-  const currentScore = currentState.score || 0
+  const currentScore = currentState.score ?? 0
   const scoreDelta = Math.max(
     0,
-    currentScore - (currentState.currentSongStartScore || 0)
+    currentScore - (currentState.currentSongStartScore ?? 0)
   )
 
-  const currentPerfects = currentState.stats?.perfectHits || 0
-  const currentMisses = currentState.stats?.misses || 0
+  const currentPerfects = currentState.stats?.perfectHits ?? 0
+  const currentMisses = currentState.stats?.misses ?? 0
   const perfectsDelta = Math.max(
     0,
-    currentPerfects - (currentState.currentSongStartPerfectHits || 0)
+    currentPerfects - (currentState.currentSongStartPerfectHits ?? 0)
   )
   const missesDelta = Math.max(
     0,
-    currentMisses - (currentState.currentSongStartMisses || 0)
+    currentMisses - (currentState.currentSongStartMisses ?? 0)
   )
 
   const totalDelta = perfectsDelta + missesDelta

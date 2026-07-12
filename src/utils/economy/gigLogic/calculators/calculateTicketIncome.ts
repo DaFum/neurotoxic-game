@@ -66,7 +66,7 @@ export const calculateTicketIncome = (
   }
 
   // Regional reputation bonus/penalty
-  const regionRep = context.regionRep || 0
+  const regionRep = context.regionRep ?? 0
   if (regionRep < 0) {
     fillRate -= Math.min(0.2, Math.abs(regionRep) * 0.002) // -2% per -10 rep, max -20%
   } else if (regionRep > 0) {
@@ -89,7 +89,7 @@ export const calculateTicketIncome = (
   fillRate = Math.min(1.0, Math.max(0.1, fillRate)) // Clamp 10% - 100%
 
   const ticketsSold = Math.floor(baseCapacity * fillRate)
-  const revenue = Math.max(0, ticketsSold * (Math.max(0, ticketPrice) || 0))
+  const revenue = Math.max(0, ticketsSold * (Math.max(0, ticketPrice) ?? 0))
 
   return {
     revenue,

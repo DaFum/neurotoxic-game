@@ -79,7 +79,7 @@ import {
   startCrowdfund as startCrowdfundAction
 } from './assetActionCreators'
 
-export type BaseGameDispatchActions = {
+type BaseGameDispatchActions = {
   changeScene: (scene: Parameters<typeof createChangeSceneAction>[0]) => void
   updatePlayer: (
     updates: Parameters<typeof createUpdatePlayerAction>[0]

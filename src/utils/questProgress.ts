@@ -18,58 +18,7 @@ import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 /**
  * Legacy quest progress event shapes accepted for save and caller compatibility.
  */
-export type LegacyQuestProgressEvent =
-  | {
-      type: 'gig_completed'
-      score: number
-      capacity: number
-      venueId: string
-      region: string
-    }
-  | {
-      type: 'good_gig'
-      score: number
-      capacity: number
-      venueId: string
-      region: string
-    }
-  | {
-      type: 'small_venue_good_gig'
-      score: number
-      capacity: number
-      venueId: string
-      region: string
-    }
-  | {
-      type: 'social_post'
-      postType: string
-      followersGain: number
-      platform?: string
-      category?: string
-      success?: boolean
-    }
-  | {
-      type: 'followers_gained'
-      amount: number
-      platform?: string
-      category?: string
-    }
-  | { type: 'fame_gained'; amount: number; region?: string }
-  | { type: 'money_earned'; amount: number }
-  | { type: 'harmony_recovered'; amount: number; newHarmony: number }
-  | { type: 'item_collected'; itemId: string }
-  | {
-      type: 'brand_deal_completed'
-      dealId: string
-      dealType?: string
-      brandAlignment?: string
-    }
-  | { type: 'travel_completed'; region: string }
-
-/**
- * Quest progress event accepted by the progress engine.
- */
-export type QuestProgressEvent = QuestEvent | LegacyQuestProgressEvent
+export type QuestProgressEvent = QuestEvent
 
 const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   gig_completed: 'gig.completed',

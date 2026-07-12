@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react'
 
 /** Re-entrancy guard state for post-gig handlers: a synchronous ref plus its React-state mirror. */
-export type ProcessingGuardReturn = {
+type ProcessingGuardReturn = {
   isProcessingAction: boolean
   isProcessingActionRef: React.MutableRefObject<boolean>
   setIsProcessingAction: React.Dispatch<React.SetStateAction<boolean>>

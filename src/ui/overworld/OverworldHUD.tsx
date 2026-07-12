@@ -16,7 +16,7 @@ import {
 import { translateLocation } from '../../utils/locationI18n'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
-export interface OverworldHUDProps {
+interface OverworldHUDProps {
   player?: PlayerState
   band?: BandState
 }

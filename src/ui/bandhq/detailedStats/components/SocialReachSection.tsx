@@ -82,7 +82,7 @@ export const SocialReachSection = ({
             label={t('ui:stats.repCooldown', {
               defaultValue: 'Rep Cooldown'
             })}
-            value={social.reputationCooldown || 0}
+            value={social.reputationCooldown ?? 0}
             subtext={t('ui:stats.repCooldownDesc', {
               defaultValue: 'Days until rep-gated posts clear'
             })}

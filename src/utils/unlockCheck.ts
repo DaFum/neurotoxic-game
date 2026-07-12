@@ -144,8 +144,8 @@ export const checkTraitUnlocks = (
     // Social Manager (Lars): 1000+ Followers on any channel
     if (Lars && !hasTrait(Lars, 'social_manager')) {
       const maxFollowers = Math.max(
-        social.instagram || 0,
-        social.tiktok || 0,
+        social.instagram ?? 0,
+        social.tiktok ?? 0,
         social.youtube || 0
       )
       if (maxFollowers >= 1000) {

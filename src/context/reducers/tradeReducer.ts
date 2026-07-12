@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../../utils/finiteNumber';
 import type { GameState, ToastPayload, TradeVoidItemPayload } from '../../types'
 import { logger } from '../../utils/logger'
 import {
@@ -71,7 +72,7 @@ export const handleTradeVoidItem = (
     return state
   }
   const cost = clampNonNegative(parsedCost)
-  const currentFame = Number(state.player.fame) || 0
+  const currentFame = finiteNumberOr(state.player.fame, 0)
 
   if (currentFame < cost) {
     logger.warn('GameState', 'Insufficient fame for void trade')

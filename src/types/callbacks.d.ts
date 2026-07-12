@@ -14,7 +14,7 @@ export type RandomFn = () => number
  * @typeParam TResult - Optional success/result value returned synchronously or
  * through a promise.
  */
-export type AsyncCallback<TResult = void> = () =>
+type AsyncCallback<TResult = void> = () =>
   TResult | void | Promise<TResult | void>
 /**
  * Asynchronous callback that resolves without a value.

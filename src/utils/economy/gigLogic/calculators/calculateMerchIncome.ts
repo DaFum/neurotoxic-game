@@ -69,7 +69,7 @@ export const calculateMerchIncome = (
     finiteNumberOr(context?.controversyLevel, 0) >= 40 &&
     finiteNumberOr(context?.loyalty, 0) >= 20
   ) {
-    const loyalty = typeof context.loyalty === 'number' ? context.loyalty : 0
+    const loyalty = finiteNumberOr(context.loyalty, 0)
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({

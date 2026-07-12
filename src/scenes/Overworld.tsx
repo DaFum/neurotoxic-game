@@ -109,7 +109,7 @@ export const Overworld = () => {
   }, [changeScene])
 
   const currentNode = gameMap?.nodes[player.currentNodeId]
-  const currentLayer = currentNode?.layer || 0
+  const currentLayer = currentNode?.layer ?? 0
 
   useAmbientResume()
 

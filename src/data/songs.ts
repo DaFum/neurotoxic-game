@@ -78,7 +78,7 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
     const bpm = Math.max(1, song.bpm || 120)
     const lastNoteTimeSeconds = (lastNoteTick / tpb) * (60 / bpm)
     const duration = Math.ceil(
-      Math.max((song.durationMs || 0) / 1000, lastNoteTimeSeconds + 4)
+      Math.max((song.durationMs ?? 0) / 1000, lastNoteTimeSeconds + 4)
     )
 
     return {
@@ -119,7 +119,7 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
       tpb,
       sourceMid: song.sourceMid,
       sourceOgg: song.sourceOgg || null,
-      excerptStartMs: song.excerptStartMs || 0,
+      excerptStartMs: song.excerptStartMs ?? 0,
       excerptEndMs: excerptEndValue,
       durationMs: durationMsValue,
       excerptDurationMs:

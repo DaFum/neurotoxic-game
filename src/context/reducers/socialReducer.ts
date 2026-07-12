@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../../utils/finiteNumber';
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
@@ -318,10 +319,10 @@ export const handleUpdateSocial = (
   // and reports as failed. Crossing-only so deals added at high controversy by
   // other flows are not retroactively voided.
   const prevControversy = clampControversyLevel(
-    Number(state.social.controversyLevel) || 0
+    finiteNumberOr(state.social.controversyLevel, 0)
   )
   const nextControversy = clampControversyLevel(
-    Number(nextState.social.controversyLevel) || 0
+    finiteNumberOr(nextState.social.controversyLevel, 0)
   )
   const activeDeals = nextState.social.activeDeals
   if (
@@ -341,7 +342,7 @@ export const handleUpdateSocial = (
       if (alignment && !isForbiddenKey(alignment)) {
         nextBrandReputation[alignment] = Math.max(
           0,
-          (nextBrandReputation[alignment] || 0) - DEAL_BREAK_TRUST_PENALTY
+          (nextBrandReputation[alignment] ?? 0) - DEAL_BREAK_TRUST_PENALTY
         )
       }
     }
@@ -573,9 +574,9 @@ export const handleMerchPress = (
     return state
   }
 
-  const currentLoyalty = Number(state.social.loyalty) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
-  const currentFame = Number(state.player.fame) || 0
+  const currentLoyalty = finiteNumberOr(state.social.loyalty, 0)
+  const currentControversy = finiteNumberOr(state.social.controversyLevel, 0)
+  const currentFame = finiteNumberOr(state.player.fame, 0)
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)
@@ -667,9 +668,9 @@ const applyZealotryAction = (
     return state
   }
 
-  const currentFame = Number(state.player.fame) || 0
-  const currentZealotry = Number(state.social.zealotry) || 0
-  const currentControversy = Number(state.social.controversyLevel) || 0
+  const currentFame = finiteNumberOr(state.player.fame, 0)
+  const currentZealotry = finiteNumberOr(state.social.zealotry, 0)
+  const currentControversy = finiteNumberOr(state.social.controversyLevel, 0)
 
   const nextMoney = clampPlayerMoney(currentMoney - cost)
   const nextHarmony = clampBandHarmony(currentHarmony - harmonyCost)

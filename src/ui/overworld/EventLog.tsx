@@ -5,7 +5,7 @@ import { translateLocation } from '../../utils/locationI18n'
 /**
  * Translation and location context used to append overworld event log entries.
  */
-export interface EventLogProps {
+interface EventLogProps {
   t: import('../../types/callbacks').TranslationCallback
   day: number
   locationId: string

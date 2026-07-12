@@ -12,7 +12,7 @@ const VOID_TRADER_CONTROVERSY_THRESHOLD = 30
 /**
  * Close behavior and optional wrapper styling for the Band HQ modal.
  */
-export interface BandHQProps {
+interface BandHQProps {
   onClose: (e?: React.MouseEvent | React.KeyboardEvent | Event) => void
   className?: string
 }
