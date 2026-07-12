@@ -1,3 +1,4 @@
+import { finiteNumberOr } from './finiteNumber';
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import { isLooseRecord } from './objectUtils'
@@ -145,7 +146,7 @@ export const checkTraitUnlocks = (
     if (Lars && !hasTrait(Lars, 'social_manager')) {
       const maxFollowers = Math.max(
         social.instagram ?? 0,
-        social.tiktok ?? 0,
+        finiteNumberOr(social.tiktok, 0),
         social.youtube || 0
       )
       if (maxFollowers >= 1000) {

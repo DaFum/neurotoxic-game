@@ -1,11 +1,11 @@
-import { finiteNumberOr } from '../../utils/finiteNumber';
 import type { GameState, ToastPayload, TradeVoidItemPayload } from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampPlayerFame,
   calculateFameLevel,
   clampNonNegative,
-  isForbiddenKey
+  isForbiddenKey,
+  finiteNumberOr
 } from '../../utils/gameState'
 import {
   isLooseRecord,

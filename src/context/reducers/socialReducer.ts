@@ -1,4 +1,3 @@
-import { finiteNumberOr } from '../../utils/finiteNumber';
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
@@ -19,7 +18,8 @@ import {
   clampZealotry,
   clampControversyLevel,
   clampNonNegative,
-  isFiniteNumber
+  isFiniteNumber,
+  finiteNumberOr
 } from '../../utils/gameState'
 import {
   sanitizeSuccessToast,

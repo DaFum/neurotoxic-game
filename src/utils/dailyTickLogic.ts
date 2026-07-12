@@ -34,7 +34,7 @@ const updatePlayerFinances = (
   let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
-  if ((nextSocial.newsletter ?? 0) >= 1000 && rng() < 0.3) {
+  if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {
     dailyCost -= Math.floor(finiteNumberOr(nextSocial.newsletter, 0) / 100) * 5
   }
 
@@ -134,7 +134,7 @@ const updateBandHarmony = (
   }
 
   // Bad Show Streak Penalty
-  if ((nextPlayer.stats?.consecutiveBadShows ?? 0) > 0) {
+  if (finiteNumberOr(nextPlayer.stats?.consecutiveBadShows, 0) > 0) {
     const nextHarmonyBadShows = clampBandHarmony(
       nextBand.harmony - Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
     )
@@ -193,7 +193,7 @@ const updateSocialDecay = (
   }
 
   // Reputation cooldown decay
-  if ((nextSocial.reputationCooldown ?? 0) > 0) {
+  if (finiteNumberOr(nextSocial.reputationCooldown, 0) > 0) {
     nextSocial.reputationCooldown = Math.max(
       0,
       nextSocial.reputationCooldown - 1
@@ -201,7 +201,7 @@ const updateSocialDecay = (
   }
 
   // TikTok Viral Surge Perk
-  if ((nextSocial.tiktok ?? 0) > 10000 && rng() < 0.05) {
+  if (finiteNumberOr(nextSocial.tiktok, 0) > 10000 && rng() < 0.05) {
     nextSocial.viral += 1 // Free viral token
   }
 
@@ -211,20 +211,20 @@ const updateSocialDecay = (
     nextPlayer.day - (nextSocial.lastGigDay ?? nextPlayer.day)
   if (daysSinceActivity >= 3) {
     nextSocial.instagram = applyReputationDecay(
-      nextSocial.instagram ?? 0,
+      finiteNumberOr(nextSocial.instagram, 0),
       daysSinceActivity
     )
     nextSocial.tiktok = applyReputationDecay(
-      nextSocial.tiktok ?? 0,
+      finiteNumberOr(nextSocial.tiktok, 0),
       daysSinceActivity
     )
     nextSocial.youtube = applyReputationDecay(
-      nextSocial.youtube ?? 0,
+      finiteNumberOr(nextSocial.youtube, 0),
       daysSinceActivity
     )
     // Newsletter decay (often overlooked, now explicit)
     nextSocial.newsletter = applyReputationDecay(
-      nextSocial.newsletter ?? 0,
+      finiteNumberOr(nextSocial.newsletter, 0),
       daysSinceActivity
     )
   }

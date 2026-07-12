@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../utils/finiteNumber';
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember, GameState, Platform } from '../types'
 import { hasActiveSponsorship } from '../utils/gameState'
@@ -40,7 +41,7 @@ const getCost = (inf: unknown): number => {
   let base = 100
   if (infObj.tier === 'Macro') base = 300
   if (infObj.tier === 'Mega') base = 800
-  const discount = Math.min(0.5, (infObj.score ?? 0) * 0.005)
+  const discount = Math.min(0.5, finiteNumberOr(infObj.score, 0) * 0.005)
   return Math.floor(base * (1 - discount))
 }
 
@@ -206,7 +207,7 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
-    condition: ({ social }: GameState) => (social?.instagram ?? 0) > 2000,
+    condition: ({ social }: GameState) => finiteNumberOr(social?.instagram, 0) > 2000,
     resolve: () => ({
       type: 'FIXED',
       success: true,
@@ -228,7 +229,7 @@ export const POST_OPTIONS = [
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.STORY],
     condition: ({ social, activeQuests }: GameState) =>
-      (social?.reputationCooldown ?? 0) === 0 &&
+      finiteNumberOr(social?.reputationCooldown, 0) === 0 &&
       hasActiveQuest(activeQuests, QUEST_APOLOGY_TOUR),
     resolve: () => ({
       type: 'FIXED',
@@ -251,8 +252,8 @@ export const POST_OPTIONS = [
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
     condition: ({ social }: GameState) =>
-      (social?.controversyLevel ?? 0) >= 50 &&
-      (social?.reputationCooldown ?? 0) === 0,
+      finiteNumberOr(social?.controversyLevel, 0) >= 50 &&
+      finiteNumberOr(social?.reputationCooldown, 0) === 0,
     resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
       if (diceRoll < 0.55) {
         return {

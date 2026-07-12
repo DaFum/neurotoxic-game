@@ -123,7 +123,7 @@ export function hasAudioAsset(filename: string): boolean {
  */
 function getAudioBufferSize(buffer: AudioBuffer | null | undefined): number {
   if (!buffer) return 0
-  return (buffer.length ?? 0) * (buffer.numberOfChannels || 0) * 4
+  return (buffer.length ?? 0) * (buffer.numberOfChannels ?? 0) * 4
 }
 
 /**
