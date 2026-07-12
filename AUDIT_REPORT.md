@@ -1,83 +1,61 @@
-# Neurotoxic Codebase Audit: Categorized Findings
+# Neurotoxic Codebase Audit Report
+
+Generated on: 2026-07-12
+Scope: `src/`
+Commit SHA: `756af2b973237a7e005ec2543307ffc351515f0c`
+Tools Used: `jscpd` for duplicates, custom python scripts (regex/ast) and `rg` for orphans.
 
 ## 1. DUPLICATES
 
-**HIGH SEVERITY**
+### Exact Duplicates & Near Duplicates
 
-- **Near-Duplicate Event Choices**: `src/utils/eventEngine/resolveChoice.ts` lines 111-124 and 146-157 contain near-identical logic for processing choice consequences.
-  - _Recommended Action_: [FIXED] MERGE into a single utility function for evaluating effect bounds.
-- **Quest Configuration Clones**: `src/data/quests/quest_alchemist.ts` (13-22) and `src/data/quests/quest_crisis_manager.ts` (20-29) contain duplicated structural shapes.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
 
-**MEDIUM SEVERITY**
+- **Severity: HIGH** | `src/components/hud/GigControlsCluster.tsx:72` & `src/ui/HUD.tsx:107`
+  - **Excerpt**: `const canTravel = state.player.location !== ...`
+  - **Description**: Near identical React component logic for Gig controls.
+  - **Action**: MERGE into `GigControlsCluster` and import in `HUD`.
 
-- **Duplicate CSS Rules**: `src/components/assets/assetsHub.css` has duplicated layout rules across blocks (78:21 vs 255:17, 95:21 vs 236:27, 141:28 vs 340:44).
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Duplicate Sprite Pool Logic**: `src/components/stage/EffectSpritePool.ts` (62-74) and `src/components/stage/NoteSpritePool.ts` (200-215) share identical instance-reset logic.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Component Duplication**: `src/scenes/mainmenu/MainMenuFooter.tsx` (7-15) and `src/scenes/mainmenu/MainMenuSecondaryButtons.tsx` (19-27) duplicate the same button row structure.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **HUD Logic Duplication**: `src/ui/HUD.tsx` (188-202, 268-275) and `src/ui/overworld/OverworldHUD.tsx` (158-172, 192-199) duplicate core layout and stat-fetching logic.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
 
-**LOW SEVERITY**
 
-- **Duplicate Types**: `NoteTextures` is defined in both `src/components/stage/NoteSpritePool.ts:28` and `src/components/stage/NoteTextureManager.ts:9`.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Duplicate Types**: `CableId` is defined in both `src/scenes/kabelsalat/kabelsalatConstants.ts:54` and `src/scenes/kabelsalat/components/ConnectionPaths.tsx:6`.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Duplicate Interfaces**: The `Props` interface is redefined across over 10 different modal components in `src/components/assets/` (e.g. `SellConfirmModal.tsx`, `RiskEventModal.tsx`, etc.).
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
+
+- **Severity: MED** | `src/utils/assetSelectors/moduleUnlock.ts:112` & `src/utils/assetSelectors/moduleUnlock.ts:196`
+  - **Excerpt**: `const checkUnlock = (module: ModuleDef) => ...`
+  - **Description**: Duplicate module unlock checks.
+  - **Action**: MERGE into a shared utility function.
 
 ## 2. ORPHANED / UNINTEGRATED CODE
 
-**HIGH SEVERITY**
+- **Severity: LOW** | `src/utils/rhythmGameLoopUtils.ts:42`
+  - **Description**: Export `handleOverlayResume` is not used anywhere else in `src/`. This looks like a partially built feature intended for use when pausing/resuming the game loop via overlays, but never integrated. Missing call site in overlay logic.
+  - **Action**: INTEGRATE into overlay UI or DELETE if overlay pausing was scrapped.
 
-- **`useTourbusLogic` Constants**: `BASE_SPEED` and `TARGET_DISTANCE` in `src/hooks/minigames/useTourbusLogic.ts` are exported but unused anywhere else.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Overworld SVG Caching Test Util**: `__resetBaseAssetPathCache` exported from `src/utils/audio/playbackUtils.ts` is only used for tests (if at all) but exported alongside runtime code.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
+- **Severity: LOW** | `src/utils/rhythmGameLoopUtils.ts:122`
+  - **Description**: Export `processToxicMode` is not used anywhere else in `src/`. The name implies a game mechanic that was developed but not wired into the main loop. Lack of imports suggests it's an unintegrated feature.
+  - **Action**: INTEGRATE into the `RhythmGameLoop` if the feature is desired.
 
-**MEDIUM SEVERITY**
-
-- **Orphaned Types**: Types like `CalculatePostGigStateParams`, `ResolvedPostResult`, `SpinStoryMoneyUpdate` from `src/utils/postGig/index.ts` and `HandlerDispatchers`, `ProcessingGuardReturn` from `src/hooks/postGig/handlers/index.ts` are exported but unused outside their index file.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **BandHQ Detailed Stats Types**: `CharacterDefinition`, `PlayerData`, `SocialData` etc in `src/ui/bandhq/detailedStats/index.ts` are exported but unused.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
+- **Severity: MED** | `src/domain/questEffects.ts:86`
+  - **Description**: Export `getBrandReputationKey` is not used anywhere else in `src/`. It appears to be an internal utility for quest effects that was exported but never needed externally. Clear orphan.
+  - **Action**: DELETE the export keyword if used internally, otherwise DELETE the function.
 
 ## 3. INCONSISTENCIES
 
-**HIGH SEVERITY**
-
-- **Action Type Usage**: The codebase uses both `ActionTypes.XXX` enum access and string literals (e.g., in reducers checking `case 'ADVANCE_DAY':` vs `case ActionTypes.ADVANCE_DAY:`).
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-
-**MEDIUM SEVERITY**
-
-- **Locale Files Structure**: While we couldn't run a full parser, manual inspection implies that i18n keys are sometimes hardcoded instead of using the `t('key')` function properly, based on memory guidelines.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **State Updates**: Some action creators validate parameters, but reducers don't consistently re-validate, creating a risk if state updates are called directly.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Missing TSDoc**: Many interfaces do not use TSDoc properly as per the style guidelines `@remarks` / `@returns` without types.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
+- **Severity: HIGH** | `src/context/reducers/clinicReducer.ts` vs `src/context/reducers/systemReducer.ts`
+  - **Description**: Clamps for member stats (`clampMemberMood`, `clampMemberStamina`) are applied inconsistently or implemented differently across multiple reducers.
+  - **Action**: FIX by ensuring `finiteNumberOr` is always used before arithmetic, and clamp functions are always applied on the final result across all reducers as per `AGENTS.md` rules.
 
 ## 4. DEAD / UNREACHABLE CODE
 
-**HIGH SEVERITY**
+- **Severity: LOW** | `src/hooks/usePreGigLogic.ts:56`
+  - **Description**: `PreGigLogicReturn` type is exported but never used outside the file. It's an unreachable type definition.
+  - **Action**: DELETE export.
 
-- **Testing DB In Main Code**: `_CONTRABAND_DB_FOR_TESTING` in `src/data/contraband.ts` is exported purely for testing and pollutes production bundles.
-  - _Recommended Action_: [FIXED] DELETE or move to tests.
+- **Severity: LOW** | `src/hooks/usePostGigHandlers.ts:17`
+  - **Description**: `UsePostGigHandlersReturn` type is exported but never used outside the file. Unreachable type.
+  - **Action**: DELETE export.
 
-**MEDIUM SEVERITY**
+- **Severity: LOW** | `src/utils/brandDealI18n.ts:16`
+  - **Description**: `BrandDealDisplay` type is exported but never used anywhere. Dead code.
+  - **Action**: DELETE export.
 
-- **Legacy Event Engine Shapes**: The `EngineGameState` and `TemplateContext` in `src/utils/eventEngine/index.ts` seem largely unintegrated with the modern React context-driven game loop, though occasionally cast via `unknown`.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
 
-## 5. MISSING INTEGRATION
 
-**HIGH SEVERITY**
-
-- **Asset Foreclosure Loop**: While asset foreclosure via zero-condition is integrated with `ADVANCE_DAY`, loan/payment delinquency logic and `ActionTypes.DISMISS_FORECLOSURE_NOTICE` remain unintegrated.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
-- **Risk Events**: `ActionTypes.SET_PENDING_RISK_EVENT` exists in the reducer, and a `RiskEventModal` exists in `src/components/assets/`, but the trigger to actually roll for and apply a risk event to an asset seems unintegrated into the main loop.
-  - _Recommended Action_: [VERIFIED FALSE POSITIVE] NO ACTION REQUIRED
