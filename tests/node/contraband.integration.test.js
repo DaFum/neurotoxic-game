@@ -1,10 +1,11 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
-  _CONTRABAND_DB_FOR_TESTING as CONTRABAND_DB,
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY
 } from '../../src/data/contraband'
+
+const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
 /**
  * Integration tests for contraband data usage patterns
