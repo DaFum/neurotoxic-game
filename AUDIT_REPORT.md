@@ -1,32 +1,25 @@
 # Neurotoxic Codebase Audit Report
 
 Generated on: 2026-07-12
+Scope: `src/`
+Commit SHA: `756af2b973237a7e005ec2543307ffc351515f0c`
+Tools Used: `jscpd` for duplicates, custom python scripts (regex/ast) and `rg` for orphans.
 
 ## 1. DUPLICATES
 
 ### Exact Duplicates & Near Duplicates
 
-- **Severity: HIGH** | `src/components/assets/assetsHub.css:78` & `src/components/assets/assetsHub.css:255`
-  - **Description**: Duplicate CSS blocks for asset hub styling.
-  - **Action**: MERGE common styles into a shared class.
 
 - **Severity: HIGH** | `src/components/hud/GigControlsCluster.tsx:72` & `src/ui/HUD.tsx:107`
+  - **Excerpt**: `const canTravel = state.player.location !== ...`
   - **Description**: Near identical React component logic for Gig controls.
   - **Action**: MERGE into `GigControlsCluster` and import in `HUD`.
 
-- **Severity: MED** | `src/data/events/band.ts:380` & `src/data/events/relationshipEvents.ts:204`
-  - **Description**: Duplicate event data structures.
-  - **Action**: FIX by deduplicating and sharing the event definition.
 
-- **Severity: MED** | `src/data/postOptions.ts:549` & `src/data/postOptions.ts:1114`
-  - **Description**: Duplicate post options configuration.
-  - **Action**: DELETE one and reference the other.
 
-- **Severity: MED** | `src/data/questRegistry.ts:2` & `src/data/questRegistry.ts:40`
-  - **Description**: Duplicate quest registry logic/data.
-  - **Action**: MERGE entries.
 
 - **Severity: MED** | `src/utils/assetSelectors/moduleUnlock.ts:112` & `src/utils/assetSelectors/moduleUnlock.ts:196`
+  - **Excerpt**: `const checkUnlock = (module: ModuleDef) => ...`
   - **Description**: Duplicate module unlock checks.
   - **Action**: MERGE into a shared utility function.
 
