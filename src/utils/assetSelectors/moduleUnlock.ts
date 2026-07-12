@@ -2,8 +2,7 @@ import type { GameState } from '../../types'
 import type {
   AssetModule,
   LongTermAsset,
-  SlotType,
-  ModuleUnlockReq
+  SlotType
 } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
@@ -89,56 +88,6 @@ const allInstalledModuleIds = (state: GameState): Set<string> => {
 }
 
 /**
- * Pure validator: returns true iff every AND-combined condition in
- * `module.unlock` is currently met by the game state. Note: `minChassisTier`
- * is explicitly excluded from this check as it requires context of a specific asset.
- * Lock reasons are NOT collected here — use `getLockReasons` for that.
- *
- * @param module - Asset module whose unlock requirements should be evaluated.
- * @param state - Current game state providing fame, money, flags, skills, and installed modules.
- * @returns True when every unlock requirement is currently satisfied.
- */
-export const isModuleUnlocked = (
-  module: AssetModule,
-  state: GameState
-): boolean => {
-  const u: ModuleUnlockReq = module.unlock
-  if (u.minFame !== undefined && state.player.fame < u.minFame) return false
-  if (u.minMoney !== undefined && state.player.money < u.minMoney) return false
-  if (u.minScenePresence !== undefined) {
-    const scene =
-      (state.social as { scenePresence?: number }).scenePresence ?? 0
-    if (scene < u.minScenePresence) return false
-  }
-  if (u.requiredStoryFlags) {
-    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
-      const f = u.requiredStoryFlags[i]
-      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f))
-        return false
-    }
-  }
-  if (u.requiredMemberSkill) {
-    const { memberId, skill, tier } = u.requiredMemberSkill
-    if (!memberHasSkill(state, skill, tier, memberId)) return false
-  }
-  if (u.requiredOtherModuleInstalled !== undefined) {
-    const required = Array.isArray(u.requiredOtherModuleInstalled)
-      ? u.requiredOtherModuleInstalled
-      : [u.requiredOtherModuleInstalled]
-    const installed = allInstalledModuleIds(state)
-    let anySatisfied = false
-    for (const r of required) {
-      if (installed.has(r)) {
-        anySatisfied = true
-        break
-      }
-    }
-    if (!anySatisfied) return false
-  }
-  return true
-}
-
-/**
  * Collects the unmet unlock conditions for a module, in a structured form
  * the UI can render as locale-driven badges. Empty array means unlocked.
  */
@@ -161,6 +110,122 @@ export interface LockReason {
   refs?: string[]
 }
 
+const checkCommonUnlockRequirements = (
+  module: AssetModule,
+  state: GameState,
+  reasons: LockReason[],
+  collectReasons: boolean
+): boolean => {
+  const u = module.unlock
+  let allSatisfied = true
+
+  /**
+   * Records a lock reason if required. Returns `true` if the caller should
+   * stop checking and immediately short-circuit (i.e. we are only checking
+   * if the module is unlocked and do not need to collect all reasons).
+   */
+  const shouldShortCircuit = (reason: LockReason): boolean => {
+    if (!collectReasons) return true
+    reasons.push(reason)
+    allSatisfied = false
+    return false
+  }
+
+  if (
+    u.minFame !== undefined &&
+    state.player.fame < u.minFame &&
+    shouldShortCircuit({ kind: 'fame', amount: u.minFame })
+  ) {
+    return false
+  }
+
+  if (
+    u.minMoney !== undefined &&
+    state.player.money < u.minMoney &&
+    shouldShortCircuit({ kind: 'money', amount: u.minMoney })
+  ) {
+    return false
+  }
+
+  if (u.minScenePresence !== undefined) {
+    const scene =
+      (state.social as { scenePresence?: number }).scenePresence ?? 0
+    if (
+      scene < u.minScenePresence &&
+      shouldShortCircuit({ kind: 'scene', amount: u.minScenePresence })
+    ) {
+      return false
+    }
+  }
+
+  if (u.requiredStoryFlags) {
+    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
+      const f = u.requiredStoryFlags[i]
+      if (
+        f !== undefined &&
+        !hasStoryFlag(state.activeStoryFlags, f) &&
+        shouldShortCircuit({ kind: 'story', ref: f })
+      ) {
+        return false
+      }
+    }
+  }
+
+  if (u.requiredMemberSkill) {
+    const { memberId, skill, tier } = u.requiredMemberSkill
+    if (
+      !memberHasSkill(state, skill, tier, memberId) &&
+      shouldShortCircuit({
+        kind: memberId !== undefined ? 'skill' : 'skillAny',
+        amount: tier,
+        ref: memberId !== undefined ? memberId : skill
+      })
+    ) {
+      return false
+    }
+  }
+
+  if (u.requiredOtherModuleInstalled !== undefined) {
+    const required = Array.isArray(u.requiredOtherModuleInstalled)
+      ? u.requiredOtherModuleInstalled
+      : [u.requiredOtherModuleInstalled]
+    const installed = allInstalledModuleIds(state)
+    let anySatisfied = false
+    for (let i = 0; i < required.length; i++) {
+      const req = required[i]
+      if (req !== undefined && installed.has(req)) {
+        anySatisfied = true
+        break
+      }
+    }
+    if (
+      !anySatisfied &&
+      shouldShortCircuit({ kind: 'otherModule', refs: [...required] })
+    ) {
+      return false
+    }
+  }
+
+  return allSatisfied
+}
+
+/**
+ * Pure validator: returns true iff every AND-combined condition in
+ * `module.unlock` is currently met by the game state. Note: `minChassisTier`
+ * is explicitly excluded from this check as it requires context of a specific asset.
+ * Lock reasons are NOT collected here — use `getLockReasons` for that.
+ *
+ * @param module - Asset module whose unlock requirements should be evaluated.
+ * @param state - Current game state providing fame, money, flags, skills, and installed modules.
+ * @returns True when every unlock requirement is currently satisfied.
+ */
+export const isModuleUnlocked = (
+  module: AssetModule,
+  state: GameState
+): boolean => {
+  return checkCommonUnlockRequirements(module, state, [], false)
+}
+
 /**
  * Returns unmet unlock requirements for a module in the current state.
  *
@@ -175,61 +240,16 @@ export const getLockReasons = (
   asset?: LongTermAsset
 ): LockReason[] => {
   const reasons: LockReason[] = []
+
   const u = module.unlock
-  if (u.minFame !== undefined && state.player.fame < u.minFame) {
-    reasons.push({ kind: 'fame', amount: u.minFame })
-  }
-  if (u.minMoney !== undefined && state.player.money < u.minMoney) {
-    reasons.push({ kind: 'money', amount: u.minMoney })
-  }
-  if (u.minScenePresence !== undefined) {
-    const scene =
-      (state.social as { scenePresence?: number }).scenePresence ?? 0
-    if (scene < u.minScenePresence) {
-      reasons.push({ kind: 'scene', amount: u.minScenePresence })
-    }
-  }
   if (asset !== undefined && u.minChassisTier !== undefined) {
     if (asset.chassisTier < u.minChassisTier) {
       reasons.push({ kind: 'chassisTier', amount: u.minChassisTier })
     }
   }
-  if (u.requiredStoryFlags) {
-    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
-      const f = u.requiredStoryFlags[i]
-      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) {
-        reasons.push({ kind: 'story', ref: f })
-      }
-    }
-  }
-  if (u.requiredMemberSkill) {
-    const { memberId, skill, tier } = u.requiredMemberSkill
-    if (!memberHasSkill(state, skill, tier, memberId)) {
-      reasons.push({
-        kind: memberId !== undefined ? 'skill' : 'skillAny',
-        amount: tier,
-        ref: memberId !== undefined ? memberId : skill
-      })
-    }
-  }
-  if (u.requiredOtherModuleInstalled !== undefined) {
-    const required = Array.isArray(u.requiredOtherModuleInstalled)
-      ? u.requiredOtherModuleInstalled
-      : [u.requiredOtherModuleInstalled]
-    const installed = allInstalledModuleIds(state)
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocations.
-    let anySatisfied = false
-    for (let i = 0; i < required.length; i++) {
-      const req = required[i]
-      if (req !== undefined && installed.has(req)) {
-        anySatisfied = true
-        break
-      }
-    }
-    if (!anySatisfied) {
-      reasons.push({ kind: 'otherModule', refs: [...required] })
-    }
-  }
+
+  checkCommonUnlockRequirements(module, state, reasons, true)
+
   return reasons
 }
 

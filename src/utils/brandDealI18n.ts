@@ -13,7 +13,7 @@ interface BrandDealDisplayInput {
 /**
  * Localized display data for an active or catalog-backed brand deal.
  */
-export interface BrandDealDisplay {
+interface BrandDealDisplay {
   key: string
   name: string
   description?: string

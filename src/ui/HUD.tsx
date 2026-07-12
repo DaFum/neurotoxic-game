@@ -1,22 +1,18 @@
-import { useState, memo } from 'react'
+import { memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import {
   Map as MapIcon,
   DollarSign,
-  Volume2,
-  VolumeX,
-  HelpCircle,
   Skull
 } from 'lucide-react'
-import { useAudioControl } from '../hooks/useAudioControl'
 import { formatCurrency } from '../utils/numberUtils'
-import { Tooltip, KeyboardShortcutsPanel, useKeyboardShortcuts } from './shared'
 import {
   BandStatusPanel,
   VanStatusMiniBars
 } from './hud/shared/SharedHUDComponents'
+import { GigControlsCluster } from '../components/hud/GigControlsCluster'
 import { translateLocation } from '../utils/locationI18n'
 import { GAME_PHASES } from '../context/gameConstants'
 
@@ -52,18 +48,6 @@ export const HUD = memo(() => {
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, playerLocation, playerLocation)
-  const [showHelp, setShowHelp] = useState(false)
-  const { audioState, handleAudioChange } = useAudioControl()
-
-  // Global keyboard shortcuts
-  useKeyboardShortcuts(
-    isGigScene
-      ? { setShowHelp: () => {} }
-      : {
-          setShowHelp,
-          onToggleMute: handleAudioChange.toggleMute
-        }
-  )
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
@@ -104,62 +88,7 @@ export const HUD = memo(() => {
         {/* During gigs these controls live in the GigHUD's collapsed
             controls cluster; keyboard shortcuts stay registered above. */}
         {!isGigScene && (
-          <div className='flex gap-1.5'>
-            <Tooltip
-              content={
-                audioState.isMuted
-                  ? t('ui:button.unmute', { defaultValue: 'Unmute (M)' })
-                  : t('ui:button.mute', { defaultValue: 'Mute (M)' })
-              }
-            >
-              <button
-                type='button'
-                onClick={handleAudioChange.toggleMute}
-                aria-label={t('ui:aria.toggleMuteSystem', {
-                  defaultValue: 'Toggle mute system'
-                })}
-                aria-pressed={audioState.isMuted}
-                className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
-                  audioState.isMuted
-                    ? 'border-ash-gray text-ash-gray hover:bg-ash-gray hover:text-void-black focus-visible:ring-ash-gray'
-                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-                }`}
-              >
-                {audioState.isMuted ? (
-                  <VolumeX size={20} />
-                ) : (
-                  <Volume2 size={20} />
-                )}
-              </button>
-            </Tooltip>
-            <Tooltip
-              content={t('ui:button.shortcuts', {
-                defaultValue: 'Shortcuts (?, h)'
-              })}
-            >
-              <button
-                type='button'
-                onClick={() => setShowHelp(prev => !prev)}
-                aria-expanded={showHelp}
-                aria-controls='shortcuts-panel'
-                aria-label={t('ui:aria.shortcutsHelp', {
-                  defaultValue: 'Toggle keyboard shortcuts help'
-                })}
-                className={`pointer-events-auto bg-void-black/90 border min-w-11 min-h-11 flex items-center justify-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
-                  showHelp
-                    ? 'border-warning-yellow text-warning-yellow focus-visible:ring-warning-yellow'
-                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-                }`}
-              >
-                <HelpCircle size={20} />
-              </button>
-            </Tooltip>
-          </div>
-        )}
-
-        {/* Keyboard Shortcuts Overlay */}
-        {!isGigScene && (
-          <KeyboardShortcutsPanel showHelp={showHelp} className='w-52' />
+          <GigControlsCluster className='relative z-(--z-hud) pointer-events-none' />
         )}
       </div>
 

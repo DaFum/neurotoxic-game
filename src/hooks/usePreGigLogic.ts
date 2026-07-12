@@ -53,7 +53,7 @@ export type ModifierOption = {
 /**
  * View model and handlers consumed by the pre-gig setup scene.
  */
-export interface PreGigLogicReturn {
+interface PreGigLogicReturn {
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
   handleRestockMerch: (merchKey: string) => void
   band: GameState['band']
