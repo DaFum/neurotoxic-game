@@ -5,7 +5,7 @@ import {
   CONTRABAND_BY_RARITY
 } from '../../src/data/contraband'
 
-const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
+const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
 /**
  * Integration tests for contraband data usage patterns
