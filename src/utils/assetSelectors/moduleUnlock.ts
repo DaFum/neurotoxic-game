@@ -119,8 +119,13 @@ const checkCommonUnlockRequirements = (
   const u = module.unlock
   let allSatisfied = true
 
-  const recordFailure = (reason: LockReason): boolean => {
-    if (!collectReasons) return true // Should short-circuit
+  /**
+   * Records a lock reason if required. Returns `true` if the caller should
+   * stop checking and immediately short-circuit (i.e. we are only checking
+   * if the module is unlocked and do not need to collect all reasons).
+   */
+  const shouldShortCircuit = (reason: LockReason): boolean => {
+    if (!collectReasons) return true
     reasons.push(reason)
     allSatisfied = false
     return false
@@ -129,7 +134,7 @@ const checkCommonUnlockRequirements = (
   if (
     u.minFame !== undefined &&
     state.player.fame < u.minFame &&
-    recordFailure({ kind: 'fame', amount: u.minFame })
+    shouldShortCircuit({ kind: 'fame', amount: u.minFame })
   ) {
     return false
   }
@@ -137,7 +142,7 @@ const checkCommonUnlockRequirements = (
   if (
     u.minMoney !== undefined &&
     state.player.money < u.minMoney &&
-    recordFailure({ kind: 'money', amount: u.minMoney })
+    shouldShortCircuit({ kind: 'money', amount: u.minMoney })
   ) {
     return false
   }
@@ -147,7 +152,7 @@ const checkCommonUnlockRequirements = (
       (state.social as { scenePresence?: number }).scenePresence ?? 0
     if (
       scene < u.minScenePresence &&
-      recordFailure({ kind: 'scene', amount: u.minScenePresence })
+      shouldShortCircuit({ kind: 'scene', amount: u.minScenePresence })
     ) {
       return false
     }
@@ -159,7 +164,7 @@ const checkCommonUnlockRequirements = (
       if (
         f !== undefined &&
         !hasStoryFlag(state.activeStoryFlags, f) &&
-        recordFailure({ kind: 'story', ref: f })
+        shouldShortCircuit({ kind: 'story', ref: f })
       ) {
         return false
       }
@@ -170,7 +175,7 @@ const checkCommonUnlockRequirements = (
     const { memberId, skill, tier } = u.requiredMemberSkill
     if (
       !memberHasSkill(state, skill, tier, memberId) &&
-      recordFailure({
+      shouldShortCircuit({
         kind: memberId !== undefined ? 'skill' : 'skillAny',
         amount: tier,
         ref: memberId !== undefined ? memberId : skill
@@ -195,7 +200,7 @@ const checkCommonUnlockRequirements = (
     }
     if (
       !anySatisfied &&
-      recordFailure({ kind: 'otherModule', refs: [...required] })
+      shouldShortCircuit({ kind: 'otherModule', refs: [...required] })
     ) {
       return false
     }
