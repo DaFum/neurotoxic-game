@@ -98,3 +98,7 @@ baseline instead of duplicating formulas.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
 - `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
 - `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.
+
+
+## Numeric Safety
+- When doing arithmetic and calculations on persisted state properties (e.g. `score`, `tiktok`, `controversyLevel`), always wrap inputs defensively with `finiteNumberOr(value, 0)` and use optional chaining to prevent `NaN` propagation.
