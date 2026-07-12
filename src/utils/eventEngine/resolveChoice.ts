@@ -113,6 +113,8 @@ export const resolveChoice = (
   rng: () => number = secureRandom
 ) => {
   let result: EffectShape
+  const appendStatIncrement = (res: EffectShape, stat: string, value: number) =>
+    appendEffectToResult(res, { type: 'stat_increment', stat, value })
 
   if (choice.skillCheck) {
     const { stat, threshold, success, failure } = choice.skillCheck
@@ -132,11 +134,7 @@ export const resolveChoice = (
       result.outcome === 'success' &&
       gameState.activeEvent?.tags?.includes('conflict')
     ) {
-      result = appendEffectToResult(result, {
-        type: 'stat_increment',
-        stat: 'conflictsResolved',
-        value: 1
-      })
+      result = appendStatIncrement(result, 'conflictsResolved', 1)
     }
   } else {
     result = { ...(choice.effect ?? {}), outcome: 'direct' }
@@ -148,11 +146,7 @@ export const resolveChoice = (
     gameState.activeEvent?.id === 'gig_mid_stage_diver' &&
     choice.flags?.includes('stageDive')
   ) {
-    result = appendEffectToResult(result, {
-      type: 'stat_increment',
-      stat: 'stageDives',
-      value: 1
-    })
+    result = appendStatIncrement(result, 'stageDives', 1)
   }
 
   if (!result.nextEventId && choice.nextEventId) {
