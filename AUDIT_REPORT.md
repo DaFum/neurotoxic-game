@@ -26,27 +26,11 @@ Generated on: 2026-07-12
   - **Description**: Duplicate quest registry logic/data.
   - **Action**: MERGE entries.
 
-- **Severity: MED** | `src/hooks/minigames/useAmpLogic.ts:38` & `src/hooks/minigames/useAmpLogic.ts:497`
-  - **Description**: Duplicate hook logic within the same file.
-  - **Action**: MERGE into a shared internal helper.
-
 - **Severity: MED** | `src/utils/assetSelectors/moduleUnlock.ts:112` & `src/utils/assetSelectors/moduleUnlock.ts:196`
   - **Description**: Duplicate module unlock checks.
   - **Action**: MERGE into a shared utility function.
 
 ## 2. ORPHANED / UNINTEGRATED CODE
-
-- **Severity: MED** | `src/hooks/useAudioControl.ts:24`
-  - **Description**: Export `executeAudioAction` is not used anywhere else in `src/`. It appears to be a public API surface for audio manipulation that was built but hasn't been integrated yet into any components. It lacks specific test files for this integration.
-  - **Action**: INTEGRATE into components requiring manual audio control.
-
-- **Severity: MED** | `src/hooks/useAudioControl.ts:53`
-  - **Description**: Export `createAudioHandlers` is not used anywhere else in `src/`. Similar to `executeAudioAction`, it seems like an intended public API for binding audio events to UI elements.
-  - **Action**: INTEGRATE into UI components.
-
-- **Severity: LOW** | `src/utils/travelUtils.ts:68`
-  - **Description**: Export `resolveVenue` is not used anywhere else in `src/`. It looks like an unused helper function, likely a remnant of refactoring map travel logic. No obvious missing call sites. Clear orphan.
-  - **Action**: DELETE as a clear orphan.
 
 - **Severity: LOW** | `src/utils/rhythmGameLoopUtils.ts:42`
   - **Description**: Export `handleOverlayResume` is not used anywhere else in `src/`. This looks like a partially built feature intended for use when pausing/resuming the game loop via overlays, but never integrated. Missing call site in overlay logic.
@@ -60,19 +44,11 @@ Generated on: 2026-07-12
   - **Description**: Export `getBrandReputationKey` is not used anywhere else in `src/`. It appears to be an internal utility for quest effects that was exported but never needed externally. Clear orphan.
   - **Action**: DELETE the export keyword if used internally, otherwise DELETE the function.
 
-- **Severity: MED** | `src/components/stage/ToxicFilterManager.ts:69`
-  - **Description**: Export `BrutalistFilter` is not used anywhere else in `src/`. It seems like a specific visual effect intended for the stage but never applied. No obvious call site. Unintegrated code.
-  - **Action**: DELETE if abandoned, or INTEGRATE into stage effects list.
-
 ## 3. INCONSISTENCIES
 
 - **Severity: HIGH** | `src/context/reducers/clinicReducer.ts` vs `src/context/reducers/systemReducer.ts`
   - **Description**: Clamps for member stats (`clampMemberMood`, `clampMemberStamina`) are applied inconsistently or implemented differently across multiple reducers.
   - **Action**: FIX by ensuring `finiteNumberOr` is always used before arithmetic, and clamp functions are always applied on the final result across all reducers as per `AGENTS.md` rules.
-
-- **Severity: MED** | `src/context/reducers/socialReducer.ts`
-  - **Description**: Uses `||` operator instead of `??` for fallbacks on potentially valid falsy values like `0`.
-  - **Action**: FIX by switching to `??` where appropriate to adhere to `AGENTS.md`.
 
 ## 4. DEAD / UNREACHABLE CODE
 
@@ -88,13 +64,5 @@ Generated on: 2026-07-12
   - **Description**: `BrandDealDisplay` type is exported but never used anywhere. Dead code.
   - **Action**: DELETE export.
 
-## 5. MISSING INTEGRATION
 
-- **Severity: HIGH** | `src/scenes/kabelsalat/components/HardwareProps.tsx:43`
-  - **Description**: Component `RackScrew` is exported but not imported anywhere.
-  - **Action**: INTEGRATE into the main `Kabelsalat` scene UI or DELETE if decorative elements were scrapped.
-
-- **Severity: HIGH** | `src/ui/shared/KeyboardShortcuts.tsx:6`
-  - **Description**: `SHORTCUTS` is exported but never wired into a global event listener or UI overlay.
-  - **Action**: INTEGRATE by connecting to `useEffect` global listener in `App.tsx` or `HUD.tsx`.
 
