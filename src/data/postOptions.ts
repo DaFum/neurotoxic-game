@@ -1,4 +1,4 @@
-import { finiteNumberOr } from '../utils/finiteNumber';
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { formatCurrency } from '../utils/numberUtils'
 import type { BandMember, GameState, Platform } from '../types'
 import { hasActiveSponsorship } from '../utils/gameState'
@@ -207,7 +207,8 @@ export const POST_OPTIONS = [
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
-    condition: ({ social }: GameState) => finiteNumberOr(social?.instagram, 0) > 2000,
+    condition: ({ social }: GameState) =>
+      finiteNumberOr(social?.instagram, 0) > 2000,
     resolve: () => ({
       type: 'FIXED',
       success: true,

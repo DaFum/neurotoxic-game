@@ -623,7 +623,9 @@ export const createCompleteRoadieMinigameAction = (
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
     equipmentDamage: clamp0to100(finiteNumberOr(equipmentDamage, 0)),
-    contrabandDelivered: clampNonNegative(finiteNumberOr(contrabandDelivered, 0)),
+    contrabandDelivered: clampNonNegative(
+      finiteNumberOr(contrabandDelivered, 0)
+    ),
     // Only include the key when a valid stash id was delivered, so the payload
     // stays clean (no `deliveredStashItemId: undefined`) for normal completions.
     ...(typeof deliveredStashItemId === 'string' &&
@@ -849,7 +851,9 @@ export const createAddQuestAction = (
   }
 
   if (safeQuest.moneyReward != null) {
-    safeQuest.moneyReward = clampNonNegative(finiteNumberOr(safeQuest.moneyReward, 0))
+    safeQuest.moneyReward = clampNonNegative(
+      finiteNumberOr(safeQuest.moneyReward, 0)
+    )
   }
 
   if (safeQuest.rewardData) {
@@ -942,7 +946,9 @@ export const createClinicHealAction = (
     )
   }
   if (safePayload.moodGain != null) {
-    safePayload.moodGain = clampNonNegative(finiteNumberOr(safePayload.moodGain, 0))
+    safePayload.moodGain = clampNonNegative(
+      finiteNumberOr(safePayload.moodGain, 0)
+    )
   }
   if (safePayload.successToast) {
     // UUIDs are generated here so the reducer stays pure.

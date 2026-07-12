@@ -68,7 +68,6 @@ export type LegacyQuestProgressEvent =
 
 export type QuestProgressEvent = QuestEvent | LegacyQuestProgressEvent
 
-
 const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   gig_completed: 'gig.completed',
   good_gig: 'gig.good',

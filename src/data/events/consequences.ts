@@ -84,7 +84,10 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'post_gig',
     chance: 0.7,
     condition: (state: GameState) => {
-      const consecutiveBadShows = finiteNumberOr(state.player?.stats?.consecutiveBadShows, 0)
+      const consecutiveBadShows = finiteNumberOr(
+        state.player?.stats?.consecutiveBadShows,
+        0
+      )
       const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
       return (
         consecutiveBadShows >= 2 &&

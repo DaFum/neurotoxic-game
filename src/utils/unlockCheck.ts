@@ -1,4 +1,4 @@
-import { finiteNumberOr } from './finiteNumber';
+import { finiteNumberOr } from './finiteNumber'
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import { isLooseRecord } from './objectUtils'
