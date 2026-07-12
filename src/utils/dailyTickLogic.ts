@@ -365,7 +365,7 @@ export const calculateDailyUpdates = (
   const nextSocial = { ...currentState.social }
 
   // Snapshot controversyLevel at start of daily update to ensure consistent checks
-  const controversySnapshot = nextSocial.controversyLevel ?? 0
+  const controversySnapshot = finiteNumberOr(nextSocial?.controversyLevel, 0)
   const pendingFlags: Record<string, boolean> = {}
 
   updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)
