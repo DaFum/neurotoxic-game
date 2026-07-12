@@ -2,8 +2,7 @@ import type { GameState } from '../../types'
 import type {
   AssetModule,
   LongTermAsset,
-  SlotType,
-  ModuleUnlockReq
+  SlotType
 } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
@@ -89,56 +88,6 @@ const allInstalledModuleIds = (state: GameState): Set<string> => {
 }
 
 /**
- * Pure validator: returns true iff every AND-combined condition in
- * `module.unlock` is currently met by the game state. Note: `minChassisTier`
- * is explicitly excluded from this check as it requires context of a specific asset.
- * Lock reasons are NOT collected here — use `getLockReasons` for that.
- *
- * @param module - Asset module whose unlock requirements should be evaluated.
- * @param state - Current game state providing fame, money, flags, skills, and installed modules.
- * @returns True when every unlock requirement is currently satisfied.
- */
-export const isModuleUnlocked = (
-  module: AssetModule,
-  state: GameState
-): boolean => {
-  const u: ModuleUnlockReq = module.unlock
-  if (u.minFame !== undefined && state.player.fame < u.minFame) return false
-  if (u.minMoney !== undefined && state.player.money < u.minMoney) return false
-  if (u.minScenePresence !== undefined) {
-    const scene =
-      (state.social as { scenePresence?: number }).scenePresence ?? 0
-    if (scene < u.minScenePresence) return false
-  }
-  if (u.requiredStoryFlags) {
-    for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
-      const f = u.requiredStoryFlags[i]
-      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f))
-        return false
-    }
-  }
-  if (u.requiredMemberSkill) {
-    const { memberId, skill, tier } = u.requiredMemberSkill
-    if (!memberHasSkill(state, skill, tier, memberId)) return false
-  }
-  if (u.requiredOtherModuleInstalled !== undefined) {
-    const required = Array.isArray(u.requiredOtherModuleInstalled)
-      ? u.requiredOtherModuleInstalled
-      : [u.requiredOtherModuleInstalled]
-    const installed = allInstalledModuleIds(state)
-    let anySatisfied = false
-    for (const r of required) {
-      if (installed.has(r)) {
-        anySatisfied = true
-        break
-      }
-    }
-    if (!anySatisfied) return false
-  }
-  return true
-}
-
-/**
  * Collects the unmet unlock conditions for a module, in a structured form
  * the UI can render as locale-driven badges. Empty array means unlocked.
  */
@@ -161,57 +110,61 @@ export interface LockReason {
   refs?: string[]
 }
 
-/**
- * Returns unmet unlock requirements for a module in the current state.
- *
- * @param module - Asset module whose requirements should be evaluated.
- * @param state - Current game state used for unlock checks.
- * @param asset - Optional asset used to evaluate chassis-tier requirements.
- * @returns Structured lock reasons; empty when the module is unlocked for the provided context.
- */
-export const getLockReasons = (
+const checkCommonUnlockRequirements = (
   module: AssetModule,
   state: GameState,
-  asset?: LongTermAsset
-): LockReason[] => {
-  const reasons: LockReason[] = []
+  reasons: LockReason[],
+  collectReasons: boolean
+): boolean => {
   const u = module.unlock
+  let allSatisfied = true
+
   if (u.minFame !== undefined && state.player.fame < u.minFame) {
+    if (!collectReasons) return false
     reasons.push({ kind: 'fame', amount: u.minFame })
+    allSatisfied = false
   }
+
   if (u.minMoney !== undefined && state.player.money < u.minMoney) {
+    if (!collectReasons) return false
     reasons.push({ kind: 'money', amount: u.minMoney })
+    allSatisfied = false
   }
+
   if (u.minScenePresence !== undefined) {
     const scene =
       (state.social as { scenePresence?: number }).scenePresence ?? 0
     if (scene < u.minScenePresence) {
+      if (!collectReasons) return false
       reasons.push({ kind: 'scene', amount: u.minScenePresence })
+      allSatisfied = false
     }
   }
-  if (asset !== undefined && u.minChassisTier !== undefined) {
-    if (asset.chassisTier < u.minChassisTier) {
-      reasons.push({ kind: 'chassisTier', amount: u.minChassisTier })
-    }
-  }
+
   if (u.requiredStoryFlags) {
     for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
       const f = u.requiredStoryFlags[i]
       if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) {
+        if (!collectReasons) return false
         reasons.push({ kind: 'story', ref: f })
+        allSatisfied = false
       }
     }
   }
+
   if (u.requiredMemberSkill) {
     const { memberId, skill, tier } = u.requiredMemberSkill
     if (!memberHasSkill(state, skill, tier, memberId)) {
+      if (!collectReasons) return false
       reasons.push({
         kind: memberId !== undefined ? 'skill' : 'skillAny',
         amount: tier,
         ref: memberId !== undefined ? memberId : skill
       })
+      allSatisfied = false
     }
   }
+
   if (u.requiredOtherModuleInstalled !== undefined) {
     const required = Array.isArray(u.requiredOtherModuleInstalled)
       ? u.requiredOtherModuleInstalled
@@ -227,9 +180,56 @@ export const getLockReasons = (
       }
     }
     if (!anySatisfied) {
+      if (!collectReasons) return false
       reasons.push({ kind: 'otherModule', refs: [...required] })
+      allSatisfied = false
     }
   }
+
+  return allSatisfied
+}
+
+/**
+ * Pure validator: returns true iff every AND-combined condition in
+ * `module.unlock` is currently met by the game state. Note: `minChassisTier`
+ * is explicitly excluded from this check as it requires context of a specific asset.
+ * Lock reasons are NOT collected here — use `getLockReasons` for that.
+ *
+ * @param module - Asset module whose unlock requirements should be evaluated.
+ * @param state - Current game state providing fame, money, flags, skills, and installed modules.
+ * @returns True when every unlock requirement is currently satisfied.
+ */
+export const isModuleUnlocked = (
+  module: AssetModule,
+  state: GameState
+): boolean => {
+  return checkCommonUnlockRequirements(module, state, [], false)
+}
+
+/**
+ * Returns unmet unlock requirements for a module in the current state.
+ *
+ * @param module - Asset module whose requirements should be evaluated.
+ * @param state - Current game state used for unlock checks.
+ * @param asset - Optional asset used to evaluate chassis-tier requirements.
+ * @returns Structured lock reasons; empty when the module is unlocked for the provided context.
+ */
+export const getLockReasons = (
+  module: AssetModule,
+  state: GameState,
+  asset?: LongTermAsset
+): LockReason[] => {
+  const reasons: LockReason[] = []
+
+  const u = module.unlock
+  if (asset !== undefined && u.minChassisTier !== undefined) {
+    if (asset.chassisTier < u.minChassisTier) {
+      reasons.push({ kind: 'chassisTier', amount: u.minChassisTier })
+    }
+  }
+
+  checkCommonUnlockRequirements(module, state, reasons, true)
+
   return reasons
 }
 

@@ -680,8 +680,8 @@ export const handleAdvanceDay = (
   const nextPlayer = { ...player, eventsTriggeredToday: 0 }
 
   const nextBand = { ...band }
-  if (typeof nextBand.harmony === 'number') {
-    nextBand.harmony = clampBandHarmony(nextBand.harmony)
+  if (typeof nextBand.harmony !== 'undefined') {
+    nextBand.harmony = clampBandHarmony(finiteNumberOr(nextBand.harmony, 50))
   }
 
   // Band stress loop: high stress drains member mood, then decays daily.

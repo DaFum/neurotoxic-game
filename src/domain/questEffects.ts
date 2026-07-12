@@ -83,7 +83,7 @@ export const applyVenueReputationDelta = (
 /**
  * Resolves the brand reputation key from a brand-trust effect.
  */
-export const getBrandReputationKey = (effect: {
+const getBrandReputationKey = (effect: {
   brandId?: string
   alignment?: string
 }): string | undefined => {

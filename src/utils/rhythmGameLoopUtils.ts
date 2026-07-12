@@ -39,7 +39,7 @@ interface RhythmTickArgs {
 /**
  * Handles resuming the audio track via the overlay when the game is unpaused.
  */
-export const handleOverlayResume = (
+const handleOverlayResume = (
   stateRef: RhythmGameRefState,
   transportState: string,
   resumeAudio: AsyncBooleanCallback
@@ -119,7 +119,7 @@ export const handleOverlayPause = (
 /**
  * Updates toxic mode state, managing its remaining duration and total accumulated time.
  */
-export const processToxicMode = (
+const processToxicMode = (
   stateRef: RhythmGameRefState,
   now: number,
   deltaMS: number,

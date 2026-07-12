@@ -188,7 +188,7 @@ export const handleClinicHeal = (
 
     const nextStamina = clampMemberStamina(
       prevStamina + staminaGain,
-      member.staminaMax
+      finiteNumberOr(member.staminaMax, 100)
     )
     const nextMood = clampMemberMood(prevMood + moodGain)
 

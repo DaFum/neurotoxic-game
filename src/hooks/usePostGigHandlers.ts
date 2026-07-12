@@ -14,7 +14,7 @@ import {
 import type { HandlerDispatchers } from './postGig/handlers/types'
 import type { PostGigPhase } from './postGig/usePostGigState'
 /** The post-gig handler surface returned by {@link usePostGigHandlers}. */
-export interface UsePostGigHandlersReturn {
+interface UsePostGigHandlersReturn {
   isProcessingAction: boolean
   hasSpun: boolean
   handlePostSelection: (option: SocialPostOption) => void

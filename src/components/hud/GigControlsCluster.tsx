@@ -12,6 +12,8 @@ interface GigControlsClusterProps {
   onTogglePause?: () => void
   /** Indicates whether the gig is over, disabling the pause functionality. */
   isGameOver?: boolean
+  /** Optional class name to override the wrapper class. */
+  className?: string
 }
 
 const BUTTON_BASE =
@@ -29,7 +31,8 @@ const BUTTON_BASE =
  */
 export const GigControlsCluster = memo(function GigControlsCluster({
   onTogglePause,
-  isGameOver
+  isGameOver,
+  className
 }: GigControlsClusterProps) {
   const { t } = useTranslation(['ui'])
   const [isOpen, setIsOpen] = useState(false)
@@ -47,7 +50,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
   })
 
   return (
-    <div className='absolute top-4 left-4 z-(--z-hud) pointer-events-none'>
+    <div className={className ?? 'absolute top-4 left-4 z-(--z-hud) pointer-events-none'}>
       <div className='flex gap-1.5'>
         <Tooltip
           content={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
@@ -119,25 +122,27 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                 <HelpCircle size={20} />
               </button>
             </Tooltip>
-            <Tooltip
-              content={t('ui:gig.pause', { defaultValue: 'Pause Game (ESC)' })}
-            >
-              <button
-                type='button'
-                onClick={() => onTogglePause?.()}
-                aria-label={t('ui:gig.pauseAria', {
-                  defaultValue: 'Pause Game'
-                })}
-                disabled={isGameOver}
-                className={`${BUTTON_BASE} ${
-                  isGameOver
-                    ? 'opacity-50 pointer-events-none border-ash-gray text-ash-gray'
-                    : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
-                }`}
+            {onTogglePause && (
+              <Tooltip
+                content={t('ui:gig.pause', { defaultValue: 'Pause Game (ESC)' })}
               >
-                <Pause size={20} />
-              </button>
-            </Tooltip>
+                <button
+                  type='button'
+                  onClick={() => onTogglePause()}
+                  aria-label={t('ui:gig.pauseAria', {
+                    defaultValue: 'Pause Game'
+                  })}
+                  disabled={isGameOver}
+                  className={`${BUTTON_BASE} ${
+                    isGameOver
+                      ? 'opacity-50 pointer-events-none border-ash-gray text-ash-gray'
+                      : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
+                  }`}
+                >
+                  <Pause size={20} />
+                </button>
+              </Tooltip>
+            )}
           </>
         )}
       </div>
