@@ -101,4 +101,4 @@ baseline instead of duplicating formulas.
 
 
 ## Numeric Safety
-- When doing arithmetic and calculations on persisted state properties (e.g. `score`, `tiktok`, `controversyLevel`), always wrap inputs defensively with `finiteNumberOr(value, 0)` and use optional chaining to prevent `NaN` propagation.
+- When doing arithmetic and calculations on persisted state properties, guard against non-finite values (`NaN`, `Infinity`) by wrapping inputs defensively with `finiteNumberOr(value, defaultValue)`. Choose a domain-appropriate default (e.g. `DEFAULT_PLAYER_STATE.money`) rather than assuming `0` universally.

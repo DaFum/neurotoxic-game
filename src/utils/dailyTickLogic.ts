@@ -193,11 +193,11 @@ const updateSocialDecay = (
   }
 
   // Reputation cooldown decay
-  if (finiteNumberOr(nextSocial.reputationCooldown, 0) > 0) {
-    nextSocial.reputationCooldown = Math.max(
-      0,
-      nextSocial.reputationCooldown - 1
-    )
+  const currentRepCooldown = finiteNumberOr(nextSocial.reputationCooldown, 0)
+  if (currentRepCooldown > 0) {
+    nextSocial.reputationCooldown = Math.max(0, currentRepCooldown - 1)
+  } else {
+    nextSocial.reputationCooldown = 0
   }
 
   // TikTok Viral Surge Perk
