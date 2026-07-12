@@ -7,9 +7,7 @@ import {
   DollarSign,
   Skull
 } from 'lucide-react'
-import { useAudioControl } from '../hooks/useAudioControl'
 import { formatCurrency } from '../utils/numberUtils'
-import { useKeyboardShortcuts } from './shared'
 import {
   BandStatusPanel,
   VanStatusMiniBars
@@ -50,17 +48,6 @@ export const HUD = memo(() => {
   const { toggleNeuroDecimator } = useGameDispatch()
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, playerLocation, playerLocation)
-  const { handleAudioChange } = useAudioControl()
-
-  // Global keyboard shortcuts
-  useKeyboardShortcuts(
-    isGigScene
-      ? { setShowHelp: () => {} }
-      : {
-          setShowHelp: () => {},
-          onToggleMute: handleAudioChange.toggleMute
-        }
-  )
 
   return (
     <div className='absolute top-0 left-0 w-full p-3 flex justify-between items-start pointer-events-none z-(--z-hud) text-xs font-mono'>
