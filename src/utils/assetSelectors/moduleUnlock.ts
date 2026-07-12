@@ -119,49 +119,64 @@ const checkCommonUnlockRequirements = (
   const u = module.unlock
   let allSatisfied = true
 
-  if (u.minFame !== undefined && state.player.fame < u.minFame) {
-    if (!collectReasons) return false
-    reasons.push({ kind: 'fame', amount: u.minFame })
+  const recordFailure = (reason: LockReason): boolean => {
+    if (!collectReasons) return true // Should short-circuit
+    reasons.push(reason)
     allSatisfied = false
+    return false
   }
 
-  if (u.minMoney !== undefined && state.player.money < u.minMoney) {
-    if (!collectReasons) return false
-    reasons.push({ kind: 'money', amount: u.minMoney })
-    allSatisfied = false
+  if (
+    u.minFame !== undefined &&
+    state.player.fame < u.minFame &&
+    recordFailure({ kind: 'fame', amount: u.minFame })
+  ) {
+    return false
+  }
+
+  if (
+    u.minMoney !== undefined &&
+    state.player.money < u.minMoney &&
+    recordFailure({ kind: 'money', amount: u.minMoney })
+  ) {
+    return false
   }
 
   if (u.minScenePresence !== undefined) {
     const scene =
       (state.social as { scenePresence?: number }).scenePresence ?? 0
-    if (scene < u.minScenePresence) {
-      if (!collectReasons) return false
-      reasons.push({ kind: 'scene', amount: u.minScenePresence })
-      allSatisfied = false
+    if (
+      scene < u.minScenePresence &&
+      recordFailure({ kind: 'scene', amount: u.minScenePresence })
+    ) {
+      return false
     }
   }
 
   if (u.requiredStoryFlags) {
     for (let i = 0, len = u.requiredStoryFlags.length; i < len; i++) {
       const f = u.requiredStoryFlags[i]
-      if (f !== undefined && !hasStoryFlag(state.activeStoryFlags, f)) {
-        if (!collectReasons) return false
-        reasons.push({ kind: 'story', ref: f })
-        allSatisfied = false
+      if (
+        f !== undefined &&
+        !hasStoryFlag(state.activeStoryFlags, f) &&
+        recordFailure({ kind: 'story', ref: f })
+      ) {
+        return false
       }
     }
   }
 
   if (u.requiredMemberSkill) {
     const { memberId, skill, tier } = u.requiredMemberSkill
-    if (!memberHasSkill(state, skill, tier, memberId)) {
-      if (!collectReasons) return false
-      reasons.push({
+    if (
+      !memberHasSkill(state, skill, tier, memberId) &&
+      recordFailure({
         kind: memberId !== undefined ? 'skill' : 'skillAny',
         amount: tier,
         ref: memberId !== undefined ? memberId : skill
       })
-      allSatisfied = false
+    ) {
+      return false
     }
   }
 
@@ -170,7 +185,6 @@ const checkCommonUnlockRequirements = (
       ? u.requiredOtherModuleInstalled
       : [u.requiredOtherModuleInstalled]
     const installed = allInstalledModuleIds(state)
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocations.
     let anySatisfied = false
     for (let i = 0; i < required.length; i++) {
       const req = required[i]
@@ -179,10 +193,11 @@ const checkCommonUnlockRequirements = (
         break
       }
     }
-    if (!anySatisfied) {
-      if (!collectReasons) return false
-      reasons.push({ kind: 'otherModule', refs: [...required] })
-      allSatisfied = false
+    if (
+      !anySatisfied &&
+      recordFailure({ kind: 'otherModule', refs: [...required] })
+    ) {
+      return false
     }
   }
 
