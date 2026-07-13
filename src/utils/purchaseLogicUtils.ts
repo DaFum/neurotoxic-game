@@ -384,8 +384,8 @@ export const validatePurchase = (
   }
 
   const payingWithFame = item.currency === 'fame'
-  const startingMoney = player.money ?? 0
-  const startingFame = player.fame ?? 0
+  const startingMoney = finiteNumberOr(player.money, 0)
+  const startingFame = finiteNumberOr(player.fame, 0)
   const currencyValue = payingWithFame ? startingFame : startingMoney
   const finalCost = getAdjustedCost(item, band)
 
