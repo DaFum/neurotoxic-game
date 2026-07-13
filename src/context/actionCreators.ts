@@ -1222,6 +1222,12 @@ export const createApplyQuestEventAction = (
   payload: event
 })
 
+/**
+ * Creates an action to graft the neuro-overclock trait onto a band member.
+ *
+ * @param memberId - The identifier of the band member receiving the graft.
+ * @returns The action object configuring the graft operation.
+ */
 export const graftNeuroOverclock = (
   memberId: string
 ): Extract<GameAction, { type: typeof ActionTypes.GRAFT_NEURO_OVERCLOCK }> => ({
