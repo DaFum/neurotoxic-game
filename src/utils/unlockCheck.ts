@@ -147,7 +147,7 @@ export const checkTraitUnlocks = (
       const maxFollowers = Math.max(
         finiteNumberOr(social?.instagram, 0),
         finiteNumberOr(social?.tiktok, 0),
-        social.youtube || 0
+        finiteNumberOr(social?.youtube, 0)
       )
       if (maxFollowers >= 1000) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'social_manager' })

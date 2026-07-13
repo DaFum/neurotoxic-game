@@ -342,7 +342,8 @@ export const handleUpdateSocial = (
       if (alignment && !isForbiddenKey(alignment)) {
         nextBrandReputation[alignment] = Math.max(
           0,
-          (nextBrandReputation[alignment] ?? 0) - DEAL_BREAK_TRUST_PENALTY
+          finiteNumberOr(nextBrandReputation[alignment], 0) -
+            DEAL_BREAK_TRUST_PENALTY
         )
       }
     }
