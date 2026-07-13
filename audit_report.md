@@ -2,9 +2,7 @@
 
 ## DUPLICATES
 
-- **[LOW]** `src/data/events/band.ts:380`: Exact duplicate of event option logic found in src/data/events/relationshipEvents.ts:204. **Action:** MERGE
 - **[LOW]** `src/data/postOptions.ts:551`: Duplicate post options effect logic found in same file at line 1116. **Action:** MERGE
-- **[LOW]** `src/hooks/minigames/useAmpLogic.ts:38`: Amp logic duplicated within the same file at line 497. **Action:** MERGE
 
 ## ORPHANED / UNINTEGRATED CODE
 
@@ -74,8 +72,6 @@
 - **[HIGH]** `src/types/components.d.ts:548`: Interface/Type `CatalogInputEffect` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/types/components.d.ts:604`: Interface/Type `Balances` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/types/components.d.ts:638`: Interface/Type `UnlockMessageKind` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
-- **[HIGH]** `src/components/stage/NoteSpritePool.ts:37`: Component `NoteSpriteFactory` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/components/stage/ToxicFilterManager.ts:69`: Component `BrutalistFilter` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/components/assets/sectionRegistry.ts:19`: Component `SectionView` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/components/minigames/amp/AmpCalibrationView.tsx:17`: Interface/Type `AmpCalibrationViewProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/components/assets/shared/AssetSlotButton.tsx:10`: Interface/Type `AssetSlotButtonProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
