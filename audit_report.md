@@ -26,7 +26,6 @@
 - **[MED]** `src/hooks/usePostGigHandlers.ts:28`: `UsePostGigHandlersProps` (interface) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
 - **[MED]** `src/ui/bandhq/hooks/useBandHQLogic.ts:29`: `BandHQLogicResult` (interface) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
 - **[MED]** `src/ui/bandhq/hooks/usePurchaseLock.ts:6`: `PurchaseLockResult` (interface) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
-- **[MED]** `src/data/craftingRecipes.ts:11`: `CraftingRecipe` (interface) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
 - **[MED]** `src/data/craftingRecipes.ts:74`: `isCraftingRecipeId` (const) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
 - **[MED]** `src/data/milestones/milestones.ts:17`: `Milestone` (interface) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
 - **[MED]** `src/data/questRegistry.ts:79`: `isQuestRegistryId` (const) is exported but NOT imported anywhere in src/. Verify if it's dead code or public API. **Action:** DELETE (if dead code) or remove export.
@@ -78,9 +77,6 @@
 - **[HIGH]** `src/components/stage/NoteSpritePool.ts:37`: Component `NoteSpriteFactory` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/components/stage/ToxicFilterManager.ts:69`: Component `BrutalistFilter` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/components/assets/sectionRegistry.ts:19`: Component `SectionView` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/components/minigames/gig/GigView.tsx:23`: Interface/Type `GigViewProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/components/minigames/amp/AmpCalibrationView.tsx:17`: Interface/Type `AmpCalibrationViewProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
-- **[HIGH]** `src/components/assets/shared/CancelButton.tsx:8`: Interface/Type `CancelButtonProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/components/assets/shared/AssetSlotButton.tsx:10`: Interface/Type `AssetSlotButtonProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
-- **[HIGH]** `src/components/assets/sections/SlotZoneButtons.tsx:18`: Interface/Type `SlotZoneButtonsProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/scenes/kabelsalat/components/ConnectionPath.tsx:11`: Interface/Type `ConnectionPathProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
