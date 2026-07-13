@@ -63,7 +63,7 @@ export const CRAFTING_RECIPES = {
 /**
  * Valid key in the crafting recipe registry.
  */
-export type CraftingRecipeId = keyof typeof CRAFTING_RECIPES
+type CraftingRecipeId = keyof typeof CRAFTING_RECIPES
 
 /**
  * Checks whether a string is a registered crafting recipe id.

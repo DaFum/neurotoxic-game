@@ -622,8 +622,10 @@ export const createCompleteRoadieMinigameAction = (
 > => ({
   type: ActionTypes.COMPLETE_ROADIE_MINIGAME,
   payload: {
-    equipmentDamage: clamp0to100(Number(equipmentDamage) || 0),
-    contrabandDelivered: clampNonNegative(Number(contrabandDelivered) || 0),
+    equipmentDamage: clamp0to100(finiteNumberOr(equipmentDamage, 0)),
+    contrabandDelivered: clampNonNegative(
+      finiteNumberOr(contrabandDelivered, 0)
+    ),
     // Only include the key when a valid stash id was delivered, so the payload
     // stays clean (no `deliveredStashItemId: undefined`) for normal completions.
     ...(typeof deliveredStashItemId === 'string' &&
@@ -849,19 +851,21 @@ export const createAddQuestAction = (
   }
 
   if (safeQuest.moneyReward != null) {
-    safeQuest.moneyReward = clampNonNegative(Number(safeQuest.moneyReward) || 0)
+    safeQuest.moneyReward = clampNonNegative(
+      finiteNumberOr(safeQuest.moneyReward, 0)
+    )
   }
 
   if (safeQuest.rewardData) {
     safeQuest.rewardData = { ...safeQuest.rewardData }
     if (safeQuest.rewardData.fame != null) {
       safeQuest.rewardData.fame = clampNonNegative(
-        Number(safeQuest.rewardData.fame) || 0
+        finiteNumberOr(safeQuest.rewardData.fame, 0)
       )
     }
     if (safeQuest.rewardData.harmony != null) {
       safeQuest.rewardData.harmony = clampNonNegative(
-        Number(safeQuest.rewardData.harmony) || 0
+        finiteNumberOr(safeQuest.rewardData.harmony, 0)
       )
     }
   }
@@ -938,11 +942,13 @@ export const createClinicHealAction = (
   const safePayload = { ...(payload || {}) } as ClinicActionPayload
   if (safePayload.staminaGain != null) {
     safePayload.staminaGain = clampNonNegative(
-      Number(safePayload.staminaGain) || 0
+      finiteNumberOr(safePayload.staminaGain, 0)
     )
   }
   if (safePayload.moodGain != null) {
-    safePayload.moodGain = clampNonNegative(Number(safePayload.moodGain) || 0)
+    safePayload.moodGain = clampNonNegative(
+      finiteNumberOr(safePayload.moodGain, 0)
+    )
   }
   if (safePayload.successToast) {
     // UUIDs are generated here so the reducer stays pure.

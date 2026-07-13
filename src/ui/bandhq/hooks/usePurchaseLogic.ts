@@ -376,8 +376,8 @@ export const usePurchaseLogic = ({
         // Build initial patches
         const initialPlayerPatch = buildInitialPlayerPatch(
           Boolean(payingWithFame),
-          (startingCurrency as number) || 0,
-          (finalCost as number) || 0
+          (startingCurrency as number) ?? 0,
+          (finalCost as number) ?? 0
         )
 
         const resolvedEffect: Effect | undefined =
@@ -502,7 +502,7 @@ export const usePurchaseLogic = ({
     (item: PurchaseItem) => {
       const effect = getPrimaryEffect(item)
       if (!effect) return true
-      if (item.requiresReputation && (social?.controversyLevel || 0) >= 50)
+      if (item.requiresReputation && (social?.controversyLevel ?? 0) >= 50)
         return true
       const isConsumable = effect?.type === 'inventory_add'
       const isOwned = isItemOwned(item, player, band)

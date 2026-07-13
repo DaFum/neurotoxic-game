@@ -16,3 +16,5 @@
 - CheckJS is strict in migrated domains. Narrow indexed lookups and optional values before use.
 - Use `unknown` and explicit narrowing for storage, API, event, or external payloads.
 - Prefer `as const satisfies` for literal maps and configs.
+
+- When reading optional values, fall back safely with `finiteNumberOr(value, 0)` rather than `?? 0` when the value could be `NaN`.

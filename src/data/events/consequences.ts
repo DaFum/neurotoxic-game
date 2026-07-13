@@ -84,8 +84,11 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'post_gig',
     chance: 0.7,
     condition: (state: GameState) => {
-      const consecutiveBadShows = state.player?.stats?.consecutiveBadShows || 0
-      const controversy = state.social?.controversyLevel || 0
+      const consecutiveBadShows = finiteNumberOr(
+        state.player?.stats?.consecutiveBadShows,
+        0
+      )
+      const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
       return (
         consecutiveBadShows >= 2 &&
         controversy >= 40 &&
@@ -132,7 +135,7 @@ export const CONSEQUENCE_EVENTS = [
     condition: (state: GameState) => {
       if (
         state.social?.egoFocus != null &&
-        (state.social?.controversyLevel || 0) >= 30 &&
+        finiteNumberOr(state.social?.controversyLevel, 0) >= 30 &&
         !hasStateItem(state.eventCooldowns, 'consequences_bandmate_scandal')
       ) {
         return { egoFocus: state.social.egoFocus }
@@ -203,7 +206,7 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'post_gig',
     chance: 0.9,
     condition: (state: GameState) => {
-      const controversy = state.social?.controversyLevel || 0
+      const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
       const flags = state.activeStoryFlags || []
       // canOfferQuest mirrors addQuest gating (active quest, completion,
       // failure-retry cooldown), so the offer never surfaces while the

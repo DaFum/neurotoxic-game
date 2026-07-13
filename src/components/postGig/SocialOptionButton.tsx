@@ -70,7 +70,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
               {t('economy:social.platform', { defaultValue: 'Platform' })}
             </span>
             <span className='text-right text-star-white drop-shadow-md break-words'>
-              {opt.platform || ''}
+              {opt.platform ?? ''}
             </span>
           </div>
           <div className='flex justify-between gap-3 pt-1'>

@@ -257,7 +257,7 @@ export interface QuestOfferDefinition {
  * {@link QuestState}. Declared once so a new quest field is added in a single
  * place rather than being duplicated (and silently dropped from one side).
  */
-export interface QuestCommon extends UnknownRecord {
+interface QuestCommon extends UnknownRecord {
   label?: string
   description?: string
   deadlineOffset?: number

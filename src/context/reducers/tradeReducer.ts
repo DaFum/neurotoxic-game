@@ -4,7 +4,8 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampNonNegative,
-  isForbiddenKey
+  isForbiddenKey,
+  finiteNumberOr
 } from '../../utils/gameState'
 import {
   isLooseRecord,
@@ -71,7 +72,7 @@ export const handleTradeVoidItem = (
     return state
   }
   const cost = clampNonNegative(parsedCost)
-  const currentFame = Number(state.player.fame) || 0
+  const currentFame = finiteNumberOr(state.player.fame, 0)
 
   if (currentFame < cost) {
     logger.warn('GameState', 'Insufficient fame for void trade')

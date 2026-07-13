@@ -134,8 +134,9 @@ export const getAdjustedCost = (
   item: PurchaseItem,
   band: BandState
 ): number => {
-  let cost = item.cost ?? 0
+  let cost = finiteNumberOr(item.cost, 0)
   // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
+  cost = finiteNumberOr(cost, 0)
   if (
     item.category === 'GEAR' &&
     item.currency === 'money' &&
@@ -143,7 +144,7 @@ export const getAdjustedCost = (
   ) {
     cost = Math.floor(cost * 0.8)
   }
-  return cost
+  return finiteNumberOr(cost, 0)
 }
 
 /**
@@ -307,7 +308,7 @@ export const applyStatModifier = (
 
   switch (effect.target) {
     case 'van': {
-      const base = getNumericProp(player.van ?? {}, effect.stat, 0) || 0
+      const base = getNumericProp(player.van ?? {}, effect.stat, 0) ?? 0
       nextPlayerPatch.van = {
         ...(player.van ?? {}),
         [effect.stat as string]: Math.max(0, base + val)
@@ -343,7 +344,7 @@ export const applyStatModifier = (
           harmony: clampBandHarmony(finiteNumberOr(band?.harmony, 0) + val)
         }
       } else {
-        const base = getNumericProp(band, effect.stat, 0) || 0
+        const base = getNumericProp(band, effect.stat, 0) ?? 0
         nextBandPatch = {
           [effect.stat as string]: Math.max(0, base + val)
         }
@@ -352,7 +353,7 @@ export const applyStatModifier = (
     }
 
     default: {
-      const base = getNumericProp(band.performance ?? {}, effect.stat, 0) || 0
+      const base = getNumericProp(band.performance ?? {}, effect.stat, 0) ?? 0
       nextBandPatch = {
         performance: {
           ...(band.performance ?? {}),
@@ -383,8 +384,8 @@ export const validatePurchase = (
   }
 
   const payingWithFame = item.currency === 'fame'
-  const startingMoney = player.money ?? 0
-  const startingFame = player.fame ?? 0
+  const startingMoney = finiteNumberOr(player.money, 0)
+  const startingFame = finiteNumberOr(player.fame, 0)
   const currencyValue = payingWithFame ? startingFame : startingMoney
   const finalCost = getAdjustedCost(item, band)
 
@@ -714,7 +715,7 @@ export const applyPassive = (
   } else if (effect.key === 'passive_followers') {
     const val = getNumericProp(effect, 'value', 0) ?? 0
     nextPlayerPatch.passiveFollowers =
-      (player.passiveFollowers || 0) + Math.max(0, val)
+      finiteNumberOr(player.passiveFollowers, 0) + Math.max(0, val)
   }
 
   return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }

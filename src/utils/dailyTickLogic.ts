@@ -34,8 +34,8 @@ const updatePlayerFinances = (
   let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
-  if ((nextSocial.newsletter || 0) >= 1000 && rng() < 0.3) {
-    dailyCost -= Math.floor((nextSocial.newsletter || 0) / 100) * 5
+  if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {
+    dailyCost -= Math.floor(finiteNumberOr(nextSocial.newsletter, 0) / 100) * 5
   }
 
   const nextMoney = clampPlayerMoney(
@@ -134,7 +134,7 @@ const updateBandHarmony = (
   }
 
   // Bad Show Streak Penalty
-  if ((nextPlayer.stats?.consecutiveBadShows || 0) > 0) {
+  if (finiteNumberOr(nextPlayer.stats?.consecutiveBadShows, 0) > 0) {
     const nextHarmonyBadShows = clampBandHarmony(
       nextBand.harmony - Math.min(10, nextPlayer.stats.consecutiveBadShows * 2)
     )
@@ -193,15 +193,15 @@ const updateSocialDecay = (
   }
 
   // Reputation cooldown decay
-  if ((nextSocial.reputationCooldown || 0) > 0) {
-    nextSocial.reputationCooldown = Math.max(
-      0,
-      nextSocial.reputationCooldown - 1
-    )
+  const currentRepCooldown = finiteNumberOr(nextSocial.reputationCooldown, 0)
+  if (currentRepCooldown > 0) {
+    nextSocial.reputationCooldown = Math.max(0, currentRepCooldown - 1)
+  } else {
+    nextSocial.reputationCooldown = 0
   }
 
   // TikTok Viral Surge Perk
-  if ((nextSocial.tiktok || 0) > 10000 && rng() < 0.05) {
+  if (finiteNumberOr(nextSocial.tiktok, 0) > 10000 && rng() < 0.05) {
     nextSocial.viral += 1 // Free viral token
   }
 
@@ -211,20 +211,20 @@ const updateSocialDecay = (
     nextPlayer.day - (nextSocial.lastGigDay ?? nextPlayer.day)
   if (daysSinceActivity >= 3) {
     nextSocial.instagram = applyReputationDecay(
-      nextSocial.instagram || 0,
+      finiteNumberOr(nextSocial.instagram, 0),
       daysSinceActivity
     )
     nextSocial.tiktok = applyReputationDecay(
-      nextSocial.tiktok || 0,
+      finiteNumberOr(nextSocial.tiktok, 0),
       daysSinceActivity
     )
     nextSocial.youtube = applyReputationDecay(
-      nextSocial.youtube || 0,
+      finiteNumberOr(nextSocial.youtube, 0),
       daysSinceActivity
     )
     // Newsletter decay (often overlooked, now explicit)
     nextSocial.newsletter = applyReputationDecay(
-      nextSocial.newsletter || 0,
+      finiteNumberOr(nextSocial.newsletter, 0),
       daysSinceActivity
     )
   }
@@ -273,7 +273,7 @@ const updatePassiveEffectsAndMembers = (
     let stamina = finiteNumberOr(m.stamina, 100)
     stamina = Math.max(0, stamina - 5)
     if (nextBand.harmony > 60) stamina += 3
-    if ((nextSocial.instagram || 0) >= 10000) stamina += 2
+    if (finiteNumberOr(nextSocial.instagram, 0) >= 10000) stamina += 2
     if (hasTrait(m, 'cyber_lungs')) stamina += 3
     stamina = clampMemberStamina(stamina, finiteNumberOr(m.staminaMax, 100))
 
@@ -365,7 +365,7 @@ export const calculateDailyUpdates = (
   const nextSocial = { ...currentState.social }
 
   // Snapshot controversyLevel at start of daily update to ensure consistent checks
-  const controversySnapshot = nextSocial.controversyLevel || 0
+  const controversySnapshot = finiteNumberOr(nextSocial?.controversyLevel, 0)
   const pendingFlags: Record<string, boolean> = {}
 
   updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)

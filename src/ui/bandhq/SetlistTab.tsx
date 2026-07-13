@@ -95,7 +95,7 @@ const getSetlistSongId = (entry: unknown): unknown => {
 /**
  * Current setlist and callbacks used to persist Band HQ setlist edits.
  */
-export interface SetlistTabProps {
+interface SetlistTabProps {
   setlist: RhythmSetlistEntry[]
   setSetlist: (list: RhythmSetlistEntry[]) => void
   addToast: (message: string, level?: string) => void

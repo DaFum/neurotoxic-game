@@ -484,7 +484,7 @@ export { generateBrandName } from './brandOfferFlavor'
 export const calculateZealotryEffects = (
   zealotry: number
 ): { passiveIncome: number; raidProbability: number } => {
-  const z = clampZealotry(Number(zealotry) || 0)
+  const z = clampZealotry(finiteNumberOr(zealotry, 0))
   return {
     passiveIncome: Math.floor(z * 1.2),
     raidProbability: (z / 100) * 0.08

@@ -419,7 +419,7 @@ export const handleSetLastGigStats = (
   if (
     nextState.activeStoryFlags?.includes('apology_tour_complete') &&
     !nextState.activeStoryFlags?.includes('comeback_triggered') &&
-    (nextState.social?.controversyLevel || 0) < 30 &&
+    finiteNumberOr(nextState.social?.controversyLevel, 0) < 30 &&
     !nextState.pendingEvents?.includes('consequences_comeback_album')
   ) {
     nextState.pendingEvents = [

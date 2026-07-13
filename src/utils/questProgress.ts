@@ -66,9 +66,6 @@ export type LegacyQuestProgressEvent =
     }
   | { type: 'travel_completed'; region: string }
 
-/**
- * Quest progress event accepted by the progress engine.
- */
 export type QuestProgressEvent = QuestEvent | LegacyQuestProgressEvent
 
 const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {

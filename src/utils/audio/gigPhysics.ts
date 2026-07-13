@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../finiteNumber'
 import { logger } from '../logger'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
 import { calculateGigPhysics, getGigModifiers } from '../simulationUtils'
@@ -82,7 +83,7 @@ export const setupGigPhysics = (
     return null
   }
 
-  const layer = currentNode.layer || 0
+  const layer = finiteNumberOr(currentNode.layer, 0)
   const speedMult = 1.0 + layer * 0.05
 
   const mergedModifiers: RhythmModifiers = {
