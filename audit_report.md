@@ -4,7 +4,6 @@
 
 - **[LOW]** `src/data/events/band.ts:380`: Exact duplicate of event option logic found in src/data/events/relationshipEvents.ts:204. **Action:** MERGE
 - **[LOW]** `src/data/postOptions.ts:551`: Duplicate post options effect logic found in same file at line 1116. **Action:** MERGE
-- **[LOW]** `src/data/questRegistry.ts:2`: Quest registry entry duplicated within the same file at line 40. **Action:** MERGE
 - **[LOW]** `src/hooks/minigames/useAmpLogic.ts:38`: Amp logic duplicated within the same file at line 497. **Action:** MERGE
 
 ## ORPHANED / UNINTEGRATED CODE
@@ -72,13 +71,6 @@
 
 ## MISSING INTEGRATION
 
-- **[HIGH]** `src/context/assetActionCreators.ts:134`: Interface/Type `PurchaseChassisInput` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/assetActionCreators.ts:233`: Interface/Type `InstallModuleInput` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/assetActionCreators.ts:494`: Interface/Type `StartCrowdfundInput` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/GameState.tsx:40`: Interface/Type `GameStore` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/useRivalBandDispatchActions.ts:25`: Interface/Type `UseRivalBandDispatchActionsProps` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/useMinigameDispatchActions.ts:19`: Interface/Type `MinigameDispatchActions` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/useAssetDispatchActions.ts:27`: Interface/Type `AssetDispatchActions` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/types/components.d.ts:503`: Interface/Type `FinancialCategory` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/types/components.d.ts:548`: Interface/Type `CatalogInputEffect` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/types/components.d.ts:604`: Interface/Type `Balances` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
@@ -95,8 +87,4 @@
 - **[HIGH]** `src/components/assets/sections/SlotZoneButtons.tsx:9`: Component `SlotOverride` looks fully built but is never imported/rendered. **Action:** INTEGRATE or DELETE
 - **[HIGH]** `src/components/assets/sections/SlotZoneButtons.tsx:18`: Interface/Type `SlotZoneButtonsProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
 - **[HIGH]** `src/scenes/kabelsalat/components/ConnectionPath.tsx:11`: Interface/Type `ConnectionPathProps` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
-- **[HIGH]** `src/context/reducers/sceneReducer.ts:13`: State/reducer `isValidGamePhase` is not integrated into the game loop/store. **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/reducers/bandReducer.ts:665`: State/reducer `handleToggleNeuroDecimator` is not integrated into the game loop/store. **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/reducers/clinicReducer.ts:34`: Interface/Type `MemberUpdaterResult` is exported but appears to be dead code (no imports found). **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/reducers/clinicReducer.ts:43`: State/reducer `findBandMember` is not integrated into the game loop/store. **Action:** INTEGRATE or DELETE
-- **[HIGH]** `src/context/reducers/sanitizers/stateSanitizers.ts:1255`: State/reducer `sanitizeActiveEventOption` is not integrated into the game loop/store. **Action:** INTEGRATE or DELETE
+- **[HIGH]** `src/context/reducers/clinicReducer.ts:34`: Interface/Type `MemberUpdaterResult` is exported but appears to be dead code (no imports found). **Action:** DELETE or remove export
