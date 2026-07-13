@@ -134,8 +134,9 @@ export const getAdjustedCost = (
   item: PurchaseItem,
   band: BandState
 ): number => {
-  let cost = item.cost ?? 0
+  let cost = finiteNumberOr(item.cost, 0)
   // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
+  cost = finiteNumberOr(cost, 0)
   if (
     item.category === 'GEAR' &&
     item.currency === 'money' &&
@@ -143,7 +144,7 @@ export const getAdjustedCost = (
   ) {
     cost = Math.floor(cost * 0.8)
   }
-  return cost
+  return finiteNumberOr(cost, 0)
 }
 
 /**
