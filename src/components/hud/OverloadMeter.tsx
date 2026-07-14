@@ -18,7 +18,6 @@ interface OverloadMeterProps {
  * @remarks
  * The meter visually indicates the danger level when the overload surpasses `80`.
  *
- * @param props - The component properties.
  * @returns The overload meter component.
  */
 export const OverloadMeter = memo(function OverloadMeter({
