@@ -4,13 +4,22 @@ import { useTranslation } from 'react-i18next'
 import { BlockMeter } from '../../ui/shared'
 import { normalizePercentageToScale } from '../../utils/gameState'
 
+/**
+ * Configuration properties for the overload meter.
+ */
 interface OverloadMeterProps {
+  /** The current toxic overload percentage. */
   overload: number
 }
 
 /**
  * Displays toxic overload as a ten-block meter with danger styling above the warning threshold.
- * @param props - Current overload percentage.
+ *
+ * @remarks
+ * The meter visually indicates the danger level when the overload surpasses `80`.
+ *
+ * @param props - The component properties.
+ * @returns The overload meter component.
  */
 export const OverloadMeter = memo(function OverloadMeter({
   overload
