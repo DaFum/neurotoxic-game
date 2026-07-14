@@ -1,0 +1,147 @@
+src/components/hud/LaneInputArea.tsx:100:      {LANES.map(lane => (
+src/components/hud/ControlsHint.tsx:26:      {LANES.map(({ id, key }) => (
+src/components/overworld/hooks/useOverworldUrls.ts:90:  const tokenDefinitions = SVG_TOKEN_NAMES.map(
+src/components/overworld/hooks/useOverworldUrls.ts:186:        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="${escapeSvgText(offlineCopy.mapAria)}">
+src/components/overworld/hooks/useOverworldUrls.ts:191:          <text x="400" y="60" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="var(--color-void-black)">${escapeSvgText(offlineCopy.mapTitle)}</text>
+src/components/overworld/hooks/useOverworldUrls.ts:192:          <text x="400" y="410" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="var(--color-void-black)">${escapeSvgText(offlineCopy.mapDescription)}</text>
+src/components/overworld/hooks/useOverworldUrls.ts:215:        : offlineAssets.mapBgUrl || fallback,
+src/components/overworld/OverworldMap.tsx:105:      return gameMap.connections.map(conn => {
+src/components/pregig/SetlistBlock.tsx:174:        {songsDb.map(song => {
+src/components/pregig/SetlistBlock.tsx:206:              {densityBars.map((bar, i) => (
+src/components/pregig/GigModifiersBlock.tsx:76:        {gigModifierOptions.map((item: ModifierOption) => (
+src/components/pregig/GigModifiersBlock.tsx:113:            {currentModifiers.activeEffects.map((eff: ActiveEffectEntry) => (
+src/components/pregig/MerchStrategyBlock.tsx:208:        {merchItems.map(item => (
+src/components/assets/ChassisAcquisitionModal.tsx:187:      {options.map(opt => {
+src/components/assets/LoanProfileModal.tsx:32:      {LOAN_PROFILES_ARRAY.map(profile => {
+src/components/assets/sections/TourbusTrailerOverlay.tsx:30:      {addonSlots.map((slot, i) => {
+src/components/assets/sections/SlotZoneButtons.tsx:50:      {slots.map(slot => {
+src/components/assets/sections/TourbusVehicleView.tsx:43:          .map(slot => {
+src/components/assets/AssetSectionPanel.tsx:116:        sectionAssets.map(asset => (
+src/components/assets/AssetSectionPanel.tsx:140:            sectionCampaigns.map(campaign => (
+src/components/assets/ModulePickerModal.tsx:54:          .map(moduleId =>
+src/components/assets/ModulePickerModal.tsx:208:              {pool.map(({ module, unlocked, lockReasons }) => {
+src/components/assets/ModulePickerModal.tsx:251:                          {lockReasons.map(r => (
+src/components/assets/ModulePickerModal.tsx:267:                              .map(id =>
+src/components/assets/AssetsBottomTabs.tsx:27:        {ASSET_SECTION_TABS.map(tab => {
+src/components/assets/AssetSlotActionList.tsx:32:      {asset.slots.map(slot => {
+src/components/assets/LiabilitiesPanel.tsx:45:        {liabilities.map(l => {
+src/components/postGig/SocialOptionButton.tsx:62:            {opt.badges?.map((b: string) => (
+src/components/postGig/DealsPhase.tsx:44:        {offers.map(deal => (
+src/components/postGig/SocialPhase.tsx:54:        {options.map((opt, i: number) => (
+src/components/postGig/NegotiationModal.tsx:97:          {TACTICS.map(tactic => (
+src/components/postGig/FinancialList.tsx:16:      {items.map((item, i) => {
+src/components/ChatterOverlay.tsx:507:  const revision = messages.map((m: ChatterMessageData) => m.id).join(',')
+src/components/ChatterOverlay.tsx:518:        {messages.map((msg: ChatterMessageData) => (
+src/components/TutorialManager.tsx:57:              {TUTORIAL_STEPS.map(stepId => (
+src/overworld.css:17:.glitch-on .map-wrap {
+src/overworld.css:365:.map-wrap {
+src/overworld.css:720:.g-hue .map-wrap {
+src/overworld.css:723:.g-pixel .map-wrap {
+src/overworld.css:882:  .map-wrap,
+src/overworld.css:920:  .map-wrap {
+src/overworld.css:970:  .map-wrap,
+src/overworld.css:1010:  .glitch-on .map-wrap,
+src/overworld.css:1012:  .g-hue .map-wrap,
+src/overworld.css:1013:  .g-pixel .map-wrap,
+src/scenes/gameover/GameOverStats.tsx:34:        {statRows.map((row, i) => (
+src/scenes/mainmenu/MainMenuFeatures.tsx:59:      {items.map((item: string) => {
+src/scenes/mainmenu/MainMenuFeatures.tsx:98:            {headers.map((header: string) => (
+src/scenes/mainmenu/MainMenuFeatures.tsx:109:          {rows.map((row: string[]) => {
+src/scenes/mainmenu/MainMenuFeatures.tsx:120:                {row.map((cell: string, colIndex: number) => {
+src/scenes/mainmenu/MainMenuFeatures.tsx:161:        {featureList.map(section => (
+src/scenes/ClinicScene.tsx:40:          {band.members.map(member => (
+src/scenes/kabelsalat/components/CableList.tsx:47:      {CABLES.map(cable => {
+src/scenes/kabelsalat/components/SocketList.tsx:32:      {socketOrder.map((socketId, index) => (
+src/scenes/kabelsalat/components/LightningEffects.tsx:15:    {lightningSeeds.map(seed => (
+src/scenes/kabelsalat/kabelsalatUtils.ts:17:  return Array.from({ length: 15 }).map(() => ({
+src/scenes/credits/CreditsView.tsx:51:            {credits.map((c, i) => (
+src/hooks/minigames/useRoadieLogic.ts:111:    spawners: TRAFFIC_ROWS.map((row, i) => ({
+src/hooks/useTutorial.ts:34:    titleKey: 'ui:tutorial.map.title',
+src/hooks/useTutorial.ts:36:    textKey: 'ui:tutorial.map.text',
+src/utils/brandDealLogic.ts:236:  return picked.map(entry =>
+src/utils/leaderboardUtils.ts:38:    songsToSubmit = lastGigStats.songStats.map((stat: SongStat) => ({
+src/utils/translationUtils.ts:39:    return context.map(item => {
+src/utils/traitUtils.ts:278:  const nextMembers: MemberWithTraits[] = members.map(m => ({
+src/utils/rivalEngine.ts:64:    // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
+src/utils/assetTicks.ts:71:  const nextAssets = state.assets.map((asset: LongTermAsset) => {
+src/utils/assetTicks.ts:124:          members: state.band.members.map((member: BandMember) => ({
+src/utils/assetTicks.ts:327:        slots: cfgTier.slots.map((slotType, i) => ({
+src/utils/assetTicks.ts:350:  const newAssetsWithDay = newAssets.map(a => ({ ...a, acquiredOnDay: day }))
+src/utils/audio/setlistResolution.ts:45:  ).map(songRef => {
+src/utils/audio/midiPlayback.ts:658:  ).map(event => ({
+src/utils/audio/playbackUtils.ts:130:    .map(segment => encodeURIComponent(segment))
+src/utils/postGig/socialResolution.ts:247:    newBand.members = newBand.members.map((m: BandMember) => {
+src/utils/questProgress.ts:318:    return declaredRules.map(rule => withDefaultScope(rule, repeatPolicy))
+src/utils/gigStats.ts:71:  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with procedural loop to avoid closure allocation
+src/domain/questRewards.ts:95:// ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop for asset repair
+src/domain/questRewards.ts:147:  // ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop
+src/domain/questPenalties.ts:109:// ⚡ BOLT OPTIMIZATION: Replaced Array.map with explicit index-based for loop
+src/data/events/index.ts:41:  EVENT_CATEGORIES.map(cat => [cat, [] as UnknownRecord[]])
+src/data/chatter/venueChatter.ts:1554:  VENUE_CHATTER_DB.map(v => [v.venueId, v])
+src/data/platforms.ts:23:  Object.values(SOCIAL_PLATFORMS).map(platform => platform.id)
+src/data/songs.ts:44:  return Object.entries(rawSongs).map(([key, song]) => {
+src/data/upgradeCatalog.ts:149:    ? rawEffects.map(rawEffect => normalizeCatalogEffect(rawEffect, item.id))
+src/data/upgradeCatalog.ts:177:  ].map(normalizeUpgradeShape)
+src/ui/hud/shared/SharedHUDComponents.tsx:105:          {(band?.members ?? []).map((m: BandMember, idx: number) => (
+src/ui/settings/LogSettings.tsx:45:          {Object.entries(LOG_LEVELS).map(([key, value]) => (
+src/ui/ToastOverlay.tsx:150:        {toasts.map(toast => {
+src/ui/QuestsModal.tsx:523:          {rewardChips.map((reward, rewardIndex) => (
+src/ui/QuestsModal.tsx:533:          {penaltyTexts.map(text => (
+src/ui/QuestsModal.tsx:635:  const displayQuests = activeQuests.map(quest => {
+src/ui/QuestsModal.tsx:697:              {sortQuests(displayQuests).map(
+src/ui/overworld/OverworldMenu.tsx:104:      {menuCategories.map(c => (
+src/ui/overworld/OverworldMenu.tsx:178:        {cat.items.map(item => (
+src/ui/overworld/EventLog.tsx:127:        {entries.map(entry => (
+src/ui/shared/BrutalistUI.tsx:336:          {blocks.map(block => {
+src/ui/shared/BrutalistUI.tsx:449:              {modalActions.map((action, i) => (
+src/ui/shared/BrutalistUI.tsx:622:        {['pill-0', 'pill-1', 'pill-2'].map(pillKey => (
+src/ui/shared/KeyboardShortcuts.tsx:84:        {SHORTCUTS.map(({ key, label }) => (
+src/ui/shared/SegmentedSlider.tsx:96:        {segments.map(segment => {
+src/ui/EventModal.tsx:191:      {eventOptions.map((option, index) => {
+src/ui/DebugLogViewer.tsx:146:            .map(log => (
+src/ui/SupplyStopModal.tsx:109:          {inventory.map(item => {
+src/ui/ContrabandStash.tsx:319:            {members.map(m => {
+src/ui/bandhq/BrandDealsTab.tsx:46:      {BRAND_DEALS.map(deal => {
+src/ui/bandhq/VoidTraderTab.tsx:41:    ].map(item => {
+src/ui/bandhq/VoidTraderTab.tsx:84:        {voidItems.map(item => {
+src/ui/bandhq/StatsTab.tsx:92:          {(band.members || []).map(member => (
+src/ui/bandhq/CatalogTab.tsx:84:        {items.map(item => (
+src/ui/bandhq/detailedStats/components/SocialReachSection.tsx:97:                  {activeDealDisplays.map(deal => (
+src/ui/bandhq/detailedStats/components/CraftingSection.tsx:18:        {recipes.map(recipe => {
+src/ui/bandhq/detailedStats/components/BandMembersSection.tsx:14:      {(members ?? []).map(member => (
+src/ui/bandhq/detailedStats/components/InventoryEquipmentSection.tsx:22:      {Object.entries(band.inventory ?? {}).map(([key, val]) => {
+src/ui/bandhq/detailedStats/components/RegionalStandingSection.tsx:35:    return Object.entries(reputationByRegion).map(([region, rep]) => (
+src/ui/bandhq/detailedStats/components/RegionalStandingSection.tsx:74:            {venueBlacklist.map(venueId => {
+src/ui/bandhq/detailedStats/components/MemberTraits.tsx:29:    // Why: baseTraits.map creates an intermediate array, and allocating a Set and copied array is unnecessary when there are no dynamic traits to merge.
+src/ui/bandhq/detailedStats/components/MemberTraits.tsx:78:  return potentialTraits.map(trait => {
+src/ui/bandhq/detailedStats/components/MemberEquipment.tsx:19:  return Object.entries(member.equipment).map(([k, v]) => (
+src/ui/bandhq/detailedStats/components/ActiveQuestsSection.tsx:24:          {activeQuests.map(q => {
+src/ui/bandhq/BandHQTabsList.tsx:54:      {tabs.map(tab => {
+src/ui/bandhq/leaderboard/components/LeaderboardTable.tsx:72:              {rankings.map(entry => {
+src/ui/bandhq/leaderboard/components/LeaderboardTabs.tsx:20:      {views.map(({ id, label }) => (
+src/ui/bandhq/leaderboard/components/SongSelector.tsx:29:        {SONGS_DB.map(song => (
+src/ui/bandhq/GlossaryTab.tsx:82:          {GLOSSARY_ENTRIES.map(entry => (
+src/ui/bandhq/SetlistTab.tsx:115:  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with explicit for loop for Set initialization
+src/ui/bandhq/SetlistTab.tsx:228:        {SONGS_DB.map(song => (
+src/context/reducers/toastSanitizers.ts:35:  // ⚡ BOLT OPTIMIZATION: Replaced .map() inside Set constructor with procedural loop.
+src/context/reducers/toastSanitizers.ts:36:  // Why: Avoids intermediate array allocation from .map().
+src/context/reducers/systemReducer.ts:422:    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/systemReducer.ts:695:      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/minigameReducer.ts:152:    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/sanitizers/stateSanitizers.ts:876:      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/assetSanitizers.ts:245:  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with a single-pass loop.
+src/context/reducers/assetSanitizers.ts:328:  // Why: Avoids intermediate array allocation from .map().
+src/context/reducers/assetSanitizers.ts:381:  // Why: Avoids intermediate array allocation from .map().
+src/context/reducers/bandReducer.ts:199:    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/clinicReducer.ts:257:  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/clinicReducer.ts:305:  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+src/context/reducers/clinicReducer.ts:425:      // ⚡ BOLT OPTIMIZATION: Replaced .map() with targeted array indexing.
+src/context/reducers/assetReducer.ts:115:  // ⚡ BOLT OPTIMIZATION: Replaced Array.map with a procedural loop
+src/context/reducers/assetReducer.ts:224:  // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
+src/context/reducers/assetReducer.ts:326:  // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .some, .map, .filter)
+src/context/reducers/assetReducer.ts:421:  // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .map)
+src/context/reducers/assetReducer.ts:546:  // ⚡ BOLT OPTIMIZATION: Replaced Array.map with targeted array indexing
+src/context/actionCreators.ts:476:  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() and Array.map() with a single procedural loop to avoid closure and array allocations.
+src/context/initialState.ts:321:    members: DEFAULT_BAND_STATE.members.map(m => ({
+src/context/useMapGeneration.ts:100:                'ui:error.mapGenerationFailedReturnToMenu',
+src/context/assetActionCreators.ts:212:  const slotIds = cfg.slots.map(() => getSafeUUID())

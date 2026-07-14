@@ -167,3 +167,8 @@
 
 **Learning:** Action payloads (like `EventDeltaPayload` which contains `relationshipChange`) are heavily processed. Using `Array.some` followed by `Array.map` to detect and stamp timestamps allocates closures and intermediate arrays on every high-frequency `APPLY_EVENT_DELTA` dispatch.
 **Action:** Replace `Array.some` and `Array.map` in action creator payload sanitisers with procedural loops and explicitly typed pre-allocated arrays (e.g., `new Array<unknown>(length)`).
+
+## 2026-07-29 - Missing inline comments in micro-optimizations
+
+**Learning:** When performing performance optimizations, like replacing array methods (e.g. `.filter()`) with procedural loops to avoid closure allocations, code review requires explicitly explaining the change with comments inline in the codebase (e.g., `// ⚡ BOLT OPTIMIZATION:` and `// Why:` / `// Impact:`). Submitting un-commented micro-optimizations leads to rejection because they sacrifice readability without explaining the rationale.
+**Action:** Always add the required comments right above the optimized block of code, outlining the `What`, `Why`, and `Impact`, just like in the PR description.

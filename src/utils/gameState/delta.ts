@@ -417,11 +417,20 @@ export const calculateAppliedDelta = (
       const isNotSelfRelationship = (rc: RelationshipChange) =>
         rc.member1 !== rc.member2
       if (Array.isArray(delta.band.relationshipChange)) {
-        applied.band.relationshipChange = delta.band.relationshipChange.filter(
-          rc =>
+        // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
+        // Why: Avoids intermediate array and closure allocations during high-frequency delta application.
+        // Impact: Reduces GC pressure per event tick.
+        const filtered = []
+        for (let i = 0; i < delta.band.relationshipChange.length; i++) {
+          const rc = delta.band.relationshipChange[i]
+          if (
             isRelationshipChange(rc) &&
             isNotSelfRelationship(rc as RelationshipChange)
-        )
+          ) {
+            filtered.push(rc)
+          }
+        }
+        applied.band.relationshipChange = filtered
       } else {
         applied.band.relationshipChange =
           isRelationshipChange(delta.band.relationshipChange) &&
