@@ -420,7 +420,7 @@ export const calculateAppliedDelta = (
         // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
         // Why: Avoids intermediate array and closure allocations during high-frequency delta application.
         // Impact: Reduces GC pressure per event tick.
-        const filtered = []
+        const filtered: RelationshipChange[] = []
         for (let i = 0; i < delta.band.relationshipChange.length; i++) {
           const rc = delta.band.relationshipChange[i]
           if (
