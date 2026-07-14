@@ -118,6 +118,9 @@ export interface TravelActionsParams {
 export interface VanMaintenanceParams {
   isTravelingRef: React.MutableRefObject<boolean>
   player: PlayerState
+  band: BandState
   updatePlayer: (updates: Partial<PlayerState>) => void
+  updateBand: (updates: Partial<BandState>) => void
+  advanceDay: () => void
   addToast: (message: string, type?: string) => void
 }

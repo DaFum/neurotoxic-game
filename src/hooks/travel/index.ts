@@ -44,10 +44,13 @@ import type { TravelLogicParams } from './types'
 export const useTravelLogic = (params: TravelLogicParams) => {
   const { refs, state, setters } = useTravelState(params)
 
-  const { handleRefuel, handleRepair } = useVanMaintenance({
+  const { handleRefuel, handleRepair, handleRestInVan } = useVanMaintenance({
     isTravelingRef: refs.isTravelingRef,
     player: params.player,
+    band: params.band,
     updatePlayer: params.updatePlayer,
+    updateBand: params.updateBand,
+    advanceDay: params.advanceDay,
     addToast: params.addToast
   })
 
@@ -96,6 +99,7 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     handleTravel,
     handleRefuel,
     handleRepair,
+    handleRestInVan,
     onTravelComplete,
     clearPendingTravel,
     travelCompletedRef

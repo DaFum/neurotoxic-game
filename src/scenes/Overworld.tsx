@@ -71,6 +71,7 @@ export const Overworld = () => {
     handleTravel,
     handleRefuel,
     handleRepair,
+    handleRestInVan,
     onTravelComplete,
     travelCompletedRef
   } = useTravelLogic({
@@ -153,6 +154,7 @@ export const Overworld = () => {
         openAssets={openAssets}
         handleRefuel={handleRefuel}
         handleRepair={handleRepair}
+        handleRestInVan={handleRestInVan}
         handleSaveWithDelay={handleSaveWithDelay}
       />
 
