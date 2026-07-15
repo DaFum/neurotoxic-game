@@ -1,4 +1,4 @@
-import type { BandMember } from '../types'
+import type { BandMember } from '../../../../types'
 import { CHAR_MAP } from '../helpers'
 import type { BasicTProps } from '../types'
 import { useMemo } from 'react'

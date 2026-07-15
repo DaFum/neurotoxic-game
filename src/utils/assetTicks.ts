@@ -22,6 +22,7 @@ import {
 } from './gameState'
 import { MODULE_REGISTRY } from './assetModuleRegistry'
 import { clampUnit } from './numberUtils'
+import { pickIndex } from './selectionUtils'
 import {
   CHASSIS_CONFIG,
   CONDITION_DECAY_PER_DAY,
@@ -431,10 +432,7 @@ export const rollAssetRiskEvents = (
     let selectedType: RiskEventType = 'fire'
     if (typesArray.length > 0) {
       const typeRoll = dayRngStream[i++] ?? 0
-      const index = Math.min(
-        typesArray.length - 1,
-        Math.floor(typeRoll * typesArray.length)
-      )
+      const index = pickIndex(typesArray, () => typeRoll)
       selectedType = typesArray[index]!
     }
 

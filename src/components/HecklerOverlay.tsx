@@ -1,14 +1,10 @@
 import { useEffect, useReducer, memo } from 'react'
+import type { Projectile as HecklerProjectile } from '../utils/hecklerLogic'
 
-type ProjectileId = string | number
-
-interface Projectile {
-  id: ProjectileId
-  x: number
-  y: number
-  rotation: number
-  type?: string
-}
+type Projectile = Pick<
+  HecklerProjectile,
+  'id' | 'x' | 'y' | 'rotation' | 'type'
+>
 
 interface HecklerStateRef {
   current: {

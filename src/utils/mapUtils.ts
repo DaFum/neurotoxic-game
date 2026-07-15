@@ -9,14 +9,14 @@ import { finiteNumberOr } from './finiteNumber'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
-type MapConnection = { from?: unknown; to?: unknown }
+type RawMapConnection = { from?: unknown; to?: unknown }
 type GameNode = { type?: unknown }
 type GameMapLike =
   | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
   | null
   | undefined
 
-const isMapConnection = (value: unknown): value is MapConnection =>
+const isMapConnection = (value: unknown): value is RawMapConnection =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
 /**

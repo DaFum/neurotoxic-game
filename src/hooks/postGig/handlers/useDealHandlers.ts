@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import type React from 'react'
 import type { BrandDeal } from '../../../types/social'
-import type { GameState } from '../../../types'
+import type { GameState, QuestEvent } from '../../../types'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
@@ -19,8 +19,6 @@ import {
 } from '../../../quests/producers/brandQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../../../quests/producers/economyQuestEvents'
 import type { HandlerDispatchers } from './types'
-
-type QuestEvent = Parameters<HandlerDispatchers['applyQuestEvent']>[0]
 
 /**
  * Builds the quest events emitted when a brand deal is accepted: offer-accepted,

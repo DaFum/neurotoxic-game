@@ -1,6 +1,6 @@
 import { useState, useEffect, useSyncExternalStore } from 'react'
 import { useTranslation } from 'react-i18next'
-import { logger, LOG_LEVELS } from '../utils/logger'
+import { logger, LOG_LEVELS, type LogEntry } from '../utils/logger'
 import { Tooltip } from './shared/Tooltip'
 
 type LogLevelName = keyof typeof LOG_LEVELS
@@ -22,8 +22,6 @@ const getLevelColor = (level: string) => {
       return 'text-star-white'
   }
 }
-
-type LogEntry = (typeof logger.logs)[number]
 
 const LogRow = ({ log }: { log: LogEntry }) => (
   <div className='flex gap-2 hover:bg-star-white/5'>
