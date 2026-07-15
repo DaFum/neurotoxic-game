@@ -506,15 +506,15 @@ const simulateFameCatalogClear = (catalog, performanceScore) => {
 }
 
 const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
-  if (gigsToBuyShopPlusLegacy > 30) {
-    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
+  if (gigsToBuyShopPlusLegacy > 80) {
+    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 55-77 guten Gigs bis 24.390 Fame.'
   }
 
   if (gigsToBuyShopPlusLegacy < 20) {
-    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
+    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 55-77 guten Gigs bis 24.390 Fame.'
   }
 
-  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 24.390 Fame.'
+  return 'Fame-Gewinn liegt im Zielkorridor von 55-77 guten Gigs bis 24.390 Fame.'
 }
 
 const buildFameBalanceAudit = () => {
