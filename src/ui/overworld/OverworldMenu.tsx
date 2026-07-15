@@ -21,6 +21,7 @@ interface OverworldMenuProps {
   openAssets: () => void
   handleRefuel: () => void
   handleRepair: () => void
+  handleRestInVan: () => void
   handleSaveWithDelay: () => void
 }
 
@@ -36,6 +37,7 @@ type MenuAction =
   | 'openDarkWebLeak'
   | 'handleRefuel'
   | 'handleRepair'
+  | 'handleRestInVan'
   | 'handleSaveWithDelay'
 
 type MenuCondition = 'fuel' | 'repair'
@@ -329,6 +331,17 @@ const useMenuCategories = (
             action: 'handleRepair'
           },
           {
+            label: t('ui:overworld.rest_in_van', {
+              defaultValue: 'CRASH IN VAN'
+            }),
+            desc: t('ui:menu.rest_desc', {
+              defaultValue: 'Skip day, gain stamina'
+            }),
+            icon: '💤',
+            v: 'w',
+            action: 'handleRestInVan'
+          },
+          {
             label: t('ui:blood_bank.button', { defaultValue: 'BLOOD BANK' }),
             desc: t('ui:menu.bloodbank_desc', {
               defaultValue: 'Trade blood for cash'
@@ -392,6 +405,7 @@ export const OverworldMenu = React.memo(
     openAssets,
     handleRefuel,
     handleRepair,
+    handleRestInVan,
     handleSaveWithDelay
   }: OverworldMenuProps) => {
     const menuCategories = useMenuCategories(t)
@@ -436,11 +450,13 @@ export const OverworldMenu = React.memo(
           openClinic,
           handleRefuel,
           handleRepair,
+          handleRestInVan,
           handleSaveWithDelay
         }) as const satisfies Record<MenuAction, () => void>,
       [
         handleRefuel,
         handleRepair,
+        handleRestInVan,
         handleSaveWithDelay,
         openAssets,
         openBloodBank,

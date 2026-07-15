@@ -37,8 +37,9 @@
 | 2026-07-07        | src/components/clinic/GraftModal.tsx                 | GraftModalProps, GraftModal                                                                                                                              |
 | 2026-07-08        | src/scenes/mainmenu/MainMenuNameInputPrompt.tsx      | MainMenuNameInputPromptProps, MainMenuNameInputPrompt                                                                                                    |
 | 2026-07-09        | src/components/assets/sectionTabs.ts                 | ASSET_SECTION_TABS_MAP                                                                                                                                   |
-| 2026-07-10        | src/components/overworld/hooks/useOverworldUrls.ts   | resetSvgTokenStyleCacheForTesting                                                                                                                        |
-| 2026-07-11        | src/context/reducers/clinicReducer.ts                | handleGraftNeuroOverclock, handleClinicEnhance                                                                                                           |
-| 2026-07-12        | src/components/stage/EffectSpritePool.ts             | EffectSprite, EffectSpritePool, constructor, getSprite, releaseSprite                                                                                    |
-| 2026-07-13        | src/context/actionCreators.ts                        | graftNeuroOverclock                                                                                                                                      |
-| 2026-07-14        | src/components/hud/OverloadMeter.tsx                 | OverloadMeterProps, OverloadMeter                                                                                                                        |
+| 2026-07-10 | src/components/overworld/hooks/useOverworldUrls.ts | resetSvgTokenStyleCacheForTesting |
+| 2026-07-11 | src/context/reducers/clinicReducer.ts | handleGraftNeuroOverclock, handleClinicEnhance |
+| 2026-07-12 | src/components/stage/EffectSpritePool.ts | EffectSprite, EffectSpritePool, constructor, getSprite, releaseSprite |
+| 2026-07-13 | src/context/actionCreators.ts | graftNeuroOverclock |
+| 2026-07-14 | src/components/hud/OverloadMeter.tsx | OverloadMeterProps, OverloadMeter |
+| 2026-07-15 | src/scenes/mainmenu/shared/MainMenuMotionContainer.tsx | MainMenuMotionContainerProps, MainMenuMotionContainer |

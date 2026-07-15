@@ -8,6 +8,8 @@ import {
   isConnected as isConnectedUtil,
   getNodeVisibility as getNodeVisibilityUtil
 } from '../../utils/mapUtils'
+import { getTotalDailyObligations } from '../../utils/assetSelectors'
+import type { GameState } from '../../types'
 import type { TravelLogicParams } from './types'
 
 /**
@@ -44,10 +46,22 @@ import type { TravelLogicParams } from './types'
 export const useTravelLogic = (params: TravelLogicParams) => {
   const { refs, state, setters } = useTravelState(params)
 
-  const { handleRefuel, handleRepair } = useVanMaintenance({
+  const dailyObligations = getTotalDailyObligations({
+    player: params.player,
+    band: params.band,
+    assets: params.assets,
+    liabilities: params.liabilities,
+    social: params.social
+  } as GameState)
+
+  const { handleRefuel, handleRepair, handleRestInVan } = useVanMaintenance({
     isTravelingRef: refs.isTravelingRef,
     player: params.player,
+    band: params.band,
     updatePlayer: params.updatePlayer,
+    updateBand: params.updateBand,
+    advanceDay: params.advanceDay,
+    dailyObligations,
     addToast: params.addToast
   })
 
@@ -96,6 +110,7 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     handleTravel,
     handleRefuel,
     handleRepair,
+    handleRestInVan,
     onTravelComplete,
     clearPendingTravel,
     travelCompletedRef

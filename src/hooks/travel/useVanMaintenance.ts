@@ -1,7 +1,12 @@
-import { useCallback } from 'react'
+import { useCallback, useRef } from 'react'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
-import { clampPlayerMoney, finiteNumberOr } from '../../utils/gameState'
+import {
+  clampPlayerMoney,
+  clampMemberStamina,
+  clampMemberMood,
+  finiteNumberOr
+} from '../../utils/gameState'
 import {
   calculateRefuelCost,
   calculateRepairCost,
@@ -28,9 +33,16 @@ import type { VanMaintenanceParams } from './types'
 export const useVanMaintenance = ({
   isTravelingRef,
   player,
+  band,
   updatePlayer,
+  updateBand,
+  advanceDay,
+  dailyObligations,
   addToast
 }: VanMaintenanceParams) => {
+  const pendingRestRef = useRef(false)
+  const pendingRestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   const handleRefuel = useCallback(() => {
     if (isTravelingRef.current) return
 
@@ -132,5 +144,49 @@ export const useVanMaintenance = ({
     }
   }, [player, updatePlayer, addToast, isTravelingRef])
 
-  return { handleRefuel, handleRepair }
+  const handleRestInVan = useCallback(() => {
+    if (isTravelingRef.current) return
+
+    if (!pendingRestRef.current) {
+      pendingRestRef.current = true
+      addToast(
+        i18n.t('ui:travel.rest.confirm', {
+          defaultValue: 'Resting will skip a day and incur daily costs of {{cost}}. Click again to confirm.',
+          cost: formatCurrency(dailyObligations, i18n.language)
+        }),
+        'warning'
+      )
+      pendingRestTimeoutRef.current = setTimeout(() => {
+        pendingRestRef.current = false
+      }, 5000)
+      return
+    }
+
+    if (pendingRestTimeoutRef.current) clearTimeout(pendingRestTimeoutRef.current)
+    pendingRestRef.current = false
+
+    const newMembers = (band?.members || []).map(m => {
+      const currentStamina = finiteNumberOr(m?.stamina, 0)
+      const currentMood = finiteNumberOr(m?.mood, 0)
+      const maxStamina = finiteNumberOr(m?.staminaMax, 100)
+
+      return {
+        ...m,
+        stamina: clampMemberStamina(currentStamina + 50, maxStamina),
+        mood: clampMemberMood(currentMood - 10)
+      }
+    })
+
+    updateBand({ members: newMembers })
+    advanceDay()
+
+    addToast(
+      i18n.t('ui:travel.rest.rested', {
+        defaultValue: 'Rest in van: +50 Stamina, -10 Mood. Passed 1 day.'
+      }),
+      'success'
+    )
+  }, [band, updateBand, advanceDay, dailyObligations, addToast, isTravelingRef])
+
+  return { handleRefuel, handleRepair, handleRestInVan }
 }
