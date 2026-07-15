@@ -12,6 +12,7 @@ import {
   resolveOverlaps
 } from './mapGenerator/layout'
 import { pickRandomSubset } from './mapGenerator/mathUtils'
+import { selectRandomItem } from './selectionUtils'
 import type {
   GeneratedMapNode,
   MapGeneratorState,
@@ -482,8 +483,9 @@ export class MapGenerator {
       for (const node of nextLayer || []) {
         const hasParent = connectedToIds.has(node.id)
         if (!hasParent) {
-          const randomParent =
-            currentLayer[Math.floor(this.random() * currentLayer.length)]
+          const randomParent = selectRandomItem(currentLayer, () =>
+            this.random()
+          )
           if (!randomParent) {
             throw new StateError(
               `Failed to select parent in layer ${i} for node ${node.id}`

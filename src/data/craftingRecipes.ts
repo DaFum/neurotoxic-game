@@ -71,7 +71,7 @@ type CraftingRecipeId = keyof typeof CRAFTING_RECIPES
  * @param id - Candidate recipe id.
  * @returns True when the recipe id exists in `CRAFTING_RECIPES`.
  */
-export const isCraftingRecipeId = (id: string): id is CraftingRecipeId =>
+const isCraftingRecipeId = (id: string): id is CraftingRecipeId =>
   Object.hasOwn(CRAFTING_RECIPES, id)
 
 /**

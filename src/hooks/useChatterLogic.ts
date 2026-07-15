@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { getRandomChatter } from '../data/chatter/index'
 import { getSafeRandom, getSafeUUID } from '../utils/crypto'
 import { logger } from '../utils/logger'
+import { selectRandomItem } from '../utils/selectionUtils'
 import type { BandMember } from '../types'
 import type { TranslationCallback } from '../types/callbacks'
 import type {
@@ -35,9 +36,8 @@ const resolveSpeaker = (
     }
   }
   if (memberNames.length > 0) {
-    const roll = getSafeRandom()
     return (
-      memberNames[Math.floor(roll * memberNames.length)] ??
+      selectRandomItem(memberNames, getSafeRandom) ??
       t('ui:chatter_labels.default_speaker', { defaultValue: 'Band' })
     )
   }

@@ -1,5 +1,5 @@
 import { MemberCard } from './MemberCard'
-import type { BandMember } from '../types'
+import type { BandMember } from '../../../../types'
 import type { BasicTProps } from '../types'
 
 export const BandMembersSection = ({

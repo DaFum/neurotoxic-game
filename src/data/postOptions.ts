@@ -8,7 +8,7 @@ import { getSafeRandom } from '../utils/crypto'
 import { QUEST_APOLOGY_TOUR } from './questsConstants'
 import { hasActiveQuest } from '../utils/questUtils'
 import { isPlainOrNullPrototypeRecord } from '../utils/objectUtils'
-import { selectRandomItem } from '../utils/audio/selectionUtils'
+import { pickIndex, selectRandomItem } from '../utils/selectionUtils'
 
 const getSecureRollOnce = () => {
   return getSafeRandom()
@@ -977,10 +977,7 @@ export const POST_OPTIONS = [
         roll = getSecureRollOnce()
       }
 
-      const selectedId =
-        affordableIds[
-          Math.floor(roll * affordableIds.length) % affordableIds.length
-        ]
+      const selectedId = affordableIds[pickIndex(affordableIds, () => roll)]
       const instagramPostFailure = {
         type: 'FIXED' as const,
         success: false,

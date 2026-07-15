@@ -1,5 +1,5 @@
 import { ProgressBar } from '../../../shared'
-import type { BandMember } from '../types'
+import type { BandMember } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { MemberEquipment } from './MemberEquipment'
 import { MemberTraits } from './MemberTraits'

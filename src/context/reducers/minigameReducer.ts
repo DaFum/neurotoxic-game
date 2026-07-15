@@ -29,6 +29,7 @@ import { computeDropChance } from '../../utils/contrabandUtils'
 import { normalizeVenueId, getRegionKeyForLocation } from '../../utils/mapUtils'
 import { addContrabandHelper } from './bandReducer'
 import { pickRandomContraband } from '../../utils/contrabandUtils'
+import { pickIndex } from '../../utils/selectionUtils'
 import {
   applySharedBandEffect,
   EQUIPMENT_APPLY_ON_ADD_EFFECTS
@@ -167,7 +168,7 @@ export const handleCompleteTravelMinigame = (
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
     const baseRng = finiteNumberOr(safeRngValue, 0)
-    const memberIndex = Math.floor(baseRng * nextMembers.length)
+    const memberIndex = pickIndex(nextMembers, () => baseRng)
     const hitMember = nextMembers[memberIndex]
     if (hitMember) {
       const staminaPenalty = voidHazardHits * 10

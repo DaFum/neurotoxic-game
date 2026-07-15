@@ -1,4 +1,4 @@
-import type { BandMember } from '../types'
+import type { BandMember } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { isEmptyObject } from '../../../../utils/gameState'
 

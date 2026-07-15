@@ -42,6 +42,7 @@ type MenuAction =
 
 type MenuCondition = 'fuel' | 'repair'
 type MenuVariant = 'p' | 'w' | 'd'
+type MenuColorToken = `var(--color-${string})`
 
 interface MenuItem {
   label: string
@@ -56,7 +57,7 @@ interface MenuCategory {
   id: string
   label: string
   icon: string
-  color: string
+  color: MenuColorToken
   items: MenuItem[]
 }
 
