@@ -1712,6 +1712,7 @@
   "travel.repair.notEnoughMoney": "Nicht genug Geld! Du brauchst {{cost}} für die Reparatur.",
   "travel.repair.repaired": "Repariert: -{{cost}}",
   "travel.repair.vanAlreadyPerfect": "Der Van ist bereits in perfektem Zustand!",
+  "travel.rest.confirm": "Das Ausruhen überspringt einen Tag und verursacht tägliche Kosten in Höhe von {{cost}}. Klicke erneut zum Bestätigen.",
   "travel.rest.rested": "Im Van gepennt: +50 Ausdauer, -10 Stimmung. 1 Tag vergangen.",
   "travel.rivalEncounter": "Deine rivalisierende Band, {{rivalName}}, ist in der Stadt!",
   "tutorial.ariaLabel": "Tutorial",

@@ -122,5 +122,6 @@ export interface VanMaintenanceParams {
   updatePlayer: (updates: Partial<PlayerState>) => void
   updateBand: (updates: Partial<BandState>) => void
   advanceDay: () => void
+  dailyObligations: number
   addToast: (message: string, type?: string) => void
 }

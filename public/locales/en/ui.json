@@ -1712,6 +1712,7 @@
   "travel.repair.notEnoughMoney": "Not enough money! Need {{cost}} to repair.",
   "travel.repair.repaired": "Repaired: -{{cost}}",
   "travel.repair.vanAlreadyPerfect": "Van is already in perfect condition!",
+  "travel.rest.confirm": "Resting will skip a day and incur daily costs of {{cost}}. Click again to confirm.",
   "travel.rest.rested": "Rest in van: +50 Stamina, -10 Mood. Passed 1 day.",
   "travel.rivalEncounter": "Your rival band, {{rivalName}}, is in town!",
   "tutorial.ariaLabel": "Tutorial",
