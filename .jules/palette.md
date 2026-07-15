@@ -166,8 +166,11 @@
 **Action:** When a button toggles the visibility of a container, always use `aria-expanded={isOpen}` to announce its current state and `aria-controls={containerId}` to programmatically link the button to the expanded content. Pass `undefined` to `aria-controls` if the target element is conditionally unmounted from the DOM when closed.
 
 ## 2024-07-11 - Add ARIA label to Warning Icon in BandMemberRow
+
 **Learning:** Icon-only warning states in HUD components (`AlertCircle` in `BandMemberRow`) lacked implicit accessibility context. Relying solely on `Tooltip` wrappers fails for screen readers since `lucide-react` icons aren`t inherently accessible.
-**Action:** Always add `role="img"` and a localized `aria-label` directly to `lucide-react` SVG components when used as status indicators, even if wrapped in a Tooltip.
+**Action:** Always add `role="img"`and a localized`aria-label`directly to`lucide-react` SVG components when used as status indicators, even if wrapped in a Tooltip.
+
 ## 2024-05-24 - Deadman Button ARIA Label
+
 **Learning:** Found that an accessible button missing an aria-label can make screen reader navigation confusing, especially if it relies on visually hidden or styled text like Deadman buttons.
 **Action:** Always verify that interactive components with complex state texts have an explicit `aria-label` conveying instructions (e.g. `HOLD TO OVERRIDE`).

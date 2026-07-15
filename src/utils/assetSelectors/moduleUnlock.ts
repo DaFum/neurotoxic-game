@@ -1,9 +1,5 @@
 import type { GameState } from '../../types'
-import type {
-  AssetModule,
-  LongTermAsset,
-  SlotType
-} from '../../types/assets'
+import type { AssetModule, LongTermAsset, SlotType } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
 

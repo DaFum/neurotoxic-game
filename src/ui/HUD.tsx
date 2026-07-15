@@ -2,11 +2,7 @@ import { memo } from 'react'
 import { useGameSelector, useGameDispatch } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
-import {
-  Map as MapIcon,
-  DollarSign,
-  Skull
-} from 'lucide-react'
+import { Map as MapIcon, DollarSign, Skull } from 'lucide-react'
 import { formatCurrency } from '../utils/numberUtils'
 import {
   BandStatusPanel,

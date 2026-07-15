@@ -844,10 +844,7 @@ const maybeApplyPostPulse = (
 
 const maybeApplyContrabandDrop = (state, rng, counters) => {
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
-  const item =
-    CONTRABAND_DB[
-      Math.floor(rng() * CONTRABAND_DB.length)
-    ]
+  const item = CONTRABAND_DB[Math.floor(rng() * CONTRABAND_DB.length)]
   if (!item) return
 
   switch (item.effectType) {

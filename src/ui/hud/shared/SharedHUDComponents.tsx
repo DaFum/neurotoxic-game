@@ -37,7 +37,9 @@ export const VanStatusMiniBars = memo(
                 color='bg-warning-yellow'
                 warn={safeFuel < 20}
                 size='mini'
-                aria-label={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+                aria-label={t('ui:hud.fuelLevel', {
+                  defaultValue: 'Fuel Level'
+                })}
               />
             </div>
           </div>
@@ -124,9 +126,7 @@ export const BandStatusPanel = memo(
             <ProgressBar
               value={safeHarmony}
               max={100}
-              color={
-                safeHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'
-              }
+              color={safeHarmony < 40 ? 'bg-blood-red' : 'bg-toxic-green'}
               size={barSize}
               showValue={false}
               aria-label={t('ui:hud.bandHarmony', {
