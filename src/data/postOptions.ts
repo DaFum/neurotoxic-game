@@ -973,11 +973,12 @@ export const POST_OPTIONS = [
 
       // Pick one from affordable
       let roll = diceRoll
-      if (roll == null) {
+      if (roll == null || !Number.isFinite(roll)) {
         roll = getSecureRollOnce()
       }
+      const safeRoll = finiteNumberOr(roll, 0)
 
-      const selectedId = affordableIds[pickIndex(affordableIds, () => roll)]
+      const selectedId = affordableIds[pickIndex(affordableIds, () => safeRoll)]
       const instagramPostFailure = {
         type: 'FIXED' as const,
         success: false,
