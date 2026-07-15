@@ -2028,15 +2028,15 @@ const KPI_TARGETS = {
     bankruptcyMax: 85,
     moneyMin: 1000,
     moneyMax: 5000,
-    fameProgressPerGigMin: 450,
-    fameProgressPerGigMax: 800
+    fameProgressPerGigMin: 250,
+    fameProgressPerGigMax: 500
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 280,
-    fameProgressPerGigMax: 520
+    fameProgressPerGigMin: 250,
+    fameProgressPerGigMax: 500
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
@@ -2066,7 +2066,7 @@ const KPI_TARGETS = {
     moneyMin: 15000,
     moneyMax: 50000,
     fameProgressPerGigMin: 260,
-    fameProgressPerGigMax: 520
+    fameProgressPerGigMax: 500
   }
 }
 
