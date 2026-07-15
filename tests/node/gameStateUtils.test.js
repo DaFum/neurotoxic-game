@@ -46,25 +46,20 @@ test('calculateFameLevel', () => {
 test('calculateGigFameReward scales successful gigs aggressively enough for shop progression', () => {
   assert.strictEqual(
     calculateGigFameReward(70),
-    305,
-    305,
-
+    800,
     'A solid gig should grant high raw fame'
   )
   assert.strictEqual(
     calculateGigFameReward(100),
-    425,
-    425,
-
+    1100,
     'A perfect gig should be able to reach the 20-30 gig shop target'
   )
 })
 
 test('calculateFameGain returns correct diminishing returns', () => {
   assert.strictEqual(
-    calculateFameGain(425, 0, 2000),
-    425,
-
+    calculateFameGain(1100, 0, 2000),
+    1100,
     'Before diminishing returns start, raw gain is applied directly'
   )
   assert.strictEqual(
@@ -77,11 +72,11 @@ test('calculateFameGain returns correct diminishing returns', () => {
   const expectedDiminished = Math.max(
     1,
     Math.round(
-      425 * Math.exp(-1000 * FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE)
+      1100 * Math.exp(-1000 * FAME_PROGRESS_CONSTANTS.DIMINISHING_RETURNS_RATE)
     )
   )
   assert.strictEqual(
-    calculateFameGain(425, currentFame, 2000),
+    calculateFameGain(1100, currentFame, 2000),
     expectedDiminished,
     'Past the late-game threshold, gain is reduced exponentially'
   )

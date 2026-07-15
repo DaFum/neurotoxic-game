@@ -506,15 +506,15 @@ const simulateFameCatalogClear = (catalog, performanceScore) => {
 }
 
 const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
-  if (gigsToBuyShopPlusLegacy > 80) {
-    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 55-77 guten Gigs bis 24.390 Fame.'
+  if (gigsToBuyShopPlusLegacy > 30) {
+    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
   }
 
   if (gigsToBuyShopPlusLegacy < 20) {
-    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 55-77 guten Gigs bis 24.390 Fame.'
+    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
   }
 
-  return 'Fame-Gewinn liegt im Zielkorridor von 55-77 guten Gigs bis 24.390 Fame.'
+  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 24.390 Fame.'
 }
 
 const buildFameBalanceAudit = () => {
@@ -2021,7 +2021,7 @@ const KPI_TARGETS = {
     moneyMin: 25000,
     moneyMax: 80000,
     fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 420
+    fameProgressPerGigMax: 800
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
@@ -2029,14 +2029,14 @@ const KPI_TARGETS = {
     moneyMin: 1000,
     moneyMax: 5000,
     fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMax: 800
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
     moneyMin: 15000,
     moneyMax: 50000,
     fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMax: 800
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
@@ -2044,7 +2044,7 @@ const KPI_TARGETS = {
     moneyMin: 5000,
     moneyMax: 30000,
     fameProgressPerGigMin: 220,
-    fameProgressPerGigMax: 420
+    fameProgressPerGigMax: 800
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
@@ -2052,21 +2052,21 @@ const KPI_TARGETS = {
     moneyMin: 10000,
     moneyMax: 50000,
     fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMax: 800
   },
   chaos_tour: {
     bankruptcyMax: 25,
     moneyMin: 10000,
     moneyMax: 60000,
     fameProgressPerGigMin: 260,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMax: 800
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
     moneyMin: 15000,
     moneyMax: 50000,
     fameProgressPerGigMin: 260,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMax: 800
   }
 }
 
