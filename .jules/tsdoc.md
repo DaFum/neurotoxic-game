@@ -42,3 +42,4 @@
 | 2026-07-12 | src/components/stage/EffectSpritePool.ts | EffectSprite, EffectSpritePool, constructor, getSprite, releaseSprite |
 | 2026-07-13 | src/context/actionCreators.ts | graftNeuroOverclock |
 | 2026-07-14 | src/components/hud/OverloadMeter.tsx | OverloadMeterProps, OverloadMeter |
+| 2026-07-15 | src/scenes/mainmenu/shared/MainMenuMotionContainer.tsx | MainMenuMotionContainerProps, MainMenuMotionContainer |
