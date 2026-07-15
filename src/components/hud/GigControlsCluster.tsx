@@ -1,7 +1,11 @@
 import { memo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Menu, X, Volume2, VolumeX, HelpCircle, Pause } from 'lucide-react'
-import { Tooltip, KeyboardShortcutsPanel, useKeyboardShortcuts } from '../../ui/shared'
+import {
+  Tooltip,
+  KeyboardShortcutsPanel,
+  useKeyboardShortcuts
+} from '../../ui/shared'
 import { useAudioControl } from '../../hooks/useAudioControl'
 
 /**
@@ -40,7 +44,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
   const { audioState, handleAudioChange } = useAudioControl()
 
   useKeyboardShortcuts({
-    setShowHelp: (value) => {
+    setShowHelp: value => {
       setShowHelp(value)
       if (value) {
         setIsOpen(true)
@@ -50,7 +54,11 @@ export const GigControlsCluster = memo(function GigControlsCluster({
   })
 
   return (
-    <div className={className ?? 'absolute top-4 left-4 z-(--z-hud) pointer-events-none'}>
+    <div
+      className={
+        className ?? 'absolute top-4 left-4 z-(--z-hud) pointer-events-none'
+      }
+    >
       <div className='flex gap-1.5'>
         <Tooltip
           content={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
@@ -124,7 +132,9 @@ export const GigControlsCluster = memo(function GigControlsCluster({
             </Tooltip>
             {onTogglePause && (
               <Tooltip
-                content={t('ui:gig.pause', { defaultValue: 'Pause Game (ESC)' })}
+                content={t('ui:gig.pause', {
+                  defaultValue: 'Pause Game (ESC)'
+                })}
               >
                 <button
                   type='button'
