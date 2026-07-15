@@ -555,6 +555,7 @@ export const DeadmanButton = memo(
         </span>
         <button
           type='button'
+          aria-label={`${label} - ${t('ui:holdToOverride', 'HOLD TO OVERRIDE')}`}
           onMouseDown={startHold}
           onMouseUp={stopHold}
           onMouseLeave={stopHold}
