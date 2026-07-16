@@ -26,11 +26,11 @@ import type { MapPoint } from './types'
 export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
-  const x1 = typeof pointA.x === 'number' ? pointA.x : (pointA.venue?.x ?? 50)
-  const y1 = typeof pointA.y === 'number' ? pointA.y : (pointA.venue?.y ?? 50)
+  const x1 = finiteNumberOr(pointA.x, finiteNumberOr(pointA.venue?.x, 50))
+  const y1 = finiteNumberOr(pointA.y, finiteNumberOr(pointA.venue?.y, 50))
 
-  const x2 = typeof pointB.x === 'number' ? pointB.x : (pointB.venue?.x ?? 50)
-  const y2 = typeof pointB.y === 'number' ? pointB.y : (pointB.venue?.y ?? 50)
+  const x2 = finiteNumberOr(pointB.x, finiteNumberOr(pointB.venue?.x, 50))
+  const y2 = finiteNumberOr(pointB.y, finiteNumberOr(pointB.venue?.y, 50))
 
   const dx = x1 - x2
   const dy = y1 - y2

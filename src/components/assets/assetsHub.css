@@ -165,7 +165,7 @@
     rgb(var(--color-void-black-rgb) / 98%)
   );
   border-top: 2px solid var(--section-accent, var(--color-toxic-green));
-  box-shadow: 0 -1rem 2rem rgb(0 0 0 / 58%);
+  box-shadow: 0 -1rem 2rem rgb(var(--color-void-black-rgb) / 58%);
 }
 
 .assets-status-strip {
@@ -362,7 +362,7 @@
 
 .asset-hero-frame {
   overflow: hidden;
-  background: rgb(0 0 0 / 50%);
+  background: rgb(var(--color-void-black-rgb) / 50%);
   box-shadow: 0 0 0 1px rgb(var(--color-star-white-rgb) / 8%) inset;
 }
 

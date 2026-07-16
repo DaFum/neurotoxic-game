@@ -11,9 +11,29 @@ mock.module('../../src/utils/logger', {
 
 const { handleMerchPress } =
   await import('../../src/context/reducers/socialReducer')
+const { handleUpdateSocial } =
+  await import('../../src/context/reducers/socialReducer')
 const { formatCurrency } = await import('../../src/utils/numberUtils')
 
 describe('socialReducer.merchPress', () => {
+  test('sanitizes non-finite social update numbers before clamping', () => {
+    const state = {
+      social: { zealotry: 7, loyalty: 11, controversyLevel: 13 },
+      pendingEvents: [],
+      activeStoryFlags: {}
+    }
+
+    const result = handleUpdateSocial(state, {
+      zealotry: Number.POSITIVE_INFINITY,
+      loyalty: Number.NaN,
+      controversyLevel: Number.NEGATIVE_INFINITY
+    })
+
+    assert.strictEqual(result.social.zealotry, 0)
+    assert.strictEqual(result.social.loyalty, 0)
+    assert.strictEqual(result.social.controversyLevel, 0)
+  })
+
   test('rejects if insufficient funds', () => {
     const state = {
       player: { money: 100, fame: 0, fameLevel: 0 },

@@ -42,6 +42,8 @@ const VARIANTS_BY_ALIGNMENT: Record<string, BrandOfferVariantId[]> = {
   NEUTRAL: ['standard']
 }
 
+const DURATION_JITTERS = [-1, 0, 1, 2] as const
+
 export const pickVariantId = (
   alignment: string,
   isStretched: boolean,
@@ -77,7 +79,7 @@ export const applyOfferVariance = (
     ? Math.max(5, roundTo(rawPerGig * (0.9 + rng() * 0.2) * mods.perGigMul, 5))
     : undefined
 
-  const durationJitter = Math.floor(rng() * 4) - 1 // -1..+2
+  const durationJitter = DURATION_JITTERS[pickIndex(DURATION_JITTERS, rng)] ?? 0
   const newDuration =
     mods.forceDuration !== undefined
       ? mods.forceDuration

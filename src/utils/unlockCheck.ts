@@ -108,7 +108,7 @@ export const checkTraitUnlocks = (
   if (ctx?.['type'] === 'TRAVEL_COMPLETE') {
     // Road Warrior (Lars): Travel 5000km total (match UI hint)
     if (Lars && !hasTrait(Lars, 'road_warrior')) {
-      if ((player.stats?.totalDistance || 0) >= 5000) {
+      if (finiteNumberOr(player.stats?.totalDistance, 0) >= 5000) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'road_warrior' })
       }
     }
@@ -134,7 +134,7 @@ export const checkTraitUnlocks = (
       // gearCount is pre-calculated by usePurchaseLogic after filtering
       // inventory against HQ gear/instrument categories.
       const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
-      if ((gearCount || 0) >= 5) {
+      if (finiteNumberOr(gearCount, 0) >= 5) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
       }
     }
@@ -156,7 +156,7 @@ export const checkTraitUnlocks = (
 
     // Clumsy (Marius): 2 failed stage dives (tracked via social drama posts)
     if (Marius && !hasTrait(Marius, 'clumsy')) {
-      if ((player.stats?.failedStageDives || 0) >= 2) {
+      if (finiteNumberOr(player.stats?.failedStageDives, 0) >= 2) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'clumsy' })
       }
     }
@@ -166,14 +166,14 @@ export const checkTraitUnlocks = (
   if (ctx?.['type'] === 'EVENT_RESOLVED') {
     // Bandleader (Lars): Resolve 3 conflicts
     if (Lars && !hasTrait(Lars, 'bandleader')) {
-      if ((player.stats?.conflictsResolved || 0) >= 3) {
+      if (finiteNumberOr(player.stats?.conflictsResolved, 0) >= 3) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'bandleader' })
       }
     }
 
     // Showman (Marius): Perform 3 Stage Dives
     if (Marius && !hasTrait(Marius, 'showman')) {
-      if ((player.stats?.stageDives || 0) >= 3) {
+      if (finiteNumberOr(player.stats?.stageDives, 0) >= 3) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'showman' })
       }
     }
