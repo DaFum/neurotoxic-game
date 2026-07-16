@@ -221,14 +221,17 @@ export const calculateGigFinancials = (
 
   const grossNet = report.income.total - report.expenses.total
   if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
-    const adjustedNet = Math.floor(grossNet * GLOBAL_PAYOUT_NERF)
+    const payoutNerf =
+      1 -
+      Math.min(1 - GLOBAL_PAYOUT_NERF, Math.max(0, (playerFame - 10) / 1200))
+    const adjustedNet = Math.floor(grossNet * payoutNerf)
     const payoutDampener = grossNet - adjustedNet
     if (payoutDampener > 0) {
       report.expenses.breakdown.push({
         labelKey: 'economy:gigExpenses.payoutDampener.label',
         value: payoutDampener,
         detailKey: 'economy:gigExpenses.payoutDampener.detail',
-        detailParams: { rate: Math.round((1 - GLOBAL_PAYOUT_NERF) * 100) }
+        detailParams: { rate: Math.round((1 - payoutNerf) * 100) }
       })
       report.expenses.total += payoutDampener
     }

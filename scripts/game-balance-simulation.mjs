@@ -2024,7 +2024,7 @@ const KPI_TARGETS = {
     // Remains intentionally hard, but no longer targets near-certain collapse.
     bankruptcyMax: 85,
     moneyMin: 1000,
-    moneyMax: 5000,
+    moneyMax: 15000,
     fameProgressPerGigMin: 380,
     fameProgressPerGigMax: 800
   },
