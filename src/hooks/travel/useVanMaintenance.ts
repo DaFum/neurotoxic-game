@@ -168,8 +168,10 @@ export const useVanMaintenance = ({
       return
     }
 
-    if (pendingRestTimeoutRef.current)
+    if (pendingRestTimeoutRef.current) {
       clearTimeout(pendingRestTimeoutRef.current)
+      pendingRestTimeoutRef.current = null
+    }
     pendingRestRef.current = false
 
     const newMembers = (band?.members || []).map(m => {
