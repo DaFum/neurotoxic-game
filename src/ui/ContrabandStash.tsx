@@ -40,18 +40,18 @@ type DisplayStashItem = ContrabandStashItem & {
 }
 
 const isBandMember = (value: unknown): value is BandMemberItem => {
-  return (
-    isLooseRecord(value) &&
-    typeof value.id === 'string' &&
-    (value.name === undefined || typeof value.name === 'string')
-  )
+  if (!isLooseRecord(value) || !Object.hasOwn(value, 'id')) return false
+  if (typeof value.id !== 'string') return false
+  if (!Object.hasOwn(value, 'name')) return true
+  return value.name === undefined || typeof value.name === 'string'
 }
 
 const isStashItem = (value: unknown): value is DisplayStashItem => {
+  if (!isLooseRecord(value) || !Object.hasOwn(value, 'id')) return false
+  if (typeof value.id !== 'string') return false
+  if (!Object.hasOwn(value, 'description')) return true
   return (
-    isLooseRecord(value) &&
-    typeof value.id === 'string' &&
-    typeof value.description === 'string'
+    value.description === undefined || typeof value.description === 'string'
   )
 }
 
