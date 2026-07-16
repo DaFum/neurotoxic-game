@@ -108,8 +108,14 @@ const runItem = async (item, useFix) => {
     return 0
   }
 
-  const level = item.optional && code === 127 ? 'WARN' : 'ERROR'
-  logLine(level, `Found errors in ${item.name}. Exit code: ${code}`)
+  const isNotFound = item.optional && code === 127
+  const level = isNotFound ? 'WARN' : 'ERROR'
+  logLine(
+    level,
+    isNotFound
+      ? `${item.name} is not installed or not found in PATH. Skipping.`
+      : `Found errors in ${item.name}. Exit code: ${code}`
+  )
   if (stdout) {
     logLine('INFO', `Command output for ${item.name}:`)
     console.log(stdout.trimEnd())
@@ -118,7 +124,7 @@ const runItem = async (item, useFix) => {
     logLine('INFO', `Stderr contents for ${item.name}:`)
     console.log(stderr.trimEnd())
   }
-  return item.optional && code === 127 ? 0 : code
+  return isNotFound ? 0 : code
 }
 
 /**
