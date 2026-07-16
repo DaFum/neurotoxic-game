@@ -98,9 +98,9 @@ export const OverworldMap = React.memo(
     const urls = useOverworldUrls(isOnlineNetwork, t)
 
     const { mapBgUrl, mapBgFallbackUrl, vanUrl, rivalVanUrl } = urls
-    const [failedMapBgUrl, setFailedMapBgUrl] = useState<string | null>(null)
+    const [failedBgUrl, setFailedBgUrl] = useState<string | null>(null)
     const mapBackgroundSrc =
-      failedMapBgUrl === mapBgUrl ? mapBgFallbackUrl : mapBgUrl
+      failedBgUrl === mapBgUrl ? mapBgFallbackUrl : mapBgUrl
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {
@@ -236,7 +236,7 @@ export const OverworldMap = React.memo(
           className='absolute inset-0 w-full h-full opacity-30 object-cover grayscale invert pointer-events-none'
           onError={() => {
             if (mapBackgroundSrc !== mapBgFallbackUrl) {
-              setFailedMapBgUrl(mapBgUrl)
+              setFailedBgUrl(mapBgUrl)
             }
           }}
         />
