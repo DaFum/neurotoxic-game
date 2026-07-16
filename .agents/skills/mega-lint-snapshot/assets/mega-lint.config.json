@@ -31,8 +31,8 @@
     {
       "name": "JAVASCRIPT_PRETTIER",
       "command": "pnpm",
-      "args": ["exec", "prettier", "--check", "."],
-      "fixArgs": ["exec", "prettier", "--write", "."]
+      "args": ["exec", "prettier", "--check", "**/*.{js,jsx,ts,tsx,mjs,cjs}"],
+      "fixArgs": ["exec", "prettier", "--write", "**/*.{js,jsx,ts,tsx,mjs,cjs}"]
     },
     {
       "name": "JSCPD",
