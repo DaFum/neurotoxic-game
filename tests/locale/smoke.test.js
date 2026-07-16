@@ -32,7 +32,6 @@ test('Smoke tests for locales', async t => {
           let data
           try {
             data = await readLocaleJson(localeDir, fileName)
-            assert.ok(true)
           } catch (err) {
             assert.fail(
               `${locale}/${namespace}.json should be valid JSON: ${err.message}`

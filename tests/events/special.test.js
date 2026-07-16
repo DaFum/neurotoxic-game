@@ -13,6 +13,21 @@ describe('SPECIAL_EVENTS', () => {
       `Event ${eventId} option ${optIdx} effect missing type`
     )
 
+    if (effect.type === 'stat' || effect.type === 'resource') {
+      assert.ok(
+        Number.isFinite(effect.value),
+        `Event ${eventId} option ${optIdx} ${effect.type} effect has invalid value`
+      )
+    }
+
+    if (effect.type === 'item') {
+      assert.strictEqual(
+        typeof effect.item,
+        'string',
+        `Event ${eventId} option ${optIdx} item effect missing item`
+      )
+    }
+
     if (effect.type === 'composite') {
       assert.ok(
         Array.isArray(effect.effects),
@@ -92,10 +107,9 @@ describe('SPECIAL_EVENTS', () => {
             'string',
             `Event ${evt.id} option ${idx} skillCheck missing stat`
           )
-          assert.strictEqual(
-            typeof opt.skillCheck.threshold,
-            'number',
-            `Event ${evt.id} option ${idx} skillCheck missing threshold`
+          assert.ok(
+            Number.isFinite(opt.skillCheck.threshold),
+            `Event ${evt.id} option ${idx} skillCheck missing finite threshold`
           )
           assert.ok(
             opt.skillCheck.success &&

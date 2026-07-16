@@ -36,5 +36,8 @@ test('hashString calculates correct 32-bit integer hashes', async t => {
 
     // 'ab' -> 97 * 31 + 98 = 3007 + 98 = 3105
     assert.equal(hashString('ab'), 3105)
+
+    assert.equal(hashString('test'), 3556498)
+    assert.equal(hashString('hello world'), 1794106052)
   })
 })

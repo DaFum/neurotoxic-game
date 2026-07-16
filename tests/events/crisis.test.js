@@ -10,35 +10,6 @@ describe('CRISIS_EVENTS', () => {
     return evt
   }
 
-  test('all crisis events have required fields', () => {
-    assert.ok(CRISIS_EVENTS.length > 0)
-    for (const evt of CRISIS_EVENTS) {
-      assert.ok(evt.id, `Event missing id`)
-      assert.ok(evt.category, `Event ${evt.id} missing category`)
-      assert.ok(evt.title, `Event ${evt.id} missing title`)
-      assert.ok(evt.description, `Event ${evt.id} missing description`)
-      assert.ok(
-        Array.isArray(evt.options),
-        `Event ${evt.id} missing options array`
-      )
-      assert.ok(evt.options.length > 0, `Event ${evt.id} has empty options`)
-      assert.ok(
-        typeof evt.chance === 'number',
-        `Event ${evt.id} missing or invalid chance`
-      )
-      assert.ok(
-        typeof evt.trigger === 'string',
-        `Event ${evt.id} missing trigger`
-      )
-      if (evt.condition) {
-        assert.ok(
-          typeof evt.condition === 'function',
-          `Event ${evt.id} condition must be a function`
-        )
-      }
-    }
-  })
-
   test('crisis_redemption_charity conditions logic', () => {
     const evt = getCrisisEvent('crisis_redemption_charity')
     assert.strictEqual(
@@ -206,6 +177,7 @@ describe('CRISIS_EVENTS', () => {
 
   describe('validateCrisisEvent', () => {
     test('validates existing crisis events without throwing', () => {
+      assert.ok(CRISIS_EVENTS.length > 0)
       for (const event of CRISIS_EVENTS) {
         assert.doesNotThrow(() => validateCrisisEvent(event))
       }

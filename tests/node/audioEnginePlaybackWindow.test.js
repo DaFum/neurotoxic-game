@@ -11,12 +11,22 @@ test('playSFX', async t => {
   const moduleState =
     audioState || (await import('../../src/utils/audio/state')).audioState
 
-  await t.test('does nothing if not setup or missing sfxSynth', () => {
-    moduleState.isSetup = false
-    moduleState.sfxSynth = null
-    playSFX('hit') // Should not throw
-    assert.ok(true)
-  })
+  await t.test(
+    'does not trigger synth calls if not setup or missing sfxSynth',
+    () => {
+      const calls = []
+      moduleState.isSetup = false
+      moduleState.sfxSynth = {
+        triggerAttackRelease: (...args) => calls.push(args)
+      }
+      playSFX('hit')
+      assert.deepEqual(calls, [])
+
+      moduleState.isSetup = true
+      moduleState.sfxSynth = null
+      assert.doesNotThrow(() => playSFX('hit'))
+    }
+  )
 
   await t.test('calls triggerAttackRelease for different types', () => {
     moduleState.isSetup = true

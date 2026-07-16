@@ -371,19 +371,6 @@ describe('MainMenu Component', () => {
       unmount()
     })
 
-    it('prevents state updates after component unmounts', async () => {
-      mockLoadGame.mockReturnValue(false)
-      const { unmount, rerender } = render(<MainMenu />)
-
-      fireEvent.click(screen.getByText('ui:load_game'))
-
-      rerender(<MainMenu />)
-
-      unmount()
-
-      expect(true).toBe(true)
-    })
-
     it('restores player identity after reset when starting new tour', async () => {
       localStorage.setItem('neurotoxic_player_id', 'saved-id')
       localStorage.setItem('neurotoxic_player_name', 'SavedPlayer')
