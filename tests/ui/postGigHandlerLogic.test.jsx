@@ -27,6 +27,13 @@ describe('buildSoldMerchInventory', () => {
     })
   })
 
+  it('treats nullish inventory as empty inventory', () => {
+    expect(buildSoldMerchInventory(undefined, { shirts: 2 })).toEqual({
+      shirts: 0
+    })
+    expect(buildSoldMerchInventory(null, { shirts: 2 })).toEqual({ shirts: 0 })
+  })
+
   it('sanitizes negative/NaN/Infinity sold amounts so inventory is never increased or corrupted', () => {
     expect(buildSoldMerchInventory({ shirts: 5 }, { shirts: -3 })).toEqual({
       shirts: 5

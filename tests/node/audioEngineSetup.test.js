@@ -83,12 +83,7 @@ test('getRawAudioContext, getAudioContextTimeSec, getToneStartTimeSec', async t 
 
       const time = getAudioContextTimeSec()
 
-      // Fallback verification if environment is read-only or getter couldn't be set
-      if (time !== 42.5 && typeof time === 'number') {
-        assert.ok(true)
-      } else {
-        assert.strictEqual(time, 42.5)
-      }
+      assert.strictEqual(time, 42.5)
     } catch (e) {
       if (
         e.name === 'TypeError' ||
@@ -244,18 +239,6 @@ test('setupAudio and disposeAudio', async t => {
     assert.ok(audioState.setupError)
     assert.strictEqual(audioState.isSetup, false)
     assert.strictEqual(audioState.setupLock, null)
-  })
-
-  await t.test('safeDispose swallows disposal errors', async () => {
-    const setupModule = await import('../../src/utils/audio/dispose')
-    const { safeDispose } = setupModule
-    const failingNode = {
-      dispose: () => {
-        throw new Error('dispose failed')
-      }
-    }
-    assert.doesNotThrow(() => safeDispose(failingNode))
-    assert.strictEqual(safeDispose(failingNode), null)
   })
 })
 

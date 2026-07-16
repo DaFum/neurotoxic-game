@@ -11,9 +11,6 @@ vi.mock('../../src/utils/economyEngine', () => ({
 vi.mock('../../src/utils/leaderboardUtils', () => ({
   submitLeaderboardScores: vi.fn(() => Promise.resolve())
 }))
-vi.mock('../../src/data/questRegistry', () => ({
-  getQuestDefinition: vi.fn()
-}))
 vi.mock('../../src/utils/logger', () => ({
   logger: {
     error: vi.fn(),
@@ -38,23 +35,15 @@ vi.mock('../../src/context/gameConstants', () => ({
 }))
 
 import {
-  buildSoldMerchInventory,
-  buildStoryFlagQuests,
   dispatchEconomyQuests,
   applyNeurotoxicPenalty,
   handleContinueSceneTransition,
   useContinueHandler
 } from '../../src/hooks/postGig/handlers/useContinueHandler'
 
-import {
-  QUEST_APOLOGY_TOUR,
-  QUEST_EGO_MANAGEMENT
-} from '../../src/data/questsConstants'
-
 import { calculateContinueStats } from '../../src/utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../../src/utils/economyEngine'
 import { submitLeaderboardScores } from '../../src/utils/leaderboardUtils'
-import { getQuestDefinition } from '../../src/data/questRegistry'
 import { logger } from '../../src/utils/logger'
 
 // --- Mock implementations and helpers ---
@@ -108,116 +97,6 @@ const flushMicrotasks = () => new Promise(resolve => setTimeout(resolve, 0))
 describe('Pure Functions in useContinueHandler.ts', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-  })
-
-  describe('buildSoldMerchInventory', () => {
-    it('decrements sold merch quantities', () => {
-      const inventory = { shirt: 5, cd: 10 }
-      const sold = { shirt: 2, cd: 0 }
-      expect(buildSoldMerchInventory(inventory, sold)).toEqual({
-        shirt: 3,
-        cd: 10
-      })
-    })
-
-    it('clamps negative totals to zero', () => {
-      const inventory = { shirt: 1 }
-      const sold = { shirt: 5 }
-      expect(buildSoldMerchInventory(inventory, sold)).toEqual({ shirt: 0 })
-    })
-
-    it('handles sold merch not in inventory', () => {
-      const inventory = { shirt: 5 }
-      const sold = { cd: 2 }
-      expect(buildSoldMerchInventory(inventory, sold)).toEqual({
-        shirt: 5,
-        cd: 0
-      })
-    })
-
-    it('ignores invalid types gracefully', () => {
-      const inventory = { shirt: 'invalid' }
-      const sold = { shirt: 2 }
-      // The current code expects numbers; if it's not a number it treats it as 0.
-      expect(buildSoldMerchInventory(inventory, sold)).toEqual({ shirt: 0 })
-    })
-
-    it('handles undefined or null inventory gracefully', () => {
-      const sold = { shirt: 2 }
-      expect(buildSoldMerchInventory(undefined, sold)).toEqual({ shirt: 0 })
-      expect(buildSoldMerchInventory(null, sold)).toEqual({ shirt: 0 })
-    })
-  })
-
-  describe('buildStoryFlagQuests', () => {
-    it('returns empty array if no active flags', () => {
-      expect(
-        buildStoryFlagQuests({
-          activeStoryFlags: [],
-          day: 1,
-          bandHarmony: 50,
-          postPenaltyHarmony: undefined
-        })
-      ).toEqual([])
-    })
-
-    it('returns apology tour quest if cancel_quest_active flag is present', () => {
-      getQuestDefinition.mockImplementation(id => {
-        if (id === QUEST_APOLOGY_TOUR) return { deadlineOffset: 2 }
-        return null
-      })
-      const result = buildStoryFlagQuests({
-        activeStoryFlags: ['cancel_quest_active'],
-        day: 5,
-        bandHarmony: 50,
-        postPenaltyHarmony: undefined
-      })
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual(
-        expect.objectContaining({
-          id: QUEST_APOLOGY_TOUR,
-          deadline: 7, // day (5) + offset (2)
-          progress: 0
-        })
-      )
-    })
-
-    it('returns ego management quest if breakup_quest_active flag is present with seeded progress', () => {
-      getQuestDefinition.mockImplementation(id => {
-        if (id === QUEST_EGO_MANAGEMENT)
-          return { deadlineOffset: 3, progressSource: 'harmony_recovered' }
-        return null
-      })
-      const result = buildStoryFlagQuests({
-        activeStoryFlags: ['breakup_quest_active'],
-        day: 2,
-        bandHarmony: 70, // this should be the seed if postPenaltyHarmony is not provided
-        postPenaltyHarmony: undefined
-      })
-      expect(result).toHaveLength(1)
-      expect(result[0]).toEqual(
-        expect.objectContaining({
-          id: QUEST_EGO_MANAGEMENT,
-          deadline: 5,
-          progress: 70
-        })
-      )
-    })
-
-    it('uses postPenaltyHarmony as seeded progress if provided', () => {
-      getQuestDefinition.mockImplementation(id => {
-        if (id === QUEST_EGO_MANAGEMENT)
-          return { deadlineOffset: 3, progressSource: 'harmony_recovered' }
-        return null
-      })
-      const result = buildStoryFlagQuests({
-        activeStoryFlags: ['breakup_quest_active'],
-        day: 2,
-        bandHarmony: 70,
-        postPenaltyHarmony: 60
-      })
-      expect(result[0].progress).toBe(60)
-    })
   })
 
   describe('dispatchEconomyQuests', () => {

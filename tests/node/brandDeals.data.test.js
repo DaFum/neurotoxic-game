@@ -23,6 +23,9 @@ describe('Brand Deals Data', () => {
         `Deal ${deal.id} missing type`
       )
 
+      const hasUpfront = Number.isFinite(deal.offer?.upfront)
+      assert.ok(hasUpfront, `Deal ${deal.id} missing finite upfront in offer`)
+
       const hasDuration =
         typeof deal.offer?.duration === 'number' && deal.offer.duration > 0
       assert.ok(hasDuration, `Deal ${deal.id} missing duration in offer`)
@@ -36,5 +39,10 @@ describe('Brand Deals Data', () => {
         `Deal ${deal.id} missing offer`
       )
     })
+  })
+
+  it('should have unique deal IDs', () => {
+    const ids = BRAND_DEALS.map(deal => deal.id)
+    assert.equal(new Set(ids).size, BRAND_DEALS.length)
   })
 })

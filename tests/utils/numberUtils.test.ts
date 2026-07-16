@@ -5,6 +5,7 @@ import {
   formatCurrency,
   formatSignedFinancialAmount
 } from '../../src/utils/numberUtils'
+import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
 describe('numberUtils', () => {
   describe('clampUnit', () => {
@@ -36,6 +37,15 @@ describe('numberUtils', () => {
       expect(formatNumber(1234, 'de')).toBe('1.234')
       expect(formatNumber(1234567.89, 'de')).toBe('1.234.568')
     })
+
+    it('handles non-number edge inputs consistently', () => {
+      expect(formatNumber(NaN, 'en')).toBe('NaN')
+      expect(formatNumber('not a number' as unknown as number, 'en')).toBe(
+        'NaN'
+      )
+      expect(formatNumber(null as unknown as number, 'en')).toBe('0')
+      expect(formatNumber(undefined as unknown as number, 'en')).toBe('NaN')
+    })
   })
 
   describe('formatCurrency', () => {
@@ -52,13 +62,48 @@ describe('numberUtils', () => {
       expect(formatCurrency(1234.56, 'de').replace(/\s/g, ' ')).toBe('1.235 €')
     })
 
+    it('handles non-number edge inputs consistently', () => {
+      expect(formatCurrency(NaN, 'en').replace(/\s+/g, ' ')).toBe('€NaN')
+      expect(
+        formatCurrency('not a number' as unknown as number, 'en').replace(
+          /\s+/g,
+          ' '
+        )
+      ).toBe('€NaN')
+      expect(
+        formatCurrency(null as unknown as number, 'en').replace(/\s+/g, ' ')
+      ).toBe('€0')
+      expect(
+        formatCurrency(undefined as unknown as number, 'en').replace(
+          /\s+/g,
+          ' '
+        )
+      ).toBe('€NaN')
+    })
+
     it('respects signDisplay option', () => {
       expect(formatCurrency(50, 'en', 'always')).toBe('+€50')
       expect(formatCurrency(0, 'en', 'always')).toBe('+€0')
       expect(formatCurrency(-50, 'en', 'always')).toBe('-€50')
+      expect(formatCurrency(1000, 'de', 'always').replace(/\s+/g, ' ')).toBe(
+        '+1.000 €'
+      )
+
+      expect(formatCurrency(1000, 'en', 'exceptZero')).toBe('+€1,000')
+      expect(formatCurrency(0, 'en', 'exceptZero')).toBe('€0')
 
       expect(formatCurrency(50, 'en', 'never')).toBe('€50')
       expect(formatCurrency(-50, 'en', 'never')).toBe('€50')
+    })
+  })
+
+  describe('finiteNumberOr', () => {
+    it('returns finite numbers and falls back for non-finite or non-number values', () => {
+      expect(finiteNumberOr(12, 99)).toBe(12)
+      expect(finiteNumberOr(Number.NaN, 99)).toBe(99)
+      expect(finiteNumberOr(Number.POSITIVE_INFINITY, 99)).toBe(99)
+      expect(finiteNumberOr(Number.NEGATIVE_INFINITY, 99)).toBe(99)
+      expect(finiteNumberOr('12', 99)).toBe(99)
     })
   })
 

@@ -79,6 +79,20 @@ describe('useDealHandlers — handleAcceptDeal single-shot guard', () => {
     expect(props.dispatchers.setBrandOffers).toHaveBeenCalledWith([])
   })
 
+  it('rejecting deals clears offers, completes the phase, and toasts', () => {
+    const props = makeProps()
+    const { result } = renderHook(() => useDealHandlers(props))
+
+    act(() => result.current.handleRejectDeals())
+
+    expect(props.dispatchers.setBrandOffers).toHaveBeenCalledWith([])
+    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'info'
+    )
+  })
+
   it('double-click only applies side-effects once (guard held after dispatch)', () => {
     const props = makeProps()
     const { result } = renderHook(() => useDealHandlers(props))

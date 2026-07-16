@@ -1,6 +1,13 @@
 import { render } from '@testing-library/react'
 import { describe, test, expect } from 'vitest'
-import { RazorPlayIcon, VoidSkullIcon } from '../../src/ui/shared/Icons.tsx'
+import {
+  RazorPlayIcon,
+  VoidSkullIcon,
+  BandcampIcon,
+  InstaIcon,
+  TikTokIcon,
+  YouTubeIcon
+} from '../../src/ui/shared/Icons.tsx'
 
 describe('RazorPlayIcon', () => {
   test('renders SVG element', () => {
@@ -31,5 +38,21 @@ describe('VoidSkullIcon', () => {
     const svg = container.querySelector('svg')
     expect(svg.className.baseVal).toContain('custom-skull')
     expect(svg.className.baseVal).toContain('text-toxic-green')
+  })
+})
+
+describe('Social icons', () => {
+  test('render SVG elements and optional accessibility titles', () => {
+    const { container } = render(
+      <div>
+        <BandcampIcon title='Bandcamp' />
+        <InstaIcon />
+        <TikTokIcon />
+        <YouTubeIcon />
+      </div>
+    )
+
+    expect(container.querySelectorAll('svg')).toHaveLength(4)
+    expect(container.querySelector('title')?.textContent).toBe('Bandcamp')
   })
 })

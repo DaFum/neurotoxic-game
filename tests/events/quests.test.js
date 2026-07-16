@@ -1,38 +1,17 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { QUEST_EVENTS } from '../../src/data/events/quests'
+import { validateGameEvent } from '../../src/utils/eventValidator.ts'
 
 describe('QUEST_EVENTS', () => {
-  test('all quest events have required fields', () => {
-    assert.ok(QUEST_EVENTS.length > 0)
-    for (const evt of QUEST_EVENTS) {
-      assert.ok(evt.id, `Event missing id`)
-      assert.ok(evt.category, `Event ${evt.id} missing category`)
-      assert.ok(evt.title, `Event ${evt.id} missing title`)
-      assert.ok(evt.description, `Event ${evt.id} missing description`)
-      assert.ok(
-        Array.isArray(evt.options),
-        `Event ${evt.id} missing options array`
-      )
-      assert.ok(evt.options.length > 0, `Event ${evt.id} has empty options`)
-      assert.ok(
-        typeof evt.chance === 'number',
-        `Event ${evt.id} missing or invalid chance`
-      )
-      assert.ok(
-        typeof evt.trigger === 'string',
-        `Event ${evt.id} missing trigger`
-      )
-      if (evt.condition) {
-        assert.ok(
-          typeof evt.condition === 'function',
-          `Event ${evt.id} condition must be a function`
-        )
-      }
+  test('all quest events pass structural validation', () => {
+    for (const event of QUEST_EVENTS) {
+      assert.doesNotThrow(() => validateGameEvent(event), event.id)
     }
   })
 
   test('quest_trigger_pick_of_destiny conditions logic', () => {
+    assert.ok(QUEST_EVENTS.length > 0)
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_pick_of_destiny')
     assert.ok(evt, 'quest event not found')
     assert.strictEqual(evt.condition({ activeQuests: [] }), true)
