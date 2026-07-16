@@ -34,11 +34,11 @@ type UiState = {
 }
 
 /** Damage from a standard obstacle hit with no mitigation upgrades. */
-export const HIT_DAMAGE_BASE = 10
+const HIT_DAMAGE_BASE = 10
 /** Damage from a standard obstacle hit when van armor is installed. */
-export const HIT_DAMAGE_ARMOR = 2
+const HIT_DAMAGE_ARMOR = 2
 /** Damage from a standard obstacle hit when only the bullbar upgrade applies. */
-export const HIT_DAMAGE_BULLBAR = 5
+const HIT_DAMAGE_BULLBAR = 5
 
 /**
  * Calculates damage taken from a hit, applying mitigation from upgrades.

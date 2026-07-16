@@ -1,10 +1,37 @@
 import { test, describe } from 'vitest'
 import assert from 'node:assert/strict'
-import { calculateFuelCost } from '../../../src/utils/economy/logisticsLogic'
+import {
+  calculateDistance,
+  calculateFuelCost
+} from '../../../src/utils/economy/logisticsLogic'
 import type { PlayerState, BandState } from '../../../src/types'
 import type { AssetModifiers } from '../../../src/types/assets'
 
 describe('logisticsLogic', () => {
+  describe('calculateDistance', () => {
+    test('falls back to finite venue coordinates when top-level coordinates are non-finite', () => {
+      const result = calculateDistance(
+        { x: Number.NaN, y: Number.POSITIVE_INFINITY, venue: { x: 60, y: 60 } },
+        { x: 50, y: 50 }
+      )
+
+      assert.equal(result, 90)
+    })
+
+    test('falls back to map center when both top-level and venue coordinates are non-finite', () => {
+      const result = calculateDistance(
+        {
+          x: Number.NaN,
+          y: Number.POSITIVE_INFINITY,
+          venue: { x: Number.NEGATIVE_INFINITY, y: Number.NaN }
+        },
+        { x: 50, y: 50 }
+      )
+
+      assert.equal(result, 20)
+    })
+  })
+
   describe('calculateFuelCost', () => {
     test('basic calculation with distance 100', () => {
       const result = calculateFuelCost(100)

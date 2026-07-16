@@ -6,6 +6,7 @@ import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { IMG_PROMPTS } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
+import { isLooseRecord } from '../../utils/objectUtils'
 import type {
   DealImageProps,
   DealInfoProps,
@@ -16,12 +17,11 @@ import type { BrandAlignment } from '../../types/social'
 
 const getNegotiationStatus = (value: unknown): string | undefined => {
   if (
-    value &&
-    typeof value === 'object' &&
+    isLooseRecord(value) &&
     Object.hasOwn(value, 'status') &&
-    typeof (value as { status?: unknown }).status === 'string'
+    typeof value.status === 'string'
   ) {
-    return (value as { status: string }).status
+    return value.status
   }
   return undefined
 }
@@ -87,7 +87,7 @@ const getAlignmentMetadata = (alignment?: string): AlignmentMetadata => {
 }
 
 const isDeal = (value: unknown): value is DealCardProps['deal'] => {
-  if (!value || typeof value !== 'object') return false
+  if (!isLooseRecord(value)) return false
   if (!Object.hasOwn(value, 'id') || !Object.hasOwn(value, 'name')) return false
   if (!Object.hasOwn(value, 'offer')) {
     return false

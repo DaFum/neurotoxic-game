@@ -45,6 +45,42 @@ test('offline overworld SVG memo refreshes when translation callback changes', (
   assert.match(source, /\}, \[isOnlineNetwork, t\]\)/)
 })
 
+test('offline overworld SVG hook does not expose unused test-only cache reset', () => {
+  const source = readSource(
+    'src/components/overworld/hooks/useOverworldUrls.ts'
+  )
+  assert.doesNotMatch(source, /resetSvgTokenStyleCacheForTesting/)
+})
+
+test('asset hub styles use color tokens instead of hardcoded black literals', () => {
+  const source = readSource('src/components/assets/assetsHub.css')
+  assert.doesNotMatch(source, /rgb\(0 0 0 \//)
+})
+
+test('brand offer duration jitter uses shared random index helper', () => {
+  const source = readSource('src/utils/brandOfferFlavor/variants.ts')
+  assert.match(source, /const DURATION_JITTERS = /)
+  assert.match(source, /pickIndex\(DURATION_JITTERS, rng\)/)
+  assert.doesNotMatch(source, /Math\.floor\(rng\(\) \* 4\) - 1/)
+})
+
+test('tourbus damage constants stay module-private implementation details', () => {
+  const source = readSource('src/hooks/minigames/useTourbusLogic.ts')
+  assert.doesNotMatch(source, /export const HIT_DAMAGE_/)
+})
+
+test('ui guards reuse shared record-object utility', () => {
+  const files = [
+    'src/components/postGig/NegotiationModal.tsx',
+    'src/components/postGig/DealCard.tsx',
+    'src/ui/ContrabandStash.tsx'
+  ]
+  for (const file of files) {
+    const source = readSource(file)
+    assert.match(source, /isLooseRecord/)
+  }
+})
+
 test('milestones do not store raw action objects or raw toast actions', () => {
   const milestones = readSource('src/data/milestones/milestones.ts')
   const reducer = readSource('src/context/gameReducer.ts')

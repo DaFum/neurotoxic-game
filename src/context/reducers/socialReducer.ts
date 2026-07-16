@@ -226,16 +226,18 @@ export const handleUpdateSocial = (
   }
 
   if (updates.zealotry !== undefined) {
-    updates.zealotry = clampZealotry(Number(updates.zealotry) || 0)
+    updates.zealotry = clampZealotry(
+      finiteNumberOr(Number(updates.zealotry), 0)
+    )
   }
 
   if (updates.loyalty !== undefined) {
-    updates.loyalty = clampLoyalty(Number(updates.loyalty) || 0)
+    updates.loyalty = clampLoyalty(finiteNumberOr(Number(updates.loyalty), 0))
   }
 
   if (updates.controversyLevel !== undefined) {
     updates.controversyLevel = clampControversyLevel(
-      Number(updates.controversyLevel) || 0
+      finiteNumberOr(Number(updates.controversyLevel), 0)
     )
   }
 

@@ -20,6 +20,6 @@ export const getNodeIconUrl = (
   nodeType: MapNodeType,
   urls: Record<string, string | undefined>
 ): string => {
-  const key = ICON_URL_KEY_MAP[nodeType] || 'pinClubUrl'
-  return urls[key] || urls.pinClubUrl || ''
+  const key = ICON_URL_KEY_MAP[nodeType] ?? 'pinClubUrl'
+  return urls[key] ?? urls.pinClubUrl ?? ''
 }

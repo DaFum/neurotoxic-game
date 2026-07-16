@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { logger } from '../utils/logger'
 import { IMG_PROMPTS } from '../utils/imageGen'
+import { isLooseRecord } from '../utils/objectUtils'
 
 /**
  * Contraband Stash Modal Component
@@ -39,18 +40,19 @@ type DisplayStashItem = ContrabandStashItem & {
 }
 
 const isBandMember = (value: unknown): value is BandMemberItem => {
-  if (!value || typeof value !== 'object') return false
-  const obj = value as Record<string, unknown>
-  return (
-    typeof obj.id === 'string' &&
-    (obj.name === undefined || typeof obj.name === 'string')
-  )
+  if (!isLooseRecord(value) || !Object.hasOwn(value, 'id')) return false
+  if (typeof value.id !== 'string') return false
+  if (!Object.hasOwn(value, 'name')) return true
+  return value.name === undefined || typeof value.name === 'string'
 }
 
 const isStashItem = (value: unknown): value is DisplayStashItem => {
-  if (!value || typeof value !== 'object') return false
-  const obj = value as Record<string, unknown>
-  return typeof obj.id === 'string' && typeof obj.description === 'string'
+  if (!isLooseRecord(value) || !Object.hasOwn(value, 'id')) return false
+  if (typeof value.id !== 'string') return false
+  if (!Object.hasOwn(value, 'description')) return true
+  return (
+    value.description === undefined || typeof value.description === 'string'
+  )
 }
 
 const getRarityClass = (rarity: string | undefined): string => {

@@ -4,6 +4,7 @@ import type {
   NegotiationModalProps,
   NegotiationResult
 } from '../../types/components'
+import { isLooseRecord } from '../../utils/objectUtils'
 
 const TACTICS = [
   {
@@ -40,7 +41,7 @@ const TACTICS = [
 ] as const
 
 const isNegotiationResult = (value: unknown): value is NegotiationResult => {
-  if (!value || typeof value !== 'object') return false
+  if (!isLooseRecord(value)) return false
   if (
     !Object.hasOwn(value, 'status') ||
     !Object.hasOwn(value, 'success') ||
