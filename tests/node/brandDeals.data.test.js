@@ -23,8 +23,8 @@ describe('Brand Deals Data', () => {
         `Deal ${deal.id} missing type`
       )
 
-      const hasUpfront = typeof deal.offer?.upfront === 'number'
-      assert.ok(hasUpfront, `Deal ${deal.id} missing upfront in offer`)
+      const hasUpfront = Number.isFinite(deal.offer?.upfront)
+      assert.ok(hasUpfront, `Deal ${deal.id} missing finite upfront in offer`)
 
       const hasDuration =
         typeof deal.offer?.duration === 'number' && deal.offer.duration > 0

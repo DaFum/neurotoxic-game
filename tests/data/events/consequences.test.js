@@ -3,8 +3,15 @@ import assert from 'node:assert'
 import { CONSEQUENCE_EVENTS } from '../../../src/data/events/consequences'
 import { KNOWN_EVENT_IDS } from '../../../src/data/events'
 import { QUEST_REGISTRY } from '../../../src/data/questRegistry'
+import { validateGameEvent } from '../../../src/utils/eventValidator.ts'
 
 describe('Consequence Events Data', () => {
+  it('all consequence events pass structural validation', () => {
+    for (const event of CONSEQUENCE_EVENTS) {
+      assert.doesNotThrow(() => validateGameEvent(event), event.id)
+    }
+  })
+
   it('every quest event.queue penalty/reward references a known event id', () => {
     for (const [questId, quest] of Object.entries(QUEST_REGISTRY)) {
       const entries = [

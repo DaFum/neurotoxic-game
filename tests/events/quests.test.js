@@ -1,8 +1,15 @@
 import { test, describe } from 'node:test'
 import assert from 'node:assert'
 import { QUEST_EVENTS } from '../../src/data/events/quests'
+import { validateGameEvent } from '../../src/utils/eventValidator.ts'
 
 describe('QUEST_EVENTS', () => {
+  test('all quest events pass structural validation', () => {
+    for (const event of QUEST_EVENTS) {
+      assert.doesNotThrow(() => validateGameEvent(event), event.id)
+    }
+  })
+
   test('quest_trigger_pick_of_destiny conditions logic', () => {
     assert.ok(QUEST_EVENTS.length > 0)
     const evt = QUEST_EVENTS.find(e => e.id === 'quest_trigger_pick_of_destiny')

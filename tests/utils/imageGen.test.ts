@@ -65,28 +65,30 @@ describe('imageGen utilities', () => {
     test('uses navigator.onLine correctly if explicit status is not given', () => {
       const originalNavigator = globalThis.navigator
 
-      delete (globalThis as Partial<typeof globalThis>).navigator
-      expect(isImageGenerationAvailable()).toBe(true)
+      try {
+        delete (globalThis as Partial<typeof globalThis>).navigator
+        expect(isImageGenerationAvailable()).toBe(true)
 
-      Object.defineProperty(globalThis, 'navigator', {
-        value: { onLine: true },
-        configurable: true
-      })
-      expect(isImageGenerationAvailable()).toBe(true)
-
-      Object.defineProperty(globalThis, 'navigator', {
-        value: { onLine: false },
-        configurable: true
-      })
-      expect(isImageGenerationAvailable()).toBe(false)
-
-      if (originalNavigator) {
         Object.defineProperty(globalThis, 'navigator', {
-          value: originalNavigator,
+          value: { onLine: true },
           configurable: true
         })
-      } else {
-        delete (globalThis as Partial<typeof globalThis>).navigator
+        expect(isImageGenerationAvailable()).toBe(true)
+
+        Object.defineProperty(globalThis, 'navigator', {
+          value: { onLine: false },
+          configurable: true
+        })
+        expect(isImageGenerationAvailable()).toBe(false)
+      } finally {
+        if (originalNavigator) {
+          Object.defineProperty(globalThis, 'navigator', {
+            value: originalNavigator,
+            configurable: true
+          })
+        } else {
+          delete (globalThis as Partial<typeof globalThis>).navigator
+        }
       }
     })
   })
