@@ -41,7 +41,9 @@ export const useVanMaintenance = ({
   addToast
 }: VanMaintenanceParams) => {
   const pendingRestRef = useRef(false)
-  const pendingRestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const pendingRestTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  )
 
   const handleRefuel = useCallback(() => {
     if (isTravelingRef.current) return
@@ -151,7 +153,8 @@ export const useVanMaintenance = ({
       pendingRestRef.current = true
       addToast(
         i18n.t('ui:travel.rest.confirm', {
-          defaultValue: 'Resting will skip a day and incur daily costs of {{cost}}. Click again to confirm.',
+          defaultValue:
+            'Resting will skip a day and incur daily costs of {{cost}}. Click again to confirm.',
           cost: formatCurrency(dailyObligations, i18n.language)
         }),
         'warning'
@@ -162,7 +165,8 @@ export const useVanMaintenance = ({
       return
     }
 
-    if (pendingRestTimeoutRef.current) clearTimeout(pendingRestTimeoutRef.current)
+    if (pendingRestTimeoutRef.current)
+      clearTimeout(pendingRestTimeoutRef.current)
     pendingRestRef.current = false
 
     const newMembers = (band?.members || []).map(m => {
