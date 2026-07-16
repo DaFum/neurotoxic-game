@@ -10,6 +10,7 @@ import { spawn } from 'node:child_process'
  * @property {string} command
  * @property {string[]} args
  * @property {string[]} [fixArgs]
+ * @property {boolean} [optional]
  */
 
 const findRepoRoot = async startDir => {
@@ -107,7 +108,14 @@ const runItem = async (item, useFix) => {
     return 0
   }
 
-  logLine('ERROR', `Found errors in ${item.name}. Exit code: ${code}`)
+  const isNotFound = item.optional && code === 127
+  const level = isNotFound ? 'WARN' : 'ERROR'
+  logLine(
+    level,
+    isNotFound
+      ? `${item.name} is not installed or not found in PATH. Skipping.`
+      : `Found errors in ${item.name}. Exit code: ${code}`
+  )
   if (stdout) {
     logLine('INFO', `Command output for ${item.name}:`)
     console.log(stdout.trimEnd())
@@ -116,7 +124,7 @@ const runItem = async (item, useFix) => {
     logLine('INFO', `Stderr contents for ${item.name}:`)
     console.log(stderr.trimEnd())
   }
-  return code
+  return isNotFound ? 0 : code
 }
 
 /**
