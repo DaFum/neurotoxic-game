@@ -1,5 +1,5 @@
 import { describe, test, expect, vi, beforeEach } from 'vitest'
-import { render } from '@testing-library/react'
+import { fireEvent, render } from '@testing-library/react'
 
 // Capture props passed to MapNodeView so we can assert on cityTraits
 const capturedProps = []
@@ -18,11 +18,13 @@ vi.mock('../../src/components/overworld/TravelingVan', () => ({
   TravelingVan: () => null
 }))
 
+let mockImageGenerationAvailable = false
+
 vi.mock('../../src/utils/imageGen', () => ({
-  isImageGenerationAvailable: () => false,
+  isImageGenerationAvailable: () => mockImageGenerationAvailable,
   resolveGenImageUrl: () => 'mock-url',
   getGeneratedImageFallbackUrl: () => 'mock-fallback',
-  getGenImageUrl: () => 'mock-image',
+  getGenImageUrl: prompt => `mock-image-${prompt ?? 'missing'}`,
   IMG_PROMPTS: {}
 }))
 
@@ -113,18 +115,17 @@ const svgTokenTestValues = {
 }
 
 const getDecodedOfflineMapSvg = container => {
-  const mapBackground = container.querySelector('.map-wrap > div')
-  const backgroundImage = mapBackground?.style.backgroundImage ?? ''
-  const urlMatch = backgroundImage.match(/url\(["']?(.*?)["']?\)$/)
+  const mapBackground = container.querySelector('img[aria-hidden="true"]')
 
-  expect(urlMatch?.[1]).toBeDefined()
+  expect(mapBackground?.getAttribute('src')).toBeDefined()
 
-  return decodeURIComponent(urlMatch[1])
+  return decodeURIComponent(mapBackground.getAttribute('src'))
 }
 
 describe('OverworldMap cityStates lookup', () => {
   beforeEach(() => {
     capturedProps.length = 0
+    mockImageGenerationAvailable = false
     for (const tokenName of Object.keys(svgTokenTestValues)) {
       document.documentElement.style.removeProperty(tokenName)
     }
@@ -152,6 +153,22 @@ describe('OverworldMap cityStates lookup', () => {
     const startNodeProps = capturedProps.find(p => p.node?.id === 'node_0_0')
     expect(startNodeProps).toBeDefined()
     expect(startNodeProps.cityTraits).toBeUndefined()
+  })
+
+  test('falls back to the offline map art when the generated map background fails to load', () => {
+    mockImageGenerationAvailable = true
+
+    const { container } = render(
+      <OverworldMap {...baseProps} gameMap={makeGameMap(true)} />
+    )
+
+    const mapBackground = container.querySelector('img[aria-hidden="true"]')
+    expect(mapBackground).not.toBeNull()
+    expect(mapBackground.getAttribute('src')).toBe('mock-image-missing')
+
+    fireEvent.error(mapBackground)
+
+    expect(mapBackground.getAttribute('src')).toContain('data:image/svg+xml')
   })
 
   test('embeds resolved design-token colors in offline SVG assets', () => {
