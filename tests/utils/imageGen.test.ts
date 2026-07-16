@@ -65,7 +65,7 @@ describe('imageGen utilities', () => {
     test('uses navigator.onLine correctly if explicit status is not given', () => {
       const originalNavigator = globalThis.navigator
 
-      delete globalThis.navigator
+      delete (globalThis as Partial<typeof globalThis>).navigator
       expect(isImageGenerationAvailable()).toBe(true)
 
       Object.defineProperty(globalThis, 'navigator', {
@@ -86,7 +86,7 @@ describe('imageGen utilities', () => {
           configurable: true
         })
       } else {
-        delete globalThis.navigator
+        delete (globalThis as Partial<typeof globalThis>).navigator
       }
     })
   })

@@ -14,17 +14,25 @@ test('playSFX', async t => {
   await t.test(
     'does not trigger synth calls if not setup or missing sfxSynth',
     () => {
-      const calls = []
-      moduleState.isSetup = false
-      moduleState.sfxSynth = {
-        triggerAttackRelease: (...args) => calls.push(args)
-      }
-      playSFX('hit')
-      assert.deepEqual(calls, [])
+      const originalIsSetup = moduleState.isSetup
+      const originalSfxSynth = moduleState.sfxSynth
 
-      moduleState.isSetup = true
-      moduleState.sfxSynth = null
-      assert.doesNotThrow(() => playSFX('hit'))
+      try {
+        const calls = []
+        moduleState.isSetup = false
+        moduleState.sfxSynth = {
+          triggerAttackRelease: (...args) => calls.push(args)
+        }
+        playSFX('hit')
+        assert.deepEqual(calls, [])
+
+        moduleState.isSetup = true
+        moduleState.sfxSynth = null
+        assert.doesNotThrow(() => playSFX('hit'))
+      } finally {
+        moduleState.isSetup = originalIsSetup
+        moduleState.sfxSynth = originalSfxSynth
+      }
     }
   )
 

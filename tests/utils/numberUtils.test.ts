@@ -40,9 +40,11 @@ describe('numberUtils', () => {
 
     it('handles non-number edge inputs consistently', () => {
       expect(formatNumber(NaN, 'en')).toBe('NaN')
-      expect(formatNumber('not a number', 'en')).toBe('NaN')
-      expect(formatNumber(null, 'en')).toBe('0')
-      expect(formatNumber(undefined, 'en')).toBe('NaN')
+      expect(formatNumber('not a number' as unknown as number, 'en')).toBe(
+        'NaN'
+      )
+      expect(formatNumber(null as unknown as number, 'en')).toBe('0')
+      expect(formatNumber(undefined as unknown as number, 'en')).toBe('NaN')
     })
   })
 
@@ -62,11 +64,21 @@ describe('numberUtils', () => {
 
     it('handles non-number edge inputs consistently', () => {
       expect(formatCurrency(NaN, 'en').replace(/\s+/g, ' ')).toBe('€NaN')
-      expect(formatCurrency('not a number', 'en').replace(/\s+/g, ' ')).toBe(
-        '€NaN'
-      )
-      expect(formatCurrency(null, 'en').replace(/\s+/g, ' ')).toBe('€0')
-      expect(formatCurrency(undefined, 'en').replace(/\s+/g, ' ')).toBe('€NaN')
+      expect(
+        formatCurrency('not a number' as unknown as number, 'en').replace(
+          /\s+/g,
+          ' '
+        )
+      ).toBe('€NaN')
+      expect(
+        formatCurrency(null as unknown as number, 'en').replace(/\s+/g, ' ')
+      ).toBe('€0')
+      expect(
+        formatCurrency(undefined as unknown as number, 'en').replace(
+          /\s+/g,
+          ' '
+        )
+      ).toBe('€NaN')
     })
 
     it('respects signDisplay option', () => {
