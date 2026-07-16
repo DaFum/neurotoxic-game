@@ -8,6 +8,7 @@
 
 import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
+import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
 
 const mockClient = {
   isOpen: true,
@@ -55,16 +56,6 @@ describe('Leaderboard API - Song', () => {
     await mockClient.disconnect()
   })
 
-  const createRes = () => {
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res),
-      setHeader: vi.fn(),
-      end: vi.fn()
-    }
-    return res
-  }
-
   describe('POST requests', () => {
     test('missing or invalid body returns 400', async () => {
       const bodies = [null, undefined, []]
@@ -75,7 +66,7 @@ describe('Leaderboard API - Song', () => {
           headers: { 'x-forwarded-for': '127.0.0.1' },
           body
         }
-        const res = createRes()
+        const { res } = createApiRouteMocks()
 
         await handler(req, res)
 
@@ -97,7 +88,7 @@ describe('Leaderboard API - Song', () => {
           // missing score
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -118,7 +109,7 @@ describe('Leaderboard API - Song', () => {
           score: -50
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -139,7 +130,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -160,7 +151,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -181,7 +172,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -202,7 +193,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -238,7 +229,7 @@ describe('Leaderboard API - Song', () => {
           ]
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -279,7 +270,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -304,7 +295,7 @@ describe('Leaderboard API - Song', () => {
           score: 1000
         }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       // Silence console.error for this test
       const originalConsoleError = console.error
@@ -329,7 +320,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: {}
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -344,7 +335,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: { songId: 'invalid song id!' }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -361,7 +352,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: { songId: 'song1' }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -385,7 +376,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: { songId: 'song1', limit: '2' }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -421,7 +412,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: { songId: 'song1' }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -440,7 +431,7 @@ describe('Leaderboard API - Song', () => {
         method: 'GET',
         query: { songId: 'song1' }
       }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       // Silence console.error for this test
       const originalConsoleError = console.error
@@ -462,7 +453,7 @@ describe('Leaderboard API - Song', () => {
   describe('Other methods', () => {
     test('PUT returns 405 Method Not Allowed', async () => {
       const req = { method: 'PUT' }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 
@@ -484,7 +475,7 @@ describe('Leaderboard API - Song', () => {
       mockClient.zRangeWithScores.mockImplementationOnce(async () => [])
 
       const req = { method: 'GET', query: { songId: 'song1' } }
-      const res = createRes()
+      const { res } = createApiRouteMocks()
 
       await handler(req, res)
 

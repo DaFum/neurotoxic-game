@@ -1,37 +1,24 @@
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
+import {
+  createMockAudioState,
+  createMockEnsureAudioContext,
+  createMockLogger
+} from '../utils/nodeAudioMockFactories.js'
 
 // --- Mocks ---
 
 // Mock Logger
-const mockLogger = {
-  debug: mock.fn(),
-  info: mock.fn(),
-  warn: mock.fn(),
-  error: mock.fn(),
-  logs: []
-}
+const mockLogger = createMockLogger()
 mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
 // Mock Audio State
-const mockAudioState = {
-  isSetup: true,
-  playRequestId: 0,
-  guitar: { triggerAttackRelease: mock.fn() },
-  bass: { triggerAttackRelease: mock.fn() },
-  drumKit: {
-    kick: { triggerAttackRelease: mock.fn() },
-    snare: { triggerAttackRelease: mock.fn() },
-    hihat: { triggerAttackRelease: mock.fn() },
-    crash: { triggerAttackRelease: mock.fn() },
-    ride: { triggerAttackRelease: mock.fn() }
-  },
-  loop: null,
-  transportEndEventId: null,
-  transportStopEventId: null
-}
+const mockAudioState = createMockAudioState({
+  includeMidi: false,
+  includeLoop: true
+})
 mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
   namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
 })
@@ -97,7 +84,7 @@ mock.module('@tonejs/midi', {
 })
 
 // Mock Setup
-const mockEnsureAudioContext = mock.fn(async () => true)
+const mockEnsureAudioContext = createMockEnsureAudioContext()
 mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
