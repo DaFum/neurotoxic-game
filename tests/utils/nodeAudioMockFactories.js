@@ -32,26 +32,22 @@ export function createMockAudioState({
   includeMidi = true,
   includeLoop = false
 } = {}) {
-  const state = {
+  return {
     isSetup: true,
     playRequestId: 0,
     guitar: createTriggerableInstrument(),
     bass: createTriggerableInstrument(),
     drumKit: createDrumKit(),
     transportEndEventId: null,
-    transportStopEventId: null
+    transportStopEventId: null,
+    ...(includeMidi
+      ? {
+          midiLead: createTriggerableInstrument(),
+          midiBass: createTriggerableInstrument(),
+          midiDrumKit: createDrumKit(),
+          midiParts: []
+        }
+      : {}),
+    ...(includeLoop ? { loop: null } : {})
   }
-
-  if (includeMidi) {
-    state.midiLead = createTriggerableInstrument()
-    state.midiBass = createTriggerableInstrument()
-    state.midiDrumKit = createDrumKit()
-    state.midiParts = []
-  }
-
-  if (includeLoop) {
-    state.loop = null
-  }
-
-  return state
 }

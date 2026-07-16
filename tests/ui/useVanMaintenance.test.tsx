@@ -6,6 +6,8 @@ import { useVanMaintenance } from '../../src/hooks/travel/useVanMaintenance'
 vi.mock('../../src/i18n', () => ({
   default: {
     language: 'en',
+    changeLanguage: vi.fn(),
+    options: {},
     t: (_key: string, options?: { defaultValue?: string; cost?: string }) =>
       options?.defaultValue?.replace('{{cost}}', options.cost ?? '') ?? ''
   }

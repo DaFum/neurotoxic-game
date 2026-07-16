@@ -1,13 +1,7 @@
-import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { chromium } from 'playwright'
 
-const DEFAULT_CI_CHROMIUM_PATH =
-  '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome'
-
-export const CHROMIUM_PATH =
-  process.env.PLAYWRIGHT_CHROMIUM_PATH ||
-  (existsSync(DEFAULT_CI_CHROMIUM_PATH) ? DEFAULT_CI_CHROMIUM_PATH : undefined)
+export const CHROMIUM_PATH = process.env.PLAYWRIGHT_CHROMIUM_PATH || undefined
 
 export const GAME_VIEWPORT = { width: 1280, height: 720 }
 
