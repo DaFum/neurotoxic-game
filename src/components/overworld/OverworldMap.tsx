@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
 import { TravelingVan } from './TravelingVan'
@@ -98,11 +98,9 @@ export const OverworldMap = React.memo(
     const urls = useOverworldUrls(isOnlineNetwork, t)
 
     const { mapBgUrl, mapBgFallbackUrl, vanUrl, rivalVanUrl } = urls
-    const [mapBackgroundSrc, setMapBackgroundSrc] = useState(mapBgUrl)
-
-    useEffect(() => {
-      setMapBackgroundSrc(mapBgUrl)
-    }, [mapBgUrl])
+    const [failedMapBgUrl, setFailedMapBgUrl] = useState<string | null>(null)
+    const mapBackgroundSrc =
+      failedMapBgUrl === mapBgUrl ? mapBgFallbackUrl : mapBgUrl
 
     // Memoized connection rendering
     const renderedConnections = useMemo(() => {
@@ -236,7 +234,11 @@ export const OverworldMap = React.memo(
             mapBackgroundSrc.startsWith('data:') ? undefined : 'anonymous'
           }
           className='absolute inset-0 w-full h-full opacity-30 object-cover grayscale invert pointer-events-none'
-          onError={() => setMapBackgroundSrc(mapBgFallbackUrl)}
+          onError={() => {
+            if (mapBackgroundSrc !== mapBgFallbackUrl) {
+              setFailedMapBgUrl(mapBgUrl)
+            }
+          }}
         />
 
         {/* Draw Connections */}

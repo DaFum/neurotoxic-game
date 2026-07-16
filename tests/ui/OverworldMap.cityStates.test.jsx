@@ -163,7 +163,7 @@ describe('OverworldMap cityStates lookup', () => {
     )
 
     const mapBackground = container.querySelector('img[aria-hidden="true"]')
-    expect(mapBackground).toBeDefined()
+    expect(mapBackground).not.toBeNull()
     expect(mapBackground.getAttribute('src')).toBe('mock-image-missing')
 
     fireEvent.error(mapBackground)
