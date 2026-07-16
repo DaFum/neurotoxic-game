@@ -199,6 +199,7 @@ export const useOverworldUrls = (
     }
     const fallback = getGeneratedImageFallbackUrl()
     return {
+      mapBgFallbackUrl: offlineAssets.mapBgUrl || fallback,
       mapBgUrl: isOnline
         ? getGenImageUrl(IMG_PROMPTS.OVERWORLD_MAP)
         : offlineAssets.mapBgUrl || fallback,
