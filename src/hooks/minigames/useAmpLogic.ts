@@ -494,34 +494,37 @@ function useAmpHazards(
 export function useAmpLogic() {
   const { completeAmpCalibration, changeScene } = useGameActions()
 
+  const ampState = useAmpState()
   const {
     dialValue,
-    setDialValue,
     targetValue,
-    setTargetValue,
     timeLeft,
-    setTimeLeft,
     score,
-    setScore,
     isGameOver,
-    setIsGameOver,
     isOverdriveActive,
-    setIsOverdriveActive,
     heat,
-    setHeat,
     isOverheat,
-    setIsOverheat,
     voidResonance,
-    setVoidResonance,
     isAnomalyActive,
-    setIsAnomalyActive,
     isHijackActive,
-    setIsHijackActive,
     hijacksOverridden,
+    interference
+  } = ampState
+  const {
+    setDialValue,
+    setTargetValue,
+    setTimeLeft,
+    setScore,
+    setIsGameOver,
+    setIsOverdriveActive,
+    setHeat,
+    setIsOverheat,
+    setVoidResonance,
+    setIsAnomalyActive,
+    setIsHijackActive,
     setHijacksOverridden,
-    interference,
     setInterference
-  } = useAmpState()
+  } = ampState
 
   const { timeLeftRef } = useAmpTimer(timeLeft, isGameOver, changeScene)
 
