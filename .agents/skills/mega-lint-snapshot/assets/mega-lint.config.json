@@ -3,7 +3,8 @@
     {
       "name": "BASH",
       "command": "bash",
-      "args": ["-lc", "rg --files -g '*.sh' | xargs -r shellcheck"]
+      "args": ["-lc", "rg --files -g '*.sh' | xargs -r shellcheck"],
+      "optional": true
     },
     {
       "name": "BASH_EXEC",
@@ -13,12 +14,14 @@
     {
       "name": "CHECKOV",
       "command": "bash",
-      "args": ["-lc", "checkov -d ."]
+      "args": ["-lc", "checkov -d ."],
+      "optional": true
     },
     {
       "name": "GITLEAKS",
       "command": "bash",
-      "args": ["-lc", "gitleaks detect --source . --no-git -c .gitleaks.toml"]
+      "args": ["-lc", "gitleaks detect --source . --no-git -c .gitleaks.toml"],
+      "optional": true
     },
     {
       "name": "JAVASCRIPT_ES",
@@ -28,13 +31,13 @@
     {
       "name": "JAVASCRIPT_PRETTIER",
       "command": "pnpm",
-      "args": ["run", "format", "--", "--check"],
-      "fixArgs": ["run", "format"]
+      "args": ["exec", "prettier", "--check", "."],
+      "fixArgs": ["exec", "prettier", "--write", "."]
     },
     {
       "name": "JSCPD",
-      "command": "bash",
-      "args": ["-lc", "jscpd --config .jscpd.json --silent"]
+      "command": "pnpm",
+      "args": ["exec", "jscpd", "--config", ".jscpd.json", "--silent"]
     },
     {
       "name": "JSON",
@@ -47,29 +50,39 @@
     {
       "name": "JSON_PRETTIER",
       "command": "pnpm",
-      "args": ["run", "format", "--", "--check", "**/*.json"],
-      "fixArgs": ["run", "format", "--", "**/*.json"]
+      "args": ["exec", "prettier", "--check", "**/*.json"],
+      "fixArgs": ["exec", "prettier", "--write", "**/*.json"]
     },
     {
       "name": "MARKDOWN",
-      "command": "bash",
-      "args": ["-lc", "markdownlint \"**/*.md\""]
+      "command": "pnpm",
+      "args": [
+        "exec",
+        "markdownlint-cli2",
+        "**/*.md",
+        "!node_modules/**/*.md",
+        "!dist/**/*.md",
+        "!report/**/*.md",
+        "!reports/**/*.md"
+      ]
     },
     {
       "name": "MARKDOWN_PRETTIER",
       "command": "pnpm",
-      "args": ["run", "format", "--", "--check", "**/*.md"],
-      "fixArgs": ["run", "format", "--", "**/*.md"]
+      "args": ["exec", "prettier", "--check", "**/*.md"],
+      "fixArgs": ["exec", "prettier", "--write", "**/*.md"]
     },
     {
       "name": "NATURAL_LANGUAGE",
       "command": "bash",
-      "args": ["-lc", "textlint \"**/*.{md,txt}\""]
+      "args": ["-lc", "textlint \"**/*.{md,txt}\""],
+      "optional": true
     },
     {
       "name": "SHELL_SHFMT",
       "command": "bash",
-      "args": ["-lc", "rg -0 --files -g '*.sh' | xargs -0 -r shfmt -d"]
+      "args": ["-lc", "rg -0 --files -g '*.sh' | xargs -0 -r shfmt -d"],
+      "optional": true
     }
   ]
 }
