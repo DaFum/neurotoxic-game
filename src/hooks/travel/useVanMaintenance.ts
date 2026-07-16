@@ -155,7 +155,10 @@ export const useVanMaintenance = ({
         i18n.t('ui:travel.rest.confirm', {
           defaultValue:
             'Resting will skip a day and incur daily costs of {{cost}}. Click again to confirm.',
-          cost: formatCurrency(dailyObligations, i18n.language)
+          cost: formatCurrency(
+            finiteNumberOr(dailyObligations, 0),
+            i18n.language
+          )
         }),
         'warning'
       )
