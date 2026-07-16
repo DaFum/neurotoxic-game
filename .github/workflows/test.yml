@@ -37,19 +37,10 @@ jobs:
       - name: Checkout repository (merge ref)
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run node:test suite (shard ${{ matrix.shard }}/2)
         id: run-tests
@@ -89,19 +80,10 @@ jobs:
       - name: Checkout repository (merge ref)
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run Vitest Logic suite
         id: run-vitest-logic
@@ -141,19 +123,10 @@ jobs:
       - name: Checkout repository (merge ref)
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run Vitest UI suite
         id: run-vitest-ui
@@ -193,19 +166,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Ensure no new @ts-nocheck debt in src
         run: pnpm run guard:nocheck
@@ -219,19 +183,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run core TypeScript checks
         run: pnpm run typecheck:core
@@ -248,19 +203,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run locale smoke tests
         id: run-locale
@@ -283,19 +229,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run locale full tests
         id: run-locale-full
@@ -318,19 +255,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run performance tests
         id: run-perf
@@ -353,19 +281,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v6
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
         with:
-          version: ${{ env.PNPM_VERSION }}
-
-      - name: Use Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '22.13.0'
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile --ignore-scripts
+          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Build production bundle
         run: pnpm run build

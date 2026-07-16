@@ -86,7 +86,7 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
 - [ ] **Wirtschafts‑Breakdown Trace‑Modus**: Gib per Schritt Beiträge (Attendance, Penalties, Modifiers, Caps) zur Fehlersuche aus.
   - Best Practice: Modeliere Trace als optionalen Akkumulator `calculateGigEconomy(state, config, trace?: BreakdownTrace)` — wenn `trace` gesetzt ist, fügt die Engine Schritt‑Einträge hinzu; wenn nicht, bleibt der Pfad zero‑overhead.
   - Muster: `BreakdownTrace = { steps: Array<{ label: string; value: number; running: number }> }` so kann das Debug‑Overlay direkt eine Wasserfall‑Darstellung rendern; `label` ist ein i18n‑Key.
-  - Fallstrick: Trace‑Strings inline zu bauen (`\`attendance \_ baseRate = ${…}\``) vermischt Berechnung und Präsentation und macht die Trace nicht lokalisierbar; speichere strukturierte `{ label: string; inputs: Record<string, number>; output: number }`‑Objekte und formatiere in der UI.
+  - Fallstrick: Trace‑Strings inline zu bauen (`` `attendance \_ baseRate = ${…}` ``) vermischt Berechnung und Präsentation und macht die Trace nicht lokalisierbar; speichere strukturierte `{ label: string; inputs: Record<string, number>; output: number }`‑Objekte und formatiere in der UI.
   - **Status:** NICHT IMPLEMENTIERT — Es existiert kein opt‑in Trace‑Accumulator im Economy‑Pfad (z. B. `calculateGigEconomy(state, config, trace)`).
 
 - [ ] **Anti‑Swing Glättungs‑Experiment**: Prototyp für Soft‑Floor/Ceiling um frühe Verluste/Gewinne abzufedern.

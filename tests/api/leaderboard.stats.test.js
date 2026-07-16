@@ -8,6 +8,7 @@
 
 import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
+import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
 
 const mockMulti = {
   zAdd: vi.fn(),
@@ -73,10 +74,7 @@ describe('Leaderboard Stats API', () => {
         stageDives: 5
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -102,10 +100,7 @@ describe('Leaderboard Stats API', () => {
         // missing playerName and money
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -126,10 +121,7 @@ describe('Leaderboard Stats API', () => {
         money: 100
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -148,10 +140,7 @@ describe('Leaderboard Stats API', () => {
         limit: '10'
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     mockRedisClient.zRangeWithScores.mockImplementationOnce(() =>
       Promise.resolve([
@@ -180,10 +169,7 @@ describe('Leaderboard Stats API', () => {
         stat: 'invalid_stat'
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -200,10 +186,7 @@ describe('Leaderboard Stats API', () => {
       headers: { 'x-forwarded-for': '127.0.0.1' },
       body: undefined
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -229,10 +212,7 @@ describe('Leaderboard Stats API', () => {
         stageDives: Infinity
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -257,10 +237,7 @@ describe('Leaderboard Stats API', () => {
         limit: '9999' // Should clamp to 100
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     mockRedisClient.zRangeWithScores.mockImplementationOnce(() =>
       Promise.resolve([])
@@ -276,12 +253,7 @@ describe('Leaderboard Stats API', () => {
     const req = {
       method: 'DELETE'
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res),
-      setHeader: vi.fn(),
-      end: vi.fn()
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 
@@ -302,10 +274,7 @@ describe('Leaderboard Stats API', () => {
         money: 100
       }
     }
-    const res = {
-      status: vi.fn(() => res),
-      json: vi.fn(() => res)
-    }
+    const { res } = createApiRouteMocks()
 
     await statsModule.default(req, res)
 

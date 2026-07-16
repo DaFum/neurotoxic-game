@@ -1,13 +1,11 @@
 #!/usr/bin/env node
 /* eslint-disable no-undef */
-import { chromium } from 'playwright'
+import { launchGameBrowser } from './automation-core.js'
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/scenes')
-const CHROMIUM_PATH =
-  '/root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome'
 
 async function snap(page, name) {
   const file = `${OUT_DIR}/${name}.png`
@@ -20,24 +18,7 @@ async function main() {
   await mkdir(OUT_DIR, { recursive: true })
 
   console.log('🎬 Launching Chromium from cache...')
-  const browser = await chromium.launch({
-    executablePath: CHROMIUM_PATH,
-    headless: true,
-    args: [
-      '--no-sandbox',
-      '--disable-setuid-sandbox',
-      '--disable-gpu',
-      '--disable-dev-shm-usage',
-      '--mute-audio',
-      '--disable-webgl'
-    ]
-  })
-
-  const context = await browser.newContext({
-    viewport: { width: 1280, height: 720 }
-  })
-
-  const page = await context.newPage()
+  const { browser, page } = await launchGameBrowser()
 
   try {
     console.log('\n📸 Capturing all scenes...\n')
