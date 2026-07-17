@@ -223,7 +223,7 @@ export const calculateGigFinancials = (
   if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
     const effectiveMonotonicFame = Math.max(
       playerFame,
-      (playerState as { peakFame?: number })?.peakFame ?? 0
+      finiteNumberOr(playerState?.peakFame, 0)
     )
     const payoutNerf =
       1 -
