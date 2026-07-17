@@ -59,8 +59,9 @@ export abstract class BaseSpritePool<T extends Sprite> {
    * Purges all sprites currently held in the pool and permanently destroys their graphical bounds.
    *
    * @remarks
-   * This is typically called during teardown procedures or scene transitions to ensure
-   * textures and memory are properly released to the WebGL context. Active sprites currently
+   * This is typically called during teardown procedures or scene transitions to clean up
+   * pooled sprite instances. Note that shared textures are not destroyed by this pool, as they
+   * are managed externally by their respective texture managers. Active sprites currently
    * rendered on screen are not tracked by the pool and must be destroyed externally.
    */
   dispose(): void {
