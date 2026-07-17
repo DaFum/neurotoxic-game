@@ -173,8 +173,3 @@
 
 **Learning:** When performing performance optimizations, like replacing array methods (e.g. `.filter()`) with procedural loops to avoid closure allocations, code review requires explicitly explaining the change with comments inline in the codebase (e.g., `// ⚡ BOLT OPTIMIZATION:` and `// Why:` / `// Impact:`). Submitting un-commented micro-optimizations leads to rejection because they sacrifice readability without explaining the rationale.
 **Action:** Always add the required comments right above the optimized block of code, outlining the `What`, `Why`, and `Impact`, just like in the PR description.
-
-## 2026-10-25 - Liability Loop Fusion (filter + procedural)
-
-**Learning:** During the daily `liabilityTick` logic inside `assetTicks.ts`, filtering the `state.assets` array via `.filter(a => !foreclosedAssetIds.has(a.id))` allocates an intermediate array and creates a new closure every tick. Combining this `.filter()` into the same `for` loop that aggregates `foreclosedKinds` saves an entire array pass, removes the `.filter()` closure allocation, and avoids recreating objects dynamically.
-**Action:** Always seek out instances where a mapped or filtered collection is immediately looped over afterwards within the same function scope. Fuse them into a single procedural `for` loop that iterates the input collection once to populate both outputs directly.
