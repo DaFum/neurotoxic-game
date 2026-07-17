@@ -44,3 +44,4 @@
 | 2026-07-14        | src/components/hud/OverloadMeter.tsx                   | OverloadMeterProps, OverloadMeter                                                                                                                        |
 | 2026-07-15        | src/scenes/mainmenu/shared/MainMenuMotionContainer.tsx | MainMenuMotionContainerProps, MainMenuMotionContainer                                                                                                    |
 | 2026-07-16        | src/hooks/preGig/preGigUtils.ts                        | Minigame, isMinigame, resetLastMinigameFallback, getLastMinigameFallback, setLastMinigameFallback, resolveBandMeetingCost                                |
+| 2026-07-17        | src/components/stage/pool/BaseSpritePool.ts              | BaseSpritePool, constructor, setContainer, releaseSpriteToPool, dispose                                                                  |
