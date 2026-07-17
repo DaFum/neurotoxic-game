@@ -210,9 +210,6 @@ export const processLiabilityTick = (
     }
   }
 
-  const nextAssets = (state.assets || []).filter(
-    a => !foreclosedAssetIds.has(a.id)
-  )
   for (const id of Object.keys(nextLiabilities)) {
     const l = nextLiabilities[id]
     if (l && foreclosedAssetIds.has(l.assetId)) {
@@ -220,26 +217,26 @@ export const processLiabilityTick = (
     }
   }
   const finalLiabilities = nextLiabilities
-  // ⚡ BOLT OPTIMIZATION: Use Set for O(1) lookups and indexed for-loop to avoid iterator allocation overhead
-  // Why: Array.includes inside a loop over assets has O(N*M) complexity where N is assets and M is unique kinds.
-  // Impact: Baseline 648 ops/sec -> Optimized 1833 ops/sec (2.8x faster for 10,000 items)
+
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter() and a separate loop with a single-pass procedural loop.
+  // Why: Avoids intermediate array allocations from .filter() and combines two iterations over state.assets into one.
+  // Impact: Reduces GC pressure and halves iteration time over assets during liability ticks.
+  const nextAssets: import('../types/assets').LongTermAsset[] = []
   const foreclosedKinds: AssetKind[] = []
   const foreclosedKindsSet = new Set<AssetKind>()
-  const stateAssets = state.assets
-  if (stateAssets) {
-    for (let i = 0, len = stateAssets.length; i < len; i++) {
-      const asset = stateAssets[i]
-      const assetId = asset?.id
-      const assetKind = asset?.kind
-      if (
-        assetId !== undefined &&
-        assetKind !== undefined &&
-        foreclosedAssetIds.has(assetId) &&
-        !foreclosedKindsSet.has(assetKind)
-      ) {
-        foreclosedKindsSet.add(assetKind)
-        foreclosedKinds.push(assetKind)
+  const stateAssets = state.assets || []
+
+  for (let i = 0, len = stateAssets.length; i < len; i++) {
+    const asset = stateAssets[i]
+    if (!asset) continue
+
+    if (foreclosedAssetIds.has(asset.id)) {
+      if (asset.kind !== undefined && !foreclosedKindsSet.has(asset.kind)) {
+        foreclosedKindsSet.add(asset.kind)
+        foreclosedKinds.push(asset.kind)
       }
+    } else {
+      nextAssets.push(asset)
     }
   }
 
