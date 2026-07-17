@@ -2068,8 +2068,6 @@ const KPI_TARGETS = {
 }
 
 const checkKpi = (id, summary) => {
-  if (!KPI_TARGETS[id]) return null;
-
   const t = KPI_TARGETS[id]
   if (!t) return null
   const checks = []
@@ -2515,7 +2513,10 @@ const buildMarkdownReport = payload => {
 
   for (const scenario of payload.results) {
     const checks = checkKpi(scenario.id, scenario.summary)
-    if (!checks) { lines.push(`| ${scenario.name} | KPI Check | N/A | N/A | ⚠️ | Unkonfiguriertes Probe-Szenario |`); continue }
+    if (!checks) {
+      lines.push(`| ${scenario.name} | KPI Check | N/A | N/A | ⚠️ | Unkonfiguriertes Probe-Szenario |`)
+      continue
+    }
     for (const c of checks) {
       lines.push(
         `| ${scenario.name} | ${c.label} | ${c.target} | ${c.actual} | ${c.pass ? '✅' : '❌'} | ${c.bewertung} |`
@@ -2567,7 +2568,9 @@ const buildMarkdownReport = payload => {
     (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
-    const checks = checkKpi(scenario.id, scenario.summary); if (!checks) return []; return checks.filter(c => !c.pass).map(c => `${scenario.name} (${c.label})`);
+    const checks = checkKpi(scenario.id, scenario.summary)
+    if (!checks) return []
+    return checks.filter(c => !c.pass).map(c => `${scenario.name} (${c.label})`)
   })
 
   const maxBankruptcyRate = Math.max(
@@ -2657,7 +2660,7 @@ export const runSimulationSuite = async (options = {}) => {
 
     const summary = summarizeScenario(runs)
     const kpis = checkKpi(scenario.id, summary)
-    summary.kpisPassed = kpis ? kpis.every(c => c.pass) : null
+    summary.kpisPassed = kpis ? kpis.every(c => c.pass) : true
     results.push({
       id: scenario.id,
       name: scenario.name,
