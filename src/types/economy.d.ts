@@ -103,7 +103,8 @@ export type GigFinancialParams = {
   performanceScore: number
   modifiers: Partial<GigModifiers>
   bandInventory: BandInventoryLike
-  playerState?: Pick<PlayerState, 'fame'> | null
+  playerState?:
+    (Pick<PlayerState, 'fame' | 'fameLevel'> & { peakFame?: number }) | null
   gigStats: GigStatsLike
   context?: EconomyContext
 }

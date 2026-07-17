@@ -221,9 +221,16 @@ export const calculateGigFinancials = (
 
   const grossNet = report.income.total - report.expenses.total
   if (grossNet > 0 && GLOBAL_PAYOUT_NERF < 1) {
+    const effectiveMonotonicFame = Math.max(
+      playerFame,
+      (playerState as { peakFame?: number })?.peakFame ?? 0
+    )
     const payoutNerf =
       1 -
-      Math.min(1 - GLOBAL_PAYOUT_NERF, Math.max(0, (playerFame - 10) / 1200))
+      Math.min(
+        1 - GLOBAL_PAYOUT_NERF,
+        Math.max(0, (effectiveMonotonicFame - 10) / 1200)
+      )
     const adjustedNet = Math.floor(grossNet * payoutNerf)
     const payoutDampener = grossNet - adjustedNet
     if (payoutDampener > 0) {

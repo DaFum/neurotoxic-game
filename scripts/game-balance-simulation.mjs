@@ -2068,6 +2068,8 @@ const KPI_TARGETS = {
 }
 
 const checkKpi = (id, summary) => {
+  if (!KPI_TARGETS[id]) return null;
+
   const t = KPI_TARGETS[id]
   if (!t) return null
   const checks = []
@@ -2348,7 +2350,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${fmtEur(s.avgMoneyAtDay20)} | ${fmtEur(s.avgMoneyAtDay40)} | ${fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+      `| ${scenario.name} | ${s.avgMoneyAtDay20 === 0 ? 'N/A' : fmtEur(s.avgMoneyAtDay20)} | ${s.avgMoneyAtDay40 === 0 ? 'N/A' : fmtEur(s.avgMoneyAtDay40)} | ${s.avgMoneyAtDay60 === 0 ? 'N/A' : fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
     )
   }
   lines.push('')
@@ -2513,7 +2515,7 @@ const buildMarkdownReport = payload => {
 
   for (const scenario of payload.results) {
     const checks = checkKpi(scenario.id, scenario.summary)
-    if (!checks) continue
+    if (!checks) { lines.push(`| ${scenario.name} | KPI Check | N/A | N/A | ⚠️ | Unkonfiguriertes Probe-Szenario |`); continue }
     for (const c of checks) {
       lines.push(
         `| ${scenario.name} | ${c.label} | ${c.target} | ${c.actual} | ${c.pass ? '✅' : '❌'} | ${c.bewertung} |`
@@ -2565,8 +2567,7 @@ const buildMarkdownReport = payload => {
     (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
-    const checks = checkKpi(scenario.id, scenario.summary) || []
-    return checks.filter(c => !c.pass).map(c => `${scenario.name} (${c.label})`)
+    const checks = checkKpi(scenario.id, scenario.summary); if (!checks) return []; return checks.filter(c => !c.pass).map(c => `${scenario.name} (${c.label})`);
   })
 
   const maxBankruptcyRate = Math.max(
@@ -2656,7 +2657,7 @@ export const runSimulationSuite = async (options = {}) => {
 
     const summary = summarizeScenario(runs)
     const kpis = checkKpi(scenario.id, summary)
-    summary.kpisPassed = !kpis || kpis.every(c => c.pass)
+    summary.kpisPassed = kpis ? kpis.every(c => c.pass) : null
     results.push({
       id: scenario.id,
       name: scenario.name,
