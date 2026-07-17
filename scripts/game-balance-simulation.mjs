@@ -340,7 +340,7 @@ export const SCENARIOS = [
     id: 'early_game_probe',
     name: 'Early Game Probe (Fame 0–50)',
     description:
-      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–800 und niedrige Logistikkosten.',
+      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–2500 und niedrige Logistikkosten.',
     gigGapDays: 2,
     ticketDiscountChance: 0.12,
     eventIntensity: 0.3,
@@ -1300,9 +1300,9 @@ const runSingleSimulation = (scenario, seed) => {
   const timeline = []
 
   // Day-waypoint snapshots (money at start of day, before daily costs)
-  let moneyAtDay20 = 0
-  let moneyAtDay40 = 0
-  let moneyAtDay60 = 0
+  let moneyAtDay20 = null
+  let moneyAtDay40 = null
+  let moneyAtDay60 = null
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -1701,9 +1701,9 @@ const summarizeScenario = runs => {
       acc.catalogMoneySpent += run.catalogMoneySpent || 0
       acc.catalogFameSpent += run.catalogFameSpent || 0
       acc.gigCapHits += run.gigCapHits || 0
-      acc.moneyAtDay20 += run.moneyAtDay20 || 0
-      acc.moneyAtDay40 += run.moneyAtDay40 || 0
-      acc.moneyAtDay60 += run.moneyAtDay60 || 0
+      if (run.moneyAtDay20 !== null) { acc.moneyAtDay20 = (acc.moneyAtDay20 || 0) + run.moneyAtDay20; acc.moneyAtDay20Count = (acc.moneyAtDay20Count || 0) + 1; }
+      if (run.moneyAtDay40 !== null) { acc.moneyAtDay40 = (acc.moneyAtDay40 || 0) + run.moneyAtDay40; acc.moneyAtDay40Count = (acc.moneyAtDay40Count || 0) + 1; }
+      if (run.moneyAtDay60 !== null) { acc.moneyAtDay60 = (acc.moneyAtDay60 || 0) + run.moneyAtDay60; acc.moneyAtDay60Count = (acc.moneyAtDay60Count || 0) + 1; }
       acc.totalTravelCostGigs += run.totalTravelCostGigs || 0
       acc.totalHitWindowSum += run.totalHitWindowSum || 0
       acc.totalMissesSum += run.totalMissesSum || 0
@@ -1748,9 +1748,9 @@ const summarizeScenario = runs => {
       catalogMoneySpent: 0,
       catalogFameSpent: 0,
       gigCapHits: 0,
-      moneyAtDay20: 0,
-      moneyAtDay40: 0,
-      moneyAtDay60: 0,
+      moneyAtDay20: null,
+      moneyAtDay40: null,
+      moneyAtDay60: null,
       totalTravelCostGigs: 0,
       totalHitWindowSum: 0,
       totalMissesSum: 0,
@@ -1810,9 +1810,9 @@ const summarizeScenario = runs => {
     avgCatalogFameSpent: Math.round(totals.catalogFameSpent / count),
     sampleSize: count,
     // Progression curve
-    avgMoneyAtDay20: Math.round(totals.moneyAtDay20 / count),
-    avgMoneyAtDay40: Math.round(totals.moneyAtDay40 / count),
-    avgMoneyAtDay60: Math.round(totals.moneyAtDay60 / count),
+    avgMoneyAtDay20: totals.moneyAtDay20 !== null ? Math.round(totals.moneyAtDay20 / (totals.moneyAtDay20Count || 1)) : null,
+    avgMoneyAtDay40: totals.moneyAtDay40 !== null ? Math.round(totals.moneyAtDay40 / (totals.moneyAtDay40Count || 1)) : null,
+    avgMoneyAtDay60: totals.moneyAtDay60 !== null ? Math.round(totals.moneyAtDay60 / (totals.moneyAtDay60Count || 1)) : null,
     // Gig calibration
     avgTravelCostPerGig: Math.round(
       totals.totalTravelCostGigs / Math.max(1, totals.gigsPlayed)
@@ -2058,6 +2058,13 @@ const KPI_TARGETS = {
     fameProgressPerGigMin: 260,
     fameProgressPerGigMax: 500
   },
+  early_game_probe: {
+    bankruptcyMax: 5,
+    gigNetMin: 200,
+    gigNetMax: 2500,
+    fameProgressPerGigMin: 0,
+    fameProgressPerGigMax: 1000
+  },
   cult_hypergrowth: {
     bankruptcyMax: 12,
     moneyMin: 15000,
@@ -2091,6 +2098,17 @@ const checkKpi = (id, summary) => {
     bewertung: bankBewertung
   })
 
+  if (t.gigNetMin !== undefined) {
+    const gigNet = summary.avgGigNet || 0;
+    checks.push({
+      label: "Gig-Netto",
+      pass: gigNet >= t.gigNetMin && gigNet <= t.gigNetMax,
+      actual: String(gigNet),
+      target: `${t.gigNetMin} – ${t.gigNetMax}`,
+      bewertung: gigNet >= t.gigNetMin && gigNet <= t.gigNetMax ? "Im Zielband" : "Außerhalb Zielband"
+    });
+  }
+  if (t.moneyMin !== undefined) {
   const money = summary.avgFinalMoney
   const moneyRange = t.moneyMax - t.moneyMin
   const moneyCenter = (t.moneyMin + t.moneyMax) / 2
@@ -2111,6 +2129,7 @@ const checkKpi = (id, summary) => {
     target: `${fmtEur(t.moneyMin)} – ${fmtEur(t.moneyMax)}`,
     bewertung: moneyBewertung
   })
+}
 
   const fame = summary.avgFameProgressPerGig ?? 0
   const fameRange = t.fameProgressPerGigMax - t.fameProgressPerGigMin
@@ -2348,7 +2367,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${fmtEur(s.avgMoneyAtDay20)} | ${fmtEur(s.avgMoneyAtDay40)} | ${fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+      `| ${scenario.name} | ${s.avgMoneyAtDay20 !== null ? fmtEur(s.avgMoneyAtDay20) : '—'} | ${s.avgMoneyAtDay40 !== null ? fmtEur(s.avgMoneyAtDay40) : '—'} | ${s.avgMoneyAtDay60 !== null ? fmtEur(s.avgMoneyAtDay60) : '—'} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
     )
   }
   lines.push('')
