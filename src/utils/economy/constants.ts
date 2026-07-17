@@ -121,7 +121,7 @@ export const MAX_GIG_NET = 7500
 /**
  * Global multiplier applied to gig payout calculations.
  */
-export const GLOBAL_PAYOUT_NERF = 0.5
+export const GLOBAL_PAYOUT_NERF = 0.3
 /**
  * Base logistics expense for gig travel.
  */

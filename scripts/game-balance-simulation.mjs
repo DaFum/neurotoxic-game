@@ -2025,7 +2025,7 @@ const KPI_TARGETS = {
     bankruptcyMax: 85,
     moneyMin: 1000,
     moneyMax: 5000,
-    fameProgressPerGigMin: 450,
+    fameProgressPerGigMin: 250,
     fameProgressPerGigMax: 800
   },
   aggressive_marketing: {
