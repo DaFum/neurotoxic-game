@@ -101,7 +101,7 @@
     "lint-staged": "17.0.8",
     "markdownlint-cli2": "0.23.0",
     "postcss": "8.5.16",
-    "prettier": "3.9.4",
+    "prettier": "3.9.5",
     "rollup-plugin-visualizer": "7.0.1",
     "serialize-javascript": "7.0.7",
     "stylelint": "17.14.0",
