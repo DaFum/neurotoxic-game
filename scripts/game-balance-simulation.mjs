@@ -1212,8 +1212,11 @@ const buildAppFeatureSnapshot = () => {
 // One travel minigame per trip plus exactly ONE setup minigame per gig,
 // chosen with the same weighting as usePreGigHandlers (last game at 0.2).
 // Result values and their application mirror minigameReducer.ts: stress
-// reduces band harmony 1:1, rewards/repair costs hit money directly, and a
-// botched setup flags `damaged_gear` for the upcoming gig.
+// reduces band harmony 1:1, rewards/repair costs hit money directly, and
+// damaged_gear follows the reducers' own predicates — equipmentDamage > 50
+// for roadie (handleCompleteRoadieMinigame) and ANY stress > 0 for
+// kabelsalat/amp (applyPostMinigameResult flags damaged_gear on stress > 0,
+// purge-induced stress included).
 const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   const skill = scenario.minigameSkill ?? 0.5
   let damagedGear = false
@@ -1250,7 +1253,9 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   runCtx.lastMinigame = chosenGame
 
   if (chosenGame === 'roadie') {
-    const roadieDamage = Math.round((1 - skill + rng() * 0.5) * 25)
+    // Damage scaled so sloppy runs can exceed the canonical damaged_gear
+    // threshold (equipmentDamage > 50 in handleCompleteRoadieMinigame).
+    const roadieDamage = Math.round((1 - skill + rng() * 0.6) * 50)
     const roadieResult = calculateRoadieMinigameResult(roadieDamage, state.band)
     state.player.money = clampPlayerMoney(
       state.player.money - roadieResult.repairCost
@@ -1471,7 +1476,7 @@ const calculatePerformanceScore = (state, venue, modifiers, rng, song) => {
   const rawGigModifiers = getGigModifiers(state.band, modifiers)
   const physics = calculateGigPhysics(state.band, {
     bpm: song?.bpm ?? 120,
-    difficulty: venue.diff
+    difficulty: song?.difficulty ?? venue.diff
   })
   const gigModifiers = mergeGigModifierPipeline(rawGigModifiers, physics)
 
@@ -1616,9 +1621,11 @@ const runSingleSimulation = (scenario, seed) => {
   const timeline = []
 
   // Day-waypoint snapshots (money at start of day, before daily costs)
-  let moneyAtDay20 = 0
-  let moneyAtDay40 = 0
-  let moneyAtDay60 = 0
+  // Checkpoints stay null when the run ends (or goes bankrupt) before the
+  // waypoint day, so short probes report "missing" instead of €0.
+  let moneyAtDay20 = null
+  let moneyAtDay40 = null
+  let moneyAtDay60 = null
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -2117,9 +2124,18 @@ const summarizeScenario = runs => {
       acc.catalogMoneySpent += run.catalogMoneySpent || 0
       acc.catalogFameSpent += run.catalogFameSpent || 0
       acc.gigCapHits += run.gigCapHits || 0
-      acc.moneyAtDay20 += run.moneyAtDay20 || 0
-      acc.moneyAtDay40 += run.moneyAtDay40 || 0
-      acc.moneyAtDay60 += run.moneyAtDay60 || 0
+      if (run.moneyAtDay20 != null) {
+        acc.moneyAtDay20 += run.moneyAtDay20
+        acc.moneyAtDay20Count += 1
+      }
+      if (run.moneyAtDay40 != null) {
+        acc.moneyAtDay40 += run.moneyAtDay40
+        acc.moneyAtDay40Count += 1
+      }
+      if (run.moneyAtDay60 != null) {
+        acc.moneyAtDay60 += run.moneyAtDay60
+        acc.moneyAtDay60Count += 1
+      }
       acc.totalTravelCostGigs += run.totalTravelCostGigs || 0
       acc.totalHitWindowSum += run.totalHitWindowSum || 0
       acc.totalMissesSum += run.totalMissesSum || 0
@@ -2180,6 +2196,9 @@ const summarizeScenario = runs => {
       moneyAtDay20: 0,
       moneyAtDay40: 0,
       moneyAtDay60: 0,
+      moneyAtDay20Count: 0,
+      moneyAtDay40Count: 0,
+      moneyAtDay60Count: 0,
       totalTravelCostGigs: 0,
       totalHitWindowSum: 0,
       totalMissesSum: 0,
@@ -2253,10 +2272,19 @@ const summarizeScenario = runs => {
     avgCatalogMoneySpent: Math.round(totals.catalogMoneySpent / count),
     avgCatalogFameSpent: Math.round(totals.catalogFameSpent / count),
     sampleSize: count,
-    // Progression curve
-    avgMoneyAtDay20: Math.round(totals.moneyAtDay20 / count),
-    avgMoneyAtDay40: Math.round(totals.moneyAtDay40 / count),
-    avgMoneyAtDay60: Math.round(totals.moneyAtDay60 / count),
+    // Progression curve (null when no run reached the waypoint day)
+    avgMoneyAtDay20:
+      totals.moneyAtDay20Count > 0
+        ? Math.round(totals.moneyAtDay20 / totals.moneyAtDay20Count)
+        : null,
+    avgMoneyAtDay40:
+      totals.moneyAtDay40Count > 0
+        ? Math.round(totals.moneyAtDay40 / totals.moneyAtDay40Count)
+        : null,
+    avgMoneyAtDay60:
+      totals.moneyAtDay60Count > 0
+        ? Math.round(totals.moneyAtDay60 / totals.moneyAtDay60Count)
+        : null,
     // Gig calibration
     avgTravelCostPerGig: Math.round(
       totals.totalTravelCostGigs / Math.max(1, totals.gigsPlayed)
@@ -2472,6 +2500,7 @@ const buildFeatureCoverage = results => {
 
 const fmt = n => n.toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
+const fmtEurOrDash = n => (n == null ? '—' : fmtEur(n))
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
@@ -2820,7 +2849,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${fmtEur(s.avgMoneyAtDay20)} | ${fmtEur(s.avgMoneyAtDay40)} | ${fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+      `| ${scenario.name} | ${fmtEurOrDash(s.avgMoneyAtDay20)} | ${fmtEurOrDash(s.avgMoneyAtDay40)} | ${fmtEurOrDash(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
     )
   }
   lines.push('')

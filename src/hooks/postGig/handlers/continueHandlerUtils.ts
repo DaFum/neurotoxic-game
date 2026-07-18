@@ -36,10 +36,7 @@ export function buildSoldMerchInventory(
   for (const merchKey in soldMerch) {
     if (Object.hasOwn(soldMerch, merchKey)) {
       const soldAmount = Math.max(0, finiteNumberOr(soldMerch[merchKey], 0))
-      const currentAmount =
-        typeof updatedInventory[merchKey] === 'number'
-          ? (updatedInventory[merchKey] as number)
-          : 0
+      const currentAmount = finiteNumberOr(updatedInventory[merchKey], 0)
       updatedInventory[merchKey] = Math.max(0, currentAmount - soldAmount)
     }
   }

@@ -27,6 +27,15 @@ describe('buildSoldMerchInventory', () => {
     })
   })
 
+  it('normalizes non-finite stored inventory counts to zero before subtraction', () => {
+    expect(buildSoldMerchInventory({ shirts: NaN }, { shirts: 2 })).toEqual({
+      shirts: 0
+    })
+    expect(
+      buildSoldMerchInventory({ shirts: Infinity }, { shirts: 2 })
+    ).toEqual({ shirts: 0 })
+  })
+
   it('treats nullish inventory as empty inventory', () => {
     expect(buildSoldMerchInventory(undefined, { shirts: 2 })).toEqual({
       shirts: 0
