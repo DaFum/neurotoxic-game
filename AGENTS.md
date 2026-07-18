@@ -124,6 +124,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Testing
 
 - Choose the runner by the framework already used in the same file; for new files, match the closest same-directory/domain tests. Do not mix `node:test` and Vitest patterns in one file.
+- Pure helpers that need direct unit tests live in dedicated utility/view-model modules (e.g. `hooks/audioControlUtils.ts`, `ui/questHintViewModel.ts`, `hooks/postGig/handlers/continueHandlerUtils.ts`). Hook/component modules export only the hook/component — do not export internal helpers from them as test seams.
 - Vitest localStorage assertions must mock and restore `window.localStorage.setItem` in `try/finally`.
 - `react-i18next` mocks must include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup maps such as `SONGS_BY_ID` in mocked fixture data.

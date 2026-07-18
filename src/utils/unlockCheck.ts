@@ -62,12 +62,10 @@ export const checkTraitUnlocks = (
   // 1. Performance Unlocks (Post-Gig)
   if (ctx?.['type'] === 'GIG_COMPLETE' && isLooseRecord(ctx.gigStats)) {
     const gigStats = ctx.gigStats
-    const accuracy =
-      typeof gigStats.accuracy === 'number' ? gigStats.accuracy : 0
-    const misses = typeof gigStats.misses === 'number' ? gigStats.misses : 0
+    const accuracy = finiteNumberOr(gigStats.accuracy, 0)
+    const misses = finiteNumberOr(gigStats.misses, 0)
     const song = isLooseRecord(gigStats.song) ? gigStats.song : undefined
-    const maxCombo =
-      typeof gigStats.maxCombo === 'number' ? gigStats.maxCombo : 0
+    const maxCombo = finiteNumberOr(gigStats.maxCombo, 0)
 
     // Virtuoso (Matze): 100% Accuracy (0 Misses)
     if (Matze && !hasTrait(Matze, 'virtuoso') && misses === 0) {
@@ -133,8 +131,8 @@ export const checkTraitUnlocks = (
     if (Matze && !hasTrait(Matze, 'gear_nerd')) {
       // gearCount is pre-calculated by usePurchaseLogic after filtering
       // inventory against HQ gear/instrument categories.
-      const gearCount = typeof ctx.gearCount === 'number' ? ctx.gearCount : 0
-      if (finiteNumberOr(gearCount, 0) >= 5) {
+      const gearCount = finiteNumberOr(ctx.gearCount, 0)
+      if (gearCount >= 5) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
       }
     }

@@ -3,6 +3,7 @@ import { secureRandom } from '../crypto'
 import { handleError } from '../errorHandler'
 import { logger } from '../logger'
 import { clampUnit } from '../numberUtils'
+import { finiteNumberOr } from '../finiteNumber'
 import { getSafeStorageItem, setSafeStorageItem } from '../storage'
 import { audioState } from './state'
 
@@ -153,18 +154,14 @@ class AudioSystem {
   init(): void {
     if (this.prefsLoaded) return
 
-    const clamp01 = (v: number, fallback: number): number => {
-      if (!Number.isFinite(v)) return fallback
-      return clampUnit(v)
-    }
-
-    this.musicVolume = clamp01(
-      getSafeStorageItem<number>('neurotoxic_vol_music', 0.5),
-      0.5
+    this.musicVolume = clampUnit(
+      finiteNumberOr(
+        getSafeStorageItem<number>('neurotoxic_vol_music', 0.5),
+        0.5
+      )
     )
-    this.sfxVolume = clamp01(
-      getSafeStorageItem<number>('neurotoxic_vol_sfx', 0.5),
-      0.5
+    this.sfxVolume = clampUnit(
+      finiteNumberOr(getSafeStorageItem<number>('neurotoxic_vol_sfx', 0.5), 0.5)
     )
     this.muted = getSafeStorageItem<boolean>('neurotoxic_muted', false) === true
 

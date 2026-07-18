@@ -1,12 +1,12 @@
 import { describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { QuestsModal } from '../../src/ui/QuestsModal.tsx'
 import {
-  QuestsModal,
   getQuestDeadlineView,
   getQuestScopeHint,
   getQuestPrimaryHint
-} from '../../src/ui/QuestsModal.tsx'
+} from '../../src/ui/questHintViewModel.ts'
 
 describe('QuestsModal', () => {
   it('renders translated accepted quests and progress', () => {

@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildSoldMerchInventory,
   buildStoryFlagQuests
-} from '../../src/hooks/postGig/handlers/useContinueHandler'
+} from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 import { buildAcceptDealQuestEvents } from '../../src/hooks/postGig/handlers/useDealHandlers'
 import {
   QUEST_APOLOGY_TOUR,

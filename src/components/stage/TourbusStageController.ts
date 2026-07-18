@@ -19,6 +19,13 @@ import {
   TOURBUS_BUS_HEIGHT_PERCENT
 } from '../../hooks/minigames/minigameConstants'
 import type { StageControllerOptions } from '../../types/components'
+import { isFiniteNumber } from '../../utils/finiteNumber'
+
+// Sprite/texture dimensions feed scale divisors, so zero and non-finite
+// values are equally invalid — collapse both to the fallback explicitly
+// instead of relying on `||` truthiness for numbers.
+const positiveFiniteOr = (value: unknown, fallback: number): number =>
+  isFiniteNumber(value) && value > 0 ? value : fallback
 
 type TourbusControllerState = TourbusRenderState & {
   busLane: number
@@ -224,8 +231,14 @@ class TourbusStageController extends BaseStageController<TourbusControllerState>
     const targetH = height * ((TOURBUS_BUS_HEIGHT_PERCENT + 5) / 100)
     const spriteTexture =
       this.busSprite instanceof Sprite ? this.busSprite.texture : null
-    const texW = spriteTexture?.width || this.busSprite.width || 60
-    const texH = spriteTexture?.height || this.busSprite.height || 80
+    const texW = positiveFiniteOr(
+      spriteTexture?.width,
+      positiveFiniteOr(this.busSprite.width, 60)
+    )
+    const texH = positiveFiniteOr(
+      spriteTexture?.height,
+      positiveFiniteOr(this.busSprite.height, 80)
+    )
     const busScale = Math.min(targetW / texW, targetH / texH)
     this.busSprite.scale.set(busScale)
 

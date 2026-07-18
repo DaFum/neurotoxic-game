@@ -482,11 +482,9 @@ export const handleUnblacklistVenue = (
   }
 
   const cost = getUnblacklistCost(venueId)
-  const currentMoney = clampPlayerMoney(state.player.money)
-  if (currentMoney !== state.player.money) {
-    logger.warn('GameState', 'Invalid player funds state for unblacklist')
-    return state
-  }
+  // Persisted money is untrusted at this boundary: recover from stale saves
+  // with a finite fallback instead of rejecting the whole action.
+  const currentMoney = clampPlayerMoney(finiteNumberOr(state.player.money, 0))
 
   if (currentMoney < cost) {
     return {
@@ -538,27 +536,25 @@ export const handleMerchPress = (
   state: GameState,
   payload: MerchPressPayload
 ): GameState => {
-  const parsedCost = Number(payload.cost)
-  const parsedLoyaltyGain = Number(payload.loyaltyGain)
-  const parsedControversyGain = Number(payload.controversyGain)
-  const parsedHarmonyCost = Number(payload.harmonyCost)
-  const parsedFameGain = payload.fameGain == null ? 0 : Number(payload.fameGain)
+  // Reducers reject malformed payloads without coercion; numeric strings are
+  // normalized (or dropped) at the action-creator boundary only.
+  const rawFameGain = payload.fameGain == null ? 0 : payload.fameGain
   if (
-    !Number.isFinite(parsedCost) ||
-    !Number.isFinite(parsedLoyaltyGain) ||
-    !Number.isFinite(parsedControversyGain) ||
-    !Number.isFinite(parsedHarmonyCost) ||
-    !Number.isFinite(parsedFameGain)
+    !isFiniteNumber(payload.cost) ||
+    !isFiniteNumber(payload.loyaltyGain) ||
+    !isFiniteNumber(payload.controversyGain) ||
+    !isFiniteNumber(payload.harmonyCost) ||
+    !isFiniteNumber(rawFameGain)
   ) {
     logger.warn('GameState', 'Invalid numeric payload for MERCH_PRESS')
     return state
   }
 
-  const cost = clampNonNegative(parsedCost)
-  const loyaltyGain = parsedLoyaltyGain
-  const controversyGain = parsedControversyGain
-  const harmonyCost = clampNonNegative(parsedHarmonyCost)
-  const fameGain = clampNonNegative(parsedFameGain)
+  const cost = clampNonNegative(payload.cost)
+  const loyaltyGain = payload.loyaltyGain
+  const controversyGain = payload.controversyGain
+  const harmonyCost = clampNonNegative(payload.harmonyCost)
+  const fameGain = clampNonNegative(rawFameGain)
   const successToast = payload.successToast
 
   const currentMoney = clampPlayerMoney(state.player.money)

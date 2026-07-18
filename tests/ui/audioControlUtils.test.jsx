@@ -4,7 +4,7 @@ import {
   createAudioHandlers,
   getAudioSnapshot,
   createAudioSubscriber
-} from '../../src/hooks/useAudioControl'
+} from '../../src/hooks/audioControlUtils'
 import { handleError } from '../../src/utils/errorHandler'
 
 vi.mock('../../src/utils/errorHandler', () => ({

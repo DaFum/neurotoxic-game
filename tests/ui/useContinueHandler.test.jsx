@@ -34,12 +34,12 @@ vi.mock('../../src/context/gameConstants', () => ({
   NEUROTOXIC_PEDAL_HARMONY_PENALTY: 10
 }))
 
+import { useContinueHandler } from '../../src/hooks/postGig/handlers/useContinueHandler'
 import {
   dispatchEconomyQuests,
   applyNeurotoxicPenalty,
-  handleContinueSceneTransition,
-  useContinueHandler
-} from '../../src/hooks/postGig/handlers/useContinueHandler'
+  handleContinueSceneTransition
+} from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 
 import { calculateContinueStats } from '../../src/utils/postGigUtils'
 import { shouldTriggerBankruptcy } from '../../src/utils/economyEngine'

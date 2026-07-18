@@ -17,7 +17,8 @@ import {
   calculateFameLevel,
   clampBandHarmony,
   clampControversyLevel,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from '../../utils/gameState'
 import {
   getTraitById,
@@ -90,12 +91,8 @@ const executeClinicAction = (
   }
 
   // Ensure player stats are valid before comparison
-  const playerMoney = Number.isFinite(state.player.money)
-    ? Math.max(0, state.player.money)
-    : 0
-  const playerFame = Number.isFinite(state.player.fame)
-    ? Math.max(0, state.player.fame)
-    : 0
+  const playerMoney = Math.max(0, finiteNumberOr(state.player.money, 0))
+  const playerFame = Math.max(0, finiteNumberOr(state.player.fame, 0))
 
   if (playerMoney < cost || playerFame < fameCost) {
     logger.warn('ClinicReducer', 'Not enough money or fame')
@@ -387,10 +384,10 @@ export const handleGraftNeuroOverclock = (
     return state
   }
 
-  if (
-    !Number.isFinite(state.player.money) ||
-    state.player.money < CLINIC_GRAFT_COST
-  ) {
+  if (!isFiniteNumber(state.player.money)) {
+    return state // Corrupted funds state
+  }
+  if (state.player.money < CLINIC_GRAFT_COST) {
     return state // Can't afford
   }
 
