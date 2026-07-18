@@ -1528,6 +1528,12 @@ export const sanitizeLastGigStats = (
     const parsed = finiteOptionalNumber(value[key])
     if (parsed !== undefined) sanitized[key] = parsed
   }
+  // Preserve the failed flag: post-gig event gating reads it, so it must
+  // survive a save/load round-trip. Own-property check so a hostile
+  // Object.prototype.failed cannot mark every loaded gig as failed.
+  if (Object.hasOwn(value, 'failed') && value.failed === true) {
+    sanitized.failed = true
+  }
   return !isEmptyObject(sanitized) ? sanitized : null
 }
 

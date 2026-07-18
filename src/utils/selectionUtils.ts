@@ -17,6 +17,23 @@ export const pickIndex = (
   Math.max(0, Math.min(items.length - 1, Math.floor(rng() * items.length)))
 
 /**
+ * Computes a random integer in `[offset, offset + span - 1]` using the
+ * provided RNG, clamped like {@link pickIndex} so an out-of-range RNG value
+ * (e.g. returning exactly 1) cannot exceed the range. Callers must guard
+ * `span <= 0`; this returns `offset` in that case.
+ *
+ * @param span - Size of the index range.
+ * @param rng - Random number generator returning [0, 1).
+ * @param offset - Start of the range. Defaults to `0`.
+ * @returns A clamped integer in `[offset, offset + span - 1]`.
+ */
+export const pickBoundedIndex = (
+  span: number,
+  rng: () => number,
+  offset: number = 0
+): number => offset + Math.max(0, Math.min(span - 1, Math.floor(rng() * span)))
+
+/**
  * Selects a random item from an array using the provided RNG.
  * @typeParam T - Item type.
  * @param items - The list of items to choose from.

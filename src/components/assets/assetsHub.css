@@ -138,7 +138,8 @@
   transform: translateY(-1px);
 }
 
-.assets-hub-primary-button {
+.assets-hub-primary-button,
+.assets-choice-button[aria-pressed='true'] {
   box-shadow: var(--asset-panel-offset) var(--asset-panel-offset) 0
     color-mix(
       in srgb,
@@ -337,14 +338,7 @@
     transform 140ms ease-out;
 }
 
-.assets-choice-button[aria-pressed='true'] {
-  box-shadow: var(--asset-panel-offset) var(--asset-panel-offset) 0
-    color-mix(
-      in srgb,
-      var(--section-accent, var(--color-toxic-green)) 45%,
-      transparent
-    );
-}
+/* Pressed-state accent shadow is shared with .assets-hub-primary-button above. */
 
 .assets-choice-button:hover:not(:disabled) {
   transform: translateY(-1px);

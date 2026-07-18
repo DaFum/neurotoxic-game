@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import {
   buildSoldMerchInventory,
   buildStoryFlagQuests
-} from '../../src/hooks/postGig/handlers/useContinueHandler'
+} from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 import { buildAcceptDealQuestEvents } from '../../src/hooks/postGig/handlers/useDealHandlers'
 import {
   QUEST_APOLOGY_TOUR,
@@ -25,6 +25,15 @@ describe('buildSoldMerchInventory', () => {
     expect(buildSoldMerchInventory({ shirts: 'x' }, { shirts: 2 })).toEqual({
       shirts: 0
     })
+  })
+
+  it('normalizes non-finite stored inventory counts to zero before subtraction', () => {
+    expect(buildSoldMerchInventory({ shirts: NaN }, { shirts: 2 })).toEqual({
+      shirts: 0
+    })
+    expect(
+      buildSoldMerchInventory({ shirts: Infinity }, { shirts: 2 })
+    ).toEqual({ shirts: 0 })
   })
 
   it('treats nullish inventory as empty inventory', () => {

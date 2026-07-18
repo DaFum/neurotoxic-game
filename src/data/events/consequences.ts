@@ -16,9 +16,13 @@ export const CONSEQUENCE_EVENTS = [
     trigger: 'post_gig',
     chance: 0.85,
     condition: (state: GameState) => {
-      const score = state.lastGigStats?.score ?? 0
+      // Bad-gig gating uses 0–100 accuracy (or the failed flag); the raw
+      // rhythm score reaches thousands and would never trip a < 30 check.
+      // Missing accuracy (pre-accuracy saves) falls back to 100 so the
+      // consequence never false-positives — same as crisis_poor_performance.
+      const accuracy = finiteNumberOr(state.lastGigStats?.accuracy, 100)
       return (
-        score < 30 &&
+        (state.lastGigStats?.failed === true || accuracy < 30) &&
         !hasStateItem(state.eventCooldowns, 'consequences_venue_complaint')
       )
     },

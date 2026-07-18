@@ -120,6 +120,7 @@ describe('gigStats', () => {
         corruptionLevel: 10,
         toxicTimeTotal: 15,
         accuracy: 67, // (8 + 2) / (8 + 2 + 5) = 10 / 15 = 66.6% -> 67
+        failed: false,
         songStats: [
           { songId: 'song1', score: 500, accuracy: 90, index: 0 },
           { songId: 'song2', score: 500, accuracy: 85, index: 1 }
@@ -149,8 +150,21 @@ describe('gigStats', () => {
         corruptionLevel: 0, // Should default to 0
         toxicTimeTotal: 5,
         accuracy: 100, // 10 / 10 = 100%
+        failed: false,
         songStats: []
       })
+    })
+
+    it('marks the snapshot as failed when the fail flag is set', () => {
+      const snapshot = buildGigStatsSnapshot(
+        1000,
+        { perfectHits: 10, misses: 0, maxCombo: 10, peakHype: 50 },
+        5,
+        [],
+        true
+      )
+
+      expect(snapshot.failed).toBe(true)
     })
   })
 })

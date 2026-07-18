@@ -5,7 +5,7 @@ import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
-import { hasStateItem } from '../../utils/gameState'
+import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
@@ -360,7 +360,11 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: (gs: GameState) =>
-      (gs.lastGigStats?.score ?? 100) < 30 &&
+      // Bad-gig gating uses 0–100 accuracy (or the failed flag); the raw
+      // rhythm score reaches thousands and would never trip a < 30 check.
+      // Missing/non-finite accuracy falls back to 100 (never false-positive).
+      (gs.lastGigStats?.failed === true ||
+        finiteNumberOr(gs.lastGigStats?.accuracy, 100) < 30) &&
       !hasStateItem(gs.eventCooldowns, 'crisis_poor_performance'),
     options: [
       {

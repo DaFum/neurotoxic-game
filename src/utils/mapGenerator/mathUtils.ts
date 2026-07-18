@@ -1,4 +1,5 @@
 import { StateError } from '../errorHandler'
+import { pickBoundedIndex, pickIndex } from '../selectionUtils'
 
 /**
  * Picks a random subset of items from an array.
@@ -19,7 +20,7 @@ export function pickRandomSubset<T>(
   if (k <= 0) return []
 
   if (k === 1) {
-    const value = arr[Math.floor(random() * n)]
+    const value = arr[pickIndex(arr, random)]
     if (value === undefined) {
       throw new StateError(
         'Sparse array invariant violated in pickRandomSubset(k=1)'
@@ -29,8 +30,8 @@ export function pickRandomSubset<T>(
   }
 
   if (k === 2) {
-    const idx1 = Math.floor(random() * n)
-    let idx2 = Math.floor(random() * (n - 1))
+    const idx1 = pickIndex(arr, random)
+    let idx2 = pickBoundedIndex(n - 1, random)
     if (idx2 >= idx1) idx2++
     const first = arr[idx1]
     const second = arr[idx2]
@@ -47,7 +48,7 @@ export function pickRandomSubset<T>(
     const result: T[] = []
     const swaps = new Map<number, T>()
     for (let i = 0; i < k; i++) {
-      const j = i + Math.floor(random() * (n - i))
+      const j = pickBoundedIndex(n - i, random, i)
 
       // Retrieve values, falling back to original array if not swapped
       const valI = swaps.has(i) ? swaps.get(i) : arr[i]
@@ -71,7 +72,7 @@ export function pickRandomSubset<T>(
   // For large k, full shallow copy is more efficient than Map overhead
   const shuffled = [...arr]
   for (let i = 0; i < k; i++) {
-    const j = i + Math.floor(random() * (n - i))
+    const j = pickBoundedIndex(n - i, random, i)
     const valueI = shuffled[i]
     const valueJ = shuffled[j]
     if (valueI === undefined || valueJ === undefined) {

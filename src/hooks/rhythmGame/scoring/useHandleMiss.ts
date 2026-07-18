@@ -149,7 +149,10 @@ export const useHandleMiss = ({
             gameStateRef.current.score,
             gameStateRef.current.stats,
             gameStateRef.current.toxicTimeTotal,
-            gameStateRef.current.songStats
+            gameStateRef.current.songStats,
+            // Health hit zero: a failed gig must never gate into the
+            // good-gig reputation/quest branch, whatever the accuracy was.
+            true
           )
         )
         endGig()

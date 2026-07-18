@@ -322,9 +322,12 @@ const updatePassiveEffectsAndMembers = (
     }
   }
 
-  // Soundproofing: Harmony boost
+  // Soundproofing: Harmony boost — wrap the addend so a stale undefined/NaN
+  // harmony does not silently drop the bonus (matches the travel regen path).
   if (hqUpgradesSet.has('hq_room_diy_soundproofing')) {
-    const nextHarmonySoundproofing = clampBandHarmony(nextBand.harmony + 1)
+    const nextHarmonySoundproofing = clampBandHarmony(
+      finiteNumberOr(nextBand.harmony, 0) + 1
+    )
     nextBand.harmony = nextHarmonySoundproofing
   }
 

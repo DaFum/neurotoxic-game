@@ -124,6 +124,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 ## Testing
 
 - Choose the runner by the framework already used in the same file; for new files, match the closest same-directory/domain tests. Do not mix `node:test` and Vitest patterns in one file.
+- Pure helpers that need direct unit tests live in dedicated utility/view-model modules (e.g. `hooks/audioControlUtils.ts`, `ui/questHintViewModel.ts`, `hooks/postGig/handlers/continueHandlerUtils.ts`). Hook/component modules export only the hook/component — do not export internal helpers from them as test seams.
 - Vitest localStorage assertions must mock and restore `window.localStorage.setItem` in `try/finally`.
 - `react-i18next` mocks must include `initReactI18next: { type: '3rdParty', init: () => {} }`.
 - Explicitly populate lookup maps such as `SONGS_BY_ID` in mocked fixture data.
@@ -147,12 +148,14 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Travel confirmation/resource checks must disclose and cover travel cost plus total daily obligations (`getTotalDailyObligations(state)`) because arrival also calls `advanceDay()`; do not use `calculateGuaranteedDailyCost` alone where assets/liabilities can apply.
 - Gig report `net` must equal displayed income minus displayed expenses; economy dampeners and performance miss money penalties belong in the expense breakdown, not hidden continue deductions.
 - Transport events tagged `breakdown` are scaled by `van.breakdownChance / BASE_BREAKDOWN_CHANCE` in `eventSelection.ts`; new mechanical-failure travel events must carry `tags: ['breakdown']` or van condition/suspension upgrades will not affect them.
+- `lastGigStats.score` is the RAW rhythm score (BASE_POINTS 100 per hit, reaches thousands) and stays raw for leaderboards/chatter/post-option thresholds. Gig-outcome gating (reputation/quest branches in `handleSetLastGigStats`, bad-gig event conditions) must use `lastGigStats.accuracy` (0–100) plus the `failed` flag — never `score < 30`-style checks on the raw score.
 - Audio end detection uses `setlistCompleted` plus `isNearTrackEnd`; do not use `audioPlaybackEnded`.
 - Leaderboards submit `SONGS_BY_ID.get(songId).leaderboardId`, never raw `currentGig.songId`.
 - Consumables use `inventory_add` and must not display as `OWNED`.
 - Include `t` in hook/callback dependency arrays when used in that scope.
 - Use `process.env.VITE_VAR` for env vars shared by Vite and `node:test`.
 - Payload sanitizers must use `Number.isFinite(v)`, not bare `typeof v === 'number'` (which lets `NaN`/`Infinity` through and corrupts downstream clamps). Prefer the shared `finiteNumberOr(value, fallback)` / `isFiniteNumber(value)` helpers from `src/utils/finiteNumber.ts` (re-exported via the `src/utils/gameState` barrel) instead of inlining the check. When dropping `fame` from a payload, also drop the paired derived `fameLevel`.
+- `scripts/game-balance-simulation.mjs` must source mechanics from canonical game modules (reducers, action creators, `CLINIC_CONFIG`, `CHASSIS_CONFIG`, minigame logic) instead of hand-rolled values. PreGig runs exactly ONE setup minigame per gig (roadie/kabelsalat/amp, last game down-weighted to 0.2 — see `usePreGigHandlers`); simulating all three per gig triples harmony stress and skews balance results.
 - Toast `options` currency strings are baked at dispatch — call `formatCurrency(value, i18n.language, signDisplay)` (import `i18n` singleton from `src/i18n.ts` in reducers/action creators; use `i18n.language` from `useTranslation()` in components). Passing `undefined` falls back to `'en'` and bakes English currency for German users. Locale templates use a bare `{{amount}}` placeholder — no hardcoded `€` in `public/locales/{en,de}/ui.json`.
 
 ## Long-Term Assets

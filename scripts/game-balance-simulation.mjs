@@ -12,14 +12,18 @@ import { SOCIAL_PLATFORMS } from '../src/data/platforms.js'
 import { CONTRABAND_BY_ID } from '../src/data/contraband.js'
 import { HQ_ITEMS } from '../src/data/hqItems.js'
 import { getUnifiedUpgradeCatalog } from '../src/data/upgradeCatalog.js'
+import { SONGS_DB } from '../src/data/songs.js'
+import { QUEST_REGISTRY } from '../src/data/questRegistry.js'
 
 const CONTRABAND_DB = Array.from(CONTRABAND_BY_ID.values())
 import {
   eventEngine,
   resolveEventChoice
 } from '../src/utils/eventEngine/index.js'
-import { normalizeTraitMap } from '../src/utils/traitUtils.js'
+import { normalizeTraitMap, applyTraitUnlocks } from '../src/utils/traitUtils.js'
+import { checkTraitUnlocks } from '../src/utils/unlockCheck.js'
 import {
+  calculateAmpCalibrationResult,
   calculateKabelsalatMinigameResult,
   calculateRefuelCost,
   calculateRepairCost,
@@ -43,6 +47,7 @@ import {
 } from '../src/utils/assetSelectors/index.js'
 import {
   clampBandHarmony,
+  clampBandStress,
   clampMemberMood,
   clampMemberStamina,
   clampPlayerFame,
@@ -53,8 +58,30 @@ import {
   clampVanFuel,
   BALANCE_CONSTANTS,
   applyEventDelta,
-  hasActiveSponsorship
+  hasActiveSponsorship,
+  finiteNumberOr
 } from '../src/utils/gameState/index.js'
+import {
+  CLINIC_CONFIG,
+  calculateClinicCost
+} from '../src/context/gameConstants.js'
+import { handleSetLastGigStats } from '../src/context/reducers/gigReducer.js'
+import {
+  purchaseChassis,
+  startCrowdfund,
+  installModule,
+  repairChassis
+} from '../src/context/assetActionCreators.js'
+import {
+  handlePurchaseChassis,
+  handleStartCrowdfund,
+  handleInstallModule,
+  handleRepairChassis
+} from '../src/context/reducers/assetReducer.js'
+import { CHASSIS_CONFIG } from '../src/utils/assetConfig.js'
+import { MODULE_REGISTRY } from '../src/utils/assetModuleRegistry.js'
+import { LOAN_PROFILES } from '../src/utils/loanProfiles.js'
+import { applySharedBandEffect } from '../src/utils/contrabandEffects.js'
 import {
   validatePurchase,
   processPurchaseEffect
@@ -72,7 +99,8 @@ import {
   processAssetTick,
   processCrowdfundTick,
   rollAssetRiskEvents,
-  processLiabilityTick
+  processLiabilityTick,
+  resolveCrowdfundProbability
 } from '../src/utils/assetTicks.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
@@ -86,21 +114,21 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 8,
+  reportVersion: 9,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
   baseGigGapDays: 1, // In-game, traveling to a new node advances the day exactly once, allowing a gig immediately upon arrival
   randomModifierChance: 0.22,
-  followerGainMultiplier: 0.2,
   fameLossBadGig: BALANCE_CONSTANTS.FAME_LOSS_BAD_GIG,
-  harmonyGainGoodGig: 2,
-  harmonyLossBadGig: 4,
-  sponsorshipPayout: BALANCE_CONSTANTS.SPONSORSHIP_PAYOUT_FLOOR,
   brandDealEvalChance: 0.14,
   postPulseChance: 0.18,
   trendShiftChance: 0.12,
   contrabandDropChance: 0.11,
+  gigEventChance: 0.3, // scaled by scenario eventIntensity; mirrors gig_intro/gig_mid trigger points
+  assetInvestChance: 0.12,
+  moduleInstallChance: 0.15,
+  crowdfundChance: 0.04,
   outputJson: REPORT_FILES.outputJson,
   outputMarkdown: REPORT_FILES.outputMarkdown
 }
@@ -340,7 +368,7 @@ export const SCENARIOS = [
     id: 'early_game_probe',
     name: 'Early Game Probe (Fame 0–50)',
     description:
-      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–800 und niedrige Logistikkosten.',
+      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Misst Survival-Rate, Gig-Netto und Logistikkosten der ersten Spieltage.',
     gigGapDays: 2,
     ticketDiscountChance: 0.12,
     eventIntensity: 0.3,
@@ -365,7 +393,7 @@ export const SCENARIOS = [
     id: 'mid_game_probe',
     name: 'Mid Game Probe (Fame 60–150)',
     description:
-      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Validiert Time-to-Upgrade (3–5 Gigs für €2.000) und Management-Cut-Wachstum.',
+      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Misst Time-to-Upgrade und Management-Cut-Wachstum.',
     gigGapDays: 2,
     ticketDiscountChance: 0.08,
     eventIntensity: 0.4,
@@ -390,7 +418,7 @@ export const SCENARIOS = [
     id: 'late_game_probe',
     name: 'Late Game Probe (Fame 175+)',
     description:
-      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Validiert Logistik-Kostenexplosion als Sink und Cap-Hit-Rate <15%.',
+      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Misst Logistikkosten als Sink und die Cap-Hit-Rate.',
     gigGapDays: 1,
     ticketDiscountChance: 0.04,
     eventIntensity: 0.5,
@@ -569,9 +597,11 @@ const FEATURE_COVERAGE_KEYS = [
   'travel_minigame',
   'roadie_minigame',
   'kabelsalat_minigame',
+  'amp_calibration_minigame',
   'gig_modifiers',
   'gig_physics',
   'world_events',
+  'gig_events',
   'events_db',
   'brand_deals',
   'social_trends',
@@ -580,7 +610,16 @@ const FEATURE_COVERAGE_KEYS = [
   'contraband',
   'sponsorship',
   'maintenance',
-  'upgrades'
+  'upgrades',
+  'clinic',
+  'rest_stops',
+  'songs',
+  'trait_unlocks',
+  'region_reputation',
+  'quest_events',
+  'asset_acquisition',
+  'asset_modules',
+  'crowdfunding'
 ]
 
 const mulberry32 = seed => {
@@ -595,6 +634,22 @@ const mulberry32 = seed => {
 
 const pickWeightedBool = (chance, rng) =>
   rng() < Math.min(1, Math.max(0, chance))
+
+const countBandTraits = band =>
+  (band?.members || []).reduce(
+    (sum, member) => sum + Object.keys(normalizeTraitMap(member.traits)).length,
+    0
+  )
+
+// Runs the real unlock pipeline (unlockCheck + traitUtils) for a context and
+// applies any earned traits to the band, mirroring the in-game reducers.
+const applyUnlockContext = (state, counters, context) => {
+  const unlocks = checkTraitUnlocks(state, context)
+  if (!unlocks.length) return
+  const result = applyTraitUnlocks({ band: state.band, toasts: [] }, unlocks)
+  state.band = result.band
+  counters.traitUnlocks += unlocks.length
+}
 
 const applyScenarioOverrides = (state, scenario) => {
   const next = structuredClone(state)
@@ -741,7 +796,33 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
     }
   }
 
+  if (eventsApplied > 0) {
+    // In-game, event resolution feeds the EVENT_RESOLVED unlock context
+    applyUnlockContext(state, eventCounts, { type: 'EVENT_RESOLVED' })
+  }
+
   return eventsApplied
+}
+
+// Mid-gig events from the EVENTS_DB `gig` category, fired at the same
+// gig_intro/gig_mid trigger points as maybeFireGigProgressEvent in-game.
+const maybeApplyGigEvent = (state, scenario, rng, counters) => {
+  const intensity = scenario.eventIntensity ?? 0.5
+  if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return
+
+  const triggerPoint = rng() < 0.5 ? 'gig_intro' : 'gig_mid'
+  const event =
+    eventEngine.checkEvent('gig', state, triggerPoint, rng) ||
+    eventEngine.checkEvent('gig', state, 'random', rng)
+  if (!event || !event.options || event.options.length === 0) return
+
+  const choice = event.options[Math.floor(rng() * event.options.length)]
+  const { delta } = resolveEventChoice(choice, state, rng)
+  if (delta) {
+    Object.assign(state, applyEventDelta(state, delta))
+  }
+  counters.gigEvents += 1
+  applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
 }
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
@@ -842,38 +923,81 @@ const maybeApplyPostPulse = (
   return true
 }
 
-const maybeApplyContrabandDrop = (state, rng, counters) => {
+// Mirrors the USE_CONTRABAND path (applyContrabandEffect in
+// src/context/reducers/bandReducer.ts): stamina/mood hit one targeted member
+// at full value, harmony/stress are band-level, everything else goes through
+// the shared additive effect table. A dropped item is modeled as used on the
+// same day. Duration-limited effects are tracked in runCtx and reverted by
+// expireContrabandEffects, matching processContrabandExpiry semantics.
+const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
   const item = CONTRABAND_DB[Math.floor(rng() * CONTRABAND_DB.length)]
   if (!item) return
 
-  switch (item.effectType) {
-    case 'stamina':
-      state.band.members = state.band.members.map(member => ({
-        ...member,
-        stamina: clampMemberStamina(member.stamina + Math.round(item.value / 4))
-      }))
-      break
-    case 'mood':
-      state.band.members = state.band.members.map(member => ({
-        ...member,
-        mood: clampMemberMood(member.mood + Math.round(item.value / 6))
-      }))
-      break
-    case 'harmony':
-      state.band.harmony = clampBandHarmony(state.band.harmony + 2)
-      break
-    case 'luck':
-      state.social.viral = Math.min(6, (state.social.viral || 0) + 1)
-      break
-    default:
-      state.player.money = clampPlayerMoney(
-        state.player.money + Math.round(Math.abs(item.value || 1) * 8)
-      )
-      break
+  const newBand = { ...state.band }
+  const itemValue = finiteNumberOr(item.value, 0)
+
+  if (item.effectType === 'stress') {
+    newBand.stress = clampBandStress(
+      Math.floor(finiteNumberOr(newBand.stress, 0) + itemValue)
+    )
+  } else if (item.effectType === 'stamina' || item.effectType === 'mood') {
+    const members = newBand.members ?? []
+    if (members.length === 0) return
+    const targetIndex = Math.floor(rng() * members.length)
+    const member = members[targetIndex]
+    if (!member) return
+    const key = item.effectType
+    const updatedMembers = [...members]
+    updatedMembers[targetIndex] = {
+      ...member,
+      [key]:
+        key === 'stamina'
+          ? clampMemberStamina(
+              finiteNumberOr(member.stamina, 0) + itemValue,
+              finiteNumberOr(member.staminaMax, 100)
+            )
+          : clampMemberMood(finiteNumberOr(member.mood, 0) + itemValue)
+    }
+    newBand.members = updatedMembers
+  } else if (item.effectType === 'harmony') {
+    newBand.harmony = clampBandHarmony(
+      finiteNumberOr(newBand.harmony, 1) + itemValue
+    )
+  } else if (applySharedBandEffect(newBand, item.effectType, itemValue)) {
+    if (item.duration != null) {
+      runCtx.contrabandEffects.push({
+        effectType: item.effectType,
+        value: itemValue,
+        remainingDuration: finiteNumberOr(item.duration, 1)
+      })
+    }
+  } else {
+    return
   }
 
+  state.band = newBand
   counters.contrabandDrops += 1
+}
+
+// Daily expiry mirror of processContrabandExpiry (systemReducer.ts):
+// decrement durations and revert expired shared effects with the exact
+// additive inverse (negated applySharedBandEffect).
+const expireContrabandEffects = (state, runCtx) => {
+  if (runCtx.contrabandEffects.length === 0) return
+  const stillActive = []
+  let newBand = null
+  for (const effect of runCtx.contrabandEffects) {
+    effect.remainingDuration -= 1
+    if (effect.remainingDuration > 0) {
+      stillActive.push(effect)
+      continue
+    }
+    if (!newBand) newBand = { ...state.band }
+    applySharedBandEffect(newBand, effect.effectType, -effect.value)
+  }
+  if (newBand) state.band = newBand
+  runCtx.contrabandEffects = stillActive
 }
 
 const applyCatalogPurchase = (state, candidate, counters) => {
@@ -924,6 +1048,19 @@ const applyCatalogPurchase = (state, candidate, counters) => {
   } else if (candidate.category === 'HQ') {
     counters.hqUpgrades += 1
   }
+
+  if (
+    candidate.category === 'GEAR' ||
+    candidate.category === 'INSTRUMENT' ||
+    candidate.category === 'INSTRUMENTS'
+  ) {
+    counters.gearItemsPurchased += 1
+  }
+  applyUnlockContext(state, counters, {
+    type: 'PURCHASE',
+    item: candidate,
+    gearCount: counters.gearItemsPurchased
+  })
 
   counters.catalogUpgrades += 1
   return true
@@ -1063,12 +1200,26 @@ const buildAppFeatureSnapshot = () => {
     trends: trendList,
     socialPlatforms: platformList,
     contrabandItems: CONTRABAND_DB.length,
-    upgradeCatalogEntries: UPGRADE_CATALOG.length
+    upgradeCatalogEntries: UPGRADE_CATALOG.length,
+    songs: Array.isArray(SONGS_DB) ? SONGS_DB.length : 0,
+    quests: Object.keys(QUEST_REGISTRY).length,
+    assetKinds: Object.keys(CHASSIS_CONFIG).length,
+    assetModules: Object.keys(MODULE_REGISTRY).length,
+    loanProfiles: Object.keys(LOAN_PROFILES).length
   }
 }
 
-const runMinigameLayer = (state, scenario, rng, counters) => {
+// One travel minigame per trip plus exactly ONE setup minigame per gig,
+// chosen with the same weighting as usePreGigHandlers (last game at 0.2).
+// Result values and their application mirror minigameReducer.ts: stress
+// reduces band harmony 1:1, rewards/repair costs hit money directly, and
+// damaged_gear follows the reducers' own predicates — equipmentDamage > 50
+// for roadie (handleCompleteRoadieMinigame) and ANY stress > 0 for
+// kabelsalat/amp (applyPostMinigameResult flags damaged_gear on stress > 0,
+// purge-induced stress included).
+const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   const skill = scenario.minigameSkill ?? 0.5
+  let damagedGear = false
 
   const travelDamage = Math.round((1 - skill + rng() * 0.7) * 20)
   const collectedItems = rng() < 0.45 + skill * 0.25 ? ['FUEL'] : []
@@ -1085,37 +1236,87 @@ const runMinigameLayer = (state, scenario, rng, counters) => {
   )
   counters.travelMinigames += 1
 
-  const roadieDamage = Math.round((1 - skill + rng() * 0.5) * 25)
-  const roadieResult = calculateRoadieMinigameResult(roadieDamage, state.band)
-  state.player.money = clampPlayerMoney(
-    state.player.money - roadieResult.repairCost
-  )
-  state.band.members = state.band.members.map(member => ({
-    ...member,
-    mood: clampMemberMood(member.mood - Math.round(roadieResult.stress / 7))
-  }))
-  counters.roadieMinigames += 1
+  const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
+  if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
+    weights[runCtx.lastMinigame] = 0.2
+  }
+  const totalWeight = weights.roadie + weights.kabelsalat + weights.amp
+  const randomVal = rng() * totalWeight
+  let chosenGame
+  if (randomVal < weights.roadie) {
+    chosenGame = 'roadie'
+  } else if (randomVal < weights.roadie + weights.kabelsalat) {
+    chosenGame = 'kabelsalat'
+  } else {
+    chosenGame = 'amp'
+  }
+  runCtx.lastMinigame = chosenGame
 
-  const kabelResult = calculateKabelsalatMinigameResult(
-    {
-      isPoweredOn: rng() < 0.45 + skill * 0.45,
-      timeLeft: Math.max(0, Math.round(rng() * 80 * skill))
-    },
-    state.band
-  )
-
-  if (kabelResult.reward > 0) {
+  if (chosenGame === 'roadie') {
+    // Damage scaled so sloppy runs can exceed the canonical damaged_gear
+    // threshold (equipmentDamage > 50 in handleCompleteRoadieMinigame).
+    const roadieDamage = Math.round((1 - skill + rng() * 0.6) * 50)
+    const roadieResult = calculateRoadieMinigameResult(roadieDamage, state.band)
+    const moneyBeforeRepair = state.player.money
     state.player.money = clampPlayerMoney(
-      state.player.money + kabelResult.reward
+      state.player.money - roadieResult.repairCost
     )
+    // Record the actual deduction: the money clamp can eat less than quoted.
+    counters.repairSpend += moneyBeforeRepair - state.player.money
+    state.band.harmony = clampBandHarmony(
+      state.band.harmony - roadieResult.stress
+    )
+    if (roadieDamage > 50) damagedGear = true
+    counters.roadieMinigames += 1
+  } else if (chosenGame === 'kabelsalat') {
+    const kabelResult = calculateKabelsalatMinigameResult(
+      {
+        isPoweredOn: rng() < 0.45 + skill * 0.45,
+        timeLeft: Math.max(0, Math.round(rng() * 80 * skill))
+      },
+      state.band
+    )
+
+    if (kabelResult.reward > 0) {
+      state.player.money = clampPlayerMoney(
+        state.player.money + kabelResult.reward
+      )
+    }
+
+    if (kabelResult.stress > 0) {
+      state.band.harmony = clampBandHarmony(
+        state.band.harmony - kabelResult.stress
+      )
+      damagedGear = true
+    }
+    counters.kabelsalatMinigames += 1
+  } else {
+    const ampScore = Math.max(
+      0,
+      Math.min(100, Math.round(skill * 100 + (rng() - 0.5) * 40))
+    )
+    const ampResult = calculateAmpCalibrationResult(
+      ampScore,
+      state.band,
+      rng() < 0.35 ? Math.round(rng() * 60) : 0,
+      rng() < 0.25 ? 1 : 0,
+      rng() < 0.2 ? 1 : 0
+    )
+    if (ampResult.reward > 0) {
+      state.player.money = clampPlayerMoney(
+        state.player.money + ampResult.reward
+      )
+    }
+    if (ampResult.stress > 0) {
+      state.band.harmony = clampBandHarmony(
+        state.band.harmony - ampResult.stress
+      )
+      damagedGear = true
+    }
+    counters.ampCalibrations += 1
   }
 
-  if (kabelResult.stress > 0) {
-    state.band.harmony = clampBandHarmony(
-      state.band.harmony - Math.round(kabelResult.stress / 5)
-    )
-  }
-  counters.kabelsalatMinigames += 1
+  return damagedGear
 }
 
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
@@ -1127,6 +1328,7 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
       state.player.money = clampPlayerMoney(state.player.money - refuelCost)
       state.player.van.fuel = 100
       counters.refuels += 1
+      counters.refuelSpend += refuelCost
     }
   }
 
@@ -1136,6 +1338,7 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
       state.player.money = clampPlayerMoney(state.player.money - repairCost)
       state.player.van.condition = 100
       counters.repairs += 1
+      counters.repairSpend += repairCost
     }
   }
 
@@ -1148,11 +1351,134 @@ const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   }
 }
 
-const calculatePerformanceScore = (state, venue, modifiers, rng) => {
+const ASSET_KINDS = Object.keys(CHASSIS_CONFIG)
+const LOAN_PROFILE_IDS = Object.keys(LOAN_PROFILES)
+const MODULES_BY_SLOT_TYPE = (() => {
+  const bySlot = new Map()
+  for (const module of Object.values(MODULE_REGISTRY)) {
+    const list = bySlot.get(module.slotType) || []
+    list.push(module)
+    bySlot.set(module.slotType, list)
+  }
+  return bySlot
+})()
+
+// Long-term asset acquisition through the real action creators + reducers:
+// purchaseChassis/handlePurchaseChassis (cash + loan incl. liabilities),
+// startCrowdfund/handleStartCrowdfund (materialized by processCrowdfundTick),
+// and installModule/handleInstallModule. All validation stays in game code.
+const maybeInvestInAssets = (state, rng, counters) => {
+  if (rng() < SIMULATION_CONSTANTS.assetInvestChance) {
+    const kind = ASSET_KINDS[Math.floor(rng() * ASSET_KINDS.length)]
+    const flavor = rng() < 0.35 ? 'diy' : 'legit'
+    const cfg = CHASSIS_CONFIG[kind]?.[flavor]?.[1]
+
+    if (cfg) {
+      // Prudent-player gate: keep a reserve covering the price plus ~15 days
+      // of total obligations (upkeep, liabilities) after the purchase.
+      const reserve = 15 * Math.max(0, getTotalDailyObligations(state))
+      const canPayCash = state.player.money >= cfg.price * 2 + reserve
+      const raw = { kind, flavor, tier: 1, mode: 'cash' }
+      if (
+        !canPayCash &&
+        flavor === 'legit' &&
+        state.player.money >= cfg.price * 0.75 + reserve
+      ) {
+        raw.mode = 'loan'
+        raw.loanProfileId =
+          LOAN_PROFILE_IDS[Math.floor(rng() * LOAN_PROFILE_IDS.length)]
+      }
+      if (canPayCash || raw.mode === 'loan') {
+        const action = purchaseChassis(raw, state)
+        if (action && action.type !== 'PURCHASE_CHASSIS_FAILED') {
+          Object.assign(state, handlePurchaseChassis(state, action.payload))
+          counters.assetsPurchased += 1
+          if (raw.mode === 'loan') counters.loansTaken += 1
+        }
+      }
+    }
+  }
+
+  if (
+    rng() < SIMULATION_CONSTANTS.crowdfundChance &&
+    (state.crowdfundCampaigns?.length ?? 0) === 0
+  ) {
+    const kind = ASSET_KINDS[Math.floor(rng() * ASSET_KINDS.length)]
+    const cfg = CHASSIS_CONFIG[kind]?.diy?.[1]
+    if (cfg) {
+      const fameStake = Math.min(20, Math.floor(state.player.fame))
+      const action = startCrowdfund(
+        {
+          kind,
+          flavor: 'diy',
+          tier: 1,
+          targetAmount: cfg.price,
+          fameStake,
+          daysRemaining: 14,
+          plannedSuccessRoll: rng(),
+          plannedSuccessProbability: resolveCrowdfundProbability(
+            state.player.fame,
+            state.social?.scenePresence ?? 0,
+            cfg.price
+          )
+        },
+        state
+      )
+      if (action) {
+        Object.assign(state, handleStartCrowdfund(state, action.payload))
+        counters.crowdfundsStarted += 1
+      }
+    }
+  }
+
+  // Keep owned assets productive: broken chassis (condition < 20) stop
+  // producing revenue but keep costing upkeep, so repair like a real player.
+  for (const asset of state.assets || []) {
+    if (asset.condition < 60 && rng() < 0.6) {
+      const moneyBefore = state.player.money
+      const action = repairChassis(asset.id, state)
+      if (action) {
+        Object.assign(state, handleRepairChassis(state, action.payload))
+        counters.repairSpend += Math.max(0, moneyBefore - state.player.money)
+      }
+    }
+  }
+
+  if (
+    rng() < SIMULATION_CONSTANTS.moduleInstallChance &&
+    state.player.money >= 2500 &&
+    (state.assets?.length ?? 0) > 0
+  ) {
+    const asset = state.assets[Math.floor(rng() * state.assets.length)]
+    const emptySlots = (asset?.slots || []).filter(
+      slot => slot.installedModuleId === null
+    )
+    const slot = emptySlots[Math.floor(rng() * emptySlots.length)]
+    const candidates = slot ? MODULES_BY_SLOT_TYPE.get(slot.slotType) || [] : []
+    const module = candidates[Math.floor(rng() * candidates.length)]
+    if (asset && slot && module) {
+      const action = installModule(
+        { assetId: asset.id, slotId: slot.id, moduleId: module.id },
+        state
+      )
+      if (action && action.type !== 'INSTALL_MODULE_FAILED') {
+        Object.assign(state, handleInstallModule(state, action.payload))
+        counters.modulesInstalled += 1
+      }
+    }
+  }
+}
+
+const pickSongForGig = rng => {
+  if (!Array.isArray(SONGS_DB) || SONGS_DB.length === 0) return null
+  return SONGS_DB[Math.floor(rng() * SONGS_DB.length)]
+}
+
+const calculatePerformanceScore = (state, venue, modifiers, rng, song) => {
   const rawGigModifiers = getGigModifiers(state.band, modifiers)
   const physics = calculateGigPhysics(state.band, {
-    bpm: 120 + Math.round(rng() * 90),
-    difficulty: venue.diff
+    bpm: song?.bpm ?? 120,
+    difficulty: song?.difficulty ?? venue.diff
   })
   const gigModifiers = mergeGigModifierPipeline(rawGigModifiers, physics)
 
@@ -1201,8 +1527,9 @@ const applyPostGigState = (
   venue,
   performanceScore,
   financials,
-  rng,
-  misses = 0
+  misses,
+  gigStatsPayload,
+  counters
 ) => {
   const continueStats = calculateContinueStats({
     player: state.player,
@@ -1223,39 +1550,20 @@ const applyPostGigState = (
   state.social.lastGigDay = state.player.day
   state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
 
-  const followerDelta = Math.max(
+  // Canonical post-gig side effects via the real reducer handler:
+  // band stress (STRESS_PER_GIG), GIG_COMPLETE trait unlocks, region/venue
+  // reputation shifts (incl. blacklisting), and gig quest events.
+  state.currentGig = venue
+  const traitsBefore = countBandTraits(state.band)
+  const nextState = handleSetLastGigStats(state, gigStatsPayload)
+  Object.assign(state, nextState)
+  counters.traitUnlocks += Math.max(
     0,
-    Math.round(
-      financials.income.total *
-        SIMULATION_CONSTANTS.followerGainMultiplier *
-        (0.38 + rng())
-    )
+    countBandTraits(state.band) - traitsBefore
   )
-
-  state.social.instagram += followerDelta
-  state.social.tiktok += Math.round(followerDelta * 0.58)
-  state.social.youtube += Math.round(followerDelta * 0.32)
-  state.social.newsletter += Math.round(followerDelta * 0.08)
-
-  if (performanceScore >= 78) {
-    state.band.harmony = clampBandHarmony(
-      state.band.harmony + SIMULATION_CONSTANTS.harmonyGainGoodGig
-    )
-    state.band.members = state.band.members.map(member => ({
-      ...member,
-      mood: clampMemberMood(member.mood + 2),
-      stamina: clampMemberStamina(member.stamina - 8)
-    }))
-  } else {
-    state.band.harmony = clampBandHarmony(
-      state.band.harmony - SIMULATION_CONSTANTS.harmonyLossBadGig
-    )
-    state.band.members = state.band.members.map(member => ({
-      ...member,
-      mood: clampMemberMood(member.mood - 3),
-      stamina: clampMemberStamina(member.stamina - 10)
-    }))
-  }
+  state.currentGig = null
+  // Reducer handlers append toasts; drop them so runs don't accumulate UI state.
+  state.toasts = []
 }
 
 const runSingleSimulation = (scenario, seed) => {
@@ -1263,6 +1571,9 @@ const runSingleSimulation = (scenario, seed) => {
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   let currentNode = HOME
+  // Per-run context: pregig minigame rotation memory and the active
+  // duration-limited contraband effects awaiting expiry.
+  const runCtx = { lastMinigame: null, contrabandEffects: [] }
 
   const counters = {
     gigsPlayed: 0,
@@ -1273,8 +1584,21 @@ const runSingleSimulation = (scenario, seed) => {
     travelMinigames: 0,
     roadieMinigames: 0,
     kabelsalatMinigames: 0,
+    ampCalibrations: 0,
+    gigEvents: 0,
+    traitUnlocks: 0,
+    assetsPurchased: 0,
+    loansTaken: 0,
+    modulesInstalled: 0,
+    crowdfundsStarted: 0,
+    restStops: 0,
+    gearItemsPurchased: 0,
+    travelSpend: 0,
     refuels: 0,
     repairs: 0,
+    refuelSpend: 0,
+    repairSpend: 0,
+    clinicSpend: 0,
     clinicVisits: 0,
     hqUpgrades: 0,
     vanUpgrades: 0,
@@ -1300,9 +1624,11 @@ const runSingleSimulation = (scenario, seed) => {
   const timeline = []
 
   // Day-waypoint snapshots (money at start of day, before daily costs)
-  let moneyAtDay20 = 0
-  let moneyAtDay40 = 0
-  let moneyAtDay60 = 0
+  // Checkpoints stay null when the run ends (or goes bankrupt) before the
+  // waypoint day, so short probes report "missing" instead of €0.
+  let moneyAtDay20 = null
+  let moneyAtDay40 = null
+  let moneyAtDay60 = null
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -1367,7 +1693,7 @@ const runSingleSimulation = (scenario, seed) => {
         state.band.members.some(m => m.stamina < 30 || m.mood < 30)
       // Save original random state by evaluating early if they *would* rest.
       // Note: we'll just consume the rng here.
-      if (needsRest && rng() < 0.85 && state.player.money >= 150) {
+      if (needsRest && rng() < 0.85) {
         willRest = true
         shouldPlayGig = false
       }
@@ -1384,22 +1710,58 @@ const runSingleSimulation = (scenario, seed) => {
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
-    maybeApplyContrabandDrop(state, rng, counters)
+    expireContrabandEffects(state, runCtx)
+    maybeApplyContrabandDrop(state, rng, counters, runCtx)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
+    maybeInvestInAssets(state, rng, counters)
 
     if (willRest) {
-      // Simulate resting / clinic visit
-      // Pay the cost and recover stats, skip the gig for the day
-      state.player.money = clampPlayerMoney(state.player.money - 150)
-      state.band.harmony = clampBandHarmony(state.band.harmony + 15)
-      state.band.members = state.band.members.map(member => ({
-        ...member,
-        mood: clampMemberMood(member.mood + 30),
-        stamina: clampMemberStamina(member.stamina + 40)
-      }))
+      // Recovery day. Clinic heals per CLINIC_CONFIG (gameConstants.ts):
+      // each treated member costs calculateClinicCost(HEAL_BASE_COST_MONEY,
+      // visits) — escalating per visit like player.clinicVisits in-game —
+      // and gains +HEAL_STAMINA_GAIN/+HEAL_MOOD_GAIN. Members the band can
+      // no longer afford to treat recover at a free REST_STOP node instead
+      // (arrivalUtils.ts: +20 stamina / +10 mood).
+      let usedRestStop = false
+      state.band.members = state.band.members.map(member => {
+        const needsCare = member.stamina < 50 || member.mood < 50
+        if (!needsCare) return member
 
-      counters.clinicVisits = (counters.clinicVisits || 0) + 1
+        const healCost = calculateClinicCost(
+          CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
+          counters.clinicVisits
+        )
+        // Rational-player cap: once escalation makes a heal cost more than
+        // ~3x base (or a meaningful share of cash), the free rest stop wins.
+        const willingToPay =
+          healCost <= CLINIC_CONFIG.HEAL_BASE_COST_MONEY * 3 &&
+          healCost <= Math.max(600, state.player.money * 0.05)
+        if (willingToPay && state.player.money >= healCost + 100) {
+          state.player.money = clampPlayerMoney(state.player.money - healCost)
+          counters.clinicSpend += healCost
+          counters.clinicVisits += 1
+          return {
+            ...member,
+            stamina: clampMemberStamina(
+              member.stamina + CLINIC_CONFIG.HEAL_STAMINA_GAIN,
+              finiteNumberOr(member.staminaMax, 100)
+            ),
+            mood: clampMemberMood(member.mood + CLINIC_CONFIG.HEAL_MOOD_GAIN)
+          }
+        }
+
+        usedRestStop = true
+        return {
+          ...member,
+          stamina: clampMemberStamina(
+            member.stamina + 20,
+            finiteNumberOr(member.staminaMax, 100)
+          ),
+          mood: clampMemberMood(member.mood + 10)
+        }
+      })
+      if (usedRestStop) counters.restStops += 1
     }
 
     if (!shouldPlayGig) {
@@ -1419,16 +1781,41 @@ const runSingleSimulation = (scenario, seed) => {
     )
     const totalTravelCost = travel.totalCost
 
+    const moneyBeforeTravel = state.player.money
     state.player.money = clampPlayerMoney(state.player.money - totalTravelCost)
+    // Quoted cost feeds avgTravelCostPerGig; the actual deduction (clamp can
+    // eat less) feeds the real-money sink ratio.
     totalTravelCostGigs += totalTravelCost
+    counters.travelSpend += moneyBeforeTravel - state.player.money
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
 
-    // Show cancellation check (happens BEFORE minigames)
+    // Arrival bookkeeping: location keys regional reputation (mapUtils
+    // getRegionKeyForLocation reads the venues:<id>.name display key) and
+    // total distance feeds the road_warrior TRAVEL_COMPLETE unlock.
+    state.player.location = venue.name
+    state.player.stats = {
+      ...state.player.stats,
+      totalDistance:
+        finiteNumberOr(state.player.stats?.totalDistance, 0) +
+        finiteNumberOr(travel.dist, 0)
+    }
+    applyUnlockContext(state, counters, { type: 'TRAVEL_COMPLETE' })
+
+    // Show cancellation check (happens BEFORE minigames); mirrors
+    // arrivalUtils.ts: deterministic at harmony <= 1, otherwise probabilistic
+    // below LOW_HARMONY_THRESHOLD, scaled down by the tourSuccess band effect.
+    const tourSuccess = Math.min(
+      1,
+      Math.max(0, finiteNumberOr(state.band.tourSuccess, 0))
+    )
     const isCancelled =
-      state.band.harmony < 15 &&
-      rng() < BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+      state.band.harmony <= 1 ||
+      (state.band.harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD &&
+        rng() <
+          BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE *
+            (1 - tourSuccess))
 
     if (isCancelled) {
       // Show is cancelled due to poor harmony
@@ -1474,26 +1861,47 @@ const runSingleSimulation = (scenario, seed) => {
       continue
     }
 
-    // Only run minigames and performance if show is NOT cancelled
-    runMinigameLayer(state, scenario, rng, counters)
+    // Only run minigames and performance if show is NOT cancelled.
+    // currentGig is the venue object for the whole gig pipeline (gotcha:
+    // event conditions and reducers read state.currentGig.capacity/.id).
+    state.currentGig = venue
+    const damagedGear = runMinigameLayer(state, scenario, rng, counters, runCtx)
 
     const modifiers = calculateModifiers(scenario, rng)
-    const perfResults = calculatePerformanceScore(state, venue, modifiers, rng)
+    if (damagedGear) modifiers.damaged_gear = true
+    const song = pickSongForGig(rng)
+    const perfResults = calculatePerformanceScore(
+      state,
+      venue,
+      modifiers,
+      rng,
+      song
+    )
     const performanceScore = perfResults.score
     const gigModifiers = perfResults.gigModifiers
     const physics = perfResults.physics
 
+    // Mid-gig events from the EVENTS_DB `gig` category
+    maybeApplyGigEvent(state, scenario, rng, counters)
+
+    // Misses/maxCombo are player-skill outputs of the rhythm game; the sim
+    // derives stand-ins from the performance score (no canonical formula).
     const misses = Math.max(
       0,
       Math.round((100 - performanceScore) * (0.12 + rng() * 0.1))
     )
+    const maxCombo = Math.round(performanceScore * (0.5 + rng() * 0.8))
 
     const currentGigStats = {
       score: perfResults.rawScore,
       accuracy: performanceScore,
       misses,
+      maxCombo,
       hitRate: performanceScore / 100,
-      peakHype: Math.round(performanceScore + rng() * 12)
+      peakHype: Math.round(performanceScore + rng() * 12),
+      song: song
+        ? { id: song.id, bpm: song.bpm, difficulty: song.difficulty }
+        : undefined
     }
 
     const financials = deriveFinancials({
@@ -1534,8 +1942,9 @@ const runSingleSimulation = (scenario, seed) => {
             expenses: { total: 0, breakdown: [] },
             soldMerch: {}
           },
-      rng,
-      misses
+      misses,
+      currentGigStats,
+      counters
     )
 
     // Deplete merch inventory based on actual sold merch
@@ -1567,6 +1976,10 @@ const runSingleSimulation = (scenario, seed) => {
 
     if (sponsorActiveBeforePostPulse) {
       counters.sponsorPayouts += 1
+    }
+
+    if (postPulseApplied) {
+      applyUnlockContext(state, counters, { type: 'SOCIAL_UPDATE' })
     }
 
     if (!postPulseApplied && state.social.activeDeals?.length > 0) {
@@ -1637,9 +2050,20 @@ const runSingleSimulation = (scenario, seed) => {
     }
   }
 
+  // In-scope waypoints a bankrupt run never reached record the terminal
+  // balance, so progression averages include failed runs; null stays
+  // reserved for waypoints beyond this scenario's daysOverride.
+  if (moneyAtDay20 == null && daysToRun >= 20) moneyAtDay20 = state.player.money
+  if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
+  if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
+
   return {
     startingFame,
     finalMoney: state.player.money,
+    regionRepTouched:
+      Object.keys(state.reputationByRegion || {}).length > 0 ||
+      Object.keys(state.reputationByVenue || {}).length > 0,
+    finalAssets: state.assets?.length ?? 0,
     maxPeakToTroughDrop,
     finalFame: state.player.fame,
     finalHarmony: state.band.harmony,
@@ -1683,6 +2107,20 @@ const summarizeScenario = runs => {
       acc.travelMinigames += run.travelMinigames
       acc.roadieMinigames += run.roadieMinigames
       acc.kabelsalatMinigames += run.kabelsalatMinigames
+      acc.ampCalibrations += run.ampCalibrations || 0
+      acc.gigEvents += run.gigEvents || 0
+      acc.traitUnlocks += run.traitUnlocks || 0
+      acc.assetsPurchased += run.assetsPurchased || 0
+      acc.loansTaken += run.loansTaken || 0
+      acc.modulesInstalled += run.modulesInstalled || 0
+      acc.crowdfundsStarted += run.crowdfundsStarted || 0
+      acc.finalAssets += run.finalAssets || 0
+      acc.restStops += run.restStops || 0
+      acc.travelSpend += run.travelSpend || 0
+      acc.refuelSpend += run.refuelSpend || 0
+      acc.repairSpend += run.repairSpend || 0
+      acc.clinicSpend += run.clinicSpend || 0
+      acc.regionRepTouchedRuns += run.regionRepTouched ? 1 : 0
       acc.refuels += run.refuels
       acc.repairs += run.repairs
       acc.clinicVisits += run.clinicVisits
@@ -1701,9 +2139,18 @@ const summarizeScenario = runs => {
       acc.catalogMoneySpent += run.catalogMoneySpent || 0
       acc.catalogFameSpent += run.catalogFameSpent || 0
       acc.gigCapHits += run.gigCapHits || 0
-      acc.moneyAtDay20 += run.moneyAtDay20 || 0
-      acc.moneyAtDay40 += run.moneyAtDay40 || 0
-      acc.moneyAtDay60 += run.moneyAtDay60 || 0
+      if (run.moneyAtDay20 != null) {
+        acc.moneyAtDay20 += run.moneyAtDay20
+        acc.moneyAtDay20Count += 1
+      }
+      if (run.moneyAtDay40 != null) {
+        acc.moneyAtDay40 += run.moneyAtDay40
+        acc.moneyAtDay40Count += 1
+      }
+      if (run.moneyAtDay60 != null) {
+        acc.moneyAtDay60 += run.moneyAtDay60
+        acc.moneyAtDay60Count += 1
+      }
       acc.totalTravelCostGigs += run.totalTravelCostGigs || 0
       acc.totalHitWindowSum += run.totalHitWindowSum || 0
       acc.totalMissesSum += run.totalMissesSum || 0
@@ -1730,6 +2177,20 @@ const summarizeScenario = runs => {
       travelMinigames: 0,
       roadieMinigames: 0,
       kabelsalatMinigames: 0,
+      ampCalibrations: 0,
+      gigEvents: 0,
+      traitUnlocks: 0,
+      assetsPurchased: 0,
+      loansTaken: 0,
+      modulesInstalled: 0,
+      crowdfundsStarted: 0,
+      finalAssets: 0,
+      restStops: 0,
+      travelSpend: 0,
+      refuelSpend: 0,
+      repairSpend: 0,
+      clinicSpend: 0,
+      regionRepTouchedRuns: 0,
       refuels: 0,
       repairs: 0,
       clinicVisits: 0,
@@ -1751,6 +2212,9 @@ const summarizeScenario = runs => {
       moneyAtDay20: 0,
       moneyAtDay40: 0,
       moneyAtDay60: 0,
+      moneyAtDay20Count: 0,
+      moneyAtDay40Count: 0,
+      moneyAtDay60Count: 0,
       totalTravelCostGigs: 0,
       totalHitWindowSum: 0,
       totalMissesSum: 0,
@@ -1789,6 +2253,21 @@ const summarizeScenario = runs => {
     avgKabelsalatMinigames: Number(
       (totals.kabelsalatMinigames / count).toFixed(2)
     ),
+    avgAmpCalibrations: Number((totals.ampCalibrations / count).toFixed(2)),
+    avgGigEvents: Number((totals.gigEvents / count).toFixed(2)),
+    avgTraitUnlocks: Number((totals.traitUnlocks / count).toFixed(2)),
+    avgAssetsPurchased: Number((totals.assetsPurchased / count).toFixed(2)),
+    avgLoansTaken: Number((totals.loansTaken / count).toFixed(2)),
+    avgModulesInstalled: Number((totals.modulesInstalled / count).toFixed(2)),
+    avgCrowdfundsStarted: Number(
+      (totals.crowdfundsStarted / count).toFixed(2)
+    ),
+    avgFinalAssets: Number((totals.finalAssets / count).toFixed(2)),
+    avgRestStops: Number((totals.restStops / count).toFixed(2)),
+    avgClinicSpend: Math.round(totals.clinicSpend / count),
+    regionRepTouchedPct: Number(
+      ((totals.regionRepTouchedRuns / count) * 100).toFixed(1)
+    ),
     avgRefuels: Number((totals.refuels / count).toFixed(2)),
     avgRepairs: Number((totals.repairs / count).toFixed(2)),
     avgClinicVisits: Number((totals.clinicVisits / count).toFixed(2)),
@@ -1809,10 +2288,19 @@ const summarizeScenario = runs => {
     avgCatalogMoneySpent: Math.round(totals.catalogMoneySpent / count),
     avgCatalogFameSpent: Math.round(totals.catalogFameSpent / count),
     sampleSize: count,
-    // Progression curve
-    avgMoneyAtDay20: Math.round(totals.moneyAtDay20 / count),
-    avgMoneyAtDay40: Math.round(totals.moneyAtDay40 / count),
-    avgMoneyAtDay60: Math.round(totals.moneyAtDay60 / count),
+    // Progression curve (null when no run reached the waypoint day)
+    avgMoneyAtDay20:
+      totals.moneyAtDay20Count > 0
+        ? Math.round(totals.moneyAtDay20 / totals.moneyAtDay20Count)
+        : null,
+    avgMoneyAtDay40:
+      totals.moneyAtDay40Count > 0
+        ? Math.round(totals.moneyAtDay40 / totals.moneyAtDay40Count)
+        : null,
+    avgMoneyAtDay60:
+      totals.moneyAtDay60Count > 0
+        ? Math.round(totals.moneyAtDay60 / totals.moneyAtDay60Count)
+        : null,
     // Gig calibration
     avgTravelCostPerGig: Math.round(
       totals.totalTravelCostGigs / Math.max(1, totals.gigsPlayed)
@@ -1839,11 +2327,14 @@ const summarizeScenario = runs => {
     gigNetToTravelRatio: Number(
       (totals.totalGigNet / Math.max(1, totals.totalTravelCostGigs)).toFixed(1)
     ),
+    // Real money spent on sinks (travel + actual refuel/repair/clinic costs
+    // from calculateRefuelCost/calculateRepairCost/calculateClinicCost).
     sinkToIncomeRatio: Number(
       (
-        (totals.totalTravelCostGigs +
-          totals.repairs * 150 +
-          totals.refuels * 80) /
+        (totals.travelSpend +
+          totals.repairSpend +
+          totals.refuelSpend +
+          totals.clinicSpend) /
         Math.max(1, totals.totalGigNet)
       ).toFixed(2)
     ),
@@ -1989,9 +2480,13 @@ const buildFeatureCoverage = results => {
     if (summary.avgTravelMinigames > 0) coverage.travel_minigame = true
     if (summary.avgRoadieMinigames > 0) coverage.roadie_minigame = true
     if (summary.avgKabelsalatMinigames > 0) coverage.kabelsalat_minigame = true
+    if (summary.avgAmpCalibrations > 0) {
+      coverage.amp_calibration_minigame = true
+    }
     if (summary.avgEventsApplied > 0) {
       coverage.world_events = true
     }
+    if (summary.avgGigEvents > 0) coverage.gig_events = true
     if (summary.avgSponsorPayouts > 0 || summary.avgSponsorSignings > 0) {
       coverage.sponsorship = true
     }
@@ -2001,6 +2496,19 @@ const buildFeatureCoverage = results => {
     if (summary.avgHqUpgrades > 0 || summary.avgVanUpgrades > 0) {
       coverage.upgrades = true
     }
+    if (summary.avgClinicVisits > 0) coverage.clinic = true
+    if (summary.avgRestStops > 0) coverage.rest_stops = true
+    if (summary.avgTraitUnlocks > 0) coverage.trait_unlocks = true
+    if (summary.regionRepTouchedPct > 0) {
+      // Region/venue reputation entries were written by the real
+      // handleSetLastGigStats pipeline, which also emits gig quest events.
+      coverage.region_reputation = true
+      coverage.quest_events = true
+    }
+    if (summary.avgAssetsPurchased > 0) coverage.asset_acquisition = true
+    if (summary.avgModulesInstalled > 0) coverage.asset_modules = true
+    if (summary.avgCrowdfundsStarted > 0) coverage.crowdfunding = true
+    if (summary.avgGigsPlayed > 0) coverage.songs = true
   }
 
   return coverage
@@ -2008,6 +2516,7 @@ const buildFeatureCoverage = results => {
 
 const fmt = n => n.toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
+const fmtEurOrDash = n => (n == null ? '—' : fmtEur(n))
 const fmtPct = n => `${n}%`
 
 const KPI_TARGETS = {
@@ -2239,9 +2748,12 @@ const buildMarkdownReport = payload => {
     `| Modifier-Kosten | Catering ${fmtEur(MODIFIER_COSTS.catering)}, Promo ${fmtEur(MODIFIER_COSTS.promo)}, Merch ${fmtEur(MODIFIER_COSTS.merch)}, Soundcheck ${fmtEur(MODIFIER_COSTS.soundcheck)}, Guestlist ${fmtEur(MODIFIER_COSTS.guestlist)} |`
   )
   lines.push(
-    `| Venue-Fame-Gates | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ |`
+    `| Venue-Auswahl (Sim-Heuristik) | diff-2: fame 0–59 · diff-3: 60–199 · diff-4: 200–399 · diff-5: 400+ (im Spiel steuert die Map-Layer-Progression die Venue-Schwierigkeit) |`
   )
   lines.push(`| Fame-Level-Skala | Level = floor(sqrt(fame / 200)) |`)
+  lines.push(
+    `| Klinik-Heilung | ${fmtEur(CLINIC_CONFIG.HEAL_BASE_COST_MONEY)} × ${CLINIC_CONFIG.VISIT_MULTIPLIER}^Besuche · +${CLINIC_CONFIG.HEAL_STAMINA_GAIN} Stamina / +${CLINIC_CONFIG.HEAL_MOOD_GAIN} Mood |`
+  )
   lines.push('')
 
   // ── Fame Audit ───────────────────────────────────────────────────────────
@@ -2286,6 +2798,11 @@ const buildMarkdownReport = payload => {
   lines.push(`| Upgrade-Katalog | ${snap.upgradeCatalogEntries} |`)
   lines.push(`| Social Platforms | ${snap.socialPlatforms.length} |`)
   lines.push(`| Trends | ${snap.trends.length} |`)
+  lines.push(`| Songs | ${snap.songs} |`)
+  lines.push(`| Quests (Registry) | ${snap.quests} |`)
+  lines.push(`| Asset-Chassis-Arten | ${snap.assetKinds} |`)
+  lines.push(`| Asset-Module | ${snap.assetModules} |`)
+  lines.push(`| Kredit-Profile | ${snap.loanProfiles} |`)
   lines.push('')
 
   // Event catalog detail
@@ -2348,7 +2865,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${fmtEur(s.avgMoneyAtDay20)} | ${fmtEur(s.avgMoneyAtDay40)} | ${fmtEur(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+      `| ${scenario.name} | ${fmtEurOrDash(s.avgMoneyAtDay20)} | ${fmtEurOrDash(s.avgMoneyAtDay40)} | ${fmtEurOrDash(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
     )
   }
   lines.push('')
@@ -2405,14 +2922,14 @@ const buildMarkdownReport = payload => {
   lines.push('## Events & Social im Detail')
   lines.push('')
   lines.push(
-    '| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Trend-Shifts | Ø Katalog-Upgrades | Bewertung |'
+    '| Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Gig-Events | Ø Trend-Shifts | Ø Katalog-Upgrades | Bewertung |'
   )
-  lines.push('|---|---:|---:|---:|---:|---:|---:|---|')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${s.avgSpecialEvents} | ${s.avgCashSwings} | ${s.avgBandEvents} | ${s.avgEquipmentEvents} | ${s.avgTrendShifts} | ${s.avgCatalogUpgrades} | ${getEventsInsight(s)} |`
+      `| ${scenario.name} | ${s.avgSpecialEvents} | ${s.avgCashSwings} | ${s.avgBandEvents} | ${s.avgEquipmentEvents} | ${s.avgGigEvents} | ${s.avgTrendShifts} | ${s.avgCatalogUpgrades} | ${getEventsInsight(s)} |`
     )
   }
   lines.push('')
@@ -2421,9 +2938,9 @@ const buildMarkdownReport = payload => {
   lines.push('## Minigame-Abdeckung im Detail')
   lines.push('')
   lines.push(
-    '| Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Gesamt Minigames | Bewertung |'
+    '| Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Ø Amp-Calibration | Gesamt Minigames | Bewertung |'
   )
-  lines.push('|---|---:|---:|---:|---:|---|')
+  lines.push('|---|---:|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
@@ -2431,11 +2948,28 @@ const buildMarkdownReport = payload => {
       (
         s.avgTravelMinigames +
         s.avgRoadieMinigames +
-        s.avgKabelsalatMinigames
+        s.avgKabelsalatMinigames +
+        s.avgAmpCalibrations
       ).toFixed(2)
     )
     lines.push(
-      `| ${scenario.name} | ${s.avgTravelMinigames} | ${s.avgRoadieMinigames} | ${s.avgKabelsalatMinigames} | ${total} | ${getMinigameInsight(s)} |`
+      `| ${scenario.name} | ${s.avgTravelMinigames} | ${s.avgRoadieMinigames} | ${s.avgKabelsalatMinigames} | ${s.avgAmpCalibrations} | ${total} | ${getMinigameInsight(s)} |`
+    )
+  }
+  lines.push('')
+
+  // ── Assets & Progression ──────────────────────────────────────────────────
+  lines.push('## Assets & Progression')
+  lines.push('')
+  lines.push(
+    '| Szenario | Ø Chassis-Käufe | Ø Kredite | Ø Module | Ø Crowdfunds | Ø End-Assets | Ø Trait-Unlocks | Ø Klinik-Ausgaben | Ø Rest-Stops | Region-Rep-Runs |'
+  )
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    lines.push(
+      `| ${scenario.name} | ${s.avgAssetsPurchased} | ${s.avgLoansTaken} | ${s.avgModulesInstalled} | ${s.avgCrowdfundsStarted} | ${s.avgFinalAssets} | ${s.avgTraitUnlocks} | ${fmtEur(s.avgClinicSpend)} | ${s.avgRestStops} | ${s.regionRepTouchedPct}% |`
     )
   }
   lines.push('')
@@ -2483,7 +3017,7 @@ const buildMarkdownReport = payload => {
     },
     {
       label: 'Meiste Ø Events',
-      key: s => s.avgEventsApplied,
+      key: s => s.avgEventsApplied + s.avgGigEvents,
       fmt: v => v.toFixed(2),
       bewertung:
         'Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse.'
@@ -2562,7 +3096,10 @@ const buildMarkdownReport = payload => {
     (a, b) => b.summary.avgFinalMoney - a.summary.avgFinalMoney
   )[0]
   const mostVolatile = [...payload.results].sort(
-    (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
+    (a, b) =>
+      b.summary.avgEventsApplied +
+      b.summary.avgGigEvents -
+      (a.summary.avgEventsApplied + a.summary.avgGigEvents)
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
     const checks = checkKpi(scenario.id, scenario.summary) || []
@@ -2583,7 +3120,7 @@ const buildMarkdownReport = payload => {
     `- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`
   )
   lines.push(
-    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${mostVolatile.summary.avgEventsApplied.toFixed(2)} Event-Impulsen.`
+    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgEventsApplied + mostVolatile.summary.avgGigEvents).toFixed(2)} Event-Impulsen (inkl. Gig-Events).`
   )
 
   if (failedKpis.length > 0) {

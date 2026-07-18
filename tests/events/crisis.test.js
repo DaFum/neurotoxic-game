@@ -46,17 +46,32 @@ describe('CRISIS_EVENTS', () => {
 
   test('crisis_poor_performance conditions logic', () => {
     const evt = getCrisisEvent('crisis_poor_performance')
+    // Gating uses 0-100 accuracy (or the failed flag); the raw rhythm score
+    // reaches thousands and is irrelevant for the < 30 check.
     assert.strictEqual(
-      evt.condition({ lastGigStats: { score: 29 }, eventCooldowns: [] }),
+      evt.condition({
+        lastGigStats: { score: 3200, accuracy: 29 },
+        eventCooldowns: []
+      }),
       true
     )
     assert.strictEqual(
-      evt.condition({ lastGigStats: { score: 30 }, eventCooldowns: [] }),
+      evt.condition({
+        lastGigStats: { score: 3400, accuracy: 30 },
+        eventCooldowns: []
+      }),
       false
     )
     assert.strictEqual(
       evt.condition({
-        lastGigStats: { score: 29 },
+        lastGigStats: { score: 12000, accuracy: 88, failed: true },
+        eventCooldowns: []
+      }),
+      true
+    )
+    assert.strictEqual(
+      evt.condition({
+        lastGigStats: { score: 3200, accuracy: 29 },
         eventCooldowns: ['crisis_poor_performance']
       }),
       false

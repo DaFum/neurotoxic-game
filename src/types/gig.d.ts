@@ -21,6 +21,8 @@ export interface PostGigSummary extends UnknownRecord {
   health?: number
   overload?: number
   maxCombo?: number
+  /** True when the gig ended via the health-zero fail path; failed gigs must never count as good gigs. */
+  failed?: boolean
   songStats?: Array<{ songId: string; score: number; accuracy: number }>
   toastId?: string
   events?: string[]

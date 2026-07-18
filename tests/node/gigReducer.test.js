@@ -150,7 +150,8 @@ describe('gigReducer', () => {
 
     it('should process bad show correctly', () => {
       baseState.currentGig = { id: 'v1', name: 'Test Venue' }
-      const payload = { score: 20 }
+      // Gating uses 0-100 accuracy; the raw rhythm score stays untouched.
+      const payload = { score: 2400, accuracy: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 1)
@@ -160,7 +161,7 @@ describe('gigReducer', () => {
     it('should process 3 bad shows into prove yourself quest', () => {
       baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       baseState.player.stats.consecutiveBadShows = 2
-      const payload = { score: 20 }
+      const payload = { score: 2400, accuracy: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 3)
@@ -175,7 +176,7 @@ describe('gigReducer', () => {
     it('should handle venue blacklisting on terrible reputation', () => {
       baseState.currentGig = { id: 'v1' }
       baseState.reputationByRegion.some = -25
-      const payload = { score: 20 }
+      const payload = { score: 2400, accuracy: 20 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.reputationByRegion.some, -35)
@@ -186,19 +187,50 @@ describe('gigReducer', () => {
     it('should process good show correctly and clear consecutive bad shows', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.player.stats.consecutiveBadShows = 2
-      const payload = { score: 70 }
+      const payload = { score: 9800, accuracy: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.player.stats.consecutiveBadShows, 0)
       assert.strictEqual(nextState.reputationByRegion.some, 5)
     })
 
-    it('should apply bonus reputation for very high score', () => {
+    it('should apply bonus reputation for very high accuracy', () => {
       baseState.currentGig = { id: 'v1' }
-      const payload = { score: 95 }
+      const payload = { score: 14300, accuracy: 95 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.strictEqual(nextState.reputationByRegion.some, 10)
+    })
+
+    it('treats missing accuracy as passing (legacy saves are not penalized)', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      const nextState = handleSetLastGigStats(baseState, { score: 7100 })
+
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 0)
+      assert.strictEqual(nextState.reputationByRegion.some, 10)
+    })
+
+    it('does not re-emit the bad-gig reputation event at the clamp floor', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      baseState.reputationByRegion.some = -100
+      baseState.reputationByVenue = { v1: -100 }
+      const payload = { score: 2400, accuracy: 20 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      // Already at the floor: values stay put, no reputation-changed events.
+      assert.strictEqual(nextState.reputationByRegion.some, -100)
+      assert.strictEqual(nextState.reputationByVenue.v1, -100)
+      // The bad show itself is still recorded.
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 1)
+    })
+
+    it('routes failed gigs into the bad-show branch regardless of accuracy', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      const payload = { score: 12000, accuracy: 88, failed: true }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 1)
+      assert.strictEqual(nextState.reputationByRegion.some, -10)
     })
 
     it('should advance apology tour quest on good score and small capacity', () => {
@@ -206,7 +238,7 @@ describe('gigReducer', () => {
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }
       ]
-      const payload = { score: 70 }
+      const payload = { score: 9800, accuracy: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       const quest = nextState.activeQuests.find(
@@ -220,7 +252,7 @@ describe('gigReducer', () => {
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }
       ]
-      const payload = { score: 70 }
+      const payload = { score: 9800, accuracy: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       const apologyQuest = nextState.activeQuests.find(
@@ -236,7 +268,7 @@ describe('gigReducer', () => {
       baseState.activeQuests = [
         { id: 'quest_apology_tour', progress: 0, required: 5 }
       ]
-      const payload = { score: 70 }
+      const payload = { score: 9800, accuracy: 70 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       const apologyQuest = nextState.activeQuests.find(
@@ -249,7 +281,7 @@ describe('gigReducer', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.activeStoryFlags = ['apology_tour_complete']
       baseState.social = { loyalty: 0, controversyLevel: 20 }
-      const payload = { score: 50 }
+      const payload = { score: 7100, accuracy: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.ok(
@@ -262,7 +294,7 @@ describe('gigReducer', () => {
       baseState.currentGig = { id: 'v1', capacity: 100 }
       baseState.activeStoryFlags = ['apology_tour_complete']
       baseState.social = { loyalty: 0, controversyLevel: 45 }
-      const payload = { score: 50 }
+      const payload = { score: 7100, accuracy: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.ok(
@@ -276,8 +308,14 @@ describe('gigReducer', () => {
       baseState.activeStoryFlags = ['apology_tour_complete']
       baseState.social = { loyalty: 0, controversyLevel: 20 }
 
-      const afterFirst = handleSetLastGigStats(baseState, { score: 50 })
-      const afterSecond = handleSetLastGigStats(afterFirst, { score: 50 })
+      const afterFirst = handleSetLastGigStats(baseState, {
+        score: 7100,
+        accuracy: 50
+      })
+      const afterSecond = handleSetLastGigStats(afterFirst, {
+        score: 7100,
+        accuracy: 50
+      })
 
       const occurrences = (afterSecond.pendingEvents || []).filter(
         id => id === 'consequences_comeback_album'
@@ -296,7 +334,7 @@ describe('gigReducer', () => {
         'comeback_triggered'
       ]
       baseState.social = { loyalty: 0, controversyLevel: 10 }
-      const payload = { score: 50 }
+      const payload = { score: 7100, accuracy: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       assert.ok(
@@ -313,7 +351,7 @@ describe('gigReducer', () => {
       baseState = QuestLifecycle.addQuest(baseState, {
         id: 'quest_ego_management'
       })
-      const payload = { score: 50 }
+      const payload = { score: 7100, accuracy: 50 }
       const nextState = handleSetLastGigStats(baseState, payload)
 
       // When the quest completes, it is removed from activeQuests.

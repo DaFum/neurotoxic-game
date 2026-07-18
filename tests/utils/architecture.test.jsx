@@ -219,7 +219,9 @@ test('Quest completion paths through gig reducer work correctly', () => {
   initialState.currentGig = { id: 'test_gig', score: 100, capacity: 200 }
 
   const nextState = handleSetLastGigStats(initialState, {
-    score: 100,
+    // Good-gig gating uses 0-100 accuracy; score stays the raw rhythm score.
+    score: 9800,
+    accuracy: 70,
     isGoodShow: true,
     venueId: 'test_venue'
   })
