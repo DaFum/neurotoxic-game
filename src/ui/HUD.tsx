@@ -140,7 +140,8 @@ export const HUD = memo(() => {
           >
             <div
               role='status'
-              className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'
+              tabIndex={0}
+              className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green'
             >
               <Skull size={14} className='text-toxic-green' />
               <span className='font-black uppercase tracking-wider text-xs'>
