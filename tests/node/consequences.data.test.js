@@ -27,24 +27,32 @@ describe('Consequences Event Pool', () => {
     )
     assert.ok(venueComplaint)
 
-    // Condition: score < 30 and no cooldown
+    // Condition: accuracy < 30 (or failed gig) and no cooldown; the raw
+    // score is irrelevant for gating.
     assert.strictEqual(
       venueComplaint.condition({
-        lastGigStats: { score: 20 },
+        lastGigStats: { score: 2400, accuracy: 20 },
         eventCooldowns: []
       }),
       true
     )
     assert.strictEqual(
       venueComplaint.condition({
-        lastGigStats: { score: 40 },
+        lastGigStats: { score: 5600, accuracy: 40 },
         eventCooldowns: []
       }),
       false
     )
     assert.strictEqual(
       venueComplaint.condition({
-        lastGigStats: { score: 20 },
+        lastGigStats: { score: 12000, accuracy: 88, failed: true },
+        eventCooldowns: []
+      }),
+      true
+    )
+    assert.strictEqual(
+      venueComplaint.condition({
+        lastGigStats: { score: 2400, accuracy: 20 },
         eventCooldowns: ['consequences_venue_complaint']
       }),
       false
