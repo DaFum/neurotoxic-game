@@ -153,6 +153,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Include `t` in hook/callback dependency arrays when used in that scope.
 - Use `process.env.VITE_VAR` for env vars shared by Vite and `node:test`.
 - Payload sanitizers must use `Number.isFinite(v)`, not bare `typeof v === 'number'` (which lets `NaN`/`Infinity` through and corrupts downstream clamps). Prefer the shared `finiteNumberOr(value, fallback)` / `isFiniteNumber(value)` helpers from `src/utils/finiteNumber.ts` (re-exported via the `src/utils/gameState` barrel) instead of inlining the check. When dropping `fame` from a payload, also drop the paired derived `fameLevel`.
+- `scripts/game-balance-simulation.mjs` must source mechanics from canonical game modules (reducers, action creators, `CLINIC_CONFIG`, `CHASSIS_CONFIG`, minigame logic) instead of hand-rolled values. PreGig runs exactly ONE setup minigame per gig (roadie/kabelsalat/amp, last game down-weighted to 0.2 — see `usePreGigHandlers`); simulating all three per gig triples harmony stress and skews balance results.
 - Toast `options` currency strings are baked at dispatch — call `formatCurrency(value, i18n.language, signDisplay)` (import `i18n` singleton from `src/i18n.ts` in reducers/action creators; use `i18n.language` from `useTranslation()` in components). Passing `undefined` falls back to `'en'` and bakes English currency for German users. Locale templates use a bare `{{amount}}` placeholder — no hardcoded `€` in `public/locales/{en,de}/ui.json`.
 
 ## Long-Term Assets
