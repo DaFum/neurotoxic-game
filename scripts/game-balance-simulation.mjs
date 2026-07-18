@@ -368,7 +368,7 @@ export const SCENARIOS = [
     id: 'early_game_probe',
     name: 'Early Game Probe (Fame 0–50)',
     description:
-      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Validiert Survival-Rate >95%, Gig-Netto €200–800 und niedrige Logistikkosten.',
+      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Misst Survival-Rate, Gig-Netto und Logistikkosten der ersten Spieltage.',
     gigGapDays: 2,
     ticketDiscountChance: 0.12,
     eventIntensity: 0.3,
@@ -393,7 +393,7 @@ export const SCENARIOS = [
     id: 'mid_game_probe',
     name: 'Mid Game Probe (Fame 60–150)',
     description:
-      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Validiert Time-to-Upgrade (3–5 Gigs für €2.000) und Management-Cut-Wachstum.',
+      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Misst Time-to-Upgrade und Management-Cut-Wachstum.',
     gigGapDays: 2,
     ticketDiscountChance: 0.08,
     eventIntensity: 0.4,
@@ -418,7 +418,7 @@ export const SCENARIOS = [
     id: 'late_game_probe',
     name: 'Late Game Probe (Fame 175+)',
     description:
-      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Validiert Logistik-Kostenexplosion als Sink und Cap-Hit-Rate <15%.',
+      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Misst Logistikkosten als Sink und die Cap-Hit-Rate.',
     gigGapDays: 1,
     ticketDiscountChance: 0.04,
     eventIntensity: 0.5,
@@ -1257,10 +1257,12 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     // threshold (equipmentDamage > 50 in handleCompleteRoadieMinigame).
     const roadieDamage = Math.round((1 - skill + rng() * 0.6) * 50)
     const roadieResult = calculateRoadieMinigameResult(roadieDamage, state.band)
+    const moneyBeforeRepair = state.player.money
     state.player.money = clampPlayerMoney(
       state.player.money - roadieResult.repairCost
     )
-    counters.repairSpend += roadieResult.repairCost
+    // Record the actual deduction: the money clamp can eat less than quoted.
+    counters.repairSpend += moneyBeforeRepair - state.player.money
     state.band.harmony = clampBandHarmony(
       state.band.harmony - roadieResult.stress
     )
@@ -1591,6 +1593,7 @@ const runSingleSimulation = (scenario, seed) => {
     crowdfundsStarted: 0,
     restStops: 0,
     gearItemsPurchased: 0,
+    travelSpend: 0,
     refuels: 0,
     repairs: 0,
     refuelSpend: 0,
@@ -1778,8 +1781,12 @@ const runSingleSimulation = (scenario, seed) => {
     )
     const totalTravelCost = travel.totalCost
 
+    const moneyBeforeTravel = state.player.money
     state.player.money = clampPlayerMoney(state.player.money - totalTravelCost)
+    // Quoted cost feeds avgTravelCostPerGig; the actual deduction (clamp can
+    // eat less) feeds the real-money sink ratio.
     totalTravelCostGigs += totalTravelCost
+    counters.travelSpend += moneyBeforeTravel - state.player.money
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
@@ -2043,6 +2050,13 @@ const runSingleSimulation = (scenario, seed) => {
     }
   }
 
+  // In-scope waypoints a bankrupt run never reached record the terminal
+  // balance, so progression averages include failed runs; null stays
+  // reserved for waypoints beyond this scenario's daysOverride.
+  if (moneyAtDay20 == null && daysToRun >= 20) moneyAtDay20 = state.player.money
+  if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
+  if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
+
   return {
     startingFame,
     finalMoney: state.player.money,
@@ -2102,6 +2116,7 @@ const summarizeScenario = runs => {
       acc.crowdfundsStarted += run.crowdfundsStarted || 0
       acc.finalAssets += run.finalAssets || 0
       acc.restStops += run.restStops || 0
+      acc.travelSpend += run.travelSpend || 0
       acc.refuelSpend += run.refuelSpend || 0
       acc.repairSpend += run.repairSpend || 0
       acc.clinicSpend += run.clinicSpend || 0
@@ -2171,6 +2186,7 @@ const summarizeScenario = runs => {
       crowdfundsStarted: 0,
       finalAssets: 0,
       restStops: 0,
+      travelSpend: 0,
       refuelSpend: 0,
       repairSpend: 0,
       clinicSpend: 0,
@@ -2315,7 +2331,7 @@ const summarizeScenario = runs => {
     // from calculateRefuelCost/calculateRepairCost/calculateClinicCost).
     sinkToIncomeRatio: Number(
       (
-        (totals.totalTravelCostGigs +
+        (totals.travelSpend +
           totals.repairSpend +
           totals.refuelSpend +
           totals.clinicSpend) /
@@ -3001,7 +3017,7 @@ const buildMarkdownReport = payload => {
     },
     {
       label: 'Meiste Ø Events',
-      key: s => s.avgEventsApplied,
+      key: s => s.avgEventsApplied + s.avgGigEvents,
       fmt: v => v.toFixed(2),
       bewertung:
         'Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse.'
@@ -3080,7 +3096,10 @@ const buildMarkdownReport = payload => {
     (a, b) => b.summary.avgFinalMoney - a.summary.avgFinalMoney
   )[0]
   const mostVolatile = [...payload.results].sort(
-    (a, b) => b.summary.avgEventsApplied - a.summary.avgEventsApplied
+    (a, b) =>
+      b.summary.avgEventsApplied +
+      b.summary.avgGigEvents -
+      (a.summary.avgEventsApplied + a.summary.avgGigEvents)
   )[0]
   const failedKpis = payload.results.flatMap(scenario => {
     const checks = checkKpi(scenario.id, scenario.summary) || []
@@ -3101,7 +3120,7 @@ const buildMarkdownReport = payload => {
     `- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`
   )
   lines.push(
-    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${mostVolatile.summary.avgEventsApplied.toFixed(2)} Event-Impulsen.`
+    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgEventsApplied + mostVolatile.summary.avgGigEvents).toFixed(2)} Event-Impulsen (inkl. Gig-Events).`
   )
 
   if (failedKpis.length > 0) {

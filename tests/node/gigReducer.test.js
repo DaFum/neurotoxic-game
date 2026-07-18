@@ -202,6 +202,28 @@ describe('gigReducer', () => {
       assert.strictEqual(nextState.reputationByRegion.some, 10)
     })
 
+    it('treats missing accuracy as passing (legacy saves are not penalized)', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      const nextState = handleSetLastGigStats(baseState, { score: 7100 })
+
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 0)
+      assert.strictEqual(nextState.reputationByRegion.some, 10)
+    })
+
+    it('does not re-emit the bad-gig reputation event at the clamp floor', () => {
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      baseState.reputationByRegion.some = -100
+      baseState.reputationByVenue = { v1: -100 }
+      const payload = { score: 2400, accuracy: 20 }
+      const nextState = handleSetLastGigStats(baseState, payload)
+
+      // Already at the floor: values stay put, no reputation-changed events.
+      assert.strictEqual(nextState.reputationByRegion.some, -100)
+      assert.strictEqual(nextState.reputationByVenue.v1, -100)
+      // The bad show itself is still recorded.
+      assert.strictEqual(nextState.player.stats.consecutiveBadShows, 1)
+    })
+
     it('routes failed gigs into the bad-show branch regardless of accuracy', () => {
       baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       const payload = { score: 12000, accuracy: 88, failed: true }
