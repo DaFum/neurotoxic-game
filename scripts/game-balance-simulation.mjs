@@ -923,11 +923,13 @@ const maybeApplyPostPulse = (
   return true
 }
 
-// Mirrors applyContrabandEffect in src/context/reducers/bandReducer.ts:
-// stamina/mood hit one targeted member at full value, harmony/stress are
-// band-level, everything else goes through the shared additive effect table.
-// (Temporary-effect durations are not tracked; the sim keeps buffs applied.)
-const maybeApplyContrabandDrop = (state, rng, counters) => {
+// Mirrors the USE_CONTRABAND path (applyContrabandEffect in
+// src/context/reducers/bandReducer.ts): stamina/mood hit one targeted member
+// at full value, harmony/stress are band-level, everything else goes through
+// the shared additive effect table. A dropped item is modeled as used on the
+// same day. Duration-limited effects are tracked in runCtx and reverted by
+// expireContrabandEffects, matching processContrabandExpiry semantics.
+const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
   const item = CONTRABAND_DB[Math.floor(rng() * CONTRABAND_DB.length)]
   if (!item) return
@@ -962,12 +964,40 @@ const maybeApplyContrabandDrop = (state, rng, counters) => {
     newBand.harmony = clampBandHarmony(
       finiteNumberOr(newBand.harmony, 1) + itemValue
     )
-  } else if (!applySharedBandEffect(newBand, item.effectType, itemValue)) {
+  } else if (applySharedBandEffect(newBand, item.effectType, itemValue)) {
+    if (item.duration != null) {
+      runCtx.contrabandEffects.push({
+        effectType: item.effectType,
+        value: itemValue,
+        remainingDuration: finiteNumberOr(item.duration, 1)
+      })
+    }
+  } else {
     return
   }
 
   state.band = newBand
   counters.contrabandDrops += 1
+}
+
+// Daily expiry mirror of processContrabandExpiry (systemReducer.ts):
+// decrement durations and revert expired shared effects with the exact
+// additive inverse (negated applySharedBandEffect).
+const expireContrabandEffects = (state, runCtx) => {
+  if (runCtx.contrabandEffects.length === 0) return
+  const stillActive = []
+  let newBand = null
+  for (const effect of runCtx.contrabandEffects) {
+    effect.remainingDuration -= 1
+    if (effect.remainingDuration > 0) {
+      stillActive.push(effect)
+      continue
+    }
+    if (!newBand) newBand = { ...state.band }
+    applySharedBandEffect(newBand, effect.effectType, -effect.value)
+  }
+  if (newBand) state.band = newBand
+  runCtx.contrabandEffects = stillActive
 }
 
 const applyCatalogPurchase = (state, candidate, counters) => {
@@ -1353,7 +1383,7 @@ const maybeInvestInAssets = (state, rng, counters) => {
       }
       if (canPayCash || raw.mode === 'loan') {
         const action = purchaseChassis(raw, state)
-        if (action.type !== 'PURCHASE_CHASSIS_FAILED') {
+        if (action && action.type !== 'PURCHASE_CHASSIS_FAILED') {
           Object.assign(state, handlePurchaseChassis(state, action.payload))
           counters.assetsPurchased += 1
           if (raw.mode === 'loan') counters.loansTaken += 1
@@ -1424,7 +1454,7 @@ const maybeInvestInAssets = (state, rng, counters) => {
         { assetId: asset.id, slotId: slot.id, moduleId: module.id },
         state
       )
-      if (action.type !== 'INSTALL_MODULE_FAILED') {
+      if (action && action.type !== 'INSTALL_MODULE_FAILED') {
         Object.assign(state, handleInstallModule(state, action.payload))
         counters.modulesInstalled += 1
       }
@@ -1534,8 +1564,9 @@ const runSingleSimulation = (scenario, seed) => {
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   let currentNode = HOME
-  // Per-run context, e.g. the pregig minigame rotation memory
-  const runCtx = { lastMinigame: null }
+  // Per-run context: pregig minigame rotation memory and the active
+  // duration-limited contraband effects awaiting expiry.
+  const runCtx = { lastMinigame: null, contrabandEffects: [] }
 
   const counters = {
     gigsPlayed: 0,
@@ -1669,7 +1700,8 @@ const runSingleSimulation = (scenario, seed) => {
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
     }
-    maybeApplyContrabandDrop(state, rng, counters)
+    expireContrabandEffects(state, runCtx)
+    maybeApplyContrabandDrop(state, rng, counters, runCtx)
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
     maybeInvestInAssets(state, rng, counters)

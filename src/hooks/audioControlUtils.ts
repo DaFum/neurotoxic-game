@@ -1,4 +1,5 @@
 import { handleError } from '../utils/errorHandler'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import type {
   AudioControlHandlers,
   AudioManagerLike,
@@ -93,29 +94,14 @@ export const getAudioSnapshot = (
     }
     const raw = value as Record<string, unknown>
     return {
-      musicVol:
-        Object.hasOwn(raw, 'musicVol') &&
-        typeof raw.musicVol === 'number' &&
-        Number.isFinite(raw.musicVol)
-          ? raw.musicVol
-          : defaults.musicVol,
-      sfxVol:
-        Object.hasOwn(raw, 'sfxVol') &&
-        typeof raw.sfxVol === 'number' &&
-        Number.isFinite(raw.sfxVol)
-          ? raw.sfxVol
-          : defaults.sfxVol,
+      musicVol: finiteNumberOr(raw.musicVol, defaults.musicVol),
+      sfxVol: finiteNumberOr(raw.sfxVol, defaults.sfxVol),
       isMuted:
-        Object.hasOwn(raw, 'isMuted') && typeof raw.isMuted === 'boolean'
-          ? raw.isMuted
-          : defaults.isMuted,
+        typeof raw.isMuted === 'boolean' ? raw.isMuted : defaults.isMuted,
       isPlaying:
-        Object.hasOwn(raw, 'isPlaying') && typeof raw.isPlaying === 'boolean'
-          ? raw.isPlaying
-          : defaults.isPlaying,
+        typeof raw.isPlaying === 'boolean' ? raw.isPlaying : defaults.isPlaying,
       currentSongId:
-        Object.hasOwn(raw, 'currentSongId') &&
-        (typeof raw.currentSongId === 'string' || raw.currentSongId === null)
+        typeof raw.currentSongId === 'string' || raw.currentSongId === null
           ? raw.currentSongId
           : defaults.currentSongId
     }
