@@ -148,6 +148,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Travel confirmation/resource checks must disclose and cover travel cost plus total daily obligations (`getTotalDailyObligations(state)`) because arrival also calls `advanceDay()`; do not use `calculateGuaranteedDailyCost` alone where assets/liabilities can apply.
 - Gig report `net` must equal displayed income minus displayed expenses; economy dampeners and performance miss money penalties belong in the expense breakdown, not hidden continue deductions.
 - Transport events tagged `breakdown` are scaled by `van.breakdownChance / BASE_BREAKDOWN_CHANCE` in `eventSelection.ts`; new mechanical-failure travel events must carry `tags: ['breakdown']` or van condition/suspension upgrades will not affect them.
+- `lastGigStats.score` is the RAW rhythm score (BASE_POINTS 100 per hit, reaches thousands) and stays raw for leaderboards/chatter/post-option thresholds. Gig-outcome gating (reputation/quest branches in `handleSetLastGigStats`, bad-gig event conditions) must use `lastGigStats.accuracy` (0–100) plus the `failed` flag — never `score < 30`-style checks on the raw score.
 - Audio end detection uses `setlistCompleted` plus `isNearTrackEnd`; do not use `audioPlaybackEnded`.
 - Leaderboards submit `SONGS_BY_ID.get(songId).leaderboardId`, never raw `currentGig.songId`.
 - Consumables use `inventory_add` and must not display as `OWNED`.

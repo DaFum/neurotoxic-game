@@ -266,6 +266,12 @@ export const handleSetLastGigStats = (
   }
 
   const score = finiteNumberOr(safePayload.score, 0)
+  // Outcome gating uses the 0–100 hit accuracy plus the failed flag. The raw
+  // rhythm score accumulates BASE_POINTS (100) per hit and reaches thousands,
+  // so gating on it made every completed gig register as a very good one;
+  // `score` stays raw because leaderboards and display consume it unchanged.
+  const accuracy = finiteNumberOr(safePayload.accuracy, 0)
+  const gigFailed = safePayload.failed === true
   // Region reputation and region-scoped quest events are keyed per city.
   // player.location is the `venues:<id>.name` display key, so derive the
   // canonical city key — checkVenueAccess reads the same key for the
@@ -296,7 +302,7 @@ export const handleSetLastGigStats = (
     })
   )
 
-  if (score < 30) {
+  if (gigFailed || accuracy < 30) {
     if (!isForbiddenKey(location)) {
       nextState.reputationByRegion[location] = clampReputation(
         finiteNumberOr(nextState.reputationByRegion[location], 0) - 10
@@ -338,14 +344,14 @@ export const handleSetLastGigStats = (
       )
     }
     nextState = handleRecordBadShow(nextState)
-  } else if (score >= 60) {
+  } else if (accuracy >= 60) {
     // Increase reputation on good gigs up to 100 max
     if (!isForbiddenKey(location)) {
       const currentRep = finiteNumberOr(
         nextState.reputationByRegion[location],
         0
       )
-      const bonus = score >= 90 ? 10 : 5
+      const bonus = accuracy >= 90 ? 10 : 5
       const nextRep = clampReputation(currentRep + bonus)
       if (nextRep > currentRep) {
         nextState.reputationByRegion[location] = nextRep
@@ -368,7 +374,7 @@ export const handleSetLastGigStats = (
         nextState.reputationByVenue[venueId],
         0
       )
-      const venueBonus = score >= 90 ? 10 : 5
+      const venueBonus = accuracy >= 90 ? 10 : 5
       const nextVenueRep = clampReputation(currentVenueRep + venueBonus)
       if (nextVenueRep > currentVenueRep) {
         nextState.reputationByVenue[venueId] = nextVenueRep

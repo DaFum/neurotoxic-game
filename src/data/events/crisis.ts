@@ -360,7 +360,10 @@ export const CRISIS_EVENTS = [
     trigger: 'post_gig',
     chance: 1.0,
     condition: (gs: GameState) =>
-      (gs.lastGigStats?.score ?? 100) < 30 &&
+      // Bad-gig gating uses 0–100 accuracy (or the failed flag); the raw
+      // rhythm score reaches thousands and would never trip a < 30 check.
+      (gs.lastGigStats?.failed === true ||
+        (gs.lastGigStats?.accuracy ?? 100) < 30) &&
       !hasStateItem(gs.eventCooldowns, 'crisis_poor_performance'),
     options: [
       {

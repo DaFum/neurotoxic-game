@@ -51,13 +51,15 @@ export const buildGigStatsSnapshot = (
     score: number
     accuracy: number
     index: number
-  }> = []
+  }> = [],
+  failed: boolean = false
 ): {
   score: number
   misses: number
   perfectHits: number
   maxCombo: number
   peakHype: number
+  failed: boolean
   corruptionLevel: number
   toxicTimeTotal: number
   accuracy: number
@@ -99,6 +101,7 @@ export const buildGigStatsSnapshot = (
     corruptionLevel,
     toxicTimeTotal,
     accuracy: calculateAccuracy(perfectHits + hits, misses),
+    failed: failed === true,
     songStats: nextSongStats
   }
 }

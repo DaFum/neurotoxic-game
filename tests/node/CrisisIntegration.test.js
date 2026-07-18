@@ -6,28 +6,28 @@ import { createInitialState } from '../../src/context/initialState'
 
 describe('Crisis Management Integration', () => {
   describe('Gap A: Regional Reputation Penalty on Poor Performance', () => {
-    it('should deduct 10 regional reputation if gig score is < 30', () => {
+    it('should deduct 10 regional reputation if gig accuracy is < 30', () => {
       const state = createInitialState()
       state.player.location = 'Berlin'
       state.reputationByRegion = { Berlin: 10 }
 
       const action = {
         type: ActionTypes.SET_LAST_GIG_STATS,
-        payload: { score: 25 }
+        payload: { score: 2500, accuracy: 25 }
       }
 
       const nextState = gameReducer(state, action)
       assert.strictEqual(nextState.reputationByRegion.Berlin, 0)
     })
 
-    it('should NOT deduct regional reputation if gig score is >= 30', () => {
+    it('should NOT deduct regional reputation if gig accuracy is >= 30', () => {
       const state = createInitialState()
       state.player.location = 'Munich'
       state.reputationByRegion = { Munich: 10 }
 
       const action = {
         type: ActionTypes.SET_LAST_GIG_STATS,
-        payload: { score: 50 }
+        payload: { score: 7100, accuracy: 50 }
       }
 
       const nextState = gameReducer(state, action)
