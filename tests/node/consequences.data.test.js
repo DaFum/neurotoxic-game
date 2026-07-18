@@ -45,6 +45,13 @@ describe('Consequences Event Pool', () => {
     )
     assert.strictEqual(
       venueComplaint.condition({
+        lastGigStats: { score: 1200 },
+        eventCooldowns: []
+      }),
+      false
+    )
+    assert.strictEqual(
+      venueComplaint.condition({
         lastGigStats: { score: 12000, accuracy: 88, failed: true },
         eventCooldowns: []
       }),
