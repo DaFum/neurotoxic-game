@@ -2,6 +2,7 @@ import type { GameState, PostGigSummary, Venue } from '../types'
 import type { RhythmSongStatsEntry } from '../types/rhythmGame'
 import { SONGS_BY_ID } from '../data/songs'
 import { logger } from './logger'
+import { finiteNumberOr } from './gameState'
 
 /**
  * Per-song score payload accepted by the song leaderboard endpoint.
@@ -35,18 +36,20 @@ export const submitLeaderboardScores = async ({
   // Impact: Reduces GC pressure and iteration time when preparing batch submissions
   const scoresToSubmit: SongStat[] = []
 
-  if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
+  const songStats = lastGigStats?.songStats
+
+  if (songStats && songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    const statsLen = lastGigStats.songStats.length
+    const statsLen = songStats.length
     for (let i = 0; i < statsLen; i++) {
-      const stat = lastGigStats.songStats[i]
+      const stat = songStats[i]
       if (!stat) continue
       const leaderboardSongId = SONGS_BY_ID.get(stat.songId)?.leaderboardId
       if (leaderboardSongId) {
         scoresToSubmit.push({
           songId: leaderboardSongId,
-          score: stat.score,
-          accuracy: stat.accuracy
+          score: finiteNumberOr(stat.score, 0),
+          accuracy: finiteNumberOr(stat.accuracy, 0)
         })
       }
     }
@@ -60,8 +63,8 @@ export const submitLeaderboardScores = async ({
       if (leaderboardSongId) {
         scoresToSubmit.push({
           songId: leaderboardSongId,
-          score: lastGigStats?.score ?? 0,
-          accuracy: lastGigStats?.accuracy ?? 0
+          score: finiteNumberOr(lastGigStats?.score, 0),
+          accuracy: finiteNumberOr(lastGigStats?.accuracy, 0)
         })
       }
     } else {
