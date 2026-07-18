@@ -173,3 +173,8 @@
 
 **Learning:** When performing performance optimizations, like replacing array methods (e.g. `.filter()`) with procedural loops to avoid closure allocations, code review requires explicitly explaining the change with comments inline in the codebase (e.g., `// ⚡ BOLT OPTIMIZATION:` and `// Why:` / `// Impact:`). Submitting un-commented micro-optimizations leads to rejection because they sacrifice readability without explaining the rationale.
 **Action:** Always add the required comments right above the optimized block of code, outlining the `What`, `Why`, and `Impact`, just like in the PR description.
+
+## 2024-10-27 - Procedural loops and Sparse Array Bugs
+
+**Learning:** When performing micro-optimizations, replacing `.map()` with pre-allocated `for` loops (e.g. `new Array(len)`) and using `if (!item) continue` to guard against nulls inadvertently creates sparse arrays with uninitialized holes. `.map()` handles empty/null items differently. Additionally, replacing declarative array methods when the inner loop still allocates heavily (e.g., via object spread) provides negligible GC relief while sacrificing readability.
+**Action:** Only refactor array methods to procedural loops when collapsing multiple array iteration passes (like a `.filter().map()` chain or an allocation followed by another iteration) into a single batching pass. Do not simply swap `.map()` for `for` loops if the iteration body still allocates new objects.

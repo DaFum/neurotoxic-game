@@ -30,48 +30,43 @@ export const submitLeaderboardScores = async ({
 }) => {
   if (!player.playerId || !player.playerName) return
 
-  // Create a unified list of song stats to submit
-  let songsToSubmit: SongStat[]
+  // ⚡ BOLT OPTIMIZATION: Collapsed .map() and separate filter loop into a single procedural pass
+  // Why: Avoids intermediate array allocations and closure allocations on hot path
+  // Impact: Reduces GC pressure and iteration time when preparing batch submissions
+  const scoresToSubmit: SongStat[] = []
 
   if (lastGigStats?.songStats && lastGigStats.songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    songsToSubmit = lastGigStats.songStats.map((stat: SongStat) => ({
-      songId: stat.songId,
-      score: stat.score,
-      accuracy: stat.accuracy
-    }))
+    const statsLen = lastGigStats.songStats.length
+    for (let i = 0; i < statsLen; i++) {
+      const stat = lastGigStats.songStats[i]
+      if (!stat) continue
+      const leaderboardSongId = SONGS_BY_ID.get(stat.songId)?.leaderboardId
+      if (leaderboardSongId) {
+        scoresToSubmit.push({
+          songId: leaderboardSongId,
+          score: stat.score,
+          accuracy: stat.accuracy
+        })
+      }
+    }
   } else {
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
       typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
     const playedSongId = currentGig?.songId ?? setlistFirstId
     if (typeof playedSongId === 'string') {
-      songsToSubmit = [
-        {
-          songId: playedSongId,
-          score: lastGigStats?.score ?? 0,
-          accuracy: lastGigStats?.accuracy ?? 0
-        }
-      ]
-    } else {
-      logger.warn('PostGig', 'No valid songId found for legacy fallback')
-      return
-    }
-  }
-
-  // Collect all valid scores to submit in a single batch
-  const scoresToSubmit: SongStat[] = []
-  for (let i = 0; i < songsToSubmit.length; i++) {
-    const songData = songsToSubmit[i]
-    if (songData) {
-      const leaderboardSongId = SONGS_BY_ID.get(songData.songId)?.leaderboardId
+      const leaderboardSongId = SONGS_BY_ID.get(playedSongId)?.leaderboardId
       if (leaderboardSongId) {
         scoresToSubmit.push({
           songId: leaderboardSongId,
-          score: songData.score,
-          accuracy: songData.accuracy
+          score: lastGigStats?.score ?? 0,
+          accuracy: lastGigStats?.accuracy ?? 0
         })
       }
+    } else {
+      logger.warn('PostGig', 'No valid songId found for legacy fallback')
+      return
     }
   }
 
