@@ -511,7 +511,8 @@ describe('useRhythmGameScoring', () => {
         gameStateRef.current.score,
         gameStateRef.current.stats,
         gameStateRef.current.toxicTimeTotal,
-        expect.any(Object) // The performance options passed
+        gameStateRef.current.songStats,
+        true // health-zero fail path marks the snapshot as failed
       )
       expect(contextActions.setLastGigStats).toHaveBeenCalledTimes(1)
       expect(contextActions.setLastGigStats).toHaveBeenCalledWith(mockSnapshot)

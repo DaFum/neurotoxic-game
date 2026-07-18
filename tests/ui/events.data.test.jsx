@@ -61,11 +61,11 @@ describe('event data tables', () => {
       evt => evt.id === 'consequences_venue_complaint'
     )
     const positive = venueComplaint.condition({
-      lastGigStats: { score: 10 },
+      lastGigStats: { score: 1200, accuracy: 10 },
       eventCooldowns: []
     })
     const negative = venueComplaint.condition({
-      lastGigStats: { score: 90 },
+      lastGigStats: { score: 13000, accuracy: 90 },
       eventCooldowns: []
     })
 
