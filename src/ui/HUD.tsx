@@ -100,7 +100,6 @@ export const HUD = memo(() => {
               defaultValue: 'Toggles the neuro-decimator audio effect'
             })}
             position='bottom'
-            className='mb-2'
           >
             <button
               onClick={() => {
@@ -113,7 +112,7 @@ export const HUD = memo(() => {
                 defaultValue: 'Toggle decimator'
               })}
               aria-pressed={neuroDecimatorActive}
-              className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
+              className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
                 neuroDecimatorActive
                   ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
                   : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
@@ -138,9 +137,11 @@ export const HUD = memo(() => {
               defaultValue: 'Neurotoxic pedal is modifying audio output'
             })}
             position='bottom'
-            className='mb-2'
           >
-            <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse pointer-events-auto'>
+            <div
+              role='status'
+              className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'
+            >
               <Skull size={14} className='text-toxic-green' />
               <span className='font-black uppercase tracking-wider text-xs'>
                 {t('ui:hud.neurotoxicActive', {
