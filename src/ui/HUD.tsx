@@ -4,6 +4,7 @@ import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import { Map as MapIcon, DollarSign, Skull } from 'lucide-react'
 import { formatCurrency } from '../utils/numberUtils'
+import { Tooltip } from './shared'
 import {
   BandStatusPanel,
   VanStatusMiniBars
@@ -94,44 +95,60 @@ export const HUD = memo(() => {
         className={`flex flex-col gap-2 items-end ${isGigScene ? 'mt-24' : ''}`}
       >
         {hasNeuroDecimator && (
-          <button
-            onClick={() => {
-              const nextState = !neuroDecimatorActive
-              toggleNeuroDecimator(nextState)
-              audioService.setNeuroDecimator(nextState)
-            }}
-            type='button'
-            aria-label={t('ui:hud.toggleDecimator', {
-              defaultValue: 'Toggle decimator'
+          <Tooltip
+            content={t('ui:hud.decimatorHint', {
+              defaultValue: 'Toggles the neuro-decimator audio effect'
             })}
-            aria-pressed={neuroDecimatorActive}
-            className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 mb-2 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
-              neuroDecimatorActive
-                ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
-                : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
-            }`}
+            position='bottom'
+            className='mb-2'
           >
-            <Skull size={14} className='inline mr-2' />
-            <span className='font-black uppercase tracking-wider text-xs'>
-              {neuroDecimatorActive
-                ? t('ui:hud.decimatorActive', {
-                    defaultValue: 'DECIMATOR: ON'
-                  })
-                : t('ui:hud.decimatorInactive', {
-                    defaultValue: 'DECIMATOR: OFF'
-                  })}
-            </span>
-          </button>
+            <button
+              onClick={() => {
+                const nextState = !neuroDecimatorActive
+                toggleNeuroDecimator(nextState)
+                audioService.setNeuroDecimator(nextState)
+              }}
+              type='button'
+              aria-label={t('ui:hud.toggleDecimator', {
+                defaultValue: 'Toggle decimator'
+              })}
+              aria-pressed={neuroDecimatorActive}
+              className={`pointer-events-auto flex-1 min-h-0 border-2 px-3 py-1.5 transition-all duration-75 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green ${
+                neuroDecimatorActive
+                  ? 'bg-blood-red text-void-black border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
+                  : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
+              }`}
+            >
+              <Skull size={14} className='inline mr-2' />
+              <span className='font-black uppercase tracking-wider text-xs'>
+                {neuroDecimatorActive
+                  ? t('ui:hud.decimatorActive', {
+                      defaultValue: 'DECIMATOR: ON'
+                    })
+                  : t('ui:hud.decimatorInactive', {
+                      defaultValue: 'DECIMATOR: OFF'
+                    })}
+              </span>
+            </button>
+          </Tooltip>
         )}
         {hasNeurotoxicPedal && (
-          <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto'>
-            <Skull size={14} className='text-toxic-green' />
-            <span className='font-black uppercase tracking-wider text-xs'>
-              {t('ui:hud.neurotoxicActive', {
-                defaultValue: 'NEUROTOXIC ACTIVE'
-              })}
-            </span>
-          </div>
+          <Tooltip
+            content={t('ui:hud.neurotoxicHint', {
+              defaultValue: 'Neurotoxic pedal is modifying audio output'
+            })}
+            position='bottom'
+            className='mb-2'
+          >
+            <div className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse pointer-events-auto'>
+              <Skull size={14} className='text-toxic-green' />
+              <span className='font-black uppercase tracking-wider text-xs'>
+                {t('ui:hud.neurotoxicActive', {
+                  defaultValue: 'NEUROTOXIC ACTIVE'
+                })}
+              </span>
+            </div>
+          </Tooltip>
         )}
         {!isGigScene && (
           <BandStatusPanel
