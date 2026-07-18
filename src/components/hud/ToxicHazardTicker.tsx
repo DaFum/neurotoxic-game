@@ -3,12 +3,14 @@ import { HazardTicker } from '../../ui/shared'
 import { useTranslation } from 'react-i18next'
 
 interface ToxicHazardTickerProps {
+  /** Indicates whether the toxic-mode hazard is currently active. */
   isToxicMode: boolean
 }
 
 /**
  * Displays the toxic-mode warning ticker while the hazard is active.
- * @param props - Toxic-mode state used to show the hazard ticker.
+ *
+ * @returns The warning ticker element, or null if the hazard is inactive.
  */
 export const ToxicHazardTicker = memo(function ToxicHazardTicker({
   isToxicMode
