@@ -42,6 +42,8 @@ type SideEffectContext = {
    * Materializes the post-resolution state snapshot for `saveGame` effects by
    * replaying the resolution's actions through the reducer (the dispatch above
    * has not re-rendered yet, so `stateRef` still holds the pre-event state).
+   * The replayed handlers must stay deterministic — a nondeterministic handler
+   * would make the saved snapshot silently diverge from live state.
    */
   getResolvedState: () => GameState
 }
