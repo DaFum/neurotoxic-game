@@ -222,7 +222,7 @@ export function resolveEvent(
           : 0
       const questActions = buildQuestActions(
         flags.addQuest,
-        finiteNumberOr(state.player.day, 0) + dayDelta
+        finiteNumberOr(state.player?.day, 0) + dayDelta
       )
       actions.push(...questActions)
     }
