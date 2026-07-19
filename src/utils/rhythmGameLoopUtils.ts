@@ -84,7 +84,7 @@ const handleOverlayResume = (
 /**
  * Handles pausing the audio track via the overlay when the game is paused.
  */
-export const handleOverlayPause = (
+const handleOverlayPause = (
   stateRef: RhythmGameRefState,
   isTransportRunning: boolean,
   pauseAudio: AsyncVoidCallback
@@ -141,7 +141,7 @@ const processToxicMode = (
 /**
  * Resolves active corruption bursts when their effect duration expires.
  */
-export const processCorruptionBurst = (
+const processCorruptionBurst = (
   stateRef: RhythmGameRefState,
   now: number,
   setIsCorruptionBurstActive: ToggleBooleanCallback,
@@ -168,7 +168,7 @@ export const processCorruptionBurst = (
 /**
  * Processes missed notes by sweeping the notes array forward up to the current time window.
  */
-export const processMissedNotes = (
+const processMissedNotes = (
   stateRef: RhythmGameRefState,
   now: number,
   handleMiss: MissHandler

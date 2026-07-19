@@ -29,7 +29,7 @@ import {
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
-export interface UseContinueHandlerProps {
+interface UseContinueHandlerProps {
   financials: PostGigFinancials | null
   perfScore: number
   player: GameState['player']

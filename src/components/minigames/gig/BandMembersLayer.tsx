@@ -1,5 +1,6 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
+import { FallbackImage } from '../../../ui/shared/FallbackImage'
 import type { BandMembersLayerProps } from '../../../types/components'
 
 /**
@@ -23,10 +24,9 @@ export const BandMembersLayer = memo(
           ref={setBandMemberRef(0)}
           className='absolute left-1/10 sm:left-1/6 top-1/3 sm:top-1/3 w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
         >
-          <img
+          <FallbackImage
             src={matzeUrl}
             alt={t('minigame:bandMembers.matze', { defaultValue: 'Matze' })}
-            crossOrigin={matzeUrl.startsWith('data:') ? undefined : 'anonymous'}
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-blood-red)]'
           />
         </div>
@@ -36,12 +36,9 @@ export const BandMembersLayer = memo(
           ref={setBandMemberRef(1)}
           className='absolute left-1/2 top-1/5 sm:top-1/5 -translate-x-1/2 w-24 h-24 sm:w-40 sm:h-40 transition-transform duration-100'
         >
-          <img
+          <FallbackImage
             src={mariusUrl}
             alt={t('minigame:bandMembers.marius', { defaultValue: 'Marius' })}
-            crossOrigin={
-              mariusUrl.startsWith('data:') ? undefined : 'anonymous'
-            }
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green-glow)]'
           />
         </div>
@@ -51,10 +48,9 @@ export const BandMembersLayer = memo(
           ref={setBandMemberRef(2)}
           className='absolute right-1/10 sm:right-1/6 top-1/3 sm:top-1/3 w-20 h-32 sm:w-32 sm:h-48 transition-transform duration-100'
         >
-          <img
+          <FallbackImage
             src={larsUrl}
             alt={t('minigame:bandMembers.lars', { defaultValue: 'Lars' })}
-            crossOrigin={larsUrl.startsWith('data:') ? undefined : 'anonymous'}
             className='w-full h-full object-contain filter drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           />
         </div>

@@ -611,7 +611,8 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.STORY],
     condition: ({ activeEvent }: GameState) =>
       activeEvent?.type === 'negative_travel' ||
-      activeEvent?.id === 'van_breakdown', // Simplified condition based on recent event
+      activeEvent?.id === 'van_breakdown_tire' ||
+      activeEvent?.id === 'van_breakdown_engine',
     resolve: () => ({
       type: 'FIXED',
       success: true,

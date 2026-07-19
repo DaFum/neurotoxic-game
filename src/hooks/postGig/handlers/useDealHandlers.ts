@@ -15,7 +15,7 @@ import { buildAcceptDealQuestEvents } from './dealHandlerUtils'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useDealHandlers}: player/social state, the processing guard, translator, and dispatchers. */
-export interface UseDealHandlersProps {
+interface UseDealHandlersProps {
   player: GameState['player']
   social: GameState['social']
   isProcessingActionRef: React.MutableRefObject<boolean>
