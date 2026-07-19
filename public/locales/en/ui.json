@@ -259,6 +259,7 @@
   "event.game_over_effect": "Game Over",
   "event.new_quest": "New Quest",
   "event.noDescription": "An event unfolds.",
+  "event.option": "Option",
   "event.resolved": "Event resolved.",
   "event.severity.critical": "CRITICAL",
   "event.story_updated": "Story Updated",
