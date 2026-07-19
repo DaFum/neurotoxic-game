@@ -1,5 +1,6 @@
 import React from 'react'
 import { motion } from 'motion/react'
+import { FallbackImage } from '../../ui/shared/FallbackImage'
 import type { TravelingVanProps } from '../../types/components'
 
 /**
@@ -36,12 +37,11 @@ export const TravelingVan = React.memo(
           }
         }}
       >
-        <img
+        <FallbackImage
           src={vanUrl}
           alt={t('ui:overworld.traveling_van', {
             defaultValue: 'Traveling Van'
           })}
-          crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
           className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           style={{ transform: 'translate(0, -50%)' }}
         />

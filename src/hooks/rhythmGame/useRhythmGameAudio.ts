@@ -209,7 +209,7 @@ const applyGigPhysicsSetup = ({
 /**
  * Audio controls exposed by the rhythm game audio hook.
  */
-export type RhythmGameAudioReturn = {
+type RhythmGameAudioReturn = {
   retryAudioInitialization: () => Promise<void>
 }
 

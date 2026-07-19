@@ -10,7 +10,7 @@ const ALLOWED_SCENE_SET: ReadonlySet<string> = new Set(ALLOWED_SCENE_VALUES)
  * @param value - Candidate scene value.
  * @returns True when the value is a valid game phase.
  */
-export const isValidGamePhase = (value: string): value is GamePhase => {
+const isValidGamePhase = (value: string): value is GamePhase => {
   return ALLOWED_SCENE_SET.has(value)
 }
 

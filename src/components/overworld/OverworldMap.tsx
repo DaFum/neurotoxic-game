@@ -6,6 +6,7 @@ import { calculateEffectiveTicketPrice } from '../../utils/economyEngine'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
+import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
 import { getNodeIconUrl } from './utils'
 
@@ -59,10 +60,9 @@ const RivalMarker = ({
       transform: 'translate(-50%, -100%)'
     }}
   >
-    <img
+    <FallbackImage
       src={rivalVanUrl}
       alt={label}
-      crossOrigin={rivalVanUrl.startsWith('data:') ? undefined : 'anonymous'}
       className='w-10 h-8 object-contain drop-shadow-[0_0_8px_var(--color-blood-red-bright)] opacity-90'
     />
   </div>

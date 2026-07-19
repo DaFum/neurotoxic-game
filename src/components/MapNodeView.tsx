@@ -6,6 +6,7 @@ import type {
 import { useTranslation } from 'react-i18next'
 import { motion } from 'motion/react'
 import { HexNode } from '../ui/shared'
+import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
@@ -382,10 +383,9 @@ export const MapNodeView = memo(
 
         {isCurrent && !isTraveling && (
           <div className='absolute pointer-events-none z-50' style={VAN_STYLE}>
-            <img
+            <FallbackImage
               src={vanUrl}
               alt={t('ui:map.vanAlt')}
-              crossOrigin={vanUrl.startsWith('data:') ? undefined : 'anonymous'}
               className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
             />
           </div>
@@ -403,12 +403,9 @@ export const MapNodeView = memo(
           />
 
           <div className='absolute inset-0 flex items-center justify-center pointer-events-none'>
-            <img
+            <FallbackImage
               src={iconUrl}
               alt={getPinAltText(t, node.type)}
-              crossOrigin={
-                iconUrl.startsWith('data:') ? undefined : 'anonymous'
-              }
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>

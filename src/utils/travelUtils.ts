@@ -240,17 +240,20 @@ export const checkTravelPrerequisites = (
 /**
  * Checks whether the player can pay the money and fuel costs for travel.
  *
- * @param totalCost - Required money after travel-cost calculations.
+ * @param totalCashRequired - Total cash the trip must cover. Arrival also
+ * calls `advanceDay()`, so callers must pass the `totalCashImpact` from
+ * `calculateTravelCostsAndImpact` (travel cost plus
+ * `getTotalDailyObligations(state)`), never the travel cost alone.
  * @param fuelLiters - Required fuel in liters.
  * @param player - Player state used for current money and van fuel.
  * @returns Access result with localized error metadata when resources are short.
  */
 export const checkTravelResources = (
-  totalCost: number,
+  totalCashRequired: number,
   fuelLiters: number,
   player: PlayerState
 ): VenueAccessResult => {
-  if (clampPlayerMoney(player.money ?? 0) < totalCost) {
+  if (clampPlayerMoney(player.money ?? 0) < totalCashRequired) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.notEnoughMoneyForTravel',
