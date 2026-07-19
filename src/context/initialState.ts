@@ -168,14 +168,8 @@ export const DEFAULT_SOCIAL_STATE = {
  * would let one state's mutations leak into every other fresh state).
  */
 export const cloneDefaultInfluencers =
-  (): (typeof DEFAULT_SOCIAL_STATE)['influencers'] => {
-    const source = DEFAULT_SOCIAL_STATE.influencers
-    const cloned = {} as (typeof DEFAULT_SOCIAL_STATE)['influencers']
-    for (const key of Object.keys(source) as Array<keyof typeof source>) {
-      cloned[key] = { ...source[key] }
-    }
-    return cloned
-  }
+  (): (typeof DEFAULT_SOCIAL_STATE)['influencers'] =>
+    structuredClone(DEFAULT_SOCIAL_STATE.influencers)
 
 /**
  * Default gig modifiers configuration
