@@ -117,7 +117,7 @@ export const Tooltip = ({
     }
   }, [isValid, isFragment])
 
-  if (!content) {
+  if (content == null || content === false || content === '') {
     return children
   }
 
