@@ -73,7 +73,7 @@ const updateVanCondition = (
   if (nextPlayer.van) {
     nextPlayer.van = { ...nextPlayer.van }
     nextPlayer.van.condition = clampVanCondition(
-      (nextPlayer.van.condition ?? 100) - 2
+      finiteNumberOr(nextPlayer.van.condition, 100) - 2
     )
     // Increased breakdown chance when condition is low
     // Calculate base breakdown chance from upgrades every day to avoid compounding multipliers.

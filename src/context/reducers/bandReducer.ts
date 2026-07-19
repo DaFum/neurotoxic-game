@@ -662,7 +662,7 @@ export const handleUseContraband = (
  * @returns State with the active flag changed, or the original state when the
  * item is missing or already in the requested state.
  */
-export const handleToggleNeuroDecimator = (
+const handleToggleNeuroDecimator = (
   state: GameState,
   payload: { isActive: boolean }
 ): GameState => {

@@ -14,7 +14,7 @@ import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { resolveBandMeetingCost } from './preGigUtils'
 
-export interface UsePreGigDerivationsProps {
+interface UsePreGigDerivationsProps {
   band: GameState['band']
   assets: GameState['assets']
   gigModifiers: GigModifiers
@@ -22,7 +22,7 @@ export interface UsePreGigDerivationsProps {
   typedT: TranslationCallback
 }
 
-export interface UsePreGigDerivationsReturn {
+interface UsePreGigDerivationsReturn {
   assetModifiers: AssetModifiers
   GIG_MODIFIER_OPTIONS: ModifierOption[]
   adjustedBandMeetingCost: number

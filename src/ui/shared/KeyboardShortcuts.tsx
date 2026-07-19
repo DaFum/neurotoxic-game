@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { X } from 'lucide-react'
 
 // Array of explicit shortcut entries
-export const SHORTCUTS = [
+const SHORTCUTS = [
   { key: '?', label: 'ui:shortcuts.toggleHelp' },
   { key: 'h', label: 'ui:shortcuts.toggleHelpAlt' },
   { key: 'm', label: 'ui:shortcuts.toggleMute' },

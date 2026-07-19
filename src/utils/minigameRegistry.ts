@@ -4,7 +4,7 @@ import type { GamePhase } from '../types'
 /**
  * Scene routing metadata for a minigame type.
  */
-export interface MinigameRegistryEntry {
+interface MinigameRegistryEntry {
   /** Scene that hosts the minigame. */
   scene: GamePhase
 }

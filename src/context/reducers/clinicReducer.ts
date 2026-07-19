@@ -32,7 +32,7 @@ import {
 } from './toastSanitizers'
 import { validateBloodBankDonation } from '../../utils/bloodBankUtils'
 
-export type MemberUpdaterResult =
+type MemberUpdaterResult =
   { updatedMember: BandMember; toastArgs?: unknown[] } | BandMember
 
 /**
@@ -41,7 +41,7 @@ export type MemberUpdaterResult =
  * @param memberId - The ID to look for.
  * @returns Object with index and member reference, or \{ targetIndex: -1, targetMember: null \}
  */
-export const findBandMember = (
+const findBandMember = (
   members: unknown[],
   memberId: string
 ): { targetIndex: number; targetMember: BandMember | null } => {
