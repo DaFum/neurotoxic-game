@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { LongTermAsset } from '../../types/assets'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { getModuleDescription } from './moduleDescription'
 
 interface AssetSlotActionListProps {
   asset: LongTermAsset
@@ -23,7 +24,7 @@ export const AssetSlotActionList = ({
   asset,
   onSlotClick
 }: AssetSlotActionListProps) => {
-  const { t } = useTranslation(['assets'])
+  const { t, i18n } = useTranslation(['assets'])
   const conditionState = getConditionState(asset.condition)
   const isDamaged = conditionState !== 'good'
 
@@ -72,9 +73,7 @@ export const AssetSlotActionList = ({
               )}
               {module && (
                 <p className='mt-0.5 line-clamp-2 text-xs opacity-70'>
-                  {t(`assets:module.${module.id}.description`, {
-                    defaultValue: ''
-                  })}
+                  {getModuleDescription(t, module, i18n.language)}
                 </p>
               )}
               {isDamaged && (

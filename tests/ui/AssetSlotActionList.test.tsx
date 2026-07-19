@@ -46,7 +46,8 @@ vi.mock('react-i18next', () => ({
         'assets:hub.accessibility.slotAction': `${opts?.slot} slot: ${opts?.state}`
       }
       return labels[key] ?? opts?.defaultValue ?? key
-    }
+    },
+    i18n: { language: 'en' }
   })
 }))
 

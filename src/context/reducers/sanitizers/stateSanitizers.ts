@@ -16,7 +16,8 @@ import {
   DEFAULT_GIG_MODIFIERS,
   DEFAULT_PLAYER_STATE,
   DEFAULT_BAND_STATE,
-  DEFAULT_SOCIAL_STATE
+  DEFAULT_SOCIAL_STATE,
+  cloneDefaultInfluencers
 } from '../../initialState'
 import {
   isLooseRecord,
@@ -1144,7 +1145,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     ...DEFAULT_SOCIAL_STATE,
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
     brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
-    influencers: { ...DEFAULT_SOCIAL_STATE.influencers }
+    influencers: cloneDefaultInfluencers()
   }
   if (!isLooseRecord(value)) return sanitized
   const safeValue = Object.assign(Object.create(null), value)

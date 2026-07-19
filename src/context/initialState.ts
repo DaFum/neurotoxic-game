@@ -163,6 +163,21 @@ export const DEFAULT_SOCIAL_STATE = {
 }
 
 /**
+ * Deep-clones the default influencer map so fresh/sanitized states never share
+ * nested influencer entries with `DEFAULT_SOCIAL_STATE` (a shared reference
+ * would let one state's mutations leak into every other fresh state).
+ */
+export const cloneDefaultInfluencers =
+  (): (typeof DEFAULT_SOCIAL_STATE)['influencers'] => {
+    const source = DEFAULT_SOCIAL_STATE.influencers
+    const cloned = {} as (typeof DEFAULT_SOCIAL_STATE)['influencers']
+    for (const key of Object.keys(source) as Array<keyof typeof source>) {
+      cloned[key] = { ...source[key] }
+    }
+    return cloned
+  }
+
+/**
  * Default gig modifiers configuration
  */
 export const DEFAULT_GIG_MODIFIERS = {
@@ -332,7 +347,8 @@ export const createInitialState = (
   social: {
     ...DEFAULT_SOCIAL_STATE,
     activeDeals: [...DEFAULT_SOCIAL_STATE.activeDeals],
-    brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation }
+    brandReputation: { ...DEFAULT_SOCIAL_STATE.brandReputation },
+    influencers: cloneDefaultInfluencers()
   },
   settings: {
     ...DEFAULT_SETTINGS,

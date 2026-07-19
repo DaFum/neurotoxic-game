@@ -4,7 +4,7 @@ import { MINIGAME_TYPES } from '../context/gameConstants'
 import { logger } from '../utils/logger'
 import type { MinigameLogicBase } from '../types/components'
 
-export interface UseMinigameSceneLogicProps<TState> {
+interface UseMinigameSceneLogicProps<TState> {
   logic: MinigameLogicBase<TState>
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
   onComplete: () => void
