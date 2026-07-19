@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import type { AssetModule } from '../../types/assets'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { formatCurrency } from '../../utils/numberUtils'
 
 /**
@@ -19,5 +20,8 @@ export const getModuleDescription = (
 ): string =>
   t(`assets:module.${module.id}.description`, {
     defaultValue: '',
-    amount: formatCurrency(module.boni.baseDailyRevenueDelta ?? 0, language)
+    amount: formatCurrency(
+      finiteNumberOr(module.boni.baseDailyRevenueDelta, 0),
+      language
+    )
   })

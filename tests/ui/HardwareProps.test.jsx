@@ -7,7 +7,8 @@ import { RackPanel } from '../../src/scenes/kabelsalat/components/HardwareProps'
 describe('RackPanel screws', () => {
   const renderPanel = () =>
     render(
-      <svg>
+      <svg aria-hidden='true'>
+        <title>RackPanel test wrapper</title>
         <RackPanel />
       </svg>
     )
