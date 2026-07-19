@@ -38,9 +38,12 @@ function createMockComponent(tag) {
       return React.createElement(
         ActualTag,
         {
-          'data-testid': 'motion-wrapper',
-          onClick: props.onAnimationComplete,
           ...domProps,
+          'data-testid': props['data-testid'] || 'motion-wrapper',
+          onClick: e => {
+            if (domProps.onClick) domProps.onClick(e)
+            props.onAnimationComplete()
+          },
           style: typeof props.style === 'object' ? props.style : undefined
         },
         children
@@ -66,7 +69,10 @@ export const createMotionReactMock = () => {
   const mProxy = new Proxy(
     {},
     {
-      get: (_, key) => createMockComponent(key)
+      get: (_, key) => {
+        if (typeof key === 'symbol' || key === 'then') return undefined
+        return createMockComponent(key)
+      }
     }
   )
 
