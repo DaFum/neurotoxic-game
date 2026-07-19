@@ -59,15 +59,17 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const map = new Map<string, string>()
     if (!gameMap?.nodes) return map
 
-    for (const key in gameMap.nodes) {
-      if (Object.hasOwn(gameMap.nodes, key)) {
-        const node = gameMap.nodes[key] as MapNode
-        if (node.venueId) {
-          map.set(node.venueId, node.id)
-        } else if (node.venue?.id) {
-          // Fallback for some potential older map formats
-          map.set(node.venue.id, node.id)
-        }
+    // ⚡ BOLT OPTIMIZATION: Replaced for...in over object with Object.values procedural iteration.
+    // Why: Avoids prototype chain lookup and string key creation overhead during map building.
+    const nodes = Object.values(gameMap.nodes)
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i] as MapNode | undefined
+      if (!node) continue
+      if (node.venueId && node.id) {
+        map.set(node.venueId, node.id)
+      } else if (node.venue?.id && node.id) {
+        // Fallback for some potential older map formats
+        map.set(node.venue.id, node.id)
       }
     }
     return map
