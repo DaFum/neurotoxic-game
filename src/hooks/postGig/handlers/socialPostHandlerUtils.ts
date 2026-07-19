@@ -1,5 +1,8 @@
 import type { GameState } from '../../../types'
-import type { SocialPostOption } from '../../../types/social'
+import type {
+  SocialEngineGameState,
+  SocialPostOption
+} from '../../../types/social'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
 import { calculatePostGigStateUpdates } from '../../../utils/postGigUtils'
@@ -81,7 +84,7 @@ export function applySocialPostResult(params: {
       createHarmonyChangedQuestEvent({
         amount: appliedHarmonyDelta,
         newHarmony: clampBandHarmony(
-          finiteNumberOr(band.harmony, 0) + appliedHarmonyDelta
+          finiteNumberOr(band?.harmony, 0) + appliedHarmonyDelta
         )
       })
     )
@@ -119,8 +122,8 @@ export function applySocialPostResult(params: {
   if (finalResult.failedStageDive) {
     updatePlayer({
       stats: {
-        ...player.stats,
-        failedStageDives: finiteNumberOr(player.stats?.failedStageDives, 0) + 1
+        ...player?.stats,
+        failedStageDives: finiteNumberOr(player?.stats?.failedStageDives, 0) + 1
       }
     })
   }
@@ -139,11 +142,11 @@ export function applySocialPostResult(params: {
 
   const playerUpdated = { ...player, money: nextMoney }
   // Generate brand offers with UPDATED state (Post-Social-Update)
-  const updatedGameState = {
+  const updatedGameState: SocialEngineGameState = {
     player: playerUpdated,
     band: hasBandUpdates ? newBand : band,
     social: { ...social, ...updatedSocial }
-  } as Partial<GameState> as GameState
+  }
 
   const offers = generateBrandOffers(updatedGameState, secureRandom)
   setBrandOffers(offers)
