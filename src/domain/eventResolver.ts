@@ -1,7 +1,10 @@
 import { resolveEventChoice } from '../utils/eventEngine'
-import { isLooseRecord } from '../utils/gameState'
+import {
+  finiteNumberOr,
+  isFiniteNumber,
+  isLooseRecord
+} from '../utils/gameState'
 import { logger } from '../utils/logger'
-import { gameReducer } from '../context/gameReducer'
 import { GAME_PHASES } from '../context/gameConstants'
 import {
   createAddCooldownAction,
@@ -37,7 +40,9 @@ export type SideEffect =
       context: Record<string, unknown>
     }
   | { type: 'changeScene'; scene: GamePhase }
-  | { type: 'saveGame'; state: GameState }
+  // Carries no state: the context caller materializes the post-resolution
+  // snapshot by replaying the returned actions through the reducer.
+  | { type: 'saveGame' }
 
 type EventResolution = {
   actions: GameAction[]
@@ -207,18 +212,19 @@ export function resolveEvent(
     const deltaAction = createApplyEventDeltaAction(delta as EventDeltaPayload)
     actions.push(deltaAction)
 
-    // Compute preview state for saveGame (pure — no side effects)
-    let previewState = gameReducer(state, deltaAction)
-
     if (flags.addQuest) {
+      // Deadlines resolve against the post-delta day. Day deltas are additive
+      // (`applyEventDelta`), so compute it purely instead of replaying the
+      // reducer here — domain modules must not depend on `gameReducer`.
+      const dayDelta =
+        isLooseRecord(delta.player) && isFiniteNumber(delta.player.day)
+          ? delta.player.day
+          : 0
       const questActions = buildQuestActions(
         flags.addQuest,
-        previewState.player.day
+        finiteNumberOr(state.player?.day, 0) + dayDelta
       )
       actions.push(...questActions)
-      for (const qa of questActions) {
-        previewState = gameReducer(previewState, qa)
-      }
     }
 
     if (typeof flags.unlock === 'string') {
@@ -226,7 +232,6 @@ export function resolveEvent(
       if (safeUnlockId) {
         const unlockAction = createAddUnlockAction(safeUnlockId)
         actions.push(unlockAction)
-        previewState = gameReducer(previewState, unlockAction)
         sideEffects.push({ type: 'persistUnlock', id: safeUnlockId })
         sideEffects.push({ type: 'unlockToast', id: safeUnlockId })
       } else {
@@ -252,9 +257,8 @@ export function resolveEvent(
       })
 
       const clearEventAction = createSetActiveEventAction(null)
-      const finalPreviewState = gameReducer(previewState, clearEventAction)
 
-      sideEffects.push({ type: 'saveGame', state: finalPreviewState })
+      sideEffects.push({ type: 'saveGame' })
       sideEffects.push({ type: 'changeScene', scene: GAME_PHASES.GAMEOVER })
       actions.push(clearEventAction)
       return { actions, sideEffects, outcomeText, description, result }

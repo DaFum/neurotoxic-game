@@ -4,6 +4,8 @@
 
 All imports from outside this directory must go through `audioEngine.ts`. Direct imports from sub-modules (`./AudioManager`, `./audioService`, `./playback`, etc.) are only permitted inside `src/utils/audio/`.
 
+Deliberate exception: pure, stateless helpers consumed by modules that are themselves dependencies of this directory's playback stack may be imported directly from their sub-module. `src/utils/chartDensity.ts` imports `buildMidiTrackEvents` from `./audio/midiUtils` and `src/utils/rhythmUtils.ts` imports `resolveSongPlaybackWindow` from `./audio/songUtils` — routing these through the `audioEngine.ts` barrel would create an import cycle (`rhythmUtils` is imported by `midiPlayback.ts`, `playbackStrategies.ts`, and `songSequencer.ts`, which the barrel re-exports) and would pull the stateful audio stack into pure utility modules and their `node:test` runs. Do not "fix" these two imports to use the barrel; do not extend this exception to stateful sub-modules.
+
 Roles:
 
 - `audioManager` (stateful class instance) — for non-React contexts: Pixi stage controllers, hook lifecycle, imperative timing.

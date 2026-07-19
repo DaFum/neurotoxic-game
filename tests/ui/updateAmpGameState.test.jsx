@@ -7,16 +7,7 @@ vi.mock('../../src/utils/crypto', () => ({
   getSafeRandom: () => rngValue
 }))
 
-// updateAmpGameState is a standalone function, but importing the module
-// evaluates the GameState import binding used by useAmpLogic; stub it so the
-// provider is not loaded.
-vi.mock('../../src/context/GameState', () => ({
-  useGameActions: () => ({}),
-  useGameState: () => ({}),
-  useGameSelector: () => ({})
-}))
-
-import { updateAmpGameState } from '../../src/hooks/minigames/useAmpLogic'
+import { updateAmpGameState } from '../../src/hooks/minigames/ampLogicUtils'
 
 function makeRefs(overrides = {}) {
   return {

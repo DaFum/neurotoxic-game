@@ -66,7 +66,7 @@ const BaseFilter = PIXI.Filter || class {}
  * Applies a brutalist CRT, chromatic aberration, and glitch effect shader.
  * @remarks Extends PIXI.Filter and sets up the custom GLProgram with predefined vertex and fragment shaders.
  */
-export class BrutalistFilter extends BaseFilter {
+class BrutalistFilter extends BaseFilter {
   /**
    * Initializes the BrutalistFilter with its GLProgram and uniforms.
    */

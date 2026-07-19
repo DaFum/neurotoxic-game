@@ -262,6 +262,10 @@ export type GameAction =
       ActionTypes['ADVANCE_QUEST'],
       { questId: string; amount: number; randomIdx?: number }
     >
+  | Action<
+      ActionTypes['APPLY_QUEST_EVENT'],
+      import('../utils/questProgress').QuestProgressEvent
+    >
   | Action<ActionTypes['ADD_UNLOCK'], string>
   | Action<
       ActionTypes['USE_CONTRABAND'],

@@ -3,7 +3,7 @@ import {
   buildSoldMerchInventory,
   buildStoryFlagQuests
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
-import { buildAcceptDealQuestEvents } from '../../src/hooks/postGig/handlers/useDealHandlers'
+import { buildAcceptDealQuestEvents } from '../../src/hooks/postGig/handlers/dealHandlerUtils'
 import {
   QUEST_APOLOGY_TOUR,
   QUEST_EGO_MANAGEMENT
