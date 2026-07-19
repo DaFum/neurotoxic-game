@@ -10,6 +10,7 @@ import { KNOWN_EVENT_IDS } from '../data/events'
 import { eventEngine } from '../utils/eventEngine'
 import { logger } from '../utils/logger'
 import { GAME_PHASES } from './gameConstants'
+import { gameReducer } from './gameReducer'
 import {
   createPopPendingEventAction,
   createSetActiveEventAction,
@@ -37,6 +38,12 @@ type SideEffectContext = {
   changeScene: ChangeScene
   saveGame: SaveGame
   tRef: MutableRefObject<TFunction>
+  /**
+   * Materializes the post-resolution state snapshot for `saveGame` effects by
+   * replaying the resolution's actions through the reducer (the dispatch above
+   * has not re-rendered yet, so `stateRef` still holds the pre-event state).
+   */
+  getResolvedState: () => GameState
 }
 
 function choiceTextFallback(choice: Record<string, unknown> | null): {
@@ -60,7 +67,7 @@ function choiceTextFallback(choice: Record<string, unknown> | null): {
 }
 
 function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
-  const { addToast, changeScene, saveGame, tRef } = ctx
+  const { addToast, changeScene, saveGame, tRef, getResolvedState } = ctx
   const t = tRef.current
   const newlyAddedUnlocks = new Set<string>()
 
@@ -131,7 +138,7 @@ function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
         break
       }
       case 'saveGame': {
-        saveGame(false, effect.state)
+        saveGame(false, getResolvedState())
         break
       }
       default: {
@@ -254,7 +261,9 @@ export function useEventSystem({
           addToast,
           changeScene,
           saveGame,
-          tRef
+          tRef,
+          getResolvedState: () =>
+            resolution.actions.reduce(gameReducer, stateRef.current)
         })
         return {
           outcomeText: resolution.outcomeText,

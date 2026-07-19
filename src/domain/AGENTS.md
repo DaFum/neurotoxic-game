@@ -7,6 +7,7 @@
 ## Side Effects
 
 - Side effects must use the discriminated `SideEffect` union in `eventResolver.ts`. Add a typed union variant and handler case instead of returning loose objects through `sideEffects`.
+- Domain modules must not import `gameReducer` or replay reducer state. The `saveGame` side effect carries no state; `useEventSystem` materializes the post-resolution snapshot by replaying the returned actions through the reducer. Quest `deadlineOffset` resolution computes the post-delta day purely (day deltas are additive in `applyEventDelta`).
 
 ## Payloads
 

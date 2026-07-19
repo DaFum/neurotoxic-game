@@ -142,10 +142,13 @@ test('resolveEvent: choice with gameOver flag emits changeScene + saveGame + gam
 
   const saveGame = sideEffects.find(e => e.type === 'saveGame')
   assert.ok(saveGame, 'must emit saveGame side effect')
-  // saveGame carries a state snapshot (object)
-  assert.equal(typeof saveGame.state, 'object')
-  // validate the post-resolution snapshot activeEvent is cleared
-  assert.equal(saveGame.state.activeEvent, null)
+  // saveGame carries no state: the context caller materializes the snapshot
+  // by replaying the returned actions through the reducer
+  assert.ok(!Object.hasOwn(saveGame, 'state'))
+  // the returned actions end by clearing the active event
+  const lastAction = actions[actions.length - 1]
+  assert.equal(lastAction.type, 'SET_ACTIVE_EVENT')
+  assert.equal(lastAction.payload, null)
 
   const gameOverToast = sideEffects.find(e => e.type === 'gameOverToast')
   assert.ok(gameOverToast)
