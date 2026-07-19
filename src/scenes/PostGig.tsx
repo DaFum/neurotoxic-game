@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'
 import { GAME_PHASES } from '../context/gameConstants'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { PlayerState, Venue } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'

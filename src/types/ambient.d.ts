@@ -1,5 +1,5 @@
 // Migration stubs for third-party modules without bundled TypeScript declarations.
-// framer-motion, lucide-react, pixi.js, tone, and @tonejs/midi ship their own types —
+// motion/react, lucide-react, pixi.js, tone, and @tonejs/midi ship their own types —
 // no stubs needed for those packages.
 
 // Minimal process global for Vite/node:test dual-compatibility (AGENTS.md pattern).

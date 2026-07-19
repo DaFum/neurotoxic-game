@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'

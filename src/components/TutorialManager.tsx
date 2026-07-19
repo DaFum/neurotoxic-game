@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useTutorial } from '../hooks/useTutorial'
 
 const getStepColorClass = (stepId: number, currentStep: number): string => {

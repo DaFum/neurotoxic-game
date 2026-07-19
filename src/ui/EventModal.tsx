@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'

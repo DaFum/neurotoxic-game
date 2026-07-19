@@ -7,7 +7,7 @@ import {
   type RefObject
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'

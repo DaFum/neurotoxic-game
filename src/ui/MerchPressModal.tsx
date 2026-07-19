@@ -1,6 +1,6 @@
 import { IconClose } from './shared/Icons'
 
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'

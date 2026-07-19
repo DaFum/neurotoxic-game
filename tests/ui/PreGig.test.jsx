@@ -7,8 +7,8 @@ import path from 'node:path'
 
 // Mocks
 
-// Mock framer-motion
-vi.mock('framer-motion', () => ({
+// Mock motion/react
+vi.mock('motion/react', () => ({
   motion: {
     div: ({ children, ...props }) =>
       React.createElement('div', props, children),

@@ -13,7 +13,7 @@ import { NetResult } from '../../src/components/postGig/NetResult'
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
-vi.mock('framer-motion', () => ({
+vi.mock('motion/react', () => ({
   motion: {
     div: ({ children, className, ...rest }) => (
       <div className={className} {...rest}>

@@ -10,7 +10,7 @@ import {
 import { render, cleanup, screen } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
-vi.mock('framer-motion', () => ({
+vi.mock('motion/react', () => ({
   AnimatePresence: ({ children }) => <>{children}</>,
   motion: {
     div: ({ children, ...props }) => <div {...props}>{children}</div>

@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'

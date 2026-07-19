@@ -1,5 +1,5 @@
 import { IconClose, IconChevronDown, IconChevronUp } from './shared/Icons'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
@@ -16,7 +16,7 @@ import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
 import { getQuestRewards } from '../domain/questRewards'
-import type { Variants } from 'framer-motion'
+import type { Variants } from 'motion/react'
 import type { PlayerState, QuestReward } from '../types'
 
 type IconProps = {

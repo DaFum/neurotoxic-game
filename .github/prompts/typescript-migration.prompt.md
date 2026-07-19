@@ -80,7 +80,7 @@ Assistant behavior & patch guidelines
   `---COMMIT---` (e.g. `chore(types): narrow unknown in X`).
 - When recommending `@types/<pkg>`, give the exact `pnpm add -D` command and
   confirm the package isn't already covered by bundled declarations
-  (`framer-motion`, `lucide-react`, `pixi.js`, `tone`, `@tonejs/midi`).
+  (`motion/react`, `lucide-react`, `pixi.js`, `tone`, `@tonejs/midi`).
 - For each batch include a risk estimate (1 low … 5 high) and the top 3 files
   likely to need follow-up.
 
