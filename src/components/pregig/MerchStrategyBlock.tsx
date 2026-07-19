@@ -61,7 +61,7 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
           <div className='w-12 shrink-0 opacity-80'>
             <GeneratedImagePanel
               prompt={item.imgPrompt}
-              alt={item.name}
+              alt=''
               aspectRatio='1:1'
               variant='inline'
               sizeHint={{ width: 48, height: 48 }}
