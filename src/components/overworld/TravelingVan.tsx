@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import type { TravelingVanProps } from '../../types/components'
 

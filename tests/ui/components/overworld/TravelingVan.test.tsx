@@ -4,8 +4,8 @@ import { render, fireEvent, screen } from '@testing-library/react'
 import { TravelingVan } from '../../../../src/components/overworld/TravelingVan'
 import type { MapNode } from '../../../../src/types/components'
 
-// Mock framer-motion to simplify testing animations
-vi.mock('framer-motion', () => ({
+// Mock motion/react to simplify testing animations
+vi.mock('motion/react', () => ({
   motion: {
     div: ({
       children,

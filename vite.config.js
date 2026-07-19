@@ -125,7 +125,7 @@ export default defineConfig({
             },
             {
               name: 'vendor-motion',
-              test: /node_modules[\\/]framer-motion[\\/]/,
+              test: /node_modules[\\/](motion|framer-motion)[\\/]/,
               priority: 20
             },
             {

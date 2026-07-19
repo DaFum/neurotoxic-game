@@ -4,7 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { HexNode } from '../ui/shared'
 import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'

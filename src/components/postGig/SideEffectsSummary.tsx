@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { TFunction } from 'i18next'
 

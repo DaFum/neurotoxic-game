@@ -6,10 +6,10 @@ import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStart
 // Note: The actual PreGigStartButton component in src/components/pregig/PreGigStartButton.tsx
 // differs from the simplified example snippet in the task description.
 // It uses `t`, `isStarting`, `isSetlistEmpty`, and `onStartShow` as props,
-// and relies on `framer-motion`, `ActionButton`, and `RazorPlayIcon`.
+// and relies on `motion/react`, `ActionButton`, and `RazorPlayIcon`.
 // This test suite correctly tests the actual production component in the repository to ensure no regressions.
 
-vi.mock('framer-motion', () => ({
+vi.mock('motion/react', () => ({
   motion: {
     div: ({
       children,

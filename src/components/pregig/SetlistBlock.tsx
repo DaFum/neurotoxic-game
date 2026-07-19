@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { Tooltip } from '../../ui/shared/Tooltip'

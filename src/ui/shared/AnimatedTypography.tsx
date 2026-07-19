@@ -1,5 +1,5 @@
-import { motion } from 'framer-motion'
-import type { HTMLMotionProps, Transition } from 'framer-motion'
+import { motion } from 'motion/react'
+import type { HTMLMotionProps, Transition } from 'motion/react'
 import type { ReactNode } from 'react'
 
 /**

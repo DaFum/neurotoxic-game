@@ -41,7 +41,7 @@ vi.mock('../../src/ui/GlitchButton', () => ({
 vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div />
 }))
-vi.mock('framer-motion', () => ({
+vi.mock('motion/react', () => ({
   useReducedMotion: () => false,
   motion: {
     div: ({ children, ...props }) => <div {...props}>{children}</div>,

@@ -68,7 +68,7 @@ PR that lands the type-tightening.
 
 ## Third-Party Types
 
-- `framer-motion`, `lucide-react`, `pixi.js`, `tone`, `@tonejs/midi` ship their
+- `motion/react`, `lucide-react`, `pixi.js`, `tone`, `@tonejs/midi` ship their
   own declarations — do not add stub `.d.ts` shims for them.
 - When a package genuinely lacks types, prefer `pnpm add -D @types/<pkg>`. As a
   last resort, add a minimal stub under `src/types/` and document it in the PR.

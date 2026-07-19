@@ -2,7 +2,7 @@ import { IconClose } from './shared/Icons'
 import { Tooltip } from './shared/Tooltip'
 
 import { memo } from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameSelector } from '../context/GameState'

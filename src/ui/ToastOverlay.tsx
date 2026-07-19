@@ -1,5 +1,5 @@
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion, AnimatePresence } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'

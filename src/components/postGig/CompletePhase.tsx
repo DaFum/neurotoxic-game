@@ -1,5 +1,5 @@
 import { formatCurrency } from '../../utils/numberUtils'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'

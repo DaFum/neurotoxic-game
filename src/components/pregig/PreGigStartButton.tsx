@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 import { ActionButton } from '../../ui/shared'
 import type { TranslationCallback } from '../../types/callbacks'
