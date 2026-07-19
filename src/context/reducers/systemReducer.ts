@@ -25,6 +25,8 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
+import { createRngStream, nextSeed } from '../../utils/seededRng'
+import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../../utils/assetConfig'
 import { QuestEvents } from '../../utils/questProgress'
 import { sanitizeSettingsPayload } from '../../utils/settingsSanitizer'
 import { DEFAULT_PLAYER_STATE } from '../initialState'
@@ -576,8 +578,9 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
  *
  * @remarks
  * Use the typed `advanceDay(state)` action creator so `dayRngStream` and
- * `nextRngSeed` are pre-generated. Dispatching a payloadless action skips
- * deterministic asset risk-event resolution.
+ * `nextRngSeed` are pre-generated. Payloadless dispatches (legacy callers,
+ * direct reducer tests) derive the same deterministic stream from
+ * `state.rngSeed`, so asset risk events run on every ADVANCE_DAY path.
  *
  * @param state - Current game state before the day tick.
  * @param payload - Optional deterministic RNG stream and next seed supplied by the action creator.
@@ -606,10 +609,21 @@ export const handleAdvanceDay = (
     }
   }
   nextStatePre = processCrowdfundTick(nextStatePre)
-  if (payload?.dayRngStream) {
+  // Payloadless dispatches derive the same deterministic stream that
+  // advanceDay(state) would have pre-rolled from state.rngSeed, so direct
+  // reducer dispatches cannot skip asset risk-event integration. Pure: the
+  // fallback seed is a fixed clamp, never Date.now().
+  const baseSeed = finiteNumberOr(state.rngSeed, 0) >>> 0
+  const dayRngStream =
+    payload?.dayRngStream ??
+    createRngStream(
+      baseSeed,
+      (state.assets?.length ?? 0) * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
+    )
+  {
     const { state: s, events } = rollAssetRiskEvents(
       nextStatePre,
-      payload.dayRngStream,
+      dayRngStream,
       0
     )
     nextStatePre = s
@@ -667,7 +681,7 @@ export const handleAdvanceDay = (
       }
     }
   }
-  const rngSeed = payload?.nextRngSeed ?? nextStatePre.rngSeed
+  const rngSeed = payload?.nextRngSeed ?? nextSeed(baseSeed)
   state = { ...nextStatePre, rngSeed }
 
   const rng = typeof payload?.rng === 'function' ? payload.rng : getSafeRandom

@@ -42,8 +42,6 @@ import type {
 import type { Effect, PurchaseItem } from '../../../types/components'
 import type { PlayerPatch, BandPatch } from '../../../types/purchase'
 
-export { getPrimaryEffect } // Re-export for backward compatibility if needed, though we will update consumers.
-
 type EffectMessage = {
   messageKey?: string
   fallback?: string
@@ -147,6 +145,17 @@ const processTraitToasts = (
   })
 }
 
+// Toast label for an item; malformed catalog entries without a string `name`
+// fall back to the localized unknown-item label instead of rendering
+// `undefined` in validation/success toasts.
+const getItemToastLabel = (item: PurchaseItem, t: TranslateFn) =>
+  t(`items:${item.id}.name`, {
+    defaultValue:
+      typeof item.name === 'string'
+        ? item.name
+        : t('ui:shop.messages.unknownItem', { defaultValue: 'Unknown Item' })
+  })
+
 const handlePurchaseValidationError = (
   validation: PurchaseValidation,
   item: PurchaseItem,
@@ -169,9 +178,7 @@ const handlePurchaseValidationError = (
   } else if (validation.errorType === 'already_owned') {
     addToast(
       t('ui:shop.messages.alreadyOwned', {
-        itemName: t(`items:${item.id}.name`, {
-          defaultValue: item.name
-        })
+        itemName: getItemToastLabel(item, t)
       }),
       'warning'
     )
@@ -182,9 +189,7 @@ const handlePurchaseValidationError = (
         currency: payingWithFame
           ? t('ui:shop.messages.fame')
           : t('ui:shop.messages.money'),
-        itemName: t(`items:${item.id}.name`, {
-          defaultValue: item.name
-        })
+        itemName: getItemToastLabel(item, t)
       }),
       'error'
     )
@@ -465,7 +470,7 @@ export const usePurchaseLogic = ({
         // Player update was already called above
         addToast(
           t('ui:shop.messages.purchaseSuccess', {
-            itemName: t(`items:${item.id}.name`, { defaultValue: item.name })
+            itemName: getItemToastLabel(item, t)
           }),
           'success'
         )

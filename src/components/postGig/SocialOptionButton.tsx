@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import type { SocialOptionButtonProps } from '../../types/components'
 
 const CATEGORY_PROMPTS = {
@@ -32,6 +33,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
   disabled = false
 }: SocialOptionButtonProps) {
   const { t } = useTranslation()
+  const isOnline = useNetworkStatus()
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
 
   return (
@@ -50,7 +52,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
         <div
           className='absolute inset-0 opacity-80 group-hover:opacity-20 transition-opacity bg-cover bg-center pointer-events-none'
           style={{
-            backgroundImage: `url("${resolveGenImageUrl(getImagePromptForCategory(opt.category, opt.badges))}")`
+            backgroundImage: `url("${resolveGenImageUrl(getImagePromptForCategory(opt.category, opt.badges), isOnline)}")`
           }}
         />
 

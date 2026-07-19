@@ -3,6 +3,7 @@ import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   SPIN_STORY_MONEY_COST,
   SPIN_STORY_CONTROVERSY_REDUCTION
@@ -27,6 +28,7 @@ export const CompletePhase = ({
   hasSpun = false
 }: CompletePhaseProps) => {
   const { t, i18n } = useTranslation()
+  const isOnline = useNetworkStatus()
   const hasPR = player?.hqUpgrades?.includes('pr_manager_contract')
   const isHighControversy = (social?.controversyLevel ?? 0) > 50
 
@@ -49,7 +51,7 @@ export const CompletePhase = ({
       <div
         className='absolute inset-0 opacity-20 bg-cover bg-center mix-blend-screen pointer-events-none z-0'
         style={{
-          backgroundImage: `url("${resolveGenImageUrl(getOutcomeImagePrompt())}")`
+          backgroundImage: `url("${resolveGenImageUrl(getOutcomeImagePrompt(), isOnline)}")`
         }}
       />
       <motion.div

@@ -6,6 +6,7 @@ import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { getModuleImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
+import { getModuleDescription } from './moduleDescription'
 import {
   getModulePoolForAsset,
   getSlotConflicts,
@@ -161,9 +162,7 @@ export const ModulePickerModal = memo(
                 </strong>
                 {installedModule && (
                   <span className='text-xs opacity-60'>
-                    {t(`assets:module.${installedModule.id}.description`, {
-                      defaultValue: ''
-                    })}
+                    {getModuleDescription(t, installedModule, i18n.language)}
                   </span>
                 )}
                 <span className='text-xs'>
@@ -234,9 +233,7 @@ export const ModulePickerModal = memo(
                         })}
                       </strong>
                       <span className='text-xs opacity-60'>
-                        {t(`assets:module.${module.id}.description`, {
-                          defaultValue: ''
-                        })}
+                        {getModuleDescription(t, module, i18n.language)}
                       </span>
                       <span className='text-xs'>
                         {t('assets:modulePicker.installCost', {

@@ -38,9 +38,10 @@ const RackScrewComponent: FC<RackScrewProps> = ({ x, y }) => (
 
 /**
  * Renders a decorative rack screw for Kabelsalat hardware panels.
+ * Module-private: consumed only by {@link RackPanel}.
  * @param props - SVG coordinates for the screw position.
  */
-export const RackScrew = memo(RackScrewComponent)
+const RackScrew = memo(RackScrewComponent)
 
 const RACK_GEOMETRY = {
   OUTER_X: 40,

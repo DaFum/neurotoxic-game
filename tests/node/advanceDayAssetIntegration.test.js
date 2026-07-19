@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert'
 import { handleAdvanceDay } from '../../src/context/reducers/systemReducer.ts'
+import { advanceDay } from '../../src/context/actionCreators.ts'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer.ts'
 import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 import { createInitialState } from '../../src/context/initialState.ts'
@@ -308,6 +309,51 @@ test('AdvanceDay handler records the first fired asset risk event', () => {
     nextState.toasts.filter(toast => toast.type === 'warning').length,
     2
   )
+})
+
+test('AdvanceDay payloadless dispatch derives the same deterministic stream as advanceDay(state)', () => {
+  const baseState = createInitialState()
+  const makeState = () => ({
+    ...baseState,
+    currentScene: GAME_PHASES.OVERWORLD,
+    player: {
+      ...baseState.player,
+      money: 1000,
+      day: 10,
+      eventsTriggeredToday: 0
+    },
+    assets: [
+      {
+        id: 'risk_asset_1',
+        kind: 'tourbus_chassis',
+        chassisFlavor: 'legit',
+        chassisTier: 1,
+        condition: 100,
+        baseDailyRevenue: 0,
+        baseUpkeep: 0,
+        baseRiskEventChance: 1,
+        slots: [],
+        acquiredOnDay: 1,
+        acquisitionMode: 'cash'
+      }
+    ],
+    liabilities: {},
+    crowdfundCampaigns: [],
+    rngSeed: 12345
+  })
+  const rng = () => 0.5
+
+  const stateForCreator = makeState()
+  const creatorAction = advanceDay(stateForCreator)
+  const viaCreator = handleAdvanceDay(stateForCreator, {
+    ...creatorAction.payload,
+    rng
+  })
+  const viaPayloadless = handleAdvanceDay(makeState(), { rng })
+
+  // Risk events fire on the payloadless path too, with identical results.
+  assert.notEqual(viaPayloadless.pendingRiskEvent, null)
+  assert.deepEqual(viaPayloadless, viaCreator)
 })
 
 test('AdvanceDay Integration - bankruptcy uses total daily obligations', () => {

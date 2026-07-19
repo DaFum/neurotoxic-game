@@ -76,7 +76,7 @@ export const QUEST_REGISTRY = {
  * Looks up a quest's static definition by id. Returns `undefined` for unknown
  * ids so callers can fall back to inline payloads.
  */
-export const isQuestRegistryId = (
+const isQuestRegistryId = (
   questId: string
 ): questId is keyof typeof QUEST_REGISTRY =>
   Object.hasOwn(QUEST_REGISTRY, questId)

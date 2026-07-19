@@ -25,7 +25,7 @@ interface UsePostGigHandlersReturn {
   handleNextPhase: () => void
 }
 /** Props for {@link usePostGigHandlers}: post-gig state slices and the flat dispatcher/UI callbacks it threads into the sub-handlers. */
-export interface UsePostGigHandlersProps extends HandlerDispatchers {
+interface UsePostGigHandlersProps extends HandlerDispatchers {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']

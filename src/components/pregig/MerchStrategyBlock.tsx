@@ -9,7 +9,8 @@ import {
   getTotalMerchStock
 } from '../../utils/merchUtils'
 import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
-import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
+import { IMG_PROMPTS } from '../../utils/imageGen'
+import { GeneratedImagePanel } from '../../ui/shared/GeneratedImagePanel'
 import { Tooltip } from '../../ui/shared/Tooltip'
 
 interface MerchStrategyBlockProps {
@@ -30,7 +31,7 @@ interface MerchItem {
   defaultPrice: number
   restockCost: number
   restockAmount: number
-  imgUrl?: string
+  imgPrompt?: string
 }
 
 interface MerchItemRowProps {
@@ -56,12 +57,16 @@ const MerchItemRow: React.FC<MerchItemRowProps> = ({
   return (
     <div className='flex justify-between items-center bg-charcoal-gray p-3 border border-concrete-gray'>
       <div className='flex items-center gap-3'>
-        {item.imgUrl && (
-          <div
-            className='w-12 h-12 bg-contain bg-center bg-no-repeat shrink-0 opacity-80'
-            style={{ backgroundImage: `url("${item.imgUrl}")` }}
-            aria-hidden='true'
-          />
+        {item.imgPrompt && (
+          <div className='w-12 shrink-0 opacity-80'>
+            <GeneratedImagePanel
+              prompt={item.imgPrompt}
+              alt=''
+              aspectRatio='1:1'
+              variant='inline'
+              sizeHint={{ width: 48, height: 48 }}
+            />
+          </div>
         )}
         <div className='flex flex-col'>
           <span className='text-toxic-green font-mono uppercase'>
@@ -170,10 +175,9 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           bundleAmount
         })
 
-        const prompt = itemDef?.img
+        const imgPrompt = itemDef?.img
           ? IMG_PROMPTS[itemDef.img as keyof typeof IMG_PROMPTS]
           : undefined
-        const imgUrl = prompt ? resolveGenImageUrl(prompt) : undefined
 
         items.push({
           key,
@@ -185,7 +189,7 @@ export const MerchStrategyBlock: React.FC<MerchStrategyBlockProps> = ({
           defaultPrice,
           restockCost,
           restockAmount,
-          imgUrl
+          imgPrompt
         })
       }
     }

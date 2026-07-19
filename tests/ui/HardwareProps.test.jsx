@@ -1,94 +1,78 @@
 import { describe, it, expect } from 'vitest'
 import { render } from '@testing-library/react'
-import { RackScrew } from '../../src/scenes/kabelsalat/components/HardwareProps'
+import { RackPanel } from '../../src/scenes/kabelsalat/components/HardwareProps'
 
-describe('RackScrew', () => {
-  it('renders SVG group at correct position', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={50} y={100} />
+// RackScrew is module-private decoration; its rendering contract is covered
+// through RackPanel, the only production consumer.
+describe('RackPanel screws', () => {
+  const renderPanel = () =>
+    render(
+      <svg aria-hidden='true'>
+        <title>RackPanel test wrapper</title>
+        <RackPanel />
       </svg>
     )
 
-    const group = container.querySelector('g')
-    expect(group).toBeTruthy()
-    expect(group.getAttribute('transform')).toBe('translate(50, 100)')
+  it('renders four screws at the rack corner positions', () => {
+    const { container } = renderPanel()
+
+    const screwGroups = [...container.querySelectorAll('g g')]
+    expect(screwGroups.length).toBe(4)
+    expect(screwGroups.map(g => g.getAttribute('transform'))).toEqual([
+      'translate(60, 40)',
+      'translate(760, 40)',
+      'translate(60, 170)',
+      'translate(760, 170)'
+    ])
   })
 
-  it('renders circle with correct attributes', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={0} y={0} />
-      </svg>
-    )
+  it('renders each screw circle with correct attributes', () => {
+    const { container } = renderPanel()
 
-    const circle = container.querySelector('circle')
-    expect(circle).toBeTruthy()
-    expect(circle.getAttribute('cx')).toBe('0')
-    expect(circle.getAttribute('cy')).toBe('0')
-    expect(circle.getAttribute('r')).toBe('4')
-    expect(circle.getAttribute('fill')).toBe('var(--color-concrete-gray)')
-    expect(circle.getAttribute('stroke')).toBe('var(--color-void-black)')
-    expect(circle.getAttribute('stroke-width')).toBe('1')
+    const circles = [...container.querySelectorAll('circle')]
+    expect(circles.length).toBe(4)
+    for (const circle of circles) {
+      expect(circle.getAttribute('cx')).toBe('0')
+      expect(circle.getAttribute('cy')).toBe('0')
+      expect(circle.getAttribute('r')).toBe('4')
+      expect(circle.getAttribute('fill')).toBe('var(--color-concrete-gray)')
+      expect(circle.getAttribute('stroke')).toBe('var(--color-void-black)')
+      expect(circle.getAttribute('stroke-width')).toBe('1')
+    }
   })
 
-  it('renders cross pattern with lines', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={0} y={0} />
-      </svg>
-    )
+  it('renders a cross pattern with two lines per screw', () => {
+    const { container } = renderPanel()
 
-    const lines = container.querySelectorAll('line')
-    expect(lines.length).toBe(2)
+    const screwGroups = [...container.querySelectorAll('g g')]
+    for (const group of screwGroups) {
+      const lines = group.querySelectorAll('line')
+      expect(lines.length).toBe(2)
 
-    // Check first line
-    expect(lines[0].getAttribute('x1')).toBe('-2')
-    expect(lines[0].getAttribute('y1')).toBe('-2')
-    expect(lines[0].getAttribute('x2')).toBe('2')
-    expect(lines[0].getAttribute('y2')).toBe('2')
-    expect(lines[0].getAttribute('stroke')).toBe('var(--color-void-black)')
-    expect(lines[0].getAttribute('stroke-width')).toBe('1.5')
+      expect(lines[0].getAttribute('x1')).toBe('-2')
+      expect(lines[0].getAttribute('y1')).toBe('-2')
+      expect(lines[0].getAttribute('x2')).toBe('2')
+      expect(lines[0].getAttribute('y2')).toBe('2')
+      expect(lines[0].getAttribute('stroke')).toBe('var(--color-void-black)')
+      expect(lines[0].getAttribute('stroke-width')).toBe('1.5')
 
-    // Check second line
-    expect(lines[1].getAttribute('x1')).toBe('-2')
-    expect(lines[1].getAttribute('y1')).toBe('2')
-    expect(lines[1].getAttribute('x2')).toBe('2')
-    expect(lines[1].getAttribute('y2')).toBe('-2')
-    expect(lines[1].getAttribute('stroke')).toBe('var(--color-void-black)')
-    expect(lines[1].getAttribute('stroke-width')).toBe('1.5')
+      expect(lines[1].getAttribute('x1')).toBe('-2')
+      expect(lines[1].getAttribute('y1')).toBe('2')
+      expect(lines[1].getAttribute('x2')).toBe('2')
+      expect(lines[1].getAttribute('y2')).toBe('-2')
+      expect(lines[1].getAttribute('stroke')).toBe('var(--color-void-black)')
+      expect(lines[1].getAttribute('stroke-width')).toBe('1.5')
+    }
   })
 
-  it('handles zero coordinates', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={0} y={0} />
-      </svg>
-    )
-    expect(container.querySelector('g').getAttribute('transform')).toBe(
-      'translate(0, 0)'
-    )
-  })
+  it('renders the outer and inner panel rects', () => {
+    const { container } = renderPanel()
 
-  it('handles negative coordinates', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={-10} y={-20} />
-      </svg>
-    )
-    expect(container.querySelector('g').getAttribute('transform')).toBe(
-      'translate(-10, -20)'
-    )
-  })
-
-  it('handles non-integer coordinates', () => {
-    const { container } = render(
-      <svg>
-        <RackScrew x={10.5} y={20.75} />
-      </svg>
-    )
-    expect(container.querySelector('g').getAttribute('transform')).toBe(
-      'translate(10.5, 20.75)'
-    )
+    const rects = [...container.querySelectorAll('rect')]
+    expect(rects.length).toBe(2)
+    expect(rects[0].getAttribute('x')).toBe('40')
+    expect(rects[0].getAttribute('y')).toBe('20')
+    expect(rects[0].getAttribute('fill')).toBe('var(--color-shadow-black)')
+    expect(rects[1].getAttribute('fill')).toBe('var(--color-void-black)')
   })
 })

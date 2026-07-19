@@ -12,6 +12,20 @@ test('createInitialState exposes empty unlocks default', () => {
   assert.deepEqual(createInitialState().unlocks, [])
 })
 
+test('createInitialState does not share social.influencers references', () => {
+  const stateA = createInitialState()
+  const stateB = createInitialState()
+
+  assert.notEqual(stateA.social.influencers, stateB.social.influencers)
+  for (const key of Object.keys(stateA.social.influencers)) {
+    assert.notEqual(
+      stateA.social.influencers[key],
+      stateB.social.influencers[key],
+      `influencer entry "${key}" must be a fresh object per state`
+    )
+  }
+})
+
 test('createInitialState accepts persistedData', () => {
   const createdState = createInitialState({
     unlocks: ['test_unlock_1', 'test_unlock_2']
