@@ -104,4 +104,16 @@ describe('Tooltip Component', () => {
 
     expect(getByText('Tooltip Content')).toBeInTheDocument()
   })
+
+  test('treats 0 as valid tooltip content', () => {
+    const { getByText } = render(
+      <Tooltip content={0}>
+        <button type='button'>Hover Me</button>
+      </Tooltip>
+    )
+
+    const trigger = getByText('Hover Me')
+    fireEvent.mouseEnter(trigger)
+    expect(getByText('0')).toBeInTheDocument()
+  })
 })
