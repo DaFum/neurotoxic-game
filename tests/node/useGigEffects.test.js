@@ -98,7 +98,8 @@ describe('useGigEffects', () => {
 })
 
 describe('calculateChaosStyle', async () => {
-  const { calculateChaosStyle } = await import('../../src/hooks/useGigEffects')
+  const { calculateChaosStyle } =
+    await import('../../src/hooks/gigEffectsUtils')
 
   test('returns full chaos style for toxic mode', () => {
     const style = calculateChaosStyle(true, 0)
@@ -125,7 +126,7 @@ describe('calculateChaosStyle', async () => {
 
 describe('playBandMemberAnimation', async () => {
   const { playBandMemberAnimation } =
-    await import('../../src/hooks/useGigEffects')
+    await import('../../src/hooks/gigEffectsUtils')
 
   beforeEach(() => {
     setupJSDOM()
@@ -160,7 +161,7 @@ describe('applyChaosJitter', async () => {
   afterEach(() => {
     teardownJSDOM()
   })
-  const { applyChaosJitter } = await import('../../src/hooks/useGigEffects')
+  const { applyChaosJitter } = await import('../../src/hooks/gigEffectsUtils')
 
   test('applies translate transform in toxic mode', () => {
     const el = document.createElement('div')

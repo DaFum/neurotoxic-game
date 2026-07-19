@@ -21,10 +21,8 @@ vi.mock('../../src/utils/crypto', () => ({
   getSafeUUID: vi.fn(() => 'test-uuid')
 }))
 
-import {
-  useSocialPostHandler,
-  applySocialPostResult
-} from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import { useSocialPostHandler } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
+import { applySocialPostResult } from '../../src/hooks/postGig/handlers/socialPostHandlerUtils'
 import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
