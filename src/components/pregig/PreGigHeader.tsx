@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { PlayerState, Venue } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -19,7 +19,7 @@ type PreGigHeaderProps = {
 export const PreGigHeader = React.memo(
   ({ t, i18n, currentGig, player, calculatedBudget }: PreGigHeaderProps) => {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className='text-center mb-4 sm:mb-6 w-full max-w-4xl'
@@ -46,7 +46,7 @@ export const PreGigHeader = React.memo(
             </span>
           </span>
         </div>
-      </motion.div>
+      </m.div>
     )
   }
 )

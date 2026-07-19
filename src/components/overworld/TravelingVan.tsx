@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import type { TravelingVanProps } from '../../types/components'
 
@@ -20,7 +20,7 @@ export const TravelingVan = React.memo(
     if (!isTraveling || !currentNode || !travelTarget) return null
 
     return (
-      <motion.div
+      <m.div
         className='absolute z-(--z-chatter) pointer-events-none'
         initial={{
           left: `${currentNode.x}%`,
@@ -45,7 +45,7 @@ export const TravelingVan = React.memo(
           className='w-12 h-8 object-contain drop-shadow-[0_0_10px_var(--color-toxic-green)]'
           style={{ transform: 'translate(0, -50%)' }}
         />
-      </motion.div>
+      </m.div>
     )
   }
 )

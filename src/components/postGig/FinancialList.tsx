@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import { getFinancialColors } from '../../utils/financialColors'
@@ -15,7 +15,7 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
     <ul className='space-y-2.5 text-sm font-mono'>
       {items.map((item, i) => {
         return (
-          <motion.li
+          <m.li
             // eslint-disable-next-line @eslint-react/no-array-index-key
             key={`${item.labelKey}-${i}`}
             initial={{ opacity: 0, x: type === 'income' ? -10 : 10 }}
@@ -31,7 +31,7 @@ export const FinancialList = ({ items, type }: FinancialListProps) => {
             >
               {formatSignedFinancialAmount(item.value, type, i18n.language)}
             </span>
-          </motion.li>
+          </m.li>
         )
       })}
     </ul>

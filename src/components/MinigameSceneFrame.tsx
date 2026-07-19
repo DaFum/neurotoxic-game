@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../context/GameState'
 import { PixiStage } from './PixiStage'
@@ -68,7 +68,7 @@ export const MinigameSceneFrame = <TState,>({
 
       {/* Game Over / Success Overlay */}
       {uiState?.isGameOver && (
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
@@ -88,7 +88,7 @@ export const MinigameSceneFrame = <TState,>({
           <ActionButton ref={continueButtonRef} onClick={onComplete}>
             {completionButtonText}
           </ActionButton>
-        </motion.div>
+        </m.div>
       )}
     </div>
   )

@@ -6,30 +6,53 @@ import type { MapNode } from '../../../../src/types/components'
 
 // Mock motion/react to simplify testing animations
 vi.mock('motion/react', () => ({
-  motion: {
-    div: ({
-      children,
-      onAnimationComplete,
-      className,
-      style,
-      ...props
-    }: React.ComponentPropsWithoutRef<'div'> & {
-      onAnimationComplete?: () => void
-    }) => {
-      // Create a wrapper that fires onAnimationComplete when clicked
-      return (
-        <div
-          data-testid='motion-wrapper'
-          className={className}
-          style={style}
-          onClick={onAnimationComplete}
-          {...props}
-        >
-          {children}
-        </div>
-      )
+  m: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            onAnimationComplete,
+            ...domProps
+          } = props
+          if (onAnimationComplete) {
+            return (
+              <Comp
+                data-testid='motion-wrapper'
+                onClick={onAnimationComplete}
+                {...domProps}
+                style={typeof style === 'object' ? style : undefined}
+              >
+                {children}
+              </Comp>
+            )
+          }
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
     }
-  }
+  ),
+  AnimatePresence: ({ children }) => <>{children}</>,
+  LazyMotion: ({ children }) => <>{children}</>,
+  useReducedMotion: () => false
 }))
 
 describe('TravelingVan', () => {

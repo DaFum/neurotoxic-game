@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import GigModifierButton from '../../ui/GigModifierButton'
 import { formatCurrency } from '../../utils/numberUtils'
@@ -63,7 +63,7 @@ export const GigModifiersBlock = ({
 }: GigModifiersBlockProps) => {
   const { i18n } = useTranslation()
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
@@ -126,6 +126,6 @@ export const GigModifiersBlock = ({
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

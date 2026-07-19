@@ -7,7 +7,7 @@ import {
   type RefObject
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
@@ -212,7 +212,7 @@ ChatterMessageBody.displayName = 'ChatterMessageBody'
 const ChatterMessageLifetimeBar = memo(
   ({ barColorClass }: ChatterMessageLifetimeBarProps) => (
     <div className='h-[2px] w-full bg-ash-gray/10'>
-      <motion.div
+      <m.div
         className={`h-full ${barColorClass} opacity-40`}
         initial={{ width: '100%' }}
         animate={{ width: '0%' }}
@@ -263,7 +263,7 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   )
 
   return (
-    <motion.div
+    <m.div
       layout
       initial={{ opacity: 0, y: 18, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -295,7 +295,7 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 
         <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
       </div>
-    </motion.div>
+    </m.div>
   )
 })
 

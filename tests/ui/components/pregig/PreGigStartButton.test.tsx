@@ -10,19 +10,73 @@ import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStart
 // This test suite correctly tests the actual production component in the repository to ensure no regressions.
 
 vi.mock('motion/react', () => ({
-  motion: {
-    div: ({
-      children,
-      className
-    }: {
-      children?: ReactNode
-      className?: string
-    }) => (
-      <div data-testid='motion-div' className={className}>
-        {children}
-      </div>
-    )
-  }
+  m: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  motion: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  AnimatePresence: ({ children }) => <>{children}</>,
+  LazyMotion: ({ children }) => <>{children}</>,
+  useReducedMotion: () => false
 }))
 
 vi.mock('../../../../src/ui/shared', () => ({

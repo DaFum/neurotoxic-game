@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { ReactNode } from 'react'
 
 /**
@@ -39,13 +39,13 @@ export const MainMenuMotionContainer = ({
   const prefersReducedMotion = useReducedMotion()
 
   return (
-    <motion.div
+    <m.div
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={prefersReducedMotion ? { duration: 0 } : { delay }}
       className={className}
     >
       {children}
-    </motion.div>
+    </m.div>
   )
 }

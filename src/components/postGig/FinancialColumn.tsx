@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
 import { getFinancialColors } from '../../utils/financialColors'
@@ -30,7 +30,7 @@ export const FinancialColumn = React.memo(
     } = getFinancialColors(type)
 
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, x: initialX }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay }}
@@ -51,7 +51,7 @@ export const FinancialColumn = React.memo(
             {formatSignedFinancialAmount(total, type, i18n.language)}
           </span>
         </div>
-      </motion.div>
+      </m.div>
     )
   }
 )

@@ -2,7 +2,7 @@ import { IconClose } from './shared/Icons'
 import { Tooltip } from './shared/Tooltip'
 
 import { memo } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { useGameSelector } from '../context/GameState'
@@ -60,7 +60,7 @@ export const PirateRadioModal = memo(
 
     return (
       <div className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'>
-        <motion.div
+        <m.div
           initial={{ scale: 0.95, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.95, opacity: 0 }}
@@ -171,7 +171,7 @@ export const PirateRadioModal = memo(
                 : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
             </GlitchButton>
           </div>
-        </motion.div>
+        </m.div>
       </div>
     )
   }

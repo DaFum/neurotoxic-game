@@ -42,12 +42,73 @@ vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div />
 }))
 vi.mock('motion/react', () => ({
-  useReducedMotion: () => false,
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }) => <h1 {...props}>{children}</h1>,
-    h2: ({ children, ...props }) => <h2 {...props}>{children}</h2>
-  }
+  m: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  motion: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  AnimatePresence: ({ children }) => <>{children}</>,
+  LazyMotion: ({ children }) => <>{children}</>,
+  useReducedMotion: () => false
 }))
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,

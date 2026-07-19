@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m, LazyMotion, domAnimation } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -129,21 +129,23 @@ function GameContent() {
 
       <ErrorBoundary>
         <Suspense fallback={<SceneLoadingFallback />}>
-          <AnimatePresence mode='wait'>
-            <motion.div
-              key={currentScene}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
-              className='w-full h-full'
-            >
-              <SceneRouter
-                currentScene={currentScene}
-                minigameType={minigameType}
-              />
-            </motion.div>
-          </AnimatePresence>
+          <LazyMotion features={domAnimation} strict>
+            <AnimatePresence mode='wait'>
+              <m.div
+                key={currentScene}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className='w-full h-full'
+              >
+                <SceneRouter
+                  currentScene={currentScene}
+                  minigameType={minigameType}
+                />
+              </m.div>
+            </AnimatePresence>
+          </LazyMotion>
         </Suspense>
       </ErrorBoundary>
       {VERCEL_TELEMETRY_ENABLED && (

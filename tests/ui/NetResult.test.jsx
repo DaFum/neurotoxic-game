@@ -14,13 +14,73 @@ import { NetResult } from '../../src/components/postGig/NetResult'
 // Mocks
 // ---------------------------------------------------------------------------
 vi.mock('motion/react', () => ({
-  motion: {
-    div: ({ children, className, ...rest }) => (
-      <div className={className} {...rest}>
-        {children}
-      </div>
-    )
-  }
+  m: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  motion: new Proxy(
+    {},
+    {
+      get:
+        (_, key) =>
+        ({ children, ...props }) => {
+          const Comp = props.as || key || 'div'
+          // filter out motion-specific props
+          const {
+            initial,
+            animate,
+            exit,
+            transition,
+            whileHover,
+            whileTap,
+            layoutId,
+            layout,
+            variants,
+            style,
+            ...domProps
+          } = props
+          return (
+            <Comp
+              {...domProps}
+              style={typeof style === 'object' ? style : undefined}
+            >
+              {children}
+            </Comp>
+          )
+        }
+    }
+  ),
+  AnimatePresence: ({ children }) => <>{children}</>,
+  LazyMotion: ({ children }) => <>{children}</>,
+  useReducedMotion: () => false
 }))
 
 // ---------------------------------------------------------------------------

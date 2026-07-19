@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 
 type CreditEntryProps = {
   role: string
@@ -14,7 +14,7 @@ type CreditEntryProps = {
 export const CreditEntry = React.memo(
   ({ role, name, delay }: CreditEntryProps) => {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay }}
@@ -27,7 +27,7 @@ export const CreditEntry = React.memo(
           {name}
         </span>
         <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />
-      </motion.div>
+      </m.div>
     )
   }
 )

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from '../../ui/GlitchButton'
 
@@ -25,7 +25,7 @@ export const MainMenuActionButtons = ({
   const prefersReducedMotion = useReducedMotion()
 
   return (
-    <motion.div
+    <m.div
       initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
@@ -57,6 +57,6 @@ export const MainMenuActionButtons = ({
       >
         {t('ui:band_hq')}
       </GlitchButton>
-    </motion.div>
+    </m.div>
   )
 }
