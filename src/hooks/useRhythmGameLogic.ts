@@ -63,10 +63,11 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     // Why: Avoids prototype chain lookup and string key creation overhead during map building.
     const nodes = Object.values(gameMap.nodes)
     for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i] as MapNode
-      if (node.venueId) {
+      const node = nodes[i] as MapNode | undefined
+      if (!node) continue
+      if (node.venueId && node.id) {
         map.set(node.venueId, node.id)
-      } else if (node.venue?.id) {
+      } else if (node.venue?.id && node.id) {
         // Fallback for some potential older map formats
         map.set(node.venue.id, node.id)
       }
