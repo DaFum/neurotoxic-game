@@ -1,6 +1,12 @@
 import { animate } from 'animejs'
 import type { AnimationParams } from 'animejs'
-import { useEffect, useRef, type CSSProperties, type ReactNode } from 'react'
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  type CSSProperties,
+  type ReactNode
+} from 'react'
 
 type AnimeTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
 
@@ -41,12 +47,16 @@ const prefersReducedMotion = () =>
 export const useAnime = <TElement extends HTMLElement>(
   animation: AnimeEntrance | undefined
 ) => {
-  const ref = useRef<TElement | null>(null)
+  const targetRef = useRef<TElement | null>(null)
+  const serializedAnimation = animation ? JSON.stringify(animation) : ''
+  const ref = useCallback((node: TElement | null) => {
+    targetRef.current = node
+  }, [])
 
   useEffect(() => {
     if (!animation || prefersReducedMotion() || typeof NodeList === 'undefined')
       return undefined
-    const target = ref.current
+    const target = targetRef.current
     if (!target) return undefined
 
     const instance = animate(target, {
@@ -58,7 +68,9 @@ export const useAnime = <TElement extends HTMLElement>(
     return () => {
       instance.revert()
     }
-  }, [animation])
+    // Anime params are primitive/primitive-array config; serialize to avoid object-literal reruns.
+    // eslint-disable-next-line @eslint-react/exhaustive-deps
+  }, [serializedAnimation])
 
   return ref
 }
@@ -104,48 +116,45 @@ export const AnimatedSubtitle = ({
   style
 }: AnimeElementProps) => {
   const ref = useAnime<HTMLElement>(animation)
-  const setRef = (node: HTMLElement | null) => {
-    ref.current = node
-  }
 
   if (as === 'h1')
     return (
-      <h1 ref={setRef} className={`uppercase ${className}`} style={style}>
+      <h1 ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </h1>
     )
   if (as === 'h3')
     return (
-      <h3 ref={setRef} className={`uppercase ${className}`} style={style}>
+      <h3 ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </h3>
     )
   if (as === 'h4')
     return (
-      <h4 ref={setRef} className={`uppercase ${className}`} style={style}>
+      <h4 ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </h4>
     )
   if (as === 'p')
     return (
-      <p ref={setRef} className={`uppercase ${className}`} style={style}>
+      <p ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </p>
     )
   if (as === 'span')
     return (
-      <span ref={setRef} className={`uppercase ${className}`} style={style}>
+      <span ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </span>
     )
   if (as === 'div')
     return (
-      <div ref={setRef} className={`uppercase ${className}`} style={style}>
+      <div ref={ref} className={`uppercase ${className}`} style={style}>
         {children}
       </div>
     )
   return (
-    <h2 ref={setRef} className={`uppercase ${className}`} style={style}>
+    <h2 ref={ref} className={`uppercase ${className}`} style={style}>
       {children}
     </h2>
   )
