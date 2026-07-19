@@ -2,7 +2,7 @@ import { animate } from 'animejs'
 import type { AnimationParams } from 'animejs'
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   type CSSProperties,
   type ReactNode
@@ -53,7 +53,7 @@ export const useAnime = <TElement extends HTMLElement>(
     targetRef.current = node
   }, [])
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!animation || prefersReducedMotion() || typeof NodeList === 'undefined')
       return undefined
     const target = targetRef.current
@@ -94,7 +94,7 @@ export const AnimatedDivider = ({
     ...animation
   })
 
-  return <div ref={ref} className={`h-0.5 ${className}`} />
+  return <div ref={ref} className={`h-0.5 ${className}`} style={{ width }} />
 }
 
 const animeDefaultEntrance = {
