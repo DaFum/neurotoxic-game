@@ -1,8 +1,8 @@
-import { motion } from 'framer-motion'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector } from '../context/GameState'
 import { PixiStage } from './PixiStage'
 import { ActionButton } from '../ui/shared'
+import { useAnime } from '../ui/shared/AnimatedTypography'
 import type { MinigameSceneFrameProps } from '../types/components'
 import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
 
@@ -36,6 +36,10 @@ export const MinigameSceneFrame = <TState,>({
     onComplete
   })
 
+  const completionOverlayRef = useAnime<HTMLDivElement>(
+    uiState?.isGameOver ? { opacity: [0, 1], duration: 250 } : undefined
+  )
+
   return (
     <div className='w-full h-full bg-void-black relative overflow-hidden flex flex-col items-center justify-center'>
       <div className='absolute inset-0 pointer-events-none'>
@@ -68,9 +72,8 @@ export const MinigameSceneFrame = <TState,>({
 
       {/* Game Over / Success Overlay */}
       {uiState?.isGameOver && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
+        <div
+          ref={completionOverlayRef}
           className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
           role='dialog'
           aria-modal='true'
@@ -88,7 +91,7 @@ export const MinigameSceneFrame = <TState,>({
           <ActionButton ref={continueButtonRef} onClick={onComplete}>
             {completionButtonText}
           </ActionButton>
-        </motion.div>
+        </div>
       )}
     </div>
   )

@@ -53,14 +53,12 @@ export const GameOverHeader = React.memo(
         {/* jscpd:ignore-start */}
         <AnimatedDivider
           width='16rem'
-          transition={{ duration: 0.8, delay: 0.8 }}
+          animation={{ duration: 800, delay: 800 }}
           className={`bg-gradient-to-r from-transparent ${dividerVia} to-transparent mb-3`}
         />
 
         <AnimatedSubtitle
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 1 }}
+          animation={{ opacity: [0, 1], delay: 1000 }}
           className='text-lg text-ash-gray font-mono mb-10 tracking-[0.3em] relative z-10'
         >
           {subtitle}

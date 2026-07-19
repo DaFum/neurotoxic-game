@@ -33,20 +33,23 @@ export const MainMenuHeader = () => {
 
       <AnimatedDivider
         width='100%'
-        transition={
-          prefersReducedMotion ? { duration: 0 } : { duration: 0.6, delay: 0.4 }
+        animation={
+          prefersReducedMotion ? { duration: 0 } : { duration: 600, delay: 400 }
         }
         className='bg-gradient-to-r from-transparent via-toxic-green to-transparent mb-4 max-w-md'
       />
 
       {/* jscpd:ignore-start */}
       <AnimatedSubtitle
-        initial={
-          prefersReducedMotion ? false : { opacity: 0, letterSpacing: '0.1em' }
-        }
-        animate={{ opacity: 1, letterSpacing: '0.5em' }}
-        transition={
-          prefersReducedMotion ? { duration: 0 } : { duration: 1, delay: 0.6 }
+        animation={
+          prefersReducedMotion
+            ? { duration: 0 }
+            : {
+                opacity: [0, 1],
+                letterSpacing: ['0.1em', '0.5em'],
+                duration: 1000,
+                delay: 600
+              }
         }
         className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-ui text-center tracking-[0.5em]'
       >

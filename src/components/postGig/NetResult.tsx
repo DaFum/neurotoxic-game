@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { useAnime } from '../../ui/shared/AnimatedTypography'
 import { useTranslation } from 'react-i18next'
 import {
   formatCurrency,
@@ -23,11 +23,17 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
     return formatCurrency(0, i18n.language)
   }
 
+  const ref = useAnime<HTMLDivElement>({
+    opacity: [0, 1],
+    scale: [0.9, 1],
+    delay: 800,
+    duration: 450,
+    ease: 'outBack'
+  })
+
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.9 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ delay: 0.8, type: 'spring' }}
+    <div
+      ref={ref}
       className='text-center py-4 sm:py-6 border-y-2 border-ash-gray/30'
     >
       <div className='text-xs text-ash-gray tracking-widest mb-2'>
@@ -43,7 +49,7 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
       >
         {getNetString()}
       </div>
-    </motion.div>
+    </div>
   )
 })
 

@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'framer-motion'
+import { useAnime } from '../../ui/shared/AnimatedTypography'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
 import { getFinancialColors } from '../../utils/financialColors'
@@ -29,12 +29,14 @@ export const FinancialColumn = React.memo(
       borderLight: borderLightClass
     } = getFinancialColors(type)
 
+    const ref = useAnime<HTMLDivElement>({
+      opacity: [0, 1],
+      x: [initialX, 0],
+      delay: delay * 1000
+    })
+
     return (
-      <motion.div
-        initial={{ opacity: 0, x: initialX }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay }}
-      >
+      <div ref={ref}>
         <h3
           className={`text-base sm:text-lg border-b-2 ${borderClass} mb-3 sm:mb-4 pb-2 tracking-widest font-mono break-words ${colorClass}`}
         >
@@ -51,7 +53,7 @@ export const FinancialColumn = React.memo(
             {formatSignedFinancialAmount(total, type, i18n.language)}
           </span>
         </div>
-      </motion.div>
+      </div>
     )
   }
 )

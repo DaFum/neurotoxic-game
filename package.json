@@ -53,6 +53,7 @@
     "@tonejs/midi": "2.0.28",
     "@vercel/analytics": "2.0.1",
     "@vercel/speed-insights": "2.0.0",
+    "animejs": "4.5.0",
     "flatted": "3.4.2",
     "framer-motion": "12.42.2",
     "i18next": "26.3.6",
