@@ -129,23 +129,21 @@ function GameContent() {
 
       <ErrorBoundary>
         <Suspense fallback={<SceneLoadingFallback />}>
-          <LazyMotion features={domAnimation} strict>
-            <AnimatePresence mode='wait'>
-              <m.div
-                key={currentScene}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.25 }}
-                className='w-full h-full'
-              >
-                <SceneRouter
-                  currentScene={currentScene}
-                  minigameType={minigameType}
-                />
-              </m.div>
-            </AnimatePresence>
-          </LazyMotion>
+          <AnimatePresence mode='wait'>
+            <m.div
+              key={currentScene}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className='w-full h-full'
+            >
+              <SceneRouter
+                currentScene={currentScene}
+                minigameType={minigameType}
+              />
+            </m.div>
+          </AnimatePresence>
         </Suspense>
       </ErrorBoundary>
       {VERCEL_TELEMETRY_ENABLED && (
@@ -170,12 +168,14 @@ function GameContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
-      <NetworkStatusProvider>
-        <GameStateProvider>
-          <GameContent />
-        </GameStateProvider>
-      </NetworkStatusProvider>
+      <LazyMotion features={domAnimation} strict>
+        <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
+        <NetworkStatusProvider>
+          <GameStateProvider>
+            <GameContent />
+          </GameStateProvider>
+        </NetworkStatusProvider>
+      </LazyMotion>
     </ErrorBoundary>
   )
 }

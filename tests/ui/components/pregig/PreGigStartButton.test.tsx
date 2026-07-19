@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../../../mocks/motionMock'
 import { render, screen, fireEvent } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -9,75 +10,7 @@ import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStart
 // and relies on `motion/react`, `ActionButton`, and `RazorPlayIcon`.
 // This test suite correctly tests the actual production component in the repository to ensure no regressions.
 
-vi.mock('motion/react', () => ({
-  m: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  motion: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  AnimatePresence: ({ children }) => <>{children}</>,
-  LazyMotion: ({ children }) => <>{children}</>,
-  useReducedMotion: () => false
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 vi.mock('../../../../src/ui/shared', () => ({
   ActionButton: ({

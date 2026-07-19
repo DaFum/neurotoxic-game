@@ -264,7 +264,6 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
 
   return (
     <m.div
-      layout
       initial={{ opacity: 0, y: 18, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, y: -10 }}
@@ -434,7 +433,7 @@ const useNonOverlappingPosition = (
     }
 
     reposition()
-    // Throttle resize to one measurement per frame to avoid layout thrashing.
+    // Throttle resize to one measurement per frame to avoid  thrashing.
     let rafId = 0
     const handleResize = () => {
       cancelAnimationFrame(rafId)

@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../../../mocks/motionMock'
 import React from 'react'
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
@@ -5,55 +6,7 @@ import { TravelingVan } from '../../../../src/components/overworld/TravelingVan'
 import type { MapNode } from '../../../../src/types/components'
 
 // Mock motion/react to simplify testing animations
-vi.mock('motion/react', () => ({
-  m: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            onAnimationComplete,
-            ...domProps
-          } = props
-          if (onAnimationComplete) {
-            return (
-              <Comp
-                data-testid='motion-wrapper'
-                onClick={onAnimationComplete}
-                {...domProps}
-                style={typeof style === 'object' ? style : undefined}
-              >
-                {children}
-              </Comp>
-            )
-          }
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  AnimatePresence: ({ children }) => <>{children}</>,
-  LazyMotion: ({ children }) => <>{children}</>,
-  useReducedMotion: () => false
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 describe('TravelingVan', () => {
   const mockNode1: MapNode = { id: 'node1', x: 10, y: 20, type: 'gigs' }

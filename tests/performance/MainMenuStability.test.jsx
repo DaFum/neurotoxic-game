@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from '@testing-library/react'
 
@@ -41,75 +42,7 @@ vi.mock('../../src/ui/GlitchButton', () => ({
 vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div />
 }))
-vi.mock('motion/react', () => ({
-  m: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  motion: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  AnimatePresence: ({ children }) => <>{children}</>,
-  LazyMotion: ({ children }) => <>{children}</>,
-  useReducedMotion: () => false
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
   resolveGenImageUrl: () => 'mock-url',

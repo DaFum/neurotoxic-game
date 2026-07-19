@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import {
   afterEach,
   beforeAll,
@@ -10,76 +11,7 @@ import {
 import { render, cleanup, screen } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
-vi.mock('motion/react', () => ({
-  m: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  motion: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  AnimatePresence: ({ children }) => <>{children}</>,
-  LazyMotion: ({ children }) => <>{children}</>,
-  domAnimation: {},
-  useReducedMotion: () => false
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 vi.mock('../../src/components/SceneRouter.tsx', () => ({
   SceneRouter: ({ currentScene }) => {

@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
@@ -8,75 +9,7 @@ import path from 'node:path'
 // Mocks
 
 // Mock motion/react
-vi.mock('motion/react', () => ({
-  m: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  motion: new Proxy(
-    {},
-    {
-      get:
-        (_, key) =>
-        ({ children, ...props }) => {
-          const Comp = props.as || key || 'div'
-          // filter out motion-specific props
-          const {
-            initial,
-            animate,
-            exit,
-            transition,
-            whileHover,
-            whileTap,
-            layoutId,
-            layout,
-            variants,
-            style,
-            ...domProps
-          } = props
-          return (
-            <Comp
-              {...domProps}
-              style={typeof style === 'object' ? style : undefined}
-            >
-              {children}
-            </Comp>
-          )
-        }
-    }
-  ),
-  AnimatePresence: ({ children }) => <>{children}</>,
-  LazyMotion: ({ children }) => <>{children}</>,
-  useReducedMotion: () => false
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 // Mock audioManager
 vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {
