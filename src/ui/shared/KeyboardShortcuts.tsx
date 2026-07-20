@@ -10,11 +10,23 @@ const SHORTCUTS = [
   { key: 'Esc', label: 'ui:shortcuts.closePanel' }
 ] as const
 
+/**
+ * Configuration properties for the useKeyboardShortcuts hook.
+ */
 interface UseKeyboardShortcutsProps {
+  /** State setter to toggle the visibility of the help panel. */
   setShowHelp: React.Dispatch<React.SetStateAction<boolean>>
+  /** Optional callback function to toggle application audio mute state. */
   onToggleMute?: () => void
 }
 
+/**
+ * Hook to manage global keyboard shortcuts for the application.
+ * Listens for keydown events and triggers corresponding UI actions,
+ * bypassing events originating from input or editable elements to avoid interference.
+ *
+ * @param props - Configuration properties for the hook.
+ */
 export function useKeyboardShortcuts({
   setShowHelp,
   onToggleMute
@@ -52,11 +64,23 @@ export function useKeyboardShortcuts({
   }, [setShowHelp, onToggleMute])
 }
 
+/**
+ * Component properties for the KeyboardShortcutsPanel.
+ */
 interface KeyboardShortcutsPanelProps {
+  /** Boolean indicating whether the panel should be visible. */
   showHelp: boolean
+  /** Optional CSS class name for custom styling. */
   className?: string
 }
 
+/**
+ * A UI component that displays a panel listing available keyboard shortcuts.
+ * The panel is conditionally rendered based on the provided visibility state.
+ *
+ * @param props - Component properties.
+ * @returns The rendered keyboard shortcuts panel or null if hidden.
+ */
 export function KeyboardShortcutsPanel({
   showHelp,
   className = ''
