@@ -178,3 +178,8 @@
 
 **Learning:** When performing micro-optimizations, replacing `.map()` with pre-allocated `for` loops (e.g. `new Array(len)`) and using `if (!item) continue` to guard against nulls inadvertently creates sparse arrays with uninitialized holes. `.map()` handles empty/null items differently. Additionally, replacing declarative array methods when the inner loop still allocates heavily (e.g., via object spread) provides negligible GC relief while sacrificing readability.
 **Action:** Only refactor array methods to procedural loops when collapsing multiple array iteration passes (like a `.filter().map()` chain or an allocation followed by another iteration) into a single batching pass. Do not simply swap `.map()` for `for` loops if the iteration body still allocates new objects.
+
+## 2024-11-20 - Rejecting Cold Path Micro-Optimizations
+
+**Learning:** Replacing array methods like `.filter().length` with procedural `for` loops in cold paths (e.g., action creators triggered by user clicks, like `installModule`) does not produce measurable performance improvements and sacrifices code readability. Code review will reject such optimizations as premature and violating constraints.
+**Action:** Only optimize arrays with procedural loops on highly active hot paths (e.g., game loop ticks, rendering updates, core state reducers) where garbage collection pressure is continuous and measurable.
