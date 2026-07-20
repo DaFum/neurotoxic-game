@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../../../mocks/motionMock'
 import React from 'react'
 import { describe, expect, test, vi, beforeEach } from 'vitest'
 import { render, fireEvent, screen } from '@testing-library/react'
@@ -5,32 +6,7 @@ import { TravelingVan } from '../../../../src/components/overworld/TravelingVan'
 import type { MapNode } from '../../../../src/types/components'
 
 // Mock motion/react to simplify testing animations
-vi.mock('motion/react', () => ({
-  motion: {
-    div: ({
-      children,
-      onAnimationComplete,
-      className,
-      style,
-      ...props
-    }: React.ComponentPropsWithoutRef<'div'> & {
-      onAnimationComplete?: () => void
-    }) => {
-      // Create a wrapper that fires onAnimationComplete when clicked
-      return (
-        <div
-          data-testid='motion-wrapper'
-          className={className}
-          style={style}
-          onClick={onAnimationComplete}
-          {...props}
-        >
-          {children}
-        </div>
-      )
-    }
-  }
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 describe('TravelingVan', () => {
   const mockNode1: MapNode = { id: 'node1', x: 10, y: 20, type: 'gigs' }

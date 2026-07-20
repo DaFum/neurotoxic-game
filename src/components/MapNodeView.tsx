@@ -4,7 +4,7 @@ import type {
   PointerEvent as ReactPointerEvent
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { HexNode } from '../ui/shared'
 import { FallbackImage } from '../ui/shared/FallbackImage'
 import { translateLocation } from '../utils/locationI18n'
@@ -391,7 +391,7 @@ export const MapNodeView = memo(
           </div>
         )}
 
-        <motion.div
+        <m.div
           initial={MOTION_INITIAL}
           animate={MOTION_ANIMATE}
           whileHover={isReachable ? MOTION_HOVER : MOTION_NO_HOVER}
@@ -409,7 +409,7 @@ export const MapNodeView = memo(
               className='w-6 h-6 object-contain drop-shadow-[0_0_8px_var(--color-void-black)]'
             />
           </div>
-        </motion.div>
+        </m.div>
 
         <div
           className={`text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black/90 pointer-events-none ${labelMobileHiddenClass}`}

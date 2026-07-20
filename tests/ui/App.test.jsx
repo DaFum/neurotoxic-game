@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import {
   afterEach,
   beforeAll,
@@ -10,12 +11,7 @@ import {
 import { render, cleanup, screen } from '@testing-library/react'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 
-vi.mock('motion/react', () => ({
-  AnimatePresence: ({ children }) => <>{children}</>,
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>
-  }
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 vi.mock('../../src/components/SceneRouter.tsx', () => ({
   SceneRouter: ({ currentScene }) => {

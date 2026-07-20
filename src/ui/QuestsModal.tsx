@@ -1,5 +1,5 @@
 import { IconClose, IconChevronDown, IconChevronUp } from './shared/Icons'
-import { motion, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
@@ -285,7 +285,7 @@ const QuestItem = memo(
       deadlineView.level === 'overdue'
 
     return (
-      <motion.div
+      <m.div
         key={quest.id}
         variants={variants}
         initial='hidden'
@@ -427,7 +427,7 @@ const QuestItem = memo(
 
           <AnimatePresence>
             {showDetails && (
-              <motion.div
+              <m.div
                 id={`quest-details-${quest.id}`}
                 initial={{ height: 0, opacity: 0 }}
                 animate={{ height: 'auto', opacity: 1 }}
@@ -460,11 +460,11 @@ const QuestItem = memo(
                       </p>
                     )}
                 </div>
-              </motion.div>
+              </m.div>
             )}
           </AnimatePresence>
         </div>
-      </motion.div>
+      </m.div>
     )
   }
 )
@@ -507,7 +507,7 @@ export const QuestsModal = ({
 
   return (
     <AnimatePresence>
-      <motion.div
+      <m.div
         className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 backdrop-blur-sm p-4'
         variants={overlayVariants}
         initial='hidden'
@@ -515,7 +515,7 @@ export const QuestsModal = ({
         exit='hidden'
         onClick={onClose}
       >
-        <motion.div
+        <m.div
           className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
           variants={modalVariants}
           onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
@@ -565,8 +565,8 @@ export const QuestsModal = ({
               {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
             </GlitchButton>
           </div>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </AnimatePresence>
   )
 }

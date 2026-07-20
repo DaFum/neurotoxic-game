@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../../../mocks/motionMock'
 import { render, screen, fireEvent } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { describe, expect, it, vi } from 'vitest'
@@ -9,21 +10,7 @@ import { PreGigStartButton } from '../../../../src/components/pregig/PreGigStart
 // and relies on `motion/react`, `ActionButton`, and `RazorPlayIcon`.
 // This test suite correctly tests the actual production component in the repository to ensure no regressions.
 
-vi.mock('motion/react', () => ({
-  motion: {
-    div: ({
-      children,
-      className
-    }: {
-      children?: ReactNode
-      className?: string
-    }) => (
-      <div data-testid='motion-div' className={className}>
-        {children}
-      </div>
-    )
-  }
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 vi.mock('../../../../src/ui/shared', () => ({
   ActionButton: ({

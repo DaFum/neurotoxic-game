@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render } from '@testing-library/react'
 
@@ -41,14 +42,7 @@ vi.mock('../../src/ui/GlitchButton', () => ({
 vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div />
 }))
-vi.mock('motion/react', () => ({
-  useReducedMotion: () => false,
-  motion: {
-    div: ({ children, ...props }) => <div {...props}>{children}</div>,
-    h1: ({ children, ...props }) => <h1 {...props}>{children}</h1>,
-    h2: ({ children, ...props }) => <h2 {...props}>{children}</h2>
-  }
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 vi.mock('../../src/utils/imageGen', () => ({
   isImageGenerationAvailable: () => true,
   resolveGenImageUrl: () => 'mock-url',

@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from 'motion/react'
+import { m, useReducedMotion } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 
@@ -11,7 +11,7 @@ export const MainMenuHeader = () => {
 
   return (
     <>
-      <motion.h1
+      <m.h1
         initial={
           prefersReducedMotion ? false : { scale: 0.8, opacity: 0, y: -20 }
         }
@@ -29,7 +29,7 @@ export const MainMenuHeader = () => {
         }}
       >
         NEUROTOXIC
-      </motion.h1>
+      </m.h1>
 
       <AnimatedDivider
         width='100%'
@@ -53,7 +53,7 @@ export const MainMenuHeader = () => {
         {t('ui:mainMenu.subtitle.grindTheVoid')}
       </AnimatedSubtitle>
 
-      <motion.div
+      <m.div
         initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={prefersReducedMotion ? { duration: 0 } : { delay: 1 }}
@@ -62,7 +62,7 @@ export const MainMenuHeader = () => {
         {t('ui:mainMenu.versionBadge', {
           defaultValue: 'v3.0 // EARLY ACCESS'
         })}
-      </motion.div>
+      </m.div>
       {/* jscpd:ignore-end */}
     </>
   )

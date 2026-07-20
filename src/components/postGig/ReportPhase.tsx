@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { FinancialColumn } from './FinancialColumn'
@@ -55,7 +55,7 @@ export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
       {/* Net Result */}
       <NetResult net={financials.net} />
 
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2 }}
@@ -68,7 +68,7 @@ export const ReportPhase = ({ financials, onNext }: ReportPhaseProps) => {
         >
           {t('economy:postGig.continueToSocials')}
         </ActionButton>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -84,7 +84,7 @@ export const PostGig = () => {
         }}
       />
 
-      <motion.div
+      <m.div
         data-testid='post-gig-panel'
         initial={{ scale: 0.8, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
@@ -137,7 +137,7 @@ export const PostGig = () => {
             />
           )}
         </Suspense>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

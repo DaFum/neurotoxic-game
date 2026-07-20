@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import type { HTMLMotionProps, Transition } from 'motion/react'
 import type { ReactNode } from 'react'
 
@@ -15,7 +15,7 @@ export const AnimatedDivider = ({
   transition?: Transition
   className?: string
 }) => (
-  <motion.div
+  <m.div
     initial={{ width: 0 }}
     animate={{ width }}
     transition={transition}
@@ -51,11 +51,11 @@ export const AnimatedSubtitle = ({
     transition,
     className: `uppercase ${className}`
   }
-  if (as === 'h1') return <motion.h1 {...props}>{children}</motion.h1>
-  if (as === 'h3') return <motion.h3 {...props}>{children}</motion.h3>
-  if (as === 'h4') return <motion.h4 {...props}>{children}</motion.h4>
-  if (as === 'p') return <motion.p {...props}>{children}</motion.p>
-  if (as === 'span') return <motion.span {...props}>{children}</motion.span>
-  if (as === 'div') return <motion.div {...props}>{children}</motion.div>
-  return <motion.h2 {...props}>{children}</motion.h2>
+  if (as === 'h1') return <m.h1 {...props}>{children}</m.h1>
+  if (as === 'h3') return <m.h3 {...props}>{children}</m.h3>
+  if (as === 'h4') return <m.h4 {...props}>{children}</m.h4>
+  if (as === 'p') return <m.p {...props}>{children}</m.p>
+  if (as === 'span') return <m.span {...props}>{children}</m.span>
+  if (as === 'div') return <m.div {...props}>{children}</m.div>
+  return <m.h2 {...props}>{children}</m.h2>
 }

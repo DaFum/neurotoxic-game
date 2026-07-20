@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 type GameOverButtonsProps = {
@@ -18,7 +18,7 @@ export const GameOverButtons = ({
   const { t } = useTranslation(['ui'])
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 2 }}
@@ -30,6 +30,6 @@ export const GameOverButtons = ({
       <GlitchButton onClick={onReturnToMenu} variant='danger'>
         {t('ui:gameOver.returnToMenu')}
       </GlitchButton>
-    </motion.div>
+    </m.div>
   )
 }

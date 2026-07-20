@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
+import { AnimatePresence, m, LazyMotion, domAnimation } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -130,7 +130,7 @@ function GameContent() {
       <ErrorBoundary>
         <Suspense fallback={<SceneLoadingFallback />}>
           <AnimatePresence mode='wait'>
-            <motion.div
+            <m.div
               key={currentScene}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -142,7 +142,7 @@ function GameContent() {
                 currentScene={currentScene}
                 minigameType={minigameType}
               />
-            </motion.div>
+            </m.div>
           </AnimatePresence>
         </Suspense>
       </ErrorBoundary>
@@ -168,12 +168,14 @@ function GameContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
-      <NetworkStatusProvider>
-        <GameStateProvider>
-          <GameContent />
-        </GameStateProvider>
-      </NetworkStatusProvider>
+      <LazyMotion features={domAnimation} strict>
+        <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
+        <NetworkStatusProvider>
+          <GameStateProvider>
+            <GameContent />
+          </GameStateProvider>
+        </NetworkStatusProvider>
+      </LazyMotion>
     </ErrorBoundary>
   )
 }

@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
@@ -31,7 +31,7 @@ export const GameOverHeader = React.memo(
 
     return (
       <>
-        <motion.div
+        <m.div
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.3, duration: 0.8 }}
@@ -41,7 +41,7 @@ export const GameOverHeader = React.memo(
           <VoidSkullIcon
             className={`w-24 h-24 ${accentText} ${accentShadow}`}
           />
-        </motion.div>
+        </m.div>
 
         <h1
           data-text={title}

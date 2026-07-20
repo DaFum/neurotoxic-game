@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { TFunction } from 'i18next'
 
@@ -41,7 +41,7 @@ export const SideEffectsSummary = ({
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.8 }}
@@ -114,6 +114,6 @@ export const SideEffectsSummary = ({
           ) : null}
         </div>
       ) : null}
-    </motion.div>
+    </m.div>
   )
 }

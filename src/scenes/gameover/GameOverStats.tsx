@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import type { PlayerState } from '../../types'
 
 /**
@@ -21,7 +21,7 @@ export const GameOverStats = ({
   ]
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 1.2, duration: 0.5 }}
@@ -32,7 +32,7 @@ export const GameOverStats = ({
       </div>
       <div className='space-y-3 font-mono'>
         {statRows.map((row, i) => (
-          <motion.div
+          <m.div
             key={row.label}
             initial={{ opacity: 0, x: -10 }}
             animate={{ opacity: 1, x: 0 }}
@@ -45,9 +45,9 @@ export const GameOverStats = ({
             <span className='text-lg text-star-white font-bold tabular-nums'>
               {row.value}
             </span>
-          </motion.div>
+          </m.div>
         ))}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
@@ -47,7 +47,7 @@ const EventOptionButton = ({
       : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'
 
   return (
-    <motion.button
+    <m.button
       type='button'
       aria-disabled={isDisabled}
       variants={{
@@ -71,7 +71,7 @@ const EventOptionButton = ({
           </span>
         )}
       </div>
-    </motion.button>
+    </m.button>
   )
 }
 
@@ -131,7 +131,7 @@ const EventOutcomeView = ({
   handleContinue,
   t
 }: EventOutcomeViewProps) => (
-  <motion.div
+  <m.div
     className='flex flex-col gap-4'
     initial={{ opacity: 0, y: 10 }}
     animate={{ opacity: 1, y: 0 }}
@@ -154,7 +154,7 @@ const EventOutcomeView = ({
     >
       [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]
     </button>
-  </motion.div>
+  </m.div>
 )
 
 interface EventOptionsListProps {
@@ -180,7 +180,7 @@ const EventOptionsList = ({
       {t('ui:keyboardHint', { count: eventOptions.length })}
     </p>
 
-    <motion.div
+    <m.div
       className='flex flex-col gap-3'
       initial='hidden'
       animate='visible'
@@ -215,7 +215,7 @@ const EventOptionsList = ({
           />
         )
       })}
-    </motion.div>
+    </m.div>
   </>
 )
 
@@ -408,7 +408,7 @@ export const EventModal = ({
         }}
       ></div>
 
-      <motion.div
+      <m.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
         className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
@@ -447,7 +447,7 @@ export const EventModal = ({
             />
           )}
         </div>
-      </motion.div>
+      </m.div>
     </div>
   )
 }

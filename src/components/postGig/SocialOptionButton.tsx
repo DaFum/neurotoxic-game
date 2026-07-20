@@ -1,6 +1,6 @@
 import { memo, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { ActionButton } from '../../ui/shared'
 import { SideEffectsPreview } from './SideEffectsPreview'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
@@ -37,7 +37,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
   const handleClick = useCallback(() => onSelect(opt), [onSelect, opt])
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.1 + index * 0.15 }}
@@ -92,7 +92,7 @@ export const SocialOptionButton = memo(function SocialOptionButton({
         {/* Side Effects Preview */}
         <SideEffectsPreview badges={opt.badges} />
       </ActionButton>
-    </motion.div>
+    </m.div>
   )
 })
 

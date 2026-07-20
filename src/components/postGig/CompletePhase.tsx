@@ -1,5 +1,5 @@
 import { formatCurrency } from '../../utils/numberUtils'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'
@@ -54,12 +54,12 @@ export const CompletePhase = ({
           backgroundImage: `url("${resolveGenImageUrl(getOutcomeImagePrompt(), isOnline)}")`
         }}
       />
-      <motion.div
+      <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         className='text-center py-2 sm:py-4 relative z-10 w-full max-w-xl'
       >
-        <motion.h3
+        <m.h3
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: 'spring', stiffness: 200, delay: 0.1 }}
@@ -72,16 +72,16 @@ export const CompletePhase = ({
           {result.success === true
             ? t('ui:postGig.viralHit', { defaultValue: 'VIRAL HIT!' })
             : t('ui:postGig.flop', { defaultValue: 'FLOPOCOLYPSE' })}
-        </motion.h3>
-        <motion.p
+        </m.h3>
+        <m.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.4 }}
           className='mb-4 sm:mb-6 text-ash-gray font-mono max-w-md mx-auto break-words'
         >
           {result.message ?? ''}
-        </motion.p>
-        <motion.div
+        </m.p>
+        <m.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
@@ -99,7 +99,7 @@ export const CompletePhase = ({
               defaultValue: result.platform ?? UNKNOWN_PLATFORM
             })}
           </div>
-        </motion.div>
+        </m.div>
 
         {pedalHarmonyPenalty > 0 ? (
           <div className='mb-4 font-mono text-sm text-blood-red'>
@@ -113,7 +113,7 @@ export const CompletePhase = ({
 
         <SideEffectsSummary result={result} i18n={i18n} t={t} />
 
-        <motion.div
+        <m.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.9 }}
@@ -146,8 +146,8 @@ export const CompletePhase = ({
               ? t('ui:postGig.processing', { defaultValue: 'Processing...' })
               : t('ui:postGig.backToTour', { defaultValue: 'Back to Tour >' })}
           </ActionButton>
-        </motion.div>
-      </motion.div>
+        </m.div>
+      </m.div>
     </div>
   )
 }

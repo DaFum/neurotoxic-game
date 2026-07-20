@@ -1,5 +1,5 @@
 import { memo, useCallback, useMemo } from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { Tooltip } from '../../ui/shared/Tooltip'
@@ -154,7 +154,7 @@ export const SetlistBlock = ({
   }, [densityBars])
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
@@ -204,7 +204,7 @@ export const SetlistBlock = ({
             </div>
             <div className='flex min-h-0 flex-1 items-end justify-between gap-1'>
               {densityBars.map((bar, i) => (
-                <motion.div
+                <m.div
                   key={`setlist-${bar.timestamp}`}
                   initial={{ height: 0 }}
                   animate={{ height: `${Math.max(8, bar.intensity * 100)}%` }}
@@ -214,7 +214,7 @@ export const SetlistBlock = ({
                   <div className='absolute -top-4 left-0 text-xs w-full text-center opacity-0 group-hover:opacity-100 transition-opacity text-star-white tabular-nums'>
                     {bar.count}
                   </div>
-                </motion.div>
+                </m.div>
               ))}
             </div>
           </>
@@ -224,6 +224,6 @@ export const SetlistBlock = ({
           </div>
         )}
       </div>
-    </motion.div>
+    </m.div>
   )
 }

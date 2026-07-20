@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 import { ActionButton } from '../../ui/shared'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -18,7 +18,7 @@ type PreGigStartButtonProps = {
 export const PreGigStartButton = React.memo(
   ({ t, isStarting, isSetlistEmpty, onStartShow }: PreGigStartButtonProps) => {
     return (
-      <motion.div
+      <m.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.5 }}
@@ -32,7 +32,7 @@ export const PreGigStartButton = React.memo(
           {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
           {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
         </ActionButton>
-      </motion.div>
+      </m.div>
     )
   }
 )

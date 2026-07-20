@@ -1,4 +1,4 @@
-import { motion, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
 import { useTutorial } from '../hooks/useTutorial'
 
 const getStepColorClass = (stepId: number, currentStep: number): string => {
@@ -26,7 +26,7 @@ export const TutorialManager = () => {
   return (
     <AnimatePresence>
       {hasContent && (
-        <motion.div
+        <m.div
           key={step}
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -81,7 +81,7 @@ export const TutorialManager = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+        </m.div>
       )}
     </AnimatePresence>
   )

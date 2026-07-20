@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 /**
  * Vitest tests for the NetResult component.
  *
@@ -13,15 +14,7 @@ import { NetResult } from '../../src/components/postGig/NetResult'
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
-vi.mock('motion/react', () => ({
-  motion: {
-    div: ({ children, className, ...rest }) => (
-      <div className={className} {...rest}>
-        {children}
-      </div>
-    )
-  }
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 
 // ---------------------------------------------------------------------------
 // Helpers

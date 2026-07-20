@@ -1,3 +1,4 @@
+import { createMotionReactMock } from '../mocks/motionMock'
 import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
@@ -8,19 +9,7 @@ import path from 'node:path'
 // Mocks
 
 // Mock motion/react
-vi.mock('motion/react', () => ({
-  motion: {
-    div: ({ children, ...props }) =>
-      React.createElement('div', props, children),
-    button: ({ children, ...props }) =>
-      React.createElement(
-        'button',
-        { ...props, type: props.type || 'button' },
-        children
-      )
-  },
-  AnimatePresence: ({ children }) => children
-}))
+vi.mock('motion/react', () => createMotionReactMock())
 // Mock audioManager
 vi.mock('../../src/utils/audio/AudioManager', () => ({
   audioManager: {

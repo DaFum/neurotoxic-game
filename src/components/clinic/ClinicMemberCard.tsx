@@ -1,4 +1,4 @@
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -52,7 +52,7 @@ export const ClinicMemberCard = ({
     : null
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: 1, y: 0 }}
       className='border border-toxic-green/30 bg-shadow-black/50 p-4 flex flex-col gap-4'
@@ -189,6 +189,6 @@ export const ClinicMemberCard = ({
         }
         cost={CLINIC_GRAFT_COST}
       />
-    </motion.div>
+    </m.div>
   )
 }

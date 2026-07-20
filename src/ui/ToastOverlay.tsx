@@ -1,5 +1,5 @@
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { motion, AnimatePresence } from 'motion/react'
+import { m, AnimatePresence } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'
@@ -73,7 +73,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
   }, [toast.id, removeToast])
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -12, scale: 0.98 }}
@@ -96,7 +96,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
         </p>
       </div>
       <div className={`h-0.5 w-full ${style.border} border-t`} />
-    </motion.div>
+    </m.div>
   )
 })
 ToastItem.displayName = 'ToastItem'

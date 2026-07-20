@@ -1,5 +1,5 @@
 import React from 'react'
-import { motion } from 'motion/react'
+import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import {
   formatCurrency,
@@ -24,7 +24,7 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
   }
 
   return (
-    <motion.div
+    <m.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: 0.8, type: 'spring' }}
@@ -43,7 +43,7 @@ export const NetResult = React.memo(({ net }: NetResultProps) => {
       >
         {getNetString()}
       </div>
-    </motion.div>
+    </m.div>
   )
 })
 
