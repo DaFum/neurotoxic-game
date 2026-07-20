@@ -29,6 +29,9 @@ import {
   finiteNumberOr,
   clampNonNegative,
   clampVanFuel,
+  clampControversyLevel,
+  clampLoyalty,
+  clampZealotry,
   clampRelationship,
   calculateFameLevel,
   clampPlayerFame,
@@ -1156,13 +1159,19 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     'youtube',
     'newsletter',
     'viral',
-    'controversyLevel',
-    'loyalty',
-    'zealotry',
     'reputationCooldown'
   ] as const) {
     const parsed = finiteOptionalNumber(safeValue[key])
     if (parsed !== undefined) sanitized[key] = parsed
+  }
+
+  for (const [key, clampFn] of [
+    ['controversyLevel', clampControversyLevel],
+    ['loyalty', clampLoyalty],
+    ['zealotry', clampZealotry]
+  ] as const) {
+    const parsed = finiteOptionalNumber(safeValue[key])
+    if (parsed !== undefined) sanitized[key] = clampFn(parsed)
   }
 
   for (const key of [
