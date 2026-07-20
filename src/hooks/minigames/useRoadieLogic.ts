@@ -87,18 +87,14 @@ function processTraffic(
 }
 
 function getInitialGameState(stashItemId: string | null): RoadieLogicState {
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.filter with procedural push.
-  // Why: Avoids intermediate array allocation for the items to deliver payload.
-  // Impact: Reduces garbage collection overhead during roadie minigame initialization.
-  const itemsToDeliver: RoadieCarryingItem[] = []
-  if (stashItemId !== null) {
-    itemsToDeliver.push({ id: stashItemId, type: 'CONTRABAND', weight: 1.5 })
-  }
-  itemsToDeliver.push(
+  const itemsToDeliver = [
+    stashItemId !== null
+      ? { id: stashItemId, type: 'CONTRABAND', weight: 1.5 }
+      : null,
     { id: 'amp', type: 'AMP', weight: 2 },
     { id: 'drums', type: 'DRUMS', weight: 1.5 },
     { id: 'guitar', type: 'GUITAR', weight: 1 }
-  )
+  ].filter((item): item is RoadieCarryingItem => item !== null)
 
   const carrying = itemsToDeliver.shift() ?? null
 
