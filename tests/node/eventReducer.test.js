@@ -21,7 +21,7 @@ describe('eventReducer', () => {
 
   beforeEach(() => {
     checkTraitUnlocksMock.mock.resetCalls()
-    baseState = {
+    baseState = /** @type {import('../../src/types').GameState} */ ({
       activeEvent: null,
       band: {
         harmony: 50,
@@ -33,7 +33,7 @@ describe('eventReducer', () => {
       toasts: [],
       inventory: {},
       activeStoryFlags: []
-    }
+    })
   })
 
   describe('handleSetActiveEvent', () => {
