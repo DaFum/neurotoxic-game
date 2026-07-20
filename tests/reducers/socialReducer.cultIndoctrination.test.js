@@ -60,4 +60,29 @@ describe('socialReducer: handleCultIndoctrination', () => {
     assert.strictEqual(nextState.social.controversyLevel, 60)
     assert.strictEqual(nextState.social.lastCultIndoctrinationDay, 5)
   })
+
+  it('breaks active brand deals if controversy crosses DEAL_BREAK_CONTROVERSY (85)', () => {
+    baseState.social.controversyLevel = 50
+    baseState.social.activeDeals = [
+      { id: 'test_deal_1', alignment: 'punk', remainingGigs: 3 }
+    ]
+    baseState.social.brandReputation = { punk: 100 }
+
+    const payload = {
+      cost: 1000,
+      fameGain: 500,
+      zealotryGain: 40,
+      controversyGain: 50, // Pushes controversy from 50 to 100 (crosses 85 threshold)
+      harmonyCost: 30
+    }
+    const nextState = handleCultIndoctrination(baseState, payload)
+
+    assert.strictEqual(nextState.social.controversyLevel, 100)
+    assert.strictEqual(nextState.social.activeDeals.length, 0)
+    assert.strictEqual(nextState.social.brandReputation.punk, 90) // 100 - DEAL_BREAK_TRUST_PENALTY (10)
+
+    // Check that toast was added
+    const toast = nextState.toasts.find((t) => t.messageKey === 'ui:toast.dealsBroken')
+    assert.ok(toast)
+  })
 })

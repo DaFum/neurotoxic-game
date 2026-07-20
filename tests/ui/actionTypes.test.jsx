@@ -81,4 +81,21 @@ describe('ActionTypes', () => {
     // Also check that there are no extra unexpected types
     expect(Object.keys(ActionTypes).length).toBe(expectedTypes.length)
   })
+
+  it('GameAction union types are properly synced with ActionTypes', () => {
+    // Type-level assertion: will fail to compile (CheckJS / strict TS)
+    // if CULT_INDOCTRINATION is missing from GameAction in game.d.ts.
+    /** @type {Extract<import('../../src/types').GameAction, { type: typeof ActionTypes.CULT_INDOCTRINATION }>} */
+    const _actionTypeCheck = {
+      type: ActionTypes.CULT_INDOCTRINATION,
+      payload: {
+        cost: 1000,
+        fameGain: 500,
+        zealotryGain: 40,
+        controversyGain: 50,
+        harmonyCost: 30
+      }
+    }
+    expect(true).toBe(true)
+  })
 })

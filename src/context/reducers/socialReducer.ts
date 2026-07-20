@@ -317,17 +317,29 @@ export const handleUpdateSocial = (
     )
   }
 
-  // Sponsors abandon a band that becomes too toxic. When this update pushes
-  // controversy across the break threshold, every active brand deal collapses
-  // and reports as failed. Crossing-only so deals added at high controversy by
-  // other flows are not retroactively voided.
-  const prevControversy = clampControversyLevel(
+  return breakDealsIfControversyCrossed(
+    nextState,
     finiteNumberOr(state.social.controversyLevel, 0)
   )
+}
+
+/**
+ * Checks if controversy crossed the deal-breaking threshold and voids active deals if so.
+ *
+ * @param nextState - The updated state after controversy was changed.
+ * @param previousControversyRaw - The raw controversy level before the update.
+ * @returns State with broken deals and quest events if crossed, otherwise unchanged nextState.
+ */
+const breakDealsIfControversyCrossed = (
+  nextState: GameState,
+  previousControversyRaw: number
+): GameState => {
+  const prevControversy = clampControversyLevel(previousControversyRaw)
   const nextControversy = clampControversyLevel(
     finiteNumberOr(nextState.social.controversyLevel, 0)
   )
   const activeDeals = nextState.social.activeDeals
+
   if (
     prevControversy < DEAL_BREAK_CONTROVERSY &&
     nextControversy >= DEAL_BREAK_CONTROVERSY &&
@@ -335,7 +347,6 @@ export const handleUpdateSocial = (
     activeDeals.length > 0
   ) {
     const brokenDeals = activeDeals
-    // Burned trust: each broken deal drags down the brand's reputation.
     const nextBrandReputation = { ...(nextState.social.brandReputation || {}) }
     for (const deal of brokenDeals) {
       const alignment =
@@ -350,7 +361,8 @@ export const handleUpdateSocial = (
         )
       }
     }
-    nextState = {
+
+    let stateWithBrokenDeals: GameState = {
       ...nextState,
       social: {
         ...nextState.social,
@@ -360,13 +372,13 @@ export const handleUpdateSocial = (
       toasts: [
         ...(nextState.toasts || []),
         {
-          // Deterministic id keeps the reducer pure (no RNG in reducers).
           id: buildDeterministicToastId('deals-broken-toast', nextState.toasts),
           messageKey: 'ui:toast.dealsBroken',
           type: 'error'
         }
       ]
     }
+
     for (const deal of brokenDeals) {
       const dealId =
         deal && typeof deal === 'object' && typeof deal.id === 'string'
@@ -376,13 +388,13 @@ export const handleUpdateSocial = (
         deal && typeof deal === 'object' && typeof deal.alignment === 'string'
           ? deal.alignment
           : undefined
-      nextState = QuestEvents.emit(
-        nextState,
+      stateWithBrokenDeals = QuestEvents.emit(
+        stateWithBrokenDeals,
         createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })
       )
       if (alignment) {
-        nextState = QuestEvents.emit(
-          nextState,
+        stateWithBrokenDeals = QuestEvents.emit(
+          stateWithBrokenDeals,
           createBrandTrustChangedQuestEvent({
             brandId: alignment,
             amount: -DEAL_BREAK_TRUST_PENALTY
@@ -390,8 +402,8 @@ export const handleUpdateSocial = (
         )
       }
     }
+    return stateWithBrokenDeals
   }
-
   return nextState
 }
 
@@ -605,7 +617,7 @@ export const handleMerchPress = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
-  return nextState
+  return breakDealsIfControversyCrossed(nextState, currentControversy)
 }
 
 type ZealotryDayField = 'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
@@ -700,7 +712,7 @@ const applyZealotryAction = (
     cost: formatCurrency(nextMoney - currentMoney, i18n.language, 'always')
   })
 
-  return nextState
+  return breakDealsIfControversyCrossed(nextState, currentControversy)
 }
 
 /**
