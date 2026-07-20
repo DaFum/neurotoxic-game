@@ -17,7 +17,7 @@ export const checkHasIndoctrinatedToday = (
   social: Partial<SocialState> | undefined | null,
   currentDay: number | undefined
 ) => {
-  if (currentDay === undefined || social?.lastCultIndoctrinationDay == null) {
+  if (currentDay === undefined || !social || social.lastCultIndoctrinationDay == null) {
     return false
   }
   return social.lastCultIndoctrinationDay === currentDay
