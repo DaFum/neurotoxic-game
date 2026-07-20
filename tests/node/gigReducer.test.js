@@ -15,6 +15,7 @@ import {
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 
 describe('gigReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {

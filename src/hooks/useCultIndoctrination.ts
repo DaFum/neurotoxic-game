@@ -9,14 +9,14 @@ import {
 import { logger } from '../utils/logger'
 
 /** Tuning values for the cult indoctrination social action. */
-export const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
+export const CULT_INDOCTRINATION_CONFIG = {
   COST: 1000,
   FAME_GAIN: 500,
   ZEALOTRY_GAIN: 40,
   CONTROVERSY_GAIN: 50,
   HARMONY_COST: 30,
   REQUIRED_ZEALOTRY: 50
-}
+} as const satisfies CultIndoctrinationConfig
 
 /**
  * Coordinates cult indoctrination modal state, validation, and dispatch.
@@ -34,22 +34,7 @@ export const useCultIndoctrination = () => {
   const closeCultIndoctrination = useCallback(() => setShowCultIndoctrination(false), [])
 
   const hasIndoctrinatedToday = checkHasIndoctrinatedToday(social, player.day)
-  let canIndoctrinate = false
-  try {
-    canIndoctrinate = validateCultIndoctrination(social, player, band, CULT_INDOCTRINATION_CONFIG)
-  } catch (error) {
-    logger.error(
-      'CultIndoctrination',
-      'validateCultIndoctrination failed while deriving canIndoctrinate',
-      {
-        error,
-        social,
-        playerDay: player.day,
-        config: CULT_INDOCTRINATION_CONFIG
-      }
-    )
-    canIndoctrinate = false
-  }
+  const canIndoctrinate = validateCultIndoctrination(social, player, band, CULT_INDOCTRINATION_CONFIG)
 
   const triggerIndoctrination = useCallback(() => {
     if (!canIndoctrinate || checkHasIndoctrinatedToday(social, player.day)) return

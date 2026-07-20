@@ -16,6 +16,7 @@ const { handleSetActiveEvent, handleApplyEventDelta } =
   await import('../../src/context/reducers/eventReducer')
 
 describe('eventReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {

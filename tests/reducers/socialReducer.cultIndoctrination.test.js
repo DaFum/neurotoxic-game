@@ -4,6 +4,7 @@ import { createInitialState } from '../../src/context/initialState'
 import assert from 'node:assert/strict'
 
 describe('socialReducer: handleCultIndoctrination', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {

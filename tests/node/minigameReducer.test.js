@@ -45,6 +45,7 @@ function withActiveMinigame(state, type) {
 }
 
 describe('minigameReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {

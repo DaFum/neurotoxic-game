@@ -285,6 +285,7 @@ const validateSocial = (social: unknown): void => {
     }
     if (key === 'lastPirateBroadcastDay' && val === null) continue
     if (key === 'lastDarkWebLeakDay' && val === null) continue
+    if (key === 'lastCultIndoctrinationDay' && val === null) continue
     if (key === 'egoFocus' && (val === null || typeof val === 'string'))
       continue
 

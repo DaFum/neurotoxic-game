@@ -4,7 +4,7 @@ import type {
   BandState,
   CultIndoctrinationConfig
 } from '../types'
-import { isFiniteNumber } from './finiteNumber'
+import { isFiniteNumber } from './gameState'
 
 /**
  * Checks whether a cult indoctrination has already run on the current day.
@@ -17,7 +17,10 @@ export const checkHasIndoctrinatedToday = (
   social: Partial<SocialState> | undefined | null,
   currentDay: number | undefined
 ) => {
-  return social?.lastCultIndoctrinationDay === currentDay
+  if (currentDay === undefined || social?.lastCultIndoctrinationDay == null) {
+    return false
+  }
+  return social.lastCultIndoctrinationDay === currentDay
 }
 
 /**

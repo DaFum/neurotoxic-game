@@ -8,6 +8,7 @@ import {
 } from '../../src/context/reducers/bandReducer'
 
 describe('bandReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {
