@@ -6,7 +6,6 @@ import {
   checkHasIndoctrinatedToday,
   validateCultIndoctrination
 } from '../utils/cultIndoctrinationUtils'
-import { logger } from '../utils/logger'
 
 /** Tuning values for the cult indoctrination social action. */
 export const CULT_INDOCTRINATION_CONFIG = {
