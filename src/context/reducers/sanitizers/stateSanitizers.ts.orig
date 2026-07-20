@@ -1171,7 +1171,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     ['zealotry', clampZealotry]
   ] as const) {
     const parsed = finiteOptionalNumber(safeValue[key])
-    if (parsed !== undefined) sanitized[key] = clampFn(parsed)
+    if (parsed !== undefined) sanitized[key] = clampFn(parsed as number)
   }
 
   for (const key of [
