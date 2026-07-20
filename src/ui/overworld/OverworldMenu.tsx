@@ -17,6 +17,7 @@ interface OverworldMenuProps {
   openBloodBank: () => void
   openClinic: () => void
   openDarkWebLeak: () => void
+  openCultIndoctrination: () => void
   openHQ: () => void
   openAssets: () => void
   handleRefuel: () => void
@@ -35,6 +36,7 @@ type MenuAction =
   | 'openBloodBank'
   | 'openClinic'
   | 'openDarkWebLeak'
+  | 'openCultIndoctrination'
   | 'handleRefuel'
   | 'handleRepair'
   | 'handleRestInVan'
@@ -302,6 +304,17 @@ const useMenuCategories = (
             icon: '🕸',
             v: 'd',
             action: 'openDarkWebLeak'
+          },
+          {
+            label: t('ui:cult_indoctrination.button', {
+              defaultValue: 'CULT INDOCTRINATION'
+            }),
+            desc: t('ui:menu.cult_desc', {
+              defaultValue: 'Indoctrinate followers'
+            }),
+            icon: '👁',
+            v: 'p',
+            action: 'openCultIndoctrination'
           }
         ]
       },
@@ -402,6 +415,7 @@ export const OverworldMenu = React.memo(
     openBloodBank,
     openClinic,
     openDarkWebLeak,
+    openCultIndoctrination,
     openHQ,
     openAssets,
     handleRefuel,
@@ -447,6 +461,7 @@ export const OverworldMenu = React.memo(
           openPirateRadio,
           openMerchPress,
           openDarkWebLeak,
+          openCultIndoctrination,
           openBloodBank,
           openClinic,
           handleRefuel,
@@ -463,6 +478,7 @@ export const OverworldMenu = React.memo(
         openBloodBank,
         openClinic,
         openDarkWebLeak,
+        openCultIndoctrination,
         openHQ,
         openMerchPress,
         openPirateRadio,

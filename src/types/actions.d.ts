@@ -37,6 +37,31 @@ export interface DarkWebLeakConfig {
   REQUIRED_CONTROVERSY: number
 }
 
+
+/**
+ * Tuning values for the cult indoctrination action.
+ */
+export interface CultIndoctrinationConfig {
+  COST: number
+  FAME_GAIN: number
+  ZEALOTRY_GAIN: number
+  CONTROVERSY_GAIN: number
+  HARMONY_COST: number
+  REQUIRED_ZEALOTRY: number
+}
+
+/**
+ * Reducer payload for resolving a cult indoctrination.
+ */
+export interface CultIndoctrinationPayload {
+  cost: number
+  fameGain: number
+  zealotryGain: number
+  controversyGain: number
+  harmonyCost: number
+  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
+}
+
 /**
  * Reducer payload for resolving a dark-web leak.
  */

@@ -1178,7 +1178,8 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     'lastGigDay',
     'lastGigDifficulty',
     'lastPirateBroadcastDay',
-    'lastDarkWebLeakDay'
+    'lastDarkWebLeakDay',
+    'lastCultIndoctrinationDay'
   ] as const) {
     const raw = safeValue[key]
     if (raw === null) {

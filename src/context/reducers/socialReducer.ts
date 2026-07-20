@@ -5,7 +5,8 @@ import type {
   SocialState,
   MerchPressPayload,
   PirateBroadcastPayload,
-  DarkWebLeakPayload
+  DarkWebLeakPayload,
+  CultIndoctrinationPayload,
 } from '../../types'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
@@ -607,11 +608,11 @@ export const handleMerchPress = (
   return nextState
 }
 
-type ZealotryDayField = 'lastPirateBroadcastDay' | 'lastDarkWebLeakDay'
+type ZealotryDayField = 'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
 
 const applyZealotryAction = (
   state: GameState,
-  payload: PirateBroadcastPayload | DarkWebLeakPayload | null | undefined,
+  payload: PirateBroadcastPayload | DarkWebLeakPayload | CultIndoctrinationPayload | null | undefined,
   dayField: ZealotryDayField,
   options: {
     optionalGainFields: boolean
@@ -737,4 +738,24 @@ export const handleDarkWebLeak = (
     insufficientLogMessage: 'Insufficient funds or harmony for dark web leak',
     invalidLogMessage: 'Invalid dark web leak payload',
     invalidPayloadShapeLogMessage: 'Invalid payload for DARK_WEB_LEAK'
+  })
+
+
+/**
+ * Applies the once-per-day cult indoctrination social action.
+ *
+ * @param state - Current game state before the indoctrination.
+ * @param payload - Required cost and gains, harmony cost, and optional success toast.
+ * @returns Updated state with zealotry-style deltas, or the original state when validation or cooldown checks fail.
+ */
+export const handleCultIndoctrination = (
+  state: GameState,
+  payload: CultIndoctrinationPayload | null | undefined
+): GameState =>
+  applyZealotryAction(state, payload, 'lastCultIndoctrinationDay', {
+    optionalGainFields: false,
+    duplicateLogMessage: 'Cult indoctrination already triggered today',
+    insufficientLogMessage: 'Insufficient funds or harmony for cult indoctrination',
+    invalidLogMessage: 'Invalid cult indoctrination payload',
+    invalidPayloadShapeLogMessage: 'Invalid payload for CULT_INDOCTRINATION'
   })

@@ -6,6 +6,7 @@ import { PirateRadioModal } from '../../ui/PirateRadioModal'
 import { MerchPressModal } from '../../ui/MerchPressModal'
 import { BloodBankModal } from '../../ui/BloodBankModal'
 import { DarkWebLeakModal } from '../../ui/DarkWebLeakModal'
+import { CultIndoctrinationModal } from '../../ui/CultIndoctrinationModal'
 import { SupplyStopModal } from '../../ui/SupplyStopModal'
 import { useOverworldModals } from '../../hooks/overworld/useOverworldModals'
 
@@ -55,6 +56,14 @@ export const OverworldModals = React.memo(
         hasLeakedToday,
         DARK_WEB_LEAK_CONFIG
       },
+      cultIndoctrination: {
+        showCultIndoctrination,
+        closeCultIndoctrination,
+        triggerIndoctrination,
+        canIndoctrinate,
+        hasIndoctrinatedToday,
+        CULT_INDOCTRINATION_CONFIG
+      },
       supplyStop: { showSupplyStop, supplyStopInventory, closeSupplyStop }
     } = modals
 
@@ -99,6 +108,15 @@ export const OverworldModals = React.memo(
             config={DARK_WEB_LEAK_CONFIG}
           />
         )}
+        {showCultIndoctrination && (
+          <CultIndoctrinationModal
+            onCancel={closeCultIndoctrination}
+            onConfirm={triggerIndoctrination}
+            canIndoctrinate={canIndoctrinate}
+            hasIndoctrinatedToday={hasIndoctrinatedToday}
+            config={CULT_INDOCTRINATION_CONFIG}
+          />
+        )}
         {showSupplyStop && supplyStopInventory && (
           <SupplyStopModal
             inventory={supplyStopInventory}
@@ -119,6 +137,7 @@ export const OverworldModals = React.memo(
       p.merchPress.showMerchPress === n.merchPress.showMerchPress &&
       p.bloodBank.showBloodBank === n.bloodBank.showBloodBank &&
       p.darkWebLeak.showDarkWebLeak === n.darkWebLeak.showDarkWebLeak &&
+      p.cultIndoctrination.showCultIndoctrination === n.cultIndoctrination.showCultIndoctrination &&
       p.supplyStop.showSupplyStop === n.supplyStop.showSupplyStop &&
       p.quests.questsProps === n.quests.questsProps &&
       p.stash.stashProps === n.stash.stashProps &&
@@ -130,6 +149,8 @@ export const OverworldModals = React.memo(
       p.bloodBank.canDonateMarrow === n.bloodBank.canDonateMarrow &&
       p.darkWebLeak.canLeak === n.darkWebLeak.canLeak &&
       p.darkWebLeak.hasLeakedToday === n.darkWebLeak.hasLeakedToday &&
+      p.cultIndoctrination.canIndoctrinate === n.cultIndoctrination.canIndoctrinate &&
+      p.cultIndoctrination.hasIndoctrinatedToday === n.cultIndoctrination.hasIndoctrinatedToday &&
       p.merchPress.config === n.merchPress.config &&
       p.merchPress.triggerPress === n.merchPress.triggerPress &&
       p.bloodBank.config === n.bloodBank.config &&
@@ -138,6 +159,9 @@ export const OverworldModals = React.memo(
       p.darkWebLeak.DARK_WEB_LEAK_CONFIG ===
         n.darkWebLeak.DARK_WEB_LEAK_CONFIG &&
       p.darkWebLeak.triggerLeak === n.darkWebLeak.triggerLeak &&
+      p.cultIndoctrination.CULT_INDOCTRINATION_CONFIG ===
+        n.cultIndoctrination.CULT_INDOCTRINATION_CONFIG &&
+      p.cultIndoctrination.triggerIndoctrination === n.cultIndoctrination.triggerIndoctrination &&
       p.pirateRadio.PIRATE_RADIO_CONFIG === n.pirateRadio.PIRATE_RADIO_CONFIG &&
       p.pirateRadio.triggerBroadcast === n.pirateRadio.triggerBroadcast &&
       p.hq.closeHQ === n.hq.closeHQ &&
@@ -145,6 +169,7 @@ export const OverworldModals = React.memo(
       p.merchPress.closeMerchPress === n.merchPress.closeMerchPress &&
       p.bloodBank.closeBloodBank === n.bloodBank.closeBloodBank &&
       p.darkWebLeak.closeDarkWebLeak === n.darkWebLeak.closeDarkWebLeak &&
+      p.cultIndoctrination.closeCultIndoctrination === n.cultIndoctrination.closeCultIndoctrination &&
       p.supplyStop.closeSupplyStop === n.supplyStop.closeSupplyStop
     )
   }

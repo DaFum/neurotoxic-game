@@ -121,3 +121,16 @@ After travel, the band can acquire an item with special effects to use.
   src/data/contraband.ts: Added occult consumables (`c_bone_dust`, `c_grimoire_page`, `c_void_ash`) and cursed equipment (`c_cursed_setlist`, `c_blood_pick`, `c_abyssal_pendant`).
   src/data/craftingRecipes.ts: Added new crafting recipes (`recipe_cursed_setlist`, `recipe_blood_pick`) enabling the combination of these new artifacts.
   src/utils/contrabandEffects.ts: Expanded `EQUIPMENT_APPLY_ON_ADD_EFFECTS` and the effect application logic to properly handle `stress` and other new effects on the band state when equipping cursed items.
+
+## 2026-06-21 - CULT INDOCTRINATION
+
+**Feature:** Cult Indoctrination (Overworld Side Hustle)
+
+**Description:**
+- Lore Integration:
+  As the band's zealotry grows, they need a place to house their most fanatic followers. The "Cult Indoctrination" overworld action allows the player to invest funds and use up harmony/stamina to indoctrinate followers, generating a massive burst of zealotry, controversy, and fame.
+- State Impact:
+  `actionTypes.ts`: Added `CULT_INDOCTRINATION`.
+  `socialReducer.ts`: Added `handleCultIndoctrination`, mapping it to the `applyZealotryAction` architecture.
+  `social.d.ts`: Expanded `SocialState` with `lastCultIndoctrinationDay`.
+  `CultIndoctrinationModal.tsx`: Brutalist UI component added to the `hustles` section in the Overworld, complete with daily locks.

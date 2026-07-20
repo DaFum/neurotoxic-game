@@ -49,6 +49,8 @@ import type {
   UpdatePlayerPayload,
   SocialState,
   DarkWebLeakPayload,
+  CultIndoctrinationPayload,
+
   PurchaseItem
 } from '../types'
 import type { AssetKind, RiskEventDescriptor } from '../types/assets'
@@ -1233,4 +1235,29 @@ export const graftNeuroOverclock = (
 ): Extract<GameAction, { type: typeof ActionTypes.GRAFT_NEURO_OVERCLOCK }> => ({
   type: ActionTypes.GRAFT_NEURO_OVERCLOCK,
   payload: { memberId }
+})
+
+/**
+ * Creates an action to trigger a cult indoctrination.
+ *
+ * @param payload - Indoctrination cost and reward deltas. Numeric economy/social fields
+ * are normalized as non-negative values before dispatch.
+ * - `payload.cost` - Money cost.
+ * - `payload.fameGain` - Fame gained.
+ * - `payload.zealotryGain` - Zealotry gained.
+ * - `payload.controversyGain` - Controversy gained.
+ * - `payload.harmonyCost` - Band harmony lost.
+ * - `payload.successToast` - Optional. Toast object appended to state on success.
+ */
+export const createCultIndoctrinationAction = (
+  payload: CultIndoctrinationPayload
+): Extract<GameAction, { type: typeof ActionTypes.CULT_INDOCTRINATION }> => ({
+  type: ActionTypes.CULT_INDOCTRINATION,
+  payload: sanitizeNonNegativePayload(payload, [
+    'cost',
+    'fameGain',
+    'zealotryGain',
+    'controversyGain',
+    'harmonyCost'
+  ])
 })

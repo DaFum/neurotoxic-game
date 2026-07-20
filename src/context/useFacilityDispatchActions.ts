@@ -9,6 +9,7 @@ import {
   createClinicEnhanceAction,
   createPirateBroadcastAction,
   createDarkWebLeakAction,
+  createCultIndoctrinationAction,
   createMerchPressAction,
   createTradeVoidItemAction,
   createBloodBankDonateAction
@@ -33,6 +34,7 @@ export interface FacilityDispatchActions {
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
   darkWebLeak: (payload: Parameters<typeof createDarkWebLeakAction>[0]) => void
+  cultIndoctrination: (payload: Parameters<typeof createCultIndoctrinationAction>[0]) => void
   pirateBroadcast: (
     payload: Parameters<typeof createPirateBroadcastAction>[0]
   ) => void
@@ -105,6 +107,13 @@ export function useFacilityDispatchActions(
     [dispatch]
   )
 
+  const cultIndoctrination = useCallback(
+    (payload: Parameters<typeof createCultIndoctrinationAction>[0]) =>
+      dispatch(createCultIndoctrinationAction(payload)),
+    [dispatch]
+  )
+
+
   const merchPress = useCallback(
     (payload: Parameters<typeof createMerchPressAction>[0]) =>
       dispatch(createMerchPressAction(payload)),
@@ -133,6 +142,7 @@ export function useFacilityDispatchActions(
       clinicEnhance,
       pirateBroadcast,
       darkWebLeak,
+      cultIndoctrination,
       merchPress,
       tradeVoidItem,
       bloodBankDonate
@@ -146,6 +156,7 @@ export function useFacilityDispatchActions(
       clinicEnhance,
       pirateBroadcast,
       darkWebLeak,
+      cultIndoctrination,
       merchPress,
       tradeVoidItem,
       bloodBankDonate
