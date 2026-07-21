@@ -174,3 +174,8 @@
 
 **Learning:** Found that an accessible button missing an aria-label can make screen reader navigation confusing, especially if it relies on visually hidden or styled text like Deadman buttons.
 **Action:** Always verify that interactive components with complex state texts have an explicit `aria-label` conveying instructions (e.g. `HOLD TO OVERRIDE`).
+
+## 2024-05-24 - Deadman Button Focus Rings
+
+**Learning:** Found that custom interactive components like `DeadmanButton`, despite having custom active states (`isHolding`), lack native explicit focus styles. This makes them invisible to keyboard-only navigation users who rely on tab navigation to find critical destructive actions.
+**Action:** Always ensure that interactive components mimicking button behaviors explicitly include focus-visible utility classes (e.g. `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to support keyboard accessibility without breaking the visual aesthetic.
