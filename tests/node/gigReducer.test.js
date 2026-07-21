@@ -15,10 +15,11 @@ import {
 import { QuestLifecycle } from '../../src/domain/questLifecycle.ts'
 
 describe('gigReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {
-    baseState = {
+    baseState = /** @type {import('../../src/types').GameState} */ ({
       player: {
         stats: { consecutiveBadShows: 0 },
         day: 1,
@@ -41,7 +42,7 @@ describe('gigReducer', () => {
         quest_prove_yourself: { id: 'quest_prove_yourself', progress: 0 },
         quest_ego_management: { id: 'quest_ego_management', completed: false }
       }
-    }
+    })
   })
 
   describe('handleSetGig', () => {

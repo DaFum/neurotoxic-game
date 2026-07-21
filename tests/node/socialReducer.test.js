@@ -12,6 +12,7 @@ import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
 import { formatCurrency } from '../../src/utils/numberUtils'
 
 describe('socialReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {

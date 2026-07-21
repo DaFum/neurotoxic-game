@@ -16,11 +16,12 @@ const { handleSetActiveEvent, handleApplyEventDelta } =
   await import('../../src/context/reducers/eventReducer')
 
 describe('eventReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {
     checkTraitUnlocksMock.mock.resetCalls()
-    baseState = {
+    baseState = /** @type {import('../../src/types').GameState} */ ({
       activeEvent: null,
       band: {
         harmony: 50,
@@ -32,7 +33,7 @@ describe('eventReducer', () => {
       toasts: [],
       inventory: {},
       activeStoryFlags: []
-    }
+    })
   })
 
   describe('handleSetActiveEvent', () => {

@@ -30,7 +30,8 @@ import {
   handleUnblacklistVenue,
   handlePirateBroadcast,
   handleMerchPress,
-  handleDarkWebLeak
+  handleDarkWebLeak,
+  handleCultIndoctrination
 } from './reducers/socialReducer'
 import {
   handleSetGig,
@@ -163,6 +164,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.PIRATE_BROADCAST]: handlePirateBroadcast,
   [ActionTypes.MERCH_PRESS]: handleMerchPress,
   [ActionTypes.DARK_WEB_LEAK]: handleDarkWebLeak,
+  [ActionTypes.CULT_INDOCTRINATION]: handleCultIndoctrination,
   [ActionTypes.UNBLACKLIST_VENUE]: handleUnblacklistVenue,
   [ActionTypes.ADD_QUEST]: handleAddQuest,
   [ActionTypes.ADVANCE_QUEST]: handleAdvanceQuest,

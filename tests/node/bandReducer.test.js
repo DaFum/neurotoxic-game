@@ -8,10 +8,11 @@ import {
 } from '../../src/context/reducers/bandReducer'
 
 describe('bandReducer', () => {
+  /** @type {import('../../src/types').GameState} */
   let baseState
 
   beforeEach(() => {
-    baseState = {
+    baseState = /** @type {import('../../src/types').GameState} */ ({
       band: {
         harmony: 50,
         inventory: {
@@ -21,7 +22,7 @@ describe('bandReducer', () => {
         members: [{ id: 'm1', name: 'Matze', traits: {} }]
       },
       toasts: []
-    }
+    })
   })
 
   describe('handleUpdateBand', () => {
