@@ -223,5 +223,61 @@ export const SPECIAL_EVENTS = [
         outcomeText: 'events:diy_chassis_consequence.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'eerie_hitchhiker',
+    category: 'special',
+    title: 'events:eerie_hitchhiker.title',
+    description: 'events:eerie_hitchhiker.desc',
+    trigger: 'special_location',
+    chance: 0.35,
+    options: [
+      {
+        label: 'events:eerie_hitchhiker.opt1.label',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 7,
+          success: { type: 'stat', stat: 'fame', value: 25 },
+          failure: { type: 'stat', stat: 'mood', value: -15 }
+        },
+        outcomeText: 'events:eerie_hitchhiker.opt1.outcome'
+      },
+      {
+        label: 'events:eerie_hitchhiker.opt2.label',
+        effect: { type: 'stat', stat: 'harmony', value: 2 },
+        outcomeText: 'events:eerie_hitchhiker.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'creepy_motel',
+    category: 'special',
+    title: 'events:creepy_motel.title',
+    description: 'events:creepy_motel.desc',
+    trigger: 'special_location',
+    chance: 0.35,
+    options: [
+      {
+        label: 'events:creepy_motel.opt1.label',
+        skillCheck: {
+          stat: 'luck',
+          threshold: 6,
+          success: { type: 'stat', stat: 'mood', value: 20 },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: -20 },
+              { type: 'resource', resource: 'money', value: -50 }
+            ]
+          }
+        },
+        outcomeText: 'events:creepy_motel.opt1.outcome'
+      },
+      {
+        label: 'events:creepy_motel.opt2.label',
+        effect: { type: 'stat', stat: 'mood', value: -5 },
+        outcomeText: 'events:creepy_motel.opt2.outcome'
+      }
+    ]
   }
 ]
