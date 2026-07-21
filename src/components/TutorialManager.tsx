@@ -1,6 +1,13 @@
 import { m, AnimatePresence } from 'motion/react'
 import { useTutorial } from '../hooks/useTutorial'
 
+/**
+ * Determines the appropriate Tailwind background color class for a tutorial progress dot.
+ *
+ * @param stepId - The index of the tutorial step represented by the dot
+ * @param currentStep - The current active tutorial step index
+ * @returns The CSS class string for the dot's background color
+ */
 const getStepColorClass = (stepId: number, currentStep: number): string => {
   if (stepId === currentStep) return 'bg-toxic-green'
   if (stepId < currentStep) return 'bg-toxic-green/40'
@@ -9,6 +16,12 @@ const getStepColorClass = (stepId: number, currentStep: number): string => {
 
 /**
  * Coordinates tutorial overlay rendering for the current tutorial step.
+ *
+ * @remarks
+ * Subscribes to the tutorial context to display contextual onboarding
+ * information. The overlay is positioned globally to appear above other UI elements.
+ *
+ * @returns The animated tutorial dialog, or null if the tutorial is hidden or empty
  */
 export const TutorialManager = () => {
   const {
