@@ -237,8 +237,18 @@ export const SPECIAL_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 7,
-          success: { type: 'stat', stat: 'fame', value: 25 },
-          failure: { type: 'stat', stat: 'mood', value: -15 }
+          success: {
+            type: 'stat',
+            stat: 'fame',
+            value: 25,
+            description: 'events:eerie_hitchhiker.opt1.success'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'mood',
+            value: -15,
+            description: 'events:eerie_hitchhiker.opt1.failure'
+          }
         },
         outcomeText: 'events:eerie_hitchhiker.opt1.outcome'
       },
@@ -262,13 +272,19 @@ export const SPECIAL_EVENTS = [
         skillCheck: {
           stat: 'luck',
           threshold: 6,
-          success: { type: 'stat', stat: 'mood', value: 20 },
+          success: {
+            type: 'stat',
+            stat: 'mood',
+            value: 20,
+            description: 'events:creepy_motel.opt1.success'
+          },
           failure: {
             type: 'composite',
             effects: [
               { type: 'stat', stat: 'mood', value: -20 },
               { type: 'resource', resource: 'money', value: -50 }
-            ]
+            ],
+            description: 'events:creepy_motel.opt1.failure'
           }
         },
         outcomeText: 'events:creepy_motel.opt1.outcome'
