@@ -381,9 +381,13 @@ export function usePersistence({
         const mergedUnlocks = Array.from(
           new Set([...persistentUnlocks, ...savedUnlocks])
         )
-        mergedUnlocks.forEach(unlockId => {
-          addUnlock(unlockId)
-        })
+        // ⚡ BOLT OPTIMIZATION: Replaced .forEach() with a procedural loop to avoid callback allocation.
+        // Why: Eliminates closure overhead during game load flow.
+        // Impact: Slightly reduces memory overhead and GC pressure.
+        for (let i = 0; i < mergedUnlocks.length; i++) {
+          const unlockId = mergedUnlocks[i]
+          if (unlockId) addUnlock(unlockId)
+        }
 
         dispatch(
           createLoadGameAction(createRawLoadPayload(parsedObj, mergedUnlocks))
