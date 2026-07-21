@@ -184,7 +184,7 @@
 **Learning:** Replacing array methods like `.filter().length` with procedural `for` loops in cold paths (e.g., action creators triggered by user clicks, like `installModule`) does not produce measurable performance improvements and sacrifices code readability. Code review will reject such optimizations as premature and violating constraints.
 **Action:** Only optimize arrays with procedural loops on highly active hot paths (e.g., game loop ticks, rendering updates, core state reducers) where garbage collection pressure is continuous and measurable.
 
-## 2024-11-20 - Reducing Object.values on Game Loop Ticks
+## 2026-07-21 - Reducing Object.values on Game Loop Ticks
 
 **Learning:** `Object.values(obj)` allocates an array on every invocation. If used inside high-frequency ticking operations (like the daily game tick `processLiabilityTick`), this results in constant intermediate array allocations which causes cumulative Garbage Collection pressure.
 **Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value.

@@ -258,9 +258,9 @@ export function useEventSystem({
       }
       try {
         const resolution = resolveEvent(choice, stateRef.current)
-        // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid closure allocations on the event resolution hot path.
-        // Why: Eliminates intermediate array and callback allocations during state materialization.
-        // Impact: Reduces GC pressure and speeds up event processing.
+        // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid callback-invocation overhead on the event resolution hot path.
+        // Why: Eliminates callback-invocation overhead during state materialization.
+        // Impact: Speeds up event processing slightly by avoiding function calls per element.
         for (let i = 0; i < resolution.actions.length; i++) {
           const action = resolution.actions[i]
           if (action) dispatch(action)
