@@ -577,7 +577,7 @@ export const DeadmanButton = memo(
             }
           }}
           onBlur={stopHold}
-          className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors
+          className={`relative w-full h-14 border-2 overflow-hidden flex items-center justify-center select-none transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
           ${isComplete ? 'border-blood-red bg-blood-red-dark' : 'border-toxic-green bg-void-black hover:border-star-white'}`}
         >
           {/* Progress Fill Background */}
