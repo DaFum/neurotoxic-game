@@ -241,13 +241,13 @@ export const SPECIAL_EVENTS = [
             type: 'stat',
             stat: 'fame',
             value: 25,
-            description: 'events:eerie_hitchhiker.opt1.success'
+            description: 'events:eerie_hitchhiker.opt1.d_success'
           },
           failure: {
             type: 'stat',
             stat: 'mood',
             value: -15,
-            description: 'events:eerie_hitchhiker.opt1.failure'
+            description: 'events:eerie_hitchhiker.opt1.d_failure'
           }
         },
         outcomeText: 'events:eerie_hitchhiker.opt1.outcome'
@@ -276,7 +276,7 @@ export const SPECIAL_EVENTS = [
             type: 'stat',
             stat: 'mood',
             value: 20,
-            description: 'events:creepy_motel.opt1.success'
+            description: 'events:creepy_motel.opt1.d_success'
           },
           failure: {
             type: 'composite',
@@ -284,7 +284,7 @@ export const SPECIAL_EVENTS = [
               { type: 'stat', stat: 'mood', value: -20 },
               { type: 'resource', resource: 'money', value: -50 }
             ],
-            description: 'events:creepy_motel.opt1.failure'
+            description: 'events:creepy_motel.opt1.d_failure'
           }
         },
         outcomeText: 'events:creepy_motel.opt1.outcome'
