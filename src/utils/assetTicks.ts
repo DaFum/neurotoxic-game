@@ -170,7 +170,13 @@ export const processLiabilityTick = (
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
-  for (const liability of Object.values(state.liabilities)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with a for...in loop to avoid allocating an array on every tick.
+  // Why: Eliminates an intermediate array allocation for the liabilities collection.
+  // Impact: Reduces GC pressure during the daily game tick.
+  for (const liabilityId in state.liabilities) {
+    if (!Object.hasOwn(state.liabilities, liabilityId)) continue
+    const liability = state.liabilities[liabilityId]
+    if (!liability) continue
     // Split the payment into interest and principal so the tracked balance
     // matches the amortization model that priced `dailyPayment`
     // (computeAmortization, annualRate / 365). On the final day, charge only
