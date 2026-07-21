@@ -47,3 +47,4 @@
 | 2026-07-17        | src/components/stage/pool/BaseSpritePool.ts              | BaseSpritePool, constructor, setContainer, releaseSpriteToPool, dispose                                                                  |
 | 2026-07-18 | src/components/hud/ToxicHazardTicker.tsx | ToxicHazardTickerProps, ToxicHazardTicker |
 | 2026-07-19 | src/ui/shared/KeyboardShortcuts.tsx | useKeyboardShortcuts, KeyboardShortcutsPanel |
+| 2026-07-21 | src/components/TutorialManager.tsx | getStepColorClass, TutorialManager |
