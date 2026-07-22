@@ -105,9 +105,9 @@ export const EXPENSE_CONSTANTS = {
  * Shared tuning constants for ticket-sales calculations.
  */
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.4,
+  BASE_DRAW_RATIO: 0.37,
   FAME_CAPACITY_SCALER: 10,
-  FAME_FILL_WEIGHT: 0.55
+  FAME_FILL_WEIGHT: 0.15
 }
 
 /**
