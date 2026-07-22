@@ -20,7 +20,10 @@ import {
   eventEngine,
   resolveEventChoice
 } from '../src/utils/eventEngine/index.js'
-import { normalizeTraitMap, applyTraitUnlocks } from '../src/utils/traitUtils.js'
+import {
+  normalizeTraitMap,
+  applyTraitUnlocks
+} from '../src/utils/traitUtils.js'
 import { checkTraitUnlocks } from '../src/utils/unlockCheck.js'
 import {
   calculateAmpCalibrationResult,
@@ -1814,8 +1817,7 @@ const runSingleSimulation = (scenario, seed) => {
       state.band.harmony <= 1 ||
       (state.band.harmony < BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD &&
         rng() <
-          BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE *
-            (1 - tourSuccess))
+          BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE * (1 - tourSuccess))
 
     if (isCancelled) {
       // Show is cancelled due to poor harmony
@@ -2259,9 +2261,7 @@ const summarizeScenario = runs => {
     avgAssetsPurchased: Number((totals.assetsPurchased / count).toFixed(2)),
     avgLoansTaken: Number((totals.loansTaken / count).toFixed(2)),
     avgModulesInstalled: Number((totals.modulesInstalled / count).toFixed(2)),
-    avgCrowdfundsStarted: Number(
-      (totals.crowdfundsStarted / count).toFixed(2)
-    ),
+    avgCrowdfundsStarted: Number((totals.crowdfundsStarted / count).toFixed(2)),
     avgFinalAssets: Number((totals.finalAssets / count).toFixed(2)),
     avgRestStops: Number((totals.restStops / count).toFixed(2)),
     avgClinicSpend: Math.round(totals.clinicSpend / count),

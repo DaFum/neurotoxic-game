@@ -6,7 +6,7 @@ import type {
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
-  CultIndoctrinationPayload,
+  CultIndoctrinationPayload
 } from '../../types'
 import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
@@ -620,11 +620,17 @@ export const handleMerchPress = (
   return breakDealsIfControversyCrossed(nextState, currentControversy)
 }
 
-type ZealotryDayField = 'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
+type ZealotryDayField =
+  'lastPirateBroadcastDay' | 'lastDarkWebLeakDay' | 'lastCultIndoctrinationDay'
 
 const applyZealotryAction = (
   state: GameState,
-  payload: PirateBroadcastPayload | DarkWebLeakPayload | CultIndoctrinationPayload | null | undefined,
+  payload:
+    | PirateBroadcastPayload
+    | DarkWebLeakPayload
+    | CultIndoctrinationPayload
+    | null
+    | undefined,
   dayField: ZealotryDayField,
   options: {
     optionalGainFields: boolean
@@ -752,7 +758,6 @@ export const handleDarkWebLeak = (
     invalidPayloadShapeLogMessage: 'Invalid payload for DARK_WEB_LEAK'
   })
 
-
 /**
  * Applies the once-per-day cult indoctrination social action.
  *
@@ -767,7 +772,8 @@ export const handleCultIndoctrination = (
   applyZealotryAction(state, payload, 'lastCultIndoctrinationDay', {
     optionalGainFields: false,
     duplicateLogMessage: 'Cult indoctrination already triggered today',
-    insufficientLogMessage: 'Insufficient funds or harmony for cult indoctrination',
+    insufficientLogMessage:
+      'Insufficient funds or harmony for cult indoctrination',
     invalidLogMessage: 'Invalid cult indoctrination payload',
     invalidPayloadShapeLogMessage: 'Invalid payload for CULT_INDOCTRINATION'
   })
