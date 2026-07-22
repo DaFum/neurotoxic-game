@@ -66,11 +66,35 @@ class PixiStageController<
       this.toxicFilterManager.isToxicActive = value
     }
   }
+
+  /**
+   * The root Pixi.js container housing all stage visuals.
+   */
   stageContainer: Container | null
+
+  /**
+   * Manages the rendering and animations of the crowd audience.
+   */
   crowdManager: CrowdManager | null
+
+  /**
+   * Manages rhythm lane layouts and lane-specific visuals.
+   */
   laneManager: LaneManager | null
+
+  /**
+   * Spawns and manages transient visual effects (like hit sparks).
+   */
   effectManager: EffectManager | null
+
+  /**
+   * Manages the lifecycle and rendering of rhythm notes scrolling down the lanes.
+   */
   noteManager: NoteManager | null
+
+  /**
+   * Manages global post-processing filters, including the toxic visual effect.
+   */
   toxicFilterManager: ToxicFilterManager | null
 
   /**
@@ -90,7 +114,9 @@ class PixiStageController<
 
   /**
    * Initializes the Pixi application and stage objects.
-   * Called by BaseStageController.init().
+   *
+   * @remarks Called by BaseStageController.init().
+   * @returns A promise that resolves when setup completes.
    */
   async setup() {
     this._initFilters()
@@ -101,6 +127,8 @@ class PixiStageController<
 
   /**
    * Initializes stage container and toxic filters.
+   *
+   * @returns Void.
    */
   _initFilters() {
     this.stageContainer = this.container
@@ -155,6 +183,8 @@ class PixiStageController<
 
   /**
    * Finalizes manager initialization after assets are loaded.
+   *
+   * @returns Void.
    */
   _finalizeInit() {
     if (this.isDisposed) return
@@ -247,6 +277,8 @@ class PixiStageController<
 
   /**
    * Disposes Pixi resources and removes the canvas.
+   *
+   * @returns Void.
    */
   dispose() {
     this.noteManager?.dispose()
