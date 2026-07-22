@@ -291,6 +291,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let fame = state.player.fame
+  const day = state.player.day ?? 0
 
   for (const campaign of state.crowdfundCampaigns) {
     const { kind, flavor, chassisTier } = campaign.assetSpec
@@ -339,7 +340,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
           position: { x: 0, y: 0 },
           installedModuleId: null
         })),
-        acquiredOnDay: 0, // populated from state.player.day below
+        acquiredOnDay: day, // ⚡ BOLT OPTIMIZATION: Stamped directly during creation to avoid .map() reallocation
         acquisitionMode: 'crowdfund',
         baseRiskEventChance: cfgTier.baseRiskEventChance
       })
@@ -349,9 +350,8 @@ export const processCrowdfundTick = (state: GameState): GameState => {
     }
   }
 
-  // Stamp the acquisition day on any newly created assets.
-  const day = state.player.day ?? 0
-  const newAssetsWithDay = newAssets.map(a => ({ ...a, acquiredOnDay: day }))
+  // ⚡ BOLT OPTIMIZATION: Removed .map() loop over newAssets to stamp acquiredOnDay.
+  // Why: Avoids intermediate array allocation and object spreads, reducing GC pressure.
 
   return {
     ...state,
@@ -360,7 +360,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       fame,
       fameLevel: calculateFameLevel(fame)
     },
-    assets: [...(state.assets ?? []), ...newAssetsWithDay],
+    assets: [...(state.assets ?? []), ...newAssets],
     crowdfundCampaigns: remaining
   }
 }
