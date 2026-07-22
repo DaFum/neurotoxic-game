@@ -74,26 +74,34 @@
   letter-spacing: 0;
 }
 
-.assets-hub-panel {
-  border: 2px solid var(--section-accent, var(--color-toxic-green));
+.assets-hub-panel,
+.assets-modal-sheet {
+  --asset-shell-accent-mix: 10%;
+  --asset-shell-stripe-alpha: 5%;
+
   background:
     linear-gradient(
       180deg,
       color-mix(
         in srgb,
-        var(--section-accent, var(--color-toxic-green)) 10%,
+        var(--section-accent, var(--color-toxic-green))
+          var(--asset-shell-accent-mix),
         rgb(var(--color-void-black-rgb) / 96%)
       ),
-      rgb(var(--color-void-black-rgb) / 92%) 38%,
+      var(--asset-shell-mid-stop, rgb(var(--color-void-black-rgb) / 92%) 38%),
       rgb(var(--color-void-black-rgb) / 98%)
     ),
     repeating-linear-gradient(
       90deg,
-      rgb(var(--color-star-white-rgb) / 5%) 0,
-      rgb(var(--color-star-white-rgb) / 5%) 1px,
+      rgb(var(--color-star-white-rgb) / var(--asset-shell-stripe-alpha)) 0,
+      rgb(var(--color-star-white-rgb) / var(--asset-shell-stripe-alpha)) 1px,
       transparent 1px,
       transparent 16px
     );
+}
+
+.assets-hub-panel {
+  border: 2px solid var(--section-accent, var(--color-toxic-green));
   box-shadow:
     var(--asset-panel-offset) var(--asset-panel-offset) 0
       var(--section-accent, var(--color-toxic-green)),
@@ -252,25 +260,12 @@
 }
 
 .assets-modal-sheet {
+  --asset-shell-accent-mix: 9%;
+  --asset-shell-mid-stop: rgb(var(--color-void-black-rgb) / 98%);
+  --asset-shell-stripe-alpha: 4%;
+
   max-width: min(100%, 48rem);
   border-color: var(--section-accent, var(--color-toxic-green));
-  background:
-    linear-gradient(
-      180deg,
-      color-mix(
-        in srgb,
-        var(--section-accent, var(--color-toxic-green)) 9%,
-        rgb(var(--color-void-black-rgb) / 96%)
-      ),
-      rgb(var(--color-void-black-rgb) / 98%)
-    ),
-    repeating-linear-gradient(
-      90deg,
-      rgb(var(--color-star-white-rgb) / 4%) 0,
-      rgb(var(--color-star-white-rgb) / 4%) 1px,
-      transparent 1px,
-      transparent 16px
-    );
   box-shadow:
     0.5rem 0.5rem 0 var(--section-accent, var(--color-toxic-green)),
     0 0 3rem

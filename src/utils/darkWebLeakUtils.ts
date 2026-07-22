@@ -4,7 +4,10 @@ import type {
   BandState,
   DarkWebLeakConfig
 } from '../types'
-import { isFiniteNumber } from './finiteNumber'
+import {
+  hasDailySocialActionRunToday,
+  validateDailySocialActionEligibility
+} from './dailySocialActionUtils'
 
 /**
  * Checks whether a dark-web leak has already run on the current day.
@@ -17,7 +20,8 @@ export const checkHasLeakedToday = (
   social: Partial<SocialState> | undefined | null,
   currentDay: number | undefined
 ) => {
-  return social?.lastDarkWebLeakDay === currentDay
+  if (!social) return false
+  return hasDailySocialActionRunToday(social.lastDarkWebLeakDay, currentDay)
 }
 
 /**
@@ -36,17 +40,16 @@ export const validateDarkWebLeak = (
   config: DarkWebLeakConfig
 ) => {
   if (!social || !player || !band) return false
-  if (!isFiniteNumber(player.money) || player.money < 0) return false
-  if (!isFiniteNumber(band.harmony) || band.harmony < 1 || band.harmony > 100)
-    return false
-
-  if (checkHasLeakedToday(social, player.day)) return false
-  if (
-    !isFiniteNumber(social.controversyLevel) ||
-    social.controversyLevel < config.REQUIRED_CONTROVERSY
-  )
-    return false
-  if (player.money < config.COST) return false
-  if (band.harmony < config.HARMONY_COST) return false
-  return true
+  return validateDailySocialActionEligibility({
+    lastActionDay: social.lastDarkWebLeakDay,
+    currentDay: player.day,
+    money: player.money,
+    harmony: band.harmony,
+    cost: config.COST,
+    harmonyCost: config.HARMONY_COST,
+    threshold: {
+      value: social.controversyLevel,
+      required: config.REQUIRED_CONTROVERSY
+    }
+  })
 }

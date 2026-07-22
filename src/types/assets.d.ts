@@ -102,7 +102,6 @@ export interface AssetBoni {
   infightingDamper?: boolean
   enablesReRecording?: boolean
   enablesLimitedEditions?: boolean
-  enablesBulkProduction?: boolean
   reducesTheftRiskTravel?: boolean
   /** Modular risk multiplier; defaults to `1.0` and multiplies existing DIY risk. */
   diyRiskMultiplier?: number
@@ -366,7 +365,6 @@ export interface AssetModifiers {
     infightingDamper: boolean
     enablesReRecording: boolean
     enablesLimitedEditions: boolean
-    enablesBulkProduction: boolean
     reducesTheftRiskTravel: boolean
   }
 }

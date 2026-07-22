@@ -49,7 +49,6 @@ export const getActiveAssetModifiers = (
     m.flags.infightingDamper ||= b.infightingDamper ?? false
     m.flags.enablesReRecording ||= b.enablesReRecording ?? false
     m.flags.enablesLimitedEditions ||= b.enablesLimitedEditions ?? false
-    m.flags.enablesBulkProduction ||= b.enablesBulkProduction ?? false
     m.flags.reducesTheftRiskTravel ||= b.reducesTheftRiskTravel ?? false
   }
   return m

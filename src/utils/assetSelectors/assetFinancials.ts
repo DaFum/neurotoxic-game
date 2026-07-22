@@ -124,9 +124,6 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
     if (b.enablesLimitedEditions !== undefined)
       agg.enablesLimitedEditions =
         agg.enablesLimitedEditions || b.enablesLimitedEditions
-    if (b.enablesBulkProduction !== undefined)
-      agg.enablesBulkProduction =
-        agg.enablesBulkProduction || b.enablesBulkProduction
     if (b.reducesTheftRiskTravel !== undefined)
       agg.reducesTheftRiskTravel =
         agg.reducesTheftRiskTravel || b.reducesTheftRiskTravel
