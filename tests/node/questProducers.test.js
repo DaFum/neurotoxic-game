@@ -46,6 +46,9 @@ import {
   createVenueUnblacklistedQuestEvent
 } from '../../src/quests/producers/venueQuestEvents.ts'
 import { createMoneyEarnedQuestEvent } from '../../src/quests/producers/economyQuestEvents.ts'
+import { handleSetLastGigStats } from '../../src/context/reducers/gigReducer.ts'
+import { GAME_PHASES } from '../../src/context/gameConstants.ts'
+import { QuestEvents } from '../../src/utils/questProgress.ts'
 
 test('quest producers create canonical events with matchable context', async t => {
   await t.test(
@@ -344,6 +347,42 @@ test('quest producers create canonical events with matchable context', async t =
       }).context?.capacity,
       0
     )
+
+    const emitted = []
+    const originalEmit = QuestEvents.emit
+    QuestEvents.emit = (state, event) => {
+      emitted.push(event)
+      return originalEmit(state, event)
+    }
+
+    try {
+      handleSetLastGigStats(
+        {
+          player: {
+            stats: { consecutiveBadShows: 0 },
+            day: 1,
+            location: 'venues:some_venue.name'
+          },
+          band: { harmony: 50, members: [] },
+          social: { loyalty: 0 },
+          currentGig: { id: 'venue_1', capacity: 0 },
+          currentScene: GAME_PHASES.POST_GIG,
+          gigModifiers: {},
+          reputationByRegion: { some: 0 },
+          reputationByVenue: { venue_1: 0 },
+          activeQuests: [],
+          activeStoryFlags: [],
+          toasts: [],
+          quests: {}
+        },
+        { score: 77, accuracy: 70 }
+      )
+    } finally {
+      QuestEvents.emit = originalEmit
+    }
+
+    const venueGoodGig = emitted.find(event => event.type === 'venue.goodGig')
+    assert.equal(venueGoodGig?.context?.capacity, 0)
     assert.equal(
       createVenueReputationChangedQuestEvent({
         venueId: 'venue_1',

@@ -147,8 +147,16 @@
 
 ---
 
+
+## Review Follow-Up Verification
+
+- Re-verified every prior finding against the current code. The centralization/removal/documentation fixes remain valid, so no additional production code changes were needed.
+- The only still-valid review gap was test coverage for the reducer call site that emits `venue.goodGig` with `currentGig.capacity = 0`.
+- Added reducer-level coverage in `tests/node/questProducers.test.js` by invoking `handleSetLastGigStats`, capturing the emitted `venue.goodGig` event through `QuestEvents.emit`, and asserting `context.capacity` remains `0`.
+
 ## Final Verification Commands
 
+- ✅ `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/questProducers.test.js` (direct producer and reducer-level `capacity: 0` coverage)
 - ✅ `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/dailySocialActionUtils.test.js tests/node/pirateRadioUtils.test.js tests/node/overworldServiceValidators.test.js tests/node/questProducers.test.js`
 - ✅ `pnpm exec vitest run tests/hooks/useDarkWebLeak.test.jsx tests/hooks/usePirateRadio.test.jsx`
 - ✅ `pnpm run typecheck:core`
