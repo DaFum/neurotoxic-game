@@ -29,14 +29,26 @@ export const useCultIndoctrination = () => {
   const social = useGameSelector(state => state.social)
   const { cultIndoctrination } = useGameActions()
 
-  const openCultIndoctrination = useCallback(() => setShowCultIndoctrination(true), [])
-  const closeCultIndoctrination = useCallback(() => setShowCultIndoctrination(false), [])
+  const openCultIndoctrination = useCallback(
+    () => setShowCultIndoctrination(true),
+    []
+  )
+  const closeCultIndoctrination = useCallback(
+    () => setShowCultIndoctrination(false),
+    []
+  )
 
   const hasIndoctrinatedToday = checkHasIndoctrinatedToday(social, player.day)
-  const canIndoctrinate = validateCultIndoctrination(social, player, band, CULT_INDOCTRINATION_CONFIG)
+  const canIndoctrinate = validateCultIndoctrination(
+    social,
+    player,
+    band,
+    CULT_INDOCTRINATION_CONFIG
+  )
 
   const triggerIndoctrination = useCallback(() => {
-    if (!canIndoctrinate || checkHasIndoctrinatedToday(social, player.day)) return
+    if (!canIndoctrinate || checkHasIndoctrinatedToday(social, player.day))
+      return
 
     audioService.playSFX('cash')
 
@@ -53,7 +65,13 @@ export const useCultIndoctrination = () => {
     })
 
     closeCultIndoctrination()
-  }, [canIndoctrinate, cultIndoctrination, closeCultIndoctrination, social, player.day])
+  }, [
+    canIndoctrinate,
+    cultIndoctrination,
+    closeCultIndoctrination,
+    social,
+    player.day
+  ])
 
   return {
     showCultIndoctrination,

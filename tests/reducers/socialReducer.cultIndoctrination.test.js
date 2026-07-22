@@ -82,7 +82,9 @@ describe('socialReducer: handleCultIndoctrination', () => {
     assert.strictEqual(nextState.social.brandReputation.punk, 90) // 100 - DEAL_BREAK_TRUST_PENALTY (10)
 
     // Check that toast was added
-    const toast = nextState.toasts.find((t) => t.messageKey === 'ui:toast.dealsBroken')
+    const toast = nextState.toasts.find(
+      t => t.messageKey === 'ui:toast.dealsBroken'
+    )
     assert.ok(toast)
   })
 })

@@ -53,8 +53,10 @@ export const CultIndoctrinationModal = ({
             {config.FAME_GAIN}
           </div>
           <div className='text-warning-yellow'>
-            {t('ui:cult_indoctrination.zealotry', { defaultValue: 'ZEALOTRY:' })} +
-            {config.ZEALOTRY_GAIN}
+            {t('ui:cult_indoctrination.zealotry', {
+              defaultValue: 'ZEALOTRY:'
+            })}{' '}
+            +{config.ZEALOTRY_GAIN}
           </div>
           <div className='text-toxic-green'>
             {t('ui:cult_indoctrination.controversy', {
@@ -85,7 +87,9 @@ export const CultIndoctrinationModal = ({
             onClick={onConfirm}
             disabled={!canIndoctrinate || hasIndoctrinatedToday}
           >
-            {t('ui:cult_indoctrination.execute', { defaultValue: 'EXECUTE INDOCTRINATION' })}
+            {t('ui:cult_indoctrination.execute', {
+              defaultValue: 'EXECUTE INDOCTRINATION'
+            })}
           </GlitchButton>
         </div>
       </div>

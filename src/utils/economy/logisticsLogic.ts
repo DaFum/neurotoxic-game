@@ -233,5 +233,7 @@ export const shouldTriggerBankruptcy = (
   const income = netIncome ?? 0
 
   // Bankrupt if at 0 money and net income minus totalDailyObligations is strictly negative.
-  return finiteNumberOr(income, 0) - finiteNumberOr(totalDailyObligations, 0) < 0
+  return (
+    finiteNumberOr(income, 0) - finiteNumberOr(totalDailyObligations, 0) < 0
+  )
 }

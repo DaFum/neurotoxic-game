@@ -34,7 +34,9 @@ export interface FacilityDispatchActions {
     payload: Parameters<typeof createClinicEnhanceAction>[0]
   ) => void
   darkWebLeak: (payload: Parameters<typeof createDarkWebLeakAction>[0]) => void
-  cultIndoctrination: (payload: Parameters<typeof createCultIndoctrinationAction>[0]) => void
+  cultIndoctrination: (
+    payload: Parameters<typeof createCultIndoctrinationAction>[0]
+  ) => void
   pirateBroadcast: (
     payload: Parameters<typeof createPirateBroadcastAction>[0]
   ) => void
@@ -112,7 +114,6 @@ export function useFacilityDispatchActions(
       dispatch(createCultIndoctrinationAction(payload)),
     [dispatch]
   )
-
 
   const merchPress = useCallback(
     (payload: Parameters<typeof createMerchPressAction>[0]) =>

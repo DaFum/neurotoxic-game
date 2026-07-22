@@ -37,7 +37,6 @@ export interface DarkWebLeakConfig {
   REQUIRED_CONTROVERSY: number
 }
 
-
 /**
  * Tuning values for the cult indoctrination action.
  */

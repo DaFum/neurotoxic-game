@@ -127,6 +127,7 @@ After travel, the band can acquire an item with special effects to use.
 **Feature:** Cult Indoctrination (Overworld Side Hustle)
 
 **Description:**
+
 - Lore Integration:
   As the band's zealotry grows, they need a place to house their most fanatic followers. The "Cult Indoctrination" overworld action allows the player to invest funds and use up harmony/stamina to indoctrinate followers, generating a massive burst of zealotry, controversy, and fame.
 - State Impact:

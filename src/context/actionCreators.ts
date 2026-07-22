@@ -50,7 +50,6 @@ import type {
   SocialState,
   DarkWebLeakPayload,
   CultIndoctrinationPayload,
-
   PurchaseItem
 } from '../types'
 import type { AssetKind, RiskEventDescriptor } from '../types/assets'
