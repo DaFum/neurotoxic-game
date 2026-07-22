@@ -1,12 +1,11 @@
 import type { DarkWebLeakConfig } from '../types'
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { audioService } from '../utils/audio/audioEngine'
 import {
   checkHasLeakedToday,
   validateDarkWebLeak
 } from '../utils/darkWebLeakUtils'
-import { logger } from '../utils/logger'
+import { useDailySocialAction } from './useDailySocialAction'
 
 /** Tuning values for the dark-web leak social action. */
 export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
@@ -24,60 +23,53 @@ export const DARK_WEB_LEAK_CONFIG: DarkWebLeakConfig = {
  * @returns Modal state, eligibility flags, action callbacks, and leak tuning constants.
  */
 export const useDarkWebLeak = () => {
-  const [showDarkWebLeak, setShowDarkWebLeak] = useState(false)
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
   const { darkWebLeak } = useGameActions()
 
-  const openDarkWebLeak = useCallback(() => setShowDarkWebLeak(true), [])
-  const closeDarkWebLeak = useCallback(() => setShowDarkWebLeak(false), [])
-
-  const hasLeakedToday = checkHasLeakedToday(social, player.day)
-  let canLeak = false
-  try {
-    canLeak = validateDarkWebLeak(social, player, band, DARK_WEB_LEAK_CONFIG)
-  } catch (error) {
-    logger.error(
-      'DarkWebLeak',
-      'validateDarkWebLeak failed while deriving canLeak',
-      {
-        error,
-        social,
-        playerDay: player.day,
-        config: DARK_WEB_LEAK_CONFIG
-      }
-    )
-    canLeak = false
-  }
-
-  const triggerLeak = useCallback(() => {
-    if (!canLeak || checkHasLeakedToday(social, player.day)) return
-
-    audioService.playSFX('cash')
-
-    darkWebLeak({
+  const hasRunToday = useCallback(
+    () => checkHasLeakedToday(social, player.day),
+    [social, player.day]
+  )
+  const validate = useCallback(
+    () => validateDarkWebLeak(social, player, band, DARK_WEB_LEAK_CONFIG),
+    [social, player, band]
+  )
+  const buildPayload = useCallback(
+    (successMessageKey: string) => ({
       cost: DARK_WEB_LEAK_CONFIG.COST,
       fameGain: DARK_WEB_LEAK_CONFIG.FAME_GAIN,
       zealotryGain: DARK_WEB_LEAK_CONFIG.ZEALOTRY_GAIN,
       controversyGain: DARK_WEB_LEAK_CONFIG.CONTROVERSY_GAIN,
       harmonyCost: DARK_WEB_LEAK_CONFIG.HARMONY_COST,
       successToast: {
-        messageKey: 'ui:dark_web_leak.success',
-        type: 'success'
+        messageKey: successMessageKey,
+        type: 'success' as const
       }
-    })
+    }),
+    []
+  )
 
-    closeDarkWebLeak()
-  }, [canLeak, darkWebLeak, closeDarkWebLeak, social, player.day])
+  const action = useDailySocialAction({
+    config: DARK_WEB_LEAK_CONFIG,
+    loggerScope: 'DarkWebLeak',
+    validationFailureMessage:
+      'validateDarkWebLeak failed while deriving canLeak',
+    successMessageKey: 'ui:dark_web_leak.success',
+    validate,
+    hasRunToday,
+    dispatchAction: darkWebLeak,
+    buildPayload
+  })
 
   return {
-    showDarkWebLeak,
-    hasLeakedToday,
-    openDarkWebLeak,
-    closeDarkWebLeak,
-    triggerLeak,
-    canLeak,
-    DARK_WEB_LEAK_CONFIG
+    showDarkWebLeak: action.showModal,
+    hasLeakedToday: action.hasRunToday,
+    openDarkWebLeak: action.openModal,
+    closeDarkWebLeak: action.closeModal,
+    triggerLeak: action.trigger,
+    canLeak: action.canRun,
+    DARK_WEB_LEAK_CONFIG: action.config
   }
 }

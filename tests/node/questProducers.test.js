@@ -336,6 +336,15 @@ test('quest producers create canonical events with matchable context', async t =
       'venue.goodGig'
     )
     assert.equal(
+      createVenueGoodGigQuestEvent({
+        venueId: 'venue_1',
+        region: 'berlin',
+        score: 77,
+        capacity: 0
+      }).context?.capacity,
+      0
+    )
+    assert.equal(
       createVenueReputationChangedQuestEvent({
         venueId: 'venue_1',
         amount: 5

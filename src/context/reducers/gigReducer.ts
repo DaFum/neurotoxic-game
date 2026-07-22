@@ -419,7 +419,7 @@ export const handleSetLastGigStats = (
       nextState,
       createVenueGoodGigQuestEvent({
         score,
-        capacity: capacity || undefined,
+        capacity: capacity ?? undefined,
         venueId: state.currentGig?.id || '',
         region: location
       })

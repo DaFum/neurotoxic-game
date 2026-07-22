@@ -4,7 +4,10 @@ import type {
   BandState,
   CultIndoctrinationConfig
 } from '../types'
-import { isFiniteNumber } from './gameState'
+import {
+  hasDailySocialActionRunToday,
+  validateDailySocialActionEligibility
+} from './dailySocialActionUtils'
 
 /**
  * Checks whether a cult indoctrination has already run on the current day.
@@ -17,14 +20,11 @@ export const checkHasIndoctrinatedToday = (
   social: Partial<SocialState> | undefined | null,
   currentDay: number | undefined
 ) => {
-  if (
-    currentDay === undefined ||
-    !social ||
-    social.lastCultIndoctrinationDay == null
-  ) {
-    return false
-  }
-  return social.lastCultIndoctrinationDay === currentDay
+  if (!social) return false
+  return hasDailySocialActionRunToday(
+    social.lastCultIndoctrinationDay,
+    currentDay
+  )
 }
 
 /**
@@ -43,17 +43,16 @@ export const validateCultIndoctrination = (
   config: CultIndoctrinationConfig
 ) => {
   if (!social || !player || !band) return false
-  if (!isFiniteNumber(player.money) || player.money < 0) return false
-  if (!isFiniteNumber(band.harmony) || band.harmony < 1 || band.harmony > 100)
-    return false
-
-  if (checkHasIndoctrinatedToday(social, player.day)) return false
-  if (
-    !isFiniteNumber(social.zealotry) ||
-    social.zealotry < config.REQUIRED_ZEALOTRY
-  )
-    return false
-  if (player.money < config.COST) return false
-  if (band.harmony < config.HARMONY_COST) return false
-  return true
+  return validateDailySocialActionEligibility({
+    lastActionDay: social.lastCultIndoctrinationDay,
+    currentDay: player.day,
+    money: player.money,
+    harmony: band.harmony,
+    cost: config.COST,
+    harmonyCost: config.HARMONY_COST,
+    threshold: {
+      value: social.zealotry,
+      required: config.REQUIRED_ZEALOTRY
+    }
+  })
 }

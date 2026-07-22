@@ -491,4 +491,5 @@ export const calculateZealotryEffects = (
   }
 }
 
+// Compatibility surface for legacy tests and consumers that still import brand-deal helpers through socialEngine.
 export { generateBrandOffers, negotiateDeal } from './brandDealLogic'

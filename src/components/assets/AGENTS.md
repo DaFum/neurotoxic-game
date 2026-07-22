@@ -52,4 +52,4 @@
 
 - `sections/MerchWorkshopSection.tsx` is the entry point; registers `SECTION_VIEWS.merch_workshop_chassis` from `sectionRegistry.ts` with accent `var(--color-warning-yellow)`. Use the narrow-selector + `useMemo` pattern from Studio/Bandhaus.
 - `sections/WorkshopProductionLineView.tsx` renders a 21:9 ultrawide conveyor with station rectangles from `WORKSHOP_SLOT_ZONES` and a decorative CSS line between main production slots. Installed-module thumbnails must route through `GeneratedImagePanel`; do not add raw Pollinations `<img>` consumers.
-- `enablesLimitedEditions` (`mw_vinyl_cutter`) and `enablesBulkProduction` are asset modifier flags for merch/economy consumers. The section UI only surfaces module installation; feature behavior belongs in the merch/economy path.
+- `enablesLimitedEditions` (`mw_vinyl_cutter`) is an asset modifier flag for merch/economy consumers. The section UI only surfaces module installation; feature behavior belongs in the merch/economy path.

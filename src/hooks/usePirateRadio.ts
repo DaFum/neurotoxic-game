@@ -1,11 +1,10 @@
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { audioService } from '../utils/audio/audioEngine'
 import {
   checkHasBroadcastedToday,
   validatePirateBroadcast
 } from '../utils/pirateRadioUtils'
-import { logger } from '../utils/logger'
+import { useDailySocialAction } from './useDailySocialAction'
 
 /** Tuning values for the pirate-radio social action. */
 export const PIRATE_RADIO_CONFIG = {
@@ -22,65 +21,53 @@ export const PIRATE_RADIO_CONFIG = {
  * @returns Modal state, eligibility flags, action callbacks, and pirate-radio tuning constants.
  */
 export const usePirateRadio = () => {
-  const [showPirateRadio, setShowPirateRadio] = useState(false)
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
   const { pirateBroadcast } = useGameActions()
 
-  const openPirateRadio = useCallback(() => setShowPirateRadio(true), [])
-  const closePirateRadio = useCallback(() => setShowPirateRadio(false), [])
-
-  const hasBroadcastedToday = checkHasBroadcastedToday(social, player.day)
-  let canBroadcast = false
-  try {
-    canBroadcast = validatePirateBroadcast(
-      social,
-      player,
-      band,
-      PIRATE_RADIO_CONFIG
-    )
-  } catch (error) {
-    logger.error(
-      'PirateRadio',
-      'validatePirateBroadcast failed while deriving canBroadcast',
-      {
-        error,
-        social,
-        playerDay: player.day,
-        config: PIRATE_RADIO_CONFIG
-      }
-    )
-    canBroadcast = false
-  }
-
-  const triggerBroadcast = useCallback(() => {
-    if (!canBroadcast) return
-
-    audioService.playSFX('cash')
-
-    pirateBroadcast({
+  const hasRunToday = useCallback(
+    () => checkHasBroadcastedToday(social, player.day),
+    [social, player.day]
+  )
+  const validate = useCallback(
+    () => validatePirateBroadcast(social, player, band, PIRATE_RADIO_CONFIG),
+    [social, player, band]
+  )
+  const buildPayload = useCallback(
+    (successMessageKey: string) => ({
       cost: PIRATE_RADIO_CONFIG.COST,
       fameGain: PIRATE_RADIO_CONFIG.FAME_GAIN,
       zealotryGain: PIRATE_RADIO_CONFIG.ZEALOTRY_GAIN,
       controversyGain: PIRATE_RADIO_CONFIG.CONTROVERSY_GAIN,
       harmonyCost: PIRATE_RADIO_CONFIG.HARMONY_COST,
       successToast: {
-        messageKey: 'ui:pirate_radio.success',
-        type: 'success'
+        messageKey: successMessageKey,
+        type: 'success' as const
       }
-    })
+    }),
+    []
+  )
 
-    closePirateRadio()
-  }, [canBroadcast, pirateBroadcast, closePirateRadio])
+  const action = useDailySocialAction({
+    config: PIRATE_RADIO_CONFIG,
+    loggerScope: 'PirateRadio',
+    validationFailureMessage:
+      'validatePirateBroadcast failed while deriving canBroadcast',
+    successMessageKey: 'ui:pirate_radio.success',
+    validate,
+    hasRunToday,
+    dispatchAction: pirateBroadcast,
+    buildPayload
+  })
 
   return {
-    showPirateRadio,
-    hasBroadcastedToday,
-    openPirateRadio,
-    closePirateRadio,
-    triggerBroadcast,
-    canBroadcast,
-    PIRATE_RADIO_CONFIG
+    showPirateRadio: action.showModal,
+    hasBroadcastedToday: action.hasRunToday,
+    openPirateRadio: action.openModal,
+    closePirateRadio: action.closeModal,
+    triggerBroadcast: action.trigger,
+    canBroadcast: action.canRun,
+    PIRATE_RADIO_CONFIG: action.config
   }
 }

@@ -5,6 +5,7 @@
 
 import { memo, type HTMLAttributes, type ReactNode } from 'react'
 
+// Shared UI supports both barrel imports for common primitives and direct leaf imports for focused component tests/mocks.
 // Export components
 export { SettingsPanel } from '../settings/SettingsPanel'
 export { VolumeSlider } from './VolumeSlider'

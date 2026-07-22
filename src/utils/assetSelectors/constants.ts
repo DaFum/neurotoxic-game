@@ -24,7 +24,6 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
     infightingDamper: false,
     enablesReRecording: false,
     enablesLimitedEditions: false,
-    enablesBulkProduction: false,
     reducesTheftRiskTravel: false
   })
 }) as AssetModifiers

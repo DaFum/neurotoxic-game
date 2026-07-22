@@ -1,11 +1,11 @@
 import type { CultIndoctrinationConfig } from '../types'
-import { useState, useCallback } from 'react'
+import { useCallback } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { audioService } from '../utils/audio/audioEngine'
 import {
   checkHasIndoctrinatedToday,
   validateCultIndoctrination
 } from '../utils/cultIndoctrinationUtils'
+import { useDailySocialAction } from './useDailySocialAction'
 
 /** Tuning values for the cult indoctrination social action. */
 export const CULT_INDOCTRINATION_CONFIG = {
@@ -23,63 +23,59 @@ export const CULT_INDOCTRINATION_CONFIG = {
  * @returns Modal state, eligibility flags, action callbacks, and indoctrination tuning constants.
  */
 export const useCultIndoctrination = () => {
-  const [showCultIndoctrination, setShowCultIndoctrination] = useState(false)
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
   const { cultIndoctrination } = useGameActions()
 
-  const openCultIndoctrination = useCallback(
-    () => setShowCultIndoctrination(true),
-    []
+  const hasRunToday = useCallback(
+    () => checkHasIndoctrinatedToday(social, player.day),
+    [social, player.day]
   )
-  const closeCultIndoctrination = useCallback(
-    () => setShowCultIndoctrination(false),
-    []
+  const validate = useCallback(
+    () =>
+      validateCultIndoctrination(
+        social,
+        player,
+        band,
+        CULT_INDOCTRINATION_CONFIG
+      ),
+    [social, player, band]
   )
-
-  const hasIndoctrinatedToday = checkHasIndoctrinatedToday(social, player.day)
-  const canIndoctrinate = validateCultIndoctrination(
-    social,
-    player,
-    band,
-    CULT_INDOCTRINATION_CONFIG
-  )
-
-  const triggerIndoctrination = useCallback(() => {
-    if (!canIndoctrinate || checkHasIndoctrinatedToday(social, player.day))
-      return
-
-    audioService.playSFX('cash')
-
-    cultIndoctrination({
+  const buildPayload = useCallback(
+    (successMessageKey: string) => ({
       cost: CULT_INDOCTRINATION_CONFIG.COST,
       fameGain: CULT_INDOCTRINATION_CONFIG.FAME_GAIN,
       zealotryGain: CULT_INDOCTRINATION_CONFIG.ZEALOTRY_GAIN,
       controversyGain: CULT_INDOCTRINATION_CONFIG.CONTROVERSY_GAIN,
       harmonyCost: CULT_INDOCTRINATION_CONFIG.HARMONY_COST,
       successToast: {
-        messageKey: 'ui:cult_indoctrination.success',
-        type: 'success'
+        messageKey: successMessageKey,
+        type: 'success' as const
       }
-    })
+    }),
+    []
+  )
 
-    closeCultIndoctrination()
-  }, [
-    canIndoctrinate,
-    cultIndoctrination,
-    closeCultIndoctrination,
-    social,
-    player.day
-  ])
+  const action = useDailySocialAction({
+    config: CULT_INDOCTRINATION_CONFIG,
+    loggerScope: 'CultIndoctrination',
+    validationFailureMessage:
+      'validateCultIndoctrination failed while deriving canIndoctrinate',
+    successMessageKey: 'ui:cult_indoctrination.success',
+    validate,
+    hasRunToday,
+    dispatchAction: cultIndoctrination,
+    buildPayload
+  })
 
   return {
-    showCultIndoctrination,
-    hasIndoctrinatedToday,
-    openCultIndoctrination,
-    closeCultIndoctrination,
-    triggerIndoctrination,
-    canIndoctrinate,
-    CULT_INDOCTRINATION_CONFIG
+    showCultIndoctrination: action.showModal,
+    hasIndoctrinatedToday: action.hasRunToday,
+    openCultIndoctrination: action.openModal,
+    closeCultIndoctrination: action.closeModal,
+    triggerIndoctrination: action.trigger,
+    canIndoctrinate: action.canRun,
+    CULT_INDOCTRINATION_CONFIG: action.config
   }
 }

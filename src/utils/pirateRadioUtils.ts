@@ -1,5 +1,7 @@
-import { clampPlayerMoney, clampBandHarmony } from './gameState'
-import { isFiniteNumber } from './finiteNumber'
+import {
+  hasDailySocialActionRunToday,
+  validateDailySocialActionEligibility
+} from './dailySocialActionUtils'
 
 /**
  * Checks whether the pirate broadcast action has already run today.
@@ -12,8 +14,8 @@ export const checkHasBroadcastedToday = (
   social: { lastPirateBroadcastDay?: unknown } | null | undefined,
   playerDay: number
 ): boolean => {
-  if (!social || !Number.isFinite(playerDay)) return false
-  return social.lastPirateBroadcastDay === playerDay
+  if (!social) return false
+  return hasDailySocialActionRunToday(social.lastPirateBroadcastDay, playerDay)
 }
 
 /**
@@ -32,31 +34,12 @@ export const validatePirateBroadcast = (
   config: { COST?: unknown; HARMONY_COST?: unknown } | null | undefined
 ): boolean => {
   if (!social || !player || !band || !config) return false
-
-  const day = isFiniteNumber(player.day) ? player.day : null
-  const money = isFiniteNumber(player.money) ? player.money : null
-  const harmony = isFiniteNumber(band.harmony) ? band.harmony : null
-  const cost = isFiniteNumber(config.COST) ? config.COST : null
-  const harmonyCost = isFiniteNumber(config.HARMONY_COST)
-    ? config.HARMONY_COST
-    : null
-  if (
-    day === null ||
-    money === null ||
-    harmony === null ||
-    cost === null ||
-    harmonyCost === null
-  ) {
-    return false
-  }
-  const hasBroadcastedToday = checkHasBroadcastedToday(social, day)
-
-  const currentMoney = clampPlayerMoney(money)
-  const currentHarmony = clampBandHarmony(harmony)
-
-  return (
-    !hasBroadcastedToday &&
-    currentMoney >= cost &&
-    currentHarmony >= harmonyCost
-  )
+  return validateDailySocialActionEligibility({
+    lastActionDay: social.lastPirateBroadcastDay,
+    currentDay: player.day,
+    money: player.money,
+    harmony: band.harmony,
+    cost: config.COST,
+    harmonyCost: config.HARMONY_COST
+  })
 }
