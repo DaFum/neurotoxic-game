@@ -291,7 +291,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let fame = state.player.fame
-  const day = state.player.day ?? 0
+  const day = finiteNumberOr(state.player.day, 0)
 
   for (const campaign of state.crowdfundCampaigns) {
     const { kind, flavor, chassisTier } = campaign.assetSpec
