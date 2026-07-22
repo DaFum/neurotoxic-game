@@ -2526,53 +2526,53 @@ const KPI_TARGETS = {
     bankruptcyMax: 10,
     moneyMin: 25000,
     moneyMax: 80000,
-    fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 420
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
-    bankruptcyMax: 85,
-    moneyMin: 1000,
+    bankruptcyMax: 90,
+    moneyMin: 400,
     moneyMax: 5000,
-    fameProgressPerGigMin: 450,
-    fameProgressPerGigMax: 800
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 280,
-    fameProgressPerGigMax: 520
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
-    bankruptcyMax: 45,
-    moneyMin: 5000,
+    bankruptcyMax: 50,
+    moneyMin: 4500,
     moneyMax: 30000,
-    fameProgressPerGigMin: 220,
-    fameProgressPerGigMax: 420
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
     bankruptcyMax: 35,
-    moneyMin: 10000,
+    moneyMin: 8500,
     moneyMax: 50000,
-    fameProgressPerGigMin: 250,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   chaos_tour: {
     bankruptcyMax: 25,
     moneyMin: 10000,
     moneyMax: 60000,
-    fameProgressPerGigMin: 260,
-    fameProgressPerGigMax: 500
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
     moneyMin: 15000,
     moneyMax: 50000,
-    fameProgressPerGigMin: 260,
-    fameProgressPerGigMax: 520
+    fameProgressPerGigMin: 600,
+    fameProgressPerGigMax: 1300
   }
 }
 

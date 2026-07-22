@@ -46,12 +46,12 @@ test('calculateFameLevel', () => {
 test('calculateGigFameReward scales successful gigs aggressively enough for shop progression', () => {
   assert.strictEqual(
     calculateGigFameReward(70),
-    800,
+    990,
     'A solid gig should grant high raw fame'
   )
   assert.strictEqual(
     calculateGigFameReward(100),
-    1100,
+    1350,
     'A perfect gig should be able to reach the 20-30 gig shop target'
   )
 })
