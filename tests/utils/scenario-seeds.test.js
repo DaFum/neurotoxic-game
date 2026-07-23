@@ -1,5 +1,9 @@
 import { test, expect } from 'vitest'
-import { SCENARIOS, createScenarioSeed, evaluateKpiStatus } from '../../scripts/game-balance-simulation.mjs'
+import {
+  SCENARIOS,
+  createScenarioSeed,
+  evaluateKpiStatus
+} from '../../scripts/game-balance-simulation.mjs'
 
 test('createScenarioSeed is deterministic', () => {
   const seed1 = createScenarioSeed('baseline_touring', 12)
@@ -30,8 +34,20 @@ test('different scenarios generate different seeds for the same run', () => {
 })
 
 test('evaluateKpiStatus correctly maps KPI statuses', () => {
-  expect(evaluateKpiStatus(undefined)).toEqual({ status: 'not_evaluated', passed: null })
-  expect(evaluateKpiStatus([])).toEqual({ status: 'not_evaluated', passed: null })
-  expect(evaluateKpiStatus([{ pass: true }, { pass: true }])).toEqual({ status: 'passed', passed: true })
-  expect(evaluateKpiStatus([{ pass: true }, { pass: false }])).toEqual({ status: 'failed', passed: false })
+  expect(evaluateKpiStatus(undefined)).toEqual({
+    status: 'not_evaluated',
+    passed: null
+  })
+  expect(evaluateKpiStatus([])).toEqual({
+    status: 'not_evaluated',
+    passed: null
+  })
+  expect(evaluateKpiStatus([{ pass: true }, { pass: true }])).toEqual({
+    status: 'passed',
+    passed: true
+  })
+  expect(evaluateKpiStatus([{ pass: true }, { pass: false }])).toEqual({
+    status: 'failed',
+    passed: false
+  })
 })
