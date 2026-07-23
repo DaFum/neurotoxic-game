@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render } from '@testing-library/react'
 
 vi.mock('../../src/utils/imageGen', () => ({
+  getGenImageUrl: prompt => `mock-generated-${prompt ?? 'missing'}`,
+  isImageGenerationAvailable: () => true,
   getGeneratedImageFallbackUrl: () => 'mock-offline-fallback'
 }))
 

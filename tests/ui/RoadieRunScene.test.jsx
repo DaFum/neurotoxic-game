@@ -48,7 +48,11 @@ vi.mock('../../src/components/MinigameSceneFrame', () => ({
       />
       {children}
       <div
-        className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center bg-void-black/80 backdrop-blur-sm pointer-events-auto'
+        className='fixed inset-0 z-(--z-modal) flex flex-col items-center justify-center backdrop-blur-sm pointer-events-auto'
+        style={{
+          backgroundColor:
+            'color-mix(in srgb, var(--color-void-black) 80%, transparent)'
+        }}
         role='dialog'
         aria-modal='true'
         aria-labelledby='completion-title'

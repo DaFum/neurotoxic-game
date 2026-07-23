@@ -8,10 +8,10 @@ const languages = ['en', 'de']
 
 const collectKeys = (value, prefix = '') => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return [prefix]
+    return [`leaf:${prefix}`]
   }
   const keys = Object.keys(value)
-  if (keys.length === 0) return [`${prefix}.__emptyObject`]
+  if (keys.length === 0) return [`object:${prefix}`]
   return keys.flatMap(key =>
     collectKeys(value[key], prefix ? `${prefix}.${key}` : key)
   )
