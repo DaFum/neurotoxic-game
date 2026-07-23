@@ -2381,7 +2381,7 @@ const summarizeScenario = runs => {
   }
 }
 
-const getScenarioInsight = summary => {
+export const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
   }
@@ -2396,7 +2396,11 @@ const getScenarioInsight = summary => {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 
-  return summary.kpisPassed
+  if (summary.kpiStatus === "not_evaluated") {
+    return "⚪ Szenario besitzt keine KPI-Zieldefinition."
+  }
+
+  return summary.kpiStatus === "passed"
     ? '✅ Szenario liegt im robusten Simulationskorridor.'
     : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
 }
@@ -2768,7 +2772,7 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(`- Report-Version: ${payload.constants.reportVersion}`)
     lines.push(`- Node-Version: ${payload.metadata.nodeVersion}`)
-    lines.push(`- Commit: ${payload.metadata.sourceCommit || 'nicht verfügbar'}`)
+    lines.push(`- Basis-Commit: ${payload.metadata.sourceBaseCommit || "nicht verf\u00FCgbar"}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? "unbekannt" : (payload.metadata.workingTreeDirty ? "Ja" : "Nein")}`)
     lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
     lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
@@ -3229,7 +3233,9 @@ const tryReadJson = async filePath => {
   }
 }
 
-const getSourceCommit = () => {
+const getWorkingTreeDirty = () => { try { return execSync("git status --porcelain", { encoding: "utf8", stdio: "pipe" }).trim().length > 0 } catch { return null } }
+
+const getSourceBaseCommit = () => {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
   try {
     return execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim()
@@ -3314,7 +3320,8 @@ export const runSimulationSuite = async (options = {}) => {
     scenarios: SCENARIOS,
     metadata: {
       nodeVersion: process.version,
-      sourceCommit: getSourceCommit(),
+      sourceBaseCommit: getSourceBaseCommit(),
+      workingTreeDirty: getWorkingTreeDirty(),
       simulationScriptSha256,
       scenarioConfigSha256,
       seedStrategy: 'scenario-id-plus-run-index'

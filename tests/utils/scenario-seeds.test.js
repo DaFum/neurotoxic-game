@@ -1,8 +1,8 @@
 import { test, expect } from 'vitest'
 import {
-  SCENARIOS,
   createScenarioSeed,
-  evaluateKpiStatus
+  evaluateKpiStatus,
+  getScenarioInsight
 } from '../../scripts/game-balance-simulation.mjs'
 
 test('createScenarioSeed is deterministic', () => {
@@ -11,20 +11,28 @@ test('createScenarioSeed is deterministic', () => {
   expect(seed1).toBe(seed2)
 })
 
-test('createScenarioSeed is independent of array index', () => {
-  // Simulating an array re-order:
-  // Before, seeds were calculated as (scenarioIndex + 1) * 10000 + runIndex * 31 + 7
-  // Now they only depend on ID and runIndex.
-  const scenario = SCENARIOS.find(s => s.id === 'bootstrap_struggle')
+test('createScenarioSeed is independent of array index and execution order', () => {
+  const idsOriginal = ['baseline_touring', 'bootstrap_struggle', 'chaos_tour']
+  const idsReversed = [...idsOriginal].reverse()
 
-  const seedRun1 = createScenarioSeed(scenario.id, 0)
-  const seedRun2 = createScenarioSeed(scenario.id, 1)
+  const runsToTest = 3
 
-  expect(seedRun1).not.toBe(seedRun2)
+  const seedsOriginal = idsOriginal.map(id => {
+    return Array.from({ length: runsToTest }).map((_, runIndex) =>
+      createScenarioSeed(id, runIndex)
+    )
+  })
 
-  // They remain the same if we imagine the scenario moving array positions
-  const seedRun1Again = createScenarioSeed(scenario.id, 0)
-  expect(seedRun1).toBe(seedRun1Again)
+  const seedsReversed = idsReversed.map(id => {
+    return Array.from({ length: runsToTest }).map((_, runIndex) =>
+      createScenarioSeed(id, runIndex)
+    )
+  })
+
+  // The seeds generated for 'baseline_touring' should be identical regardless of when it's processed
+  expect(seedsOriginal[0]).toEqual(seedsReversed[2])
+  expect(seedsOriginal[1]).toEqual(seedsReversed[1])
+  expect(seedsOriginal[2]).toEqual(seedsReversed[0])
 })
 
 test('different scenarios generate different seeds for the same run', () => {
@@ -50,4 +58,18 @@ test('evaluateKpiStatus correctly maps KPI statuses', () => {
     status: 'failed',
     passed: false
   })
+})
+
+test('getScenarioInsight correctly identifies untargeted KPI scenarios', () => {
+  const summary = {
+    bankruptcyRate: 0,
+    avgFinalMoney: 5000,
+    avgFinalFame: 50,
+    avgFinalHarmony: 60,
+    kpiStatus: 'not_evaluated',
+    kpisPassed: null
+  }
+  expect(getScenarioInsight(summary)).toBe(
+    '⚪ Szenario besitzt keine KPI-Zieldefinition.'
+  )
 })
