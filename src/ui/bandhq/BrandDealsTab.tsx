@@ -52,10 +52,11 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
         const isActive = activeDealsMap.has(deal.id)
         const activeDeal = activeDealsMap.get(deal.id) ?? null
 
+        const dealName = displayDeal?.name ?? deal.name
+        const dealDescription = displayDeal?.description ?? deal.description
+
         // Generate a specific, fitting image prompt for each deal
-        const promptName = displayDeal?.name ?? deal.name
-        const promptDescription = displayDeal?.description ?? deal.description
-        const prompt = `pixel art logo for ${promptName}, ${promptDescription}, dark grunge aesthetic, high contrast, visually striking`
+        const prompt = `pixel art logo for ${dealName}, ${dealDescription}, dark grunge aesthetic, high contrast, visually striking`
         const imageUrl = resolveGenImageUrl(prompt, isOnline)
 
         return (
@@ -79,12 +80,10 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
             <h3
               className={`text-lg font-bold mb-2 font-mono uppercase tracking-wide ${isActive ? 'text-toxic-green' : 'text-star-white'}`}
             >
-              {displayDeal?.name || deal.name}
+              {dealName}
             </h3>
 
-            <p className='text-sm text-ash-gray mb-4 grow'>
-              {displayDeal?.description || deal.description}
-            </p>
+            <p className='text-sm text-ash-gray mb-4 grow'>{dealDescription}</p>
 
             <div className='mt-auto pt-3 border-t border-ash-gray/20 text-xs font-mono'>
               <div className='flex justify-between mb-1'>

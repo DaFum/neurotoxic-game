@@ -4,7 +4,12 @@ import { fireEvent, render, screen } from '@testing-library/react'
 
 import { OverworldMenu } from '../../src/ui/overworld/OverworldMenu.tsx'
 
-const t = (_key, options) => options?.defaultValue ?? _key
+/**
+ * @param {string} key
+ * @param {{ defaultValue?: string }=} options
+ * @returns {string}
+ */
+const t = (key, options) => options?.defaultValue ?? key
 
 const defaultActions = () => ({
   openStash: vi.fn(),
@@ -23,6 +28,9 @@ const defaultActions = () => ({
   handleSaveWithDelay: vi.fn()
 })
 
+/**
+ * @param {{ actions: ReturnType<typeof defaultActions> }} props
+ */
 const Harness = ({ actions }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(true)
   return (

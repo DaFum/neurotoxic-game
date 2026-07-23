@@ -8,9 +8,9 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({
     i18n: { language: 'en', changeLanguage: vi.fn(), options: {} },
     t: (key, options) => {
-      if (key.endsWith('.name')) return `localized ${options?.defaultValue}`
+      if (key.endsWith('.name')) return `NAME_MARKER:${options?.defaultValue}`
       if (key.endsWith('.description')) {
-        return `localized ${options?.defaultValue}`
+        return `DESCRIPTION_MARKER:${options?.defaultValue}`
       }
       return options?.defaultValue ?? key
     }
@@ -22,7 +22,10 @@ vi.mock('../../src/utils/networkStatus', () => ({
 }))
 
 vi.mock('../../src/utils/imageGen', () => ({
-  resolveGenImageUrl: (...args) => resolveGenImageUrl(...args)
+  resolveGenImageUrl: (...args) => resolveGenImageUrl(...args),
+  getGenImageUrl: prompt => `mock-gen-${prompt ?? 'missing'}`,
+  isImageGenerationAvailable: () => true,
+  getGeneratedImageFallbackUrl: () => 'mock-fallback-url'
 }))
 
 const { BrandDealsTab } = await import('../../src/ui/bandhq/BrandDealsTab.tsx')
@@ -33,6 +36,7 @@ describe('BrandDealsTab', () => {
 
     expect(resolveGenImageUrl).toHaveBeenCalled()
     const [prompt] = resolveGenImageUrl.mock.calls[0]
-    expect(prompt).toContain('localized')
+    expect(prompt).toContain('NAME_MARKER:')
+    expect(prompt).toContain('DESCRIPTION_MARKER:')
   })
 })

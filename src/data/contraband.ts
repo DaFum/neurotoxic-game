@@ -4,7 +4,10 @@
  * They either grant immediate consumable effects or passive buffs.
  */
 
-import { validateContrabandItem } from '../schemas/contraband'
+import {
+  validateContrabandItem,
+  type SanitizedContrabandItem
+} from '../schemas/contraband'
 import { logger } from '../utils/logger'
 import type { Rarity } from '../types'
 
@@ -522,16 +525,12 @@ export const VOID_TRADER_COSTS = {
 }
 
 /** Lookup map of contraband definition by item id. */
-export const CONTRABAND_BY_ID = new Map<
-  string,
-  (typeof CONTRABAND_DB)[number]
->()
+export const CONTRABAND_BY_ID = new Map<string, SanitizedContrabandItem>()
 
 /** Contraband definitions grouped by rarity for random selection. */
-export const CONTRABAND_BY_RARITY: Record<
-  Rarity,
-  (typeof CONTRABAND_DB)[number][]
-> = {
+export const CONTRABAND_VALIDATION_FAILURES: string[] = []
+
+export const CONTRABAND_BY_RARITY: Record<Rarity, SanitizedContrabandItem[]> = {
   common: [],
   uncommon: [],
   rare: [],
@@ -540,25 +539,29 @@ export const CONTRABAND_BY_RARITY: Record<
 
 for (const item of CONTRABAND_DB) {
   const validation = validateContrabandItem(item)
-  if (!validation.ok) {
-    logger.warn(
-      'ContrabandData',
-      `Invalid contraband item ${item.id}: ${validation.errors.join(', ')}`
-    )
+  if (!validation.ok || !validation.value) {
+    const id = typeof item.id === 'string' ? item.id : 'unknown'
+    const message = `Invalid contraband item ${id}: ${validation.errors.join(', ')}`
+    CONTRABAND_VALIDATION_FAILURES.push(message)
+    logger.warn('ContrabandData', message)
     continue
   }
 
-  if (CONTRABAND_BY_ID.has(item.id)) {
-    logger.warn('ContrabandData', `Duplicate item ID found: ${item.id}`)
+  const sanitizedItem = validation.value
+  if (CONTRABAND_BY_ID.has(sanitizedItem.id)) {
+    logger.warn(
+      'ContrabandData',
+      `Duplicate item ID found: ${sanitizedItem.id}`
+    )
   }
-  CONTRABAND_BY_ID.set(item.id, item)
-  const rarityGroup = CONTRABAND_BY_RARITY[item.rarity as Rarity]
+  CONTRABAND_BY_ID.set(sanitizedItem.id, sanitizedItem)
+  const rarityGroup = CONTRABAND_BY_RARITY[sanitizedItem.rarity]
   if (rarityGroup) {
-    rarityGroup.push(item)
+    rarityGroup.push(sanitizedItem)
   } else {
     logger.warn(
       'ContrabandData',
-      `Unknown rarity "${item.rarity}" for item ${item.id}`
+      `Unknown rarity "${sanitizedItem.rarity}" for item ${sanitizedItem.id}`
     )
   }
 }

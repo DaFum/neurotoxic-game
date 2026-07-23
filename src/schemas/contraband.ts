@@ -5,9 +5,26 @@ import { isFiniteNumber } from '../utils/finiteNumber'
 const VALID_TYPES = new Set(['consumable', 'equipment', 'relic'])
 const VALID_RARITIES = new Set<Rarity>(['common', 'uncommon', 'rare', 'epic'])
 
+export type SanitizedContrabandItem = {
+  id: string
+  imagePrompt: string
+  name: string
+  type: string
+  effectType: string
+  value: number
+  description: string
+  rarity: Rarity
+  icon: string
+  stackable: boolean
+  maxStacks?: number
+  duration?: number
+  applyOnAdd?: boolean
+}
+
 export interface ContrabandValidationResult {
   ok: boolean
   errors: string[]
+  value: SanitizedContrabandItem | null
 }
 
 const readString = (item: Record<string, unknown>, key: string): boolean =>
@@ -34,7 +51,7 @@ export const validateContrabandItem = (
 ): ContrabandValidationResult => {
   const errors: string[] = []
   if (!isLooseRecord(value)) {
-    return { ok: false, errors: ['item must be an object'] }
+    return { ok: false, errors: ['item must be an object'], value: null }
   }
   if (hasForbiddenKeys(value)) errors.push('item contains forbidden keys')
 
@@ -76,5 +93,30 @@ export const validateContrabandItem = (
     errors.push('applyOnAdd must be boolean when present')
   }
 
-  return { ok: errors.length === 0, errors }
+  const sanitized: SanitizedContrabandItem | null =
+    errors.length === 0
+      ? {
+          id: item.id as string,
+          imagePrompt: item.imagePrompt as string,
+          name: item.name as string,
+          type: item.type as string,
+          effectType: item.effectType as string,
+          value: item.value as number,
+          description: item.description as string,
+          rarity: item.rarity as Rarity,
+          icon: item.icon as string,
+          stackable: item.stackable as boolean,
+          ...(item.maxStacks !== undefined
+            ? { maxStacks: item.maxStacks as number }
+            : {}),
+          ...(item.duration !== undefined
+            ? { duration: item.duration as number }
+            : {}),
+          ...(item.applyOnAdd !== undefined
+            ? { applyOnAdd: item.applyOnAdd as boolean }
+            : {})
+        }
+      : null
+
+  return { ok: errors.length === 0, errors, value: sanitized }
 }

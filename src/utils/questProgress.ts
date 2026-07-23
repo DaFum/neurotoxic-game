@@ -15,6 +15,8 @@ import { getQuestDefinition } from '../data/questRegistry'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
+const INVALID_THRESHOLD_PROGRESS = Number.NaN
+
 /**
  * Legacy quest progress event shapes accepted for save and caller compatibility.
  */
@@ -402,8 +404,12 @@ const questRuleMatchesEvent = (
     if (success !== match.success) return false
   }
 
-  if (isFiniteNumber(match.minScore)) {
-    if (!isFiniteNumber(context.score) || context.score < match.minScore) {
+  if (match.minScore !== undefined) {
+    if (
+      !isFiniteNumber(match.minScore) ||
+      !isFiniteNumber(context.score) ||
+      context.score < match.minScore
+    ) {
       return false
     }
   }
@@ -423,12 +429,18 @@ const getThresholdValue = (
   const context = getEventContext(event)
   switch (rule.thresholdField) {
     case 'social.loyalty':
-      return finiteNumberOr(context.loyalty, 0)
+      return isFiniteNumber(context.loyalty)
+        ? context.loyalty
+        : INVALID_THRESHOLD_PROGRESS
     case 'asset.condition':
-      return finiteNumberOr(context.condition, 0)
+      return isFiniteNumber(context.condition)
+        ? context.condition
+        : INVALID_THRESHOLD_PROGRESS
     case 'band.harmony':
     default:
-      return finiteNumberOr(context.harmony, 0)
+      return isFiniteNumber(context.harmony)
+        ? context.harmony
+        : INVALID_THRESHOLD_PROGRESS
   }
 }
 
@@ -479,6 +491,7 @@ export const QuestProgress = {
 
         const amount = calculateProgressAmount(rule, event)
         if (rule.amount === 'threshold') {
+          if (!Number.isFinite(amount)) break
           nextState = QuestLifecycle.setQuestProgress(nextState, {
             questId: quest.id,
             progress: amount

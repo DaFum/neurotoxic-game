@@ -10,7 +10,9 @@ const collectKeys = (value, prefix = '') => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return [prefix]
   }
-  return Object.keys(value).flatMap(key =>
+  const keys = Object.keys(value)
+  if (keys.length === 0) return [`${prefix}.__emptyObject`]
+  return keys.flatMap(key =>
     collectKeys(value[key], prefix ? `${prefix}.${key}` : key)
   )
 }

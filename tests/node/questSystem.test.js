@@ -539,7 +539,7 @@ describe('Quest System Registry Validation', () => {
       activeQuests: [
         {
           id: 'q_nonfinite_threshold',
-          progress: 0,
+          progress: 7,
           required: 100,
           progressRules: [
             {
@@ -557,7 +557,7 @@ describe('Quest System Registry Validation', () => {
       amount: 1,
       context: { harmony: Number.NaN }
     })
-    assert.equal(thresholdNext.activeQuests[0].progress, 0)
+    assert.equal(thresholdNext.activeQuests[0].progress, 7)
 
     const minScoreState = {
       ...getBaseState(),

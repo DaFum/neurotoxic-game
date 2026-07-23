@@ -3,7 +3,8 @@ import assert from 'node:assert/strict'
 import {
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY,
-  CONTRABAND_RARITY_WEIGHTS
+  CONTRABAND_RARITY_WEIGHTS,
+  CONTRABAND_VALIDATION_FAILURES
 } from '../../src/data/contraband'
 import { validateContrabandItem } from '../../src/schemas/contraband'
 
@@ -11,9 +12,15 @@ const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {
+    it('records no validation failures while initializing the raw source catalog', () => {
+      assert.deepEqual(CONTRABAND_VALIDATION_FAILURES, [])
+    })
+
     it('validates each item through the reusable contraband schema', () => {
       for (const item of CONTRABAND_DB) {
-        assert.equal(validateContrabandItem(item).ok, true, item.id)
+        const result = validateContrabandItem(item)
+        assert.equal(result.ok, true, item.id)
+        assert.deepEqual(result.value, item, item.id)
       }
     })
 

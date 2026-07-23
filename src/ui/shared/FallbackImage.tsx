@@ -26,8 +26,10 @@ export const FallbackImage = ({
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
   // Keying the failure on the src that failed means a src change retries the
   // new URL automatically, without an effect-based reset.
-  const resolvedSrc =
-    failedSrc === src ? (fallbackSrc ?? getGeneratedImageFallbackUrl()) : src
+  const hasFailed = failedSrc === src
+  const resolvedSrc = hasFailed
+    ? (fallbackSrc ?? getGeneratedImageFallbackUrl())
+    : src
 
   return (
     <img
@@ -37,12 +39,14 @@ export const FallbackImage = ({
       crossOrigin={resolvedSrc.startsWith('data:') ? undefined : 'anonymous'}
       className={className}
       style={style}
-      onError={() => {
-        // If the fallback itself failed, bail to avoid re-rendering with the
-        // same broken src and re-triggering React's onError forever.
-        if (resolvedSrc !== src) return
-        setFailedSrc(src)
-      }}
+      onError={
+        hasFailed
+          ? undefined
+          : event => {
+              event.currentTarget.onerror = null
+              setFailedSrc(src)
+            }
+      }
     />
   )
 }
