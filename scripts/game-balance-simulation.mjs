@@ -1,6 +1,8 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import crypto from 'node:crypto'
+import { execSync } from 'node:child_process'
 
 import { ALL_VENUES } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
@@ -117,7 +119,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 9,
+  reportVersion: 10,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -464,7 +466,15 @@ const SHOP_FAME_CATALOG = UPGRADE_CATALOG.filter(
 const LEGACY_FAME_CATALOG = UPGRADE_CATALOG.filter(
   item => item.currency === 'fame' && !SHOP_FAME_ENTRY_IDS.has(item.id)
 )
-const FAME_AUDIT_PERFORMANCE_SCORES = [70, 85, 100]
+const FAME_AUDIT_PERFORMANCE_SCORES = [
+  45,
+  50,
+  55,
+  60,
+  70,
+  85,
+  100
+]
 
 const getCatalogFameRefund = item => {
   const effects = Array.isArray(item.effects)
@@ -624,6 +634,16 @@ const FEATURE_COVERAGE_KEYS = [
   'asset_modules',
   'crowdfunding'
 ]
+
+export const createScenarioSeed = (id, runIndex) => {
+  let h = 0x811c9dc5
+  const str = `${id}:${runIndex}`
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i)
+    h = Math.imul(h, 0x01000193)
+  }
+  return h >>> 0
+}
 
 const mulberry32 = seed => {
   let t = seed + 0x6d2b79f5
@@ -2361,7 +2381,7 @@ const summarizeScenario = runs => {
   }
 }
 
-const getScenarioInsight = summary => {
+export const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
   }
@@ -2376,7 +2396,11 @@ const getScenarioInsight = summary => {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 
-  return summary.kpisPassed
+  if (summary.kpiStatus === "not_evaluated") {
+    return "⚪ Szenario besitzt keine KPI-Zieldefinition."
+  }
+
+  return summary.kpiStatus === "passed"
     ? '✅ Szenario liegt im robusten Simulationskorridor.'
     : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
 }
@@ -2531,7 +2555,7 @@ const KPI_TARGETS = {
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
-    bankruptcyMax: 90,
+    bankruptcyMax: 60,
     moneyMin: 400,
     moneyMax: 5000,
     fameProgressPerGigMin: 600,
@@ -2574,6 +2598,14 @@ const KPI_TARGETS = {
     fameProgressPerGigMin: 600,
     fameProgressPerGigMax: 1300
   }
+}
+
+export const evaluateKpiStatus = kpis => {
+  if (!kpis || kpis.length === 0) {
+    return { status: 'not_evaluated', passed: null }
+  }
+  const passed = kpis.every(c => c.pass)
+  return { status: passed ? 'passed' : 'failed', passed }
 }
 
 const checkKpi = (id, summary) => {
@@ -2733,6 +2765,19 @@ const buildMarkdownReport = payload => {
   lines.push('')
   lines.push(`Erstellt am: ${payload.generatedAt}`)
   lines.push('')
+
+  // ── Reproduzierbarkeit ────────────────────────────────────────────────────
+  if (payload.metadata) {
+    lines.push('## Reproduzierbarkeit')
+    lines.push('')
+    lines.push(`- Report-Version: ${payload.constants.reportVersion}`)
+    lines.push(`- Node-Version: ${payload.metadata.nodeVersion}`)
+    lines.push(`- Basis-Commit: ${payload.metadata.sourceBaseCommit || "nicht verf\u00FCgbar"}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? "unbekannt" : (payload.metadata.workingTreeDirty ? "Ja" : "Nein")}`)
+    lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
+    lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
+    lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
+    lines.push('')
+  }
 
   // ── Config ────────────────────────────────────────────────────────────────
   lines.push('## Simulationseinstellungen')
@@ -3047,7 +3092,11 @@ const buildMarkdownReport = payload => {
 
   for (const scenario of payload.results) {
     const checks = checkKpi(scenario.id, scenario.summary)
-    if (!checks) continue
+    const { status } = evaluateKpiStatus(checks)
+    if (status === 'not_evaluated') {
+      lines.push(`| ${scenario.name} | — | — | — | ⚪ Nicht bewertet | — |`)
+      continue
+    }
     for (const c of checks) {
       lines.push(
         `| ${scenario.name} | ${c.label} | ${c.target} | ${c.actual} | ${c.pass ? '✅' : '❌'} | ${c.bewertung} |`
@@ -3123,6 +3172,21 @@ const buildMarkdownReport = payload => {
     `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgEventsApplied + mostVolatile.summary.avgGigEvents).toFixed(2)} Event-Impulsen (inkl. Gig-Events).`
   )
 
+  const kpiCounts = payload.results.reduce(
+    (acc, scenario) => {
+      acc[scenario.summary.kpiStatus] = (acc[scenario.summary.kpiStatus] || 0) + 1
+      return acc
+    },
+    { passed: 0, failed: 0, not_evaluated: 0 }
+  )
+
+  lines.push('')
+  lines.push('### KPI-Zusammenfassung')
+  lines.push(`- Bestanden: ${kpiCounts.passed}`)
+  lines.push(`- Fehlgeschlagen: ${kpiCounts.failed}`)
+  lines.push(`- Nicht bewertet: ${kpiCounts.not_evaluated}`)
+  lines.push('')
+
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)
     lines.push(
@@ -3169,6 +3233,34 @@ const tryReadJson = async filePath => {
   }
 }
 
+const getWorkingTreeDirty = () => { try { return execSync("git status --porcelain", { encoding: "utf8", stdio: "pipe" }).trim().length > 0 } catch { return null } }
+
+const getSourceBaseCommit = () => {
+  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
+  try {
+    return execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim()
+  } catch {
+    return null
+  }
+}
+
+const getFileHash = async filePath => {
+  try {
+    const content = await fs.readFile(filePath)
+    return crypto.createHash('sha256').update(content).digest('hex')
+  } catch {
+    return null
+  }
+}
+
+const getJsonHash = data => {
+  try {
+    return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex')
+  } catch {
+    return null
+  }
+}
+
 export const runSimulationSuite = async (options = {}) => {
   logger.setLevel(LOG_LEVELS.ERROR)
 
@@ -3187,13 +3279,15 @@ export const runSimulationSuite = async (options = {}) => {
       runIndex < SIMULATION_CONSTANTS.runsPerScenario;
       runIndex++
     ) {
-      const seed = (scenarioIndex + 1) * 10_000 + runIndex * 31 + 7
+      const seed = createScenarioSeed(scenario.id, runIndex)
       runs.push(runSingleSimulation(scenario, seed))
     }
 
     const summary = summarizeScenario(runs)
     const kpis = checkKpi(scenario.id, summary)
-    summary.kpisPassed = !kpis || kpis.every(c => c.pass)
+    const evalResult = evaluateKpiStatus(kpis)
+    summary.kpiStatus = evalResult.status
+    summary.kpisPassed = evalResult.passed
     results.push({
       id: scenario.id,
       name: scenario.name,
@@ -3215,12 +3309,23 @@ export const runSimulationSuite = async (options = {}) => {
     : outputJsonPath
   const baselinePayload = await tryReadJson(baselinePath)
 
+  const simulationScriptSha256 = await getFileHash(fileURLToPath(import.meta.url))
+  const scenarioConfigSha256 = getJsonHash(SCENARIOS)
+
   const payload = {
     generatedAt: new Date().toISOString(),
     constants: SIMULATION_CONSTANTS,
     outputJson: SIMULATION_CONSTANTS.outputJson,
     outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown,
     scenarios: SCENARIOS,
+    metadata: {
+      nodeVersion: process.version,
+      sourceBaseCommit: getSourceBaseCommit(),
+      workingTreeDirty: getWorkingTreeDirty(),
+      simulationScriptSha256,
+      scenarioConfigSha256,
+      seedStrategy: 'scenario-id-plus-run-index'
+    },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     featureCoverage: buildFeatureCoverage(results),
