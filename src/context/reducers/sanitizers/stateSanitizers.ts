@@ -228,7 +228,7 @@ const sanitizeStashItem = (
  * Sanitizes untrusted inventory data into a valid band inventory structure.
  *
  * @remarks
- * Ensures item quantities are non-negative and properly mapped from the raw payload,
+ * Ensures item quantities are properly mapped from the raw payload,
  * validating against allowed items.
  *
  * @param value - The raw untrusted payload for the band inventory
@@ -815,8 +815,8 @@ const parseNumericStats = (
  * Sanitizes a raw band configuration payload into a stable band state object.
  *
  * @remarks
- * Verifies core properties such as band name, reputation, harmony, and stamina.
- * Corrupt or out-of-bound numerical states are clamped or reset to baseline values.
+ * Verifies numerical fields such as harmony, stamina, heat, respect, insight, network, and credits.
+ * Corrupt or out-of-bound numerical states are mapped to their baseline default values or preserved if valid.
  *
  * @param loadedBand - The raw untrusted band state payload
  * @returns A safe, sanitized band state object
@@ -1091,8 +1091,7 @@ export const migrateLegacyVenueId = (id: unknown): string => {
  * Sanitizes the current minigame execution state.
  *
  * @remarks
- * Resets the minigame state to default if structural irregularities are found,
- * ensuring it has the correct active status, type, and progress data.
+ * Falls back to default minigame properties on a per-field basis for missing or invalid object properties, ensuring it has the correct active status, type, and progress data.
  *
  * @param rawMinigame - The untrusted minigame state payload
  * @returns A valid minigame state, falling back to default if invalid
@@ -1788,7 +1787,7 @@ export const sanitizeActiveQuests = (
  * Sanitizes quest cooldown trackers to prevent premature quest recurrence.
  *
  * @remarks
- * Filters out malformed cooldown entries and ensures remaining cooldown durations are finite numbers.
+ * Filters out malformed cooldown entries and ensures expiresOnDay values are finite numbers.
  *
  * @param value - The raw untrusted quest cooldowns array
  * @returns A sanitized list of active quest cooldown entries
