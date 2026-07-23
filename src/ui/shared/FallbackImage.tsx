@@ -33,6 +33,7 @@ export const FallbackImage = ({
     <img
       src={resolvedSrc}
       alt={alt}
+      aria-hidden={alt === '' ? 'true' : undefined}
       crossOrigin={resolvedSrc.startsWith('data:') ? undefined : 'anonymous'}
       className={className}
       style={style}
