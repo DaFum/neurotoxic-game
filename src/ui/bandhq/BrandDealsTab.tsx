@@ -53,7 +53,9 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
         const activeDeal = activeDealsMap.get(deal.id) ?? null
 
         // Generate a specific, fitting image prompt for each deal
-        const prompt = `pixel art logo for ${deal.name}, ${deal.description}, dark grunge aesthetic, high contrast, visually striking`
+        const promptName = displayDeal?.name ?? deal.name
+        const promptDescription = displayDeal?.description ?? deal.description
+        const prompt = `pixel art logo for ${promptName}, ${promptDescription}, dark grunge aesthetic, high contrast, visually striking`
         const imageUrl = resolveGenImageUrl(prompt, isOnline)
 
         return (

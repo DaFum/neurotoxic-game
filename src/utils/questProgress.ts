@@ -402,8 +402,8 @@ const questRuleMatchesEvent = (
     if (success !== match.success) return false
   }
 
-  if (typeof match.minScore === 'number') {
-    if (typeof context.score !== 'number' || context.score < match.minScore) {
+  if (isFiniteNumber(match.minScore)) {
+    if (!isFiniteNumber(context.score) || context.score < match.minScore) {
       return false
     }
   }
@@ -423,12 +423,12 @@ const getThresholdValue = (
   const context = getEventContext(event)
   switch (rule.thresholdField) {
     case 'social.loyalty':
-      return typeof context.loyalty === 'number' ? context.loyalty : 0
+      return finiteNumberOr(context.loyalty, 0)
     case 'asset.condition':
-      return typeof context.condition === 'number' ? context.condition : 0
+      return finiteNumberOr(context.condition, 0)
     case 'band.harmony':
     default:
-      return typeof context.harmony === 'number' ? context.harmony : 0
+      return finiteNumberOr(context.harmony, 0)
   }
 }
 

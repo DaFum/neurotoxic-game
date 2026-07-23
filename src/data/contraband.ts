@@ -4,6 +4,7 @@
  * They either grant immediate consumable effects or passive buffs.
  */
 
+import { validateContrabandItem } from '../schemas/contraband'
 import { logger } from '../utils/logger'
 import type { Rarity } from '../types'
 
@@ -538,6 +539,15 @@ export const CONTRABAND_BY_RARITY: Record<
 }
 
 for (const item of CONTRABAND_DB) {
+  const validation = validateContrabandItem(item)
+  if (!validation.ok) {
+    logger.warn(
+      'ContrabandData',
+      `Invalid contraband item ${item.id}: ${validation.errors.join(', ')}`
+    )
+    continue
+  }
+
   if (CONTRABAND_BY_ID.has(item.id)) {
     logger.warn('ContrabandData', `Duplicate item ID found: ${item.id}`)
   }

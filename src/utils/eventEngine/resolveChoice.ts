@@ -89,7 +89,7 @@ const resolveSkillCheckFailure = (
  * Ensures the result is a composite effect and appends a new effect to it safely,
  * without mutating the global events DB.
  */
-export const appendEffectToResult = (
+const appendEffectToResult = (
   result: EffectShape,
   effectToAppend: EffectShape
 ): EffectShape => {

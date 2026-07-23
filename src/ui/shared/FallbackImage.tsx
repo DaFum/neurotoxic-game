@@ -6,6 +6,7 @@ interface FallbackImageProps {
   alt: string
   className?: string
   style?: CSSProperties
+  fallbackSrc?: string
 }
 
 /**
@@ -19,12 +20,14 @@ export const FallbackImage = ({
   src,
   alt,
   className,
-  style
+  style,
+  fallbackSrc
 }: FallbackImageProps) => {
   const [failedSrc, setFailedSrc] = useState<string | null>(null)
   // Keying the failure on the src that failed means a src change retries the
   // new URL automatically, without an effect-based reset.
-  const resolvedSrc = failedSrc === src ? getGeneratedImageFallbackUrl() : src
+  const resolvedSrc =
+    failedSrc === src ? (fallbackSrc ?? getGeneratedImageFallbackUrl()) : src
 
   return (
     <img

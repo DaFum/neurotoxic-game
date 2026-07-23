@@ -7,6 +7,7 @@ import { RoadieHUD } from '../components/minigames/roadie/RoadieHUD'
 import { RoadieControls } from '../components/minigames/roadie/RoadieControls'
 import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
  * Hosts the Roadie equipment-delivery minigame and returns to the gig flow on completion.
@@ -41,10 +42,11 @@ export const RoadieRunScene = () => {
   const renderCompletionStats = useCallback(
     (state: unknown) => {
       const currentDamage =
-        state &&
-        typeof state === 'object' &&
-        typeof (state as { currentDamage?: unknown }).currentDamage === 'number'
-          ? (state as { currentDamage: number }).currentDamage
+        state && typeof state === 'object'
+          ? finiteNumberOr(
+              (state as { currentDamage?: unknown }).currentDamage,
+              0
+            )
           : 0
       return t('ui:roadieRun.completion.equipmentDamage', {
         damage: Math.max(0, currentDamage)

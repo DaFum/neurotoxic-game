@@ -3,8 +3,6 @@ import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest'
 
 import React from 'react'
 import { render, fireEvent, renderHook, act } from '@testing-library/react'
-import fs from 'node:fs/promises'
-import path from 'node:path'
 
 // Mocks
 
@@ -132,8 +130,9 @@ vi.mock('../../src/context/GameState', () => ({
 }))
 // Import PreGig after mocks
 const { PreGig } = await import('../../src/scenes/PreGig.tsx')
-const { __testInternals, usePreGigLogic } =
-  await import('../../src/hooks/usePreGigLogic')
+const { usePreGigLogic } = await import('../../src/hooks/usePreGigLogic')
+const { resetLastMinigameFallback, resolveBandMeetingCost } =
+  await import('../../src/hooks/preGig/preGigUtils')
 const { getSafeRandom } = await import('../../src/utils/crypto')
 const { resolveMerchRestockCost } = await import('../../src/utils/merchUtils')
 
@@ -163,16 +162,10 @@ const makeAssetWithModule = ({
 })
 
 describe('PreGig', () => {
-  test('exposes minigame fallback reset only through test internals', () => {
-    expect(__testInternals?.resetLastMinigameFallback).toBeTypeOf('function')
-  })
-
   test('pre-gig economy internals sanitize invalid asset multipliers', () => {
-    expect(__testInternals?.resolveBandMeetingCost(Number.NaN)).toBe(50)
-    expect(
-      __testInternals?.resolveBandMeetingCost(Number.POSITIVE_INFINITY)
-    ).toBe(50)
-    expect(__testInternals?.resolveBandMeetingCost(-2)).toBe(0)
+    expect(resolveBandMeetingCost(Number.NaN)).toBe(50)
+    expect(resolveBandMeetingCost(Number.POSITIVE_INFINITY)).toBe(50)
+    expect(resolveBandMeetingCost(-2)).toBe(0)
 
     expect(
       resolveMerchRestockCost({
@@ -200,16 +193,6 @@ describe('PreGig', () => {
     ).toBe(0)
   })
 
-  test('guards test internals runtime detection for browsers without process', async () => {
-    const source = await fs.readFile(
-      path.join(process.cwd(), 'src', 'hooks', 'usePreGigLogic.ts'),
-      'utf8'
-    )
-
-    expect(source).toContain("typeof process !== 'undefined'")
-    expect(source).toContain("process.env?.NODE_ENV === 'test'")
-  })
-
   beforeEach(() => {
     //  removed (handled by vitest env)
     // Reset mocks
@@ -229,9 +212,7 @@ describe('PreGig', () => {
     }
 
     // Reset fallback memory
-    if (typeof __testInternals?.resetLastMinigameFallback === 'function') {
-      __testInternals.resetLastMinigameFallback()
-    }
+    resetLastMinigameFallback()
   })
 
   afterEach(() => {

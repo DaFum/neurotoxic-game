@@ -2,6 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { NEUROTOXIC_PEDAL_HARMONY_PENALTY } from '../context/gameConstants'
 import { getTotalDailyObligations } from '../utils/assetSelectors'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
@@ -120,7 +121,7 @@ export const usePostGigLogic = () => {
   const pedalHarmonyPenalty = band?.inventory?.neurotoxicPedal
     ? Math.min(
         NEUROTOXIC_PEDAL_HARMONY_PENALTY,
-        Math.max(0, (band.harmony ?? 0) - 1)
+        Math.max(0, finiteNumberOr(band.harmony, 1) - 1)
       )
     : 0
 

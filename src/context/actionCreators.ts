@@ -193,7 +193,8 @@ const SOCIAL_NULLABLE_FIELDS = new Set([
   'lastGigDay',
   'lastGigDifficulty',
   'lastPirateBroadcastDay',
-  'lastDarkWebLeakDay'
+  'lastDarkWebLeakDay',
+  'lastCultIndoctrinationDay'
 ])
 
 const SOCIAL_NUMERIC_FIELDS = new Set([
@@ -206,6 +207,7 @@ const SOCIAL_NUMERIC_FIELDS = new Set([
   'lastGigDifficulty',
   'lastPirateBroadcastDay',
   'lastDarkWebLeakDay',
+  'lastCultIndoctrinationDay',
   'controversyLevel',
   'loyalty',
   'zealotry',

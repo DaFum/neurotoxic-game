@@ -1,7 +1,7 @@
 import { finiteNumberOr } from '../utils/finiteNumber'
 // Music Library
 import rhythmSongs from '../assets/rhythm_songs.json' with { type: 'json' }
-import type { Note, Song } from '../types/audio'
+import type { Note, Song, SongAudioSources } from '../types/audio'
 
 type RawNote = {
   t?: number
@@ -15,7 +15,7 @@ type RawNote = {
   [key: string]: unknown
 }
 
-type RawSong = {
+type RawSong = SongAudioSources & {
   name?: string
   notes?: RawNote[]
   tpb?: number
@@ -27,8 +27,6 @@ type RawSong = {
   crowdAppeal?: number
   staminaDrain?: number
   tempoMap?: unknown[]
-  sourceMid?: string
-  sourceOgg?: string | null
   excerptStartMs?: number
   excerptEndMs?: number
   excerptDurationMs?: number

@@ -10,35 +10,8 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economyEngine'
 
-import {
-  resetLastMinigameFallback,
-  resolveBandMeetingCost
-} from './preGig/preGigUtils'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
-
-const isTestRuntime =
-  typeof process !== 'undefined' && process.env?.NODE_ENV === 'test'
-
-/**
- * Internal testing utilities exposed only during test execution.
- *
- * @remarks
- * This export is `undefined` in production. It exposes hidden module state
- * and internal helpers strictly to enable isolated unit testing without modifying
- * production signatures.
- */
-export const __testInternals:
-  | {
-      resetLastMinigameFallback: () => void
-      resolveBandMeetingCost: (trainingCostMultiplier: unknown) => number
-    }
-  | undefined = isTestRuntime
-  ? {
-      resetLastMinigameFallback,
-      resolveBandMeetingCost
-    }
-  : undefined
 
 /**
  * UI-ready metadata for one pre-gig modifier option.

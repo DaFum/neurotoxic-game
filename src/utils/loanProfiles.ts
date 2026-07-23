@@ -60,7 +60,7 @@ export const LOAN_PROFILES: Record<LoanProfileId, LoanProfile> = {
 /**
  * Flat refinance fee rate applied to remaining principal.
  */
-export const REFINANCE_FEE_RATE = 0.02
+const REFINANCE_FEE_RATE = 0.02
 
 /**
  * Checks whether fame and scene presence satisfy a loan profile's gates.

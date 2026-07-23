@@ -32,7 +32,7 @@ import {
 /**
  * State and toast payloads produced by applying quest rewards.
  */
-export interface QuestRewardResult {
+interface QuestRewardResult {
   state: GameState
   toasts: ToastPayload[]
 }

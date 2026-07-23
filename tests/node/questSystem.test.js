@@ -533,6 +533,60 @@ describe('Quest System Registry Validation', () => {
     }
   })
 
+  it('ignores non-finite score and threshold context values', () => {
+    const thresholdState = {
+      ...getBaseState(),
+      activeQuests: [
+        {
+          id: 'q_nonfinite_threshold',
+          progress: 0,
+          required: 100,
+          progressRules: [
+            {
+              event: 'band.harmonyChanged',
+              amount: 'threshold',
+              thresholdField: 'band.harmony'
+            }
+          ]
+        }
+      ]
+    }
+
+    const thresholdNext = QuestProgress.applyEvent(thresholdState, {
+      type: 'band.harmonyChanged',
+      amount: 1,
+      context: { harmony: Number.NaN }
+    })
+    assert.equal(thresholdNext.activeQuests[0].progress, 0)
+
+    const minScoreState = {
+      ...getBaseState(),
+      activeQuests: [
+        {
+          id: 'q_nonfinite_score',
+          progress: 0,
+          required: 10,
+          progressRules: [
+            {
+              event: 'gig.completed',
+              amount: 'fixed',
+              fixedAmount: 1,
+              match: { minScore: 10 }
+            }
+          ]
+        }
+      ]
+    }
+    const minScoreNext = QuestProgress.applyEvent(minScoreState, {
+      type: 'gig.completed',
+      score: Number.POSITIVE_INFINITY,
+      capacity: 100,
+      venueId: 'test_venue',
+      region: 'test_region'
+    })
+    assert.equal(minScoreNext.activeQuests[0].progress, 0)
+  })
+
   it('should ensure repeatPolicy never quests do not restart', () => {
     // Contract: QuestLifecycle.addQuest enforces repeatPolicy: 'never' by
     // refusing re-add once the id is in completedQuestIds or an active

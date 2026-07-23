@@ -1,7 +1,7 @@
 /**
  * Minimum milliseconds between accepted lane-down inputs.
  */
-export const DEBOUNCE_MS = 50
+const DEBOUNCE_MS = 50
 
 interface LaneState {
   active: boolean

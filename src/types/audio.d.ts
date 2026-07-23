@@ -24,7 +24,12 @@ export interface Note {
 /**
  * Rhythm song metadata, playable chart data, and optional MIDI/OGG source references.
  */
-export interface Song {
+export type SongAudioSources = {
+  sourceMid?: string
+  sourceOgg?: string | null
+}
+
+export interface Song extends SongAudioSources {
   id: string
   leaderboardId: string
   title: string
@@ -44,8 +49,6 @@ export interface Song {
   staminaDrain?: number
   energy?: { peak: number }
   tempoMap?: unknown[]
-  sourceMid?: string
-  sourceOgg?: string | null
   tpb?: number
 }
 

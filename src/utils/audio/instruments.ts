@@ -18,7 +18,7 @@ type EnvelopeWithCurves = {
  * @param bus - Tone.js audio node to connect the snare to.
  * @returns Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
-export function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
+function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
   const snareBus = new Tone.Volume(0).connect(bus)
   const snareNoise = new Tone.NoiseSynth({
     envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
@@ -180,7 +180,7 @@ export function setupBass(): void {
  * @param kickOverrides - Optional MembraneSynth options for the kick voice.
  * @returns Drum kit synth bundle used by MIDI and gig playback.
  */
-export function buildDrumKit(
+function buildDrumKit(
   bus: Tone.InputNode,
   kickOverrides: Partial<Tone.MembraneSynthOptions> = {}
 ): DrumKitSynth {

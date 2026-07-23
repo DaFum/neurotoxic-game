@@ -5,11 +5,37 @@ import {
   CONTRABAND_BY_RARITY,
   CONTRABAND_RARITY_WEIGHTS
 } from '../../src/data/contraband'
+import { validateContrabandItem } from '../../src/schemas/contraband'
 
 const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {
+    it('validates each item through the reusable contraband schema', () => {
+      for (const item of CONTRABAND_DB) {
+        assert.equal(validateContrabandItem(item).ok, true, item.id)
+      }
+    })
+
+    it('rejects hostile prototype keys at nested schema boundaries', () => {
+      const result = validateContrabandItem({
+        id: 'c_test',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_test.name',
+        type: 'consumable',
+        effectType: 'stamina',
+        value: 1,
+        description: 'items:contraband.c_test.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false,
+        nested: { constructor: { prototype: { polluted: true } } }
+      })
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+    })
+
     it('should have all items with imagePrompt field', () => {
       for (const item of CONTRABAND_DB) {
         assert.equal(
