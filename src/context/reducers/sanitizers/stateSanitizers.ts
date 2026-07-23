@@ -224,6 +224,16 @@ const sanitizeStashItem = (
   return copy
 }
 
+/**
+ * Sanitizes untrusted inventory data into a valid band inventory structure.
+ *
+ * @remarks
+ * Ensures item quantities are properly mapped from the raw payload,
+ * validating against allowed items.
+ *
+ * @param value - The raw untrusted payload for the band inventory
+ * @returns A fully sanitized and valid inventory object
+ */
 export const sanitizeBandInventory = (
   value: unknown
 ): BandState['inventory'] => {
@@ -646,6 +656,16 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   return sanitizedMap
 }
 
+/**
+ * Sanitizes an untrusted player payload into a valid player state object.
+ *
+ * @remarks
+ * Normalizes user details like name, cash balance, and limits values to valid bounds
+ * to prevent corrupted or tampered values.
+ *
+ * @param loadedPlayer - The raw untrusted player state payload
+ * @returns A safe, sanitized player state object
+ */
 export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
   const playerData = isLooseRecord(loadedPlayer)
     ? Object.assign(Object.create(null), loadedPlayer)
@@ -791,6 +811,16 @@ const parseNumericStats = (
   return result
 }
 
+/**
+ * Sanitizes a raw band configuration payload into a stable band state object.
+ *
+ * @remarks
+ * Verifies numerical fields such as harmony, stamina, heat, respect, insight, network, and credits.
+ * Corrupt or out-of-bound numerical states are mapped to their baseline default values or preserved if valid.
+ *
+ * @param loadedBand - The raw untrusted band state payload
+ * @returns A safe, sanitized band state object
+ */
 export const sanitizeBand = (loadedBand: unknown): BandState => {
   const bandData = isLooseRecord(loadedBand)
     ? Object.assign(Object.create(null), loadedBand)
@@ -1016,6 +1046,16 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
   }
 }
 
+/**
+ * Sanitizes an array of toast notification payloads.
+ *
+ * @remarks
+ * Filters out invalid toast entries and ensures that required properties (like message and id)
+ * exist for each toast.
+ *
+ * @param loadedToasts - The raw untrusted toast payloads array
+ * @returns An array of sanitized toast payloads
+ */
 export const sanitizeToasts = (loadedToasts: unknown): ToastPayload[] => {
   if (!Array.isArray(loadedToasts)) return []
   const acc: ToastPayload[] = []
@@ -1047,6 +1087,15 @@ export const migrateLegacyVenueId = (id: unknown): string => {
   return normalizeVenueId(id) ?? id
 }
 
+/**
+ * Sanitizes the current minigame execution state.
+ *
+ * @remarks
+ * Falls back to default minigame properties on a per-field basis for missing or invalid object properties, ensuring it has the correct active status, type, and progress data.
+ *
+ * @param rawMinigame - The untrusted minigame state payload
+ * @returns A valid minigame state, falling back to default if invalid
+ */
 export const sanitizeMinigameState = (
   rawMinigame: unknown
 ): GameState['minigame'] => {
@@ -1113,6 +1162,16 @@ export const sanitizeMinigameState = (
   return nextMinigame
 }
 
+/**
+ * Sanitizes an array of setlist entries.
+ *
+ * @remarks
+ * Validates that each setlist item references a legitimate song identifier and filters out
+ * unknown or corrupted entries.
+ *
+ * @param rawSetlist - The untrusted setlist payload array
+ * @returns A sanitized list of song identifiers
+ */
 export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
   if (!Array.isArray(rawSetlist)) return []
   const sanitized: GameState['setlist'] = []
@@ -1127,6 +1186,15 @@ export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
   return sanitized
 }
 
+/**
+ * Sanitizes regional reputation metrics mapped by region keys.
+ *
+ * @remarks
+ * Iterates through the provided regional map, clamping reputation values to valid finite bounds.
+ *
+ * @param value - The raw untrusted regional reputation mapping
+ * @returns A sanitized mapping of regional reputation values
+ */
 export const sanitizeReputationByRegion = (
   value: unknown
 ): GameState['reputationByRegion'] => {
@@ -1143,6 +1211,16 @@ export const sanitizeReputationByRegion = (
   return sanitized
 }
 
+/**
+ * Sanitizes the broader social state encompassing followers, influencers, and brand interactions.
+ *
+ * @remarks
+ * Deeply validates nested social structures, removing malicious payload keys and clamping
+ * followers and sentiment to non-negative bounds.
+ *
+ * @param value - The raw untrusted social state payload
+ * @returns A stable, sanitized social state object
+ */
 export const sanitizeSocial = (value: unknown): SocialState => {
   const sanitized: SocialState = {
     ...DEFAULT_SOCIAL_STATE,
@@ -1263,6 +1341,15 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   return sanitized
 }
 
+/**
+ * Sanitizes the active event option selected during an ongoing game event.
+ *
+ * @remarks
+ * Ensures the event option references a known option structure with proper string keys and bounds.
+ *
+ * @param value - The raw untrusted active event option payload
+ * @returns A sanitized event option or null if the payload is invalid
+ */
 export const sanitizeActiveEventOption = (
   value: unknown
 ): EventOption | null => {
@@ -1313,6 +1400,16 @@ export const sanitizeActiveEventOption = (
   return !isEmptyObject(option) ? option : null
 }
 
+/**
+ * Sanitizes the active game event state.
+ *
+ * @remarks
+ * Validates the event structure, including its identifiers and currently selected options,
+ * guarding against prototype pollution and corrupted event chains.
+ *
+ * @param value - The raw untrusted active event state payload
+ * @returns A valid active event state or null if no valid event exists
+ */
 export const sanitizeActiveEvent = (
   value: unknown
 ): GameState['activeEvent'] => {
@@ -1364,6 +1461,15 @@ export const sanitizeActiveEvent = (
   return event
 }
 
+/**
+ * Sanitizes the state tracking persistent NPCs and relationships.
+ *
+ * @remarks
+ * Validates that each NPC has a known ID, and clamps their relationship metrics to allowed bounds.
+ *
+ * @param value - The raw untrusted NPC tracking state
+ * @returns A sanitized mapping of NPC identifiers to their corresponding states
+ */
 export const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
   if (!isLooseRecord(value)) return {}
   const sanitized: GameState['npcs'] = {}
@@ -1389,6 +1495,16 @@ export const sanitizeNpcs = (value: unknown): GameState['npcs'] => {
   return sanitized
 }
 
+/**
+ * Sanitizes modifiers applied to upcoming or active gigs.
+ *
+ * @remarks
+ * Iterates through allowed gig modifiers, preserving valid boolean flags and handling legacy
+ * aliases (e.g., merging `energy` flags into `catering`).
+ *
+ * @param value - The raw untrusted gig modifiers mapping
+ * @returns A sanitized object containing valid gig modifiers
+ */
 export const sanitizeGigModifiers = (
   value: unknown
 ): GameState['gigModifiers'] => {
@@ -1418,6 +1534,16 @@ export const sanitizeGigModifiers = (
   return sanitized
 }
 
+/**
+ * Sanitizes the currently targeted or active gig venue context.
+ *
+ * @remarks
+ * Ensures the venue has valid IDs, identifiers, and bounds for capacity and difficulty,
+ * filtering out any polluted prototype properties.
+ *
+ * @param value - The raw untrusted venue context payload
+ * @returns A sanitized venue object or null if invalid
+ */
 export const sanitizeVenue = (value: unknown): GameState['currentGig'] => {
   if (!isLooseRecord(value)) return null
   if (typeof value.id !== 'string' || typeof value.name !== 'string') {
@@ -1522,6 +1648,16 @@ export const sanitizeRivalBand = (value: unknown): GameState['rivalBand'] => {
   }
 }
 
+/**
+ * Sanitizes the performance statistics from the previously completed gig.
+ *
+ * @remarks
+ * Clamps and validates numerical stats such as score, combo, and accuracy. It preserves
+ * failure flags which persist across state transitions.
+ *
+ * @param value - The raw untrusted statistics payload from the last gig
+ * @returns A sanitized gig statistics object or null if no valid stats exist
+ */
 export const sanitizeLastGigStats = (
   value: unknown
 ): GameState['lastGigStats'] => {
@@ -1548,6 +1684,16 @@ export const sanitizeLastGigStats = (
   return !isEmptyObject(sanitized) ? sanitized : null
 }
 
+/**
+ * Sanitizes the array of active and ongoing player quests.
+ *
+ * @remarks
+ * Normalizes quest progress against maximum bounds and correctly links active quests
+ * to their backing registry definitions, dropping completely invalid items.
+ *
+ * @param value - The raw untrusted active quests array
+ * @returns A sanitized array of valid active quests
+ */
 export const sanitizeActiveQuests = (
   value: unknown
 ): GameState['activeQuests'] => {
@@ -1637,6 +1783,15 @@ export const sanitizeActiveQuests = (
   })
 }
 
+/**
+ * Sanitizes quest cooldown trackers to prevent premature quest recurrence.
+ *
+ * @remarks
+ * Filters out malformed cooldown entries and ensures expiresOnDay values are finite numbers.
+ *
+ * @param value - The raw untrusted quest cooldowns array
+ * @returns A sanitized list of active quest cooldown entries
+ */
 export const sanitizeQuestCooldowns = (
   value: unknown
 ): GameState['questCooldowns'] => {
@@ -1652,6 +1807,16 @@ export const sanitizeQuestCooldowns = (
   })
 }
 
+/**
+ * Sanitizes the tracking array representing completed quest scopes.
+ *
+ * @remarks
+ * Validates the composite keys (questId and scopeKey) mapping to completed scopes, ignoring
+ * invalid or polluted entries.
+ *
+ * @param value - The raw untrusted completed quest scopes array
+ * @returns A sanitized list of valid completed quest scope entries
+ */
 export const sanitizeQuestScopes = (
   value: unknown
 ): GameState['completedQuestScopes'] => {
