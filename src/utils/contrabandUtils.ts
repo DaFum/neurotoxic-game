@@ -14,7 +14,7 @@ import type { Rarity } from '../types'
  */
 export const DROP_BASE_CHANCE = 0.15
 /** Drop-chance bonus applied per point of band luck. */
-export const LUCK_MOD_PER_POINT = 0.005
+const LUCK_MOD_PER_POINT = 0.005
 /** Maximum allowed contraband drop chance. */
 export const MAX_DROP_CHANCE = 0.5
 

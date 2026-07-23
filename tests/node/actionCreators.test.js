@@ -634,6 +634,25 @@ describe('Action Creators', () => {
       })
       assert.strictEqual(merch.payload.loyaltyGain, 0)
     })
+
+    it('drops non-finite cult indoctrination cooldown updates while preserving null', () => {
+      const invalid = createUpdateSocialAction({
+        lastCultIndoctrinationDay: Number.NaN
+      })
+      assert.deepStrictEqual(invalid.payload, {})
+
+      const cleared = createUpdateSocialAction({
+        lastCultIndoctrinationDay: null
+      })
+      assert.deepStrictEqual(cleared.payload, {
+        lastCultIndoctrinationDay: null
+      })
+
+      const wrapped = createUpdateSocialAction(() => ({
+        lastCultIndoctrinationDay: Number.POSITIVE_INFINITY
+      }))
+      assert.deepStrictEqual(wrapped.payload({}), {})
+    })
   })
 })
 

@@ -1,4 +1,4 @@
-import type { Note } from './audio'
+import type { Note, SongAudioSources } from './audio'
 import type { Projectile } from '../utils/hecklerLogic'
 
 /**
@@ -77,17 +77,15 @@ export type SetLastGigStats = (stats: GigStats) => void
  */
 export type RhythmSetlistEntry =
   | string
-  | {
+  | (SongAudioSources & {
       id?: string
       name?: string
       bpm?: number
       duration?: number
       difficulty?: number
       notes?: unknown[]
-      sourceMid?: string
-      sourceOgg?: string | null
       [key: string]: unknown
-    }
+    })
 
 /**
  * Active rhythm gameplay modifiers from band, venue, and prep effects.

@@ -19,7 +19,7 @@ import {
 /**
  * State, story flags, and cooldowns produced by quest failure penalties.
  */
-export interface QuestPenaltyResult {
+interface QuestPenaltyResult {
   state: GameState
   flagsToAdd: string[]
   cooldownsToAdd: GameState['questCooldowns']

@@ -11,7 +11,7 @@ import { finiteNumberOr } from '../utils/gameState'
 /**
  * Quest offer available for a trigger after condition and slot checks.
  */
-export interface AvailableQuestOffer {
+interface AvailableQuestOffer {
   questId: string
   offer: QuestOfferDefinition
 }

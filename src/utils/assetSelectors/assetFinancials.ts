@@ -45,7 +45,7 @@ export const calculateChassisGrossSaleValue = (
  * @param asset - Asset whose slots should be inspected.
  * @returns Installed module definitions in slot order, excluding unknown module ids.
  */
-export const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
+const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
   const out: AssetModule[] = []
   for (const s of asset.slots) {
     if (s.installedModuleId === null) continue

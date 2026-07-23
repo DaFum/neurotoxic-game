@@ -1,4 +1,4 @@
-import type { Song, Note } from '../../types/audio'
+import type { Song, Note, SongAudioSources } from '../../types/audio'
 
 /**
  * Silent countdown before gig audio and the scheduled note window begin, in milliseconds.
@@ -44,16 +44,15 @@ export interface MutableRef<T> {
  * is generated at runtime; `sourceMid`/`sourceOgg` select the background audio
  * strategy and may be omitted for fully procedural playback.
  */
-export type ActiveSong = Partial<Song> & {
-  id: string
-  name: string
-  bpm: number
-  duration: number
-  difficulty: number
-  notes?: Note[]
-  sourceMid?: string
-  sourceOgg?: string | null
-}
+export type ActiveSong = SongAudioSources &
+  Partial<Song> & {
+    id: string
+    name: string
+    bpm: number
+    duration: number
+    difficulty: number
+    notes?: Note[]
+  }
 
 /**
  * Type guard for an untrusted value that carries a `notes` array.
@@ -63,15 +62,13 @@ export type ActiveSong = Partial<Song> & {
  */
 export const hasNotesField = (
   v: unknown
-): v is {
+): v is SongAudioSources & {
   notes: Note[]
   id?: string
   name?: string
   bpm?: number
   duration?: number
   difficulty?: number
-  sourceMid?: string
-  sourceOgg?: string | null
 } => {
   return (
     typeof v === 'object' &&

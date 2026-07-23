@@ -824,6 +824,22 @@ describe('usePostGigLogic', () => {
       )
     })
 
+    it('uses finite harmony when deriving neurotoxic pedal penalty', async () => {
+      mockGameState(
+        getBaseState({
+          band: {
+            ...getBaseState().band,
+            harmony: Number.NaN,
+            inventory: { neurotoxicPedal: true }
+          }
+        })
+      )
+
+      const { result } = renderHook(() => usePostGigLogic())
+
+      expect(result.current.pedalHarmonyPenalty).toBe(0)
+    })
+
     it('returns early from handleContinue if financials are null', async () => {
       mockGameState(getBaseState({ lastGigStats: null }))
       const { result } = renderHook(() => usePostGigLogic())
