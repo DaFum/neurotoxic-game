@@ -39,12 +39,11 @@ vi.mock('../../../../src/ui/shared', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
-  Loader2: () => <svg data-testid='loader2-icon' />
+  Loader2: (props: Record<string, unknown>) => <svg data-testid='loader2-icon' {...props} />
 }))
 
 vi.mock('../../../../src/ui/shared/Icons', () => ({
-  RazorPlayIcon: () => <svg data-testid='razor-play-icon' />,
-  Loader2: () => <svg data-testid='loader2-icon' />
+  RazorPlayIcon: () => <svg data-testid='razor-play-icon' />
 }))
 
 describe('PreGigStartButton', () => {
@@ -87,6 +86,7 @@ describe('PreGigStartButton', () => {
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(screen.queryByTestId('razor-play-icon')).not.toBeInTheDocument()
     expect(screen.getByTestId('loader2-icon')).toBeInTheDocument()
+    expect(screen.getByTestId('loader2-icon')).toHaveAttribute('aria-hidden', 'true')
     expect(screen.getByText('ui:pregig.initializing')).toBeInTheDocument()
   })
 
