@@ -179,3 +179,8 @@
 
 **Learning:** Found that custom interactive components like `DeadmanButton`, despite having custom active states (`isHolding`), lack native explicit focus styles. This makes them invisible to keyboard-only navigation users who rely on tab navigation to find critical destructive actions.
 **Action:** Always ensure that interactive components mimicking button behaviors explicitly include focus-visible utility classes (e.g. `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to support keyboard accessibility without breaking the visual aesthetic.
+
+## 2024-07-24 - Add ARIA busy and loading state for async action buttons
+
+**Learning:** Buttons triggering asynchronous state transitions (like loading the gig setlist with `isStarting=true`) often disable themselves and change their label, but lack an explicit ARIA indicator that they are actively processing. Screen readers might just read "Initializing, disabled" without context. Adding `aria-busy` along with a visual spinner ensures all users know the app is working and hasn't frozen.
+**Action:** When creating or auditing buttons that trigger loading states, add `aria-busy={isLoading}` to communicate the pending state to screen readers natively, and accompany it with a visual loading spinner (like `Loader2` from `lucide-react`) for sighted users.

@@ -17,16 +17,19 @@ vi.mock('../../../../src/ui/shared', () => ({
     children,
     onClick,
     disabled,
-    className
-  }: {
+    className,
+  ...props
+}: {
     children?: ReactNode
     onClick?: () => void
     disabled?: boolean
     className?: string
+    'aria-busy'?: boolean
   }) => (
     <button
       onClick={onClick}
       disabled={disabled}
+      aria-busy={props['aria-busy']}
       className={className}
       data-testid='action-button'
     >
@@ -35,8 +38,13 @@ vi.mock('../../../../src/ui/shared', () => ({
   )
 }))
 
+vi.mock('lucide-react', () => ({
+  Loader2: () => <svg data-testid='loader2-icon' />
+}))
+
 vi.mock('../../../../src/ui/shared/Icons', () => ({
-  RazorPlayIcon: () => <svg data-testid='razor-play-icon' />
+  RazorPlayIcon: () => <svg data-testid='razor-play-icon' />,
+  Loader2: () => <svg data-testid='loader2-icon' />
 }))
 
 describe('PreGigStartButton', () => {
@@ -55,6 +63,7 @@ describe('PreGigStartButton', () => {
 
     const button = screen.getByTestId('action-button')
     expect(button).not.toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'false')
     expect(screen.getByTestId('razor-play-icon')).toBeInTheDocument()
     expect(screen.getByText('ui:pregig.startShow')).toBeInTheDocument()
 
@@ -75,7 +84,9 @@ describe('PreGigStartButton', () => {
 
     const button = screen.getByTestId('action-button')
     expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'true')
     expect(screen.queryByTestId('razor-play-icon')).not.toBeInTheDocument()
+    expect(screen.getByTestId('loader2-icon')).toBeInTheDocument()
     expect(screen.getByText('ui:pregig.initializing')).toBeInTheDocument()
   })
 
@@ -92,5 +103,6 @@ describe('PreGigStartButton', () => {
 
     const button = screen.getByTestId('action-button')
     expect(button).toBeDisabled()
+    expect(button).toHaveAttribute('aria-busy', 'false')
   })
 })
