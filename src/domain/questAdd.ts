@@ -12,8 +12,9 @@ import { completeQuest } from './questComplete'
  * @remarks
  * Merges the provided quest payload with static defaults from the quest registry.
  * It gates progression behind `canAcceptQuest` rules and computes relative deadlines
- * into absolute day markers. If the requested quest dictates an immediate completion
- * state upon instantiation, it synchronously completes it before returning the new state.
+ * into absolute day markers. If the quest's initial progress is greater than or equal
+ * to a finite required threshold (greater than zero), it synchronously completes the
+ * quest before returning the new state.
  *
  * @param state - The current overarching game state.
  * @param quest - The partial quest payload containing override parameters and identification.
