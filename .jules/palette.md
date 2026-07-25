@@ -179,3 +179,6 @@
 
 **Learning:** Found that custom interactive components like `DeadmanButton`, despite having custom active states (`isHolding`), lack native explicit focus styles. This makes them invisible to keyboard-only navigation users who rely on tab navigation to find critical destructive actions.
 **Action:** Always ensure that interactive components mimicking button behaviors explicitly include focus-visible utility classes (e.g. `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`) to support keyboard accessibility without breaking the visual aesthetic.
+## 2024-06-19 - Keyboard Accessibility for HUD Tooltips
+**Learning:** Tooltip-wrapped non-interactive elements (such as `div` and `svg`) must explicitly receive `tabIndex={0}` and focus rings to preserve keyboard accessibility, especially in HUDs where hover is heavily relied upon.
+**Action:** When wrapping non-interactive elements in a Tooltip, always add `tabIndex={0}` and `focus-visible` styles to ensure keyboard-only users can navigate and trigger these tooltips.

@@ -25,7 +25,7 @@ export const VanStatusMiniBars = memo(
           content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
           position='bottom'
         >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+          <div className='flex items-end gap-1.5 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green' tabIndex={0}>
             <Fuel size={12} className='text-warning-yellow shrink-0 mb-0.5' />
             <div className='min-w-0 flex-1'>
               <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
@@ -48,7 +48,7 @@ export const VanStatusMiniBars = memo(
           content={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
           position='bottom'
         >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+          <div className='flex items-end gap-1.5 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green' tabIndex={0}>
             <Wrench size={12} className='text-condition-blue shrink-0 mb-0.5' />
             <div className='min-w-0 flex-1'>
               <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>

@@ -35,7 +35,8 @@ export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
           >
             <AlertCircle
               size={12}
-              className={`shrink-0 pointer-events-auto ${isStaminaLow ? 'text-blood-red' : 'text-warning-yellow'}`}
+              tabIndex={0}
+              className={`shrink-0 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${isStaminaLow ? 'text-blood-red' : 'text-warning-yellow'}`}
               role='img'
               aria-label={t('ui:overworld.memberWarning', {
                 defaultValue: 'Member needs attention'
@@ -54,7 +55,7 @@ export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
           content={t('ui:hud.mood', { defaultValue: 'Mood' })}
           position='bottom'
         >
-          <div className='flex items-center gap-1 pointer-events-auto'>
+          <div className='flex items-center gap-1 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green' tabIndex={0}>
             <div className='w-12'>
               <ProgressBar
                 value={mood}
@@ -78,7 +79,7 @@ export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
           content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
           position='bottom'
         >
-          <div className='flex items-center gap-1 pointer-events-auto'>
+          <div className='flex items-center gap-1 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green' tabIndex={0}>
             <div className='w-12'>
               <ProgressBar
                 value={stamina}
