@@ -1,3 +1,12 @@
+/**
+ * Defines the comprehensive catalog of purchasable gear, merch, and consumables.
+ *
+ * @remarks
+ * Items are categorized by type (GEAR, MERCH, CONSUMABLE) and each defines
+ * intrinsic economic costs and concrete state mutation instructions via the
+ * `effect` payload. The array is asserted as `const` to ensure literal type
+ * extraction across the application.
+ */
 export const gear = [
   // Standard Consumables
   {
