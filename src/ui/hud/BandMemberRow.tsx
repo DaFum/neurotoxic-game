@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { ProgressBar } from '../shared/index'
 import { Tooltip } from '../shared/index'
 import type { BandMember } from '../../types/band'
@@ -10,7 +11,8 @@ interface BandMemberRowProps {
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
-export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
+// ⚡ BOLT OPTIMIZATION: Wrapped component in React.memo to prevent unnecessary re-renders in lists.
+export const BandMemberRow = memo(({ m, idx, t }: BandMemberRowProps) => {
   const safeName =
     m?.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
   const mood = finiteNumberOr(m?.mood, 0)
@@ -101,4 +103,4 @@ export const BandMemberRow = ({ m, idx, t }: BandMemberRowProps) => {
       </div>
     </div>
   )
-}
+})
