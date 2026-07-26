@@ -6,6 +6,20 @@ import { createActiveQuestRuntime } from './questHelpers'
 import { canAcceptQuest } from './questAcceptance'
 import { completeQuest } from './questComplete'
 
+/**
+ * Integrates a new quest or restores a dormant quest into the active game state.
+ *
+ * @remarks
+ * Merges the provided quest payload with static defaults from the quest registry.
+ * It gates progression behind `canAcceptQuest` rules and computes relative deadlines
+ * into absolute day markers. If the quest's initial progress is greater than or equal
+ * to a finite required threshold (greater than zero), it synchronously completes the
+ * quest before returning the new state.
+ *
+ * @param state - The current overarching game state.
+ * @param quest - The partial quest payload containing override parameters and identification.
+ * @returns The updated game state featuring the active or instantly completed quest.
+ */
 export const addQuest = (state: GameState, quest: QuestState): GameState => {
   if (
     typeof quest.id !== 'string' ||

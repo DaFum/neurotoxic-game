@@ -50,3 +50,4 @@
 | 2026-07-21        | src/components/TutorialManager.tsx                     | getStepColorClass, TutorialManager                                                                                                                       |
 | 2026-07-22        | src/components/PixiStageController.ts                  | PixiStageController                                                                                                                                      |
 | 2026-07-23 | src/context/reducers/sanitizers/stateSanitizers.ts | sanitizeBandInventory, sanitizePlayer, sanitizeBand, sanitizeToasts, sanitizeMinigameState, sanitizeSetlist, sanitizeReputationByRegion, sanitizeSocial, sanitizeActiveEventOption, sanitizeActiveEvent, sanitizeNpcs, sanitizeGigModifiers, sanitizeVenue, sanitizeLastGigStats, sanitizeActiveQuests, sanitizeQuestCooldowns, sanitizeQuestScopes |
+| 2026-07-24 | src/domain/questAdd.ts | addQuest |
