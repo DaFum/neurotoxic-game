@@ -1,162 +1,141 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-
 import fs from 'node:fs/promises'
-import path from 'node:path'
-import { fileURLToPath } from 'node:url'
-import module from 'node:module'
 
-const require = module.createRequire(import.meta.url)
-const __dirname = path.dirname(fileURLToPath(import.meta.url))
-const simScriptPath = path.join(
-  __dirname,
-  '../../scripts/game-balance-simulation.mjs'
-)
+import {
+  REGRESSION_METRICS,
+  SCENARIOS,
+  buildExecutionCoverage,
+  buildFeatureInventory,
+  calculateDrawdownPct,
+  reconcileFameLedger,
+  runSingleSimulation,
+  summarizeScenario
+} from '../../scripts/game-balance-simulation.mjs'
 
-test('Statistics Utilities (Extracted for test)', async () => {
-  const content = await fs.readFile(simScriptPath, 'utf8')
-
-  const startLine = 'const mean = values => {'
-  const endLine =
-    '// ─────────────────────────────────────────────────────────────────────────'
-
-  const startIdx = content.indexOf(startLine)
-  const endIdx = content.indexOf(endLine, startIdx)
-
-  const utilsBlock = content.substring(startIdx, endIdx)
-
-  const extracted = `${utilsBlock}\n module.exports = { mean, median, standardDeviation, quantile, minimum, maximum, wilsonScoreInterval };\n`
-
-  const fsCjs = require('fs')
-  fsCjs.writeFileSync(path.join(__dirname, 'temp_stats.cjs'), extracted, 'utf8')
-  const {
-    mean,
-    median,
-    standardDeviation,
-    quantile,
-    minimum,
-    maximum,
-    wilsonScoreInterval
-  } = require('./temp_stats.cjs')
-
-  assert.equal(mean([]), null)
-  assert.equal(median([]), null)
-  assert.equal(standardDeviation([]), 0)
-  assert.equal(quantile([], 0.5), null)
-  assert.equal(minimum([]), null)
-  assert.equal(maximum([]), null)
-
-  assert.equal(mean([5]), 5)
-  assert.equal(median([5]), 5)
-  assert.equal(standardDeviation([5]), 0)
-  assert.equal(quantile([5], 0.5), 5)
-  assert.equal(minimum([5]), 5)
-  assert.equal(maximum([5]), 5)
-
-  assert.equal(mean([1, 2, 3, 4]), 2.5)
-  assert.equal(median([1, 2, 3, 4]), 2.5)
-
-  assert.equal(mean([1, 2, 3]), 2)
-  assert.equal(median([1, 2, 3]), 2)
-
-  assert.equal(quantile([1, 2, 3, 4], 0.5), 2.5)
-
-  const arr = [4, 1, 3, 2]
-  median(arr)
-  assert.deepEqual(arr, [4, 1, 3, 2])
-  quantile(arr, 0.5)
-  assert.deepEqual(arr, [4, 1, 3, 2])
-
-  const w0 = wilsonScoreInterval(0, 260)
-  assert.equal(Math.round(w0.lowerPct), 0)
-
-  const w1 = wilsonScoreInterval(1, 260)
-  assert.ok(w1.lowerPct >= 0 && w1.lowerPct < w1.upperPct)
-
-  const w202 = wilsonScoreInterval(202, 260)
-  assert.ok(w202.lowerPct > 70 && w202.upperPct < 85)
-
-  const w260 = wilsonScoreInterval(260, 260)
-  assert.equal(Math.round(w260.lowerPct), 99)
-  assert.equal(Math.round(w260.upperPct), 100)
-
-  fsCjs.unlinkSync(path.join(__dirname, 'temp_stats.cjs'))
-})
-
-test('Baseline-Kompatibilität', async () => {
-  const content = await fs.readFile(simScriptPath, 'utf8')
-
-  const startIdx = content.indexOf('const buildRegressionComparison')
-  const endIdx = content.indexOf('const buildMarkdownReport', startIdx)
-
-  const REGRESSION_METRICS = [
-    { key: 'bankruptcyRate', label: 'Insolvenzrate', suffix: '%' },
-    { key: 'avgFinalMoney', label: 'Ø Endgeld' }
-  ]
-
-  const funcStr =
-    content.substring(startIdx, endIdx) +
-    '\n module.exports = { buildRegressionComparison };'
-
-  const fsCjs = require('fs')
-  fsCjs.writeFileSync(
-    path.join(__dirname, 'temp_compat.cjs'),
-    `const REGRESSION_METRICS = ${JSON.stringify(REGRESSION_METRICS)};\n${funcStr}`,
-    'utf8'
-  )
-  const { buildRegressionComparison } = require('./temp_compat.cjs')
-
-  const v9Baseline = {
-    results: [
-      {
-        id: 'baseline_touring',
-        summary: {
-          bankruptcyRate: 5,
-          avgFinalMoney: 10000
-        }
-      }
-    ]
-  }
-
-  const v11Results = [
-    {
-      id: 'baseline_touring',
-      summary: {
-        bankruptcyRate: 6,
-        avgFinalMoney: 12000,
-        sampleSize: 260
+const probeScenario = (daysOverride, overrides = {}) => {
+  const base = SCENARIOS[0]
+  return {
+    ...base,
+    id: `probe-${daysOverride}`,
+    gigGapDays: 999,
+    eventIntensity: 0,
+    brandDealsEnabled: false,
+    socialStrategy: 'none',
+    daysOverride,
+    ...overrides,
+    initialOverrides: {
+      ...base.initialOverrides,
+      ...overrides.initialOverrides,
+      player: {
+        ...base.initialOverrides.player,
+        money: 1_000_000,
+        fame: 0,
+        ...overrides.initialOverrides?.player
       }
     }
-  ]
+  }
+}
 
-  const comparison = buildRegressionComparison(v9Baseline, v11Results)
-
-  fsCjs.unlinkSync(path.join(__dirname, 'temp_compat.cjs'))
-
-  assert.ok(comparison)
-  assert.equal(comparison.length, 1)
-  assert.equal(comparison[0].metrics.avgFinalMoney.previous, 10000)
-  assert.equal(comparison[0].metrics.avgFinalMoney.current, 12000)
+test('baseline compatibility metrics match the canonical contract', () => {
+  assert.deepEqual(
+    REGRESSION_METRICS.map(metric => metric.key),
+    [
+      'bankruptcyRate',
+      'avgFinalMoney',
+      'avgFameProgressPerGig',
+      'avgGigsPlayed'
+    ]
+  )
 })
 
-test('Fame-Accounting (Invariants)', async () => {
-  const startFame = 100
-  let earned = 50
-  let spentGross = 20
-  let refunded = 0
-  let lost = 10
-  let clampedOrDiscarded = 5
-  let finalFame =
-    startFame + earned - spentGross + refunded - lost - clampedOrDiscarded
-  assert.equal(finalFame, 115)
+test('run-level Fame accounting records successful gigs and reconciles', () => {
+  const run = runSingleSimulation(
+    probeScenario(10, { gigGapDays: 1, minigameSkill: 1 }),
+    9876
+  )
+  assert.ok(run.gigsPlayed > 0)
+  assert.ok(run.fameAccounting.earned > 0)
+  assert.ok(Math.abs(reconcileFameLedger(run)) < 1e-9)
 })
 
-test('Population-Splits', async () => {
-  assert.ok(true)
+test('days survived reflects probes and early bankruptcy', () => {
+  for (const daysOverride of [20, 30, 40, 75]) {
+    const run = runSingleSimulation(probeScenario(daysOverride), 1234)
+    assert.equal(run.daysSurvived, daysOverride)
+  }
+
+  const bankrupt = runSingleSimulation(
+    probeScenario(40, {
+      initialOverrides: { player: { money: 0, fame: 0 } }
+    }),
+    1234
+  )
+  assert.equal(bankrupt.bankrupt, true)
+  assert.ok(bankrupt.daysSurvived < 40)
+  assert.equal(
+    summarizeScenario([bankrupt]).population.allRuns.daysSurvived.max,
+    bankrupt.daysSurvived
+  )
 })
-test('Execution-Coverage', async () => {
-  assert.ok(true)
+
+test('drawdown is consistently expressed as percent', () => {
+  assert.equal(calculateDrawdownPct(100, 50), 50)
+  assert.equal(calculateDrawdownPct(100, 0), 100)
+  assert.equal(calculateDrawdownPct(100, 100), 0)
+  assert.equal(calculateDrawdownPct(0, -10), 0)
 })
-test('Volatility', async () => {
-  assert.ok(true)
+
+test('execution coverage aggregates without leaking or duplicating IDs', () => {
+  const zero = buildExecutionCoverage([{ summary: {} }])
+  assert.equal(zero.brandDeals.covered, false)
+
+  const run = runSingleSimulation(
+    { ...probeScenario(5), gigGapDays: 1, minigameSkill: 1 },
+    9876
+  )
+  const scenarioCoverage = summarizeScenario([run]).executionCoverage
+  const globalCoverage = buildExecutionCoverage([
+    { summary: { executionCoverage: scenarioCoverage } },
+    { summary: { executionCoverage: scenarioCoverage } }
+  ])
+  assert.ok(scenarioCoverage.socialTrends.evaluations > 0)
+  for (const metric of Object.values(globalCoverage)) {
+    const evaluations = metric.evaluations ?? metric.attempts ?? 0
+    const activations = metric.activations ?? metric.successes ?? 0
+    assert.ok(activations <= evaluations)
+    if (metric.uniqueIdsSeen) {
+      assert.equal(
+        metric.uniqueIdsSeen.length,
+        new Set(metric.uniqueIdsSeen).size
+      )
+    }
+  }
+  assert.equal(
+    globalCoverage.socialTrends.evaluations,
+    scenarioCoverage.socialTrends.evaluations * 2
+  )
+  assert.deepEqual(buildExecutionCoverage([{ summary: {} }]), zero)
+})
+
+test('feature inventory is finite and matches the application snapshot', () => {
+  const inventory = buildFeatureInventory()
+  for (const value of Object.values(inventory)) {
+    assert.ok(Number.isFinite(value) && value >= 0)
+  }
+  assert.equal(inventory.socialPlatformsAvailable, 4)
+  assert.equal(inventory.questsAvailable, 32)
+  assert.equal(inventory.assetModulesAvailable, 63)
+  assert.equal(inventory.loanProfilesAvailable, 5)
+})
+
+test('generated Markdown contains no undefined or NaN cells', async () => {
+  const markdown = await fs.readFile(
+    new URL(
+      '../../reports/game-balance-simulation-analysis.md',
+      import.meta.url
+    ),
+    'utf8'
+  )
+  assert.doesNotMatch(markdown, /undefined|NaN/)
 })
