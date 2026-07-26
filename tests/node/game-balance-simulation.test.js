@@ -2,12 +2,15 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
 import { LOAN_PROFILES } from '../../src/utils/loanProfiles.js'
+import { createInitialState } from '../../src/context/initialState.js'
+import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
 
 import {
   REGRESSION_METRICS,
   SCENARIOS,
   accountFameChange,
   accountFamePurchase,
+  applyCatalogPurchase,
   buildExecutionCoverage,
   buildFeatureInventory,
   calculateDrawdownPct,
@@ -132,6 +135,36 @@ test('Fame purchases account only successful deductions and real refunds', () =>
   assert.equal(accounting.spentGross, 20)
   assert.equal(accounting.refunded, 5)
   assert.equal(accounting.spentNet, 15)
+})
+
+test('label contact separates Fame cost from its Fame reward', () => {
+  const state = createInitialState()
+  state.player.fame = 5000
+  const counters = {
+    fameAccounting: {
+      earned: 0,
+      spentGross: 0,
+      refunded: 0,
+      spentNet: 0,
+      lost: 0,
+      clampAdjustment: 0
+    },
+    catalogFameSpent: 0,
+    catalogMoneySpent: 0,
+    gearItemsPurchased: 0,
+    traitUnlocks: 0,
+    catalogUpgrades: 0
+  }
+  const labelContact = getUnifiedUpgradeCatalog().find(
+    item => item.id === 'label_contact'
+  )
+
+  assert.equal(applyCatalogPurchase(state, labelContact, counters), true)
+  assert.equal(state.player.fame, 4000)
+  assert.equal(counters.fameAccounting.spentGross, 2000)
+  assert.equal(counters.fameAccounting.earned, 1000)
+  assert.equal(counters.fameAccounting.refunded, 0)
+  assert.equal(counters.fameAccounting.clampAdjustment, 0)
 })
 
 test('summary Fame progress uses the explicit earned ledger', () => {

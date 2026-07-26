@@ -1081,7 +1081,7 @@ const expireContrabandEffects = (state, runCtx) => {
   runCtx.contrabandEffects = stillActive
 }
 
-const applyCatalogPurchase = (state, candidate, counters) => {
+export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!candidate) return false
 
   const validation = validatePurchase(candidate, state.player, state.band)
@@ -1123,9 +1123,14 @@ const applyCatalogPurchase = (state, candidate, counters) => {
       succeeded: true,
       nominalCost: validation.finalCost,
       beforeFame: oldFame,
-      afterFame: state.player.fame,
+      afterFame: proposedFame,
       refundedFame: 0
     })
+    recordObservedFameChange(
+      counters.fameAccounting,
+      proposedFame,
+      state.player.fame
+    )
     counters.catalogFameSpent += validation.finalCost
   } else {
     counters.catalogMoneySpent += validation.finalCost
