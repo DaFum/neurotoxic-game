@@ -1334,7 +1334,9 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   )
   counters.travelMinigames += 1
   counters.executionCoverage.minigamesTravel.attempts++
-  counters.executionCoverage.minigamesTravel.completions++
+  if (collectedItems.length > 0) {
+    counters.executionCoverage.minigamesTravel.completions++
+  }
 
   const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
   if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
@@ -1369,7 +1371,9 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     if (roadieDamage > 50) damagedGear = true
     counters.roadieMinigames += 1
     counters.executionCoverage.minigamesRoadie.attempts++
-    counters.executionCoverage.minigamesRoadie.completions++
+    if (roadieDamage <= 50) {
+      counters.executionCoverage.minigamesRoadie.completions++
+    }
   } else if (chosenGame === 'kabelsalat') {
     const kabelResult = calculateKabelsalatMinigameResult(
       {
@@ -1393,7 +1397,9 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     }
     counters.kabelsalatMinigames += 1
     counters.executionCoverage.minigamesKabelsalat.attempts++
-    counters.executionCoverage.minigamesKabelsalat.completions++
+    if (kabelResult.stress === 0) {
+      counters.executionCoverage.minigamesKabelsalat.completions++
+    }
   } else {
     const ampScore = Math.max(
       0,
@@ -1419,7 +1425,9 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     }
     counters.ampCalibrations += 1
     counters.executionCoverage.minigamesAmp.attempts++
-    counters.executionCoverage.minigamesAmp.completions++
+    if (ampResult.reward > 0) {
+      counters.executionCoverage.minigamesAmp.completions++
+    }
   }
 
   return damagedGear

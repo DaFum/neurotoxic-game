@@ -251,6 +251,14 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
   assert.deepEqual(buildExecutionCoverage([{ summary: {} }]), zero)
   assert.ok(globalCoverage.minigamesTravel.completions > 0)
   assert.equal('successes' in globalCoverage.minigamesTravel, false)
+  assert.ok(
+    [
+      globalCoverage.minigamesTravel,
+      globalCoverage.minigamesRoadie,
+      globalCoverage.minigamesKabelsalat,
+      globalCoverage.minigamesAmp
+    ].some(metric => metric.completions < metric.attempts)
+  )
 })
 
 test('feature inventory is finite and matches the application snapshot', () => {
