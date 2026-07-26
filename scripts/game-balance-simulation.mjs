@@ -893,14 +893,7 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
           const newFame = state.player.fame;
           const actualDiff = newFame - oldFame;
 
-          const accountedDiff = Number.isFinite(rawDiff) ? rawDiff : actualDiff
-          if (accountedDiff > 0) {
-            counters.fameAccounting.earned += accountedDiff;
-            counters.fameAccounting.clampedOrDiscarded += accountedDiff - actualDiff
-          } else if (accountedDiff < 0) {
-            counters.fameAccounting.lost += Math.abs(accountedDiff);
-            counters.fameAccounting.clampedOrDiscarded += accountedDiff - actualDiff
-          }
+          accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
         }
   }
   counters.gigEvents += 1
@@ -1133,15 +1126,21 @@ const applyCatalogPurchase = (state, candidate, counters) => {
   }
 
   if (validation.payingWithFame) {
-    const actualDeduction = oldFame - (state.player.fame ?? oldFame)
-    const refund = Math.max(0, validation.finalCost - actualDeduction)
-    counters.fameAccounting.spentGross += validation.finalCost
-    counters.fameAccounting.refunded += refund
-    counters.fameAccounting.spentNet =
-      counters.fameAccounting.spentGross - counters.fameAccounting.refunded
+    accountFamePurchase(counters.fameAccounting, {
+      succeeded: true,
+      nominalCost: validation.finalCost,
+      beforeFame: oldFame,
+      afterFame: state.player.fame,
+      refundedFame: 0
+    })
     counters.catalogFameSpent += validation.finalCost
   } else {
     counters.catalogMoneySpent += validation.finalCost
+    recordObservedFameChange(
+      counters.fameAccounting,
+      oldFame,
+      state.player.fame
+    )
   }
 
   if (candidate.category === 'VAN') {
@@ -1337,7 +1336,7 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   )
   counters.travelMinigames += 1
   counters.executionCoverage.minigamesTravel.attempts++
-  counters.executionCoverage.minigamesTravel.successes++
+  counters.executionCoverage.minigamesTravel.completions++
 
   const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
   if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
@@ -1372,7 +1371,7 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     if (roadieDamage > 50) damagedGear = true
     counters.roadieMinigames += 1
     counters.executionCoverage.minigamesRoadie.attempts++
-    counters.executionCoverage.minigamesRoadie.successes++
+    counters.executionCoverage.minigamesRoadie.completions++
   } else if (chosenGame === 'kabelsalat') {
     const kabelResult = calculateKabelsalatMinigameResult(
       {
@@ -1396,7 +1395,7 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     }
     counters.kabelsalatMinigames += 1
     counters.executionCoverage.minigamesKabelsalat.attempts++
-    counters.executionCoverage.minigamesKabelsalat.successes++
+    counters.executionCoverage.minigamesKabelsalat.completions++
   } else {
     const ampScore = Math.max(
       0,
@@ -1422,7 +1421,7 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     }
     counters.ampCalibrations += 1
     counters.executionCoverage.minigamesAmp.attempts++
-    counters.executionCoverage.minigamesAmp.successes++
+    counters.executionCoverage.minigamesAmp.completions++
   }
 
   return damagedGear
@@ -1673,8 +1672,14 @@ const applyPostGigState = (
   // reputation shifts (incl. blacklisting), and gig quest events.
   state.currentGig = venue
   const traitsBefore = countBandTraits(state.band)
+  const fameBeforeGigReducer = state.player.fame
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
+  recordObservedFameChange(
+    counters.fameAccounting,
+    fameBeforeGigReducer,
+    state.player.fame
+  )
   counters.traitUnlocks += Math.max(
     0,
     countBandTraits(state.band) - traitsBefore
@@ -1692,14 +1697,35 @@ export const reconcileFameLedger = run =>
   run.fameAccounting.earned -
   run.fameAccounting.spentGross +
   run.fameAccounting.refunded -
-  run.fameAccounting.lost -
-  run.fameAccounting.clampedOrDiscarded -
+  run.fameAccounting.lost +
+  run.fameAccounting.clampAdjustment -
   run.finalFame
+
+export const accountFameChange = (accounting, rawDifference, actualDifference) => {
+  const difference = Number.isFinite(rawDifference)
+    ? rawDifference
+    : actualDifference
+  if (difference > 0) accounting.earned += difference
+  else if (difference < 0) accounting.lost += Math.abs(difference)
+  accounting.clampAdjustment += actualDifference - difference
+}
+
+export const accountFamePurchase = (
+  accounting,
+  { succeeded, nominalCost, beforeFame, afterFame, refundedFame = 0 }
+) => {
+  if (!succeeded) return
+  accounting.spentGross += nominalCost
+  accounting.refunded += refundedFame
+  accounting.spentNet = accounting.spentGross - accounting.refunded
+  const expectedDeduction = nominalCost - refundedFame
+  const actualDeduction = beforeFame - afterFame
+  accounting.clampAdjustment += expectedDeduction - actualDeduction
+}
 
 const recordObservedFameChange = (accounting, before, after) => {
   const difference = after - before
-  if (difference > 0) accounting.earned += difference
-  else if (difference < 0) accounting.lost += Math.abs(difference)
+  accountFameChange(accounting, difference, difference)
 }
 
 export const runSingleSimulation = (scenario, seed) => {
@@ -1753,16 +1779,16 @@ export const runSingleSimulation = (scenario, seed) => {
       postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
       socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
       contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-      minigamesTravel: { attempts: 0, successes: 0 },
-      minigamesRoadie: { attempts: 0, successes: 0 },
-      minigamesKabelsalat: { attempts: 0, successes: 0 },
-      minigamesAmp: { attempts: 0, successes: 0 },
+      minigamesTravel: { attempts: 0, completions: 0 },
+      minigamesRoadie: { attempts: 0, completions: 0 },
+      minigamesKabelsalat: { attempts: 0, completions: 0 },
+      minigamesAmp: { attempts: 0, completions: 0 },
       sponsorship: { attempts: 0, successes: 0 },
       restStops: { evaluations: 0, activations: 0 }
     },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
-    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampedOrDiscarded: 0 },
+    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
     gigCapHits: 0
   }
 
@@ -2000,7 +2026,7 @@ export const runSingleSimulation = (scenario, seed) => {
         const newFameClamped = clampPlayerFame(newFameRaw);
         counters.fameAccounting.lost += loss;
         if (newFameClamped > newFameRaw) {
-          counters.fameAccounting.clampedOrDiscarded += newFameRaw - newFameClamped
+          counters.fameAccounting.clampAdjustment += newFameClamped - newFameRaw
         }
         state.player.fame = newFameClamped;
       }
@@ -2244,17 +2270,18 @@ export const runSingleSimulation = (scenario, seed) => {
   if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
   if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
 
-  counters.fameAccounting.clampedOrDiscarded +=
+  const reconciliationDelta =
     startingFame +
     counters.fameAccounting.earned -
     counters.fameAccounting.spentGross +
     counters.fameAccounting.refunded -
-    counters.fameAccounting.lost -
-    counters.fameAccounting.clampedOrDiscarded -
+    counters.fameAccounting.lost +
+    counters.fameAccounting.clampAdjustment -
     state.player.fame
 
   return {
     startingFame,
+    reconciliationDelta,
     daysSurvived,
     finalMoney: state.player.money,
     regionRepTouched:
@@ -2398,10 +2425,10 @@ export const summarizeScenario = runs => {
     postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    minigamesTravel: { attempts: 0, successes: 0 },
-    minigamesRoadie: { attempts: 0, successes: 0 },
-    minigamesKabelsalat: { attempts: 0, successes: 0 },
-    minigamesAmp: { attempts: 0, successes: 0 },
+    minigamesTravel: { attempts: 0, completions: 0 },
+    minigamesRoadie: { attempts: 0, completions: 0 },
+    minigamesKabelsalat: { attempts: 0, completions: 0 },
+    minigamesAmp: { attempts: 0, completions: 0 },
     sponsorship: { attempts: 0, successes: 0 },
     restStops: { evaluations: 0, activations: 0 }
   }
@@ -2426,13 +2453,13 @@ export const summarizeScenario = runs => {
     if(c.contraband.uniqueIdsSeen) c.contraband.uniqueIdsSeen.forEach(id => aggregateCoverage.contraband.uniqueIdsSeen.add(id))
 
     aggregateCoverage.minigamesTravel.attempts += c.minigamesTravel.attempts
-    aggregateCoverage.minigamesTravel.successes += c.minigamesTravel.successes
+    aggregateCoverage.minigamesTravel.completions += c.minigamesTravel.completions
     aggregateCoverage.minigamesRoadie.attempts += c.minigamesRoadie.attempts
-    aggregateCoverage.minigamesRoadie.successes += c.minigamesRoadie.successes
+    aggregateCoverage.minigamesRoadie.completions += c.minigamesRoadie.completions
     aggregateCoverage.minigamesKabelsalat.attempts += c.minigamesKabelsalat.attempts
-    aggregateCoverage.minigamesKabelsalat.successes += c.minigamesKabelsalat.successes
+    aggregateCoverage.minigamesKabelsalat.completions += c.minigamesKabelsalat.completions
     aggregateCoverage.minigamesAmp.attempts += c.minigamesAmp.attempts
-    aggregateCoverage.minigamesAmp.successes += c.minigamesAmp.successes
+    aggregateCoverage.minigamesAmp.completions += c.minigamesAmp.completions
 
     aggregateCoverage.sponsorship.attempts += c.sponsorship.attempts
     aggregateCoverage.sponsorship.successes += c.sponsorship.successes
@@ -2452,7 +2479,7 @@ export const summarizeScenario = runs => {
       aggregateCoverage[k].uniqueIdsSeen = ids
       aggregateCoverage[k].covered = aggregateCoverage[k].evaluations > 0 || aggregateCoverage[k].attempts > 0 || aggregateCoverage[k].activations > 0 || ids.length > 0
     } else {
-      aggregateCoverage[k].covered = aggregateCoverage[k].attempts > 0 || aggregateCoverage[k].successes > 0 || aggregateCoverage[k].evaluations > 0 || aggregateCoverage[k].activations > 0
+      aggregateCoverage[k].covered = aggregateCoverage[k].attempts > 0 || aggregateCoverage[k].completions > 0 || aggregateCoverage[k].successes > 0 || aggregateCoverage[k].evaluations > 0 || aggregateCoverage[k].activations > 0
     }
   })
 
@@ -2463,7 +2490,12 @@ export const summarizeScenario = runs => {
   const bankruptcyCount = bankruptRuns.length
   const n = runs.length
   const bankruptcyRatePct = n > 0 ? (bankruptcyCount / n) * 100 : 0
-  const confidence95 = wilsonScoreInterval(bankruptcyCount, n)
+  const preciseConfidence95 = wilsonScoreInterval(bankruptcyCount, n)
+  const confidence95 = {
+    lowerPct: Number(preciseConfidence95.lowerPct.toFixed(2)),
+    upperPct: Number(preciseConfidence95.upperPct.toFixed(2)),
+    method: preciseConfidence95.method
+  }
 
   const finalMoneyMean = popAll.finalMoney ? popAll.finalMoney.mean : 0
   const finalFameMean = popAll.finalFame ? popAll.finalFame.mean : 0
@@ -2555,9 +2587,9 @@ export const summarizeScenario = runs => {
       bankruptRuns: popBankrupt
     },
 
-    avgFameProgress: Math.round(mean(runs.map(r => r.finalFame - r.startingFame + r.catalogFameSpent))),
+    avgFameProgress: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
     avgFameProgressPerGig: Number(mean(runs.map(r =>
-      (r.finalFame - r.startingFame + r.catalogFameSpent) / Math.max(1, r.gigsPlayed)
+      r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0
     )).toFixed(2)),
     avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
     avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney))),
@@ -2620,9 +2652,12 @@ export const summarizeScenario = runs => {
       refunded: Math.round(mean(runs.map(r => r.fameAccounting.refunded))),
       spentNet: Math.round(mean(runs.map(r => r.fameAccounting.spentNet))),
       lost: Math.round(mean(runs.map(r => r.fameAccounting.lost))),
-      clampedOrDiscarded: Math.round(mean(runs.map(r => r.fameAccounting.clampedOrDiscarded))),
+      clampAdjustment: Number(mean(runs.map(r => r.fameAccounting.clampAdjustment)).toFixed(2)),
       finalFame: Number(mean(runs.map(r => r.finalFame)).toFixed(2)),
-      reconciliationDelta: Number(mean(runs.map(reconcileFameLedger)).toFixed(6))
+      reconciliationDelta: Number(mean(runs.map(r => r.reconciliationDelta)).toFixed(6)),
+      maxAbsReconciliationDelta: Number(maximum(runs.map(r => Math.abs(r.reconciliationDelta))).toFixed(6)),
+      reconciledRuns: runs.filter(r => Math.abs(r.reconciliationDelta) <= 1e-9).length,
+      sampleSize: runs.length
     },
     executionCoverage: aggregateCoverage
   }
@@ -2752,10 +2787,10 @@ export const buildExecutionCoverage = results => {
     postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    minigamesTravel: { attempts: 0, successes: 0 },
-    minigamesRoadie: { attempts: 0, successes: 0 },
-    minigamesKabelsalat: { attempts: 0, successes: 0 },
-    minigamesAmp: { attempts: 0, successes: 0 },
+    minigamesTravel: { attempts: 0, completions: 0 },
+    minigamesRoadie: { attempts: 0, completions: 0 },
+    minigamesKabelsalat: { attempts: 0, completions: 0 },
+    minigamesAmp: { attempts: 0, completions: 0 },
     sponsorship: { attempts: 0, successes: 0 },
     restStops: { evaluations: 0, activations: 0 }
   }
@@ -2784,13 +2819,13 @@ export const buildExecutionCoverage = results => {
     else c.contraband.uniqueIdsSeen.forEach(id => combined.contraband.uniqueIdsSeen.add(id))
 
     combined.minigamesTravel.attempts += c.minigamesTravel.attempts
-    combined.minigamesTravel.successes += c.minigamesTravel.successes
+    combined.minigamesTravel.completions += c.minigamesTravel.completions
     combined.minigamesRoadie.attempts += c.minigamesRoadie.attempts
-    combined.minigamesRoadie.successes += c.minigamesRoadie.successes
+    combined.minigamesRoadie.completions += c.minigamesRoadie.completions
     combined.minigamesKabelsalat.attempts += c.minigamesKabelsalat.attempts
-    combined.minigamesKabelsalat.successes += c.minigamesKabelsalat.successes
+    combined.minigamesKabelsalat.completions += c.minigamesKabelsalat.completions
     combined.minigamesAmp.attempts += c.minigamesAmp.attempts
-    combined.minigamesAmp.successes += c.minigamesAmp.successes
+    combined.minigamesAmp.completions += c.minigamesAmp.completions
 
     combined.sponsorship.attempts += c.sponsorship.attempts
     combined.sponsorship.successes += c.sponsorship.successes
@@ -2809,7 +2844,7 @@ export const buildExecutionCoverage = results => {
       if(k === 'socialTrends') finalCov[k].availableIds = ALLOWED_TRENDS.length
       if(k === 'contraband') finalCov[k].availableIds = CONTRABAND_DB.length
     } else {
-      finalCov[k].covered = finalCov[k].attempts > 0 || finalCov[k].successes > 0 || finalCov[k].evaluations > 0 || finalCov[k].activations > 0
+      finalCov[k].covered = finalCov[k].attempts > 0 || finalCov[k].completions > 0 || finalCov[k].successes > 0 || finalCov[k].evaluations > 0 || finalCov[k].activations > 0
     }
   })
 
@@ -3363,12 +3398,12 @@ const buildMarkdownReport = payload => {
 
   lines.push('## Fame-Bilanz')
   lines.push('')
-  lines.push('| Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Verworfen/Clamped |')
-  lines.push('|---|---:|---:|---:|---:|---:|---:|')
+  lines.push('| Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Clamp-Anpassung | Reconciled Runs |')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
     const s = scenario.summary
     const fa = s.fameAccounting ?? {}
-    lines.push(`| ${scenario.name} | ${fa.earned ?? 0} | ${fa.spentGross ?? 0} | ${fa.refunded ?? 0} | ${fa.spentNet ?? 0} | ${fa.lost ?? 0} | ${fa.clampedOrDiscarded ?? 0} |`)
+    lines.push(`| ${scenario.name} | ${fa.earned ?? 0} | ${fa.spentGross ?? 0} | ${fa.refunded ?? 0} | ${fa.spentNet ?? 0} | ${fa.lost ?? 0} | ${fa.clampAdjustment ?? 0} | ${fa.reconciledRuns ?? 0}/${fa.sampleSize ?? 0} |`)
   }
   lines.push('')
 
@@ -3432,13 +3467,13 @@ const buildMarkdownReport = payload => {
   lines.push('')
   lines.push('## Ausführungsabdeckung (Coverage)')
   lines.push('')
-  lines.push(`| Feature | Covered | Evaluations / Attempts | Activations / Successes | Unique IDs Seen |`)
+  lines.push(`| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`)
   lines.push(`|---|---|---:|---:|---:|`)
   const cov = payload.executionCoverage || {}
   Object.keys(cov).forEach(k => {
     const c = cov[k] || {}
     const evals = c.evaluations ?? c.attempts ?? 0
-    const acts = c.activations ?? c.successes ?? 0
+    const acts = c.activations ?? c.completions ?? c.successes ?? 0
     const uids = c.uniqueIdsSeen ? c.uniqueIdsSeen.length : '-'
     lines.push(`| ${k} | ${c.covered ? '✅' : '❌'} | ${evals} | ${acts} | ${uids} |`)
   })

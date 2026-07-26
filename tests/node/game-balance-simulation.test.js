@@ -5,6 +5,8 @@ import fs from 'node:fs/promises'
 import {
   REGRESSION_METRICS,
   SCENARIOS,
+  accountFameChange,
+  accountFamePurchase,
   buildExecutionCoverage,
   buildFeatureInventory,
   calculateDrawdownPct,
@@ -57,6 +59,88 @@ test('run-level Fame accounting records successful gigs and reconciles', () => {
   assert.ok(run.gigsPlayed > 0)
   assert.ok(run.fameAccounting.earned > 0)
   assert.ok(Math.abs(reconcileFameLedger(run)) < 1e-9)
+
+  run.finalFame += 1
+  assert.equal(reconcileFameLedger(run), -1)
+  run.reconciliationDelta = reconcileFameLedger(run)
+  const unreconciledSummary = summarizeScenario([run])
+  assert.equal(unreconciledSummary.fameAccounting.reconciledRuns, 0)
+  assert.equal(unreconciledSummary.fameAccounting.maxAbsReconciliationDelta, 1)
+})
+
+test('event Fame accounting records gains, losses, and floor clamps', () => {
+  const accounting = {
+    earned: 0,
+    spentGross: 0,
+    refunded: 0,
+    spentNet: 0,
+    lost: 0,
+    clampAdjustment: 0
+  }
+  accountFameChange(accounting, 25, 25)
+  accountFameChange(accounting, -10, -10)
+  accountFameChange(accounting, -10, -5)
+  assert.deepEqual(accounting, {
+    earned: 25,
+    spentGross: 0,
+    refunded: 0,
+    spentNet: 0,
+    lost: 20,
+    clampAdjustment: 5
+  })
+})
+
+test('Fame purchases account only successful deductions and real refunds', () => {
+  const accounting = {
+    earned: 0,
+    spentGross: 0,
+    refunded: 0,
+    spentNet: 0,
+    lost: 0,
+    clampAdjustment: 0
+  }
+  accountFamePurchase(accounting, {
+    succeeded: false,
+    nominalCost: 20,
+    beforeFame: 100,
+    afterFame: 80
+  })
+  assert.equal(accounting.spentGross, 0)
+
+  accountFamePurchase(accounting, {
+    succeeded: true,
+    nominalCost: 20,
+    beforeFame: 100,
+    afterFame: 85,
+    refundedFame: 5
+  })
+  assert.equal(accounting.spentGross, 20)
+  assert.equal(accounting.refunded, 5)
+  assert.equal(accounting.spentNet, 15)
+})
+
+test('summary Fame progress uses the explicit earned ledger', () => {
+  const runs = [
+    runSingleSimulation(probeScenario(5, { gigGapDays: 1 }), 321),
+    runSingleSimulation(probeScenario(5, { gigGapDays: 1 }), 654)
+  ]
+  const summary = summarizeScenario(runs)
+  const expectedProgress = Math.round(
+    runs.reduce((total, run) => total + run.fameAccounting.earned, 0) /
+      runs.length
+  )
+  const expectedPerGig = Number(
+    (
+      runs.reduce(
+        (total, run) =>
+          total +
+          (run.gigsPlayed > 0 ? run.fameAccounting.earned / run.gigsPlayed : 0),
+        0
+      ) / runs.length
+    ).toFixed(2)
+  )
+  assert.equal(summary.avgFameProgress, expectedProgress)
+  assert.equal(summary.avgFameProgressPerGig, expectedPerGig)
 })
 
 test('days survived reflects probes and early bankruptcy', () => {
@@ -102,7 +186,8 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
   assert.ok(scenarioCoverage.socialTrends.evaluations > 0)
   for (const metric of Object.values(globalCoverage)) {
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
-    const activations = metric.activations ?? metric.successes ?? 0
+    const activations =
+      metric.activations ?? metric.completions ?? metric.successes ?? 0
     assert.ok(activations <= evaluations)
     if (metric.uniqueIdsSeen) {
       assert.equal(
@@ -116,6 +201,8 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
     scenarioCoverage.socialTrends.evaluations * 2
   )
   assert.deepEqual(buildExecutionCoverage([{ summary: {} }]), zero)
+  assert.ok(globalCoverage.minigamesTravel.completions > 0)
+  assert.equal('successes' in globalCoverage.minigamesTravel, false)
 })
 
 test('feature inventory is finite and matches the application snapshot', () => {
