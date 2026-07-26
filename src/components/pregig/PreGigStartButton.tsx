@@ -1,5 +1,6 @@
 import React from 'react'
 import { m } from 'motion/react'
+import { Loader2 } from 'lucide-react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 import { ActionButton } from '../../ui/shared'
 import type { TranslationCallback } from '../../types/callbacks'
@@ -27,9 +28,11 @@ export const PreGigStartButton = React.memo(
         <ActionButton
           onClick={onStartShow}
           disabled={isSetlistEmpty || isStarting}
+          aria-busy={isStarting}
           className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         >
           {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
+          {isStarting && <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />}
           {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
         </ActionButton>
       </m.div>
