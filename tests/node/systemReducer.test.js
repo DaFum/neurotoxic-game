@@ -1274,6 +1274,19 @@ test('systemReducer - LOAD_GAME', async t => {
       assert.deepEqual(node.metadata, { visited: false, weight: 2 })
     }
   )
+
+  await t.test('drops a non-finite loaded gameMap version', () => {
+    const initialState = createInitialState()
+    const nextState = handleLoadGame(initialState, {
+      gameMap: {
+        version: Number.POSITIVE_INFINITY,
+        nodes: { start: { id: 'start', x: 0, y: 0 } },
+        connections: []
+      }
+    })
+
+    assert.equal(Object.hasOwn(nextState.gameMap, 'version'), false)
+  })
 })
 
 test('systemReducer - RESET_STATE', async t => {

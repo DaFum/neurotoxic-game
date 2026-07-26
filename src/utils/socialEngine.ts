@@ -12,7 +12,8 @@ import {
   hasActiveSponsorship,
   clampPlayerMoney,
   clampBandHarmony,
-  finiteNumberOr
+  finiteNumberOr,
+  isFiniteNumber
 } from './gameState'
 import type { SocialEngineGameState, SocialPostOption } from '../types/social'
 import type { RandomFn } from '../types/callbacks'
@@ -271,27 +272,19 @@ export const resolvePost = (
     // Safety bounds enforcement for resolved deltas
     // Note: Double-clamping occurs here and in hooks for defense-in-depth, ensuring
     // resolved deltas stay within bounds before applying and displaying correctly.
-    let moneyChange =
-      typeof result.moneyChange === 'number' ? result.moneyChange : undefined
-    if (
-      moneyChange !== undefined &&
-      Number.isFinite(moneyChange) &&
-      gameState.player?.money !== undefined
-    ) {
+    let moneyChange = isFiniteNumber(result.moneyChange)
+      ? result.moneyChange
+      : undefined
+    if (moneyChange !== undefined && gameState.player?.money !== undefined) {
       const prevMoney = finiteNumberOr(gameState.player.money, 0)
       const nextMoney = clampPlayerMoney(prevMoney + moneyChange)
       moneyChange = nextMoney - prevMoney
     }
 
-    let harmonyChange =
-      typeof result.harmonyChange === 'number'
-        ? result.harmonyChange
-        : undefined
-    if (
-      harmonyChange !== undefined &&
-      Number.isFinite(harmonyChange) &&
-      gameState.band?.harmony !== undefined
-    ) {
+    let harmonyChange = isFiniteNumber(result.harmonyChange)
+      ? result.harmonyChange
+      : undefined
+    if (harmonyChange !== undefined && gameState.band?.harmony !== undefined) {
       const prevHarmony = finiteNumberOr(gameState.band.harmony, 0)
       const nextHarmony = clampBandHarmony(prevHarmony + harmonyChange)
       harmonyChange = nextHarmony - prevHarmony
@@ -311,18 +304,34 @@ export const resolvePost = (
       message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
       moneyChange,
-      moodChange: result.moodChange,
+      moodChange: isFiniteNumber(result.moodChange)
+        ? result.moodChange
+        : undefined,
       harmonyChange,
-      staminaChange: result.staminaChange,
-      controversyChange: result.controversyChange,
-      loyaltyChange: result.loyaltyChange,
-      zealotryChange: result.zealotryChange,
+      staminaChange: isFiniteNumber(result.staminaChange)
+        ? result.staminaChange
+        : undefined,
+      controversyChange: isFiniteNumber(result.controversyChange)
+        ? result.controversyChange
+        : undefined,
+      loyaltyChange: isFiniteNumber(result.loyaltyChange)
+        ? result.loyaltyChange
+        : undefined,
+      zealotryChange: isFiniteNumber(result.zealotryChange)
+        ? result.zealotryChange
+        : undefined,
       targetMember: result.targetMember,
-      allMembersMoodChange: result.allMembersMoodChange,
-      allMembersStaminaChange: result.allMembersStaminaChange,
-      egoDrop: result.egoDrop,
+      allMembersMoodChange: isFiniteNumber(result.allMembersMoodChange)
+        ? result.allMembersMoodChange
+        : undefined,
+      allMembersStaminaChange: isFiniteNumber(result.allMembersStaminaChange)
+        ? result.allMembersStaminaChange
+        : undefined,
+      egoDrop: isFiniteNumber(result.egoDrop) ? result.egoDrop : undefined,
       egoClear: result.egoClear,
-      reputationCooldownSet: result.reputationCooldownSet,
+      reputationCooldownSet: isFiniteNumber(result.reputationCooldownSet)
+        ? result.reputationCooldownSet
+        : undefined,
       unlockTrait: result.unlockTrait,
       influencerUpdate: result.influencerUpdate
     }

@@ -648,7 +648,8 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
   }
   if (
     typeof mapRecord.version === 'string' ||
-    typeof mapRecord.version === 'number'
+    (typeof mapRecord.version === 'number' &&
+      Number.isFinite(mapRecord.version))
   ) {
     sanitizedMap.version = mapRecord.version
   }

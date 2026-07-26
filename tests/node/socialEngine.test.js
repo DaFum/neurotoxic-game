@@ -396,6 +396,44 @@ test('resolvePost clamps money bounds >= 0', () => {
   )
 })
 
+test('resolvePost drops non-finite numeric side effects', () => {
+  const postOption = {
+    id: 'non_finite_side_effects',
+    platform: 'tiktok',
+    resolve: () => ({
+      moneyChange: Number.NaN,
+      harmonyChange: Number.POSITIVE_INFINITY,
+      moodChange: Number.NEGATIVE_INFINITY,
+      staminaChange: Number.NaN,
+      controversyChange: Number.POSITIVE_INFINITY,
+      loyaltyChange: Number.NaN,
+      zealotryChange: Number.NEGATIVE_INFINITY,
+      allMembersMoodChange: Number.NaN,
+      allMembersStaminaChange: Number.POSITIVE_INFINITY,
+      egoDrop: Number.NaN,
+      reputationCooldownSet: Number.POSITIVE_INFINITY
+    })
+  }
+
+  const result = resolvePost(postOption, mockGameState)
+
+  for (const field of [
+    'moneyChange',
+    'harmonyChange',
+    'moodChange',
+    'staminaChange',
+    'controversyChange',
+    'loyaltyChange',
+    'zealotryChange',
+    'allMembersMoodChange',
+    'allMembersStaminaChange',
+    'egoDrop',
+    'reputationCooldownSet'
+  ]) {
+    assert.equal(result[field], undefined, `${field} should be dropped`)
+  }
+})
+
 test('calculateViralityScore handles low performance', () => {
   const venue = { name: 'Test Venue' }
   const score = calculateViralityScore(30, [], venue)

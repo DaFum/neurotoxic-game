@@ -21,7 +21,11 @@ export const isMinigame = (value: unknown): value is Minigame => {
  * Clears the stored fallback minigame identifier.
  *
  * @remarks
- * This function is used to reset the fallback state when it is no longer needed.
+ * Test-support API used to isolate the module-level anti-repeat state between
+ * PreGig test cases. Production flow updates the state through
+ * {@link setLastMinigameFallback}.
+ *
+ * @internal
  */
 export const resetLastMinigameFallback = (): void => {
   lastMinigameFallback = null

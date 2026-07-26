@@ -98,6 +98,14 @@ describe('rhythmUtils', () => {
       assert.strictEqual(notesNoVar[2].laneIndex, 2) // beat 2
       assert.strictEqual(notesNoVar[3].laneIndex, 0) // beat 3
     })
+
+    test('clamps an out-of-range RNG result to a valid lane', () => {
+      const song = { id: 'lane-clamp', duration: 2, bpm: 120, difficulty: 5 }
+      const notes = generateNotesForSong(song, { leadIn: 0, random: () => 1 })
+
+      assert.ok(notes.length > 0)
+      assert.ok(notes.every(note => note.laneIndex >= 0 && note.laneIndex < 3))
+    })
   })
 
   describe('checkHit', () => {

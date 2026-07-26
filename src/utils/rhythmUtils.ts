@@ -1,6 +1,7 @@
 import { resolveSongPlaybackWindow } from './audio/songUtils'
 import { secureRandom } from './crypto'
 import { isFiniteNumber } from './finiteNumber'
+import { pickBoundedIndex } from './selectionUtils'
 import type { Note, Song } from '../types/audio'
 import type { TempoMapEntry, ProcessedTempoMapEntry } from '../types/rhythm'
 import type { RandomFn } from '../types/callbacks'
@@ -56,7 +57,7 @@ export const generateNotesForSong = (
         let laneIndex = laneMap[i % 4] ?? 0
         // Add some variation for harder levels
         if (diff > 3 && random() > 0.7) {
-          laneIndex = Math.floor(random() * 3)
+          laneIndex = pickBoundedIndex(3, random)
         }
 
         notes.push({

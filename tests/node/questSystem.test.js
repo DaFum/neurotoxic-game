@@ -310,6 +310,17 @@ describe('Quest System Registry Validation', () => {
     assert.ok(checked > 0, 'offer-metadata gate matched no quest events')
   })
 
+  it('content gate: quest trigger events derive offer metadata from the registry', async () => {
+    const fs = await import('node:fs')
+    const source = fs.readFileSync('src/data/events/quests.ts', 'utf8')
+    const presentations = source.slice(
+      source.indexOf('export const QUEST_EVENTS')
+    )
+
+    assert.match(source, /defineQuestOfferEvent/)
+    assert.doesNotMatch(presentations, /^ {4}(?:category|trigger|chance):/m)
+  })
+
   it('content gate: registry label/description keys exist in EN and DE', async () => {
     const fs = await import('node:fs')
     const locales = {}
