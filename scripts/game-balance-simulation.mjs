@@ -1641,10 +1641,11 @@ const applyPostGigState = (
 ) => {
   const oldFameGig = state.player.fame;
   const continueStats = calculateContinueStats({
-    gigStatsPayload,
-    financials,
     player: state.player,
-    calculateGigFameReward,
+    perfScore: performanceScore,
+    financials,
+    misses,
+    bandStyle: state.band.style,
     calculateFameGain,
     calculateFameLevel,
     clampPlayerFame,
@@ -2496,18 +2497,18 @@ const summarizeScenario = runs => {
       bankruptRuns: popBankrupt
     },
 
-    avgFameProgressPerGig: mean(runs.map(r => r.fameEarnedPerGig)),
-    avgPeakToTroughDrop: mean(runs.map(r => r.maxDrawdownPct / 100)), // Convert back to fraction if needed
-    avgClinicVisits: mean(runs.map(r => (r.counters && r.counters.clinicVisits) || 0)),
+    avgFameProgressPerGig: Number(mean(runs.map(r => r.fameAccounting.earned / Math.max(1, r.gigsPlayed))).toFixed(2)),
+    avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)), // Convert back to fraction if needed
+    avgClinicVisits: Number(mean(runs.map(r => (r.clinicVisits) || 0)).toFixed(2)),
 
 
 
 
     // Add more missing fields mentioned
-    avgPeakMoney: mean(runs.map(r => r.peakMoney || 0)),
+    avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney || 0))),
     avgUpgradesHQ: mean(runs.map(r => (r.counters && r.counters.upgradesHQ) || 0)),
     avgUpgradesVan: mean(runs.map(r => (r.counters && r.counters.upgradesVan) || 0)),
-    avgTotalMinigames: mean(runs.map(r => (r.counters && r.counters.minigamesTotal) || 0)),
+    avgTotalMinigames: mean(runs.map(r => (r.minigamesTotal) || 0)),
     bankruptcy: {
       count: bankruptcyCount,
       sampleSize: n,
