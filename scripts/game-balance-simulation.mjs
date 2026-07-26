@@ -110,6 +110,78 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
+// ── Determinism Mock ──────────────────────────────────────────────────────
+let uuidCounter = 0
+if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
+  globalThis.crypto.randomUUID = () => `sim-uuid-${++uuidCounter}`
+}
+// ──────────────────────────────────────────────────────────────────────────
+
+// ── Statistics Utilities ──────────────────────────────────────────────────
+const mean = values => {
+  if (!values || values.length === 0) return null
+  const sum = values.reduce((a, b) => a + b, 0)
+  return sum / values.length
+}
+
+const median = values => {
+  if (!values || values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const mid = Math.floor(sorted.length / 2)
+  return sorted.length % 2 !== 0
+    ? sorted[mid]
+    : (sorted[mid - 1] + sorted[mid]) / 2
+}
+
+const standardDeviation = values => {
+  if (!values || values.length <= 1) return 0
+  const m = mean(values)
+  const variance = values.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / (values.length - 1)
+  return Math.sqrt(variance)
+}
+
+const quantile = (values, q) => {
+  if (!values || values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const pos = (sorted.length - 1) * q
+  const base = Math.floor(pos)
+  const rest = pos - base
+  if (sorted[base + 1] !== undefined) {
+    return sorted[base] + rest * (sorted[base + 1] - sorted[base])
+  } else {
+    return sorted[base]
+  }
+}
+
+const minimum = values => {
+  if (!values || values.length === 0) return null
+  return Math.min(...values)
+}
+
+const maximum = values => {
+  if (!values || values.length === 0) return null
+  return Math.max(...values)
+}
+
+const wilsonScoreInterval = (successes, n) => {
+  if (n === 0) return { lowerPct: 0, upperPct: 0, method: 'wilson' }
+  const z = 1.96 // 95% confidence
+  const p = successes / n
+  const q = 1 - p
+
+  const denominator = 1 + (z * z) / n
+  const center = p + (z * z) / (2 * n)
+  const spread = z * Math.sqrt((p * q) / n + (z * z) / (4 * n * n))
+
+  return {
+    lowerPct: ((center - spread) / denominator) * 100,
+    upperPct: ((center + spread) / denominator) * 100,
+    method: 'wilson'
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────
+
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
 const REPORT_DIR = path.join(PROJECT_ROOT, 'reports')
@@ -119,7 +191,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 10,
+  reportVersion: 11,
   runsPerScenario: 260,
   daysPerRun: 75,
   homeVenueId: 'stendal_proberaum',
@@ -138,7 +210,7 @@ export const SIMULATION_CONSTANTS = {
   outputMarkdown: REPORT_FILES.outputMarkdown
 }
 
-const REGRESSION_METRICS = [
+export const REGRESSION_METRICS = [
   {
     key: 'bankruptcyRate',
     label: 'Insolvenzrate',
@@ -602,38 +674,7 @@ const buildFameBalanceAudit = () => {
   }
 }
 
-const FEATURE_COVERAGE_KEYS = [
-  'daily_updates',
-  'gig_financials',
-  'travel_expenses',
-  'fuel_cost',
-  'travel_minigame',
-  'roadie_minigame',
-  'kabelsalat_minigame',
-  'amp_calibration_minigame',
-  'gig_modifiers',
-  'gig_physics',
-  'world_events',
-  'gig_events',
-  'events_db',
-  'brand_deals',
-  'social_trends',
-  'social_platforms',
-  'post_options',
-  'contraband',
-  'sponsorship',
-  'maintenance',
-  'upgrades',
-  'clinic',
-  'rest_stops',
-  'songs',
-  'trait_unlocks',
-  'region_reputation',
-  'quest_events',
-  'asset_acquisition',
-  'asset_modules',
-  'crowdfunding'
-]
+
 
 export const createScenarioSeed = (id, runIndex) => {
   let h = 0x811c9dc5
@@ -842,17 +883,24 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const { delta } = resolveEventChoice(choice, state, rng)
   if (delta) {
+    const oldFame = state.player.fame
+    const rawDiff = delta.player?.fame
     Object.assign(state, applyEventDelta(state, delta))
+    const actualDiff = state.player.fame - oldFame
+    accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
   }
   counters.gigEvents += 1
   applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
 }
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
+  counters.executionCoverage.socialTrends.evaluations++;
   if (rng() >= SIMULATION_CONSTANTS.trendShiftChance) return
   const nextTrend = ALLOWED_TRENDS[Math.floor(rng() * ALLOWED_TRENDS.length)]
   state.social.trend = nextTrend
   counters.trendShifts += 1
+  counters.executionCoverage.socialTrends.activations++
+  counters.executionCoverage.socialTrends.uniqueIdsSeen.add(nextTrend)
 }
 
 const maybeActivateBrandDeal = (state, rng, counters) => {
@@ -868,6 +916,7 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     return
   }
 
+  counters.executionCoverage.brandDeals.evaluations++;
   if (rng() >= SIMULATION_CONSTANTS.brandDealEvalChance) return
   const candidate = BRAND_DEALS[Math.floor(rng() * BRAND_DEALS.length)]
   if (!candidate) return
@@ -899,6 +948,8 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   ]
 
   counters.brandDealsActivated += 1
+    counters.executionCoverage.brandDeals.activations++
+    counters.executionCoverage.brandDeals.uniqueIdsSeen.add(candidate.id)
 }
 
 const maybeApplyPostPulse = (
@@ -911,6 +962,8 @@ const maybeApplyPostPulse = (
   performanceScore
 ) => {
   if (rng() >= SIMULATION_CONSTANTS.postPulseChance) return false
+
+  counters.executionCoverage.postOptions.evaluations++
 
   const { options } = derivePostOptions({
     currentGig,
@@ -943,6 +996,8 @@ const maybeApplyPostPulse = (
   if (hasBandUpdates && newBand) state.band = newBand
 
   counters.postPulses += 1
+  counters.executionCoverage.postOptions.activations++
+  counters.executionCoverage.postOptions.uniqueIdsSeen.add(post.id)
   return true
 }
 
@@ -953,6 +1008,7 @@ const maybeApplyPostPulse = (
 // same day. Duration-limited effects are tracked in runCtx and reverted by
 // expireContrabandEffects, matching processContrabandExpiry semantics.
 const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
+  counters.executionCoverage.contraband.evaluations++;
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
   const item = CONTRABAND_DB[Math.floor(rng() * CONTRABAND_DB.length)]
   if (!item) return
@@ -1001,6 +1057,8 @@ const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
 
   state.band = newBand
   counters.contrabandDrops += 1
+    counters.executionCoverage.contraband.activations++
+    counters.executionCoverage.contraband.uniqueIdsSeen.add(item.id)
 }
 
 // Daily expiry mirror of processContrabandExpiry (systemReducer.ts):
@@ -1023,18 +1081,18 @@ const expireContrabandEffects = (state, runCtx) => {
   runCtx.contrabandEffects = stillActive
 }
 
-const applyCatalogPurchase = (state, candidate, counters) => {
+export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!candidate) return false
 
   const validation = validatePurchase(candidate, state.player, state.band)
   if (!validation.isValid) return
 
+  const oldFame = state.player.fame ?? 0
+  const proposedFame = clampPlayerFame(oldFame - validation.finalCost)
   const initialPlayerPatch = validation.payingWithFame
     ? {
-        fame: clampPlayerFame((state.player.fame ?? 0) - validation.finalCost),
-        fameLevel: calculateFameLevel(
-          clampPlayerFame((state.player.fame ?? 0) - validation.finalCost)
-        )
+        fame: proposedFame,
+        fameLevel: calculateFameLevel(proposedFame)
       }
     : {
         money: clampPlayerMoney(
@@ -1061,9 +1119,26 @@ const applyCatalogPurchase = (state, candidate, counters) => {
   }
 
   if (validation.payingWithFame) {
+    accountFamePurchase(counters.fameAccounting, {
+      succeeded: true,
+      nominalCost: validation.finalCost,
+      beforeFame: oldFame,
+      afterFame: proposedFame,
+      refundedFame: 0
+    })
+    recordObservedFameChange(
+      counters.fameAccounting,
+      proposedFame,
+      state.player.fame
+    )
     counters.catalogFameSpent += validation.finalCost
   } else {
     counters.catalogMoneySpent += validation.finalCost
+    recordObservedFameChange(
+      counters.fameAccounting,
+      oldFame,
+      state.player.fame
+    )
   }
 
   if (candidate.category === 'VAN') {
@@ -1258,6 +1333,10 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     state.player.van.fuel + travelResult.fuelBonus
   )
   counters.travelMinigames += 1
+  counters.executionCoverage.minigamesTravel.attempts++
+  if (collectedItems.length > 0) {
+    counters.executionCoverage.minigamesTravel.completions++
+  }
 
   const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
   if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
@@ -1291,6 +1370,10 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
     )
     if (roadieDamage > 50) damagedGear = true
     counters.roadieMinigames += 1
+    counters.executionCoverage.minigamesRoadie.attempts++
+    if (roadieDamage <= 50) {
+      counters.executionCoverage.minigamesRoadie.completions++
+    }
   } else if (chosenGame === 'kabelsalat') {
     const kabelResult = calculateKabelsalatMinigameResult(
       {
@@ -1313,6 +1396,10 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
       damagedGear = true
     }
     counters.kabelsalatMinigames += 1
+    counters.executionCoverage.minigamesKabelsalat.attempts++
+    if (kabelResult.stress === 0) {
+      counters.executionCoverage.minigamesKabelsalat.completions++
+    }
   } else {
     const ampScore = Math.max(
       0,
@@ -1337,6 +1424,10 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
       damagedGear = true
     }
     counters.ampCalibrations += 1
+    counters.executionCoverage.minigamesAmp.attempts++
+    if (ampResult.reward > 0) {
+      counters.executionCoverage.minigamesAmp.completions++
+    }
   }
 
   return damagedGear
@@ -1554,17 +1645,25 @@ const applyPostGigState = (
   gigStatsPayload,
   counters
 ) => {
+  const oldFameGig = state.player.fame;
   const continueStats = calculateContinueStats({
     player: state.player,
     perfScore: performanceScore,
     financials,
     misses,
+    bandStyle: state.band.style,
     calculateFameGain,
     calculateFameLevel,
     clampPlayerFame,
     clampPlayerMoney,
     BALANCE_CONSTANTS
-  })
+  });
+  recordObservedFameChange(
+    counters.fameAccounting,
+    oldFameGig,
+    continueStats.newFame
+  )
+
 
   state.player.money = continueStats.newMoney
   state.player.fame = continueStats.newFame
@@ -1578,8 +1677,14 @@ const applyPostGigState = (
   // reputation shifts (incl. blacklisting), and gig quest events.
   state.currentGig = venue
   const traitsBefore = countBandTraits(state.band)
+  const fameBeforeGigReducer = state.player.fame
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
+  recordObservedFameChange(
+    counters.fameAccounting,
+    fameBeforeGigReducer,
+    state.player.fame
+  )
   counters.traitUnlocks += Math.max(
     0,
     countBandTraits(state.band) - traitsBefore
@@ -1589,7 +1694,45 @@ const applyPostGigState = (
   state.toasts = []
 }
 
-const runSingleSimulation = (scenario, seed) => {
+export const calculateDrawdownPct = (peakMoney, currentMoney) =>
+  peakMoney > 0 ? Math.max(0, ((peakMoney - currentMoney) / peakMoney) * 100) : 0
+
+export const reconcileFameLedger = run =>
+  run.startingFame +
+  run.fameAccounting.earned -
+  run.fameAccounting.spentGross +
+  run.fameAccounting.refunded -
+  run.fameAccounting.lost -
+  run.finalFame
+
+export const accountFameChange = (accounting, rawDifference, actualDifference) => {
+  const difference = Number.isFinite(rawDifference)
+    ? rawDifference
+    : actualDifference
+  if (difference > 0) accounting.earned += difference
+  else if (difference < 0) accounting.lost += Math.abs(difference)
+  accounting.clampAdjustment += actualDifference - difference
+}
+
+export const accountFamePurchase = (
+  accounting,
+  { succeeded, nominalCost, beforeFame, afterFame, refundedFame = 0 }
+) => {
+  if (!succeeded) return
+  accounting.spentGross += nominalCost
+  accounting.refunded += refundedFame
+  accounting.spentNet = accounting.spentGross - accounting.refunded
+  const expectedDeduction = nominalCost - refundedFame
+  const actualDeduction = beforeFame - afterFame
+  accounting.clampAdjustment += expectedDeduction - actualDeduction
+}
+
+const recordObservedFameChange = (accounting, before, after) => {
+  const difference = after - before
+  accountFameChange(accounting, difference, difference)
+}
+
+export const runSingleSimulation = (scenario, seed) => {
   const rng = mulberry32(seed)
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
@@ -1635,8 +1778,21 @@ const runSingleSimulation = (scenario, seed) => {
     postPulses: 0,
     contrabandDrops: 0,
     catalogUpgrades: 0,
+    executionCoverage: {
+      brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+      postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+      socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+      contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+      minigamesTravel: { attempts: 0, completions: 0 },
+      minigamesRoadie: { attempts: 0, completions: 0 },
+      minigamesKabelsalat: { attempts: 0, completions: 0 },
+      minigamesAmp: { attempts: 0, completions: 0 },
+      sponsorship: { attempts: 0, successes: 0 },
+      restStops: { evaluations: 0, activations: 0 }
+    },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
+    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
     gigCapHits: 0
   }
 
@@ -1644,6 +1800,7 @@ const runSingleSimulation = (scenario, seed) => {
   let peakMoney = state.player.money
   let lowestMoney = state.player.money
   let maxPeakToTroughDrop = 0
+  let daysSurvived = 0
   const timeline = []
 
   // Day-waypoint snapshots (money at start of day, before daily costs)
@@ -1664,12 +1821,19 @@ const runSingleSimulation = (scenario, seed) => {
 
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
   for (let day = 1; day <= daysToRun; day++) {
+    daysSurvived = day
+    if (state.player.money > peakMoney) peakMoney = state.player.money;
+    else {
+      const drop = calculateDrawdownPct(peakMoney, state.player.money)
+      if (drop > maxPeakToTroughDrop) maxPeakToTroughDrop = drop;
+    }
     // Snapshot money at start of day (before any spending)
     if (day === 20) moneyAtDay20 = state.player.money
     if (day === 40) moneyAtDay40 = state.player.money
     if (day === 60) moneyAtDay60 = state.player.money
 
     const moneyBeforeDay = state.player.money
+    const fameBeforeDailyUpdates = state.player.fame
     let preState = state
     preState = processAssetTick(preState) || preState
     const liabilityResult = processLiabilityTick(preState)
@@ -1690,6 +1854,11 @@ const runSingleSimulation = (scenario, seed) => {
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
+    recordObservedFameChange(
+      counters.fameAccounting,
+      fameBeforeDailyUpdates,
+      state.player.fame
+    )
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -1711,6 +1880,7 @@ const runSingleSimulation = (scenario, seed) => {
     let willRest = false
     // Check if the band needs rest/clinic before taking on a gig
     if (shouldPlayGig) {
+      counters.executionCoverage.restStops.evaluations++
       const needsRest =
         state.band.harmony < 30 ||
         state.band.members.some(m => m.stamina < 30 || m.mood < 30)
@@ -1722,16 +1892,24 @@ const runSingleSimulation = (scenario, seed) => {
       }
     }
 
+    const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
       applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
+    recordObservedFameChange(
+      counters.fameAccounting,
+      fameBeforeWorldEvents,
+      state.player.fame
+    )
     maybeShiftSocialTrend(state, rng, counters)
     const hadSponsorBeforeActivation = hasActiveSponsorship(state.social)
     if (scenario.brandDealsEnabled !== false) {
+      counters.executionCoverage.sponsorship.attempts++
       maybeActivateBrandDeal(state, rng, counters)
     }
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
+      counters.executionCoverage.sponsorship.successes++
     }
     expireContrabandEffects(state, runCtx)
     maybeApplyContrabandDrop(state, rng, counters, runCtx)
@@ -1784,7 +1962,10 @@ const runSingleSimulation = (scenario, seed) => {
           mood: clampMemberMood(member.mood + 10)
         }
       })
-      if (usedRestStop) counters.restStops += 1
+      if (usedRestStop) {
+        counters.restStops += 1
+        counters.executionCoverage.restStops.activations++
+      }
     }
 
     if (!shouldPlayGig) {
@@ -1842,9 +2023,18 @@ const runSingleSimulation = (scenario, seed) => {
     if (isCancelled) {
       // Show is cancelled due to poor harmony
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
-      state.player.fame = clampPlayerFame(
-        state.player.fame - SIMULATION_CONSTANTS.fameLossBadGig * 2
-      )
+      {
+        const oldFame = state.player.fame;
+        const loss = SIMULATION_CONSTANTS.fameLossBadGig * 2;
+        const newFameRaw = oldFame - loss;
+        const newFameClamped = clampPlayerFame(newFameRaw);
+        accountFameChange(
+          counters.fameAccounting,
+          -loss,
+          newFameClamped - oldFame
+        )
+        state.player.fame = newFameClamped;
+      }
       state.player.fameLevel = calculateFameLevel(state.player.fame)
 
       // Record cancelled state in timeline (without incrementing gigsPlayed)
@@ -1984,6 +2174,7 @@ const runSingleSimulation = (scenario, seed) => {
     }
 
     const sponsorActiveBeforePostPulse = hasActiveSponsorship(state.social)
+    const fameBeforePostPulse = state.player.fame
     const postPulseApplied =
       scenario.socialStrategy !== 'none' &&
       maybeApplyPostPulse(
@@ -1995,6 +2186,11 @@ const runSingleSimulation = (scenario, seed) => {
         state.activeEvent || null,
         performanceScore
       )
+    recordObservedFameChange(
+      counters.fameAccounting,
+      fameBeforePostPulse,
+      state.player.fame
+    )
 
     if (sponsorActiveBeforePostPulse) {
       counters.sponsorPayouts += 1
@@ -2020,7 +2216,7 @@ const runSingleSimulation = (scenario, seed) => {
 
     // Calculate Peak-to-Trough drop percentage relative to the current peak.
     if (peakMoney > 0) {
-      const currentDrop = (peakMoney - state.player.money) / peakMoney
+      const currentDrop = calculateDrawdownPct(peakMoney, state.player.money)
       if (currentDrop > maxPeakToTroughDrop) maxPeakToTroughDrop = currentDrop
     }
 
@@ -2079,8 +2275,16 @@ const runSingleSimulation = (scenario, seed) => {
   if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
   if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
 
+  const reconciliationDelta = reconcileFameLedger({
+    startingFame,
+    fameAccounting: counters.fameAccounting,
+    finalFame: state.player.fame
+  })
+
   return {
     startingFame,
+    reconciliationDelta,
+    daysSurvived,
     finalMoney: state.player.money,
     regionRepTouched:
       Object.keys(state.reputationByRegion || {}).length > 0 ||
@@ -2108,285 +2312,278 @@ const runSingleSimulation = (scenario, seed) => {
   }
 }
 
-const summarizeScenario = runs => {
-  const totals = runs.reduce(
-    (acc, run) => {
-      acc.startingFame += run.startingFame || 0
-      acc.finalMoney += run.finalMoney
-      acc.finalFame += run.finalFame
-      acc.finalHarmony += run.finalHarmony
-      acc.finalControversy += run.finalControversy
-      acc.totalGigNet += run.totalGigNet
-      acc.gigsPlayed += run.gigsPlayed
-      acc.maxPeakToTroughDrop =
-        (acc.maxPeakToTroughDrop || 0) + (run.maxPeakToTroughDrop || 0)
-      acc.peakMoney += run.peakMoney
-      acc.lowestMoney += run.lowestMoney
-      acc.bankruptcies += run.bankrupt ? 1 : 0
-      acc.sponsorSignings += run.sponsorSignings
-      acc.sponsorPayouts += run.sponsorPayouts
-      acc.sponsorDrops += run.sponsorDrops
-      acc.travelMinigames += run.travelMinigames
-      acc.roadieMinigames += run.roadieMinigames
-      acc.kabelsalatMinigames += run.kabelsalatMinigames
-      acc.ampCalibrations += run.ampCalibrations || 0
-      acc.gigEvents += run.gigEvents || 0
-      acc.traitUnlocks += run.traitUnlocks || 0
-      acc.assetsPurchased += run.assetsPurchased || 0
-      acc.loansTaken += run.loansTaken || 0
-      acc.modulesInstalled += run.modulesInstalled || 0
-      acc.crowdfundsStarted += run.crowdfundsStarted || 0
-      acc.finalAssets += run.finalAssets || 0
-      acc.restStops += run.restStops || 0
-      acc.travelSpend += run.travelSpend || 0
-      acc.refuelSpend += run.refuelSpend || 0
-      acc.repairSpend += run.repairSpend || 0
-      acc.clinicSpend += run.clinicSpend || 0
-      acc.regionRepTouchedRuns += run.regionRepTouched ? 1 : 0
-      acc.refuels += run.refuels
-      acc.repairs += run.repairs
-      acc.clinicVisits += run.clinicVisits
-      acc.hqUpgrades += run.hqUpgrades
-      acc.vanUpgrades += run.vanUpgrades
-      acc.specialEvents += run.specialEvents
-      acc.cashSwings += run.cashSwings
-      acc.bandEvents += run.bandEvents
-      acc.equipmentEvents += run.equipmentEvents
-      acc.eventsApplied += run.eventsApplied || 0
-      acc.trendShifts += run.trendShifts
-      acc.brandDealsActivated += run.brandDealsActivated
-      acc.postPulses += run.postPulses
-      acc.contrabandDrops += run.contrabandDrops
-      acc.catalogUpgrades += run.catalogUpgrades
-      acc.catalogMoneySpent += run.catalogMoneySpent || 0
-      acc.catalogFameSpent += run.catalogFameSpent || 0
-      acc.gigCapHits += run.gigCapHits || 0
-      if (run.moneyAtDay20 != null) {
-        acc.moneyAtDay20 += run.moneyAtDay20
-        acc.moneyAtDay20Count += 1
+const COVERAGE_ID_INVENTORY = {
+  brandDeals: BRAND_DEALS.length,
+  postOptions: POST_OPTIONS.length,
+  socialTrends: ALLOWED_TRENDS.length,
+  contraband: CONTRABAND_DB.length
+}
+
+export const mergeExecutionCoverage = sources => {
+  const coverage = {
+    brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+    postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+    socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+    contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+    minigamesTravel: { attempts: 0, completions: 0 },
+    minigamesRoadie: { attempts: 0, completions: 0 },
+    minigamesKabelsalat: { attempts: 0, completions: 0 },
+    minigamesAmp: { attempts: 0, completions: 0 },
+    sponsorship: { attempts: 0, successes: 0 },
+    restStops: { evaluations: 0, activations: 0 }
+  }
+
+  for (const source of sources) {
+    if (!source) continue
+    for (const [key, target] of Object.entries(coverage)) {
+      const current = source[key] ?? {}
+      for (const counter of ['evaluations', 'activations', 'attempts', 'completions', 'successes']) {
+        if (counter in target) target[counter] += current[counter] ?? 0
       }
-      if (run.moneyAtDay40 != null) {
-        acc.moneyAtDay40 += run.moneyAtDay40
-        acc.moneyAtDay40Count += 1
+      if (target.uniqueIdsSeen) {
+        for (const id of current.uniqueIdsSeen ?? []) target.uniqueIdsSeen.add(id)
       }
-      if (run.moneyAtDay60 != null) {
-        acc.moneyAtDay60 += run.moneyAtDay60
-        acc.moneyAtDay60Count += 1
-      }
-      acc.totalTravelCostGigs += run.totalTravelCostGigs || 0
-      acc.totalHitWindowSum += run.totalHitWindowSum || 0
-      acc.totalMissesSum += run.totalMissesSum || 0
-      acc.totalPerfScoreSum += run.totalPerfScoreSum || 0
-      acc.gigScoreLow += run.gigScoreLow || 0
-      acc.gigScoreMid += run.gigScoreMid || 0
-      acc.gigScoreHigh += run.gigScoreHigh || 0
-      return acc
-    },
-    {
-      startingFame: 0,
-      finalMoney: 0,
-      finalFame: 0,
-      finalHarmony: 0,
-      finalControversy: 0,
-      totalGigNet: 0,
-      gigsPlayed: 0,
-      peakMoney: 0,
-      lowestMoney: 0,
-      bankruptcies: 0,
-      sponsorSignings: 0,
-      sponsorPayouts: 0,
-      sponsorDrops: 0,
-      travelMinigames: 0,
-      roadieMinigames: 0,
-      kabelsalatMinigames: 0,
-      ampCalibrations: 0,
-      gigEvents: 0,
-      traitUnlocks: 0,
-      assetsPurchased: 0,
-      loansTaken: 0,
-      modulesInstalled: 0,
-      crowdfundsStarted: 0,
-      finalAssets: 0,
-      restStops: 0,
-      travelSpend: 0,
-      refuelSpend: 0,
-      repairSpend: 0,
-      clinicSpend: 0,
-      regionRepTouchedRuns: 0,
-      refuels: 0,
-      repairs: 0,
-      clinicVisits: 0,
-      hqUpgrades: 0,
-      vanUpgrades: 0,
-      specialEvents: 0,
-      cashSwings: 0,
-      bandEvents: 0,
-      equipmentEvents: 0,
-      eventsApplied: 0,
-      trendShifts: 0,
-      brandDealsActivated: 0,
-      postPulses: 0,
-      contrabandDrops: 0,
-      catalogUpgrades: 0,
-      catalogMoneySpent: 0,
-      catalogFameSpent: 0,
-      gigCapHits: 0,
-      moneyAtDay20: 0,
-      moneyAtDay40: 0,
-      moneyAtDay60: 0,
-      moneyAtDay20Count: 0,
-      moneyAtDay40Count: 0,
-      moneyAtDay60Count: 0,
-      totalTravelCostGigs: 0,
-      totalHitWindowSum: 0,
-      totalMissesSum: 0,
-      totalPerfScoreSum: 0,
-      gigScoreLow: 0,
-      gigScoreMid: 0,
-      gigScoreHigh: 0,
-      maxPeakToTroughDrop: 0
     }
+  }
+
+  for (const [key, metric] of Object.entries(coverage)) {
+    if (metric.uniqueIdsSeen) {
+      metric.uniqueIdsSeen = Array.from(metric.uniqueIdsSeen).sort()
+      metric.availableIds = COVERAGE_ID_INVENTORY[key]
+    }
+    metric.covered =
+      (metric.evaluations ?? metric.attempts ?? 0) > 0 ||
+      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0 ||
+      (metric.uniqueIdsSeen?.length ?? 0) > 0
+  }
+  return coverage
+}
+
+export const summarizeScenario = runs => {
+  const solventRuns = runs.filter(r => !r.bankrupt)
+  const bankruptRuns = runs.filter(r => r.bankrupt)
+
+  const describe = (values, format) => ({
+    mean: format(mean(values)),
+    median: format(median(values)),
+    stdDev: format(standardDeviation(values)),
+    min: format(minimum(values)),
+    p10: format(quantile(values, 0.1)),
+    p25: format(quantile(values, 0.25)),
+    p75: format(quantile(values, 0.75)),
+    p90: format(quantile(values, 0.9)),
+    max: format(maximum(values))
+  })
+  const roundInteger = value => Math.round(value)
+  const roundTwo = value => Number(value.toFixed(2))
+  const perGig = (run, value) => run.gigsPlayed > 0 ? value / run.gigsPlayed : 0
+
+  const calcStats = subset => {
+    if (!subset || subset.length === 0) return null
+    return {
+      sampleSize: subset.length,
+      finalMoney: describe(subset.map(run => run.finalMoney), roundInteger),
+      finalFame: describe(subset.map(run => run.finalFame), roundInteger),
+      gigsPlayed: describe(subset.map(run => run.gigsPlayed), roundTwo),
+      daysSurvived: describe(subset.map(run => run.daysSurvived), roundTwo),
+      gigNet: describe(subset.map(run => perGig(run, run.totalGigNet)), roundInteger),
+      performanceScore: describe(subset.map(run => perGig(run, run.totalPerfScoreSum)), roundInteger),
+      finalHarmony: describe(subset.map(run => run.finalHarmony), roundInteger),
+      fameEarned: describe(subset.map(run => run.fameAccounting.earned), roundInteger),
+      fameEarnedPerGig: describe(subset.map(run => perGig(run, run.fameAccounting.earned)), roundInteger)
+    }
+  }
+
+  const aggregateCoverage = mergeExecutionCoverage(
+    runs.map(run => run.executionCoverage)
   )
 
-  const count = runs.length || 1
-  const fameProgressTotal =
-    totals.finalFame - totals.startingFame + totals.catalogFameSpent
+  const popAll = calcStats(runs) || { sampleSize: 0 }
+  const popSolvent = calcStats(solventRuns) || { sampleSize: 0 }
+  const popBankrupt = calcStats(bankruptRuns) || { sampleSize: 0 }
+
+  const bankruptcyCount = bankruptRuns.length
+  const n = runs.length
+  const bankruptcyRatePct = n > 0 ? (bankruptcyCount / n) * 100 : 0
+  const preciseConfidence95 = wilsonScoreInterval(bankruptcyCount, n)
+  const confidence95 = {
+    lowerPct: Number(preciseConfidence95.lowerPct.toFixed(2)),
+    upperPct: Number(preciseConfidence95.upperPct.toFixed(2)),
+    method: preciseConfidence95.method
+  }
+
+  const finalMoneyMean = popAll.finalMoney ? popAll.finalMoney.mean : 0
+  const finalFameMean = popAll.finalFame ? popAll.finalFame.mean : 0
+  const gigsPlayedMean = popAll.gigsPlayed ? popAll.gigsPlayed.mean : 0
+
+  const avgEventsApplied = Number(mean(runs.map(r => r.eventsApplied)).toFixed(2))
+  const avgGigEvents = Number(mean(runs.map(r => r.gigEvents)).toFixed(2))
+
   return {
-    avgFinalMoney: Math.round(totals.finalMoney / count),
-    avgFinalFame: Math.round(totals.finalFame / count),
-    avgFinalHarmony: Math.round(totals.finalHarmony / count),
-    avgFinalControversy: Number((totals.finalControversy / count).toFixed(2)),
-    avgPeakMoney: Math.round(totals.peakMoney / count),
-    avgLowestMoney: Math.round(totals.lowestMoney / count),
-    avgGigsPlayed: Number((totals.gigsPlayed / count).toFixed(2)),
-    avgPeakToTroughDrop: totals.maxPeakToTroughDrop
-      ? Number(((totals.maxPeakToTroughDrop * 100) / count).toFixed(1))
-      : 0,
-    gigCapHits: Number(
-      ((totals.gigCapHits / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
-    ),
-    avgGigNet: Math.round(totals.totalGigNet / Math.max(1, totals.gigsPlayed)),
-    bankruptcyRate: Number(((totals.bankruptcies / count) * 100).toFixed(2)),
-    avgSponsorSignings: Number((totals.sponsorSignings / count).toFixed(2)),
-    avgSponsorPayouts: Number((totals.sponsorPayouts / count).toFixed(2)),
-    avgSponsorDrops: Number((totals.sponsorDrops / count).toFixed(2)),
-    avgTravelMinigames: Number((totals.travelMinigames / count).toFixed(2)),
-    avgRoadieMinigames: Number((totals.roadieMinigames / count).toFixed(2)),
-    avgKabelsalatMinigames: Number(
-      (totals.kabelsalatMinigames / count).toFixed(2)
-    ),
-    avgAmpCalibrations: Number((totals.ampCalibrations / count).toFixed(2)),
-    avgGigEvents: Number((totals.gigEvents / count).toFixed(2)),
-    avgTraitUnlocks: Number((totals.traitUnlocks / count).toFixed(2)),
-    avgAssetsPurchased: Number((totals.assetsPurchased / count).toFixed(2)),
-    avgLoansTaken: Number((totals.loansTaken / count).toFixed(2)),
-    avgModulesInstalled: Number((totals.modulesInstalled / count).toFixed(2)),
-    avgCrowdfundsStarted: Number((totals.crowdfundsStarted / count).toFixed(2)),
-    avgFinalAssets: Number((totals.finalAssets / count).toFixed(2)),
-    avgRestStops: Number((totals.restStops / count).toFixed(2)),
-    avgClinicSpend: Math.round(totals.clinicSpend / count),
-    regionRepTouchedPct: Number(
-      ((totals.regionRepTouchedRuns / count) * 100).toFixed(1)
-    ),
-    avgRefuels: Number((totals.refuels / count).toFixed(2)),
-    avgRepairs: Number((totals.repairs / count).toFixed(2)),
-    avgClinicVisits: Number((totals.clinicVisits / count).toFixed(2)),
-    avgHqUpgrades: Number((totals.hqUpgrades / count).toFixed(2)),
-    avgVanUpgrades: Number((totals.vanUpgrades / count).toFixed(2)),
-    avgSpecialEvents: Number((totals.specialEvents / count).toFixed(2)),
-    avgCashSwings: Number((totals.cashSwings / count).toFixed(2)),
-    avgBandEvents: Number((totals.bandEvents / count).toFixed(2)),
-    avgEquipmentEvents: Number((totals.equipmentEvents / count).toFixed(2)),
-    avgEventsApplied: Number((totals.eventsApplied / count).toFixed(2)),
-    avgTrendShifts: Number((totals.trendShifts / count).toFixed(2)),
-    avgBrandDealsActivated: Number(
-      (totals.brandDealsActivated / count).toFixed(2)
-    ),
-    avgPostPulses: Number((totals.postPulses / count).toFixed(2)),
-    avgContrabandDrops: Number((totals.contrabandDrops / count).toFixed(2)),
-    avgCatalogUpgrades: Number((totals.catalogUpgrades / count).toFixed(2)),
-    avgCatalogMoneySpent: Math.round(totals.catalogMoneySpent / count),
-    avgCatalogFameSpent: Math.round(totals.catalogFameSpent / count),
-    sampleSize: count,
-    // Progression curve (null when no run reached the waypoint day)
-    avgMoneyAtDay20:
-      totals.moneyAtDay20Count > 0
-        ? Math.round(totals.moneyAtDay20 / totals.moneyAtDay20Count)
+    avgFinalMoney: finalMoneyMean,
+    avgFinalFame: finalFameMean,
+    avgFinalHarmony: popAll.finalHarmony ? popAll.finalHarmony.mean : 0,
+    avgGigsPlayed: gigsPlayedMean,
+    avgGigNet: popAll.gigNet ? popAll.gigNet.mean : 0,
+    bankruptcyRate: Number(bankruptcyRatePct.toFixed(2)),
+    avgEventsApplied,
+    avgGigEvents,
+    avgPerformanceScore: popAll.performanceScore ? popAll.performanceScore.mean : 0,
+
+    statistics: {
+      finalMoney: popAll.finalMoney,
+      finalFame: popAll.finalFame,
+      gigsPlayed: popAll.gigsPlayed,
+      daysSurvived: popAll.daysSurvived,
+      gigNet: popAll.gigNet,
+      performanceScore: popAll.performanceScore,
+      lowestMoney: {
+        mean: Math.round(mean(runs.map(r => r.lowestMoney))),
+        median: Math.round(median(runs.map(r => r.lowestMoney))),
+        stdDev: Math.round(standardDeviation(runs.map(r => r.lowestMoney))),
+        min: Math.round(minimum(runs.map(r => r.lowestMoney))),
+        p10: Math.round(quantile(runs.map(r => r.lowestMoney), 0.1)),
+        p25: Math.round(quantile(runs.map(r => r.lowestMoney), 0.25)),
+        p75: Math.round(quantile(runs.map(r => r.lowestMoney), 0.75)),
+        p90: Math.round(quantile(runs.map(r => r.lowestMoney), 0.9)),
+        max: Math.round(maximum(runs.map(r => r.lowestMoney)))
+      },
+      peakMoney: {
+        mean: Math.round(mean(runs.map(r => r.peakMoney))),
+        median: Math.round(median(runs.map(r => r.peakMoney))),
+        stdDev: Math.round(standardDeviation(runs.map(r => r.peakMoney))),
+        min: Math.round(minimum(runs.map(r => r.peakMoney))),
+        p10: Math.round(quantile(runs.map(r => r.peakMoney), 0.1)),
+        p25: Math.round(quantile(runs.map(r => r.peakMoney), 0.25)),
+        p75: Math.round(quantile(runs.map(r => r.peakMoney), 0.75)),
+        p90: Math.round(quantile(runs.map(r => r.peakMoney), 0.9)),
+        max: Math.round(maximum(runs.map(r => r.peakMoney)))
+      },
+      maxDrawdownPct: {
+        mean: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+        median: Number(median(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+        stdDev: Number(standardDeviation(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+        min: Number(minimum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+        p10: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.1).toFixed(2)),
+        p25: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.25).toFixed(2)),
+        p75: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.75).toFixed(2)),
+        p90: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.9).toFixed(2)),
+        max: Number(maximum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2))
+      },
+      finalHarmony: popAll.finalHarmony,
+      eventsApplied: {
+        mean: avgEventsApplied,
+        median: Number(median(runs.map(r => r.eventsApplied)).toFixed(2)),
+        stdDev: Number(standardDeviation(runs.map(r => r.eventsApplied)).toFixed(2)),
+        min: minimum(runs.map(r => r.eventsApplied)),
+        p10: quantile(runs.map(r => r.eventsApplied), 0.1),
+        p25: quantile(runs.map(r => r.eventsApplied), 0.25),
+        p75: quantile(runs.map(r => r.eventsApplied), 0.75),
+        p90: quantile(runs.map(r => r.eventsApplied), 0.9),
+        max: maximum(runs.map(r => r.eventsApplied))
+      },
+      gigEvents: {
+        mean: avgGigEvents,
+        median: Number(median(runs.map(r => r.gigEvents)).toFixed(2)),
+        stdDev: Number(standardDeviation(runs.map(r => r.gigEvents)).toFixed(2)),
+        min: minimum(runs.map(r => r.gigEvents)),
+        p10: quantile(runs.map(r => r.gigEvents), 0.1),
+        p25: quantile(runs.map(r => r.gigEvents), 0.25),
+        p75: quantile(runs.map(r => r.gigEvents), 0.75),
+        p90: quantile(runs.map(r => r.gigEvents), 0.9),
+        max: maximum(runs.map(r => r.gigEvents))
+      },
+      fameEarned: popAll.fameEarned,
+      fameEarnedPerGig: popAll.fameEarnedPerGig
+    },
+    population: {
+      allRuns: popAll,
+      solventRuns: popSolvent,
+      bankruptRuns: popBankrupt
+    },
+
+    avgFameProgress: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
+    avgFameProgressPerGig: Number(mean(runs.map(r =>
+      r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0
+    )).toFixed(2)),
+    avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+    avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney))),
+    avgLowestMoney: Math.round(mean(runs.map(r => r.lowestMoney))),
+    avgFinalControversy: Number(mean(runs.map(r => r.finalControversy)).toFixed(2)),
+    ...Object.fromEntries([
+      ['ClinicVisits', 'clinicVisits'], ['SponsorPayouts', 'sponsorPayouts'],
+      ['SponsorSignings', 'sponsorSignings'], ['SponsorDrops', 'sponsorDrops'],
+      ['BrandDealsActivated', 'brandDealsActivated'], ['Refuels', 'refuels'],
+      ['Repairs', 'repairs'], ['HqUpgrades', 'hqUpgrades'], ['VanUpgrades', 'vanUpgrades'],
+      ['CatalogUpgrades', 'catalogUpgrades'], ['TravelMinigames', 'travelMinigames'],
+      ['RoadieMinigames', 'roadieMinigames'], ['KabelsalatMinigames', 'kabelsalatMinigames'],
+      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'],
+      ['AssetsPurchased', 'assetsPurchased'], ['LoansTaken', 'loansTaken'],
+      ['ModulesInstalled', 'modulesInstalled'], ['CrowdfundsStarted', 'crowdfundsStarted'],
+      ['TraitUnlocks', 'traitUnlocks'], ['FinalAssets', 'finalAssets'],
+      ['TrendShifts', 'trendShifts'], ['SpecialEvents', 'specialEvents'],
+      ['CashSwings', 'cashSwings'], ['BandEvents', 'bandEvents'],
+      ['EquipmentEvents', 'equipmentEvents'], ['PostPulses', 'postPulses'],
+      ['ContrabandDrops', 'contrabandDrops']
+    ].map(([name, field]) => [`avg${name}`, Number(mean(runs.map(r => r[field] ?? 0)).toFixed(2))])),
+    avgClinicSpend: Math.round(mean(runs.map(r => r.clinicSpend ?? 0))),
+    regionRepTouchedPct: Number((mean(runs.map(r => r.regionRepTouched ? 100 : 0))).toFixed(1)),
+    avgTravelCostPerGig: Math.round(runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))),
+    avgHitWindow: Math.round(runs.reduce((sum, r) => sum + r.totalHitWindowSum, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))),
+    avgMissesPerGig: Number((runs.reduce((sum, r) => sum + r.totalMissesSum, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))).toFixed(1)),
+    gigScorePctLow: Number((runs.reduce((sum, r) => sum + r.gigScoreLow, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigScorePctMid: Number((runs.reduce((sum, r) => sum + r.gigScoreMid, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigScorePctHigh: Number((runs.reduce((sum, r) => sum + r.gigScoreHigh, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigNetToTravelRatio: Number((runs.reduce((sum, r) => sum + r.totalGigNet, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0))).toFixed(1)),
+    sinkToIncomeRatio: Number((runs.reduce((sum, r) => sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalGigNet, 0))).toFixed(2)),
+    gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
+    gigsToAffordVanUpgrade: Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
+    avgMoneyAtDay20: runs.some(r => r.moneyAtDay20 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay20 != null).map(r => r.moneyAtDay20))) : null,
+    avgMoneyAtDay40: runs.some(r => r.moneyAtDay40 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay40 != null).map(r => r.moneyAtDay40))) : null,
+    avgMoneyAtDay60: runs.some(r => r.moneyAtDay60 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay60 != null).map(r => r.moneyAtDay60))) : null,
+    bankruptcy: {
+      count: bankruptcyCount,
+      sampleSize: n,
+      ratePct: Number(bankruptcyRatePct.toFixed(2)),
+      confidence95
+    },
+    volatility: {
+      finalMoneyStdDev: popAll.finalMoney ? popAll.finalMoney.stdDev : 0,
+      finalMoneyCoefficientOfVariation: (popAll.finalMoney && popAll.finalMoney.mean !== 0)
+        ? Number((popAll.finalMoney.stdDev / Math.abs(popAll.finalMoney.mean)).toFixed(4))
         : null,
-    avgMoneyAtDay40:
-      totals.moneyAtDay40Count > 0
-        ? Math.round(totals.moneyAtDay40 / totals.moneyAtDay40Count)
-        : null,
-    avgMoneyAtDay60:
-      totals.moneyAtDay60Count > 0
-        ? Math.round(totals.moneyAtDay60 / totals.moneyAtDay60Count)
-        : null,
-    // Gig calibration
-    avgTravelCostPerGig: Math.round(
-      totals.totalTravelCostGigs / Math.max(1, totals.gigsPlayed)
-    ),
-    avgHitWindow: Math.round(
-      totals.totalHitWindowSum / Math.max(1, totals.gigsPlayed)
-    ),
-    avgMissesPerGig: Number(
-      (totals.totalMissesSum / Math.max(1, totals.gigsPlayed)).toFixed(1)
-    ),
-    avgPerformanceScore: Math.round(
-      totals.totalPerfScoreSum / Math.max(1, totals.gigsPlayed)
-    ),
-    gigScorePctLow: Number(
-      ((totals.gigScoreLow / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
-    ),
-    gigScorePctMid: Number(
-      ((totals.gigScoreMid / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
-    ),
-    gigScorePctHigh: Number(
-      ((totals.gigScoreHigh / Math.max(1, totals.gigsPlayed)) * 100).toFixed(1)
-    ),
-    // Income structure & sink analysis
-    gigNetToTravelRatio: Number(
-      (totals.totalGigNet / Math.max(1, totals.totalTravelCostGigs)).toFixed(1)
-    ),
-    // Real money spent on sinks (travel + actual refuel/repair/clinic costs
-    // from calculateRefuelCost/calculateRepairCost/calculateClinicCost).
-    sinkToIncomeRatio: Number(
-      (
-        (totals.travelSpend +
-          totals.repairSpend +
-          totals.refuelSpend +
-          totals.clinicSpend) /
-        Math.max(1, totals.totalGigNet)
-      ).toFixed(2)
-    ),
-    avgFameProgress: Math.round(fameProgressTotal / count),
-    avgFameProgressPerGig: Number(
-      (
-        fameProgressTotal /
-        count /
-        Math.max(1, totals.gigsPlayed / count)
-      ).toFixed(2)
-    ),
-    gigsToAffordHqUpgrade: Number(
-      (
-        HQ_UPGRADE_COST /
-        Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
-      ).toFixed(2)
-    ),
-    gigsToAffordVanUpgrade: Number(
-      (
-        VAN_UPGRADE_COST /
-        Math.max(1, totals.totalGigNet / Math.max(1, totals.gigsPlayed))
-      ).toFixed(2)
-    )
+      performanceScoreStdDev: popAll.performanceScore ? popAll.performanceScore.stdDev : 0,
+      finalHarmonyStdDev: popAll.finalHarmony ? popAll.finalHarmony.stdDev : 0,
+      maxDrawdownMeanPct: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+      maxDrawdownP90Pct: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.9).toFixed(2)),
+      moneyRangeMedian: Math.round(median(runs.map(r => r.peakMoney - r.lowestMoney)))
+    },
+    fameAccounting: {
+      startingFame: Number(mean(runs.map(r => r.startingFame)).toFixed(2)),
+      earned: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
+      spentGross: Math.round(mean(runs.map(r => r.fameAccounting.spentGross))),
+      refunded: Math.round(mean(runs.map(r => r.fameAccounting.refunded))),
+      spentNet: Math.round(mean(runs.map(r => r.fameAccounting.spentNet))),
+      lost: Math.round(mean(runs.map(r => r.fameAccounting.lost))),
+      clampAdjustment: Number(mean(runs.map(r => r.fameAccounting.clampAdjustment)).toFixed(2)),
+      finalFame: Number(mean(runs.map(r => r.finalFame)).toFixed(2)),
+      reconciliationDelta: Number(mean(runs.map(r => r.reconciliationDelta)).toFixed(6)),
+      maxAbsReconciliationDelta: Number(maximum(runs.map(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment))).toFixed(6)),
+      reconciledRuns: runs.filter(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment) <= 1e-9).length,
+      sampleSize: runs.length
+    },
+    executionCoverage: aggregateCoverage
   }
 }
+
 
 export const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
   }
 
-  if (summary.avgFinalMoney >= 100000 && summary.avgFinalFame < 20) {
+  if (summary.avgFinalMoney >= 100000 && calculateFameLevel(summary.avgFinalFame) < 20) {
     return '⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen.'
   }
 
@@ -2476,69 +2673,32 @@ const getMinigameInsight = s => {
   return '⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt.'
 }
 
-const buildFeatureCoverage = results => {
-  const coverage = Object.fromEntries(
-    FEATURE_COVERAGE_KEYS.map(key => [key, false])
-  )
-
-  if (results.length > 0) {
-    const hasEventsApplied = results.some(
-      scenario => scenario.summary.avgEventsApplied > 0
-    )
-    coverage.daily_updates = true
-    coverage.gig_financials = true
-    coverage.travel_expenses = true
-    coverage.fuel_cost = true
-    coverage.gig_modifiers = true
-    coverage.gig_physics = true
-    coverage.events_db = hasEventsApplied
-    coverage.brand_deals = true
-    coverage.social_trends = true
-    coverage.social_platforms = true
-    coverage.post_options = true
-    coverage.contraband = true
+export const buildFeatureInventory = () => {
+  return {
+    venuesAvailable: ALL_VENUES.length,
+    eventsAvailable: Object.values(EVENTS_DB).reduce((acc, arr) => acc + arr.length, 0),
+    brandDealsAvailable: BRAND_DEALS.length,
+    postOptionsAvailable: POST_OPTIONS.length,
+    contrabandItemsAvailable: CONTRABAND_DB.length,
+    upgradesAvailable: getUnifiedUpgradeCatalog().length,
+    socialPlatformsAvailable: Object.keys(SOCIAL_PLATFORMS).length,
+    trendsAvailable: ALLOWED_TRENDS.length,
+    songsAvailable: Object.keys(SONGS_DB).length,
+    questsAvailable: Object.keys(QUEST_REGISTRY).length,
+    assetChassisAvailable: Object.values(CHASSIS_CONFIG).reduce(
+      (total, flavors) =>
+        total + Object.values(flavors).reduce((sum, tiers) => sum + Object.keys(tiers).length, 0),
+      0
+    ),
+    assetModulesAvailable: Object.keys(MODULE_REGISTRY).length,
+    loanProfilesAvailable: Object.keys(LOAN_PROFILES).length
   }
-
-  for (const scenario of results) {
-    const summary = scenario.summary
-    if (summary.avgTravelMinigames > 0) coverage.travel_minigame = true
-    if (summary.avgRoadieMinigames > 0) coverage.roadie_minigame = true
-    if (summary.avgKabelsalatMinigames > 0) coverage.kabelsalat_minigame = true
-    if (summary.avgAmpCalibrations > 0) {
-      coverage.amp_calibration_minigame = true
-    }
-    if (summary.avgEventsApplied > 0) {
-      coverage.world_events = true
-    }
-    if (summary.avgGigEvents > 0) coverage.gig_events = true
-    if (summary.avgSponsorPayouts > 0 || summary.avgSponsorSignings > 0) {
-      coverage.sponsorship = true
-    }
-    if (summary.avgRefuels > 0 || summary.avgRepairs > 0) {
-      coverage.maintenance = true
-    }
-    if (summary.avgHqUpgrades > 0 || summary.avgVanUpgrades > 0) {
-      coverage.upgrades = true
-    }
-    if (summary.avgClinicVisits > 0) coverage.clinic = true
-    if (summary.avgRestStops > 0) coverage.rest_stops = true
-    if (summary.avgTraitUnlocks > 0) coverage.trait_unlocks = true
-    if (summary.regionRepTouchedPct > 0) {
-      // Region/venue reputation entries were written by the real
-      // handleSetLastGigStats pipeline, which also emits gig quest events.
-      coverage.region_reputation = true
-      coverage.quest_events = true
-    }
-    if (summary.avgAssetsPurchased > 0) coverage.asset_acquisition = true
-    if (summary.avgModulesInstalled > 0) coverage.asset_modules = true
-    if (summary.avgCrowdfundsStarted > 0) coverage.crowdfunding = true
-    if (summary.avgGigsPlayed > 0) coverage.songs = true
-  }
-
-  return coverage
 }
 
-const fmt = n => n.toLocaleString('de-DE')
+export const buildExecutionCoverage = results =>
+  mergeExecutionCoverage(results.map(result => result.summary.executionCoverage))
+
+const fmt = n => (n == null ? 0 : n).toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
 const fmtEurOrDash = n => (n == null ? '—' : fmtEur(n))
 const fmtPct = n => `${n}%`
@@ -2775,6 +2935,7 @@ const buildMarkdownReport = payload => {
     lines.push(`- Basis-Commit: ${payload.metadata.sourceBaseCommit || "nicht verf\u00FCgbar"}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? "unbekannt" : (payload.metadata.workingTreeDirty ? "Ja" : "Nein")}`)
     lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
     lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
+    lines.push(`- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
     lines.push('')
   }
@@ -2877,7 +3038,7 @@ const buildMarkdownReport = payload => {
     const startFame = sc?.initialOverrides?.player?.fame ?? 0
     const fameLevel = calculateFameLevel(s.avgFinalFame)
     lines.push(
-      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHits}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
+      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHitPct}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )
   }
   lines.push('')
@@ -3081,7 +3242,91 @@ const buildMarkdownReport = payload => {
   lines.push('')
 
   // ── KPI Health Check ──────────────────────────────────────────────────────
-  lines.push('## KPI-Zielkorridore (Health Check)')
+
+  lines.push('## Fame-Bilanz')
+  lines.push('')
+  lines.push('| Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Clamp-Anpassung | Reconciled Runs |')
+  lines.push('|---|---:|---:|---:|---:|---:|---:|---:|')
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    const fa = s.fameAccounting ?? {}
+    lines.push(`| ${scenario.name} | ${fa.earned ?? 0} | ${fa.spentGross ?? 0} | ${fa.refunded ?? 0} | ${fa.spentNet ?? 0} | ${fa.lost ?? 0} | ${fa.clampAdjustment ?? 0} | ${fa.reconciledRuns ?? 0}/${fa.sampleSize ?? 0} |`)
+  }
+  lines.push('')
+
+  lines.push('## Ergebnisverteilungen')
+  lines.push('')
+  lines.push('*(Zeigt Mittelwert, Median, StdDev, P10, P90 für Endgeld über alle Runs)*')
+  lines.push('')
+  lines.push('| Szenario | Mean | Median | StdDev | P10 | P90 |')
+  lines.push('|---|---:|---:|---:|---:|---:|')
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    const m = s.statistics?.finalMoney || {}
+    lines.push(`| ${scenario.name} | ${fmtEur(m.mean)} | ${fmtEur(m.median)} | ${fmtEur(m.stdDev)} | ${fmtEur(m.p10)} | ${fmtEur(m.p90)} |`)
+  }
+  lines.push('')
+
+  lines.push('## Insolvenzrisiko')
+  lines.push('')
+  lines.push('| Szenario | Insolvenzfälle | Stichprobe | Rate | Lower 95% (Wilson) | Upper 95% (Wilson) |')
+  lines.push('|---|---:|---:|---:|---:|---:|')
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    const b = s.bankruptcy || {}
+    const c = b.confidence95 || {}
+    lines.push(`| ${scenario.name} | ${b.count ?? 0} | ${b.sampleSize ?? 0} | ${(b.ratePct ?? 0).toFixed(2)}% | ${(c.lowerPct ?? 0).toFixed(2)}% | ${(c.upperPct ?? 0).toFixed(2)}% |`)
+  }
+  lines.push('')
+
+  lines.push('## Populationen')
+  lines.push('')
+  lines.push('| Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |')
+  lines.push('|---|---|---|---|')
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    const p = s.population || {}
+    const all = p.allRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
+    const sol = p.solventRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
+    const ban = p.bankruptRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
+    lines.push(`| ${scenario.name} | ${all.sampleSize} / ${fmtEur(all.finalMoney?.mean)} | ${sol.sampleSize} / ${fmtEur(sol.finalMoney?.mean)} | ${ban.sampleSize} / ${fmtEur(ban.finalMoney?.mean)} |`)
+  }
+  lines.push('')
+
+  lines.push('## Volatilität')
+  lines.push('')
+  lines.push('| Szenario | Endgeld StdDev | CV (Endgeld) | Max Drawdown Mean | Max Drawdown P90 |')
+  lines.push('|---|---:|---:|---:|---:|')
+  for (const scenario of payload.results) {
+    const s = scenario.summary
+    const v = s.volatility || {}
+    lines.push(`| ${scenario.name} | ${fmtEur(v.finalMoneyStdDev)} | ${v.finalMoneyCoefficientOfVariation ?? '—'} | ${(v.maxDrawdownMeanPct ?? 0).toFixed(2)}% | ${(v.maxDrawdownP90Pct ?? 0).toFixed(2)}% |`)
+  }
+  lines.push('')
+
+  lines.push('## Feature-Inventar')
+  lines.push('')
+  lines.push(`| Feature | Anzahl Verfügbar |`)
+  lines.push(`|---|---:|`)
+  const inv = payload.featureInventory || {}
+  Object.keys(inv).forEach(k => {
+    lines.push(`| ${k} | ${inv[k]} |`)
+  })
+  lines.push('')
+  lines.push('## Ausführungsabdeckung (Coverage)')
+  lines.push('')
+  lines.push(`| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`)
+  lines.push(`|---|---|---:|---:|---:|`)
+  const cov = payload.executionCoverage || {}
+  Object.keys(cov).forEach(k => {
+    const c = cov[k] || {}
+    const evals = c.evaluations ?? c.attempts ?? 0
+    const acts = c.activations ?? c.completions ?? c.successes ?? 0
+    const uids = c.uniqueIdsSeen ? c.uniqueIdsSeen.length : '-'
+    lines.push(`| ${k} | ${c.covered ? '✅' : '❌'} | ${evals} | ${acts} | ${uids} |`)
+  })
+  lines.push('')
+lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')
   lines.push(
     'Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kalibriert auf 75-Tage-Lauf).'
@@ -3127,12 +3372,8 @@ const buildMarkdownReport = payload => {
   }
 
   // ── Feature Coverage ──────────────────────────────────────────────────────
-  lines.push('## Feature-Abdeckung in der Simulation')
-  lines.push('')
-  Object.entries(payload.featureCoverage).forEach(([key, enabled]) => {
-    lines.push(`- ${enabled ? '✅' : '⚪'} ${key}`)
-  })
-  lines.push('')
+
+
 
   // ── Kurzfazit ─────────────────────────────────────────────────────────────
   lines.push('## Kurzfazit')
@@ -3169,7 +3410,7 @@ const buildMarkdownReport = payload => {
     `- Höchster Kapitalaufbau: **${richest.name}** mit Ø ${fmtEur(richest.summary.avgFinalMoney)} Endgeld.`
   )
   lines.push(
-    `- Höchste Volatilität: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgEventsApplied + mostVolatile.summary.avgGigEvents).toFixed(2)} Event-Impulsen (inkl. Gig-Events).`
+    `- Ereignisdichte: **${mostVolatile.name}** mit Ø ${(mostVolatile.summary.avgEventsApplied + mostVolatile.summary.avgGigEvents).toFixed(2)} Event-Impulsen (inkl. Gig-Events).`
   )
 
   const kpiCounts = payload.results.reduce(
@@ -3324,11 +3565,13 @@ export const runSimulationSuite = async (options = {}) => {
       workingTreeDirty: getWorkingTreeDirty(),
       simulationScriptSha256,
       scenarioConfigSha256,
+      kpiConfigSha256: getJsonHash(KPI_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index'
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
-    featureCoverage: buildFeatureCoverage(results),
+    featureInventory: buildFeatureInventory(),
+    executionCoverage: buildExecutionCoverage(results),
     regressionComparison: buildRegressionComparison(baselinePayload, results),
     results
   }
@@ -3369,7 +3612,8 @@ if (
   const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
   const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   const totalRuns = payload.results.reduce(
-    (sum, scenario) => sum + scenario.summary.sampleSize,
+    (sum, scenario) =>
+      sum + (scenario.summary.population?.allRuns?.sampleSize ?? 0),
     0
   )
 
