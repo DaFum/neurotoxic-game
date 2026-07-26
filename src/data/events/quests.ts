@@ -1,6 +1,6 @@
 import type { GameState } from '../../types'
 import { QuestOfferEngine } from '../../domain/questOfferEngine'
-import { getQuestDefinition } from '../questRegistry'
+import { getQuestDefinition, type QuestRegistryId } from '../questRegistry'
 import {
   QUEST_PICK_OF_DESTINY,
   QUEST_VIRAL_DANCE,
@@ -38,7 +38,7 @@ const defineQuestOfferEvent = <
     options: readonly unknown[]
   }
 >(
-  questId: string,
+  questId: QuestRegistryId,
   event: T
 ) => {
   const offer = getQuestDefinition(questId)?.offer

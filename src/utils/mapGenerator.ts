@@ -52,7 +52,7 @@ export class MapGenerator {
    * @returns A float between 0 and 1.
    */
   random(): number {
-    this.seed = (this.seed * 9301 + 49297) % 233280
+    this.seed = finiteNumberOr((this.seed * 9301 + 49297) % 233280, 0)
     return this.seed / 233280
   }
 

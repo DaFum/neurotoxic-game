@@ -72,13 +72,13 @@ export const QUEST_REGISTRY = {
   quest_alchemist
 } as const satisfies Record<string, QuestDefinition>
 
+export type QuestRegistryId = keyof typeof QUEST_REGISTRY
+
 /**
  * Looks up a quest's static definition by id. Returns `undefined` for unknown
  * ids so callers can fall back to inline payloads.
  */
-const isQuestRegistryId = (
-  questId: string
-): questId is keyof typeof QUEST_REGISTRY =>
+const isQuestRegistryId = (questId: string): questId is QuestRegistryId =>
   Object.hasOwn(QUEST_REGISTRY, questId)
 
 /**

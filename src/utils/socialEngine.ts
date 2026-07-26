@@ -299,7 +299,7 @@ export const resolvePost = (
 
     return {
       success: result.success ?? true,
-      followers: result.followers ?? 0,
+      followers: isFiniteNumber(result.followers) ? result.followers : 0,
       platform,
       message: result.message ?? 'Post completed.',
       // Side effects (optional, will be undefined if not provided)
@@ -321,13 +321,14 @@ export const resolvePost = (
         ? result.zealotryChange
         : undefined,
       targetMember: result.targetMember,
-      allMembersMoodChange: isFiniteNumber(result.allMembersMoodChange)
-        ? result.allMembersMoodChange
-        : undefined,
-      allMembersStaminaChange: isFiniteNumber(result.allMembersStaminaChange)
-        ? result.allMembersStaminaChange
-        : undefined,
-      egoDrop: isFiniteNumber(result.egoDrop) ? result.egoDrop : undefined,
+      allMembersMoodChange:
+        result.allMembersMoodChange === true ? true : undefined,
+      allMembersStaminaChange:
+        result.allMembersStaminaChange === true ? true : undefined,
+      egoDrop:
+        typeof result.egoDrop === 'string' || result.egoDrop === null
+          ? result.egoDrop
+          : undefined,
       egoClear: result.egoClear,
       reputationCooldownSet: isFiniteNumber(result.reputationCooldownSet)
         ? result.reputationCooldownSet

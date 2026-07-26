@@ -82,6 +82,7 @@ node --test --import tsx --experimental-test-module-mocks --import ./tests/setup
   tests/node/rhythmUtils.test.js \
   tests/node/shuffleUtils.test.js \
   tests/node/mapGenerator.test.js \
+  tests/node/systemReducer.test.js \
   tests/node/domain/questOfferEngine.test.js \
   tests/node/questSystem.test.js \
   tests/events/quests.test.js \
@@ -109,8 +110,9 @@ node --test --import tsx --experimental-test-module-mocks --import ./tests/setup
 ### Static resolution checks
 
 ```bash
-rg -n "getAvailableOffers|quest: 'quest_|CONTRABAND_VALIDATION_FAILURES|export interface Milestone" src tests
-rg -n "Math\.floor\([^\n]*(Math\.random|rng\(\)|random\(\)|this\.random\(\))" src/utils src/context
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs \
+  tests/node/auditReportRegression.test.js \
+  tests/node/questSystem.test.js
 pnpm run symbols:update
 pnpm run symbols:check
 git diff --check
@@ -129,3 +131,16 @@ pnpm run build
 ## Durable-instruction review
 
 No new `AGENTS.md` rule was added. The work followed existing durable rules for canonical random selection, finite-number boundaries, quest registry authority, public return types, and travel-fallback parity; the fixes did not reveal a new non-obvious repository invariant.
+
+## Review follow-up verification
+
+The follow-up review was checked against the current code rather than applied mechanically:
+
+- **Fixed:** `pickBoundedIndex` and `pickIndex` returned `NaN` for non-finite RNG rolls. Both now normalize the roll, and `MapGenerator.random()` also prevents a finite but overflowing `Number.MAX_VALUE` seed from poisoning later layout rolls.
+- **Fixed:** `resolvePost` now sanitizes invalid `followers` to `0`.
+- **Fixed:** the earlier numeric guard incorrectly removed boolean `allMembersMoodChange` / `allMembersStaminaChange` flags and string/null `egoDrop` values. Their actual contracts are now preserved while invalid shapes are dropped.
+- **Fixed:** `defineQuestOfferEvent` accepts `QuestRegistryId`, exported from the registry, so invalid static IDs fail type checking.
+- **Fixed:** `QuestOfferEngine` now consumes the typed `getQuestDefinition()` result without a redundant cast.
+- **Fixed:** the brittle quest source-format assertion was removed. Behavioral registry parity remains in `questSystem.test.js`, while AST-based audit regression tests detect duplicated offer fields, literal quest IDs regardless of quote style, and inline random-index calculations regardless of whitespace or line breaks.
+- **Fixed:** the baseline command now includes `systemReducer.test.js`, matching the documented load-sanitation baseline scope.
+- **Skipped:** no changes were made for the emitted Pixi/audio/secure-random warning lines because the provided output did not show a failure in those systems, and they are unrelated to the reviewed audit changes. The actionable post-gig failure was reproduced and its stale expectation was updated to assert boundary sanitation instead of an exception.

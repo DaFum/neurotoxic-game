@@ -345,6 +345,24 @@ test('resolvePost trims explicit result platform values', () => {
   assert.equal(result.message, '')
 })
 
+test('resolvePost preserves typed non-numeric social effect fields', () => {
+  const postOption = {
+    id: 'typed_non_numeric_effects',
+    platform: 'tiktok',
+    resolve: () => ({
+      allMembersMoodChange: true,
+      allMembersStaminaChange: true,
+      egoDrop: 'Vocalist'
+    })
+  }
+
+  const result = resolvePost(postOption, mockGameState)
+
+  assert.equal(result.allMembersMoodChange, true)
+  assert.equal(result.allMembersStaminaChange, true)
+  assert.equal(result.egoDrop, 'Vocalist')
+})
+
 test('resolvePost clamps harmony bounds between 1-100', () => {
   const gameState = {
     player: { money: 100 },
@@ -401,6 +419,7 @@ test('resolvePost drops non-finite numeric side effects', () => {
     id: 'non_finite_side_effects',
     platform: 'tiktok',
     resolve: () => ({
+      followers: Number.POSITIVE_INFINITY,
       moneyChange: Number.NaN,
       harmonyChange: Number.POSITIVE_INFINITY,
       moodChange: Number.NEGATIVE_INFINITY,
@@ -416,6 +435,8 @@ test('resolvePost drops non-finite numeric side effects', () => {
   }
 
   const result = resolvePost(postOption, mockGameState)
+
+  assert.equal(result.followers, 0)
 
   for (const field of [
     'moneyChange',
