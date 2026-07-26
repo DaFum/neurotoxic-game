@@ -111,7 +111,6 @@ import {
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 
 // ── Determinism Mock ──────────────────────────────────────────────────────
-import * as cryptoModule from '../src/utils/crypto.js'
 let uuidCounter = 0
 if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
   globalThis.crypto.randomUUID = () => `sim-uuid-${++uuidCounter}`
@@ -675,38 +674,7 @@ const buildFameBalanceAudit = () => {
   }
 }
 
-const FEATURE_COVERAGE_KEYS = [
-  'daily_updates',
-  'gig_financials',
-  'travel_expenses',
-  'fuel_cost',
-  'travel_minigame',
-  'roadie_minigame',
-  'kabelsalat_minigame',
-  'amp_calibration_minigame',
-  'gig_modifiers',
-  'gig_physics',
-  'world_events',
-  'gig_events',
-  'events_db',
-  'brand_deals',
-  'social_trends',
-  'social_platforms',
-  'post_options',
-  'contraband',
-  'sponsorship',
-  'maintenance',
-  'upgrades',
-  'clinic',
-  'rest_stops',
-  'songs',
-  'trait_unlocks',
-  'region_reputation',
-  'quest_events',
-  'asset_acquisition',
-  'asset_modules',
-  'crowdfunding'
-]
+
 
 export const createScenarioSeed = (id, runIndex) => {
   let h = 0x811c9dc5
@@ -916,9 +884,9 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const { delta } = resolveEventChoice(choice, state, rng)
   if (delta) {
     {
-          const oldFame = state.player.fame;
 
           // Before applyEventDelta, let's pre-calculate what the raw change would be if we could
+          const oldFame = state.player.fame;
           let rawDiff = 0;
           if (delta.fame) {
             rawDiff += delta.fame;
@@ -1671,17 +1639,23 @@ const applyPostGigState = (
   gigStatsPayload,
   counters
 ) => {
+  const oldFameGig = state.player.fame;
   const continueStats = calculateContinueStats({
-    player: state.player,
-    perfScore: performanceScore,
+    gigStatsPayload,
     financials,
-    misses,
+    player: state.player,
+    calculateGigFameReward,
     calculateFameGain,
     calculateFameLevel,
     clampPlayerFame,
     clampPlayerMoney,
     BALANCE_CONSTANTS
-  })
+  });
+  const fameGainGig = continueStats.newFame - oldFameGig;
+  if (fameGainGig > 0) {
+    counters.fameAccounting.earned += fameGainGig;
+  };
+
 
   state.player.money = continueStats.newMoney
   state.player.fame = continueStats.newFame
@@ -1867,7 +1841,7 @@ const runSingleSimulation = (scenario, seed) => {
     }
     if (!hadSponsorBeforeActivation && hasActiveSponsorship(state.social)) {
       counters.sponsorSignings += 1
-        counters.executionCoverage.sponsorship.successes++
+        counters.executionCoverage.sponsorship.activations++
     }
     expireContrabandEffects(state, runCtx)
     maybeApplyContrabandDrop(state, rng, counters, runCtx)
@@ -2521,6 +2495,19 @@ const summarizeScenario = runs => {
       solventRuns: popSolvent,
       bankruptRuns: popBankrupt
     },
+
+    avgFameProgressPerGig: mean(runs.map(r => r.fameEarnedPerGig)),
+    avgPeakToTroughDrop: mean(runs.map(r => r.maxDrawdownPct / 100)), // Convert back to fraction if needed
+    avgClinicVisits: mean(runs.map(r => (r.counters && r.counters.clinicVisits) || 0)),
+
+
+
+
+    // Add more missing fields mentioned
+    avgPeakMoney: mean(runs.map(r => r.peakMoney || 0)),
+    avgUpgradesHQ: mean(runs.map(r => (r.counters && r.counters.upgradesHQ) || 0)),
+    avgUpgradesVan: mean(runs.map(r => (r.counters && r.counters.upgradesVan) || 0)),
+    avgTotalMinigames: mean(runs.map(r => (r.counters && r.counters.minigamesTotal) || 0)),
     bankruptcy: {
       count: bankruptcyCount,
       sampleSize: n,
@@ -2649,7 +2636,7 @@ const getMinigameInsight = s => {
 const buildFeatureInventory = () => {
   return {
     venuesAvailable: ALL_VENUES.length,
-    eventsAvailable: Object.keys(EVENTS_DB).length,
+    eventsAvailable: Object.values(EVENTS_DB).reduce((acc, arr) => acc + arr.length, 0),
     brandDealsAvailable: BRAND_DEALS.length,
     postOptionsAvailable: POST_OPTIONS.length,
     contrabandItemsAvailable: CONTRABAND_DB.length,
@@ -3407,8 +3394,7 @@ lines.push('## KPI-Zielkorridore (Health Check)')
   }
 
   // ── Feature Coverage ──────────────────────────────────────────────────────
-  lines.push('## Feature-Abdeckung in der Simulation')
-  lines.push('')
+
 
 
   // ── Kurzfazit ─────────────────────────────────────────────────────────────
