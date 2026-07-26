@@ -345,6 +345,24 @@ test('resolvePost trims explicit result platform values', () => {
   assert.equal(result.message, '')
 })
 
+test('resolvePost preserves typed non-numeric social effect fields', () => {
+  const postOption = {
+    id: 'typed_non_numeric_effects',
+    platform: 'tiktok',
+    resolve: () => ({
+      allMembersMoodChange: true,
+      allMembersStaminaChange: true,
+      egoDrop: 'Vocalist'
+    })
+  }
+
+  const result = resolvePost(postOption, mockGameState)
+
+  assert.equal(result.allMembersMoodChange, true)
+  assert.equal(result.allMembersStaminaChange, true)
+  assert.equal(result.egoDrop, 'Vocalist')
+})
+
 test('resolvePost clamps harmony bounds between 1-100', () => {
   const gameState = {
     player: { money: 100 },
@@ -394,6 +412,47 @@ test('resolvePost clamps money bounds >= 0', () => {
     -100,
     'Money drop should be clamped to 0, delta -100'
   )
+})
+
+test('resolvePost drops non-finite numeric side effects', () => {
+  const postOption = {
+    id: 'non_finite_side_effects',
+    platform: 'tiktok',
+    resolve: () => ({
+      followers: Number.POSITIVE_INFINITY,
+      moneyChange: Number.NaN,
+      harmonyChange: Number.POSITIVE_INFINITY,
+      moodChange: Number.NEGATIVE_INFINITY,
+      staminaChange: Number.NaN,
+      controversyChange: Number.POSITIVE_INFINITY,
+      loyaltyChange: Number.NaN,
+      zealotryChange: Number.NEGATIVE_INFINITY,
+      allMembersMoodChange: Number.NaN,
+      allMembersStaminaChange: Number.POSITIVE_INFINITY,
+      egoDrop: Number.NaN,
+      reputationCooldownSet: Number.POSITIVE_INFINITY
+    })
+  }
+
+  const result = resolvePost(postOption, mockGameState)
+
+  assert.equal(result.followers, 0)
+
+  for (const field of [
+    'moneyChange',
+    'harmonyChange',
+    'moodChange',
+    'staminaChange',
+    'controversyChange',
+    'loyaltyChange',
+    'zealotryChange',
+    'allMembersMoodChange',
+    'allMembersStaminaChange',
+    'egoDrop',
+    'reputationCooldownSet'
+  ]) {
+    assert.equal(result[field], undefined, `${field} should be dropped`)
+  }
 })
 
 test('calculateViralityScore handles low performance', () => {

@@ -16,6 +16,18 @@ test('MapGenerator generates a map with correct structure', () => {
   assert.ok(Array.isArray(map.connections), 'Should have connections array')
 })
 
+test('MapGenerator keeps a Number.MAX_VALUE seed finite', () => {
+  const generator = new MapGenerator(Number.MAX_VALUE)
+  const map = generator.generateMap(5)
+
+  assert.ok(Number.isFinite(generator.seed))
+  assert.ok(
+    map.nodeList.every(
+      node => Number.isFinite(node.x) && Number.isFinite(node.y)
+    )
+  )
+})
+
 test('MapGenerator guarantees start node', () => {
   const generator = new MapGenerator()
   const map = generator.generateMap()

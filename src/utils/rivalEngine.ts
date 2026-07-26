@@ -5,7 +5,7 @@ import { generateBrandName } from './socialEngine'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 import { isEmptyObject } from './gameState'
-import { selectRandomItem } from './selectionUtils'
+import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
 
 import type { BrandAlignment } from '../types'
 
@@ -28,7 +28,7 @@ export const generateRivalBand = (
   const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
 
   return {
-    id: 'rival_' + Math.floor(rng() * 1000000000),
+    id: 'rival_' + pickBoundedIndex(1000000000, rng),
     name: generateBrandName('Rivals', alignment, rng),
     alignment,
     powerLevel,

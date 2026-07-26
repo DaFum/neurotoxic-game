@@ -96,14 +96,4 @@ test('QuestOfferEngine', async t => {
       )
     }
   )
-
-  await t.test('returns available offers for a trigger', () => {
-    const offerIds = QuestOfferEngine.getAvailableOffers(
-      baseState(),
-      'random'
-    ).map(offer => offer.questId)
-
-    assert.ok(offerIds.includes('quest_community_outreach'))
-    assert.ok(offerIds.includes('quest_venue_residency'))
-  })
 })

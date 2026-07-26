@@ -1,8 +1,23 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
+import ts from 'typescript'
 
 const readSource = path => readFileSync(path, 'utf8')
+
+const parseTypeScript = path =>
+  ts.createSourceFile(
+    path,
+    readSource(path),
+    ts.ScriptTarget.Latest,
+    true,
+    path.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
+  )
+
+const walk = (node, visit) => {
+  visit(node)
+  ts.forEachChild(node, child => walk(child, visit))
+}
 
 test('rhythm hook uses audioEngine facade for audio orchestration helpers', () => {
   const source = readSource('src/hooks/rhythmGame/useRhythmGameAudio.ts')
@@ -62,6 +77,89 @@ test('brand offer duration jitter uses shared random index helper', () => {
   assert.match(source, /const DURATION_JITTERS = /)
   assert.match(source, /pickIndex\(DURATION_JITTERS, rng\)/)
   assert.doesNotMatch(source, /Math\.floor\(rng\(\) \* 4\) - 1/)
+})
+
+test('quest event presentations contain no duplicated registry metadata or literal quest ids', () => {
+  const sourceFile = parseTypeScript('src/data/events/quests.ts')
+  let definitions = 0
+
+  walk(sourceFile, node => {
+    if (
+      ts.isCallExpression(node) &&
+      ts.isIdentifier(node.expression) &&
+      node.expression.text === 'defineQuestOfferEvent'
+    ) {
+      definitions++
+      const [questId, presentation] = node.arguments
+      assert.ok(
+        ts.isIdentifier(questId),
+        'quest id must use a QUEST_* constant'
+      )
+      assert.ok(
+        ts.isObjectLiteralExpression(presentation),
+        'quest presentation must be an object literal'
+      )
+      const propertyNames = presentation.properties
+        .filter(ts.isPropertyAssignment)
+        .map(property => property.name.getText(sourceFile))
+      for (const forbidden of ['category', 'trigger', 'chance']) {
+        assert.ok(
+          !propertyNames.includes(forbidden),
+          `${questId.text} duplicates registry field ${forbidden}`
+        )
+      }
+    }
+
+    if (
+      ts.isPropertyAssignment(node) &&
+      node.name.getText(sourceFile) === 'quest' &&
+      ts.isStringLiteral(node.initializer) &&
+      node.initializer.text.startsWith('quest_')
+    ) {
+      assert.fail(`literal quest id found: ${node.initializer.text}`)
+    }
+  })
+
+  assert.ok(definitions > 0, 'expected defineQuestOfferEvent calls')
+})
+
+test('random index call sites do not inline Math.floor around RNG calls', () => {
+  const files = [
+    'src/utils/mapGenerator.ts',
+    'src/utils/rhythmUtils.ts',
+    'src/utils/rivalEngine.ts',
+    'src/utils/shuffleUtils.ts'
+  ]
+
+  for (const file of files) {
+    const sourceFile = parseTypeScript(file)
+    walk(sourceFile, node => {
+      if (
+        !ts.isCallExpression(node) ||
+        !ts.isPropertyAccessExpression(node.expression) ||
+        node.expression.expression.getText(sourceFile) !== 'Math' ||
+        node.expression.name.text !== 'floor'
+      ) {
+        return
+      }
+
+      let containsRandomCall = false
+      for (const argument of node.arguments) {
+        walk(argument, descendant => {
+          if (!ts.isCallExpression(descendant)) return
+          const callee = descendant.expression.getText(sourceFile)
+          if (['rng', 'random', 'this.random'].includes(callee)) {
+            containsRandomCall = true
+          }
+        })
+      }
+      assert.equal(
+        containsRandomCall,
+        false,
+        `${file} inlines a random index calculation: ${node.getText(sourceFile)}`
+      )
+    })
+  }
 })
 
 test('tourbus damage constants stay module-private implementation details', () => {

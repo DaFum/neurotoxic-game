@@ -527,9 +527,14 @@ export const VOID_TRADER_COSTS = {
 /** Lookup map of contraband definition by item id. */
 export const CONTRABAND_BY_ID = new Map<string, SanitizedContrabandItem>()
 
-/** Contraband definitions grouped by rarity for random selection. */
-export const CONTRABAND_VALIDATION_FAILURES: string[] = []
+const contrabandValidationFailures: string[] = []
 
+/** Returns an immutable snapshot of catalog validation failures. */
+export const getContrabandValidationFailures = (): readonly string[] => [
+  ...contrabandValidationFailures
+]
+
+/** Contraband definitions grouped by rarity for random selection. */
 export const CONTRABAND_BY_RARITY: Record<Rarity, SanitizedContrabandItem[]> = {
   common: [],
   uncommon: [],
@@ -542,7 +547,7 @@ for (const item of CONTRABAND_DB) {
   if (!validation.ok || !validation.value) {
     const id = typeof item.id === 'string' ? item.id : 'unknown'
     const message = `Invalid contraband item ${id}: ${validation.errors.join(', ')}`
-    CONTRABAND_VALIDATION_FAILURES.push(message)
+    contrabandValidationFailures.push(message)
     logger.warn('ContrabandData', message)
     continue
   }

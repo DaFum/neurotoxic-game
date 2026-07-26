@@ -1,20 +1,7 @@
-import type {
-  GameState,
-  QuestOfferCondition,
-  QuestOfferDefinition,
-  QuestState
-} from '../types'
-import { QUEST_REGISTRY, getQuestDefinition } from '../data/questRegistry'
+import type { GameState, QuestOfferCondition } from '../types'
+import { getQuestDefinition } from '../data/questRegistry'
 import { canAcceptQuest } from './questLifecycle'
 import { finiteNumberOr } from '../utils/gameState'
-
-/**
- * Quest offer available for a trigger after condition and slot checks.
- */
-interface AvailableQuestOffer {
-  questId: string
-  offer: QuestOfferDefinition
-}
 
 const matchesSocialCondition = (
   state: GameState,
@@ -111,32 +98,11 @@ const matchesOfferCondition = (
  */
 export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
-    const definition = getQuestDefinition(questId) as
-      (Partial<QuestState> & { offer?: QuestOfferDefinition }) | undefined
+    const definition = getQuestDefinition(questId)
     if (!definition?.offer) return canAcceptQuest(state, questId).ok
     return (
       canAcceptQuest(state, questId).ok &&
       matchesOfferCondition(state, definition.offer.condition)
     )
-  },
-
-  getAvailableOffers: (
-    state: GameState,
-    trigger: QuestOfferDefinition['trigger']
-  ): AvailableQuestOffer[] => {
-    const available: AvailableQuestOffer[] = []
-    // ⚡ BOLT OPTIMIZATION: Replaced Object.entries().flatMap with a single-pass loop
-    for (const questId in QUEST_REGISTRY) {
-      if (!Object.hasOwn(QUEST_REGISTRY, questId)) continue
-      const definition = QUEST_REGISTRY[
-        questId as keyof typeof QUEST_REGISTRY
-      ] as Partial<QuestState>
-      const offer = definition?.offer
-      if (!offer || offer.trigger !== trigger) continue
-      if (QuestOfferEngine.canOfferQuest(state, questId)) {
-        available.push({ questId, offer })
-      }
-    }
-    return available
   }
 }

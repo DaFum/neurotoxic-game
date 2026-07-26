@@ -12,7 +12,7 @@ import {
   resolveOverlaps
 } from './mapGenerator/layout'
 import { pickRandomSubset } from './mapGenerator/mathUtils'
-import { selectRandomItem } from './selectionUtils'
+import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
 import type {
   GeneratedMapNode,
   MapGeneratorState,
@@ -52,7 +52,7 @@ export class MapGenerator {
    * @returns A float between 0 and 1.
    */
   random(): number {
-    this.seed = (this.seed * 9301 + 49297) % 233280
+    this.seed = finiteNumberOr((this.seed * 9301 + 49297) % 233280, 0)
     return this.seed / 233280
   }
 
@@ -237,7 +237,7 @@ export class MapGenerator {
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
       // Determine node count for this layer (2-4 branching)
-      const nodeCount = Math.floor(this.random() * 3) + 2
+      const nodeCount = pickBoundedIndex(3, () => this.random(), 2)
 
       // Compute available counts once per layer, then decrement as venues are reserved
       const available = {
@@ -347,7 +347,7 @@ export class MapGenerator {
 
     if (poolLength > 0) {
       // Dynamic subset selection with single pass filtering
-      let targetIndex = Math.floor(this.random() * poolLength)
+      let targetIndex = pickBoundedIndex(poolLength, () => this.random())
       for (let k = 0; k < poolArray.length; k++) {
         const v = poolArray[k]
         if (!v) continue
@@ -394,7 +394,7 @@ export class MapGenerator {
         throw new StateError(`Empty fallback pool for difficulty ${i}`)
       }
 
-      let targetIndex = Math.floor(this.random() * fallbackLength)
+      let targetIndex = pickBoundedIndex(fallbackLength, () => this.random())
       for (let k = 0; k < fallbackArray.length; k++) {
         const v = fallbackArray[k]
         if (!v) continue
@@ -468,7 +468,7 @@ export class MapGenerator {
       // Forward pass: ensure everyone connects forward
       for (const node of currentLayer) {
         // Pick 1-2 random targets in next layer
-        const numTargets = Math.floor(this.random() * 2) + 1
+        const numTargets = pickBoundedIndex(2, () => this.random(), 1)
         const targets = pickRandomSubset(nextLayer, numTargets, () =>
           this.random()
         )

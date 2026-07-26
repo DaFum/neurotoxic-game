@@ -4,7 +4,7 @@ import {
   CONTRABAND_BY_ID,
   CONTRABAND_BY_RARITY,
   CONTRABAND_RARITY_WEIGHTS,
-  CONTRABAND_VALIDATION_FAILURES
+  getContrabandValidationFailures
 } from '../../src/data/contraband'
 import { validateContrabandItem } from '../../src/schemas/contraband'
 
@@ -13,7 +13,7 @@ const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {
     it('records no validation failures while initializing the raw source catalog', () => {
-      assert.deepEqual(CONTRABAND_VALIDATION_FAILURES, [])
+      assert.deepEqual(getContrabandValidationFailures(), [])
     })
 
     it('validates each item through the reusable contraband schema', () => {

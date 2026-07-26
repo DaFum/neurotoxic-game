@@ -13,7 +13,7 @@ export const shuffleInPlace = <T>(
   onMissingEntry?: (i: number, j: number) => void
 ): T[] => {
   for (let i = items.length - 1; i > 0; i--) {
-    const j = Math.floor(rng() * (i + 1))
+    const j = pickBoundedIndex(i + 1, rng)
     if (!(i in items) || !(j in items)) {
       onMissingEntry?.(i, j)
       continue
@@ -25,3 +25,4 @@ export const shuffleInPlace = <T>(
   }
   return items
 }
+import { pickBoundedIndex } from './selectionUtils'

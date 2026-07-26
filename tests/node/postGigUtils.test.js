@@ -175,18 +175,18 @@ test('calculatePostGigStateUpdates rejects malformed influencer updates', () => 
   )
 })
 
-test('calculatePostGigStateUpdates rejects non-finite numeric deltas', () => {
-  assert.throws(
-    () =>
-      calculatePostGigStateUpdates(
-        buildPostGigParams({
-          result: {
-            moneyChange: Number.NaN
-          }
-        })
-      ),
-    /Invalid post result moneyChange: NaN/
+test('calculatePostGigStateUpdates drops non-finite numeric deltas', () => {
+  const updates = calculatePostGigStateUpdates(
+    buildPostGigParams({
+      result: {
+        moneyChange: Number.NaN
+      }
+    })
   )
+
+  assert.equal(updates.finalResult.moneyChange, undefined)
+  assert.equal(updates.nextMoney, 100)
+  assert.equal(updates.appliedMoneyDelta, 0)
 })
 
 const invalidPlatformVariants = [

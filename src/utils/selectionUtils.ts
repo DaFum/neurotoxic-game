@@ -1,4 +1,8 @@
 import { secureRandom } from './crypto'
+import { finiteNumberOr } from './finiteNumber'
+
+const getFiniteRandomRoll = (rng: () => number): number =>
+  finiteNumberOr(rng(), 0)
 
 /**
  * Computes a random index into an array using the provided RNG, clamped to
@@ -13,8 +17,13 @@ import { secureRandom } from './crypto'
 export const pickIndex = (
   items: readonly unknown[],
   rng: () => number
-): number =>
-  Math.max(0, Math.min(items.length - 1, Math.floor(rng() * items.length)))
+): number => {
+  const roll = getFiniteRandomRoll(rng)
+  return Math.max(
+    0,
+    Math.min(items.length - 1, Math.floor(roll * items.length))
+  )
+}
 
 /**
  * Computes a random integer in `[offset, offset + span - 1]` using the
@@ -31,7 +40,10 @@ export const pickBoundedIndex = (
   span: number,
   rng: () => number,
   offset: number = 0
-): number => offset + Math.max(0, Math.min(span - 1, Math.floor(rng() * span)))
+): number => {
+  const roll = getFiniteRandomRoll(rng)
+  return offset + Math.max(0, Math.min(span - 1, Math.floor(roll * span)))
+}
 
 /**
  * Selects a random item from an array using the provided RNG.

@@ -14,7 +14,7 @@ import type { GameState, GameAction } from '../../types'
 /**
  * Static milestone definition with condition and optional reward action factory.
  */
-export interface Milestone {
+interface Milestone {
   id: string
   condition: (state: GameState) => boolean
   createRewardAction?: () => GameAction
