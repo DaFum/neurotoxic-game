@@ -883,18 +883,11 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const { delta } = resolveEventChoice(choice, state, rng)
   if (delta) {
-    {
-
-          // Before applyEventDelta, let's pre-calculate what the raw change would be if we could
-          const oldFame = state.player.fame;
-          const rawDiff = delta.player?.fame
-
-          Object.assign(state, applyEventDelta(state, delta));
-          const newFame = state.player.fame;
-          const actualDiff = newFame - oldFame;
-
-          accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
-        }
+    const oldFame = state.player.fame
+    const rawDiff = delta.player?.fame
+    Object.assign(state, applyEventDelta(state, delta))
+    const actualDiff = state.player.fame - oldFame
+    accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
   }
   counters.gigEvents += 1
   applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
@@ -1652,12 +1645,11 @@ const applyPostGigState = (
     clampPlayerMoney,
     BALANCE_CONSTANTS
   });
-  const fameGainGig = continueStats.newFame - oldFameGig;
-  if (fameGainGig > 0) {
-    counters.fameAccounting.earned += fameGainGig;
-  } else if (fameGainGig < 0) {
-    counters.fameAccounting.lost += Math.abs(fameGainGig)
-  }
+  recordObservedFameChange(
+    counters.fameAccounting,
+    oldFameGig,
+    continueStats.newFame
+  )
 
 
   state.player.money = continueStats.newMoney
@@ -1697,8 +1689,7 @@ export const reconcileFameLedger = run =>
   run.fameAccounting.earned -
   run.fameAccounting.spentGross +
   run.fameAccounting.refunded -
-  run.fameAccounting.lost +
-  run.fameAccounting.clampAdjustment -
+  run.fameAccounting.lost -
   run.finalFame
 
 export const accountFameChange = (accounting, rawDifference, actualDifference) => {
@@ -2024,10 +2015,11 @@ export const runSingleSimulation = (scenario, seed) => {
         const loss = SIMULATION_CONSTANTS.fameLossBadGig * 2;
         const newFameRaw = oldFame - loss;
         const newFameClamped = clampPlayerFame(newFameRaw);
-        counters.fameAccounting.lost += loss;
-        if (newFameClamped > newFameRaw) {
-          counters.fameAccounting.clampAdjustment += newFameClamped - newFameRaw
-        }
+        accountFameChange(
+          counters.fameAccounting,
+          -loss,
+          newFameClamped - oldFame
+        )
         state.player.fame = newFameClamped;
       }
       state.player.fameLevel = calculateFameLevel(state.player.fame)
@@ -2270,14 +2262,11 @@ export const runSingleSimulation = (scenario, seed) => {
   if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
   if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
 
-  const reconciliationDelta =
-    startingFame +
-    counters.fameAccounting.earned -
-    counters.fameAccounting.spentGross +
-    counters.fameAccounting.refunded -
-    counters.fameAccounting.lost +
-    counters.fameAccounting.clampAdjustment -
-    state.player.fame
+  const reconciliationDelta = reconcileFameLedger({
+    startingFame,
+    fameAccounting: counters.fameAccounting,
+    finalFame: state.player.fame
+  })
 
   return {
     startingFame,
@@ -2310,117 +2299,15 @@ export const runSingleSimulation = (scenario, seed) => {
   }
 }
 
-export const summarizeScenario = runs => {
-  const solventRuns = runs.filter(r => !r.bankrupt)
-  const bankruptRuns = runs.filter(r => r.bankrupt)
+const COVERAGE_ID_INVENTORY = {
+  brandDeals: BRAND_DEALS.length,
+  postOptions: POST_OPTIONS.length,
+  socialTrends: ALLOWED_TRENDS.length,
+  contraband: CONTRABAND_DB.length
+}
 
-  const calcStats = subset => {
-    if (!subset || subset.length === 0) return null
-    return {
-      sampleSize: subset.length,
-      finalMoney: {
-        mean: Math.round(mean(subset.map(r => r.finalMoney))),
-        median: Math.round(median(subset.map(r => r.finalMoney))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.finalMoney))),
-        min: Math.round(minimum(subset.map(r => r.finalMoney))),
-        p10: Math.round(quantile(subset.map(r => r.finalMoney), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.finalMoney), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.finalMoney), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.finalMoney), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.finalMoney)))
-      },
-      finalFame: {
-        mean: Math.round(mean(subset.map(r => r.finalFame))),
-        median: Math.round(median(subset.map(r => r.finalFame))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.finalFame))),
-        min: Math.round(minimum(subset.map(r => r.finalFame))),
-        p10: Math.round(quantile(subset.map(r => r.finalFame), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.finalFame), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.finalFame), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.finalFame), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.finalFame)))
-      },
-      gigsPlayed: {
-        mean: Number(mean(subset.map(r => r.gigsPlayed)).toFixed(2)),
-        median: median(subset.map(r => r.gigsPlayed)),
-        stdDev: Number(standardDeviation(subset.map(r => r.gigsPlayed)).toFixed(2)),
-        min: minimum(subset.map(r => r.gigsPlayed)),
-        p10: quantile(subset.map(r => r.gigsPlayed), 0.1),
-        p25: quantile(subset.map(r => r.gigsPlayed), 0.25),
-        p75: quantile(subset.map(r => r.gigsPlayed), 0.75),
-        p90: quantile(subset.map(r => r.gigsPlayed), 0.9),
-        max: maximum(subset.map(r => r.gigsPlayed))
-      },
-      daysSurvived: {
-        mean: Number(mean(subset.map(r => r.daysSurvived)).toFixed(2)),
-        median: median(subset.map(r => r.daysSurvived)),
-        stdDev: Number(standardDeviation(subset.map(r => r.daysSurvived)).toFixed(2)),
-        min: minimum(subset.map(r => r.daysSurvived)),
-        p10: quantile(subset.map(r => r.daysSurvived), 0.1),
-        p25: quantile(subset.map(r => r.daysSurvived), 0.25),
-        p75: quantile(subset.map(r => r.daysSurvived), 0.75),
-        p90: quantile(subset.map(r => r.daysSurvived), 0.9),
-        max: maximum(subset.map(r => r.daysSurvived))
-      },
-      gigNet: {
-        mean: Math.round(mean(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0))),
-        median: Math.round(median(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0))),
-        min: Math.round(minimum(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0))),
-        p10: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.gigsPlayed > 0 ? r.totalGigNet / r.gigsPlayed : 0)))
-      },
-      performanceScore: {
-        mean: Math.round(mean(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0))),
-        median: Math.round(median(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0))),
-        min: Math.round(minimum(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0))),
-        p10: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.gigsPlayed > 0 ? r.totalPerfScoreSum / r.gigsPlayed : 0)))
-      },
-      finalHarmony: {
-        mean: Math.round(mean(subset.map(r => r.finalHarmony))),
-        median: Math.round(median(subset.map(r => r.finalHarmony))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.finalHarmony))),
-        min: Math.round(minimum(subset.map(r => r.finalHarmony))),
-        p10: Math.round(quantile(subset.map(r => r.finalHarmony), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.finalHarmony), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.finalHarmony), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.finalHarmony), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.finalHarmony)))
-      },
-      fameEarned: {
-        mean: Math.round(mean(subset.map(r => r.fameAccounting.earned))),
-        median: Math.round(median(subset.map(r => r.fameAccounting.earned))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.fameAccounting.earned))),
-        min: Math.round(minimum(subset.map(r => r.fameAccounting.earned))),
-        p10: Math.round(quantile(subset.map(r => r.fameAccounting.earned), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.fameAccounting.earned), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.fameAccounting.earned), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.fameAccounting.earned), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.fameAccounting.earned)))
-      },
-      fameEarnedPerGig: {
-        mean: Math.round(mean(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0))),
-        median: Math.round(median(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0))),
-        stdDev: Math.round(standardDeviation(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0))),
-        min: Math.round(minimum(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0))),
-        p10: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0), 0.1)),
-        p25: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0), 0.25)),
-        p75: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0), 0.75)),
-        p90: Math.round(quantile(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0), 0.9)),
-        max: Math.round(maximum(subset.map(r => r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0)))
-      }
-    }
-  }
-
-  const aggregateCoverage = {
+export const mergeExecutionCoverage = sources => {
+  const coverage = {
     brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
     socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
@@ -2433,55 +2320,70 @@ export const summarizeScenario = runs => {
     restStops: { evaluations: 0, activations: 0 }
   }
 
-  runs.forEach(r => {
-    const c = r.executionCoverage
-    if (!c) return
-    aggregateCoverage.brandDeals.evaluations += c.brandDeals.evaluations
-    aggregateCoverage.brandDeals.activations += c.brandDeals.activations
-    if(c.brandDeals.uniqueIdsSeen) c.brandDeals.uniqueIdsSeen.forEach(id => aggregateCoverage.brandDeals.uniqueIdsSeen.add(id))
-
-    aggregateCoverage.postOptions.evaluations += c.postOptions.evaluations
-    aggregateCoverage.postOptions.activations += c.postOptions.activations
-    if(c.postOptions.uniqueIdsSeen) c.postOptions.uniqueIdsSeen.forEach(id => aggregateCoverage.postOptions.uniqueIdsSeen.add(id))
-
-    aggregateCoverage.socialTrends.evaluations += c.socialTrends.evaluations
-    aggregateCoverage.socialTrends.activations += c.socialTrends.activations
-    if(c.socialTrends.uniqueIdsSeen) c.socialTrends.uniqueIdsSeen.forEach(id => aggregateCoverage.socialTrends.uniqueIdsSeen.add(id))
-
-    aggregateCoverage.contraband.evaluations += c.contraband.evaluations
-    aggregateCoverage.contraband.activations += c.contraband.activations
-    if(c.contraband.uniqueIdsSeen) c.contraband.uniqueIdsSeen.forEach(id => aggregateCoverage.contraband.uniqueIdsSeen.add(id))
-
-    aggregateCoverage.minigamesTravel.attempts += c.minigamesTravel.attempts
-    aggregateCoverage.minigamesTravel.completions += c.minigamesTravel.completions
-    aggregateCoverage.minigamesRoadie.attempts += c.minigamesRoadie.attempts
-    aggregateCoverage.minigamesRoadie.completions += c.minigamesRoadie.completions
-    aggregateCoverage.minigamesKabelsalat.attempts += c.minigamesKabelsalat.attempts
-    aggregateCoverage.minigamesKabelsalat.completions += c.minigamesKabelsalat.completions
-    aggregateCoverage.minigamesAmp.attempts += c.minigamesAmp.attempts
-    aggregateCoverage.minigamesAmp.completions += c.minigamesAmp.completions
-
-    aggregateCoverage.sponsorship.attempts += c.sponsorship.attempts
-    aggregateCoverage.sponsorship.successes += c.sponsorship.successes
-    aggregateCoverage.restStops.evaluations += c.restStops.evaluations
-    aggregateCoverage.restStops.activations += c.restStops.activations
-  })
-
-  Object.keys(aggregateCoverage).forEach(k => {
-    if (aggregateCoverage[k].uniqueIdsSeen !== undefined) {
-      const ids = Array.from(aggregateCoverage[k].uniqueIdsSeen).sort()
-      aggregateCoverage[k].availableIds = {
-        brandDeals: BRAND_DEALS.length,
-        postOptions: POST_OPTIONS.length,
-        socialTrends: ALLOWED_TRENDS.length,
-        contraband: CONTRABAND_DB.length
-      }[k]
-      aggregateCoverage[k].uniqueIdsSeen = ids
-      aggregateCoverage[k].covered = aggregateCoverage[k].evaluations > 0 || aggregateCoverage[k].attempts > 0 || aggregateCoverage[k].activations > 0 || ids.length > 0
-    } else {
-      aggregateCoverage[k].covered = aggregateCoverage[k].attempts > 0 || aggregateCoverage[k].completions > 0 || aggregateCoverage[k].successes > 0 || aggregateCoverage[k].evaluations > 0 || aggregateCoverage[k].activations > 0
+  for (const source of sources) {
+    if (!source) continue
+    for (const [key, target] of Object.entries(coverage)) {
+      const current = source[key] ?? {}
+      for (const counter of ['evaluations', 'activations', 'attempts', 'completions', 'successes']) {
+        if (counter in target) target[counter] += current[counter] ?? 0
+      }
+      if (target.uniqueIdsSeen) {
+        for (const id of current.uniqueIdsSeen ?? []) target.uniqueIdsSeen.add(id)
+      }
     }
+  }
+
+  for (const [key, metric] of Object.entries(coverage)) {
+    if (metric.uniqueIdsSeen) {
+      metric.uniqueIdsSeen = Array.from(metric.uniqueIdsSeen).sort()
+      metric.availableIds = COVERAGE_ID_INVENTORY[key]
+    }
+    metric.covered =
+      (metric.evaluations ?? metric.attempts ?? 0) > 0 ||
+      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0 ||
+      (metric.uniqueIdsSeen?.length ?? 0) > 0
+  }
+  return coverage
+}
+
+export const summarizeScenario = runs => {
+  const solventRuns = runs.filter(r => !r.bankrupt)
+  const bankruptRuns = runs.filter(r => r.bankrupt)
+
+  const describe = (values, format) => ({
+    mean: format(mean(values)),
+    median: format(median(values)),
+    stdDev: format(standardDeviation(values)),
+    min: format(minimum(values)),
+    p10: format(quantile(values, 0.1)),
+    p25: format(quantile(values, 0.25)),
+    p75: format(quantile(values, 0.75)),
+    p90: format(quantile(values, 0.9)),
+    max: format(maximum(values))
   })
+  const roundInteger = value => Math.round(value)
+  const roundTwo = value => Number(value.toFixed(2))
+  const perGig = (run, value) => run.gigsPlayed > 0 ? value / run.gigsPlayed : 0
+
+  const calcStats = subset => {
+    if (!subset || subset.length === 0) return null
+    return {
+      sampleSize: subset.length,
+      finalMoney: describe(subset.map(run => run.finalMoney), roundInteger),
+      finalFame: describe(subset.map(run => run.finalFame), roundInteger),
+      gigsPlayed: describe(subset.map(run => run.gigsPlayed), roundTwo),
+      daysSurvived: describe(subset.map(run => run.daysSurvived), roundTwo),
+      gigNet: describe(subset.map(run => perGig(run, run.totalGigNet)), roundInteger),
+      performanceScore: describe(subset.map(run => perGig(run, run.totalPerfScoreSum)), roundInteger),
+      finalHarmony: describe(subset.map(run => run.finalHarmony), roundInteger),
+      fameEarned: describe(subset.map(run => run.fameAccounting.earned), roundInteger),
+      fameEarnedPerGig: describe(subset.map(run => perGig(run, run.fameAccounting.earned)), roundInteger)
+    }
+  }
+
+  const aggregateCoverage = mergeExecutionCoverage(
+    runs.map(run => run.executionCoverage)
+  )
 
   const popAll = calcStats(runs) || { sampleSize: 0 }
   const popSolvent = calcStats(solventRuns) || { sampleSize: 0 }
@@ -2621,7 +2523,6 @@ export const summarizeScenario = runs => {
     gigScorePctHigh: Number((runs.reduce((sum, r) => sum + r.gigScoreHigh, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigNetToTravelRatio: Number((runs.reduce((sum, r) => sum + r.totalGigNet, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0))).toFixed(1)),
     sinkToIncomeRatio: Number((runs.reduce((sum, r) => sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalGigNet, 0))).toFixed(2)),
-    gigCapHits: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
     gigsToAffordVanUpgrade: Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
@@ -2655,8 +2556,8 @@ export const summarizeScenario = runs => {
       clampAdjustment: Number(mean(runs.map(r => r.fameAccounting.clampAdjustment)).toFixed(2)),
       finalFame: Number(mean(runs.map(r => r.finalFame)).toFixed(2)),
       reconciliationDelta: Number(mean(runs.map(r => r.reconciliationDelta)).toFixed(6)),
-      maxAbsReconciliationDelta: Number(maximum(runs.map(r => Math.abs(r.reconciliationDelta))).toFixed(6)),
-      reconciledRuns: runs.filter(r => Math.abs(r.reconciliationDelta) <= 1e-9).length,
+      maxAbsReconciliationDelta: Number(maximum(runs.map(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment))).toFixed(6)),
+      reconciledRuns: runs.filter(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment) <= 1e-9).length,
       sampleSize: runs.length
     },
     executionCoverage: aggregateCoverage
@@ -2781,75 +2682,8 @@ export const buildFeatureInventory = () => {
   }
 }
 
-export const buildExecutionCoverage = results => {
-  const combined = {
-    brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-    minigamesTravel: { attempts: 0, completions: 0 },
-    minigamesRoadie: { attempts: 0, completions: 0 },
-    minigamesKabelsalat: { attempts: 0, completions: 0 },
-    minigamesAmp: { attempts: 0, completions: 0 },
-    sponsorship: { attempts: 0, successes: 0 },
-    restStops: { evaluations: 0, activations: 0 }
-  }
-
-  results.forEach(res => {
-    const c = res.summary.executionCoverage
-    if (!c) return
-    combined.brandDeals.evaluations += c.brandDeals.evaluations
-    combined.brandDeals.activations += c.brandDeals.activations
-    if(Array.isArray(c.brandDeals.uniqueIdsSeen)) c.brandDeals.uniqueIdsSeen.forEach(id => combined.brandDeals.uniqueIdsSeen.add(id))
-    else c.brandDeals.uniqueIdsSeen.forEach(id => combined.brandDeals.uniqueIdsSeen.add(id))
-
-    combined.postOptions.evaluations += c.postOptions.evaluations
-    combined.postOptions.activations += c.postOptions.activations
-    if(Array.isArray(c.postOptions.uniqueIdsSeen)) c.postOptions.uniqueIdsSeen.forEach(id => combined.postOptions.uniqueIdsSeen.add(id))
-    else c.postOptions.uniqueIdsSeen.forEach(id => combined.postOptions.uniqueIdsSeen.add(id))
-
-    combined.socialTrends.evaluations += c.socialTrends.evaluations
-    combined.socialTrends.activations += c.socialTrends.activations
-    if(Array.isArray(c.socialTrends.uniqueIdsSeen)) c.socialTrends.uniqueIdsSeen.forEach(id => combined.socialTrends.uniqueIdsSeen.add(id))
-    else c.socialTrends.uniqueIdsSeen.forEach(id => combined.socialTrends.uniqueIdsSeen.add(id))
-
-    combined.contraband.evaluations += c.contraband.evaluations
-    combined.contraband.activations += c.contraband.activations
-    if(Array.isArray(c.contraband.uniqueIdsSeen)) c.contraband.uniqueIdsSeen.forEach(id => combined.contraband.uniqueIdsSeen.add(id))
-    else c.contraband.uniqueIdsSeen.forEach(id => combined.contraband.uniqueIdsSeen.add(id))
-
-    combined.minigamesTravel.attempts += c.minigamesTravel.attempts
-    combined.minigamesTravel.completions += c.minigamesTravel.completions
-    combined.minigamesRoadie.attempts += c.minigamesRoadie.attempts
-    combined.minigamesRoadie.completions += c.minigamesRoadie.completions
-    combined.minigamesKabelsalat.attempts += c.minigamesKabelsalat.attempts
-    combined.minigamesKabelsalat.completions += c.minigamesKabelsalat.completions
-    combined.minigamesAmp.attempts += c.minigamesAmp.attempts
-    combined.minigamesAmp.completions += c.minigamesAmp.completions
-
-    combined.sponsorship.attempts += c.sponsorship.attempts
-    combined.sponsorship.successes += c.sponsorship.successes
-    combined.restStops.evaluations += c.restStops.evaluations
-    combined.restStops.activations += c.restStops.activations
-  })
-
-  const finalCov = {}
-  Object.keys(combined).forEach(k => {
-    finalCov[k] = { ...combined[k] }
-    if (finalCov[k].uniqueIdsSeen !== undefined) {
-      finalCov[k].uniqueIdsSeen = Array.from(finalCov[k].uniqueIdsSeen).sort()
-      finalCov[k].covered = finalCov[k].evaluations > 0 || finalCov[k].attempts > 0 || finalCov[k].activations > 0 || finalCov[k].uniqueIdsSeen.length > 0
-      if(k === 'brandDeals') finalCov[k].availableIds = BRAND_DEALS.length
-      if(k === 'postOptions') finalCov[k].availableIds = POST_OPTIONS.length
-      if(k === 'socialTrends') finalCov[k].availableIds = ALLOWED_TRENDS.length
-      if(k === 'contraband') finalCov[k].availableIds = CONTRABAND_DB.length
-    } else {
-      finalCov[k].covered = finalCov[k].attempts > 0 || finalCov[k].completions > 0 || finalCov[k].successes > 0 || finalCov[k].evaluations > 0 || finalCov[k].activations > 0
-    }
-  })
-
-  return finalCov
-}
+export const buildExecutionCoverage = results =>
+  mergeExecutionCoverage(results.map(result => result.summary.executionCoverage))
 
 const fmt = n => (n == null ? 0 : n).toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
@@ -3191,7 +3025,7 @@ const buildMarkdownReport = payload => {
     const startFame = sc?.initialOverrides?.player?.fame ?? 0
     const fameLevel = calculateFameLevel(s.avgFinalFame)
     lines.push(
-      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHits}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
+      `| ${scenario.name} | ${fmtEur(startMoney)} | ${startFame} | ${fmtEur(s.avgFinalMoney)} | ${s.avgPeakToTroughDrop}% | ${s.sinkToIncomeRatio} | ${s.gigCapHitPct}% | ${s.avgFinalFame} | ${fameLevel} | ${s.avgFinalHarmony} | ${s.avgFinalControversy} | ${s.avgGigsPlayed} | ${s.avgClinicVisits} | ${fmtPct(s.bankruptcyRate)} | ${fmtEur(s.avgGigNet)} | ${getScenarioInsight(s)} |`
     )
   }
   lines.push('')
@@ -3410,6 +3244,7 @@ const buildMarkdownReport = payload => {
   lines.push('## Ergebnisverteilungen')
   lines.push('')
   lines.push('*(Zeigt Mittelwert, Median, StdDev, P10, P90 für Endgeld über alle Runs)*')
+  lines.push('')
   lines.push('| Szenario | Mean | Median | StdDev | P10 | P90 |')
   lines.push('|---|---:|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
@@ -3427,7 +3262,7 @@ const buildMarkdownReport = payload => {
     const s = scenario.summary
     const b = s.bankruptcy || {}
     const c = b.confidence95 || {}
-    lines.push(`| ${scenario.name} | ${b.count || 0} | ${b.sampleSize || 0} | ${(b.ratePct || 0).toFixed(2)}% | ${(c.lowerPct || 0).toFixed(2)}% | ${(c.upperPct || 0).toFixed(2)}% |`)
+    lines.push(`| ${scenario.name} | ${b.count ?? 0} | ${b.sampleSize ?? 0} | ${(b.ratePct ?? 0).toFixed(2)}% | ${(c.lowerPct ?? 0).toFixed(2)}% | ${(c.upperPct ?? 0).toFixed(2)}% |`)
   }
   lines.push('')
 
@@ -3438,9 +3273,9 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     const p = s.population || {}
-    const all = p.allRuns || { sampleSize: 0, finalMoney: { mean: 0 } }
-    const sol = p.solventRuns || { sampleSize: 0, finalMoney: { mean: 0 } }
-    const ban = p.bankruptRuns || { sampleSize: 0, finalMoney: { mean: 0 } }
+    const all = p.allRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
+    const sol = p.solventRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
+    const ban = p.bankruptRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
     lines.push(`| ${scenario.name} | ${all.sampleSize} / ${fmtEur(all.finalMoney?.mean)} | ${sol.sampleSize} / ${fmtEur(sol.finalMoney?.mean)} | ${ban.sampleSize} / ${fmtEur(ban.finalMoney?.mean)} |`)
   }
   lines.push('')
@@ -3677,7 +3512,7 @@ export const runSimulationSuite = async (options = {}) => {
     }
 
     const summary = summarizeScenario(runs)
-    const kpis = checkKpi ? checkKpi(scenario.id, summary) : []
+    const kpis = checkKpi(scenario.id, summary)
     const evalResult = evaluateKpiStatus(kpis)
     summary.kpiStatus = evalResult.status
     summary.kpisPassed = evalResult.passed
@@ -3764,7 +3599,8 @@ if (
   const outputJsonPath = path.join(REPORT_DIR, payload.outputJson)
   const outputMarkdownPath = path.join(REPORT_DIR, payload.outputMarkdown)
   const totalRuns = payload.results.reduce(
-    (sum, scenario) => sum + (scenario.summary.sampleSize || scenario.summary.population?.allRuns?.sampleSize || 0),
+    (sum, scenario) =>
+      sum + (scenario.summary.population?.allRuns?.sampleSize ?? 0),
     0
   )
 

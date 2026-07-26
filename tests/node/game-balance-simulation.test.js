@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
+import { LOAN_PROFILES } from '../../src/utils/loanProfiles.js'
 
 import {
   REGRESSION_METRICS,
@@ -58,7 +59,7 @@ test('run-level Fame accounting records successful gigs and reconciles', () => {
   )
   assert.ok(run.gigsPlayed > 0)
   assert.ok(run.fameAccounting.earned > 0)
-  assert.ok(Math.abs(reconcileFameLedger(run)) < 1e-9)
+  assert.equal(reconcileFameLedger(run) + run.fameAccounting.clampAdjustment, 0)
 
   run.finalFame += 1
   assert.equal(reconcileFameLedger(run), -1)
@@ -88,6 +89,20 @@ test('event Fame accounting records gains, losses, and floor clamps', () => {
     lost: 20,
     clampAdjustment: 5
   })
+  assert.equal(
+    reconcileFameLedger({
+      startingFame: 5,
+      finalFame: 0,
+      fameAccounting: {
+        earned: 0,
+        spentGross: 0,
+        refunded: 0,
+        lost: 10,
+        clampAdjustment: 5
+      }
+    }),
+    -5
+  )
 })
 
 test('Fame purchases account only successful deductions and real refunds', () => {
@@ -213,7 +228,17 @@ test('feature inventory is finite and matches the application snapshot', () => {
   assert.equal(inventory.socialPlatformsAvailable, 4)
   assert.equal(inventory.questsAvailable, 32)
   assert.equal(inventory.assetModulesAvailable, 63)
-  assert.equal(inventory.loanProfilesAvailable, 5)
+  assert.deepEqual(Object.keys(LOAN_PROFILES).sort(), [
+    'coop',
+    'loanShark',
+    'longTerm',
+    'mediumTerm',
+    'shortTerm'
+  ])
+  assert.equal(
+    inventory.loanProfilesAvailable,
+    Object.keys(LOAN_PROFILES).length
+  )
 })
 
 test('generated Markdown contains no undefined or NaN cells', async () => {
