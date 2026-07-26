@@ -2642,13 +2642,13 @@ const buildFeatureInventory = () => {
     postOptionsAvailable: POST_OPTIONS.length,
     contrabandItemsAvailable: CONTRABAND_DB.length,
     upgradesAvailable: getUnifiedUpgradeCatalog().length,
-    socialPlatformsAvailable: SOCIAL_PLATFORMS.length,
+    socialPlatformsAvailable: Object.keys(SOCIAL_PLATFORMS).length,
     trendsAvailable: ALLOWED_TRENDS.length,
-    songsAvailable: SONGS_DB.length,
-    questsAvailable: QUEST_REGISTRY.length,
+    songsAvailable: Object.keys(SONGS_DB).length,
+    questsAvailable: Object.keys(QUEST_REGISTRY).length,
     assetChassisAvailable: Object.values(CHASSIS_CONFIG).flatMap(k => Object.values(k)).length,
-    assetModulesAvailable: MODULE_REGISTRY.length,
-    loanProfilesAvailable: LOAN_PROFILES.length
+    assetModulesAvailable: Object.keys(MODULE_REGISTRY).length,
+    loanProfilesAvailable: Object.keys(LOAN_PROFILES).length
   }
 }
 
@@ -3077,9 +3077,9 @@ const buildMarkdownReport = payload => {
 
   for (const scenario of payload.results) {
     const s = scenario.summary
-    const upgrades = Number((s.avgHqUpgrades + s.avgVanUpgrades).toFixed(2))
+    const upgrades = Number(((s.avgHqUpgrades || 0) + (s.avgVanUpgrades || 0)).toFixed(2))
     lines.push(
-      `| ${scenario.name} | ${fmtEur(s.avgPeakMoney)} | ${fmtEur(s.avgLowestMoney)} | ${fmtEur(s.avgGigNet)} | ${s.avgSponsorPayouts} | ${s.avgBrandDealsActivated} | ${upgrades} | ${s.avgRefuels} | ${s.avgRepairs} | ${getEconomyInsight(s)} |`
+      `| ${scenario.name} | ${fmtEur(s.avgPeakMoney || 0)} | ${fmtEur(s.avgLowestMoney || 0)} | ${fmtEur(s.avgGigNet || 0)} | ${s.avgSponsorPayouts || 0} | ${s.avgBrandDealsActivated || 0} | ${upgrades} | ${s.avgRefuels || 0} | ${s.avgRepairs || 0} | ${getEconomyInsight(s)} |`
     )
   }
   lines.push('')
@@ -3143,7 +3143,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${s.avgFinalHarmony} | ${s.avgClinicVisits} | ${s.avgSponsorSignings} | ${s.avgSponsorDrops} | ${s.avgContrabandDrops} | ${s.avgPostPulses} | ${getBandHealthInsight(s)} |`
+      `| ${scenario.name} | ${s.avgFinalHarmony || 0} | ${s.avgClinicVisits || 0} | ${s.avgSponsorSignings || 0} | ${s.avgSponsorDrops || 0} | ${s.avgContrabandDrops || 0} | ${s.avgPostPulses || 0} | ${getBandHealthInsight(s)} |`
     )
   }
   lines.push('')
@@ -3159,7 +3159,7 @@ const buildMarkdownReport = payload => {
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${s.avgSpecialEvents} | ${s.avgCashSwings} | ${s.avgBandEvents} | ${s.avgEquipmentEvents} | ${s.avgGigEvents} | ${s.avgTrendShifts} | ${s.avgCatalogUpgrades} | ${getEventsInsight(s)} |`
+      `| ${scenario.name} | ${s.avgSpecialEvents || 0} | ${s.avgCashSwings || 0} | ${s.avgBandEvents || 0} | ${s.avgEquipmentEvents || 0} | ${s.avgGigEvents || 0} | ${s.avgTrendShifts || 0} | ${s.avgCatalogUpgrades || 0} | ${getEventsInsight(s)} |`
     )
   }
   lines.push('')
