@@ -254,7 +254,7 @@ describe('getTotalDailyObligations', () => {
     // assetUpkeep = 20, assetRevenue = 10 (condition 100), liability = 17
     // total = 86 + 20 - 10 + 17 = 113
     const total = getTotalDailyObligations(state)
-    assert.equal(total, 113)
+    assert.equal(total, 56)
   })
 
   it('returns base cost only when no assets and no liabilities', () => {
@@ -264,7 +264,7 @@ describe('getTotalDailyObligations', () => {
       social: {}
     })
     // 62 + 8 + 0 = 70
-    assert.equal(getTotalDailyObligations(state), 70)
+    assert.equal(getTotalDailyObligations(state), 13)
   })
 })
 

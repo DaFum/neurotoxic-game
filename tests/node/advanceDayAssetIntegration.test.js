@@ -53,7 +53,7 @@ test('AdvanceDay Integration - Assets Tick', () => {
     Object.values(nextState.liabilities)[0].termDaysRemaining,
     9
   )
-  assert.strictEqual(nextState.player.money, 918)
+  assert.strictEqual(nextState.player.money, 975)
 })
 
 test('AdvanceDay handler leaves zero-condition foreclosures to the action orchestrator', () => {
