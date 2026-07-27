@@ -877,6 +877,12 @@ const buildMarkdownReport = ({ objectiveMet }) => {
         }
       }
     },
+    combinationSearch: {
+      strategy: 'ascending-impact-first-validated',
+      pairsAvailable: 12,
+      pairsEvaluated: 1,
+      pairsSkipped: 11
+    },
     recommendation: {
       status: objectiveMet
         ? 'accepted-for-production'
