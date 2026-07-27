@@ -604,7 +604,7 @@ test('Golden Path: Daily cost scaling with band size', async t => {
     const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
     assert.equal(
       state.player.money,
-      moneyBefore - expectedCost,
+      Math.floor(moneyBefore - expectedCost),
       `Daily cost should be ${expectedCost} for 3 members`
     )
   })
