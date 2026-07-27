@@ -95,7 +95,7 @@ test('calculateDailyUpdates: daily cost includes band size scaling', () => {
   const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
   assert.equal(
     result.player.money,
-    500 - expectedCost,
+    Math.floor(500 - expectedCost),
     `Should deduct ${expectedCost}€ daily (base + band)`
   )
 })
@@ -107,7 +107,7 @@ test('calculateDailyUpdates does not scale YouTube revenue with obligation relie
   const scaledObligations =
     fullObligations * getEarlyGameObligationMultiplier(2)
 
-  assert.equal(result.player.money, 500 - scaledObligations + 10)
+  assert.equal(result.player.money, Math.floor(500 - scaledObligations + 10))
 })
 
 test('calculateDailyUpdates: money never goes negative', () => {

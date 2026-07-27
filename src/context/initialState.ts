@@ -143,6 +143,7 @@ export const DEFAULT_SOCIAL_STATE = {
   youtube: 14,
   newsletter: 0,
   viral: 0,
+  regionalGigHistory: {},
   lastGigDay: null,
   lastGigDifficulty: null,
   lastPirateBroadcastDay: null,

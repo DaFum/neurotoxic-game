@@ -2,6 +2,8 @@
   "cultDonations": "Cult Donations",
   "gigExpenses.catering.detail": "Counters Tired Band Penalty",
   "gigExpenses.catering.label": "Catering / Energy",
+  "gigExpenses.demandSaturation.detail": "Recent regional shows reduced demand",
+  "gigExpenses.demandSaturation.label": "Regional Demand Saturation",
   "gigExpenses.guestList.detail": "VIP Treatment (+Bar Revenue, +Score)",
   "gigExpenses.guestList.label": "Guest List",
   "gigExpenses.managementFee.detail": "{{rate}}% of Gross Income",

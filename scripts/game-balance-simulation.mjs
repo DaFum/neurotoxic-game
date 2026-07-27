@@ -110,10 +110,8 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
-import {
-  DEFAULT_BALANCE_TUNING,
-  getRepeatDemandMultiplier
-} from '../src/utils/balanceTuning.ts'
+import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
+import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 
 // ── Determinism Mock ──────────────────────────────────────────────────────
 let uuidCounter = 0
@@ -2144,7 +2142,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         : undefined
     }
 
-    let financials = deriveFinancials({
+    const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
+    const regionalGigHistory = Object.fromEntries(runCtx.regionalGigHistory)
+    const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
+      .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
+    const financials = deriveFinancials({
       currentGig: venue,
       lastGigStats: currentGigStats,
       perfScore: performanceScore,
@@ -2166,25 +2168,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       },
       // Note: Region/City effects in Balance-Run are not fully simulated here.
       cityTraits: [],
-      assetModifiers: getActiveAssetModifiers(state.assets || [])
+      assetModifiers: getActiveAssetModifiers(state.assets || []),
+      repeatDemandContext: { day, regionId, regionalGigHistory, tuning }
     })
-
-    const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
-    const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
-      .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
-    const demandMultiplier = getRepeatDemandMultiplier(day, recentRegionalGigs.length, tuning)
-    if (financials && demandMultiplier < 1) {
-      const demandCost = Math.round(Math.max(0, financials.net) * (1 - demandMultiplier))
-      financials = {
-        ...financials,
-        net: financials.net - demandCost,
-        expenses: {
-          ...financials.expenses,
-          total: financials.expenses.total + demandCost,
-          breakdown: [...financials.expenses.breakdown, { type: 'demandSaturation', amount: demandCost }]
-        }
-      }
-    }
 
     // Standard post-gig adjustments
     applyPostGigState(
@@ -2405,6 +2391,11 @@ export const mergeExecutionCoverage = sources => {
   return coverage
 }
 
+export const calculateAverageFameEarnedPerGig = runs => mean(runs.map(run => {
+  const fameEarned = run.fameAccounting?.earned ?? run.fameEarned ?? 0
+  return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
+}))
+
 export const summarizeScenario = runs => {
   const solventRuns = runs.filter(r => !r.bankrupt)
   const bankruptRuns = runs.filter(r => r.bankrupt)
@@ -2549,9 +2540,7 @@ export const summarizeScenario = runs => {
     },
 
     avgFameProgress: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
-    avgFameProgressPerGig: Number(mean(runs.map(r =>
-      r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0
-    )).toFixed(2)),
+    avgFameProgressPerGig: Number(calculateAverageFameEarnedPerGig(runs).toFixed(2)),
     avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
     avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney))),
     avgLowestMoney: Math.round(mean(runs.map(r => r.lowestMoney))),
@@ -2749,7 +2738,7 @@ const fmtEur = n => `€${fmt(n)}`
 const fmtEurOrDash = n => (n == null ? '—' : fmtEur(n))
 const fmtPct = n => `${n}%`
 
-const KPI_TARGETS = {
+export const KPI_TARGETS = {
   // All scenarios start from the real game-default state (€500, fame 0, harmony 80).
   // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-16, moderate rebalance).
   baseline_touring: {
@@ -3540,7 +3529,7 @@ const getFileHash = async filePath => {
   }
 }
 
-const getJsonHash = data => {
+export const getJsonHash = data => {
   try {
     return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex')
   } catch {
@@ -3610,6 +3599,7 @@ export const runSimulationSuite = async (options = {}) => {
       sourceBaseCommit: getSourceBaseCommit(),
       workingTreeDirty: getWorkingTreeDirty(),
       simulationScriptSha256,
+      balanceSourceSha256: await getBalanceSourceHash(PROJECT_ROOT),
       scenarioConfigSha256,
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index'

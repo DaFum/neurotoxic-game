@@ -2,6 +2,8 @@
   "cultDonations": "Kultspenden",
   "gigExpenses.catering.detail": "Vermeidet den Müdigkeits-Malus",
   "gigExpenses.catering.label": "Catering / Energie",
+  "gigExpenses.demandSaturation.detail": "Kürzliche Auftritte in der Region senkten die Nachfrage",
+  "gigExpenses.demandSaturation.label": "Regionale Nachfragesättigung",
   "gigExpenses.guestList.detail": "VIP-Behandlung (+Bareinnahmen, +Punkte)",
   "gigExpenses.guestList.label": "Gästeliste",
   "gigExpenses.managementFee.detail": "{{rate}}% der Bruttoeinnahmen",

@@ -54,7 +54,7 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
 
 /**
  * Temporary recurring-obligation relief selected by Phase 3 experiment
- * `bootstrap-obligations-50-through-60`.
+ * `bootstrap-obligations-49-through-60`.
  *
  * The multiplier applies through day 60 and accepts values in the range 0–1.
  */
@@ -63,20 +63,20 @@ export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> = deepFreeze({
   earlyGame: {
     ...ORIGINAL_CONTROL_BALANCE_TUNING.earlyGame,
     durationDays: 60,
-    dailyObligationMultiplier: 0.5
+    dailyObligationMultiplier: 0.49
   },
   /**
    * Expiring regional demand saturation selected by Phase 3 experiment
-   * `touring-demand-10-40-window-10`.
+   * `touring-demand-16-55-after-28`.
    *
    * Rates are fractions in 0–1; the history window is measured in days.
    */
   touring: {
     ...ORIGINAL_CONTROL_BALANCE_TUNING.touring,
     repeatGigWindowDays: 10,
-    repeatDemandStartDay: 0,
-    repeatDemandPenaltyPerGig: 0.1,
-    maxRepeatDemandPenalty: 0.4
+    repeatDemandStartDay: 28,
+    repeatDemandPenaltyPerGig: 0.16,
+    maxRepeatDemandPenalty: 0.55
   }
 })
 
