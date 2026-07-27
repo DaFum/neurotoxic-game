@@ -112,6 +112,7 @@ import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
 import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
+import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
 // ── Determinism Mock ──────────────────────────────────────────────────────
 let uuidCounter = 0
@@ -1750,6 +1751,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   uuidCounter = 0
   const rng = mulberry32(seed)
   simulationCryptoRandom = rng
+  // secureRandom() buffers 1024 draws. Without dropping the buffer the run
+  // would start by consuming values generated from the previous run's stream,
+  // so identical (scenario, seed, tuning) inputs would not reproduce.
+  resetSecureRandomBatch()
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   let currentNode = HOME

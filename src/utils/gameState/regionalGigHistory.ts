@@ -37,21 +37,41 @@ export const normalizeRegionalGigHistory = (
   return normalized
 }
 
+const MAX_REGIONS = 100
+
+const mostRecentDay = (days: number[]): number =>
+  days.length > 0 ? (days[days.length - 1] as number) : -1
+
 /**
  * Appends a gig day to a region's history, bounding the total structure.
+ *
+ * The appended region is always retained: when the history is already at the
+ * region cap and `regionId` is new, the region whose last gig is oldest is
+ * evicted, so the gig just played is never the one dropped.
  */
 export const appendToRegionalGigHistory = (
   history: Record<string, number[]> | undefined | null,
   regionId: string,
   day: number
 ): Record<string, number[]> => {
-  const safeHistory = history ?? {}
-  const currentDays = Array.isArray(safeHistory[regionId])
-    ? safeHistory[regionId]
-    : []
+  const normalized = normalizeRegionalGigHistory(history ?? {})
+  const currentDays = normalized[regionId] ?? []
+
+  if (!(regionId in normalized)) {
+    const regionIds = Object.keys(normalized)
+    if (regionIds.length >= MAX_REGIONS) {
+      const stalest = regionIds.reduce((oldest, candidate) =>
+        mostRecentDay(normalized[candidate] as number[]) <
+        mostRecentDay(normalized[oldest] as number[])
+          ? candidate
+          : oldest
+      )
+      delete normalized[stalest]
+    }
+  }
 
   return normalizeRegionalGigHistory({
-    ...safeHistory,
+    ...normalized,
     [regionId]: [...currentDays, day]
   })
 }

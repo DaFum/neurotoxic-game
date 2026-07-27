@@ -18,11 +18,13 @@ import {
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
   assertEqualControlCohorts,
+  combinationImpact,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
   kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
+  renderExperimentMarkdown,
   selectAcceptedCandidate,
   summarizePairedRuns
 } from '../../scripts/game-balance-experiments.mjs'
@@ -621,4 +623,263 @@ test('generated identifiers do not make candidate execution order observable', (
     [first.finalMoney, first.finalFame, first.gigsPlayed, first.bankrupt],
     [second.finalMoney, second.finalFame, second.gigsPlayed, second.bankrupt]
   )
+})
+
+// Paired experiments are only meaningful if a run is a pure function of
+// (scenario, seed, tuning). `secureRandom()` buffers 1024 draws, so a run that
+// does not drop the buffer inherits values generated from the previous run's
+// stream at an offset that depends on how many draws that run made. A
+// full-length run is required here: a 2-day probe consumes too few draws for
+// the drift to reach the summary fields.
+test('full-length runs are reproducible regardless of preceding runs', () => {
+  const scenario = SCENARIOS.find(item => item.id === 'bootstrap_struggle')
+  const seed = createScenarioSeed(scenario.id, 0)
+  const fingerprint = run => [
+    run.finalMoney,
+    run.finalFame,
+    run.gigsPlayed,
+    run.daysSurvived,
+    run.finalHarmony,
+    run.bankrupt
+  ]
+
+  const first = runSingleSimulation(scenario, seed, DEFAULT_BALANCE_TUNING)
+  const repeated = runSingleSimulation(scenario, seed, DEFAULT_BALANCE_TUNING)
+  assert.deepEqual(
+    fingerprint(repeated),
+    fingerprint(first),
+    'Identical inputs must reproduce identically'
+  )
+
+  // A differently-tuned run in between consumes a different number of draws.
+  runSingleSimulation(
+    { ...scenario, id: 'interleaved_probe' },
+    createScenarioSeed('interleaved_probe', 7),
+    resolveBalanceTuning({
+      earlyGame: { durationDays: 30, dailyObligationMultiplier: 0.5 }
+    })
+  )
+  const afterInterleave = runSingleSimulation(
+    scenario,
+    seed,
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.deepEqual(
+    fingerprint(afterInterleave),
+    fingerprint(first),
+    'An interleaved run must not shift the secure-random stream'
+  )
+})
+
+// Obligation stages are cumulative `throughDay` boundaries, so each stage's
+// weight is its own segment length. Reading nonexistent `durationDays` /
+// `dailyObligationMultiplier` fields off a stage yields NaN, which silently
+// demotes staged combinations to the id tie-break instead of ranking them by
+// actual intervention size.
+test('combinationImpact weights obligation stages by segment length', () => {
+  const noTouring = { overrides: { touring: {} } }
+  const staged = {
+    overrides: {
+      earlyGame: {
+        obligationStages: [
+          { throughDay: 5, multiplier: 0.6 },
+          { throughDay: 10, multiplier: 0.8 }
+        ]
+      }
+    }
+  }
+
+  // Days 1-5 at 0.6 => 5 * 0.4 = 2; days 6-10 at 0.8 => 5 * 0.2 = 1.
+  const impact = combinationImpact({ bootstrap: staged, touring: noTouring })
+  assert.ok(Number.isFinite(impact), 'Staged impact must not be NaN')
+  assert.equal(impact, 3)
+
+  const flat = {
+    overrides: {
+      earlyGame: { durationDays: 10, dailyObligationMultiplier: 0.7 }
+    }
+  }
+  assert.ok(
+    Math.abs(combinationImpact({ bootstrap: flat, touring: noTouring }) - 3) <
+      1e-9,
+    'Equivalent total relief must rank equally regardless of encoding'
+  )
+
+  // A single stage covering the same window with less relief must rank lower.
+  const milder = {
+    overrides: {
+      earlyGame: { obligationStages: [{ throughDay: 10, multiplier: 0.85 }] }
+    }
+  }
+  assert.ok(
+    combinationImpact({ bootstrap: milder, touring: noTouring }) < impact
+  )
+})
+
+test('combinationImpact ignores an empty obligationStages array', () => {
+  const impact = combinationImpact({
+    bootstrap: {
+      overrides: {
+        earlyGame: {
+          obligationStages: [],
+          durationDays: 60,
+          dailyObligationMultiplier: 0.5
+        }
+      }
+    },
+    touring: { overrides: { touring: {} } }
+  })
+  assert.equal(impact, 30, 'Empty stages must fall back to the flat window')
+})
+
+// The suite reuses one control cohort per scenario across every combination
+// instead of re-simulating it. That is only sound because a run is a pure
+// function of (scenario, seed, tuning) — this pins the equivalence.
+test('reusing a control cohort matches re-simulating it', () => {
+  const scenario = {
+    ...SCENARIOS[0],
+    id: 'cohort_reuse_probe',
+    daysOverride: 20
+  }
+  const candidateTuning = resolveBalanceTuning({
+    touring: {
+      repeatGigWindowDays: 4,
+      repeatDemandPenaltyPerGig: 0.1,
+      maxRepeatDemandPenalty: 0.3
+    }
+  })
+  const shared = {
+    scenario,
+    runsPerScenario: 3,
+    controlTuning: DEFAULT_BALANCE_TUNING,
+    candidateTuning
+  }
+
+  const resimulated = pairSimulationRuns(shared)
+  const reused = pairSimulationRuns({
+    ...shared,
+    controlRuns: resimulated.map(pair => pair.control)
+  })
+
+  assert.deepEqual(
+    reused.map(pair => [pair.control, pair.candidate, pair.delta]),
+    resimulated.map(pair => [pair.control, pair.candidate, pair.delta])
+  )
+})
+
+const buildMarkdownReport = ({ objectiveMet }) => {
+  const candidate = {
+    id: 'probe-candidate',
+    aggregateResults: {
+      bankruptcy: {
+        controlRatePct: 80,
+        candidateRatePct: 50,
+        deltaRatePct: -30
+      },
+      continuous: {
+        daysSurvived: { pairedDelta: { median: 12 } },
+        finalHarmony: { pairedDelta: { median: -1 } },
+        maxDrawdownPct: { pairedDelta: { median: 2 } },
+        finalMoney: { pairedDelta: { median: -100 } }
+      },
+      solventMedianMoney: 1200,
+      famePerGigDeltaPct: 0.5,
+      medianFinalMoneyDeltaPct: -17,
+      p90FinalMoneyDeltaPct: -20,
+      day20DeltaPct: -1
+    },
+    acceptanceCriteria: { passed: true }
+  }
+  const gapProfile = {
+    before: 205.68,
+    after: objectiveMet ? 22.5 : 139.81,
+    reductionPct: 65.87,
+    withinTarget: objectiveMet
+  }
+  return {
+    metadata: { pairingStrategy: 'same-scenario-same-run-index-same-seed' },
+    runtime: { totalRuns: 1000, durationMs: 1000 },
+    phases: {
+      phase3B: {
+        candidates: [candidate],
+        ranking: [{ id: candidate.id }],
+        selectedCandidateId: candidate.id
+      },
+      phase3C: {
+        candidates: [candidate],
+        ranking: [{ id: candidate.id }],
+        selectedCandidateId: candidate.id,
+        objectiveStatus: objectiveMet ? 'met' : 'partial',
+        objectiveNote: objectiveMet
+          ? 'Objective reached.'
+          : 'Structural Gap-1 dominance remains unresolved.',
+        gigFrequencyAnalysis: { control: [], finalTuning: [] },
+        gapTradeoff: { gap1VsGap2: { control: {}, finalTuning: {} } },
+        gigFrequencyValidation: {
+          objectiveMet,
+          targetRangePct: [20, 25],
+          improved: true,
+          shortfalls: objectiveMet
+            ? []
+            : [
+                'baseline_touring money-per-day advantage 139.81% is outside the 20-25% target (was 205.68%)'
+              ],
+          profiles: {
+            baseline_touring: gapProfile,
+            low_resource_touring: gapProfile
+          }
+        }
+      }
+    },
+    finalCombinedValidation: {
+      passed: true,
+      resultsByScenario: {
+        bootstrap_struggle: {
+          scenarioId: 'bootstrap_struggle',
+          controlKpiStatus: 'passed',
+          candidateKpiStatus: 'passed',
+          bankruptcy: {
+            controlRatePct: 80,
+            candidateRatePct: 50,
+            deltaRatePct: -30
+          },
+          continuous: {
+            finalMoney: { pairedDelta: { median: -100 } },
+            finalHarmony: { pairedDelta: { median: -1 } },
+            maxDrawdownPct: { pairedDelta: { median: 2 } }
+          },
+          famePerGigDeltaPct: 0.5,
+          scenarioValidation: { passed: true }
+        }
+      }
+    },
+    recommendation: {
+      status: objectiveMet
+        ? 'accepted-for-production'
+        : 'accepted-for-production-partial'
+    }
+  }
+}
+
+test('experiment markdown discloses an unmet Phase 3C objective', () => {
+  const partial = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: false })
+  )
+
+  assert.match(partial, /Phase 3C Gesamtstatus \| partial/)
+  assert.match(partial, /Gap-1-Dominanz im Zielband \| nicht gelöst/)
+  assert.match(partial, /accepted-for-production-partial/)
+  assert.match(partial, /139\.81%/, 'Measured advantage must appear')
+  assert.match(partial, /outside the 20-25% target/)
+  assert.match(partial, /Structural Gap-1 dominance remains unresolved/)
+})
+
+test('experiment markdown reports a met Phase 3C objective without partial wording', () => {
+  const met = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: true })
+  )
+
+  assert.match(met, /Phase 3C Gesamtstatus \| met/)
+  assert.match(met, /Gap-1-Dominanz im Zielband \| erreicht/)
+  assert.doesNotMatch(met, /accepted-for-production-partial/)
 })
