@@ -117,10 +117,13 @@ export const MANAGEMENT_CUT_RATE = 0.15
 /**
  * Maximum allowed gig net before overage is surfaced as an expense.
  *
- * Scaled with {@link GLOBAL_PAYOUT_NERF} so the cap keeps clipping the same
- * outlier venues rather than throttling the intended payout level.
+ * The cap is applied *after* {@link GLOBAL_PAYOUT_NERF}, so holding the same
+ * gross-net clipping threshold means scaling it by the same factor: the old
+ * 7500 at a 0.5 multiplier bound at a gross net above 15000, and 15000 * 0.97
+ * keeps that threshold intact. Any other value silently adds or removes
+ * high-end damping on top of the payout change — derive it, do not guess it.
  */
-export const MAX_GIG_NET = 13300
+export const MAX_GIG_NET = 14550
 /**
  * Global multiplier applied to gig payout calculations.
  *

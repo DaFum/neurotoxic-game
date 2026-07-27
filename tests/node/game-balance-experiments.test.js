@@ -913,3 +913,50 @@ test('experiment markdown reports a met Phase 3C objective without partial wordi
   assert.match(met, /Gap-1-Dominanz im Zielband \| erreicht/)
   assert.doesNotMatch(met, /accepted-for-production-partial/)
 })
+
+// The search stops at the first validated pair, so ordering by impact is only a
+// least-intervention guarantee if every configured lever actually scores above
+// the no-op. A new override family that combinationImpact does not read would
+// tie with 'none' and win or lose on the alphabetical tie-break instead.
+test('every configured lever scores a positive combination impact', () => {
+  const neutralBootstrap = BALANCE_EXPERIMENTS.find(
+    item => item.id === 'bootstrap-none'
+  )
+  const neutralTouring = BALANCE_EXPERIMENTS.find(
+    item => item.id === 'touring-none'
+  )
+  assert.ok(neutralBootstrap && neutralTouring, 'No-op candidates must exist')
+
+  assert.equal(
+    combinationImpact({
+      bootstrap: neutralBootstrap,
+      touring: neutralTouring
+    }),
+    0,
+    'The all-neutral combination must be the strict minimum'
+  )
+
+  for (const candidate of BALANCE_EXPERIMENTS) {
+    if (candidate.id.endsWith('-none')) continue
+
+    const impact =
+      candidate.phase === 'bootstrap'
+        ? combinationImpact({
+            bootstrap: candidate,
+            touring: neutralTouring
+          })
+        : combinationImpact({
+            bootstrap: neutralBootstrap,
+            touring: candidate
+          })
+
+    assert.ok(
+      Number.isFinite(impact),
+      `${candidate.id} produced a non-finite impact (${impact})`
+    )
+    assert.ok(
+      impact > 0,
+      `${candidate.id} scores ${impact}, tying with the no-op — combinationImpact does not read its override family`
+    )
+  }
+})

@@ -174,9 +174,19 @@ export const combinationImpact = ({ bootstrap, touring }) => {
   const grantRelief =
     ((early.emergencyGrant ?? 0) / 1000) * (early.emergencyGrantMaxDay ?? 0)
   const relief = obligationRelief + grantRelief
+  // Dense-schedule pressure is an intervention as well. Every override family
+  // must contribute a positive term, otherwise a real lever ties with the
+  // genuine no-op and the "first validated pair is the least intervention"
+  // guarantee degrades into an alphabetical tie-break.
+  // `tests/node/game-balance-experiments.test.js` asserts this for every
+  // configured candidate.
+  const denseSchedule =
+    (late.denseScheduleHarmonyPenalty ?? 0) +
+    (1 - (late.denseScheduleRecoveryMultiplier ?? 1)) * 10 +
+    ((late.denseScheduleMaintenanceMultiplier ?? 1) - 1) * 10
   const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
     (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
-  return relief + saturation
+  return relief + saturation + denseSchedule
 }
 
 export const evaluateCandidate = (definition, pairs, summary) => {
@@ -392,7 +402,7 @@ Final gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Boot
 
 ## Nebenwirkungen
 
-Fame per gig, harmony, bankruptcy, drawdown, and day-20/day-40 money are explicit acceptance checks.
+Fame per gig, harmony, bankruptcy, drawdown, and the early/mid progression checkpoints (days ${SIMULATION_CONSTANTS.progressionCheckpointDays[0]} and ${SIMULATION_CONSTANTS.progressionCheckpointDays[1]}) are explicit acceptance checks.
 
 ## Verworfene Kandidaten
 

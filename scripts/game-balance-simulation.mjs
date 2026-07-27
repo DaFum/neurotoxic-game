@@ -469,7 +469,7 @@ export const SCENARIOS = [
     id: 'early_game_probe',
     name: 'Early Game Probe (Fame 0–50)',
     description:
-      'Frühspiel-Sonde: Fame 0, 20-Tage-Run. Misst Survival-Rate, Gig-Netto und Logistikkosten der ersten Spieltage.',
+      'Frühspiel-Sonde: Fame 0, volle Tour. Misst Survival-Rate, Gig-Netto und Logistikkosten der ersten Spieltage.',
     gigGapDays: 2,
     ticketDiscountChance: 0.12,
     eventIntensity: 0.3,
@@ -493,7 +493,7 @@ export const SCENARIOS = [
     id: 'mid_game_probe',
     name: 'Mid Game Probe (Fame 60–150)',
     description:
-      'Mittelspiel-Sonde: Fame 60 Start, 40-Tage-Run. Misst Time-to-Upgrade und Management-Cut-Wachstum.',
+      'Mittelspiel-Sonde: Fame 60 Start, volle Tour. Misst Time-to-Upgrade und Management-Cut-Wachstum.',
     gigGapDays: 2,
     ticketDiscountChance: 0.08,
     eventIntensity: 0.4,
@@ -517,7 +517,7 @@ export const SCENARIOS = [
     id: 'late_game_probe',
     name: 'Late Game Probe (Fame 175+)',
     description:
-      'Spätspiel-Sonde: Fame 175 Start, 30-Tage-Run. Misst Logistikkosten als Sink und die Cap-Hit-Rate.',
+      'Spätspiel-Sonde: Fame 175 Start, volle Tour. Misst Logistikkosten als Sink und die Cap-Hit-Rate.',
     gigGapDays: 1,
     ticketDiscountChance: 0.04,
     eventIntensity: 0.5,
@@ -639,16 +639,48 @@ const simulateFameCatalogClear = (catalog, performanceScore) => {
   return { gigs: Math.ceil(gigs), finalFame: fame, rawGigFame }
 }
 
-const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy }) => {
-  if (gigsToBuyShopPlusLegacy > 30) {
-    return 'Fame-Gewinn ist zu niedrig fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
+/**
+ * Share of a tour's gigs that clearing the whole fame catalogue may consume.
+ * The catalogue has to be affordable inside one tour, so the upper bound is the
+ * tour itself; the lower bound keeps it from becoming a rounding error.
+ */
+const FAME_CATALOG_TARGET_SHARE = Object.freeze({ min: 0.6, max: 1 })
+
+/**
+ * Derives the fame-audit target from the current configuration instead of
+ * hardcoding it. Gig count per tour follows the map-bounded horizon, and the
+ * cost side is read from the live catalogue, so re-pricing the shop or moving
+ * `daysPerRun` re-targets the audit automatically. A hardcoded target silently
+ * inverts its verdict the moment either side moves.
+ */
+const getFameCatalogTarget = totalFameCost => {
+  const gigsPerTour = Math.max(
+    1,
+    Math.floor(
+      SIMULATION_CONSTANTS.daysPerRun /
+        Math.max(1, SIMULATION_CONSTANTS.baseGigGapDays)
+    )
+  )
+  return {
+    totalFameCost,
+    gigsPerTour,
+    minGigs: Math.max(1, Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.min)),
+    maxGigs: Math.max(1, Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.max))
+  }
+}
+
+const getFameAuditVerdict = ({ gigsToBuyShopPlusLegacy, target }) => {
+  const goal = `${target.minGigs}-${target.maxGigs} guten Gigs bis ${target.totalFameCost} Fame (Tour-Horizont ${target.gigsPerTour} Gigs)`
+
+  if (gigsToBuyShopPlusLegacy > target.maxGigs) {
+    return `Fame-Gewinn ist zu niedrig fuer das Ziel von ${goal}.`
   }
 
-  if (gigsToBuyShopPlusLegacy < 20) {
-    return 'Fame-Gewinn ist zu hoch fuer das Ziel von 20-30 guten Gigs bis 24.390 Fame.'
+  if (gigsToBuyShopPlusLegacy < target.minGigs) {
+    return `Fame-Gewinn ist zu hoch fuer das Ziel von ${goal}.`
   }
 
-  return 'Fame-Gewinn liegt im Zielkorridor von 20-30 guten Gigs bis 24.390 Fame.'
+  return `Fame-Gewinn liegt im Zielkorridor von ${goal}.`
 }
 
 const buildFameBalanceAudit = () => {
@@ -658,6 +690,8 @@ const buildFameBalanceAudit = () => {
     (max, item) => Math.max(max, Number(item.cost) || 0),
     0
   )
+
+  const target = getFameCatalogTarget(allFameCost)
 
   const scenarios = FAME_AUDIT_PERFORMANCE_SCORES.map(performanceScore => {
     const reachLabel = simulateGigsToReachFameTarget(
@@ -680,7 +714,8 @@ const buildFameBalanceAudit = () => {
       gigsToBuyShopOnly: shopOnly.gigs,
       gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs,
       verdict: getFameAuditVerdict({
-        gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs
+        gigsToBuyShopPlusLegacy: shopPlusLegacy.gigs,
+        target
       })
     }
   })
@@ -688,6 +723,7 @@ const buildFameBalanceAudit = () => {
   return {
     shopOnlyCost,
     shopPlusLegacyCost: allFameCost,
+    target,
     mostExpensiveShopItem,
     eventualPurchaseIsPossible: true,
     note: 'Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben. Praktisch entscheidet die noetige Gig-Anzahl ueber die Balance.',
@@ -2773,7 +2809,8 @@ export const KPI_TARGETS = {
   // Fame per gig is a per-gig ratio, so it is horizon-independent, but it does
   // scale with FAME_PROGRESS_CONSTANTS: the 600-1300 band was set for the
   // 150/12 reward and is scaled by the same 1.684x applied there. Measured
-  // ~1530 per gig under neutral tuning.
+  // ~1530 per gig under neutral tuning after that change (it was 840-980
+  // before it).
   //
   // Bankruptcy caps are now loose rather than binding: funding the shop
   // catalogue within one tour raised payouts, which pulled Bootstrap Struggle
@@ -2782,8 +2819,7 @@ export const KPI_TARGETS = {
   // the observed risk profile and want a deliberate design pass.
   //
   // Bankruptcy caps express per-scenario risk tolerance and are horizon-
-  // independent intent, so they are unchanged. Fame per gig is a per-gig ratio
-  // and is likewise unaffected (measured 840-980 across all scenarios).
+  // independent intent, so they are unchanged.
   baseline_touring: {
     bankruptcyMax: 10,
     moneyMin: 15000,
@@ -3139,6 +3175,33 @@ const buildMarkdownReport = payload => {
     )
   }
   lines.push('')
+
+  // ── KPI Holdout ───────────────────────────────────────────────────────────
+  const holdout = payload.kpiHoldoutValidation
+  if (holdout) {
+    lines.push('## KPI-Holdout-Validierung')
+    lines.push('')
+    lines.push(
+      `Die KPI-Geldbänder wurden aus einem neutralen Kontrolllauf abgeleitet. Dieselben Szenarien laufen hier erneut auf einem disjunkten Seed-Strom (\`${holdout.seedStrategy}\`, ${holdout.runsPerScenario} Runs), damit das Urteil nicht allein auf der Kohorte beruht, gegen die kalibriert wurde.`
+    )
+    lines.push('')
+    lines.push(
+      '| Szenario | Kalibrierung | Holdout | Übereinstimmung | Holdout Ø Endgeld | Holdout Insolvenzrate |'
+    )
+    lines.push('|---|---|---|---|---:|---:|')
+    for (const item of holdout.scenarios) {
+      lines.push(
+        `| ${item.id} | ${item.calibrationStatus} | ${item.holdoutStatus} | ${item.agrees ? '✅' : '❌'} | ${fmtEur(item.holdoutAvgFinalMoney)} | ${fmtPct(item.holdoutBankruptcyRate)} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      holdout.agrees
+        ? '✅ Alle KPI-Urteile stimmen auf unabhängigen Seeds überein.'
+        : `❌ Abweichende KPI-Urteile auf unabhängigen Seeds: ${holdout.disagreements.join(', ')}. Betroffene Bänder liegen auf einem Seed-Artefakt.`
+    )
+    lines.push('')
+  }
 
   // ── Progression Curve ─────────────────────────────────────────────────────
   lines.push('## Kapital-Progressionskurve')
@@ -3622,6 +3685,55 @@ export const runSimulationSuite = async (options = {}) => {
     })
   }
 
+  // The KPI money bands were derived from a neutral-tuning control run, so
+  // "neutral passes the money targets" is partly true by construction. Re-run
+  // the KPI scenarios on a disjoint seed stream and re-evaluate: agreement means
+  // the verdict reflects the economy rather than the particular cohort the
+  // bands were fitted to. A disagreement is the signal that a band sits on a
+  // seed artefact.
+  const kpiHoldoutValidation = (() => {
+    const scenarioResults = SCENARIOS.filter(
+      scenario => KPI_TARGETS[scenario.id]
+    ).map(scenario => {
+      const runs = []
+      for (
+        let runIndex = 0;
+        runIndex < SIMULATION_CONSTANTS.runsPerScenario;
+        runIndex++
+      ) {
+        runs.push(
+          runSingleSimulation(
+            scenario,
+            createScenarioSeed(`${scenario.id}#holdout`, runIndex)
+          )
+        )
+      }
+      const summary = summarizeScenario(runs)
+      const evaluation = evaluateKpiStatus(checkKpi(scenario.id, summary))
+      const calibrationStatus = results.find(
+        result => result.id === scenario.id
+      )?.summary.kpiStatus
+      return {
+        id: scenario.id,
+        calibrationStatus,
+        holdoutStatus: evaluation.status,
+        agrees: calibrationStatus === evaluation.status,
+        holdoutAvgFinalMoney: summary.avgFinalMoney,
+        holdoutBankruptcyRate: summary.bankruptcyRate,
+        holdoutFameProgressPerGig: summary.avgFameEarnedPerGig ?? null
+      }
+    })
+    return {
+      seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
+      runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
+      agrees: scenarioResults.every(result => result.agrees),
+      disagreements: scenarioResults
+        .filter(result => !result.agrees)
+        .map(result => result.id),
+      scenarios: scenarioResults
+    }
+  })()
+
   await fs.mkdir(REPORT_DIR, { recursive: true })
   const outputJsonPath = path.join(REPORT_DIR, SIMULATION_CONSTANTS.outputJson)
   const outputMarkdownPath = path.join(
@@ -3655,6 +3767,7 @@ export const runSimulationSuite = async (options = {}) => {
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
+    kpiHoldoutValidation,
     featureInventory: buildFeatureInventory(),
     executionCoverage: buildExecutionCoverage(results),
     regressionComparison: buildRegressionComparison(baselinePayload, results),
