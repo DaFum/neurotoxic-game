@@ -3186,19 +3186,25 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      '| Szenario | Kalibrierung | Holdout | Übereinstimmung | Holdout Ø Endgeld | Holdout Insolvenzrate |'
+      'Verglichen wird jedes KPI-Band einzeln, nicht nur der Gesamtstatus: ein Szenariovergleich würde ein kompensierendes Paar (ein Band kippt auf Fail, ein anderes auf Pass) hinter unverändertem Gesamturteil verbergen.'
     )
-    lines.push('|---|---|---|---|---:|---:|')
+    lines.push('')
+    lines.push(
+      '| Szenario | Band | Ziel | Kalibrierung | Holdout | Übereinstimmung |'
+    )
+    lines.push('|---|---|---|---|---|---|')
     for (const item of holdout.scenarios) {
-      lines.push(
-        `| ${item.id} | ${item.calibrationStatus} | ${item.holdoutStatus} | ${item.agrees ? '✅' : '❌'} | ${fmtEur(item.holdoutAvgFinalMoney)} | ${fmtPct(item.holdoutBankruptcyRate)} |`
-      )
+      for (const check of item.checks) {
+        lines.push(
+          `| ${item.id} | ${check.label} | ${check.target} | ${check.calibrationActual} ${check.calibrationPass ? '✅' : '❌'} | ${check.holdoutActual} ${check.holdoutPass ? '✅' : '❌'} | ${check.agrees ? '✅' : '❌'} |`
+        )
+      }
     }
     lines.push('')
     lines.push(
       holdout.agrees
-        ? '✅ Alle KPI-Urteile stimmen auf unabhängigen Seeds überein.'
-        : `❌ Abweichende KPI-Urteile auf unabhängigen Seeds: ${holdout.disagreements.join(', ')}. Betroffene Bänder liegen auf einem Seed-Artefakt.`
+        ? '✅ Jedes einzelne KPI-Band urteilt auf unabhängigen Seeds gleich.'
+        : `❌ Auf unabhängigen Seeds abweichende Bänder: ${holdout.disagreements.join('; ')}. Diese Bänder liegen auf einem Seed-Artefakt und sind neu abzuleiten.`
     )
     lines.push('')
   }
@@ -3474,7 +3480,7 @@ const buildMarkdownReport = payload => {
 lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')
   lines.push(
-    'Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kalibriert auf 75-Tage-Lauf).'
+    `Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kalibriert auf eine vollständige map-gebundene ${SIMULATION_CONSTANTS.daysPerRun}-Tage-Tour.`
   )
   lines.push('')
   lines.push('| Szenario | KPI | Ziel | Ist-Wert | Status | Bewertung |')
@@ -3681,6 +3687,7 @@ export const runSimulationSuite = async (options = {}) => {
       name: scenario.name,
       description: scenario.description,
       summary,
+      kpiChecks: kpis,
       sampleTimeline: runs[0]?.timeline?.slice(0, 10) || []
     })
   }
@@ -3689,8 +3696,14 @@ export const runSimulationSuite = async (options = {}) => {
   // "neutral passes the money targets" is partly true by construction. Re-run
   // the KPI scenarios on a disjoint seed stream and re-evaluate: agreement means
   // the verdict reflects the economy rather than the particular cohort the
-  // bands were fitted to. A disagreement is the signal that a band sits on a
-  // seed artefact.
+  // bands were fitted to.
+  //
+  // The comparison is per band, not per scenario. A scenario-level status
+  // comparison only reports *that* something moved, which is not enough to act
+  // on — and it hides a compensating pair (one band flipping to fail while
+  // another flips to pass) behind an unchanged overall verdict. Naming the band
+  // is the whole point, since only the money bands were fitted to the
+  // calibration cohort; the insolvency caps and fame corridor were not.
   const kpiHoldoutValidation = (() => {
     const scenarioResults = SCENARIOS.filter(
       scenario => KPI_TARGETS[scenario.id]
@@ -3709,15 +3722,35 @@ export const runSimulationSuite = async (options = {}) => {
         )
       }
       const summary = summarizeScenario(runs)
-      const evaluation = evaluateKpiStatus(checkKpi(scenario.id, summary))
-      const calibrationStatus = results.find(
-        result => result.id === scenario.id
-      )?.summary.kpiStatus
+      const holdoutChecks = checkKpi(scenario.id, summary) ?? []
+      const evaluation = evaluateKpiStatus(holdoutChecks)
+      const calibration = results.find(result => result.id === scenario.id)
+      const calibrationChecks = calibration?.kpiChecks ?? []
+
+      const checks = holdoutChecks.map(holdoutCheck => {
+        const calibrationCheck = calibrationChecks.find(
+          item => item.label === holdoutCheck.label
+        )
+        return {
+          label: holdoutCheck.label,
+          target: holdoutCheck.target,
+          calibrationPass: calibrationCheck?.pass ?? null,
+          calibrationActual: calibrationCheck?.actual ?? null,
+          holdoutPass: holdoutCheck.pass,
+          holdoutActual: holdoutCheck.actual,
+          agrees: calibrationCheck?.pass === holdoutCheck.pass
+        }
+      })
+
       return {
         id: scenario.id,
-        calibrationStatus,
+        calibrationStatus: calibration?.summary.kpiStatus,
         holdoutStatus: evaluation.status,
-        agrees: calibrationStatus === evaluation.status,
+        agrees: checks.every(check => check.agrees),
+        disagreeingBands: checks
+          .filter(check => !check.agrees)
+          .map(check => check.label),
+        checks,
         holdoutAvgFinalMoney: summary.avgFinalMoney,
         holdoutBankruptcyRate: summary.bankruptcyRate,
         holdoutFameProgressPerGig: summary.avgFameEarnedPerGig ?? null
@@ -3726,10 +3759,13 @@ export const runSimulationSuite = async (options = {}) => {
     return {
       seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
       runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
+      comparison: 'per-kpi-band',
       agrees: scenarioResults.every(result => result.agrees),
       disagreements: scenarioResults
         .filter(result => !result.agrees)
-        .map(result => result.id),
+        .flatMap(result =>
+          result.disagreeingBands.map(band => `${result.id}: ${band}`)
+        ),
       scenarios: scenarioResults
     }
   })()
