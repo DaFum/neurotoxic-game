@@ -16,6 +16,19 @@ const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.js
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-experiments-analysis.md')
 const METRICS = ['daysSurvived', 'finalMoney', 'finalFame', 'fameEarned', 'gigsPlayed', 'finalHarmony', 'maxDrawdownPct']
 
+/**
+ * Raised when the experiment legitimately finds nothing shippable. Distinct
+ * from a code or infrastructure fault so the CLI can report the two
+ * differently: an empty candidate set is a valid outcome, a RangeError from a
+ * misconfigured horizon is not.
+ */
+export class NoViableCandidateError extends Error {
+  constructor(message) {
+    super(message)
+    this.name = 'NoViableCandidateError'
+  }
+}
+
 const round = value => Number(value.toFixed(2))
 const percentageDelta = (control, candidate) => control === 0 ? 0 : round((candidate - control) / Math.abs(control) * 100)
 const compact = run => ({
@@ -344,10 +357,16 @@ const SELECTION_RATIONALE =
 // as a meaningful ranking but is not one — say so rather than let the reader
 // infer significance from the sequence.
 const describeRanking = ranking => {
-  const scores = ranking.map(item =>
-    item.targetFit - item.sideEffectPenalty - item.overcorrectionPenalty - item.complexityPenalty
+  // rankCandidates orders passing candidates ahead of failing ones before it
+  // compares scores, so acceptance is part of what makes an order meaningful.
+  // Keying on the score alone would describe a real pass/fail ordering as a
+  // pure id tie-break.
+  const keys = ranking.map(item =>
+    `${item.passed === false ? 0 : 1}:${(
+      item.targetFit - item.sideEffectPenalty - item.overcorrectionPenalty - item.complexityPenalty
+    ).toFixed(4)}`
   )
-  const distinct = new Set(scores.map(score => score.toFixed(4))).size
+  const distinct = new Set(keys).size
   return distinct <= 1
     ? '\n\n> Alle Kandidaten erreichen denselben Rangwert; die Reihenfolge entsteht ausschliesslich aus dem ID-Tie-Break und ist nicht aussagekraeftig.'
     : distinct < Math.ceil(ranking.length / 2)
@@ -514,7 +533,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const bootstrapCandidates = runCandidates(bootstrapDefinitions, bootstrapScenario, ORIGINAL_CONTROL_BALANCE_TUNING)
   const bootstrapRanking = rankCandidates(bootstrapCandidates)
   const acceptedBootstrap = bootstrapRanking.filter(item => item.acceptanceCriteria.passed)
-  if (!acceptedBootstrap.length) throw new Error('No Phase 3B candidate satisfies acceptance criteria')
+  if (!acceptedBootstrap.length) throw new NoViableCandidateError('No Phase 3B candidate satisfies acceptance criteria')
 
   // Selection takes the least-impact fully validated combination, and
   // `combinationImpact` reads only the candidate overrides — no simulation. So
@@ -551,7 +570,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       break
     }
   }
-  if (!selected) throw new Error('No combined Phase 3 candidate satisfies final validation')
+  if (!selected) throw new NoViableCandidateError('No combined Phase 3 candidate satisfies final validation')
   const combinationsSkipped = orderedPairs.length - pairsConsidered
   const selectedBootstrap = selected.bootstrap
   const selectedTouring = selected.touring
@@ -673,10 +692,14 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   try {
     report = await runExperimentSuite()
   } catch (error) {
-    console.error(
-      `[balance-experiments] no production candidate: ${error instanceof Error ? error.message : String(error)}`
-    )
-    process.exit(1)
+    // Only an empty candidate set is a legitimate outcome. Anything else is a
+    // fault and must keep its stack, otherwise a misconfigured horizon or a
+    // simulation regression reads in CI as "the experiment found nothing".
+    if (error instanceof NoViableCandidateError) {
+      console.error(`[balance-experiments] no production candidate: ${error.message}`)
+      process.exit(1)
+    }
+    throw error
   }
   console.log(`[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`)
   console.log(`[balance-experiments] recommendation: ${report.recommendation.status} (Phase 3C objective: ${report.recommendation.objectiveStatus})`)

@@ -19,6 +19,7 @@ import {
 import {
   assertEqualControlCohorts,
   combinationImpact,
+  NoViableCandidateError,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
   kpiStatusForRuns,
@@ -1005,4 +1006,54 @@ test('experiment markdown flags a non-discriminating ranking', () => {
     })
   )
   assert.doesNotMatch(spread, /nicht aussagekraeftig/)
+})
+
+// An empty candidate set is a legitimate experiment outcome; a misconfigured
+// horizon or a simulation regression is not. The CLI distinguishes them by
+// type, so the type has to stay distinguishable.
+test('no-viable-candidate failures are a distinct error type', () => {
+  const outcome = new NoViableCandidateError(
+    'No Phase 3B candidate satisfies acceptance criteria'
+  )
+
+  assert.ok(outcome instanceof NoViableCandidateError)
+  assert.ok(outcome instanceof Error)
+  assert.equal(outcome.name, 'NoViableCandidateError')
+  assert.equal(
+    new RangeError(
+      'Progression checkpoints fall outside the simulated horizon'
+    ) instanceof NoViableCandidateError,
+    false,
+    'A configuration fault must not be reported as an experiment outcome'
+  )
+})
+
+// rankCandidates puts passing candidates ahead of failing ones before it
+// compares scores, so an all-tied score set can still carry a meaningful order.
+test('ranking tie notice accounts for pass/fail ordering', () => {
+  const tiedButMixedAcceptance = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        { ...rankingEntry('probe-a', 0), passed: true },
+        { ...rankingEntry('probe-b', 0), passed: false }
+      ]
+    })
+  )
+  assert.doesNotMatch(
+    tiedButMixedAcceptance,
+    /nicht aussagekraeftig/,
+    'Pass-before-fail is a real ordering, not an id tie-break'
+  )
+
+  const tiedAndAllPassing = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        { ...rankingEntry('probe-a', 0), passed: true },
+        { ...rankingEntry('probe-b', 0), passed: true }
+      ]
+    })
+  )
+  assert.match(tiedAndAllPassing, /nicht aussagekraeftig/)
 })
