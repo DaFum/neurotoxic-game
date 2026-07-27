@@ -15,6 +15,8 @@ KPI thresholds, or the checked-in baseline.
   override values, but may not introduce simulator-only mechanics.
 - Candidate selection follows the acceptance limits in the Phase 3 request. A
   candidate that misses a hard limit cannot win through an aggregate score.
+- If no candidate passes every hard acceptance limit, the suite aborts without
+  selecting or recommending a production tuning.
 - The final report stores compact paired outcomes rather than full timelines.
 - No dependency, UI, content, seed, run-count, duration, KPI, or baseline change
   is in scope.

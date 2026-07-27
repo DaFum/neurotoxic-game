@@ -87,6 +87,20 @@ const percentile = (values, p) => {
   return sorted[Math.round((sorted.length - 1) * p)]
 }
 
+const pairedCheckpointDelta = (pairs, key) => {
+  const valid = pairs.filter(
+    pair => Number.isFinite(pair.control[key]) && Number.isFinite(pair.candidate[key])
+  )
+  if (valid.length === 0) return null
+  return percentageDelta(
+    median(valid.map(pair => pair.control[key])),
+    median(valid.map(pair => pair.candidate[key]))
+  )
+}
+
+export const selectAcceptedCandidate = ranking =>
+  ranking.find(item => item.acceptanceCriteria.passed) ?? null
+
 export const evaluateCandidate = (definition, pairs, summary) => {
   const controlFamePerGig = pairs.reduce((sum, pair) => sum + pair.control.fameEarned / Math.max(1, pair.control.gigsPlayed), 0) / pairs.length
   const candidateFamePerGig = pairs.reduce((sum, pair) => sum + pair.candidate.fameEarned / Math.max(1, pair.candidate.gigsPlayed), 0) / pairs.length
@@ -94,14 +108,8 @@ export const evaluateCandidate = (definition, pairs, summary) => {
   const candidateSolventMoney = pairs.filter(pair => !pair.candidate.bankrupt).map(pair => pair.candidate.finalMoney)
   const medianFinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.median, summary.continuous.finalMoney.candidate.median)
   const p90FinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.p90, summary.continuous.finalMoney.candidate.p90)
-  const day20DeltaPct = percentageDelta(
-    median(pairs.map(pair => pair.control.moneyAtDay20)),
-    median(pairs.map(pair => pair.candidate.moneyAtDay20))
-  )
-  const day40DeltaPct = percentageDelta(
-    median(pairs.map(pair => pair.control.moneyAtDay40)),
-    median(pairs.map(pair => pair.candidate.moneyAtDay40))
-  )
+  const day20DeltaPct = pairedCheckpointDelta(pairs, 'moneyAtDay20')
+  const day40DeltaPct = pairedCheckpointDelta(pairs, 'moneyAtDay40')
   const criteria = definition.acceptanceCriteria
   const checks = definition.phase === 'bootstrap'
     ? {
@@ -114,13 +122,13 @@ export const evaluateCandidate = (definition, pairs, summary) => {
     : {
         medianFinalMoney: medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] && medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
         p90FinalMoney: p90FinalMoneyDeltaPct >= criteria.p90FinalMoneyDeltaPct[0] && p90FinalMoneyDeltaPct <= criteria.p90FinalMoneyDeltaPct[1],
-        day20: day20DeltaPct >= criteria.day20MinimumDeltaPct,
-        day40: day40DeltaPct >= criteria.day40MinimumDeltaPct,
+        day20: day20DeltaPct == null ? null : day20DeltaPct >= criteria.day20MinimumDeltaPct,
+        day40: day40DeltaPct == null ? null : day40DeltaPct >= criteria.day40MinimumDeltaPct,
         bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.candidateBankruptcyRateMaxPct && summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
         famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct,
         harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
       }
-  const passed = Object.values(checks).every(Boolean)
+  const passed = Object.values(checks).every(value => value === true)
   const targetFit = definition.phase === 'bootstrap'
     ? Math.max(0, 100 - Math.abs(50 - summary.bankruptcy.candidateRatePct) * 3)
     : Math.max(0, 100 - Math.abs(-17.5 - medianFinalMoneyDeltaPct) * 4)
@@ -212,7 +220,8 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Kombinierte Validierung
 
-The selected overrides are validated together against original control in the JSON artifact.
+Observational analysis only: the selected overrides are compared together against
+original control, but no combined per-scenario acceptance gate is implemented.
 
 ## Nebenwirkungen
 
@@ -254,13 +263,15 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   }
   const bootstrapCandidates = runCandidates(bootstrapDefinitions, bootstrapScenario, ORIGINAL_CONTROL_BALANCE_TUNING)
   const bootstrapRanking = rankCandidates(bootstrapCandidates)
-  const selectedBootstrap = bootstrapRanking.find(item => item.acceptanceCriteria.passed) ?? bootstrapRanking[0]
+  const selectedBootstrap = selectAcceptedCandidate(bootstrapRanking)
+  if (!selectedBootstrap) throw new Error('No Phase 3B candidate satisfies acceptance criteria')
   selectedBootstrap.selectedForProduction = true
   for (const item of bootstrapCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact accepted candidate ranked higher.'
   const intermediateTuning = resolveBalanceTuning(selectedBootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
   const touringCandidates = runCandidates(touringDefinitions, baselineScenario, intermediateTuning)
   const touringRanking = rankCandidates(touringCandidates)
-  const selectedTouring = touringRanking.find(item => item.acceptanceCriteria.passed) ?? touringRanking[0]
+  const selectedTouring = selectAcceptedCandidate(touringRanking)
+  if (!selectedTouring) throw new Error('No Phase 3C candidate satisfies acceptance criteria')
   selectedTouring.selectedForProduction = true
   for (const item of touringCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A better snowball-reduction versus side-effect candidate ranked higher.'
   const finalTuning = resolveBalanceTuning({ earlyGame: selectedBootstrap.overrides.earlyGame, touring: selectedTouring.overrides.touring }, ORIGINAL_CONTROL_BALANCE_TUNING)
@@ -289,8 +300,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },
       phase3C: { hypothesis: 'A bounded dense-tour trade-off reduces late compounding while preserving early viability.', gigFrequencyAnalysis: gapProfiles, candidates: touringCandidates, ranking: touringRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id }
     },
-    finalCombinedValidation: combined,
-    recommendation: { bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning },
+    finalCombinedValidation: { status: 'observational', results: combined },
+    recommendation: { status: 'candidate-selection-only', bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns: runsPerScenario * (BALANCE_EXPERIMENTS.length + SCENARIOS.length * 2 + 12) }
   }
   if (writeReports) {

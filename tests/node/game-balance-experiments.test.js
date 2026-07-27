@@ -21,6 +21,7 @@ import {
   evaluateCandidate,
   pairSimulationRuns,
   rankCandidates,
+  selectAcceptedCandidate,
   summarizePairedRuns
 } from '../../scripts/game-balance-experiments.mjs'
 import {
@@ -89,6 +90,12 @@ test('resolveBalanceTuning rejects malformed obligation stage shapes and order',
         }
       }),
     /strictly increasing/i
+  )
+  const inherited = Object.create({ throughDay: 5, multiplier: 0.8 })
+  assert.throws(
+    () =>
+      resolveBalanceTuning({ earlyGame: { obligationStages: [inherited] } }),
+    /own.*throughDay/i
   )
 })
 
@@ -306,6 +313,15 @@ test('ranking never lets a hard failure beat a passing candidate', () => {
     }
   ])
   assert.equal(ranked[0].id, 'passed')
+})
+
+test('selection returns null when every candidate fails hard criteria', () => {
+  assert.equal(
+    selectAcceptedCandidate([
+      { id: 'failed', acceptanceCriteria: { passed: false } }
+    ]),
+    null
+  )
 })
 
 test('evaluateCandidate uses and preserves declared acceptance criteria', () => {

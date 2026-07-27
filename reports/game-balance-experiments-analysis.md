@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 15340 simulation runs in 84982 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 15340 simulation runs in 59918 ms.
 
 ## Kontrollzustand
 
@@ -97,7 +97,8 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 ## Kombinierte Validierung
 
-The selected overrides are validated together against original control in the JSON artifact.
+Observational analysis only: the selected overrides are compared together against
+original control, but no combined per-scenario acceptance gate is implemented.
 
 ## Nebenwirkungen
 

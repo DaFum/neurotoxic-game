@@ -162,6 +162,10 @@ export const resolveBalanceTuning = (
       earlyGame.obligationStages = value.map((stage, index) => {
         if (!stage || typeof stage !== 'object')
           throw new TypeError(`Invalid obligation stage ${index}`)
+        if (!Object.hasOwn(stage, 'throughDay'))
+          throw new TypeError('Obligation stage requires own throughDay')
+        if (!Object.hasOwn(stage, 'multiplier'))
+          throw new TypeError('Obligation stage requires own multiplier')
         const unknownKeys = Object.keys(stage).filter(
           stageKey => stageKey !== 'throughDay' && stageKey !== 'multiplier'
         )
