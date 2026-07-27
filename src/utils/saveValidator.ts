@@ -337,10 +337,7 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `social.regionalGigHistory.${regionId} must be an array`
           )
-        if (days.length > 256)
-          throw new StateError(
-            `social.regionalGigHistory.${regionId} has too many days`
-          )
+
         if (
           !days.every(
             day => Number.isFinite(day) && Number.isInteger(day) && day >= 0

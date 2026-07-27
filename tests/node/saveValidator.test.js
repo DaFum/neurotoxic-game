@@ -45,7 +45,7 @@ describe('saveValidator', () => {
     assert.deepEqual(loaded.social.regionalGigHistory, { berlin: [2, 4] })
   })
 
-  it('rejects malformed or unbounded regional gig history', () => {
+  it('rejects malformed regional gig history', () => {
     for (const history of [
       { berlin: '4' },
       { berlin: [-1] },

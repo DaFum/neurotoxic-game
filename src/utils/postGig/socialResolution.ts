@@ -303,7 +303,7 @@ export const calculatePostGigStateUpdates = (
     regionalGigHistory[regionId] = [
       ...(regionalGigHistory[regionId] ?? []),
       player.day
-    ]
+    ].slice(-256)
   }
 
   const updatedSocial: Partial<GameState['social']> = {
