@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 37415 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 26503 ms.
 
 ## Kontrollzustand
 
@@ -48,30 +48,30 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 | Tuning | Profile | Gig Gap | Gigs | Money/Day | Gig Net/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Refuels | Drawdown | Bankruptcy | Days Survived |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| control | baseline_touring | 1 | 9.9 | 2911.82 | 4487.52 | 1510.46 | 1523.71 | 49.87 | 1.35 | 1.06 | 27.44% | 0% | 10 |
-| control | baseline_touring | 2 | 5 | 1679.54 | 2151.62 | 779.1 | 1558.21 | 49.62 | 0.93 | 0.15 | 24.83% | 0% | 10 |
-| control | baseline_touring | 3 | 2.98 | 1030.74 | 1205.88 | 465.47 | 1580.11 | 52.83 | 0.5 | 0.01 | 37.2% | 1.15% | 9.96 |
-| control | baseline_touring | 4 | 1.91 | 562.71 | 652.95 | 312.71 | 1597.6 | 55.01 | 0.05 | 0 | 56.34% | 8.85% | 9.79 |
-| control | baseline_touring | 5 | 1.75 | 507.79 | 563.74 | 286.02 | 1579.5 | 54.79 | 0 | 0 | 73.88% | 25% | 9.72 |
-| control | low_resource_touring | 1 | 9.9 | 2844.77 | 4426.03 | 1544.35 | 1562.12 | 49.2 | 1.32 | 1.03 | 27.27% | 0% | 10 |
-| control | low_resource_touring | 2 | 5 | 1719.87 | 2189.38 | 776.59 | 1554.32 | 49.5 | 0.91 | 0.17 | 37.29% | 0% | 10 |
-| control | low_resource_touring | 3 | 0.08 | 94.1 | 112.26 | 39.69 | 46.28 | 73.32 | 0.01 | 0 | 68.93% | 97.31% | 3.2 |
+| control | baseline_touring | 1 | 9.89 | 2974.75 | 4553.06 | 1512.65 | 1528.07 | 50 | 1.35 | 1.06 | 27.36% | 0% | 10 |
+| control | baseline_touring | 2 | 5 | 1663.2 | 2180.65 | 780.14 | 1560.28 | 50.2 | 0.93 | 0.15 | 26.48% | 0% | 10 |
+| control | baseline_touring | 3 | 2.98 | 1043.2 | 1225.03 | 465.47 | 1580.11 | 52.98 | 0.5 | 0.01 | 37.2% | 1.15% | 9.96 |
+| control | baseline_touring | 4 | 1.91 | 571.77 | 662.06 | 312.71 | 1597.6 | 55.01 | 0.05 | 0 | 56.34% | 8.85% | 9.79 |
+| control | baseline_touring | 5 | 1.75 | 513.14 | 569.09 | 286.02 | 1579.5 | 54.79 | 0 | 0 | 73.88% | 25% | 9.72 |
+| control | low_resource_touring | 1 | 9.9 | 2897.93 | 4473.9 | 1544.59 | 1562.38 | 49.08 | 1.31 | 1.03 | 27.33% | 0% | 10 |
+| control | low_resource_touring | 2 | 5 | 1729.71 | 2216.24 | 776.92 | 1554.97 | 49.72 | 0.92 | 0.17 | 37.31% | 0% | 10 |
+| control | low_resource_touring | 3 | 0.08 | 99.99 | 118.27 | 39.69 | 46.28 | 73.32 | 0.01 | 0 | 68.93% | 97.31% | 3.2 |
 | control | low_resource_touring | 4 | 0 | 0 | 0 | 0 | 0 | 73.9 | 0 | 0 | 69.2% | 100% | 3 |
 | control | low_resource_touring | 5 | 0 | 0 | 0.63 | 2.31 | 6.73 | 73.99 | 0 | 0 | 69.3% | 100% | 3.03 |
-| finalTuning | baseline_touring | 1 | 9.9 | 2911.82 | 4487.52 | 1510.46 | 1523.71 | 49.87 | 1.35 | 1.06 | 27.44% | 0% | 10 |
-| finalTuning | baseline_touring | 2 | 5 | 1679.54 | 2151.62 | 779.1 | 1558.21 | 49.62 | 0.93 | 0.15 | 24.83% | 0% | 10 |
-| finalTuning | baseline_touring | 3 | 2.98 | 1030.74 | 1205.88 | 465.47 | 1580.11 | 52.83 | 0.5 | 0.01 | 37.2% | 1.15% | 9.96 |
-| finalTuning | baseline_touring | 4 | 1.91 | 562.71 | 652.95 | 312.71 | 1597.6 | 55.01 | 0.05 | 0 | 56.34% | 8.85% | 9.79 |
-| finalTuning | baseline_touring | 5 | 1.75 | 507.79 | 563.74 | 286.02 | 1579.5 | 54.79 | 0 | 0 | 73.88% | 25% | 9.72 |
-| finalTuning | low_resource_touring | 1 | 9.9 | 2844.77 | 4426.03 | 1544.35 | 1562.12 | 49.2 | 1.32 | 1.03 | 27.27% | 0% | 10 |
-| finalTuning | low_resource_touring | 2 | 5 | 1719.87 | 2189.38 | 776.59 | 1554.32 | 49.5 | 0.91 | 0.17 | 37.29% | 0% | 10 |
-| finalTuning | low_resource_touring | 3 | 0.08 | 94.1 | 112.26 | 39.69 | 46.28 | 73.32 | 0.01 | 0 | 68.93% | 97.31% | 3.2 |
+| finalTuning | baseline_touring | 1 | 9.89 | 2974.75 | 4553.06 | 1512.65 | 1528.07 | 50 | 1.35 | 1.06 | 27.36% | 0% | 10 |
+| finalTuning | baseline_touring | 2 | 5 | 1663.2 | 2180.65 | 780.14 | 1560.28 | 50.2 | 0.93 | 0.15 | 26.48% | 0% | 10 |
+| finalTuning | baseline_touring | 3 | 2.98 | 1043.2 | 1225.03 | 465.47 | 1580.11 | 52.98 | 0.5 | 0.01 | 37.2% | 1.15% | 9.96 |
+| finalTuning | baseline_touring | 4 | 1.91 | 571.77 | 662.06 | 312.71 | 1597.6 | 55.01 | 0.05 | 0 | 56.34% | 8.85% | 9.79 |
+| finalTuning | baseline_touring | 5 | 1.75 | 513.14 | 569.09 | 286.02 | 1579.5 | 54.79 | 0 | 0 | 73.88% | 25% | 9.72 |
+| finalTuning | low_resource_touring | 1 | 9.9 | 2897.93 | 4473.9 | 1544.59 | 1562.38 | 49.08 | 1.31 | 1.03 | 27.33% | 0% | 10 |
+| finalTuning | low_resource_touring | 2 | 5 | 1729.71 | 2216.24 | 776.92 | 1554.97 | 49.72 | 0.92 | 0.17 | 37.31% | 0% | 10 |
+| finalTuning | low_resource_touring | 3 | 0.08 | 99.99 | 118.27 | 39.69 | 46.28 | 73.32 | 0.01 | 0 | 68.93% | 97.31% | 3.2 |
 | finalTuning | low_resource_touring | 4 | 0 | 0 | 0 | 0 | 0 | 73.9 | 0 | 0 | 69.2% | 100% | 3 |
 | finalTuning | low_resource_touring | 5 | 0 | 0 | 0.63 | 2.31 | 6.73 | 73.99 | 0 | 0 | 69.3% | 100% | 3.03 |
 
-Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":73.37,"famePerDayAdvantagePct":93.87,"harmonyDelta":0.25,"repairsDelta":0.42,"bankruptcyDeltaPct":0},"low_resource_touring":{"moneyPerDayAdvantagePct":65.41,"famePerDayAdvantagePct":98.86,"harmonyDelta":-0.3,"repairsDelta":0.41,"bankruptcyDeltaPct":0}}
+Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":78.86,"famePerDayAdvantagePct":93.89,"harmonyDelta":-0.2,"repairsDelta":0.42,"bankruptcyDeltaPct":0},"low_resource_touring":{"moneyPerDayAdvantagePct":67.54,"famePerDayAdvantagePct":98.81,"harmonyDelta":-0.64,"repairsDelta":0.39,"bankruptcyDeltaPct":0}}
 
-Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":73.37,"famePerDayAdvantagePct":93.87,"harmonyDelta":0.25,"repairsDelta":0.42,"bankruptcyDeltaPct":0},"low_resource_touring":{"moneyPerDayAdvantagePct":65.41,"famePerDayAdvantagePct":98.86,"harmonyDelta":-0.3,"repairsDelta":0.41,"bankruptcyDeltaPct":0}}
+Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":78.86,"famePerDayAdvantagePct":93.89,"harmonyDelta":-0.2,"repairsDelta":0.42,"bankruptcyDeltaPct":0},"low_resource_touring":{"moneyPerDayAdvantagePct":67.54,"famePerDayAdvantagePct":98.81,"harmonyDelta":-0.64,"repairsDelta":0.39,"bankruptcyDeltaPct":0}}
 
 ### Phase-3C-Ziel (Gap-1-Dominanz)
 
@@ -79,28 +79,28 @@ Target band: **20–25%** money-per-day advantage of Gap 1 over Gap 2. This obje
 
 | Profile | Before | After | Reduction | Within target |
 |---|---:|---:|---:|---|
-| baseline_touring | 73.37% | 73.37% | 0 pp | No |
-| low_resource_touring | 65.41% | 65.41% | 0 pp | No |
+| baseline_touring | 78.86% | 78.86% | 0 pp | No |
+| low_resource_touring | 67.54% | 67.54% | 0 pp | No |
 
 Objective status: **partial**
 
-- baseline_touring money-per-day advantage 73.37% is outside the 20-25% target (was 73.37%)
-- low_resource_touring money-per-day advantage 65.41% is outside the 20-25% target (was 65.41%)
+- baseline_touring money-per-day advantage 78.86% is outside the 20-25% target (was 78.86%)
+- low_resource_touring money-per-day advantage 67.54% is outside the 20-25% target (was 67.54%)
 
-Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 73.37% is outside the 20-25% target (was 73.37%); low_resource_touring money-per-day advantage 65.41% is outside the 20-25% target (was 65.41%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.
+Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 78.86% is outside the 20-25% target (was 78.86%); low_resource_touring money-per-day advantage 67.54% is outside the 20-25% target (was 67.54%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.
 
 ## Late-Game-Kandidaten
 
 | Candidate | Median Final Money Delta | P90 Final Money Delta | Early Checkpoint Delta | Bankruptcy Delta | Harmony Delta | Pass/Fail |
 |---|---:|---:|---:|---:|---:|---|
 | touring-none | 0% | 0% | 0% | 0 pp | 0 | Pass |
-| touring-demand-5-15-window-3 | -3.01% | -0.41% | -0.27% | 0 pp | 0 | Pass |
-| touring-demand-7.5-25-window-3 | -3.99% | -1.61% | -0.27% | 0 pp | 0 | Pass |
-| touring-demand-5-20-window-5 | -3.83% | -1.87% | -0.27% | 0 pp | 0 | Pass |
-| touring-demand-10-40-after-3-window-3 | -5.56% | -2.5% | 0% | 0 pp | 0 | Pass |
-| touring-demand-10-40-after-3-window-5 | -6.87% | -4.43% | 0% | 0 pp | 0 | Pass |
-| touring-demand-13.5-48-after-3-window-5 | -8.79% | -6.41% | 0% | 0 pp | 0 | Pass |
-| touring-demand-16-55-after-5 | -7.41% | -6.36% | 0% | 0 pp | 0 | Pass |
+| touring-demand-5-15-window-3 | -2.73% | -3.41% | -0.27% | 0 pp | 0 | Pass |
+| touring-demand-7.5-25-window-3 | -3.21% | -3.57% | -0.27% | 0 pp | 0 | Pass |
+| touring-demand-5-20-window-5 | -2.42% | -4.02% | -0.27% | 0 pp | 0 | Pass |
+| touring-demand-10-40-after-3-window-3 | -6.26% | -3.33% | 0% | 0 pp | 0 | Pass |
+| touring-demand-10-40-after-3-window-5 | -7.27% | -5.2% | 0% | 0 pp | 0 | Pass |
+| touring-demand-13.5-48-after-3-window-5 | -8.34% | -6.62% | 0% | 0 pp | 0 | Pass |
+| touring-demand-16-55-after-5 | -7.45% | -6.63% | 0% | 0 pp | 0 | Pass |
 | touring-stress-1 | 0% | 0% | 0% | 0 pp | 0 | Pass |
 | touring-stress-2 | 0% | 0% | 0% | 0 pp | 0 | Pass |
 | touring-stress-1-recovery-90 | 0% | 0% | 0% | 0 pp | 0 | Pass |
@@ -115,8 +115,8 @@ Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 73.37% is
 3. touring-demand-10-40-after-3-window-5
 4. touring-demand-10-40-after-3-window-3
 5. touring-demand-7.5-25-window-3
-6. touring-demand-5-20-window-5
-7. touring-demand-5-15-window-3
+6. touring-demand-5-15-window-3
+7. touring-demand-5-20-window-5
 8. touring-none
 9. touring-stress-1
 10. touring-stress-2
@@ -135,7 +135,7 @@ Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 73.37% is
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 | baseline_touring | passed | passed | 0% | 0% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | bootstrap_struggle | passed | passed | 17.31% | 17.31% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| aggressive_marketing | passed | passed | 0.77% | 0.77% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| aggressive_marketing | passed | passed | 0.38% | 0.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | scandal_recovery | passed | passed | 1.15% | 1.15% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | festival_push | passed | passed | 0.77% | 0.77% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | chaos_tour | passed | passed | 0.38% | 0.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
@@ -150,7 +150,7 @@ Final gate: **PASS**. Bootstrap Struggle bankruptcy must remain <= 60%.
 
 ## Nebenwirkungen
 
-Fame per gig, harmony, bankruptcy, drawdown, and day-20/day-40 money are explicit acceptance checks.
+Fame per gig, harmony, bankruptcy, drawdown, and the early/mid progression checkpoints (days 3 and 5) are explicit acceptance checks.
 
 ## Verworfene Kandidaten
 
