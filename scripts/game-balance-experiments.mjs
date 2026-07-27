@@ -4,7 +4,7 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { DEFAULT_BALANCE_TUNING, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
+import { ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
 import { SCENARIOS, SIMULATION_CONSTANTS, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
