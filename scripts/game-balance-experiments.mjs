@@ -572,7 +572,10 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       balanceSourceSha256: await getBalanceSourceHash(ROOT),
       experimentScriptSha256: await hashFile(fileURLToPath(import.meta.url)),
       experimentConfigSha256: hashExperimentConfig(BALANCE_EXPERIMENTS),
-      scenarioConfigSha256: crypto.createHash('sha256').update(JSON.stringify(SCENARIOS)).digest('hex'),
+      // Same helper the simulation report uses, so the two artifacts can be
+      // compared hash-for-hash. Hashing the array directly here produced a
+      // different digest for identical scenario data.
+      scenarioConfigSha256: getJsonHash(SCENARIOS),
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index', pairingStrategy: 'same-scenario-same-run-index-same-seed'
     },
