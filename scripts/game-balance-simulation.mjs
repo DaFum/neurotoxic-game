@@ -2391,6 +2391,11 @@ export const mergeExecutionCoverage = sources => {
   return coverage
 }
 
+export const calculateAverageFameEarnedPerGig = runs => mean(runs.map(run => {
+  const fameEarned = run.fameAccounting?.earned ?? run.fameEarned ?? 0
+  return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
+}))
+
 export const summarizeScenario = runs => {
   const solventRuns = runs.filter(r => !r.bankrupt)
   const bankruptRuns = runs.filter(r => r.bankrupt)
@@ -2535,9 +2540,7 @@ export const summarizeScenario = runs => {
     },
 
     avgFameProgress: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
-    avgFameProgressPerGig: Number(mean(runs.map(r =>
-      r.gigsPlayed > 0 ? r.fameAccounting.earned / r.gigsPlayed : 0
-    )).toFixed(2)),
+    avgFameProgressPerGig: Number(calculateAverageFameEarnedPerGig(runs).toFixed(2)),
     avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
     avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney))),
     avgLowestMoney: Math.round(mean(runs.map(r => r.lowestMoney))),
