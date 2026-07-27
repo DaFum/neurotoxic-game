@@ -109,11 +109,24 @@ import {
 } from '../src/utils/assetTicks.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
+import {
+  DEFAULT_BALANCE_TUNING,
+  getRepeatDemandMultiplier
+} from '../src/utils/balanceTuning.ts'
 
 // ── Determinism Mock ──────────────────────────────────────────────────────
 let uuidCounter = 0
+let simulationCryptoRandom = () => 0.5
 if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
   globalThis.crypto.randomUUID = () => `sim-uuid-${++uuidCounter}`
+}
+if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+  globalThis.crypto.getRandomValues = array => {
+    for (let index = 0; index < array.length; index++) {
+      array[index] = Math.floor(simulationCryptoRandom() * 2 ** 32)
+    }
+    return array
+  }
 }
 // ──────────────────────────────────────────────────────────────────────────
 
@@ -1732,14 +1745,18 @@ const recordObservedFameChange = (accounting, before, after) => {
   accountFameChange(accounting, difference, difference)
 }
 
-export const runSingleSimulation = (scenario, seed) => {
+export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUNING) => {
+  // UUIDs are deterministic per run so candidate ordering cannot affect paired
+  // gameplay through generated asset/campaign identifiers.
+  uuidCounter = 0
   const rng = mulberry32(seed)
+  simulationCryptoRandom = rng
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   let currentNode = HOME
   // Per-run context: pregig minigame rotation memory and the active
   // duration-limited contraband effects awaiting expiry.
-  const runCtx = { lastMinigame: null, contrabandEffects: [] }
+  const runCtx = { lastMinigame: null, contrabandEffects: [], emergencyGrantUsed: false, regionalGigHistory: new Map() }
 
   const counters = {
     gigsPlayed: 0,
@@ -1846,7 +1863,7 @@ export const runSingleSimulation = (scenario, seed) => {
       0
     )
     preState = riskResult.state || preState
-    const updates = calculateDailyUpdates(preState, rng)
+    const updates = calculateDailyUpdates(preState, rng, tuning)
     state = preState
     state = {
       ...state,
@@ -1859,6 +1876,16 @@ export const runSingleSimulation = (scenario, seed) => {
       fameBeforeDailyUpdates,
       state.player.fame
     )
+
+    if (
+      !runCtx.emergencyGrantUsed &&
+      tuning.earlyGame.emergencyGrant > 0 &&
+      day <= tuning.earlyGame.emergencyGrantMaxDay &&
+      state.player.money <= tuning.earlyGame.emergencyGrantTriggerMoney
+    ) {
+      state.player.money = clampPlayerMoney(state.player.money + tuning.earlyGame.emergencyGrant)
+      runCtx.emergencyGrantUsed = true
+    }
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
@@ -2116,7 +2143,7 @@ export const runSingleSimulation = (scenario, seed) => {
         : undefined
     }
 
-    const financials = deriveFinancials({
+    let financials = deriveFinancials({
       currentGig: venue,
       lastGigStats: currentGigStats,
       perfScore: performanceScore,
@@ -2140,6 +2167,23 @@ export const runSingleSimulation = (scenario, seed) => {
       cityTraits: [],
       assetModifiers: getActiveAssetModifiers(state.assets || [])
     })
+
+    const regionId = venue.id?.split('_')[0] ?? venue.id
+    const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
+      .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
+    const demandMultiplier = getRepeatDemandMultiplier(day, recentRegionalGigs.length, tuning)
+    if (financials && demandMultiplier < 1) {
+      const demandCost = Math.round(Math.max(0, financials.net) * (1 - demandMultiplier))
+      financials = {
+        ...financials,
+        net: financials.net - demandCost,
+        expenses: {
+          ...financials.expenses,
+          total: financials.expenses.total + demandCost,
+          breakdown: [...financials.expenses.breakdown, { type: 'demandSaturation', amount: demandCost }]
+        }
+      }
+    }
 
     // Standard post-gig adjustments
     applyPostGigState(
@@ -2208,6 +2252,7 @@ export const runSingleSimulation = (scenario, seed) => {
 
     currentNode = venue
     counters.gigsPlayed += 1
+    runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
     totalGigNet += gigNet
     if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1

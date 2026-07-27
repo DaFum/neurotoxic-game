@@ -20,6 +20,7 @@ import {
   EXPENSE_CONSTANTS
 } from '../../src/utils/economyEngine'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
+import { getEarlyGameObligationMultiplier } from '../../src/utils/balanceTuning'
 
 // --- Test Helpers ---
 
@@ -598,8 +599,9 @@ test('Golden Path: Daily cost scaling with band size', async t => {
     let state = createInitialState()
     const moneyBefore = state.player.money
     state = gameReducer(state, { type: ActionTypes.ADVANCE_DAY })
-    // BASE_COST (40) + bandSize (3) * 8 = 64
-    const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+    // Phase 3 relief scales the canonical base plus per-member obligation.
+    const fullCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+    const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
     assert.equal(
       state.player.money,
       moneyBefore - expectedCost,
