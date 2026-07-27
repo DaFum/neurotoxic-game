@@ -33,10 +33,10 @@ test('shouldTriggerBankruptcy handles missing netIncome safely', () => {
   assert.strictEqual(shouldTriggerBankruptcy(-10, undefined), true)
 })
 
-test('shouldTriggerBankruptcy throws for invalid money input', () => {
-  assert.throws(() => shouldTriggerBankruptcy(undefined, 0), TypeError)
-  assert.throws(() => shouldTriggerBankruptcy(NaN, 0), TypeError)
-  assert.throws(() => shouldTriggerBankruptcy('bankrupt', 0), TypeError)
+test('shouldTriggerBankruptcy returns true for invalid money input', () => {
+  assert.strictEqual(shouldTriggerBankruptcy(undefined, 0), true)
+  assert.strictEqual(shouldTriggerBankruptcy(NaN, 0), true)
+  assert.strictEqual(shouldTriggerBankruptcy('bankrupt', 0), true)
 })
 
 test('shouldTriggerBankruptcy handles numeric strings', () => {

@@ -23,7 +23,10 @@ import type { MapPoint } from './types'
  * @param nodeB - Source node-like value. Defaults to `null`.
  * @returns Distance used by travel and logistics cost formulas.
  */
-export const calculateDistance = (nodeA: unknown, nodeB: unknown = null): number => {
+export const calculateDistance = (
+  nodeA: unknown,
+  nodeB: unknown = null
+): number => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
   const x1 = finiteNumberOr(pointA.x, finiteNumberOr(pointA.venue?.x, 50))
