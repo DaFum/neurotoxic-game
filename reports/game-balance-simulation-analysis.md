@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-27T06:14:30.611Z
+Erstellt am: 2026-07-27T13:20:08.155Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 11
-- Node-Version: v22.22.2
-- Basis-Commit: 5248929c912f965a40cae3c80053b47165737515
-- Working Tree Dirty: Nein
-- Simulationsskript SHA-256: a71bba481fb344a6a15a5440195d55d698b42c929765d60c11dd255970da5f11
+- Node-Version: v22.22.1
+- Basis-Commit: e0dbeb8c7e52c01beb6ed6a18801b1eeaa3431db
+- Working Tree Dirty: Ja
+- Simulationsskript SHA-256: 97e8a7e4b21cbf114556c49e59dd2b587a2d3d511d2d9d6b9c9393f48d709eb6
 - Szenariokonfiguration SHA-256: e2f97ba93da6a842fa33908edf7acf33b2404c753b18903421f900c04aa7c6c0
 - KPI-Zielkonfiguration SHA-256: 7e243b1d2ee21d2c19e764cba96afa604f633f210757fa6e9eb8843aa226cfa7
 - Seed-Strategie: scenario-id-plus-run-index
@@ -75,183 +75,183 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 
 | Szenario | Startkapital | Startfame | Ø Endgeld | Peak-Drop | S2I-Ratio | Cap-Hits | Ø Endfame | Ø Fame-Lv. | Ø Harmony | Ø Kontroverse | Ø Gigs | Ø Clinic | Insolvenz | Ø Gig-Netto | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €500 | 0 | €48.877 | 62.03% | 0.11 | 0.3% | 20311 | 10 | 37 | 13.99 | 59.59 | 6.49 | 0% | €2.249 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Bootstrap Struggle | €500 | 0 | €1.994 | 91.42% | 0.24 | 0.7% | 1514 | 2 | 54 | 0.98 | 7.75 | 4.62 | 61.92% | €1.871 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Aggressive Marketing | €500 | 0 | €23.098 | 58.26% | 0.12 | 1.3% | 8509 | 6 | 53 | 5.26 | 29.33 | 5.95 | 2.31% | €2.602 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | €500 | 0 | €8.082 | 76.1% | 0.17 | 1% | 3733 | 4 | 51 | 2.12 | 15.07 | 4.82 | 17.69% | €2.049 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Festival Push | €500 | 0 | €10.483 | 73.35% | 0.14 | 2.1% | 4921 | 4 | 53 | 2.18 | 15.56 | 5.07 | 18.46% | €2.428 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
-| Chaos Tour | €500 | 0 | €16.627 | 57.06% | 0.15 | 0.8% | 5891 | 5 | 43 | 5.68 | 26.99 | 5.75 | 1.92% | €2.130 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Cult Hypergrowth | €500 | 0 | €24.696 | 61.62% | 0.11 | 1.5% | 7946 | 6 | 53 | 5.69 | 30.05 | 5.85 | 0.38% | €2.676 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| No Social (Fame 0-50) | €500 | 0 | €17.048 | 56.38% | 0.15 | 0.7% | 9301 | 6 | 51 | 0 | 28.62 | 5.56 | 1.54% | €2.041 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
-| High Controversy | €500 | 0 | €16.992 | 58.38% | 0.15 | 0.8% | 7214 | 6 | 49 | 10.75 | 27.1 | 5.75 | 3.46% | €1.978 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
-| Early Game Probe (Fame 0–50) | €500 | 0 | €11.509 | 26.98% | 0.13 | 0.8% | 3147 | 3 | 42 | 5.38 | 9.11 | 2.36 | 1.15% | €1.963 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
-| Mid Game Probe (Fame 60–150) | €1.500 | 60 | €14.927 | 44.47% | 0.15 | 0.7% | 4208 | 4 | 49 | 3.6 | 15.82 | 5.02 | 0.38% | €2.195 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
-| Late Game Probe (Fame 175+) | €5.000 | 175 | €27.825 | 47.45% | 0.12 | 0.7% | 10665 | 7 | 39 | 8.92 | 25.83 | 5.15 | 0% | €2.384 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
+| Baseline Touring | €500 | 0 | €48.654 | 61.55% | 0.11 | 1.1% | 21350 | 10 | 40 | 11.32 | 60.18 | 6.46 | 0% | €2.216 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Bootstrap Struggle | €500 | 0 | €1.650 | 91.25% | 0.25 | 0.8% | 1651 | 2 | 54 | 0.7 | 7.84 | 4.65 | 60.38% | €1.843 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Aggressive Marketing | €500 | 0 | €23.586 | 58.23% | 0.12 | 1.9% | 8207 | 6 | 55 | 5.6 | 29.78 | 5.97 | 0.77% | €2.615 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | €500 | 0 | €7.215 | 77.29% | 0.17 | 1.4% | 3774 | 4 | 51 | 2.67 | 14.98 | 4.85 | 19.23% | €2.049 | ⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen. |
+| Festival Push | €500 | 0 | €11.441 | 71.19% | 0.14 | 2.7% | 5330 | 5 | 53 | 2.43 | 15.87 | 5.07 | 13.46% | €2.471 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Chaos Tour | €500 | 0 | €17.396 | 57.92% | 0.15 | 1.1% | 7521 | 6 | 41 | 4.75 | 27.04 | 5.81 | 2.69% | €2.160 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Cult Hypergrowth | €500 | 0 | €24.746 | 57.49% | 0.11 | 2.3% | 8421 | 6 | 52 | 5.07 | 29.87 | 5.87 | 0.77% | €2.674 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| No Social (Fame 0-50) | €500 | 0 | €17.259 | 54.75% | 0.15 | 1% | 9031 | 6 | 51 | 0 | 28.82 | 5.65 | 0.77% | €2.043 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
+| High Controversy | €500 | 0 | €17.189 | 56.81% | 0.15 | 0.8% | 6627 | 5 | 49 | 11.32 | 27.28 | 5.76 | 3.85% | €1.966 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
+| Early Game Probe (Fame 0–50) | €500 | 0 | €12.049 | 27.53% | 0.13 | 1.8% | 3221 | 4 | 42 | 5.65 | 9.13 | 2.42 | 0% | €2.054 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
+| Mid Game Probe (Fame 60–150) | €1.500 | 60 | €15.593 | 44.71% | 0.15 | 1.6% | 4398 | 4 | 48 | 4.13 | 15.8 | 5.14 | 0.77% | €2.265 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
+| Late Game Probe (Fame 175+) | €5.000 | 175 | €30.719 | 50.75% | 0.1 | 2.8% | 10797 | 7 | 40 | 11.28 | 25.99 | 5.08 | 0% | €2.624 | ⚪ Szenario besitzt keine KPI-Zieldefinition. |
 
 ## Wirtschaft im Detail
 
 | Szenario | Ø Peak-Geld | Ø Tiefstkurs | Ø Gig-Netto | Ø Sponsor-Payouts | Ø Brand Deals | Ø Upgrades (HQ+Van) | Ø Refuels | Ø Repairs | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €54.553 | €499 | €2.249 | 6.82 | 2.35 | 21.94 | 7.88 | 11.71 | ⚠️ Hohe Wartungskosten – Van-Disziplin und Modifier-Effizienz prüfen. |
-| Bootstrap Struggle | €7.749 | €149 | €1.871 | 0.32 | 0.28 | 5.85 | 0.66 | 3.65 | ⚠️ Kritische Liquiditätslücken – Kostenreserve erhöhen. |
-| Aggressive Marketing | €31.402 | €447 | €2.602 | 2.6 | 1.18 | 16.62 | 4.16 | 7.74 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Scandal Recovery | €12.735 | €334 | €2.049 | 0.97 | 0.56 | 10.05 | 1.99 | 5.43 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Festival Push | €16.127 | €349 | €2.428 | 1.05 | 0.56 | 11.32 | 2.03 | 5.27 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Chaos Tour | €22.508 | €445 | €2.130 | 2.58 | 1.1 | 14.53 | 3.67 | 7.32 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Cult Hypergrowth | €33.463 | €452 | €2.676 | 2.83 | 1.17 | 17.04 | 4.21 | 7.38 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| No Social (Fame 0-50) | €22.618 | €443 | €2.041 | 0 | 0 | 15.54 | 3.99 | 7.77 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| High Controversy | €21.934 | €411 | €1.978 | 2.86 | 1.2 | 14.55 | 3.83 | 7.47 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Early Game Probe (Fame 0–50) | €12.955 | €450 | €1.963 | 0.19 | 0.12 | 3.83 | 1.01 | 1.92 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Mid Game Probe (Fame 60–150) | €18.820 | €1.390 | €2.195 | 0.75 | 0.35 | 8.09 | 2.11 | 4.06 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
-| Late Game Probe (Fame 175+) | €37.695 | €4.957 | €2.384 | 1.5 | 0.55 | 8.49 | 3.53 | 4.6 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Baseline Touring | €52.835 | €500 | €2.216 | 6.66 | 2.17 | 21.42 | 8.02 | 11.86 | ⚠️ Hohe Wartungskosten – Van-Disziplin und Modifier-Effizienz prüfen. |
+| Bootstrap Struggle | €7.497 | €159 | €1.843 | 0.23 | 0.23 | 5.96 | 0.71 | 3.68 | ⚠️ Kritische Liquiditätslücken – Kostenreserve erhöhen. |
+| Aggressive Marketing | €32.414 | €447 | €2.615 | 2.67 | 1.12 | 17.03 | 4.21 | 7.76 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Scandal Recovery | €12.642 | €336 | €2.049 | 0.87 | 0.5 | 10.17 | 2 | 5.44 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Festival Push | €16.514 | €359 | €2.471 | 1.08 | 0.6 | 11.77 | 2.07 | 5.39 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Chaos Tour | €22.858 | €437 | €2.160 | 2.25 | 1.06 | 14.55 | 3.6 | 7.4 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Cult Hypergrowth | €33.162 | €448 | €2.674 | 2.73 | 1.18 | 17.21 | 4.19 | 7.4 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| No Social (Fame 0-50) | €22.750 | €448 | €2.043 | 0 | 0 | 15.59 | 4.03 | 7.77 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| High Controversy | €21.466 | €409 | €1.966 | 2.28 | 1.06 | 14.61 | 3.78 | 7.43 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Early Game Probe (Fame 0–50) | €13.711 | €450 | €2.054 | 0.21 | 0.17 | 3.89 | 1 | 1.92 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Mid Game Probe (Fame 60–150) | €19.686 | €1.393 | €2.265 | 0.97 | 0.43 | 8.19 | 2.12 | 4.05 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
+| Late Game Probe (Fame 175+) | €40.070 | €4.936 | €2.624 | 1.35 | 0.55 | 8.96 | 3.6 | 4.62 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
 
 ## Kapital-Progressionskurve
 
 | Szenario | Ø Geld Tag 20 | Ø Geld Tag 40 | Ø Geld Tag 60 | Ø Endgeld | Bewertung |
 |---|---:|---:|---:|---:|---|
-| Baseline Touring | €24.058 | €27.431 | €37.458 | €48.877 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Bootstrap Struggle | €5.145 | €2.691 | €2.208 | €1.994 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Aggressive Marketing | €13.401 | €16.724 | €21.353 | €23.098 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Scandal Recovery | €7.039 | €6.593 | €6.380 | €8.082 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Festival Push | €9.116 | €8.303 | €8.449 | €10.483 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Chaos Tour | €10.165 | €12.148 | €15.637 | €16.627 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Cult Hypergrowth | €14.564 | €18.095 | €22.716 | €24.696 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| No Social (Fame 0-50) | €10.282 | €12.235 | €15.622 | €17.048 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| High Controversy | €7.633 | €11.038 | €15.052 | €16.992 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Early Game Probe (Fame 0–50) | €10.226 | — | — | €11.509 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Mid Game Probe (Fame 60–150) | €12.201 | €14.262 | — | €14.927 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Late Game Probe (Fame 175+) | €26.555 | — | — | €27.825 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Baseline Touring | €26.090 | €27.937 | €38.265 | €48.654 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Bootstrap Struggle | €5.150 | €2.732 | €2.088 | €1.650 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Aggressive Marketing | €14.110 | €17.799 | €21.696 | €23.586 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Scandal Recovery | €7.181 | €6.695 | €6.241 | €7.215 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Festival Push | €9.363 | €8.329 | €8.944 | €11.441 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Chaos Tour | €10.834 | €12.563 | €15.562 | €17.396 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Cult Hypergrowth | €15.423 | €18.654 | €23.138 | €24.746 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| No Social (Fame 0-50) | €10.926 | €12.765 | €16.092 | €17.259 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| High Controversy | €8.302 | €11.279 | €14.876 | €17.189 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Early Game Probe (Fame 0–50) | €10.781 | — | — | €12.049 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Mid Game Probe (Fame 60–150) | €12.519 | €14.848 | — | €15.593 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Late Game Probe (Fame 175+) | €27.947 | — | — | €30.719 | ✅ Kapitalaufbau im erwarteten Korridor. |
 
 ## Einkommensstruktur & Sink-Analyse
 
 | Szenario | Ø Gig-Netto | Ø Reisekosten/Gig | Netto/Reise-Ratio | Gigs f. HQ-Upgrade | Gigs f. Van-Upgrade | Bewertung |
 |---|---:|---:|---:|---:|---:|---|
-| Baseline Touring | €2.249 | €97 | 23.1× | 11.12 | 0.67 | ✅ Einkommensstruktur akzeptabel. |
-| Bootstrap Struggle | €1.871 | €61 | 32.3× | 13.36 | 0.8 | ✅ Einkommensstruktur akzeptabel. |
-| Aggressive Marketing | €2.602 | €89 | 29.3× | 9.61 | 0.58 | ✅ Einkommensstruktur akzeptabel. |
-| Scandal Recovery | €2.049 | €72 | 29.2× | 12.2 | 0.73 | ✅ Einkommensstruktur akzeptabel. |
-| Festival Push | €2.428 | €77 | 32.2× | 10.3 | 0.62 | ✅ Einkommensstruktur akzeptabel. |
-| Chaos Tour | €2.130 | €85 | 25.3× | 11.74 | 0.7 | ✅ Einkommensstruktur akzeptabel. |
-| Cult Hypergrowth | €2.676 | €89 | 30.2× | 9.34 | 0.56 | ✅ Einkommensstruktur akzeptabel. |
-| No Social (Fame 0-50) | €2.041 | €86 | 24× | 12.25 | 0.73 | ✅ Einkommensstruktur akzeptabel. |
-| High Controversy | €1.978 | €82 | 24.5× | 12.64 | 0.76 | ✅ Einkommensstruktur akzeptabel. |
-| Early Game Probe (Fame 0–50) | €1.963 | €73 | 26.9× | 12.74 | 0.76 | ✅ Einkommensstruktur akzeptabel. |
-| Mid Game Probe (Fame 60–150) | €2.195 | €84 | 26.1× | 11.39 | 0.68 | ✅ Einkommensstruktur akzeptabel. |
-| Late Game Probe (Fame 175+) | €2.384 | €96 | 24.9× | 10.49 | 0.63 | ✅ Einkommensstruktur akzeptabel. |
+| Baseline Touring | €2.216 | €97 | 22.7× | 11.28 | 0.68 | ✅ Einkommensstruktur akzeptabel. |
+| Bootstrap Struggle | €1.843 | €60 | 31.6× | 13.56 | 0.81 | ✅ Einkommensstruktur akzeptabel. |
+| Aggressive Marketing | €2.615 | €90 | 29.3× | 9.56 | 0.57 | ✅ Einkommensstruktur akzeptabel. |
+| Scandal Recovery | €2.049 | €72 | 29× | 12.2 | 0.73 | ✅ Einkommensstruktur akzeptabel. |
+| Festival Push | €2.471 | €77 | 32.3× | 10.12 | 0.61 | ✅ Einkommensstruktur akzeptabel. |
+| Chaos Tour | €2.160 | €85 | 25.5× | 11.57 | 0.69 | ✅ Einkommensstruktur akzeptabel. |
+| Cult Hypergrowth | €2.674 | €90 | 29.9× | 9.35 | 0.56 | ✅ Einkommensstruktur akzeptabel. |
+| No Social (Fame 0-50) | €2.043 | €86 | 23.8× | 12.24 | 0.73 | ✅ Einkommensstruktur akzeptabel. |
+| High Controversy | €1.966 | €83 | 24.1× | 12.72 | 0.76 | ✅ Einkommensstruktur akzeptabel. |
+| Early Game Probe (Fame 0–50) | €2.054 | €74 | 27.9× | 12.17 | 0.73 | ✅ Einkommensstruktur akzeptabel. |
+| Mid Game Probe (Fame 60–150) | €2.265 | €85 | 26.9× | 11.04 | 0.66 | ✅ Einkommensstruktur akzeptabel. |
+| Late Game Probe (Fame 175+) | €2.624 | €96 | 27.5× | 9.53 | 0.57 | ✅ Einkommensstruktur akzeptabel. |
 
 ## Gig-Performance-Kalibrierung
 
 | Szenario | Ø Hit-Window (ms) | Ø Misses/Gig | Ø Score | Score <50% | Score 50–70% | Score >70% | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 153 | 8.6 | 49 | 54.1% | 41.2% | 4.7% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Bootstrap Struggle | 152 | 8.8 | 48 | 55.7% | 39.2% | 5.1% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Aggressive Marketing | 153 | 7.9 | 53 | 38.9% | 52.1% | 9% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Scandal Recovery | 158 | 8.5 | 50 | 49.8% | 44.4% | 5.8% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Festival Push | 153 | 7.3 | 56 | 27.7% | 59.1% | 13.2% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Chaos Tour | 153 | 9.1 | 46 | 63.3% | 33.3% | 3.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Cult Hypergrowth | 153 | 8.1 | 53 | 40.3% | 53% | 6.7% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| No Social (Fame 0-50) | 153 | 8.6 | 49 | 53.6% | 41.2% | 5.2% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| High Controversy | 153 | 8.8 | 48 | 55.5% | 40% | 4.6% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Early Game Probe (Fame 0–50) | 152 | 8.4 | 51 | 48.6% | 43.8% | 7.6% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Mid Game Probe (Fame 60–150) | 158 | 8.6 | 50 | 50.1% | 45.3% | 4.6% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Late Game Probe (Fame 175+) | 158 | 8.4 | 51 | 48.8% | 43.6% | 7.6% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Baseline Touring | 153 | 8.4 | 50 | 50.4% | 43.1% | 6.5% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Bootstrap Struggle | 152 | 8.8 | 48 | 57.2% | 38% | 4.9% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Aggressive Marketing | 153 | 7.8 | 54 | 36.9% | 52.5% | 10.5% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Scandal Recovery | 158 | 8.4 | 50 | 47.7% | 45.9% | 6.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Festival Push | 153 | 7.4 | 56 | 28.7% | 59.2% | 12.1% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Chaos Tour | 153 | 9.1 | 46 | 63.8% | 32.7% | 3.5% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Cult Hypergrowth | 153 | 8 | 53 | 39.3% | 53.5% | 7.2% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| No Social (Fame 0-50) | 153 | 8.6 | 49 | 53.4% | 41.5% | 5.1% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| High Controversy | 153 | 8.7 | 48 | 55.3% | 40% | 4.8% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Early Game Probe (Fame 0–50) | 152 | 8.4 | 51 | 47.7% | 44.6% | 7.7% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Mid Game Probe (Fame 60–150) | 158 | 8.6 | 49 | 50.8% | 44.8% | 4.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Late Game Probe (Fame 175+) | 158 | 8.3 | 51 | 47.2% | 45.4% | 7.5% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 
 ## Bandgesundheit im Detail
 
 | Szenario | Ø Endharmony | Ø Clinic-Besuche | Ø Sponsor-Signings | Ø Sponsor-Drops | Ø Kontraband-Drops | Ø Post Pulses | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 37 | 6.49 | 1.77 | 0.63 | 7.94 | 11.17 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
-| Bootstrap Struggle | 54 | 4.62 | 0.23 | 0.15 | 6.52 | 1.47 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Aggressive Marketing | 53 | 5.95 | 0.93 | 0.5 | 8.3 | 5.35 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Scandal Recovery | 51 | 4.82 | 0.46 | 0.3 | 7.69 | 2.7 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Festival Push | 53 | 5.07 | 0.47 | 0.27 | 7.72 | 2.71 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Chaos Tour | 43 | 5.75 | 0.89 | 0.41 | 8.35 | 4.89 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
-| Cult Hypergrowth | 53 | 5.85 | 0.93 | 0.36 | 8.24 | 5.27 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| No Social (Fame 0-50) | 51 | 5.56 | 0 | 0 | 8.33 | 0 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| High Controversy | 49 | 5.75 | 0.93 | 0.44 | 7.97 | 4.83 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Early Game Probe (Fame 0–50) | 42 | 2.36 | 0.1 | 0.02 | 2.12 | 1.7 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
-| Mid Game Probe (Fame 60–150) | 49 | 5.02 | 0.3 | 0.11 | 4.22 | 2.73 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Late Game Probe (Fame 175+) | 39 | 5.15 | 0.47 | 0.08 | 3.2 | 4.38 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
+| Baseline Touring | 40 | 6.46 | 1.71 | 0.56 | 8.3 | 10.71 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
+| Bootstrap Struggle | 54 | 4.65 | 0.19 | 0.13 | 6.58 | 1.43 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Aggressive Marketing | 55 | 5.97 | 0.93 | 0.44 | 8.34 | 5.4 | ✅ Stabile Bandgesundheit mit niedrigem Erholungsbedarf. |
+| Scandal Recovery | 51 | 4.85 | 0.42 | 0.27 | 7.75 | 2.68 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Festival Push | 53 | 5.07 | 0.52 | 0.33 | 8.07 | 2.8 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Chaos Tour | 41 | 5.81 | 0.82 | 0.45 | 8.35 | 4.65 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
+| Cult Hypergrowth | 52 | 5.87 | 0.93 | 0.43 | 8.24 | 5.32 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| No Social (Fame 0-50) | 51 | 5.65 | 0 | 0 | 8.4 | 0 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| High Controversy | 49 | 5.76 | 0.81 | 0.4 | 8.05 | 4.92 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Early Game Probe (Fame 0–50) | 42 | 2.42 | 0.12 | 0.05 | 2.15 | 1.75 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
+| Mid Game Probe (Fame 60–150) | 48 | 5.14 | 0.37 | 0.14 | 4.35 | 2.67 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Late Game Probe (Fame 175+) | 40 | 5.08 | 0.44 | 0.1 | 3.22 | 4.72 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
 
 ## Events & Social im Detail
 
 | Szenario | Ø Special-Events | Ø Cash-Events | Ø Band-Events | Ø Equipment-Events | Ø Gig-Events | Ø Trend-Shifts | Ø Katalog-Upgrades | Bewertung |
 |---|---:|---:|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 1.08 | 1.49 | 1.55 | 0.88 | 4.16 | 8.91 | 30.39 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| Bootstrap Struggle | 1.14 | 1.85 | 1.67 | 0.15 | 0.7 | 7.03 | 10.45 | ✅ Gesunde Event-Verteilung. |
-| Aggressive Marketing | 1.92 | 2.81 | 2.7 | 0.71 | 3.47 | 9.01 | 24.59 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| Scandal Recovery | 1.84 | 3.35 | 3.17 | 0.5 | 2.07 | 8.54 | 16.92 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| Festival Push | 1.06 | 1.7 | 1.65 | 0.27 | 1.15 | 8.62 | 18.23 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| Chaos Tour | 2.72 | 4.13 | 4.45 | 1.03 | 5.04 | 8.83 | 22.24 | ⚠️ Hohe Event-Dichte – Chaos-Faktor vs. Spielkontrolle abwägen. |
-| Cult Hypergrowth | 1.68 | 2.52 | 2.47 | 0.6 | 3.07 | 9.13 | 24.98 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| No Social (Fame 0-50) | 1.42 | 2.27 | 2.23 | 0.52 | 2.49 | 9.1 | 23.4 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| High Controversy | 1.45 | 2.29 | 2.3 | 0.53 | 2.54 | 8.88 | 22.1 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
-| Early Game Probe (Fame 0–50) | 0.21 | 0.38 | 0.38 | 0.11 | 0.61 | 2.39 | 5.76 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
-| Mid Game Probe (Fame 60–150) | 0.6 | 1.02 | 0.93 | 0.25 | 1.16 | 4.83 | 12.44 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
-| Late Game Probe (Fame 175+) | 0.65 | 0.93 | 0.85 | 0.5 | 2.59 | 3.59 | 12.06 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Baseline Touring | 1 | 1.78 | 1.61 | 0.74 | 3.99 | 9.07 | 29.62 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Bootstrap Struggle | 1.17 | 1.8 | 1.78 | 0.15 | 0.73 | 7.1 | 10.76 | ✅ Gesunde Event-Verteilung. |
+| Aggressive Marketing | 1.93 | 2.71 | 2.66 | 0.67 | 3.58 | 8.81 | 24.81 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Scandal Recovery | 1.92 | 3.15 | 3.18 | 0.46 | 2.15 | 8.22 | 16.96 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Festival Push | 1.09 | 1.74 | 1.76 | 0.27 | 1.28 | 8.75 | 18.66 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Chaos Tour | 2.75 | 4.33 | 4.35 | 1.15 | 5.18 | 8.91 | 22.37 | ⚠️ Hohe Event-Dichte – Chaos-Faktor vs. Spielkontrolle abwägen. |
+| Cult Hypergrowth | 1.63 | 2.73 | 2.35 | 0.62 | 3.05 | 8.93 | 25.08 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| No Social (Fame 0-50) | 1.44 | 2.23 | 2.21 | 0.52 | 2.6 | 9.1 | 23.57 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| High Controversy | 1.31 | 2.23 | 2.27 | 0.53 | 2.62 | 8.46 | 21.95 | ✅ Gute Upgrade-Progression – wirtschaftliche Entwicklung stabil. |
+| Early Game Probe (Fame 0–50) | 0.2 | 0.36 | 0.39 | 0.11 | 0.67 | 2.34 | 5.74 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Mid Game Probe (Fame 60–150) | 0.62 | 1 | 0.83 | 0.26 | 1.19 | 4.79 | 12.52 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Late Game Probe (Fame 175+) | 0.6 | 0.84 | 0.98 | 0.49 | 2.54 | 3.46 | 12.58 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 
 ## Minigame-Abdeckung im Detail
 
 | Szenario | Ø Travel-Games | Ø Roadie-Games | Ø Kabelsalat-Games | Ø Amp-Calibration | Gesamt Minigames | Bewertung |
 |---|---:|---:|---:|---:|---:|---|
-| Baseline Touring | 59.59 | 19.92 | 19.83 | 19.84 | 119.18 | ✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion. |
-| Bootstrap Struggle | 7.75 | 2.58 | 2.55 | 2.62 | 15.5 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Aggressive Marketing | 29.33 | 9.78 | 9.62 | 9.93 | 58.66 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
-| Scandal Recovery | 15.07 | 5 | 5.02 | 5.04 | 30.13 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Festival Push | 15.56 | 5.3 | 5.13 | 5.13 | 31.12 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Chaos Tour | 26.99 | 8.92 | 8.99 | 9.08 | 53.98 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
-| Cult Hypergrowth | 30.05 | 9.9 | 10.04 | 10.11 | 60.1 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
-| No Social (Fame 0-50) | 28.62 | 9.45 | 9.62 | 9.55 | 57.24 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
-| High Controversy | 27.1 | 9.1 | 9.09 | 8.91 | 54.2 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
-| Early Game Probe (Fame 0–50) | 9.11 | 3.07 | 2.98 | 3.05 | 18.21 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Mid Game Probe (Fame 60–150) | 15.82 | 5.26 | 5.37 | 5.18 | 31.63 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Late Game Probe (Fame 175+) | 25.83 | 8.59 | 8.67 | 8.58 | 51.67 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| Baseline Touring | 60.18 | 19.94 | 20.26 | 19.98 | 120.36 | ✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion. |
+| Bootstrap Struggle | 7.84 | 2.69 | 2.48 | 2.67 | 15.68 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Aggressive Marketing | 29.78 | 10.19 | 9.86 | 9.74 | 59.57 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| Scandal Recovery | 14.98 | 4.98 | 4.93 | 5.07 | 29.96 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Festival Push | 15.87 | 5.37 | 5.27 | 5.23 | 31.74 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Chaos Tour | 27.04 | 9 | 9.1 | 8.93 | 54.07 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| Cult Hypergrowth | 29.87 | 9.98 | 10 | 9.89 | 59.74 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| No Social (Fame 0-50) | 28.82 | 9.39 | 9.78 | 9.65 | 57.64 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| High Controversy | 27.28 | 9.21 | 9.05 | 9.02 | 54.56 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
+| Early Game Probe (Fame 0–50) | 9.13 | 3.04 | 2.98 | 3.12 | 18.27 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Mid Game Probe (Fame 60–150) | 15.8 | 5.27 | 5.35 | 5.18 | 31.6 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Late Game Probe (Fame 175+) | 25.99 | 8.69 | 8.69 | 8.61 | 51.98 | ✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität. |
 
 ## Assets & Progression
 
 | Szenario | Ø Chassis-Käufe | Ø Kredite | Ø Module | Ø Crowdfunds | Ø End-Assets | Ø Trait-Unlocks | Ø Klinik-Ausgaben | Ø Rest-Stops | Region-Rep-Runs |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| Baseline Touring | 2.87 | 0.37 | 6.79 | 1 | 3.63 | 4.73 | €3.295 | 6.69 | 100% |
-| Bootstrap Struggle | 0.63 | 0.4 | 1.67 | 1.41 | 1.33 | 1.63 | €1.904 | 5.43 | 71.9% |
-| Aggressive Marketing | 2.9 | 0.78 | 6.42 | 1 | 3.53 | 2.97 | €2.906 | 5.69 | 100% |
-| Scandal Recovery | 1.44 | 0.71 | 4.1 | 1.57 | 2.31 | 2.72 | €2.025 | 7.29 | 93.8% |
-| Festival Push | 1.91 | 0.93 | 4.83 | 1.33 | 2.72 | 1.53 | €2.196 | 6.9 | 99.2% |
-| Chaos Tour | 2.59 | 0.89 | 5.95 | 1.21 | 3.37 | 3.02 | €2.710 | 7.13 | 96.9% |
-| Cult Hypergrowth | 2.78 | 0.48 | 6.38 | 1.13 | 3.5 | 3.79 | €2.885 | 5.26 | 99.2% |
-| No Social (Fame 0-50) | 2.41 | 0.88 | 5.75 | 1.28 | 3.21 | 2.81 | €2.582 | 6.68 | 98.5% |
-| High Controversy | 2.28 | 0.92 | 5.3 | 1.27 | 3.09 | 3.36 | €2.693 | 7.85 | 96.5% |
-| Early Game Probe (Fame 0–50) | 0.78 | 0.37 | 0.64 | 0.52 | 0.9 | 1.61 | €806 | 0.02 | 94.2% |
-| Mid Game Probe (Fame 60–150) | 1.9 | 0.58 | 2.77 | 0.85 | 2.37 | 2.28 | €2.264 | 2.78 | 96.9% |
-| Late Game Probe (Fame 175+) | 2.12 | 0.26 | 2.68 | 0.59 | 2.42 | 2.79 | €2.488 | 0.77 | 100% |
+| Baseline Touring | 2.85 | 0.33 | 6.77 | 1.06 | 3.61 | 4.75 | €3.273 | 6.39 | 100% |
+| Bootstrap Struggle | 0.61 | 0.4 | 1.77 | 1.46 | 1.33 | 1.72 | €1.911 | 5.5 | 73.5% |
+| Aggressive Marketing | 2.87 | 0.7 | 6.53 | 0.99 | 3.5 | 3.07 | €2.936 | 5.39 | 100% |
+| Scandal Recovery | 1.52 | 0.75 | 4.08 | 1.55 | 2.36 | 2.67 | €2.052 | 7.22 | 94.6% |
+| Festival Push | 1.94 | 0.92 | 5.02 | 1.33 | 2.78 | 1.56 | €2.201 | 7.02 | 100% |
+| Chaos Tour | 2.55 | 0.9 | 6 | 1.18 | 3.27 | 3.12 | €2.757 | 6.84 | 94.6% |
+| Cult Hypergrowth | 2.88 | 0.55 | 6.32 | 1.06 | 3.54 | 3.82 | €2.910 | 5.32 | 99.6% |
+| No Social (Fame 0-50) | 2.43 | 0.82 | 5.88 | 1.3 | 3.25 | 2.78 | €2.644 | 6.47 | 99.2% |
+| High Controversy | 2.37 | 0.9 | 5.34 | 1.25 | 3.17 | 3.37 | €2.704 | 7.44 | 95.8% |
+| Early Game Probe (Fame 0–50) | 0.79 | 0.35 | 0.7 | 0.53 | 0.92 | 1.67 | €825 | 0.02 | 94.2% |
+| Mid Game Probe (Fame 60–150) | 1.9 | 0.59 | 2.91 | 0.84 | 2.42 | 2.3 | €2.340 | 2.8 | 96.9% |
+| Late Game Probe (Fame 175+) | 2.13 | 0.27 | 2.73 | 0.55 | 2.42 | 2.81 | €2.433 | 0.57 | 100% |
 
 ## Cross-Szenario-Vergleich (Höchstwerte)
 
 | Metrik | Gewinner | Wert | Bewertung |
 |---|---|---:|---|
-| Höchstes Ø Endgeld | **Baseline Touring** | €48.877 | Tägliches Gigging dominiert als Einnahmestrategie. |
-| Höchstes Ø Endfame | **Baseline Touring** | 20311 | Fokus auf Touring und Performance maximiert den Fame-Aufbau. |
-| Höchste Insolvenzrate | **Bootstrap Struggle** | 61.92% | Erwartetes Risikoprofil für ressourcenarme Spielweisen. |
-| Höchster Ø Gig-Netto | **Cult Hypergrowth** | €2.676 | Promo-fokussierte Builds maximieren den Einzel-Gig-Ertrag. |
-| Höchstes Ø Peak-Geld | **Baseline Touring** | €54.553 | Liquiditätsmaximierung durch hohe Gig-Dichte und Disziplin. |
-| Meiste Ø Gigs | **Baseline Touring** | 59.59 | Gig-Frequenz ist direkt mit dem Tourstil verknüpft – korrektes Pacing. |
-| Meiste Ø Events | **Chaos Tour** | 17.37 | Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse. |
+| Höchstes Ø Endgeld | **Baseline Touring** | €48.654 | Tägliches Gigging dominiert als Einnahmestrategie. |
+| Höchstes Ø Endfame | **Baseline Touring** | 21350 | Fokus auf Touring und Performance maximiert den Fame-Aufbau. |
+| Höchste Insolvenzrate | **Bootstrap Struggle** | 60.38% | Erwartetes Risikoprofil für ressourcenarme Spielweisen. |
+| Höchster Ø Gig-Netto | **Cult Hypergrowth** | €2.674 | Promo-fokussierte Builds maximieren den Einzel-Gig-Ertrag. |
+| Höchstes Ø Peak-Geld | **Baseline Touring** | €52.835 | Liquiditätsmaximierung durch hohe Gig-Dichte und Disziplin. |
+| Meiste Ø Gigs | **Baseline Touring** | 60.18 | Gig-Frequenz ist direkt mit dem Tourstil verknüpft – korrektes Pacing. |
+| Meiste Ø Events | **Chaos Tour** | 17.76 | Chaotische Spielweisen triggern signifikant mehr Zufallsereignisse. |
 
 ## Fame-Bilanz
 
 | Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Clamp-Anpassung | Reconciled Runs |
 |---|---:|---:|---:|---:|---:|---:|---:|
-| Baseline Touring | 47147 | 26789 | 0 | 26789 | 47 | 0 | 260/260 |
-| Bootstrap Struggle | 6597 | 5066 | 0 | 5066 | 18 | 0 | 260/260 |
-| Aggressive Marketing | 28201 | 19674 | 0 | 19674 | 18 | 0 | 260/260 |
-| Scandal Recovery | 13920 | 10167 | 0 | 10167 | 20 | 0 | 260/260 |
-| Festival Push | 16846 | 11914 | 0 | 11914 | 11 | 0 | 260/260 |
-| Chaos Tour | 22257 | 16321 | 0 | 16321 | 45 | 0 | 260/260 |
-| Cult Hypergrowth | 27972 | 20007 | 0 | 20007 | 19 | 0 | 260/260 |
-| No Social (Fame 0-50) | 27289 | 17956 | 0 | 17956 | 32 | 0 | 260/260 |
-| High Controversy | 23784 | 16536 | 0 | 16536 | 33 | 0 | 260/260 |
-| Early Game Probe (Fame 0–50) | 7448 | 4293 | 0 | 4293 | 9 | 0 | 260/260 |
-| Mid Game Probe (Fame 60–150) | 13597 | 9434 | 0 | 9434 | 15 | 0 | 260/260 |
-| Late Game Probe (Fame 175+) | 20654 | 10143 | 0 | 10143 | 21 | 0 | 260/260 |
+| Baseline Touring | 47743 | 26351 | 0 | 26351 | 43 | 0 | 260/260 |
+| Bootstrap Struggle | 6860 | 5191 | 0 | 5191 | 18 | 0 | 260/260 |
+| Aggressive Marketing | 28079 | 19855 | 0 | 19855 | 17 | 0 | 260/260 |
+| Scandal Recovery | 14032 | 10240 | 0 | 10240 | 19 | 0 | 260/260 |
+| Festival Push | 17889 | 12548 | 0 | 12548 | 10 | 0 | 260/260 |
+| Chaos Tour | 24110 | 16547 | 0 | 16547 | 42 | 0 | 260/260 |
+| Cult Hypergrowth | 28655 | 20216 | 0 | 20216 | 18 | 0 | 260/260 |
+| No Social (Fame 0-50) | 27251 | 18188 | 0 | 18188 | 32 | 0 | 260/260 |
+| High Controversy | 23421 | 16762 | 0 | 16762 | 32 | 0 | 260/260 |
+| Early Game Probe (Fame 0–50) | 7593 | 4363 | 0 | 4363 | 8 | 0 | 260/260 |
+| Mid Game Probe (Fame 60–150) | 13820 | 9467 | 0 | 9467 | 15 | 0 | 260/260 |
+| Late Game Probe (Fame 175+) | 21106 | 10467 | 0 | 10467 | 18 | 0 | 260/260 |
 
 ## Ergebnisverteilungen
 
@@ -259,69 +259,69 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 
 | Szenario | Mean | Median | StdDev | P10 | P90 |
 |---|---:|---:|---:|---:|---:|
-| Baseline Touring | €48.877 | €48.584 | €19.507 | €23.785 | €74.736 |
-| Bootstrap Struggle | €1.994 | €0 | €3.818 | €0 | €7.098 |
-| Aggressive Marketing | €23.098 | €23.036 | €9.691 | €9.958 | €35.210 |
-| Scandal Recovery | €8.082 | €6.324 | €7.197 | €0 | €18.075 |
-| Festival Push | €10.483 | €9.577 | €9.045 | €0 | €23.743 |
-| Chaos Tour | €16.627 | €16.108 | €8.032 | €6.647 | €27.221 |
-| Cult Hypergrowth | €24.696 | €23.665 | €10.355 | €12.462 | €36.860 |
-| No Social (Fame 0-50) | €17.048 | €15.986 | €8.746 | €6.488 | €29.153 |
-| High Controversy | €16.992 | €15.648 | €8.713 | €5.983 | €28.679 |
-| Early Game Probe (Fame 0–50) | €11.509 | €11.077 | €4.588 | €6.368 | €18.038 |
-| Mid Game Probe (Fame 60–150) | €14.927 | €14.303 | €6.413 | €7.139 | €23.074 |
-| Late Game Probe (Fame 175+) | €27.825 | €27.873 | €8.669 | €16.923 | €39.145 |
+| Baseline Touring | €48.654 | €47.726 | €16.586 | €29.037 | €71.316 |
+| Bootstrap Struggle | €1.650 | €0 | €3.077 | €0 | €5.830 |
+| Aggressive Marketing | €23.586 | €23.778 | €9.040 | €12.314 | €35.217 |
+| Scandal Recovery | €7.215 | €5.817 | €6.468 | €0 | €16.636 |
+| Festival Push | €11.441 | €10.246 | €8.508 | €0 | €22.610 |
+| Chaos Tour | €17.396 | €16.638 | €8.732 | €7.013 | €29.032 |
+| Cult Hypergrowth | €24.746 | €24.124 | €9.008 | €14.015 | €36.535 |
+| No Social (Fame 0-50) | €17.259 | €16.241 | €8.480 | €6.898 | €29.155 |
+| High Controversy | €17.189 | €15.819 | €8.622 | €6.996 | €29.121 |
+| Early Game Probe (Fame 0–50) | €12.049 | €11.573 | €4.880 | €5.956 | €18.995 |
+| Mid Game Probe (Fame 60–150) | €15.593 | €15.050 | €6.650 | €7.227 | €24.977 |
+| Late Game Probe (Fame 175+) | €30.719 | €29.844 | €10.028 | €18.551 | €43.234 |
 
 ## Insolvenzrisiko
 
 | Szenario | Insolvenzfälle | Stichprobe | Rate | Lower 95% (Wilson) | Upper 95% (Wilson) |
 |---|---:|---:|---:|---:|---:|
 | Baseline Touring | 0 | 260 | 0.00% | 0.00% | 1.46% |
-| Bootstrap Struggle | 161 | 260 | 61.92% | 55.89% | 67.61% |
-| Aggressive Marketing | 6 | 260 | 2.31% | 1.06% | 4.94% |
-| Scandal Recovery | 46 | 260 | 17.69% | 13.53% | 22.79% |
-| Festival Push | 48 | 260 | 18.46% | 14.22% | 23.62% |
-| Chaos Tour | 5 | 260 | 1.92% | 0.82% | 4.42% |
-| Cult Hypergrowth | 1 | 260 | 0.38% | 0.07% | 2.15% |
-| No Social (Fame 0-50) | 4 | 260 | 1.54% | 0.60% | 3.89% |
-| High Controversy | 9 | 260 | 3.46% | 1.83% | 6.45% |
-| Early Game Probe (Fame 0–50) | 3 | 260 | 1.15% | 0.39% | 3.34% |
-| Mid Game Probe (Fame 60–150) | 1 | 260 | 0.38% | 0.07% | 2.15% |
+| Bootstrap Struggle | 157 | 260 | 60.38% | 54.33% | 66.14% |
+| Aggressive Marketing | 2 | 260 | 0.77% | 0.21% | 2.76% |
+| Scandal Recovery | 50 | 260 | 19.23% | 14.90% | 24.46% |
+| Festival Push | 35 | 260 | 13.46% | 9.84% | 18.15% |
+| Chaos Tour | 7 | 260 | 2.69% | 1.31% | 5.45% |
+| Cult Hypergrowth | 2 | 260 | 0.77% | 0.21% | 2.76% |
+| No Social (Fame 0-50) | 2 | 260 | 0.77% | 0.21% | 2.76% |
+| High Controversy | 10 | 260 | 3.85% | 2.10% | 6.93% |
+| Early Game Probe (Fame 0–50) | 0 | 260 | 0.00% | 0.00% | 1.46% |
+| Mid Game Probe (Fame 60–150) | 2 | 260 | 0.77% | 0.21% | 2.76% |
 | Late Game Probe (Fame 175+) | 0 | 260 | 0.00% | 0.00% | 1.46% |
 
 ## Populationen
 
 | Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |
 |---|---|---|---|
-| Baseline Touring | 260 / €48.877 | 260 / €48.877 | 0 / €0 |
-| Bootstrap Struggle | 260 / €1.994 | 99 / €5.238 | 161 / €0 |
-| Aggressive Marketing | 260 / €23.098 | 254 / €23.644 | 6 / €0 |
-| Scandal Recovery | 260 / €8.082 | 214 / €9.820 | 46 / €0 |
-| Festival Push | 260 / €10.483 | 212 / €12.856 | 48 / €0 |
-| Chaos Tour | 260 / €16.627 | 255 / €16.953 | 5 / €0 |
-| Cult Hypergrowth | 260 / €24.696 | 259 / €24.792 | 1 / €0 |
-| No Social (Fame 0-50) | 260 / €17.048 | 256 / €17.315 | 4 / €0 |
-| High Controversy | 260 / €16.992 | 251 / €17.602 | 9 / €0 |
-| Early Game Probe (Fame 0–50) | 260 / €11.509 | 257 / €11.643 | 3 / €0 |
-| Mid Game Probe (Fame 60–150) | 260 / €14.927 | 259 / €14.984 | 1 / €0 |
-| Late Game Probe (Fame 175+) | 260 / €27.825 | 260 / €27.825 | 0 / €0 |
+| Baseline Touring | 260 / €48.654 | 260 / €48.654 | 0 / €0 |
+| Bootstrap Struggle | 260 / €1.650 | 103 / €4.166 | 157 / €0 |
+| Aggressive Marketing | 260 / €23.586 | 258 / €23.768 | 2 / €0 |
+| Scandal Recovery | 260 / €7.215 | 210 / €8.933 | 50 / €0 |
+| Festival Push | 260 / €11.441 | 225 / €13.221 | 35 / €0 |
+| Chaos Tour | 260 / €17.396 | 253 / €17.878 | 7 / €0 |
+| Cult Hypergrowth | 260 / €24.746 | 258 / €24.938 | 2 / €0 |
+| No Social (Fame 0-50) | 260 / €17.259 | 258 / €17.393 | 2 / €0 |
+| High Controversy | 260 / €17.189 | 250 / €17.877 | 10 / €0 |
+| Early Game Probe (Fame 0–50) | 260 / €12.049 | 260 / €12.049 | 0 / €0 |
+| Mid Game Probe (Fame 60–150) | 260 / €15.593 | 258 / €15.714 | 2 / €0 |
+| Late Game Probe (Fame 175+) | 260 / €30.719 | 260 / €30.719 | 0 / €0 |
 
 ## Volatilität
 
 | Szenario | Endgeld StdDev | CV (Endgeld) | Max Drawdown Mean | Max Drawdown P90 |
 |---|---:|---:|---:|---:|
-| Baseline Touring | €19.507 | 0.3991 | 62.03% | 75.26% |
-| Bootstrap Struggle | €3.818 | 1.9147 | 91.42% | 99.82% |
-| Aggressive Marketing | €9.691 | 0.4196 | 58.26% | 87.27% |
-| Scandal Recovery | €7.197 | 0.8905 | 76.10% | 99.34% |
-| Festival Push | €9.045 | 0.8628 | 73.35% | 99.07% |
-| Chaos Tour | €8.032 | 0.4831 | 57.06% | 84.88% |
-| Cult Hypergrowth | €10.355 | 0.4193 | 61.62% | 90.72% |
-| No Social (Fame 0-50) | €8.746 | 0.513 | 56.38% | 87.64% |
-| High Controversy | €8.713 | 0.5128 | 58.38% | 87.89% |
-| Early Game Probe (Fame 0–50) | €4.588 | 0.3986 | 26.98% | 49.16% |
-| Mid Game Probe (Fame 60–150) | €6.413 | 0.4296 | 44.47% | 77.57% |
-| Late Game Probe (Fame 175+) | €8.669 | 0.3116 | 47.45% | 68.88% |
+| Baseline Touring | €16.586 | 0.3409 | 61.55% | 74.46% |
+| Bootstrap Struggle | €3.077 | 1.8648 | 91.25% | 99.83% |
+| Aggressive Marketing | €9.040 | 0.3833 | 58.23% | 82.16% |
+| Scandal Recovery | €6.468 | 0.8965 | 77.29% | 99.40% |
+| Festival Push | €8.508 | 0.7436 | 71.19% | 99.24% |
+| Chaos Tour | €8.732 | 0.502 | 57.92% | 91.94% |
+| Cult Hypergrowth | €9.008 | 0.364 | 57.49% | 80.57% |
+| No Social (Fame 0-50) | €8.480 | 0.4913 | 54.75% | 84.05% |
+| High Controversy | €8.622 | 0.5016 | 56.81% | 90.31% |
+| Early Game Probe (Fame 0–50) | €4.880 | 0.405 | 27.53% | 55.83% |
+| Mid Game Probe (Fame 60–150) | €6.650 | 0.4265 | 44.71% | 72.34% |
+| Late Game Probe (Fame 175+) | €10.028 | 0.3264 | 50.75% | 68.47% |
 
 ## Feature-Inventar
 
@@ -345,16 +345,16 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 
 | Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |
 |---|---|---:|---:|---:|
-| brandDeals | ✅ | 155470 | 2448 | 53 |
-| postOptions | ✅ | 12273 | 12273 | 27 |
-| socialTrends | ✅ | 191633 | 23106 | 5 |
-| contraband | ✅ | 191633 | 20952 | 37 |
-| minigamesTravel | ✅ | 75614 | 44499 | - |
-| minigamesRoadie | ✅ | 25186 | 22842 | - |
-| minigamesKabelsalat | ✅ | 25200 | 17470 | - |
-| minigamesAmp | ✅ | 25228 | 18142 | - |
-| sponsorship | ✅ | 172278 | 1944 | - |
-| restStops | ✅ | 98684 | 16248 | - |
+| brandDeals | ✅ | 156635 | 2363 | 53 |
+| postOptions | ✅ | 12234 | 12234 | 29 |
+| socialTrends | ✅ | 191964 | 22869 | 5 |
+| contraband | ✅ | 191964 | 21267 | 37 |
+| minigamesTravel | ✅ | 76071 | 44860 | - |
+| minigamesRoadie | ✅ | 25417 | 23083 | - |
+| minigamesKabelsalat | ✅ | 25412 | 17759 | - |
+| minigamesAmp | ✅ | 25242 | 18208 | - |
+| sponsorship | ✅ | 172570 | 1880 | - |
+| restStops | ✅ | 98773 | 15853 | - |
 
 ## KPI-Zielkorridore (Health Check)
 
@@ -363,54 +363,37 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kal
 | Szenario | KPI | Ziel | Ist-Wert | Status | Bewertung |
 |---|---|---|---|---|---|
 | Baseline Touring | Insolvenzrate | ≤ 10% | 0% | ✅ | Risikofrei – kein Insolvenzfall beobachtet. |
-| Baseline Touring | Endgeld | €25.000 – €80.000 | €48.877 | ✅ | Zentral im Zielband – sehr gute Balance. |
-| Baseline Touring | Fame-Fortschritt/Gig | 600 – 1300 | 792.18 | ✅ | Im Zielband – leicht außermittig. |
-| Bootstrap Struggle | Insolvenzrate | ≤ 60% | 61.92% | ❌ | Außerhalb Toleranz – Rebalancing nötig. |
-| Bootstrap Struggle | Endgeld | €400 – €5.000 | €1.994 | ✅ | Im Zielband – leicht außermittig. |
-| Bootstrap Struggle | Fame-Fortschritt/Gig | 600 – 1300 | 819.39 | ✅ | Im Zielband – leicht außermittig. |
-| Aggressive Marketing | Insolvenzrate | ≤ 15% | 2.31% | ✅ | Solide – deutlich unter Risikogrenze. |
-| Aggressive Marketing | Endgeld | €15.000 – €50.000 | €23.098 | ✅ | Im Zielband – leicht außermittig. |
-| Aggressive Marketing | Fame-Fortschritt/Gig | 600 – 1300 | 965.24 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
-| Scandal Recovery | Insolvenzrate | ≤ 50% | 17.69% | ✅ | Solide – deutlich unter Risikogrenze. |
-| Scandal Recovery | Endgeld | €4.500 – €30.000 | €8.082 | ✅ | Im Zielband – leicht außermittig. |
-| Scandal Recovery | Fame-Fortschritt/Gig | 600 – 1300 | 905.28 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
-| Festival Push | Insolvenzrate | ≤ 35% | 18.46% | ✅ | Akzeptabel – innerhalb Toleranz. |
-| Festival Push | Endgeld | €8.500 – €50.000 | €10.483 | ✅ | Im Zielband – leicht außermittig. |
-| Festival Push | Fame-Fortschritt/Gig | 600 – 1300 | 1056.77 | ✅ | Im Zielband – leicht außermittig. |
-| Chaos Tour | Insolvenzrate | ≤ 25% | 1.92% | ✅ | Solide – deutlich unter Risikogrenze. |
-| Chaos Tour | Endgeld | €10.000 – €60.000 | €16.627 | ✅ | Im Zielband – leicht außermittig. |
-| Chaos Tour | Fame-Fortschritt/Gig | 600 – 1300 | 824.29 | ✅ | Im Zielband – leicht außermittig. |
-| Cult Hypergrowth | Insolvenzrate | ≤ 12% | 0.38% | ✅ | Solide – deutlich unter Risikogrenze. |
-| Cult Hypergrowth | Endgeld | €15.000 – €50.000 | €24.696 | ✅ | Im Zielband – leicht außermittig. |
-| Cult Hypergrowth | Fame-Fortschritt/Gig | 600 – 1300 | 934.55 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
+| Baseline Touring | Endgeld | €25.000 – €80.000 | €48.654 | ✅ | Zentral im Zielband – sehr gute Balance. |
+| Baseline Touring | Fame-Fortschritt/Gig | 600 – 1300 | 790.74 | ✅ | Im Zielband – leicht außermittig. |
+| Bootstrap Struggle | Insolvenzrate | ≤ 60% | 60.38% | ❌ | Außerhalb Toleranz – Rebalancing nötig. |
+| Bootstrap Struggle | Endgeld | €400 – €5.000 | €1.650 | ✅ | Im Zielband – leicht außermittig. |
+| Bootstrap Struggle | Fame-Fortschritt/Gig | 600 – 1300 | 831.62 | ✅ | Im Zielband – leicht außermittig. |
+| Aggressive Marketing | Insolvenzrate | ≤ 15% | 0.77% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Aggressive Marketing | Endgeld | €15.000 – €50.000 | €23.586 | ✅ | Im Zielband – leicht außermittig. |
+| Aggressive Marketing | Fame-Fortschritt/Gig | 600 – 1300 | 943.7 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
+| Scandal Recovery | Insolvenzrate | ≤ 50% | 19.23% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Scandal Recovery | Endgeld | €4.500 – €30.000 | €7.215 | ✅ | Im Zielband – leicht außermittig. |
+| Scandal Recovery | Fame-Fortschritt/Gig | 600 – 1300 | 919.13 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
+| Festival Push | Insolvenzrate | ≤ 35% | 13.46% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Festival Push | Endgeld | €8.500 – €50.000 | €11.441 | ✅ | Im Zielband – leicht außermittig. |
+| Festival Push | Fame-Fortschritt/Gig | 600 – 1300 | 1104.28 | ✅ | Im Zielband – leicht außermittig. |
+| Chaos Tour | Insolvenzrate | ≤ 25% | 2.69% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Chaos Tour | Endgeld | €10.000 – €60.000 | €17.396 | ✅ | Im Zielband – leicht außermittig. |
+| Chaos Tour | Fame-Fortschritt/Gig | 600 – 1300 | 886.96 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
+| Cult Hypergrowth | Insolvenzrate | ≤ 12% | 0.77% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Cult Hypergrowth | Endgeld | €15.000 – €50.000 | €24.746 | ✅ | Im Zielband – leicht außermittig. |
+| Cult Hypergrowth | Fame-Fortschritt/Gig | 600 – 1300 | 963.59 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
 | No Social (Fame 0-50) | — | — | — | ⚪ Nicht bewertet | — |
 | High Controversy | — | — | — | ⚪ Nicht bewertet | — |
 | Early Game Probe (Fame 0–50) | — | — | — | ⚪ Nicht bewertet | — |
 | Mid Game Probe (Fame 60–150) | — | — | — | ⚪ Nicht bewertet | — |
 | Late Game Probe (Fame 175+) | — | — | — | ⚪ Nicht bewertet | — |
 
-## Rebalance-Regressionsvergleich (Alt vs Neu)
-
-| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
-|---|---:|---:|---:|---:|
-| Baseline Touring | -1.15% | €-8.208 | 62.79 | -0.53 |
-| Bootstrap Struggle | -23.85% | €1.131 | 118.16 | 3.02 |
-| Aggressive Marketing | 0% | €-585 | 175.96 | -0.28 |
-| Scandal Recovery | -21.16% | €1.908 | 142.88 | 2.17 |
-| Festival Push | -3.46% | €-120 | 221.49 | 0.09 |
-| Chaos Tour | -3.46% | €-876 | 155.44 | 0.22 |
-| Cult Hypergrowth | -1.16% | €-1.637 | 141.89 | 0.54 |
-| No Social (Fame 0-50) | -1.92% | €1.063 | 234.68 | 1.01 |
-| High Controversy | -1.54% | €378 | 170.03 | 0.04 |
-| Early Game Probe (Fame 0–50) | -0.39% | €898 | 86.08 | 0.04 |
-| Mid Game Probe (Fame 60–150) | -0.77% | €142 | 129.84 | -0.06 |
-| Late Game Probe (Fame 175+) | 0% | €-1.809 | 52.7 | -0.19 |
-
 ## Kurzfazit
 
-- Höchstes Risiko: **Bootstrap Struggle** mit 61.92% Insolvenzrate.
-- Höchster Kapitalaufbau: **Baseline Touring** mit Ø €48.877 Endgeld.
-- Ereignisdichte: **Chaos Tour** mit Ø 17.37 Event-Impulsen (inkl. Gig-Events).
+- Höchstes Risiko: **Bootstrap Struggle** mit 60.38% Insolvenzrate.
+- Höchster Kapitalaufbau: **Baseline Touring** mit Ø €48.654 Endgeld.
+- Ereignisdichte: **Chaos Tour** mit Ø 17.76 Event-Impulsen (inkl. Gig-Events).
 
 ### KPI-Zusammenfassung
 - Bestanden: 6

@@ -10,7 +10,10 @@ import { getQuestDefinition } from '../../../data/questRegistry'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
-import { clampMemberMood } from '../../../utils/gameState'
+import {
+  clampMemberMood,
+  normalizeRegionalGigHistory
+} from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
   DEFAULT_GIG_MODIFIERS,
@@ -1320,26 +1323,9 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   }
 
   if (isLooseRecord(safeValue.regionalGigHistory)) {
-    sanitized.regionalGigHistory = {}
-    for (const regionId of Object.keys(safeValue.regionalGigHistory).slice(
-      0,
-      100
-    )) {
-      if (!Object.hasOwn(safeValue.regionalGigHistory, regionId)) continue
-      if (isForbiddenKey(regionId)) continue
-      const days = safeValue.regionalGigHistory[regionId]
-      if (!Array.isArray(days)) continue
-      sanitized.regionalGigHistory[regionId] = [
-        ...new Set(
-          days.filter(
-            (day): day is number =>
-              Number.isFinite(day) && Number.isInteger(day) && day >= 0
-          )
-        )
-      ]
-        .sort((left, right) => left - right)
-        .slice(-256)
-    }
+    sanitized.regionalGigHistory = normalizeRegionalGigHistory(
+      safeValue.regionalGigHistory
+    )
   }
 
   if (isLooseRecord(safeValue.influencers)) {
