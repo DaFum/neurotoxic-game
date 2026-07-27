@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 
 import {
@@ -56,7 +57,7 @@ REQUIRED_SOURCES.forEach(relativePath => {
   })
 })
 
-test('balance source hash is stable and content sensitive', async () => {
+test('balance source hash is stable', async () => {
   const first = await getBalanceSourceHash(ROOT)
   const second = await getBalanceSourceHash(ROOT)
 
@@ -64,19 +65,35 @@ test('balance source hash is stable and content sensitive', async () => {
   assert.equal(first, second, 'Hashing twice must be stable')
 })
 
+// The probe runs against a throwaway copy of the listed sources. Mutating the
+// tracked file in place and restoring it in a hook leaves the working tree
+// modified whenever the process dies mid-test.
 test('balance source hash depends on the listed contents', async t => {
-  const target = path.join(ROOT, 'src/utils/economy/constants.ts')
-  const original = fs.readFileSync(target)
-  const before = await getBalanceSourceHash(ROOT)
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'balance-source-hash-'))
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }))
 
-  t.after(() => fs.writeFileSync(target, original))
+  for (const relativePath of BALANCE_SOURCE_FILES) {
+    const destination = path.join(sandbox, relativePath)
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(path.join(ROOT, relativePath), destination)
+  }
 
-  fs.writeFileSync(target, `${original.toString()}\n// hash probe\n`)
-  const after = await getBalanceSourceHash(ROOT)
+  const before = await getBalanceSourceHash(sandbox)
+
+  const probeTarget = path.join(sandbox, 'src/utils/economy/constants.ts')
+  fs.appendFileSync(probeTarget, '\n// hash probe\n')
+  const after = await getBalanceSourceHash(sandbox)
 
   assert.notEqual(
     before,
     after,
     'Editing an economy constant must change the published hash'
+  )
+  assert.equal(
+    fs
+      .readFileSync(path.join(ROOT, 'src/utils/economy/constants.ts'), 'utf8')
+      .includes('hash probe'),
+    false,
+    'The probe must never touch the tracked source'
   )
 })

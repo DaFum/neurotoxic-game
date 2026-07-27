@@ -224,10 +224,22 @@ export const evaluateCandidate = (definition, pairs, summary) => {
         harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
       }
   const passed = Object.values(checks).every(value => value === true)
+  // Anchors derive from the live acceptance criteria. The bootstrap anchor used
+  // to be a literal 50% insolvency, inherited from an economy where the control
+  // sat near there; against the current tolerance most candidates fell outside
+  // the 100/3 window and tied at zero, which made the ranking look ordered while
+  // carrying no information. Midpoint of the tolerated band keeps the original
+  // shape — a relief lever should land inside the band, not at either extreme.
+  // Each phase reads only its own criteria: the two criteria shapes are
+  // disjoint, so computing both anchors eagerly throws on the missing one.
+  const bootstrapAnchorPct = (criteria.bankruptcyRateMaxPct ?? 0) / 2
   const targetFit = definition.phase === 'bootstrap'
-    ? Math.max(0, 100 - Math.abs(50 - summary.bankruptcy.candidateRatePct) * 3)
-    : Math.max(0, 100 - Math.abs(-17.5 - medianFinalMoneyDeltaPct) * 4)
-  const overcorrectionPenalty = definition.phase === 'bootstrap' && summary.bankruptcy.candidateRatePct < 30 ? 50 : 0
+    ? Math.max(0, 100 - Math.abs(bootstrapAnchorPct - summary.bankruptcy.candidateRatePct) * 3)
+    : Math.max(0, 100 - Math.abs(
+        ((criteria.medianFinalMoneyDeltaPct?.[0] ?? 0) + (criteria.medianFinalMoneyDeltaPct?.[1] ?? 0)) / 2 -
+          medianFinalMoneyDeltaPct
+      ) * 4)
+  const overcorrectionPenalty = definition.phase === 'bootstrap' && summary.bankruptcy.candidateRatePct < bootstrapAnchorPct / 2 ? 50 : 0
   const sideEffectPenalty = Math.abs(famePerGigDeltaPct) + Math.max(0, -summary.continuous.finalHarmony.pairedDelta.median)
   const complexityPenalty = definition.id.includes('staged') || definition.id.includes('recovery') ? 2 : 1
   return {
@@ -324,6 +336,25 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
 
+const SELECTION_RATIONALE =
+  'Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected.'
+
+// The ranking is ordered by targetFit minus penalties. When most candidates tie
+// on the same score the order is decided by the id tie-break alone, which reads
+// as a meaningful ranking but is not one — say so rather than let the reader
+// infer significance from the sequence.
+const describeRanking = ranking => {
+  const scores = ranking.map(item =>
+    item.targetFit - item.sideEffectPenalty - item.overcorrectionPenalty - item.complexityPenalty
+  )
+  const distinct = new Set(scores.map(score => score.toFixed(4))).size
+  return distinct <= 1
+    ? '\n\n> Alle Kandidaten erreichen denselben Rangwert; die Reihenfolge entsteht ausschliesslich aus dem ID-Tie-Break und ist nicht aussagekraeftig.'
+    : distinct < Math.ceil(ranking.length / 2)
+      ? `\n\n> Nur ${distinct} verschiedene Rangwerte bei ${ranking.length} Kandidaten: die Reihenfolge ist innerhalb gleichwertiger Gruppen ein ID-Tie-Break.`
+      : ''
+}
+
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
   const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
@@ -349,11 +380,11 @@ ${bootstrapRows}
 
 ## Bootstrap-Ranking
 
-${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`).join('\n')}
+${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`).join('\n')}${describeRanking(report.phases.phase3B.ranking)}
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search: candidate pairs are ordered by \`combinationImpact\`, which is derived from the overrides alone, and the first pair passing final combined validation wins. ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated; the remaining ${report.combinationSearch.pairsSkipped} carry higher impact and so could not have been selected.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -386,11 +417,11 @@ ${touringRows}
 
 ## Late-Game-Ranking
 
-${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`).join('\n')}
+${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`).join('\n')}${describeRanking(report.phases.phase3C.ranking)}
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search: candidate pairs are ordered by \`combinationImpact\`, which is derived from the overrides alone, and the first pair passing final combined validation wins. ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated; the remaining ${report.combinationSearch.pairsSkipped} carry higher impact and so could not have been selected.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
 
 ## Kombinierte Validierung
 
@@ -547,7 +578,13 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     }
   }
 
-  const touringCandidates = touringByBootstrap.get(selectedBootstrap.id) || touringByBootstrap.get(bootstrapCandidates[0].id)
+  // The selected bootstrap always came through screenTouringFor, so its entry
+  // exists. Assert rather than silently substituting another candidate's
+  // screening results, which would misreport the touring table.
+  const touringCandidates = touringByBootstrap.get(selectedBootstrap.id)
+  if (!touringCandidates) {
+    throw new Error(`No touring screening recorded for selected bootstrap ${selectedBootstrap.id}`)
+  }
 
   for (const item of touringCandidates) {
     if (!item.selectedForProduction && !item.rejectionReason) {
@@ -600,7 +637,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       pairsAvailable: orderedPairs.length,
       pairsEvaluated: pairsConsidered,
       pairsSkipped: combinationsSkipped,
-      note: 'Pairs are ordered by combinationImpact, which is derived from the candidate overrides alone. The search stops at the first pair that passes final combined validation; the remaining pairs would have higher impact and so could not have been selected.'
+      note: SELECTION_RATIONALE
     },
     combinationRanking: [...combinations].sort((left, right) =>
       Number(right.validation.passed) - Number(left.validation.passed) || combinationImpact(left) - combinationImpact(right)
@@ -629,7 +666,18 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
-  const report = await runExperimentSuite()
+  // The suite throws when no candidate clears Phase 3B or no combination clears
+  // final validation. That is a legitimate experiment outcome, not a crash, so
+  // report it as a failed run instead of an unhandled rejection stack.
+  let report
+  try {
+    report = await runExperimentSuite()
+  } catch (error) {
+    console.error(
+      `[balance-experiments] no production candidate: ${error instanceof Error ? error.message : String(error)}`
+    )
+    process.exit(1)
+  }
   console.log(`[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`)
   console.log(`[balance-experiments] recommendation: ${report.recommendation.status} (Phase 3C objective: ${report.recommendation.objectiveStatus})`)
   if (report.recommendation.objectiveStatus !== 'met') {
