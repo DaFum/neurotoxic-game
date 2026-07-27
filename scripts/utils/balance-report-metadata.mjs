@@ -10,7 +10,11 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/utils/dailyTickLogic.ts',
   'src/utils/postGig/derivations.ts',
   'src/utils/postGig/socialResolution.ts',
-  'src/types/social.d.ts'
+  'src/types/social.d.ts',
+  'src/hooks/postGig/usePostGigDerivations.ts',
+  'src/context/initialState.ts',
+  'src/context/reducers/sanitizers/stateSanitizers.ts',
+  'src/utils/saveValidator.ts'
 ])
 
 export const getBalanceSourceHash = async root => {

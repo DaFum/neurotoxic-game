@@ -20,6 +20,7 @@ import {
   assertEqualControlCohorts,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
+  kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
   selectAcceptedCandidate,
@@ -28,6 +29,7 @@ import {
 import {
   KPI_TARGETS,
   SCENARIOS,
+  calculateAverageFameEarnedPerGig,
   createScenarioSeed,
   getJsonHash,
   runSingleSimulation
@@ -68,49 +70,123 @@ const combinedSummary = ({
 })
 
 test('final combined validation enforces hard acceptance and integrity gates', () => {
-  const valid = [
-    combinedSummary({ scenarioId: 'bootstrap_struggle', candidateRate: 60 })
-  ]
+  const valid = SCENARIOS.map(scenario =>
+    combinedSummary({
+      scenarioId: scenario.id,
+      candidateRate: scenario.id === 'bootstrap_struggle' ? 60 : 0,
+      controlStatus: KPI_TARGETS[scenario.id] ? 'passed' : 'not_evaluated',
+      candidateStatus: KPI_TARGETS[scenario.id] ? 'passed' : 'not_evaluated'
+    })
+  )
   assert.equal(evaluateFinalCombinedValidation(valid).passed, true)
+  assert.equal(evaluateFinalCombinedValidation(valid.slice(1)).passed, false)
   assert.equal(
-    evaluateFinalCombinedValidation([
-      combinedSummary({
-        scenarioId: 'bootstrap_struggle',
-        candidateRate: 60.01
-      })
-    ]).passed,
+    evaluateFinalCombinedValidation([...valid, valid[0]]).checks
+      .scenarioIdsUnique,
     false
   )
   assert.equal(
-    evaluateFinalCombinedValidation([
-      combinedSummary({ controlStatus: 'passed', candidateStatus: 'failed' })
-    ]).passed,
+    evaluateFinalCombinedValidation(
+      valid.map(item =>
+        item.scenarioId === 'bootstrap_struggle'
+          ? combinedSummary({
+              scenarioId: item.scenarioId,
+              candidateRate: 60.01
+            })
+          : item
+      )
+    ).passed,
     false
   )
   assert.equal(
-    evaluateFinalCombinedValidation([
-      combinedSummary({ controlRate: 2, candidateRate: 4.01 })
-    ]).passed,
+    evaluateFinalCombinedValidation(
+      valid.map((item, index) =>
+        index === 0
+          ? {
+              ...item,
+              controlKpiStatus: 'passed',
+              candidateKpiStatus: 'failed'
+            }
+          : item
+      )
+    ).passed,
     false
   )
   assert.equal(
-    evaluateFinalCombinedValidation([combinedSummary({ fameDelta: 5.01 })])
-      .passed,
+    evaluateFinalCombinedValidation(
+      valid.map(item =>
+        item.scenarioId === 'baseline_touring'
+          ? combinedSummary({
+              scenarioId: item.scenarioId,
+              controlRate: 2,
+              candidateRate: 4.01
+            })
+          : item
+      )
+    ).passed,
     false
   )
   assert.equal(
-    evaluateFinalCombinedValidation([combinedSummary({ harmonyDelta: -5.01 })])
-      .passed,
+    evaluateFinalCombinedValidation(
+      valid.map((item, index) =>
+        index === 0 ? { ...item, famePerGigDeltaPct: 5.01 } : item
+      )
+    ).passed,
     false
   )
   assert.equal(
-    evaluateFinalCombinedValidation([combinedSummary({ drawdownDelta: 10.01 })])
-      .passed,
+    evaluateFinalCombinedValidation(
+      valid.map((item, index) =>
+        index === 0
+          ? combinedSummary({
+              scenarioId: item.scenarioId,
+              harmonyDelta: -5.01
+            })
+          : item
+      )
+    ).passed,
     false
   )
-  const badTransitions = combinedSummary()
+  assert.equal(
+    evaluateFinalCombinedValidation(
+      valid.map((item, index) =>
+        index === 0
+          ? combinedSummary({
+              scenarioId: item.scenarioId,
+              drawdownDelta: 10.01
+            })
+          : item
+      )
+    ).passed,
+    false
+  )
+  const badTransitions = structuredClone(valid[0])
   badTransitions.bankruptcy.bankruptcyTransitions.bothSolvent = 9
-  assert.equal(evaluateFinalCombinedValidation([badTransitions]).passed, false)
+  assert.equal(
+    evaluateFinalCombinedValidation([badTransitions, ...valid.slice(1)]).passed,
+    false
+  )
+})
+
+test('canonical fame per gig averages run ratios and non-KPI scenarios are explicit', () => {
+  const runs = [
+    { scenarioId: 'unconfigured', gigsPlayed: 1, fameEarned: 100 },
+    { scenarioId: 'unconfigured', gigsPlayed: 9, fameEarned: 0 }
+  ]
+  assert.equal(calculateAverageFameEarnedPerGig(runs), 50)
+  assert.deepEqual(
+    kpiStatusForRuns(
+      runs.map(run => ({
+        control: run,
+        candidate: run,
+        scenarioId: run.scenarioId
+      }))
+    ),
+    {
+      control: 'not_evaluated',
+      candidate: 'not_evaluated'
+    }
+  )
 })
 
 test('KPI hash depends on KPI targets but not report version', () => {
@@ -259,16 +335,16 @@ test('resolveBalanceTuning rejects malformed obligation stage shapes and order',
 })
 
 test('selected obligation relief ends after its configured production window', () => {
-  assert.equal(getEarlyGameObligationMultiplier(1), 0.46)
-  assert.equal(getEarlyGameObligationMultiplier(60), 0.46)
+  assert.equal(getEarlyGameObligationMultiplier(1), 0.49)
+  assert.equal(getEarlyGameObligationMultiplier(60), 0.49)
   assert.equal(getEarlyGameObligationMultiplier(61), 1)
 })
 
 test('selected regional repeat demand penalty starts after the first show and caps', () => {
   assert.equal(getRepeatDemandMultiplier(0, 0), 1)
-  assert.equal(getRepeatDemandMultiplier(29, 1), 1)
-  assert.equal(getRepeatDemandMultiplier(30, 1), 0.84)
-  assert.ok(Math.abs(getRepeatDemandMultiplier(30, 20) - 0.45) < 1e-12)
+  assert.equal(getRepeatDemandMultiplier(28, 1), 1)
+  assert.equal(getRepeatDemandMultiplier(29, 1), 0.84)
+  assert.ok(Math.abs(getRepeatDemandMultiplier(29, 20) - 0.45) < 1e-12)
 })
 
 test('experiment config hash is stable and sensitive to parameter changes', () => {
