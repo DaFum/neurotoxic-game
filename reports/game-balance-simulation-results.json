@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T21:30:03.761Z",
+  "generatedAt": "2026-07-27T21:44:37.662Z",
   "constants": {
     "reportVersion": 12,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "9d451a81ba3f430d23bb80464ffb26995bcd0e02",
+    "sourceBaseCommit": "b4343614a9128be7b6766224473580426e30e474",
     "workingTreeDirty": false,
     "simulationScriptSha256": "5a55192592b40ae8ba168af9ec855d57c9543ae9e1904111ca4532d99a1bc90f",
-    "balanceSourceSha256": "538e7e5a256f389aebe583b8e4cb868bb1b32430d845dbc2b149107efabb075e",
+    "balanceSourceSha256": "9db74b0b4b81f0362dfac371e5b9c08db1793c912265b86aea0d173302eeb957",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
     "seedStrategy": "scenario-id-plus-run-index"
