@@ -109,6 +109,7 @@ test('regionalGigHistory roundtrip integration', () => {
 })
 
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
+import { getRegionKeyForLocation } from '../../src/utils/mapUtils'
 
 const buildPostGigParams = (social, player) => ({
   option: {
@@ -153,6 +154,38 @@ test('post-gig path normalizes regional gig history through the canonical helper
   // Raw appending would yield [12, 5, 5, -3, 2.5, 12]; only the canonical
   // helper dedupes, sorts and drops non-integer/negative days.
   assert.deepEqual(updates.updatedSocial.regionalGigHistory.berlin, [5, 12])
+})
+
+// `player.location` is persisted and only loosely constrained, and
+// `getRegionKeyForLocation` returns 'constructor' / '__proto__' unchanged (the
+// latter because its first underscore sits at index 0). A bare index read then
+// resolves an inherited Object.prototype value instead of undefined, and the
+// spread throws mid post-gig resolution.
+const FORBIDDEN_REGION_LOCATIONS = [
+  'constructor',
+  '__proto__',
+  'venues:constructor.name'
+]
+
+FORBIDDEN_REGION_LOCATIONS.forEach(location => {
+  test(`appendToRegionalGigHistory rejects the forbidden region key from ${location}`, () => {
+    const regionId = getRegionKeyForLocation(location)
+    const history = { berlin: [1] }
+
+    const result = appendToRegionalGigHistory(history, regionId, 5)
+
+    assert.deepEqual(result, { berlin: [1] })
+    assert.equal(Object.hasOwn(result, '__proto__'), false)
+    assert.equal(result.berlin.length, 1)
+  })
+
+  test(`post-gig path survives a persisted ${location} location`, () => {
+    const updates = calculatePostGigStateUpdates(
+      buildPostGigParams({ regionalGigHistory: { berlin: [1] } }, { location })
+    )
+
+    assert.deepEqual(updates.updatedSocial.regionalGigHistory, { berlin: [1] })
+  })
 })
 
 test('post-gig path keeps the played region within the validator region cap', () => {

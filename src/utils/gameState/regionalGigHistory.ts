@@ -48,6 +48,12 @@ const mostRecentDay = (days: number[]): number =>
  * The appended region is always retained: when the history is already at the
  * region cap and `regionId` is new, the region whose last gig is oldest is
  * evicted, so the gig just played is never the one dropped.
+ *
+ * A forbidden `regionId` is dropped rather than recorded. `player.location` is
+ * persisted and only loosely constrained, and `getRegionKeyForLocation` passes
+ * `constructor` / `__proto__` through unchanged, so reading the entry with a
+ * bare index would resolve an inherited `Object.prototype` value instead of
+ * `undefined` and the spread below would throw mid post-gig resolution.
  */
 export const appendToRegionalGigHistory = (
   history: Record<string, number[]> | undefined | null,
@@ -55,9 +61,14 @@ export const appendToRegionalGigHistory = (
   day: number
 ): Record<string, number[]> => {
   const normalized = normalizeRegionalGigHistory(history ?? {})
-  const currentDays = normalized[regionId] ?? []
+  if (isForbiddenKey(regionId)) return normalized
 
-  if (!(regionId in normalized)) {
+  const existing = Object.hasOwn(normalized, regionId)
+    ? normalized[regionId]
+    : undefined
+  const currentDays = Array.isArray(existing) ? existing : []
+
+  if (!Object.hasOwn(normalized, regionId)) {
     const regionIds = Object.keys(normalized)
     if (regionIds.length >= MAX_REGIONS) {
       const stalest = regionIds.reduce((oldest, candidate) =>
