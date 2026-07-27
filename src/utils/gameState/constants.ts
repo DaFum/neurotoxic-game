@@ -2,10 +2,16 @@
  * Fame reward tuning constants.
  * GIG_BASE_REWARD      – Flat fame awarded for any passing gig (perfScore ≥ 31).
  * GIG_SCORE_MULTIPLIER – Additional fame per perfScore point on top of the base.
+ *
+ * Raised from 150/12 so a full tour funds the fame-priced shop entries: over the
+ * map-bounded horizon the band earned ~8.6k fame against 24.4k of fame costs.
+ * Prices and rewards each close half of that 2.84x gap (sqrt(2.84) = 1.684), so
+ * the reward scales up while the fame-priced catalogue drops by the same factor.
+ * Re-derive both together; moving one alone breaks the target.
  */
 export const FAME_PROGRESS_CONSTANTS = Object.freeze({
-  GIG_BASE_REWARD: 150,
-  GIG_SCORE_MULTIPLIER: 12,
+  GIG_BASE_REWARD: 250,
+  GIG_SCORE_MULTIPLIER: 20,
   DIMINISHING_RETURNS_START: 30000,
   DIMINISHING_RETURNS_RATE: 0.0001
 })

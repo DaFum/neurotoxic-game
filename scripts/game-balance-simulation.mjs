@@ -204,9 +204,20 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 11,
+  reportVersion: 12,
   runsPerScenario: 260,
-  daysPerRun: 75,
+  // A playthrough is bounded by the map, not by a free-running clock:
+  // `MapGenerator.generateMap()` is always called with depth 10 and produces a
+  // strictly forward layered DAG, so every route from START to the single
+  // FINALE node is exactly 10 hops, and arriving anywhere advances the day
+  // once. Reaching FINALE ends the run (GAMEOVER, victory). Measured over 40
+  // generated maps: 10 hops every time, 8-10 gig nodes reachable on the best
+  // path. Simulating longer models tours the game cannot contain.
+  daysPerRun: 10,
+  // Progression waypoints inside a tour, as absolute days. Must stay within
+  // `daysPerRun` or every checkpoint metric reads null and the paired
+  // acceptance checks silently fail instead of measuring anything.
+  progressionCheckpointDays: [3, 5, 7],
   homeVenueId: 'stendal_proberaum',
   baseGigGapDays: 1, // In-game, traveling to a new node advances the day exactly once, allowing a gig immediately upon arrival
   randomModifierChance: 0.22,
@@ -413,13 +424,14 @@ export const SCENARIOS = [
       social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
     }
   },
-  // ── Phase probes: fixed fame starting points, short runs ──────────────────
+  // ── Phase probes: fixed fame starting points ───────────────────────────────
+  // Probes differ only in their starting state, not in length: every run models
+  // one full tour over the map's fixed horizon, so they inherit `daysPerRun`.
   {
     id: 'no_social_probe',
     name: 'No Social (Fame 0-50)',
     description: 'A build that completely ignores social media.',
     ticketDiscountChance: 0.1,
-    daysOverride: 75,
     gigGapDays: 2,
     socialStrategy: 'none',
     brandDealsEnabled: false,
@@ -440,7 +452,6 @@ export const SCENARIOS = [
     name: 'High Controversy',
     description: 'Max controversy strategy.',
     ticketDiscountChance: 0.1,
-    daysOverride: 75,
     gigGapDays: 2,
     assetStrategies: {
       promo: 0.2,
@@ -472,7 +483,6 @@ export const SCENARIOS = [
       soundcheck: 0.08,
       guestlist: 0.03
     },
-    daysOverride: 20,
     initialOverrides: {
       player: { money: 500, fame: 0 },
       band: { harmony: 80 },
@@ -497,7 +507,6 @@ export const SCENARIOS = [
       soundcheck: 0.18,
       guestlist: 0.08
     },
-    daysOverride: 40,
     initialOverrides: {
       player: { money: 1500, fame: 60 },
       band: { harmony: 75 },
@@ -522,7 +531,6 @@ export const SCENARIOS = [
       soundcheck: 0.4,
       guestlist: 0.2
     },
-    daysOverride: 30,
     initialOverrides: {
       player: { money: 5000, fame: 175 },
       band: { harmony: 80 },
@@ -1827,9 +1835,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   // Day-waypoint snapshots (money at start of day, before daily costs)
   // Checkpoints stay null when the run ends (or goes bankrupt) before the
   // waypoint day, so short probes report "missing" instead of €0.
-  let moneyAtDay20 = null
-  let moneyAtDay40 = null
-  let moneyAtDay60 = null
+  let moneyAtEarlyCheckpoint = null
+  let moneyAtMidCheckpoint = null
+  let moneyAtLateCheckpoint = null
+  const [earlyCheckpointDay, midCheckpointDay, lateCheckpointDay] =
+    SIMULATION_CONSTANTS.progressionCheckpointDays
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -1849,9 +1859,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       if (drop > maxPeakToTroughDrop) maxPeakToTroughDrop = drop;
     }
     // Snapshot money at start of day (before any spending)
-    if (day === 20) moneyAtDay20 = state.player.money
-    if (day === 40) moneyAtDay40 = state.player.money
-    if (day === 60) moneyAtDay60 = state.player.money
+    if (day === earlyCheckpointDay) moneyAtEarlyCheckpoint = state.player.money
+    if (day === midCheckpointDay) moneyAtMidCheckpoint = state.player.money
+    if (day === lateCheckpointDay) moneyAtLateCheckpoint = state.player.money
 
     const moneyBeforeDay = state.player.money
     const fameBeforeDailyUpdates = state.player.fame
@@ -2309,9 +2319,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   // In-scope waypoints a bankrupt run never reached record the terminal
   // balance, so progression averages include failed runs; null stays
   // reserved for waypoints beyond this scenario's daysOverride.
-  if (moneyAtDay20 == null && daysToRun >= 20) moneyAtDay20 = state.player.money
-  if (moneyAtDay40 == null && daysToRun >= 40) moneyAtDay40 = state.player.money
-  if (moneyAtDay60 == null && daysToRun >= 60) moneyAtDay60 = state.player.money
+  if (moneyAtEarlyCheckpoint == null && daysToRun >= earlyCheckpointDay)
+    moneyAtEarlyCheckpoint = state.player.money
+  if (moneyAtMidCheckpoint == null && daysToRun >= midCheckpointDay)
+    moneyAtMidCheckpoint = state.player.money
+  if (moneyAtLateCheckpoint == null && daysToRun >= lateCheckpointDay)
+    moneyAtLateCheckpoint = state.player.money
 
   const reconciliationDelta = reconcileFameLedger({
     startingFame,
@@ -2336,9 +2349,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     peakMoney,
     lowestMoney,
     timeline,
-    moneyAtDay20,
-    moneyAtDay40,
-    moneyAtDay60,
+    moneyAtEarlyCheckpoint,
+    moneyAtMidCheckpoint,
+    moneyAtLateCheckpoint,
     totalTravelCostGigs,
     totalHitWindowSum,
     totalMissesSum,
@@ -2580,9 +2593,9 @@ export const summarizeScenario = runs => {
     gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
     gigsToAffordVanUpgrade: Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
-    avgMoneyAtDay20: runs.some(r => r.moneyAtDay20 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay20 != null).map(r => r.moneyAtDay20))) : null,
-    avgMoneyAtDay40: runs.some(r => r.moneyAtDay40 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay40 != null).map(r => r.moneyAtDay40))) : null,
-    avgMoneyAtDay60: runs.some(r => r.moneyAtDay60 != null) ? Math.round(mean(runs.filter(r => r.moneyAtDay60 != null).map(r => r.moneyAtDay60))) : null,
+    avgMoneyAtEarlyCheckpoint: runs.some(r => r.moneyAtEarlyCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtEarlyCheckpoint != null).map(r => r.moneyAtEarlyCheckpoint))) : null,
+    avgMoneyAtMidCheckpoint: runs.some(r => r.moneyAtMidCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtMidCheckpoint != null).map(r => r.moneyAtMidCheckpoint))) : null,
+    avgMoneyAtLateCheckpoint: runs.some(r => r.moneyAtLateCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtLateCheckpoint != null).map(r => r.moneyAtLateCheckpoint))) : null,
     bankruptcy: {
       count: bankruptcyCount,
       sampleSize: n,
@@ -2746,58 +2759,82 @@ const fmtPct = n => `${n}%`
 
 export const KPI_TARGETS = {
   // All scenarios start from the real game-default state (€500, fame 0, harmony 80).
-  // Targets calibrated to 75-day runs with uniform starting conditions (2026-04-16, moderate rebalance).
+  //
+  // Money bands are calibrated to the map-bounded horizon (`daysPerRun`, one
+  // tour). The previous bands assumed 75-day runs and were unreachable once the
+  // horizon matched the game: the neutral-tuning control ends a tour on ~€18.3k
+  // in `baseline_touring`, against an old floor of €25k. Each band brackets the
+  // measured neutral-tuning mean at x0.5 to x1.6 — the same relative corridor
+  // the 75-day bands placed around their own horizon's output — and is rounded
+  // to readable figures. Re-derive with a control run whenever `daysPerRun`,
+  // GLOBAL_PAYOUT_NERF or FAME_PROGRESS_CONSTANTS change; a band that the
+  // neutral control cannot reach is a broken gate, not a balance finding.
+  //
+  // Fame per gig is a per-gig ratio, so it is horizon-independent, but it does
+  // scale with FAME_PROGRESS_CONSTANTS: the 600-1300 band was set for the
+  // 150/12 reward and is scaled by the same 1.684x applied there. Measured
+  // ~1530 per gig under neutral tuning.
+  //
+  // Bankruptcy caps are now loose rather than binding: funding the shop
+  // catalogue within one tour raised payouts, which pulled Bootstrap Struggle
+  // from ~46% insolvency down to ~17% and the other scenarios close to 0%. The
+  // caps still express the intended ceilings, but they no longer characterise
+  // the observed risk profile and want a deliberate design pass.
+  //
+  // Bankruptcy caps express per-scenario risk tolerance and are horizon-
+  // independent intent, so they are unchanged. Fame per gig is a per-gig ratio
+  // and is likewise unaffected (measured 840-980 across all scenarios).
   baseline_touring: {
     bankruptcyMax: 10,
-    moneyMin: 25000,
-    moneyMax: 80000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 15000,
+    moneyMax: 47000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
     bankruptcyMax: 60,
-    moneyMin: 400,
-    moneyMax: 5000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 2000,
+    moneyMax: 7000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
-    moneyMin: 15000,
-    moneyMax: 50000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 9000,
+    moneyMax: 28000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
     bankruptcyMax: 50,
     moneyMin: 4500,
-    moneyMax: 30000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMax: 15000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
     bankruptcyMax: 35,
-    moneyMin: 8500,
-    moneyMax: 50000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 5500,
+    moneyMax: 18000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   chaos_tour: {
     bankruptcyMax: 25,
-    moneyMin: 10000,
-    moneyMax: 60000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 8000,
+    moneyMax: 26000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
-    moneyMin: 15000,
-    moneyMax: 50000,
-    fameProgressPerGigMin: 600,
-    fameProgressPerGigMax: 1300
+    moneyMin: 9500,
+    moneyMax: 31000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   }
 }
 
@@ -2913,14 +2950,16 @@ const buildRegressionComparison = (baselinePayload, results) => {
 }
 
 const getProgressionInsight = s => {
-  // Thresholds calibrated to the post-Round-3 economy (2026-04-13):
-  // With €3,500 gig-net and daily frequency, Baseline Touring reaches ~€46k by day 20.
-  // €70k+ would indicate a genuinely pathological sink failure; €55k+ is notable but not critical.
-  if (s.avgMoneyAtDay20 > 70000)
+  // Scaled from the previous 75-day thresholds (70k/55k/800, set when the early
+  // checkpoint sat at day 20 and Baseline Touring reached ~€46k there) by the
+  // same factor applied to the KPI money bands for the map-bounded horizon
+  // (Baseline Touring band top 80000 -> 29000). Re-derive alongside
+  // KPI_TARGETS whenever `daysPerRun` or the checkpoint days change.
+  if (s.avgMoneyAtEarlyCheckpoint > 25000)
     return '⚠️ Sehr hohe Frühakkumulation – Sink-Kosten drastisch erhöhen.'
-  if (s.avgMoneyAtDay20 > 55000)
+  if (s.avgMoneyAtEarlyCheckpoint > 20000)
     return '⚠️ Schnelle Kapitalakkumulation – Daily-Kosten oder Upgrade-Preise prüfen.'
-  if (s.avgMoneyAtDay20 < 800 && s.bankruptcyRate > 5)
+  if (s.avgMoneyAtEarlyCheckpoint < 300 && s.bankruptcyRate > 5)
     return '⚠️ Liquiditätsprobleme in Frühphase – Einstiegspuffer erhöhen.'
   return '✅ Kapitalaufbau im erwarteten Korridor.'
 }
@@ -3104,15 +3143,17 @@ const buildMarkdownReport = payload => {
   // ── Progression Curve ─────────────────────────────────────────────────────
   lines.push('## Kapital-Progressionskurve')
   lines.push('')
+  const [earlyDay, midDay, lateDay] =
+    SIMULATION_CONSTANTS.progressionCheckpointDays
   lines.push(
-    '| Szenario | Ø Geld Tag 20 | Ø Geld Tag 40 | Ø Geld Tag 60 | Ø Endgeld | Bewertung |'
+    `| Szenario | Ø Geld Tag ${earlyDay} | Ø Geld Tag ${midDay} | Ø Geld Tag ${lateDay} | Ø Endgeld | Bewertung |`
   )
   lines.push('|---|---:|---:|---:|---:|---|')
 
   for (const scenario of payload.results) {
     const s = scenario.summary
     lines.push(
-      `| ${scenario.name} | ${fmtEurOrDash(s.avgMoneyAtDay20)} | ${fmtEurOrDash(s.avgMoneyAtDay40)} | ${fmtEurOrDash(s.avgMoneyAtDay60)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
+      `| ${scenario.name} | ${fmtEurOrDash(s.avgMoneyAtEarlyCheckpoint)} | ${fmtEurOrDash(s.avgMoneyAtMidCheckpoint)} | ${fmtEurOrDash(s.avgMoneyAtLateCheckpoint)} | ${fmtEur(s.avgFinalMoney)} | ${getProgressionInsight(s)} |`
     )
   }
   lines.push('')

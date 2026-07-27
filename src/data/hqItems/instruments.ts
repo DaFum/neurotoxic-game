@@ -4,7 +4,7 @@ export const instruments = [
     id: 'hq_inst_guitar_custom',
     name: 'items:hq_inst_guitar_custom.name',
     category: 'INSTRUMENT',
-    cost: 15000, // High-end instrument
+    cost: 7500, // High-end instrument
     currency: 'money',
     img: 'ITEM_GUITAR_CUSTOM',
     description: 'items:hq_inst_guitar_custom.description',
@@ -19,7 +19,7 @@ export const instruments = [
     id: 'hq_inst_guitar_flying_v',
     name: 'items:hq_inst_guitar_flying_v.name',
     category: 'INSTRUMENT',
-    cost: 1200, // Mid-range vintage
+    cost: 590, // Mid-range vintage
     currency: 'money',
     img: 'ITEM_GUITAR_V',
     description: 'items:hq_inst_guitar_flying_v.description',
@@ -34,7 +34,7 @@ export const instruments = [
     id: 'hq_inst_bass_sansamp',
     name: 'items:hq_inst_bass_sansamp.name',
     category: 'INSTRUMENT',
-    cost: 1800, // Pro gear
+    cost: 860, // Pro gear
     currency: 'money',
     img: 'ITEM_BASS_PREAMP',
     description: 'items:hq_inst_bass_sansamp.description',
@@ -50,7 +50,7 @@ export const instruments = [
     id: 'hq_inst_drum_trigger',
     name: 'items:hq_inst_drum_trigger.name',
     category: 'INSTRUMENT',
-    cost: 2200, // Pro drum gear
+    cost: 1000, // Pro drum gear
     currency: 'money',
     img: 'ITEM_DRUM_TRIGGER',
     description: 'items:hq_inst_drum_trigger.description',
@@ -65,7 +65,7 @@ export const instruments = [
     id: 'hq_inst_cowbell_inferno',
     name: 'items:hq_inst_cowbell_inferno.name',
     category: 'INSTRUMENT',
-    cost: 500, // Meme instrument
+    cost: 250, // Meme instrument
     currency: 'money',
     img: 'ITEM_COWBELL',
     description: 'items:hq_inst_cowbell_inferno.description',
@@ -81,7 +81,7 @@ export const instruments = [
     id: 'hq_inst_second_guitar',
     name: 'items:hq_inst_second_guitar.name',
     category: 'INSTRUMENT',
-    cost: 500, // Backup gear
+    cost: 250, // Backup gear
     currency: 'money',
     img: 'ITEM_GUITAR_CHEAP',
     description: 'items:hq_inst_second_guitar.description',
@@ -96,7 +96,7 @@ export const instruments = [
     id: 'hq_inst_broken_drum_kit',
     name: 'items:hq_inst_broken_drum_kit.name',
     category: 'INSTRUMENT',
-    cost: 1000, // Beater kit
+    cost: 480, // Beater kit
     currency: 'money',
     img: 'ITEM_DRUM_BROKEN',
     description: 'items:hq_inst_broken_drum_kit.description',
@@ -111,7 +111,7 @@ export const instruments = [
     id: 'hq_inst_bass_effect_pedal_cheap',
     name: 'items:hq_inst_bass_effect_pedal_cheap.name',
     category: 'INSTRUMENT',
-    cost: 150, // Cheap FX
+    cost: 80, // Cheap FX
     currency: 'money',
     img: 'ITEM_PEDAL_CHEAP',
     description: 'items:hq_inst_bass_effect_pedal_cheap.description',
@@ -127,7 +127,7 @@ export const instruments = [
     id: 'hq_inst_theremin_doom',
     name: 'items:hq_inst_theremin_doom.name',
     category: 'INSTRUMENT',
-    cost: 3000, // Boutique obscure instrument
+    cost: 1500, // Boutique obscure instrument
     currency: 'money',
     img: 'ITEM_THEREMIN',
     description: 'items:hq_inst_theremin_doom.description',
@@ -142,7 +142,7 @@ export const instruments = [
     id: 'hq_inst_didgeridoo',
     name: 'items:hq_inst_didgeridoo.name',
     category: 'INSTRUMENT',
-    cost: 900, // Niche instrument
+    cost: 450, // Niche instrument
     currency: 'money',
     img: 'ITEM_DIDGERIDOO',
     description: 'items:hq_inst_didgeridoo.description',

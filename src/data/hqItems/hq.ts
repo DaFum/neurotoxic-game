@@ -5,7 +5,7 @@ export const hq = [
     id: 'hq_room_coffee',
     name: 'items:hq_room_coffee.name',
     category: 'HQ',
-    cost: 400, // Appliance cost
+    cost: 200, // Appliance cost
     currency: 'money',
     img: 'ITEM_HQ_COFFEE',
     description: 'items:hq_room_coffee.description',
@@ -15,7 +15,7 @@ export const hq = [
     id: 'hq_room_sofa',
     name: 'items:hq_room_sofa.name',
     category: 'HQ',
-    cost: 600, // Furniture cost
+    cost: 290, // Furniture cost
     currency: 'money',
     img: 'ITEM_HQ_SOFA',
     description: 'items:hq_room_sofa.description',
@@ -25,7 +25,7 @@ export const hq = [
     id: 'hq_room_marketing',
     name: 'items:hq_room_marketing.name',
     category: 'HQ',
-    cost: 1000, // Service cost
+    cost: 540, // Service cost
     currency: 'fame',
     requiresReputation: true,
     img: 'ITEM_HQ_BOTNET',
@@ -41,7 +41,7 @@ export const hq = [
     id: 'hq_room_label',
     name: 'items:hq_room_label.name',
     category: 'HQ',
-    cost: 5000, // Major milestone cost
+    cost: 2700, // Major milestone cost
     currency: 'fame',
     requiresReputation: true,
     img: 'ITEM_HQ_LABEL',
@@ -53,7 +53,7 @@ export const hq = [
     id: 'hq_room_old_couch',
     name: 'items:hq_room_old_couch.name',
     category: 'HQ',
-    cost: 100, // Cheap furniture
+    cost: 50, // Cheap furniture
     currency: 'money',
     img: 'ITEM_HQ_OLD_COUCH',
     description: 'items:hq_room_old_couch.description',
@@ -63,7 +63,7 @@ export const hq = [
     id: 'hq_room_poster_wall',
     name: 'items:hq_room_poster_wall.name',
     category: 'HQ',
-    cost: 50, // Decoration cost
+    cost: 20, // Decoration cost
     currency: 'money',
     img: 'ITEM_HQ_POSTERS',
     description: 'items:hq_room_poster_wall.description',
@@ -73,7 +73,7 @@ export const hq = [
     id: 'hq_room_cheap_beer_fridge',
     name: 'items:hq_room_cheap_beer_fridge.name',
     category: 'HQ',
-    cost: 200, // Appliance cost
+    cost: 100, // Appliance cost
     currency: 'money',
     img: 'ITEM_HQ_FRIDGE',
     description: 'items:hq_room_cheap_beer_fridge.description',
@@ -83,7 +83,7 @@ export const hq = [
     id: 'hq_room_diy_soundproofing',
     name: 'items:hq_room_diy_soundproofing.name',
     category: 'HQ',
-    cost: 100, // Material cost
+    cost: 50, // Material cost
     currency: 'money',
     img: 'ITEM_HQ_EGGS',
     description: 'items:hq_room_diy_soundproofing.description',
@@ -94,7 +94,7 @@ export const hq = [
     id: 'hq_room_cat',
     name: 'items:hq_room_cat.name',
     category: 'HQ',
-    cost: 50, // Adoption fee
+    cost: 20, // Adoption fee
     currency: 'money',
     img: 'ITEM_HQ_CAT',
     description: 'items:hq_room_cat.description',
@@ -109,7 +109,7 @@ export const hq = [
     id: 'hq_room_beer_pipeline',
     name: 'items:hq_room_beer_pipeline.name',
     category: 'HQ',
-    cost: 25000, // Luxury installation
+    cost: 12500, // Luxury installation
     currency: 'money',
     img: 'ITEM_HQ_PIPELINE',
     description: 'items:hq_room_beer_pipeline.description',
@@ -124,7 +124,7 @@ export const hq = [
     id: 'hq_room_shrine',
     name: 'items:hq_room_shrine.name',
     category: 'HQ',
-    cost: 660, // Occult cost (Adjusted to multiple of 10)
+    cost: 360, // Occult cost (Adjusted to multiple of 10)
     currency: 'fame',
     img: 'ITEM_HQ_SHRINE',
     description: 'items:hq_room_shrine.description',
@@ -134,7 +134,7 @@ export const hq = [
     id: 'hq_room_skull',
     name: 'items:hq_room_skull.name',
     category: 'HQ',
-    cost: 300, // Decor cost
+    cost: 150, // Decor cost
     currency: 'money',
     img: 'ITEM_HQ_SKULL',
     description: 'items:hq_room_skull.description',
@@ -149,7 +149,7 @@ export const hq = [
     id: 'pr_manager_contract',
     name: 'items:pr_manager_contract.name',
     category: 'HQ',
-    cost: 500,
+    cost: 250,
     currency: 'money',
     requiresReputation: true,
     img: 'ITEM_HQ_PR_CONTRACT',
@@ -160,7 +160,7 @@ export const hq = [
     id: 'hq_room_void_altar',
     name: 'items:hq_room_void_altar.name',
     category: 'HQ',
-    cost: 660,
+    cost: 360,
     currency: 'fame',
     img: 'ITEM_HQ_VOID_ALTAR',
     description: 'items:hq_room_void_altar.description',

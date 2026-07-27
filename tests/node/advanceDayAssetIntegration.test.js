@@ -53,8 +53,7 @@ test('AdvanceDay Integration - Assets Tick', () => {
     Object.values(nextState.liabilities)[0].termDaysRemaining,
     9
   )
-  // €50 revenue - €20 upkeep - €50 liability - €31 Phase 3 daily relief cost.
-  assert.strictEqual(nextState.player.money, 949)
+  assert.strictEqual(nextState.player.money, 918)
 })
 
 test('AdvanceDay handler leaves zero-condition foreclosures to the action orchestrator', () => {

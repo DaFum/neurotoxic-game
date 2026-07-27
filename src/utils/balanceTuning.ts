@@ -53,32 +53,22 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
   })
 
 /**
- * Temporary recurring-obligation relief selected by Phase 3 experiment
- * `bootstrap-obligations-49-through-60`.
+ * Production tuning. Currently neutral: Phase 3 selected no lever once the
+ * simulated horizon was bounded by the map.
  *
- * The multiplier applies through day 60 and accepts values in the range 0–1.
+ * The levers it previously carried were calibrated against 75-day runs. A real
+ * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"
+ * obligation discount covered every real playthrough six times over — a
+ * permanent subsidy, not the temporary relief it was justified as — while a
+ * repeat-demand window starting at day 28 never fired at all. Over the real
+ * horizon the untuned economy sits inside every KPI band and inside Bootstrap
+ * Struggle's insolvency tolerance, so there is nothing for a lever to fix.
+ *
+ * Re-run `pnpm run simulate:balance:experiments` before reintroducing a lever;
+ * `bootstrap-none` / `touring-none` are legitimate winners.
  */
-export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> = deepFreeze({
-  ...ORIGINAL_CONTROL_BALANCE_TUNING,
-  earlyGame: {
-    ...ORIGINAL_CONTROL_BALANCE_TUNING.earlyGame,
-    durationDays: 60,
-    dailyObligationMultiplier: 0.49
-  },
-  /**
-   * Expiring regional demand saturation selected by Phase 3 experiment
-   * `touring-demand-16-55-after-28`.
-   *
-   * Rates are fractions in 0–1; the history window is measured in days.
-   */
-  touring: {
-    ...ORIGINAL_CONTROL_BALANCE_TUNING.touring,
-    repeatGigWindowDays: 10,
-    repeatDemandStartDay: 28,
-    repeatDemandPenaltyPerGig: 0.16,
-    maxRepeatDemandPenalty: 0.55
-  }
-})
+export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> =
+  ORIGINAL_CONTROL_BALANCE_TUNING
 
 export const getEarlyGameObligationMultiplier = (
   day: number,

@@ -27,8 +27,8 @@ const compact = run => ({
   gigsPlayed: run.gigsPlayed,
   finalHarmony: run.finalHarmony,
   maxDrawdownPct: run.maxPeakToTroughDrop,
-  moneyAtDay20: run.moneyAtDay20,
-  moneyAtDay40: run.moneyAtDay40,
+  moneyAtEarlyCheckpoint: run.moneyAtEarlyCheckpoint,
+  moneyAtMidCheckpoint: run.moneyAtMidCheckpoint,
   totalGigNet: run.totalGigNet,
   clinicVisits: run.clinicVisits,
   repairs: run.repairs,
@@ -163,9 +163,17 @@ const stagedObligationRelief = stages => stages.reduce((sum, stage, index) => {
 export const combinationImpact = ({ bootstrap, touring }) => {
   const early = bootstrap.overrides.earlyGame ?? {}
   const late = touring.overrides.touring ?? {}
-  const relief = early.obligationStages?.length
+  const obligationRelief = early.obligationStages?.length
     ? stagedObligationRelief(early.obligationStages)
     : (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
+  // An emergency grant is an intervention too. Omitting it scored a grant lever
+  // as "changes nothing", which then beat the genuine no-op on the alphabetical
+  // tie-break and shipped a lever with no measurable effect. The scale here only
+  // has to order levers consistently and keep the no-op strictly minimal; it is
+  // not a physical quantity.
+  const grantRelief =
+    ((early.emergencyGrant ?? 0) / 1000) * (early.emergencyGrantMaxDay ?? 0)
+  const relief = obligationRelief + grantRelief
   const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
     (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
   return relief + saturation
@@ -178,13 +186,20 @@ export const evaluateCandidate = (definition, pairs, summary) => {
   const candidateSolventMoney = pairs.filter(pair => !pair.candidate.bankrupt).map(pair => pair.candidate.finalMoney)
   const medianFinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.median, summary.continuous.finalMoney.candidate.median)
   const p90FinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.p90, summary.continuous.finalMoney.candidate.p90)
-  const day20DeltaPct = pairedCheckpointDelta(pairs, 'moneyAtDay20')
-  const day40DeltaPct = pairedCheckpointDelta(pairs, 'moneyAtDay40')
+  // Checkpoints are horizon-relative (`progressionCheckpointDays`). A null here
+  // means the waypoint lies outside the simulated horizon, which is a
+  // misconfiguration rather than a candidate failure — surface it instead of
+  // silently failing every candidate.
+  const earlyCheckpointDeltaPct = pairedCheckpointDelta(pairs, 'moneyAtEarlyCheckpoint')
+  const midCheckpointDeltaPct = pairedCheckpointDelta(pairs, 'moneyAtMidCheckpoint')
+  if (definition.phase === 'touring' && (earlyCheckpointDeltaPct == null || midCheckpointDeltaPct == null)) {
+    throw new RangeError('Progression checkpoints fall outside the simulated horizon; check SIMULATION_CONSTANTS.progressionCheckpointDays against daysPerRun')
+  }
   const criteria = definition.acceptanceCriteria
   const checks = definition.phase === 'bootstrap'
     ? {
         bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.bankruptcyRateMaxPct,
-        survival: summary.continuous.daysSurvived.pairedDelta.median >= criteria.medianSurvivalMinimumDeltaDays || percentageDelta(summary.continuous.daysSurvived.control.median, summary.continuous.daysSurvived.candidate.median) >= criteria.medianSurvivalMinimumDeltaPct,
+        bankruptcyDelta: summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
         solventMedianMoney: median(candidateSolventMoney) <= criteria.solventMedianMoneyMax,
         solventP90Money: percentile(candidateSolventMoney, 0.9) <= criteria.solventP90MoneyMax,
         famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct
@@ -192,8 +207,8 @@ export const evaluateCandidate = (definition, pairs, summary) => {
     : {
         medianFinalMoney: medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] && medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
         p90FinalMoney: p90FinalMoneyDeltaPct >= criteria.p90FinalMoneyDeltaPct[0] && p90FinalMoneyDeltaPct <= criteria.p90FinalMoneyDeltaPct[1],
-        day20: day20DeltaPct == null ? null : day20DeltaPct >= criteria.day20MinimumDeltaPct,
-        day40: day40DeltaPct == null ? null : day40DeltaPct >= criteria.day40MinimumDeltaPct,
+        earlyCheckpoint: earlyCheckpointDeltaPct >= criteria.earlyCheckpointMinimumDeltaPct,
+        midCheckpoint: midCheckpointDeltaPct >= criteria.midCheckpointMinimumDeltaPct,
         bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.candidateBankruptcyRateMaxPct && summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
         famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct,
         harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
@@ -211,7 +226,7 @@ export const evaluateCandidate = (definition, pairs, summary) => {
     aggregateResults: {
       ...summary,
       solventMedianMoney: round(median(candidateSolventMoney)), solventP90Money: round(percentile(candidateSolventMoney, 0.9)),
-      famePerGigDeltaPct, medianFinalMoneyDeltaPct, p90FinalMoneyDeltaPct, day20DeltaPct, day40DeltaPct
+      famePerGigDeltaPct, medianFinalMoneyDeltaPct, p90FinalMoneyDeltaPct, earlyCheckpointDeltaPct, midCheckpointDeltaPct
     },
     acceptanceCriteria: { ...definition.acceptanceCriteria, passed, checks },
     rankingComponents: { targetFit: round(targetFit), sideEffectPenalty: round(sideEffectPenalty), overcorrectionPenalty, complexityPenalty },
@@ -303,7 +318,7 @@ export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
   const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
   const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis).flatMap(([tuning, profiles]) => profiles.flatMap(profile => profile.results.map(item => `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`))).join('\n')
-  const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.day20DeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
+  const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.earlyCheckpointDeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
   const combinedRows = Object.values(report.finalCombinedValidation.resultsByScenario).map(item => `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioValidation.passed ? 'Pass' : 'Fail'} |`).join('\n')
   return `# Game Balance Experiments – Phase 3
 
@@ -328,7 +343,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` was selected via the combination-driven selection algorithm. Bootstrap and late-game selection are driven by fully validated Cartesian-product combinations and the combinationImpact tie-break.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search: candidate pairs are ordered by \`combinationImpact\`, which is derived from the overrides alone, and the first pair passing final combined validation wins. ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated; the remaining ${report.combinationSearch.pairsSkipped} carry higher impact and so could not have been selected.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -355,7 +370,7 @@ ${report.phases.phase3C.objectiveNote}
 
 ## Late-Game-Kandidaten
 
-| Candidate | Median Final Money Delta | P90 Final Money Delta | Day 20 Delta | Bankruptcy Delta | Harmony Delta | Pass/Fail |
+| Candidate | Median Final Money Delta | P90 Final Money Delta | Early Checkpoint Delta | Bankruptcy Delta | Harmony Delta | Pass/Fail |
 |---|---:|---:|---:|---:|---:|---|
 ${touringRows}
 
@@ -365,7 +380,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` was selected via the combination-driven selection algorithm. Bootstrap and late-game selection are driven by fully validated Cartesian-product combinations and the combinationImpact tie-break.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search: candidate pairs are ordered by \`combinationImpact\`, which is derived from the overrides alone, and the first pair passing final combined validation wins. ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated; the remaining ${report.combinationSearch.pairsSkipped} carry higher impact and so could not have been selected.
 
 ## Kombinierte Validierung
 
@@ -460,22 +475,43 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const acceptedBootstrap = bootstrapRanking.filter(item => item.acceptanceCriteria.passed)
   if (!acceptedBootstrap.length) throw new Error('No Phase 3B candidate satisfies acceptance criteria')
 
+  // Selection takes the least-impact fully validated combination, and
+  // `combinationImpact` reads only the candidate overrides — no simulation. So
+  // order the pairs by impact up front and stop at the first that validates:
+  // the winner is identical to evaluating all of them, at a fraction of the
+  // cost. Evaluating the whole Cartesian product meant ~1560 runs per
+  // combination for results that could never change the outcome.
   const combinations = []
   const touringByBootstrap = new Map()
-  for (const bootstrap of acceptedBootstrap) {
-    const intermediateTuning = resolveBalanceTuning(bootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
-    const candidates = runCandidates(touringDefinitions, baselineScenario, intermediateTuning)
-    touringByBootstrap.set(bootstrap.id, candidates)
-    for (const touring of rankCandidates(candidates).filter(item => item.acceptanceCriteria.passed)) {
-      combinations.push(evaluateCombination(bootstrap, touring))
+  const screenTouringFor = bootstrap => {
+    if (!touringByBootstrap.has(bootstrap.id)) {
+      const intermediateTuning = resolveBalanceTuning(bootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
+      touringByBootstrap.set(bootstrap.id, runCandidates(touringDefinitions, baselineScenario, intermediateTuning))
+    }
+    return touringByBootstrap.get(bootstrap.id)
+  }
+  const orderedPairs = acceptedBootstrap
+    .flatMap(bootstrap => touringDefinitions.map(touring => ({ bootstrap, touring })))
+    .sort((left, right) =>
+      combinationImpact(left) - combinationImpact(right) ||
+      left.bootstrap.id.localeCompare(right.bootstrap.id) || left.touring.id.localeCompare(right.touring.id)
+    )
+
+  let selected = null
+  let pairsConsidered = 0
+  for (const pair of orderedPairs) {
+    const touring = screenTouringFor(pair.bootstrap).find(item => item.id === pair.touring.id)
+    if (!touring?.acceptanceCriteria.passed) continue
+    pairsConsidered++
+    const combination = evaluateCombination(pair.bootstrap, touring)
+    combinations.push(combination)
+    if (combination.validation.passed) {
+      selected = combination
+      break
     }
   }
-  const acceptedCombinations = combinations.filter(item => item.validation.passed).sort((left, right) =>
-    combinationImpact(left) - combinationImpact(right) ||
-    left.bootstrap.id.localeCompare(right.bootstrap.id) || left.touring.id.localeCompare(right.touring.id)
-  )
-  const selected = acceptedCombinations[0] ?? null
   if (!selected) throw new Error('No combined Phase 3 candidate satisfies final validation')
+  const combinationsSkipped = orderedPairs.length - pairsConsidered
   const selectedBootstrap = selected.bootstrap
   const selectedTouring = selected.touring
   selectedBootstrap.selectedForProduction = true
@@ -483,12 +519,21 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
 
 
 
+  // Search stops at the first validated combination, so an unselected candidate
+  // was either evaluated and failed, or never reached. Say which.
+  const describeRejection = (item, side) => {
+    const evaluated = combinations.filter(c => c[side].id === item.id)
+    if (!evaluated.length) {
+      return 'Not evaluated: a lower-impact combination already passed final combined validation.'
+    }
+    return evaluated.some(c => c.validation.passed)
+      ? 'A lower-impact fully validated combination ranked higher.'
+      : `Did not pass final combined validation (${[...new Set(evaluated.flatMap(c => c.validation.failures))].join(', ')}).`
+  }
+
   for (const item of bootstrapCandidates) {
     if (!item.selectedForProduction && !item.rejectionReason) {
-      const hasPassingCombination = combinations.some(c => c.bootstrap.id === item.id && c.validation.passed)
-      item.rejectionReason = hasPassingCombination
-        ? 'A lower-impact fully validated combination ranked higher.'
-        : 'Did not produce any combination that passed final combined validation.'
+      item.rejectionReason = describeRejection(item, 'bootstrap')
     }
   }
 
@@ -496,10 +541,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
 
   for (const item of touringCandidates) {
     if (!item.selectedForProduction && !item.rejectionReason) {
-      const hasPassingCombination = combinations.some(c => c.touring.id === item.id && c.validation.passed)
-      item.rejectionReason = hasPassingCombination
-        ? 'A lower-impact fully validated combination ranked higher.'
-        : 'Did not produce any combination that passed final combined validation.'
+      item.rejectionReason = describeRejection(item, 'touring')
     }
   }
 
@@ -516,7 +558,9 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const objectiveStatus = gigFrequencyValidation.objectiveMet ? 'met' : 'partial'
   const objectiveNote = gigFrequencyValidation.objectiveMet
     ? `Gap-1 money-per-day dominance was brought inside the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band for both profiles.`
-    : `Late-game compounding was reduced (${gigFrequencyValidation.shortfalls.join('; ')}), but structural Gap-1 dominance remains unresolved.`
+    : gigFrequencyValidation.improved
+      ? `Late-game compounding was reduced (${gigFrequencyValidation.shortfalls.join('; ')}), but structural Gap-1 dominance remains unresolved.`
+      : `Gap-1 dominance is unchanged (${gigFrequencyValidation.shortfalls.join('; ')}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 1,
@@ -538,6 +582,13 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote }
     },
     finalCombinedValidation,
+    combinationSearch: {
+      strategy: 'ascending-impact-first-validated',
+      pairsAvailable: orderedPairs.length,
+      pairsEvaluated: pairsConsidered,
+      pairsSkipped: combinationsSkipped,
+      note: 'Pairs are ordered by combinationImpact, which is derived from the candidate overrides alone. The search stops at the first pair that passes final combined validation; the remaining pairs would have higher impact and so could not have been selected.'
+    },
     combinationRanking: [...combinations].sort((left, right) =>
       Number(right.validation.passed) - Number(left.validation.passed) || combinationImpact(left) - combinationImpact(right)
     ).map(item => ({ bootstrap: item.bootstrap.id, touring: item.touring.id, impact: round(combinationImpact(item)), passed: item.validation.passed, failures: item.validation.failures })),

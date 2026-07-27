@@ -336,17 +336,42 @@ test('resolveBalanceTuning rejects malformed obligation stage shapes and order',
   )
 })
 
-test('selected obligation relief ends after its configured production window', () => {
-  assert.equal(getEarlyGameObligationMultiplier(1), 0.49)
-  assert.equal(getEarlyGameObligationMultiplier(60), 0.49)
-  assert.equal(getEarlyGameObligationMultiplier(61), 1)
+// Phase 3 selected no lever once the horizon was bounded by the map, so the
+// production defaults are neutral. Guarding that explicitly matters: a lever
+// reintroduced without a supporting experiment run would silently change every
+// player's economy.
+test('production defaults apply no balance lever', () => {
+  assert.equal(getEarlyGameObligationMultiplier(1), 1)
+  assert.equal(getEarlyGameObligationMultiplier(10), 1)
+  assert.equal(getRepeatDemandMultiplier(1, 5), 1)
+  assert.equal(getRepeatDemandMultiplier(10, 20), 1)
 })
 
-test('selected regional repeat demand penalty starts after the first show and caps', () => {
-  assert.equal(getRepeatDemandMultiplier(0, 0), 1)
-  assert.equal(getRepeatDemandMultiplier(28, 1), 1)
-  assert.equal(getRepeatDemandMultiplier(29, 1), 0.84)
-  assert.ok(Math.abs(getRepeatDemandMultiplier(29, 20) - 0.45) < 1e-12)
+test('obligation relief ends after its configured window', () => {
+  const tuning = resolveBalanceTuning(
+    { earlyGame: { durationDays: 5, dailyObligationMultiplier: 0.7 } },
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.equal(getEarlyGameObligationMultiplier(1, tuning), 0.7)
+  assert.equal(getEarlyGameObligationMultiplier(5, tuning), 0.7)
+  assert.equal(getEarlyGameObligationMultiplier(6, tuning), 1)
+})
+
+test('regional repeat demand penalty starts after its gate and caps', () => {
+  const tuning = resolveBalanceTuning(
+    {
+      touring: {
+        repeatGigWindowDays: 5,
+        repeatDemandStartDay: 3,
+        repeatDemandPenaltyPerGig: 0.16,
+        maxRepeatDemandPenalty: 0.55
+      }
+    },
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.equal(getRepeatDemandMultiplier(3, 1, tuning), 1)
+  assert.equal(getRepeatDemandMultiplier(4, 1, tuning), 0.84)
+  assert.ok(Math.abs(getRepeatDemandMultiplier(4, 20, tuning) - 0.45) < 1e-12)
 })
 
 test('experiment config hash is stable and sensitive to parameter changes', () => {
@@ -572,8 +597,8 @@ test('evaluateCandidate uses and preserves declared acceptance criteria', () => 
     gigsPlayed: 1,
     finalHarmony: 80,
     maxDrawdownPct: 0,
-    moneyAtDay20: 100,
-    moneyAtDay40: 100
+    moneyAtEarlyCheckpoint: 100,
+    moneyAtMidCheckpoint: 100
   })
   const pairs = [
     {
@@ -588,8 +613,7 @@ test('evaluateCandidate uses and preserves declared acceptance criteria', () => 
     scenarios: ['criteria_probe'],
     acceptanceCriteria: {
       bankruptcyRateMaxPct: 100,
-      medianSurvivalMinimumDeltaDays: 0,
-      medianSurvivalMinimumDeltaPct: 0,
+      bankruptcyMaximumDeltaPct: 100,
       solventMedianMoneyMax: 100,
       solventP90MoneyMax: 100,
       famePerGigMaximumAbsDeltaPct: 0
@@ -786,7 +810,7 @@ const buildMarkdownReport = ({ objectiveMet }) => {
       famePerGigDeltaPct: 0.5,
       medianFinalMoneyDeltaPct: -17,
       p90FinalMoneyDeltaPct: -20,
-      day20DeltaPct: -1
+      earlyCheckpointDeltaPct: -1
     },
     acceptanceCriteria: { passed: true }
   }
