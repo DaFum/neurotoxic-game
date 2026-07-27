@@ -1,6 +1,9 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Configuration properties for the ComboDisplay component.
+ */
 interface ComboDisplayProps {
   /** Current consecutive hit streak. */
   combo: number
@@ -14,6 +17,9 @@ interface ComboDisplayProps {
  * @remarks
  * Combo feedback escalates at `20` and `50` hits. Accuracy below `70` displays
  * the low-accuracy warning beside the combo counter.
+ *
+ * @param props - The properties for the ComboDisplay component.
+ * @returns The rendered combination of streak and accuracy displays.
  */
 export const ComboDisplay = memo(function ComboDisplay({
   combo,
