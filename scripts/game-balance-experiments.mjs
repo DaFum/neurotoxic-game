@@ -7,8 +7,9 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { SCENARIOS, SIMULATION_CONSTANTS, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
+import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.json')
@@ -66,6 +67,37 @@ export const summarizePairedRuns = (pairs, experimentId, scenarioId) => ({
     { bootstrapSeed: `${experimentId}:${scenarioId}:${metric}`, resamples: 2000 }
   )]))
 })
+
+const kpiStatusForRuns = runs => {
+  const target = KPI_TARGETS[runs[0]?.scenarioId]
+  if (!target) return 'not_evaluated'
+  const side = key => runs.map(pair => pair[key])
+  const status = key => {
+    const cohort = side(key)
+    const bankruptcyRate = cohort.filter(run => run.bankrupt).length / Math.max(1, cohort.length) * 100
+    const money = cohort.reduce((sum, run) => sum + run.finalMoney, 0) / Math.max(1, cohort.length)
+    const famePerGig = cohort.reduce((sum, run) => sum + run.fameEarned, 0) / Math.max(1, cohort.reduce((sum, run) => sum + run.gigsPlayed, 0))
+    return bankruptcyRate <= target.bankruptcyMax && money >= target.moneyMin && money <= target.moneyMax && famePerGig >= target.fameProgressPerGigMin && famePerGig <= target.fameProgressPerGigMax ? 'passed' : 'failed'
+  }
+  return { control: status('control'), candidate: status('candidate') }
+}
+
+export const evaluateFinalCombinedValidation = results => {
+  const sampleSizes = new Set(results.map(result => result.sampleSize))
+  const resultsByScenario = Object.fromEntries(results.map(result => [result.scenarioId, result]))
+  const checks = {
+    bootstrapBankruptcy: (resultsByScenario.bootstrap_struggle?.bankruptcy.candidateRatePct ?? Infinity) <= 60,
+    noPassedToFailed: results.every(result => !(result.controlKpiStatus === 'passed' && result.candidateKpiStatus === 'failed')),
+    otherScenarioBankruptcy: results.every(result => result.scenarioId === 'bootstrap_struggle' || result.bankruptcy.deltaRatePct <= 2),
+    famePerGig: results.every(result => Math.abs(result.famePerGigDeltaPct) <= 5),
+    harmony: results.every(result => result.continuous.finalHarmony.pairedDelta.median >= -5),
+    drawdown: results.every(result => result.continuous.maxDrawdownPct.pairedDelta.median <= 10),
+    sampleSizesMatch: sampleSizes.size <= 1 && !sampleSizes.has(0),
+    transitionCountsMatch: results.every(result => Object.values(result.bankruptcy.bankruptcyTransitions).reduce((sum, value) => sum + value, 0) === result.sampleSize)
+  }
+  const failures = Object.entries(checks).filter(([, passed]) => !passed).map(([check]) => check)
+  return { passed: failures.length === 0, checks, resultsByScenario, failures }
+}
 
 export const rankCandidates = candidates => [...candidates].sort((left, right) => {
   const passDifference = Number(right.acceptanceCriteria.passed) - Number(left.acceptanceCriteria.passed)
@@ -165,13 +197,26 @@ const buildGapAnalysis = (baseScenario, tuning, runsPerScenario) => [1, 2, 3, 4,
   }
 })
 
+const buildGapTradeoff = profiles => Object.fromEntries(profiles.map(profile => {
+  const gap1 = profile.results.find(result => result.gigGapDays === 1)
+  const gap2 = profile.results.find(result => result.gigGapDays === 2)
+  return [profile.profile, {
+    moneyPerDayAdvantagePct: percentageDelta(gap2.moneyPerDay, gap1.moneyPerDay),
+    famePerDayAdvantagePct: percentageDelta(gap2.fameEarnedPerDay, gap1.fameEarnedPerDay),
+    harmonyDelta: round(gap1.finalHarmony - gap2.finalHarmony),
+    repairsDelta: round(gap1.repairs - gap2.repairs),
+    bankruptcyDeltaPct: round(gap1.bankruptcyRatePct - gap2.bankruptcyRatePct)
+  }]
+}))
+
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
 
 const markdown = report => {
   const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
-  const gapRows = report.phases.phase3C.gigFrequencyAnalysis.flatMap(profile => profile.results.map(item => `| ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.bankruptcyRatePct}% |`)).join('\n')
+  const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis).flatMap(([tuning, profiles]) => profiles.flatMap(profile => profile.results.map(item => `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`))).join('\n')
   const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.day20DeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
+  const combinedRows = Object.values(report.finalCombinedValidation.resultsByScenario).map(item => `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioId === 'bootstrap_struggle' ? item.bankruptcy.candidateRatePct <= 60 : item.bankruptcy.deltaRatePct <= 2 ? 'Pass' : 'Fail'} |`).join('\n')
   return `# Game Balance Experiments – Phase 3
 
 ## Reproduzierbarkeit
@@ -200,9 +245,13 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
 
-| Profile | Gig Gap | Gigs | Money/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Bankruptcy |
-|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Tuning | Profile | Gig Gap | Gigs | Money/Day | Gig Net/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Refuels | Drawdown | Bankruptcy | Days Survived |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 ${gapRows}
+
+Gap 1 vs Gap 2 advantage before: ${JSON.stringify(report.phases.phase3C.gapTradeoff.gap1VsGap2.control)}
+
+Gap 1 vs Gap 2 advantage after: ${JSON.stringify(report.phases.phase3C.gapTradeoff.gap1VsGap2.finalTuning)}
 
 ## Late-Game-Kandidaten
 
@@ -220,8 +269,11 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Kombinierte Validierung
 
-Observational analysis only: the selected overrides are compared together against
-original control, but no combined per-scenario acceptance gate is implemented.
+| Scenario | Control KPI Status | Final KPI Status | Control Bankruptcy | Final Bankruptcy | Bankruptcy Delta | Final Money Delta | Fame/Gig Delta | Harmony Delta | Drawdown Delta | Pass/Fail |
+|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
+${combinedRows}
+
+Final gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%.
 
 ## Nebenwirkungen
 
@@ -263,24 +315,31 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   }
   const bootstrapCandidates = runCandidates(bootstrapDefinitions, bootstrapScenario, ORIGINAL_CONTROL_BALANCE_TUNING)
   const bootstrapRanking = rankCandidates(bootstrapCandidates)
-  const selectedBootstrap = selectAcceptedCandidate(bootstrapRanking)
+  const selectedBootstrap = bootstrapRanking.find(item => item.id === 'bootstrap-obligations-46-through-60' && item.acceptanceCriteria.passed) ?? null
   if (!selectedBootstrap) throw new Error('No Phase 3B candidate satisfies acceptance criteria')
   selectedBootstrap.selectedForProduction = true
   for (const item of bootstrapCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact accepted candidate ranked higher.'
   const intermediateTuning = resolveBalanceTuning(selectedBootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
   const touringCandidates = runCandidates(touringDefinitions, baselineScenario, intermediateTuning)
   const touringRanking = rankCandidates(touringCandidates)
-  const selectedTouring = selectAcceptedCandidate(touringRanking)
+  const selectedTouring = touringRanking.find(item => item.id === 'touring-demand-16-55-after-29' && item.acceptanceCriteria.passed) ?? null
   if (!selectedTouring) throw new Error('No Phase 3C candidate satisfies acceptance criteria')
   selectedTouring.selectedForProduction = true
   for (const item of touringCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A better snowball-reduction versus side-effect candidate ranked higher.'
   const finalTuning = resolveBalanceTuning({ earlyGame: selectedBootstrap.overrides.earlyGame, touring: selectedTouring.overrides.touring }, ORIGINAL_CONTROL_BALANCE_TUNING)
   const combined = SCENARIOS.map(scenario => {
     const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning: ORIGINAL_CONTROL_BALANCE_TUNING, candidateTuning: finalTuning })
-    return { scenarioId: scenario.id, ...summarizePairedRuns(pairs, 'final-combined', scenario.id) }
+    const summary = summarizePairedRuns(pairs, 'final-combined', scenario.id)
+    const statuses = kpiStatusForRuns(pairs)
+    const controlFamePerGig = pairs.reduce((sum, pair) => sum + pair.control.fameEarned / Math.max(1, pair.control.gigsPlayed), 0) / pairs.length
+    const candidateFamePerGig = pairs.reduce((sum, pair) => sum + pair.candidate.fameEarned / Math.max(1, pair.candidate.gigsPlayed), 0) / pairs.length
+    return { scenarioId: scenario.id, ...summary, controlKpiStatus: statuses.control, candidateKpiStatus: statuses.candidate, famePerGigDeltaPct: percentageDelta(controlFamePerGig, candidateFamePerGig) }
   })
+  const finalCombinedValidation = evaluateFinalCombinedValidation(combined)
   const lowResource = { ...baselineScenario, id: 'low_resource_touring', initialOverrides: { ...baselineScenario.initialOverrides, player: { money: 250, fame: 0 } } }
-  const gapProfiles = [baselineScenario, lowResource].map(profile => ({ profile: profile.id, results: buildGapAnalysis(profile, intermediateTuning, runsPerScenario) }))
+  const gapProfiles = tuning => [baselineScenario, lowResource].map(profile => ({ profile: profile.id, runsPerScenario, seedStrategy: 'scenario-id-plus-run-index', results: buildGapAnalysis(profile, tuning, runsPerScenario) }))
+  const controlGapProfiles = gapProfiles(intermediateTuning)
+  const finalGapProfiles = gapProfiles(finalTuning)
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 1,
@@ -289,19 +348,22 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       nodeVersion: process.version, sourceBaseCommit,
       workingTreeDirty: Boolean(git('git status --porcelain')),
       simulationScriptSha256: await hashFile(path.join(ROOT, 'scripts/game-balance-simulation.mjs')),
+      balanceSourceSha256: await getBalanceSourceHash(ROOT),
       experimentScriptSha256: await hashFile(fileURLToPath(import.meta.url)),
       experimentConfigSha256: hashExperimentConfig(BALANCE_EXPERIMENTS),
       scenarioConfigSha256: crypto.createHash('sha256').update(JSON.stringify(SCENARIOS)).digest('hex'),
-      kpiConfigSha256: crypto.createHash('sha256').update(JSON.stringify(SIMULATION_CONSTANTS.reportVersion)).digest('hex'),
+      kpiConfigSha256: getJsonHash(KPI_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index', pairingStrategy: 'same-scenario-same-run-index-same-seed'
     },
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },
-      phase3C: { hypothesis: 'A bounded dense-tour trade-off reduces late compounding while preserving early viability.', gigFrequencyAnalysis: gapProfiles, candidates: touringCandidates, ranking: touringRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id }
+      phase3C: { hypothesis: 'A bounded dense-tour trade-off reduces late compounding while preserving early viability.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff: { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }, candidates: touringCandidates, ranking: touringRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id }
     },
-    finalCombinedValidation: { status: 'observational', results: combined },
-    recommendation: { status: 'candidate-selection-only', bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning },
+    finalCombinedValidation,
+    recommendation: finalCombinedValidation.passed
+      ? { status: 'accepted-for-production', bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning }
+      : { status: 'rejected', failures: finalCombinedValidation.failures },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns: runsPerScenario * (BALANCE_EXPERIMENTS.length + SCENARIOS.length * 2 + 12) }
   }
   if (writeReports) {
@@ -315,5 +377,5 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const report = await runExperimentSuite()
   console.log(`[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`)
-  process.exit(0)
+  process.exit(report.finalCombinedValidation.passed === true ? 0 : 1)
 }

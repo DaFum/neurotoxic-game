@@ -1319,6 +1319,19 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     }
   }
 
+  if (isLooseRecord(safeValue.regionalGigHistory)) {
+    sanitized.regionalGigHistory = {}
+    for (const regionId in safeValue.regionalGigHistory) {
+      if (!Object.hasOwn(safeValue.regionalGigHistory, regionId)) continue
+      if (isForbiddenKey(regionId)) continue
+      const days = safeValue.regionalGigHistory[regionId]
+      if (!Array.isArray(days)) continue
+      sanitized.regionalGigHistory[regionId] = days.filter(
+        (day): day is number => Number.isFinite(day) && day >= 0
+      )
+    }
+  }
+
   if (isLooseRecord(safeValue.influencers)) {
     sanitized.influencers = {}
     for (const key in safeValue.influencers) {

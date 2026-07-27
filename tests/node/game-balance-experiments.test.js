@@ -18,6 +18,7 @@ import {
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
   assertEqualControlCohorts,
+  evaluateFinalCombinedValidation,
   evaluateCandidate,
   pairSimulationRuns,
   rankCandidates,
@@ -25,10 +26,168 @@ import {
   summarizePairedRuns
 } from '../../scripts/game-balance-experiments.mjs'
 import {
+  KPI_TARGETS,
   SCENARIOS,
   createScenarioSeed,
+  getJsonHash,
   runSingleSimulation
 } from '../../scripts/game-balance-simulation.mjs'
+import { applyRepeatDemandAdjustment } from '../../src/utils/postGig/derivations.ts'
+
+const combinedSummary = ({
+  scenarioId = 'baseline_touring',
+  controlRate = 0,
+  candidateRate = 0,
+  controlStatus = 'passed',
+  candidateStatus = 'passed',
+  fameDelta = 0,
+  harmonyDelta = 0,
+  drawdownDelta = 0,
+  sampleSize = 10
+} = {}) => ({
+  scenarioId,
+  sampleSize,
+  controlKpiStatus: controlStatus,
+  candidateKpiStatus: candidateStatus,
+  bankruptcy: {
+    controlRatePct: controlRate,
+    candidateRatePct: candidateRate,
+    deltaRatePct: candidateRate - controlRate,
+    bankruptcyTransitions: {
+      bothSolvent: sampleSize,
+      controlOnlyBankrupt: 0,
+      candidateOnlyBankrupt: 0,
+      bothBankrupt: 0
+    }
+  },
+  famePerGigDeltaPct: fameDelta,
+  continuous: {
+    finalHarmony: { pairedDelta: { median: harmonyDelta } },
+    maxDrawdownPct: { pairedDelta: { median: drawdownDelta } }
+  }
+})
+
+test('final combined validation enforces hard acceptance and integrity gates', () => {
+  const valid = [
+    combinedSummary({ scenarioId: 'bootstrap_struggle', candidateRate: 60 })
+  ]
+  assert.equal(evaluateFinalCombinedValidation(valid).passed, true)
+  assert.equal(
+    evaluateFinalCombinedValidation([
+      combinedSummary({
+        scenarioId: 'bootstrap_struggle',
+        candidateRate: 60.01
+      })
+    ]).passed,
+    false
+  )
+  assert.equal(
+    evaluateFinalCombinedValidation([
+      combinedSummary({ controlStatus: 'passed', candidateStatus: 'failed' })
+    ]).passed,
+    false
+  )
+  assert.equal(
+    evaluateFinalCombinedValidation([
+      combinedSummary({ controlRate: 2, candidateRate: 4.01 })
+    ]).passed,
+    false
+  )
+  assert.equal(
+    evaluateFinalCombinedValidation([combinedSummary({ fameDelta: 5.01 })])
+      .passed,
+    false
+  )
+  assert.equal(
+    evaluateFinalCombinedValidation([combinedSummary({ harmonyDelta: -5.01 })])
+      .passed,
+    false
+  )
+  assert.equal(
+    evaluateFinalCombinedValidation([combinedSummary({ drawdownDelta: 10.01 })])
+      .passed,
+    false
+  )
+  const badTransitions = combinedSummary()
+  badTransitions.bankruptcy.bankruptcyTransitions.bothSolvent = 9
+  assert.equal(evaluateFinalCombinedValidation([badTransitions]).passed, false)
+})
+
+test('KPI hash depends on KPI targets but not report version', () => {
+  const hash = getJsonHash(KPI_TARGETS)
+  assert.equal(hash, getJsonHash(structuredClone(KPI_TARGETS)))
+  const changed = structuredClone(KPI_TARGETS)
+  changed.bootstrap_struggle.bankruptcyMax--
+  assert.notEqual(hash, getJsonHash(changed))
+  assert.equal(hash, getJsonHash(KPI_TARGETS, { reportVersion: 999 }))
+})
+
+test('canonical repeat demand adjustment is immutable, bounded, regional, and save compatible', () => {
+  const financials = {
+    income: { total: 100, breakdown: [] },
+    expenses: { total: 90, breakdown: [] },
+    net: 10
+  }
+  const tuning = resolveBalanceTuning({
+    touring: {
+      repeatGigWindowDays: 5,
+      repeatDemandStartDay: 20,
+      repeatDemandPenaltyPerGig: 0.1,
+      maxRepeatDemandPenalty: 0.4
+    }
+  })
+  assert.equal(
+    applyRepeatDemandAdjustment(financials, {
+      day: 20,
+      regionId: 'berlin',
+      regionalGigHistory: {},
+      tuning
+    }),
+    financials
+  )
+  assert.equal(
+    applyRepeatDemandAdjustment(financials, {
+      day: 20,
+      regionId: 'berlin',
+      regionalGigHistory: { berlin: [19] },
+      tuning
+    }),
+    financials
+  )
+  const adjusted = applyRepeatDemandAdjustment(financials, {
+    day: 21,
+    regionId: 'berlin',
+    regionalGigHistory: { berlin: [1, 16, 17, 18, 19, 20], hamburg: [20] },
+    tuning
+  })
+  assert.notEqual(adjusted, financials)
+  assert.equal(adjusted.net, 6)
+  assert.equal(adjusted.expenses.total, 94)
+  assert.equal(
+    adjusted.expenses.breakdown.at(-1).labelKey,
+    'economy:gigExpenses.demandSaturation.label'
+  )
+  assert.equal(financials.net, 10)
+  const loss = applyRepeatDemandAdjustment(
+    { ...financials, net: 2 },
+    {
+      day: 21,
+      regionId: 'berlin',
+      regionalGigHistory: { berlin: [20, 20, 20, 20, 20] },
+      tuning
+    }
+  )
+  assert.equal(loss.net >= 0, true)
+  assert.equal(
+    applyRepeatDemandAdjustment(financials, {
+      day: 21,
+      regionId: 'munich',
+      regionalGigHistory: { berlin: [20] },
+      tuning
+    }),
+    financials
+  )
+})
 
 test('resolveBalanceTuning applies partial overrides without mutating defaults', () => {
   const before = structuredClone(DEFAULT_BALANCE_TUNING)
@@ -100,15 +259,16 @@ test('resolveBalanceTuning rejects malformed obligation stage shapes and order',
 })
 
 test('selected obligation relief ends after its configured production window', () => {
-  assert.equal(getEarlyGameObligationMultiplier(1), 0.5)
-  assert.equal(getEarlyGameObligationMultiplier(60), 0.5)
+  assert.equal(getEarlyGameObligationMultiplier(1), 0.46)
+  assert.equal(getEarlyGameObligationMultiplier(60), 0.46)
   assert.equal(getEarlyGameObligationMultiplier(61), 1)
 })
 
 test('selected regional repeat demand penalty starts after the first show and caps', () => {
   assert.equal(getRepeatDemandMultiplier(0, 0), 1)
-  assert.equal(getRepeatDemandMultiplier(1, 1), 0.9)
-  assert.equal(getRepeatDemandMultiplier(1, 20), 0.6)
+  assert.equal(getRepeatDemandMultiplier(29, 1), 1)
+  assert.equal(getRepeatDemandMultiplier(30, 1), 0.84)
+  assert.ok(Math.abs(getRepeatDemandMultiplier(30, 20) - 0.45) < 1e-12)
 })
 
 test('experiment config hash is stable and sensitive to parameter changes', () => {

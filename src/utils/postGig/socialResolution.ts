@@ -15,6 +15,7 @@ import {
 } from '../gameState'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import { getRegionKeyForLocation } from '../mapUtils'
 
 const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 
@@ -296,6 +297,14 @@ export const calculatePostGigStateUpdates = (
       (result.success ? 1 : 0) +
       gigViralBonus
   )
+  const regionId = getRegionKeyForLocation(player.location)
+  const regionalGigHistory = { ...(social.regionalGigHistory ?? {}) }
+  if (regionId) {
+    regionalGigHistory[regionId] = [
+      ...(regionalGigHistory[regionId] ?? []),
+      player.day
+    ]
+  }
 
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
@@ -308,6 +317,7 @@ export const calculatePostGigStateUpdates = (
     ),
     lastGigDay: player.day,
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
+    regionalGigHistory,
     controversyLevel: clampControversyLevel(
       finiteNumberOr(social.controversyLevel, 0) +
         (result.controversyChange ?? 0)

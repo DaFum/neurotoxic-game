@@ -63,7 +63,7 @@ export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> = deepFreeze({
   earlyGame: {
     ...ORIGINAL_CONTROL_BALANCE_TUNING.earlyGame,
     durationDays: 60,
-    dailyObligationMultiplier: 0.5
+    dailyObligationMultiplier: 0.46
   },
   /**
    * Expiring regional demand saturation selected by Phase 3 experiment
@@ -74,9 +74,9 @@ export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> = deepFreeze({
   touring: {
     ...ORIGINAL_CONTROL_BALANCE_TUNING.touring,
     repeatGigWindowDays: 10,
-    repeatDemandStartDay: 0,
-    repeatDemandPenaltyPerGig: 0.1,
-    maxRepeatDemandPenalty: 0.4
+    repeatDemandStartDay: 29,
+    repeatDemandPenaltyPerGig: 0.16,
+    maxRepeatDemandPenalty: 0.55
   }
 })
 
