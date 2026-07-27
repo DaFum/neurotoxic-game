@@ -50,11 +50,19 @@ describe('saveValidator', () => {
       { berlin: '4' },
       { berlin: [-1] },
       { berlin: [1.5] },
-      { berlin: [Infinity] }
+      { berlin: [Infinity] },
+      Object.fromEntries(
+        Array.from({ length: 101 }, (_, i) => [`region${i}`, [1]])
+      ),
+      { berlin: Array.from({ length: 257 }, (_, i) => i) },
+      JSON.parse('{"__proto__":[1]}')
     ]) {
       const data = getValidData()
       data.social.regionalGigHistory = history
-      assert.throws(() => validateSaveData(data), /regionalGigHistory/)
+      assert.throws(
+        () => validateSaveData(data),
+        /regionalGigHistory|Prototype pollution detected: __proto__/
+      )
     }
   })
 

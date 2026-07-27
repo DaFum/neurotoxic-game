@@ -14,7 +14,9 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/hooks/postGig/usePostGigDerivations.ts',
   'src/context/initialState.ts',
   'src/context/reducers/sanitizers/stateSanitizers.ts',
-  'src/utils/saveValidator.ts'
+  'src/utils/saveValidator.ts',
+  'scripts/utils/paired-statistics.mjs',
+  'src/context/usePersistence.ts'
 ])
 
 export const getBalanceSourceHash = async root => {

@@ -11,8 +11,7 @@ import {
   clampPlayerMoney,
   clampMemberMood,
   clampMemberStamina,
-  clampBandHarmony,
-  appendToRegionalGigHistory
+  clampBandHarmony
 } from '../gameState'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
@@ -299,13 +298,10 @@ export const calculatePostGigStateUpdates = (
       gigViralBonus
   )
   const regionId = getRegionKeyForLocation(player.location)
-  let regionalGigHistory = { ...(social.regionalGigHistory ?? {}) }
+  const regionalGigHistory = { ...(social.regionalGigHistory ?? {}) }
   if (regionId) {
-    regionalGigHistory = appendToRegionalGigHistory(
-      social.regionalGigHistory,
-      regionId,
-      player.day
-    )
+    const historyArray = regionalGigHistory[regionId] ?? []
+    regionalGigHistory[regionId] = [...historyArray, player.day].slice(-256)
   }
 
   const updatedSocial: Partial<GameState['social']> = {

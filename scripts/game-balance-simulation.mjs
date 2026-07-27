@@ -1882,7 +1882,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       day <= tuning.earlyGame.emergencyGrantMaxDay &&
       state.player.money <= tuning.earlyGame.emergencyGrantTriggerMoney
     ) {
-      state.player.money = clampPlayerMoney(state.player.money + tuning.earlyGame.emergencyGrant)
+      state.player.money = clampPlayerMoney(finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant)
       runCtx.emergencyGrantUsed = true
     }
 
@@ -2144,8 +2144,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
 
     const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
     const regionalGigHistory = Object.fromEntries(runCtx.regionalGigHistory)
+    state.player.day = day
     const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
-      .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
+      .filter(gigDay => state.player.day - gigDay <= tuning.touring.repeatGigWindowDays)
     const financials = deriveFinancials({
       currentGig: venue,
       lastGigStats: currentGigStats,
@@ -3529,9 +3530,11 @@ const getFileHash = async filePath => {
   }
 }
 
-export const getJsonHash = data => {
+export const getJsonHash = (data, meta = {}) => {
   try {
-    return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex')
+    const obj = { ...data, ...meta };
+    delete obj.reportVersion;
+    return crypto.createHash('sha256').update(JSON.stringify(obj)).digest('hex')
   } catch {
     return null
   }
