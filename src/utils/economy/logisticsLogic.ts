@@ -23,7 +23,7 @@ import type { MapPoint } from './types'
  * @param nodeB - Source node-like value. Defaults to `null`.
  * @returns Distance used by travel and logistics cost formulas.
  */
-export const calculateDistance = (nodeA: unknown, nodeB: unknown = null) => {
+export const calculateDistance = (nodeA: unknown, nodeB: unknown = null): number => {
   const pointA = (nodeA && typeof nodeA === 'object' ? nodeA : {}) as MapPoint
   const pointB = (nodeB && typeof nodeB === 'object' ? nodeB : {}) as MapPoint
   const x1 = finiteNumberOr(pointA.x, finiteNumberOr(pointA.venue?.x, 50))
@@ -55,7 +55,7 @@ export const calculateFuelCost = (
   playerState: Pick<PlayerState, 'van'> | null = null,
   bandState: Pick<BandState, 'members'> | null = null,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
-) => {
+): { fuelLiters: number; fuelCost: number } => {
   if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
 
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
@@ -99,7 +99,7 @@ export const calculateGuaranteedDailyCost = (
   player: Pick<PlayerState, 'fameLevel'>,
   band: Pick<BandState, 'members'>,
   social: Partial<Pick<SocialState, 'youtube'>> = {}
-) => {
+): number => {
   const bandSize = Array.isArray(band.members) ? band.members.length : 3
   const fameLevel = finiteNumberOr(player.fameLevel, 0)
   const lifestyleInflation = Math.floor(Math.pow(fameLevel, 1.4) * 15)
@@ -134,7 +134,7 @@ export const calculateTravelExpenses = (
   playerState: Pick<PlayerState, 'fameLevel' | 'money' | 'van'> | null = null,
   bandState: Pick<BandState, 'members'> | null = null,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
-) => {
+): { dist: number; fuelLiters: number; totalCost: number } => {
   const dist = calculateDistance(node, fromNode)
   // Fuel is paid by consuming the van's tank (fuelLiters), not as a money cost.
   // Consumers deduct fuelLiters from van.fuel separately, so fuelCost must NOT
@@ -180,7 +180,7 @@ export const calculateTravelExpenses = (
  * @param currentFuel - Current fuel level, clamped to the van's fuel range.
  * @returns Cost in euros.
  */
-export const calculateRefuelCost = (currentFuel: number) => {
+export const calculateRefuelCost = (currentFuel: number): number => {
   const safeFuel = clamp0to100(finiteNumberOr(currentFuel, 0))
   const missing = Math.max(0, EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL - safeFuel)
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE)
@@ -191,7 +191,7 @@ export const calculateRefuelCost = (currentFuel: number) => {
  * @param currentCondition - Current condition (0-100).
  * @returns Cost in euros.
  */
-export const calculateRepairCost = (currentCondition: number) => {
+export const calculateRepairCost = (currentCondition: number): number => {
   const safeCondition = clamp0to100(finiteNumberOr(currentCondition, 0))
   const missing = 100 - safeCondition
   return Math.ceil(missing * EXPENSE_CONSTANTS.TRANSPORT.REPAIR_COST_PER_UNIT)
@@ -214,10 +214,12 @@ export const shouldTriggerBankruptcy = (
   newMoney: unknown,
   netIncome: number | null | undefined,
   totalDailyObligations: number = 0
-) => {
+): boolean => {
   const val = Number(newMoney)
   if (!Number.isFinite(val)) {
-    throw new TypeError('newMoney must be a finite number')
+    // If we've hit NaN or Infinity money, state is corrupt. Return true to trigger
+    // bankruptcy defensively rather than crashing the runtime loop.
+    return true
   }
 
   // If player has money left, they are not bankrupt.

@@ -69,7 +69,7 @@ export const ZEALOTRY_PROMO_THRESHOLD = 80
  */
 export const EXPENSE_CONSTANTS = {
   DAILY: {
-    BASE_COST: 62
+    BASE_COST: 5
   },
   TRANSPORT: {
     FUEL_PER_100KM: 10, // Liters

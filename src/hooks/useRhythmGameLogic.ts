@@ -93,8 +93,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
 
   // Fold temporary band effects (contraband/equipment) into the static
   // performance values the scoring hook consumes.
+  const hasNeuroOverclock = bandHasTrait(band, 'neuro_overclock')
+
   const scoringPerformance = useMemo(() => {
-    const hasNeuroOverclock = bandHasTrait(band, 'neuro_overclock')
     const baseTempo = finiteNumberOr(band?.tempo, 0)
     const finalTempo = hasNeuroOverclock ? baseTempo + 0.5 : baseTempo
 
@@ -104,7 +105,13 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       critChance: finiteNumberOr(band?.crit, 0),
       crowdControl: finiteNumberOr(band?.crowdControl, 0)
     }
-  }, [band])
+  }, [
+    band?.tempo,
+    band?.crit,
+    band?.crowdControl,
+    band?.performance,
+    hasNeuroOverclock
+  ])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({
