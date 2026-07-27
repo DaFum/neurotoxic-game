@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-27T11:48:48.533Z",
+  "generatedAt": "2026-07-27T14:02:53.369Z",
   "metadata": {
-    "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "966ebd1855eb4ba37c1b91f069721b114f28bf87",
+    "nodeVersion": "v22.22.1",
+    "sourceBaseCommit": "e0dbeb8c7e52c01beb6ed6a18801b1eeaa3431db",
     "workingTreeDirty": true,
     "simulationScriptSha256": "97e8a7e4b21cbf114556c49e59dd2b587a2d3d511d2d9d6b9c9393f48d709eb6",
-    "balanceSourceSha256": "e9c5b8687e8d97ddcc46259dc4e81ffe5d8d9bb770f7f730b43f1868df09c129",
-    "experimentScriptSha256": "f4a15e357371f8190583d974a5c4efc721266c3354b5a39f328b3f797a8ec03a",
+    "balanceSourceSha256": "349cb54fef5bc16a01dd03ed5480e7ba6c901f0e466b55d657b317d0a30e595c",
+    "experimentScriptSha256": "071a5b199f9a90f13983a98b01914d2078b6fd0c21865e7281b1679086a6596b",
     "experimentConfigSha256": "d5277149e91ebdce29cf5cfa9d10391d7ff76db2f96bfb2bac11f91c9df8464b",
     "scenarioConfigSha256": "e2f97ba93da6a842fa33908edf7acf33b2404c753b18903421f900c04aa7c6c0",
     "kpiConfigSha256": "7e243b1d2ee21d2c19e764cba96afa604f633f210757fa6e9eb8843aa226cfa7",
@@ -11938,7 +11938,7 @@
       "selectedCandidateId": "bootstrap-obligations-49-through-60"
     },
     "phase3C": {
-      "hypothesis": "A bounded dense-tour trade-off reduces late compounding while preserving early viability.",
+      "hypothesis": "Partial snowball reduction achieved. Structural Gap-1 dominance remains unresolved.",
       "gigFrequencyAnalysis": {
         "control": [
           {
@@ -11957,7 +11957,7 @@
                 "moneyPerDay": 870.49,
                 "gigNetPerDay": 2049.98,
                 "fameEarnedPerDay": 665.71,
-                "fameEarnedPerGig": 816.75,
+                "fameEarnedPerGig": 816.77,
                 "gigsPlayed": 61.13,
                 "finalHarmony": 40.8,
                 "clinicVisits": 6.23,
@@ -11977,7 +11977,7 @@
                 "moneyPerDay": 284.77,
                 "gigNetPerDay": 940.63,
                 "fameEarnedPerDay": 374.15,
-                "fameEarnedPerGig": 956.63,
+                "fameEarnedPerGig": 958.31,
                 "gigsPlayed": 29.13,
                 "finalHarmony": 55.93,
                 "clinicVisits": 5.85,
@@ -11997,7 +11997,7 @@
                 "moneyPerDay": 136.83,
                 "gigNetPerDay": 509.33,
                 "fameEarnedPerDay": 229.83,
-                "fameEarnedPerGig": 1026.37,
+                "fameEarnedPerGig": 1010.53,
                 "gigsPlayed": 16.15,
                 "finalHarmony": 52.03,
                 "clinicVisits": 4.85,
@@ -12017,7 +12017,7 @@
                 "moneyPerDay": 43.85,
                 "gigNetPerDay": 285.86,
                 "fameEarnedPerDay": 129.11,
-                "fameEarnedPerGig": 960.96,
+                "fameEarnedPerGig": 919.5,
                 "gigsPlayed": 8.41,
                 "finalHarmony": 53.38,
                 "clinicVisits": 4.7,
@@ -12037,7 +12037,7 @@
                 "moneyPerDay": 20.32,
                 "gigNetPerDay": 190.54,
                 "fameEarnedPerDay": 92.84,
-                "fameEarnedPerGig": 952.68,
+                "fameEarnedPerGig": 896.92,
                 "gigsPlayed": 5.19,
                 "finalHarmony": 53.26,
                 "clinicVisits": 4.58,
@@ -12064,7 +12064,7 @@
                 "moneyPerDay": 836.58,
                 "gigNetPerDay": 2018.92,
                 "fameEarnedPerDay": 664.36,
-                "fameEarnedPerGig": 816.58,
+                "fameEarnedPerGig": 818.49,
                 "gigsPlayed": 61.02,
                 "finalHarmony": 38.48,
                 "clinicVisits": 6.35,
@@ -12084,7 +12084,7 @@
                 "moneyPerDay": 287.66,
                 "gigNetPerDay": 944.52,
                 "fameEarnedPerDay": 406.34,
-                "fameEarnedPerGig": 1030.74,
+                "fameEarnedPerGig": 1032.95,
                 "gigsPlayed": 29.38,
                 "finalHarmony": 55.41,
                 "clinicVisits": 5.62,
@@ -12104,7 +12104,7 @@
                 "moneyPerDay": 123.53,
                 "gigNetPerDay": 478.28,
                 "fameEarnedPerDay": 224.17,
-                "fameEarnedPerGig": 1026.46,
+                "fameEarnedPerGig": 1003.36,
                 "gigsPlayed": 15.3,
                 "finalHarmony": 52.43,
                 "clinicVisits": 4.78,
@@ -12124,7 +12124,7 @@
                 "moneyPerDay": 43.54,
                 "gigNetPerDay": 291.98,
                 "fameEarnedPerDay": 133.82,
-                "fameEarnedPerGig": 1007.11,
+                "fameEarnedPerGig": 950.25,
                 "gigsPlayed": 8.11,
                 "finalHarmony": 54.68,
                 "clinicVisits": 4.58,
@@ -12144,7 +12144,7 @@
                 "moneyPerDay": 20.57,
                 "gigNetPerDay": 193.82,
                 "fameEarnedPerDay": 89.93,
-                "fameEarnedPerGig": 899.25,
+                "fameEarnedPerGig": 862.17,
                 "gigsPlayed": 4.37,
                 "finalHarmony": 52.74,
                 "clinicVisits": 3.62,
@@ -12173,7 +12173,7 @@
                 "moneyPerDay": 659.97,
                 "gigNetPerDay": 1810.74,
                 "fameEarnedPerDay": 661.3,
-                "fameEarnedPerGig": 815.08,
+                "fameEarnedPerGig": 816.44,
                 "gigsPlayed": 60.85,
                 "finalHarmony": 40.97,
                 "clinicVisits": 6.3,
@@ -12193,7 +12193,7 @@
                 "moneyPerDay": 275.21,
                 "gigNetPerDay": 907.43,
                 "fameEarnedPerDay": 387.8,
-                "fameEarnedPerGig": 976.09,
+                "fameEarnedPerGig": 981.61,
                 "gigsPlayed": 29.58,
                 "finalHarmony": 53.86,
                 "clinicVisits": 5.81,
@@ -12213,7 +12213,7 @@
                 "moneyPerDay": 125.36,
                 "gigNetPerDay": 490.46,
                 "fameEarnedPerDay": 223.91,
-                "fameEarnedPerGig": 1002.37,
+                "fameEarnedPerGig": 992.02,
                 "gigsPlayed": 16.06,
                 "finalHarmony": 53.52,
                 "clinicVisits": 4.84,
@@ -12233,7 +12233,7 @@
                 "moneyPerDay": 39.81,
                 "gigNetPerDay": 272.62,
                 "fameEarnedPerDay": 124.53,
-                "fameEarnedPerGig": 946.57,
+                "fameEarnedPerGig": 908.84,
                 "gigsPlayed": 8.2,
                 "finalHarmony": 54.44,
                 "clinicVisits": 4.71,
@@ -12253,7 +12253,7 @@
                 "moneyPerDay": 18.4,
                 "gigNetPerDay": 189.53,
                 "fameEarnedPerDay": 91.2,
-                "fameEarnedPerGig": 948.66,
+                "fameEarnedPerGig": 890.09,
                 "gigsPlayed": 5.18,
                 "finalHarmony": 53.65,
                 "clinicVisits": 4.54,
@@ -12280,7 +12280,7 @@
                 "moneyPerDay": 684.77,
                 "gigNetPerDay": 1831.58,
                 "fameEarnedPerDay": 673.84,
-                "fameEarnedPerGig": 821.19,
+                "fameEarnedPerGig": 819.25,
                 "gigsPlayed": 61.52,
                 "finalHarmony": 38.62,
                 "clinicVisits": 6.38,
@@ -12300,7 +12300,7 @@
                 "moneyPerDay": 266.31,
                 "gigNetPerDay": 901.33,
                 "fameEarnedPerDay": 411.41,
-                "fameEarnedPerGig": 1042.62,
+                "fameEarnedPerGig": 1040.92,
                 "gigsPlayed": 29.52,
                 "finalHarmony": 54.72,
                 "clinicVisits": 5.59,
@@ -12320,7 +12320,7 @@
                 "moneyPerDay": 116.4,
                 "gigNetPerDay": 461.12,
                 "fameEarnedPerDay": 212.63,
-                "fameEarnedPerGig": 992.34,
+                "fameEarnedPerGig": 977.77,
                 "gigsPlayed": 14.98,
                 "finalHarmony": 51.98,
                 "clinicVisits": 4.8,
@@ -12340,7 +12340,7 @@
                 "moneyPerDay": 45.03,
                 "gigNetPerDay": 294.17,
                 "fameEarnedPerDay": 137.01,
-                "fameEarnedPerGig": 1025.86,
+                "fameEarnedPerGig": 959.36,
                 "gigsPlayed": 8.06,
                 "finalHarmony": 55.58,
                 "clinicVisits": 4.56,
@@ -12360,7 +12360,7 @@
                 "moneyPerDay": 25.75,
                 "gigNetPerDay": 202.42,
                 "fameEarnedPerDay": 91.62,
-                "fameEarnedPerGig": 906.04,
+                "fameEarnedPerGig": 869.62,
                 "gigsPlayed": 4.49,
                 "finalHarmony": 52.99,
                 "clinicVisits": 3.58,
@@ -12407,6 +12407,21 @@
               "bankruptcyDeltaPct": -0.39
             }
           }
+        }
+      },
+      "gigFrequencyValidation": {
+        "passed": false,
+        "failures": [
+          "Baseline Money Advantage 139.81% is outside 20-25% target",
+          "Low Resource Money Advantage 157.13% is outside 20-25% target"
+        ],
+        "checks": {
+          "baselineMoneyPerDayAdvantage": 139.81,
+          "lowResourceMoneyPerDayAdvantage": 157.13,
+          "famePerDayTradeoff": 70.53,
+          "harmonyTradeoff": -12.89,
+          "repairsTradeoff": 4.38,
+          "bankruptcyTradeoff": -1.92
         }
       },
       "candidates": [
@@ -27017,7 +27032,9 @@
           "passed": false
         }
       ],
-      "selectedCandidateId": "touring-demand-16-55-after-28"
+      "selectedCandidateId": "touring-demand-16-55-after-28",
+      "objectiveStatus": "partial",
+      "objectiveNote": "Late-game compounding was reduced, but structural Gap-1 dominance remains unresolved."
     }
   },
   "finalCombinedValidation": {
@@ -32178,7 +32195,7 @@
     }
   },
   "runtime": {
-    "durationMs": 864164,
+    "durationMs": 1107557,
     "candidates": 31,
     "totalRuns": 163540
   }

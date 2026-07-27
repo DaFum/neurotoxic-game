@@ -300,10 +300,8 @@ export const calculatePostGigStateUpdates = (
   const regionId = getRegionKeyForLocation(player.location)
   const regionalGigHistory = { ...(social.regionalGigHistory ?? {}) }
   if (regionId) {
-    regionalGigHistory[regionId] = [
-      ...(regionalGigHistory[regionId] ?? []),
-      player.day
-    ]
+    const historyArray = regionalGigHistory[regionId] ?? []
+    regionalGigHistory[regionId] = [...historyArray, player.day].slice(-256)
   }
 
   const updatedSocial: Partial<GameState['social']> = {

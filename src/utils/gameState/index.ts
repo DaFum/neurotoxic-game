@@ -1,3 +1,4 @@
+export * from './regionalGigHistory'
 export * from './clamps'
 export * from './constants'
 export * from './calculations'
@@ -15,3 +16,5 @@ export {
   sanitizeStringArray
 } from '../objectUtils'
 export { countKeys } from './checks'
+
+export * from './regionalGigHistory'

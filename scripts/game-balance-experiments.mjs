@@ -156,7 +156,7 @@ export const selectAcceptedCandidate = ranking =>
 const combinationImpact = ({ bootstrap, touring }) => {
   const early = bootstrap.overrides.earlyGame ?? {}
   const late = touring.overrides.touring ?? {}
-  const relief = (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
+  const relief = early.obligationStages ? early.obligationStages.reduce((sum, stage) => sum + (stage.durationDays * (1 - stage.dailyObligationMultiplier)), 0) : (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
   const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
     (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
   return relief + saturation
@@ -221,7 +221,7 @@ const buildGapAnalysis = (baseScenario, tuning, runsPerScenario, runner = runSin
     bankruptcyRatePct: round(runs.filter(run => run.bankrupt).length / runs.length * 100),
     finalMoneyMean: round(average('finalMoney')), finalMoneyMedian: round(median(runs.map(run => run.finalMoney))), finalMoneyP90: round(percentile(runs.map(run => run.finalMoney), 0.9)),
     moneyPerDay: round(average('finalMoney') / days), gigNetPerDay: round(average('totalGigNet') / days), fameEarnedPerDay: round(average('fameEarned') / days),
-    fameEarnedPerGig: round(average('fameEarned') / Math.max(1, average('gigsPlayed'))), gigsPlayed: round(average('gigsPlayed')), finalHarmony: round(average('finalHarmony')),
+    fameEarnedPerGig: round(calculateAverageFameEarnedPerGig(runs)), gigsPlayed: round(average('gigsPlayed')), finalHarmony: round(average('finalHarmony')),
     clinicVisits: round(average('clinicVisits')), repairs: round(average('repairs')), refuels: round(average('refuels')), maxDrawdownPct: round(average('maxDrawdownPct')), daysSurvived: round(average('daysSurvived'))
   }
 })
@@ -237,6 +237,35 @@ const buildGapTradeoff = profiles => Object.fromEntries(profiles.map(profile => 
     bankruptcyDeltaPct: round(gap1.bankruptcyRatePct - gap2.bankruptcyRatePct)
   }]
 }))
+
+
+const evaluateGigGap = (finalTradeoff) => {
+  const failures = []
+
+  const baselineMoneyAdvantage = finalTradeoff.baseline_touring.moneyPerDayAdvantagePct
+  const lowResourceMoneyAdvantage = finalTradeoff.low_resource_touring.moneyPerDayAdvantagePct
+
+  if (baselineMoneyAdvantage < 20 || baselineMoneyAdvantage > 25) {
+    failures.push(`Baseline Money Advantage ${baselineMoneyAdvantage}% is outside 20-25% target`)
+  }
+  if (lowResourceMoneyAdvantage < 20 || lowResourceMoneyAdvantage > 25) {
+    failures.push(`Low Resource Money Advantage ${lowResourceMoneyAdvantage}% is outside 20-25% target`)
+  }
+
+  const passed = failures.length === 0
+  return {
+    passed,
+    failures,
+    checks: {
+      baselineMoneyPerDayAdvantage: baselineMoneyAdvantage,
+      lowResourceMoneyPerDayAdvantage: lowResourceMoneyAdvantage,
+      famePerDayTradeoff: finalTradeoff.baseline_touring.famePerDayAdvantagePct,
+      harmonyTradeoff: finalTradeoff.baseline_touring.harmonyDelta,
+      repairsTradeoff: finalTradeoff.baseline_touring.repairsDelta,
+      bankruptcyTradeoff: finalTradeoff.baseline_touring.bankruptcyDeltaPct
+    }
+  }
+}
 
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
@@ -269,7 +298,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` showed the best accepted paired outcome.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected via the combination-driven selection algorithm. Bootstrap and late-game selection are driven by fully validated Cartesian-product combinations and the combinationImpact tie-break.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -294,7 +323,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` had the best snowball-reduction versus side-effect trade-off.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected via the combination-driven selection algorithm. Bootstrap and late-game selection are driven by fully validated Cartesian-product combinations and the combinationImpact tie-break.
 
 ## Kombinierte Validierung
 
@@ -385,9 +414,29 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const selectedTouring = selected.touring
   selectedBootstrap.selectedForProduction = true
   selectedTouring.selectedForProduction = true
-  for (const item of bootstrapCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact fully validated combination ranked higher.'
-  const touringCandidates = touringByBootstrap.get(selectedBootstrap.id)
-  for (const item of touringCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact fully validated combination ranked higher.'
+
+
+
+  for (const item of bootstrapCandidates) {
+    if (!item.selectedForProduction && !item.rejectionReason) {
+      const hasPassingCombination = combinations.some(c => c.bootstrap.id === item.id && c.validation.passed)
+      item.rejectionReason = hasPassingCombination
+        ? 'A lower-impact fully validated combination ranked higher.'
+        : 'Did not produce any combination that passed final combined validation.'
+    }
+  }
+
+  const touringCandidates = touringByBootstrap.get(selectedBootstrap.id) || touringByBootstrap.get(bootstrapCandidates[0].id)
+
+  for (const item of touringCandidates) {
+    if (!item.selectedForProduction && !item.rejectionReason) {
+      const hasPassingCombination = combinations.some(c => c.touring.id === item.id && c.validation.passed)
+      item.rejectionReason = hasPassingCombination
+        ? 'A lower-impact fully validated combination ranked higher.'
+        : 'Did not produce any combination that passed final combined validation.'
+    }
+  }
+
 
   const intermediateTuning = resolveBalanceTuning(selectedBootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
   const finalTuning = selected.tuning
@@ -396,6 +445,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const gapProfiles = tuning => [baselineScenario, lowResource].map(profile => ({ profile: profile.id, runsPerScenario, seedStrategy: 'scenario-id-plus-run-index', results: buildGapAnalysis(profile, tuning, runsPerScenario, runner) }))
   const controlGapProfiles = gapProfiles(intermediateTuning)
   const finalGapProfiles = gapProfiles(finalTuning)
+  const gapTradeoff = { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }
+  const gigFrequencyValidation = evaluateGigGap(gapTradeoff.gap1VsGap2.finalTuning)
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 1,
@@ -414,7 +465,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },
-      phase3C: { hypothesis: 'A bounded dense-tour trade-off reduces late compounding while preserving early viability.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff: { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id }
+      phase3C: { hypothesis: 'Partial snowball reduction achieved. Structural Gap-1 dominance remains unresolved.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus: 'partial', objectiveNote: 'Late-game compounding was reduced, but structural Gap-1 dominance remains unresolved.' }
     },
     finalCombinedValidation,
     combinationRanking: [...combinations].sort((left, right) =>
@@ -423,7 +474,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     recommendation: { status: 'accepted-for-production', bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }
-  if (writeReports && finalCombinedValidation.passed) {
+  if (writeReports && gigFrequencyValidation.passed) {
     await fs.mkdir(path.dirname(OUTPUT_JSON), { recursive: true })
     await fs.writeFile(OUTPUT_JSON, `${JSON.stringify(report, null, 2)}\n`)
     await fs.writeFile(OUTPUT_MARKDOWN, markdown(report))
@@ -434,5 +485,5 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
 if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   const report = await runExperimentSuite()
   console.log(`[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`)
-  process.exit(report.finalCombinedValidation.passed === true ? 0 : 1)
+  process.exit(report.finalCombinedValidation.passed && report.phases.phase3C.gigFrequencyValidation.passed ? 0 : 1)
 }

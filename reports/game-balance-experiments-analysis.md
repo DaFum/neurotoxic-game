@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 163540 simulation runs in 864164 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 163540 simulation runs in 1107557 ms.
 
 ## Kontrollzustand
 
@@ -54,26 +54,26 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 | Tuning | Profile | Gig Gap | Gigs | Money/Day | Gig Net/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Refuels | Drawdown | Bankruptcy | Days Survived |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| control | baseline_touring | 1 | 61.13 | 870.49 | 2049.98 | 665.71 | 816.75 | 40.8 | 11.89 | 7.99 | 60.12% | 0% | 75 |
-| control | baseline_touring | 2 | 29.13 | 284.77 | 940.63 | 374.15 | 956.63 | 55.93 | 7.56 | 4.13 | 57.7% | 1.15% | 74.47 |
-| control | baseline_touring | 3 | 16.15 | 136.83 | 509.33 | 229.83 | 1026.37 | 52.03 | 5.48 | 2.16 | 72.59% | 14.62% | 72.12 |
-| control | baseline_touring | 4 | 8.41 | 43.85 | 285.86 | 129.11 | 960.96 | 53.38 | 3.83 | 1.08 | 87.61% | 53.85% | 62.61 |
-| control | baseline_touring | 5 | 5.19 | 20.32 | 190.54 | 92.84 | 952.68 | 53.26 | 2.85 | 0.44 | 94.07% | 78.08% | 53.24 |
-| control | low_resource_touring | 1 | 61.02 | 836.58 | 2018.92 | 664.36 | 816.58 | 38.48 | 11.93 | 8.1 | 61.41% | 0% | 75 |
-| control | low_resource_touring | 2 | 29.38 | 287.66 | 944.52 | 406.34 | 1030.74 | 55.41 | 7.66 | 4.14 | 57.09% | 0.77% | 74.54 |
-| control | low_resource_touring | 3 | 15.3 | 123.53 | 478.28 | 224.17 | 1026.46 | 52.43 | 5.22 | 2.07 | 74.34% | 16.92% | 70.06 |
-| control | low_resource_touring | 4 | 8.11 | 43.54 | 291.98 | 133.82 | 1007.11 | 54.68 | 3.68 | 0.99 | 88.41% | 53.08% | 61.02 |
-| control | low_resource_touring | 5 | 4.37 | 20.57 | 193.82 | 89.93 | 899.25 | 52.74 | 2.27 | 0.37 | 93.58% | 80.38% | 43.73 |
-| finalTuning | baseline_touring | 1 | 60.85 | 659.97 | 1810.74 | 661.3 | 815.08 | 40.97 | 12.01 | 8.08 | 61.49% | 0% | 75 |
-| finalTuning | baseline_touring | 2 | 29.58 | 275.21 | 907.43 | 387.8 | 976.09 | 53.86 | 7.63 | 4.2 | 55.82% | 1.92% | 74.45 |
-| finalTuning | baseline_touring | 3 | 16.06 | 125.36 | 490.46 | 223.91 | 1002.37 | 53.52 | 5.43 | 2.17 | 73.47% | 15.38% | 71.88 |
-| finalTuning | baseline_touring | 4 | 8.2 | 39.81 | 272.62 | 124.53 | 946.57 | 54.44 | 3.77 | 1.06 | 87.76% | 53.85% | 62.3 |
-| finalTuning | baseline_touring | 5 | 5.18 | 18.4 | 189.53 | 91.2 | 948.66 | 53.65 | 2.85 | 0.45 | 94.7% | 76.54% | 53.89 |
-| finalTuning | low_resource_touring | 1 | 61.52 | 684.77 | 1831.58 | 673.84 | 821.19 | 38.62 | 12.03 | 8.05 | 62% | 0.38% | 74.98 |
-| finalTuning | low_resource_touring | 2 | 29.52 | 266.31 | 901.33 | 411.41 | 1042.62 | 54.72 | 7.71 | 4.15 | 56.34% | 0.77% | 74.8 |
-| finalTuning | low_resource_touring | 3 | 14.98 | 116.4 | 461.12 | 212.63 | 992.34 | 51.98 | 5.17 | 2.02 | 74.2% | 18.46% | 69.9 |
-| finalTuning | low_resource_touring | 4 | 8.06 | 45.03 | 294.17 | 137.01 | 1025.86 | 55.58 | 3.65 | 0.96 | 88.36% | 54.23% | 60.36 |
-| finalTuning | low_resource_touring | 5 | 4.49 | 25.75 | 202.42 | 91.62 | 906.04 | 52.99 | 2.34 | 0.39 | 93.31% | 78.85% | 44.43 |
+| control | baseline_touring | 1 | 61.13 | 870.49 | 2049.98 | 665.71 | 816.77 | 40.8 | 11.89 | 7.99 | 60.12% | 0% | 75 |
+| control | baseline_touring | 2 | 29.13 | 284.77 | 940.63 | 374.15 | 958.31 | 55.93 | 7.56 | 4.13 | 57.7% | 1.15% | 74.47 |
+| control | baseline_touring | 3 | 16.15 | 136.83 | 509.33 | 229.83 | 1010.53 | 52.03 | 5.48 | 2.16 | 72.59% | 14.62% | 72.12 |
+| control | baseline_touring | 4 | 8.41 | 43.85 | 285.86 | 129.11 | 919.5 | 53.38 | 3.83 | 1.08 | 87.61% | 53.85% | 62.61 |
+| control | baseline_touring | 5 | 5.19 | 20.32 | 190.54 | 92.84 | 896.92 | 53.26 | 2.85 | 0.44 | 94.07% | 78.08% | 53.24 |
+| control | low_resource_touring | 1 | 61.02 | 836.58 | 2018.92 | 664.36 | 818.49 | 38.48 | 11.93 | 8.1 | 61.41% | 0% | 75 |
+| control | low_resource_touring | 2 | 29.38 | 287.66 | 944.52 | 406.34 | 1032.95 | 55.41 | 7.66 | 4.14 | 57.09% | 0.77% | 74.54 |
+| control | low_resource_touring | 3 | 15.3 | 123.53 | 478.28 | 224.17 | 1003.36 | 52.43 | 5.22 | 2.07 | 74.34% | 16.92% | 70.06 |
+| control | low_resource_touring | 4 | 8.11 | 43.54 | 291.98 | 133.82 | 950.25 | 54.68 | 3.68 | 0.99 | 88.41% | 53.08% | 61.02 |
+| control | low_resource_touring | 5 | 4.37 | 20.57 | 193.82 | 89.93 | 862.17 | 52.74 | 2.27 | 0.37 | 93.58% | 80.38% | 43.73 |
+| finalTuning | baseline_touring | 1 | 60.85 | 659.97 | 1810.74 | 661.3 | 816.44 | 40.97 | 12.01 | 8.08 | 61.49% | 0% | 75 |
+| finalTuning | baseline_touring | 2 | 29.58 | 275.21 | 907.43 | 387.8 | 981.61 | 53.86 | 7.63 | 4.2 | 55.82% | 1.92% | 74.45 |
+| finalTuning | baseline_touring | 3 | 16.06 | 125.36 | 490.46 | 223.91 | 992.02 | 53.52 | 5.43 | 2.17 | 73.47% | 15.38% | 71.88 |
+| finalTuning | baseline_touring | 4 | 8.2 | 39.81 | 272.62 | 124.53 | 908.84 | 54.44 | 3.77 | 1.06 | 87.76% | 53.85% | 62.3 |
+| finalTuning | baseline_touring | 5 | 5.18 | 18.4 | 189.53 | 91.2 | 890.09 | 53.65 | 2.85 | 0.45 | 94.7% | 76.54% | 53.89 |
+| finalTuning | low_resource_touring | 1 | 61.52 | 684.77 | 1831.58 | 673.84 | 819.25 | 38.62 | 12.03 | 8.05 | 62% | 0.38% | 74.98 |
+| finalTuning | low_resource_touring | 2 | 29.52 | 266.31 | 901.33 | 411.41 | 1040.92 | 54.72 | 7.71 | 4.15 | 56.34% | 0.77% | 74.8 |
+| finalTuning | low_resource_touring | 3 | 14.98 | 116.4 | 461.12 | 212.63 | 977.77 | 51.98 | 5.17 | 2.02 | 74.2% | 18.46% | 69.9 |
+| finalTuning | low_resource_touring | 4 | 8.06 | 45.03 | 294.17 | 137.01 | 959.36 | 55.58 | 3.65 | 0.96 | 88.36% | 54.23% | 60.36 |
+| finalTuning | low_resource_touring | 5 | 4.49 | 25.75 | 202.42 | 91.62 | 869.62 | 52.99 | 2.34 | 0.39 | 93.31% | 78.85% | 44.43 |
 
 Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":205.68,"famePerDayAdvantagePct":77.93,"harmonyDelta":-15.13,"repairsDelta":4.33,"bankruptcyDeltaPct":-1.15},"low_resource_touring":{"moneyPerDayAdvantagePct":190.82,"famePerDayAdvantagePct":63.5,"harmonyDelta":-16.93,"repairsDelta":4.27,"bankruptcyDeltaPct":-0.77}}
 
