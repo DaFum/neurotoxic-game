@@ -195,7 +195,10 @@ test('KPI hash depends on KPI targets but not report version', () => {
   const changed = structuredClone(KPI_TARGETS)
   changed.bootstrap_struggle.bankruptcyMax--
   assert.notEqual(hash, getJsonHash(changed))
-  assert.equal(hash, getJsonHash(KPI_TARGETS, { reportVersion: 999 }))
+
+  const versionedTarget = structuredClone(KPI_TARGETS)
+  versionedTarget.reportVersion = 999
+  assert.equal(hash, getJsonHash(versionedTarget))
 })
 
 test('canonical repeat demand adjustment is immutable, bounded, regional, and save compatible', () => {

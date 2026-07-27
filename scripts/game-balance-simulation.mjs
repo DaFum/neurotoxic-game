@@ -1838,6 +1838,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
+    state.player.day = day
     if (state.player.money > peakMoney) peakMoney = state.player.money;
     else {
       const drop = calculateDrawdownPct(peakMoney, state.player.money)
@@ -1882,7 +1883,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       day <= tuning.earlyGame.emergencyGrantMaxDay &&
       state.player.money <= tuning.earlyGame.emergencyGrantTriggerMoney
     ) {
-      state.player.money = clampPlayerMoney(state.player.money + tuning.earlyGame.emergencyGrant)
+      state.player.money = clampPlayerMoney(finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant)
       runCtx.emergencyGrantUsed = true
     }
 
@@ -2145,7 +2146,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
     const regionalGigHistory = Object.fromEntries(runCtx.regionalGigHistory)
     const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
-      .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
+      .filter(gigDay => state.player.day - gigDay <= tuning.touring.repeatGigWindowDays)
     const financials = deriveFinancials({
       currentGig: venue,
       lastGigStats: currentGigStats,
@@ -2169,7 +2170,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // Note: Region/City effects in Balance-Run are not fully simulated here.
       cityTraits: [],
       assetModifiers: getActiveAssetModifiers(state.assets || []),
-      repeatDemandContext: { day, regionId, regionalGigHistory, tuning }
+      repeatDemandContext: { day: state.player.day, regionId, regionalGigHistory, tuning }
     })
 
     // Standard post-gig adjustments

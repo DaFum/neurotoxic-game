@@ -6,6 +6,7 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
   'scripts/game-balance-experiment-config.mjs',
+  'scripts/utils/paired-statistics.mjs',
   'src/utils/balanceTuning.ts',
   'src/utils/dailyTickLogic.ts',
   'src/utils/postGig/derivations.ts',
@@ -13,6 +14,7 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/types/social.d.ts',
   'src/hooks/postGig/usePostGigDerivations.ts',
   'src/context/initialState.ts',
+  'src/context/usePersistence.ts',
   'src/context/reducers/sanitizers/stateSanitizers.ts',
   'src/utils/saveValidator.ts'
 ])

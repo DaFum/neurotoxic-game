@@ -50,11 +50,20 @@ describe('saveValidator', () => {
       { berlin: '4' },
       { berlin: [-1] },
       { berlin: [1.5] },
-      { berlin: [Infinity] }
+      { berlin: [Infinity] },
+      Array.from({ length: 101 }).reduce((acc, _, i) => {
+        acc[`region${i}`] = [1]
+        return acc
+      }, {}),
+      { berlin: Array.from({ length: 257 }, () => 1) },
+      JSON.parse(`{"constructor": [1]}`)
     ]) {
       const data = getValidData()
       data.social.regionalGigHistory = history
-      assert.throws(() => validateSaveData(data), /regionalGigHistory/)
+      assert.throws(
+        () => validateSaveData(data),
+        /regionalGigHistory|reserved|too many|Prototype pollution/
+      )
     }
   })
 

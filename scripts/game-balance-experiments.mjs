@@ -156,7 +156,16 @@ export const selectAcceptedCandidate = ranking =>
 const combinationImpact = ({ bootstrap, touring }) => {
   const early = bootstrap.overrides.earlyGame ?? {}
   const late = touring.overrides.touring ?? {}
-  const relief = (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
+  let relief = 0
+  if (early.obligationStages && early.obligationStages.length > 0) {
+    let lastDay = 0
+    for (const stage of early.obligationStages) {
+      relief += (stage.throughDay - lastDay) * (1 - (stage.multiplier ?? 1))
+      lastDay = stage.throughDay
+    }
+  } else {
+    relief = (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
+  }
   const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
     (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
   return relief + saturation
@@ -269,7 +278,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` showed the best accepted paired outcome.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected via the fully validated Cartesian-product combinations evaluated by lowest combinationImpact.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -294,7 +303,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` had the best snowball-reduction versus side-effect trade-off.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected as part of the best fully validated Cartesian-product combination by lowest combinationImpact.
 
 ## Kombinierte Validierung
 
@@ -385,10 +394,23 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const selectedTouring = selected.touring
   selectedBootstrap.selectedForProduction = true
   selectedTouring.selectedForProduction = true
-  for (const item of bootstrapCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact fully validated combination ranked higher.'
+  const passingBootstraps = new Set(acceptedCombinations.map(c => c.bootstrap.id))
+  const passingTourings = new Set(acceptedCombinations.map(c => c.touring.id))
+  for (const item of bootstrapCandidates) {
+    if (!item.selectedForProduction && !item.rejectionReason) {
+      item.rejectionReason = passingBootstraps.has(item.id)
+        ? 'A lower-impact fully validated combination ranked higher.'
+        : 'Candidate did not participate in any combination satisfying final validation.'
+    }
+  }
   const touringCandidates = touringByBootstrap.get(selectedBootstrap.id)
-  for (const item of touringCandidates) if (!item.selectedForProduction && !item.rejectionReason) item.rejectionReason = 'A lower-impact fully validated combination ranked higher.'
-
+  for (const item of touringCandidates) {
+    if (!item.selectedForProduction && !item.rejectionReason) {
+      item.rejectionReason = passingTourings.has(item.id)
+        ? 'A lower-impact fully validated combination ranked higher.'
+        : 'Candidate did not participate in any combination satisfying final validation.'
+    }
+  }
   const intermediateTuning = resolveBalanceTuning(selectedBootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
   const finalTuning = selected.tuning
   const finalCombinedValidation = selected.validation
