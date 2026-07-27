@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-27T20:46:27.881Z",
+  "generatedAt": "2026-07-27T21:29:47.709Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "5ce80004290236772cb72996a7d9fe31e094dcce",
+    "sourceBaseCommit": "9d451a81ba3f430d23bb80464ffb26995bcd0e02",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "9769d507afa89fab618c1c60040cc4eaff06d4d867c5d704e9165db7a842a0a4",
-    "balanceSourceSha256": "225b00040230b2764a15582c70e133a49b880adf244ebb8b192ef4a8aeb11c8d",
-    "experimentScriptSha256": "0b124e8d81edef2a66a35f90773d5f7bcdf0be1367041d3058eac2504730085f",
+    "simulationScriptSha256": "5a55192592b40ae8ba168af9ec855d57c9543ae9e1904111ca4532d99a1bc90f",
+    "balanceSourceSha256": "538e7e5a256f389aebe583b8e4cb868bb1b32430d845dbc2b149107efabb075e",
+    "experimentScriptSha256": "6f1e2c7ee0ba1c301c5b5a64002d7d483f991ac302bfc748c95d60b1cbed9f66",
     "experimentConfigSha256": "d203a1d726f71a5ac7370496fc73cbdac4c21e69e892bdb75917eeffe31b5178",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
@@ -869,9 +869,9 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 1.93,
+            "targetFit": 61.93,
             "sideEffectPenalty": 0,
-            "overcorrectionPenalty": 50,
+            "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": true,
@@ -1708,9 +1708,9 @@
             "midCheckpointDeltaPct": 1.61
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 59.62,
             "sideEffectPenalty": 0.16,
-            "overcorrectionPenalty": 50,
+            "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
@@ -2547,9 +2547,9 @@
             "midCheckpointDeltaPct": 3.55
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 55,
             "sideEffectPenalty": 0.26,
-            "overcorrectionPenalty": 50,
+            "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
@@ -3386,7 +3386,7 @@
             "midCheckpointDeltaPct": 5.32
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 52.69,
             "sideEffectPenalty": 0.28,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
@@ -4225,7 +4225,7 @@
             "midCheckpointDeltaPct": 7.32
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 44.62,
             "sideEffectPenalty": 0.39,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
@@ -5064,7 +5064,7 @@
             "midCheckpointDeltaPct": 10.87
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 29.62,
             "sideEffectPenalty": 0.33,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
@@ -5903,7 +5903,7 @@
             "midCheckpointDeltaPct": 14.86
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 16.93,
             "sideEffectPenalty": 0.19,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
@@ -6743,9 +6743,9 @@
             "midCheckpointDeltaPct": 0.11
           },
           "rankingComponents": {
-            "targetFit": 1.93,
+            "targetFit": 61.93,
             "sideEffectPenalty": 0.02,
-            "overcorrectionPenalty": 50,
+            "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
@@ -7583,9 +7583,9 @@
             "midCheckpointDeltaPct": 0.33
           },
           "rankingComponents": {
-            "targetFit": 0.76,
+            "targetFit": 60.76,
             "sideEffectPenalty": 0.01,
-            "overcorrectionPenalty": 50,
+            "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
@@ -8430,7 +8430,7 @@
             "midCheckpointDeltaPct": 9.21
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 38.86,
             "sideEffectPenalty": 0.39,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 2
@@ -9273,7 +9273,7 @@
             "midCheckpointDeltaPct": 6.77
           },
           "rankingComponents": {
-            "targetFit": 0,
+            "targetFit": 48.07,
             "sideEffectPenalty": 0.3,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 2
@@ -9285,90 +9285,90 @@
       "ranking": [
         {
           "id": "bootstrap-none",
-          "targetFit": 1.93,
+          "targetFit": 61.93,
           "sideEffectPenalty": 0,
-          "overcorrectionPenalty": 50,
+          "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
         },
         {
           "id": "bootstrap-emergency-250",
-          "targetFit": 1.93,
+          "targetFit": 61.93,
           "sideEffectPenalty": 0.02,
-          "overcorrectionPenalty": 50,
+          "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
         },
         {
           "id": "bootstrap-emergency-500",
-          "targetFit": 0.76,
+          "targetFit": 60.76,
           "sideEffectPenalty": 0.01,
-          "overcorrectionPenalty": 50,
+          "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
         },
         {
           "id": "bootstrap-obligations-90-through-3",
-          "targetFit": 0,
+          "targetFit": 59.62,
           "sideEffectPenalty": 0.16,
-          "overcorrectionPenalty": 50,
-          "complexityPenalty": 1,
-          "passed": true
-        },
-        {
-          "id": "bootstrap-obligations-60-through-5",
-          "targetFit": 0,
-          "sideEffectPenalty": 0.19,
-          "overcorrectionPenalty": 50,
+          "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
         },
         {
           "id": "bootstrap-obligations-80-through-3",
-          "targetFit": 0,
+          "targetFit": 55,
           "sideEffectPenalty": 0.26,
-          "overcorrectionPenalty": 50,
+          "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
         },
         {
           "id": "bootstrap-obligations-70-through-3",
-          "targetFit": 0,
+          "targetFit": 52.69,
           "sideEffectPenalty": 0.28,
           "overcorrectionPenalty": 50,
           "complexityPenalty": 1,
           "passed": true
         },
         {
-          "id": "bootstrap-obligations-70-through-5",
-          "targetFit": 0,
-          "sideEffectPenalty": 0.33,
-          "overcorrectionPenalty": 50,
-          "complexityPenalty": 1,
-          "passed": true
-        },
-        {
-          "id": "bootstrap-obligations-80-through-5",
-          "targetFit": 0,
-          "sideEffectPenalty": 0.39,
-          "overcorrectionPenalty": 50,
-          "complexityPenalty": 1,
-          "passed": true
-        },
-        {
           "id": "bootstrap-staged-75",
-          "targetFit": 0,
+          "targetFit": 48.07,
           "sideEffectPenalty": 0.3,
           "overcorrectionPenalty": 50,
           "complexityPenalty": 2,
           "passed": true
         },
         {
+          "id": "bootstrap-obligations-80-through-5",
+          "targetFit": 44.62,
+          "sideEffectPenalty": 0.39,
+          "overcorrectionPenalty": 50,
+          "complexityPenalty": 1,
+          "passed": true
+        },
+        {
           "id": "bootstrap-staged-60-80",
-          "targetFit": 0,
+          "targetFit": 38.86,
           "sideEffectPenalty": 0.39,
           "overcorrectionPenalty": 50,
           "complexityPenalty": 2,
+          "passed": true
+        },
+        {
+          "id": "bootstrap-obligations-70-through-5",
+          "targetFit": 29.62,
+          "sideEffectPenalty": 0.33,
+          "overcorrectionPenalty": 50,
+          "complexityPenalty": 1,
+          "passed": true
+        },
+        {
+          "id": "bootstrap-obligations-60-through-5",
+          "targetFit": 16.93,
+          "sideEffectPenalty": 0.19,
+          "overcorrectionPenalty": 50,
+          "complexityPenalty": 1,
           "passed": true
         }
       ],
@@ -10721,7 +10721,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -11572,7 +11572,7 @@
             "midCheckpointDeltaPct": -0.19
           },
           "rankingComponents": {
-            "targetFit": 40.92,
+            "targetFit": 60.92,
             "sideEffectPenalty": 0.02,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -12423,7 +12423,7 @@
             "midCheckpointDeltaPct": -0.19
           },
           "rankingComponents": {
-            "targetFit": 42.84,
+            "targetFit": 62.84,
             "sideEffectPenalty": 0.05,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -13274,7 +13274,7 @@
             "midCheckpointDeltaPct": -0.19
           },
           "rankingComponents": {
-            "targetFit": 39.68,
+            "targetFit": 59.68,
             "sideEffectPenalty": 0.03,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -14126,7 +14126,7 @@
             "midCheckpointDeltaPct": -0.26
           },
           "rankingComponents": {
-            "targetFit": 55.04,
+            "targetFit": 75.04,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -14978,7 +14978,7 @@
             "midCheckpointDeltaPct": -0.26
           },
           "rankingComponents": {
-            "targetFit": 59.08,
+            "targetFit": 79.08,
             "sideEffectPenalty": 0.03,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -15830,7 +15830,7 @@
             "midCheckpointDeltaPct": -0.38
           },
           "rankingComponents": {
-            "targetFit": 63.36,
+            "targetFit": 83.36,
             "sideEffectPenalty": 0.12,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -16682,7 +16682,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 59.8,
+            "targetFit": 79.8,
             "sideEffectPenalty": 0.06,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -17532,7 +17532,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -18382,7 +18382,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -19233,7 +19233,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 2
@@ -20083,7 +20083,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -20933,7 +20933,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -21783,7 +21783,7 @@
             "midCheckpointDeltaPct": 0
           },
           "rankingComponents": {
-            "targetFit": 30,
+            "targetFit": 50,
             "sideEffectPenalty": 0,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
@@ -21795,7 +21795,7 @@
       "ranking": [
         {
           "id": "touring-demand-13.5-48-after-3-window-5",
-          "targetFit": 63.36,
+          "targetFit": 83.36,
           "sideEffectPenalty": 0.12,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21803,7 +21803,7 @@
         },
         {
           "id": "touring-demand-16-55-after-5",
-          "targetFit": 59.8,
+          "targetFit": 79.8,
           "sideEffectPenalty": 0.06,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21811,7 +21811,7 @@
         },
         {
           "id": "touring-demand-10-40-after-3-window-5",
-          "targetFit": 59.08,
+          "targetFit": 79.08,
           "sideEffectPenalty": 0.03,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21819,7 +21819,7 @@
         },
         {
           "id": "touring-demand-10-40-after-3-window-3",
-          "targetFit": 55.04,
+          "targetFit": 75.04,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21827,7 +21827,7 @@
         },
         {
           "id": "touring-demand-7.5-25-window-3",
-          "targetFit": 42.84,
+          "targetFit": 62.84,
           "sideEffectPenalty": 0.05,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21835,7 +21835,7 @@
         },
         {
           "id": "touring-demand-5-15-window-3",
-          "targetFit": 40.92,
+          "targetFit": 60.92,
           "sideEffectPenalty": 0.02,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21843,7 +21843,7 @@
         },
         {
           "id": "touring-demand-5-20-window-5",
-          "targetFit": 39.68,
+          "targetFit": 59.68,
           "sideEffectPenalty": 0.03,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21851,7 +21851,7 @@
         },
         {
           "id": "touring-none",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21859,7 +21859,7 @@
         },
         {
           "id": "touring-stress-1",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21867,7 +21867,7 @@
         },
         {
           "id": "touring-stress-2",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21875,7 +21875,7 @@
         },
         {
           "id": "touring-wear-105",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21883,7 +21883,7 @@
         },
         {
           "id": "touring-wear-110",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21891,7 +21891,7 @@
         },
         {
           "id": "touring-wear-115",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
@@ -21899,7 +21899,7 @@
         },
         {
           "id": "touring-stress-1-recovery-90",
-          "targetFit": 30,
+          "targetFit": 50,
           "sideEffectPenalty": 0,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 2,
@@ -26868,7 +26868,7 @@
     "pairsAvailable": 154,
     "pairsEvaluated": 1,
     "pairsSkipped": 153,
-    "note": "Pairs are ordered by combinationImpact, which is derived from the candidate overrides alone. The search stops at the first pair that passes final combined validation; the remaining pairs would have higher impact and so could not have been selected."
+    "note": "Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected."
   },
   "combinationRanking": [
     {
@@ -26907,7 +26907,7 @@
     }
   },
   "runtime": {
-    "durationMs": 24506,
+    "durationMs": 36816,
     "candidates": 25,
     "totalRuns": 18460
   }

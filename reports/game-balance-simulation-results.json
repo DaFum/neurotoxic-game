@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T20:46:40.947Z",
+  "generatedAt": "2026-07-27T21:30:03.761Z",
   "constants": {
     "reportVersion": 12,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "5ce80004290236772cb72996a7d9fe31e094dcce",
+    "sourceBaseCommit": "9d451a81ba3f430d23bb80464ffb26995bcd0e02",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "9769d507afa89fab618c1c60040cc4eaff06d4d867c5d704e9165db7a842a0a4",
-    "balanceSourceSha256": "225b00040230b2764a15582c70e133a49b880adf244ebb8b192ef4a8aeb11c8d",
+    "simulationScriptSha256": "5a55192592b40ae8ba168af9ec855d57c9543ae9e1904111ca4532d99a1bc90f",
+    "balanceSourceSha256": "538e7e5a256f389aebe583b8e4cb868bb1b32430d845dbc2b149107efabb075e",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
     "seedStrategy": "scenario-id-plus-run-index"
@@ -670,7 +670,7 @@
         ],
         "holdoutAvgFinalMoney": 27880,
         "holdoutBankruptcyRate": 0,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1555.77
       },
       {
         "id": "bootstrap_struggle",
@@ -709,7 +709,7 @@
         ],
         "holdoutAvgFinalMoney": 4371,
         "holdoutBankruptcyRate": 16.92,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1448.9
       },
       {
         "id": "aggressive_marketing",
@@ -748,7 +748,7 @@
         ],
         "holdoutAvgFinalMoney": 18646,
         "holdoutBankruptcyRate": 0,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1532.36
       },
       {
         "id": "scandal_recovery",
@@ -787,7 +787,7 @@
         ],
         "holdoutAvgFinalMoney": 9533,
         "holdoutBankruptcyRate": 1.15,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1538.29
       },
       {
         "id": "festival_push",
@@ -826,7 +826,7 @@
         ],
         "holdoutAvgFinalMoney": 11424,
         "holdoutBankruptcyRate": 0.77,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1651.29
       },
       {
         "id": "chaos_tour",
@@ -865,7 +865,7 @@
         ],
         "holdoutAvgFinalMoney": 16319,
         "holdoutBankruptcyRate": 0.77,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1407.74
       },
       {
         "id": "cult_hypergrowth",
@@ -904,7 +904,7 @@
         ],
         "holdoutAvgFinalMoney": 19656,
         "holdoutBankruptcyRate": 0,
-        "holdoutFameProgressPerGig": null
+        "holdoutFameProgressPerGig": 1531.57
       }
     ]
   },
