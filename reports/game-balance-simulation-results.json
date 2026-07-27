@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-27T20:30:12.721Z",
+  "generatedAt": "2026-07-27T20:46:40.947Z",
   "constants": {
     "reportVersion": 12,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "8f7d1b401282bf937e234f119464f7ece01c77c3",
+    "sourceBaseCommit": "5ce80004290236772cb72996a7d9fe31e094dcce",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "c1a0ad9fe2c4968c3a7b44c28b7b1fd09872aa0e88ee22956c45c2e45778d432",
-    "balanceSourceSha256": "bd9835431b1133a4266ea4e2ce45169724bd90eaa63cf57110fdb31152e1c57a",
+    "simulationScriptSha256": "9769d507afa89fab618c1c60040cc4eaff06d4d867c5d704e9165db7a842a0a4",
+    "balanceSourceSha256": "225b00040230b2764a15582c70e133a49b880adf244ebb8b192ef4a8aeb11c8d",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
     "seedStrategy": "scenario-id-plus-run-index"
@@ -629,6 +629,7 @@
   "kpiHoldoutValidation": {
     "seedStrategy": "scenario-id-plus-holdout-marker-plus-run-index",
     "runsPerScenario": 260,
+    "comparison": "per-kpi-band",
     "agrees": true,
     "disagreements": [],
     "scenarios": [
@@ -637,6 +638,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 10%",
+            "calibrationPass": true,
+            "calibrationActual": "0%",
+            "holdoutPass": true,
+            "holdoutActual": "0%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€15.000 – €47.000",
+            "calibrationPass": true,
+            "calibrationActual": "€29.858",
+            "holdoutPass": true,
+            "holdoutActual": "€27.880",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1528.06",
+            "holdoutPass": true,
+            "holdoutActual": "1555.77",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 27880,
         "holdoutBankruptcyRate": 0,
         "holdoutFameProgressPerGig": null
@@ -646,6 +677,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 60%",
+            "calibrationPass": true,
+            "calibrationActual": "17.31%",
+            "holdoutPass": true,
+            "holdoutActual": "16.92%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€2.000 – €7.000",
+            "calibrationPass": true,
+            "calibrationActual": "€4.457",
+            "holdoutPass": true,
+            "holdoutActual": "€4.371",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1465.5",
+            "holdoutPass": true,
+            "holdoutActual": "1448.9",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 4371,
         "holdoutBankruptcyRate": 16.92,
         "holdoutFameProgressPerGig": null
@@ -655,6 +716,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 15%",
+            "calibrationPass": true,
+            "calibrationActual": "0.38%",
+            "holdoutPass": true,
+            "holdoutActual": "0%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€9.000 – €28.000",
+            "calibrationPass": true,
+            "calibrationActual": "€18.104",
+            "holdoutPass": true,
+            "holdoutActual": "€18.646",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1529.68",
+            "holdoutPass": true,
+            "holdoutActual": "1532.36",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 18646,
         "holdoutBankruptcyRate": 0,
         "holdoutFameProgressPerGig": null
@@ -664,6 +755,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 50%",
+            "calibrationPass": true,
+            "calibrationActual": "1.15%",
+            "holdoutPass": true,
+            "holdoutActual": "1.15%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€4.500 – €15.000",
+            "calibrationPass": true,
+            "calibrationActual": "€9.536",
+            "holdoutPass": true,
+            "holdoutActual": "€9.533",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1471.51",
+            "holdoutPass": true,
+            "holdoutActual": "1538.29",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 9533,
         "holdoutBankruptcyRate": 1.15,
         "holdoutFameProgressPerGig": null
@@ -673,6 +794,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 35%",
+            "calibrationPass": true,
+            "calibrationActual": "0.77%",
+            "holdoutPass": true,
+            "holdoutActual": "0.77%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€5.500 – €18.000",
+            "calibrationPass": true,
+            "calibrationActual": "€11.137",
+            "holdoutPass": true,
+            "holdoutActual": "€11.424",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1631.94",
+            "holdoutPass": true,
+            "holdoutActual": "1651.29",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 11424,
         "holdoutBankruptcyRate": 0.77,
         "holdoutFameProgressPerGig": null
@@ -682,6 +833,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 25%",
+            "calibrationPass": true,
+            "calibrationActual": "0.38%",
+            "holdoutPass": true,
+            "holdoutActual": "0.77%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€8.000 – €26.000",
+            "calibrationPass": true,
+            "calibrationActual": "€16.491",
+            "holdoutPass": true,
+            "holdoutActual": "€16.319",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1402.69",
+            "holdoutPass": true,
+            "holdoutActual": "1407.74",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 16319,
         "holdoutBankruptcyRate": 0.77,
         "holdoutFameProgressPerGig": null
@@ -691,6 +872,36 @@
         "calibrationStatus": "passed",
         "holdoutStatus": "passed",
         "agrees": true,
+        "disagreeingBands": [],
+        "checks": [
+          {
+            "label": "Insolvenzrate",
+            "target": "≤ 12%",
+            "calibrationPass": true,
+            "calibrationActual": "0.38%",
+            "holdoutPass": true,
+            "holdoutActual": "0%",
+            "agrees": true
+          },
+          {
+            "label": "Endgeld",
+            "target": "€9.500 – €31.000",
+            "calibrationPass": true,
+            "calibrationActual": "€19.336",
+            "holdoutPass": true,
+            "holdoutActual": "€19.656",
+            "agrees": true
+          },
+          {
+            "label": "Fame-Fortschritt/Gig",
+            "target": "1000 – 2200",
+            "calibrationPass": true,
+            "calibrationActual": "1573.44",
+            "holdoutPass": true,
+            "holdoutActual": "1531.57",
+            "agrees": true
+          }
+        ],
         "holdoutAvgFinalMoney": 19656,
         "holdoutBankruptcyRate": 0,
         "holdoutFameProgressPerGig": null
@@ -877,19 +1088,19 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 29500,
+          "previous": 29858,
           "current": 29858,
-          "delta": 358
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1525.91,
+          "previous": 1528.06,
           "current": 1528.06,
-          "delta": 2.15
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 9.9,
+          "previous": 9.91,
           "current": 9.91,
-          "delta": 0.01
+          "delta": 0
         }
       }
     },
@@ -903,9 +1114,9 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 4381,
+          "previous": 4457,
           "current": 4457,
-          "delta": 76
+          "delta": 0
         },
         "avgFameProgressPerGig": {
           "previous": 1465.5,
@@ -924,24 +1135,24 @@
       "name": "Aggressive Marketing",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0.77,
+          "previous": 0.38,
           "current": 0.38,
-          "delta": -0.39
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 17794,
+          "previous": 18104,
           "current": 18104,
-          "delta": 310
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1521.65,
+          "previous": 1529.68,
           "current": 1529.68,
-          "delta": 8.03
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.98,
+          "previous": 4.99,
           "current": 4.99,
-          "delta": 0.01
+          "delta": 0
         }
       }
     },
@@ -955,9 +1166,9 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 9434,
+          "previous": 9536,
           "current": 9536,
-          "delta": 102
+          "delta": 0
         },
         "avgFameProgressPerGig": {
           "previous": 1471.51,
@@ -981,9 +1192,9 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 11270,
+          "previous": 11137,
           "current": 11137,
-          "delta": -133
+          "delta": 0
         },
         "avgFameProgressPerGig": {
           "previous": 1631.94,
@@ -1007,14 +1218,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 16392,
+          "previous": 16491,
           "current": 16491,
-          "delta": 99
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1400.12,
+          "previous": 1402.69,
           "current": 1402.69,
-          "delta": 2.57
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 4.95,
@@ -1033,14 +1244,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 19182,
+          "previous": 19336,
           "current": 19336,
-          "delta": 154
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1572.01,
+          "previous": 1573.44,
           "current": 1573.44,
-          "delta": 1.43
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 4.98,
@@ -1059,14 +1270,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 15926,
+          "previous": 15999,
           "current": 15999,
-          "delta": 73
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1464.82,
+          "previous": 1466.52,
           "current": 1466.52,
-          "delta": 1.7
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 5,
@@ -1085,14 +1296,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 12362,
+          "previous": 12574,
           "current": 12574,
-          "delta": 212
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1378.87,
+          "previous": 1378.02,
           "current": 1378.02,
-          "delta": -0.85
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 4.97,
@@ -1111,14 +1322,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 15712,
+          "previous": 15946,
           "current": 15946,
-          "delta": 234
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1502.91,
+          "previous": 1503.09,
           "current": 1503.09,
-          "delta": 0.18
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 4.99,
@@ -1137,14 +1348,14 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 17673,
+          "previous": 17935,
           "current": 17935,
-          "delta": 262
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1468.78,
+          "previous": 1469.04,
           "current": 1469.04,
-          "delta": 0.26
+          "delta": 0
         },
         "avgGigsPlayed": {
           "previous": 4.99,
@@ -1163,19 +1374,19 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 35569,
+          "previous": 36206,
           "current": 36206,
-          "delta": 637
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1561.37,
+          "previous": 1562.44,
           "current": 1562.44,
-          "delta": 1.07
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 9.95,
+          "previous": 9.96,
           "current": 9.96,
-          "delta": 0.01
+          "delta": 0
         }
       }
     }
@@ -1787,6 +1998,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "0%",
+          "target": "≤ 10%",
+          "bewertung": "Risikofrei – kein Insolvenzfall beobachtet."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€29.858",
+          "target": "€15.000 – €47.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1528.06",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 1,
@@ -2634,6 +2868,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "17.31%",
+          "target": "≤ 60%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€4.457",
+          "target": "€2.000 – €7.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1465.5",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 4,
@@ -3364,6 +3621,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "0.38%",
+          "target": "≤ 15%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€18.104",
+          "target": "€9.000 – €28.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1529.68",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 2,
@@ -4138,6 +4418,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "1.15%",
+          "target": "≤ 50%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€9.536",
+          "target": "€4.500 – €15.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1471.51",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 3,
@@ -4880,6 +5183,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "0.77%",
+          "target": "≤ 35%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€11.137",
+          "target": "€5.500 – €18.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1631.94",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 3,
@@ -5625,6 +5951,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "0.38%",
+          "target": "≤ 25%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€16.491",
+          "target": "€8.000 – €26.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1402.69",
+          "target": "1000 – 2200",
+          "bewertung": "Im Zielband – leicht außermittig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 2,
@@ -6383,6 +6732,29 @@
         "kpiStatus": "passed",
         "kpisPassed": true
       },
+      "kpiChecks": [
+        {
+          "label": "Insolvenzrate",
+          "pass": true,
+          "actual": "0.38%",
+          "target": "≤ 12%",
+          "bewertung": "Solide – deutlich unter Risikogrenze."
+        },
+        {
+          "label": "Endgeld",
+          "pass": true,
+          "actual": "€19.336",
+          "target": "€9.500 – €31.000",
+          "bewertung": "Zentral im Zielband – sehr gute Balance."
+        },
+        {
+          "label": "Fame-Fortschritt/Gig",
+          "pass": true,
+          "actual": "1573.44",
+          "target": "1000 – 2200",
+          "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
+        }
+      ],
       "sampleTimeline": [
         {
           "day": 2,
@@ -7030,6 +7402,7 @@
         "kpiStatus": "not_evaluated",
         "kpisPassed": null
       },
+      "kpiChecks": null,
       "sampleTimeline": [
         {
           "day": 2,
@@ -7804,6 +8177,7 @@
         "kpiStatus": "not_evaluated",
         "kpisPassed": null
       },
+      "kpiChecks": null,
       "sampleTimeline": [
         {
           "day": 2,
@@ -8480,6 +8854,7 @@
         "kpiStatus": "not_evaluated",
         "kpisPassed": null
       },
+      "kpiChecks": null,
       "sampleTimeline": [
         {
           "day": 2,
@@ -9155,6 +9530,7 @@
         "kpiStatus": "not_evaluated",
         "kpisPassed": null
       },
+      "kpiChecks": null,
       "sampleTimeline": [
         {
           "day": 2,
@@ -9839,6 +10215,7 @@
         "kpiStatus": "not_evaluated",
         "kpisPassed": null
       },
+      "kpiChecks": null,
       "sampleTimeline": [
         {
           "day": 1,

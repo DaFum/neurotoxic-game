@@ -1,12 +1,12 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-27T20:29:58.668Z",
+  "generatedAt": "2026-07-27T20:46:27.881Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "8f7d1b401282bf937e234f119464f7ece01c77c3",
+    "sourceBaseCommit": "5ce80004290236772cb72996a7d9fe31e094dcce",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "c1a0ad9fe2c4968c3a7b44c28b7b1fd09872aa0e88ee22956c45c2e45778d432",
-    "balanceSourceSha256": "bd9835431b1133a4266ea4e2ce45169724bd90eaa63cf57110fdb31152e1c57a",
+    "simulationScriptSha256": "9769d507afa89fab618c1c60040cc4eaff06d4d867c5d704e9165db7a842a0a4",
+    "balanceSourceSha256": "225b00040230b2764a15582c70e133a49b880adf244ebb8b192ef4a8aeb11c8d",
     "experimentScriptSha256": "0b124e8d81edef2a66a35f90773d5f7bcdf0be1367041d3058eac2504730085f",
     "experimentConfigSha256": "d203a1d726f71a5ac7370496fc73cbdac4c21e69e892bdb75917eeffe31b5178",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
@@ -26907,7 +26907,7 @@
     }
   },
   "runtime": {
-    "durationMs": 26503,
+    "durationMs": 24506,
     "candidates": 25,
     "totalRuns": 18460
   }

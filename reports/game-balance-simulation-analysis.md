@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-27T20:30:12.721Z
+Erstellt am: 2026-07-27T20:46:40.947Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 12
 - Node-Version: v22.22.2
-- Basis-Commit: 8f7d1b401282bf937e234f119464f7ece01c77c3
+- Basis-Commit: 5ce80004290236772cb72996a7d9fe31e094dcce
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: c1a0ad9fe2c4968c3a7b44c28b7b1fd09872aa0e88ee22956c45c2e45778d432
+- Simulationsskript SHA-256: 9769d507afa89fab618c1c60040cc4eaff06d4d867c5d704e9165db7a842a0a4
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: 1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1
 - Seed-Strategie: scenario-id-plus-run-index
@@ -109,17 +109,33 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 
 Die KPI-Geldbänder wurden aus einem neutralen Kontrolllauf abgeleitet. Dieselben Szenarien laufen hier erneut auf einem disjunkten Seed-Strom (`scenario-id-plus-holdout-marker-plus-run-index`, 260 Runs), damit das Urteil nicht allein auf der Kohorte beruht, gegen die kalibriert wurde.
 
-| Szenario | Kalibrierung | Holdout | Übereinstimmung | Holdout Ø Endgeld | Holdout Insolvenzrate |
-|---|---|---|---|---:|---:|
-| baseline_touring | passed | passed | ✅ | €27.880 | 0% |
-| bootstrap_struggle | passed | passed | ✅ | €4.371 | 16.92% |
-| aggressive_marketing | passed | passed | ✅ | €18.646 | 0% |
-| scandal_recovery | passed | passed | ✅ | €9.533 | 1.15% |
-| festival_push | passed | passed | ✅ | €11.424 | 0.77% |
-| chaos_tour | passed | passed | ✅ | €16.319 | 0.77% |
-| cult_hypergrowth | passed | passed | ✅ | €19.656 | 0% |
+Verglichen wird jedes KPI-Band einzeln, nicht nur der Gesamtstatus: ein Szenariovergleich würde ein kompensierendes Paar (ein Band kippt auf Fail, ein anderes auf Pass) hinter unverändertem Gesamturteil verbergen.
 
-✅ Alle KPI-Urteile stimmen auf unabhängigen Seeds überein.
+| Szenario | Band | Ziel | Kalibrierung | Holdout | Übereinstimmung |
+|---|---|---|---|---|---|
+| baseline_touring | Insolvenzrate | ≤ 10% | 0% ✅ | 0% ✅ | ✅ |
+| baseline_touring | Endgeld | €15.000 – €47.000 | €29.858 ✅ | €27.880 ✅ | ✅ |
+| baseline_touring | Fame-Fortschritt/Gig | 1000 – 2200 | 1528.06 ✅ | 1555.77 ✅ | ✅ |
+| bootstrap_struggle | Insolvenzrate | ≤ 60% | 17.31% ✅ | 16.92% ✅ | ✅ |
+| bootstrap_struggle | Endgeld | €2.000 – €7.000 | €4.457 ✅ | €4.371 ✅ | ✅ |
+| bootstrap_struggle | Fame-Fortschritt/Gig | 1000 – 2200 | 1465.5 ✅ | 1448.9 ✅ | ✅ |
+| aggressive_marketing | Insolvenzrate | ≤ 15% | 0.38% ✅ | 0% ✅ | ✅ |
+| aggressive_marketing | Endgeld | €9.000 – €28.000 | €18.104 ✅ | €18.646 ✅ | ✅ |
+| aggressive_marketing | Fame-Fortschritt/Gig | 1000 – 2200 | 1529.68 ✅ | 1532.36 ✅ | ✅ |
+| scandal_recovery | Insolvenzrate | ≤ 50% | 1.15% ✅ | 1.15% ✅ | ✅ |
+| scandal_recovery | Endgeld | €4.500 – €15.000 | €9.536 ✅ | €9.533 ✅ | ✅ |
+| scandal_recovery | Fame-Fortschritt/Gig | 1000 – 2200 | 1471.51 ✅ | 1538.29 ✅ | ✅ |
+| festival_push | Insolvenzrate | ≤ 35% | 0.77% ✅ | 0.77% ✅ | ✅ |
+| festival_push | Endgeld | €5.500 – €18.000 | €11.137 ✅ | €11.424 ✅ | ✅ |
+| festival_push | Fame-Fortschritt/Gig | 1000 – 2200 | 1631.94 ✅ | 1651.29 ✅ | ✅ |
+| chaos_tour | Insolvenzrate | ≤ 25% | 0.38% ✅ | 0.77% ✅ | ✅ |
+| chaos_tour | Endgeld | €8.000 – €26.000 | €16.491 ✅ | €16.319 ✅ | ✅ |
+| chaos_tour | Fame-Fortschritt/Gig | 1000 – 2200 | 1402.69 ✅ | 1407.74 ✅ | ✅ |
+| cult_hypergrowth | Insolvenzrate | ≤ 12% | 0.38% ✅ | 0% ✅ | ✅ |
+| cult_hypergrowth | Endgeld | €9.500 – €31.000 | €19.336 ✅ | €19.656 ✅ | ✅ |
+| cult_hypergrowth | Fame-Fortschritt/Gig | 1000 – 2200 | 1573.44 ✅ | 1531.57 ✅ | ✅ |
+
+✅ Jedes einzelne KPI-Band urteilt auf unabhängigen Seeds gleich.
 
 ## Kapital-Progressionskurve
 
@@ -374,7 +390,7 @@ Die KPI-Geldbänder wurden aus einem neutralen Kontrolllauf abgeleitet. Dieselbe
 
 ## KPI-Zielkorridore (Health Check)
 
-Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kalibriert auf 75-Tage-Lauf).
+Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kalibriert auf eine vollständige map-gebundene 10-Tage-Tour.
 
 | Szenario | KPI | Ziel | Ist-Wert | Status | Bewertung |
 |---|---|---|---|---|---|
@@ -404,23 +420,6 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kal
 | Early Game Probe (Fame 0–50) | — | — | — | ⚪ Nicht bewertet | — |
 | Mid Game Probe (Fame 60–150) | — | — | — | ⚪ Nicht bewertet | — |
 | Late Game Probe (Fame 175+) | — | — | — | ⚪ Nicht bewertet | — |
-
-## Rebalance-Regressionsvergleich (Alt vs Neu)
-
-| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
-|---|---:|---:|---:|---:|
-| Baseline Touring | 0% | €358 | 2.15 | 0.01 |
-| Bootstrap Struggle | 0% | €76 | 0 | 0 |
-| Aggressive Marketing | -0.39% | €310 | 8.03 | 0.01 |
-| Scandal Recovery | 0% | €102 | 0 | 0 |
-| Festival Push | 0% | €-133 | 0 | 0 |
-| Chaos Tour | 0% | €99 | 2.57 | 0 |
-| Cult Hypergrowth | 0% | €154 | 1.43 | 0 |
-| No Social (Fame 0-50) | 0% | €73 | 1.7 | 0 |
-| High Controversy | 0% | €212 | -0.85 | 0 |
-| Early Game Probe (Fame 0–50) | 0% | €234 | 0.18 | 0 |
-| Mid Game Probe (Fame 60–150) | 0% | €262 | 0.26 | 0 |
-| Late Game Probe (Fame 175+) | 0% | €637 | 1.07 | 0.01 |
 
 ## Kurzfazit
 
