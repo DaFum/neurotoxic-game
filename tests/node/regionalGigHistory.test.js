@@ -108,6 +108,118 @@ test('regionalGigHistory roundtrip integration', () => {
   assert.deepEqual(loadedState.regionalGigHistory, finalHistory)
 })
 
+import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
+import { getRegionKeyForLocation } from '../../src/utils/mapUtils'
+
+const buildPostGigParams = (social, player) => ({
+  option: {
+    id: 'post_gig_region_option',
+    platform: 'instagram',
+    condition: () => true,
+    resolve: () => ({
+      success: true,
+      platform: 'instagram',
+      followers: 0,
+      message: 'Region history test'
+    })
+  },
+  player: { money: 100, day: 12, ...player },
+  band: { harmony: 50, members: [] },
+  social: {
+    instagram: 0,
+    tiktok: 0,
+    youtube: 0,
+    newsletter: 0,
+    viral: 0,
+    controversyLevel: 0,
+    loyalty: 0,
+    zealotry: 0,
+    reputationCooldown: 0,
+    trend: 'MUSIC',
+    activeDeals: [],
+    influencers: {},
+    ...social
+  },
+  secureRandomValue: 0.5
+})
+
+test('post-gig path normalizes regional gig history through the canonical helper', () => {
+  const updates = calculatePostGigStateUpdates(
+    buildPostGigParams(
+      { regionalGigHistory: { berlin: [12, 5, 5, -3, 2.5] } },
+      { location: 'venues:berlin_club.name', day: 12 }
+    )
+  )
+
+  // Raw appending would yield [12, 5, 5, -3, 2.5, 12]; only the canonical
+  // helper dedupes, sorts and drops non-integer/negative days.
+  assert.deepEqual(updates.updatedSocial.regionalGigHistory.berlin, [5, 12])
+})
+
+// `player.location` is persisted and only loosely constrained, and
+// `getRegionKeyForLocation` returns 'constructor' / '__proto__' unchanged (the
+// latter because its first underscore sits at index 0). A bare index read then
+// resolves an inherited Object.prototype value instead of undefined, and the
+// spread throws mid post-gig resolution.
+const FORBIDDEN_REGION_LOCATIONS = [
+  'constructor',
+  '__proto__',
+  'venues:constructor.name'
+]
+
+FORBIDDEN_REGION_LOCATIONS.forEach(location => {
+  test(`appendToRegionalGigHistory rejects the forbidden region key from ${location}`, () => {
+    const regionId = getRegionKeyForLocation(location)
+    const history = { berlin: [1] }
+
+    const result = appendToRegionalGigHistory(history, regionId, 5)
+
+    assert.deepEqual(result, { berlin: [1] })
+    assert.equal(Object.hasOwn(result, '__proto__'), false)
+    assert.equal(result.berlin.length, 1)
+  })
+
+  test(`post-gig path survives a persisted ${location} location`, () => {
+    const updates = calculatePostGigStateUpdates(
+      buildPostGigParams({ regionalGigHistory: { berlin: [1] } }, { location })
+    )
+
+    assert.deepEqual(updates.updatedSocial.regionalGigHistory, { berlin: [1] })
+  })
+})
+
+test('post-gig path keeps the played region within the validator region cap', () => {
+  const regionalGigHistory = {}
+  for (let index = 0; index < 100; index++) {
+    regionalGigHistory[`region${index}`] = [index + 1]
+  }
+
+  const updates = calculatePostGigStateUpdates(
+    buildPostGigParams(
+      { regionalGigHistory },
+      { location: 'venues:berlin_club.name', day: 200 }
+    )
+  )
+  const history = updates.updatedSocial.regionalGigHistory
+
+  assert.equal(
+    Object.keys(history).length,
+    100,
+    'Must not exceed the 100-region bound the save validator enforces'
+  )
+  assert.deepEqual(
+    history.berlin,
+    [200],
+    'The region just played must be recorded, not dropped'
+  )
+  assert.equal(history.region0, undefined, 'Stalest region is evicted')
+
+  const state = createInitialState()
+  if (!state.gameMap) state.gameMap = { nodes: [] }
+  state.social.regionalGigHistory = history
+  assert.doesNotThrow(() => validateSaveData(JSON.parse(JSON.stringify(state))))
+})
+
 import fs from 'fs'
 import path from 'path'
 

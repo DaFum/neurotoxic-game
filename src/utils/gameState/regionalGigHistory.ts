@@ -37,21 +37,52 @@ export const normalizeRegionalGigHistory = (
   return normalized
 }
 
+const MAX_REGIONS = 100
+
+const mostRecentDay = (days: number[]): number =>
+  days.length > 0 ? (days[days.length - 1] as number) : -1
+
 /**
  * Appends a gig day to a region's history, bounding the total structure.
+ *
+ * The appended region is always retained: when the history is already at the
+ * region cap and `regionId` is new, the region whose last gig is oldest is
+ * evicted, so the gig just played is never the one dropped.
+ *
+ * A forbidden `regionId` is dropped rather than recorded. `player.location` is
+ * persisted and only loosely constrained, and `getRegionKeyForLocation` passes
+ * `constructor` / `__proto__` through unchanged, so reading the entry with a
+ * bare index would resolve an inherited `Object.prototype` value instead of
+ * `undefined` and the spread below would throw mid post-gig resolution.
  */
 export const appendToRegionalGigHistory = (
   history: Record<string, number[]> | undefined | null,
   regionId: string,
   day: number
 ): Record<string, number[]> => {
-  const safeHistory = history ?? {}
-  const currentDays = Array.isArray(safeHistory[regionId])
-    ? safeHistory[regionId]
-    : []
+  const normalized = normalizeRegionalGigHistory(history ?? {})
+  if (isForbiddenKey(regionId)) return normalized
+
+  const existing = Object.hasOwn(normalized, regionId)
+    ? normalized[regionId]
+    : undefined
+  const currentDays = Array.isArray(existing) ? existing : []
+
+  if (!Object.hasOwn(normalized, regionId)) {
+    const regionIds = Object.keys(normalized)
+    if (regionIds.length >= MAX_REGIONS) {
+      const stalest = regionIds.reduce((oldest, candidate) =>
+        mostRecentDay(normalized[candidate] as number[]) <
+        mostRecentDay(normalized[oldest] as number[])
+          ? candidate
+          : oldest
+      )
+      delete normalized[stalest]
+    }
+  }
 
   return normalizeRegionalGigHistory({
-    ...safeHistory,
+    ...normalized,
     [regionId]: [...currentDays, day]
   })
 }

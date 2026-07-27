@@ -18,11 +18,13 @@ import {
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
   assertEqualControlCohorts,
+  combinationImpact,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
   kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
+  renderExperimentMarkdown,
   selectAcceptedCandidate,
   summarizePairedRuns
 } from '../../scripts/game-balance-experiments.mjs'
@@ -334,17 +336,42 @@ test('resolveBalanceTuning rejects malformed obligation stage shapes and order',
   )
 })
 
-test('selected obligation relief ends after its configured production window', () => {
-  assert.equal(getEarlyGameObligationMultiplier(1), 0.49)
-  assert.equal(getEarlyGameObligationMultiplier(60), 0.49)
-  assert.equal(getEarlyGameObligationMultiplier(61), 1)
+// Phase 3 selected no lever once the horizon was bounded by the map, so the
+// production defaults are neutral. Guarding that explicitly matters: a lever
+// reintroduced without a supporting experiment run would silently change every
+// player's economy.
+test('production defaults apply no balance lever', () => {
+  assert.equal(getEarlyGameObligationMultiplier(1), 1)
+  assert.equal(getEarlyGameObligationMultiplier(10), 1)
+  assert.equal(getRepeatDemandMultiplier(1, 5), 1)
+  assert.equal(getRepeatDemandMultiplier(10, 20), 1)
 })
 
-test('selected regional repeat demand penalty starts after the first show and caps', () => {
-  assert.equal(getRepeatDemandMultiplier(0, 0), 1)
-  assert.equal(getRepeatDemandMultiplier(28, 1), 1)
-  assert.equal(getRepeatDemandMultiplier(29, 1), 0.84)
-  assert.ok(Math.abs(getRepeatDemandMultiplier(29, 20) - 0.45) < 1e-12)
+test('obligation relief ends after its configured window', () => {
+  const tuning = resolveBalanceTuning(
+    { earlyGame: { durationDays: 5, dailyObligationMultiplier: 0.7 } },
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.equal(getEarlyGameObligationMultiplier(1, tuning), 0.7)
+  assert.equal(getEarlyGameObligationMultiplier(5, tuning), 0.7)
+  assert.equal(getEarlyGameObligationMultiplier(6, tuning), 1)
+})
+
+test('regional repeat demand penalty starts after its gate and caps', () => {
+  const tuning = resolveBalanceTuning(
+    {
+      touring: {
+        repeatGigWindowDays: 5,
+        repeatDemandStartDay: 3,
+        repeatDemandPenaltyPerGig: 0.16,
+        maxRepeatDemandPenalty: 0.55
+      }
+    },
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.equal(getRepeatDemandMultiplier(3, 1, tuning), 1)
+  assert.equal(getRepeatDemandMultiplier(4, 1, tuning), 0.84)
+  assert.ok(Math.abs(getRepeatDemandMultiplier(4, 20, tuning) - 0.45) < 1e-12)
 })
 
 test('experiment config hash is stable and sensitive to parameter changes', () => {
@@ -570,8 +597,8 @@ test('evaluateCandidate uses and preserves declared acceptance criteria', () => 
     gigsPlayed: 1,
     finalHarmony: 80,
     maxDrawdownPct: 0,
-    moneyAtDay20: 100,
-    moneyAtDay40: 100
+    moneyAtEarlyCheckpoint: 100,
+    moneyAtMidCheckpoint: 100
   })
   const pairs = [
     {
@@ -586,8 +613,7 @@ test('evaluateCandidate uses and preserves declared acceptance criteria', () => 
     scenarios: ['criteria_probe'],
     acceptanceCriteria: {
       bankruptcyRateMaxPct: 100,
-      medianSurvivalMinimumDeltaDays: 0,
-      medianSurvivalMinimumDeltaPct: 0,
+      bankruptcyMaximumDeltaPct: 100,
       solventMedianMoneyMax: 100,
       solventP90MoneyMax: 100,
       famePerGigMaximumAbsDeltaPct: 0
@@ -621,4 +647,316 @@ test('generated identifiers do not make candidate execution order observable', (
     [first.finalMoney, first.finalFame, first.gigsPlayed, first.bankrupt],
     [second.finalMoney, second.finalFame, second.gigsPlayed, second.bankrupt]
   )
+})
+
+// Paired experiments are only meaningful if a run is a pure function of
+// (scenario, seed, tuning). `secureRandom()` buffers 1024 draws, so a run that
+// does not drop the buffer inherits values generated from the previous run's
+// stream at an offset that depends on how many draws that run made. A
+// full-length run is required here: a 2-day probe consumes too few draws for
+// the drift to reach the summary fields.
+test('full-length runs are reproducible regardless of preceding runs', () => {
+  const scenario = SCENARIOS.find(item => item.id === 'bootstrap_struggle')
+  const seed = createScenarioSeed(scenario.id, 0)
+  const fingerprint = run => [
+    run.finalMoney,
+    run.finalFame,
+    run.gigsPlayed,
+    run.daysSurvived,
+    run.finalHarmony,
+    run.bankrupt
+  ]
+
+  const first = runSingleSimulation(scenario, seed, DEFAULT_BALANCE_TUNING)
+  const repeated = runSingleSimulation(scenario, seed, DEFAULT_BALANCE_TUNING)
+  assert.deepEqual(
+    fingerprint(repeated),
+    fingerprint(first),
+    'Identical inputs must reproduce identically'
+  )
+
+  // A differently-tuned run in between consumes a different number of draws.
+  runSingleSimulation(
+    { ...scenario, id: 'interleaved_probe' },
+    createScenarioSeed('interleaved_probe', 7),
+    resolveBalanceTuning({
+      earlyGame: { durationDays: 30, dailyObligationMultiplier: 0.5 }
+    })
+  )
+  const afterInterleave = runSingleSimulation(
+    scenario,
+    seed,
+    DEFAULT_BALANCE_TUNING
+  )
+  assert.deepEqual(
+    fingerprint(afterInterleave),
+    fingerprint(first),
+    'An interleaved run must not shift the secure-random stream'
+  )
+})
+
+// Obligation stages are cumulative `throughDay` boundaries, so each stage's
+// weight is its own segment length. Reading nonexistent `durationDays` /
+// `dailyObligationMultiplier` fields off a stage yields NaN, which silently
+// demotes staged combinations to the id tie-break instead of ranking them by
+// actual intervention size.
+test('combinationImpact weights obligation stages by segment length', () => {
+  const noTouring = { overrides: { touring: {} } }
+  const staged = {
+    overrides: {
+      earlyGame: {
+        obligationStages: [
+          { throughDay: 5, multiplier: 0.6 },
+          { throughDay: 10, multiplier: 0.8 }
+        ]
+      }
+    }
+  }
+
+  // Days 1-5 at 0.6 => 5 * 0.4 = 2; days 6-10 at 0.8 => 5 * 0.2 = 1.
+  const impact = combinationImpact({ bootstrap: staged, touring: noTouring })
+  assert.ok(Number.isFinite(impact), 'Staged impact must not be NaN')
+  assert.equal(impact, 3)
+
+  const flat = {
+    overrides: {
+      earlyGame: { durationDays: 10, dailyObligationMultiplier: 0.7 }
+    }
+  }
+  assert.ok(
+    Math.abs(combinationImpact({ bootstrap: flat, touring: noTouring }) - 3) <
+      1e-9,
+    'Equivalent total relief must rank equally regardless of encoding'
+  )
+
+  // A single stage covering the same window with less relief must rank lower.
+  const milder = {
+    overrides: {
+      earlyGame: { obligationStages: [{ throughDay: 10, multiplier: 0.85 }] }
+    }
+  }
+  assert.ok(
+    combinationImpact({ bootstrap: milder, touring: noTouring }) < impact
+  )
+})
+
+test('combinationImpact ignores an empty obligationStages array', () => {
+  const impact = combinationImpact({
+    bootstrap: {
+      overrides: {
+        earlyGame: {
+          obligationStages: [],
+          durationDays: 60,
+          dailyObligationMultiplier: 0.5
+        }
+      }
+    },
+    touring: { overrides: { touring: {} } }
+  })
+  assert.equal(impact, 30, 'Empty stages must fall back to the flat window')
+})
+
+// The suite reuses one control cohort per scenario across every combination
+// instead of re-simulating it. That is only sound because a run is a pure
+// function of (scenario, seed, tuning) — this pins the equivalence.
+test('reusing a control cohort matches re-simulating it', () => {
+  const scenario = {
+    ...SCENARIOS[0],
+    id: 'cohort_reuse_probe',
+    daysOverride: 20
+  }
+  const candidateTuning = resolveBalanceTuning({
+    touring: {
+      repeatGigWindowDays: 4,
+      repeatDemandPenaltyPerGig: 0.1,
+      maxRepeatDemandPenalty: 0.3
+    }
+  })
+  const shared = {
+    scenario,
+    runsPerScenario: 3,
+    controlTuning: DEFAULT_BALANCE_TUNING,
+    candidateTuning
+  }
+
+  const resimulated = pairSimulationRuns(shared)
+  const reused = pairSimulationRuns({
+    ...shared,
+    controlRuns: resimulated.map(pair => pair.control)
+  })
+
+  assert.deepEqual(
+    reused.map(pair => [pair.control, pair.candidate, pair.delta]),
+    resimulated.map(pair => [pair.control, pair.candidate, pair.delta])
+  )
+})
+
+const buildMarkdownReport = ({ objectiveMet }) => {
+  const candidate = {
+    id: 'probe-candidate',
+    aggregateResults: {
+      bankruptcy: {
+        controlRatePct: 80,
+        candidateRatePct: 50,
+        deltaRatePct: -30
+      },
+      continuous: {
+        daysSurvived: { pairedDelta: { median: 12 } },
+        finalHarmony: { pairedDelta: { median: -1 } },
+        maxDrawdownPct: { pairedDelta: { median: 2 } },
+        finalMoney: { pairedDelta: { median: -100 } }
+      },
+      solventMedianMoney: 1200,
+      famePerGigDeltaPct: 0.5,
+      medianFinalMoneyDeltaPct: -17,
+      p90FinalMoneyDeltaPct: -20,
+      earlyCheckpointDeltaPct: -1
+    },
+    acceptanceCriteria: { passed: true }
+  }
+  const gapProfile = {
+    before: 205.68,
+    after: objectiveMet ? 22.5 : 139.81,
+    reductionPct: 65.87,
+    withinTarget: objectiveMet
+  }
+  return {
+    metadata: { pairingStrategy: 'same-scenario-same-run-index-same-seed' },
+    runtime: { totalRuns: 1000, durationMs: 1000 },
+    phases: {
+      phase3B: {
+        candidates: [candidate],
+        ranking: [{ id: candidate.id }],
+        selectedCandidateId: candidate.id
+      },
+      phase3C: {
+        candidates: [candidate],
+        ranking: [{ id: candidate.id }],
+        selectedCandidateId: candidate.id,
+        objectiveStatus: objectiveMet ? 'met' : 'partial',
+        objectiveNote: objectiveMet
+          ? 'Objective reached.'
+          : 'Structural Gap-1 dominance remains unresolved.',
+        gigFrequencyAnalysis: { control: [], finalTuning: [] },
+        gapTradeoff: { gap1VsGap2: { control: {}, finalTuning: {} } },
+        gigFrequencyValidation: {
+          objectiveMet,
+          targetRangePct: [20, 25],
+          improved: true,
+          shortfalls: objectiveMet
+            ? []
+            : [
+                'baseline_touring money-per-day advantage 139.81% is outside the 20-25% target (was 205.68%)'
+              ],
+          profiles: {
+            baseline_touring: gapProfile,
+            low_resource_touring: gapProfile
+          }
+        }
+      }
+    },
+    finalCombinedValidation: {
+      passed: true,
+      resultsByScenario: {
+        bootstrap_struggle: {
+          scenarioId: 'bootstrap_struggle',
+          controlKpiStatus: 'passed',
+          candidateKpiStatus: 'passed',
+          bankruptcy: {
+            controlRatePct: 80,
+            candidateRatePct: 50,
+            deltaRatePct: -30
+          },
+          continuous: {
+            finalMoney: { pairedDelta: { median: -100 } },
+            finalHarmony: { pairedDelta: { median: -1 } },
+            maxDrawdownPct: { pairedDelta: { median: 2 } }
+          },
+          famePerGigDeltaPct: 0.5,
+          scenarioValidation: { passed: true }
+        }
+      }
+    },
+    combinationSearch: {
+      strategy: 'ascending-impact-first-validated',
+      pairsAvailable: 12,
+      pairsEvaluated: 1,
+      pairsSkipped: 11
+    },
+    recommendation: {
+      status: objectiveMet
+        ? 'accepted-for-production'
+        : 'accepted-for-production-partial'
+    }
+  }
+}
+
+test('experiment markdown discloses an unmet Phase 3C objective', () => {
+  const partial = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: false })
+  )
+
+  assert.match(partial, /Phase 3C Gesamtstatus \| partial/)
+  assert.match(partial, /Gap-1-Dominanz im Zielband \| nicht gelöst/)
+  assert.match(partial, /accepted-for-production-partial/)
+  assert.match(partial, /139\.81%/, 'Measured advantage must appear')
+  assert.match(partial, /outside the 20-25% target/)
+  assert.match(partial, /Structural Gap-1 dominance remains unresolved/)
+})
+
+test('experiment markdown reports a met Phase 3C objective without partial wording', () => {
+  const met = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: true })
+  )
+
+  assert.match(met, /Phase 3C Gesamtstatus \| met/)
+  assert.match(met, /Gap-1-Dominanz im Zielband \| erreicht/)
+  assert.doesNotMatch(met, /accepted-for-production-partial/)
+})
+
+// The search stops at the first validated pair, so ordering by impact is only a
+// least-intervention guarantee if every configured lever actually scores above
+// the no-op. A new override family that combinationImpact does not read would
+// tie with 'none' and win or lose on the alphabetical tie-break instead.
+test('every configured lever scores a positive combination impact', () => {
+  const neutralBootstrap = BALANCE_EXPERIMENTS.find(
+    item => item.id === 'bootstrap-none'
+  )
+  const neutralTouring = BALANCE_EXPERIMENTS.find(
+    item => item.id === 'touring-none'
+  )
+  assert.ok(neutralBootstrap && neutralTouring, 'No-op candidates must exist')
+
+  assert.equal(
+    combinationImpact({
+      bootstrap: neutralBootstrap,
+      touring: neutralTouring
+    }),
+    0,
+    'The all-neutral combination must be the strict minimum'
+  )
+
+  for (const candidate of BALANCE_EXPERIMENTS) {
+    if (candidate.id.endsWith('-none')) continue
+
+    const impact =
+      candidate.phase === 'bootstrap'
+        ? combinationImpact({
+            bootstrap: candidate,
+            touring: neutralTouring
+          })
+        : combinationImpact({
+            bootstrap: neutralBootstrap,
+            touring: candidate
+          })
+
+    assert.ok(
+      Number.isFinite(impact),
+      `${candidate.id} produced a non-finite impact (${impact})`
+    )
+    assert.ok(
+      impact > 0,
+      `${candidate.id} scores ${impact}, tying with the no-op — combinationImpact does not read its override family`
+    )
+  }
 })

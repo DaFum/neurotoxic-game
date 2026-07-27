@@ -44,15 +44,18 @@ test('calculateFameLevel', () => {
 })
 
 test('calculateGigFameReward scales successful gigs aggressively enough for shop progression', () => {
+  // GIG_BASE_REWARD 250 + GIG_SCORE_MULTIPLIER 20 per performance point. Raised
+  // from 150/12 so a full tour funds the fame-priced shop entries; the fame
+  // catalogue was scaled down by the same factor, so these move together.
   assert.strictEqual(
     calculateGigFameReward(70),
-    990,
+    1650,
     'A solid gig should grant high raw fame'
   )
   assert.strictEqual(
     calculateGigFameReward(100),
-    1350,
-    'A perfect gig should be able to reach the 20-30 gig shop target'
+    2250,
+    'A perfect gig should be able to reach the shop progression target'
   )
 })
 

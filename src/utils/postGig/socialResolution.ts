@@ -11,7 +11,8 @@ import {
   clampPlayerMoney,
   clampMemberMood,
   clampMemberStamina,
-  clampBandHarmony
+  clampBandHarmony,
+  appendToRegionalGigHistory
 } from '../gameState'
 import { SOCIAL_PLATFORM_IDS, SOCIAL_PLATFORMS } from '../../data/platforms'
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
@@ -298,11 +299,16 @@ export const calculatePostGigStateUpdates = (
       gigViralBonus
   )
   const regionId = getRegionKeyForLocation(player.location)
-  const regionalGigHistory = { ...(social.regionalGigHistory ?? {}) }
-  if (regionId) {
-    const historyArray = regionalGigHistory[regionId] ?? []
-    regionalGigHistory[regionId] = [...historyArray, player.day].slice(-256)
-  }
+  // The canonical helper owns every bound the save validator enforces (region
+  // count, key safety, day dedup/sort/limit); appending inline here would let a
+  // gig in a new region push a full history past the validator's region cap.
+  const regionalGigHistory = regionId
+    ? appendToRegionalGigHistory(
+        social.regionalGigHistory,
+        regionId,
+        finiteNumberOr(player.day, 0)
+      )
+    : { ...(social.regionalGigHistory ?? {}) }
 
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(

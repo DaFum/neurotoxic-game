@@ -140,13 +140,27 @@ export const getSafeUUID = (): string => {
   )
 }
 
+/**
+ * Discards the buffered secure-random batch so the next `secureRandom()` call
+ * refills from the current `crypto.getRandomValues` implementation.
+ *
+ * Deterministic harnesses reseed `crypto.getRandomValues` per run. Because
+ * values are drawn 1024 at a time, a run that does not drop the buffer first
+ * keeps consuming values generated from the *previous* run's stream, at an
+ * offset that depends on how many draws that run made — which makes
+ * same-seed runs irreproducible. Callers that reseed must reset the batch.
+ */
+export const resetSecureRandomBatch = (): void => {
+  batchArray = null
+  batchIndex = BATCH_SIZE
+}
+
 // Conditional export that gets compiled away in production
 export const __testInternals: { resetBatch: () => void } | undefined =
   process.env.NODE_ENV === 'test'
     ? {
         resetBatch: (): void => {
-          batchArray = null
-          batchIndex = BATCH_SIZE
+          resetSecureRandomBatch()
           secureRandomErrorReported = false
         }
       }
