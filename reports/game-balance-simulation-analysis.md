@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-27T13:36:35.196Z
+Erstellt am: 2026-07-27T14:19:11.492Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 11
 - Node-Version: v22.22.1
-- Basis-Commit: e0dbeb8c7e52c01beb6ed6a18801b1eeaa3431db
-- Working Tree Dirty: Ja
-- Simulationsskript SHA-256: bc3d122ee392a7628efa8ff4ac273b778d5b0b136355ea460f13201f890eb2de
+- Basis-Commit: 9a7e5e37f6c3782e0d846034cc5f304bcc3a28a1
+- Working Tree Dirty: Nein
+- Simulationsskript SHA-256: a3a4ef80bda270abb0e7318d4bac57f9c468668d4d2e10a554d60d5b5610ddbc
 - Szenariokonfiguration SHA-256: e2f97ba93da6a842fa33908edf7acf33b2404c753b18903421f900c04aa7c6c0
 - KPI-Zielkonfiguration SHA-256: 7e243b1d2ee21d2c19e764cba96afa604f633f210757fa6e9eb8843aa226cfa7
 - Seed-Strategie: scenario-id-plus-run-index
@@ -388,23 +388,6 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario (kal
 | Early Game Probe (Fame 0–50) | — | — | — | ⚪ Nicht bewertet | — |
 | Mid Game Probe (Fame 60–150) | — | — | — | ⚪ Nicht bewertet | — |
 | Late Game Probe (Fame 175+) | — | — | — | ⚪ Nicht bewertet | — |
-
-## Rebalance-Regressionsvergleich (Alt vs Neu)
-
-| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
-|---|---:|---:|---:|---:|
-| Baseline Touring | 0% | €3.484 | -4.15 | 0.84 |
-| Bootstrap Struggle | -2.3% | €-4 | 5.88 | 0.1 |
-| Aggressive Marketing | -1.16% | €677 | 26.02 | 0.41 |
-| Scandal Recovery | 2.69% | €-394 | 21.51 | -0.32 |
-| Festival Push | -2.69% | €530 | 5.93 | 0.26 |
-| Chaos Tour | -0.38% | €1.035 | 28.16 | -0.01 |
-| Cult Hypergrowth | 1.54% | €471 | 23.29 | -0.39 |
-| No Social (Fame 0-50) | -0.77% | €287 | -15.8 | 0.22 |
-| High Controversy | -1.54% | €332 | -2.25 | 0.13 |
-| Early Game Probe (Fame 0–50) | -1.15% | €340 | -4.58 | -0.01 |
-| Mid Game Probe (Fame 60–150) | 0.77% | €509 | 4.27 | 0 |
-| Late Game Probe (Fame 175+) | 0% | €2.153 | 16.35 | 0.27 |
 
 ## Kurzfazit
 

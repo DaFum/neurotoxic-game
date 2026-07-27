@@ -3530,9 +3530,13 @@ const getFileHash = async filePath => {
   }
 }
 
-export const getJsonHash = data => {
+export const getJsonHash = (data, excludeKeys = {}) => {
   try {
-    return crypto.createHash('sha256').update(JSON.stringify(data)).digest('hex')
+    const clone = structuredClone(data)
+    for (const key of Object.keys(excludeKeys)) {
+      delete clone[key]
+    }
+    return crypto.createHash('sha256').update(JSON.stringify(clone)).digest('hex')
   } catch {
     return null
   }
