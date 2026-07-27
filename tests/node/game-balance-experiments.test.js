@@ -17,6 +17,8 @@ import {
   hashExperimentConfig
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
+  assertEqualControlCohorts,
+  evaluateCandidate,
   pairSimulationRuns,
   rankCandidates,
   summarizePairedRuns
@@ -54,6 +56,42 @@ test('resolveBalanceTuning rejects unknown, non-finite, and out-of-range values'
   )
 })
 
+test('resolveBalanceTuning rejects malformed obligation stage shapes and order', () => {
+  assert.throws(
+    () =>
+      resolveBalanceTuning({
+        earlyGame: {
+          obligationStages: [{ throughDay: 5, multiplier: 0.8, extra: true }]
+        }
+      }),
+    /unknown.*stage.*key/i
+  )
+  assert.throws(
+    () =>
+      resolveBalanceTuning({
+        earlyGame: {
+          obligationStages: [
+            { throughDay: 5, multiplier: 0.8 },
+            { throughDay: 5, multiplier: 0.9 }
+          ]
+        }
+      }),
+    /strictly increasing/i
+  )
+  assert.throws(
+    () =>
+      resolveBalanceTuning({
+        earlyGame: {
+          obligationStages: [
+            { throughDay: 10, multiplier: 0.8 },
+            { throughDay: 5, multiplier: 0.9 }
+          ]
+        }
+      }),
+    /strictly increasing/i
+  )
+})
+
 test('selected obligation relief ends after its configured production window', () => {
   assert.equal(getEarlyGameObligationMultiplier(1), 0.5)
   assert.equal(getEarlyGameObligationMultiplier(60), 0.5)
@@ -61,10 +99,9 @@ test('selected obligation relief ends after its configured production window', (
 })
 
 test('selected regional repeat demand penalty starts after the first show and caps', () => {
-  assert.equal(getRepeatDemandMultiplier(20, 0), 1)
-  assert.equal(getRepeatDemandMultiplier(20, 1), 1)
-  assert.equal(getRepeatDemandMultiplier(21, 1), 0.88)
-  assert.equal(getRepeatDemandMultiplier(21, 20), 0.55)
+  assert.equal(getRepeatDemandMultiplier(0, 0), 1)
+  assert.equal(getRepeatDemandMultiplier(1, 1), 0.9)
+  assert.equal(getRepeatDemandMultiplier(1, 20), 0.6)
 })
 
 test('experiment config hash is stable and sensitive to parameter changes', () => {
@@ -167,6 +204,58 @@ test('pairSimulationRuns uses the same scenario seed for control and candidate',
   )
 })
 
+test('pairSimulationRuns reuses a precomputed control cohort', () => {
+  const controlRuns = [1, 2].map(finalMoney => ({
+    bankrupt: false,
+    daysSurvived: 1,
+    finalMoney,
+    finalFame: 0,
+    fameEarned: 0,
+    gigsPlayed: 0,
+    finalHarmony: 80,
+    maxDrawdownPct: 0
+  }))
+  let runnerCalls = 0
+  const pairs = pairSimulationRuns({
+    scenario: { id: 'cached_control_probe' },
+    runsPerScenario: 2,
+    controlTuning: DEFAULT_BALANCE_TUNING,
+    candidateTuning: DEFAULT_BALANCE_TUNING,
+    controlRuns,
+    runner: () => {
+      runnerCalls++
+      return {
+        bankrupt: false,
+        daysSurvived: 1,
+        finalMoney: 10,
+        finalFame: 0,
+        fameAccounting: { earned: 0 },
+        gigsPlayed: 0,
+        finalHarmony: 80,
+        maxPeakToTroughDrop: 0
+      }
+    }
+  })
+
+  assert.equal(runnerCalls, 2)
+  assert.deepEqual(
+    pairs.map(pair => pair.control.finalMoney),
+    [1, 2]
+  )
+})
+
+test('assertEqualControlCohorts rejects divergent candidate controls', () => {
+  const cohort = [{ control: { finalMoney: 10 } }]
+  assert.doesNotThrow(() =>
+    assertEqualControlCohorts([cohort, structuredClone(cohort)])
+  )
+  assert.throws(
+    () =>
+      assertEqualControlCohorts([cohort, [{ control: { finalMoney: 11 } }]]),
+    /control cohorts differ/i
+  )
+})
+
 test('control-versus-control produces zero deltas and transitions', () => {
   const pairs = pairSimulationRuns({
     scenario: { id: 'zero_probe' },
@@ -217,6 +306,49 @@ test('ranking never lets a hard failure beat a passing candidate', () => {
     }
   ])
   assert.equal(ranked[0].id, 'passed')
+})
+
+test('evaluateCandidate uses and preserves declared acceptance criteria', () => {
+  const makeResult = bankrupt => ({
+    bankrupt,
+    daysSurvived: 10,
+    finalMoney: 100,
+    finalFame: 10,
+    fameEarned: 10,
+    gigsPlayed: 1,
+    finalHarmony: 80,
+    maxDrawdownPct: 0,
+    moneyAtDay20: 100,
+    moneyAtDay40: 100
+  })
+  const pairs = [
+    {
+      scenarioId: 'criteria_probe',
+      control: makeResult(false),
+      candidate: makeResult(true)
+    }
+  ]
+  const definition = {
+    id: 'criteria-probe',
+    phase: 'bootstrap',
+    scenarios: ['criteria_probe'],
+    acceptanceCriteria: {
+      bankruptcyRateMaxPct: 100,
+      medianSurvivalMinimumDeltaDays: 0,
+      medianSurvivalMinimumDeltaPct: 0,
+      solventMedianMoneyMax: 100,
+      solventP90MoneyMax: 100,
+      famePerGigMaximumAbsDeltaPct: 0
+    }
+  }
+  const result = evaluateCandidate(
+    definition,
+    pairs,
+    summarizePairedRuns(pairs, definition.id, 'criteria_probe')
+  )
+
+  assert.equal(result.acceptanceCriteria.bankruptcyRateMaxPct, 100)
+  assert.equal(result.acceptanceCriteria.passed, true)
 })
 
 test('generated identifiers do not make candidate execution order observable', () => {

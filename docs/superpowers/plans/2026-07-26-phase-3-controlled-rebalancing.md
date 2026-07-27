@@ -96,8 +96,9 @@
 
 - [ ] Commit Tasks 1–4 code/tests first so report `sourceBaseCommit` identifies the
   actual production code state; ensure the working tree is clean.
-- [ ] Run experiment generation twice, normalize only documented volatile fields,
-  hash both normalized outputs, and assert equality.
+- [ ] Run experiment generation twice, remove only `generatedAt` and
+  `runtime.durationMs` from normalized report hash inputs, hash both normalized
+  outputs, and assert equality. Do not remove any other report fields.
 - [ ] Run normal simulation twice with the same normalized comparison.
 - [ ] Run comparison against the unchanged baseline and validate all report
   hashes, counts, finite values, Wilson bounds, KPI transitions, required Markdown

@@ -109,6 +109,7 @@ import {
 } from '../src/utils/assetTicks.js'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
+import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
 import {
   DEFAULT_BALANCE_TUNING,
   getRepeatDemandMultiplier
@@ -2168,7 +2169,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       assetModifiers: getActiveAssetModifiers(state.assets || [])
     })
 
-    const regionId = venue.id?.split('_')[0] ?? venue.id
+    const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
     const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
       .filter(gigDay => day - gigDay <= tuning.touring.repeatGigWindowDays)
     const demandMultiplier = getRepeatDemandMultiplier(day, recentRegionalGigs.length, tuning)

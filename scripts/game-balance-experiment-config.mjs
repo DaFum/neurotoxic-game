@@ -1,8 +1,8 @@
 import crypto from 'node:crypto'
 
 const criteria = phase => phase === 'bootstrap'
-  ? { bankruptcyRateMaxPct: 60, medianSurvivalMinimumDeltaDays: 10, famePerGigMaximumAbsDeltaPct: 5 }
-  : { medianFinalMoneyDeltaPct: [-25, -10], p90FinalMoneyDeltaPct: [-30, -15], day20MinimumDeltaPct: -5, bankruptcyMaximumDeltaPct: 2, famePerGigMaximumAbsDeltaPct: 5 }
+  ? { bankruptcyRateMaxPct: 60, medianSurvivalMinimumDeltaDays: 10, medianSurvivalMinimumDeltaPct: 20, solventMedianMoneyMax: 5000, solventP90MoneyMax: 15000, famePerGigMaximumAbsDeltaPct: 5 }
+  : { medianFinalMoneyDeltaPct: [-25, -10], p90FinalMoneyDeltaPct: [-30, -15], day20MinimumDeltaPct: -5, day40MinimumDeltaPct: -10, candidateBankruptcyRateMaxPct: 10, bankruptcyMaximumDeltaPct: 2, famePerGigMaximumAbsDeltaPct: 5, harmonyMinimumDelta: -5 }
 
 const candidate = (id, phase, description, hypothesis, scenarios, overrides) => ({
   id, phase, description, hypothesis, scenarios, overrides, acceptanceCriteria: criteria(phase)

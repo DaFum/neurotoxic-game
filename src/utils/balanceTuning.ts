@@ -67,16 +67,16 @@ export const DEFAULT_BALANCE_TUNING: Readonly<BalanceTuning> = deepFreeze({
   },
   /**
    * Expiring regional demand saturation selected by Phase 3 experiment
-   * `touring-demand-12-45-after-20`.
+   * `touring-demand-10-40-window-10`.
    *
    * Rates are fractions in 0–1; the history window is measured in days.
    */
   touring: {
     ...ORIGINAL_CONTROL_BALANCE_TUNING.touring,
     repeatGigWindowDays: 10,
-    repeatDemandStartDay: 20,
-    repeatDemandPenaltyPerGig: 0.12,
-    maxRepeatDemandPenalty: 0.45
+    repeatDemandStartDay: 0,
+    repeatDemandPenaltyPerGig: 0.1,
+    maxRepeatDemandPenalty: 0.4
   }
 })
 
@@ -158,11 +158,23 @@ export const resolveBalanceTuning = (
     if (key === 'obligationStages') {
       if (!Array.isArray(value))
         throw new TypeError('obligationStages must be an array')
+      let previousThroughDay = -1
       earlyGame.obligationStages = value.map((stage, index) => {
         if (!stage || typeof stage !== 'object')
           throw new TypeError(`Invalid obligation stage ${index}`)
+        const unknownKeys = Object.keys(stage).filter(
+          stageKey => stageKey !== 'throughDay' && stageKey !== 'multiplier'
+        )
+        if (unknownKeys.length > 0)
+          throw new TypeError(`Unknown obligation stage key: ${unknownKeys[0]}`)
+        const throughDay = validateNumber('durationDays', stage.throughDay)
+        if (throughDay <= previousThroughDay)
+          throw new RangeError(
+            'Obligation stage boundaries must be strictly increasing'
+          )
+        previousThroughDay = throughDay
         return {
-          throughDay: validateNumber('durationDays', stage.throughDay),
+          throughDay,
           multiplier: validateNumber(
             'dailyObligationMultiplier',
             stage.multiplier

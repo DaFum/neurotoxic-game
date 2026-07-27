@@ -34,11 +34,12 @@ const compact = run => ({
   refuels: run.refuels
 })
 
-export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, runner = runSingleSimulation }) => {
+export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner = runSingleSimulation }) => {
+  if (controlRuns && controlRuns.length !== runsPerScenario) throw new RangeError('Control cohort size must match runsPerScenario')
   const pairs = []
   for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
     const seed = createScenarioSeed(scenario.id, runIndex)
-    const control = compact(runner(scenario, seed, controlTuning))
+    const control = controlRuns?.[runIndex] ?? compact(runner(scenario, seed, controlTuning))
     const candidate = compact(runner(scenario, seed, candidateTuning))
     pairs.push({
       scenarioId: scenario.id, runIndex, seed, control, candidate,
@@ -46,6 +47,15 @@ export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, c
     })
   }
   return pairs
+}
+
+export const assertEqualControlCohorts = candidatePairs => {
+  const expected = JSON.stringify(candidatePairs[0]?.map(pair => pair.control) ?? [])
+  for (const pairs of candidatePairs.slice(1)) {
+    if (JSON.stringify(pairs.map(pair => pair.control)) !== expected) {
+      throw new Error('Control cohorts differ across candidates')
+    }
+  }
 }
 
 export const summarizePairedRuns = (pairs, experimentId, scenarioId) => ({
@@ -77,7 +87,7 @@ const percentile = (values, p) => {
   return sorted[Math.round((sorted.length - 1) * p)]
 }
 
-const evaluateCandidate = (definition, pairs, summary) => {
+export const evaluateCandidate = (definition, pairs, summary) => {
   const controlFamePerGig = pairs.reduce((sum, pair) => sum + pair.control.fameEarned / Math.max(1, pair.control.gigsPlayed), 0) / pairs.length
   const candidateFamePerGig = pairs.reduce((sum, pair) => sum + pair.candidate.fameEarned / Math.max(1, pair.candidate.gigsPlayed), 0) / pairs.length
   const famePerGigDeltaPct = percentageDelta(controlFamePerGig, candidateFamePerGig)
@@ -88,21 +98,27 @@ const evaluateCandidate = (definition, pairs, summary) => {
     median(pairs.map(pair => pair.control.moneyAtDay20)),
     median(pairs.map(pair => pair.candidate.moneyAtDay20))
   )
+  const day40DeltaPct = percentageDelta(
+    median(pairs.map(pair => pair.control.moneyAtDay40)),
+    median(pairs.map(pair => pair.candidate.moneyAtDay40))
+  )
+  const criteria = definition.acceptanceCriteria
   const checks = definition.phase === 'bootstrap'
     ? {
-        bankruptcy: summary.bankruptcy.candidateRatePct <= 60,
-        survival: summary.continuous.daysSurvived.pairedDelta.median >= 10 || summary.continuous.daysSurvived.candidate.median >= summary.continuous.daysSurvived.control.median * 1.2,
-        solventMedianMoney: median(candidateSolventMoney) <= 5000,
-        solventP90Money: percentile(candidateSolventMoney, 0.9) <= 15000,
-        famePerGig: Math.abs(famePerGigDeltaPct) <= 5
+        bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.bankruptcyRateMaxPct,
+        survival: summary.continuous.daysSurvived.pairedDelta.median >= criteria.medianSurvivalMinimumDeltaDays || percentageDelta(summary.continuous.daysSurvived.control.median, summary.continuous.daysSurvived.candidate.median) >= criteria.medianSurvivalMinimumDeltaPct,
+        solventMedianMoney: median(candidateSolventMoney) <= criteria.solventMedianMoneyMax,
+        solventP90Money: percentile(candidateSolventMoney, 0.9) <= criteria.solventP90MoneyMax,
+        famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct
       }
     : {
-        medianFinalMoney: medianFinalMoneyDeltaPct >= -25 && medianFinalMoneyDeltaPct <= -10,
-        p90FinalMoney: p90FinalMoneyDeltaPct >= -30 && p90FinalMoneyDeltaPct <= -15,
-        day20: day20DeltaPct >= -5,
-        bankruptcy: summary.bankruptcy.candidateRatePct <= 10 && summary.bankruptcy.deltaRatePct <= 2,
-        famePerGig: Math.abs(famePerGigDeltaPct) <= 5,
-        harmony: summary.continuous.finalHarmony.pairedDelta.median >= -5
+        medianFinalMoney: medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] && medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
+        p90FinalMoney: p90FinalMoneyDeltaPct >= criteria.p90FinalMoneyDeltaPct[0] && p90FinalMoneyDeltaPct <= criteria.p90FinalMoneyDeltaPct[1],
+        day20: day20DeltaPct >= criteria.day20MinimumDeltaPct,
+        day40: day40DeltaPct >= criteria.day40MinimumDeltaPct,
+        bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.candidateBankruptcyRateMaxPct && summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
+        famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct,
+        harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
       }
   const passed = Object.values(checks).every(Boolean)
   const targetFit = definition.phase === 'bootstrap'
@@ -117,9 +133,9 @@ const evaluateCandidate = (definition, pairs, summary) => {
     aggregateResults: {
       ...summary,
       solventMedianMoney: round(median(candidateSolventMoney)), solventP90Money: round(percentile(candidateSolventMoney, 0.9)),
-      famePerGigDeltaPct, medianFinalMoneyDeltaPct, p90FinalMoneyDeltaPct, day20DeltaPct
+      famePerGigDeltaPct, medianFinalMoneyDeltaPct, p90FinalMoneyDeltaPct, day20DeltaPct, day40DeltaPct
     },
-    acceptanceCriteria: { passed, checks },
+    acceptanceCriteria: { ...definition.acceptanceCriteria, passed, checks },
     rankingComponents: { targetFit: round(targetFit), sideEffectPenalty: round(sideEffectPenalty), overcorrectionPenalty, complexityPenalty },
     selectedForProduction: false,
     rejectionReason: passed ? null : `Acceptance limits missed: ${Object.entries(checks).filter(([, value]) => !value).map(([key]) => key).join(', ')}.`
@@ -223,14 +239,19 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const touringDefinitions = BALANCE_EXPERIMENTS.filter(item => item.phase === 'touring')
   const bootstrapScenario = SCENARIOS.find(item => item.id === 'bootstrap_struggle')
   const baselineScenario = SCENARIOS.find(item => item.id === 'baseline_touring')
-  const runCandidates = (definitions, scenario, controlTuning) => definitions.map(definition => {
+  const runCandidates = (definitions, scenario, controlTuning) => {
+    const controlRuns = Array.from({ length: runsPerScenario }, (_, runIndex) => compact(runSingleSimulation(scenario, createScenarioSeed(scenario.id, runIndex), controlTuning)))
+    const pairedCandidates = definitions.map(definition => {
     const candidateTuning = resolveBalanceTuning({
       earlyGame: { ...controlTuning.earlyGame, ...definition.overrides.earlyGame },
       touring: { ...controlTuning.touring, ...definition.overrides.touring }
     }, controlTuning)
-    const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning, candidateTuning })
-    return evaluateCandidate(definition, pairs, summarizePairedRuns(pairs, definition.id, scenario.id))
-  })
+      const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns })
+      return { definition, pairs }
+    })
+    assertEqualControlCohorts(pairedCandidates.map(candidate => candidate.pairs))
+    return pairedCandidates.map(({ definition, pairs }) => evaluateCandidate(definition, pairs, summarizePairedRuns(pairs, definition.id, scenario.id)))
+  }
   const bootstrapCandidates = runCandidates(bootstrapDefinitions, bootstrapScenario, ORIGINAL_CONTROL_BALANCE_TUNING)
   const bootstrapRanking = rankCandidates(bootstrapCandidates)
   const selectedBootstrap = bootstrapRanking.find(item => item.acceptanceCriteria.passed) ?? bootstrapRanking[0]
@@ -270,7 +291,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     },
     finalCombinedValidation: combined,
     recommendation: { bootstrap: selectedBootstrap.id, touring: selectedTouring.id, tuning: finalTuning },
-    runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns: runsPerScenario * (BALANCE_EXPERIMENTS.length * 2 + SCENARIOS.length * 2 + 10) }
+    runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns: runsPerScenario * (BALANCE_EXPERIMENTS.length + SCENARIOS.length * 2 + 12) }
   }
   if (writeReports) {
     await fs.mkdir(path.dirname(OUTPUT_JSON), { recursive: true })

@@ -37,8 +37,18 @@ const updatePlayerFinances = (
   rng: () => number,
   tuning: Readonly<BalanceTuning>
 ) => {
-  let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
-  dailyCost *= getEarlyGameObligationMultiplier(nextPlayer.day, tuning)
+  const obligations = calculateGuaranteedDailyCost(nextPlayer, nextBand, {
+    youtube: 0
+  })
+  const netDailyCost = calculateGuaranteedDailyCost(
+    nextPlayer,
+    nextBand,
+    nextSocial
+  )
+  const youtubeRevenue = obligations - netDailyCost
+  let dailyCost =
+    obligations * getEarlyGameObligationMultiplier(nextPlayer.day, tuning) -
+    youtubeRevenue
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {

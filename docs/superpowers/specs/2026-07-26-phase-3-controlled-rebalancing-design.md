@@ -86,8 +86,10 @@ rankings, selected candidates, combined validation, runtime, and recommendation.
 The Markdown report renders the required focused tables and interpretations.
 
 Two consecutive experiment runs and two normal simulation runs are normalized by
-removing only `generatedAt` and explicitly volatile Git metadata, then hashed and
-compared. The baseline hash is captured before work and checked after all commits.
+removing only `generatedAt` and `runtime.durationMs`, then hashed and compared.
+Both fields are volatile and explicitly excluded from normalized report hash
+inputs; no other report fields are removed. The baseline hash is captured before
+work and checked after all commits.
 
 ## Testing
 
