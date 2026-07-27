@@ -1329,9 +1329,10 @@ export const sanitizeSocial = (value: unknown): SocialState => {
       if (isForbiddenKey(regionId)) continue
       const days = safeValue.regionalGigHistory[regionId]
       if (!Array.isArray(days)) continue
+      const boundedDays = days.length > 512 ? days.slice(-256) : days
       sanitized.regionalGigHistory[regionId] = [
         ...new Set(
-          days.filter(
+          boundedDays.filter(
             (day): day is number =>
               Number.isFinite(day) && Number.isInteger(day) && day >= 0
           )
