@@ -692,9 +692,19 @@ export const handleDismissForeclosureNotice = (
 ): GameState => {
   return {
     ...state,
-    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
-      kind => kind !== payload.kind
-    )
+    pendingForeclosureNotices: (() => {
+      // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
+      // Why: Eliminates intermediate array and closure allocations.
+      // Impact: Reduces GC pressure when dismissing foreclosure notices.
+      const source = state.pendingForeclosureNotices ?? []
+      const result = []
+      for (let i = 0; i < source.length; i++) {
+        if (source[i] !== payload.kind) {
+          result.push(source[i])
+        }
+      }
+      return result
+    })()
   }
 }
 
