@@ -6,6 +6,7 @@ import { createInitialState } from '../../src/context/initialState.js'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
 
 import { MapGenerator } from '../../src/utils/mapGenerator.ts'
+import { VENUES_BY_ID } from '../../src/data/venues.js'
 
 import {
   KPI_TARGETS,
@@ -26,6 +27,7 @@ import {
   calculateDrawdownPct,
   chooseNextTourNode,
   createScenarioSeed,
+  planTravel,
   classifyBankruptcyRisk,
   describeCorridorConfidence,
   evaluateScenarioRiskStatus,
@@ -983,13 +985,14 @@ test('the rest branch is reachable, and harmony alone never triggers it', () => 
   // true and worth pinning is that the branch is live (so it cannot rot back
   // into dead code) and that harmony is not a reason to skip a gig, because
   // resting does not repair it.
-  const scenario = SCENARIOS.find(item => item.id === 'high_controversy_probe')
-  assert.ok(scenario, 'high_controversy_probe must exist')
-  // 60 runs, not 20: rest is rare (about 0.05 days per run) now that pass-through
-  // rest stops keep members above the care thresholds, so a small cohort sees
-  // zero by chance and the assertion would be flaky rather than wrong.
-  const runs = Array.from({ length: 60 }, (_, index) =>
-    runSingleSimulation(scenario, createScenarioSeed(scenario.id, index))
+  // Rest is rare — roughly 0.05 days per run, because pass-through rest stops keep
+  // members above the care threshold — and which seeds hit it shifts whenever the
+  // rng stream moves. Sample across every configured scenario so the assertion
+  // tests reachability rather than one cohort's luck.
+  const runs = SCENARIOS.flatMap(scenario =>
+    Array.from({ length: 30 }, (_, index) =>
+      runSingleSimulation(scenario, createScenarioSeed(scenario.id, index))
+    )
   )
 
   const restDays = runs.reduce((sum, run) => sum + run.restDays, 0)
@@ -1100,17 +1103,29 @@ test('travel is independent of the gig cadence', () => {
   const dense = cohort({ ...SCENARIOS[0], gigGapDays: 1 })
   const sparse = cohort({ ...SCENARIOS[0], gigGapDays: 4 })
 
-  const mean = (runs, pick) =>
-    runs.reduce((sum, run) => sum + pick(run), 0) / runs.length
+  const mean = (cohort, pick) =>
+    cohort.reduce((sum, run) => sum + pick(run), 0) / cohort.length
   const denseLayers = mean(dense, run => run.deepestLayerReached)
   const sparseLayers = mean(sparse, run => run.deepestLayerReached)
   const denseGigs = mean(dense, run => run.gigsPlayed)
   const sparseGigs = mean(sparse, run => run.gigsPlayed)
 
-  // Same travel policy, so the same depth is reached regardless of cadence.
+  // The contract is that cadence must not remove travel OPPORTUNITIES. Reach can
+  // still differ, because a sparse cadence earns less and may then fail the
+  // canonical money gate — that is the economy talking, not the loop skipping
+  // travel. So compare hops plus the days a trip was legitimately refused.
+  const opportunities = runs =>
+    mean(runs, run => run.travelLog.length + run.strandedDays + run.restDays)
   assert.ok(
-    Math.abs(denseLayers - sparseLayers) < 1.5,
-    `layer reach must not track cadence, saw ${denseLayers} vs ${sparseLayers}`
+    Math.abs(opportunities(dense) - opportunities(sparse)) < 1.5,
+    `cadence must not remove travel opportunities, saw ${opportunities(dense)} vs ${opportunities(sparse)}`
+  )
+  // And the reach shortfall must be explained by refused trips, not by a loop
+  // that never offered them. The old coupling gave 10 vs 1.7 with zero blocks.
+  const sparseBlocked = mean(sparse, run => run.strandedDays)
+  assert.ok(
+    denseLayers - sparseLayers <= sparseBlocked + 1.5,
+    `unexplained reach gap: ${denseLayers} vs ${sparseLayers} with ${sparseBlocked} blocked days`
   )
   // The cadence still has to do something: fewer shows at the same reach.
   assert.ok(
@@ -1144,11 +1159,15 @@ test('every day is either an explicit rest or a real hop along a directed edge',
       (sum, count) => sum + count,
       0
     )
-    // No invented cost-only days: every survived day is a rest, an arrival, or
-    // the terminal day on which the run ended.
+    // Every survived day is accounted for by an arrival, an explicit rest, a
+    // legitimately blocked trip (production calls this stranded), a dead end, or
+    // the terminal day. The earlier version of this assertion omitted stranded
+    // days and so demanded that the band always travels — which is exactly the
+    // wrong contract, because it licences travel the game would refuse.
     assert.ok(
-      arrivals + run.restDays + run.routeDeadEnds >= run.daysSurvived - 1,
-      `idle days found: ${run.daysSurvived} days, ${arrivals} arrivals, ${run.restDays} rests, ${run.routeDeadEnds} dead ends`
+      arrivals + run.restDays + run.strandedDays + run.routeDeadEnds >=
+        run.daysSurvived - 1,
+      `unaccounted days: ${run.daysSurvived} days, ${arrivals} arrivals, ${run.restDays} rests, ${run.strandedDays} stranded, ${run.routeDeadEnds} dead ends`
     )
     // Travel costs accrue for arrivals, including ones that pay nothing.
     if (arrivals > 0) assert.ok(run.travelSpend > 0)
@@ -1223,5 +1242,246 @@ test('tour path aggregation reports reach, arrivals and node mix', () => {
   assert.ok(
     Math.abs(total - 100) < 0.5,
     `node shares must sum to 100, saw ${total}`
+  )
+})
+
+// ── Production travel gates ─────────────────────────────────────────────────
+
+const travelState = (overrides = {}) => {
+  const state = createInitialState()
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: 50_000,
+      van: { ...state.player.van, fuel: 100 },
+      ...overrides.player
+    },
+    band: state.band,
+    social: state.social,
+    assets: state.assets ?? [],
+    liabilities: state.liabilities ?? [],
+    reputationByRegion: overrides.reputationByRegion ?? {},
+    venueBlacklist: overrides.venueBlacklist ?? []
+  }
+}
+
+const tourNode = (id, venueId, type = 'GIG') => {
+  const venue = VENUES_BY_ID.get(venueId)
+  assert.ok(venue, `fixture venue ${venueId} must exist`)
+  return { id, type, layer: 1, venue }
+}
+// Real catalogue entries at the two ends of the travel-cost range. That range is
+// only about EUR 174 to 180 across the whole catalogue, because the day's
+// obligations dominate the distance term — itself consistent with travel being
+// ~2% of gig net. The budget below is therefore set exactly, not with a margin.
+// The dear one also exceeds the 150 prove-yourself capacity cap.
+const NEAR_VENUE_ID = 'stendal_adler'
+const FAR_VENUE_ID = 'saarbruecken_garage'
+
+test('a trip the band cannot pay for is refused, not clamped', () => {
+  // The regression: travel cost and fuel were deducted and clamped at zero, so a
+  // broke band still arrived, still played the destination gig and was rescued by
+  // its payout. Production refuses at `checkTravelResources`, which requires the
+  // travel cost PLUS the day's obligations.
+  const nodes = [tourNode('node_1_0', NEAR_VENUE_ID)]
+  const plan = planTravel({
+    reachable: nodes,
+    state: travelState({ player: { money: 0 } }),
+    rng: () => 0,
+    wantsToPerform: true
+  })
+
+  assert.equal(plan.blocked, 'money')
+  assert.equal(
+    plan.node,
+    undefined,
+    'a refused trip must not name a destination'
+  )
+})
+
+test('an empty tank blocks the trip before any arrival', () => {
+  const plan = planTravel({
+    reachable: [tourNode('node_1_0', NEAR_VENUE_ID)],
+    state: travelState({ player: { money: 50_000, van: { fuel: 0 } } }),
+    rng: () => 0,
+    wantsToPerform: true
+  })
+
+  assert.equal(plan.blocked, 'fuel')
+})
+
+test('routing picks a reachable neighbour over an unreachable one', () => {
+  // Discriminated on fuel rather than money: the day's obligations fold into
+  // `totalCashImpact` and themselves scale with the balance, so a money budget
+  // moves the very threshold it is meant to sit under. Fuel demand depends only
+  // on distance, so it is a monotone discriminator.
+  const thirsty = tourNode('node_1_0', 'tangermuende_kaminstube')
+  const frugal = tourNode('node_1_1', 'magdeburg_factory')
+  const probe = travelState()
+  const fuelFor = node =>
+    planTravel({
+      reachable: [node],
+      state: probe,
+      rng: () => 0,
+      wantsToPerform: true
+    }).travel.fuelLiters
+
+  const thirstyFuel = fuelFor(thirsty)
+  const frugalFuel = fuelFor(frugal)
+  assert.ok(
+    thirstyFuel > frugalFuel,
+    `fixture venues must differ in fuel demand, saw ${thirstyFuel} and ${frugalFuel}`
+  )
+
+  const tank = travelState({
+    player: { money: 50_000, van: { fuel: frugalFuel } }
+  })
+  assert.equal(
+    planTravel({
+      reachable: [thirsty],
+      state: tank,
+      rng: () => 0,
+      wantsToPerform: true
+    }).blocked,
+    'fuel',
+    'the fixture must actually put the thirsty neighbour out of range'
+  )
+
+  const plan = planTravel({
+    reachable: [thirsty, frugal],
+    state: tank,
+    rng: () => 0,
+    wantsToPerform: true
+  })
+  assert.ok(plan.node, 'a reachable neighbour must still be chosen')
+  assert.equal(plan.node.id, frugal.id)
+})
+
+test('venue access rules exclude nodes the game would refuse', () => {
+  const node = tourNode('node_1_0', FAR_VENUE_ID)
+  const allowed = planTravel({
+    reachable: [node],
+    state: travelState(),
+    rng: () => 0,
+    wantsToPerform: true
+  })
+  assert.ok(allowed.node, 'baseline fixture must be reachable')
+
+  const blacklisted = planTravel({
+    reachable: [node],
+    state: travelState({ venueBlacklist: [node.venue.id] }),
+    rng: () => 0,
+    wantsToPerform: true
+  })
+  assert.equal(blacklisted.blocked, 'venue_access')
+
+  // Prove-yourself mode caps venue capacity at 150.
+  if ((node.venue.capacity ?? 0) > 150) {
+    const proveYourself = planTravel({
+      reachable: [node],
+      state: travelState({
+        player: { money: 50_000, stats: { proveYourselfMode: true } }
+      }),
+      rng: () => 0,
+      wantsToPerform: true
+    })
+    assert.equal(proveYourself.blocked, 'venue_access')
+  }
+})
+
+test('no reachable neighbour is a dead end, not a stranded day', () => {
+  // The two are different: one is the map running out, the other is the band
+  // running out. They must not share a counter.
+  const plan = planTravel({
+    reachable: [],
+    state: travelState(),
+    rng: () => 0,
+    wantsToPerform: true
+  })
+  assert.equal(plan.blocked, 'dead_end')
+})
+
+test('runs record blocked trips by reason and never arrive on those days', () => {
+  const runs = SCENARIOS.slice(0, 4).flatMap(scenario =>
+    Array.from({ length: 10 }, (_, index) =>
+      runSingleSimulation(
+        scenario,
+        createScenarioSeed(`gated-${scenario.id}`, index)
+      )
+    )
+  )
+
+  const totalBlocked = runs.reduce(
+    (sum, run) =>
+      sum +
+      run.travelBlocked.money +
+      run.travelBlocked.fuel +
+      run.travelBlocked.venue_access,
+    0
+  )
+  assert.ok(
+    totalBlocked > 0,
+    'the gates must actually bite somewhere in this cohort'
+  )
+
+  for (const run of runs) {
+    const blocked =
+      run.travelBlocked.money +
+      run.travelBlocked.fuel +
+      run.travelBlocked.venue_access
+    assert.equal(
+      run.strandedDays,
+      blocked,
+      'stranded days must equal blocked trips'
+    )
+    assert.equal(run.stranded, blocked > 0)
+    // A blocked day produces no arrival, so arrivals can never exceed the days
+    // that were not spent resting or stranded.
+    const arrivals = run.travelLog.length
+    assert.ok(
+      arrivals <= run.daysSurvived - run.restDays - run.strandedDays + 1
+    )
+  }
+})
+
+test('every logged trip used a real directed map edge', () => {
+  for (let index = 0; index < 10; index++) {
+    const seed = createScenarioSeed('edge-parity', index)
+    const run = runSingleSimulation(SCENARIOS[0], seed)
+    const tourMap = new MapGenerator(seed).generateMap(run.tourDepth)
+    const validEdges = new Set(
+      tourMap.connections.map(
+        connection => `${connection.from}->${connection.to}`
+      )
+    )
+
+    assert.ok(run.travelLog.length > 0, 'the run must have travelled')
+    for (const hop of run.travelLog) {
+      assert.ok(
+        validEdges.has(`${hop.from}->${hop.to}`),
+        `trip ${hop.from}->${hop.to} is not a directed edge of this run's map`
+      )
+    }
+  }
+})
+
+test('a refuel rescues a fuel-blocked trip instead of losing the day', () => {
+  const runs = SCENARIOS.slice(0, 4).flatMap(scenario =>
+    Array.from({ length: 10 }, (_, index) =>
+      runSingleSimulation(
+        scenario,
+        createScenarioSeed(`refuel-${scenario.id}`, index)
+      )
+    )
+  )
+  const rescued = runs.reduce((sum, run) => sum + run.refuelledToTravel, 0)
+  const fuelBlocked = runs.reduce((sum, run) => sum + run.travelBlocked.fuel, 0)
+
+  assert.ok(rescued > 0, 'an affordable refuel must unblock trips')
+  assert.equal(
+    fuelBlocked,
+    0,
+    'a fuel block should only survive when the refuel is unaffordable'
   )
 })

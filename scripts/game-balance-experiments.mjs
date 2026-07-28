@@ -332,12 +332,19 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     low_resource_touring: profileObjective('low_resource_touring')
   }
   const objectiveMet = shortfalls.length === 0
-  const allBelowTarget = Object.values(profiles).every(
-    profile => profile.belowTarget
-  )
+  const missing = Object.values(profiles).filter(profile => !profile.withinTarget)
+  const allBelowTarget =
+    missing.length > 0 && missing.every(profile => profile.belowTarget)
+  const allAboveTarget =
+    missing.length > 0 && missing.every(profile => !profile.belowTarget)
+  // Profiles can now miss the band in opposite directions, in which case no
+  // single lever serves both and saying "dominance is unchanged" is wrong.
+  const mixedDirections = missing.length > 0 && !allBelowTarget && !allAboveTarget
   return {
     objectiveMet,
     allBelowTarget,
+    allAboveTarget,
+    mixedDirections,
     isReleaseGate: false,
     targetRangePct: GIG_GAP_TARGET_RANGE_PCT,
     shortfalls,
@@ -643,7 +650,9 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     ? `Gap-1 money-per-day dominance was brought inside the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band for both profiles.`
     : gigFrequencyValidation.allBelowTarget
       ? `Gap-1 money-per-day advantage now sits BELOW the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band (${gigFrequencyValidation.shortfalls.join('; ')}). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.`
-      : gigFrequencyValidation.improved
+      : gigFrequencyValidation.mixedDirections
+        ? `The two profiles miss the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band in OPPOSITE directions (${gigFrequencyValidation.shortfalls.join('; ')}). No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.`
+        : gigFrequencyValidation.improved
       ? `Late-game compounding was reduced (${gigFrequencyValidation.shortfalls.join('; ')}), but structural Gap-1 dominance remains unresolved.`
       : `Gap-1 dominance is unchanged (${gigFrequencyValidation.shortfalls.join('; ')}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
   const sourceBaseCommit = git('git rev-parse HEAD')

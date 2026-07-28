@@ -6,6 +6,12 @@ import { execSync } from 'node:child_process'
 
 import { ALL_VENUES } from '../src/data/venues.js'
 import { MapGenerator } from '../src/utils/mapGenerator.ts'
+import {
+  calculateTravelCostsAndImpact,
+  checkTravelResources,
+  checkVenueAccess
+} from '../src/utils/travelUtils.ts'
+import { VENUES_BY_ID } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
 import { EVENTS_DB } from '../src/data/events/index.js'
 import { BRAND_DEALS } from '../src/data/brandDeals.js'
@@ -34,7 +40,6 @@ import {
   calculateRefuelCost,
   calculateRepairCost,
   calculateRoadieMinigameResult,
-  calculateTravelExpenses,
   calculateTravelMinigameResult,
   EXPENSE_CONSTANTS,
   MAX_GIG_NET,
@@ -540,7 +545,6 @@ export const SCENARIOS = [
   }
 ]
 
-const HOME = ALL_VENUES.find(v => v.id === SIMULATION_CONSTANTS.homeVenueId)
 const UPGRADE_CATALOG = getUnifiedUpgradeCatalog()
 const _HQ_BEER_PIPELINE = UPGRADE_CATALOG.find(
   item => item.id === 'hq_room_beer_pipeline'
@@ -877,6 +881,94 @@ export const buildTourAdjacency = tourMap => {
     else adjacency.set(connection.from, [target])
   }
   return adjacency
+}
+
+/**
+ * Canonical travel gating, mirroring `useHandleTravel`.
+ *
+ * The simulation used to deduct travel cost and fuel and clamp both at zero, so
+ * a broke band with an empty tank still arrived, still played the gig at the
+ * destination and was rescued by its payout. Production refuses the trip before
+ * any of that: `checkVenueAccess` rejects blacklisted venues, oversized venues in
+ * prove-yourself mode and regions whose reputation has bottomed out, and
+ * `checkTravelResources` requires the full fuel and the travel cost PLUS the
+ * day's obligations (`totalCashImpact`) to be covered.
+ *
+ * Returns the chosen destination with its costed impact, or the reason no trip
+ * was possible. A blocked day is a real state — production calls it stranded —
+ * and must not be silently converted into a free hop.
+ */
+export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
+  if (!reachable.length) return { blocked: 'dead_end' }
+
+  const accessible = []
+  let accessRejections = 0
+  for (const node of reachable) {
+    const access = checkVenueAccess({
+      node,
+      player: state.player,
+      reputationByRegion: state.reputationByRegion ?? {},
+      venueBlacklist: state.player.venueBlacklist ?? state.venueBlacklist ?? [],
+      venuesMap: VENUES_BY_ID,
+      // Only used to build the localized refusal text, which the simulation
+      // discards; the access verdict itself does not depend on it.
+      getLocationName: name => String(name ?? '')
+    })
+    if (access.allowed) accessible.push(node)
+    else accessRejections += 1
+  }
+  if (!accessible.length) {
+    return { blocked: 'venue_access', accessRejections }
+  }
+
+  const costed = accessible.map(node => ({
+    node,
+    travel: calculateTravelCostsAndImpact(
+      node,
+      state.player.currentMapNode ?? undefined,
+      state.player,
+      state.band,
+      state.social,
+      state.assets,
+      state.liabilities,
+      getActiveAssetModifiers(state.assets || [])
+    )
+  }))
+
+  const affordable = costed.filter(
+    candidate =>
+      checkTravelResources(
+        candidate.travel.totalCashImpact,
+        candidate.travel.fuelLiters,
+        state.player
+      ).allowed
+  )
+  if (!affordable.length) {
+    // Name which resource bit. A tank that cannot cover the shortest reachable
+    // hop is a different problem from a balance that cannot cover the day.
+    const cheapest = costed.reduce((best, candidate) =>
+      candidate.travel.totalCashImpact < best.travel.totalCashImpact
+        ? candidate
+        : best
+    )
+    const fuelShort = costed.every(
+      candidate =>
+        Math.max(0, state.player.van?.fuel ?? 0) < candidate.travel.fuelLiters
+    )
+    return {
+      blocked: fuelShort ? 'fuel' : 'money',
+      shortfall: cheapest.travel.totalCashImpact
+    }
+  }
+
+  const chosen = chooseNextTourNode(
+    affordable.map(candidate => candidate.node),
+    state,
+    rng,
+    wantsToPerform
+  )
+  const selected = affordable.find(candidate => candidate.node === chosen)
+  return selected ? { ...selected } : { blocked: 'dead_end' }
 }
 
 /**
@@ -1725,17 +1817,26 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   return damagedGear
 }
 
+/**
+ * Fill the tank if the band can pay for it. Shared by the maintenance-discipline
+ * heuristic and by the travel fallback: a player who is told "Not enough fuel in
+ * the tank!" refuels and then drives, rather than losing the day.
+ */
+const attemptRefuel = (state, counters) => {
+  const refuelCost = calculateRefuelCost(state.player.van.fuel)
+  if (state.player.money < refuelCost) return false
+  state.player.money = clampPlayerMoney(state.player.money - refuelCost)
+  state.player.van.fuel = 100
+  counters.refuels += 1
+  counters.refuelSpend += refuelCost
+  return true
+}
+
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
   if (state.player.van.fuel < 35 && rng() < discipline) {
-    const refuelCost = calculateRefuelCost(state.player.van.fuel)
-    if (state.player.money >= refuelCost) {
-      state.player.money = clampPlayerMoney(state.player.money - refuelCost)
-      state.player.van.fuel = 100
-      counters.refuels += 1
-      counters.refuelSpend += refuelCost
-    }
+    attemptRefuel(state, counters)
   }
 
   if (state.player.van.condition < 62 && rng() < discipline) {
@@ -2036,7 +2137,6 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   resetSecureRandomBatch()
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
-  let currentNode = HOME
   // A real tour map for this run: layers 0..daysPerRun-1 plus the FINALE at
   // layer daysPerRun, so reaching the finale takes exactly as many hops as the
   // horizon allows. Seeded from the run seed, so the same (scenario, seed) pair
@@ -2053,6 +2153,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let finaleCompleted = false
   let routeDeadEnds = 0
   let nonPerformingArrivals = 0
+  // Days on which no legal trip existed. Kept apart from routeDeadEnds, which
+  // means "no forward edge on the map" rather than "could not afford to drive".
+  let strandedDays = 0
+  const travelLog = []
   const nodeTypesVisited = {}
   // Per-run context: pregig minigame rotation memory and the active
   // duration-limited contraband effects awaiting expiry.
@@ -2124,7 +2228,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     currentDay: 0,
     purchaseLog: [],
     missedPurchases: [],
-    liquidityDeferrals: []
+    liquidityDeferrals: [],
+    // Refused trips by reason, mirroring the production gates.
+    travelBlocked: { money: 0, fuel: 0, venue_access: 0 },
+    // Trips that only happened because the band refuelled first.
+    refuelledToTravel: 0
   }
 
   let totalGigNet = 0
@@ -2291,13 +2399,32 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       }
     }
 
+    // Plan the trip before world events so travel events can be gated on a trip
+    // that is actually going to happen. Production fires them on arrival; here
+    // the plan is re-verified immediately before the deduction, because events
+    // and shop purchases in between can still move money.
+    const reachable = currentMapNode
+      ? (tourAdjacency.get(currentMapNode.id) ?? [])
+      : []
+    state.player.currentMapNode = currentMapNode
+    let travelPlan = willRest
+      ? null
+      : planTravel({ reachable, state, rng, wantsToPerform })
+    // Canonical in-place fallback: an empty tank is not a dead end while a
+    // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
+    // re-planning on the refuelled state stays deterministic.
+    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
+      travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
+      if (!travelPlan.blocked) counters.refuelledToTravel += 1
+    }
+    const tripPlanned = Boolean(travelPlan && !travelPlan.blocked)
+
     const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
-      // `isTravelDay`, not "is performance day": the band drives on every
-      // non-rest day now, so travel events fire whenever it is actually on the
-      // road rather than only when a show was scheduled.
-      applyWorldEvents(state, scenario, rng, counters, !willRest)
+      // `isTravelDay` means a trip that will actually happen — not merely a
+      // non-rest day. A refused trip must not fire road events.
+      applyWorldEvents(state, scenario, rng, counters, tripPlanned)
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2379,28 +2506,45 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       continue
     }
 
-    const reachable = currentMapNode
-      ? (tourAdjacency.get(currentMapNode.id) ?? [])
-      : []
-    const nextNode = chooseNextTourNode(reachable, state, rng, wantsToPerform)
-    if (!nextNode) {
-      // No forward edge left: the band already stands on the finale (or on a
-      // dead end the generator produced). The tour is over, not merely gigless.
-      routeDeadEnds += 1
+    const recordNoTrip = reason => {
+      if (reason === 'dead_end') routeDeadEnds += 1
+      else {
+        strandedDays += 1
+        counters.travelBlocked[reason] =
+          (counters.travelBlocked[reason] ?? 0) + 1
+      }
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+    }
+
+    if (!tripPlanned) {
+      // Stranded or out of forward edges. The day still passes — asset revenue
+      // and liabilities tick — so the band may be able to move tomorrow. It does
+      // not arrive anywhere and it does not play.
+      recordNoTrip(travelPlan?.blocked ?? 'dead_end')
       continue
     }
-    const venue = nextNode.venue
-    const assetModifiers = getActiveAssetModifiers(state.assets || [])
-    const travel = calculateTravelExpenses(
-      venue,
-      currentNode,
-      state.player,
-      state.band,
-      assetModifiers
+
+    // Re-verify against the state as it stands after events and purchases; the
+    // plan was costed before them.
+    const revalidated = checkTravelResources(
+      travelPlan.travel.totalCashImpact,
+      travelPlan.travel.fuelLiters,
+      state.player
     )
+    if (!revalidated.allowed) {
+      recordNoTrip(
+        Math.max(0, state.player.van?.fuel ?? 0) < travelPlan.travel.fuelLiters
+          ? 'fuel'
+          : 'money'
+      )
+      continue
+    }
+
+    const nextNode = travelPlan.node
+    const venue = nextNode.venue
+    const travel = travelPlan.travel
     const totalTravelCost = travel.totalCost
 
     const moneyBeforeTravel = state.player.money
@@ -2425,8 +2569,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     }
     applyUnlockContext(state, counters, { type: 'TRAVEL_COMPLETE' })
 
-    // Arrival happened, whatever the node turns out to be.
-    currentNode = venue
+    // Arrival happened, whatever the node turns out to be. The edge is logged so
+    // a test can verify every trip used a real directed map connection.
+    travelLog.push({ from: currentMapNode?.id ?? null, to: nextNode.id })
     currentMapNode = nextNode
     deepestLayerReached = Math.max(deepestLayerReached, nextNode.layer)
     nodeTypesVisited[nextNode.type] =
@@ -2517,9 +2662,6 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         counters.bankrupt = true
         break
       }
-
-      // Update location so next travel routes from the new (cancelled) destination
-      currentNode = venue
 
       // A cancelled finale still ends the tour — the band stands on the last
       // node with no forward edge — but it did not complete the show.
@@ -2779,6 +2921,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     nodeTypesVisited,
     routeDeadEnds,
     nonPerformingArrivals,
+    strandedDays,
+    stranded: strandedDays > 0,
+    travelLog,
+    travelBlocked: counters.travelBlocked,
     minHarmonyObserved,
     minMemberStaminaObserved: Number.isFinite(minMemberStaminaObserved)
       ? minMemberStaminaObserved
@@ -3105,6 +3251,25 @@ export const summarizeScenario = runs => {
         ),
         avgRouteDeadEnds: Number(
           mean(runs.map(run => run.routeDeadEnds ?? 0)).toFixed(2)
+        ),
+        // Trips the production gates refused, split by reason. Kept apart from
+        // routeDeadEnds, which means the map ran out of forward edges rather than
+        // the band running out of money, fuel or venue access.
+        avgStrandedDays: Number(
+          mean(runs.map(run => run.strandedDays ?? 0)).toFixed(2)
+        ),
+        strandedRunsPct: shareOfRunsPct(run => run.stranded === true),
+        travelBlockedByReason: ['money', 'fuel', 'venue_access'].reduce(
+          (totals, reason) => ({
+            ...totals,
+            [reason]: Number(
+              mean(runs.map(run => run.travelBlocked?.[reason] ?? 0)).toFixed(2)
+            )
+          }),
+          {}
+        ),
+        avgRefuelledToTravel: Number(
+          mean(runs.map(run => run.refuelledToTravel ?? 0)).toFixed(2)
         ),
         nodeTypeSharePct: Object.fromEntries(
           Object.entries(nodeTypeVisits).map(([type, count]) => [
@@ -4489,14 +4654,14 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      `| Szenario | Gigs | Ankünfte | Ebene erreicht (max ${depth}) | Finale erreicht | Ankünfte ohne Bühne | Sackgassen |`
+      `| Szenario | Gigs | Ankünfte | Ebene erreicht (max ${depth}) | Finale erreicht | Finale gespielt | Ankünfte ohne Bühne | Ø blockierte Fahrten | davon Geld/Fuel/Zugang | Ø Tanken für Fahrt | Sackgassen |`
     )
-    lines.push('|---|---:|---:|---:|---:|---:|---:|')
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|')
     for (const scenario of payload.results) {
       const t = scenario.summary?.tourPaths
       if (!t) continue
       lines.push(
-        `| ${scenario.name} | ${scenario.summary.avgGigsPlayed.toFixed(2)} | ${t.avgArrivals} | ${t.avgDeepestLayerReached} | ${fmtPct(t.finaleReachedPct)} | ${t.avgNonPerformingArrivals} | ${t.avgRouteDeadEnds} |`
+        `| ${scenario.name} | ${scenario.summary.avgGigsPlayed.toFixed(2)} | ${t.avgArrivals} | ${t.avgDeepestLayerReached} | ${fmtPct(t.finaleReachedPct)} | ${fmtPct(t.finaleCompletedPct)} | ${t.avgNonPerformingArrivals} | ${t.avgStrandedDays} | ${t.travelBlockedByReason.money}/${t.travelBlockedByReason.fuel}/${t.travelBlockedByReason.venue_access} | ${t.avgRefuelledToTravel} | ${t.avgRouteDeadEnds} |`
       )
     }
     lines.push('')
