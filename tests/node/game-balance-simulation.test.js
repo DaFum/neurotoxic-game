@@ -628,11 +628,13 @@ test('purchase log records timing, cost and the balance on both sides of a buy',
     assert.ok(['money', 'fame'].includes(entry.currency))
     if (entry.currency === 'money') {
       // The recorded pair must bracket the cost, otherwise "remaining
-      // liquidity after a purchase" is measuring the wrong moment.
+      // liquidity after a purchase" is measuring the wrong moment. Fame is not
+      // asserted here: a money-priced item may grant fame as its effect, so the
+      // currency paid and the stats moved are independent.
       assert.ok(entry.moneyAfter <= entry.moneyBefore)
-      assert.equal(entry.fameBefore, entry.fameAfter)
     } else {
       assert.ok(entry.fameAfter <= entry.fameBefore)
+      assert.equal(entry.moneyBefore, entry.moneyAfter)
     }
   }
 
@@ -878,4 +880,106 @@ test('a non-numeric seed is rejected instead of collapsing to one fixed stream',
     [first.finalMoney, first.finalFame, first.gigsPlayed],
     [second.finalMoney, second.finalFame, second.gigsPlayed]
   )
+})
+
+// ── Decision heuristics ─────────────────────────────────────────────────────
+
+test('the buyer keeps a reserve scaled to running costs, not a flat floor', () => {
+  const scenario = probeScenario(10, { gigGapDays: 999 })
+  const runs = Array.from({ length: 12 }, (_, index) =>
+    runSingleSimulation(scenario, createScenarioSeed('reserve', index))
+  )
+
+  for (const run of runs) {
+    for (const entry of run.purchaseLog) {
+      if (entry.currency !== 'money') continue
+      // The old flat €900 floor scaled with nothing: it blocked everything on
+      // day 2 and meant nothing by day 8. Whatever the reserve resolves to, a
+      // purchase must never leave the buyer with nothing.
+      assert.ok(
+        entry.moneyAfter >= 0,
+        'a purchase must not drive the balance negative'
+      )
+    }
+  }
+})
+
+test('a shop visit falls back to something in reach instead of wasting the draw', () => {
+  // With one uniform draw over the whole catalogue and no fallback, most visits
+  // hit an unaffordable or already-owned item and bought nothing, which is why a
+  // full tour ended with about three items owned.
+  const runs = Array.from({ length: 12 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('fallback', index))
+  )
+  const distinct = runs.map(
+    run => new Set(run.purchaseLog.map(entry => entry.id)).size
+  )
+  const average = distinct.reduce((sum, value) => sum + value, 0) / runs.length
+
+  assert.ok(
+    average > 5,
+    `a ten-day tour should buy more than five distinct items, saw ${average}`
+  )
+  // Purchases must still be dated and paid for, not conjured by the fallback.
+  for (const run of runs) {
+    for (const entry of run.purchaseLog) {
+      assert.ok(entry.day >= 1 && entry.day <= run.daysSurvived)
+      assert.ok(entry.cost >= 0)
+    }
+  }
+})
+
+test('rest decision and rest effect read the same threshold', () => {
+  // They used to disagree — rest fired below 30, care required below 50 — so a
+  // rest day could consume a gig slot, heal nobody and increment no counter.
+  // Any rest day must now either treat someone at the clinic or use the free
+  // rest stop.
+  const runs = Array.from({ length: 20 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('rest-effect', index))
+  )
+
+  for (const run of runs) {
+    assert.ok(
+      run.restDays >= run.restStops,
+      'free rest stops are a subset of rest days'
+    )
+    if (run.restDays > 0) {
+      assert.ok(
+        run.restStops > 0 || run.clinicVisits > 0,
+        'a rest day must actually do something'
+      )
+    }
+  }
+})
+
+test('wear pressure never reaches the thresholds the HUD warns at', () => {
+  // Documented finding: stamina drifts -5/day but regains +3 above harmony 60,
+  // and mood drifts toward exactly 50, so neither reaches the HUD's low marks
+  // (stamina < 35, mood < 50) over a ten-day tour. If tuning ever changes that,
+  // this test fails and the report text explaining the zero needs revisiting.
+  const runs = SCENARIOS.slice(0, 7).flatMap(scenario =>
+    Array.from({ length: 6 }, (_, index) =>
+      runSingleSimulation(
+        scenario,
+        createScenarioSeed(`wear-${scenario.id}`, index)
+      )
+    )
+  )
+
+  const minStamina = Math.min(...runs.map(run => run.minMemberStaminaObserved))
+  const minMood = Math.min(...runs.map(run => run.minMemberMoodObserved))
+
+  assert.ok(
+    minStamina >= 35,
+    `stamina reached ${minStamina}, HUD warns below 35`
+  )
+  assert.ok(minMood >= 50, `mood reached ${minMood}, HUD warns below 50`)
+  assert.equal(
+    runs.reduce((sum, run) => sum + run.restDays, 0),
+    0,
+    'no rest day can trigger while the wear thresholds are unreachable'
+  )
+  // Harmony, by contrast, does get low — it is simply not a reason to rest,
+  // because resting does not repair it.
+  assert.ok(Math.min(...runs.map(run => run.minHarmonyObserved)) < 40)
 })

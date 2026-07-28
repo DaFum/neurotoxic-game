@@ -743,6 +743,16 @@ export const createScenarioSeed = (id, runIndex) => {
   return h >>> 0
 }
 
+/**
+ * When a band member benefits from a rest day. `BandMemberRow` flags stamina
+ * below 35 and mood below 50 as low in the HUD, so this is the point at which
+ * the game tells the player something is wrong.
+ *
+ * Both the rest decision and the rest effect read this one predicate; when they
+ * disagreed, a rest day could consume a gig slot and heal nobody.
+ */
+const MEMBER_NEEDS_CARE = member => member.stamina < 35 || member.mood < 50
+
 const mulberry32 = seed => {
   // `seed + 0x6d2b79f5` is string concatenation for a non-numeric seed, and the
   // arithmetic below then collapses to NaN — which yields ONE fixed stream for
@@ -1278,24 +1288,93 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
   return true
 }
 
+/**
+ * How much cash the simulated buyer refuses to spend.
+ *
+ * This replaced a flat €900 floor, which scaled with nothing: on day 2 it
+ * blocked every affordable item, and by day 8 with €20k in the bank it was
+ * meaningless. A reserve is really "enough to keep the tour running", which the
+ * game already computes as `getTotalDailyObligations` — the same selector
+ * bankruptcy and travel confirmation use. Two days of it, floored at €150 so a
+ * scenario with no obligations still keeps enough for the next hop (measured
+ * travel cost sits at €47-94 per gig).
+ */
+const PURCHASE_RESERVE_DAYS = 2
+const PURCHASE_RESERVE_FLOOR = 150
+
+const purchaseReserve = state =>
+  Math.max(
+    PURCHASE_RESERVE_FLOOR,
+    getTotalDailyObligations(state) * PURCHASE_RESERVE_DAYS
+  )
+
+/**
+ * Whether the buyer can and will pay for an item right now. Separates the two
+ * reasons a purchase does not happen, because they mean different things: no
+ * money at all is an economy signal, while breaching the reserve is the buyer's
+ * own prudence and can block something genuinely affordable.
+ */
+const evaluatePurchaseIntent = (item, state, reserve) => {
+  const validation = validatePurchase(item, state.player, state.band)
+  if (!validation.isValid) return { verdict: validation.errorType, validation }
+  if (validation.payingWithFame) return { verdict: 'buy', validation }
+  const remaining = (state.player.money ?? 0) - validation.finalCost
+  return remaining >= reserve
+    ? { verdict: 'buy', validation }
+    : { verdict: 'reserve_guard', validation }
+}
+
+/**
+ * One shop visit per day, buying at most one item.
+ *
+ * There used to be a 24% chance of even looking at the shop, which capped a tour
+ * at roughly 2.4 purchase opportunities and was the real reason the buyer ended
+ * a ten-day tour owning about three items while sitting on five figures — not
+ * affordability. The shop is reachable from HQ between gigs, so whether a player
+ * looks is not a dice roll; what varies is which item catches their eye, and
+ * whether there is surplus over the money the tour still needs.
+ */
 const maybeBuyCatalogUpgrade = (state, rng, counters) => {
-  if (rng() > 0.24) return
-  const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
-  if (!candidate) return
-  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) {
-    // Recorded separately from a true `insufficient_funds` miss: this is the
-    // simulated buyer keeping a cash reserve, so it can block an item the
-    // player could actually afford. Conflating the two would report a model
-    // heuristic as an economy finding.
-    counters.liquidityDeferrals?.push({
-      day: counters.currentDay ?? null,
-      id: candidate.id,
-      category: candidate.category
-    })
+  const desired = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
+  if (!desired) return
+
+  const reserve = purchaseReserve(state)
+  const intent = evaluatePurchaseIntent(desired, state, reserve)
+  if (intent.verdict === 'buy') {
+    applyCatalogPurchase(state, desired, counters)
     return
   }
 
-  applyCatalogPurchase(state, candidate, counters)
+  // The draw is the buyer's *want*. Recording why it did not happen is what
+  // makes "missed purchase" mean something; previously the flat floor returned
+  // before validation ran, so a real affordability failure was invisible.
+  if (intent.verdict === 'insufficient_funds') {
+    counters.missedPurchases?.push({
+      day: counters.currentDay ?? null,
+      id: desired.id,
+      category: desired.category,
+      currency: desired.currency === 'fame' ? 'fame' : 'money'
+    })
+  } else if (intent.verdict === 'reserve_guard') {
+    counters.liquidityDeferrals?.push({
+      day: counters.currentDay ?? null,
+      id: desired.id,
+      category: desired.category
+    })
+  }
+
+  // A player who cannot afford the amp buys strings instead. Without this the
+  // whole shop visit was wasted on a single uniform draw over 67 items, most of
+  // which are out of reach or already owned, which is why the buyer ended a tour
+  // having bought about three things while sitting on five figures.
+  const inReach = UPGRADE_CATALOG.filter(
+    item =>
+      item.id !== desired.id &&
+      evaluatePurchaseIntent(item, state, reserve).verdict === 'buy'
+  )
+  if (!inReach.length) return
+  const fallback = inReach[Math.floor(rng() * inReach.length)]
+  applyCatalogPurchase(state, fallback, counters)
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1891,6 +1970,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     modulesInstalled: 0,
     crowdfundsStarted: 0,
     restStops: 0,
+    // Rest days are counted separately from rest stops: `restStops` only counts
+    // the free-fallback branch, so a band that rested and paid the clinic
+    // instead recorded nothing at all and read as "never rested".
+    restDays: 0,
     gearItemsPurchased: 0,
     travelSpend: 0,
     refuels: 0,
@@ -1967,6 +2050,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   // to dip at all. Kept separate so the published `lowestMoney` statistics do
   // not silently change meaning.
   let lowestMoneyObserved = state.player.money
+  // Wear pressure, sampled at the same day-start point as liquidity. Final
+  // values alone cannot say whether a tour ever came close to a rest decision.
+  let minHarmonyObserved = state.band.harmony
+  let minMemberStaminaObserved = Infinity
+  let minMemberMoodObserved = Infinity
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -1986,6 +2074,14 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
       daysBelowCriticalLiquidity += 1
     lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+    minHarmonyObserved = Math.min(minHarmonyObserved, state.band.harmony)
+    for (const member of state.band.members) {
+      minMemberStaminaObserved = Math.min(
+        minMemberStaminaObserved,
+        member.stamina
+      )
+      minMemberMoodObserved = Math.min(minMemberMoodObserved, member.mood)
+    }
     if (state.player.money > peakMoney) peakMoney = state.player.money;
     else {
       const drop = calculateDrawdownPct(peakMoney, state.player.money)
@@ -2055,17 +2151,29 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
 
     let willRest = false
-    // Check if the band needs rest/clinic before taking on a gig
+    // Check if the band needs rest/clinic before taking on a gig.
+    //
+    // The trigger is deliberately identical to `MEMBER_NEEDS_CARE` below, which
+    // decides what a rest day actually does. They used to differ — rest fired on
+    // `harmony < 30 || stamina < 30 || mood < 30`, while care required
+    // `stamina < 50 || mood < 50` — so a rest could burn a gig day, heal nobody,
+    // and increment no counter at all. Resting does not repair harmony either
+    // (the daily tick's +3 drift toward 50 happens regardless), so harmony is no
+    // longer a reason to skip a gig: it would be a guaranteed no-op day.
+    //
+    // Thresholds come from what the game itself signals: `BandMemberRow` marks
+    // stamina below 35 and mood below 50 as low in the HUD, which is what a
+    // player actually reacts to, rather than the deeper mark where
+    // `gigModifiersUtils` starts penalising performance.
     if (shouldPlayGig) {
       counters.executionCoverage.restStops.evaluations++
-      const needsRest =
-        state.band.harmony < 30 ||
-        state.band.members.some(m => m.stamina < 30 || m.mood < 30)
+      const needsRest = state.band.members.some(MEMBER_NEEDS_CARE)
       // Save original random state by evaluating early if they *would* rest.
       // Note: we'll just consume the rng here.
       if (needsRest && rng() < 0.85) {
         willRest = true
         shouldPlayGig = false
+        counters.restDays += 1
       }
     }
 
@@ -2103,8 +2211,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // (arrivalUtils.ts: +20 stamina / +10 mood).
       let usedRestStop = false
       state.band.members = state.band.members.map(member => {
-        const needsCare = member.stamina < 50 || member.mood < 50
-        if (!needsCare) return member
+        if (!MEMBER_NEEDS_CARE(member)) return member
 
         const healCost = calculateClinicCost(
           CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
@@ -2487,6 +2594,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     peakMoney,
     lowestMoney,
     lowestMoneyObserved,
+    minHarmonyObserved,
+    minMemberStaminaObserved: Number.isFinite(minMemberStaminaObserved)
+      ? minMemberStaminaObserved
+      : null,
+    minMemberMoodObserved: Number.isFinite(minMemberMoodObserved)
+      ? minMemberMoodObserved
+      : null,
     affordabilityAtMidCheckpoint,
     affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
@@ -2744,7 +2858,7 @@ export const summarizeScenario = runs => {
       ['Repairs', 'repairs'], ['HqUpgrades', 'hqUpgrades'], ['VanUpgrades', 'vanUpgrades'],
       ['CatalogUpgrades', 'catalogUpgrades'], ['TravelMinigames', 'travelMinigames'],
       ['RoadieMinigames', 'roadieMinigames'], ['KabelsalatMinigames', 'kabelsalatMinigames'],
-      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'],
+      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'], ['RestDays', 'restDays'],
       ['AssetsPurchased', 'assetsPurchased'], ['LoansTaken', 'loansTaken'],
       ['ModulesInstalled', 'modulesInstalled'], ['CrowdfundsStarted', 'crowdfundsStarted'],
       ['TraitUnlocks', 'traitUnlocks'], ['FinalAssets', 'finalAssets'],
@@ -2862,7 +2976,11 @@ export const summarizeScenario = runs => {
         (sum, run) => sum + run.totalTravelCostGigs,
         0
       )
-      const totalRest = runs.reduce((sum, run) => sum + (run.restStops ?? 0), 0)
+      const totalRest = runs.reduce((sum, run) => sum + (run.restDays ?? 0), 0)
+      const totalRestStops = runs.reduce(
+        (sum, run) => sum + (run.restStops ?? 0),
+        0
+      )
       const netPerGig = totalGigs > 0 ? totalNet / totalGigs : 0
       const moneyPriced = UPGRADE_CATALOG.filter(
         item => item.currency !== 'fame' && Number.isFinite(item.cost)
@@ -2874,6 +2992,11 @@ export const summarizeScenario = runs => {
           (totalDays > 0 ? totalGigs / totalDays : 0).toFixed(3)
         ),
         avgRestDays: Number((runs.length ? totalRest / runs.length : 0).toFixed(2)),
+        // The free rest-stop fallback, i.e. rest days where the clinic was not
+        // worth paying for. A subset of avgRestDays, not a synonym.
+        avgFreeRestStops: Number(
+          (runs.length ? totalRestStops / runs.length : 0).toFixed(2)
+        ),
         restDaySharePct: Number(
           ((totalDays > 0 ? totalRest / totalDays : 0) * 100).toFixed(2)
         ),
@@ -4111,7 +4234,7 @@ const buildMarkdownReport = payload => {
     }
     lines.push('')
     lines.push(
-      '„Verpasste Käufe“ sind Artikel, die der simulierte Käufer wollte und nicht bezahlen konnte (`insufficient_funds`). „Liquiditätsvorbehalt“ zählt getrennt die Fälle, in denen derselbe Käufer wegen seiner eigenen Reserve-Heuristik unter €900 nicht gekauft hat — das kann Artikel blockieren, die bezahlbar gewesen wären. Beide Zahlen beschreiben das Entscheidungsmodell der Simulation, nicht das Verhalten echter Spieler; Kaufreihenfolge und Kaufanteil sind entsprechend Heuristik-Artefakte und keine Designbefunde.'
+      '„Verpasste Käufe“ sind Artikel, die der simulierte Käufer wollte und nicht bezahlen konnte (`insufficient_funds`). „Liquiditätsvorbehalt“ zählt getrennt die Fälle, in denen derselbe Käufer den Artikel bezahlen könnte, aber seine Reserve nicht antasten will — zwei Tage der laufenden Verpflichtungen aus `getTotalDailyObligations`, mindestens €150 für den nächsten Hop. Beide Zahlen beschreiben das Entscheidungsmodell der Simulation, nicht das Verhalten echter Spieler; Kaufreihenfolge und Kaufanteil bleiben Heuristik-Artefakte und sind keine Designbefunde.'
     )
     lines.push('')
   }
@@ -4144,7 +4267,7 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      '**Ruhetage sind in allen Szenarien 0, und das ist selbst ein Befund.** Der Ruhe-Auslöser des Modells verlangt Harmony unter 30 oder ein Bandmitglied unter 30 Stamina/Mood; in keinem der simulierten Runs tritt dieser Zustand ein, weshalb auch keine Klinikbesuche stattfinden. Die Opportunitätskosten von Pausen sind damit in diesem Modell nicht messbar — nicht weil sie null wären, sondern weil dichte Touren keinen Verschleißdruck erzeugen, der eine Pause erzwingen würde. `foregoneGigNetPerRestDayUpperBound` steht als Obergrenze im JSON, entspricht bei null Ruhetagen aber genau dem Gig-Netto und ist deshalb hier nicht als Spalte geführt.'
+      '**Ruhetage sind in allen Szenarien 0, und das ist ein Befund über den Verschleiß, nicht über Pausen.** Der Ruhe-Auslöser nutzt die Marken, die das Spiel selbst im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50). Gemessen über alle Runs fällt die niedrigste Stamina nie unter 47 und die Mood liegt durch die tägliche Drift bei genau 50 — die Verschleißmechanik erreicht ihre eigenen Warnschwellen also nie. Dichte Touren erzeugen damit keinen Druck, der eine Pause erzwingen würde, und die Opportunitätskosten einer Pause sind in diesem Modell folglich nicht messbar. `avgFreeRestStops` im JSON zählt separat die Ruhetage ohne bezahlten Klinikbesuch; `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.'
     )
     lines.push('')
   }
