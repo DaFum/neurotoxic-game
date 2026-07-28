@@ -19,16 +19,24 @@ const criteria = phase =>
         // horizon ceiling, so a "survived longer" delta is unmeasurable. What a
         // relief lever must show instead is that it does not raise insolvency
         // and does not quietly enrich the runs that were already solvent.
-        // The solvency ceilings track the economy, not the scenario: under
-        // neutral tuning a surviving bootstrap run ends a tour on ~EUR 4.35k
-        // median / ~EUR 9.1k p90, so these sit just above that to catch a lever
-        // that enriches already-solvent runs. Re-derive whenever
-        // GLOBAL_PAYOUT_NERF or the catalogue changes, or the neutral baseline
-        // itself stops qualifying.
+        // The solvency ceilings track the economy, not the scenario: they sit
+        // just above the measured neutral baseline so a lever that enriches
+        // already-solvent runs is caught. Re-derive whenever GLOBAL_PAYOUT_NERF
+        // or the catalogue changes, or the neutral baseline itself stops
+        // qualifying.
+        //
+        // Re-derived when travel stopped being gated on the gig cadence. The
+        // previous EUR 5.5k / 11k pair was calibrated while a non-performance day
+        // skipped travel, so Bootstrap Struggle took about two hops in ten days
+        // and ended a tour on ~EUR 4.35k median. Now that it actually tours, the
+        // neutral baseline is ~EUR 24.7k median / ~EUR 29.9k p90 — the old
+        // ceilings failed every candidate including the neutral no-op, which is a
+        // broken gate rather than a balance finding. Same ~1.26x median / ~1.21x
+        // p90 headroom as before.
         bankruptcyRateMaxPct: 60,
         bankruptcyMaximumDeltaPct: 0,
-        solventMedianMoneyMax: 5500,
-        solventP90MoneyMax: 11000,
+        solventMedianMoneyMax: 31000,
+        solventP90MoneyMax: 36000,
         famePerGigMaximumAbsDeltaPct: 5
       }
     : {
