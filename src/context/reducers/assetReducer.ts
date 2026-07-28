@@ -697,10 +697,10 @@ export const handleDismissForeclosureNotice = (
       // Why: Eliminates intermediate array and closure allocations.
       // Impact: Reduces GC pressure when dismissing foreclosure notices.
       const source = state.pendingForeclosureNotices ?? []
-      const result = []
+      const result: AssetKind[] = []
       for (let i = 0; i < source.length; i++) {
         if (source[i] !== payload.kind) {
-          result.push(source[i])
+          if (source[i]) result.push(source[i] as AssetKind)
         }
       }
       return result
