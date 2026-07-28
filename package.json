@@ -101,7 +101,7 @@
     "jsdom": "29.1.1",
     "lint-staged": "17.0.8",
     "markdownlint-cli2": "0.23.1",
-    "postcss": "8.5.22",
+    "postcss": "8.5.23",
     "prettier": "3.9.5",
     "rollup-plugin-visualizer": "7.0.1",
     "serialize-javascript": "7.0.7",
