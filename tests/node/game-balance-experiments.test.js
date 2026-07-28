@@ -856,7 +856,8 @@ const buildMarkdownReport = ({
     passed: false,
     evaluatedScenarios: [],
     failures: []
-  }
+  },
+  combinationSearch = {}
 }) => {
   const candidate = {
     id: 'probe-candidate',
@@ -947,7 +948,8 @@ const buildMarkdownReport = ({
       strategy: 'ascending-impact-first-validated',
       pairsAvailable: 12,
       pairsEvaluated: 1,
-      pairsSkipped: 11
+      pairsSkipped: 11,
+      ...combinationSearch
     },
     holdoutSafetyValidation: holdoutSafety,
     recommendation: {
@@ -999,6 +1001,66 @@ test('experiment markdown discloses a failed holdout safety gate and withholds t
     failed,
     /Holdout-Sicherheitsgrenzen \(harte Caps\) \| fehlgeschlagen/
   )
+})
+
+// The search rejects on the hard caps first and only reaches calibration for pairs
+// that already cleared them. Blaming every rejection on the caps names the wrong
+// blocker and sends the next phase at the wrong problem.
+test('the no-recommendation narrative attributes rejections to the gate that made them', () => {
+  const render = counts =>
+    renderExperimentMarkdown(
+      buildMarkdownReport({
+        objectiveMet: true,
+        combinationSearch: {
+          selectionOutcome: 'no-combination-cleared-both-gates',
+          pairsEvaluated: 12,
+          pairsSkipped: 0,
+          ...counts
+        }
+      })
+    )
+
+  const capsOnly = render({
+    pairsRejectedBySelectionGate: 12,
+    pairsRejectedByCalibrationGate: 0
+  })
+  assert.match(capsOnly, /Alle 12 Ablehnungen fielen an den harten Caps/)
+  assert.doesNotMatch(capsOnly, /Kalibrierungs-Gate gescheiterten/)
+
+  const calibrationOnly = render({
+    pairsRejectedBySelectionGate: 0,
+    pairsRejectedByCalibrationGate: 12
+  })
+  assert.match(
+    calibrationOnly,
+    /Alle 12 Ablehnungen fielen am gepaarten Kalibrierungs-Gate, nicht an den harten Caps/
+  )
+  assert.doesNotMatch(
+    calibrationOnly,
+    /Ablehnungen fielen an den harten Caps/,
+    'Caps that rejected nothing may not be named as the blocker'
+  )
+
+  const mixed = render({
+    pairsRejectedBySelectionGate: 5,
+    pairsRejectedByCalibrationGate: 7
+  })
+  assert.match(
+    mixed,
+    /5 davon fielen an den harten Caps auf dem `selection`-Strom, 7 am gepaarten Kalibrierungs-Gate/
+  )
+  assert.match(mixed, /müssen neu balanciert werden/)
+  assert.match(mixed, /Kandidatenfamilie/)
+
+  // Zero reached pairs is an unmeasured gate, not a cap result.
+  const nothingReached = render({
+    pairsEvaluated: 0,
+    pairsSkipped: 12,
+    pairsRejectedBySelectionGate: 0,
+    pairsRejectedByCalibrationGate: 0
+  })
+  assert.match(nothingReached, /keine Kombination erreicht/)
+  assert.doesNotMatch(nothingReached, /Ablehnungen fielen/)
 })
 
 test('a passing holdout safety gate withholds nothing', () => {

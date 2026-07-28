@@ -576,6 +576,25 @@ export const renderExperimentMarkdown = report => {
     `${selectedPairs} clearing both) and ${search.pairsSkipped} were never reached, because the search stops ` +
     `at the first pair that clears both gates and every remaining pair carries higher impact. The reserved ` +
     `\`validation\` stream is measured once, on that pair alone.`
+  // The search rejects on the hard caps first and only reaches calibration for
+  // pairs that already cleared them, so a `pairsRejectedByCalibrationGate` pair is
+  // not a cap failure. Blaming every rejection on the caps names the wrong blocker
+  // and points the next phase at the wrong problem.
+  const noCombinationNote = (() => {
+    const reached = `Die Messimplementierung ist vollständig, und die Suche hat jede der ${search.pairsEvaluated} erreichten Kombinationen geprüft — keine besteht beide Gates.`
+    const capsNextStep = 'Die an den Caps gescheiterten Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'
+    const calibrationNextStep = 'Für die am Kalibrierungs-Gate gescheiterten Kombinationen sind die Caps nicht die bindende Grenze; dort braucht es eine Kandidatenfamilie, die die gepaarten Kalibrierungskriterien erfüllt.'
+    if (search.pairsEvaluated === 0) {
+      return '**Keine Produktionsempfehlung.** Es wurde keine Kombination erreicht, also ist kein Gate gemessen — das ist kein bestandenes Gate.'
+    }
+    if (calibrationRejected === 0) {
+      return `**Keine Produktionsempfehlung.** ${reached} Alle ${holdoutRejected} Ablehnungen fielen an den harten Caps auf dem \`selection\`-Strom. ${capsNextStep}`
+    }
+    if (holdoutRejected === 0) {
+      return `**Keine Produktionsempfehlung.** ${reached} Alle ${calibrationRejected} Ablehnungen fielen am gepaarten Kalibrierungs-Gate, nicht an den harten Caps. ${calibrationNextStep}`
+    }
+    return `**Keine Produktionsempfehlung.** ${reached} ${holdoutRejected} davon fielen an den harten Caps auf dem \`selection\`-Strom, ${calibrationRejected} am gepaarten Kalibrierungs-Gate. ${capsNextStep} ${calibrationNextStep}`
+  })()
   const selectionOutcomeNote =
     report.combinationSearch.selectionOutcome === 'no-combination-cleared-both-gates'
       ? ' **Keine Kombination hat beide Gates bestanden.** Die genannte Kombination ist nur die Basis, gegen die dieser Bericht geschrieben ist — sie wird nicht zur Auslieferung empfohlen.'
@@ -718,7 +737,7 @@ ${
       ? `**Keine Produktionsempfehlung.** Die gewählte Kombination hat das Suchstrom-Gate bestanden und bricht auf dem reservierten \`validation\`-Strom (${(
           report.combinationSearch.selectedFinalValidationFailures ?? []
         ).join('; ')}). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.`
-      : `**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig, und die Suche hat jede der ${report.combinationSearch.pairsEvaluated} erreichten Kombinationen gegen die harten Caps geprüft — keine besteht sie. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.`
+      : noCombinationNote
 }
 
 ### Release-Gesamtstatus
