@@ -375,7 +375,7 @@ const describeRanking = ranking => {
 }
 
 const NO_CHANGE_NOTE =
-  ' Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.'
+  ' Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.'
 
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation

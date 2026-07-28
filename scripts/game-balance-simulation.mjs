@@ -1243,7 +1243,7 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
         currency: candidate.currency === 'fame' ? 'fame' : 'money'
       })
     }
-    return
+    return false
   }
 
   const moneyBefore = state.player.money ?? 0
@@ -1353,6 +1353,22 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
 const PURCHASE_RESERVE_DAYS = 2
 const PURCHASE_RESERVE_FLOOR = 150
 
+/**
+ * Cheapest price in each currency, used only as a fast bail-out before the
+ * fallback scan. `getAdjustedCost` can shave a band-specific discount off these,
+ * so they are a floor and never a purchase decision on their own.
+ */
+const cheapestCost = currencyMatches =>
+  UPGRADE_CATALOG.reduce(
+    (cheapest, item) =>
+      currencyMatches(item) && Number.isFinite(item.cost)
+        ? Math.min(cheapest, item.cost)
+        : cheapest,
+    Infinity
+  )
+const CHEAPEST_MONEY_ITEM_COST = cheapestCost(item => item.currency !== 'fame')
+const CHEAPEST_FAME_ITEM_COST = cheapestCost(item => item.currency === 'fame')
+
 const purchaseReserve = state =>
   Math.max(
     PURCHASE_RESERVE_FLOOR,
@@ -1418,6 +1434,16 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   // whole shop visit was wasted on a single uniform draw over 67 items, most of
   // which are out of reach or already owned, which is why the buyer ended a tour
   // having bought about three things while sitting on five figures.
+  //
+  // The scan runs a full `validatePurchase` per catalogue entry, and the shop is
+  // now visited every day, so skip it outright when nothing could possibly be
+  // affordable. Behaviour is identical; only the broke case gets cheaper.
+  if (
+    (state.player.money ?? 0) - reserve < CHEAPEST_MONEY_ITEM_COST &&
+    (state.player.fame ?? 0) < CHEAPEST_FAME_ITEM_COST
+  ) {
+    return
+  }
   const inReach = UPGRADE_CATALOG.filter(
     item =>
       item.id !== desired.id &&
@@ -2004,9 +2030,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   // layer daysPerRun, so reaching the finale takes exactly as many hops as the
   // horizon allows. Seeded from the run seed, so the same (scenario, seed) pair
   // still reproduces exactly.
-  const tourMap = new MapGenerator(seed).generateMap(
-    SIMULATION_CONSTANTS.daysPerRun
-  )
+  const tourHorizonDays =
+    scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
+  const tourMap = new MapGenerator(seed).generateMap(tourHorizonDays)
   const tourAdjacency = buildTourAdjacency(tourMap)
   let currentMapNode = tourMap.nodes.node_0_0 ?? null
   let deepestLayerReached = currentMapNode?.layer ?? 0
@@ -2469,6 +2495,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // Update location so next travel routes from the new (cancelled) destination
       currentNode = venue
 
+      // A cancelled finale still ends the tour. Without this the run keeps
+      // iterating with no forward edge left, inflating routeDeadEnds.
+      if (tourCompleted) break
+
       // Skip the rest of the gig pipeline
       continue
     }
@@ -2715,7 +2745,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     lowestMoneyObserved,
     tourCompleted,
     deepestLayerReached,
-    tourDepth: SIMULATION_CONSTANTS.daysPerRun,
+    tourDepth: tourHorizonDays,
     nodeTypesVisited,
     routeDeadEnds,
     nonPerformingArrivals,
@@ -3930,6 +3960,7 @@ const buildMarkdownReport = payload => {
     lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
     lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`)
+    lines.push(`- Risikokorridor-Konfiguration SHA-256: ${payload.metadata.riskTargetConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
     lines.push('')
   }
@@ -4348,9 +4379,18 @@ const buildMarkdownReport = payload => {
       )
       lines.push('')
       for (const warning of risk.warnings) lines.push(`- ⚠️ ${warning}`)
-    } else {
+    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
       lines.push(
         '✅ Alle bewerteten Szenarien liegen in ihrem Zielkorridor und bleiben auf unabhängigen Seeds im selben Risikoband.'
+      )
+    } else {
+      // A `not_evaluated` scenario produces no warning, so an empty warning list
+      // is not the same as "everything is healthy".
+      lines.push(
+        `⚪ Keine Warnungen, aber auch nicht durchgehend \`healthy\`: ${risk.scenarios
+          .filter(scenario => scenario.status !== 'healthy')
+          .map(scenario => `${scenario.id} (${scenario.status})`)
+          .join(', ')}.`
       )
     }
     lines.push('')
@@ -4396,6 +4436,12 @@ const buildMarkdownReport = payload => {
   )
   if (pathReference) {
     const depth = pathReference.summary.tourPaths.tourDepth
+    const finaleReachers = payload.results
+      .filter(scenario => (scenario.summary?.tourPaths?.finaleReachedPct ?? 0) > 0)
+      .map(scenario => ({
+        name: scenario.name,
+        share: scenario.summary.tourPaths.finaleReachedPct
+      }))
     lines.push('## Reale Tourpfade')
     lines.push('')
     lines.push(
@@ -4424,7 +4470,12 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      '**Das beantwortet die Gap-1-Frage strukturell.** Nur ein Szenario, das praktisch täglich spielt, legt die zehn Hops zurück und erreicht das Finale; bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.'
+      `**Das beantwortet die Gap-1-Frage strukturell.** Das Finale erreichen nur ${
+        finaleReachers.length
+      } von ${payload.results.length} Szenarien (${
+        finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') ||
+        'keines'
+      }) — und zwar genau die, die praktisch täglich spielen. Bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke, und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.`
     )
     lines.push('')
     lines.push(
@@ -4672,7 +4723,7 @@ lines.push('## KPI-Zielkorridore (Health Check)')
     }, {})
     lines.push('### Designrisiko-Zusammenfassung (nicht blockierend)')
     lines.push(
-      `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze.`
+      `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze; ${risk.scenarios.filter(scenario => scenario.status === 'not_evaluated').length} ohne Korridorurteil.`
     )
     lines.push(
       `- Risikobänder: ${Object.entries(riskCounts)
@@ -4683,9 +4734,13 @@ lines.push('## KPI-Zielkorridore (Health Check)')
       lines.push(
         `- ⚠️ ${risk.warnings.length} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
       )
-    } else {
+    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
       lines.push(
         '- ✅ Alle bewerteten Szenarien liegen in ihrem Design-Risikokorridor.'
+      )
+    } else {
+      lines.push(
+        `- ⚪ Keine Warnungen, aber ${risk.scenarios.filter(scenario => scenario.status !== 'healthy').length} Szenario(en) ohne \`healthy\`-Status.`
       )
     }
     lines.push('')

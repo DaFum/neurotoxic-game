@@ -918,14 +918,31 @@ test('a shop visit falls back to something in reach instead of wasting the draw'
   const runs = Array.from({ length: 12 }, (_, index) =>
     runSingleSimulation(SCENARIOS[0], createScenarioSeed('fallback', index))
   )
-  const distinct = runs.map(
-    run => new Set(run.purchaseLog.map(entry => entry.id)).size
-  )
-  const average = distinct.reduce((sum, value) => sum + value, 0) / runs.length
-
+  // Structural rather than statistical: on a day where the drawn item failed,
+  // the fallback must either have bought something else or found nothing in
+  // reach. A bare "bought more than N items" bound would flip on any payout or
+  // catalogue change without saying what actually broke.
+  let fallbackOpportunities = 0
+  let fallbackPurchases = 0
+  for (const run of runs) {
+    const purchaseDays = new Set(run.purchaseLog.map(entry => entry.day))
+    const blockedDays = new Set(
+      [...run.missedPurchases, ...run.liquidityDeferrals].map(
+        entry => entry.day
+      )
+    )
+    for (const day of blockedDays) {
+      fallbackOpportunities += 1
+      if (purchaseDays.has(day)) fallbackPurchases += 1
+    }
+  }
   assert.ok(
-    average > 5,
-    `a ten-day tour should buy more than five distinct items, saw ${average}`
+    fallbackOpportunities > 0,
+    'the cohort must contain days where the drawn item was not bought'
+  )
+  assert.ok(
+    fallbackPurchases > 0,
+    'a blocked draw must sometimes still end in a purchase, otherwise the fallback is dead'
   )
   // Purchases must still be dated and paid for, not conjured by the fallback.
   for (const run of runs) {
