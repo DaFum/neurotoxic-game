@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 54665 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 37400 ms.
 
 ## Kontrollzustand
 
@@ -13,29 +13,29 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 | Candidate | Control Bankruptcy | Candidate Bankruptcy | Delta | Median Days Survived Delta | Solvent Median Money | Fame/Gig Delta | Pass/Fail |
 |---|---:|---:|---:|---:|---:|---:|---|
-| bootstrap-none | 10% | 10% | 0 pp | 0 | €24670.5 | 0% | Pass |
-| bootstrap-obligations-90-through-3 | 10% | 11.92% | 1.92 pp | 0 | €24568 | -2.34% | Fail |
-| bootstrap-obligations-80-through-3 | 10% | 10.77% | 0.77 pp | 0 | €24583 | 0.28% | Fail |
-| bootstrap-obligations-70-through-3 | 10% | 9.23% | -0.77 pp | 0 | €24819 | 1.5% | Pass |
-| bootstrap-obligations-80-through-5 | 10% | 8.46% | -1.54 pp | 0 | €24684.5 | 2.18% | Pass |
-| bootstrap-obligations-70-through-5 | 10% | 7.69% | -2.31 pp | 0 | €24685.5 | 2.87% | Pass |
-| bootstrap-obligations-60-through-5 | 10% | 6.15% | -3.85 pp | 0 | €24827 | 3.74% | Pass |
-| bootstrap-emergency-250 | 10% | 1.15% | -8.85 pp | 0 | €24696 | 11.87% | Fail |
-| bootstrap-emergency-500 | 10% | 0.77% | -9.23 pp | 0 | €24690.5 | 11.19% | Fail |
-| bootstrap-staged-60-80 | 10% | 8.46% | -1.54 pp | 0 | €24746.5 | 2.29% | Pass |
-| bootstrap-staged-75 | 10% | 8.85% | -1.15 pp | 0 | €24744 | 0.87% | Pass |
+| bootstrap-none | 30.38% | 30.38% | 0 pp | 0 | €24417 | 0% | Pass |
+| bootstrap-obligations-90-through-3 | 30.38% | 32.31% | 1.92 pp | 0 | €24614 | -1.93% | Fail |
+| bootstrap-obligations-80-through-3 | 30.38% | 30% | -0.38 pp | 0 | €24633 | 0.41% | Pass |
+| bootstrap-obligations-70-through-3 | 30.38% | 28.46% | -1.92 pp | 0 | €24985.5 | 0.88% | Pass |
+| bootstrap-obligations-80-through-5 | 30.38% | 28.46% | -1.92 pp | 0 | €24695.5 | 1.44% | Pass |
+| bootstrap-obligations-70-through-5 | 30.38% | 25% | -5.38 pp | 0 | €24870 | 4.24% | Pass |
+| bootstrap-obligations-60-through-5 | 30.38% | 20.77% | -9.62 pp | 0 | €24820 | 9.49% | Fail |
+| bootstrap-emergency-250 | 30.38% | 7.69% | -22.69 pp | 0 | €23975.5 | 29.51% | Fail |
+| bootstrap-emergency-500 | 30.38% | 1.92% | -28.46 pp | 0 | €24008 | 37.46% | Fail |
+| bootstrap-staged-60-80 | 30.38% | 26.15% | -4.23 pp | 0 | €24910.5 | 3.2% | Pass |
+| bootstrap-staged-75 | 30.38% | 26.92% | -3.46 pp | 0 | €25144 | 2.83% | Pass |
 
 ## Bootstrap-Ranking
 
-1. bootstrap-none
-2. bootstrap-obligations-70-through-3
-3. bootstrap-staged-75
+1. bootstrap-obligations-80-through-3
+2. bootstrap-none
+3. bootstrap-obligations-70-through-3
 4. bootstrap-obligations-80-through-5
-5. bootstrap-staged-60-80
-6. bootstrap-obligations-70-through-5
-7. bootstrap-obligations-60-through-5
+5. bootstrap-staged-75
+6. bootstrap-staged-60-80
+7. bootstrap-obligations-70-through-5
 8. bootstrap-obligations-90-through-3
-9. bootstrap-obligations-80-through-3
+9. bootstrap-obligations-60-through-5
 10. bootstrap-emergency-250
 11. bootstrap-emergency-500
 
@@ -48,30 +48,30 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 | Tuning | Profile | Gig Gap | Gigs | Money/Day | Gig Net/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Refuels | Drawdown | Bankruptcy | Days Survived |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| control | baseline_touring | 1 | 8.64 | 2899.35 | 3523.82 | 1403.86 | 1632.31 | 46.69 | 1.08 | 1.25 | 16.73% | 0% | 10 |
-| control | baseline_touring | 2 | 6.75 | 2642.22 | 3162.6 | 1168.71 | 1636.6 | 52.08 | 0.94 | 1.19 | 35.45% | 3.46% | 9.79 |
-| control | baseline_touring | 3 | 6.52 | 2672.82 | 3148.86 | 1129.82 | 1616.99 | 49.58 | 0.91 | 1.17 | 37.61% | 4.62% | 9.73 |
-| control | baseline_touring | 4 | 5.63 | 2495.55 | 2964.83 | 1039.37 | 1494.36 | 52.6 | 0.79 | 1.05 | 46.45% | 13.85% | 9.18 |
-| control | baseline_touring | 5 | 5.29 | 2306.25 | 2776.83 | 963.12 | 1411.71 | 54.12 | 0.79 | 1.06 | 47.22% | 15.38% | 9.06 |
-| control | low_resource_touring | 1 | 8.56 | 2867.98 | 3477.99 | 1350.02 | 1576.15 | 46.78 | 1.1 | 1.2 | 17.09% | 0.38% | 9.97 |
-| control | low_resource_touring | 2 | 6.02 | 2457.51 | 3014.38 | 1052.66 | 1331.61 | 52.85 | 0.83 | 1 | 48.23% | 15.38% | 8.92 |
-| control | low_resource_touring | 3 | 5.05 | 2334.45 | 2846.44 | 1029.5 | 1220.94 | 56.68 | 0.69 | 0.91 | 56.26% | 26.92% | 8.12 |
-| control | low_resource_touring | 4 | 4.73 | 2304.7 | 2758.25 | 961.86 | 1170.12 | 56.75 | 0.65 | 0.85 | 57.17% | 30% | 7.95 |
-| control | low_resource_touring | 5 | 4.63 | 2302.77 | 2718.83 | 976.16 | 1199.02 | 56.86 | 0.66 | 0.88 | 58.27% | 30.38% | 7.92 |
-| finalTuning | baseline_touring | 1 | 8.64 | 2899.35 | 3523.82 | 1403.86 | 1632.31 | 46.69 | 1.08 | 1.25 | 16.73% | 0% | 10 |
-| finalTuning | baseline_touring | 2 | 6.75 | 2642.22 | 3162.6 | 1168.71 | 1636.6 | 52.08 | 0.94 | 1.19 | 35.45% | 3.46% | 9.79 |
-| finalTuning | baseline_touring | 3 | 6.52 | 2672.82 | 3148.86 | 1129.82 | 1616.99 | 49.58 | 0.91 | 1.17 | 37.61% | 4.62% | 9.73 |
-| finalTuning | baseline_touring | 4 | 5.63 | 2495.55 | 2964.83 | 1039.37 | 1494.36 | 52.6 | 0.79 | 1.05 | 46.45% | 13.85% | 9.18 |
-| finalTuning | baseline_touring | 5 | 5.29 | 2306.25 | 2776.83 | 963.12 | 1411.71 | 54.12 | 0.79 | 1.06 | 47.22% | 15.38% | 9.06 |
-| finalTuning | low_resource_touring | 1 | 8.56 | 2867.98 | 3477.99 | 1350.02 | 1576.15 | 46.78 | 1.1 | 1.2 | 17.09% | 0.38% | 9.97 |
-| finalTuning | low_resource_touring | 2 | 6.02 | 2457.51 | 3014.38 | 1052.66 | 1331.61 | 52.85 | 0.83 | 1 | 48.23% | 15.38% | 8.92 |
-| finalTuning | low_resource_touring | 3 | 5.05 | 2334.45 | 2846.44 | 1029.5 | 1220.94 | 56.68 | 0.69 | 0.91 | 56.26% | 26.92% | 8.12 |
-| finalTuning | low_resource_touring | 4 | 4.73 | 2304.7 | 2758.25 | 961.86 | 1170.12 | 56.75 | 0.65 | 0.85 | 57.17% | 30% | 7.95 |
-| finalTuning | low_resource_touring | 5 | 4.63 | 2302.77 | 2718.83 | 976.16 | 1199.02 | 56.86 | 0.66 | 0.88 | 58.27% | 30.38% | 7.92 |
+| control | baseline_touring | 1 | 8.52 | 2809.9 | 3501.72 | 1358.59 | 1587.7 | 48.7 | 1.08 | 1.28 | 20.14% | 1.15% | 9.95 |
+| control | baseline_touring | 2 | 5.98 | 2466.72 | 2974.34 | 1064.03 | 1434.8 | 53.42 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
+| control | baseline_touring | 3 | 5.62 | 2421.51 | 2888.75 | 1031.86 | 1316.58 | 54.62 | 0.78 | 1.08 | 43.04% | 20.38% | 8.87 |
+| control | baseline_touring | 4 | 4.58 | 2144.43 | 2595.54 | 870.66 | 1114.53 | 57.52 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
+| control | baseline_touring | 5 | 4.43 | 2103.37 | 2489.05 | 925.65 | 1264.78 | 57.42 | 0.65 | 0.94 | 51.28% | 30.77% | 8.33 |
+| control | low_resource_touring | 1 | 8.27 | 2776.63 | 3463.55 | 1352.58 | 1526.5 | 49.95 | 1.04 | 1.25 | 20.12% | 5% | 9.68 |
+| control | low_resource_touring | 2 | 2.92 | 1778.18 | 2140.08 | 815.39 | 633.9 | 63.24 | 0.4 | 0.49 | 62.59% | 61.54% | 5.71 |
+| control | low_resource_touring | 3 | 2.48 | 1616.57 | 1939.31 | 726.1 | 574.42 | 64.8 | 0.34 | 0.46 | 66.5% | 66.92% | 5.37 |
+| control | low_resource_touring | 4 | 2.43 | 1603.42 | 1976.02 | 703.33 | 608.14 | 65.43 | 0.34 | 0.45 | 66.61% | 65.77% | 5.5 |
+| control | low_resource_touring | 5 | 2.22 | 1551.79 | 1825.14 | 661.62 | 574.47 | 65.28 | 0.3 | 0.41 | 68.03% | 68.46% | 5.31 |
+| finalTuning | baseline_touring | 1 | 8.52 | 2809.9 | 3501.72 | 1358.59 | 1587.7 | 48.7 | 1.08 | 1.28 | 20.14% | 1.15% | 9.95 |
+| finalTuning | baseline_touring | 2 | 5.98 | 2466.72 | 2974.34 | 1064.03 | 1434.8 | 53.42 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
+| finalTuning | baseline_touring | 3 | 5.62 | 2421.51 | 2888.75 | 1031.86 | 1316.58 | 54.62 | 0.78 | 1.08 | 43.04% | 20.38% | 8.87 |
+| finalTuning | baseline_touring | 4 | 4.58 | 2144.43 | 2595.54 | 870.66 | 1114.53 | 57.52 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
+| finalTuning | baseline_touring | 5 | 4.43 | 2103.37 | 2489.05 | 925.65 | 1264.78 | 57.42 | 0.65 | 0.94 | 51.28% | 30.77% | 8.33 |
+| finalTuning | low_resource_touring | 1 | 8.27 | 2776.63 | 3463.55 | 1352.58 | 1526.5 | 49.95 | 1.04 | 1.25 | 20.12% | 5% | 9.68 |
+| finalTuning | low_resource_touring | 2 | 2.92 | 1778.18 | 2140.08 | 815.39 | 633.9 | 63.24 | 0.4 | 0.49 | 62.59% | 61.54% | 5.71 |
+| finalTuning | low_resource_touring | 3 | 2.48 | 1616.57 | 1939.31 | 726.1 | 574.42 | 64.8 | 0.34 | 0.46 | 66.5% | 66.92% | 5.37 |
+| finalTuning | low_resource_touring | 4 | 2.43 | 1603.42 | 1976.02 | 703.33 | 608.14 | 65.43 | 0.34 | 0.45 | 66.61% | 65.77% | 5.5 |
+| finalTuning | low_resource_touring | 5 | 2.22 | 1551.79 | 1825.14 | 661.62 | 574.47 | 65.28 | 0.3 | 0.41 | 68.03% | 68.46% | 5.31 |
 
-Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":9.73,"famePerDayAdvantagePct":20.12,"harmonyDelta":-5.39,"repairsDelta":0.14,"bankruptcyDeltaPct":-3.46},"low_resource_touring":{"moneyPerDayAdvantagePct":16.7,"famePerDayAdvantagePct":28.25,"harmonyDelta":-6.07,"repairsDelta":0.27,"bankruptcyDeltaPct":-15}}
+Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.68,"harmonyDelta":-4.72,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
 
-Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":9.73,"famePerDayAdvantagePct":20.12,"harmonyDelta":-5.39,"repairsDelta":0.14,"bankruptcyDeltaPct":-3.46},"low_resource_touring":{"moneyPerDayAdvantagePct":16.7,"famePerDayAdvantagePct":28.25,"harmonyDelta":-6.07,"repairsDelta":0.27,"bankruptcyDeltaPct":-15}}
+Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.68,"harmonyDelta":-4.72,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
 
 ### Phase-3C-Ziel (Gap-1-Dominanz)
 
@@ -79,28 +79,28 @@ Target band: **20–25%** money-per-day advantage of Gap 1 over Gap 2. This obje
 
 | Profile | Before | After | Reduction | Within target |
 |---|---:|---:|---:|---|
-| baseline_touring | 9.73% | 9.73% | 0 pp | No |
-| low_resource_touring | 16.7% | 16.7% | 0 pp | No |
+| baseline_touring | 13.91% | 13.91% | 0 pp | No |
+| low_resource_touring | 56.15% | 56.15% | 0 pp | No |
 
 Objective status: **partial**
 
-- baseline_touring money-per-day advantage 9.73% is below the 20-25% target (was 9.73%)
-- low_resource_touring money-per-day advantage 16.7% is below the 20-25% target (was 16.7%)
+- baseline_touring money-per-day advantage 13.91% is below the 20-25% target (was 13.91%)
+- low_resource_touring money-per-day advantage 56.15% is above the 20-25% target (was 56.15%)
 
-Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_touring money-per-day advantage 9.73% is below the 20-25% target (was 9.73%); low_resource_touring money-per-day advantage 16.7% is below the 20-25% target (was 16.7%)). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.
+The two profiles miss the 20-25% target band in OPPOSITE directions (baseline_touring money-per-day advantage 13.91% is below the 20-25% target (was 13.91%); low_resource_touring money-per-day advantage 56.15% is above the 20-25% target (was 56.15%)). No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.
 
 ## Late-Game-Kandidaten
 
 | Candidate | Median Final Money Delta | P90 Final Money Delta | Early Checkpoint Delta | Bankruptcy Delta | Harmony Delta | Pass/Fail |
 |---|---:|---:|---:|---:|---:|---|
 | touring-none | 0% | 0% | 0% | 0 pp | 0 | Pass |
-| touring-demand-5-15-window-3 | -1.97% | -2.23% | 0% | 0 pp | 0 | Pass |
-| touring-demand-7.5-25-window-3 | -2.69% | -1.13% | 0% | 0 pp | 0 | Pass |
-| touring-demand-5-20-window-5 | -2.07% | -2.64% | 0% | 0 pp | 0 | Pass |
-| touring-demand-10-40-after-3-window-3 | -3.9% | -2.23% | 0% | 0 pp | 0 | Pass |
-| touring-demand-10-40-after-3-window-5 | -4.33% | -2.67% | 0% | 0 pp | 0 | Pass |
-| touring-demand-13.5-48-after-3-window-5 | -5.65% | -2.72% | 0% | 0 pp | 0 | Pass |
-| touring-demand-16-55-after-5 | -6% | -2.76% | 0% | 0 pp | 0 | Pass |
+| touring-demand-5-15-window-3 | -1.26% | -1.56% | -0.31% | 0 pp | 0 | Pass |
+| touring-demand-7.5-25-window-3 | -2.87% | -1.59% | -0.52% | 0 pp | 0 | Pass |
+| touring-demand-5-20-window-5 | -1.52% | -1.73% | -0.31% | 0 pp | 0 | Pass |
+| touring-demand-10-40-after-3-window-3 | -2.87% | -2.82% | 0% | 0 pp | 0 | Pass |
+| touring-demand-10-40-after-3-window-5 | -4.69% | -3.56% | 0% | 0 pp | 0 | Pass |
+| touring-demand-13.5-48-after-3-window-5 | -5.65% | -4.27% | 0% | 0 pp | 0 | Pass |
+| touring-demand-16-55-after-5 | -5.74% | -5.43% | 0% | 0 pp | 0 | Pass |
 | touring-stress-1 | 0% | 0% | 0% | 0 pp | 0 | Pass |
 | touring-stress-2 | 0% | 0% | 0% | 0 pp | 0 | Pass |
 | touring-stress-1-recovery-90 | 0% | 0% | 0% | 0 pp | 0 | Pass |
@@ -113,8 +113,8 @@ Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_to
 1. touring-demand-16-55-after-5
 2. touring-demand-13.5-48-after-3-window-5
 3. touring-demand-10-40-after-3-window-5
-4. touring-demand-10-40-after-3-window-3
-5. touring-demand-7.5-25-window-3
+4. touring-demand-7.5-25-window-3
+5. touring-demand-10-40-after-3-window-3
 6. touring-demand-5-20-window-5
 7. touring-demand-5-15-window-3
 8. touring-none
@@ -133,17 +133,17 @@ Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_to
 
 | Scenario | Control KPI Status | Final KPI Status | Control Bankruptcy | Final Bankruptcy | Bankruptcy Delta | Final Money Delta | Fame/Gig Delta | Harmony Delta | Drawdown Delta | Pass/Fail |
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
-| baseline_touring | passed | passed | 0.38% | 0.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| bootstrap_struggle | passed | passed | 10% | 10% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| aggressive_marketing | passed | passed | 1.92% | 1.92% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| scandal_recovery | passed | passed | 5.77% | 5.77% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| festival_push | passed | passed | 5% | 5% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| chaos_tour | passed | passed | 4.62% | 4.62% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| cult_hypergrowth | passed | passed | 1.92% | 1.92% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| no_social_probe | not_evaluated | not_evaluated | 3.46% | 3.46% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| high_controversy_probe | not_evaluated | not_evaluated | 11.92% | 11.92% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| early_game_probe | not_evaluated | not_evaluated | 4.62% | 4.62% | 0 pp | 0 | 0% | 0 | 0 | Pass |
-| mid_game_probe | not_evaluated | not_evaluated | 0.38% | 0.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| baseline_touring | passed | passed | 3.08% | 3.08% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| bootstrap_struggle | passed | passed | 30.38% | 30.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| aggressive_marketing | passed | passed | 10.77% | 10.77% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| scandal_recovery | passed | passed | 25% | 25% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| festival_push | passed | passed | 25.77% | 25.77% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| chaos_tour | passed | passed | 13.46% | 13.46% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| cult_hypergrowth | passed | passed | 10.38% | 10.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| no_social_probe | not_evaluated | not_evaluated | 13.46% | 13.46% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| high_controversy_probe | not_evaluated | not_evaluated | 28.85% | 28.85% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| early_game_probe | not_evaluated | not_evaluated | 12.31% | 12.31% | 0 pp | 0 | 0% | 0 | 0 | Pass |
+| mid_game_probe | not_evaluated | not_evaluated | 2.31% | 2.31% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | late_game_probe | not_evaluated | not_evaluated | 0% | 0% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 
 Final gate: **PASS**. Bootstrap Struggle bankruptcy must remain <= 60%.
