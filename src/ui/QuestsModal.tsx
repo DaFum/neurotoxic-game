@@ -1,6 +1,6 @@
 import { IconClose, IconChevronDown, IconChevronUp } from './shared/Icons'
 import { m, AnimatePresence } from 'motion/react'
-import { ProgressBar } from './shared/index.tsx'
+import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { useTranslation } from 'react-i18next'
 import {
@@ -525,14 +525,16 @@ export const QuestsModal = ({
             <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
               {t('ui:quests.title')}
             </h2>
-            <button
-              type='button'
-              onClick={onClose}
-              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              aria-label={t('ui:quests.closeButton')}
-            >
-              <IconClose />
-            </button>
+            <Tooltip content={t('ui:quests.closeButton')} position='bottom'>
+              <button
+                type='button'
+                onClick={onClose}
+                className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+                aria-label={t('ui:quests.closeButton')}
+              >
+                <IconClose />
+              </button>
+            </Tooltip>
           </div>
 
           {/* Quests List */}
