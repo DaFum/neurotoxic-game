@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T18:01:38.316Z",
+  "generatedAt": "2026-07-28T18:16:59.565Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "9fb33079633cd747446134fd7ab5edaff08ef951",
+    "sourceBaseCommit": "f7b8db4f9d4f5021b4ed89eded4cb06fad14ba33",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "5927ee12be7af4fe6d1d2856bcb3d59a05cb197cd4921932266de1dca0d8d29f",
-    "balanceSourceSha256": "142a39842373dd29a57f5e7708d257128d57310b1ad1928252050e27710ec859",
-    "experimentScriptSha256": "a77f36b396437c721f0f2b03e65198704a41c3f54bb4717d5ab36791362619a9",
+    "simulationScriptSha256": "42271841d8aeaa2d703cc3d9a694347c2c439fb81a772768d3307f926c3db0a4",
+    "balanceSourceSha256": "76abf2c62425cfd1e781a6a5b0c420c6a0eb02cd551af6f71eb5198a7f0e44bf",
+    "experimentScriptSha256": "7887a9c2e73a43e852d0ea97453e4453ed8f53b9ca181b26a63904b2b489ff67",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
@@ -27454,7 +27454,10 @@
     "pairsSkipped": 153,
     "pairsRejectedBySelectionGate": 0,
     "pairsRejectedByCalibrationGate": 0,
-    "selectionOutcome": "fully-validated",
+    "selectionOutcome": "selection-validated-final-validation-failed",
+    "selectedFinalValidationFailures": [
+      "cult_hypergrowth 13.85% > 12%"
+    ],
     "selectedAppliesNoChange": true,
     "note": "Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass."
   },
@@ -27498,13 +27501,14 @@
     },
     "productionHold": {
       "adopted": false,
+      "held": false,
       "heldFor": null,
       "matchesRecommendation": null,
       "reason": null
     }
   },
   "runtime": {
-    "durationMs": 38760,
+    "durationMs": 38622,
     "candidates": 25,
     "totalRuns": 22100
   }

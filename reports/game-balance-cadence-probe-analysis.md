@@ -1,8 +1,8 @@
 # Gig-Kadenz-Phasenvergleich (Phase 5, Schritt 1)
 
-Erzeugt: 2026-07-28T18:02:18.002Z
+Erzeugt: 2026-07-28T18:17:39.527Z
 Runs pro Szenario und Stream: 260 · Streams: calibration, selection, holdout
-Seed-Strategie: `scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)`
+Seed-Strategie: `calibration: scenario-id-plus-run-index; selection: scenario-id#selection-plus-run-index; holdout: scenario-id#holdout-plus-run-index`
 
 ## Frage
 

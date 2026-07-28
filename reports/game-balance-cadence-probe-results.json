@@ -11,7 +11,7 @@
     "selection",
     "holdout"
   ],
-  "seedStrategy": "scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)",
+  "seedStrategy": "calibration: scenario-id-plus-run-index; selection: scenario-id#selection-plus-run-index; holdout: scenario-id#holdout-plus-run-index",
   "conclusion": {
     "phaseExplainsBreach": true,
     "independentConfirmation": {
@@ -2729,18 +2729,18 @@
       ]
     }
   ],
-  "generatedAt": "2026-07-28T18:02:18.002Z",
+  "generatedAt": "2026-07-28T18:17:39.527Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "9fb33079633cd747446134fd7ab5edaff08ef951",
+    "sourceBaseCommit": "f7b8db4f9d4f5021b4ed89eded4cb06fad14ba33",
     "workingTreeDirty": false,
-    "cadenceProbeScriptSha256": "167af49555e1b08a39559f9d44bc80c3548735a69b8f27e4daa02704e725e689",
-    "balanceSourceSha256": "142a39842373dd29a57f5e7708d257128d57310b1ad1928252050e27710ec859",
+    "cadenceProbeScriptSha256": "9308087b7cf8a4b0fbd74dc7b1886efe92678528ceaba201da527c3cd251be47",
+    "balanceSourceSha256": "76abf2c62425cfd1e781a6a5b0c420c6a0eb02cd551af6f71eb5198a7f0e44bf",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
   },
   "runtime": {
-    "durationMs": 19283
+    "durationMs": 20089
   }
 }

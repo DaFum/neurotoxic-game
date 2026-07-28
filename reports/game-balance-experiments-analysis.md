@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 22100 simulation runs in 38760 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 22100 simulation runs in 38622 ms.
 
 ## Kontrollzustand
 
@@ -182,7 +182,7 @@ Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem 
 
 **Riskanter als beabsichtigt:** `cult_hypergrowth`, `aggressive_marketing`, `festival_push`, `scandal_recovery`, `bootstrap_struggle`.
 
-**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig, und die Suche hat jede der 1 erreichten Kombinationen gegen dieses Gate geprüft — keine besteht es. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.
+**Keine Produktionsempfehlung.** Die gewählte Kombination hat das Suchstrom-Gate bestanden und bricht auf dem reservierten `validation`-Strom (cult_hypergrowth 13.85% > 12%). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.
 
 ### Release-Gesamtstatus
 
@@ -202,8 +202,6 @@ Only the selected bootstrap and touring defaults are intended for production.
 
 Recommendation: **no-production-recommendation-final-validation-failed**
 
-> **Nicht ausgeliefert.** `BALANCE_RECOMMENDATION_HOLD` in `src/utils/balanceTuning.ts` hält diese Empfehlung zurück, die Produktionswerte bleiben neutral: null
-
 ## Fazit
 
 Selection is based on paired deltas, distributions, deterministic bootstrap intervals, transition matrices, and explicit side-effect limits.
@@ -216,5 +214,5 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
 | Late-Game-Snowball | nicht verbessert |
 | Gap-1-Dominanz im Zielband | nicht gelöst |
 | Phase 3C Gesamtstatus | partial |
-| Kombinationssuche | fully-validated |
+| Kombinationssuche | selection-validated-final-validation-failed |
 | Produktionskandidat | no-production-recommendation-final-validation-failed |
