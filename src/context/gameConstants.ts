@@ -23,10 +23,10 @@ export const GAME_PHASES = Object.freeze({
 } as const satisfies Record<string, string>)
 
 /**
- * Whitelist of persisted scene values that can be restored from saves.
+ * Whitelist of scene values used for transition validation.
  *
  * @remarks
- * Restricting the loadable scenes prevents players from being loaded into transient states such as minigames or transition screens if the game is interrupted.
+ * Consumed by the scene reducer to validate scene transitions. It contains both stable and transient phases (like minigames) and does not govern save-load protection, as load logic independently forces the scene to the overworld.
  */
 export const ALLOWED_SCENE_VALUES = Object.freeze(
   Object.values(GAME_PHASES) as GamePhase[]
@@ -52,7 +52,7 @@ export const MINIGAME_TYPES = {
  * Allowed pitch drift before amp calibration counts as a miss.
  *
  * @remarks
- * Determines the margin of error in tuning minigames. Values exceeding this threshold break the active combo streak.
+ * Serves as a waveform-display threshold. Exceeding this value alters the waveform color during rendering, but it is not referenced by scoring or combo logic.
  */
 export const AMP_CALIBRATION_TOLERANCE = 50
 
@@ -180,7 +180,7 @@ export const RIVAL_STAY_CHANCE = 0.3
  * Crowd decay multiplier applied after sustaining rival gig pressure.
  *
  * @remarks
- * Drastically accelerates the rate at which hype deteriorates if the player fails to counter the rival band's performance.
+ * Accelerates hype decay when playing a gig at a map node currently occupied by a rival. This multiplier is applied to each miss during the rhythm game.
  */
 export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
 
@@ -188,7 +188,7 @@ export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
  * Maximum sponsorship deal chance penalty inflicted by rival pressure.
  *
  * @remarks
- * Caps the negative impact that a dominant rival can have on the player's negotiation probabilities to prevent softlocks.
+ * Used in brand offer generation to limit the penalty subtracted from offer-ranking scores. It does not act as a cap on actual negotiation success probabilities.
  */
 export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2
 
@@ -196,7 +196,7 @@ export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2
  * Harmony cost for accepting the Neurotoxic pedal tradeoff.
  *
  * @remarks
- * Deducted permanently upon acquisition of the pedal, reflecting the toll taken on band cohesion.
+ * A recurring penalty deducted after every gig as long as the pedal remains in the band's inventory, representing the ongoing toll on cohesion.
  */
 export const NEUROTOXIC_PEDAL_HARMONY_PENALTY = 5
 
@@ -212,7 +212,7 @@ export const NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER = 0.5
  * Conversion factor for translating rival power into a direct negotiation penalty.
  *
  * @remarks
- * Multiplied against the rival's raw power stat to determine the exact percentage deducted from successful sponsorship rolls.
+ * Multiplied against the rival's raw power stat to determine the offer-ranking penalty points, not direct success probability deductions.
  */
 export const RIVAL_POWER_TO_DEAL_CHANCE_FACTOR = 0.02
 
