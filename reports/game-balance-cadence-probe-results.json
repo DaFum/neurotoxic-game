@@ -2729,18 +2729,18 @@
       ]
     }
   ],
-  "generatedAt": "2026-07-28T18:17:39.527Z",
+  "generatedAt": "2026-07-28T21:39:03.580Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "f7b8db4f9d4f5021b4ed89eded4cb06fad14ba33",
+    "sourceBaseCommit": "245b371053a0a24e553061795616c34d91b88817",
     "workingTreeDirty": false,
     "cadenceProbeScriptSha256": "9308087b7cf8a4b0fbd74dc7b1886efe92678528ceaba201da527c3cd251be47",
-    "balanceSourceSha256": "76abf2c62425cfd1e781a6a5b0c420c6a0eb02cd551af6f71eb5198a7f0e44bf",
+    "balanceSourceSha256": "072922fae1065f76005cac5014a23571fb8df0b6a8bbb4571e0d296df7f9d77f",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
   },
   "runtime": {
-    "durationMs": 20089
+    "durationMs": 22667
   }
 }

@@ -1,17 +1,17 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T18:16:59.565Z",
+  "generatedAt": "2026-07-28T21:38:19.701Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "f7b8db4f9d4f5021b4ed89eded4cb06fad14ba33",
+    "sourceBaseCommit": "245b371053a0a24e553061795616c34d91b88817",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "42271841d8aeaa2d703cc3d9a694347c2c439fb81a772768d3307f926c3db0a4",
-    "balanceSourceSha256": "76abf2c62425cfd1e781a6a5b0c420c6a0eb02cd551af6f71eb5198a7f0e44bf",
-    "experimentScriptSha256": "7887a9c2e73a43e852d0ea97453e4453ed8f53b9ca181b26a63904b2b489ff67",
+    "simulationScriptSha256": "65a1668e0a8fb263f508f1901b7edf3e5a86498e0872d2d1591f03954d16651d",
+    "balanceSourceSha256": "072922fae1065f76005cac5014a23571fb8df0b6a8bbb4571e0d296df7f9d77f",
+    "experimentScriptSha256": "47c6fba604aa6b6bb367ef6786822db5b35493f159888732c0ac6d5c773a7e01",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
-    "seedStrategy": "scenario-id-plus-run-index",
+    "seedStrategy": "calibration: scenario-id-plus-run-index; selection: scenario-id#selection-plus-run-index; validation: scenario-id#holdout-plus-run-index",
     "pairingStrategy": "same-scenario-same-run-index-same-seed"
   },
   "controlSnapshot": {
@@ -27466,11 +27466,12 @@
       "bootstrap": "bootstrap-none",
       "touring": "touring-none",
       "impact": 0,
-      "passed": true,
       "calibrationPassed": true,
       "calibrationFailures": [],
-      "selectionGatePassed": true,
-      "selectionGateFailures": []
+      "selectionPassed": true,
+      "selectionFailures": [],
+      "finalValidationPassed": false,
+      "shippable": false
     }
   ],
   "recommendation": {
@@ -27508,7 +27509,7 @@
     }
   },
   "runtime": {
-    "durationMs": 38622,
+    "durationMs": 44570,
     "candidates": 25,
     "totalRuns": 22100
   }

@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 22100 simulation runs in 38622 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 22100 simulation runs in 44570 ms.
 
 ## Kontrollzustand
 
