@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T06:48:04.359Z
+Erstellt am: 2026-07-28T07:04:14.795Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: bd1512f3ce09a7cc922b6eefe1e4c56818c99a1d
-- Working Tree Dirty: Ja
-- Simulationsskript SHA-256: bdf8e15df63689bad29952304615c1545cb7cb7927fd256b94aefb7a42cecb25
+- Basis-Commit: 37733909c537a606589374ce5597fdd0b1edd319
+- Working Tree Dirty: Nein
+- Simulationsskript SHA-256: f759d80542649c61929e3f1e1c1a4caf640328464615470a0176399a091d3d1e
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: 1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1
 - Seed-Strategie: scenario-id-plus-run-index
@@ -371,7 +371,7 @@ Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft u
 
 „Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.
 
-Zwei Spalten tragen kaum Signal und sagen warum: „je < €500“ sättigt bei 100%, weil der Startstand selbst €500 beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die €250-Marke. „Saldo 0“ ist strukturell 0%, weil Bankrott bereits auslöst, wenn die absehbaren Tagespflichten nicht mehr gedeckt sind; ein echter Nullstand ist kein Zustand, den das Spiel erzeugt.
+Zwei Spalten tragen kaum Signal und sagen warum: „je < €500“ sättigt bei 100%, weil der Startstand selbst €500 beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die €250-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.
 
 ## Populationen
 

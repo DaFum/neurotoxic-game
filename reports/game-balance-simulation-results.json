@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T06:48:04.359Z",
+  "generatedAt": "2026-07-28T07:04:14.795Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "bd1512f3ce09a7cc922b6eefe1e4c56818c99a1d",
-    "workingTreeDirty": true,
-    "simulationScriptSha256": "bdf8e15df63689bad29952304615c1545cb7cb7927fd256b94aefb7a42cecb25",
-    "balanceSourceSha256": "f5cd27a248cf96f78d7ebc086142c3758a84611486add944022b9de5c9a1f859",
+    "sourceBaseCommit": "37733909c537a606589374ce5597fdd0b1edd319",
+    "workingTreeDirty": false,
+    "simulationScriptSha256": "f759d80542649c61929e3f1e1c1a4caf640328464615470a0176399a091d3d1e",
+    "balanceSourceSha256": "877e125956349bd5fa7dfe9f5de4bb3784059d40ebb9871f3ee1b720db7ddf2b",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
