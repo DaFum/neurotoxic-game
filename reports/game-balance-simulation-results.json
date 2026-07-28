@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T07:04:14.795Z",
+  "generatedAt": "2026-07-28T07:34:49.519Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "37733909c537a606589374ce5597fdd0b1edd319",
+    "sourceBaseCommit": "828ad3a87ce72f0d479e65434af6608abea31711",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "f759d80542649c61929e3f1e1c1a4caf640328464615470a0176399a091d3d1e",
-    "balanceSourceSha256": "877e125956349bd5fa7dfe9f5de4bb3784059d40ebb9871f3ee1b720db7ddf2b",
+    "simulationScriptSha256": "33bacc743085a06dee9b1f5a927210f55192c02b5b30a5d1500a337e050062ee",
+    "balanceSourceSha256": "e400813d186e098362c7a2b66c94927ea4e627e624883b908fac31bbb53008fc",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
@@ -2246,6 +2246,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 99.62,
+          "firstPurchaseDayMedian": 3,
+          "vanUpgradeReachedPct": 90,
+          "firstVanUpgradeDayMedian": 4,
+          "hqUpgradeReachedPct": 84.62,
+          "firstHqUpgradeDayMedian": 6.5,
+          "avgDistinctItemsPurchased": 3.43,
+          "catalogSharePurchasedPct": 5.12,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 19923.23,
+          "avgResidualMoneyAfterPurchase": 14731.55,
+          "avgMissedPurchases": 0.12,
+          "avgLiquidityDeferrals": 0.15,
+          "avgUnaffordableAtMidCheckpoint": 0.19,
+          "avgAffordableAtMidCheckpoint": 63.3,
+          "avgUnaffordableAtEnd": 0,
+          "avgAffordableAtEnd": 61.79
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 4495,
+          "gigNetPerGigDay": 4536,
+          "gigsPerCalendarDay": 0.991,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4536,
+          "travelCostShareOfGigNetPct": 1.91,
+          "avgTravelCostPerGigDay": 87,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -3145,6 +3177,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 68.85,
+          "firstPurchaseDayMedian": 7,
+          "vanUpgradeReachedPct": 49.23,
+          "firstVanUpgradeDayMedian": 9,
+          "hqUpgradeReachedPct": 10.77,
+          "firstHqUpgradeDayMedian": 9,
+          "avgDistinctItemsPurchased": 1.12,
+          "catalogSharePurchasedPct": 1.68,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 3801.79,
+          "avgResidualMoneyAfterPurchase": 3631.47,
+          "avgMissedPurchases": 0.39,
+          "avgLiquidityDeferrals": 1,
+          "avgUnaffordableAtMidCheckpoint": 7.03,
+          "avgAffordableAtMidCheckpoint": 56.97,
+          "avgUnaffordableAtEnd": 9.87,
+          "avgAffordableAtEnd": 53.5
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 557,
+          "gigNetPerGigDay": 2915,
+          "gigsPerCalendarDay": 0.191,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 2915,
+          "travelCostShareOfGigNetPct": 1.61,
+          "avgTravelCostPerGigDay": 47,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -3912,6 +3976,38 @@
             "upperPct": 2.15,
             "method": "wilson"
           }
+        },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 97.31,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 82.69,
+          "firstVanUpgradeDayMedian": 5,
+          "hqUpgradeReachedPct": 46.15,
+          "firstHqUpgradeDayMedian": 8,
+          "avgDistinctItemsPurchased": 2.55,
+          "catalogSharePurchasedPct": 3.81,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 12510.71,
+          "avgResidualMoneyAfterPurchase": 9851.31,
+          "avgMissedPurchases": 0.23,
+          "avgLiquidityDeferrals": 0.39,
+          "avgUnaffordableAtMidCheckpoint": 1.62,
+          "avgAffordableAtMidCheckpoint": 62.13,
+          "avgUnaffordableAtEnd": 0.2,
+          "avgAffordableAtEnd": 62.32
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 2439,
+          "gigNetPerGigDay": 4885,
+          "gigsPerCalendarDay": 0.499,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4885,
+          "travelCostShareOfGigNetPct": 1.52,
+          "avgTravelCostPerGigDay": 74,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
         },
         "financialStress": {
           "thresholds": {
@@ -4729,6 +4825,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 90.77,
+          "firstPurchaseDayMedian": 7,
+          "vanUpgradeReachedPct": 72.69,
+          "firstVanUpgradeDayMedian": 7,
+          "hqUpgradeReachedPct": 29.62,
+          "firstHqUpgradeDayMedian": 8,
+          "avgDistinctItemsPurchased": 1.92,
+          "catalogSharePurchasedPct": 2.87,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 5679.71,
+          "avgResidualMoneyAfterPurchase": 5367.89,
+          "avgMissedPurchases": 0.36,
+          "avgLiquidityDeferrals": 0.75,
+          "avgUnaffordableAtMidCheckpoint": 6.66,
+          "avgAffordableAtMidCheckpoint": 57.21,
+          "avgUnaffordableAtEnd": 1.95,
+          "avgAffordableAtEnd": 61.01
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 1139,
+          "gigNetPerGigDay": 3805,
+          "gigsPerCalendarDay": 0.299,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 3805,
+          "travelCostShareOfGigNetPct": 1.49,
+          "avgTravelCostPerGigDay": 57,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -5514,6 +5642,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 96.54,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 85,
+          "firstVanUpgradeDayMedian": 7,
+          "hqUpgradeReachedPct": 28.46,
+          "firstHqUpgradeDayMedian": 8,
+          "avgDistinctItemsPurchased": 2.18,
+          "catalogSharePurchasedPct": 3.25,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 6697.21,
+          "avgResidualMoneyAfterPurchase": 6013.96,
+          "avgMissedPurchases": 0.32,
+          "avgLiquidityDeferrals": 0.58,
+          "avgUnaffordableAtMidCheckpoint": 5.69,
+          "avgAffordableAtMidCheckpoint": 58.2,
+          "avgUnaffordableAtEnd": 1.38,
+          "avgAffordableAtEnd": 61.44
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 1327,
+          "gigNetPerGigDay": 4434,
+          "gigsPerCalendarDay": 0.299,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4434,
+          "travelCostShareOfGigNetPct": 1.33,
+          "avgTravelCostPerGigDay": 59,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -6296,6 +6456,38 @@
             "upperPct": 2.15,
             "method": "wilson"
           }
+        },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 98.08,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 86.54,
+          "firstVanUpgradeDayMedian": 5,
+          "hqUpgradeReachedPct": 39.23,
+          "firstHqUpgradeDayMedian": 8,
+          "avgDistinctItemsPurchased": 2.52,
+          "catalogSharePurchasedPct": 3.76,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 10006.29,
+          "avgResidualMoneyAfterPurchase": 8242.25,
+          "avgMissedPurchases": 0.21,
+          "avgLiquidityDeferrals": 0.44,
+          "avgUnaffordableAtMidCheckpoint": 1.96,
+          "avgAffordableAtMidCheckpoint": 61.81,
+          "avgUnaffordableAtEnd": 0.44,
+          "avgAffordableAtEnd": 62.15
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 2117,
+          "gigNetPerGigDay": 4271,
+          "gigsPerCalendarDay": 0.496,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4271,
+          "travelCostShareOfGigNetPct": 1.67,
+          "avgTravelCostPerGigDay": 71,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
         },
         "financialStress": {
           "thresholds": {
@@ -7098,6 +7290,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 98.08,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 88.08,
+          "firstVanUpgradeDayMedian": 5,
+          "hqUpgradeReachedPct": 45.77,
+          "firstHqUpgradeDayMedian": 8,
+          "avgDistinctItemsPurchased": 2.65,
+          "catalogSharePurchasedPct": 3.96,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 11741.1,
+          "avgResidualMoneyAfterPurchase": 9278.07,
+          "avgMissedPurchases": 0.25,
+          "avgLiquidityDeferrals": 0.37,
+          "avgUnaffordableAtMidCheckpoint": 1.6,
+          "avgAffordableAtMidCheckpoint": 62.14,
+          "avgUnaffordableAtEnd": 0.21,
+          "avgAffordableAtEnd": 62.29
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 2533,
+          "gigNetPerGigDay": 5074,
+          "gigsPerCalendarDay": 0.499,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 5074,
+          "travelCostShareOfGigNetPct": 1.47,
+          "avgTravelCostPerGigDay": 74,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -7812,6 +8036,38 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 96.15,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 84.62,
+          "firstVanUpgradeDayMedian": 6,
+          "hqUpgradeReachedPct": 33.08,
+          "firstHqUpgradeDayMedian": 7,
+          "avgDistinctItemsPurchased": 2.51,
+          "catalogSharePurchasedPct": 3.74,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 9665.1,
+          "avgResidualMoneyAfterPurchase": 7989.37,
+          "avgMissedPurchases": 0.21,
+          "avgLiquidityDeferrals": 0.39,
+          "avgUnaffordableAtMidCheckpoint": 1.9,
+          "avgAffordableAtMidCheckpoint": 61.85,
+          "avgUnaffordableAtEnd": 0.23,
+          "avgAffordableAtEnd": 62.38
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 2047,
+          "gigNetPerGigDay": 4095,
+          "gigsPerCalendarDay": 0.5,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4095,
+          "travelCostShareOfGigNetPct": 1.72,
+          "avgTravelCostPerGigDay": 71,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
         },
         "financialStress": {
           "thresholds": {
@@ -8578,6 +8834,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 95,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 86.54,
+          "firstVanUpgradeDayMedian": 6,
+          "hqUpgradeReachedPct": 26.54,
+          "firstHqUpgradeDayMedian": 7,
+          "avgDistinctItemsPurchased": 2.28,
+          "catalogSharePurchasedPct": 3.4,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 6929.22,
+          "avgResidualMoneyAfterPurchase": 6167.65,
+          "avgMissedPurchases": 0.22,
+          "avgLiquidityDeferrals": 0.6,
+          "avgUnaffordableAtMidCheckpoint": 2.09,
+          "avgAffordableAtMidCheckpoint": 61.79,
+          "avgUnaffordableAtEnd": 0.93,
+          "avgAffordableAtEnd": 61.84
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 1531,
+          "gigNetPerGigDay": 3071,
+          "gigsPerCalendarDay": 0.498,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 3071,
+          "travelCostShareOfGigNetPct": 2.1,
+          "avgTravelCostPerGigDay": 65,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -9271,6 +9559,38 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 98.85,
+          "firstPurchaseDayMedian": 5,
+          "vanUpgradeReachedPct": 86.15,
+          "firstVanUpgradeDayMedian": 6,
+          "hqUpgradeReachedPct": 36.54,
+          "firstHqUpgradeDayMedian": 6,
+          "avgDistinctItemsPurchased": 2.59,
+          "catalogSharePurchasedPct": 3.87,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 9111.16,
+          "avgResidualMoneyAfterPurchase": 8156.25,
+          "avgMissedPurchases": 0.2,
+          "avgLiquidityDeferrals": 0.39,
+          "avgUnaffordableAtMidCheckpoint": 1.85,
+          "avgAffordableAtMidCheckpoint": 61.91,
+          "avgUnaffordableAtEnd": 0.27,
+          "avgAffordableAtEnd": 62.3
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 1980,
+          "gigNetPerGigDay": 3965,
+          "gigsPerCalendarDay": 0.499,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 3965,
+          "travelCostShareOfGigNetPct": 1.79,
+          "avgTravelCostPerGigDay": 71,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
         },
         "financialStress": {
           "thresholds": {
@@ -9967,6 +10287,38 @@
             "method": "wilson"
           }
         },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 98.08,
+          "firstPurchaseDayMedian": 3,
+          "vanUpgradeReachedPct": 89.62,
+          "firstVanUpgradeDayMedian": 5,
+          "hqUpgradeReachedPct": 43.08,
+          "firstHqUpgradeDayMedian": 6,
+          "avgDistinctItemsPurchased": 3.03,
+          "catalogSharePurchasedPct": 4.53,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 9000.21,
+          "avgResidualMoneyAfterPurchase": 7650.36,
+          "avgMissedPurchases": 0.62,
+          "avgLiquidityDeferrals": 0,
+          "avgUnaffordableAtMidCheckpoint": 1.6,
+          "avgAffordableAtMidCheckpoint": 61.87,
+          "avgUnaffordableAtEnd": 0.12,
+          "avgAffordableAtEnd": 62.16
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 2226,
+          "gigNetPerGigDay": 4460,
+          "gigsPerCalendarDay": 0.499,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 4460,
+          "travelCostShareOfGigNetPct": 1.75,
+          "avgTravelCostPerGigDay": 78,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
+        },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
@@ -10660,6 +11012,38 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "purchasePaths": {
+          "catalogSize": 67,
+          "runsWithAnyPurchasePct": 100,
+          "firstPurchaseDayMedian": 3,
+          "vanUpgradeReachedPct": 91.15,
+          "firstVanUpgradeDayMedian": 3,
+          "hqUpgradeReachedPct": 90,
+          "firstHqUpgradeDayMedian": 5,
+          "avgDistinctItemsPurchased": 3.81,
+          "catalogSharePurchasedPct": 5.69,
+          "modalFirstPurchaseCategory": "VAN",
+          "avgMoneyBeforePurchase": 22808.36,
+          "avgResidualMoneyAfterPurchase": 17737.69,
+          "avgMissedPurchases": 0.28,
+          "avgLiquidityDeferrals": 0,
+          "avgUnaffordableAtMidCheckpoint": 0.03,
+          "avgAffordableAtMidCheckpoint": 63.16,
+          "avgUnaffordableAtEnd": 0,
+          "avgAffordableAtEnd": 61.46
+        },
+        "gigEconomics": {
+          "gigNetPerCalendarDay": 5000,
+          "gigNetPerGigDay": 5021,
+          "gigsPerCalendarDay": 0.996,
+          "avgRestDays": 0,
+          "restDaySharePct": 0,
+          "foregoneGigNetPerRestDayUpperBound": 5021,
+          "travelCostShareOfGigNetPct": 1.87,
+          "avgTravelCostPerGigDay": 94,
+          "catalogItemsUnderOneGigNetPct": 95.35,
+          "moneyPricedCatalogSize": 43
         },
         "financialStress": {
           "thresholds": {

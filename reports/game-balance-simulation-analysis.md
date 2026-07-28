@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T07:04:14.795Z
+Erstellt am: 2026-07-28T07:34:49.519Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: 37733909c537a606589374ce5597fdd0b1edd319
+- Basis-Commit: 828ad3a87ce72f0d479e65434af6608abea31711
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: f759d80542649c61929e3f1e1c1a4caf640328464615470a0176399a091d3d1e
+- Simulationsskript SHA-256: 33bacc743085a06dee9b1f5a927210f55192c02b5b30a5d1500a337e050062ee
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: 1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1
 - Seed-Strategie: scenario-id-plus-run-index
@@ -372,6 +372,50 @@ Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft u
 „Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.
 
 Zwei Spalten tragen kaum Signal und sagen warum: „je < €500“ sättigt bei 100%, weil der Startstand selbst €500 beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die €250-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.
+
+## Kaufpfade und Progression
+
+Am Ende genug Geld zu besitzen ist nicht dasselbe wie während der Tour sinnvoll kaufen zu können. Das Fame-Shop-Audit beantwortet nur die erste Frage; hier steht, *wann* gekauft wird, was erreichbar bleibt und was am Geld scheitert. Katalogumfang: 67 Artikel.
+
+| Szenario | 1. Kauf (Median Tag) | Van erreicht | Van (Median Tag) | HQ erreicht | HQ (Median Tag) | Ø Artikel | Kataloganteil | Erster Kauf typisch | Ø Geld vor Kauf | Ø Restliquidität | Ø verpasste Käufe | Ø Liquiditätsvorbehalt | Unbezahlbar Tag 5 | Bezahlbar Tag 5 |
+|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|
+| Baseline Touring | 3 | 90% | 4 | 84.62% | 6.5 | 3.43 | 5.12% | VAN | €19.923,23 | €14.731,55 | 0.12 | 0.15 | 0.19 | 63.3 |
+| Bootstrap Struggle | 7 | 49.23% | 9 | 10.77% | 9 | 1.12 | 1.68% | VAN | €3.801,79 | €3.631,47 | 0.39 | 1 | 7.03 | 56.97 |
+| Aggressive Marketing | 5 | 82.69% | 5 | 46.15% | 8 | 2.55 | 3.81% | VAN | €12.510,71 | €9.851,31 | 0.23 | 0.39 | 1.62 | 62.13 |
+| Scandal Recovery | 7 | 72.69% | 7 | 29.62% | 8 | 1.92 | 2.87% | VAN | €5.679,71 | €5.367,89 | 0.36 | 0.75 | 6.66 | 57.21 |
+| Festival Push | 5 | 85% | 7 | 28.46% | 8 | 2.18 | 3.25% | VAN | €6.697,21 | €6.013,96 | 0.32 | 0.58 | 5.69 | 58.2 |
+| Chaos Tour | 5 | 86.54% | 5 | 39.23% | 8 | 2.52 | 3.76% | VAN | €10.006,29 | €8.242,25 | 0.21 | 0.44 | 1.96 | 61.81 |
+| Cult Hypergrowth | 5 | 88.08% | 5 | 45.77% | 8 | 2.65 | 3.96% | VAN | €11.741,1 | €9.278,07 | 0.25 | 0.37 | 1.6 | 62.14 |
+| No Social (Fame 0-50) | 5 | 84.62% | 6 | 33.08% | 7 | 2.51 | 3.74% | VAN | €9.665,1 | €7.989,37 | 0.21 | 0.39 | 1.9 | 61.85 |
+| High Controversy | 5 | 86.54% | 6 | 26.54% | 7 | 2.28 | 3.4% | VAN | €6.929,22 | €6.167,65 | 0.22 | 0.6 | 2.09 | 61.79 |
+| Early Game Probe (Fame 0–50) | 5 | 86.15% | 6 | 36.54% | 6 | 2.59 | 3.87% | VAN | €9.111,16 | €8.156,25 | 0.2 | 0.39 | 1.85 | 61.91 |
+| Mid Game Probe (Fame 60–150) | 3 | 89.62% | 5 | 43.08% | 6 | 3.03 | 4.53% | VAN | €9.000,21 | €7.650,36 | 0.62 | 0 | 1.6 | 61.87 |
+| Late Game Probe (Fame 175+) | 3 | 91.15% | 3 | 90% | 5 | 3.81 | 5.69% | VAN | €22.808,36 | €17.737,69 | 0.28 | 0 | 0.03 | 63.16 |
+
+„Verpasste Käufe“ sind Artikel, die der simulierte Käufer wollte und nicht bezahlen konnte (`insufficient_funds`). „Liquiditätsvorbehalt“ zählt getrennt die Fälle, in denen derselbe Käufer wegen seiner eigenen Reserve-Heuristik unter €900 nicht gekauft hat — das kann Artikel blockieren, die bezahlbar gewesen wären. Beide Zahlen beschreiben das Entscheidungsmodell der Simulation, nicht das Verhalten echter Spieler; Kaufreihenfolge und Kaufanteil sind entsprechend Heuristik-Artefakte und keine Designbefunde.
+
+## Gig-Frequenz, Reisekosten und Amortisation
+
+Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler oder eine beabsichtigte Belohnung für aktiveres Spielen ist, wird hier gemessen und nicht entschieden.
+
+| Szenario | Gig-Netto/Kalendertag | Gig-Netto/Gig | Gigs/Kalendertag | Ø Ruhetage | Ruhetaganteil | Reisekosten je Gig | Reisekostenanteil am Netto | Katalog < 1 Gig |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| Baseline Touring | €4.495 | €4.536 | 0.991 | 0 | 0% | €87 | 1.91% | 95.35% |
+| Bootstrap Struggle | €557 | €2.915 | 0.191 | 0 | 0% | €47 | 1.61% | 95.35% |
+| Aggressive Marketing | €2.439 | €4.885 | 0.499 | 0 | 0% | €74 | 1.52% | 95.35% |
+| Scandal Recovery | €1.139 | €3.805 | 0.299 | 0 | 0% | €57 | 1.49% | 95.35% |
+| Festival Push | €1.327 | €4.434 | 0.299 | 0 | 0% | €59 | 1.33% | 95.35% |
+| Chaos Tour | €2.117 | €4.271 | 0.496 | 0 | 0% | €71 | 1.67% | 95.35% |
+| Cult Hypergrowth | €2.533 | €5.074 | 0.499 | 0 | 0% | €74 | 1.47% | 95.35% |
+| No Social (Fame 0-50) | €2.047 | €4.095 | 0.5 | 0 | 0% | €71 | 1.72% | 95.35% |
+| High Controversy | €1.531 | €3.071 | 0.498 | 0 | 0% | €65 | 2.1% | 95.35% |
+| Early Game Probe (Fame 0–50) | €1.980 | €3.965 | 0.499 | 0 | 0% | €71 | 1.79% | 95.35% |
+| Mid Game Probe (Fame 60–150) | €2.226 | €4.460 | 0.499 | 0 | 0% | €78 | 1.75% | 95.35% |
+| Late Game Probe (Fame 175+) | €5.000 | €5.021 | 0.996 | 0 | 0% | €94 | 1.87% | 95.35% |
+
+„Katalog < 1 Gig“ ist der Anteil der 43 geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.
+
+**Ruhetage sind in allen Szenarien 0, und das ist selbst ein Befund.** Der Ruhe-Auslöser des Modells verlangt Harmony unter 30 oder ein Bandmitglied unter 30 Stamina/Mood; in keinem der simulierten Runs tritt dieser Zustand ein, weshalb auch keine Klinikbesuche stattfinden. Die Opportunitätskosten von Pausen sind damit in diesem Modell nicht messbar — nicht weil sie null wären, sondern weil dichte Touren keinen Verschleißdruck erzeugen, der eine Pause erzwingen würde. `foregoneGigNetPerRestDayUpperBound` steht als Obergrenze im JSON, entspricht bei null Ruhetagen aber genau dem Gig-Netto und ist deshalb hier nicht als Spalte geführt.
 
 ## Populationen
 
