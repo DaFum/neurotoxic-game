@@ -295,10 +295,11 @@ export const calculateAppliedDelta = (
     // Inventory
     if (delta.band.inventory) {
       applied.band.inventory = {}
-      // Optimization: using Object.keys avoids prototype chain traversal and Object.hasOwn checks
-      const inventoryKeys = Object.keys(delta.band.inventory)
-      for (let i = 0; i < inventoryKeys.length; i++) {
-        const itemId = inventoryKeys[i]
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with a for...in loop.
+      // Why: Eliminates an intermediate array allocation for the inventory keys.
+      // Impact: Reduces GC pressure during high-frequency delta calculation.
+      for (const itemId in delta.band.inventory) {
+        if (!Object.hasOwn(delta.band.inventory, itemId)) continue
         if (!itemId) continue
         if (isForbiddenKey(itemId)) continue
 
@@ -545,9 +546,11 @@ export const applyEventDelta = (
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
-      const statKeys = Object.keys(delta.player.stats)
-      for (let i = 0; i < statKeys.length; i++) {
-        const key = statKeys[i]
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with a for...in loop.
+      // Why: Eliminates an intermediate array allocation for the stats keys.
+      // Impact: Reduces GC pressure during high-frequency delta application.
+      for (const key in delta.player.stats) {
+        if (!Object.hasOwn(delta.player.stats, key)) continue
         if (!key) continue
         if (isForbiddenKey(key)) continue
 
@@ -741,9 +744,11 @@ export const applyEventDelta = (
 
           if (newRelationships) {
             let relationshipsActuallyChanged = false
-            const newRelKeys = Object.keys(newRelationships)
-            for (let k = 0; k < newRelKeys.length; k++) {
-              const key = newRelKeys[k]
+            // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with a for...in loop.
+            // Why: Eliminates an intermediate array allocation for the relationship keys.
+            // Impact: Reduces GC pressure during relationship updates.
+            for (const key in newRelationships) {
+              if (!Object.hasOwn(newRelationships, key)) continue
               if (!key) continue
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
@@ -797,9 +802,11 @@ export const applyEventDelta = (
 
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
-      const bandInventoryKeys = Object.keys(delta.band.inventory)
-      for (let i = 0; i < bandInventoryKeys.length; i++) {
-        const item = bandInventoryKeys[i]
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with a for...in loop.
+      // Why: Eliminates an intermediate array allocation for the inventory keys.
+      // Impact: Reduces GC pressure during high-frequency delta application.
+      for (const item in delta.band.inventory) {
+        if (!Object.hasOwn(delta.band.inventory, item)) continue
         if (!item) continue
         if (isForbiddenKey(item)) continue
         const val = delta.band.inventory[item]
@@ -858,9 +865,11 @@ export const applyEventDelta = (
 
   if (delta.social) {
     const nextSocial = { ...nextState.social }
-    const socialKeys = Object.keys(delta.social)
-    for (let i = 0; i < socialKeys.length; i++) {
-      const key = socialKeys[i]
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with a for...in loop.
+    // Why: Eliminates an intermediate array allocation for the social keys.
+    // Impact: Reduces GC pressure during high-frequency delta application.
+    for (const key in delta.social) {
+      if (!Object.hasOwn(delta.social, key)) continue
       if (!key) continue
       if (isForbiddenKey(key)) continue
       const value = delta.social[key]

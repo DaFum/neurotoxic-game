@@ -188,3 +188,8 @@
 
 **Learning:** `Object.values(obj)` allocates an array on every invocation. If used inside high-frequency ticking operations (like the daily game tick `processLiabilityTick`), this results in constant intermediate array allocations which causes cumulative Garbage Collection pressure.
 **Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value.
+
+## 2024-11-20 - Reducing Object.keys on Event Deltas
+
+**Learning:** `Object.keys()` allocates an array on every invocation. When used inside high-frequency event delta application routines (`calculateAppliedDelta` and `applyEventDelta` in `src/utils/gameState/delta.ts`), this results in constant intermediate array allocations for properties like `inventory`, `stats`, `relationships`, and `social`, causing cumulative Garbage Collection pressure on hot paths.
+**Action:** Replace `Object.keys(obj)` with `for...in` loops in hot path delta calculation and application routines to avoid allocating temporary arrays. Always include `if (!Object.hasOwn(obj, key)) continue` to safeguard against prototype traversal.
