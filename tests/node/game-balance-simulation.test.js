@@ -19,11 +19,13 @@ import {
   buildExecutionCoverage,
   buildFeatureInventory,
   calculateDrawdownPct,
+  createScenarioSeed,
   classifyBankruptcyRisk,
   describeCorridorConfidence,
   evaluateScenarioRiskStatus,
   reconcileFameLedger,
   runSingleSimulation,
+  summarizeCatalogAffordability,
   summarizeScenario
 } from '../../scripts/game-balance-simulation.mjs'
 
@@ -507,8 +509,8 @@ test('buildDesignRiskReview reports an absent holdout instead of assuming agreem
 
 test('financial stress profile measures liquidity pressure from a true running minimum', () => {
   const runs = [
-    runSingleSimulation(SCENARIOS[1], 'stress-seed-a'),
-    runSingleSimulation(SCENARIOS[1], 'stress-seed-b')
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('stress', 0)),
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('stress', 1))
   ]
   const stress = summarizeScenario(runs).financialStress
 
@@ -578,5 +580,302 @@ test('committed report carries a non-blocking design risk review', async () => {
     scenarios.map(scenario => scenario.id).sort(),
     Object.keys(RISK_TARGETS).sort(),
     'Every configured corridor must be evaluated in the committed report'
+  )
+})
+
+// ── Purchase paths and gig economics (Phase 4D / 4E) ────────────────────────
+
+test('catalogue affordability separates reachable items from unaffordable ones', () => {
+  const state = createInitialState()
+
+  const broke = summarizeCatalogAffordability({
+    ...state,
+    player: { ...state.player, money: 0, fame: 0 }
+  })
+  const rich = summarizeCatalogAffordability({
+    ...state,
+    player: { ...state.player, money: 10_000_000, fame: 10_000_000 }
+  })
+
+  assert.ok(broke.unaffordable > 0, 'A broke player must see blocked items')
+  assert.equal(broke.affordable, 0, 'A broke player can afford nothing')
+  assert.ok(rich.affordable > 0)
+  assert.equal(rich.unaffordable, 0, 'Money is never the blocker when rich')
+  // Owned and effect-less items are in neither bucket, so the two counts do not
+  // have to sum to the catalogue size — but neither may exceed it.
+  assert.ok(rich.affordable >= broke.affordable)
+})
+
+test('purchase log records timing, cost and the balance on both sides of a buy', () => {
+  const run = runSingleSimulation(
+    SCENARIOS[0],
+    createScenarioSeed('purchase-path', 0)
+  )
+
+  assert.ok(Array.isArray(run.purchaseLog))
+  assert.ok(Array.isArray(run.missedPurchases))
+  assert.ok(Array.isArray(run.liquidityDeferrals))
+  assert.ok(run.purchaseLog.length > 0, 'Baseline touring must buy something')
+
+  for (const entry of run.purchaseLog) {
+    assert.ok(
+      Number.isInteger(entry.day) &&
+        entry.day >= 1 &&
+        entry.day <= run.daysSurvived,
+      'Every purchase must be dated inside the run'
+    )
+    assert.ok(Number.isFinite(entry.cost) && entry.cost >= 0)
+    assert.ok(['money', 'fame'].includes(entry.currency))
+    if (entry.currency === 'money') {
+      // The recorded pair must bracket the cost, otherwise "remaining
+      // liquidity after a purchase" is measuring the wrong moment.
+      assert.ok(entry.moneyAfter <= entry.moneyBefore)
+      assert.equal(entry.fameBefore, entry.fameAfter)
+    } else {
+      assert.ok(entry.fameAfter <= entry.fameBefore)
+    }
+  }
+
+  for (const entry of run.missedPurchases) {
+    assert.ok(Number.isInteger(entry.day))
+    assert.ok(['money', 'fame'].includes(entry.currency))
+  }
+
+  assert.ok(run.affordabilityAtEnd)
+  assert.ok(Number.isInteger(run.affordabilityAtEnd.affordable))
+  assert.ok(Number.isInteger(run.affordabilityAtEnd.unaffordable))
+})
+
+// A fully specified run with no purchases and no gigs. Aggregation arithmetic is
+// tested against these rather than against live simulations: a two-run cohort
+// happens to buy only fame-priced items and a sparse-gig scenario can go
+// bankrupt before its first gig, which makes live cohorts a poor probe for
+// "does the maths divide by the right thing".
+const syntheticRun = (overrides = {}) => ({
+  bankrupt: false,
+  daysSurvived: 10,
+  finalMoney: 0,
+  finalFame: 0,
+  finalHarmony: 50,
+  finalControversy: 0,
+  gigsPlayed: 0,
+  totalGigNet: 0,
+  totalTravelCostGigs: 0,
+  totalHitWindowSum: 0,
+  totalMissesSum: 0,
+  totalPerfScoreSum: 0,
+  gigScoreLow: 0,
+  gigScoreMid: 0,
+  gigScoreHigh: 0,
+  gigCapHits: 0,
+  peakMoney: 0,
+  lowestMoney: 0,
+  lowestMoneyObserved: 0,
+  daysBelowTightLiquidity: 10,
+  daysBelowCriticalLiquidity: 10,
+  emergencyGrantUsed: false,
+  maxPeakToTroughDrop: 0,
+  eventsApplied: 0,
+  gigEvents: 0,
+  startingFame: 0,
+  travelSpend: 0,
+  repairSpend: 0,
+  refuelSpend: 0,
+  clinicSpend: 0,
+  restStops: 0,
+  purchaseLog: [],
+  missedPurchases: [],
+  liquidityDeferrals: [],
+  affordabilityAtMidCheckpoint: null,
+  affordabilityAtEnd: { affordable: 0, unaffordable: 0 },
+  fameAccounting: {
+    earned: 0,
+    spentGross: 0,
+    refunded: 0,
+    spentNet: 0,
+    lost: 0,
+    clampAdjustment: 0
+  },
+  timeline: [],
+  ...overrides
+})
+
+test('purchase path aggregation reports timing, reachability and residual liquidity', () => {
+  const paths = summarizeScenario([
+    syntheticRun({
+      purchaseLog: [
+        {
+          day: 3,
+          id: 'van_a',
+          category: 'VAN',
+          currency: 'money',
+          cost: 900,
+          moneyBefore: 2000,
+          moneyAfter: 1100,
+          fameBefore: 0,
+          fameAfter: 0
+        },
+        {
+          day: 6,
+          id: 'hq_a',
+          category: 'HQ',
+          currency: 'money',
+          cost: 500,
+          moneyBefore: 1500,
+          moneyAfter: 1000,
+          fameBefore: 0,
+          fameAfter: 0
+        }
+      ],
+      missedPurchases: [
+        { day: 7, id: 'gear_a', category: 'GEAR', currency: 'money' }
+      ],
+      liquidityDeferrals: [{ day: 8, id: 'gear_b', category: 'GEAR' }],
+      affordabilityAtMidCheckpoint: { affordable: 40, unaffordable: 5 },
+      affordabilityAtEnd: { affordable: 50, unaffordable: 2 }
+    }),
+    // A second run that only reaches the van, so the HQ timing must be the
+    // median over reaching runs rather than over the whole cohort.
+    syntheticRun({
+      purchaseLog: [
+        {
+          day: 5,
+          id: 'van_a',
+          category: 'VAN',
+          currency: 'fame',
+          cost: 100,
+          moneyBefore: 800,
+          moneyAfter: 800,
+          fameBefore: 300,
+          fameAfter: 200
+        }
+      ],
+      affordabilityAtMidCheckpoint: { affordable: 30, unaffordable: 15 },
+      affordabilityAtEnd: { affordable: 45, unaffordable: 7 }
+    })
+  ]).purchasePaths
+
+  assert.equal(paths.runsWithAnyPurchasePct, 100)
+  assert.equal(paths.firstPurchaseDayMedian, 4) // median of days 3 and 5
+  assert.equal(paths.vanUpgradeReachedPct, 100)
+  assert.equal(paths.firstVanUpgradeDayMedian, 4)
+  assert.equal(paths.hqUpgradeReachedPct, 50)
+  assert.equal(
+    paths.firstHqUpgradeDayMedian,
+    6,
+    'Median over reaching runs only'
+  )
+  assert.equal(paths.avgDistinctItemsPurchased, 1.5)
+  assert.equal(paths.modalFirstPurchaseCategory, 'VAN')
+  // Only money-priced purchases may enter the money averages; folding a
+  // fame purchase in would report an unchanged balance as spent liquidity.
+  assert.equal(paths.avgMoneyBeforePurchase, 1750)
+  assert.equal(paths.avgResidualMoneyAfterPurchase, 1050)
+  assert.equal(paths.avgMissedPurchases, 0.5)
+  assert.equal(paths.avgLiquidityDeferrals, 0.5)
+  assert.equal(paths.avgUnaffordableAtMidCheckpoint, 10)
+  assert.equal(paths.avgUnaffordableAtEnd, 4.5)
+})
+
+test('a scenario that never purchases reports null timings instead of zero', () => {
+  // Zero would read as "bought on day 0"; null is the honest answer for a
+  // cohort with no purchase at all.
+  const paths = summarizeScenario([
+    syntheticRun({ affordabilityAtEnd: { affordable: 0, unaffordable: 12 } })
+  ]).purchasePaths
+
+  assert.equal(paths.firstPurchaseDayMedian, null)
+  assert.equal(paths.firstVanUpgradeDayMedian, null)
+  assert.equal(paths.firstHqUpgradeDayMedian, null)
+  assert.equal(paths.runsWithAnyPurchasePct, 0)
+  assert.equal(paths.modalFirstPurchaseCategory, null)
+  assert.equal(paths.avgMoneyBeforePurchase, null)
+  assert.equal(paths.avgUnaffordableAtMidCheckpoint, null)
+  assert.equal(paths.avgUnaffordableAtEnd, 12)
+})
+
+test('gig economics separates yield per calendar day from yield per gig', () => {
+  const economics = summarizeScenario([
+    syntheticRun({
+      daysSurvived: 10,
+      gigsPlayed: 3,
+      totalGigNet: 3000,
+      totalTravelCostGigs: 300
+    }),
+    syntheticRun({
+      daysSurvived: 10,
+      gigsPlayed: 3,
+      totalGigNet: 3000,
+      totalTravelCostGigs: 300
+    })
+  ]).gigEconomics
+
+  // The two rates must not collapse into one another: sparse touring earns more
+  // per gig than per calendar day, and that gap is the Gap-1 effect itself.
+  assert.equal(economics.gigNetPerCalendarDay, 300)
+  assert.equal(economics.gigNetPerGigDay, 1000)
+  assert.equal(economics.gigsPerCalendarDay, 0.3)
+  assert.equal(economics.travelCostShareOfGigNetPct, 10)
+  assert.equal(economics.avgTravelCostPerGigDay, 100)
+  assert.ok(economics.gigNetPerGigDay > economics.gigNetPerCalendarDay)
+})
+
+test('gig economics reports zero rather than dividing by no gigs', () => {
+  // A cohort that went bankrupt before its first gig is a real case; it must not
+  // produce NaN or Infinity in a published table.
+  const economics = summarizeScenario([
+    syntheticRun({ daysSurvived: 4, gigsPlayed: 0 })
+  ]).gigEconomics
+
+  for (const value of Object.values(economics)) {
+    assert.ok(
+      Number.isFinite(value),
+      'every gig-economics figure must be finite'
+    )
+  }
+  assert.equal(economics.gigNetPerGigDay, 0)
+  assert.equal(economics.catalogItemsUnderOneGigNetPct, 0)
+})
+
+test('gig economics measures rest days from the model, which currently never rests', () => {
+  // Documented finding, not an aspiration: the rest trigger (harmony < 30 or a
+  // member under 30 stamina/mood) never fires under current tuning, so the
+  // opportunity cost of a pause is unmeasurable in this model. If tuning ever
+  // makes the band rest, this test starts failing and the report text that
+  // explains the zero needs revisiting.
+  const runs = [
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('rest-probe', 0)),
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('rest-probe', 1))
+  ]
+  for (const run of runs) assert.equal(run.restStops, 0)
+
+  const economics = summarizeScenario(runs).gigEconomics
+  assert.equal(economics.avgRestDays, 0)
+  assert.equal(economics.restDaySharePct, 0)
+})
+
+test('a non-numeric seed is rejected instead of collapsing to one fixed stream', () => {
+  // `seed + 0x6d2b79f5` concatenates for a string, the arithmetic then goes NaN,
+  // and every string seed produces the SAME run — two "different" seeds would
+  // look like a reproducibility success. Callers must use createScenarioSeed.
+  assert.throws(
+    () => runSingleSimulation(SCENARIOS[0], 'not-a-number'),
+    /Simulation seed must be a finite number/
+  )
+  assert.throws(() => runSingleSimulation(SCENARIOS[0], undefined), TypeError)
+  assert.throws(() => runSingleSimulation(SCENARIOS[0], Number.NaN), TypeError)
+
+  // Distinct numeric seeds must actually diverge.
+  const first = runSingleSimulation(
+    SCENARIOS[0],
+    createScenarioSeed('divergence', 0)
+  )
+  const second = runSingleSimulation(
+    SCENARIOS[0],
+    createScenarioSeed('divergence', 1)
+  )
+  assert.notDeepEqual(
+    [first.finalMoney, first.finalFame, first.gigsPlayed],
+    [second.finalMoney, second.finalFame, second.gigsPlayed]
   )
 })

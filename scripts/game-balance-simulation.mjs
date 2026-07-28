@@ -744,6 +744,16 @@ export const createScenarioSeed = (id, runIndex) => {
 }
 
 const mulberry32 = seed => {
+  // `seed + 0x6d2b79f5` is string concatenation for a non-numeric seed, and the
+  // arithmetic below then collapses to NaN — which yields ONE fixed stream for
+  // every string seed. A caller passing 'seed-a' and 'seed-b' would silently get
+  // two identical runs and read that as reproducibility. The reports are safe
+  // (they always seed from `createScenarioSeed`), so fail loudly instead.
+  if (!Number.isFinite(seed)) {
+    throw new TypeError(
+      `Simulation seed must be a finite number, received ${typeof seed} (${String(seed)}); use createScenarioSeed(id, runIndex)`
+    )
+  }
   let t = seed + 0x6d2b79f5
   return () => {
     t += 0x6d2b79f5
@@ -1138,11 +1148,45 @@ const expireContrabandEffects = (state, runCtx) => {
   runCtx.contrabandEffects = stillActive
 }
 
+/**
+ * Which catalogue items the player could buy right now, and which ones are
+ * unlocked and unowned but out of reach financially.
+ *
+ * Phase 4D's core distinction: owning enough money at the end of a tour is not
+ * the same as being able to buy the right thing at the right time. `unaffordable`
+ * counts exactly the items the shop would show as blocked.
+ */
+export const summarizeCatalogAffordability = state => {
+  let affordable = 0
+  let unaffordable = 0
+  for (const item of UPGRADE_CATALOG) {
+    const validation = validatePurchase(item, state.player, state.band)
+    if (validation.isValid) affordable += 1
+    else if (validation.errorType === 'insufficient_funds') unaffordable += 1
+  }
+  return { affordable, unaffordable }
+}
+
 export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!candidate) return false
 
   const validation = validatePurchase(candidate, state.player, state.band)
-  if (!validation.isValid) return
+  if (!validation.isValid) {
+    // A purchase the player wanted and could not pay for is a progression
+    // signal, not a no-op. `already_owned` and `missing_effect` are not.
+    if (validation.errorType === 'insufficient_funds' && counters.missedPurchases) {
+      counters.missedPurchases.push({
+        day: counters.currentDay ?? null,
+        id: candidate.id,
+        category: candidate.category,
+        currency: candidate.currency === 'fame' ? 'fame' : 'money'
+      })
+    }
+    return
+  }
+
+  const moneyBefore = state.player.money ?? 0
+  const fameBefore = state.player.fame ?? 0
 
   const oldFame = state.player.fame ?? 0
   const proposedFame = clampPlayerFame(oldFame - validation.finalCost)
@@ -1218,6 +1262,19 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
   })
 
   counters.catalogUpgrades += 1
+  if (counters.purchaseLog) {
+    counters.purchaseLog.push({
+      day: counters.currentDay ?? null,
+      id: candidate.id,
+      category: candidate.category,
+      currency: validation.payingWithFame ? 'fame' : 'money',
+      cost: validation.finalCost,
+      moneyBefore,
+      moneyAfter: state.player.money ?? 0,
+      fameBefore,
+      fameAfter: state.player.fame ?? 0
+    })
+  }
   return true
 }
 
@@ -1225,7 +1282,18 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   if (rng() > 0.24) return
   const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
   if (!candidate) return
-  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) return
+  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) {
+    // Recorded separately from a true `insufficient_funds` miss: this is the
+    // simulated buyer keeping a cash reserve, so it can block an item the
+    // player could actually afford. Conflating the two would report a model
+    // heuristic as an economy finding.
+    counters.liquidityDeferrals?.push({
+      day: counters.currentDay ?? null,
+      id: candidate.id,
+      category: candidate.category
+    })
+    return
+  }
 
   applyCatalogPurchase(state, candidate, counters)
 }
@@ -1858,7 +1926,14 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
     fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
-    gigCapHits: 0
+    gigCapHits: 0,
+    // Phase 4D purchase-path instrumentation. `currentDay` is the day context
+    // every purchase site reads, so timing does not have to be threaded through
+    // each call.
+    currentDay: 0,
+    purchaseLog: [],
+    missedPurchases: [],
+    liquidityDeferrals: []
   }
 
   let totalGigNet = 0
@@ -1874,6 +1949,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let moneyAtEarlyCheckpoint = null
   let moneyAtMidCheckpoint = null
   let moneyAtLateCheckpoint = null
+  // Shop reachability at a mid-tour waypoint and at the end. The end-of-run
+  // count alone cannot distinguish "could buy things while it mattered" from
+  // "ended rich".
+  let affordabilityAtMidCheckpoint = null
   const [earlyCheckpointDay, midCheckpointDay, lateCheckpointDay] =
     SIMULATION_CONSTANTS.progressionCheckpointDays
 
@@ -1901,6 +1980,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
+    counters.currentDay = day
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.tight)
       daysBelowTightLiquidity += 1
     if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
@@ -1913,7 +1993,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     }
     // Snapshot money at start of day (before any spending)
     if (day === earlyCheckpointDay) moneyAtEarlyCheckpoint = state.player.money
-    if (day === midCheckpointDay) moneyAtMidCheckpoint = state.player.money
+    if (day === midCheckpointDay) {
+      moneyAtMidCheckpoint = state.player.money
+      affordabilityAtMidCheckpoint = summarizeCatalogAffordability(state)
+    }
     if (day === lateCheckpointDay) moneyAtLateCheckpoint = state.player.money
 
     const moneyBeforeDay = state.player.money
@@ -2404,6 +2487,8 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     peakMoney,
     lowestMoney,
     lowestMoneyObserved,
+    affordabilityAtMidCheckpoint,
+    affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
     daysBelowCriticalLiquidity,
     emergencyGrantUsed: runCtx.emergencyGrantUsed,
@@ -2473,6 +2558,32 @@ export const calculateAverageFameEarnedPerGig = runs => mean(runs.map(run => {
   const fameEarned = run.fameAccounting?.earned ?? run.fameEarned ?? 0
   return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
 }))
+
+const firstDayMatching = (log, predicate) => {
+  const days = (log ?? [])
+    .filter(entry => predicate(entry) && entry.day != null)
+    .map(entry => entry.day)
+  return days.length ? Math.min(...days) : null
+}
+
+const medianOrNull = values =>
+  values.length ? Number(median(values).toFixed(2)) : null
+
+const modalValue = values => {
+  const tally = new Map()
+  for (const value of values) tally.set(value, (tally.get(value) ?? 0) + 1)
+  let best = null
+  let bestCount = 0
+  // Ties resolve on the first-seen value, which is deterministic because the
+  // run order is.
+  for (const [value, count] of tally) {
+    if (count > bestCount) {
+      best = value
+      bestCount = count
+    }
+  }
+  return best
+}
 
 export const summarizeScenario = runs => {
   const solventRuns = runs.filter(r => !r.bankrupt)
@@ -2664,6 +2775,130 @@ export const summarizeScenario = runs => {
       ratePct: Number(bankruptcyRatePct.toFixed(2)),
       confidence95
     },
+    // Phase 4D — purchase paths. "Ends the tour with enough money" and "could
+    // buy something useful while it mattered" are different questions, and the
+    // fame-shop audit only answers the first. Everything here describes the
+    // simulated buyer's heuristics, not a real player's choices.
+    purchasePaths: (() => {
+      const firstPurchaseDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, () => true))
+        .filter(day => day != null)
+      const vanDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'VAN'))
+        .filter(day => day != null)
+      const hqDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'HQ'))
+        .filter(day => day != null)
+      const distinctItems = runs.map(
+        run => new Set((run.purchaseLog ?? []).map(entry => entry.id)).size
+      )
+      const moneyPurchases = runs.flatMap(run =>
+        (run.purchaseLog ?? []).filter(entry => entry.currency === 'money')
+      )
+      const firstCategories = runs
+        .map(run => (run.purchaseLog ?? [])[0]?.category)
+        .filter(category => category != null)
+      const affordability = key =>
+        runs.map(run => run[key]).filter(entry => entry != null)
+      const meanOf = (entries, field) =>
+        entries.length
+          ? Number(
+              mean(entries.map(entry => entry[field])).toFixed(2)
+            )
+          : null
+
+      return {
+        catalogSize: UPGRADE_CATALOG.length,
+        runsWithAnyPurchasePct: shareOfRunsPct(
+          run => (run.purchaseLog?.length ?? 0) > 0
+        ),
+        firstPurchaseDayMedian: medianOrNull(firstPurchaseDays),
+        vanUpgradeReachedPct: shareOfRunsPct(
+          run =>
+            firstDayMatching(run.purchaseLog, e => e.category === 'VAN') != null
+        ),
+        firstVanUpgradeDayMedian: medianOrNull(vanDays),
+        hqUpgradeReachedPct: shareOfRunsPct(
+          run =>
+            firstDayMatching(run.purchaseLog, e => e.category === 'HQ') != null
+        ),
+        firstHqUpgradeDayMedian: medianOrNull(hqDays),
+        avgDistinctItemsPurchased: Number(mean(distinctItems).toFixed(2)),
+        catalogSharePurchasedPct: Number(
+          ((mean(distinctItems) / Math.max(1, UPGRADE_CATALOG.length)) * 100).toFixed(2)
+        ),
+        modalFirstPurchaseCategory: modalValue(firstCategories),
+        avgMoneyBeforePurchase: meanOf(moneyPurchases, 'moneyBefore'),
+        // Liquidity left standing right after a purchase: a buyer who is broke
+        // after every purchase is making forced choices, not decisions.
+        avgResidualMoneyAfterPurchase: meanOf(moneyPurchases, 'moneyAfter'),
+        avgMissedPurchases: Number(
+          mean(runs.map(run => run.missedPurchases?.length ?? 0)).toFixed(2)
+        ),
+        avgLiquidityDeferrals: Number(
+          mean(runs.map(run => run.liquidityDeferrals?.length ?? 0)).toFixed(2)
+        ),
+        avgUnaffordableAtMidCheckpoint: meanOf(
+          affordability('affordabilityAtMidCheckpoint'),
+          'unaffordable'
+        ),
+        avgAffordableAtMidCheckpoint: meanOf(
+          affordability('affordabilityAtMidCheckpoint'),
+          'affordable'
+        ),
+        avgUnaffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'unaffordable'),
+        avgAffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'affordable')
+      }
+    })(),
+
+    // Phase 4E — gig frequency against travel and rest. Deliberately diagnostic:
+    // whether Gap-1 dominance is a balance fault or an intended reward for
+    // active play is not decided here, it is measured.
+    gigEconomics: (() => {
+      const totalDays = runs.reduce((sum, run) => sum + run.daysSurvived, 0)
+      const totalGigs = runs.reduce((sum, run) => sum + run.gigsPlayed, 0)
+      const totalNet = runs.reduce((sum, run) => sum + run.totalGigNet, 0)
+      const totalTravel = runs.reduce(
+        (sum, run) => sum + run.totalTravelCostGigs,
+        0
+      )
+      const totalRest = runs.reduce((sum, run) => sum + (run.restStops ?? 0), 0)
+      const netPerGig = totalGigs > 0 ? totalNet / totalGigs : 0
+      const moneyPriced = UPGRADE_CATALOG.filter(
+        item => item.currency !== 'fame' && Number.isFinite(item.cost)
+      )
+      return {
+        gigNetPerCalendarDay: Math.round(totalDays > 0 ? totalNet / totalDays : 0),
+        gigNetPerGigDay: Math.round(netPerGig),
+        gigsPerCalendarDay: Number(
+          (totalDays > 0 ? totalGigs / totalDays : 0).toFixed(3)
+        ),
+        avgRestDays: Number((runs.length ? totalRest / runs.length : 0).toFixed(2)),
+        restDaySharePct: Number(
+          ((totalDays > 0 ? totalRest / totalDays : 0) * 100).toFixed(2)
+        ),
+        // Upper bound: a rest day may enable gigs that would otherwise fail, so
+        // this is the gross income not earned, not a net loss.
+        foregoneGigNetPerRestDayUpperBound: Math.round(netPerGig),
+        travelCostShareOfGigNetPct: Number(
+          ((totalNet > 0 ? totalTravel / totalNet : 0) * 100).toFixed(2)
+        ),
+        avgTravelCostPerGigDay: Math.round(
+          totalGigs > 0 ? totalTravel / totalGigs : 0
+        ),
+        // The user-visible version of "some cheap upgrades pay for themselves in
+        // under one gig": how much of the money catalogue a single gig covers.
+        catalogItemsUnderOneGigNetPct: Number(
+          (
+            (moneyPriced.filter(item => item.cost <= netPerGig).length /
+              Math.max(1, moneyPriced.length)) *
+            100
+          ).toFixed(2)
+        ),
+        moneyPricedCatalogSize: moneyPriced.length
+      }
+    })(),
+
     // Insolvency alone stopped being the tension indicator once payouts rose:
     // over a ten-day tour it is a rare terminal event, so a scenario can be
     // under sustained economic pressure and still report ~0%. These are
@@ -3844,6 +4079,72 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(
       `Zwei Spalten tragen kaum Signal und sagen warum: „je < ${fmtEur(thresholds.tightEur)}“ sättigt bei 100%, weil der Startstand selbst ${fmtEur(thresholds.tightEur)} beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die ${fmtEur(thresholds.criticalEur)}-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
+    )
+    lines.push('')
+  }
+
+  // ── Purchase paths (4D) ───────────────────────────────────────────────────
+  const purchaseReference = payload.results.find(
+    scenario => scenario.summary?.purchasePaths
+  )
+  if (purchaseReference) {
+    const catalogSize = purchaseReference.summary.purchasePaths.catalogSize
+    const [, midDayForShop] = SIMULATION_CONSTANTS.progressionCheckpointDays
+    lines.push('## Kaufpfade und Progression')
+    lines.push('')
+    lines.push(
+      `Am Ende genug Geld zu besitzen ist nicht dasselbe wie während der Tour sinnvoll kaufen zu können. Das Fame-Shop-Audit beantwortet nur die erste Frage; hier steht, *wann* gekauft wird, was erreichbar bleibt und was am Geld scheitert. Katalogumfang: ${catalogSize} Artikel.`
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | 1. Kauf (Median Tag) | Van erreicht | Van (Median Tag) | HQ erreicht | HQ (Median Tag) | Ø Artikel | Kataloganteil | Erster Kauf typisch | Ø Geld vor Kauf | Ø Restliquidität | Ø verpasste Käufe | Ø Liquiditätsvorbehalt | Unbezahlbar Tag ${midDayForShop} | Bezahlbar Tag ${midDayForShop} |`
+    )
+    lines.push(
+      '|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|'
+    )
+    for (const scenario of payload.results) {
+      const p = scenario.summary?.purchasePaths
+      if (!p) continue
+      lines.push(
+        `| ${scenario.name} | ${p.firstPurchaseDayMedian ?? '—'} | ${fmtPct(p.vanUpgradeReachedPct)} | ${p.firstVanUpgradeDayMedian ?? '—'} | ${fmtPct(p.hqUpgradeReachedPct)} | ${p.firstHqUpgradeDayMedian ?? '—'} | ${p.avgDistinctItemsPurchased} | ${fmtPct(p.catalogSharePurchasedPct)} | ${p.modalFirstPurchaseCategory ?? '—'} | ${fmtEurOrDash(p.avgMoneyBeforePurchase)} | ${fmtEurOrDash(p.avgResidualMoneyAfterPurchase)} | ${p.avgMissedPurchases} | ${p.avgLiquidityDeferrals} | ${p.avgUnaffordableAtMidCheckpoint ?? '—'} | ${p.avgAffordableAtMidCheckpoint ?? '—'} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      '„Verpasste Käufe“ sind Artikel, die der simulierte Käufer wollte und nicht bezahlen konnte (`insufficient_funds`). „Liquiditätsvorbehalt“ zählt getrennt die Fälle, in denen derselbe Käufer wegen seiner eigenen Reserve-Heuristik unter €900 nicht gekauft hat — das kann Artikel blockieren, die bezahlbar gewesen wären. Beide Zahlen beschreiben das Entscheidungsmodell der Simulation, nicht das Verhalten echter Spieler; Kaufreihenfolge und Kaufanteil sind entsprechend Heuristik-Artefakte und keine Designbefunde.'
+    )
+    lines.push('')
+  }
+
+  // ── Gig economics (4E) ────────────────────────────────────────────────────
+  const gigReference = payload.results.find(
+    scenario => scenario.summary?.gigEconomics
+  )
+  if (gigReference) {
+    lines.push('## Gig-Frequenz, Reisekosten und Amortisation')
+    lines.push('')
+    lines.push(
+      'Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler oder eine beabsichtigte Belohnung für aktiveres Spielen ist, wird hier gemessen und nicht entschieden.'
+    )
+    lines.push('')
+    lines.push(
+      '| Szenario | Gig-Netto/Kalendertag | Gig-Netto/Gig | Gigs/Kalendertag | Ø Ruhetage | Ruhetaganteil | Reisekosten je Gig | Reisekostenanteil am Netto | Katalog < 1 Gig |'
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for (const scenario of payload.results) {
+      const g = scenario.summary?.gigEconomics
+      if (!g) continue
+      lines.push(
+        `| ${scenario.name} | ${fmtEur(g.gigNetPerCalendarDay)} | ${fmtEur(g.gigNetPerGigDay)} | ${g.gigsPerCalendarDay} | ${g.avgRestDays} | ${fmtPct(g.restDaySharePct)} | ${fmtEur(g.avgTravelCostPerGigDay)} | ${fmtPct(g.travelCostShareOfGigNetPct)} | ${fmtPct(g.catalogItemsUnderOneGigNetPct)} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      `„Katalog < 1 Gig“ ist der Anteil der ${gigReference.summary.gigEconomics.moneyPricedCatalogSize} geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.`
+    )
+    lines.push('')
+    lines.push(
+      '**Ruhetage sind in allen Szenarien 0, und das ist selbst ein Befund.** Der Ruhe-Auslöser des Modells verlangt Harmony unter 30 oder ein Bandmitglied unter 30 Stamina/Mood; in keinem der simulierten Runs tritt dieser Zustand ein, weshalb auch keine Klinikbesuche stattfinden. Die Opportunitätskosten von Pausen sind damit in diesem Modell nicht messbar — nicht weil sie null wären, sondern weil dichte Touren keinen Verschleißdruck erzeugen, der eine Pause erzwingen würde. `foregoneGigNetPerRestDayUpperBound` steht als Obergrenze im JSON, entspricht bei null Ruhetagen aber genau dem Gig-Netto und ist deshalb hier nicht als Spalte geführt.'
     )
     lines.push('')
   }
