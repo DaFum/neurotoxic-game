@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T14:12:37.153Z",
+  "generatedAt": "2026-07-28T14:32:25.316Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "19b5d7cf6beca6e4a14f346312c8503bedcbcc2b",
+    "sourceBaseCommit": "3fde25e6b8822757cf5baa0876d262eabcc8c683",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "3c7c47f7d80659414e3f95fdb0720e32ca82819f2528e3acc6107c57930a90d1",
-    "balanceSourceSha256": "029b96f93c9110e51c2cf7f571f221411fd51f5d35ecbb41657fd5172c775f50",
-    "experimentScriptSha256": "dca94fafeef4a8a6016410f4c282248090876b258be6936014b65c1d43767e6e",
+    "simulationScriptSha256": "d5509a198815758bb97ed6ffff1085b54a04a274fd82557cb3e3d5c0865961a2",
+    "balanceSourceSha256": "c8517ec7c36ed6ca91a8c1ba00dd9a0fc9b60e026221d0500f59b3e13e555ee3",
+    "experimentScriptSha256": "c0ddad530447cc56827efcd4d9049dfe150fb6a36869d7e254c1ab2b54777aab",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
@@ -26874,6 +26874,15 @@
     "metric": "bankruptcyRate",
     "source": "holdout",
     "passed": false,
+    "expectedScenarios": [
+      "baseline_touring",
+      "bootstrap_struggle",
+      "aggressive_marketing",
+      "scandal_recovery",
+      "festival_push",
+      "chaos_tour",
+      "cult_hypergrowth"
+    ],
     "evaluatedScenarios": [
       "baseline_touring",
       "bootstrap_struggle",
@@ -26883,6 +26892,7 @@
       "chaos_tour",
       "cult_hypergrowth"
     ],
+    "missingScenarioIds": [],
     "failures": [
       {
         "scenarioId": "cult_hypergrowth",
@@ -26938,7 +26948,7 @@
     }
   },
   "runtime": {
-    "durationMs": 43022,
+    "durationMs": 43244,
     "candidates": 25,
     "totalRuns": 20280
   }

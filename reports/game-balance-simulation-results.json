@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T14:11:37.445Z",
+  "generatedAt": "2026-07-28T14:31:25.919Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "19b5d7cf6beca6e4a14f346312c8503bedcbcc2b",
+    "sourceBaseCommit": "3fde25e6b8822757cf5baa0876d262eabcc8c683",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "3c7c47f7d80659414e3f95fdb0720e32ca82819f2528e3acc6107c57930a90d1",
-    "balanceSourceSha256": "029b96f93c9110e51c2cf7f571f221411fd51f5d35ecbb41657fd5172c775f50",
+    "simulationScriptSha256": "d5509a198815758bb97ed6ffff1085b54a04a274fd82557cb3e3d5c0865961a2",
+    "balanceSourceSha256": "c8517ec7c36ed6ca91a8c1ba00dd9a0fc9b60e026221d0500f59b3e13e555ee3",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
@@ -1115,6 +1115,15 @@
     "metric": "bankruptcyRate",
     "source": "holdout",
     "passed": false,
+    "expectedScenarios": [
+      "baseline_touring",
+      "bootstrap_struggle",
+      "aggressive_marketing",
+      "scandal_recovery",
+      "festival_push",
+      "chaos_tour",
+      "cult_hypergrowth"
+    ],
     "evaluatedScenarios": [
       "baseline_touring",
       "bootstrap_struggle",
@@ -1124,6 +1133,7 @@
       "chaos_tour",
       "cult_hypergrowth"
     ],
+    "missingScenarioIds": [],
     "failures": [
       {
         "scenarioId": "cult_hypergrowth",
