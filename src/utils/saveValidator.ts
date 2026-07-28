@@ -322,6 +322,37 @@ const validateSocial = (social: unknown): void => {
       continue
     }
 
+    if (key === 'regionalGigHistory') {
+      if (!isLooseRecord(val))
+        throw new StateError('social.regionalGigHistory must be an object')
+      const entries = Object.entries(val)
+      if (entries.length > 100)
+        throw new StateError('social.regionalGigHistory has too many regions')
+      for (const [regionId, days] of entries) {
+        if (isForbiddenKey(regionId))
+          throw new StateError(
+            `social.regionalGigHistory.${regionId} is reserved`
+          )
+        if (!Array.isArray(days))
+          throw new StateError(
+            `social.regionalGigHistory.${regionId} must be an array`
+          )
+        if (days.length > 256)
+          throw new StateError(
+            `social.regionalGigHistory.${regionId} has too many days`
+          )
+        if (
+          !days.every(
+            day => Number.isFinite(day) && Number.isInteger(day) && day >= 0
+          )
+        )
+          throw new StateError(
+            `social.regionalGigHistory.${regionId} must contain non-negative integer days`
+          )
+      }
+      continue
+    }
+
     if (key === 'brandReputation') {
       if (!isLooseRecord(val))
         throw new StateError('social.brandReputation must be an object')

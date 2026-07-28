@@ -9,6 +9,7 @@ import {
 } from '../../src/utils/economyEngine'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
 import { applyEventDelta } from '../../src/utils/gameState'
+import { getEarlyGameObligationMultiplier } from '../../src/utils/balanceTuning'
 
 /**
  * Test helpers
@@ -90,13 +91,23 @@ test('calculateDailyUpdates: daily cost includes band size scaling', () => {
   const state = buildFullState()
   const result = calculateDailyUpdates(state)
 
-  // Base cost is 40, plus 3 members * 8 = 24, total = 64
-  const expectedCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+  const fullCost = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+  const expectedCost = fullCost * getEarlyGameObligationMultiplier(2)
   assert.equal(
     result.player.money,
-    500 - expectedCost,
+    Math.floor(500 - expectedCost),
     `Should deduct ${expectedCost}€ daily (base + band)`
   )
+})
+
+test('calculateDailyUpdates does not scale YouTube revenue with obligation relief', () => {
+  const state = buildFullState({ social: { youtube: 10000 } })
+  const result = calculateDailyUpdates(state, () => 0.99)
+  const fullObligations = EXPENSE_CONSTANTS.DAILY.BASE_COST + 3 * 8
+  const scaledObligations =
+    fullObligations * getEarlyGameObligationMultiplier(2)
+
+  assert.equal(result.player.money, Math.floor(500 - scaledObligations + 10))
 })
 
 test('calculateDailyUpdates: money never goes negative', () => {

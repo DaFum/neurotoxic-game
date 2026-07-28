@@ -3,10 +3,69 @@ import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
 import { BALANCE_CONSTANTS } from '../gameState'
 import { getRegionKeyForLocation } from '../mapUtils'
+import {
+  DEFAULT_BALANCE_TUNING,
+  getRepeatDemandMultiplier
+} from '../balanceTuning'
 
 import type { GameState } from '../../types'
 import type { CityTraitState } from '../../types/game'
 import type { AssetModifiers } from '../../types/assets'
+import type { BalanceTuning } from '../balanceTuning'
+
+export interface RepeatDemandContext {
+  day: number
+  regionId: string
+  regionalGigHistory?: Readonly<Record<string, readonly number[]>>
+  tuning?: Readonly<BalanceTuning>
+}
+
+export const applyRepeatDemandAdjustment = (
+  financials: NonNullable<ReturnType<typeof calculateGigFinancials>>,
+  context: RepeatDemandContext
+) => {
+  const tuning = context.tuning ?? DEFAULT_BALANCE_TUNING
+  if (
+    tuning.touring.repeatDemandPenaltyPerGig <= 0 ||
+    tuning.touring.maxRepeatDemandPenalty <= 0 ||
+    context.day <= tuning.touring.repeatDemandStartDay
+  ) {
+    return financials
+  }
+  const recentGigCount = (
+    context.regionalGigHistory?.[context.regionId] ?? []
+  ).filter(
+    gigDay =>
+      Number.isFinite(gigDay) &&
+      gigDay < context.day &&
+      context.day - gigDay <= tuning.touring.repeatGigWindowDays
+  ).length
+  const multiplier = getRepeatDemandMultiplier(
+    context.day,
+    recentGigCount,
+    tuning
+  )
+  const demandCost = Math.min(
+    Math.max(0, financials.net),
+    Math.round(Math.max(0, financials.net) * (1 - multiplier))
+  )
+  if (demandCost <= 0) return financials
+  return {
+    ...financials,
+    expenses: {
+      total: financials.expenses.total + demandCost,
+      breakdown: [
+        ...financials.expenses.breakdown,
+        {
+          labelKey: 'economy:gigExpenses.demandSaturation.label',
+          detailKey: 'economy:gigExpenses.demandSaturation.detail',
+          value: demandCost
+        }
+      ]
+    },
+    net: Math.max(0, financials.net - demandCost)
+  }
+}
 
 /**
  * Derives the post-gig context for the current venue: gig financials, generated
@@ -45,7 +104,8 @@ export const deriveFinancials = ({
   activeStoryFlags,
   gigContext,
   cityTraits,
-  assetModifiers
+  assetModifiers,
+  repeatDemandContext
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -65,6 +125,7 @@ export const deriveFinancials = ({
   } | null
   cityTraits?: CityTraitState
   assetModifiers?: AssetModifiers
+  repeatDemandContext?: RepeatDemandContext
 }) => {
   if (!currentGig || !lastGigStats) return null
 
@@ -98,12 +159,15 @@ export const deriveFinancials = ({
     assetModifiers
   )
 
-  return applyPostGigPerformancePenalty({
+  const performanceAdjusted = applyPostGigPerformancePenalty({
     financials: result,
     misses: lastGigStats.misses ?? 0,
     missTolerance: BALANCE_CONSTANTS.MISS_TOLERANCE,
     missMoneyPenalty: BALANCE_CONSTANTS.MISS_MONEY_PENALTY
   })
+  return repeatDemandContext
+    ? applyRepeatDemandAdjustment(performanceAdjusted, repeatDemandContext)
+    : performanceAdjusted
 }
 
 /**

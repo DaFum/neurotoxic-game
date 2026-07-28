@@ -10,7 +10,10 @@ import { getQuestDefinition } from '../../../data/questRegistry'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
-import { clampMemberMood } from '../../../utils/gameState'
+import {
+  clampMemberMood,
+  normalizeRegionalGigHistory
+} from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
   DEFAULT_GIG_MODIFIERS,
@@ -1317,6 +1320,12 @@ export const sanitizeSocial = (value: unknown): SocialState => {
         sanitized.brandReputation[key] = reputation
       }
     }
+  }
+
+  if (isLooseRecord(safeValue.regionalGigHistory)) {
+    sanitized.regionalGigHistory = normalizeRegionalGigHistory(
+      safeValue.regionalGigHistory
+    )
   }
 
   if (isLooseRecord(safeValue.influencers)) {

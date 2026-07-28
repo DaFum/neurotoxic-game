@@ -159,7 +159,7 @@ export const createRawLoadPayload = (
   return payload
 }
 
-const createPersistedState = (currentState: GameState) => {
+export const createPersistedState = (currentState: GameState) => {
   const {
     version,
     currentScene,

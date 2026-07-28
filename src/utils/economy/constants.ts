@@ -116,12 +116,26 @@ export const TICKET_SALES_CONSTANTS = {
 export const MANAGEMENT_CUT_RATE = 0.15
 /**
  * Maximum allowed gig net before overage is surfaced as an expense.
+ *
+ * The cap is applied *after* {@link GLOBAL_PAYOUT_NERF}, so holding the same
+ * gross-net clipping threshold means scaling it by the same factor: the old
+ * 7500 at a 0.5 multiplier bound at a gross net above 15000, and 15000 * 0.97
+ * keeps that threshold intact. Any other value silently adds or removes
+ * high-end damping on top of the payout change — derive it, do not guess it.
  */
-export const MAX_GIG_NET = 7500
+export const MAX_GIG_NET = 14550
 /**
  * Global multiplier applied to gig payout calculations.
+ *
+ * Raised from 0.5 so a full tour funds the one-off shop catalogue: over the
+ * map-bounded horizon the band earned ~EUR 18.3k against EUR 57.5k of one-off
+ * money purchases. Prices and income each close half of that 3.14x gap, so the
+ * catalogue drops by the same factor this rises. Measuring the first pass at
+ * 0.886 left income at 83% of the reduced catalogue, so the residual was split
+ * the same way again, landing here. Re-derive both together; moving one alone
+ * breaks the target.
  */
-export const GLOBAL_PAYOUT_NERF = 0.5
+export const GLOBAL_PAYOUT_NERF = 0.97
 /**
  * Base logistics expense for gig travel.
  */

@@ -9,7 +9,7 @@ import {
   deriveCityTraits,
   getCityKeyFromVenueId
 } from '../../utils/mapGenerator'
-import { normalizeVenueId } from '../../utils/mapUtils'
+import { getRegionKeyForLocation, normalizeVenueId } from '../../utils/mapUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import type {
@@ -110,7 +110,12 @@ export const usePostGigDerivations = ({
       activeStoryFlags,
       gigContext,
       cityTraits,
-      assetModifiers
+      assetModifiers,
+      repeatDemandContext: {
+        day: player.day,
+        regionId: getRegionKeyForLocation(player.location) ?? 'Unknown',
+        regionalGigHistory: social.regionalGigHistory
+      }
     })
   }, [
     currentGig,

@@ -1,6 +1,12 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { validateSaveData } from '../../src/utils/saveValidator'
+import { createInitialState } from '../../src/context/initialState.ts'
+import {
+  createPersistedState,
+  createRawLoadPayload
+} from '../../src/context/usePersistence.ts'
+import { handleLoadGame } from '../../src/context/reducers/systemReducer.ts'
 
 describe('saveValidator', () => {
   const getValidData = () => ({
@@ -27,6 +33,37 @@ describe('saveValidator', () => {
   it('returns true for valid save data', () => {
     const data = getValidData()
     assert.strictEqual(validateSaveData(data), true)
+  })
+
+  it('roundtrips a new save with normalized regional gig history', () => {
+    const state = createInitialState()
+    state.gameMap = {}
+    state.social.regionalGigHistory = { berlin: [4, 2, 4] }
+    const parsed = JSON.parse(JSON.stringify(createPersistedState(state)))
+    assert.equal(validateSaveData(parsed), true)
+    const loaded = handleLoadGame(state, createRawLoadPayload(parsed, []))
+    assert.deepEqual(loaded.social.regionalGigHistory, { berlin: [2, 4] })
+  })
+
+  it('rejects malformed or unbounded regional gig history', () => {
+    for (const history of [
+      { berlin: '4' },
+      { berlin: [-1] },
+      { berlin: [1.5] },
+      { berlin: [Infinity] },
+      Object.fromEntries(
+        Array.from({ length: 101 }, (_, i) => [`region${i}`, [1]])
+      ),
+      { berlin: Array.from({ length: 257 }, (_, i) => i) },
+      JSON.parse('{"__proto__":[1]}')
+    ]) {
+      const data = getValidData()
+      data.social.regionalGigHistory = history
+      assert.throws(
+        () => validateSaveData(data),
+        /regionalGigHistory|Prototype pollution detected: __proto__/
+      )
+    }
   })
 
   describe('root object validation', () => {

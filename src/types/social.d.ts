@@ -200,6 +200,7 @@ export interface SocialState extends UnknownRecord {
   brandReputation: Record<string, number>
   influencers: Record<string, UnknownRecord>
   scenePresence?: number
+  regionalGigHistory: Record<string, number[]>
 }
 
 /**

@@ -13,7 +13,7 @@ export const gear = [
     id: 'hq_gear_neuro_decimator',
     name: 'items:hq_gear_neuro_decimator.name',
     category: 'GEAR',
-    cost: 660, // Brutalist pricing, rounded to multiple of 10 for integrity test
+    cost: 320, // Brutalist pricing, rounded to multiple of 10 for integrity test
     currency: 'money',
     img: 'ITEM_NEURO_DECIMATOR',
     description: 'items:hq_gear_neuro_decimator.description',
@@ -23,7 +23,7 @@ export const gear = [
     id: 'hq_gear_neurotoxic_pedal',
     name: 'items:hq_gear_neurotoxic_pedal.name',
     category: 'GEAR',
-    cost: 660,
+    cost: 320,
     currency: 'money',
     img: 'ITEM_NEUROTOXIC_PEDAL',
     description: 'items:hq_gear_neurotoxic_pedal.description',
@@ -33,7 +33,7 @@ export const gear = [
     id: 'hq_gear_strings',
     name: 'items:hq_gear_strings.name',
     category: 'GEAR',
-    cost: 20, // Low cost consumable
+    cost: 10, // Low cost consumable
     currency: 'money',
     img: 'ITEM_STRINGS',
     description: 'items:hq_gear_strings.description',
@@ -43,7 +43,7 @@ export const gear = [
     id: 'hq_gear_cables',
     name: 'items:hq_gear_cables.name',
     category: 'GEAR',
-    cost: 50, // Mid-range cable cost
+    cost: 20, // Mid-range cable cost
     currency: 'money',
     img: 'ITEM_CABLES',
     description: 'items:hq_gear_cables.description',
@@ -53,7 +53,7 @@ export const gear = [
     id: 'hq_gear_drum_parts',
     name: 'items:hq_gear_drum_parts.name',
     category: 'GEAR',
-    cost: 60, // Standard drum maintenance
+    cost: 30, // Standard drum maintenance
     currency: 'money',
     img: 'ITEM_DRUM_PARTS',
     description: 'items:hq_gear_drum_parts.description',
@@ -165,7 +165,7 @@ export const gear = [
     id: 'hq_gear_cheap_mics',
     name: 'items:hq_gear_cheap_mics.name',
     category: 'GEAR',
-    cost: 80, // Very cheap for 5 mics
+    cost: 40, // Very cheap for 5 mics
     currency: 'money',
     img: 'ITEM_CHEAP_MICS',
     description: 'items:hq_gear_cheap_mics.description',
@@ -175,7 +175,7 @@ export const gear = [
     id: 'hq_gear_diy_patch_kit',
     name: 'items:hq_gear_diy_patch_kit.name',
     category: 'GEAR',
-    cost: 20, // Cheap sewing kit
+    cost: 10, // Cheap sewing kit
     currency: 'money',
     img: 'ITEM_DIY_PATCH_KIT',
     description: 'items:hq_gear_diy_patch_kit.description',
@@ -185,7 +185,7 @@ export const gear = [
     id: 'hq_gear_tour_food_canned',
     name: 'items:hq_gear_tour_food_canned.name',
     category: 'CONSUMABLE',
-    cost: 30, // 3€/Can
+    cost: 20, // 3€/Can
     currency: 'money',
     img: 'ITEM_CANNED_FOOD',
     description: 'items:hq_gear_tour_food_canned.description',
@@ -195,7 +195,7 @@ export const gear = [
     id: 'hq_gear_tour_beer_bulk',
     name: 'items:hq_gear_tour_beer_bulk.name',
     category: 'CONSUMABLE',
-    cost: 40, // Bulk discount beer
+    cost: 20, // Bulk discount beer
     currency: 'money',
     img: 'ITEM_BEER_CRATE',
     description: 'items:hq_gear_tour_beer_bulk.description',
@@ -206,7 +206,7 @@ export const gear = [
     id: 'hq_gear_lucky_rabbit_foot',
     name: 'items:hq_gear_lucky_rabbit_foot.name',
     category: 'GEAR',
-    cost: 150, // Magic item cost
+    cost: 80, // Magic item cost
     currency: 'money',
     img: 'ITEM_RABBIT_FOOT',
     description: 'items:hq_gear_lucky_rabbit_foot.description',
@@ -216,7 +216,7 @@ export const gear = [
     id: 'hq_gear_duct_tape_roll',
     name: 'items:hq_gear_duct_tape_roll.name',
     category: 'GEAR',
-    cost: 80, // High quality tape
+    cost: 40, // High quality tape
     currency: 'money',
     img: 'ITEM_DUCT_TAPE',
     description: 'items:hq_gear_duct_tape_roll.description',
@@ -231,7 +231,7 @@ export const gear = [
     id: 'hq_gear_incense_sticks',
     name: 'items:hq_gear_incense_sticks.name',
     category: 'GEAR',
-    cost: 30, // Mood items
+    cost: 20, // Mood items
     currency: 'money',
     img: 'ITEM_INCENSE',
     description: 'items:hq_gear_incense_sticks.description',
@@ -246,7 +246,7 @@ export const gear = [
     id: 'hq_gear_voodoo_doll',
     name: 'items:hq_gear_voodoo_doll.name',
     category: 'GEAR',
-    cost: 660, // Occult item cost (Adjusted to multiple of 10)
+    cost: 320, // Occult item cost (Adjusted to multiple of 10)
     currency: 'money',
     img: 'ITEM_VOODOO_DOLL',
     description: 'items:hq_gear_voodoo_doll.description',

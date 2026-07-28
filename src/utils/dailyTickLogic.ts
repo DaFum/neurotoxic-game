@@ -14,6 +14,11 @@ import {
   finiteNumberOr
 } from './gameState'
 import type { PlayerState, BandState, GameState, SocialState } from '../types'
+import {
+  DEFAULT_BALANCE_TUNING,
+  getEarlyGameObligationMultiplier,
+  type BalanceTuning
+} from './balanceTuning'
 
 /**
  * Calculates daily state updates including costs, mood drift, and decay.
@@ -29,9 +34,21 @@ const updatePlayerFinances = (
   nextPlayer: PlayerState,
   nextBand: BandState,
   nextSocial: SocialState,
-  rng: () => number
+  rng: () => number,
+  tuning: Readonly<BalanceTuning>
 ) => {
-  let dailyCost = calculateGuaranteedDailyCost(nextPlayer, nextBand, nextSocial)
+  const obligations = calculateGuaranteedDailyCost(nextPlayer, nextBand, {
+    youtube: 0
+  })
+  const netDailyCost = calculateGuaranteedDailyCost(
+    nextPlayer,
+    nextBand,
+    nextSocial
+  )
+  const youtubeRevenue = obligations - netDailyCost
+  let dailyCost =
+    obligations * getEarlyGameObligationMultiplier(nextPlayer.day, tuning) -
+    youtubeRevenue
 
   // Newsletter Merch Sales Perk (Note: Can result in net daily income/negative dailyCost)
   if (finiteNumberOr(nextSocial.newsletter, 0) >= 1000 && rng() < 0.3) {
@@ -358,7 +375,8 @@ const updatePassiveEffectsAndMembers = (
  */
 export const calculateDailyUpdates = (
   currentState: GameState,
-  rng: () => number = getSafeRandom
+  rng: () => number = getSafeRandom,
+  tuning: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
 ) => {
   const nextPlayer = {
     ...currentState.player,
@@ -371,7 +389,7 @@ export const calculateDailyUpdates = (
   const controversySnapshot = finiteNumberOr(nextSocial?.controversyLevel, 0)
   const pendingFlags: Record<string, boolean> = {}
 
-  updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng)
+  updatePlayerFinances(nextPlayer, nextBand, nextSocial, rng, tuning)
   updateVanCondition(nextPlayer, controversySnapshot)
   updateBandHarmony(
     nextPlayer,
