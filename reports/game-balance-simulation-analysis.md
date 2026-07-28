@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T21:38:28.874Z
+Erstellt am: 2026-07-28T21:53:48.911Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: 245b371053a0a24e553061795616c34d91b88817
+- Basis-Commit: a2ef7744a4a5958c0fc9b516c0d758976a8a26b5
 - Working Tree Dirty: Nein
 - Simulationsskript SHA-256: 65a1668e0a8fb263f508f1901b7edf3e5a86498e0872d2d1591f03954d16651d
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
