@@ -2,6 +2,9 @@ import type { MinigameState, GamePhase } from '../types'
 
 /**
  * Canonical scene identifiers used by game state, routing, and persistence.
+ *
+ * @remarks
+ * These constants act as the source of truth for all active game phases. They are utilized by the routing engine to render correct views and by the persistence layer to serialize the player's current location.
  */
 export const GAME_PHASES = Object.freeze({
   OVERWORLD: 'OVERWORLD',
@@ -20,14 +23,20 @@ export const GAME_PHASES = Object.freeze({
 } as const satisfies Record<string, string>)
 
 /**
- * Whitelist of persisted scene values that can be restored from saves.
+ * Whitelist of scene values used for transition validation.
+ *
+ * @remarks
+ * Consumed by the scene reducer to validate scene transitions. It contains both stable and transient phases (like minigames) and does not govern save-load protection, as load logic independently forces the scene to the overworld.
  */
 export const ALLOWED_SCENE_VALUES = Object.freeze(
   Object.values(GAME_PHASES) as GamePhase[]
 )
 
 /**
- * Minigame identifiers stored in `MinigameState.type`.
+ * Minigame identifiers stored in the active game state.
+ *
+ * @remarks
+ * Used exclusively within the game state object to determine which specific minigame overlay and logic to load.
  */
 export const MINIGAME_TYPES = {
   TOURBUS: 'TOURBUS',
@@ -41,9 +50,15 @@ export const MINIGAME_TYPES = {
 
 /**
  * Allowed pitch drift before amp calibration counts as a miss.
+ *
+ * @remarks
+ * Serves as a waveform-display threshold. Exceeding this value alters the waveform color during rendering, but it is not referenced by scoring or combo logic.
  */
 export const AMP_CALIBRATION_TOLERANCE = 50
 
+/**
+ * Defines the core structure for initializing or resetting the minigame state.
+ */
 type DefaultMinigameState = Required<
   Pick<
     MinigameState,
@@ -59,6 +74,9 @@ type DefaultMinigameState = Required<
 
 /**
  * Empty minigame state used when no overlay minigame is active.
+ *
+ * @remarks
+ * Applied when clearing minigame state to guarantee a predictable, inactive baseline. Prevents leftover data from leaking between minigames.
  */
 export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
   active: false,
@@ -71,12 +89,18 @@ export const DEFAULT_MINIGAME_STATE: DefaultMinigameState = {
 }
 
 /**
- * Baseline roadie equipment count for the roadie minigame.
+ * Baseline equipment count for the roadie minigame.
+ *
+ * @remarks
+ * Dictates the starting threshold of gear that must be successfully managed before the roadie phase is considered complete.
  */
 export const DEFAULT_EQUIPMENT_COUNT = 10
 
 /**
  * Shared balance constants for fixed gameplay systems that do not need runtime tuning.
+ *
+ * @remarks
+ * These values govern the underlying math for static systems like the Blood Bank. They should not be modified by difficulty settings or active modifiers.
  */
 export const GAME_CONSTANTS = Object.freeze({
   BLOOD_BANK: {
@@ -92,13 +116,19 @@ export const GAME_CONSTANTS = Object.freeze({
 })
 
 /**
- * Clinic treatment tuning and the trait granted by enhancement treatment.
- */
-/**
  * Cost for the Neuro-Overclock experimental graft.
+ *
+ * @remarks
+ * A fixed euro threshold required to unlock the highly volatile, powerful cybernetic upgrade at the clinic.
  */
 export const CLINIC_GRAFT_COST = 8500
 
+/**
+ * Clinic treatment tuning and the trait granted by enhancement treatment.
+ *
+ * @remarks
+ * Defines scaling multipliers for repeated visits and the base restorative values applied upon treatment.
+ */
 export const CLINIC_CONFIG = Object.freeze({
   VISIT_MULTIPLIER: 1.2,
   HEAL_BASE_COST_MONEY: 280,
@@ -111,9 +141,12 @@ export const CLINIC_CONFIG = Object.freeze({
 /**
  * Scales repeat clinic visit costs by the configured visit multiplier.
  *
- * @param baseCost - Unscaled base treatment cost.
- * @param currentVisits - Number of previous clinic visits.
- * @returns Cost rounded down to whole euros or fame points.
+ * @remarks
+ * Uses an exponential growth formula to calculate escalating costs based on the player's visit history, discouraging excessive clinic reliance.
+ *
+ * @param baseCost - The unscaled, default cost of the desired treatment.
+ * @param currentVisits - The total number of previous clinic visits made by the player.
+ * @returns The final scaled cost, rounded down to the nearest whole integer.
  */
 export const calculateClinicCost = (
   baseCost: number,
@@ -125,7 +158,10 @@ export const calculateClinicCost = (
 }
 
 /**
- * Scenes that practice mode can return to without a custom destination.
+ * Scenes that practice mode can safely return to upon completion or cancellation.
+ *
+ * @remarks
+ * Enforces a strict set of fallback destinations to prevent practice mode from depositing players into illegal or transient states.
  */
 export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
   GAME_PHASES.OVERWORLD,
@@ -133,51 +169,81 @@ export const PRACTICE_RETURN_SCENES = new Set<GamePhase>([
 ])
 
 /**
- * Chance that a rival band keeps its current route instead of moving.
+ * Chance that a rival band maintains its current geographic route instead of relocating.
+ *
+ * @remarks
+ * Evaluated daily during the overworld progression tick to inject a degree of unpredictability into rival movement patterns.
  */
 export const RIVAL_STAY_CHANCE = 0.3
 
 /**
- * Crowd decay multiplier applied after rival gig pressure.
+ * Crowd decay multiplier applied after sustaining rival gig pressure.
+ *
+ * @remarks
+ * Accelerates hype decay when playing a gig at a map node currently occupied by a rival. This multiplier is applied to each miss during the rhythm game.
  */
 export const RIVAL_GIG_CROWD_DECAY_PENALTY = 1.5
 
 /**
- * Maximum deal chance penalty from rival pressure.
+ * Maximum sponsorship deal chance penalty inflicted by rival pressure.
+ *
+ * @remarks
+ * Used in brand offer generation to limit the penalty subtracted from offer-ranking scores. It does not act as a cap on actual negotiation success probabilities.
  */
 export const MAX_RIVAL_DEAL_CHANCE_PENALTY = 0.2
 
 /**
  * Harmony cost for accepting the Neurotoxic pedal tradeoff.
+ *
+ * @remarks
+ * A recurring penalty deducted after every gig as long as the pedal remains in the band's inventory, representing the ongoing toll on cohesion.
  */
 export const NEUROTOXIC_PEDAL_HARMONY_PENALTY = 5
 
 /**
- * Crowd decay modifier applied by the Neurotoxic pedal.
+ * Crowd decay modifier applied by the active Neurotoxic pedal.
+ *
+ * @remarks
+ * Substantially reduces hype decay as a potent buff, offsetting its heavy initial harmony cost.
  */
 export const NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER = 0.5
 
 /**
- * Rival power conversion factor for sponsorship negotiation pressure.
+ * Conversion factor for translating rival power into a direct negotiation penalty.
+ *
+ * @remarks
+ * Multiplied against the rival's raw power stat to determine the offer-ranking penalty points, not direct success probability deductions.
  */
 export const RIVAL_POWER_TO_DEAL_CHANCE_FACTOR = 0.02
 
 /**
- * Chance penalty applied by rival negotiation interference.
+ * Fixed chance penalty applied by aggressive rival negotiation interference.
+ *
+ * @remarks
+ * A flat deduction subtracted from the player's final deal success probability when rivals actively sabotage talks.
  */
 export const RIVAL_NEGOTIATION_PENALTY = 0.15
 
 /**
- * Success chance for safe brand-deal negotiation.
+ * Base success probability for a safe, low-risk brand deal negotiation strategy.
+ *
+ * @remarks
+ * Yields lower overall payouts but ensures a steady income stream.
  */
 export const DEAL_NEGOTIATION_SAFE_CHANCE = 0.8
 
 /**
- * Success chance for persuasive brand-deal negotiation.
+ * Base success probability for a persuasive, balanced brand deal negotiation strategy.
+ *
+ * @remarks
+ * Carries moderate risk for an equivalently moderate increase in sponsorship yield.
  */
 export const DEAL_NEGOTIATION_PERSUASIVE_CHANCE = 0.5
 
 /**
- * Success chance for aggressive brand-deal negotiation.
+ * Base success probability for an aggressive, high-risk brand deal negotiation strategy.
+ *
+ * @remarks
+ * Highly volatile approach that results in massive payouts upon success or total negotiation collapse upon failure.
  */
 export const DEAL_NEGOTIATION_AGGRESSIVE_CHANCE = 0.3
