@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
+import { DEFAULT_BALANCE_TUNING } from '../../src/utils/balanceTuning.ts'
 import { LOAN_PROFILES } from '../../src/utils/loanProfiles.js'
 import { createInitialState } from '../../src/context/initialState.js'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
@@ -1422,6 +1423,40 @@ test('a run reports the opening separately from the tour', () => {
       insolvent.length >
       0.5,
     'most insolvencies here happen before the first gig'
+  )
+})
+
+// The emergency grant fires exactly when the daily tick has pushed money to or
+// below its trigger, so that trough is the number a grant candidate is diagnosed
+// on. Sampling only after the grant reported the lifted balance instead — a €40
+// trough plus a €250 grant reads as €290. The shipped neutral no-op hides this
+// because its grant is 0.
+test('the pre-gig minimum sees the trough the emergency grant lifts', () => {
+  const scenario = probeScenario(2, {
+    initialOverrides: { player: { money: 300 } }
+  })
+  const trigger = 250
+  const tuning = {
+    ...DEFAULT_BALANCE_TUNING,
+    earlyGame: {
+      ...DEFAULT_BALANCE_TUNING.earlyGame,
+      emergencyGrant: 5000,
+      // Capped at day 1, so the grant can only fire on the day-1 tick — which
+      // precedes any gig, and therefore always sits inside the pre-gig window.
+      emergencyGrantMaxDay: 1,
+      emergencyGrantTriggerMoney: trigger
+    }
+  }
+  const run = runSingleSimulation(
+    scenario,
+    createScenarioSeed('grant-observation', 1),
+    tuning
+  )
+
+  assert.equal(run.emergencyGrantUsed, true)
+  assert.ok(
+    run.earlyRunway.lowestMoneyBeforeFirstGig <= trigger,
+    `the grant only fires at or below €${trigger}, so the pre-gig minimum cannot read €${run.earlyRunway.lowestMoneyBeforeFirstGig}`
   )
 })
 

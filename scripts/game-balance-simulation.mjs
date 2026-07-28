@@ -2505,6 +2505,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       fameBeforeDailyUpdates,
       state.player.fame
     )
+    // The daily tick is the trough the grant then lifts the run out of. Sampling
+    // only after the grant reported the post-grant balance as the minimum (€40
+    // trough + €250 grant read as €290), which is exactly the number a grant
+    // candidate is diagnosed on.
+    observeEarlyRunwayMoney()
 
     if (
       !runCtx.emergencyGrantUsed &&
@@ -2514,13 +2519,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     ) {
       state.player.money = clampPlayerMoney(finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant)
       runCtx.emergencyGrantUsed = true
+      observeEarlyRunwayMoney()
     }
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
     const dailyObligations = getTotalDailyObligations(state)
     if (firstGigDay == null) obligationsBeforeFirstGig += dailyObligations
-    observeEarlyRunwayMoney()
     if (
       shouldTriggerBankruptcy(
         state.player.money,
