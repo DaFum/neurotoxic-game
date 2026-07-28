@@ -1042,10 +1042,18 @@ export const GIG_CADENCE_POLICIES = Object.freeze([
   'first-income'
 ])
 
+/**
+ * The policy every shipped scenario runs under. Single source of truth: a probe
+ * comparing against "the shipped phase" has to resolve it from here rather than
+ * repeating the literal, or a rename would silently leave the comparison with no
+ * baseline at all and every delta reading as zero.
+ */
+export const SHIPPED_GIG_CADENCE_POLICY = GIG_CADENCE_POLICIES[0]
+
 export const resolveGigCadence = ({
   day,
   gigGapDays,
-  policy = 'gap-aligned',
+  policy = SHIPPED_GIG_CADENCE_POLICY,
   firstGigDay = null
 }) => {
   const gap = Math.max(
@@ -2242,6 +2250,18 @@ const recordObservedFameChange = (accounting, before, after) => {
   accountFameChange(accounting, difference, difference)
 }
 
+/**
+ * The discretionary money sinks, as opposed to the recurring obligations the daily
+ * tick charges. Shared by the first-gig snapshot and the end-of-run fallback so the
+ * two cannot drift into meaning different things.
+ */
+const discretionarySpend = counters =>
+  counters.travelSpend +
+  counters.refuelSpend +
+  counters.repairSpend +
+  counters.clinicSpend +
+  counters.catalogMoneySpent
+
 export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUNING) => {
   // UUIDs are deterministic per run so candidate ordering cannot affect paired
   // gameplay through generated asset/campaign identifiers.
@@ -2397,7 +2417,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let moneyBeforeFirstGig = null
   let lowestMoneyBeforeFirstGig = state.player.money
   let obligationsBeforeFirstGig = 0
-  let spendBeforeFirstGig = 0
+  // Snapshotted when the first show starts. Stays null for a run that never
+  // played, and the return then reads the counters directly — a run that went
+  // bankrupt before any gig has still spent money on travel, fuel, repairs and the
+  // shop, and reporting €0 for it would understate the pre-gig spending of exactly
+  // the cohort `earlyRunway` exists to describe.
+  let spendBeforeFirstGig = null
   let blockedTravelDaysBeforeFirstGig = 0
   let firstBlockedTravel = null
 
@@ -2509,7 +2534,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const wantsToPerform = resolveGigCadence({
       day,
       gigGapDays: scenario.gigGapDays,
-      policy: scenario.gigCadencePolicy ?? 'gap-aligned',
+      policy: scenario.gigCadencePolicy ?? SHIPPED_GIG_CADENCE_POLICY,
       firstGigDay
     })
 
@@ -2827,12 +2852,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     if (firstGigDay == null) {
       firstGigDay = day
       moneyBeforeFirstGig = state.player.money
-      spendBeforeFirstGig =
-        counters.travelSpend +
-        counters.refuelSpend +
-        counters.repairSpend +
-        counters.clinicSpend +
-        counters.catalogMoneySpent
+      spendBeforeFirstGig = discretionarySpend(counters)
     }
     const damagedGear = runPreGigSetupMinigame(
       state,
@@ -3113,7 +3133,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       daysBeforeFirstGig:
         firstGigDay == null ? daysSurvived : firstGigDay - 1,
       obligationsBeforeFirstGig: Math.round(obligationsBeforeFirstGig),
-      spendBeforeFirstGig: Math.round(spendBeforeFirstGig),
+      spendBeforeFirstGig: Math.round(
+        spendBeforeFirstGig ?? discretionarySpend(counters)
+      ),
       blockedTravelDaysBeforeFirstGig,
       firstBlockedTravel
     },

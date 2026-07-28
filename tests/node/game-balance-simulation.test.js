@@ -1313,7 +1313,11 @@ test('cadence policies differ only in phase, and agree at a gap of one', () => {
   // A missing gap must not disable the cadence, and an unknown policy must not
   // silently resolve to the shipped one: a probe would then report identical
   // cohorts as evidence that phase does not matter.
-  assert.equal(resolveGigCadence({ day: 3, gigGapDays: undefined }), true)
+  assert.equal(
+    resolveGigCadence({ day: 3, gigGapDays: undefined }),
+    3 % SIMULATION_CONSTANTS.baseGigGapDays === 0,
+    'The fallback is baseGigGapDays, so the expectation has to come from it too'
+  )
   assert.throws(
     () => resolveGigCadence({ day: 1, gigGapDays: 2, policy: 'offset' }),
     RangeError
@@ -1365,6 +1369,27 @@ test('a run reports the opening separately from the tour', () => {
       runway.bankruptBeforeFirstGig,
       run.bankrupt && runway.firstGigDay == null
     )
+    // A run that never played has still spent money on travel, fuel, repairs and
+    // the shop. Reporting 0 for it would understate the pre-gig spending of exactly
+    // the never-played cohort this block exists to describe.
+    const discretionary =
+      run.travelSpend +
+      run.refuelSpend +
+      run.repairSpend +
+      run.clinicSpend +
+      run.catalogMoneySpent
+    if (runway.firstGigDay == null) {
+      assert.equal(
+        runway.spendBeforeFirstGig,
+        Math.round(discretionary),
+        'A never-played run reports its whole discretionary spend as pre-gig spend'
+      )
+    } else {
+      assert.ok(
+        runway.spendBeforeFirstGig <= Math.round(discretionary) + 1,
+        'The pre-gig snapshot cannot exceed the run total'
+      )
+    }
     if (runway.firstBlockedTravel) {
       assert.ok(runway.blockedTravelDaysBeforeFirstGig >= 1)
       assert.ok(runway.firstBlockedTravel.day >= 1)

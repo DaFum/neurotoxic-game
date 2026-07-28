@@ -4,7 +4,7 @@ import path from 'node:path'
 import { execSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import { ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
+import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
 import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
@@ -507,6 +507,18 @@ const NO_CHANGE_NOTE =
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
   const noChangeNote = report.combinationSearch.selectedAppliesNoChange ? NO_CHANGE_NOTE : ''
+  // Evaluated and skipped have to add up to the pairs available, and the gate
+  // breakdown belongs to the evaluated side only — appending it to the skipped
+  // count read as a breakdown of pairs that were never measured at all.
+  const search = report.combinationSearch
+  const holdoutRejected = search.pairsRejectedByHoldoutGate ?? 0
+  const calibrationRejected = search.pairsRejectedByCalibrationGate ?? 0
+  const selectedPairs = Math.max(0, search.pairsEvaluated - holdoutRejected - calibrationRejected)
+  const pairAccounting =
+    `Of ${search.pairsAvailable} available pairs, ${search.pairsEvaluated} were evaluated ` +
+    `(${holdoutRejected} rejected by the holdout gate, ${calibrationRejected} by the calibration gate, ` +
+    `${selectedPairs} clearing both) and ${search.pairsSkipped} were never reached, because the search stops ` +
+    `at the first pair that clears both gates and every remaining pair carries higher impact.`
   const selectionOutcomeNote =
     report.combinationSearch.selectionOutcome === 'no-combination-cleared-both-gates'
       ? ' **Keine Kombination hat beide Gates bestanden.** Die genannte Kombination ist nur die Basis, gegen die dieser Bericht geschrieben ist — sie wird nicht zur Auslieferung empfohlen.'
@@ -530,7 +542,7 @@ ${holdoutMeasurements
   const corridor = report.designRiskCorridors
   const corridorNote = !corridor
     ? '_Keine Korridorauswertung im Artefakt._'
-    : `${corridor.note}
+    : `Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem das Risiko entfernen, für das ein Szenario existiert — diese Liste macht "sicherer als beabsichtigt" sichtbar.
 
 | Szenario | Holdout-Insolvenz | Designkorridor | Lage |
 |---|---:|---:|---|
@@ -581,7 +593,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped (${report.combinationSearch.pairsRejectedByHoldoutGate ?? 0} rejected by the holdout gate, ${report.combinationSearch.pairsRejectedByCalibrationGate ?? 0} by the calibration gate).${selectionOutcomeNote}${noChangeNote}
+\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${pairAccounting}${selectionOutcomeNote}${noChangeNote}
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -618,7 +630,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped (${report.combinationSearch.pairsRejectedByHoldoutGate ?? 0} rejected by the holdout gate, ${report.combinationSearch.pairsRejectedByCalibrationGate ?? 0} by the calibration gate).${selectionOutcomeNote}${noChangeNote}
+\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${pairAccounting}${selectionOutcomeNote}${noChangeNote}
 
 ## Kombinierte Validierung
 
@@ -658,7 +670,21 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 
 Only the selected bootstrap and touring defaults are intended for production.
 
-Recommendation: **${report.recommendation.status}**
+Recommendation: **${report.recommendation.status}**${
+    report.recommendation.productionHold?.adopted === false
+      ? `
+
+> **Nicht ausgeliefert.** \`BALANCE_RECOMMENDATION_HOLD\` in \`src/utils/balanceTuning.ts\` hält diese Empfehlung zurück, die Produktionswerte bleiben neutral${
+          report.recommendation.productionHold.matchesRecommendation === false
+            ? ' — und der Hold wurde gegen ein anderes Kandidatenpaar geprüft (`' +
+              report.recommendation.productionHold.heldFor.bootstrap +
+              '` + `' +
+              report.recommendation.productionHold.heldFor.touring +
+              '`), deckt dieses also nicht ab'
+            : ''
+        }: ${report.recommendation.productionHold.reason}`
+      : ''
+  }
 
 ## Fazit
 
@@ -871,11 +897,17 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     const calibrationFailures = [
       ...new Set(evaluated.filter(c => c.calibrationEvaluated).flatMap(c => c.validation.failures))
     ]
+    // Naming the partner keeps each failure traceable to one evaluated pair. A bare
+    // list of rates cannot be cross-referenced back to a combination, which is the
+    // whole point of a rejection reason.
+    const partnerOf = combination =>
+      side === 'bootstrap' ? combination.touring.id : combination.bootstrap.id
     const holdoutFailures = [
       ...new Set(
         evaluated.flatMap(c =>
           (c.holdoutSafetyValidation?.failures ?? []).map(
-            failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+            failure =>
+              `with ${partnerOf(c)}: ${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
           )
         )
       )
@@ -968,7 +1000,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     blocking: false,
     layer: 'design-intent',
     source: 'holdout',
-    note: 'Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem das Risiko entfernen, für das ein Szenario existiert — diese Liste macht "sicherer als beabsichtigt" sichtbar.',
+    note: 'The hard caps are ceilings. A lever can clear all of them and still remove the risk a scenario exists to create, so this list makes "safer than intended" visible.',
     scenarios: Object.entries(holdoutBankruptcyByScenario).map(([scenarioId, measurement]) => {
       const corridor = RISK_TARGETS[scenarioId]?.bankruptcyTargetPct ?? null
       return {
@@ -1070,7 +1102,25 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       objectiveNote,
       bootstrap: selectedBootstrap.id,
       touring: selectedTouring.id,
-      tuning: finalTuning
+      tuning: finalTuning,
+      // Whether the recommendation is actually shipped. Without this the artifact
+      // read as production-ready tuning while `balanceTuning.ts` deliberately kept
+      // production neutral, and nothing in the report said so.
+      productionHold:
+        selected && BALANCE_RECOMMENDATION_HOLD
+          ? {
+              adopted: false,
+              heldFor: {
+                bootstrap: BALANCE_RECOMMENDATION_HOLD.bootstrap,
+                touring: BALANCE_RECOMMENDATION_HOLD.touring
+              },
+              // A hold reviewed against a different pair does not cover this one.
+              matchesRecommendation:
+                BALANCE_RECOMMENDATION_HOLD.bootstrap === selectedBootstrap.id &&
+                BALANCE_RECOMMENDATION_HOLD.touring === selectedTouring.id,
+              reason: BALANCE_RECOMMENDATION_HOLD.reason
+            }
+          : { adopted: Boolean(selected), heldFor: null, matchesRecommendation: null, reason: null }
     },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }

@@ -37,6 +37,7 @@ import {
   KPI_TARGETS,
   RISK_TARGETS,
   SCENARIOS,
+  SHIPPED_GIG_CADENCE_POLICY,
   SIMULATION_CONSTANTS,
   buildHoldoutSafetyValidation,
   calculateAverageFameEarnedPerGig,
@@ -77,6 +78,16 @@ const rate = (count, total) => round((count / Math.max(1, total)) * 100)
 const roundOrNull = value => (value == null ? null : round(value))
 const pctDelta = (from, to) =>
   from == null || to == null || from === 0 ? null : round(((to - from) / Math.abs(from)) * 100)
+// `pctDelta` is null when a side is missing or the baseline is exactly 0. Folding
+// that into the max as 0 would report "not comparable" as "no side effect", which
+// is the opposite of a caveat.
+const maxAbsDelta = (items, key) => {
+  const comparable = items
+    .map(item => item[key])
+    .filter(value => value != null)
+    .map(Math.abs)
+  return comparable.length ? round(Math.max(...comparable)) : null
+}
 
 /** Scenarios with a hard insolvency cap — the same set the holdout gate covers. */
 export const cappedScenarios = () =>
@@ -192,7 +203,17 @@ export const runCadenceProbe = ({
     ])
   )
 
-  const shipped = policies.find(entry => entry.policy === 'gap-aligned')
+  const shipped = policies.find(
+    entry => entry.policy === SHIPPED_GIG_CADENCE_POLICY
+  )
+  // Failing loudly beats rendering a report whose baseline silently vanished: with
+  // no shipped cohort every delta is null, nothing is `isShipped`, and the shipped
+  // policy itself would qualify as a variant that "cleared" the gate.
+  if (!shipped) {
+    throw new RangeError(
+      `Shipped cadence policy ${SHIPPED_GIG_CADENCE_POLICY} is not among the compared policies`
+    )
+  }
   const cohortOf = (entry, scenarioId, stream) =>
     entry.scenarios.find(scenario => scenario.scenarioId === scenarioId)?.streams[stream]
 
@@ -233,22 +254,19 @@ export const runCadenceProbe = ({
     })
     return {
       policy: entry.policy,
-      isShipped: entry.policy === 'gap-aligned',
+      isShipped: entry.policy === SHIPPED_GIG_CADENCE_POLICY,
       holdoutSafetyValidation: holdoutByPolicy[entry.policy],
       // Named separately from the gate because these are diagnostics on the
       // shipped-vs-variant comparison, not release conditions.
       sideEffects: {
-        maxAbsSolventMoneyDeltaPct: Math.max(
-          ...perScenario.map(item => Math.abs(item.solventMoneyDeltaPct ?? 0))
-        ),
-        maxAbsFamePerGigDeltaPct: Math.max(
-          ...perScenario.map(item => Math.abs(item.famePerGigDeltaPct ?? 0))
-        ),
+        maxAbsSolventMoneyDeltaPct: maxAbsDelta(perScenario, 'solventMoneyDeltaPct'),
+        maxAbsFamePerGigDeltaPct: maxAbsDelta(perScenario, 'famePerGigDeltaPct'),
         // The honest Fame comparison: same denominator on both sides. A large
         // gap between this and the figure above is the never-played composition
         // shifting, not Fame per gig moving.
-        maxAbsFamePerGigPlayedRunsDeltaPct: Math.max(
-          ...perScenario.map(item => Math.abs(item.famePerGigPlayedRunsDeltaPct ?? 0))
+        maxAbsFamePerGigPlayedRunsDeltaPct: maxAbsDelta(
+          perScenario,
+          'famePerGigPlayedRunsDeltaPct'
         )
       },
       scenariosOutsideDesignCorridor: perScenario
@@ -259,13 +277,37 @@ export const runCadenceProbe = ({
   })
 
   const cultId = 'cult_hypergrowth'
-  const clearing = variants.filter(
-    variant => variant.holdoutSafetyValidation.passed && !variant.isShipped
-  )
+  const shippedVariant = variants.find(variant => variant.isShipped)
+  const cultCap = KPI_TARGETS[cultId]?.bankruptcyMax ?? null
+  const cultRateFor = variant =>
+    variant.scenarios.find(item => item.scenarioId === cultId)?.holdoutBankruptcyRatePct ?? null
+  const shippedCultRate = shippedVariant ? cultRateFor(shippedVariant) : null
+  // There is nothing to explain unless the shipped policy actually breaches the
+  // cap this probe is about. With a small `--runs`, sampling can put every policy
+  // under it — `--runs 1` reads 0% everywhere — and a filter that only asked
+  // "which variants pass?" would then publish a FAIL-to-PASS causal claim its own
+  // measurements do not support.
+  const shippedBreaches =
+    shippedVariant != null &&
+    !shippedVariant.holdoutSafetyValidation.passed &&
+    cultCap != null &&
+    shippedCultRate != null &&
+    shippedCultRate > cultCap
+  const clearing = shippedBreaches
+    ? variants.filter(
+        variant =>
+          !variant.isShipped &&
+          variant.holdoutSafetyValidation.passed &&
+          (cultRateFor(variant) ?? Infinity) <= cultCap
+      )
+    : []
   const conclusion = {
     // The question, in one field: did any phase variant turn the failing gate
     // into a passing one on the same seeds?
     phaseExplainsBreach: clearing.length > 0,
+    shippedPolicyBreachesCultCap: shippedBreaches,
+    shippedCultHoldoutRatePct: shippedCultRate,
+    cultHardCapPct: cultCap,
     clearingPolicies: clearing.map(variant => variant.policy),
     cultBeforeFirstGigShareByPolicy: Object.fromEntries(
       policies.map(entry => [
@@ -279,11 +321,17 @@ export const runCadenceProbe = ({
         variant.scenarios.find(item => item.scenarioId === cultId)?.holdoutBankruptcyRatePct ?? null
       ])
     ),
-    verdict: clearing.length
-      ? `Allein die Kadenz-Phase bringt das Holdout-Gate von \`${cultId}\` von FAIL auf PASS (${clearing
-          .map(variant => variant.policy)
-          .join(', ')}). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.`
-      : `Keine Kadenz-Phase besteht das Holdout-Gate. Das Eröffnungsrisiko überlebt jede Phase, ist also ein echtes Early-Runway-Problem im Spiel und kein Artefakt der Simulationspolitik — ein Eingriff ist gerechtfertigt.`
+    verdict: !shippedBreaches
+      ? `Nicht auswertbar: Die ausgelieferte Politik \`gap-aligned\` überschreitet die harte Grenze von \`${cultId}\` in diesem Lauf nicht (${
+          shippedCultRate == null ? 'nicht gemessen' : `${shippedCultRate}%`
+        } gegen ${cultCap == null ? '—' : `${cultCap}%`}). Ohne reproduzierten Bruch gibt es keine Ursache zuzuordnen — bei kleinem \`--runs\` ist das ein Stichprobeneffekt. Mit ${
+          SIMULATION_CONSTANTS.runsPerScenario
+        } Runs pro Szenario wiederholen.`
+      : clearing.length
+        ? `Allein die Kadenz-Phase bringt das Holdout-Gate von \`${cultId}\` von FAIL (${shippedCultRate}% gegen ${cultCap}%) auf PASS (${clearing
+            .map(variant => `${variant.policy} ${cultRateFor(variant)}%`)
+            .join(', ')}). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.`
+        : `Der Bruch ist reproduziert (\`gap-aligned\` ${shippedCultRate}% gegen ${cultCap}%), aber keine Kadenz-Phase behebt ihn. Das Eröffnungsrisiko überlebt jede Phase, ist also ein echtes Early-Runway-Problem im Spiel und kein Artefakt der Simulationspolitik — ein Eingriff ist gerechtfertigt.`
   }
 
   return {
@@ -340,7 +388,7 @@ ${report.variants
               .map(failure => `\`${failure.scenarioId}\` ${failure.holdoutValuePct}% > ${failure.maximumPct}%`)
               .join('; ')
           : '—'
-      } | ${variant.sideEffects.maxAbsSolventMoneyDeltaPct}% | ${variant.sideEffects.maxAbsFamePerGigDeltaPct}% | ${variant.sideEffects.maxAbsFamePerGigPlayedRunsDeltaPct}% |`
+      } | ${fmtPct(variant.sideEffects.maxAbsSolventMoneyDeltaPct)} | ${fmtPct(variant.sideEffects.maxAbsFamePerGigDeltaPct)} | ${fmtPct(variant.sideEffects.maxAbsFamePerGigPlayedRunsDeltaPct)} |`
   )
   .join('\n')}
 

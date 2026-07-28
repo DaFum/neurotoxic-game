@@ -287,11 +287,45 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
   assert.deepEqual(
     DEFAULT_BALANCE_TUNING,
     ORIGINAL_CONTROL_BALANCE_TUNING,
-    `BALANCE_RECOMMENDATION_HOLD is set, so production must stay on the control tuning: ${BALANCE_RECOMMENDATION_HOLD}`
+    `BALANCE_RECOMMENDATION_HOLD is set, so production must stay on the control tuning: ${BALANCE_RECOMMENDATION_HOLD.reason}`
   )
   assert.notDeepEqual(
     tuning,
     ORIGINAL_CONTROL_BALANCE_TUNING,
     'The report recommends no lever, so BALANCE_RECOMMENDATION_HOLD is stale and must be set back to null'
+  )
+
+  // A hold reviewed against one candidate pair must not silently cover a different
+  // one. Without this, a report that started recommending some other lever would
+  // leave production pinned to the control tuning against evidence nobody read.
+  assert.deepEqual(
+    {
+      bootstrap: recommendation.bootstrap,
+      touring: recommendation.touring
+    },
+    {
+      bootstrap: BALANCE_RECOMMENDATION_HOLD.bootstrap,
+      touring: BALANCE_RECOMMENDATION_HOLD.touring
+    },
+    `The report now recommends \`${recommendation.bootstrap}\` + \`${recommendation.touring}\`, which BALANCE_RECOMMENDATION_HOLD was not reviewed against; re-review and update or clear the hold`
+  )
+
+  // The artifact has to carry the same verdict, or a reader of the report alone
+  // would take the recommendation for shipped tuning.
+  const hold = /** @type {Record<string, unknown>} */ (recommendation)
+    .productionHold
+  assert.ok(
+    typeof hold === 'object' && hold !== null,
+    `Experiment report has no \`recommendation.productionHold\`; ${regenerate}`
+  )
+  assert.equal(
+    /** @type {Record<string, unknown>} */ (hold).adopted,
+    false,
+    'A held recommendation must be reported as not adopted'
+  )
+  assert.equal(
+    /** @type {Record<string, unknown>} */ (hold).matchesRecommendation,
+    true,
+    'The report must confirm the hold was reviewed against the pair it recommends'
   )
 })

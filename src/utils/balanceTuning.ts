@@ -52,6 +52,14 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
     }
   })
 
+export interface BalanceRecommendationHold {
+  /** `recommendation.bootstrap` of the report this hold was reviewed against. */
+  bootstrap: string
+  /** `recommendation.touring` of the report this hold was reviewed against. */
+  touring: string
+  reason: string
+}
+
 /**
  * Why production does not carry the lever the committed experiment report
  * recommends.
@@ -63,13 +71,22 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
  *
  * A non-null hold is the one legitimate exception: the report recommends a lever
  * that has deliberately not been adopted. It exists so that decision is a
- * reviewed line of code rather than a silent mismatch, and
- * `tests/node/regionalGigHistory.test.js` then requires production to sit on
- * `ORIGINAL_CONTROL_BALANCE_TUNING` — never on some third hand-edited state — and
- * requires the hold to be cleared once the report stops recommending a lever.
+ * reviewed line of code rather than a silent mismatch. It names the exact
+ * candidate pair it was reviewed against, so a report that starts recommending
+ * something else invalidates the hold instead of silently inheriting it — a
+ * generic "we are holding something" would leave production pinned to the control
+ * tuning against evidence nobody looked at. `tests/node/regionalGigHistory.test.js`
+ * enforces all three parts: production sits on `ORIGINAL_CONTROL_BALANCE_TUNING`,
+ * the ids match the report, and the hold is cleared once the report recommends no
+ * lever at all.
  */
-export const BALANCE_RECOMMENDATION_HOLD: string | null =
-  'The report recommends `bootstrap-emergency-250` (a one-off €250 grant below €100 through day 5). Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold.'
+export const BALANCE_RECOMMENDATION_HOLD: Readonly<BalanceRecommendationHold> | null =
+  deepFreeze({
+    bootstrap: 'bootstrap-emergency-250',
+    touring: 'touring-none',
+    reason:
+      'A one-off €250 grant below €100 through day 5. Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold.'
+  })
 
 /**
  * Production tuning. Currently neutral: Phase 3 selected no lever once the
