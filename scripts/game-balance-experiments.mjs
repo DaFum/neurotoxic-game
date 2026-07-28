@@ -1124,6 +1124,40 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       validation: 'measured once, on the selected combination only'
     },
     selectionGateValidation: reported.selectionGateValidation ?? null,
+    // Both cohorts, side by side. A cap verdict that flips between two equal-size
+    // cohorts is not a property of the tuning, and a reader has to be able to see
+    // that from the artifact instead of taking one stream's figure as settled.
+    selectionBankruptcyByScenario: Object.fromEntries(
+      (reported.selectionGateMeasured ?? []).map(scenario => [
+        scenario.id,
+        {
+          ratePct: scenario.holdoutBankruptcy.ratePct,
+          count: scenario.holdoutBankruptcy.count,
+          sampleSize: scenario.holdoutBankruptcy.sampleSize,
+          maximumPct: KPI_TARGETS[scenario.id]?.bankruptcyMax ?? null
+        }
+      ])
+    ),
+    // Named where both streams measured the same scenario and disagree about its
+    // cap. That is a sample-size statement, not a balance finding.
+    capVerdictDisagreements: (reported.selectionGateMeasured ?? [])
+      .map(scenario => {
+        const cap = KPI_TARGETS[scenario.id]?.bankruptcyMax
+        const selectionRate = scenario.holdoutBankruptcy.ratePct
+        const validationRate = holdoutBankruptcyByScenario[scenario.id]?.ratePct
+        if (cap == null || validationRate == null) return null
+        return selectionRate <= cap === validationRate <= cap
+          ? null
+          : {
+              scenarioId: scenario.id,
+              maximumPct: cap,
+              selectionRatePct: selectionRate,
+              validationRatePct: validationRate,
+              spreadPct: round(Math.abs(validationRate - selectionRate)),
+              note: `Two equal-size cohorts disagree about the ${cap}% cap (${selectionRate}% vs ${validationRate}%). At this sample size the cap is not decidable for this scenario; raise runsPerScenario or revisit the cap before treating either figure as the verdict.`
+            }
+      })
+      .filter(Boolean),
     holdoutSafetyValidation,
     holdoutBankruptcyByScenario,
     designRiskCorridors,

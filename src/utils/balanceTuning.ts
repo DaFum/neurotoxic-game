@@ -81,17 +81,13 @@ export interface BalanceRecommendationHold {
  * lever at all.
  */
 export const BALANCE_RECOMMENDATION_HOLD: Readonly<BalanceRecommendationHold> | null =
-  deepFreeze({
-    bootstrap: 'bootstrap-emergency-250',
-    touring: 'touring-none',
-    reason:
-      'A one-off €250 grant below €100 through day 5. Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold.'
-  })
+  null
 
 /**
  * Production tuning. Currently neutral: Phase 3 selected no lever once the
- * simulated horizon was bounded by the map, and the lever the report now
- * recommends is on hold — see `BALANCE_RECOMMENDATION_HOLD`.
+ * simulated horizon was bounded by the map, and the report still recommends the
+ * neutral no-op, so there is nothing being held back (`BALANCE_RECOMMENDATION_HOLD`
+ * is `null`).
  *
  * The levers it previously carried were calibrated against 75-day runs. A real
  * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"
