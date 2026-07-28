@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T09:01:04.940Z",
+  "generatedAt": "2026-07-28T09:14:55.678Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "64d44e5b143641a94be59a7e97a92e99b263c95c",
+    "sourceBaseCommit": "0c09a79f3c94b88f9aabe82de18094248e61cdaf",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "47b6ab54bb69b387fbd1796d81a34a8adea411e741f0c72e4a3f68e7e807ef33",
-    "balanceSourceSha256": "95070685ad296b882de9f7ba8e5bce60d144b7e2461d5418341bf4ef0e3d6632",
-    "experimentScriptSha256": "fd49885c91a73bf228f7ab707b49f8e275b643b7665809f8821339da365c2a15",
+    "simulationScriptSha256": "f8e4d0c2b3d908461896e73c25276e316c3759cb923f600ac031aebac6ac19e5",
+    "balanceSourceSha256": "5362aeb14a4cb856658dff2fe537cd653ba26af3f3052b8909786d9498eaa3b5",
+    "experimentScriptSha256": "57d6d2b8e17c786542473d0bb8c2d4b50af540b588a9fa050eaf1bc04f8a5a12",
     "experimentConfigSha256": "d203a1d726f71a5ac7370496fc73cbdac4c21e69e892bdb75917eeffe31b5178",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "3dc121493fa11aad91a76c1be2fbbaab48746efb7c7ed5adc560fc53e4e0ece3",
@@ -9515,15 +9515,15 @@
                 "gigGapDays": 2,
                 "sampleSize": 260,
                 "bankruptcyRatePct": 8.85,
-                "finalMoneyMean": 5404.98,
+                "finalMoneyMean": 5402.72,
                 "finalMoneyMedian": 5716,
-                "finalMoneyP90": 8709,
-                "moneyPerDay": 566.2,
-                "gigNetPerDay": 790.26,
-                "fameEarnedPerDay": 699.76,
-                "fameEarnedPerGig": 1593.74,
+                "finalMoneyP90": 8567,
+                "moneyPerDay": 565.96,
+                "gigNetPerDay": 789.76,
+                "fameEarnedPerDay": 697.43,
+                "fameEarnedPerGig": 1588.18,
                 "gigsPlayed": 4.05,
-                "finalHarmony": 54.5,
+                "finalHarmony": 54.46,
                 "clinicVisits": 0,
                 "repairs": 0.7,
                 "refuels": 0.25,
@@ -9539,15 +9539,15 @@
                 "finalMoneyMedian": 0,
                 "finalMoneyP90": 0,
                 "moneyPerDay": 29.58,
-                "gigNetPerDay": 39.03,
-                "fameEarnedPerDay": 34.85,
-                "fameEarnedPerGig": 47.08,
+                "gigNetPerDay": 38.95,
+                "fameEarnedPerDay": 34.92,
+                "fameEarnedPerGig": 47.31,
                 "gigsPlayed": 0.07,
                 "finalHarmony": 73.44,
                 "clinicVisits": 0,
                 "repairs": 0.01,
                 "refuels": 0,
-                "maxDrawdownPct": 69.1,
+                "maxDrawdownPct": 69.13,
                 "daysSurvived": 3.19
               },
               {
@@ -9731,15 +9731,15 @@
                 "gigGapDays": 2,
                 "sampleSize": 260,
                 "bankruptcyRatePct": 8.85,
-                "finalMoneyMean": 5404.98,
+                "finalMoneyMean": 5402.72,
                 "finalMoneyMedian": 5716,
-                "finalMoneyP90": 8709,
-                "moneyPerDay": 566.2,
-                "gigNetPerDay": 790.26,
-                "fameEarnedPerDay": 699.76,
-                "fameEarnedPerGig": 1593.74,
+                "finalMoneyP90": 8567,
+                "moneyPerDay": 565.96,
+                "gigNetPerDay": 789.76,
+                "fameEarnedPerDay": 697.43,
+                "fameEarnedPerGig": 1588.18,
                 "gigsPlayed": 4.05,
-                "finalHarmony": 54.5,
+                "finalHarmony": 54.46,
                 "clinicVisits": 0,
                 "repairs": 0.7,
                 "refuels": 0.25,
@@ -9755,15 +9755,15 @@
                 "finalMoneyMedian": 0,
                 "finalMoneyP90": 0,
                 "moneyPerDay": 29.58,
-                "gigNetPerDay": 39.03,
-                "fameEarnedPerDay": 34.85,
-                "fameEarnedPerGig": 47.08,
+                "gigNetPerDay": 38.95,
+                "fameEarnedPerDay": 34.92,
+                "fameEarnedPerGig": 47.31,
                 "gigsPlayed": 0.07,
                 "finalHarmony": 73.44,
                 "clinicVisits": 0,
                 "repairs": 0.01,
                 "refuels": 0,
-                "maxDrawdownPct": 69.1,
+                "maxDrawdownPct": 69.13,
                 "daysSurvived": 3.19
               },
               {
@@ -9821,9 +9821,9 @@
               "bankruptcyDeltaPct": -3.85
             },
             "low_resource_touring": {
-              "moneyPerDayAdvantagePct": 406.53,
-              "famePerDayAdvantagePct": 92.93,
-              "harmonyDelta": -7.72,
+              "moneyPerDayAdvantagePct": 406.75,
+              "famePerDayAdvantagePct": 93.57,
+              "harmonyDelta": -7.68,
               "repairsDelta": 0.4,
               "bankruptcyDeltaPct": -8.47
             }
@@ -9837,9 +9837,9 @@
               "bankruptcyDeltaPct": -3.85
             },
             "low_resource_touring": {
-              "moneyPerDayAdvantagePct": 406.53,
-              "famePerDayAdvantagePct": 92.93,
-              "harmonyDelta": -7.72,
+              "moneyPerDayAdvantagePct": 406.75,
+              "famePerDayAdvantagePct": 93.57,
+              "harmonyDelta": -7.68,
               "repairsDelta": 0.4,
               "bankruptcyDeltaPct": -8.47
             }
@@ -9855,7 +9855,7 @@
         ],
         "shortfalls": [
           "baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%)",
-          "low_resource_touring money-per-day advantage 406.53% is outside the 20-25% target (was 406.53%)"
+          "low_resource_touring money-per-day advantage 406.75% is outside the 20-25% target (was 406.75%)"
         ],
         "profiles": {
           "baseline_touring": {
@@ -9865,8 +9865,8 @@
             "withinTarget": false
           },
           "low_resource_touring": {
-            "before": 406.53,
-            "after": 406.53,
+            "before": 406.75,
+            "after": 406.75,
             "reductionPct": 0,
             "withinTarget": false
           }
@@ -9874,7 +9874,7 @@
         "improved": false,
         "checks": {
           "baselineMoneyPerDayAdvantage": 383.43,
-          "lowResourceMoneyPerDayAdvantage": 406.53,
+          "lowResourceMoneyPerDayAdvantage": 406.75,
           "famePerDayTradeoff": 95.67,
           "harmonyTradeoff": -9.51,
           "repairsTradeoff": 0.36,
@@ -21908,7 +21908,7 @@
       ],
       "selectedCandidateId": "touring-none",
       "objectiveStatus": "partial",
-      "objectiveNote": "Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.53% is outside the 20-25% target (was 406.53%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove."
+      "objectiveNote": "Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.75% is outside the 20-25% target (was 406.75%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove."
     }
   },
   "finalCombinedValidation": {
@@ -26883,7 +26883,7 @@
   "recommendation": {
     "status": "accepted-for-production-partial",
     "objectiveStatus": "partial",
-    "objectiveNote": "Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.53% is outside the 20-25% target (was 406.53%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.",
+    "objectiveNote": "Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.75% is outside the 20-25% target (was 406.75%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.",
     "bootstrap": "bootstrap-none",
     "touring": "touring-none",
     "tuning": {
@@ -26908,7 +26908,7 @@
     }
   },
   "runtime": {
-    "durationMs": 51552,
+    "durationMs": 53078,
     "candidates": 25,
     "totalRuns": 18460
   }

@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 51552 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 53078 ms.
 
 ## Kontrollzustand
 
@@ -41,7 +41,7 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 ## Gewählter Bootstrap-Hebel
 
-`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 98 pairs were evaluated, 97 skipped. Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.
+`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 98 pairs were evaluated, 97 skipped. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -54,8 +54,8 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | control | baseline_touring | 4 | 1.63 | 155.48 | 253.12 | 284.7 | 1588.92 | 62.5 | 0.01 | 0 | 71.8% | 20.77% | 9.43 |
 | control | baseline_touring | 5 | 0.87 | 100.47 | 149.9 | 182.47 | 904.93 | 65.23 | 0 | 0 | 85.15% | 61.92% | 7.63 |
 | control | low_resource_touring | 1 | 8.56 | 2867.98 | 3477.99 | 1350.02 | 1576.15 | 46.78 | 1.1 | 1.2 | 17.09% | 0.38% | 9.97 |
-| control | low_resource_touring | 2 | 4.05 | 566.2 | 790.26 | 699.76 | 1593.74 | 54.5 | 0.7 | 0.25 | 45.5% | 8.85% | 9.55 |
-| control | low_resource_touring | 3 | 0.07 | 29.58 | 39.03 | 34.85 | 47.08 | 73.44 | 0.01 | 0 | 69.1% | 97.69% | 3.19 |
+| control | low_resource_touring | 2 | 4.05 | 565.96 | 789.76 | 697.43 | 1588.18 | 54.46 | 0.7 | 0.25 | 45.5% | 8.85% | 9.55 |
+| control | low_resource_touring | 3 | 0.07 | 29.58 | 38.95 | 34.92 | 47.31 | 73.44 | 0.01 | 0 | 69.13% | 97.69% | 3.19 |
 | control | low_resource_touring | 4 | 0.01 | 2.19 | 3.12 | 3.49 | 5.29 | 73.79 | 0 | 0 | 69.07% | 99.62% | 3.03 |
 | control | low_resource_touring | 5 | 0 | 0 | 0 | 0.15 | 0 | 73.99 | 0 | 0 | 69.36% | 100% | 3.01 |
 | finalTuning | baseline_touring | 1 | 8.64 | 2899.35 | 3523.82 | 1403.86 | 1632.31 | 46.69 | 1.08 | 1.25 | 16.73% | 0% | 10 |
@@ -64,14 +64,14 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | finalTuning | baseline_touring | 4 | 1.63 | 155.48 | 253.12 | 284.7 | 1588.92 | 62.5 | 0.01 | 0 | 71.8% | 20.77% | 9.43 |
 | finalTuning | baseline_touring | 5 | 0.87 | 100.47 | 149.9 | 182.47 | 904.93 | 65.23 | 0 | 0 | 85.15% | 61.92% | 7.63 |
 | finalTuning | low_resource_touring | 1 | 8.56 | 2867.98 | 3477.99 | 1350.02 | 1576.15 | 46.78 | 1.1 | 1.2 | 17.09% | 0.38% | 9.97 |
-| finalTuning | low_resource_touring | 2 | 4.05 | 566.2 | 790.26 | 699.76 | 1593.74 | 54.5 | 0.7 | 0.25 | 45.5% | 8.85% | 9.55 |
-| finalTuning | low_resource_touring | 3 | 0.07 | 29.58 | 39.03 | 34.85 | 47.08 | 73.44 | 0.01 | 0 | 69.1% | 97.69% | 3.19 |
+| finalTuning | low_resource_touring | 2 | 4.05 | 565.96 | 789.76 | 697.43 | 1588.18 | 54.46 | 0.7 | 0.25 | 45.5% | 8.85% | 9.55 |
+| finalTuning | low_resource_touring | 3 | 0.07 | 29.58 | 38.95 | 34.92 | 47.31 | 73.44 | 0.01 | 0 | 69.13% | 97.69% | 3.19 |
 | finalTuning | low_resource_touring | 4 | 0.01 | 2.19 | 3.12 | 3.49 | 5.29 | 73.79 | 0 | 0 | 69.07% | 99.62% | 3.03 |
 | finalTuning | low_resource_touring | 5 | 0 | 0 | 0 | 0.15 | 0 | 73.99 | 0 | 0 | 69.36% | 100% | 3.01 |
 
-Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":383.43,"famePerDayAdvantagePct":95.67,"harmonyDelta":-9.51,"repairsDelta":0.36,"bankruptcyDeltaPct":-3.85},"low_resource_touring":{"moneyPerDayAdvantagePct":406.53,"famePerDayAdvantagePct":92.93,"harmonyDelta":-7.72,"repairsDelta":0.4,"bankruptcyDeltaPct":-8.47}}
+Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":383.43,"famePerDayAdvantagePct":95.67,"harmonyDelta":-9.51,"repairsDelta":0.36,"bankruptcyDeltaPct":-3.85},"low_resource_touring":{"moneyPerDayAdvantagePct":406.75,"famePerDayAdvantagePct":93.57,"harmonyDelta":-7.68,"repairsDelta":0.4,"bankruptcyDeltaPct":-8.47}}
 
-Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":383.43,"famePerDayAdvantagePct":95.67,"harmonyDelta":-9.51,"repairsDelta":0.36,"bankruptcyDeltaPct":-3.85},"low_resource_touring":{"moneyPerDayAdvantagePct":406.53,"famePerDayAdvantagePct":92.93,"harmonyDelta":-7.72,"repairsDelta":0.4,"bankruptcyDeltaPct":-8.47}}
+Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":383.43,"famePerDayAdvantagePct":95.67,"harmonyDelta":-9.51,"repairsDelta":0.36,"bankruptcyDeltaPct":-3.85},"low_resource_touring":{"moneyPerDayAdvantagePct":406.75,"famePerDayAdvantagePct":93.57,"harmonyDelta":-7.68,"repairsDelta":0.4,"bankruptcyDeltaPct":-8.47}}
 
 ### Phase-3C-Ziel (Gap-1-Dominanz)
 
@@ -80,14 +80,14 @@ Target band: **20–25%** money-per-day advantage of Gap 1 over Gap 2. This obje
 | Profile | Before | After | Reduction | Within target |
 |---|---:|---:|---:|---|
 | baseline_touring | 383.43% | 383.43% | 0 pp | No |
-| low_resource_touring | 406.53% | 406.53% | 0 pp | No |
+| low_resource_touring | 406.75% | 406.75% | 0 pp | No |
 
 Objective status: **partial**
 
 - baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%)
-- low_resource_touring money-per-day advantage 406.53% is outside the 20-25% target (was 406.53%)
+- low_resource_touring money-per-day advantage 406.75% is outside the 20-25% target (was 406.75%)
 
-Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.53% is outside the 20-25% target (was 406.53%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.
+Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% is outside the 20-25% target (was 383.43%); low_resource_touring money-per-day advantage 406.75% is outside the 20-25% target (was 406.75%)). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.
 
 ## Late-Game-Kandidaten
 
@@ -127,7 +127,7 @@ Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 383.43% i
 
 ## Gewählter Late-Game-Hebel
 
-`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 98 pairs were evaluated, 97 skipped. Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.
+`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 98 pairs were evaluated, 97 skipped. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
 
 ## Kombinierte Validierung
 
