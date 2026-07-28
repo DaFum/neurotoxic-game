@@ -887,12 +887,23 @@ export const buildTourAdjacency = tourMap => {
  * fame-to-difficulty preference still applies — it just now selects among two or
  * three real options instead of the entire venue catalogue.
  */
-export const chooseNextTourNode = (reachable, state, rng) => {
+export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true) => {
   if (!reachable.length) return null
   const performable = reachable.filter(node =>
     PERFORMABLE_NODE_TYPES.has(node.type)
   )
-  const routable = performable.length ? performable : reachable
+  const nonPerformable = reachable.filter(
+    node => !PERFORMABLE_NODE_TYPES.has(node.type)
+  )
+  // Cadence lives here, not at the node. Production starts the show on arrival
+  // at a GIG/FESTIVAL/FINALE node (`handleNodeArrival`) with no skip option, so
+  // a band that does not want to play today has to route around such a node —
+  // and can only do so when the map offers an alternative. When it does not, the
+  // band plays anyway, which is a real constraint rather than a modelling
+  // shortcut.
+  const preferred = wantsToPerform ? performable : nonPerformable
+  const fallback = wantsToPerform ? nonPerformable : performable
+  const routable = preferred.length ? preferred : fallback.length ? fallback : reachable
   const targetDiff = targetDifficultyForState(state)
   const inBand = routable.filter(
     node =>
@@ -2036,7 +2047,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const tourAdjacency = buildTourAdjacency(tourMap)
   let currentMapNode = tourMap.nodes.node_0_0 ?? null
   let deepestLayerReached = currentMapNode?.layer ?? 0
-  let tourCompleted = false
+  // Arriving at the finale and actually playing it are different outcomes: the
+  // show can still be cancelled on harmony.
+  let finaleReached = false
+  let finaleCompleted = false
   let routeDeadEnds = 0
   let nonPerformingArrivals = 0
   const nodeTypesVisited = {}
@@ -2241,11 +2255,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       break
     }
 
-    let shouldPlayGig =
+    // Performance appetite for this day. It no longer decides whether the band
+    // moves: travel and performing are independent in the game, where
+    // `useHandleTravel` gates a trip on visibility, a directed edge and
+    // money/fuel — never on having played the current node. Coupling the two
+    // made map reach a property of `gigGapDays` instead of the map, so a sparse
+    // cadence looked like it could not finish the tour when in truth it had
+    // simply never been allowed to drive.
+    const wantsToPerform =
       day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
 
     let willRest = false
-    // Check if the band needs rest/clinic before taking on a gig.
+    // Check if the band needs rest/clinic before travelling on.
     //
     // The trigger is deliberately identical to `MEMBER_NEEDS_CARE` below, which
     // decides what a rest day actually does. They used to differ — rest fired on
@@ -2259,14 +2280,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // stamina below 35 and mood below 50 as low in the HUD, which is what a
     // player actually reacts to, rather than the deeper mark where
     // `gigModifiersUtils` starts penalising performance.
-    if (shouldPlayGig) {
+    {
       counters.executionCoverage.restStops.evaluations++
       const needsRest = state.band.members.some(MEMBER_NEEDS_CARE)
       // Save original random state by evaluating early if they *would* rest.
       // Note: we'll just consume the rng here.
       if (needsRest && rng() < 0.85) {
         willRest = true
-        shouldPlayGig = false
         counters.restDays += 1
       }
     }
@@ -2274,7 +2294,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
-      applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
+      // `isTravelDay`, not "is performance day": the band drives on every
+      // non-rest day now, so travel events fire whenever it is actually on the
+      // road rather than only when a show was scheduled.
+      applyWorldEvents(state, scenario, rng, counters, !willRest)
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2346,7 +2369,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       }
     }
 
-    if (!shouldPlayGig) {
+    // A rest day is an explicit action and consumes the day in place. Every
+    // other day the band drives: there is no wait action in the game, so a day
+    // that is neither rest nor travel would be an invented cost-only day.
+    if (willRest) {
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
@@ -2356,7 +2382,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const reachable = currentMapNode
       ? (tourAdjacency.get(currentMapNode.id) ?? [])
       : []
-    const nextNode = chooseNextTourNode(reachable, state, rng)
+    const nextNode = chooseNextTourNode(reachable, state, rng, wantsToPerform)
     if (!nextNode) {
       // No forward edge left: the band already stands on the finale (or on a
       // dead end the generator produced). The tour is over, not merely gigless.
@@ -2405,7 +2431,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     deepestLayerReached = Math.max(deepestLayerReached, nextNode.layer)
     nodeTypesVisited[nextNode.type] =
       (nodeTypesVisited[nextNode.type] ?? 0) + 1
-    if (nextNode.type === 'FINALE') tourCompleted = true
+    if (nextNode.type === 'FINALE') finaleReached = true
 
     // Rest and supply stops are not stages. Routing prefers performable nodes,
     // but the map does not always offer one, and playing a gig at a rest stop
@@ -2495,9 +2521,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // Update location so next travel routes from the new (cancelled) destination
       currentNode = venue
 
-      // A cancelled finale still ends the tour. Without this the run keeps
-      // iterating with no forward edge left, inflating routeDeadEnds.
-      if (tourCompleted) break
+      // A cancelled finale still ends the tour — the band stands on the last
+      // node with no forward edge — but it did not complete the show.
+      if (finaleReached) break
 
       // Skip the rest of the gig pipeline
       continue
@@ -2707,7 +2733,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // Playing the finale ends the run on the victory screen, exactly as the game
     // does. A tour that gets there has finished; one that does not has simply
     // run out of days, and the two are different outcomes.
-    if (tourCompleted) break
+    if (finaleReached) {
+      finaleCompleted = true
+      break
+    }
   }
 
   // In-scope waypoints a bankrupt run never reached record the terminal
@@ -2743,7 +2772,8 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     peakMoney,
     lowestMoney,
     lowestMoneyObserved,
-    tourCompleted,
+    finaleReached,
+    finaleCompleted,
     deepestLayerReached,
     tourDepth: tourHorizonDays,
     nodeTypesVisited,
@@ -3060,7 +3090,10 @@ export const summarizeScenario = runs => {
       }
       return {
         tourDepth: depth,
-        finaleReachedPct: shareOfRunsPct(run => run.tourCompleted === true),
+        finaleReachedPct: shareOfRunsPct(run => run.finaleReached === true),
+        // Reaching the finale node and playing its show are different: the show
+        // can still be cancelled on harmony.
+        finaleCompletedPct: shareOfRunsPct(run => run.finaleCompleted === true),
         avgDeepestLayerReached: Number(
           mean(runs.map(run => run.deepestLayerReached ?? 0)).toFixed(2)
         ),
@@ -3452,69 +3485,76 @@ export const KPI_TARGETS = {
   // caps still express the intended ceilings, but they no longer characterise
   // the observed risk profile and want a deliberate design pass.
   //
-  // The money bands other than `baseline_touring` were re-derived when venue
-  // selection moved onto the real tour map. The old model picked each venue
-  // freely from the whole difficulty-banded catalogue, so a band could play a
-  // high-capacity stage whenever its fame allowed. On the generated map a node
-  // connects to only one or two nodes in the next layer and early layers hold
-  // easy venues, so a scenario that plays every second or fourth day never
-  // reaches the paying stages at all. Same ×0.5 to ×1.6 rule around the new
-  // neutral-tuning mean; the previous figures (e.g. bootstrap €2000-7000,
-  // chaos €8000-26000) were unreachable under real routing and would have
-  // failed every candidate. `baseline_touring` is unchanged: it plays daily,
-  // walks the full depth and still ends on ~€29k.
+  // All seven money bands were re-derived once travel stopped being gated on the
+  // gig cadence. Two earlier attempts were wrong for the same underlying reason.
+  //
+  // The first set assumed venues could be picked freely from the whole
+  // difficulty-banded catalogue, which the map does not allow. The second set was
+  // derived while a non-performance day skipped travel entirely, so a scenario
+  // playing every fourth day took two hops in ten days, never reached the paying
+  // late layers, and produced bands as low as €550-1700 — figures that described
+  // a band standing still, not a band touring sparsely.
+  //
+  // Travel and performing are independent in the game (`useHandleTravel` gates a
+  // trip on visibility, a directed edge and money/fuel, never on having played),
+  // so every non-rest day is now a hop for every scenario. The consequence is
+  // visible in these numbers: final money converges to roughly €22k-29k across
+  // all seven, because touring at all dominates every scenario knob. Same ×0.5 to
+  // ×1.6 rule around the new neutral-tuning mean. That the bands now barely
+  // discriminate between scenarios is a finding about the economy, not a
+  // calibration convenience — the spread wants a deliberate design pass.
   //
   // Bankruptcy caps express per-scenario risk tolerance and are horizon-
   // independent intent, so they are unchanged.
   baseline_touring: {
     bankruptcyMax: 10,
-    moneyMin: 15000,
-    moneyMax: 47000,
+    moneyMin: 14000,
+    moneyMax: 46000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
     bankruptcyMax: 60,
-    moneyMin: 550,
-    moneyMax: 1700,
+    moneyMin: 11000,
+    moneyMax: 36000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
-    moneyMin: 4100,
-    moneyMax: 13000,
+    moneyMin: 14000,
+    moneyMax: 44000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
     bankruptcyMax: 50,
-    moneyMin: 1500,
-    moneyMax: 4800,
+    moneyMin: 12000,
+    moneyMax: 39000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
     bankruptcyMax: 35,
-    moneyMin: 2200,
-    moneyMax: 7100,
+    moneyMin: 13000,
+    moneyMax: 43000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   chaos_tour: {
     bankruptcyMax: 25,
-    moneyMin: 2900,
-    moneyMax: 9300,
+    moneyMin: 12000,
+    moneyMax: 39000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
-    moneyMin: 4200,
-    moneyMax: 13000,
+    moneyMin: 14000,
+    moneyMax: 45000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   }
@@ -4470,16 +4510,11 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      `**Das beantwortet die Gap-1-Frage strukturell.** Das Finale erreichen nur ${
-        finaleReachers.length
-      } von ${payload.results.length} Szenarien (${
-        finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') ||
-        'keines'
-      }) — und zwar genau die, die praktisch täglich spielen. Bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke, und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.`
+      `**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — \`useHandleTravel\` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen ${finaleReachers.length} von ${payload.results.length} Szenarien das Finale (${finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') || 'keines'}), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da rund 70 Prozent der Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.`
     )
     lines.push('')
     lines.push(
-      'Modellgrenze: Nicht-Gig-Tage verbrauchen keinen Hop. Im Spiel vergeht ein Tag nur durch Anreise, hier pausiert die Band am Ort. Die Gig-Kadenz bleibt damit die Szenario-Stellschraube `gigGapDays`, damit die Gap-Analyse aus Phase 3C weiter dasselbe misst; Streckenwahl, Erreichbarkeit und Entfernungen sind echt.'
+      'Modellgrenzen: Ein Ruhetag ist eine explizite Aktion und verbraucht den Tag am Ort; jeder andere Tag ist eine Fahrt, weil das Spiel keine Warten-Aktion kennt. `gigGapDays` steuert nur die Streckenpräferenz, nicht die Zahl der Hops. Nicht modelliert bleiben Notverkäufe, Kreditentscheidungen an realen Zeitpunkten und die Supply-Stop-Auswahl.'
     )
     lines.push('')
   }
@@ -4559,7 +4594,7 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      `**Ruhetage sind selten, aber nicht unmöglich — und das ist ein Befund über den Verschleiß.** Der Ruhe-Auslöser nutzt die Marken, die das Spiel selbst im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50). Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Werte werden also durchaus unterschritten; in den Hauptszenarien führt das dennoch zu null Ruhetagen, weil die Ruheentscheidung nur an Gig-Tagen ausgewertet wird und die Tiefpunkte überwiegend dazwischen liegen. Messbar geruht wird bislang nur im Szenario mit hoher Controversy. Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin — nicht weil er null wäre, sondern weil die Stichprobe an Ruhetagen zu klein ist. Rastplatz-Knoten geben die kanonische Erholung (+20 Stamina / +10 Mood) auch bei bloßer Durchreise; \`avgRestStopArrivals\` zählt sie getrennt von \`avgRestDays\`, weil dafür kein Gig aufgegeben wurde. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
+      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. Messbar geruht wird bislang nur im Szenario mit hoher Controversy. Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
     )
     lines.push('')
   }

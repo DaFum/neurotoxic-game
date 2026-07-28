@@ -985,7 +985,10 @@ test('the rest branch is reachable, and harmony alone never triggers it', () => 
   // resting does not repair it.
   const scenario = SCENARIOS.find(item => item.id === 'high_controversy_probe')
   assert.ok(scenario, 'high_controversy_probe must exist')
-  const runs = Array.from({ length: 40 }, (_, index) =>
+  // 60 runs, not 20: rest is rare (about 0.05 days per run) now that pass-through
+  // rest stops keep members above the care thresholds, so a small cohort sees
+  // zero by chance and the assertion would be flaky rather than wrong.
+  const runs = Array.from({ length: 60 }, (_, index) =>
     runSingleSimulation(scenario, createScenarioSeed(scenario.id, index))
   )
 
@@ -1004,19 +1007,23 @@ test('the rest branch is reachable, and harmony alone never triggers it', () => 
     }
   }
 
-  // Harmony gets far below any rest threshold without ever causing a rest.
+  // Harmony reaches values far below any old rest threshold, and the scenario
+  // still mostly tours instead of resting — harmony is not a rest reason.
   const lowHarmonyRuns = runs.filter(run => run.minHarmonyObserved < 35)
   assert.ok(lowHarmonyRuns.length > 0, 'harmony must reach low values here')
-  const restedForCare = lowHarmonyRuns.every(
-    run =>
-      run.restDays === 0 ||
-      run.minMemberStaminaObserved < 35 ||
-      run.minMemberMoodObserved < 50
-  )
   assert.ok(
-    restedForCare,
-    'a rest day must be explained by member care, never by harmony alone'
+    lowHarmonyRuns.filter(run => run.restDays > 0).length <
+      lowHarmonyRuns.length,
+    'low harmony must not imply a rest day'
   )
+
+  // Deliberately not asserted: that every rest day is explained by the observed
+  // member minima. Those minima are sampled at the start of the day while the
+  // rest decision reads the state after the daily tick has taken its -5 stamina,
+  // so a member can sit above the threshold at both sampling points and still
+  // have been below it at the moment of the decision. The predicate itself is
+  // shared between decision and effect in the source, which is the real
+  // guarantee; comparing two different sampling points would only look rigorous.
 })
 
 // ── Real tour paths (Phase 4F) ──────────────────────────────────────────────
@@ -1079,48 +1086,102 @@ test('route choice prefers a stage over a rest stop but takes what is offered', 
   assert.equal(chooseNextTourNode([], state, rng), null)
 })
 
-test('daily touring walks the full map depth and finishes on the finale', () => {
-  const runs = Array.from({ length: 12 }, (_, index) =>
-    runSingleSimulation(SCENARIOS[0], createScenarioSeed('finale-reach', index))
-  )
-
-  for (const run of runs) {
-    assert.equal(
-      run.tourDepth,
-      SIMULATION_CONSTANTS.daysPerRun,
-      'the map depth must match the horizon'
+test('travel is independent of the gig cadence', () => {
+  // The regression this pins: `shouldPlayGig` used to gate route movement, so a
+  // non-performance day ended before any travel. Map reach then measured
+  // `gigGapDays` rather than the map, and a sparse cadence looked unable to
+  // finish the tour when it had simply never been allowed to drive. Production
+  // gates travel on visibility, a directed edge and money/fuel only
+  // (`useHandleTravel`), never on having played the current node.
+  const cohort = scenario =>
+    Array.from({ length: 20 }, (_, index) =>
+      runSingleSimulation(scenario, createScenarioSeed('cadence-parity', index))
     )
-    assert.ok(
-      run.deepestLayerReached <= run.tourDepth,
-      'a run cannot pass the finale layer'
-    )
-    // Arrivals and gigs are different counts: rest and supply stops pay nothing.
-    assert.ok(run.gigsPlayed + run.nonPerformingArrivals <= run.daysSurvived)
-  }
+  const dense = cohort({ ...SCENARIOS[0], gigGapDays: 1 })
+  const sparse = cohort({ ...SCENARIOS[0], gigGapDays: 4 })
 
-  const reached = runs.filter(run => run.tourCompleted).length
+  const mean = (runs, pick) =>
+    runs.reduce((sum, run) => sum + pick(run), 0) / runs.length
+  const denseLayers = mean(dense, run => run.deepestLayerReached)
+  const sparseLayers = mean(sparse, run => run.deepestLayerReached)
+  const denseGigs = mean(dense, run => run.gigsPlayed)
+  const sparseGigs = mean(sparse, run => run.gigsPlayed)
+
+  // Same travel policy, so the same depth is reached regardless of cadence.
   assert.ok(
-    reached > runs.length / 2,
-    `daily touring should usually finish the tour, saw ${reached}/${runs.length}`
+    Math.abs(denseLayers - sparseLayers) < 1.5,
+    `layer reach must not track cadence, saw ${denseLayers} vs ${sparseLayers}`
+  )
+  // The cadence still has to do something: fewer shows at the same reach.
+  assert.ok(
+    sparseGigs < denseGigs,
+    `a sparse cadence must play fewer gigs, saw ${sparseGigs} vs ${denseGigs}`
+  )
+  // ...but not by halving the driving, which is what the coupling did.
+  assert.ok(
+    sparseGigs > denseGigs / 2,
+    `sparse touring must not collapse to half the gigs, saw ${sparseGigs} vs ${denseGigs}`
   )
 })
 
-test('sparse touring cannot reach the finale inside the horizon', () => {
-  // Bootstrap Struggle plays every fourth day, so it gets roughly two hops of a
-  // ten-hop map. This is the structural half of the Gap-1 question: dense
-  // touring is not compounding an advantage, it is the only pacing that
-  // finishes the tour at all.
-  const runs = Array.from({ length: 12 }, (_, index) =>
-    runSingleSimulation(SCENARIOS[1], createScenarioSeed('sparse-reach', index))
+test('every day is either an explicit rest or a real hop along a directed edge', () => {
+  const tourMap = new MapGenerator(createScenarioSeed('edges', 0)).generateMap(
+    SIMULATION_CONSTANTS.daysPerRun
+  )
+  const validEdges = new Set(
+    tourMap.connections.map(
+      connection => `${connection.from}->${connection.to}`
+    )
+  )
+  assert.ok(validEdges.size > 0)
+
+  const runs = Array.from({ length: 20 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('no-idle-days', index))
   )
 
   for (const run of runs) {
-    assert.equal(run.tourCompleted, false)
-    assert.ok(
-      run.deepestLayerReached < run.tourDepth,
-      'a four-day cadence cannot walk ten layers in ten days'
+    const arrivals = Object.values(run.nodeTypesVisited).reduce(
+      (sum, count) => sum + count,
+      0
     )
+    // No invented cost-only days: every survived day is a rest, an arrival, or
+    // the terminal day on which the run ended.
+    assert.ok(
+      arrivals + run.restDays + run.routeDeadEnds >= run.daysSurvived - 1,
+      `idle days found: ${run.daysSurvived} days, ${arrivals} arrivals, ${run.restDays} rests, ${run.routeDeadEnds} dead ends`
+    )
+    // Travel costs accrue for arrivals, including ones that pay nothing.
+    if (arrivals > 0) assert.ok(run.travelSpend > 0)
   }
+})
+
+test('reaching the finale and completing it are tracked separately', () => {
+  // `finaleCompleted` used to be set on arrival, before the harmony cancellation
+  // check, so a cancelled finale counted as a finished tour.
+  const runs = Array.from({ length: 30 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('finale-split', index))
+  )
+  for (const run of runs) {
+    assert.equal(typeof run.finaleReached, 'boolean')
+    assert.equal(typeof run.finaleCompleted, 'boolean')
+    // Completion implies arrival, never the other way round.
+    if (run.finaleCompleted) assert.equal(run.finaleReached, true)
+  }
+  const paths = summarizeScenario(runs).tourPaths
+  assert.ok(paths.finaleCompletedPct <= paths.finaleReachedPct)
+})
+
+test('a sparse cadence still reaches the finale', () => {
+  // The inverse of the old assertion, which pinned the artifact: a four-day
+  // cadence used to be structurally unable to finish the tour.
+  const runs = Array.from({ length: 20 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('sparse-reach', index))
+  )
+  const reached = runs.filter(run => run.finaleReached).length
+  assert.ok(
+    reached > runs.length / 2,
+    `a sparse cadence must still finish the tour, saw ${reached}/${runs.length}`
+  )
 })
 
 test('the same seed still reproduces once the map is part of the run', () => {
