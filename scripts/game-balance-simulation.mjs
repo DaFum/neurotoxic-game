@@ -3753,7 +3753,7 @@ export const runSimulationSuite = async (options = {}) => {
         checks,
         holdoutAvgFinalMoney: summary.avgFinalMoney,
         holdoutBankruptcyRate: summary.bankruptcyRate,
-        holdoutFameProgressPerGig: summary.avgFameEarnedPerGig ?? null
+        holdoutFameProgressPerGig: summary.avgFameProgressPerGig ?? null
       }
     })
     return {

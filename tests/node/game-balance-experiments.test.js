@@ -19,6 +19,7 @@ import {
 import {
   assertEqualControlCohorts,
   combinationImpact,
+  NoViableCandidateError,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
   kpiStatusForRuns,
@@ -760,10 +761,11 @@ test('combinationImpact ignores an empty obligationStages array', () => {
 // instead of re-simulating it. That is only sound because a run is a pure
 // function of (scenario, seed, tuning) — this pins the equivalence.
 test('reusing a control cohort matches re-simulating it', () => {
+  // No daysOverride: the probe should exercise the same map-bounded horizon the
+  // suite actually runs on.
   const scenario = {
     ...SCENARIOS[0],
-    id: 'cohort_reuse_probe',
-    daysOverride: 20
+    id: 'cohort_reuse_probe'
   }
   const candidateTuning = resolveBalanceTuning({
     touring: {
@@ -791,7 +793,23 @@ test('reusing a control cohort matches re-simulating it', () => {
   )
 })
 
-const buildMarkdownReport = ({ objectiveMet }) => {
+const rankingEntry = (id, targetFit) => ({
+  id,
+  targetFit,
+  sideEffectPenalty: 0,
+  overcorrectionPenalty: 0,
+  complexityPenalty: 1
+})
+
+const DEFAULT_RANKING_ENTRIES = [
+  rankingEntry('probe-candidate', 60),
+  rankingEntry('probe-other', 40)
+]
+
+const buildMarkdownReport = ({
+  objectiveMet,
+  rankingEntries = DEFAULT_RANKING_ENTRIES
+}) => {
   const candidate = {
     id: 'probe-candidate',
     aggregateResults: {
@@ -826,12 +844,12 @@ const buildMarkdownReport = ({ objectiveMet }) => {
     phases: {
       phase3B: {
         candidates: [candidate],
-        ranking: [{ id: candidate.id }],
+        ranking: rankingEntries,
         selectedCandidateId: candidate.id
       },
       phase3C: {
         candidates: [candidate],
-        ranking: [{ id: candidate.id }],
+        ranking: rankingEntries,
         selectedCandidateId: candidate.id,
         objectiveStatus: objectiveMet ? 'met' : 'partial',
         objectiveNote: objectiveMet
@@ -959,4 +977,83 @@ test('every configured lever scores a positive combination impact', () => {
       `${candidate.id} scores ${impact}, tying with the no-op — combinationImpact does not read its override family`
     )
   }
+})
+
+// targetFit saturating for most candidates once made the bootstrap ranking a
+// pure id tie-break while still reading like a meaningful order. The renderer
+// has to say so; this branch is otherwise only reachable in that degraded state.
+test('experiment markdown flags a non-discriminating ranking', () => {
+  const tied = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        rankingEntry('probe-a', 0),
+        rankingEntry('probe-b', 0),
+        rankingEntry('probe-c', 0)
+      ]
+    })
+  )
+  assert.match(tied, /ID-Tie-Break und ist nicht aussagekraeftig/)
+
+  const spread = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        rankingEntry('probe-a', 60),
+        rankingEntry('probe-b', 40),
+        rankingEntry('probe-c', 20)
+      ]
+    })
+  )
+  assert.doesNotMatch(spread, /nicht aussagekraeftig/)
+})
+
+// An empty candidate set is a legitimate experiment outcome; a misconfigured
+// horizon or a simulation regression is not. The CLI distinguishes them by
+// type, so the type has to stay distinguishable.
+test('no-viable-candidate failures are a distinct error type', () => {
+  const outcome = new NoViableCandidateError(
+    'No Phase 3B candidate satisfies acceptance criteria'
+  )
+
+  assert.ok(outcome instanceof NoViableCandidateError)
+  assert.ok(outcome instanceof Error)
+  assert.equal(outcome.name, 'NoViableCandidateError')
+  assert.equal(
+    new RangeError(
+      'Progression checkpoints fall outside the simulated horizon'
+    ) instanceof NoViableCandidateError,
+    false,
+    'A configuration fault must not be reported as an experiment outcome'
+  )
+})
+
+// rankCandidates puts passing candidates ahead of failing ones before it
+// compares scores, so an all-tied score set can still carry a meaningful order.
+test('ranking tie notice accounts for pass/fail ordering', () => {
+  const tiedButMixedAcceptance = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        { ...rankingEntry('probe-a', 0), passed: true },
+        { ...rankingEntry('probe-b', 0), passed: false }
+      ]
+    })
+  )
+  assert.doesNotMatch(
+    tiedButMixedAcceptance,
+    /nicht aussagekraeftig/,
+    'Pass-before-fail is a real ordering, not an id tie-break'
+  )
+
+  const tiedAndAllPassing = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: false,
+      rankingEntries: [
+        { ...rankingEntry('probe-a', 0), passed: true },
+        { ...rankingEntry('probe-b', 0), passed: true }
+      ]
+    })
+  )
+  assert.match(tiedAndAllPassing, /nicht aussagekraeftig/)
 })

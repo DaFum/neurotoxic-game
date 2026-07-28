@@ -100,7 +100,10 @@ test('regionalGigHistory roundtrip integration', () => {
     validateSaveData(parsed)
     assert.ok(true)
   } catch (e) {
-    assert.fail('Validator should not throw: ' + e.message)
+    assert.fail(
+      'Validator should not throw: ' +
+        (e instanceof Error ? e.message : String(e))
+    )
   }
 
   // sanitizer/reducer load
@@ -228,14 +231,18 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
     process.cwd(),
     'reports/game-balance-experiments-results.json'
   )
-  if (fs.existsSync(reportPath)) {
-    const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'))
-    assert.deepEqual(
-      DEFAULT_BALANCE_TUNING,
-      report.recommendation.tuning,
-      'Default tuning should exactly match recommended tuning from report'
-    )
-  } else {
-    assert.ok(true, 'Report does not exist yet')
-  }
+  // The report is committed, so a missing file means the artifact was dropped or
+  // the generator failed — skipping silently would hide exactly the drift this
+  // test exists to catch.
+  assert.ok(
+    fs.existsSync(reportPath),
+    `Missing committed experiment report at ${reportPath}; regenerate with pnpm run simulate:balance:experiments`
+  )
+
+  const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'))
+  assert.deepEqual(
+    DEFAULT_BALANCE_TUNING,
+    report.recommendation.tuning,
+    'Default tuning should exactly match recommended tuning from report'
+  )
 })

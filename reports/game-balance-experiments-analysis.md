@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 24506 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 36095 ms.
 
 ## Kontrollzustand
 
@@ -31,17 +31,17 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 2. bootstrap-emergency-250
 3. bootstrap-emergency-500
 4. bootstrap-obligations-90-through-3
-5. bootstrap-obligations-60-through-5
-6. bootstrap-obligations-80-through-3
-7. bootstrap-obligations-70-through-3
-8. bootstrap-obligations-70-through-5
-9. bootstrap-obligations-80-through-5
-10. bootstrap-staged-75
-11. bootstrap-staged-60-80
+5. bootstrap-obligations-80-through-3
+6. bootstrap-obligations-70-through-3
+7. bootstrap-staged-75
+8. bootstrap-obligations-80-through-5
+9. bootstrap-staged-60-80
+10. bootstrap-obligations-70-through-5
+11. bootstrap-obligations-60-through-5
 
 ## Gewählter Bootstrap-Hebel
 
-`bootstrap-none` was selected by the combination search: candidate pairs are ordered by `combinationImpact`, which is derived from the overrides alone, and the first pair passing final combined validation wins. 1 of 154 pairs were evaluated; the remaining 153 carry higher impact and so could not have been selected.
+`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -127,7 +127,7 @@ Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 78.86% is
 
 ## Gewählter Late-Game-Hebel
 
-`touring-none` was selected by the combination search: candidate pairs are ordered by `combinationImpact`, which is derived from the overrides alone, and the first pair passing final combined validation wins. 1 of 154 pairs were evaluated; the remaining 153 carry higher impact and so could not have been selected.
+`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped.
 
 ## Kombinierte Validierung
 

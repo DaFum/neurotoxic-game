@@ -1,5 +1,12 @@
 import crypto from 'node:crypto'
 
+// Percentages in ids and descriptions come from fractional tuning values, and a
+// bare `value * 100` leaks binary float error into both (0.29 * 100 is
+// 28.999999999999996). Ids feed `hashExperimentConfig`, so that noise would end
+// up in the published config hash. Round to at most one decimal, which keeps
+// genuine half-percent steps such as 7.5 and 13.5 intact.
+const pct = value => Number((value * 100).toFixed(1))
+
 // Every window below is expressed in days inside a single tour. The map is a
 // depth-10 layered DAG and arriving anywhere advances the day once, so a run
 // spans `SIMULATION_CONSTANTS.daysPerRun` days. A lever whose window starts at
@@ -70,9 +77,9 @@ export const BALANCE_EXPERIMENTS = [
 
   ...[0.9, 0.8, 0.7].map(value =>
     candidate(
-      `bootstrap-obligations-${value * 100}-through-3`,
+      `bootstrap-obligations-${pct(value)}-through-3`,
       'bootstrap',
-      `Reduces applicable early-game daily obligations to ${value * 100} percent through day 3.`,
+      `Reduces applicable early-game daily obligations to ${pct(value)} percent through day 3.`,
       'Lower recurring costs over the opening hops should prevent early insolvency without changing Fame efficiency.',
       ['bootstrap_struggle'],
       { earlyGame: { durationDays: 3, dailyObligationMultiplier: value } }
@@ -80,9 +87,9 @@ export const BALANCE_EXPERIMENTS = [
   ),
   ...[0.8, 0.7, 0.6].map(value =>
     candidate(
-      `bootstrap-obligations-${value * 100}-through-5`,
+      `bootstrap-obligations-${pct(value)}-through-5`,
       'bootstrap',
-      `Reduces applicable early-game daily obligations to ${value * 100} percent through day 5.`,
+      `Reduces applicable early-game daily obligations to ${pct(value)} percent through day 5.`,
       'Covering the first half of the tour should catch the runs that fail just after the opening.',
       ['bootstrap_struggle'],
       { earlyGame: { durationDays: 5, dailyObligationMultiplier: value } }
@@ -134,9 +141,9 @@ export const BALANCE_EXPERIMENTS = [
     [5, 0.05, 0.2]
   ].map(([window, penalty, maximum]) =>
     candidate(
-      `touring-demand-${penalty * 100}-${maximum * 100}-window-${window}`,
+      `touring-demand-${pct(penalty)}-${pct(maximum)}-window-${window}`,
       'touring',
-      `Applies ${penalty * 100} percent regional repeat-demand loss per gig over ${window} days, capped at ${maximum * 100} percent.`,
+      `Applies ${pct(penalty)} percent regional repeat-demand loss per gig over ${window} days, capped at ${pct(maximum)} percent.`,
       'Expiring regional saturation should target dense routing more than paced touring.',
       ['baseline_touring'],
       {
@@ -154,9 +161,9 @@ export const BALANCE_EXPERIMENTS = [
     [5, 0.135, 0.48]
   ].map(([window, penalty, maximum]) =>
     candidate(
-      `touring-demand-${penalty * 100}-${maximum * 100}-after-3-window-${window}`,
+      `touring-demand-${pct(penalty)}-${pct(maximum)}-after-3-window-${window}`,
       'touring',
-      `Applies ${penalty * 100} percent regional repeat-demand loss over ${window} days after day 3, capped at ${maximum * 100} percent.`,
+      `Applies ${pct(penalty)} percent regional repeat-demand loss over ${window} days after day 3, capped at ${pct(maximum)} percent.`,
       'Deferring saturation past the opening hops should preserve early cash while flattening repeat routing later in the tour.',
       ['baseline_touring'],
       {
@@ -215,7 +222,7 @@ export const BALANCE_EXPERIMENTS = [
   ),
   ...[1.05, 1.1, 1.15].map(value =>
     candidate(
-      `touring-wear-${Math.round(value * 100)}`,
+      `touring-wear-${Math.round(pct(value))}`,
       'touring',
       `Multiplies dense-schedule wear by ${value}.`,
       'Canonical wear should convert dense schedules into delayed maintenance costs.',
