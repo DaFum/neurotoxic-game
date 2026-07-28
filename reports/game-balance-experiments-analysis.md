@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 37400 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 37822 ms.
 
 ## Kontrollzustand
 
@@ -49,9 +49,9 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | Tuning | Profile | Gig Gap | Gigs | Money/Day | Gig Net/Day | Fame/Day | Fame/Gig | Harmony | Repairs | Refuels | Drawdown | Bankruptcy | Days Survived |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | control | baseline_touring | 1 | 8.52 | 2809.9 | 3501.72 | 1358.59 | 1587.7 | 48.7 | 1.08 | 1.28 | 20.14% | 1.15% | 9.95 |
-| control | baseline_touring | 2 | 5.98 | 2466.72 | 2974.34 | 1064.03 | 1434.8 | 53.42 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
+| control | baseline_touring | 2 | 5.98 | 2466.75 | 2974.59 | 1063.45 | 1434.03 | 53.33 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
 | control | baseline_touring | 3 | 5.62 | 2421.51 | 2888.75 | 1031.86 | 1316.58 | 54.62 | 0.78 | 1.08 | 43.04% | 20.38% | 8.87 |
-| control | baseline_touring | 4 | 4.58 | 2144.43 | 2595.54 | 870.66 | 1114.53 | 57.52 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
+| control | baseline_touring | 4 | 4.58 | 2144.58 | 2596.13 | 870.7 | 1114.58 | 57.5 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
 | control | baseline_touring | 5 | 4.43 | 2103.37 | 2489.05 | 925.65 | 1264.78 | 57.42 | 0.65 | 0.94 | 51.28% | 30.77% | 8.33 |
 | control | low_resource_touring | 1 | 8.27 | 2776.63 | 3463.55 | 1352.58 | 1526.5 | 49.95 | 1.04 | 1.25 | 20.12% | 5% | 9.68 |
 | control | low_resource_touring | 2 | 2.92 | 1778.18 | 2140.08 | 815.39 | 633.9 | 63.24 | 0.4 | 0.49 | 62.59% | 61.54% | 5.71 |
@@ -59,9 +59,9 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | control | low_resource_touring | 4 | 2.43 | 1603.42 | 1976.02 | 703.33 | 608.14 | 65.43 | 0.34 | 0.45 | 66.61% | 65.77% | 5.5 |
 | control | low_resource_touring | 5 | 2.22 | 1551.79 | 1825.14 | 661.62 | 574.47 | 65.28 | 0.3 | 0.41 | 68.03% | 68.46% | 5.31 |
 | finalTuning | baseline_touring | 1 | 8.52 | 2809.9 | 3501.72 | 1358.59 | 1587.7 | 48.7 | 1.08 | 1.28 | 20.14% | 1.15% | 9.95 |
-| finalTuning | baseline_touring | 2 | 5.98 | 2466.72 | 2974.34 | 1064.03 | 1434.8 | 53.42 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
+| finalTuning | baseline_touring | 2 | 5.98 | 2466.75 | 2974.59 | 1063.45 | 1434.03 | 53.33 | 0.82 | 1.15 | 38.75% | 16.15% | 9.14 |
 | finalTuning | baseline_touring | 3 | 5.62 | 2421.51 | 2888.75 | 1031.86 | 1316.58 | 54.62 | 0.78 | 1.08 | 43.04% | 20.38% | 8.87 |
-| finalTuning | baseline_touring | 4 | 4.58 | 2144.43 | 2595.54 | 870.66 | 1114.53 | 57.52 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
+| finalTuning | baseline_touring | 4 | 4.58 | 2144.58 | 2596.13 | 870.7 | 1114.58 | 57.5 | 0.64 | 0.91 | 50.74% | 31.92% | 8.28 |
 | finalTuning | baseline_touring | 5 | 4.43 | 2103.37 | 2489.05 | 925.65 | 1264.78 | 57.42 | 0.65 | 0.94 | 51.28% | 30.77% | 8.33 |
 | finalTuning | low_resource_touring | 1 | 8.27 | 2776.63 | 3463.55 | 1352.58 | 1526.5 | 49.95 | 1.04 | 1.25 | 20.12% | 5% | 9.68 |
 | finalTuning | low_resource_touring | 2 | 2.92 | 1778.18 | 2140.08 | 815.39 | 633.9 | 63.24 | 0.4 | 0.49 | 62.59% | 61.54% | 5.71 |
@@ -69,9 +69,9 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | finalTuning | low_resource_touring | 4 | 2.43 | 1603.42 | 1976.02 | 703.33 | 608.14 | 65.43 | 0.34 | 0.45 | 66.61% | 65.77% | 5.5 |
 | finalTuning | low_resource_touring | 5 | 2.22 | 1551.79 | 1825.14 | 661.62 | 574.47 | 65.28 | 0.3 | 0.41 | 68.03% | 68.46% | 5.31 |
 
-Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.68,"harmonyDelta":-4.72,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
+Gap 1 vs Gap 2 advantage before: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.75,"harmonyDelta":-4.63,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
 
-Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.68,"harmonyDelta":-4.72,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
+Gap 1 vs Gap 2 advantage after: {"baseline_touring":{"moneyPerDayAdvantagePct":13.91,"famePerDayAdvantagePct":27.75,"harmonyDelta":-4.63,"repairsDelta":0.26,"bankruptcyDeltaPct":-15},"low_resource_touring":{"moneyPerDayAdvantagePct":56.15,"famePerDayAdvantagePct":65.88,"harmonyDelta":-13.29,"repairsDelta":0.64,"bankruptcyDeltaPct":-56.54}}
 
 ### Phase-3C-Ziel (Gap-1-Dominanz)
 

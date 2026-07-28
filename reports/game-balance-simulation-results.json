@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T12:15:24.632Z",
+  "generatedAt": "2026-07-28T12:40:39.580Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "a91e5d2d0df9591df8f088003be54ba4dc14fa73",
+    "sourceBaseCommit": "265c37ae54ce168c23ec74d990933206cee7a5f3",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "6d3baa5c512d308b0e02b93a1ee523affd8820e6dbe22213b485a1f38ef8a0e4",
-    "balanceSourceSha256": "093a06dec97af0f2fbfd2a1b42432a9394a0daec45fcb3d909a5ddd1d70b953d",
+    "simulationScriptSha256": "b38396d758f5d530bad7e519376dfa4511cbd36c38ee69cdf39c838138cc6830",
+    "balanceSourceSha256": "8d1b067a9285f42d0c3a372d4713fd0f7af900b22f226464c2113351219497db",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
@@ -1060,7 +1060,7 @@
             "label": "Endgeld",
             "target": "€14.000 – €45.000",
             "calibrationPass": true,
-            "calibrationActual": "€25.826",
+            "calibrationActual": "€25.831",
             "holdoutPass": true,
             "holdoutActual": "€25.072",
             "agrees": true
@@ -1069,7 +1069,7 @@
             "label": "Fame-Fortschritt/Gig",
             "target": "1000 – 2200",
             "calibrationPass": true,
-            "calibrationActual": "1494.02",
+            "calibrationActual": "1494.4",
             "holdoutPass": true,
             "holdoutActual": "1447.33",
             "agrees": true
@@ -1100,7 +1100,7 @@
           "avgDaysBelowTightThreshold": 1.03,
           "avgDaysBelowCriticalThreshold": 0.4,
           "medianMaxDrawdownPct": 30.99,
-          "p90MaxDrawdownPct": 89.09,
+          "p90MaxDrawdownPct": 89.11,
           "solventFinalMoneyP10": 22089,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 3
@@ -1319,11 +1319,11 @@
       }
     ],
     "warnings": [
-      "bootstrap_struggle: Insolvenzrate 30.38% liegt über dem Zielkorridor 15–30%, aber noch unter der Sicherheitsgrenze.",
-      "aggressive_marketing: Insolvenzrate 10.77% liegt über dem Zielkorridor 2–8%, aber noch unter der Sicherheitsgrenze.",
-      "scandal_recovery: Insolvenzrate 25% liegt über dem Zielkorridor 8–20%, aber noch unter der Sicherheitsgrenze.",
-      "festival_push: Insolvenzrate 25.77% liegt über dem Zielkorridor 5–15%, aber noch unter der Sicherheitsgrenze.",
-      "cult_hypergrowth: Insolvenzrate 10.38% überschreitet die harte Sicherheitsgrenze — das ist ein Safety-Gate-Befund, kein Designhinweis."
+      "bootstrap_struggle: Insolvenzrate (Kalibrierung 30.38%, Holdout 30.38%) liegt über dem Zielkorridor 15–30%, aber noch unter der Sicherheitsgrenze.",
+      "aggressive_marketing: Insolvenzrate (Kalibrierung 10.77%, Holdout 11.54%) liegt über dem Zielkorridor 2–8%, aber noch unter der Sicherheitsgrenze.",
+      "scandal_recovery: Insolvenzrate (Kalibrierung 25%, Holdout 24.62%) liegt über dem Zielkorridor 8–20%, aber noch unter der Sicherheitsgrenze.",
+      "festival_push: Insolvenzrate (Kalibrierung 25.77%, Holdout 26.92%) liegt über dem Zielkorridor 5–15%, aber noch unter der Sicherheitsgrenze.",
+      "cult_hypergrowth: Holdout 14.23% überschreitet die harte Sicherheitsgrenze 12% — das ist ein Safety-Gate-Befund, kein Designhinweis."
     ]
   },
   "featureInventory": {
@@ -1473,22 +1473,22 @@
     },
     "minigamesTravel": {
       "attempts": 19646,
-      "completions": 11621,
+      "completions": 11622,
       "covered": true
     },
     "minigamesRoadie": {
-      "attempts": 6593,
-      "completions": 5872,
+      "attempts": 6594,
+      "completions": 5873,
       "covered": true
     },
     "minigamesKabelsalat": {
-      "attempts": 6520,
-      "completions": 4504,
+      "attempts": 6518,
+      "completions": 4503,
       "covered": true
     },
     "minigamesAmp": {
-      "attempts": 6533,
-      "completions": 4651,
+      "attempts": 6534,
+      "completions": 4652,
       "covered": true
     },
     "sponsorship": {
@@ -1508,24 +1508,24 @@
       "name": "Baseline Touring",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0.38,
+          "previous": 3.08,
           "current": 3.08,
-          "delta": 2.7
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 28913,
+          "previous": 27959,
           "current": 27959,
-          "delta": -954
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1636.26,
+          "previous": 1627,
           "current": 1627,
-          "delta": -9.26
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 8.67,
+          "previous": 8.48,
           "current": 8.48,
-          "delta": -0.19
+          "delta": 0
         }
       }
     },
@@ -1534,24 +1534,24 @@
       "name": "Bootstrap Struggle",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 10,
+          "previous": 30.38,
           "current": 30.38,
-          "delta": 20.38
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 22308,
+          "previous": 17224,
           "current": 17224,
-          "delta": -5084
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1404.7,
+          "previous": 1113.45,
           "current": 1113.45,
-          "delta": -291.25
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 5.9,
+          "previous": 4.7,
           "current": 4.7,
-          "delta": -1.2
+          "delta": 0
         }
       }
     },
@@ -1560,24 +1560,24 @@
       "name": "Aggressive Marketing",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 1.92,
+          "previous": 10.77,
           "current": 10.77,
-          "delta": 8.85
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 27788,
+          "previous": 25209,
           "current": 25209,
-          "delta": -2579
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1643.08,
+          "previous": 1458.46,
           "current": 1458.46,
-          "delta": -184.62
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.93,
+          "previous": 6.33,
           "current": 6.33,
-          "delta": -0.6
+          "delta": 0
         }
       }
     },
@@ -1586,24 +1586,24 @@
       "name": "Scandal Recovery",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 5.77,
+          "previous": 25,
           "current": 25,
-          "delta": 19.23
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 24222,
+          "previous": 19470,
           "current": 19470,
-          "delta": -4752
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1437.13,
+          "previous": 1240.49,
           "current": 1240.49,
-          "delta": -196.64
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.23,
+          "previous": 5.17,
           "current": 5.17,
-          "delta": -1.06
+          "delta": 0
         }
       }
     },
@@ -1612,24 +1612,24 @@
       "name": "Festival Push",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 5,
+          "previous": 25.77,
           "current": 25.77,
-          "delta": 20.77
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 26937,
+          "previous": 20816,
           "current": 20816,
-          "delta": -6121
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1650.33,
+          "previous": 1259.27,
           "current": 1259.27,
-          "delta": -391.06
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.45,
+          "previous": 5.18,
           "current": 5.18,
-          "delta": -1.27
+          "delta": 0
         }
       }
     },
@@ -1638,24 +1638,24 @@
       "name": "Chaos Tour",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 4.62,
+          "previous": 13.46,
           "current": 13.46,
-          "delta": 8.84
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 24341,
+          "previous": 22756,
           "current": 22756,
-          "delta": -1585
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1484.75,
+          "previous": 1308.16,
           "current": 1308.16,
-          "delta": -176.59
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.66,
+          "previous": 6.12,
           "current": 6.12,
-          "delta": -0.54
+          "delta": 0
         }
       }
     },
@@ -1664,24 +1664,24 @@
       "name": "Cult Hypergrowth",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 1.92,
+          "previous": 10.38,
           "current": 10.38,
-          "delta": 8.46
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 28107,
-          "current": 25826,
-          "delta": -2281
+          "previous": 25826,
+          "current": 25831,
+          "delta": 5
         },
         "avgFameProgressPerGig": {
-          "previous": 1590.42,
-          "current": 1494.02,
-          "delta": -96.4
+          "previous": 1494.02,
+          "current": 1494.4,
+          "delta": 0.38
         },
         "avgGigsPlayed": {
-          "previous": 6.97,
+          "previous": 6.47,
           "current": 6.47,
-          "delta": -0.5
+          "delta": 0
         }
       }
     },
@@ -1690,24 +1690,24 @@
       "name": "No Social (Fame 0-50)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 3.46,
+          "previous": 13.46,
           "current": 13.46,
-          "delta": 10
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 24773,
+          "previous": 22143,
           "current": 22143,
-          "delta": -2630
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1485.21,
+          "previous": 1395.63,
           "current": 1395.63,
-          "delta": -89.58
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.88,
+          "previous": 6.3,
           "current": 6.3,
-          "delta": -0.58
+          "delta": 0
         }
       }
     },
@@ -1716,24 +1716,24 @@
       "name": "High Controversy",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 11.92,
+          "previous": 28.85,
           "current": 28.85,
-          "delta": 16.93
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 19056,
+          "previous": 15062,
           "current": 15062,
-          "delta": -3994
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1417.29,
-          "current": 1324.99,
-          "delta": -92.3
+          "previous": 1324.99,
+          "current": 1325.22,
+          "delta": 0.23
         },
         "avgGigsPlayed": {
-          "previous": 6.41,
+          "previous": 5.32,
           "current": 5.32,
-          "delta": -1.09
+          "delta": 0
         }
       }
     },
@@ -1742,24 +1742,24 @@
       "name": "Early Game Probe (Fame 0–50)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 4.62,
+          "previous": 12.31,
           "current": 12.31,
-          "delta": 7.69
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 24205,
+          "previous": 22291,
           "current": 22291,
-          "delta": -1914
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1508.97,
+          "previous": 1392.7,
           "current": 1392.7,
-          "delta": -116.27
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.62,
+          "previous": 6.26,
           "current": 6.26,
-          "delta": -0.36
+          "delta": 0
         }
       }
     },
@@ -1768,24 +1768,24 @@
       "name": "Mid Game Probe (Fame 60–150)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0.38,
+          "previous": 2.31,
           "current": 2.31,
-          "delta": 1.93
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 25791,
+          "previous": 25262,
           "current": 25262,
-          "delta": -529
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1629.33,
+          "previous": 1540.49,
           "current": 1540.49,
-          "delta": -88.84
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 6.72,
+          "previous": 6.57,
           "current": 6.57,
-          "delta": -0.15
+          "delta": 0
         }
       }
     },
@@ -1799,19 +1799,19 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 31245,
+          "previous": 30739,
           "current": 30739,
-          "delta": -506
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1574.63,
+          "previous": 1658.62,
           "current": 1658.62,
-          "delta": 83.99
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 8.79,
+          "previous": 8.66,
           "current": 8.66,
-          "delta": -0.13
+          "delta": 0
         }
       }
     }
@@ -5100,8 +5100,8 @@
           "avgStrandedDays": 0.36,
           "strandedRunsPct": 25,
           "travelBlockedByReason": {
-            "money": 0.35,
-            "fuel": 0.01,
+            "money": 0.36,
+            "fuel": 0,
             "venue_access": 0
           },
           "avgRefuelledToTravel": 0.38,
@@ -5904,8 +5904,8 @@
           "avgStrandedDays": 0.35,
           "strandedRunsPct": 25.38,
           "travelBlockedByReason": {
-            "money": 0.34,
-            "fuel": 0.01,
+            "money": 0.35,
+            "fuel": 0,
             "venue_access": 0
           },
           "avgRefuelledToTravel": 0.27,
@@ -7193,20 +7193,20 @@
       "name": "Cult Hypergrowth",
       "description": "Maximaler Promo-Einsatz und Social-Traits – testet aggressiven Fanbase-Aufbau und Monetarisierung.",
       "summary": {
-        "avgFinalMoney": 25826,
-        "avgFinalFame": 7942,
+        "avgFinalMoney": 25831,
+        "avgFinalFame": 7943,
         "avgFinalHarmony": 55,
         "avgGigsPlayed": 6.47,
-        "avgGigNet": 4577,
+        "avgGigNet": 4578,
         "bankruptcyRate": 10.38,
         "avgEventsApplied": 0.97,
         "avgGigEvents": 0.75,
         "avgPerformanceScore": 59,
         "statistics": {
           "finalMoney": {
-            "mean": 25826,
+            "mean": 25831,
             "median": 27127,
-            "stdDev": 10513,
+            "stdDev": 10515,
             "min": 0,
             "p10": 0,
             "p25": 23918,
@@ -7215,9 +7215,9 @@
             "max": 54977
           },
           "finalFame": {
-            "mean": 7942,
+            "mean": 7943,
             "median": 8140,
-            "stdDev": 4842,
+            "stdDev": 4843,
             "min": 0,
             "p10": 1131,
             "p25": 6029,
@@ -7248,7 +7248,7 @@
             "max": 10
           },
           "gigNet": {
-            "mean": 4577,
+            "mean": 4578,
             "median": 4914,
             "stdDev": 1716,
             "min": 0,
@@ -7281,9 +7281,9 @@
             "max": 500
           },
           "peakMoney": {
-            "mean": 25906,
+            "mean": 25911,
             "median": 27127,
-            "stdDev": 10371,
+            "stdDev": 10372,
             "min": 500,
             "p10": 875,
             "p25": 24056,
@@ -7294,7 +7294,7 @@
           "maxDrawdownPct": {
             "mean": 37.34,
             "median": 30.47,
-            "stdDev": 23.59,
+            "stdDev": 23.58,
             "min": 0,
             "p10": 9.28,
             "p25": 25.8,
@@ -7336,9 +7336,9 @@
             "max": 4
           },
           "fameEarned": {
-            "mean": 10659,
+            "mean": 10662,
             "median": 11043,
-            "stdDev": 5339,
+            "stdDev": 5342,
             "min": 0,
             "p10": 1785,
             "p25": 9436,
@@ -7354,7 +7354,7 @@
             "p10": 1300,
             "p25": 1449,
             "p75": 1638,
-            "p90": 1722,
+            "p90": 1726,
             "max": 6191
           }
         },
@@ -7362,9 +7362,9 @@
           "allRuns": {
             "sampleSize": 260,
             "finalMoney": {
-              "mean": 25826,
+              "mean": 25831,
               "median": 27127,
-              "stdDev": 10513,
+              "stdDev": 10515,
               "min": 0,
               "p10": 0,
               "p25": 23918,
@@ -7373,9 +7373,9 @@
               "max": 54977
             },
             "finalFame": {
-              "mean": 7942,
+              "mean": 7943,
               "median": 8140,
-              "stdDev": 4842,
+              "stdDev": 4843,
               "min": 0,
               "p10": 1131,
               "p25": 6029,
@@ -7406,7 +7406,7 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 4577,
+              "mean": 4578,
               "median": 4914,
               "stdDev": 1716,
               "min": 0,
@@ -7439,9 +7439,9 @@
               "max": 100
             },
             "fameEarned": {
-              "mean": 10659,
+              "mean": 10662,
               "median": 11043,
-              "stdDev": 5339,
+              "stdDev": 5342,
               "min": 0,
               "p10": 1785,
               "p25": 9436,
@@ -7457,14 +7457,14 @@
               "p10": 1300,
               "p25": 1449,
               "p75": 1638,
-              "p90": 1722,
+              "p90": 1726,
               "max": 6191
             }
           },
           "solventRuns": {
             "sampleSize": 233,
             "finalMoney": {
-              "mean": 28819,
+              "mean": 28824,
               "median": 27968,
               "stdDev": 6064,
               "min": 16133,
@@ -7475,7 +7475,7 @@
               "max": 54977
             },
             "finalFame": {
-              "mean": 8856,
+              "mean": 8857,
               "median": 8600,
               "stdDev": 4253,
               "min": 1685,
@@ -7508,8 +7508,8 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 5104,
-              "median": 4982,
+              "mean": 5105,
+              "median": 4984,
               "stdDev": 775,
               "min": 3445,
               "p10": 4186,
@@ -7541,9 +7541,9 @@
               "max": 100
             },
             "fameEarned": {
-              "mean": 11880,
+              "mean": 11884,
               "median": 11335,
-              "stdDev": 4168,
+              "stdDev": 4171,
               "min": 4775,
               "p10": 8990,
               "p25": 9880,
@@ -7559,7 +7559,7 @@
               "p10": 1409,
               "p25": 1478,
               "p75": 1646,
-              "p90": 1726,
+              "p90": 1729,
               "max": 6191
             }
           },
@@ -7666,10 +7666,10 @@
             }
           }
         },
-        "avgFameProgress": 10659,
-        "avgFameProgressPerGig": 1494.02,
+        "avgFameProgress": 10662,
+        "avgFameProgressPerGig": 1494.4,
         "avgPeakToTroughDrop": 37.34,
-        "avgPeakMoney": 25906,
+        "avgPeakMoney": 25911,
         "avgLowestMoney": 364,
         "avgFinalControversy": 3.43,
         "avgClinicVisits": 0,
@@ -7680,11 +7680,11 @@
         "avgRefuels": 1.14,
         "avgRepairs": 0.83,
         "avgHqUpgrades": 2.24,
-        "avgVanUpgrades": 3.19,
-        "avgCatalogUpgrades": 10.71,
+        "avgVanUpgrades": 3.2,
+        "avgCatalogUpgrades": 10.72,
         "avgTravelMinigames": 6.47,
         "avgRoadieMinigames": 2.19,
-        "avgKabelsalatMinigames": 2.07,
+        "avgKabelsalatMinigames": 2.06,
         "avgAmpCalibrations": 2.22,
         "avgRestStops": 0,
         "avgRestDays": 0,
@@ -7709,15 +7709,15 @@
         "avgMissesPerGig": 6,
         "gigScorePctLow": 7.1,
         "gigScorePctMid": 64.3,
-        "gigScorePctHigh": 28.5,
+        "gigScorePctHigh": 28.6,
         "gigNetToTravelRatio": 46.3,
         "sinkToIncomeRatio": 0.04,
         "gigCapHitPct": 12.2,
         "gigsToAffordHqUpgrade": 2.73,
         "gigsToAffordVanUpgrade": 0.18,
-        "avgMoneyAtEarlyCheckpoint": 2973,
-        "avgMoneyAtMidCheckpoint": 6133,
-        "avgMoneyAtLateCheckpoint": 7980,
+        "avgMoneyAtEarlyCheckpoint": 2972,
+        "avgMoneyAtMidCheckpoint": 6132,
+        "avgMoneyAtLateCheckpoint": 7985,
         "bankruptcy": {
           "count": 27,
           "sampleSize": 260,
@@ -7761,11 +7761,11 @@
           "firstVanUpgradeDayMedian": 4,
           "hqUpgradeReachedPct": 91.15,
           "firstHqUpgradeDayMedian": 2,
-          "avgDistinctItemsPurchased": 9.74,
-          "catalogSharePurchasedPct": 14.54,
+          "avgDistinctItemsPurchased": 9.75,
+          "catalogSharePurchasedPct": 14.55,
           "modalFirstPurchaseCategory": "HQ",
-          "avgMoneyBeforePurchase": 6751.13,
-          "avgResidualMoneyAfterPurchase": 6137.51,
+          "avgMoneyBeforePurchase": 6750.74,
+          "avgResidualMoneyAfterPurchase": 6137.49,
           "avgMissedPurchases": 1.21,
           "avgLiquidityDeferrals": 0.25,
           "avgUnaffordableAtMidCheckpoint": 3.59,
@@ -7774,13 +7774,13 @@
           "avgAffordableAtEnd": 50.61
         },
         "gigEconomics": {
-          "gigNetPerCalendarDay": 3472,
-          "gigNetPerGigDay": 5045,
+          "gigNetPerCalendarDay": 3473,
+          "gigNetPerGigDay": 5046,
           "gigsPerCalendarDay": 0.688,
           "avgRestDays": 0,
           "avgFreeRestStops": 0,
           "restDaySharePct": 0,
-          "foregoneGigNetPerRestDayUpperBound": 5045,
+          "foregoneGigNetPerRestDayUpperBound": 5046,
           "travelCostShareOfGigNetPct": 2.16,
           "avgTravelCostPerGigDay": 109,
           "catalogItemsUnderOneGigNetPct": 95.35,
@@ -7808,7 +7808,7 @@
           "earliestBankruptcyDay": 3
         },
         "volatility": {
-          "finalMoneyStdDev": 10513,
+          "finalMoneyStdDev": 10515,
           "finalMoneyCoefficientOfVariation": 0.4071,
           "performanceScoreStdDev": 20,
           "finalHarmonyStdDev": 15,
@@ -7818,13 +7818,13 @@
         },
         "fameAccounting": {
           "startingFame": 0,
-          "earned": 10659,
-          "spentGross": 2716,
+          "earned": 10662,
+          "spentGross": 2719,
           "refunded": 0,
-          "spentNet": 2716,
+          "spentNet": 2719,
           "lost": 0,
           "clampAdjustment": 0,
-          "finalFame": 7942.32,
+          "finalFame": 7942.58,
           "reconciliationDelta": 0,
           "maxAbsReconciliationDelta": 0,
           "reconciledRuns": 260,
@@ -7939,22 +7939,22 @@
           },
           "minigamesTravel": {
             "attempts": 1682,
-            "completions": 1059,
+            "completions": 1060,
             "covered": true
           },
           "minigamesRoadie": {
-            "attempts": 569,
-            "completions": 569,
+            "attempts": 570,
+            "completions": 570,
             "covered": true
           },
           "minigamesKabelsalat": {
-            "attempts": 537,
-            "completions": 389,
+            "attempts": 535,
+            "completions": 388,
             "covered": true
           },
           "minigamesAmp": {
-            "attempts": 576,
-            "completions": 509,
+            "attempts": 577,
+            "completions": 510,
             "covered": true
           },
           "sponsorship": {
@@ -7982,14 +7982,14 @@
         {
           "label": "Endgeld",
           "pass": true,
-          "actual": "€25.826",
+          "actual": "€25.831",
           "target": "€14.000 – €45.000",
           "bewertung": "Zentral im Zielband – sehr gute Balance."
         },
         {
           "label": "Fame-Fortschritt/Gig",
           "pass": true,
-          "actual": "1494.02",
+          "actual": "1494.4",
           "target": "1000 – 2200",
           "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
         }
@@ -8875,7 +8875,7 @@
       "description": "Max controversy strategy.",
       "summary": {
         "avgFinalMoney": 15062,
-        "avgFinalFame": 5722,
+        "avgFinalFame": 5723,
         "avgFinalHarmony": 46,
         "avgGigsPlayed": 5.32,
         "avgGigNet": 2545,
@@ -8896,9 +8896,9 @@
             "max": 34697
           },
           "finalFame": {
-            "mean": 5722,
+            "mean": 5723,
             "median": 6365,
-            "stdDev": 4449,
+            "stdDev": 4450,
             "min": 0,
             "p10": 0,
             "p25": 1765,
@@ -8951,12 +8951,12 @@
             "max": 87
           },
           "lowestMoney": {
-            "mean": 296,
+            "mean": 297,
             "median": 347,
-            "stdDev": 170,
+            "stdDev": 169,
             "min": 0,
             "p10": 45,
-            "p25": 88,
+            "p25": 89,
             "p75": 473,
             "p90": 500,
             "max": 500
@@ -8973,14 +8973,14 @@
             "max": 34697
           },
           "maxDrawdownPct": {
-            "mean": 51.32,
+            "mean": 51.27,
             "median": 44.04,
-            "stdDev": 27.89,
+            "stdDev": 27.83,
             "min": 0,
             "p10": 19.45,
             "p25": 27.24,
             "p75": 83.2,
-            "p90": 92.42,
+            "p90": 92.4,
             "max": 100
           },
           "finalHarmony": {
@@ -9017,9 +9017,9 @@
             "max": 4
           },
           "fameEarned": {
-            "mean": 7888,
+            "mean": 7889,
             "median": 9325,
-            "stdDev": 5237,
+            "stdDev": 5236,
             "min": 0,
             "p10": 0,
             "p25": 3145,
@@ -9054,9 +9054,9 @@
               "max": 34697
             },
             "finalFame": {
-              "mean": 5722,
+              "mean": 5723,
               "median": 6365,
-              "stdDev": 4449,
+              "stdDev": 4450,
               "min": 0,
               "p10": 0,
               "p25": 1765,
@@ -9120,9 +9120,9 @@
               "max": 81
             },
             "fameEarned": {
-              "mean": 7888,
+              "mean": 7889,
               "median": 9325,
-              "stdDev": 5237,
+              "stdDev": 5236,
               "min": 0,
               "p10": 0,
               "p25": 3145,
@@ -9258,15 +9258,15 @@
               "max": 0
             },
             "finalFame": {
-              "mean": 811,
+              "mean": 815,
               "median": 380,
-              "stdDev": 1210,
+              "stdDev": 1233,
               "min": 0,
               "p10": 0,
               "p25": 0,
-              "p75": 1206,
+              "p75": 1146,
               "p90": 2140,
-              "max": 5651
+              "max": 5921
             },
             "gigsPlayed": {
               "mean": 0.75,
@@ -9324,34 +9324,34 @@
               "max": 81
             },
             "fameEarned": {
-              "mean": 1273,
+              "mean": 1275,
               "median": 1361,
-              "stdDev": 1459,
+              "stdDev": 1464,
               "min": 0,
               "p10": 0,
               "p25": 0,
               "p75": 1771,
-              "p90": 3272,
+              "p90": 3315,
               "max": 6120
             },
             "fameEarnedPerGig": {
-              "mean": 953,
+              "mean": 954,
               "median": 1361,
               "stdDev": 1022,
               "min": 0,
               "p10": 0,
               "p25": 0,
-              "p75": 1676,
+              "p75": 1683,
               "p90": 1774,
               "max": 6120
             }
           }
         },
-        "avgFameProgress": 7888,
-        "avgFameProgressPerGig": 1324.99,
-        "avgPeakToTroughDrop": 51.32,
+        "avgFameProgress": 7889,
+        "avgFameProgressPerGig": 1325.22,
+        "avgPeakToTroughDrop": 51.27,
         "avgPeakMoney": 15305,
-        "avgLowestMoney": 296,
+        "avgLowestMoney": 297,
         "avgFinalControversy": 59.18,
         "avgClinicVisits": 0.13,
         "avgSponsorPayouts": 0.05,
@@ -9360,7 +9360,7 @@
         "avgBrandDealsActivated": 0.02,
         "avgRefuels": 0.95,
         "avgRepairs": 0.69,
-        "avgHqUpgrades": 1.77,
+        "avgHqUpgrades": 1.78,
         "avgVanUpgrades": 2.67,
         "avgCatalogUpgrades": 8.86,
         "avgTravelMinigames": 5.32,
@@ -9447,11 +9447,11 @@
           "modalFirstPurchaseCategory": "MERCH",
           "avgMoneyBeforePurchase": 2675.66,
           "avgResidualMoneyAfterPurchase": 2516.11,
-          "avgMissedPurchases": 1.36,
+          "avgMissedPurchases": 1.35,
           "avgLiquidityDeferrals": 0.52,
           "avgUnaffordableAtMidCheckpoint": 7.24,
           "avgAffordableAtMidCheckpoint": 53.96,
-          "avgUnaffordableAtEnd": 15.34,
+          "avgUnaffordableAtEnd": 15.35,
           "avgAffordableAtEnd": 42.73
         },
         "gigEconomics": {
@@ -9483,7 +9483,7 @@
           "avgDaysBelowTightThreshold": 1.51,
           "avgDaysBelowCriticalThreshold": 0.62,
           "medianMaxDrawdownPct": 44.04,
-          "p90MaxDrawdownPct": 92.42,
+          "p90MaxDrawdownPct": 92.4,
           "solventFinalMoneyP10": 15152,
           "medianBankruptcyDay": 4,
           "earliestBankruptcyDay": 2
@@ -9493,19 +9493,19 @@
           "finalMoneyCoefficientOfVariation": 0.7249,
           "performanceScoreStdDev": 21,
           "finalHarmonyStdDev": 16,
-          "maxDrawdownMeanPct": 51.32,
-          "maxDrawdownP90Pct": 92.42,
+          "maxDrawdownMeanPct": 51.27,
+          "maxDrawdownP90Pct": 92.4,
           "moneyRangeMedian": 19173
         },
         "fameAccounting": {
           "startingFame": 0,
-          "earned": 7888,
+          "earned": 7889,
           "spentGross": 2166,
           "refunded": 0,
           "spentNet": 2166,
           "lost": 1,
           "clampAdjustment": 0,
-          "finalFame": 5721.57,
+          "finalFame": 5722.69,
           "reconciliationDelta": 0,
           "maxAbsReconciliationDelta": 0,
           "reconciledRuns": 260,
@@ -10309,8 +10309,8 @@
           "avgStrandedDays": 0.16,
           "strandedRunsPct": 12.31,
           "travelBlockedByReason": {
-            "money": 0.15,
-            "fuel": 0.01,
+            "money": 0.16,
+            "fuel": 0,
             "venue_access": 0
           },
           "avgRefuelledToTravel": 0.47,
