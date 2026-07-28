@@ -3876,17 +3876,51 @@ const RISK_STATUS_LABEL = {
   not_evaluated: '⚪ not_evaluated'
 }
 
+const formatRiskStreams = ({ calibrationPct, holdoutPct }) =>
+  Number.isFinite(holdoutPct)
+    ? `Kalibrierung ${calibrationPct}%, Holdout ${holdoutPct}%`
+    : `Kalibrierung ${calibrationPct}%`
+
+/**
+ * Every warning names both seed streams because the composite status is not
+ * always driven by the calibration rate. `unsafe` can come from a holdout-only
+ * breach — cult_hypergrowth reads 10.38% in calibration and 14.23% in the
+ * holdout against a 12% cap — and quoting the calibration rate there asserted
+ * that 10.38% exceeds a 12% limit. `unstable` exists precisely because the two
+ * streams disagree, so one rate cannot describe it either.
+ */
 const RISK_STATUS_WARNING = {
-  low_risk: (id, observed, range) =>
-    `${id}: Insolvenzrate ${observed}% liegt unter dem Zielkorridor ${range[0]}–${range[1]}% — das Szenario ist sicherer als beabsichtigt.`,
-  high_risk: (id, observed, range) =>
-    `${id}: Insolvenzrate ${observed}% liegt über dem Zielkorridor ${range[0]}–${range[1]}%, aber noch unter der Sicherheitsgrenze.`,
-  unstable: (id, observed, range) =>
-    `${id}: Kalibrierung und Holdout ordnen die Rate ${observed}% unterschiedlich zum Korridor ${range[0]}–${range[1]}% ein — das Szenario liegt auf einer Korridorgrenze.`,
-  unsafe: (id, observed) =>
-    `${id}: Insolvenzrate ${observed}% überschreitet die harte Sicherheitsgrenze — das ist ein Safety-Gate-Befund, kein Designhinweis.`,
-  insufficient_evidence: (id, observed) =>
-    `${id}: Stichprobe zu klein, um die Rate ${observed}% gegen den Korridor zu bewerten (mindestens ${RISK_EVIDENCE_MINIMUM_SAMPLE} Runs nötig).`
+  low_risk: ({ id, targetRangePct, ...streams }) =>
+    `${id}: Insolvenzrate (${formatRiskStreams(streams)}) liegt unter dem Zielkorridor ${targetRangePct[0]}–${targetRangePct[1]}% — das Szenario ist sicherer als beabsichtigt.`,
+  high_risk: ({ id, targetRangePct, ...streams }) =>
+    `${id}: Insolvenzrate (${formatRiskStreams(streams)}) liegt über dem Zielkorridor ${targetRangePct[0]}–${targetRangePct[1]}%, aber noch unter der Sicherheitsgrenze.`,
+  unstable: ({
+    id,
+    targetRangePct,
+    calibrationStatus,
+    holdoutStatus,
+    ...streams
+  }) =>
+    `${id}: Kalibrierung (${calibrationStatus}) und Holdout (${holdoutStatus}) ordnen die Raten unterschiedlich zum Korridor ${targetRangePct[0]}–${targetRangePct[1]}% ein — ${formatRiskStreams(streams)}; das Szenario liegt auf einer Korridorgrenze.`,
+  unsafe: ({
+    id,
+    safetyMaximumPct,
+    calibrationStatus,
+    holdoutStatus,
+    calibrationPct,
+    holdoutPct
+  }) => {
+    const breached = [
+      calibrationStatus === 'above_safety_limit'
+        ? `Kalibrierung ${calibrationPct}%`
+        : null,
+      holdoutStatus === 'above_safety_limit' ? `Holdout ${holdoutPct}%` : null
+    ].filter(Boolean)
+    const verb = breached.length > 1 ? 'überschreiten' : 'überschreitet'
+    return `${id}: ${breached.join(' und ')} ${verb} die harte Sicherheitsgrenze ${safetyMaximumPct}% — das ist ein Safety-Gate-Befund, kein Designhinweis.`
+  },
+  insufficient_evidence: ({ id, ...streams }) =>
+    `${id}: Stichprobe zu klein, um die Raten (${formatRiskStreams(streams)}) gegen den Korridor zu bewerten (mindestens ${RISK_EVIDENCE_MINIMUM_SAMPLE} Runs nötig).`
 }
 
 /**
@@ -3970,11 +4004,15 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
     const describe = RISK_STATUS_WARNING[scenario.status]
     if (!describe) return []
     return [
-      describe(
-        scenario.id,
-        scenario.bankruptcy.observedPct,
-        scenario.bankruptcy.targetRangePct
-      )
+      describe({
+        id: scenario.id,
+        calibrationPct: scenario.bankruptcy.observedPct,
+        holdoutPct: scenario.holdout.observedPct,
+        targetRangePct: scenario.bankruptcy.targetRangePct,
+        safetyMaximumPct: scenario.bankruptcy.safetyMaximumPct,
+        calibrationStatus: scenario.bankruptcy.status,
+        holdoutStatus: scenario.holdout.status
+      })
     ]
   })
 

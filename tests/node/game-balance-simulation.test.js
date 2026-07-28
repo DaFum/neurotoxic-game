@@ -486,6 +486,39 @@ test('buildDesignRiskReview stays non-blocking and warns on a below-target scena
   assert.match(review.warnings[0], /sicherer als beabsichtigt/)
 })
 
+test('an unsafe warning names the stream that actually breached the safety cap', () => {
+  const cap = KPI_TARGETS.cult_hypergrowth.bankruptcyMax
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'cult_hypergrowth',
+        name: 'Cult Hypergrowth',
+        summary: {
+          bankruptcy: { count: 27, sampleSize: 260, ratePct: 10.38 }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'cult_hypergrowth',
+        holdoutBankruptcy: { count: 37, sampleSize: 260, ratePct: 14.23 }
+      }
+    ]
+  })
+
+  const [scenario] = review.scenarios
+  assert.equal(scenario.bankruptcy.status, 'above_target')
+  assert.equal(scenario.holdout.status, 'above_safety_limit')
+  assert.equal(scenario.status, 'unsafe')
+
+  // The calibration rate is under the cap, so quoting it as the breach would
+  // publish a false claim about the very figure the safety gate turns on.
+  assert.equal(review.warnings.length, 1)
+  assert.match(review.warnings[0], /Holdout 14\.23% überschreitet/)
+  assert.match(review.warnings[0], new RegExp(`Sicherheitsgrenze ${cap}%`))
+  assert.doesNotMatch(review.warnings[0], /Kalibrierung 10\.38% überschreitet/)
+})
+
 test('buildDesignRiskReview reports an absent holdout instead of assuming agreement', () => {
   const review = buildDesignRiskReview({
     results: [
