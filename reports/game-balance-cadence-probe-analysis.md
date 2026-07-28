@@ -1,6 +1,6 @@
 # Gig-Kadenz-Phasenvergleich (Phase 5, Schritt 1)
 
-Erzeugt: 2026-07-28T16:41:03.375Z
+Erzeugt: 2026-07-28T17:18:48.604Z
 Runs pro Szenario und Stream: 260 · Streams: calibration, holdout
 Seed-Strategie: `scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)`
 
@@ -42,7 +42,7 @@ Bei `gigGapDays: 1` sind alle drei identisch — solche Zeilen sind keine Bestä
 | Geld direkt vor erstem Gig (Median) | €232 | €365 | €365 |
 | Geld direkt vor erstem Gig (P10) | €140 | €220 | €221 |
 | Ø Verpflichtungen vor erstem Gig | €170 | €88 | €88 |
-| Ø Ausgaben vor erstem Gig | €152 | €131 | €131 |
+| Ø Ausgaben vor erstem Gig | €182 | €131 | €131 |
 | Runs mit blockierter Reise vor erstem Gig | 12.69% | 0% | 0% |
 | erste blockierte Reise (Median-Tag) | 3 | — | — |
 | Ø Gigs | 6.13 | 7.47 | 7.46 |
@@ -64,7 +64,7 @@ Bei `gigGapDays: 1` sind alle drei identisch — solche Zeilen sind keine Bestä
 
 ## Schlussfolgerung
 
-Allein die Kadenz-Phase bringt das Holdout-Gate von `cult_hypergrowth` von FAIL auf PASS (gap-offset, first-income). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.
+Allein die Kadenz-Phase bringt das Holdout-Gate von `cult_hypergrowth` von FAIL (13.85% gegen 12%) auf PASS (gap-offset 1.92%, first-income 1.92%). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.
 
 - `gap-aligned`: über dem Designkorridor: `bootstrap_struggle`, `aggressive_marketing`, `scandal_recovery`, `festival_push`, `cult_hypergrowth`; kein Szenario unter dem Designkorridor
 - `gap-offset`: kein Szenario über dem Designkorridor; unter dem Designkorridor: `scandal_recovery`, `chaos_tour`, `cult_hypergrowth`

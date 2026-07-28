@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T16:40:25.509Z",
+  "generatedAt": "2026-07-28T17:18:11.739Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "d427e3b917c52d1c6f9b793137fa819f718346e2",
-    "workingTreeDirty": true,
-    "simulationScriptSha256": "ccff9a1e09f6a7e40345082ae6469e0f4ef0f79ee22a1be696977de4af4a5455",
-    "balanceSourceSha256": "b83f6d26f39000acd7a6d8f1cdb86cac9178e3a0596e89a48e0a2c36727f70b2",
-    "experimentScriptSha256": "0fc1eff12f55130eb3aeeb03951c2cbb91c26ec894c31fdbb61dc098877093ee",
+    "sourceBaseCommit": "70b5beb4b46ae9e5b34f1b5585649be42f77e03c",
+    "workingTreeDirty": false,
+    "simulationScriptSha256": "574d7365e3a681aba27295848b666c4dc8a05d9785fe731b152171659895638e",
+    "balanceSourceSha256": "d190ff0a97c517f87c18f90e8f1cd52efbe5e1f70e6bb59dd519217f6a00e16b",
+    "experimentScriptSha256": "abe8f2fafa170987b93bdfd7a5076003caae891ee67a6179d59d5968f1b6e765",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
@@ -882,7 +882,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 13.85% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 13.85% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 13.85% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 13.85% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 13.85% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 13.85% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 13.85% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 13.85% > 12%; with touring-wear-105: cult_hypergrowth 13.85% > 12%; with touring-stress-1: cult_hypergrowth 13.85% > 12%; with touring-wear-110: cult_hypergrowth 13.85% > 12%)."
         },
         {
           "id": "bootstrap-obligations-90-through-3",
@@ -1728,7 +1728,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 18.85% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 18.85% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 18.85% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 18.85% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 18.85% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 18.85% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 18.85% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 18.85% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 18.85% > 12%; with touring-wear-105: cult_hypergrowth 18.85% > 12%)."
         },
         {
           "id": "bootstrap-obligations-80-through-3",
@@ -2574,7 +2574,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 16.54% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 16.54% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 16.54% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 16.54% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 16.54% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 16.54% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 16.54% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 16.54% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 16.54% > 12%; with touring-wear-105: cult_hypergrowth 16.54% > 12%)."
         },
         {
           "id": "bootstrap-obligations-70-through-3",
@@ -3420,7 +3420,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 14.62% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 14.62% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 14.62% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 14.62% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 14.62% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 14.62% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 14.62% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 14.62% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 14.62% > 12%)."
         },
         {
           "id": "bootstrap-obligations-80-through-5",
@@ -4266,7 +4266,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 15.38% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 15.38% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 15.38% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 15.38% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "bootstrap-obligations-70-through-5",
@@ -9357,7 +9357,7 @@
             "complexityPenalty": 2
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with touring-none: cult_hypergrowth 15.38% > 12%; with touring-demand-5-15-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-10-40-after-3-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-5-20-window-5: cult_hypergrowth 15.38% > 12%; with touring-demand-7.5-25-window-3: cult_hypergrowth 15.38% > 12%; with touring-demand-10-40-after-3-window-5: cult_hypergrowth 15.38% > 12%; with touring-demand-16-55-after-5: cult_hypergrowth 15.38% > 12%; with touring-demand-13.5-48-after-3-window-5: cult_hypergrowth 15.38% > 12%)."
         }
       ],
       "ranking": [
@@ -11676,7 +11676,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-7.5-25-window-3",
@@ -12534,7 +12534,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-5-20-window-5",
@@ -13392,7 +13392,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-10-40-after-3-window-3",
@@ -14251,7 +14251,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-10-40-after-3-window-5",
@@ -15110,7 +15110,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-13.5-48-after-3-window-5",
@@ -15969,7 +15969,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-demand-16-55-after-5",
@@ -16828,7 +16828,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%; cult_hypergrowth 14.62% > 12%; cult_hypergrowth 15.38% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%; with bootstrap-obligations-70-through-3: cult_hypergrowth 14.62% > 12%; with bootstrap-obligations-80-through-5: cult_hypergrowth 15.38% > 12%; with bootstrap-staged-75: cult_hypergrowth 15.38% > 12%)."
         },
         {
           "id": "touring-stress-1",
@@ -17685,7 +17685,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%)."
         },
         {
           "id": "touring-stress-2",
@@ -20257,7 +20257,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%; cult_hypergrowth 18.85% > 12%; cult_hypergrowth 16.54% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%; with bootstrap-obligations-90-through-3: cult_hypergrowth 18.85% > 12%; with bootstrap-obligations-80-through-3: cult_hypergrowth 16.54% > 12%)."
         },
         {
           "id": "touring-wear-110",
@@ -21114,7 +21114,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Breached the holdout safety caps (cult_hypergrowth 13.85% > 12%)."
+          "rejectionReason": "Breached the holdout safety caps (with bootstrap-none: cult_hypergrowth 13.85% > 12%)."
         },
         {
           "id": "touring-wear-115",
@@ -27204,7 +27204,7 @@
     "blocking": false,
     "layer": "design-intent",
     "source": "holdout",
-    "note": "Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem das Risiko entfernen, für das ein Szenario existiert — diese Liste macht \"sicherer als beabsichtigt\" sichtbar.",
+    "note": "The hard caps are ceilings. A lever can clear all of them and still remove the risk a scenario exists to create, so this list makes \"safer than intended\" visible.",
     "scenarios": [
       {
         "scenarioId": "baseline_touring",
@@ -27962,10 +27962,19 @@
         "denseScheduleRecoveryMultiplier": 1,
         "denseScheduleMaintenanceMultiplier": 1
       }
+    },
+    "productionHold": {
+      "adopted": false,
+      "heldFor": {
+        "bootstrap": "bootstrap-emergency-250",
+        "touring": "touring-none"
+      },
+      "matchesRecommendation": true,
+      "reason": "A one-off €250 grant below €100 through day 5. Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold."
     }
   },
   "runtime": {
-    "durationMs": 140477,
+    "durationMs": 146603,
     "candidates": 25,
     "totalRuns": 71240
   }

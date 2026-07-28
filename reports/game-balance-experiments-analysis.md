@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 71240 simulation runs in 140477 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 71240 simulation runs in 146603 ms.
 
 ## Kontrollzustand
 
@@ -41,7 +41,7 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 ## Gewählter Bootstrap-Hebel
 
-`bootstrap-emergency-250` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. 54 of 154 pairs were evaluated, 100 skipped (53 rejected by the holdout gate, 0 by the calibration gate).
+`bootstrap-emergency-250` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. Of 154 available pairs, 54 were evaluated (53 rejected by the holdout gate, 0 by the calibration gate, 1 clearing both) and 100 were never reached, because the search stops at the first pair that clears both gates and every remaining pair carries higher impact.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -127,7 +127,7 @@ Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_to
 
 ## Gewählter Late-Game-Hebel
 
-`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. 54 of 154 pairs were evaluated, 100 skipped (53 rejected by the holdout gate, 0 by the calibration gate).
+`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. Of 154 available pairs, 54 were evaluated (53 rejected by the holdout gate, 0 by the calibration gate, 1 clearing both) and 100 were never reached, because the search stops at the first pair that clears both gates and every remaining pair carries higher impact.
 
 ## Kombinierte Validierung
 
@@ -199,6 +199,8 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 Only the selected bootstrap and touring defaults are intended for production.
 
 Recommendation: **accepted-for-production-partial**
+
+> **Nicht ausgeliefert.** `BALANCE_RECOMMENDATION_HOLD` in `src/utils/balanceTuning.ts` hält diese Empfehlung zurück, die Produktionswerte bleiben neutral: A one-off €250 grant below €100 through day 5. Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold.
 
 ## Fazit
 

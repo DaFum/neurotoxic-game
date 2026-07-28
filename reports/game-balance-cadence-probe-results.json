@@ -13,6 +13,9 @@
   "seedStrategy": "scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)",
   "conclusion": {
     "phaseExplainsBreach": true,
+    "shippedPolicyBreachesCultCap": true,
+    "shippedCultHoldoutRatePct": 13.85,
+    "cultHardCapPct": 12,
     "clearingPolicies": [
       "gap-offset",
       "first-income"
@@ -27,7 +30,7 @@
       "gap-offset": 1.92,
       "first-income": 1.92
     },
-    "verdict": "Allein die Kadenz-Phase bringt das Holdout-Gate von `cult_hypergrowth` von FAIL auf PASS (gap-offset, first-income). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist."
+    "verdict": "Allein die Kadenz-Phase bringt das Holdout-Gate von `cult_hypergrowth` von FAIL (13.85% gegen 12%) auf PASS (gap-offset 1.92%, first-income 1.92%). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist."
   },
   "variants": [
     {
@@ -578,7 +581,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.08,
               "obligationsBeforeFirstGigMean": 91.29,
-              "spendBeforeFirstGigMean": 130.23,
+              "spendBeforeFirstGigMean": 134.36,
               "blockedTravelBeforeFirstGigRunsPct": 1.15,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -610,7 +613,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.07,
               "obligationsBeforeFirstGigMean": 90.96,
-              "spendBeforeFirstGigMean": 123.89,
+              "spendBeforeFirstGigMean": 125.58,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 2.5,
               "firstBlockedTravelReasons": {
@@ -649,7 +652,7 @@
               "lowestMoneyBeforeFirstGigMedian": 282,
               "daysBeforeFirstGigMean": 1.46,
               "obligationsBeforeFirstGigMean": 191.52,
-              "spendBeforeFirstGigMean": 134.1,
+              "spendBeforeFirstGigMean": 184.11,
               "blockedTravelBeforeFirstGigRunsPct": 23.46,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -681,7 +684,7 @@
               "lowestMoneyBeforeFirstGigMedian": 281,
               "daysBeforeFirstGigMean": 1.7,
               "obligationsBeforeFirstGigMean": 206.73,
-              "spendBeforeFirstGigMean": 123.53,
+              "spendBeforeFirstGigMean": 186.66,
               "blockedTravelBeforeFirstGigRunsPct": 29.23,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -720,7 +723,7 @@
               "lowestMoneyBeforeFirstGigMedian": 284,
               "daysBeforeFirstGigMean": 0.95,
               "obligationsBeforeFirstGigMean": 159.76,
-              "spendBeforeFirstGigMean": 159.38,
+              "spendBeforeFirstGigMean": 180.39,
               "blockedTravelBeforeFirstGigRunsPct": 9.62,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -752,7 +755,7 @@
               "lowestMoneyBeforeFirstGigMedian": 283,
               "daysBeforeFirstGigMean": 1.02,
               "obligationsBeforeFirstGigMean": 164.39,
-              "spendBeforeFirstGigMean": 159.48,
+              "spendBeforeFirstGigMean": 185.49,
               "blockedTravelBeforeFirstGigRunsPct": 11.15,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -791,7 +794,7 @@
               "lowestMoneyBeforeFirstGigMedian": 280,
               "daysBeforeFirstGigMean": 1.53,
               "obligationsBeforeFirstGigMean": 195.82,
-              "spendBeforeFirstGigMean": 127.9,
+              "spendBeforeFirstGigMean": 180.17,
               "blockedTravelBeforeFirstGigRunsPct": 24.23,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -823,7 +826,7 @@
               "lowestMoneyBeforeFirstGigMedian": 283,
               "daysBeforeFirstGigMean": 1.47,
               "obligationsBeforeFirstGigMean": 193.17,
-              "spendBeforeFirstGigMean": 137.86,
+              "spendBeforeFirstGigMean": 185.45,
               "blockedTravelBeforeFirstGigRunsPct": 22.31,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -862,7 +865,7 @@
               "lowestMoneyBeforeFirstGigMedian": 280,
               "daysBeforeFirstGigMean": 1.54,
               "obligationsBeforeFirstGigMean": 196.81,
-              "spendBeforeFirstGigMean": 129.35,
+              "spendBeforeFirstGigMean": 182.78,
               "blockedTravelBeforeFirstGigRunsPct": 25.38,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -894,7 +897,7 @@
               "lowestMoneyBeforeFirstGigMedian": 283,
               "daysBeforeFirstGigMean": 1.47,
               "obligationsBeforeFirstGigMean": 191.85,
-              "spendBeforeFirstGigMean": 135.2,
+              "spendBeforeFirstGigMean": 186.44,
               "blockedTravelBeforeFirstGigRunsPct": 22.69,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -933,7 +936,7 @@
               "lowestMoneyBeforeFirstGigMedian": 284,
               "daysBeforeFirstGigMean": 0.96,
               "obligationsBeforeFirstGigMean": 159.76,
-              "spendBeforeFirstGigMean": 165.13,
+              "spendBeforeFirstGigMean": 186.43,
               "blockedTravelBeforeFirstGigRunsPct": 9.62,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -965,7 +968,7 @@
               "lowestMoneyBeforeFirstGigMedian": 283,
               "daysBeforeFirstGigMean": 1.08,
               "obligationsBeforeFirstGigMean": 168.03,
-              "spendBeforeFirstGigMean": 159.99,
+              "spendBeforeFirstGigMean": 188.35,
               "blockedTravelBeforeFirstGigRunsPct": 13.08,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1004,7 +1007,7 @@
               "lowestMoneyBeforeFirstGigMedian": 284,
               "daysBeforeFirstGigMean": 0.95,
               "obligationsBeforeFirstGigMean": 159.1,
-              "spendBeforeFirstGigMean": 153.7,
+              "spendBeforeFirstGigMean": 175.33,
               "blockedTravelBeforeFirstGigRunsPct": 9.62,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1036,7 +1039,7 @@
               "lowestMoneyBeforeFirstGigMedian": 283,
               "daysBeforeFirstGigMean": 1.1,
               "obligationsBeforeFirstGigMean": 169.68,
-              "spendBeforeFirstGigMean": 152.3,
+              "spendBeforeFirstGigMean": 182.38,
               "blockedTravelBeforeFirstGigRunsPct": 12.69,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1080,7 +1083,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.08,
               "obligationsBeforeFirstGigMean": 91.29,
-              "spendBeforeFirstGigMean": 130.23,
+              "spendBeforeFirstGigMean": 134.36,
               "blockedTravelBeforeFirstGigRunsPct": 1.15,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1112,7 +1115,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.07,
               "obligationsBeforeFirstGigMean": 90.96,
-              "spendBeforeFirstGigMean": 123.89,
+              "spendBeforeFirstGigMean": 125.58,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 2.5,
               "firstBlockedTravelReasons": {
@@ -1151,7 +1154,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.2,
               "obligationsBeforeFirstGigMean": 99.89,
-              "spendBeforeFirstGigMean": 128.64,
+              "spendBeforeFirstGigMean": 136.2,
               "blockedTravelBeforeFirstGigRunsPct": 3.46,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1183,7 +1186,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.18,
               "obligationsBeforeFirstGigMean": 98.24,
-              "spendBeforeFirstGigMean": 124.54,
+              "spendBeforeFirstGigMean": 133.18,
               "blockedTravelBeforeFirstGigRunsPct": 4.23,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1222,7 +1225,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.11,
               "obligationsBeforeFirstGigMean": 93.61,
-              "spendBeforeFirstGigMean": 128.88,
+              "spendBeforeFirstGigMean": 133.81,
               "blockedTravelBeforeFirstGigRunsPct": 2.31,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1254,7 +1257,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.06,
               "obligationsBeforeFirstGigMean": 90.3,
-              "spendBeforeFirstGigMean": 132.41,
+              "spendBeforeFirstGigMean": 133.54,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1293,7 +1296,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.1,
               "obligationsBeforeFirstGigMean": 92.95,
-              "spendBeforeFirstGigMean": 127.08,
+              "spendBeforeFirstGigMean": 131.63,
               "blockedTravelBeforeFirstGigRunsPct": 1.92,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1325,7 +1328,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.1,
               "obligationsBeforeFirstGigMean": 92.95,
-              "spendBeforeFirstGigMean": 130.87,
+              "spendBeforeFirstGigMean": 133.34,
               "blockedTravelBeforeFirstGigRunsPct": 1.54,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1364,7 +1367,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.11,
               "obligationsBeforeFirstGigMean": 93.28,
-              "spendBeforeFirstGigMean": 128.65,
+              "spendBeforeFirstGigMean": 133.19,
               "blockedTravelBeforeFirstGigRunsPct": 2.31,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1396,7 +1399,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.06,
               "obligationsBeforeFirstGigMean": 90.63,
-              "spendBeforeFirstGigMean": 134.45,
+              "spendBeforeFirstGigMean": 136.66,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 3.5,
               "firstBlockedTravelReasons": {
@@ -1435,7 +1438,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.12,
               "obligationsBeforeFirstGigMean": 94.6,
-              "spendBeforeFirstGigMean": 134.28,
+              "spendBeforeFirstGigMean": 137.92,
               "blockedTravelBeforeFirstGigRunsPct": 1.92,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1467,7 +1470,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.1,
               "obligationsBeforeFirstGigMean": 92.62,
-              "spendBeforeFirstGigMean": 134.59,
+              "spendBeforeFirstGigMean": 138.36,
               "blockedTravelBeforeFirstGigRunsPct": 1.92,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1506,7 +1509,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.12,
               "obligationsBeforeFirstGigMean": 94.27,
-              "spendBeforeFirstGigMean": 124.27,
+              "spendBeforeFirstGigMean": 128.66,
               "blockedTravelBeforeFirstGigRunsPct": 2.31,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1580,7 +1583,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.08,
               "obligationsBeforeFirstGigMean": 91.29,
-              "spendBeforeFirstGigMean": 130.23,
+              "spendBeforeFirstGigMean": 134.36,
               "blockedTravelBeforeFirstGigRunsPct": 1.15,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1612,7 +1615,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.07,
               "obligationsBeforeFirstGigMean": 90.96,
-              "spendBeforeFirstGigMean": 123.89,
+              "spendBeforeFirstGigMean": 125.58,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 2.5,
               "firstBlockedTravelReasons": {
@@ -1651,7 +1654,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.14,
               "obligationsBeforeFirstGigMean": 96.25,
-              "spendBeforeFirstGigMean": 131.81,
+              "spendBeforeFirstGigMean": 136,
               "blockedTravelBeforeFirstGigRunsPct": 1.92,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1683,7 +1686,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.11,
               "obligationsBeforeFirstGigMean": 93.61,
-              "spendBeforeFirstGigMean": 127.89,
+              "spendBeforeFirstGigMean": 133.17,
               "blockedTravelBeforeFirstGigRunsPct": 2.31,
               "firstBlockedTravelDayMedian": 2,
               "firstBlockedTravelReasons": {
@@ -1722,7 +1725,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.1,
               "obligationsBeforeFirstGigMean": 92.95,
-              "spendBeforeFirstGigMean": 129.66,
+              "spendBeforeFirstGigMean": 133.8,
               "blockedTravelBeforeFirstGigRunsPct": 1.92,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1791,7 +1794,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.06,
               "obligationsBeforeFirstGigMean": 90.63,
-              "spendBeforeFirstGigMean": 129.37,
+              "spendBeforeFirstGigMean": 131.63,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 2.5,
               "firstBlockedTravelReasons": {
@@ -1823,7 +1826,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.06,
               "obligationsBeforeFirstGigMean": 90.63,
-              "spendBeforeFirstGigMean": 131.79,
+              "spendBeforeFirstGigMean": 132.97,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -1862,7 +1865,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.07,
               "obligationsBeforeFirstGigMean": 90.63,
-              "spendBeforeFirstGigMean": 130.56,
+              "spendBeforeFirstGigMean": 133.2,
               "blockedTravelBeforeFirstGigRunsPct": 1.15,
               "firstBlockedTravelDayMedian": 2,
               "firstBlockedTravelReasons": {
@@ -1961,7 +1964,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.07,
               "obligationsBeforeFirstGigMean": 90.96,
-              "spendBeforeFirstGigMean": 136.21,
+              "spendBeforeFirstGigMean": 138.34,
               "blockedTravelBeforeFirstGigRunsPct": 1.15,
               "firstBlockedTravelDayMedian": 3,
               "firstBlockedTravelReasons": {
@@ -2000,7 +2003,7 @@
               "lowestMoneyBeforeFirstGigMedian": 414,
               "daysBeforeFirstGigMean": 0.06,
               "obligationsBeforeFirstGigMean": 90.63,
-              "spendBeforeFirstGigMean": 127.25,
+              "spendBeforeFirstGigMean": 128.66,
               "blockedTravelBeforeFirstGigRunsPct": 0.77,
               "firstBlockedTravelDayMedian": 3.5,
               "firstBlockedTravelReasons": {
@@ -2048,16 +2051,16 @@
       ]
     }
   ],
-  "generatedAt": "2026-07-28T16:41:03.375Z",
+  "generatedAt": "2026-07-28T17:18:48.604Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "cadenceProbeScriptSha256": "bee045eb897173842abc7e29218915360fb9f606dc873047a601b475381fb9fd",
-    "balanceSourceSha256": "b83f6d26f39000acd7a6d8f1cdb86cac9178e3a0596e89a48e0a2c36727f70b2",
+    "cadenceProbeScriptSha256": "d9646c87a02e7a1e71600a40eb868612ca08e7bf49abbed47b6df489a0142298",
+    "balanceSourceSha256": "d190ff0a97c517f87c18f90e8f1cd52efbe5e1f70e6bb59dd519217f6a00e16b",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
   },
   "runtime": {
-    "durationMs": 15639
+    "durationMs": 15326
   }
 }
