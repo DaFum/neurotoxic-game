@@ -2653,6 +2653,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // other day the band drives: there is no wait action in the game, so a day
     // that is neither rest nor travel would be an invented cost-only day.
     if (willRest) {
+      // The clinic deduction above is the last money move of a rest day, and this
+      // branch ends the day — without sampling here the trough would only be seen
+      // by tomorrow's sample, and not at all when the rest day is the last one.
+      observeEarlyRunwayMoney()
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)

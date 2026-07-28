@@ -711,7 +711,15 @@ ${holdoutRows}
 
 ${corridorNote}
 
-${report.holdoutSafetyValidation?.passed ? '' : `**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig, und die Suche hat jede der ${report.combinationSearch.pairsEvaluated} erreichten Kombinationen gegen dieses Gate geprüft — keine besteht es. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.`}
+${
+  report.holdoutSafetyValidation?.passed
+    ? ''
+    : report.combinationSearch.selectionOutcome === 'selection-validated-final-validation-failed'
+      ? `**Keine Produktionsempfehlung.** Die gewählte Kombination hat das Suchstrom-Gate bestanden und bricht auf dem reservierten \`validation\`-Strom (${(
+          report.combinationSearch.selectedFinalValidationFailures ?? []
+        ).join('; ')}). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.`
+      : `**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig, und die Suche hat jede der ${report.combinationSearch.pairsEvaluated} erreichten Kombinationen gegen die harten Caps geprüft — keine besteht sie. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.`
+}
 
 ### Release-Gesamtstatus
 
@@ -730,7 +738,7 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 Only the selected bootstrap and touring defaults are intended for production.
 
 Recommendation: **${report.recommendation.status}**${
-    report.recommendation.productionHold?.adopted === false
+    report.recommendation.productionHold?.held === true
       ? `
 
 > **Nicht ausgeliefert.** \`BALANCE_RECOMMENDATION_HOLD\` in \`src/utils/balanceTuning.ts\` hält diese Empfehlung zurück, die Produktionswerte bleiben neutral${
@@ -919,7 +927,11 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
             evaluateCombination(leastImpactPair.bootstrap, leastImpactPair.touring),
             {
               calibrationEvaluated: true,
-              selectionGateValidation: existing?.selectionGateValidation ?? null
+              // Both halves, or `selectionBankruptcyByScenario` and
+              // `capVerdictDisagreements` render empty exactly in the case they
+              // exist to explain.
+              selectionGateValidation: existing?.selectionGateValidation ?? null,
+              selectionGateMeasured: existing?.selectionGateMeasured ?? null
             }
           )
       if (!existing?.calibrationEvaluated) {
@@ -1171,7 +1183,18 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // Selection and reporting are the same thing only when something cleared
       // both gates. Otherwise the artifacts describe the least-impact baseline so
       // the breach is visible, and no lever is being recommended.
-      selectionOutcome: selected ? 'fully-validated' : 'no-combination-cleared-both-gates',
+      // `fully-validated` may only mean all three gates held. A pair that cleared the
+      // search and breached the reserved stream is a different outcome, and leaving
+      // it labelled as fully validated made this block disagree with
+      // `recommendation.status`.
+      selectionOutcome: !selected
+        ? 'no-combination-cleared-both-gates'
+        : holdoutSafetyValidation.passed
+          ? 'fully-validated'
+          : 'selection-validated-final-validation-failed',
+      selectedFinalValidationFailures: (holdoutSafetyValidation.failures ?? []).map(
+        failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+      ),
       selectedAppliesNoChange,
       note: SELECTION_RATIONALE
     },
@@ -1228,6 +1251,11 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
         shippable && BALANCE_RECOMMENDATION_HOLD
           ? {
               adopted: false,
+              // `held` and `adopted` are different facts: not shipping because a
+              // reviewed hold exists is not the same as a gate refusing. Keying the
+              // report's prose on `adopted === false` alone attributed the second
+              // case to a hold that was `null` and printed its reason as `null`.
+              held: true,
               heldFor: {
                 bootstrap: BALANCE_RECOMMENDATION_HOLD.bootstrap,
                 touring: BALANCE_RECOMMENDATION_HOLD.touring
@@ -1238,7 +1266,13 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
                 BALANCE_RECOMMENDATION_HOLD.touring === selectedTouring.id,
               reason: BALANCE_RECOMMENDATION_HOLD.reason
             }
-          : { adopted: shippable, heldFor: null, matchesRecommendation: null, reason: null }
+          : {
+              adopted: shippable,
+              held: false,
+              heldFor: null,
+              matchesRecommendation: null,
+              reason: null
+            }
     },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }

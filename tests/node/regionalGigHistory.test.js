@@ -298,6 +298,13 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
   // A hold reviewed against one candidate pair must not silently cover a different
   // one. Without this, a report that started recommending some other lever would
   // leave production pinned to the control tuning against evidence nobody read.
+  // Untrusted parsed JSON: require the fields before reading them, or a truncated
+  // artifact reports as a contract violation instead of as a malformed report.
+  assert.ok(
+    Object.hasOwn(recommendation, 'bootstrap') &&
+      Object.hasOwn(recommendation, 'touring'),
+    `Experiment report recommendation is missing candidate ids; ${regenerate}`
+  )
   assert.deepEqual(
     {
       bootstrap: recommendation.bootstrap,
@@ -312,11 +319,20 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
 
   // The artifact has to carry the same verdict, or a reader of the report alone
   // would take the recommendation for shipped tuning.
+  assert.ok(
+    Object.hasOwn(recommendation, 'productionHold'),
+    `Experiment report has no \`recommendation.productionHold\`; ${regenerate}`
+  )
   const hold = /** @type {Record<string, unknown>} */ (recommendation)
     .productionHold
   assert.ok(
     typeof hold === 'object' && hold !== null,
-    `Experiment report has no \`recommendation.productionHold\`; ${regenerate}`
+    `Experiment report \`recommendation.productionHold\` is not an object; ${regenerate}`
+  )
+  assert.ok(
+    Object.hasOwn(hold, 'adopted') &&
+      Object.hasOwn(hold, 'matchesRecommendation'),
+    `Experiment report production hold is incomplete; ${regenerate}`
   )
   assert.equal(
     /** @type {Record<string, unknown>} */ (hold).adopted,

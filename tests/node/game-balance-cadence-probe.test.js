@@ -76,14 +76,32 @@ const seedIndex = scenarios => {
  *   in eight — 25%, above its 12% cap. Every other scenario stays solvent so the
  *   gate turns on this scenario alone, the way the real breach reads.
  */
-const makeRunner = breachingPolicies => {
+const makeRunner = (
+  breachingPolicies,
+  breachingStreams = ['selection', 'holdout']
+) => {
   const scenarios = cappedScenarios()
   const indexBySeed = seedIndex(scenarios)
+  const streamOfSeed = new Map()
+  for (const scenario of scenarios) {
+    for (let runIndex = 0; runIndex < RUNS; runIndex++) {
+      streamOfSeed.set(createScenarioSeed(scenario.id, runIndex), 'calibration')
+      streamOfSeed.set(
+        createScenarioSeed(`${scenario.id}#selection`, runIndex),
+        'selection'
+      )
+      streamOfSeed.set(
+        createScenarioSeed(`${scenario.id}#holdout`, runIndex),
+        'holdout'
+      )
+    }
+  }
   return (scenario, seed) => {
     const runIndex = indexBySeed.get(seed)
     const breaches =
       scenario.id === CULT &&
       breachingPolicies.includes(scenario.gigCadencePolicy) &&
+      breachingStreams.includes(streamOfSeed.get(seed)) &&
       runIndex < 2
     return stubRun({ bankrupt: breaches, played: !breaches })
   }
@@ -145,6 +163,33 @@ test('a breach only the shipped policy carries is attributed to the phase', () =
     true
   )
   assert.equal(report.conclusion.independentConfirmation.shippedCultRatePct, 25)
+})
+
+// The probe imposes an independent-confirmation requirement on itself; publishing a
+// positive conclusion without it would ignore the probe's own rule.
+test('a phase effect on one cohort only is not a conclusion', () => {
+  // Breaches on `validation` but not on `selection`: a variant therefore "clears the
+  // holdout gate" while the second cohort shows no effect to confirm.
+  const report = runCadenceProbe({
+    runsPerScenario: RUNS,
+    // The probe names its reserved cohort `holdout`; breaching only there leaves the
+    // `selection` cohort with no effect to confirm.
+    runner: makeRunner(['gap-aligned'], ['holdout']),
+    scenarios: cappedScenarios()
+  })
+
+  assert.equal(report.conclusion.shippedPolicyBreachesCultCap, true)
+  assert.equal(
+    report.conclusion.independentConfirmation.agreesWithHoldout,
+    false
+  )
+  assert.equal(
+    report.conclusion.phaseExplainsBreach,
+    false,
+    'A single-cohort effect must not be published as a phase conclusion'
+  )
+  assert.match(report.conclusion.verdict, /Nicht auswertbar/)
+  assert.match(report.conclusion.verdict, /Stichprobeneffekt/)
 })
 
 test('a breach every phase carries is not a simulation artifact', () => {

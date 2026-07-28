@@ -1392,7 +1392,16 @@ test('the reserved validation stream is measured once, on the selected pair only
     ].filter(item => item.selectedForProduction),
     []
   )
-  assert.equal(report.combinationSearch.selectionOutcome, 'fully-validated')
+  // `fully-validated` would claim all three gates held. The search gates did; the
+  // reserved stream did not, and the search artifact has to say which step failed
+  // rather than disagreeing with `recommendation.status`.
+  assert.equal(
+    report.combinationSearch.selectionOutcome,
+    'selection-validated-final-validation-failed'
+  )
+  assert.deepEqual(report.combinationSearch.selectedFinalValidationFailures, [
+    'cult_hypergrowth 25% > 12%'
+  ])
   assert.equal(report.combinationSearch.pairsRejectedBySelectionGate, 0)
   assert.deepEqual(report.holdoutSafetyValidation.missingScenarioIds, [])
   assert.deepEqual(Object.keys(report.seedStreams).sort(), [

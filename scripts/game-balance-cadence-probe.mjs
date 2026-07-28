@@ -343,8 +343,10 @@ export const runCadenceProbe = ({
   }
   const conclusion = {
     // The question, in one field: did any phase variant turn the failing gate
-    // into a passing one on the same seeds?
-    phaseExplainsBreach: clearing.length > 0,
+    // into a passing one on the same seeds — and does a second, independent cohort
+    // agree? Reporting a positive conclusion without that agreement would ignore
+    // the requirement this probe imposes on itself.
+    phaseExplainsBreach: clearing.length > 0 && independentConfirmation.agreesWithHoldout,
     independentConfirmation,
     shippedPolicyBreachesCultCap: shippedBreaches,
     shippedCultHoldoutRatePct: shippedCultRate,
@@ -368,7 +370,15 @@ export const runCadenceProbe = ({
         } gegen ${cultCap == null ? '—' : `${cultCap}%`}). Ohne reproduzierten Bruch gibt es keine Ursache zuzuordnen — bei kleinem \`--runs\` ist das ein Stichprobeneffekt. Mit ${
           SIMULATION_CONSTANTS.runsPerScenario
         } Runs pro Szenario wiederholen.`
-      : clearing.length
+      : clearing.length && !independentConfirmation.agreesWithHoldout
+        ? `Nicht auswertbar: Eine Phase besteht das Holdout-Gate von \`${cultId}\`, aber der unabhängige \`selection\`-Strom bestätigt die Richtung nicht (\`gap-aligned\` ${
+            independentConfirmation.shippedCultRatePct == null
+              ? 'nicht gemessen'
+              : `${independentConfirmation.shippedCultRatePct}%`
+          } gegen ${Object.entries(independentConfirmation.variantCultRatePct)
+            .map(([policy, rate]) => `\`${policy}\` ${rate == null ? '—' : `${rate}%`}`)
+            .join(' · ')}). Ein Effekt, der nur auf einer Kohorte auftritt, ist ein Stichprobeneffekt und keine Aussage über die Phase.`
+        : clearing.length
         ? `Allein die Kadenz-Phase bringt das Holdout-Gate von \`${cultId}\` von FAIL (${shippedCultRate}% gegen ${cultCap}%) auf PASS (${clearing
             .map(variant => `${variant.policy} ${cultRateFor(variant)}%`)
             .join(', ')}). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.`
@@ -380,7 +390,12 @@ export const runCadenceProbe = ({
     runsPerScenario,
     policies: GIG_CADENCE_POLICIES,
     streams: STREAMS.map(stream => stream.id),
-    seedStrategy: 'scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)',
+    // Derived from STREAMS so a newly added cohort cannot go undocumented.
+    seedStrategy: STREAMS.map(stream =>
+      stream.id === 'calibration'
+        ? 'calibration: scenario-id-plus-run-index'
+        : `${stream.id}: scenario-id#${stream.id === 'holdout' ? 'holdout' : stream.id}-plus-run-index`
+    ).join('; '),
     conclusion,
     variants,
     cohorts: policies
