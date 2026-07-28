@@ -117,7 +117,7 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
-import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
+import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
@@ -5440,7 +5440,7 @@ const tryReadJson = async filePath => {
   }
 }
 
-const getWorkingTreeDirty = () => { try { return execSync("git status --porcelain", { encoding: "utf8", stdio: "pipe" }).trim().length > 0 } catch { return null } }
+const getWorkingTreeDirty = () => getSourceWorkingTreeDirty(PROJECT_ROOT)
 
 const getSourceBaseCommit = () => {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA

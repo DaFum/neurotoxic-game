@@ -4,9 +4,12 @@ import fs from 'node:fs'
 import os from 'node:os'
 import path from 'node:path'
 
+import { execFileSync } from 'node:child_process'
+
 import {
   BALANCE_SOURCE_FILES,
-  getBalanceSourceHash
+  getBalanceSourceHash,
+  getSourceWorkingTreeDirty
 } from '../../scripts/utils/balance-report-metadata.mjs'
 
 const ROOT = process.cwd()
@@ -100,5 +103,41 @@ test('balance source hash depends on the listed contents', async t => {
       .includes('hash probe'),
     false,
     'The probe must never touch the tracked source'
+  )
+})
+
+// Generated reports are outputs, not inputs. Counting them made `workingTreeDirty`
+// depend on the order the artifacts happened to be generated in: regenerate all four
+// in one pass and every report after the first claims a dirty tree, which reads as
+// unreproducible when the source state was in fact pinned.
+test('the working-tree flag ignores pending report artifacts', t => {
+  const sandbox = fs.mkdtempSync(path.join(os.tmpdir(), 'balance-dirty-flag-'))
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }))
+
+  const git = args =>
+    execFileSync('git', args, { cwd: sandbox, encoding: 'utf8', stdio: 'pipe' })
+  git(['init', '--quiet'])
+  git(['config', 'user.email', 'probe@example.com'])
+  git(['config', 'user.name', 'Probe'])
+  fs.mkdirSync(path.join(sandbox, 'reports'), { recursive: true })
+  fs.writeFileSync(path.join(sandbox, 'reports/report.json'), '{"a":1}\n')
+  fs.writeFileSync(path.join(sandbox, 'source.ts'), 'export const a = 1\n')
+  git(['add', '-A'])
+  git(['commit', '--quiet', '-m', 'baseline'])
+
+  assert.equal(getSourceWorkingTreeDirty(sandbox), false, 'clean tree')
+
+  fs.writeFileSync(path.join(sandbox, 'reports/report.json'), '{"a":2}\n')
+  assert.equal(
+    getSourceWorkingTreeDirty(sandbox),
+    false,
+    'A regenerated report is an output and must not mark the source dirty'
+  )
+
+  fs.writeFileSync(path.join(sandbox, 'source.ts'), 'export const a = 2\n')
+  assert.equal(
+    getSourceWorkingTreeDirty(sandbox),
+    true,
+    'An uncommitted source edit must mark the tree dirty'
   )
 })

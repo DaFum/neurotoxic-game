@@ -9,7 +9,7 @@ import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experi
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
 import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
-import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
+import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.json')
@@ -1098,7 +1098,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     generatedAt: new Date().toISOString(),
     metadata: {
       nodeVersion: process.version, sourceBaseCommit,
-      workingTreeDirty: Boolean(git('git status --porcelain')),
+      workingTreeDirty: getSourceWorkingTreeDirty(ROOT),
       simulationScriptSha256: await hashFile(path.join(ROOT, 'scripts/game-balance-simulation.mjs')),
       balanceSourceSha256: await getBalanceSourceHash(ROOT),
       experimentScriptSha256: await hashFile(fileURLToPath(import.meta.url)),

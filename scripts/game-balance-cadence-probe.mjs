@@ -46,7 +46,7 @@ import {
   getJsonHash,
   runSingleSimulation
 } from './game-balance-simulation.mjs'
-import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
+import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
@@ -545,10 +545,7 @@ const git = command => {
   }
 }
 const gitRevision = () => process.env.GITHUB_SHA ?? git('git rev-parse HEAD')
-const gitWorkingTreeDirty = () => {
-  const status = git('git status --porcelain')
-  return status == null ? null : status.length > 0
-}
+const gitWorkingTreeDirty = () => getSourceWorkingTreeDirty(ROOT)
 
 const parseArgs = argv => {
   const options = { write: true, runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario }
