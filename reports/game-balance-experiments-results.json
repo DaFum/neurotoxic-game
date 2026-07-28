@@ -1,17 +1,17 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T14:32:25.316Z",
+  "generatedAt": "2026-07-28T22:12:38.668Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "3fde25e6b8822757cf5baa0876d262eabcc8c683",
+    "sourceBaseCommit": "dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "d5509a198815758bb97ed6ffff1085b54a04a274fd82557cb3e3d5c0865961a2",
-    "balanceSourceSha256": "c8517ec7c36ed6ca91a8c1ba00dd9a0fc9b60e026221d0500f59b3e13e555ee3",
-    "experimentScriptSha256": "c0ddad530447cc56827efcd4d9049dfe150fb6a36869d7e254c1ab2b54777aab",
+    "simulationScriptSha256": "2d06db30c0ab74709ec5611e325c29113ca6c9a7d13b1223de65154f3551e528",
+    "balanceSourceSha256": "322be0b3824245288d0e49f55e5f4f0f66496574dea67063554ad109e7bfa079",
+    "experimentScriptSha256": "02628b858cf5e36129ececff98bfb4d29f262ad936237e14a9fd8efc52c7cc2a",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
-    "seedStrategy": "scenario-id-plus-run-index",
+    "seedStrategy": "calibration: scenario-id-plus-run-index; selection: scenario-id#selection-plus-run-index; validation: scenario-id#holdout-plus-run-index",
     "pairingStrategy": "same-scenario-same-run-index-same-seed"
   },
   "controlSnapshot": {
@@ -863,6 +863,15 @@
             "solventMedianMoney": 24073,
             "solventP90Money": 30366,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1614.45,
+              "candidate": 1614.45,
+              "deltaPct": 0,
+              "sampleSize": 199,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 61
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -874,8 +883,9 @@
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
-          "selectedForProduction": true,
-          "rejectionReason": null
+          "selectedForProduction": false,
+          "rejectionReason": null,
+          "reportedAsBaseline": true
         },
         {
           "id": "bootstrap-obligations-90-through-3",
@@ -1701,7 +1711,16 @@
             },
             "solventMedianMoney": 24214,
             "solventP90Money": 30422,
-            "famePerGigDeltaPct": -4.46,
+            "famePerGigDeltaPct": -1.87,
+            "famePerGig": {
+              "control": 1598.73,
+              "candidate": 1568.83,
+              "deltaPct": -1.87,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 0.25,
             "p90FinalMoneyDeltaPct": 0.56,
             "earlyCheckpointDeltaPct": 2.81,
@@ -1709,12 +1728,12 @@
           },
           "rankingComponents": {
             "targetFit": 98.86,
-            "sideEffectPenalty": 4.46,
+            "sideEffectPenalty": 1.87,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-obligations-80-through-3",
@@ -2540,7 +2559,16 @@
             },
             "solventMedianMoney": 23935,
             "solventP90Money": 30453,
-            "famePerGigDeltaPct": -4.01,
+            "famePerGigDeltaPct": -2.86,
+            "famePerGig": {
+              "control": 1598.73,
+              "candidate": 1553.08,
+              "deltaPct": -2.86,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 1.25,
             "p90FinalMoneyDeltaPct": 0.02,
             "earlyCheckpointDeltaPct": 6.91,
@@ -2548,12 +2576,12 @@
           },
           "rankingComponents": {
             "targetFit": 93.07,
-            "sideEffectPenalty": 4.01,
+            "sideEffectPenalty": 2.86,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-obligations-70-through-3",
@@ -3379,7 +3407,16 @@
             },
             "solventMedianMoney": 24135,
             "solventP90Money": 30458,
-            "famePerGigDeltaPct": -3.87,
+            "famePerGigDeltaPct": -3.72,
+            "famePerGig": {
+              "control": 1599.26,
+              "candidate": 1539.73,
+              "deltaPct": -3.72,
+              "sampleSize": 191,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 69
+            },
             "medianFinalMoneyDeltaPct": 2.16,
             "p90FinalMoneyDeltaPct": 0.31,
             "earlyCheckpointDeltaPct": 7.42,
@@ -3387,12 +3424,12 @@
           },
           "rankingComponents": {
             "targetFit": 91.93,
-            "sideEffectPenalty": 3.87,
+            "sideEffectPenalty": 3.72,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-obligations-80-through-5",
@@ -4218,7 +4255,16 @@
             },
             "solventMedianMoney": 24002,
             "solventP90Money": 30255,
-            "famePerGigDeltaPct": -3.14,
+            "famePerGigDeltaPct": -3.27,
+            "famePerGig": {
+              "control": 1598.73,
+              "candidate": 1546.43,
+              "deltaPct": -3.27,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 2.07,
             "p90FinalMoneyDeltaPct": -0.19,
             "earlyCheckpointDeltaPct": 6.91,
@@ -4226,12 +4272,12 @@
           },
           "rankingComponents": {
             "targetFit": 89.62,
-            "sideEffectPenalty": 3.14,
+            "sideEffectPenalty": 3.27,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-obligations-70-through-5",
@@ -5057,7 +5103,16 @@
             },
             "solventMedianMoney": 24221,
             "solventP90Money": 30544,
-            "famePerGigDeltaPct": -0.26,
+            "famePerGigDeltaPct": -3.65,
+            "famePerGig": {
+              "control": 1620.36,
+              "candidate": 1561.29,
+              "deltaPct": -3.65,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 4.99,
             "p90FinalMoneyDeltaPct": 2.62,
             "earlyCheckpointDeltaPct": 7.42,
@@ -5065,12 +5120,12 @@
           },
           "rankingComponents": {
             "targetFit": 82.69,
-            "sideEffectPenalty": 0.26,
+            "sideEffectPenalty": 3.65,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-obligations-60-through-5",
@@ -5896,7 +5951,16 @@
             },
             "solventMedianMoney": 24652.5,
             "solventP90Money": 31171,
-            "famePerGigDeltaPct": 3.04,
+            "famePerGigDeltaPct": -2.48,
+            "famePerGig": {
+              "control": 1620.36,
+              "candidate": 1580.22,
+              "deltaPct": -2.48,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 6.5,
             "p90FinalMoneyDeltaPct": 4.6,
             "earlyCheckpointDeltaPct": 10.23,
@@ -5904,12 +5968,12 @@
           },
           "rankingComponents": {
             "targetFit": 74.62,
-            "sideEffectPenalty": 3.04,
+            "sideEffectPenalty": 2.48,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-emergency-250",
@@ -5932,13 +5996,13 @@
             "solventMedianMoneyMax": 31000,
             "solventP90MoneyMax": 36000,
             "famePerGigMaximumAbsDeltaPct": 5,
-            "passed": false,
+            "passed": true,
             "checks": {
               "bankruptcy": true,
               "bankruptcyDelta": true,
               "solventMedianMoney": true,
               "solventP90Money": true,
-              "famePerGig": false
+              "famePerGig": true
             }
           },
           "resultsByScenario": {
@@ -6736,7 +6800,16 @@
             },
             "solventMedianMoney": 23757.5,
             "solventP90Money": 30516,
-            "famePerGigDeltaPct": 22.93,
+            "famePerGigDeltaPct": -0.4,
+            "famePerGig": {
+              "control": 1614.45,
+              "candidate": 1608.03,
+              "deltaPct": -0.4,
+              "sampleSize": 199,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 61
+            },
             "medianFinalMoneyDeltaPct": 5.38,
             "p90FinalMoneyDeltaPct": 3.92,
             "earlyCheckpointDeltaPct": 0,
@@ -6744,12 +6817,12 @@
           },
           "rankingComponents": {
             "targetFit": 33.07,
-            "sideEffectPenalty": 22.93,
+            "sideEffectPenalty": 0.4,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Acceptance limits missed: famePerGig."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-emergency-500",
@@ -6772,13 +6845,13 @@
             "solventMedianMoneyMax": 31000,
             "solventP90MoneyMax": 36000,
             "famePerGigMaximumAbsDeltaPct": 5,
-            "passed": false,
+            "passed": true,
             "checks": {
               "bankruptcy": true,
               "bankruptcyDelta": true,
               "solventMedianMoney": true,
               "solventP90Money": true,
-              "famePerGig": false
+              "famePerGig": true
             }
           },
           "resultsByScenario": {
@@ -7576,7 +7649,16 @@
             },
             "solventMedianMoney": 23920,
             "solventP90Money": 30626,
-            "famePerGigDeltaPct": 25.68,
+            "famePerGigDeltaPct": -0.64,
+            "famePerGig": {
+              "control": 1614.45,
+              "candidate": 1604.12,
+              "deltaPct": -0.64,
+              "sampleSize": 199,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 61
+            },
             "medianFinalMoneyDeltaPct": 7.77,
             "p90FinalMoneyDeltaPct": 4.46,
             "earlyCheckpointDeltaPct": 1.74,
@@ -7584,12 +7666,12 @@
           },
           "rankingComponents": {
             "targetFit": 23.86,
-            "sideEffectPenalty": 25.68,
+            "sideEffectPenalty": 0.64,
             "overcorrectionPenalty": 50,
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Acceptance limits missed: famePerGig."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-staged-60-80",
@@ -8423,7 +8505,16 @@
             },
             "solventMedianMoney": 24202,
             "solventP90Money": 31009,
-            "famePerGigDeltaPct": -0.69,
+            "famePerGigDeltaPct": -3.97,
+            "famePerGig": {
+              "control": 1620.36,
+              "candidate": 1556,
+              "deltaPct": -3.97,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 4.85,
             "p90FinalMoneyDeltaPct": 2.79,
             "earlyCheckpointDeltaPct": 9.36,
@@ -8431,12 +8522,12 @@
           },
           "rankingComponents": {
             "targetFit": 80.38,
-            "sideEffectPenalty": 0.69,
+            "sideEffectPenalty": 3.97,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 2
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "bootstrap-staged-75",
@@ -9266,7 +9357,16 @@
             },
             "solventMedianMoney": 24028,
             "solventP90Money": 30041,
-            "famePerGigDeltaPct": -2.28,
+            "famePerGigDeltaPct": -3.76,
+            "famePerGig": {
+              "control": 1620.36,
+              "candidate": 1559.48,
+              "deltaPct": -3.76,
+              "sampleSize": 192,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 68
+            },
             "medianFinalMoneyDeltaPct": 2.51,
             "p90FinalMoneyDeltaPct": -0.23,
             "earlyCheckpointDeltaPct": 6.29,
@@ -9274,12 +9374,12 @@
           },
           "rankingComponents": {
             "targetFit": 88.45,
-            "sideEffectPenalty": 2.28,
+            "sideEffectPenalty": 3.76,
             "overcorrectionPenalty": 0,
             "complexityPenalty": 2
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         }
       ],
       "ranking": [
@@ -9294,7 +9394,7 @@
         {
           "id": "bootstrap-obligations-90-through-3",
           "targetFit": 98.86,
-          "sideEffectPenalty": 4.46,
+          "sideEffectPenalty": 1.87,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9302,7 +9402,7 @@
         {
           "id": "bootstrap-obligations-80-through-3",
           "targetFit": 93.07,
-          "sideEffectPenalty": 4.01,
+          "sideEffectPenalty": 2.86,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9310,7 +9410,7 @@
         {
           "id": "bootstrap-obligations-70-through-3",
           "targetFit": 91.93,
-          "sideEffectPenalty": 3.87,
+          "sideEffectPenalty": 3.72,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9318,7 +9418,7 @@
         {
           "id": "bootstrap-obligations-80-through-5",
           "targetFit": 89.62,
-          "sideEffectPenalty": 3.14,
+          "sideEffectPenalty": 3.27,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9326,7 +9426,7 @@
         {
           "id": "bootstrap-staged-75",
           "targetFit": 88.45,
-          "sideEffectPenalty": 2.28,
+          "sideEffectPenalty": 3.76,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 2,
           "passed": true
@@ -9334,7 +9434,7 @@
         {
           "id": "bootstrap-obligations-70-through-5",
           "targetFit": 82.69,
-          "sideEffectPenalty": 0.26,
+          "sideEffectPenalty": 3.65,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9342,7 +9442,7 @@
         {
           "id": "bootstrap-staged-60-80",
           "targetFit": 80.38,
-          "sideEffectPenalty": 0.69,
+          "sideEffectPenalty": 3.97,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 2,
           "passed": true
@@ -9350,7 +9450,7 @@
         {
           "id": "bootstrap-obligations-60-through-5",
           "targetFit": 74.62,
-          "sideEffectPenalty": 3.04,
+          "sideEffectPenalty": 2.48,
           "overcorrectionPenalty": 0,
           "complexityPenalty": 1,
           "passed": true
@@ -9358,18 +9458,18 @@
         {
           "id": "bootstrap-emergency-250",
           "targetFit": 33.07,
-          "sideEffectPenalty": 22.93,
+          "sideEffectPenalty": 0.4,
           "overcorrectionPenalty": 50,
           "complexityPenalty": 1,
-          "passed": false
+          "passed": true
         },
         {
           "id": "bootstrap-emergency-500",
           "targetFit": 23.86,
-          "sideEffectPenalty": 25.68,
+          "sideEffectPenalty": 0.64,
           "overcorrectionPenalty": 50,
           "complexityPenalty": 1,
-          "passed": false
+          "passed": true
         }
       ],
       "selectedCandidateId": "bootstrap-none"
@@ -10720,6 +10820,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -10731,8 +10840,9 @@
             "overcorrectionPenalty": 0,
             "complexityPenalty": 1
           },
-          "selectedForProduction": true,
-          "rejectionReason": null
+          "selectedForProduction": false,
+          "rejectionReason": null,
+          "reportedAsBaseline": true
         },
         {
           "id": "touring-demand-5-15-window-3",
@@ -11571,6 +11681,15 @@
             "solventMedianMoney": 28054,
             "solventP90Money": 34142,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.44,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -1.52,
             "p90FinalMoneyDeltaPct": -1.84,
             "earlyCheckpointDeltaPct": 0,
@@ -11583,7 +11702,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-7.5-25-window-3",
@@ -12422,6 +12541,15 @@
             "solventMedianMoney": 27847,
             "solventP90Money": 34231,
             "famePerGigDeltaPct": -0.01,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.23,
+              "deltaPct": -0.01,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -2.28,
             "p90FinalMoneyDeltaPct": -1.57,
             "earlyCheckpointDeltaPct": 0,
@@ -12434,7 +12562,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-5-20-window-5",
@@ -13273,6 +13401,15 @@
             "solventMedianMoney": 28006,
             "solventP90Money": 34142,
             "famePerGigDeltaPct": 0.02,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.72,
+              "deltaPct": 0.02,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -2.13,
             "p90FinalMoneyDeltaPct": -1.84,
             "earlyCheckpointDeltaPct": 0,
@@ -13285,7 +13422,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-10-40-after-3-window-3",
@@ -14125,6 +14262,15 @@
             "solventMedianMoney": 27658,
             "solventP90Money": 33940,
             "famePerGigDeltaPct": -0.04,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1577.81,
+              "deltaPct": -0.04,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -3.09,
             "p90FinalMoneyDeltaPct": -2.18,
             "earlyCheckpointDeltaPct": 0,
@@ -14137,7 +14283,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-10-40-after-3-window-5",
@@ -14977,6 +15123,15 @@
             "solventMedianMoney": 27430,
             "solventP90Money": 33940,
             "famePerGigDeltaPct": -0.03,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1577.93,
+              "deltaPct": -0.03,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -3.58,
             "p90FinalMoneyDeltaPct": -2.18,
             "earlyCheckpointDeltaPct": 0,
@@ -14989,7 +15144,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-13.5-48-after-3-window-5",
@@ -15829,6 +15984,15 @@
             "solventMedianMoney": 27249,
             "solventP90Money": 33768,
             "famePerGigDeltaPct": -0.07,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1577.3,
+              "deltaPct": -0.07,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -4.55,
             "p90FinalMoneyDeltaPct": -2.93,
             "earlyCheckpointDeltaPct": 0,
@@ -15841,7 +16005,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-demand-16-55-after-5",
@@ -16681,6 +16845,15 @@
             "solventMedianMoney": 26927,
             "solventP90Money": 33582,
             "famePerGigDeltaPct": 0.01,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.56,
+              "deltaPct": 0.01,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": -5.56,
             "p90FinalMoneyDeltaPct": -3.69,
             "earlyCheckpointDeltaPct": 0,
@@ -16693,7 +16866,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-stress-1",
@@ -17531,6 +17704,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -17543,7 +17725,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-stress-2",
@@ -18381,6 +18563,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -18393,7 +18584,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-stress-1-recovery-90",
@@ -19232,6 +19423,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -19244,7 +19444,7 @@
             "complexityPenalty": 2
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-wear-105",
@@ -20082,6 +20282,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -20094,7 +20303,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-wear-110",
@@ -20932,6 +21141,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -20944,7 +21162,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         },
         {
           "id": "touring-wear-115",
@@ -21782,6 +22000,15 @@
             "solventMedianMoney": 28479,
             "solventP90Money": 34716,
             "famePerGigDeltaPct": 0,
+            "famePerGig": {
+              "control": 1578.42,
+              "candidate": 1578.42,
+              "deltaPct": 0,
+              "sampleSize": 256,
+              "minimumSampleSize": 130,
+              "sufficientEvidence": true,
+              "excludedPairs": 4
+            },
             "medianFinalMoneyDeltaPct": 0,
             "p90FinalMoneyDeltaPct": 0,
             "earlyCheckpointDeltaPct": 0,
@@ -21794,7 +22021,7 @@
             "complexityPenalty": 1
           },
           "selectedForProduction": false,
-          "rejectionReason": "Not evaluated: a lower-impact combination already passed final combined validation."
+          "rejectionReason": "Not evaluated: a lower-impact combination already cleared both gates."
         }
       ],
       "ranking": [
@@ -22332,6 +22559,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1578.42,
+          "candidate": 1578.42,
+          "deltaPct": 0,
+          "sampleSize": 256,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 4
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -22743,6 +22979,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1614.45,
+          "candidate": 1614.45,
+          "deltaPct": 0,
+          "sampleSize": 199,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 61
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -23154,6 +23399,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1649.1,
+          "candidate": 1649.1,
+          "deltaPct": 0,
+          "sampleSize": 235,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 25
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -23565,6 +23819,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1593.84,
+          "candidate": 1593.84,
+          "deltaPct": 0,
+          "sampleSize": 195,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 65
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -23976,6 +24239,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1675.08,
+          "candidate": 1675.08,
+          "deltaPct": 0,
+          "sampleSize": 194,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 66
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -24387,6 +24659,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1436.12,
+          "candidate": 1436.12,
+          "deltaPct": 0,
+          "sampleSize": 234,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 26
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -24798,6 +25079,15 @@
         "controlKpiStatus": "passed",
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1648.94,
+          "candidate": 1648.94,
+          "deltaPct": 0,
+          "sampleSize": 234,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 26
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -25209,6 +25499,15 @@
         "controlKpiStatus": "not_evaluated",
         "candidateKpiStatus": "not_evaluated",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1551.63,
+          "candidate": 1551.63,
+          "deltaPct": 0,
+          "sampleSize": 233,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 27
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -25620,6 +25919,15 @@
         "controlKpiStatus": "not_evaluated",
         "candidateKpiStatus": "not_evaluated",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1529.27,
+          "candidate": 1529.27,
+          "deltaPct": 0,
+          "sampleSize": 230,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 30
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -26031,6 +26339,15 @@
         "controlKpiStatus": "not_evaluated",
         "candidateKpiStatus": "not_evaluated",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1529.18,
+          "candidate": 1529.18,
+          "deltaPct": 0,
+          "sampleSize": 231,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 29
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -26442,6 +26759,15 @@
         "controlKpiStatus": "not_evaluated",
         "candidateKpiStatus": "not_evaluated",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1584.16,
+          "candidate": 1584.16,
+          "deltaPct": 0,
+          "sampleSize": 254,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 6
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -26853,6 +27179,15 @@
         "controlKpiStatus": "not_evaluated",
         "candidateKpiStatus": "not_evaluated",
         "famePerGigDeltaPct": 0,
+        "famePerGig": {
+          "control": 1619.98,
+          "candidate": 1619.98,
+          "deltaPct": 0,
+          "sampleSize": 260,
+          "minimumSampleSize": 130,
+          "sufficientEvidence": true,
+          "excludedPairs": 0
+        },
         "scenarioValidation": {
           "passed": true,
           "checks": {
@@ -26868,6 +27203,92 @@
     },
     "failures": []
   },
+  "seedStreams": {
+    "calibration": "paired candidate-vs-control comparison",
+    "selection": "candidate search, 1 of 154 pairs measured against the hard caps",
+    "validation": "measured once, on the selected combination only"
+  },
+  "selectionGateValidation": {
+    "blocking": true,
+    "layer": "hard-safety-limit",
+    "metric": "bankruptcyRate",
+    "source": "holdout",
+    "passed": true,
+    "expectedScenarios": [
+      "baseline_touring",
+      "bootstrap_struggle",
+      "aggressive_marketing",
+      "scandal_recovery",
+      "festival_push",
+      "chaos_tour",
+      "cult_hypergrowth"
+    ],
+    "evaluatedScenarios": [
+      "baseline_touring",
+      "cult_hypergrowth",
+      "aggressive_marketing",
+      "chaos_tour",
+      "festival_push",
+      "scandal_recovery",
+      "bootstrap_struggle"
+    ],
+    "missingScenarioIds": [],
+    "failures": []
+  },
+  "selectionBankruptcyByScenario": {
+    "baseline_touring": {
+      "ratePct": 2.31,
+      "count": 6,
+      "sampleSize": 260,
+      "maximumPct": 10
+    },
+    "cult_hypergrowth": {
+      "ratePct": 9.23,
+      "count": 24,
+      "sampleSize": 260,
+      "maximumPct": 12
+    },
+    "aggressive_marketing": {
+      "ratePct": 13.08,
+      "count": 34,
+      "sampleSize": 260,
+      "maximumPct": 15
+    },
+    "chaos_tour": {
+      "ratePct": 18.08,
+      "count": 47,
+      "sampleSize": 260,
+      "maximumPct": 25
+    },
+    "festival_push": {
+      "ratePct": 27.31,
+      "count": 71,
+      "sampleSize": 260,
+      "maximumPct": 35
+    },
+    "scandal_recovery": {
+      "ratePct": 23.85,
+      "count": 62,
+      "sampleSize": 260,
+      "maximumPct": 50
+    },
+    "bootstrap_struggle": {
+      "ratePct": 24.23,
+      "count": 63,
+      "sampleSize": 260,
+      "maximumPct": 60
+    }
+  },
+  "capVerdictDisagreements": [
+    {
+      "scenarioId": "cult_hypergrowth",
+      "maximumPct": 12,
+      "selectionRatePct": 9.23,
+      "validationRatePct": 13.85,
+      "spreadPct": 4.62,
+      "note": "Two equal-size cohorts disagree about the 12% cap (9.23% vs 13.85%). At this sample size the cap is not decidable for this scenario; raise runsPerScenario or revisit the cap before treating either figure as the verdict."
+    }
+  ],
   "holdoutSafetyValidation": {
     "blocking": true,
     "layer": "hard-safety-limit",
@@ -26885,12 +27306,12 @@
     ],
     "evaluatedScenarios": [
       "baseline_touring",
-      "bootstrap_struggle",
+      "cult_hypergrowth",
       "aggressive_marketing",
-      "scandal_recovery",
-      "festival_push",
       "chaos_tour",
-      "cult_hypergrowth"
+      "festival_push",
+      "scandal_recovery",
+      "bootstrap_struggle"
     ],
     "missingScenarioIds": [],
     "failures": [
@@ -26903,25 +27324,158 @@
       }
     ]
   },
+  "holdoutBankruptcyByScenario": {
+    "baseline_touring": {
+      "ratePct": 1.15,
+      "count": 3,
+      "sampleSize": 260,
+      "maximumPct": 10
+    },
+    "cult_hypergrowth": {
+      "ratePct": 13.85,
+      "count": 36,
+      "sampleSize": 260,
+      "maximumPct": 12
+    },
+    "aggressive_marketing": {
+      "ratePct": 11.92,
+      "count": 31,
+      "sampleSize": 260,
+      "maximumPct": 15
+    },
+    "chaos_tour": {
+      "ratePct": 15,
+      "count": 39,
+      "sampleSize": 260,
+      "maximumPct": 25
+    },
+    "festival_push": {
+      "ratePct": 25.77,
+      "count": 67,
+      "sampleSize": 260,
+      "maximumPct": 35
+    },
+    "scandal_recovery": {
+      "ratePct": 25.38,
+      "count": 66,
+      "sampleSize": 260,
+      "maximumPct": 50
+    },
+    "bootstrap_struggle": {
+      "ratePct": 33.46,
+      "count": 87,
+      "sampleSize": 260,
+      "maximumPct": 60
+    }
+  },
+  "designRiskCorridors": {
+    "blocking": false,
+    "layer": "design-intent",
+    "source": "holdout",
+    "note": "The hard caps are ceilings. A lever can clear all of them and still remove the risk a scenario exists to create, so this list makes \"safer than intended\" visible.",
+    "scenarios": [
+      {
+        "scenarioId": "baseline_touring",
+        "ratePct": 1.15,
+        "corridorPct": [
+          1,
+          5
+        ],
+        "position": "inside"
+      },
+      {
+        "scenarioId": "cult_hypergrowth",
+        "ratePct": 13.85,
+        "corridorPct": [
+          2,
+          10
+        ],
+        "position": "above"
+      },
+      {
+        "scenarioId": "aggressive_marketing",
+        "ratePct": 11.92,
+        "corridorPct": [
+          2,
+          8
+        ],
+        "position": "above"
+      },
+      {
+        "scenarioId": "chaos_tour",
+        "ratePct": 15,
+        "corridorPct": [
+          8,
+          20
+        ],
+        "position": "inside"
+      },
+      {
+        "scenarioId": "festival_push",
+        "ratePct": 25.77,
+        "corridorPct": [
+          5,
+          15
+        ],
+        "position": "above"
+      },
+      {
+        "scenarioId": "scandal_recovery",
+        "ratePct": 25.38,
+        "corridorPct": [
+          8,
+          20
+        ],
+        "position": "above"
+      },
+      {
+        "scenarioId": "bootstrap_struggle",
+        "ratePct": 33.46,
+        "corridorPct": [
+          15,
+          30
+        ],
+        "position": "above"
+      }
+    ],
+    "belowCorridor": [],
+    "aboveCorridor": [
+      "cult_hypergrowth",
+      "aggressive_marketing",
+      "festival_push",
+      "scandal_recovery",
+      "bootstrap_struggle"
+    ]
+  },
   "combinationSearch": {
-    "strategy": "ascending-impact-first-validated",
-    "pairsAvailable": 126,
+    "strategy": "ascending-impact-first-clearing-both-gates",
+    "pairsAvailable": 154,
     "pairsEvaluated": 1,
-    "pairsSkipped": 125,
+    "pairsSkipped": 153,
+    "pairsRejectedBySelectionGate": 0,
+    "pairsRejectedByCalibrationGate": 0,
+    "selectionOutcome": "selection-validated-final-validation-failed",
+    "selectedFinalValidationFailures": [
+      "cult_hypergrowth 13.85% > 12%"
+    ],
     "selectedAppliesNoChange": true,
-    "note": "Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected."
+    "note": "Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass."
   },
   "combinationRanking": [
     {
       "bootstrap": "bootstrap-none",
       "touring": "touring-none",
       "impact": 0,
-      "passed": true,
-      "failures": []
+      "calibrationPassed": true,
+      "calibrationFailures": [],
+      "selectionPassed": true,
+      "selectionFailures": [],
+      "finalValidationPassed": false,
+      "shippable": false
     }
   ],
   "recommendation": {
-    "status": "no-production-recommendation-holdout-safety-failed",
+    "status": "no-production-recommendation-final-validation-failed",
     "objectiveStatus": "partial",
     "objectiveNote": "The two profiles miss the 20-25% target band in OPPOSITE directions (baseline_touring money-per-day advantage 15.73% is below the 20-25% target (was 15.73%); low_resource_touring money-per-day advantage 59.4% is above the 20-25% target (was 59.4%)). No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.",
     "bootstrap": "bootstrap-none",
@@ -26945,11 +27499,18 @@
         "denseScheduleRecoveryMultiplier": 1,
         "denseScheduleMaintenanceMultiplier": 1
       }
+    },
+    "productionHold": {
+      "adopted": false,
+      "held": false,
+      "heldFor": null,
+      "matchesRecommendation": null,
+      "reason": null
     }
   },
   "runtime": {
-    "durationMs": 43244,
+    "durationMs": 42412,
     "candidates": 25,
-    "totalRuns": 20280
+    "totalRuns": 22100
   }
 }

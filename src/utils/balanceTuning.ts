@@ -52,9 +52,42 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
     }
   })
 
+export interface BalanceRecommendationHold {
+  /** `recommendation.bootstrap` of the report this hold was reviewed against. */
+  bootstrap: string
+  /** `recommendation.touring` of the report this hold was reviewed against. */
+  touring: string
+  reason: string
+}
+
+/**
+ * Why production does not carry the lever the committed experiment report
+ * recommends.
+ *
+ * `null` is the normal state and means production is expected to match
+ * `recommendation.tuning` in `reports/game-balance-experiments-results.json`
+ * exactly — that equality is what stops production tuning from drifting away
+ * from the evidence, in either direction.
+ *
+ * A non-null hold is the one legitimate exception: the report recommends a lever
+ * that has deliberately not been adopted. It exists so that decision is a
+ * reviewed line of code rather than a silent mismatch. It names the exact
+ * candidate pair it was reviewed against, so a report that starts recommending
+ * something else invalidates the hold instead of silently inheriting it — a
+ * generic "we are holding something" would leave production pinned to the control
+ * tuning against evidence nobody looked at. `tests/node/regionalGigHistory.test.js`
+ * enforces all three parts: production sits on `ORIGINAL_CONTROL_BALANCE_TUNING`,
+ * the ids match the report, and the hold is cleared once the report recommends no
+ * lever at all.
+ */
+export const BALANCE_RECOMMENDATION_HOLD: Readonly<BalanceRecommendationHold> | null =
+  null
+
 /**
  * Production tuning. Currently neutral: Phase 3 selected no lever once the
- * simulated horizon was bounded by the map.
+ * simulated horizon was bounded by the map, and the report still recommends the
+ * neutral no-op, so there is nothing being held back (`BALANCE_RECOMMENDATION_HOLD`
+ * is `null`).
  *
  * The levers it previously carried were calibrated against 75-day runs. A real
  * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"

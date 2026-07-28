@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import fs from 'node:fs/promises'
+import { DEFAULT_BALANCE_TUNING } from '../../src/utils/balanceTuning.ts'
 import { LOAN_PROFILES } from '../../src/utils/loanProfiles.js'
 import { createInitialState } from '../../src/context/initialState.js'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
@@ -9,6 +10,7 @@ import { MapGenerator } from '../../src/utils/mapGenerator.ts'
 import { VENUES_BY_ID } from '../../src/data/venues.js'
 
 import {
+  GIG_CADENCE_POLICIES,
   KPI_TARGETS,
   LIQUIDITY_STRESS_THRESHOLDS,
   PERFORMABLE_NODE_TYPES,
@@ -33,6 +35,7 @@ import {
   describeCorridorConfidence,
   evaluateScenarioRiskStatus,
   reconcileFameLedger,
+  resolveGigCadence,
   runSingleSimulation,
   summarizeCatalogAffordability,
   summarizeScenario
@@ -1275,6 +1278,211 @@ test('route choice prefers a stage over a rest stop but takes what is offered', 
   assert.equal(PERFORMABLE_NODE_TYPES.has(onlyStops.type), false)
 
   assert.equal(chooseNextTourNode([], state, rng), null)
+})
+
+// `gigGapDays` fixes how often a band plays, not which days it plays on, and the
+// phase is not neutral: it decides how many cost cycles land before the first
+// payout. These pin the three policies so a probe comparing them cannot be
+// comparing three copies of the same cohort.
+test('cadence policies differ only in phase, and agree at a gap of one', () => {
+  const days = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+  const performDays = (policy, gigGapDays, firstGigDay = null) =>
+    days.filter(day =>
+      resolveGigCadence({ day, gigGapDays, policy, firstGigDay })
+    )
+
+  assert.deepEqual(performDays('gap-aligned', 2), [2, 4, 6, 8, 10])
+  assert.deepEqual(performDays('gap-offset', 2), [1, 3, 5, 7, 9])
+  assert.deepEqual(performDays('gap-aligned', 3), [3, 6, 9])
+  assert.deepEqual(performDays('gap-offset', 3), [1, 4, 7, 10])
+
+  // Before the first gig, `first-income` never declines a paying show; once the
+  // gig is on the board it keeps the gap cadence anchored on that day.
+  assert.deepEqual(performDays('first-income', 2, null), days)
+  assert.deepEqual(performDays('first-income', 2, 1), [1, 3, 5, 7, 9])
+  assert.deepEqual(performDays('first-income', 2, 4), [2, 4, 6, 8, 10])
+  assert.deepEqual(performDays('first-income', 3, 2), [2, 5, 8])
+
+  for (const policy of GIG_CADENCE_POLICIES) {
+    assert.deepEqual(
+      performDays(policy, 1),
+      days,
+      `${policy} must play daily at a gap of one`
+    )
+  }
+
+  // A missing gap must not disable the cadence, and an unknown policy must not
+  // silently resolve to the shipped one: a probe would then report identical
+  // cohorts as evidence that phase does not matter.
+  assert.equal(
+    resolveGigCadence({ day: 3, gigGapDays: undefined }),
+    3 % SIMULATION_CONSTANTS.baseGigGapDays === 0,
+    'The fallback is baseGigGapDays, so the expectation has to come from it too'
+  )
+  assert.throws(
+    () => resolveGigCadence({ day: 1, gigGapDays: 2, policy: 'offset' }),
+    RangeError
+  )
+})
+
+test('scenarios keep the shipped cadence phase unless a probe overrides it', () => {
+  // The probe sets `gigCadencePolicy` per cohort. If it leaked into SCENARIOS the
+  // published reports would silently change meaning and their config hash with it.
+  for (const scenario of SCENARIOS) {
+    assert.equal(
+      Object.hasOwn(scenario, 'gigCadencePolicy'),
+      false,
+      `${scenario.id} must not pin a cadence policy`
+    )
+  }
+})
+
+test('a run reports the opening separately from the tour', () => {
+  const scenario = SCENARIOS.find(item => item.id === 'cult_hypergrowth')
+  assert.ok(scenario)
+  const runs = Array.from({ length: 40 }, (_, runIndex) =>
+    runSingleSimulation(
+      scenario,
+      createScenarioSeed(`${scenario.id}#holdout`, runIndex)
+    )
+  )
+
+  for (const run of runs) {
+    const runway = run.earlyRunway
+    assert.ok(runway, 'every run reports its early runway')
+    if (runway.firstGigDay == null) {
+      // No payout ever happened, so every day it survived was an unpaid day and
+      // there is no "money before the first gig" to report.
+      assert.equal(run.gigsPlayed, 0)
+      assert.equal(runway.moneyBeforeFirstGig, null)
+      assert.equal(runway.daysBeforeFirstGig, run.daysSurvived)
+    } else {
+      assert.ok(run.gigsPlayed >= 1)
+      assert.ok(
+        runway.firstGigDay >= 1 && runway.firstGigDay <= run.daysSurvived
+      )
+      assert.equal(runway.daysBeforeFirstGig, runway.firstGigDay - 1)
+      assert.equal(Number.isFinite(runway.moneyBeforeFirstGig), true)
+      // Insolvency after a payout is an economy outcome, not a runway one.
+      assert.equal(runway.bankruptBeforeFirstGig, false)
+    }
+    assert.equal(
+      runway.bankruptBeforeFirstGig,
+      run.bankrupt && runway.firstGigDay == null
+    )
+    // A minimum cannot sit above the balance at the end of the same window. It did,
+    // while the sample only happened after the daily tick and every later money move
+    // (events, maintenance, refuel, shop, assets, travel cost) fell outside it.
+    if (runway.moneyBeforeFirstGig != null) {
+      assert.ok(
+        runway.lowestMoneyBeforeFirstGig <= runway.moneyBeforeFirstGig,
+        `lowest (${runway.lowestMoneyBeforeFirstGig}) must not exceed the balance directly before the first gig (${runway.moneyBeforeFirstGig})`
+      )
+    }
+    assert.ok(
+      runway.lowestMoneyBeforeFirstGig <= run.peakMoney,
+      'the pre-gig minimum cannot exceed the run peak'
+    )
+    // A run that never played has still spent money on travel, fuel, repairs and
+    // the shop. Reporting 0 for it would understate the pre-gig spending of exactly
+    // the never-played cohort this block exists to describe.
+    const discretionary =
+      run.travelSpend +
+      run.refuelSpend +
+      run.repairSpend +
+      run.clinicSpend +
+      run.catalogMoneySpent
+    if (runway.firstGigDay == null) {
+      assert.equal(
+        runway.spendBeforeFirstGig,
+        Math.round(discretionary),
+        'A never-played run reports its whole discretionary spend as pre-gig spend'
+      )
+    } else {
+      assert.ok(
+        runway.spendBeforeFirstGig <= Math.round(discretionary) + 1,
+        'The pre-gig snapshot cannot exceed the run total'
+      )
+    }
+    if (runway.firstBlockedTravel) {
+      assert.ok(runway.blockedTravelDaysBeforeFirstGig >= 1)
+      assert.ok(runway.firstBlockedTravel.day >= 1)
+      assert.equal(typeof runway.firstBlockedTravel.reason, 'string')
+    } else {
+      assert.equal(runway.blockedTravelDaysBeforeFirstGig, 0)
+    }
+  }
+
+  // The published `cult_hypergrowth` holdout breach is carried by runs that fail
+  // before their first payout. If that ever stops being true the diagnosis in
+  // `scripts/game-balance-cadence-probe.mjs` no longer describes this scenario.
+  const insolvent = runs.filter(run => run.bankrupt)
+  assert.ok(insolvent.length > 0, 'the probe cohort must contain insolvencies')
+  assert.ok(
+    insolvent.filter(run => run.earlyRunway.bankruptBeforeFirstGig).length /
+      insolvent.length >
+      0.5,
+    'most insolvencies here happen before the first gig'
+  )
+})
+
+// The emergency grant fires exactly when the daily tick has pushed money to or
+// below its trigger, so that trough is the number a grant candidate is diagnosed
+// on. Sampling only after the grant reported the lifted balance instead — a €40
+// trough plus a €250 grant reads as €290. The shipped neutral no-op hides this
+// because its grant is 0.
+test('the pre-gig minimum sees the trough the emergency grant lifts', () => {
+  const scenario = probeScenario(2, {
+    initialOverrides: { player: { money: 300 } }
+  })
+  const trigger = 250
+  const tuning = {
+    ...DEFAULT_BALANCE_TUNING,
+    earlyGame: {
+      ...DEFAULT_BALANCE_TUNING.earlyGame,
+      emergencyGrant: 5000,
+      // Capped at day 1, so the grant can only fire on the day-1 tick — which
+      // precedes any gig, and therefore always sits inside the pre-gig window.
+      emergencyGrantMaxDay: 1,
+      emergencyGrantTriggerMoney: trigger
+    }
+  }
+  const run = runSingleSimulation(
+    scenario,
+    createScenarioSeed('grant-observation', 1),
+    tuning
+  )
+
+  assert.equal(run.emergencyGrantUsed, true)
+  assert.ok(
+    run.earlyRunway.lowestMoneyBeforeFirstGig <= trigger,
+    `the grant only fires at or below €${trigger}, so the pre-gig minimum cannot read €${run.earlyRunway.lowestMoneyBeforeFirstGig}`
+  )
+})
+
+test('the shipped cadence phase is what a default run uses', () => {
+  // Guards the refactor from an inline `day % gap` to `resolveGigCadence`: a
+  // default run and an explicitly `gap-aligned` one must be the same run.
+  const scenario = SCENARIOS.find(item => item.id === 'cult_hypergrowth')
+  const seed = createScenarioSeed(scenario.id, 7)
+  const shipped = runSingleSimulation(scenario, seed)
+  const explicit = runSingleSimulation(
+    { ...scenario, gigCadencePolicy: 'gap-aligned' },
+    seed
+  )
+  assert.deepEqual(explicit.timeline, shipped.timeline)
+  assert.equal(explicit.finalMoney, shipped.finalMoney)
+  assert.equal(explicit.gigsPlayed, shipped.gigsPlayed)
+
+  const offset = runSingleSimulation(
+    { ...scenario, gigCadencePolicy: 'gap-offset' },
+    seed
+  )
+  assert.notDeepEqual(
+    offset.timeline.map(entry => entry.day),
+    shipped.timeline.map(entry => entry.day),
+    'a phase shift must actually move the gig days'
+  )
 })
 
 test('travel is independent of the gig cadence', () => {

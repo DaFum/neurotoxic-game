@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 20280 simulation runs in 43244 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 22100 simulation runs in 42412 ms.
 
 ## Kontrollzustand
 
@@ -14,16 +14,16 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 | Candidate | Control Bankruptcy | Candidate Bankruptcy | Delta | Median Days Survived Delta | Solvent Median Money | Fame/Gig Delta | Pass/Fail |
 |---|---:|---:|---:|---:|---:|---:|---|
 | bootstrap-none | 30.38% | 30.38% | 0 pp | 0 | €24073 | 0% | Pass |
-| bootstrap-obligations-90-through-3 | 30.38% | 29.62% | -0.77 pp | 0 | €24214 | -4.46% | Pass |
-| bootstrap-obligations-80-through-3 | 30.38% | 27.69% | -2.69 pp | 0 | €23935 | -4.01% | Pass |
-| bootstrap-obligations-70-through-3 | 30.38% | 27.31% | -3.08 pp | 0 | €24135 | -3.87% | Pass |
-| bootstrap-obligations-80-through-5 | 30.38% | 26.54% | -3.85 pp | 0 | €24002 | -3.14% | Pass |
-| bootstrap-obligations-70-through-5 | 30.38% | 24.23% | -6.15 pp | 0 | €24221 | -0.26% | Pass |
-| bootstrap-obligations-60-through-5 | 30.38% | 21.54% | -8.85 pp | 0 | €24652.5 | 3.04% | Pass |
-| bootstrap-emergency-250 | 30.38% | 7.69% | -22.69 pp | 0 | €23757.5 | 22.93% | Fail |
-| bootstrap-emergency-500 | 30.38% | 4.62% | -25.77 pp | 0 | €23920 | 25.68% | Fail |
-| bootstrap-staged-60-80 | 30.38% | 23.46% | -6.92 pp | 0 | €24202 | -0.69% | Pass |
-| bootstrap-staged-75 | 30.38% | 26.15% | -4.23 pp | 0 | €24028 | -2.28% | Pass |
+| bootstrap-obligations-90-through-3 | 30.38% | 29.62% | -0.77 pp | 0 | €24214 | -1.87% | Pass |
+| bootstrap-obligations-80-through-3 | 30.38% | 27.69% | -2.69 pp | 0 | €23935 | -2.86% | Pass |
+| bootstrap-obligations-70-through-3 | 30.38% | 27.31% | -3.08 pp | 0 | €24135 | -3.72% | Pass |
+| bootstrap-obligations-80-through-5 | 30.38% | 26.54% | -3.85 pp | 0 | €24002 | -3.27% | Pass |
+| bootstrap-obligations-70-through-5 | 30.38% | 24.23% | -6.15 pp | 0 | €24221 | -3.65% | Pass |
+| bootstrap-obligations-60-through-5 | 30.38% | 21.54% | -8.85 pp | 0 | €24652.5 | -2.48% | Pass |
+| bootstrap-emergency-250 | 30.38% | 7.69% | -22.69 pp | 0 | €23757.5 | -0.4% | Pass |
+| bootstrap-emergency-500 | 30.38% | 4.62% | -25.77 pp | 0 | €23920 | -0.64% | Pass |
+| bootstrap-staged-60-80 | 30.38% | 23.46% | -6.92 pp | 0 | €24202 | -3.97% | Pass |
+| bootstrap-staged-75 | 30.38% | 26.15% | -4.23 pp | 0 | €24028 | -3.76% | Pass |
 
 ## Bootstrap-Ranking
 
@@ -41,7 +41,7 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 ## Gewählter Bootstrap-Hebel
 
-`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 126 pairs were evaluated, 125 skipped. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
+`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. Of 154 available pairs, 1 were evaluated on the `selection` stream (0 rejected by the hard caps, 0 by the calibration gate, 1 clearing both) and 153 were never reached, because the search stops at the first pair that clears both gates and every remaining pair carries higher impact. The reserved `validation` stream is measured once, on that pair alone. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -127,7 +127,7 @@ The two profiles miss the 20-25% target band in OPPOSITE directions (baseline_to
 
 ## Gewählter Late-Game-Hebel
 
-`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 126 pairs were evaluated, 125 skipped. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
+`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass. Of 154 available pairs, 1 were evaluated on the `selection` stream (0 rejected by the hard caps, 0 by the calibration gate, 1 clearing both) and 153 were never reached, because the search stops at the first pair that clears both gates and every remaining pair carries higher impact. The reserved `validation` stream is measured once, on that pair alone. Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.
 
 ## Kombinierte Validierung
 
@@ -150,15 +150,43 @@ Kalibrierungs-Gate: **PASS**. Bootstrap Struggle bankruptcy must remain <= 60%. 
 
 ### Harte Sicherheitsgrenzen auf dem Holdout-Strom
 
-Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem disjunkten Seed-Strom gegen die harten `KPI_TARGETS.bankruptcyMax`-Obergrenzen geprüft. Der gepaarte Vergleich oben läuft auf dem Kalibrierungsstrom und kann eine Überschreitung, die nur auf unabhängigen Seeds auftritt, nicht sehen.
+Drei disjunkte Seed-Ströme, mit getrennten Aufgaben: `calibration` trägt den gepaarten Vergleich, `selection` trägt die Kandidatensuche gegen die harten `KPI_TARGETS.bankruptcyMax`-Obergrenzen, und `validation` wird **genau einmal** gemessen — auf der Kombination, die die Suche bereits gewählt hat. Ein Strom, auf dem bis zu 154 Kandidaten ausprobiert werden, kann nicht gleichzeitig belegen, dass der Gewinner generalisiert; deshalb entscheidet die Suche auf `selection` und `validation` bleibt unberührt.
+
+Suchstrom-Gate (`selection`, nicht der Unabhängigkeitsbeleg): **PASS**
 
 Holdout-Sicherheitsgate: **FAIL** — `cult_hypergrowth` bankruptcyRate 13.85% > 12% (n=260)
 
-**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.
+| Szenario | Holdout-Insolvenz | harte Grenze | Status |
+|---|---:|---:|---|
+| baseline_touring | 1.15% (3/260) | 10% | bestanden |
+| cult_hypergrowth | 13.85% (36/260) | 12% | überschritten |
+| aggressive_marketing | 11.92% (31/260) | 15% | bestanden |
+| chaos_tour | 15% (39/260) | 25% | bestanden |
+| festival_push | 25.77% (67/260) | 35% | bestanden |
+| scandal_recovery | 25.38% (66/260) | 50% | bestanden |
+| bootstrap_struggle | 33.46% (87/260) | 60% | bestanden |
+
+#### Designkorridore (nicht blockierend)
+
+Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem das Risiko entfernen, für das ein Szenario existiert — diese Liste macht "sicherer als beabsichtigt" sichtbar.
+
+| Szenario | Holdout-Insolvenz | Designkorridor | Lage |
+|---|---:|---:|---|
+| baseline_touring | 1.15% | 1–5% | im Korridor |
+| cult_hypergrowth | 13.85% | 2–10% | über Korridor |
+| aggressive_marketing | 11.92% | 2–8% | über Korridor |
+| chaos_tour | 15% | 8–20% | im Korridor |
+| festival_push | 25.77% | 5–15% | über Korridor |
+| scandal_recovery | 25.38% | 8–20% | über Korridor |
+| bootstrap_struggle | 33.46% | 15–30% | über Korridor |
+
+**Riskanter als beabsichtigt:** `cult_hypergrowth`, `aggressive_marketing`, `festival_push`, `scandal_recovery`, `bootstrap_struggle`.
+
+**Keine Produktionsempfehlung.** Die gewählte Kombination hat das Suchstrom-Gate bestanden und bricht auf dem reservierten `validation`-Strom (cult_hypergrowth 13.85% > 12%). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.
 
 ### Release-Gesamtstatus
 
-Beide Gates müssen bestehen. Kalibrierung: **PASS** · Holdout-Sicherheit: **FAIL** → Gesamt: **FAIL** (`no-production-recommendation-holdout-safety-failed`).
+Beide Gates müssen bestehen. Kalibrierung: **PASS** · Holdout-Sicherheit: **FAIL** → Gesamt: **FAIL** (`no-production-recommendation-final-validation-failed`).
 
 ## Nebenwirkungen
 
@@ -172,7 +200,7 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 
 Only the selected bootstrap and touring defaults are intended for production.
 
-Recommendation: **no-production-recommendation-holdout-safety-failed**
+Recommendation: **no-production-recommendation-final-validation-failed**
 
 ## Fazit
 
@@ -186,4 +214,5 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
 | Late-Game-Snowball | nicht verbessert |
 | Gap-1-Dominanz im Zielband | nicht gelöst |
 | Phase 3C Gesamtstatus | partial |
-| Produktionskandidat | no-production-recommendation-holdout-safety-failed |
+| Kombinationssuche | selection-validated-final-validation-failed |
+| Produktionskandidat | no-production-recommendation-final-validation-failed |

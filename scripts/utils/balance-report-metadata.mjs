@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { execSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 
@@ -55,6 +56,38 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/data/hqItems/instruments.ts',
   'src/data/hqItems/van.ts'
 ])
+
+/**
+ * Whether the SOURCE that produced a report was dirty.
+ *
+ * Generated reports are outputs, not inputs: a sibling artifact still waiting to be
+ * committed cannot change a number. Counting them made the flag depend on the order
+ * the reports happened to be generated in — regenerate all four in one pass and
+ * every artifact after the first claims a dirty tree, which reads as unreproducible
+ * when the source state was in fact pinned. Scoping the check to non-report paths
+ * makes the claim mean what it says.
+ */
+export const getSourceWorkingTreeDirty = root => {
+  try {
+    const status = execSync('git status --porcelain', {
+      cwd: root,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore']
+    })
+    return status
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      // Porcelain lines are `XY <path>`, and renames carry `old -> new`; the trailing
+      // path is the one that matters for "is this a report".
+      .some(line => {
+        const target = line.slice(2).trim().split(' -> ').pop() ?? ''
+        return !target.replace(/^"|"$/g, '').startsWith('reports/')
+      })
+  } catch {
+    return null
+  }
+}
 
 export const getBalanceSourceHash = async root => {
   const hash = crypto.createHash('sha256')

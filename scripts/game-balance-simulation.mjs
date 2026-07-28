@@ -117,7 +117,7 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
-import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
+import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
@@ -1014,6 +1014,63 @@ export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true)
   )
   const pool = inBand.length ? inBand : routable
   return pool[Math.floor(rng() * pool.length)] ?? null
+}
+
+/**
+ * The three cadence policies a scenario can be simulated under.
+ *
+ * `gigGapDays` says how often a band wants to play, not *which* days those are,
+ * and the phase is not a free choice: it decides how many cost cycles land
+ * before the first payout. At `gigGapDays: 2` the shipped policy resolves to
+ * days 2, 4, 6, 8, 10 — the band deliberately declines to play on day 1 and
+ * routes around the opening gig node when the map offers an alternative. "Every
+ * other day" reads just as well as days 1, 3, 5, 7, 9, and on 500 EUR of
+ * starting cash that half-cycle offset is the difference between one and two
+ * unpaid cost days before the first income.
+ *
+ * - `gap-aligned`   days where `day % gap === 0` (shipped behaviour)
+ * - `gap-offset`    the same cadence phase-shifted to start on day 1
+ * - `first-income`  play the first gig the map offers, then keep the gap
+ *                   cadence anchored on that day
+ *
+ * At `gigGapDays: 1` all three agree, so a scenario that plays daily is
+ * unaffected by the choice.
+ */
+export const GIG_CADENCE_POLICIES = Object.freeze([
+  'gap-aligned',
+  'gap-offset',
+  'first-income'
+])
+
+/**
+ * The policy every shipped scenario runs under. Single source of truth: a probe
+ * comparing against "the shipped phase" has to resolve it from here rather than
+ * repeating the literal, or a rename would silently leave the comparison with no
+ * baseline at all and every delta reading as zero.
+ */
+export const SHIPPED_GIG_CADENCE_POLICY = GIG_CADENCE_POLICIES[0]
+
+export const resolveGigCadence = ({
+  day,
+  gigGapDays,
+  policy = SHIPPED_GIG_CADENCE_POLICY,
+  firstGigDay = null
+}) => {
+  const gap = Math.max(
+    1,
+    gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays
+  )
+  // A typo'd policy must not silently resolve to the shipped one: the whole
+  // point of the comparison is that the variants differ, so a silent fallback
+  // would report three identical cohorts as evidence that phase does not matter.
+  if (!GIG_CADENCE_POLICIES.includes(policy)) {
+    throw new RangeError(`Unknown gig cadence policy: ${policy}`)
+  }
+  if (policy === 'gap-offset') return (day - 1) % gap === 0
+  if (policy === 'first-income') {
+    return firstGigDay == null ? true : (day - firstGigDay) % gap === 0
+  }
+  return day % gap === 0
 }
 
 const calculateModifiers = (scenario, rng) => {
@@ -2193,6 +2250,18 @@ const recordObservedFameChange = (accounting, before, after) => {
   accountFameChange(accounting, difference, difference)
 }
 
+/**
+ * The discretionary money sinks, as opposed to the recurring obligations the daily
+ * tick charges. Shared by the first-gig snapshot and the end-of-run fallback so the
+ * two cannot drift into meaning different things.
+ */
+const discretionarySpend = counters =>
+  counters.travelSpend +
+  counters.refuelSpend +
+  counters.repairSpend +
+  counters.clinicSpend +
+  counters.catalogMoneySpent
+
 export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUNING) => {
   // UUIDs are deterministic per run so candidate ordering cannot affect paired
   // gameplay through generated asset/campaign identifiers.
@@ -2340,6 +2409,36 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let minMemberStaminaObserved = Infinity
   let minMemberMoodObserved = Infinity
 
+  // Early-runway instrumentation. Insolvency that happens before the first
+  // payout is a different failure from one the economy caused: it says the run
+  // never reached the loop the economy describes. Averages over the whole tour
+  // cannot separate the two, so the opening is measured on its own.
+  let firstGigDay = null
+  let moneyBeforeFirstGig = null
+  let lowestMoneyBeforeFirstGig = state.player.money
+  let obligationsBeforeFirstGig = 0
+  // Snapshotted when the first show starts. Stays null for a run that never
+  // played, and the return then reads the counters directly — a run that went
+  // bankrupt before any gig has still spent money on travel, fuel, repairs and the
+  // shop, and reporting €0 for it would understate the pre-gig spending of exactly
+  // the cohort `earlyRunway` exists to describe.
+  let spendBeforeFirstGig = null
+  // A running minimum has to be sampled after every step that can move money, not
+  // once per day. Sampling only after the daily tick left events, maintenance,
+  // refuelling, the shop, asset investment and the travel cost outside the window,
+  // so the reported "minimum" could sit ABOVE the balance at the end of that same
+  // window — €414 against €351.50 directly before the first gig. That is not a
+  // minimum, and it made this field unusable for the runway question it exists for.
+  const observeEarlyRunwayMoney = () => {
+    if (firstGigDay != null) return
+    lowestMoneyBeforeFirstGig = Math.min(
+      lowestMoneyBeforeFirstGig,
+      state.player.money
+    )
+  }
+  let blockedTravelDaysBeforeFirstGig = 0
+  let firstBlockedTravel = null
+
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
   let totalHitWindowSum = 0
@@ -2406,6 +2505,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       fameBeforeDailyUpdates,
       state.player.fame
     )
+    // The daily tick is the trough the grant then lifts the run out of. Sampling
+    // only after the grant reported the post-grant balance as the minimum (€40
+    // trough + €250 grant read as €290), which is exactly the number a grant
+    // candidate is diagnosed on.
+    observeEarlyRunwayMoney()
 
     if (
       !runCtx.emergencyGrantUsed &&
@@ -2415,11 +2519,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     ) {
       state.player.money = clampPlayerMoney(finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant)
       runCtx.emergencyGrantUsed = true
+      observeEarlyRunwayMoney()
     }
 
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
     const dailyObligations = getTotalDailyObligations(state)
+    if (firstGigDay == null) obligationsBeforeFirstGig += dailyObligations
     if (
       shouldTriggerBankruptcy(
         state.player.money,
@@ -2438,8 +2544,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // made map reach a property of `gigGapDays` instead of the map, so a sparse
     // cadence looked like it could not finish the tour when in truth it had
     // simply never been allowed to drive.
-    const wantsToPerform =
-      day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
+    const wantsToPerform = resolveGigCadence({
+      day,
+      gigGapDays: scenario.gigGapDays,
+      policy: scenario.gigCadencePolicy ?? SHIPPED_GIG_CADENCE_POLICY,
+      firstGigDay
+    })
 
     let willRest = false
     // Check if the band needs rest/clinic before travelling on.
@@ -2471,6 +2581,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
       applyDailyEvents(state, scenario, rng, counters)
+    observeEarlyRunwayMoney()
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2486,11 +2597,23 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       counters.sponsorSignings += 1
       counters.executionCoverage.sponsorship.successes++
     }
+    observeEarlyRunwayMoney()
     expireContrabandEffects(state, runCtx)
+    observeEarlyRunwayMoney()
     maybeApplyContrabandDrop(state, rng, counters, runCtx)
+    observeEarlyRunwayMoney()
+    // One sample per money-moving call rather than one per group: a negative event
+    // followed by a brand-deal advance inside the same group would otherwise hide
+    // the trough between them. Mutations *inside* a single helper are still not
+    // sampled individually — that would mean threading an observer through the
+    // production-mirroring helpers, which is out of proportion to the question this
+    // field answers.
     maybeMaintainVanAndResources(state, scenario, rng, counters)
+    observeEarlyRunwayMoney()
     maybeBuyCatalogUpgrade(state, rng, counters)
+    observeEarlyRunwayMoney()
     maybeInvestInAssets(state, rng, counters)
+    observeEarlyRunwayMoney()
 
     if (willRest) {
       // Recovery day. Clinic heals per CLINIC_CONFIG (gameConstants.ts):
@@ -2546,13 +2669,24 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // other day the band drives: there is no wait action in the game, so a day
     // that is neither rest nor travel would be an invented cost-only day.
     if (willRest) {
+      // The clinic deduction above is the last money move of a rest day, and this
+      // branch ends the day — without sampling here the trough would only be seen
+      // by tomorrow's sample, and not at all when the rest day is the last one.
+      observeEarlyRunwayMoney()
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
       continue
     }
 
+    observeEarlyRunwayMoney()
+
     const recordNoTrip = reason => {
+      observeEarlyRunwayMoney()
+      if (firstGigDay == null) {
+        blockedTravelDaysBeforeFirstGig += 1
+        firstBlockedTravel ??= { day, reason }
+      }
       if (reason === 'dead_end') routeDeadEnds += 1
       else {
         strandedDays += 1
@@ -2611,6 +2745,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
+    observeEarlyRunwayMoney()
 
     // Arrival bookkeeping: location keys regional reputation (mapUtils
     // getRegionKeyForLocation reads the venues:<id>.name display key) and
@@ -2744,6 +2879,16 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
+    // The show is going ahead, so this is the run's first income opportunity.
+    // Recorded before the setup minigame and the modifier purchases, which is
+    // what "money directly before the first gig" has to mean for a runway
+    // question — and it is also the anchor the `first-income` cadence keeps.
+    observeEarlyRunwayMoney()
+    if (firstGigDay == null) {
+      firstGigDay = day
+      moneyBeforeFirstGig = state.player.money
+      spendBeforeFirstGig = discretionarySpend(counters)
+    }
     const damagedGear = runPreGigSetupMinigame(
       state,
       scenario,
@@ -3011,6 +3156,24 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
     daysBelowCriticalLiquidity,
+    // `daysBeforeFirstGig` counts unpaid days: for a run that never played, that
+    // is every day it survived. `spendBeforeFirstGig` covers the discretionary
+    // sinks (travel, fuel, repairs, clinic, shop); the recurring side is
+    // `obligationsBeforeFirstGig`, which the daily tick charges separately.
+    earlyRunway: {
+      firstGigDay,
+      bankruptBeforeFirstGig: counters.bankrupt && firstGigDay == null,
+      moneyBeforeFirstGig,
+      lowestMoneyBeforeFirstGig,
+      daysBeforeFirstGig:
+        firstGigDay == null ? daysSurvived : firstGigDay - 1,
+      obligationsBeforeFirstGig: Math.round(obligationsBeforeFirstGig),
+      spendBeforeFirstGig: Math.round(
+        spendBeforeFirstGig ?? discretionarySpend(counters)
+      ),
+      blockedTravelDaysBeforeFirstGig,
+      firstBlockedTravel
+    },
     emergencyGrantUsed: runCtx.emergencyGrantUsed,
     timeline,
     moneyAtEarlyCheckpoint,
@@ -5297,7 +5460,7 @@ const tryReadJson = async filePath => {
   }
 }
 
-const getWorkingTreeDirty = () => { try { return execSync("git status --porcelain", { encoding: "utf8", stdio: "pipe" }).trim().length > 0 } catch { return null } }
+const getWorkingTreeDirty = () => getSourceWorkingTreeDirty(PROJECT_ROOT)
 
 const getSourceBaseCommit = () => {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
