@@ -4782,12 +4782,37 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push('### Weiche Design-Warnungen')
     lines.push('')
-    if (risk.warnings.length) {
+    // An `unsafe` warning is a hard-limit breach, not a corridor hint, so it must
+    // not sit under a heading that says nothing blocks. Warnings are prefixed
+    // with their scenario id by `RISK_STATUS_WARNING`, which is what lets them be
+    // split here without changing the published `warnings` array itself.
+    const blockingIds = new Set(
+      risk.scenarios
+        .filter(scenario => scenario.status === 'unsafe')
+        .map(scenario => scenario.id)
+    )
+    const isBlockingWarning = warning =>
+      [...blockingIds].some(id => warning.startsWith(`${id}:`))
+    const softWarnings = risk.warnings.filter(
+      warning => !isBlockingWarning(warning)
+    )
+    const blockingWarnings = risk.warnings.filter(isBlockingWarning)
+    if (softWarnings.length) {
       lines.push(
         'Diese Punkte erscheinen im Report, blockieren aber nichts:'
       )
       lines.push('')
-      for (const warning of risk.warnings) lines.push(`- ⚠️ ${warning}`)
+      for (const warning of softWarnings) lines.push(`- ⚠️ ${warning}`)
+      if (blockingWarnings.length) {
+        lines.push('')
+        lines.push(
+          `Nicht in dieser Kategorie: ${blockingWarnings.length} Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.`
+        )
+      }
+    } else if (blockingWarnings.length) {
+      lines.push(
+        `Keine weichen Warnungen. ${blockingWarnings.length} Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.`
+      )
     } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
       lines.push(
         '✅ Alle bewerteten Szenarien liegen in ihrem Zielkorridor und bleiben auf unabhängigen Seeds im selben Risikoband.'
@@ -4863,6 +4888,10 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(
       `Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nur auf einen oder zwei Knoten der nächsten Ebene, frühe Ebenen tragen leichte Venues, und das Finale liegt auf Ebene ${depth}. Vorher wurde jede Venue frei aus dem gesamten Katalog gezogen — eine Erreichbarkeit, die das Spiel nicht anbietet.`
+    )
+    lines.push('')
+    lines.push(
+      '„Finale erreicht“ und „Finale gespielt“ sind absichtlich zwei Spalten: die erste zählt die Ankunft am FINALE-Knoten, die zweite die tatsächlich absolvierte Show. Ein bei niedriger Harmony abgesagtes Finale steht deshalb in der ersten, aber nicht in der zweiten Spalte — eine Ankunft ist kein Beweis, dass gespielt wurde.'
     )
     lines.push('')
     lines.push(
@@ -4956,6 +4985,17 @@ const buildMarkdownReport = payload => {
         ...wearValues.map(item => item.minHarmonyObserved ?? Infinity)
       )
     }
+    // Which scenarios rest, read from the table rather than asserted. The rounded
+    // `avgRestDays` column shows 0 for a scenario whose share is 0.04%, so naming
+    // "only the high-controversy scenario" contradicted the shares beside it.
+    const restingScenarios = payload.results
+      .filter(scenario => (scenario.summary?.gigEconomics?.restDaySharePct ?? 0) > 0)
+      .map(scenario => ({
+        name: scenario.name,
+        sharePct: scenario.summary.gigEconomics.restDaySharePct
+      }))
+      .sort((left, right) => right.sharePct - left.sharePct)
+    const topRestingScenario = restingScenarios[0]
     lines.push('## Gig-Frequenz, Reisekosten und Amortisation')
     lines.push('')
     lines.push(
@@ -4979,7 +5019,7 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. Messbar geruht wird bislang nur im Szenario mit hoher Controversy. Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
+      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. ${restingScenarios.length ? `Ruhetage treten in ${restingScenarios.length} von ${payload.results.length} Szenarien überhaupt auf (${restingScenarios.map(item => `${item.name} ${item.sharePct}%`).join(', ')}); nennenswert ist der Anteil nur bei ${topRestingScenario?.name ?? '—'}, alle übrigen liegen im Promillebereich.` : 'In keinem Szenario entstand ein messbarer Ruhetag.'} Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
     )
     lines.push('')
   }
@@ -5160,9 +5200,17 @@ lines.push('## KPI-Zielkorridore (Health Check)')
         .map(([status, count]) => `${status} ${count}`)
         .join(' · ')}.`
     )
-    if (risk.warnings.length) {
+    // Counted the same way the corridor section splits them: a hard-limit breach
+    // is not a soft warning, so it must not be tallied as one here either.
+    const softWarningCount = risk.warnings.filter(warning => {
+      const blocking = risk.scenarios
+        .filter(scenario => scenario.status === 'unsafe')
+        .map(scenario => scenario.id)
+      return !blocking.some(id => warning.startsWith(`${id}:`))
+    }).length
+    if (softWarningCount) {
       lines.push(
-        `- ⚠️ ${risk.warnings.length} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
+        `- ⚠️ ${softWarningCount} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
       )
     } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
       lines.push(

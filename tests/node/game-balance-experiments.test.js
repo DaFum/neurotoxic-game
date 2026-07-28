@@ -809,10 +809,13 @@ const DEFAULT_RANKING_ENTRIES = [
 const buildMarkdownReport = ({
   objectiveMet,
   rankingEntries = DEFAULT_RANKING_ENTRIES,
+  // A blocking gate must not default to "passed" in a fixture: a test that forgot
+  // to supply it would assert on a pass nothing validated. Fail closed, and make
+  // the passing case state so explicitly.
   holdoutSafety = {
     blocking: true,
-    passed: true,
-    evaluatedScenarios: ['x'],
+    passed: false,
+    evaluatedScenarios: [],
     failures: []
   }
 }) => {
@@ -961,12 +964,35 @@ test('experiment markdown discloses a failed holdout safety gate and withholds t
 
 test('a passing holdout safety gate withholds nothing', () => {
   const passed = renderExperimentMarkdown(
-    buildMarkdownReport({ objectiveMet: true })
+    buildMarkdownReport({
+      objectiveMet: true,
+      // Stated explicitly: the fixture default fails closed, so a pass here has
+      // to come from a validation result rather than from an omission.
+      holdoutSafety: {
+        blocking: true,
+        passed: true,
+        evaluatedScenarios: ['baseline_touring'],
+        failures: []
+      }
+    })
   )
 
   assert.match(passed, /Holdout-Sicherheitsgate: \*\*PASS\*\*/)
   assert.doesNotMatch(passed, /Keine Produktionsempfehlung/)
   assert.match(passed, /Holdout-Sicherheitsgrenzen \(harte Caps\) \| bestanden/)
+  assert.match(passed, /Gesamt: \*\*PASS\*\*/)
+})
+
+test('the overall release status fails when either gate fails', () => {
+  const holdoutFailed = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: true })
+  )
+
+  // Calibration passes in this fixture, so the overall verdict must still be FAIL
+  // — that is the whole point of the second gate.
+  assert.match(holdoutFailed, /Kalibrierungs-Gate: \*\*PASS\*\*/)
+  assert.match(holdoutFailed, /Holdout-Sicherheit: \*\*FAIL\*\*/)
+  assert.match(holdoutFailed, /Gesamt: \*\*FAIL\*\*/)
 })
 
 test('experiment markdown reports a met Phase 3C objective without partial wording', () => {

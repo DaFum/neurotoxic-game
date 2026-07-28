@@ -492,7 +492,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 ${combinedRows}
 
-Final gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%.
+Kalibrierungs-Gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%. Dies ist nur das erste von zwei blockierenden Gates — das Gesamturteil steht unter „Release-Gesamtstatus“.
 
 ### Harte Sicherheitsgrenzen auf dem Holdout-Strom
 
@@ -501,6 +501,10 @@ Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem dis
 Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
 
 ${report.holdoutSafetyValidation?.passed ? '' : '**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'}
+
+### Release-Gesamtstatus
+
+Beide Gates müssen bestehen. Kalibrierung: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}** · Holdout-Sicherheit: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** → Gesamt: **${report.finalCombinedValidation.passed && report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** (\`${report.recommendation.status}\`).
 
 ## Nebenwirkungen
 
@@ -789,7 +793,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     console.warn(`[balance-experiments] ${report.recommendation.objectiveNote}`)
   }
   if (!report.holdoutSafetyValidation.passed) {
-    console.error(`[balance-experiments] holdout safety gate FAILED: ${report.holdoutSafetyValidation.failures.map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'no scenario could be evaluated'}`)
+    console.error(`[balance-experiments] holdout safety gate FAILED: ${(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'no scenario could be evaluated'}`)
   }
   // Both hard gates decide the exit code. A holdout breach of bankruptcyMax is a
   // release blocker, so it must not exit 0 just because the paired comparison

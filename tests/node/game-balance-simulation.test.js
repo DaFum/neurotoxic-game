@@ -560,6 +560,19 @@ test('the holdout safety gate passes only on measured evidence', () => {
   ])
   assert.equal(withinCap.passed, true)
 
+  // The two scenario ids below carry the branches this test exercises. Pin that,
+  // so adding a cap to the probe turns into an explicit failure here rather than
+  // a case that quietly stops testing anything.
+  assert.equal(
+    KPI_TARGETS.late_game_probe?.bankruptcyMax,
+    undefined,
+    'this case requires a scenario with no configured cap'
+  )
+  assert.ok(
+    Number.isFinite(KPI_TARGETS.baseline_touring?.bankruptcyMax),
+    'this case requires a scenario with a configured cap'
+  )
+
   // Nothing measured is not a pass — the same vacuous-truth trap the holdout
   // agreement had, and it would be worse here because this gate blocks release.
   for (const empty of [
@@ -941,11 +954,19 @@ test('gig economics reports zero rather than dividing by no gigs', () => {
     'minMemberStaminaObserved',
     'minMemberMoodObserved'
   ]
+  for (const key of WEAR_MINIMA) {
+    // `assert.equal` is loose, so `undefined` would satisfy it — and `undefined`
+    // vanishes entirely on `JSON.stringify` into the committed report. Require the
+    // key to exist and hold exactly `null`.
+    assert.ok(Object.hasOwn(economics, key), `${key} must be present`)
+    assert.strictEqual(
+      economics[key],
+      null,
+      `${key} must report absence, not a bogus zero`
+    )
+  }
   for (const [key, value] of Object.entries(economics)) {
-    if (WEAR_MINIMA.includes(key)) {
-      assert.equal(value, null, `${key} must report absence, not a bogus zero`)
-      continue
-    }
+    if (WEAR_MINIMA.includes(key)) continue
     assert.ok(
       Number.isFinite(value),
       `every gig-economics figure must be finite, ${key} is ${value}`
@@ -1580,7 +1601,9 @@ test('the tourbus minigame runs once per trip, not once per gig', () => {
   // played (8.48) instead of trips (9.78 arrivals) and every rest stop, supply
   // stop and cancelled show skipped its van damage and fuel pickup. Production
   // starts it when a confirmed trip begins, before the arrival is processed.
-  const runs = SCENARIOS.slice(0, 6).flatMap(scenario =>
+  // Every configured scenario, so the cohort cannot silently shrink or exclude a
+  // newly added scenario the way a fixed slice would.
+  const runs = SCENARIOS.flatMap(scenario =>
     Array.from({ length: 8 }, (_, index) =>
       runSingleSimulation(
         scenario,
@@ -1609,7 +1632,7 @@ test('no transport event fires without a trip that actually ran', () => {
   // Travel events used to be gated on a *planned* trip and fired before the
   // final money check, so a refused journey could leave a road event applied to
   // a trip that never happened. Now they run after the arrival is a fact.
-  const runs = SCENARIOS.slice(0, 6).flatMap(scenario =>
+  const runs = SCENARIOS.flatMap(scenario =>
     Array.from({ length: 8 }, (_, index) =>
       runSingleSimulation(
         scenario,
@@ -1630,6 +1653,13 @@ test('no transport event fires without a trip that actually ran', () => {
   for (const run of immobile) {
     assert.equal(run.equipmentEvents, 0)
   }
+
+  // Without this, a counter that never increments satisfies both assertions above
+  // and a regression that stops recording transport events entirely would pass.
+  assert.ok(
+    runs.some(run => run.equipmentEvents > 0),
+    'transport events must actually fire, otherwise the upper bound proves nothing'
+  )
 })
 
 test('a refuel rescues a fuel-blocked trip instead of losing the day', () => {
