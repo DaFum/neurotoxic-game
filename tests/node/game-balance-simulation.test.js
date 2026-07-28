@@ -632,15 +632,16 @@ test('purchase log records timing, cost and the balance on both sides of a buy',
     )
     assert.ok(Number.isFinite(entry.cost) && entry.cost >= 0)
     assert.ok(['money', 'fame'].includes(entry.currency))
+    // Only the paid currency is asserted to move downward. The other one is
+    // deliberately not pinned: effects cross currencies in both directions — a
+    // money-priced item can grant fame, and a fame-priced one can pay out money
+    // — so the currency paid and the stats moved are independent.
     if (entry.currency === 'money') {
       // The recorded pair must bracket the cost, otherwise "remaining
-      // liquidity after a purchase" is measuring the wrong moment. Fame is not
-      // asserted here: a money-priced item may grant fame as its effect, so the
-      // currency paid and the stats moved are independent.
+      // liquidity after a purchase" is measuring the wrong moment.
       assert.ok(entry.moneyAfter <= entry.moneyBefore)
     } else {
       assert.ok(entry.fameAfter <= entry.fameBefore)
-      assert.equal(entry.moneyBefore, entry.moneyAfter)
     }
   }
 
@@ -958,36 +959,47 @@ test('rest decision and rest effect read the same threshold', () => {
   }
 })
 
-test('wear pressure never reaches the thresholds the HUD warns at', () => {
-  // Documented finding: stamina drifts -5/day but regains +3 above harmony 60,
-  // and mood drifts toward exactly 50, so neither reaches the HUD's low marks
-  // (stamina < 35, mood < 50) over a ten-day tour. If tuning ever changes that,
-  // this test fails and the report text explaining the zero needs revisiting.
-  const runs = SCENARIOS.slice(0, 7).flatMap(scenario =>
-    Array.from({ length: 6 }, (_, index) =>
-      runSingleSimulation(
-        scenario,
-        createScenarioSeed(`wear-${scenario.id}`, index)
-      )
-    )
+test('the rest branch is reachable, and harmony alone never triggers it', () => {
+  // An earlier version of this test asserted that wear never reaches the HUD's
+  // marks. The full cohorts disprove that: stamina dips to 31 and mood to 42 in
+  // some scenarios, and the high-controversy scenario actually rests. What is
+  // true and worth pinning is that the branch is live (so it cannot rot back
+  // into dead code) and that harmony is not a reason to skip a gig, because
+  // resting does not repair it.
+  const scenario = SCENARIOS.find(item => item.id === 'high_controversy_probe')
+  assert.ok(scenario, 'high_controversy_probe must exist')
+  const runs = Array.from({ length: 40 }, (_, index) =>
+    runSingleSimulation(scenario, createScenarioSeed(scenario.id, index))
   )
 
-  const minStamina = Math.min(...runs.map(run => run.minMemberStaminaObserved))
-  const minMood = Math.min(...runs.map(run => run.minMemberMoodObserved))
-
+  const restDays = runs.reduce((sum, run) => sum + run.restDays, 0)
   assert.ok(
-    minStamina >= 35,
-    `stamina reached ${minStamina}, HUD warns below 35`
+    restDays > 0,
+    'the rest decision must still be reachable in at least one scenario'
   )
-  assert.ok(minMood >= 50, `mood reached ${minMood}, HUD warns below 50`)
-  assert.equal(
-    runs.reduce((sum, run) => sum + run.restDays, 0),
-    0,
-    'no rest day can trigger while the wear thresholds are unreachable'
+  for (const run of runs) {
+    assert.ok(run.restDays >= run.restStops)
+    if (run.restDays > 0) {
+      assert.ok(
+        run.restStops > 0 || run.clinicVisits > 0,
+        'a rest day must actually do something'
+      )
+    }
+  }
+
+  // Harmony gets far below any rest threshold without ever causing a rest.
+  const lowHarmonyRuns = runs.filter(run => run.minHarmonyObserved < 35)
+  assert.ok(lowHarmonyRuns.length > 0, 'harmony must reach low values here')
+  const restedForCare = lowHarmonyRuns.every(
+    run =>
+      run.restDays === 0 ||
+      run.minMemberStaminaObserved < 35 ||
+      run.minMemberMoodObserved < 50
   )
-  // Harmony, by contrast, does get low — it is simply not a reason to rest,
-  // because resting does not repair it.
-  assert.ok(Math.min(...runs.map(run => run.minHarmonyObserved)) < 40)
+  assert.ok(
+    restedForCare,
+    'a rest day must be explained by member care, never by harmony alone'
+  )
 })
 
 // ── Real tour paths (Phase 4F) ──────────────────────────────────────────────

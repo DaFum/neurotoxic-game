@@ -847,8 +847,16 @@ const targetDifficultyForState = state => {
   return targetDiff
 }
 
-/** Node types a band can actually perform at. */
-export const PERFORMABLE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'SPECIAL', 'FINALE'])
+/**
+ * Node types a band can actually perform at.
+ *
+ * Must mirror `isGigNode` in `src/utils/arrivalUtils.ts`, which production uses
+ * to decide whether an arrival starts a gig: GIG, FESTIVAL and FINALE only. A
+ * SPECIAL node triggers an event and returns `gigStarted: false`. Generated maps
+ * roll roughly 10% specials, so treating them as stages would invent several
+ * paid gigs per tour and distort every economy and progression figure.
+ */
+export const PERFORMABLE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
 /**
  * Builds the forward adjacency of a generated tour map.
@@ -2031,6 +2039,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // the free-fallback branch, so a band that rested and paid the clinic
     // instead recorded nothing at all and read as "never rested".
     restDays: 0,
+    // Recovery taken by passing through a REST_STOP node, which is not a rest
+    // decision — the band did not give up a gig for it.
+    restStopArrivals: 0,
     gearItemsPurchased: 0,
     travelSpend: 0,
     refuels: 0,
@@ -2375,6 +2386,21 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // would invent income the game never pays.
     if (!PERFORMABLE_NODE_TYPES.has(nextNode.type)) {
       nonPerformingArrivals += 1
+      // A rest stop recovers the whole band on arrival, unconditionally:
+      // +20 stamina / +10 mood per member (arrivalUtils.ts REST_STOP). Skipping
+      // it would understate recovery in exactly the wear and rest metrics this
+      // report adds.
+      if (nextNode.type === 'REST_STOP') {
+        state.band.members = state.band.members.map(member => ({
+          ...member,
+          stamina: clampMemberStamina(
+            finiteNumberOr(member.stamina, 0) + 20,
+            finiteNumberOr(member.staminaMax, 100)
+          ),
+          mood: clampMemberMood(finiteNumberOr(member.mood, 0) + 10)
+        }))
+        counters.restStopArrivals += 1
+      }
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
@@ -2957,7 +2983,7 @@ export const summarizeScenario = runs => {
       ['Repairs', 'repairs'], ['HqUpgrades', 'hqUpgrades'], ['VanUpgrades', 'vanUpgrades'],
       ['CatalogUpgrades', 'catalogUpgrades'], ['TravelMinigames', 'travelMinigames'],
       ['RoadieMinigames', 'roadieMinigames'], ['KabelsalatMinigames', 'kabelsalatMinigames'],
-      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'], ['RestDays', 'restDays'],
+      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'], ['RestDays', 'restDays'], ['RestStopArrivals', 'restStopArrivals'],
       ['AssetsPurchased', 'assetsPurchased'], ['LoansTaken', 'loansTaken'],
       ['ModulesInstalled', 'modulesInstalled'], ['CrowdfundsStarted', 'crowdfundsStarted'],
       ['TraitUnlocks', 'traitUnlocks'], ['FinalAssets', 'finalAssets'],
@@ -3155,7 +3181,16 @@ export const summarizeScenario = runs => {
             100
           ).toFixed(2)
         ),
-        moneyPricedCatalogSize: moneyPriced.length
+        moneyPricedCatalogSize: moneyPriced.length,
+        // Published so the report's wear statement is read from the data rather
+        // than asserted from a hardcoded figure.
+        minHarmonyObserved: minimum(runs.map(run => run.minHarmonyObserved ?? 0)),
+        minMemberStaminaObserved: minimum(
+          runs.map(run => run.minMemberStaminaObserved ?? 0)
+        ),
+        minMemberMoodObserved: minimum(
+          runs.map(run => run.minMemberMoodObserved ?? 0)
+        )
       }
     })(),
 
@@ -4436,6 +4471,20 @@ const buildMarkdownReport = payload => {
     scenario => scenario.summary?.gigEconomics
   )
   if (gigReference) {
+    const wearValues = payload.results
+      .map(scenario => scenario.summary?.gigEconomics)
+      .filter(Boolean)
+    const worstWear = {
+      stamina: Math.min(
+        ...wearValues.map(item => item.minMemberStaminaObserved ?? Infinity)
+      ),
+      mood: Math.min(
+        ...wearValues.map(item => item.minMemberMoodObserved ?? Infinity)
+      ),
+      harmony: Math.min(
+        ...wearValues.map(item => item.minHarmonyObserved ?? Infinity)
+      )
+    }
     lines.push('## Gig-Frequenz, Reisekosten und Amortisation')
     lines.push('')
     lines.push(
@@ -4459,7 +4508,7 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      '**Ruhetage sind in allen Szenarien 0, und das ist ein Befund über den Verschleiß, nicht über Pausen.** Der Ruhe-Auslöser nutzt die Marken, die das Spiel selbst im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50). Gemessen über alle Runs fällt die niedrigste Stamina nie unter 47 und die Mood liegt durch die tägliche Drift bei genau 50 — die Verschleißmechanik erreicht ihre eigenen Warnschwellen also nie. Dichte Touren erzeugen damit keinen Druck, der eine Pause erzwingen würde, und die Opportunitätskosten einer Pause sind in diesem Modell folglich nicht messbar. `avgFreeRestStops` im JSON zählt separat die Ruhetage ohne bezahlten Klinikbesuch; `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.'
+      `**Ruhetage sind selten, aber nicht unmöglich — und das ist ein Befund über den Verschleiß.** Der Ruhe-Auslöser nutzt die Marken, die das Spiel selbst im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50). Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Werte werden also durchaus unterschritten; in den Hauptszenarien führt das dennoch zu null Ruhetagen, weil die Ruheentscheidung nur an Gig-Tagen ausgewertet wird und die Tiefpunkte überwiegend dazwischen liegen. Messbar geruht wird bislang nur im Szenario mit hoher Controversy. Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin — nicht weil er null wäre, sondern weil die Stichprobe an Ruhetagen zu klein ist. Rastplatz-Knoten geben die kanonische Erholung (+20 Stamina / +10 Mood) auch bei bloßer Durchreise; \`avgRestStopArrivals\` zählt sie getrennt von \`avgRestDays\`, weil dafür kein Gig aufgegeben wurde. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
     )
     lines.push('')
   }
