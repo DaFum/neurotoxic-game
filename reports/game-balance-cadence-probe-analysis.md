@@ -1,7 +1,7 @@
 # Gig-Kadenz-Phasenvergleich (Phase 5, Schritt 1)
 
-Erzeugt: 2026-07-28T17:18:48.604Z
-Runs pro Szenario und Stream: 260 · Streams: calibration, holdout
+Erzeugt: 2026-07-28T18:02:18.002Z
+Runs pro Szenario und Stream: 260 · Streams: calibration, selection, holdout
 Seed-Strategie: `scenario-id-plus-run-index (holdout: scenario-id#holdout-plus-run-index)`
 
 ## Frage
@@ -73,5 +73,7 @@ Allein die Kadenz-Phase bringt das Holdout-Gate von `cult_hypergrowth` von FAIL 
 Die Designkorridore (`RISK_TARGETS`) sind an der ausgelieferten Phase kalibriert. Verschiebt die Phase das Risiko um eine Größenordnung, sagt eine Korridorverletzung zuerst etwas über die Phase und erst danach über das Szenariodesign — die Korridore sollten deshalb nicht an eine Variante angepasst werden, deren Phase noch nicht entschieden ist.
 
 Anteil der Insolvenzen, die vor dem ersten Gig eintreten (`cult_hypergrowth`, Holdout): `gap-aligned` 91.67% · `gap-offset` 0% · `first-income` 0%
+
+Bestätigung auf dem unabhängigen `selection`-Strom: **ja** — `gap-aligned` 9.23% gegen `gap-offset` 1.92% · `first-income` 0.77%. Der Effekt ist damit nicht an die Kohorte gebunden, auf der er gefunden wurde.
 
 > Diese Auswertung ändert keinen Produktionswert. Sie entscheidet nur, ob der nächste Schritt eine Korrektur der Simulationspolitik oder ein echter Early-Runway-Eingriff ist. Eine Variante, die das Gate besteht, ist Evidenz — kein Grund, sie deshalb zu übernehmen: die Phase muss zu dem passen, was das Spiel vorgibt.
