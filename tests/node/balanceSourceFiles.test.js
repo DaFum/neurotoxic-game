@@ -45,7 +45,12 @@ const REQUIRED_SOURCES = [
   'src/data/hqItems/van.ts',
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
-  'scripts/game-balance-experiment-config.mjs'
+  'scripts/game-balance-experiment-config.mjs',
+  // Simulated tours walk a generated map, so route topology and arrival
+  // semantics decide which venues are reached and which arrivals pay at all.
+  'src/utils/mapGenerator.ts',
+  'src/utils/arrivalUtils.ts',
+  'src/data/venues.ts'
 ]
 
 REQUIRED_SOURCES.forEach(relativePath => {

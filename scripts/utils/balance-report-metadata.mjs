@@ -36,6 +36,18 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/utils/gameState/constants.ts',
   // Regional gig history bounds feed the repeat-demand adjustment.
   'src/utils/gameState/regionalGigHistory.ts',
+  // Route topology: which venues a tour can reach, in what order, and which node
+  // types it meets. Since simulated tours walk a generated map, a change here
+  // moves every economy and progression number in the reports.
+  'src/utils/mapGenerator.ts',
+  'src/utils/mapGenerator/layout.ts',
+  'src/utils/mapGenerator/mathUtils.ts',
+  'src/utils/mapGenerator/cityTraits.ts',
+  'src/utils/mapGenerator/types.ts',
+  // Arrival semantics: which node types start a gig and what a rest stop
+  // recovers. The simulation mirrors both.
+  'src/utils/arrivalUtils.ts',
+  'src/data/venues.ts',
   // Catalogue prices drive the fame audit and the shop-affordability target.
   'src/data/upgradeCatalog.ts',
   'src/data/hqItems/gear.ts',

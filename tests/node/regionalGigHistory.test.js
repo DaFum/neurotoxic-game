@@ -239,10 +239,35 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
     `Missing committed experiment report at ${reportPath}; regenerate with pnpm run simulate:balance:experiments`
   )
 
+  // The artifact is untrusted JSON: reading straight through to
+  // `recommendation.tuning` turns a truncated or half-written report into a
+  // TypeError about undefined instead of naming the malformed layer.
+  /** @type {unknown} */
   const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'))
+  const regenerate = 'regenerate with pnpm run simulate:balance:experiments'
+  assert.ok(
+    typeof report === 'object' &&
+      report !== null &&
+      Object.hasOwn(report, 'recommendation'),
+    `Experiment report has no \`recommendation\`; ${regenerate}`
+  )
+  const recommendation = /** @type {Record<string, unknown>} */ (report)
+    .recommendation
+  assert.ok(
+    typeof recommendation === 'object' &&
+      recommendation !== null &&
+      Object.hasOwn(recommendation, 'tuning'),
+    `Experiment report has no \`recommendation.tuning\`; ${regenerate}`
+  )
+  const tuning = /** @type {Record<string, unknown>} */ (recommendation).tuning
+  assert.ok(
+    typeof tuning === 'object' && tuning !== null,
+    `Experiment report \`recommendation.tuning\` is not an object; ${regenerate}`
+  )
+
   assert.deepEqual(
     DEFAULT_BALANCE_TUNING,
-    report.recommendation.tuning,
+    tuning,
     'Default tuning should exactly match recommended tuning from report'
   )
 })

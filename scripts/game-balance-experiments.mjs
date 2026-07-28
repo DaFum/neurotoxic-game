@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
 
@@ -317,10 +317,14 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     const before = controlTradeoff[profile].moneyPerDayAdvantagePct
     const after = finalTradeoff[profile].moneyPerDayAdvantagePct
     const withinTarget = after >= minimum && after <= maximum
+    const belowTarget = after < minimum
     if (!withinTarget) {
-      shortfalls.push(`${profile} money-per-day advantage ${after}% is outside the ${minimum}-${maximum}% target (was ${before}%)`)
+      // Naming the direction matters: an advantage under the band and one over it
+      // call for opposite responses, and "outside the target" alone reads as a
+      // dominance problem either way.
+      shortfalls.push(`${profile} money-per-day advantage ${after}% is ${belowTarget ? 'below' : 'above'} the ${minimum}-${maximum}% target (was ${before}%)`)
     }
-    return { before, after, reductionPct: round(before - after), withinTarget }
+    return { before, after, reductionPct: round(before - after), withinTarget, belowTarget }
   }
 
   const profiles = {
@@ -328,8 +332,19 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     low_resource_touring: profileObjective('low_resource_touring')
   }
   const objectiveMet = shortfalls.length === 0
+  const missing = Object.values(profiles).filter(profile => !profile.withinTarget)
+  const allBelowTarget =
+    missing.length > 0 && missing.every(profile => profile.belowTarget)
+  const allAboveTarget =
+    missing.length > 0 && missing.every(profile => !profile.belowTarget)
+  // Profiles can now miss the band in opposite directions, in which case no
+  // single lever serves both and saying "dominance is unchanged" is wrong.
+  const mixedDirections = missing.length > 0 && !allBelowTarget && !allAboveTarget
   return {
     objectiveMet,
+    allBelowTarget,
+    allAboveTarget,
+    mixedDirections,
     isReleaseGate: false,
     targetRangePct: GIG_GAP_TARGET_RANGE_PCT,
     shortfalls,
@@ -344,6 +359,31 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
       bankruptcyTradeoff: finalTradeoff.baseline_touring.bankruptcyDeltaPct
     }
   }
+}
+
+/**
+ * Prose for the Gap-1 objective, in the same priority order the flags are
+ * evaluated: inside the band, both profiles under it, profiles on opposite
+ * sides, merely reduced, unchanged. Five outcomes had grown into a nested
+ * ternary whose last two branches were dedented, so the fall-through order read
+ * backwards from the way it ran.
+ */
+const describeObjective = validation => {
+  const [minimum, maximum] = GIG_GAP_TARGET_RANGE_PCT
+  const shortfalls = validation.shortfalls.join('; ')
+  if (validation.objectiveMet) {
+    return `Gap-1 money-per-day dominance was brought inside the ${minimum}-${maximum}% target band for both profiles.`
+  }
+  if (validation.allBelowTarget) {
+    return `Gap-1 money-per-day advantage now sits BELOW the ${minimum}-${maximum}% target band (${shortfalls}). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.`
+  }
+  if (validation.mixedDirections) {
+    return `The two profiles miss the ${minimum}-${maximum}% target band in OPPOSITE directions (${shortfalls}). No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.`
+  }
+  if (validation.improved) {
+    return `Late-game compounding was reduced (${shortfalls}), but structural Gap-1 dominance remains unresolved.`
+  }
+  return `Gap-1 dominance is unchanged (${shortfalls}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
 }
 
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
@@ -374,8 +414,12 @@ const describeRanking = ranking => {
       : ''
 }
 
+const NO_CHANGE_NOTE =
+  ' Der gewählte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unverändert auf dem Kontrollzustand.'
+
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
+  const noChangeNote = report.combinationSearch.selectedAppliesNoChange ? NO_CHANGE_NOTE : ''
   const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
   const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis).flatMap(([tuning, profiles]) => profiles.flatMap(profile => profile.results.map(item => `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`))).join('\n')
   const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.earlyCheckpointDeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
@@ -403,7 +447,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.${noChangeNote}
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -440,7 +484,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.${noChangeNote}
 
 ## Kombinierte Validierung
 
@@ -448,7 +492,19 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 |---|---|---|---:|---:|---:|---:|---:|---:|---:|---|
 ${combinedRows}
 
-Final gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%.
+Kalibrierungs-Gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%. Dies ist nur das erste von zwei blockierenden Gates — das Gesamturteil steht unter „Release-Gesamtstatus“.
+
+### Harte Sicherheitsgrenzen auf dem Holdout-Strom
+
+Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem disjunkten Seed-Strom gegen die harten \`KPI_TARGETS.bankruptcyMax\`-Obergrenzen geprüft. Der gepaarte Vergleich oben läuft auf dem Kalibrierungsstrom und kann eine Überschreitung, die nur auf unabhängigen Seeds auftritt, nicht sehen.
+
+Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation?.missingScenarioIds?.length ? ` — nicht gemessen: ${report.holdoutSafetyValidation.missingScenarioIds.map(id => `\`${id}\``).join(', ')} (unvollständige Abdeckung ist kein bestandenes Gate)` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length && !report.holdoutSafetyValidation.missingScenarioIds?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
+
+${report.holdoutSafetyValidation?.passed ? '' : '**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'}
+
+### Release-Gesamtstatus
+
+Beide Gates müssen bestehen. Kalibrierung: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}** · Holdout-Sicherheit: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** → Gesamt: **${report.finalCombinedValidation.passed && report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** (\`${report.recommendation.status}\`).
 
 ## Nebenwirkungen
 
@@ -472,6 +528,7 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
 |---|---|
 | Phase 3B (Bootstrap-Insolvenz) | ${report.finalCombinedValidation.resultsByScenario.bootstrap_struggle?.scenarioValidation.passed ? 'bestanden' : 'fehlgeschlagen'} |
 | Finale Sicherheits-Gates | ${report.finalCombinedValidation.passed ? 'bestanden' : 'fehlgeschlagen'} |
+| Holdout-Sicherheitsgrenzen (harte Caps) | ${report.holdoutSafetyValidation?.passed ? 'bestanden' : 'fehlgeschlagen'} |
 | Late-Game-Snowball | ${gap.improved ? 'verbessert' : 'nicht verbessert'} |
 | Gap-1-Dominanz im Zielband | ${gap.objectiveMet ? 'erreicht' : 'nicht gelöst'} |
 | Phase 3C Gesamtstatus | ${report.phases.phase3C.objectiveStatus} |
@@ -574,6 +631,11 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const combinationsSkipped = orderedPairs.length - pairsConsidered
   const selectedBootstrap = selected.bootstrap
   const selectedTouring = selected.touring
+  // Ordering by ascending impact makes the neutral pair the first thing tried,
+  // so "nothing ships" is a legitimate and expected outcome — but the selection
+  // sections then name a candidate id where a reader expects a lever. Flag it
+  // so the reports say outright that production tuning does not move.
+  const selectedAppliesNoChange = combinationImpact({ bootstrap: selectedBootstrap, touring: selectedTouring }) === 0
   selectedBootstrap.selectedForProduction = true
   selectedTouring.selectedForProduction = true
 
@@ -622,11 +684,26 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const gapTradeoff = { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }
   const gigFrequencyValidation = evaluateGigGap(gapTradeoff.gap1VsGap2.control, gapTradeoff.gap1VsGap2.finalTuning)
   const objectiveStatus = gigFrequencyValidation.objectiveMet ? 'met' : 'partial'
-  const objectiveNote = gigFrequencyValidation.objectiveMet
-    ? `Gap-1 money-per-day dominance was brought inside the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band for both profiles.`
-    : gigFrequencyValidation.improved
-      ? `Late-game compounding was reduced (${gigFrequencyValidation.shortfalls.join('; ')}), but structural Gap-1 dominance remains unresolved.`
-      : `Gap-1 dominance is unchanged (${gigFrequencyValidation.shortfalls.join('; ')}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
+  const objectiveNote = describeObjective(gigFrequencyValidation)
+  // The hard safety layer, measured on the tuning that would actually ship.
+  //
+  // `finalCombinedValidation` compares candidate against control on the
+  // calibration stream, so a cap breached only on independent seeds never
+  // reached the release decision: cult_hypergrowth passed at 10.38% while its
+  // holdout sat at 14.23% against a 12% ceiling, and the suite still reported
+  // `accepted-for-production-partial`. Same `#holdout` seed marker as the
+  // simulation report, so both artifacts judge the same stream.
+  const holdoutSafetyValidation = buildHoldoutSafetyValidation(
+    SCENARIOS.filter(item => Number.isFinite(KPI_TARGETS[item.id]?.bankruptcyMax)).map(scenario => {
+      const runs = Array.from({ length: runsPerScenario }, (_, runIndex) =>
+        compact(runner(scenario, createScenarioSeed(`${scenario.id}#holdout`, runIndex), finalTuning)))
+      const count = runs.filter(run => run.bankrupt).length
+      return {
+        id: scenario.id,
+        holdoutBankruptcy: { count, sampleSize: runs.length, ratePct: round(count / Math.max(1, runs.length) * 100) }
+      }
+    })
+  )
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 1,
@@ -651,23 +728,32 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote }
     },
     finalCombinedValidation,
+    holdoutSafetyValidation,
     combinationSearch: {
       strategy: 'ascending-impact-first-validated',
       pairsAvailable: orderedPairs.length,
       pairsEvaluated: pairsConsidered,
       pairsSkipped: combinationsSkipped,
+      selectedAppliesNoChange,
       note: SELECTION_RATIONALE
     },
     combinationRanking: [...combinations].sort((left, right) =>
       Number(right.validation.passed) - Number(left.validation.passed) || combinationImpact(left) - combinationImpact(right)
     ).map(item => ({ bootstrap: item.bootstrap.id, touring: item.touring.id, impact: round(combinationImpact(item)), passed: item.validation.passed, failures: item.validation.failures })),
     recommendation: {
-      // Release readiness is decided by the safety gates alone. The Phase 3C
-      // objective only distinguishes a full from a partial acceptance, so the
-      // status, the objective status and the process exit code always agree.
-      status: finalCombinedValidation.passed
-        ? gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial'
-        : 'rejected',
+      // Release readiness is decided by the safety gates alone, and there are now
+      // two of them. `finalCombinedValidation` judges the candidate against the
+      // control on the calibration stream; `holdoutSafetyValidation` judges the
+      // shipping tuning against the hard `bankruptcyMax` ceilings on independent
+      // seeds. A holdout breach cannot yield any `accepted-for-production-*`
+      // status — the measurement is complete, the baseline simply is not safe —
+      // but it does not suppress the diagnostic artifacts either. The Phase 3C
+      // objective only distinguishes a full from a partial acceptance.
+      status: !finalCombinedValidation.passed
+        ? 'rejected'
+        : !holdoutSafetyValidation.passed
+          ? 'no-production-recommendation-holdout-safety-failed'
+          : gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial',
       objectiveStatus,
       objectiveNote,
       bootstrap: selectedBootstrap.id,
@@ -706,5 +792,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   if (report.recommendation.objectiveStatus !== 'met') {
     console.warn(`[balance-experiments] ${report.recommendation.objectiveNote}`)
   }
-  process.exit(report.finalCombinedValidation.passed ? 0 : 1)
+  if (!report.holdoutSafetyValidation.passed) {
+    console.error(`[balance-experiments] holdout safety gate FAILED: ${[(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), (report.holdoutSafetyValidation.missingScenarioIds ?? []).length ? `unmeasured: ${report.holdoutSafetyValidation.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' | ') || 'no scenario could be evaluated'}`)
+  }
+  // Both hard gates decide the exit code. A holdout breach of bankruptcyMax is a
+  // release blocker, so it must not exit 0 just because the paired comparison
+  // held on the calibration stream.
+  process.exit(report.finalCombinedValidation.passed && report.holdoutSafetyValidation.passed ? 0 : 1)
 }

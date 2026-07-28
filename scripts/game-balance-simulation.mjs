@@ -5,6 +5,13 @@ import crypto from 'node:crypto'
 import { execSync } from 'node:child_process'
 
 import { ALL_VENUES } from '../src/data/venues.js'
+import { MapGenerator } from '../src/utils/mapGenerator.ts'
+import {
+  calculateTravelCostsAndImpact,
+  checkTravelResources,
+  checkVenueAccess
+} from '../src/utils/travelUtils.ts'
+import { VENUES_BY_ID } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
 import { EVENTS_DB } from '../src/data/events/index.js'
 import { BRAND_DEALS } from '../src/data/brandDeals.js'
@@ -33,7 +40,6 @@ import {
   calculateRefuelCost,
   calculateRepairCost,
   calculateRoadieMinigameResult,
-  calculateTravelExpenses,
   calculateTravelMinigameResult,
   EXPENSE_CONSTANTS,
   MAX_GIG_NET,
@@ -89,6 +95,7 @@ import { LOAN_PROFILES } from '../src/utils/loanProfiles.js'
 import { applySharedBandEffect } from '../src/utils/contrabandEffects.js'
 import {
   validatePurchase,
+  getAdjustedCost,
   processPurchaseEffect
 } from '../src/utils/purchaseLogicUtils.js'
 import {
@@ -204,7 +211,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 12,
+  reportVersion: 13,
   runsPerScenario: 260,
   // A playthrough is bounded by the map, not by a free-running clock:
   // `MapGenerator.generateMap()` is always called with depth 10 and produces a
@@ -539,8 +546,6 @@ export const SCENARIOS = [
   }
 ]
 
-const VENUES = ALL_VENUES.filter(v => v.type !== 'HOME' && v.capacity > 0)
-const HOME = ALL_VENUES.find(v => v.id === SIMULATION_CONSTANTS.homeVenueId)
 const UPGRADE_CATALOG = getUnifiedUpgradeCatalog()
 const _HQ_BEER_PIPELINE = UPGRADE_CATALOG.find(
   item => item.id === 'hq_room_beer_pipeline'
@@ -743,7 +748,27 @@ export const createScenarioSeed = (id, runIndex) => {
   return h >>> 0
 }
 
+/**
+ * When a band member benefits from a rest day. `BandMemberRow` flags stamina
+ * below 35 and mood below 50 as low in the HUD, so this is the point at which
+ * the game tells the player something is wrong.
+ *
+ * Both the rest decision and the rest effect read this one predicate; when they
+ * disagreed, a rest day could consume a gig slot and heal nobody.
+ */
+const MEMBER_NEEDS_CARE = member => member.stamina < 35 || member.mood < 50
+
 const mulberry32 = seed => {
+  // `seed + 0x6d2b79f5` is string concatenation for a non-numeric seed, and the
+  // arithmetic below then collapses to NaN — which yields ONE fixed stream for
+  // every string seed. A caller passing 'seed-a' and 'seed-b' would silently get
+  // two identical runs and read that as reproducibility. The reports are safe
+  // (they always seed from `createScenarioSeed`), so fail loudly instead.
+  if (!Number.isFinite(seed)) {
+    throw new TypeError(
+      `Simulation seed must be a finite number, received ${typeof seed} (${String(seed)}); use createScenarioSeed(id, runIndex)`
+    )
+  }
   let t = seed + 0x6d2b79f5
   return () => {
     t += 0x6d2b79f5
@@ -814,7 +839,7 @@ const applyScenarioOverrides = (state, scenario) => {
   return next
 }
 
-const pickVenueForState = (state, rng) => {
+const targetDifficultyForState = state => {
   const fame = state.player.fame
   const controversy = state.social.controversyLevel || 0
   let targetDiff = 2
@@ -824,12 +849,171 @@ const pickVenueForState = (state, rng) => {
   else if (fame >= 60) targetDiff = 3
 
   if (controversy >= 70) targetDiff = Math.max(2, targetDiff - 1)
+  return targetDiff
+}
 
-  const candidates = VENUES.filter(
-    venue => venue.diff <= targetDiff && venue.diff >= targetDiff - 1
+/**
+ * Node types a band can actually perform at.
+ *
+ * Must mirror `isGigNode` in `src/utils/arrivalUtils.ts`, which production uses
+ * to decide whether an arrival starts a gig: GIG, FESTIVAL and FINALE only. A
+ * SPECIAL node triggers an event and returns `gigStarted: false`. Generated maps
+ * roll roughly 10% specials, so treating them as stages would invent several
+ * paid gigs per tour and distort every economy and progression figure.
+ */
+export const PERFORMABLE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
+
+/**
+ * Builds the forward adjacency of a generated tour map.
+ *
+ * The simulation used to pick each venue freely from the whole difficulty-banded
+ * pool, which let a tour visit any venue in any order — a reachability the game
+ * does not offer. `generateMap` produces a strictly forward layered DAG where a
+ * node connects to only one or two nodes in the next layer, so where the band can
+ * go next is a real constraint, and so is the distance it has to cover.
+ */
+export const buildTourAdjacency = tourMap => {
+  const adjacency = new Map()
+  for (const connection of tourMap.connections) {
+    const target = tourMap.nodes[connection.to]
+    if (!target) continue
+    const existing = adjacency.get(connection.from)
+    if (existing) existing.push(target)
+    else adjacency.set(connection.from, [target])
+  }
+  return adjacency
+}
+
+/**
+ * Canonical travel gating, mirroring `useHandleTravel`.
+ *
+ * The simulation used to deduct travel cost and fuel and clamp both at zero, so
+ * a broke band with an empty tank still arrived, still played the gig at the
+ * destination and was rescued by its payout. Production refuses the trip before
+ * any of that: `checkVenueAccess` rejects blacklisted venues, oversized venues in
+ * prove-yourself mode and regions whose reputation has bottomed out, and
+ * `checkTravelResources` requires the full fuel and the travel cost PLUS the
+ * day's obligations (`totalCashImpact`) to be covered.
+ *
+ * Returns the chosen destination with its costed impact, or the reason no trip
+ * was possible. A blocked day is a real state — production calls it stranded —
+ * and must not be silently converted into a free hop.
+ */
+export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
+  if (!reachable.length) return { blocked: 'dead_end' }
+
+  const accessible = []
+  let accessRejections = 0
+  for (const node of reachable) {
+    const access = checkVenueAccess({
+      node,
+      player: state.player,
+      reputationByRegion: state.reputationByRegion ?? {},
+      venueBlacklist: state.player.venueBlacklist ?? state.venueBlacklist ?? [],
+      venuesMap: VENUES_BY_ID,
+      // Only used to build the localized refusal text, which the simulation
+      // discards; the access verdict itself does not depend on it.
+      getLocationName: name => String(name ?? '')
+    })
+    if (access.allowed) accessible.push(node)
+    else accessRejections += 1
+  }
+  if (!accessible.length) {
+    return { blocked: 'venue_access', accessRejections }
+  }
+
+  const costed = accessible.map(node => ({
+    node,
+    travel: calculateTravelCostsAndImpact(
+      node,
+      state.player.currentMapNode ?? undefined,
+      state.player,
+      state.band,
+      state.social,
+      state.assets,
+      state.liabilities,
+      getActiveAssetModifiers(state.assets ?? [])
+    )
+  }))
+
+  const affordable = costed.filter(
+    candidate =>
+      checkTravelResources(
+        candidate.travel.totalCashImpact,
+        candidate.travel.fuelLiters,
+        state.player
+      ).allowed
   )
-  const pool = candidates.length ? candidates : VENUES
-  return pool[Math.floor(rng() * pool.length)]
+  if (!affordable.length) {
+    // Name which resource bit. A tank that cannot cover the shortest reachable
+    // hop is a different problem from a balance that cannot cover the day.
+    const cheapest = costed.reduce((best, candidate) =>
+      candidate.travel.totalCashImpact < best.travel.totalCashImpact
+        ? candidate
+        : best
+    )
+    // Fuel binds when at least one hop is payable in cash and fails *only* on
+    // the tank — that is the case the refuel retry can rescue. Requiring every
+    // candidate to be fuel-short classified a mixed set as `money`, which both
+    // mis-attributed the counter and skipped the refuel that would have freed
+    // the trip. Asking the production gate for zero litres isolates its money
+    // verdict instead of re-deriving one here.
+    const fuelShort = costed.some(
+      candidate =>
+        Math.max(0, state.player.van?.fuel ?? 0) <
+          candidate.travel.fuelLiters &&
+        checkTravelResources(candidate.travel.totalCashImpact, 0, state.player)
+          .allowed
+    )
+    return {
+      blocked: fuelShort ? 'fuel' : 'money',
+      shortfall: cheapest.travel.totalCashImpact
+    }
+  }
+
+  const chosen = chooseNextTourNode(
+    affordable.map(candidate => candidate.node),
+    state,
+    rng,
+    wantsToPerform
+  )
+  const selected = affordable.find(candidate => candidate.node === chosen)
+  return selected ? { ...selected } : { blocked: 'dead_end' }
+}
+
+/**
+ * Route choice among the nodes actually reachable from the current one.
+ *
+ * A touring band heads for stages it can play, so performable nodes win over
+ * rest and supply stops when both are on offer. Within that, the old
+ * fame-to-difficulty preference still applies — it just now selects among two or
+ * three real options instead of the entire venue catalogue.
+ */
+export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true) => {
+  if (!reachable.length) return null
+  const performable = reachable.filter(node =>
+    PERFORMABLE_NODE_TYPES.has(node.type)
+  )
+  const nonPerformable = reachable.filter(
+    node => !PERFORMABLE_NODE_TYPES.has(node.type)
+  )
+  // Cadence lives here, not at the node. Production starts the show on arrival
+  // at a GIG/FESTIVAL/FINALE node (`handleNodeArrival`) with no skip option, so
+  // a band that does not want to play today has to route around such a node —
+  // and can only do so when the map offers an alternative. When it does not, the
+  // band plays anyway, which is a real constraint rather than a modelling
+  // shortcut.
+  const preferred = wantsToPerform ? performable : nonPerformable
+  const fallback = wantsToPerform ? nonPerformable : performable
+  const routable = preferred.length ? preferred : fallback.length ? fallback : reachable
+  const targetDiff = targetDifficultyForState(state)
+  const inBand = routable.filter(
+    node =>
+      (node.venue?.diff ?? 0) <= targetDiff &&
+      (node.venue?.diff ?? 0) >= targetDiff - 1
+  )
+  const pool = inBand.length ? inBand : routable
+  return pool[Math.floor(rng() * pool.length)] ?? null
 }
 
 const calculateModifiers = (scenario, rng) => {
@@ -862,7 +1046,17 @@ const calculateModifiers = (scenario, rng) => {
   return modifiers
 }
 
-const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
+/**
+ * Events that happen because a day passed, not because the band drove.
+ *
+ * Split from the transport branch so that "no transport event without a trip
+ * that actually ran" is structural rather than a flag the caller has to pass
+ * correctly. The old single function took an `isTravelDay` boolean derived from
+ * a *planned* trip, and the plan was still revalidated afterwards — so a trip
+ * refused at the final money check left a road event already applied to a
+ * journey that never happened.
+ */
+const applyDailyEvents = (state, scenario, rng, eventCounts) => {
   const intensity = scenario.eventIntensity ?? 0.5
   let eventsApplied = 0
 
@@ -902,8 +1096,26 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
     }
   }
 
-  // Process equipment events (transport)
-  if (isTravelDay && rng() < 0.06 * intensity) {
+  if (eventsApplied > 0) {
+    // In-game, event resolution feeds the EVENT_RESOLVED unlock context
+    applyUnlockContext(state, eventCounts, { type: 'EVENT_RESOLVED' })
+  }
+
+  return eventsApplied
+}
+
+/**
+ * Transport events, fired only after a trip has actually been executed.
+ *
+ * The caller reaching this function is the proof that the journey happened: the
+ * resource gate passed, the cost was deducted and the band arrived. There is no
+ * `isTravelDay` flag to get wrong.
+ */
+const applyTravelEvents = (state, scenario, rng, eventCounts) => {
+  const intensity = scenario.eventIntensity ?? 0.5
+  let eventsApplied = 0
+
+  if (rng() < 0.06 * intensity) {
     const event = eventEngine.checkEvent('transport', state, 'travel', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
@@ -918,7 +1130,6 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
   }
 
   if (eventsApplied > 0) {
-    // In-game, event resolution feeds the EVENT_RESOLVED unlock context
     applyUnlockContext(state, eventCounts, { type: 'EVENT_RESOLVED' })
   }
 
@@ -1138,11 +1349,45 @@ const expireContrabandEffects = (state, runCtx) => {
   runCtx.contrabandEffects = stillActive
 }
 
+/**
+ * Which catalogue items the player could buy right now, and which ones are
+ * unlocked and unowned but out of reach financially.
+ *
+ * Phase 4D's core distinction: owning enough money at the end of a tour is not
+ * the same as being able to buy the right thing at the right time. `unaffordable`
+ * counts exactly the items the shop would show as blocked.
+ */
+export const summarizeCatalogAffordability = state => {
+  let affordable = 0
+  let unaffordable = 0
+  for (const item of UPGRADE_CATALOG) {
+    const validation = validatePurchase(item, state.player, state.band)
+    if (validation.isValid) affordable += 1
+    else if (validation.errorType === 'insufficient_funds') unaffordable += 1
+  }
+  return { affordable, unaffordable }
+}
+
 export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!candidate) return false
 
   const validation = validatePurchase(candidate, state.player, state.band)
-  if (!validation.isValid) return
+  if (!validation.isValid) {
+    // A purchase the player wanted and could not pay for is a progression
+    // signal, not a no-op. `already_owned` and `missing_effect` are not.
+    if (validation.errorType === 'insufficient_funds' && counters.missedPurchases) {
+      counters.missedPurchases.push({
+        day: counters.currentDay ?? null,
+        id: candidate.id,
+        category: candidate.category,
+        currency: candidate.currency === 'fame' ? 'fame' : 'money'
+      })
+    }
+    return false
+  }
+
+  const moneyBefore = state.player.money ?? 0
+  const fameBefore = state.player.fame ?? 0
 
   const oldFame = state.player.fame ?? 0
   const proposedFame = clampPlayerFame(oldFame - validation.finalCost)
@@ -1218,16 +1463,148 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
   })
 
   counters.catalogUpgrades += 1
+  if (counters.purchaseLog) {
+    counters.purchaseLog.push({
+      day: counters.currentDay ?? null,
+      id: candidate.id,
+      category: candidate.category,
+      currency: validation.payingWithFame ? 'fame' : 'money',
+      cost: validation.finalCost,
+      moneyBefore,
+      moneyAfter: state.player.money ?? 0,
+      fameBefore,
+      fameAfter: state.player.fame ?? 0
+    })
+  }
   return true
 }
 
-const maybeBuyCatalogUpgrade = (state, rng, counters) => {
-  if (rng() > 0.24) return
-  const candidate = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
-  if (!candidate) return
-  if (candidate.currency !== 'fame' && (state.player.money ?? 0) < 900) return
+/**
+ * How much cash the simulated buyer refuses to spend.
+ *
+ * This replaced a flat €900 floor, which scaled with nothing: on day 2 it
+ * blocked every affordable item, and by day 8 with €20k in the bank it was
+ * meaningless. A reserve is really "enough to keep the tour running", which the
+ * game already computes as `getTotalDailyObligations` — the same selector
+ * bankruptcy and travel confirmation use. Two days of it, floored at €150 so a
+ * scenario with no obligations still keeps enough for the next hop (measured
+ * travel cost sits at €47-94 per gig).
+ */
+const PURCHASE_RESERVE_DAYS = 2
+const PURCHASE_RESERVE_FLOOR = 150
 
-  applyCatalogPurchase(state, candidate, counters)
+/**
+ * Cheapest reachable price in each currency, used only as a fast bail-out before
+ * the fallback scan.
+ *
+ * The money side must be priced through `getAdjustedCost`, because it is
+ * band-dependent: `gear_nerd` takes 20% off money-priced GEAR, and three
+ * scenario trait packs carry that trait. Against the raw catalogue price a
+ * €125 item discounted to €100 was declared unaffordable while €110 was on
+ * hand, so the visit returned before the scan that would have bought it — the
+ * "behaviour is identical" claim below only holds once the guard prices items
+ * the way the purchase does. Fame prices carry no trait discount.
+ */
+const cheapestAdjustedMoneyCost = band =>
+  UPGRADE_CATALOG.reduce(
+    (cheapest, item) =>
+      item.currency !== 'fame' && Number.isFinite(item.cost)
+        ? Math.min(cheapest, getAdjustedCost(item, band))
+        : cheapest,
+    Infinity
+  )
+const CHEAPEST_FAME_ITEM_COST = UPGRADE_CATALOG.reduce(
+  (cheapest, item) =>
+    item.currency === 'fame' && Number.isFinite(item.cost)
+      ? Math.min(cheapest, item.cost)
+      : cheapest,
+  Infinity
+)
+
+const purchaseReserve = state =>
+  Math.max(
+    PURCHASE_RESERVE_FLOOR,
+    getTotalDailyObligations(state) * PURCHASE_RESERVE_DAYS
+  )
+
+/**
+ * Whether the buyer can and will pay for an item right now. Separates the two
+ * reasons a purchase does not happen, because they mean different things: no
+ * money at all is an economy signal, while breaching the reserve is the buyer's
+ * own prudence and can block something genuinely affordable.
+ */
+const evaluatePurchaseIntent = (item, state, reserve) => {
+  const validation = validatePurchase(item, state.player, state.band)
+  if (!validation.isValid) return { verdict: validation.errorType, validation }
+  if (validation.payingWithFame) return { verdict: 'buy', validation }
+  const remaining = (state.player.money ?? 0) - validation.finalCost
+  return remaining >= reserve
+    ? { verdict: 'buy', validation }
+    : { verdict: 'reserve_guard', validation }
+}
+
+/**
+ * One shop visit per day, buying at most one item.
+ *
+ * There used to be a 24% chance of even looking at the shop, which capped a tour
+ * at roughly 2.4 purchase opportunities and was the real reason the buyer ended
+ * a ten-day tour owning about three items while sitting on five figures — not
+ * affordability. The shop is reachable from HQ between gigs, so whether a player
+ * looks is not a dice roll; what varies is which item catches their eye, and
+ * whether there is surplus over the money the tour still needs.
+ */
+const maybeBuyCatalogUpgrade = (state, rng, counters) => {
+  const desired = UPGRADE_CATALOG[Math.floor(rng() * UPGRADE_CATALOG.length)]
+  if (!desired) return
+
+  const reserve = purchaseReserve(state)
+  const intent = evaluatePurchaseIntent(desired, state, reserve)
+  if (intent.verdict === 'buy') {
+    applyCatalogPurchase(state, desired, counters)
+    return
+  }
+
+  // The draw is the buyer's *want*. Recording why it did not happen is what
+  // makes "missed purchase" mean something; previously the flat floor returned
+  // before validation ran, so a real affordability failure was invisible.
+  if (intent.verdict === 'insufficient_funds') {
+    counters.missedPurchases?.push({
+      day: counters.currentDay ?? null,
+      id: desired.id,
+      category: desired.category,
+      currency: desired.currency === 'fame' ? 'fame' : 'money'
+    })
+  } else if (intent.verdict === 'reserve_guard') {
+    counters.liquidityDeferrals?.push({
+      day: counters.currentDay ?? null,
+      id: desired.id,
+      category: desired.category
+    })
+  }
+
+  // A player who cannot afford the amp buys strings instead. Without this the
+  // whole shop visit was wasted on a single uniform draw over 67 items, most of
+  // which are out of reach or already owned, which is why the buyer ended a tour
+  // having bought about three things while sitting on five figures.
+  //
+  // The scan runs a full `validatePurchase` per catalogue entry, and the shop is
+  // now visited every day, so skip it outright when nothing could possibly be
+  // affordable. Behaviour is identical; only the broke case gets cheaper.
+  if (
+    (state.player.money ?? 0) - reserve <
+      cheapestAdjustedMoneyCost(state.band) &&
+    (state.player.fame ?? 0) < CHEAPEST_FAME_ITEM_COST
+  ) {
+    return
+  }
+  const inReach = UPGRADE_CATALOG.filter(
+    item =>
+      item.id !== desired.id &&
+      evaluatePurchaseIntent(item, state, reserve).verdict === 'buy'
+  )
+  if (!inReach.length) return
+  const fallback = inReach[Math.floor(rng() * inReach.length)]
+  applyCatalogPurchase(state, fallback, counters)
 }
 
 // eslint-disable-next-line no-unused-vars
@@ -1364,18 +1741,23 @@ const buildAppFeatureSnapshot = () => {
   }
 }
 
-// One travel minigame per trip plus exactly ONE setup minigame per gig,
-// chosen with the same weighting as usePreGigHandlers (last game at 0.2).
-// Result values and their application mirror minigameReducer.ts: stress
-// reduces band harmony 1:1, rewards/repair costs hit money directly, and
-// damaged_gear follows the reducers' own predicates — equipmentDamage > 50
-// for roadie (handleCompleteRoadieMinigame) and ANY stress > 0 for
-// kabelsalat/amp (applyPostMinigameResult flags damaged_gear on stress > 0,
-// purge-induced stress included).
-const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
+/**
+ * The tourbus minigame, once per executed trip.
+ *
+ * Deliberately separate from the setup minigame. Both used to run in one call
+ * made after arrival at a performable, non-cancelled node, which tied the
+ * *travel* minigame to gigs played: a band with 9.78 arrivals and 8.48 gigs got
+ * 8.48 tourbus runs, and every rest stop, supply stop and cancelled show
+ * silently skipped its van damage, fuel pickup and follow-up repair. Production
+ * starts it when a confirmed trip begins (`useHandleTravel` calls
+ * `onStartTravelMinigame` before the arrival is processed), so it belongs to the
+ * trip, not to the show.
+ *
+ * Runs after the resource gate for the same reason production does: the fuel
+ * bonus must not be what makes a trip affordable.
+ */
+const runTravelMinigame = (state, scenario, rng, counters) => {
   const skill = scenario.minigameSkill ?? 0.5
-  let damagedGear = false
-
   const travelDamage = Math.round((1 - skill + rng() * 0.7) * 20)
   const collectedItems = rng() < 0.45 + skill * 0.25 ? ['FUEL'] : []
   const travelResult = calculateTravelMinigameResult(
@@ -1394,6 +1776,19 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   if (collectedItems.length > 0) {
     counters.executionCoverage.minigamesTravel.completions++
   }
+}
+
+// Exactly ONE setup minigame per gig actually begun, chosen with the same
+// weighting as usePreGigHandlers (last game at 0.2). Result values and their
+// application mirror minigameReducer.ts: stress reduces band harmony 1:1,
+// rewards/repair costs hit money directly, and damaged_gear follows the
+// reducers' own predicates — equipmentDamage > 50 for roadie
+// (handleCompleteRoadieMinigame) and ANY stress > 0 for kabelsalat/amp
+// (applyPostMinigameResult flags damaged_gear on stress > 0, purge-induced
+// stress included).
+const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
+  const skill = scenario.minigameSkill ?? 0.5
+  let damagedGear = false
 
   const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
   if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
@@ -1490,17 +1885,26 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   return damagedGear
 }
 
+/**
+ * Fill the tank if the band can pay for it. Shared by the maintenance-discipline
+ * heuristic and by the travel fallback: a player who is told "Not enough fuel in
+ * the tank!" refuels and then drives, rather than losing the day.
+ */
+const attemptRefuel = (state, counters) => {
+  const refuelCost = calculateRefuelCost(state.player.van.fuel)
+  if (state.player.money < refuelCost) return false
+  state.player.money = clampPlayerMoney(state.player.money - refuelCost)
+  state.player.van.fuel = 100
+  counters.refuels += 1
+  counters.refuelSpend += refuelCost
+  return true
+}
+
 const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
   if (state.player.van.fuel < 35 && rng() < discipline) {
-    const refuelCost = calculateRefuelCost(state.player.van.fuel)
-    if (state.player.money >= refuelCost) {
-      state.player.money = clampPlayerMoney(state.player.money - refuelCost)
-      state.player.van.fuel = 100
-      counters.refuels += 1
-      counters.refuelSpend += refuelCost
-    }
+    attemptRefuel(state, counters)
   }
 
   if (state.player.van.condition < 62 && rng() < discipline) {
@@ -1801,7 +2205,27 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   resetSecureRandomBatch()
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
-  let currentNode = HOME
+  // A real tour map for this run: layers 0..daysPerRun-1 plus the FINALE at
+  // layer daysPerRun, so reaching the finale takes exactly as many hops as the
+  // horizon allows. Seeded from the run seed, so the same (scenario, seed) pair
+  // still reproduces exactly.
+  const tourHorizonDays =
+    scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
+  const tourMap = new MapGenerator(seed).generateMap(tourHorizonDays)
+  const tourAdjacency = buildTourAdjacency(tourMap)
+  let currentMapNode = tourMap.nodes.node_0_0 ?? null
+  let deepestLayerReached = currentMapNode?.layer ?? 0
+  // Arriving at the finale and actually playing it are different outcomes: the
+  // show can still be cancelled on harmony.
+  let finaleReached = false
+  let finaleCompleted = false
+  let routeDeadEnds = 0
+  let nonPerformingArrivals = 0
+  // Days on which no legal trip existed. Kept apart from routeDeadEnds, which
+  // means "no forward edge on the map" rather than "could not afford to drive".
+  let strandedDays = 0
+  const travelLog = []
+  const nodeTypesVisited = {}
   // Per-run context: pregig minigame rotation memory and the active
   // duration-limited contraband effects awaiting expiry.
   const runCtx = { lastMinigame: null, contrabandEffects: [], emergencyGrantUsed: false, regionalGigHistory: new Map() }
@@ -1823,6 +2247,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     modulesInstalled: 0,
     crowdfundsStarted: 0,
     restStops: 0,
+    // Rest days are counted separately from rest stops: `restStops` only counts
+    // the free-fallback branch, so a band that rested and paid the clinic
+    // instead recorded nothing at all and read as "never rested".
+    restDays: 0,
+    // Recovery taken by passing through a REST_STOP node, which is not a rest
+    // decision — the band did not give up a gig for it.
+    restStopArrivals: 0,
     gearItemsPurchased: 0,
     travelSpend: 0,
     refuels: 0,
@@ -1858,7 +2289,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
     fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
-    gigCapHits: 0
+    gigCapHits: 0,
+    // Phase 4D purchase-path instrumentation. `currentDay` is the day context
+    // every purchase site reads, so timing does not have to be threaded through
+    // each call.
+    currentDay: 0,
+    purchaseLog: [],
+    missedPurchases: [],
+    liquidityDeferrals: [],
+    // Refused trips by reason, mirroring the production gates.
+    travelBlocked: { money: 0, fuel: 0, venue_access: 0 },
+    // Trips that only happened because the band refuelled first.
+    refuelledToTravel: 0
   }
 
   let totalGigNet = 0
@@ -1874,8 +2316,29 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let moneyAtEarlyCheckpoint = null
   let moneyAtMidCheckpoint = null
   let moneyAtLateCheckpoint = null
+  // Shop reachability at a mid-tour waypoint and at the end. The end-of-run
+  // count alone cannot distinguish "could buy things while it mattered" from
+  // "ended rich".
+  let affordabilityAtMidCheckpoint = null
   const [earlyCheckpointDay, midCheckpointDay, lateCheckpointDay] =
     SIMULATION_CONSTANTS.progressionCheckpointDays
+
+  // Liquidity pressure, sampled at the start of each day before that day's
+  // costs land. Insolvency is terminal and rare over ten days, so time spent
+  // near zero is what distinguishes a tense scenario from a safe one.
+  let daysBelowTightLiquidity = 0
+  let daysBelowCriticalLiquidity = 0
+  // A true running minimum. `lowestMoney` above is only sampled at gig
+  // checkpoints, which makes it "lowest balance seen around a gig" rather than
+  // the low-water mark of the run — a scenario that plays daily never appears
+  // to dip at all. Kept separate so the published `lowestMoney` statistics do
+  // not silently change meaning.
+  let lowestMoneyObserved = state.player.money
+  // Wear pressure, sampled at the same day-start point as liquidity. Final
+  // values alone cannot say whether a tour ever came close to a rest decision.
+  let minHarmonyObserved = state.band.harmony
+  let minMemberStaminaObserved = Infinity
+  let minMemberMoodObserved = Infinity
 
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
@@ -1889,6 +2352,20 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
+    counters.currentDay = day
+    if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.tight)
+      daysBelowTightLiquidity += 1
+    if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
+      daysBelowCriticalLiquidity += 1
+    lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+    minHarmonyObserved = Math.min(minHarmonyObserved, state.band.harmony)
+    for (const member of state.band.members) {
+      minMemberStaminaObserved = Math.min(
+        minMemberStaminaObserved,
+        member.stamina
+      )
+      minMemberMoodObserved = Math.min(minMemberMoodObserved, member.mood)
+    }
     if (state.player.money > peakMoney) peakMoney = state.player.money;
     else {
       const drop = calculateDrawdownPct(peakMoney, state.player.money)
@@ -1896,7 +2373,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     }
     // Snapshot money at start of day (before any spending)
     if (day === earlyCheckpointDay) moneyAtEarlyCheckpoint = state.player.money
-    if (day === midCheckpointDay) moneyAtMidCheckpoint = state.player.money
+    if (day === midCheckpointDay) {
+      moneyAtMidCheckpoint = state.player.money
+      affordabilityAtMidCheckpoint = summarizeCatalogAffordability(state)
+    }
     if (day === lateCheckpointDay) moneyAtLateCheckpoint = state.player.money
 
     const moneyBeforeDay = state.player.money
@@ -1951,28 +2431,46 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       break
     }
 
-    let shouldPlayGig =
+    // Performance appetite for this day. It no longer decides whether the band
+    // moves: travel and performing are independent in the game, where
+    // `useHandleTravel` gates a trip on visibility, a directed edge and
+    // money/fuel — never on having played the current node. Coupling the two
+    // made map reach a property of `gigGapDays` instead of the map, so a sparse
+    // cadence looked like it could not finish the tour when in truth it had
+    // simply never been allowed to drive.
+    const wantsToPerform =
       day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
 
     let willRest = false
-    // Check if the band needs rest/clinic before taking on a gig
-    if (shouldPlayGig) {
+    // Check if the band needs rest/clinic before travelling on.
+    //
+    // The trigger is deliberately identical to `MEMBER_NEEDS_CARE` below, which
+    // decides what a rest day actually does. They used to differ — rest fired on
+    // `harmony < 30 || stamina < 30 || mood < 30`, while care required
+    // `stamina < 50 || mood < 50` — so a rest could burn a gig day, heal nobody,
+    // and increment no counter at all. Resting does not repair harmony either
+    // (the daily tick's +3 drift toward 50 happens regardless), so harmony is no
+    // longer a reason to skip a gig: it would be a guaranteed no-op day.
+    //
+    // Thresholds come from what the game itself signals: `BandMemberRow` marks
+    // stamina below 35 and mood below 50 as low in the HUD, which is what a
+    // player actually reacts to, rather than the deeper mark where
+    // `gigModifiersUtils` starts penalising performance.
+    {
       counters.executionCoverage.restStops.evaluations++
-      const needsRest =
-        state.band.harmony < 30 ||
-        state.band.members.some(m => m.stamina < 30 || m.mood < 30)
+      const needsRest = state.band.members.some(MEMBER_NEEDS_CARE)
       // Save original random state by evaluating early if they *would* rest.
       // Note: we'll just consume the rng here.
       if (needsRest && rng() < 0.85) {
         willRest = true
-        shouldPlayGig = false
+        counters.restDays += 1
       }
     }
 
     const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
-      applyWorldEvents(state, scenario, rng, counters, shouldPlayGig)
+      applyDailyEvents(state, scenario, rng, counters)
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2003,8 +2501,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // (arrivalUtils.ts: +20 stamina / +10 mood).
       let usedRestStop = false
       state.band.members = state.band.members.map(member => {
-        const needsCare = member.stamina < 50 || member.mood < 50
-        if (!needsCare) return member
+        if (!MEMBER_NEEDS_CARE(member)) return member
 
         const healCost = calculateClinicCost(
           CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
@@ -2045,21 +2542,64 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       }
     }
 
-    if (!shouldPlayGig) {
+    // A rest day is an explicit action and consumes the day in place. Every
+    // other day the band drives: there is no wait action in the game, so a day
+    // that is neither rest nor travel would be an invented cost-only day.
+    if (willRest) {
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
       continue
     }
 
-    const venue = pickVenueForState(state, rng)
-    const assetModifiers = getActiveAssetModifiers(state.assets || [])
-    const travel = calculateTravelExpenses(
-      venue,
-      currentNode,
-      state.player,
-      state.band,
-      assetModifiers
-    )
+    const recordNoTrip = reason => {
+      if (reason === 'dead_end') routeDeadEnds += 1
+      else {
+        strandedDays += 1
+        counters.travelBlocked[reason] =
+          (counters.travelBlocked[reason] ?? 0) + 1
+      }
+      peakMoney = Math.max(peakMoney, state.player.money)
+      lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+    }
+
+    // Route planning comes last, after every decision that can move money or
+    // fuel: the day's events, maintenance, the shop visit and asset investment.
+    // Planning earlier meant costing a trip against a balance that no longer
+    // existed by the time it was taken, which needed a second validation pass
+    // and could still strand a day whose blocker a later windfall had removed.
+    // Now the plan is costed on the state the band actually travels in, so
+    // `planTravel`'s own `checkTravelResources` filter *is* the final gate.
+    const reachable = currentMapNode
+      ? (tourAdjacency.get(currentMapNode.id) ?? [])
+      : []
+    state.player.currentMapNode = currentMapNode
+    let travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
+    // Canonical in-place fallback: an empty tank is not a dead end while a
+    // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
+    // re-planning on the refuelled state stays deterministic.
+    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
+      travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
+      if (!travelPlan.blocked) counters.refuelledToTravel += 1
+    }
+
+    if (travelPlan.blocked) {
+      // Stranded or out of forward edges. The day still passes — asset revenue
+      // and liabilities tick — so the band may be able to move tomorrow. It does
+      // not arrive anywhere and it does not play, and no road event fires.
+      recordNoTrip(travelPlan.blocked)
+      continue
+    }
+
+    // The trip is happening. Production runs the tourbus minigame here, at the
+    // start of a confirmed journey and before the arrival is processed — after
+    // the gate, so its fuel bonus can never be what made the trip affordable.
+    runTravelMinigame(state, scenario, rng, counters)
+
+    const nextNode = travelPlan.node
+    const venue = nextNode.venue
+    const travel = travelPlan.travel
     const totalTravelCost = travel.totalCost
 
     const moneyBeforeTravel = state.player.money
@@ -2083,6 +2623,54 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         finiteNumberOr(travel.dist, 0)
     }
     applyUnlockContext(state, counters, { type: 'TRAVEL_COMPLETE' })
+
+    // Arrival happened, whatever the node turns out to be. The edge is logged so
+    // a test can verify every trip used a real directed map connection.
+    travelLog.push({ from: currentMapNode?.id ?? null, to: nextNode.id })
+    currentMapNode = nextNode
+    deepestLayerReached = Math.max(deepestLayerReached, nextNode.layer)
+    nodeTypesVisited[nextNode.type] =
+      (nodeTypesVisited[nextNode.type] ?? 0) + 1
+    if (nextNode.type === 'FINALE') finaleReached = true
+
+    // Road events, now that the journey is a fact rather than a plan. Production
+    // fires them after the day advances and before `handleNodeArrival`, which is
+    // where the node's own effects (rest-stop recovery, the show) follow below.
+    const fameBeforeTravelEvents = state.player.fame
+    counters.eventsApplied =
+      (counters.eventsApplied || 0) +
+      applyTravelEvents(state, scenario, rng, counters)
+    recordObservedFameChange(
+      counters.fameAccounting,
+      fameBeforeTravelEvents,
+      state.player.fame
+    )
+
+    // Rest and supply stops are not stages. Routing prefers performable nodes,
+    // but the map does not always offer one, and playing a gig at a rest stop
+    // would invent income the game never pays.
+    if (!PERFORMABLE_NODE_TYPES.has(nextNode.type)) {
+      nonPerformingArrivals += 1
+      // A rest stop recovers the whole band on arrival, unconditionally:
+      // +20 stamina / +10 mood per member (arrivalUtils.ts REST_STOP). Skipping
+      // it would understate recovery in exactly the wear and rest metrics this
+      // report adds.
+      if (nextNode.type === 'REST_STOP') {
+        state.band.members = state.band.members.map(member => ({
+          ...member,
+          stamina: clampMemberStamina(
+            finiteNumberOr(member.stamina, 0) + 20,
+            finiteNumberOr(member.staminaMax, 100)
+          ),
+          mood: clampMemberMood(finiteNumberOr(member.mood, 0) + 10)
+        }))
+        counters.restStopArrivals += 1
+      }
+      peakMoney = Math.max(peakMoney, state.player.money)
+      lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+      continue
+    }
 
     // Show cancellation check (happens BEFORE minigames); mirrors
     // arrivalUtils.ts: deterministic at harmony <= 1, otherwise probabilistic
@@ -2143,18 +2731,26 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         break
       }
 
-      // Update location so next travel routes from the new (cancelled) destination
-      currentNode = venue
+      // A cancelled finale still ends the tour — the band stands on the last
+      // node with no forward edge — but it did not complete the show.
+      if (finaleReached) break
 
       // Skip the rest of the gig pipeline
       continue
     }
 
-    // Only run minigames and performance if show is NOT cancelled.
+    // Only the setup minigame and the performance are gated on the show going
+    // ahead; the tourbus run already happened with the journey.
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
-    const damagedGear = runMinigameLayer(state, scenario, rng, counters, runCtx)
+    const damagedGear = runPreGigSetupMinigame(
+      state,
+      scenario,
+      rng,
+      counters,
+      runCtx
+    )
 
     const modifiers = calculateModifiers(scenario, rng)
     if (damagedGear) modifiers.damaged_gear = true
@@ -2289,7 +2885,6 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         .filter(d => d.remainingGigs > 0)
     }
 
-    currentNode = venue
     counters.gigsPlayed += 1
     runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
@@ -2297,6 +2892,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
+    lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
 
     // Calculate Peak-to-Trough drop percentage relative to the current peak.
     if (peakMoney > 0) {
@@ -2350,6 +2946,14 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       counters.bankrupt = true
       break
     }
+
+    // Playing the finale ends the run on the victory screen, exactly as the game
+    // does. A tour that gets there has finished; one that does not has simply
+    // run out of days, and the two are different outcomes.
+    if (finaleReached) {
+      finaleCompleted = true
+      break
+    }
   }
 
   // In-scope waypoints a bankrupt run never reached record the terminal
@@ -2384,6 +2988,30 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     totalGigNet,
     peakMoney,
     lowestMoney,
+    lowestMoneyObserved,
+    finaleReached,
+    finaleCompleted,
+    deepestLayerReached,
+    tourDepth: tourHorizonDays,
+    nodeTypesVisited,
+    routeDeadEnds,
+    nonPerformingArrivals,
+    strandedDays,
+    stranded: strandedDays > 0,
+    travelLog,
+    travelBlocked: counters.travelBlocked,
+    minHarmonyObserved,
+    minMemberStaminaObserved: Number.isFinite(minMemberStaminaObserved)
+      ? minMemberStaminaObserved
+      : null,
+    minMemberMoodObserved: Number.isFinite(minMemberMoodObserved)
+      ? minMemberMoodObserved
+      : null,
+    affordabilityAtMidCheckpoint,
+    affordabilityAtEnd: summarizeCatalogAffordability(state),
+    daysBelowTightLiquidity,
+    daysBelowCriticalLiquidity,
+    emergencyGrantUsed: runCtx.emergencyGrantUsed,
     timeline,
     moneyAtEarlyCheckpoint,
     moneyAtMidCheckpoint,
@@ -2451,6 +3079,32 @@ export const calculateAverageFameEarnedPerGig = runs => mean(runs.map(run => {
   return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
 }))
 
+const firstDayMatching = (log, predicate) => {
+  const days = (log ?? [])
+    .filter(entry => predicate(entry) && entry.day != null)
+    .map(entry => entry.day)
+  return days.length ? Math.min(...days) : null
+}
+
+const medianOrNull = values =>
+  values.length ? Number(median(values).toFixed(2)) : null
+
+const modalValue = values => {
+  const tally = new Map()
+  for (const value of values) tally.set(value, (tally.get(value) ?? 0) + 1)
+  let best = null
+  let bestCount = 0
+  // Ties resolve on the first-seen value, which is deterministic because the
+  // run order is.
+  for (const [value, count] of tally) {
+    if (count > bestCount) {
+      best = value
+      bestCount = count
+    }
+  }
+  return best
+}
+
 export const summarizeScenario = runs => {
   const solventRuns = runs.filter(r => !r.bankrupt)
   const bankruptRuns = runs.filter(r => r.bankrupt)
@@ -2503,6 +3157,9 @@ export const summarizeScenario = runs => {
     upperPct: Number(preciseConfidence95.upperPct.toFixed(2)),
     method: preciseConfidence95.method
   }
+
+  const shareOfRunsPct = predicate =>
+    n > 0 ? Number(((runs.filter(predicate).length / n) * 100).toFixed(2)) : 0
 
   const finalMoneyMean = popAll.finalMoney ? popAll.finalMoney.mean : 0
   const finalFameMean = popAll.finalFame ? popAll.finalFame.mean : 0
@@ -2607,7 +3264,7 @@ export const summarizeScenario = runs => {
       ['Repairs', 'repairs'], ['HqUpgrades', 'hqUpgrades'], ['VanUpgrades', 'vanUpgrades'],
       ['CatalogUpgrades', 'catalogUpgrades'], ['TravelMinigames', 'travelMinigames'],
       ['RoadieMinigames', 'roadieMinigames'], ['KabelsalatMinigames', 'kabelsalatMinigames'],
-      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'],
+      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'], ['RestDays', 'restDays'], ['RestStopArrivals', 'restStopArrivals'],
       ['AssetsPurchased', 'assetsPurchased'], ['LoansTaken', 'loansTaken'],
       ['ModulesInstalled', 'modulesInstalled'], ['CrowdfundsStarted', 'crowdfundsStarted'],
       ['TraitUnlocks', 'traitUnlocks'], ['FinalAssets', 'finalAssets'],
@@ -2638,6 +3295,262 @@ export const summarizeScenario = runs => {
       ratePct: Number(bankruptcyRatePct.toFixed(2)),
       confidence95
     },
+    // Phase 4F — real tour paths. Venue choice is constrained to the nodes
+    // actually connected to the current one, so "how far did the tour get" is a
+    // real question with a real answer, and reaching the FINALE is an outcome
+    // rather than an assumption.
+    tourPaths: (() => {
+      const depth = runs[0]?.tourDepth ?? SIMULATION_CONSTANTS.daysPerRun
+      const nodeTypeVisits = {}
+      let totalVisits = 0
+      for (const run of runs) {
+        for (const [type, count] of Object.entries(run.nodeTypesVisited ?? {})) {
+          nodeTypeVisits[type] = (nodeTypeVisits[type] ?? 0) + count
+          totalVisits += count
+        }
+      }
+      return {
+        tourDepth: depth,
+        finaleReachedPct: shareOfRunsPct(run => run.finaleReached === true),
+        // Reaching the finale node and playing its show are different: the show
+        // can still be cancelled on harmony.
+        finaleCompletedPct: shareOfRunsPct(run => run.finaleCompleted === true),
+        avgDeepestLayerReached: Number(
+          mean(runs.map(run => run.deepestLayerReached ?? 0)).toFixed(2)
+        ),
+        avgArrivals: Number((totalVisits / Math.max(1, runs.length)).toFixed(2)),
+        // Arrivals at rest and supply stops: real nodes that pay nothing, which
+        // is why arrivals and gigs played are not the same number.
+        avgNonPerformingArrivals: Number(
+          mean(runs.map(run => run.nonPerformingArrivals ?? 0)).toFixed(2)
+        ),
+        avgRouteDeadEnds: Number(
+          mean(runs.map(run => run.routeDeadEnds ?? 0)).toFixed(2)
+        ),
+        // Trips the production gates refused, split by reason. Kept apart from
+        // routeDeadEnds, which means the map ran out of forward edges rather than
+        // the band running out of money, fuel or venue access.
+        avgStrandedDays: Number(
+          mean(runs.map(run => run.strandedDays ?? 0)).toFixed(2)
+        ),
+        strandedRunsPct: shareOfRunsPct(run => run.stranded === true),
+        travelBlockedByReason: ['money', 'fuel', 'venue_access'].reduce(
+          (totals, reason) => ({
+            ...totals,
+            [reason]: Number(
+              mean(runs.map(run => run.travelBlocked?.[reason] ?? 0)).toFixed(2)
+            )
+          }),
+          {}
+        ),
+        avgRefuelledToTravel: Number(
+          mean(runs.map(run => run.refuelledToTravel ?? 0)).toFixed(2)
+        ),
+        nodeTypeSharePct: Object.fromEntries(
+          Object.entries(nodeTypeVisits).map(([type, count]) => [
+            type,
+            Number(((count / Math.max(1, totalVisits)) * 100).toFixed(2))
+          ])
+        )
+      }
+    })(),
+
+    // Phase 4D — purchase paths. "Ends the tour with enough money" and "could
+    // buy something useful while it mattered" are different questions, and the
+    // fame-shop audit only answers the first. Everything here describes the
+    // simulated buyer's heuristics, not a real player's choices.
+    purchasePaths: (() => {
+      const firstPurchaseDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, () => true))
+        .filter(day => day != null)
+      const vanDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'VAN'))
+        .filter(day => day != null)
+      const hqDays = runs
+        .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'HQ'))
+        .filter(day => day != null)
+      const distinctItems = runs.map(
+        run => new Set((run.purchaseLog ?? []).map(entry => entry.id)).size
+      )
+      const moneyPurchases = runs.flatMap(run =>
+        (run.purchaseLog ?? []).filter(entry => entry.currency === 'money')
+      )
+      const firstCategories = runs
+        .map(run => (run.purchaseLog ?? [])[0]?.category)
+        .filter(category => category != null)
+      const affordability = key =>
+        runs.map(run => run[key]).filter(entry => entry != null)
+      const meanOf = (entries, field) =>
+        entries.length
+          ? Number(
+              mean(entries.map(entry => entry[field])).toFixed(2)
+            )
+          : null
+
+      return {
+        catalogSize: UPGRADE_CATALOG.length,
+        runsWithAnyPurchasePct: shareOfRunsPct(
+          run => (run.purchaseLog?.length ?? 0) > 0
+        ),
+        firstPurchaseDayMedian: medianOrNull(firstPurchaseDays),
+        vanUpgradeReachedPct: shareOfRunsPct(
+          run =>
+            firstDayMatching(run.purchaseLog, e => e.category === 'VAN') != null
+        ),
+        firstVanUpgradeDayMedian: medianOrNull(vanDays),
+        hqUpgradeReachedPct: shareOfRunsPct(
+          run =>
+            firstDayMatching(run.purchaseLog, e => e.category === 'HQ') != null
+        ),
+        firstHqUpgradeDayMedian: medianOrNull(hqDays),
+        avgDistinctItemsPurchased: Number(mean(distinctItems).toFixed(2)),
+        catalogSharePurchasedPct: Number(
+          ((mean(distinctItems) / Math.max(1, UPGRADE_CATALOG.length)) * 100).toFixed(2)
+        ),
+        modalFirstPurchaseCategory: modalValue(firstCategories),
+        avgMoneyBeforePurchase: meanOf(moneyPurchases, 'moneyBefore'),
+        // Liquidity left standing right after a purchase: a buyer who is broke
+        // after every purchase is making forced choices, not decisions.
+        avgResidualMoneyAfterPurchase: meanOf(moneyPurchases, 'moneyAfter'),
+        avgMissedPurchases: Number(
+          mean(runs.map(run => run.missedPurchases?.length ?? 0)).toFixed(2)
+        ),
+        avgLiquidityDeferrals: Number(
+          mean(runs.map(run => run.liquidityDeferrals?.length ?? 0)).toFixed(2)
+        ),
+        avgUnaffordableAtMidCheckpoint: meanOf(
+          affordability('affordabilityAtMidCheckpoint'),
+          'unaffordable'
+        ),
+        avgAffordableAtMidCheckpoint: meanOf(
+          affordability('affordabilityAtMidCheckpoint'),
+          'affordable'
+        ),
+        avgUnaffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'unaffordable'),
+        avgAffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'affordable')
+      }
+    })(),
+
+    // Phase 4E — gig frequency against travel and rest. Deliberately diagnostic:
+    // whether Gap-1 dominance is a balance fault or an intended reward for
+    // active play is not decided here, it is measured.
+    gigEconomics: (() => {
+      const totalDays = runs.reduce((sum, run) => sum + run.daysSurvived, 0)
+      const totalGigs = runs.reduce((sum, run) => sum + run.gigsPlayed, 0)
+      const totalNet = runs.reduce((sum, run) => sum + run.totalGigNet, 0)
+      const totalTravel = runs.reduce(
+        (sum, run) => sum + run.totalTravelCostGigs,
+        0
+      )
+      const totalRest = runs.reduce((sum, run) => sum + (run.restDays ?? 0), 0)
+      const totalRestStops = runs.reduce(
+        (sum, run) => sum + (run.restStops ?? 0),
+        0
+      )
+      const netPerGig = totalGigs > 0 ? totalNet / totalGigs : 0
+      const moneyPriced = UPGRADE_CATALOG.filter(
+        item => item.currency !== 'fame' && Number.isFinite(item.cost)
+      )
+      return {
+        gigNetPerCalendarDay: Math.round(totalDays > 0 ? totalNet / totalDays : 0),
+        gigNetPerGigDay: Math.round(netPerGig),
+        gigsPerCalendarDay: Number(
+          (totalDays > 0 ? totalGigs / totalDays : 0).toFixed(3)
+        ),
+        avgRestDays: Number((runs.length ? totalRest / runs.length : 0).toFixed(2)),
+        // The free rest-stop fallback, i.e. rest days where the clinic was not
+        // worth paying for. A subset of avgRestDays, not a synonym.
+        avgFreeRestStops: Number(
+          (runs.length ? totalRestStops / runs.length : 0).toFixed(2)
+        ),
+        restDaySharePct: Number(
+          ((totalDays > 0 ? totalRest / totalDays : 0) * 100).toFixed(2)
+        ),
+        // Upper bound: a rest day may enable gigs that would otherwise fail, so
+        // this is the gross income not earned, not a net loss.
+        foregoneGigNetPerRestDayUpperBound: Math.round(netPerGig),
+        travelCostShareOfGigNetPct: Number(
+          ((totalNet > 0 ? totalTravel / totalNet : 0) * 100).toFixed(2)
+        ),
+        avgTravelCostPerGigDay: Math.round(
+          totalGigs > 0 ? totalTravel / totalGigs : 0
+        ),
+        // The user-visible version of "some cheap upgrades pay for themselves in
+        // under one gig": how much of the money catalogue a single gig covers.
+        catalogItemsUnderOneGigNetPct: Number(
+          (
+            (moneyPriced.filter(item => item.cost <= netPerGig).length /
+              Math.max(1, moneyPriced.length)) *
+            100
+          ).toFixed(2)
+        ),
+        moneyPricedCatalogSize: moneyPriced.length,
+        // Published so the report's wear statement is read from the data rather
+        // than asserted from a hardcoded figure.
+        // A run without an observation reports null, and `?? 0` would have made
+        // that absence the smallest observation there is — pulling the published
+        // low-water mark, and the prose that reads it, down to a zero nobody
+        // measured. Drop the non-observations instead of defaulting them.
+        minHarmonyObserved: minimum(
+          runs.map(run => run.minHarmonyObserved).filter(Number.isFinite)
+        ),
+        minMemberStaminaObserved: minimum(
+          runs.map(run => run.minMemberStaminaObserved).filter(Number.isFinite)
+        ),
+        minMemberMoodObserved: minimum(
+          runs.map(run => run.minMemberMoodObserved).filter(Number.isFinite)
+        )
+      }
+    })(),
+
+    // Insolvency alone stopped being the tension indicator once payouts rose:
+    // over a ten-day tour it is a rare terminal event, so a scenario can be
+    // under sustained economic pressure and still report ~0%. These are
+    // observations only — no target, no gate — so that the corridors can be set
+    // from measured behaviour in a later pass rather than invented now.
+    financialStress: {
+      thresholds: {
+        tightEur: LIQUIDITY_STRESS_THRESHOLDS.tight,
+        criticalEur: LIQUIDITY_STRESS_THRESHOLDS.critical
+      },
+      bankruptcyRatePct: Number(bankruptcyRatePct.toFixed(2)),
+      everBelowTightPct: shareOfRunsPct(
+        run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.tight
+      ),
+      everBelowCriticalPct: shareOfRunsPct(
+        run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.critical
+      ),
+      zeroBalancePct: shareOfRunsPct(run => run.lowestMoneyObserved <= 0),
+      // "Assisted", not "would have failed without it": a counterfactual needs
+      // a paired run with the option removed, which this cohort does not have.
+      creditOrGrantAssistedPct: shareOfRunsPct(
+        run => (run.loansTaken ?? 0) > 0 || run.emergencyGrantUsed === true
+      ),
+      avgDaysBelowTightThreshold: Number(
+        mean(runs.map(run => run.daysBelowTightLiquidity ?? 0)).toFixed(2)
+      ),
+      avgDaysBelowCriticalThreshold: Number(
+        mean(runs.map(run => run.daysBelowCriticalLiquidity ?? 0)).toFixed(2)
+      ),
+      medianMaxDrawdownPct: Number(
+        median(runs.map(run => run.maxPeakToTroughDrop)).toFixed(2)
+      ),
+      p90MaxDrawdownPct: Number(
+        quantile(runs.map(run => run.maxPeakToTroughDrop), 0.9).toFixed(2)
+      ),
+      // The floor of the surviving population: a scenario whose solvent tail
+      // still ends comfortable is safer than its insolvency rate suggests.
+      solventFinalMoneyP10: popSolvent.finalMoney
+        ? popSolvent.finalMoney.p10
+        : null,
+      medianBankruptcyDay: bankruptRuns.length
+        ? Number(median(bankruptRuns.map(run => run.daysSurvived)).toFixed(2))
+        : null,
+      earliestBankruptcyDay: bankruptRuns.length
+        ? minimum(bankruptRuns.map(run => run.daysSurvived))
+        : null
+    },
+
     volatility: {
       finalMoneyStdDev: popAll.finalMoney ? popAll.finalMoney.stdDev : 0,
       finalMoneyCoefficientOfVariation: (popAll.finalMoney && popAll.finalMoney.mean !== 0)
@@ -2818,59 +3731,445 @@ export const KPI_TARGETS = {
   // caps still express the intended ceilings, but they no longer characterise
   // the observed risk profile and want a deliberate design pass.
   //
+  // All seven money bands were re-derived once travel stopped being gated on the
+  // gig cadence. Two earlier attempts were wrong for the same underlying reason.
+  //
+  // The first set assumed venues could be picked freely from the whole
+  // difficulty-banded catalogue, which the map does not allow. The second set was
+  // derived while a non-performance day skipped travel entirely, so a scenario
+  // playing every fourth day took two hops in ten days, never reached the paying
+  // late layers, and produced bands as low as €550-1700 — figures that described
+  // a band standing still, not a band touring sparsely.
+  //
+  // Travel and performing are independent in the game (`useHandleTravel` gates a
+  // trip on visibility, a directed edge and money/fuel, never on having played),
+  // so every non-rest day now *attempts* a trip. It is not guaranteed one: the
+  // attempt goes through the same venue-access, cash and fuel gates production
+  // uses, and a refusal costs the day in place as a stranded day. Cadence
+  // therefore still separates the scenarios, through how often a band can afford
+  // to move and which nodes it routes toward. Observed KPI-scenario means
+  // currently span roughly €17,200-28,100, so the bands overlap heavily without
+  // collapsing onto one figure. Same ×0.5 to ×1.6 rule around the neutral-tuning
+  // mean. That they discriminate this weakly is a finding about the economy, not
+  // a calibration convenience — the spread wants a deliberate design pass.
+  //
   // Bankruptcy caps express per-scenario risk tolerance and are horizon-
   // independent intent, so they are unchanged.
   baseline_touring: {
     bankruptcyMax: 10,
-    moneyMin: 15000,
-    moneyMax: 47000,
+    moneyMin: 14000,
+    moneyMax: 46000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
     bankruptcyMax: 60,
-    moneyMin: 2000,
-    moneyMax: 7000,
+    moneyMin: 11000,
+    moneyMax: 36000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
-    moneyMin: 9000,
-    moneyMax: 28000,
+    moneyMin: 14000,
+    moneyMax: 44000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
     bankruptcyMax: 50,
-    moneyMin: 4500,
-    moneyMax: 15000,
+    moneyMin: 12000,
+    moneyMax: 39000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
     bankruptcyMax: 35,
-    moneyMin: 5500,
-    moneyMax: 18000,
+    moneyMin: 13000,
+    moneyMax: 43000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   chaos_tour: {
     bankruptcyMax: 25,
-    moneyMin: 8000,
-    moneyMax: 26000,
+    moneyMin: 12000,
+    moneyMax: 39000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
-    moneyMin: 9500,
-    moneyMax: 31000,
+    moneyMin: 14000,
+    moneyMax: 45000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
+  }
+}
+
+/**
+ * Design risk corridors — the second of three insolvency layers.
+ *
+ * `KPI_TARGETS[id].bankruptcyMax` is layer one: a hard safety ceiling that only
+ * answers "is the scenario playable at all". After the payout raise that funds
+ * the shop catalogue within one tour, those ceilings stopped characterising the
+ * observed risk: Bootstrap Struggle sits at ~17% against a cap of 60%, every
+ * other main scenario near 0%. Almost any further income increase still
+ * "passes" while the game gets progressively risk-free, so the caps cannot
+ * measure balance quality any more — only catastrophic regressions.
+ *
+ * These corridors are layer two: the risk band a scenario is *intended* to
+ * occupy. They are DESIGN HYPOTHESES, not measured results, and deliberately
+ * NON-BLOCKING — `below_target` means "safer than intended", which is a
+ * conversation, not a build failure. Promoting any lower bound to a real gate
+ * is a separate decision that wants two or three more balance iterations and
+ * real playtests behind it.
+ *
+ * Every corridor must stay inside its scenario's `bankruptcyMax`; the corridor
+ * describes intent within the safety envelope, it never widens it.
+ */
+export const RISK_TARGETS = {
+  baseline_touring: {
+    bankruptcyTargetPct: [1, 5],
+    intent: 'Meist erfolgreich, einzelne Runs dürfen scheitern.'
+  },
+  bootstrap_struggle: {
+    bankruptcyTargetPct: [15, 30],
+    intent: 'Spürbar gefährlich, aber nicht frustrierend.'
+  },
+  aggressive_marketing: {
+    bankruptcyTargetPct: [2, 8],
+    intent: 'Risiko entsteht aus hohen Ausgaben.'
+  },
+  scandal_recovery: {
+    bankruptcyTargetPct: [8, 20],
+    intent: 'Bewusst schwieriger Erholungspfad.'
+  },
+  festival_push: {
+    bankruptcyTargetPct: [5, 15],
+    intent: 'Volatilität durch wenige wichtige Gigs.'
+  },
+  chaos_tour: {
+    bankruptcyTargetPct: [8, 20],
+    intent: 'Hohe Varianz ist der Kern des Szenarios.'
+  },
+  cult_hypergrowth: {
+    bankruptcyTargetPct: [2, 10],
+    intent: 'Starkes Wachstum mit einzelnen Kollapsrisiken.'
+  }
+}
+
+/**
+ * Liquidity marks for the financial stress profile. Insolvency is a terminal
+ * event and, over a ten-day horizon, a rare one: a run can be under constant
+ * economic pressure and still never formally go bankrupt. These thresholds
+ * measure the pressure itself, so a scenario can read as tense at a 3%
+ * insolvency rate.
+ */
+export const LIQUIDITY_STRESS_THRESHOLDS = Object.freeze({
+  tight: 500,
+  critical: 250
+})
+
+/** Below this cohort size a rate is noise, not a risk profile. */
+export const RISK_EVIDENCE_MINIMUM_SAMPLE = 30
+
+/**
+ * Where an observed insolvency rate sits across all three layers. Order
+ * matters: the safety ceiling outranks the corridor, and missing evidence
+ * outranks both — a rate from nine runs must not be reported as a design
+ * verdict either way.
+ */
+export const classifyBankruptcyRisk = ({
+  observedPct,
+  targetRangePct,
+  safetyMaximumPct,
+  sampleSize
+}) => {
+  if (!Array.isArray(targetRangePct) || targetRangePct.length !== 2) {
+    return 'not_evaluated'
+  }
+  if (!Number.isFinite(observedPct)) return 'not_evaluated'
+  if (!Number.isFinite(sampleSize) || sampleSize < RISK_EVIDENCE_MINIMUM_SAMPLE) {
+    return 'insufficient_evidence'
+  }
+  if (Number.isFinite(safetyMaximumPct) && observedPct > safetyMaximumPct) {
+    return 'above_safety_limit'
+  }
+  const [minimumPct, maximumPct] = targetRangePct
+  if (observedPct < minimumPct) return 'below_target'
+  if (observedPct > maximumPct) return 'above_target'
+  return 'within_target'
+}
+
+/**
+ * How the Wilson interval relates to the corridor. A point estimate inside the
+ * band still hides that the plausible range leaks out of it: Bootstrap at
+ * 45/260 reads 17.31% against a 15-30% corridor, but its 95% interval runs from
+ * roughly 13% to 22%, so the true rate is quite possibly under the intended
+ * minimum. That is not a failure — it is "sitting on the lower design edge",
+ * and it is exactly what a bare pass/fail cannot say.
+ */
+export const describeCorridorConfidence = ({ confidence95, targetRangePct }) => {
+  if (!Array.isArray(targetRangePct) || targetRangePct.length !== 2) {
+    return 'not_evaluated'
+  }
+  const lowerPct = confidence95?.lowerPct
+  const upperPct = confidence95?.upperPct
+  if (!Number.isFinite(lowerPct) || !Number.isFinite(upperPct)) {
+    return 'not_evaluated'
+  }
+  const [minimumPct, maximumPct] = targetRangePct
+  if (upperPct < minimumPct) return 'entirely_below'
+  if (lowerPct > maximumPct) return 'entirely_above'
+  if (lowerPct >= minimumPct && upperPct <= maximumPct) return 'contained'
+  if (lowerPct < minimumPct && upperPct > maximumPct) return 'spans_corridor'
+  return lowerPct < minimumPct ? 'straddles_lower' : 'straddles_upper'
+}
+
+/**
+ * Folds the calibration and holdout classifications into one scenario verdict.
+ * Agreement across disjoint seed streams is what separates "this is the risk
+ * profile" from "this was that cohort": a scenario that reads within_target on
+ * one stream and below_target on the other is on a boundary, and reporting
+ * either label alone would overstate what was measured.
+ */
+export const evaluateScenarioRiskStatus = ({
+  calibrationStatus,
+  holdoutStatus
+}) => {
+  const statuses = [calibrationStatus, holdoutStatus]
+  if (statuses.includes('insufficient_evidence')) return 'insufficient_evidence'
+  if (statuses.includes('above_safety_limit')) return 'unsafe'
+  if (statuses.includes('not_evaluated')) return 'not_evaluated'
+  if (calibrationStatus !== holdoutStatus) return 'unstable'
+  if (calibrationStatus === 'within_target') return 'healthy'
+  if (calibrationStatus === 'below_target') return 'low_risk'
+  return 'high_risk'
+}
+
+const RISK_STATUS_LABEL = {
+  healthy: '🟢 healthy',
+  low_risk: '🔵 low_risk',
+  high_risk: '🟠 high_risk',
+  unsafe: '🔴 unsafe',
+  unstable: '🟡 unstable',
+  insufficient_evidence: '⚪ insufficient_evidence',
+  not_evaluated: '⚪ not_evaluated'
+}
+
+const formatRiskStreams = ({ calibrationPct, holdoutPct }) =>
+  Number.isFinite(holdoutPct)
+    ? `Kalibrierung ${calibrationPct}%, Holdout ${holdoutPct}%`
+    : `Kalibrierung ${calibrationPct}%`
+
+/**
+ * Every warning names both seed streams because the composite status is not
+ * always driven by the calibration rate. `unsafe` can come from a holdout-only
+ * breach — cult_hypergrowth reads 10.38% in calibration and 14.23% in the
+ * holdout against a 12% cap — and quoting the calibration rate there asserted
+ * that 10.38% exceeds a 12% limit. `unstable` exists precisely because the two
+ * streams disagree, so one rate cannot describe it either.
+ */
+const RISK_STATUS_WARNING = {
+  low_risk: ({ id, targetRangePct, ...streams }) =>
+    `${id}: Insolvenzrate (${formatRiskStreams(streams)}) liegt unter dem Zielkorridor ${targetRangePct[0]}–${targetRangePct[1]}% — das Szenario ist sicherer als beabsichtigt.`,
+  high_risk: ({ id, targetRangePct, ...streams }) =>
+    `${id}: Insolvenzrate (${formatRiskStreams(streams)}) liegt über dem Zielkorridor ${targetRangePct[0]}–${targetRangePct[1]}%, aber noch unter der Sicherheitsgrenze.`,
+  unstable: ({
+    id,
+    targetRangePct,
+    calibrationStatus,
+    holdoutStatus,
+    ...streams
+  }) =>
+    `${id}: Kalibrierung (${calibrationStatus}) und Holdout (${holdoutStatus}) ordnen die Raten unterschiedlich zum Korridor ${targetRangePct[0]}–${targetRangePct[1]}% ein — ${formatRiskStreams(streams)}; das Szenario liegt auf einer Korridorgrenze.`,
+  unsafe: ({
+    id,
+    safetyMaximumPct,
+    calibrationStatus,
+    holdoutStatus,
+    calibrationPct,
+    holdoutPct
+  }) => {
+    const breached = [
+      calibrationStatus === 'above_safety_limit'
+        ? `Kalibrierung ${calibrationPct}%`
+        : null,
+      holdoutStatus === 'above_safety_limit' ? `Holdout ${holdoutPct}%` : null
+    ].filter(Boolean)
+    const verb = breached.length > 1 ? 'überschreiten' : 'überschreitet'
+    return `${id}: ${breached.join(' und ')} ${verb} die harte Sicherheitsgrenze ${safetyMaximumPct}% — das ist ein Safety-Gate-Befund, kein Designhinweis.`
+  },
+  insufficient_evidence: ({ id, ...streams }) =>
+    `${id}: Stichprobe zu klein, um die Raten (${formatRiskStreams(streams)}) gegen den Korridor zu bewerten (mindestens ${RISK_EVIDENCE_MINIMUM_SAMPLE} Runs nötig).`
+}
+
+/**
+ * The hard safety layer, evaluated on the holdout stream.
+ *
+ * `bankruptcyMax` is a ceiling, not a hypothesis, so a breach is blocking
+ * wherever it is observed — and the calibration cohort alone cannot decide it.
+ * `cult_hypergrowth` reads 10.38% against its 12% cap on the cohort the bands
+ * were derived from and 14.23% on independent seeds. Because only the
+ * calibration rate reached the release gate, a hard limit could fail while the
+ * pipeline still recommended the tuning for production.
+ *
+ * Deliberately separate from `designRiskReview`, which stays non-blocking: a
+ * corridor states an intent, a cap states a limit. This block decides release
+ * readiness; it does not suppress the diagnostic report, because a run that
+ * fails the gate is exactly the run someone needs to read.
+ */
+export const buildHoldoutSafetyValidation = holdoutScenarios => {
+  const candidates = (holdoutScenarios ?? []).filter(
+    scenario =>
+      Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax) &&
+      Number.isFinite(scenario.holdoutBankruptcy?.ratePct)
+  )
+  const failures = candidates
+    .filter(
+      scenario =>
+        scenario.holdoutBankruptcy.ratePct >
+        KPI_TARGETS[scenario.id].bankruptcyMax
+    )
+    .map(scenario => ({
+      scenarioId: scenario.id,
+      metric: 'bankruptcyRate',
+      holdoutValuePct: scenario.holdoutBankruptcy.ratePct,
+      maximumPct: KPI_TARGETS[scenario.id].bankruptcyMax,
+      sampleSize: scenario.holdoutBankruptcy.sampleSize ?? null
+    }))
+  // Coverage is part of the verdict, not an assumption about the caller. An
+  // empty set was already refused, but a *partial* one passed just as happily:
+  // handing over only `baseline_touring` cleared the gate while six other hard
+  // limits went unmeasured. The expectation is derived from the configuration
+  // rather than from what arrived, so config drift or a refactor that narrows
+  // the caller's loop fails closed instead of silently shrinking the gate.
+  const expectedScenarioIds = SCENARIOS.filter(scenario =>
+    Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax)
+  ).map(scenario => scenario.id)
+  const evaluatedScenarios = candidates.map(scenario => scenario.id)
+  const missingScenarioIds = expectedScenarioIds.filter(
+    id => !evaluatedScenarios.includes(id)
+  )
+
+  return {
+    blocking: true,
+    layer: 'hard-safety-limit',
+    metric: 'bankruptcyRate',
+    source: 'holdout',
+    passed:
+      expectedScenarioIds.length > 0 &&
+      missingScenarioIds.length === 0 &&
+      failures.length === 0,
+    expectedScenarios: expectedScenarioIds,
+    evaluatedScenarios,
+    missingScenarioIds,
+    failures
+  }
+}
+
+/**
+ * Layer three: the observed risk profile, expressed as a relation between
+ * measurement and intent instead of a bare pass/fail.
+ *
+ * Deliberately non-blocking. The simulation report has no exit code to fail and
+ * this block does not feed one; the corridors are hypotheses that need more
+ * iterations and real playtests before any lower bound becomes a gate. The
+ * warnings exist so that "safer than intended" is visible rather than hidden
+ * behind a hard cap the scenario passes with room to spare.
+ */
+export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
+  const scenarios = (results ?? [])
+    .filter(result => RISK_TARGETS[result.id])
+    .map(result => {
+      const targetRangePct = RISK_TARGETS[result.id].bankruptcyTargetPct
+      const safetyMaximumPct = KPI_TARGETS[result.id]?.bankruptcyMax ?? null
+      const bankruptcy = result.summary?.bankruptcy ?? {}
+      const observedPct = bankruptcy.ratePct
+      const calibrationStatus = classifyBankruptcyRisk({
+        observedPct,
+        targetRangePct,
+        safetyMaximumPct,
+        sampleSize: bankruptcy.sampleSize
+      })
+
+      const holdoutEntry = (holdoutScenarios ?? []).find(
+        item => item.id === result.id
+      )
+      const holdoutBankruptcy = holdoutEntry?.holdoutBankruptcy ?? null
+      const holdoutStatus = holdoutBankruptcy
+        ? classifyBankruptcyRisk({
+            observedPct: holdoutBankruptcy.ratePct,
+            targetRangePct,
+            safetyMaximumPct,
+            sampleSize: holdoutBankruptcy.sampleSize
+          })
+        : 'not_evaluated'
+
+      const status = evaluateScenarioRiskStatus({
+        calibrationStatus,
+        holdoutStatus
+      })
+
+      return {
+        id: result.id,
+        name: result.name,
+        intent: RISK_TARGETS[result.id].intent,
+        status,
+        bankruptcy: {
+          observedPct: observedPct ?? null,
+          count: bankruptcy.count ?? null,
+          sampleSize: bankruptcy.sampleSize ?? null,
+          targetRangePct,
+          safetyMaximumPct,
+          status: calibrationStatus,
+          confidence95: bankruptcy.confidence95 ?? null,
+          corridorConfidence: describeCorridorConfidence({
+            confidence95: bankruptcy.confidence95,
+            targetRangePct
+          })
+        },
+        holdout: {
+          observedPct: holdoutBankruptcy?.ratePct ?? null,
+          sampleSize: holdoutBankruptcy?.sampleSize ?? null,
+          status: holdoutStatus,
+          // Whether the scenario stays in the same risk band on a disjoint seed
+          // stream — a stricter question than "does it still pass".
+          riskBandResult:
+            holdoutStatus === 'not_evaluated'
+              ? 'not_evaluated'
+              : calibrationStatus === holdoutStatus
+                ? 'stable'
+                : 'unstable_boundary'
+        }
+      }
+    })
+
+  const warnings = scenarios.flatMap(scenario => {
+    const describe = RISK_STATUS_WARNING[scenario.status]
+    if (!describe) return []
+    return [
+      describe({
+        id: scenario.id,
+        calibrationPct: scenario.bankruptcy.observedPct,
+        holdoutPct: scenario.holdout.observedPct,
+        targetRangePct: scenario.bankruptcy.targetRangePct,
+        safetyMaximumPct: scenario.bankruptcy.safetyMaximumPct,
+        calibrationStatus: scenario.bankruptcy.status,
+        holdoutStatus: scenario.holdout.status
+      })
+    ]
+  })
+
+  return {
+    blocking: false,
+    note: 'Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax.',
+    evidenceMinimumSample: RISK_EVIDENCE_MINIMUM_SAMPLE,
+    scenarios,
+    warnings
   }
 }
 
@@ -3052,6 +4351,7 @@ const buildMarkdownReport = payload => {
     lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
     lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`)
+    lines.push(`- Risikokorridor-Konfiguration SHA-256: ${payload.metadata.riskTargetConfigSha256 || 'nicht verfügbar'}`)
     lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
     lines.push('')
   }
@@ -3206,6 +4506,51 @@ const buildMarkdownReport = payload => {
         ? '✅ Jedes einzelne KPI-Band urteilt auf unabhängigen Seeds gleich.'
         : `❌ Auf unabhängigen Seeds abweichende Bänder: ${holdout.disagreements.join('; ')}. Diese Bänder liegen auf einem Seed-Artefakt und sind neu abzuleiten.`
     )
+    lines.push('')
+  }
+
+  // ── Hard safety limits on the holdout stream ──────────────────────────────
+  const safety = payload.holdoutSafetyValidation
+  if (safety) {
+    lines.push('## Harte Sicherheitsgrenzen (Holdout)')
+    lines.push('')
+    lines.push(
+      'Diese Prüfung ist die einzige *blockierende* Schicht des Risikomodells. `KPI_TARGETS.bankruptcyMax` ist eine Obergrenze, keine Designhypothese — eine Überschreitung ist deshalb ein Fehler, egal auf welchem Seed-Strom sie auftritt. Die Kalibrierungskohorte allein kann das nicht entscheiden, weil die Bänder gegen genau diese Kohorte abgeleitet wurden. Die Zielkorridore in „Insolvenz-Zielkorridore“ bleiben davon getrennt und weiterhin nicht blockierend.'
+    )
+    lines.push('')
+    lines.push(
+      `Abdeckung: ${safety.evaluatedScenarios.length} von ${safety.expectedScenarios?.length ?? safety.evaluatedScenarios.length} Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Abdeckung ist selbst ein Fehlschlag — ein Gate, das nur einen Teil der harten Grenzen prüft, sagt über die übrigen nichts aus.`
+    )
+    lines.push('')
+    if (safety.missingScenarioIds?.length) {
+      lines.push(
+        `⚪ Nicht gemessen: ${safety.missingScenarioIds.join(', ')}. Das ist **kein** bestandenes Gate, sondern fehlende Evidenz.`
+      )
+      lines.push('')
+    }
+    if (safety.passed) {
+      lines.push(
+        `✅ Alle ${safety.evaluatedScenarios.length} geprüften Szenarien bleiben auf unabhängigen Seeds unter ihrer harten Grenze.`
+      )
+    } else if (safety.failures.length) {
+      lines.push(
+        '| Szenario | Metrik | Holdout | Harte Grenze | Stichprobe |'
+      )
+      lines.push('|---|---|---:|---:|---:|')
+      for (const failure of safety.failures) {
+        lines.push(
+          `| ${failure.scenarioId} | ${failure.metric} | ${failure.holdoutValuePct}% | ${failure.maximumPct}% | ${failure.sampleSize ?? '—'} |`
+        )
+      }
+      lines.push('')
+      lines.push(
+        `❌ ${safety.failures.length} harte Sicherheitsgrenze(n) auf dem Holdout-Strom überschritten. Die Messimplementierung ist vollständig, aber die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht — es gibt daher **keine Produktionsempfehlung**, bis die betroffenen Szenarien neu balanciert sind.`
+      )
+    } else {
+      lines.push(
+        '❌ Gate nicht bestanden, ohne überschrittene Grenze: die Abdeckung ist unvollständig. **Keine Produktionsempfehlung**, bis alle konfigurierten Grenzen gemessen sind.'
+      )
+    }
     lines.push('')
   }
 
@@ -3430,6 +4775,282 @@ const buildMarkdownReport = payload => {
   }
   lines.push('')
 
+  // ── Design risk corridors ─────────────────────────────────────────────────
+  const risk = payload.designRiskReview
+  if (risk?.scenarios?.length) {
+    lines.push('## Insolvenz-Zielkorridore (Designmetrik, nicht blockierend)')
+    lines.push('')
+    lines.push(
+      'Die Sicherheitsobergrenzen in `KPI_TARGETS.bankruptcyMax` beantworten nur, ob ein Szenario grundsätzlich spielbar ist. Nach dem Einkommensschub charakterisieren sie das beobachtete Risiko nicht mehr: fast jede weitere Einnahmenerhöhung besteht sie weiterhin, während das Spiel zunehmend risikofrei wird. Die Korridore hier beschreiben das *beabsichtigte* Risikoband.'
+    )
+    lines.push('')
+    lines.push(
+      `${risk.note} \`below_target\` heißt „sicherer als beabsichtigt“ — ein Hinweis, kein Fehlschlag.`
+    )
+    lines.push('')
+    lines.push(
+      '| Szenario | Beobachtet | Zielkorridor | Safety-Max | 95%-Intervall (Wilson) | Intervall vs. Korridor | Kalibrierung | Holdout | Risikoband | Status |'
+    )
+    lines.push('|---|---:|---:|---:|---:|---|---|---|---|---|')
+    for (const item of risk.scenarios) {
+      const b = item.bankruptcy
+      const c = b.confidence95
+      const interval = c
+        ? `${(c.lowerPct ?? 0).toFixed(2)}–${(c.upperPct ?? 0).toFixed(2)}%`
+        : '—'
+      lines.push(
+        `| ${item.name} | ${(b.observedPct ?? 0).toFixed(2)}% | ${b.targetRangePct[0]}–${b.targetRangePct[1]}% | ${b.safetyMaximumPct == null ? '—' : `${b.safetyMaximumPct}%`} | ${interval} | ${b.corridorConfidence} | ${b.status} | ${item.holdout.status} | ${item.holdout.riskBandResult} | ${RISK_STATUS_LABEL[item.status] ?? item.status} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      'Das Wilson-Intervall steht bewusst neben dem Punktwert: eine Rate kann im Korridor liegen, während der plausible Bereich darunter hinausreicht — das ist „auf der unteren Designgrenze“, was ein reines Pass/Fail nicht sagen kann.'
+    )
+    lines.push('')
+    lines.push('### Weiche Design-Warnungen')
+    lines.push('')
+    // An `unsafe` warning is a hard-limit breach, not a corridor hint, so it must
+    // not sit under a heading that says nothing blocks. Warnings are prefixed
+    // with their scenario id by `RISK_STATUS_WARNING`, which is what lets them be
+    // split here without changing the published `warnings` array itself.
+    const blockingIds = new Set(
+      risk.scenarios
+        .filter(scenario => scenario.status === 'unsafe')
+        .map(scenario => scenario.id)
+    )
+    const isBlockingWarning = warning =>
+      [...blockingIds].some(id => warning.startsWith(`${id}:`))
+    const softWarnings = risk.warnings.filter(
+      warning => !isBlockingWarning(warning)
+    )
+    const blockingWarnings = risk.warnings.filter(isBlockingWarning)
+    if (softWarnings.length) {
+      lines.push(
+        'Diese Punkte erscheinen im Report, blockieren aber nichts:'
+      )
+      lines.push('')
+      for (const warning of softWarnings) lines.push(`- ⚠️ ${warning}`)
+      if (blockingWarnings.length) {
+        lines.push('')
+        lines.push(
+          `Nicht in dieser Kategorie: ${blockingWarnings.length} Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.`
+        )
+      }
+    } else if (blockingWarnings.length) {
+      lines.push(
+        `Keine weichen Warnungen. ${blockingWarnings.length} Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.`
+      )
+    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
+      lines.push(
+        '✅ Alle bewerteten Szenarien liegen in ihrem Zielkorridor und bleiben auf unabhängigen Seeds im selben Risikoband.'
+      )
+    } else {
+      // A `not_evaluated` scenario produces no warning, so an empty warning list
+      // is not the same as "everything is healthy".
+      lines.push(
+        `⚪ Keine Warnungen, aber auch nicht durchgehend \`healthy\`: ${risk.scenarios
+          .filter(scenario => scenario.status !== 'healthy')
+          .map(scenario => `${scenario.id} (${scenario.status})`)
+          .join(', ')}.`
+      )
+    }
+    lines.push('')
+  }
+
+  // ── Financial stress ──────────────────────────────────────────────────────
+  const stressReference = payload.results.find(
+    scenario => scenario.summary?.financialStress
+  )
+  if (stressReference) {
+    const thresholds = stressReference.summary.financialStress.thresholds
+    lines.push('## Financial-Stress-Profil')
+    lines.push('')
+    lines.push(
+      `Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft unter wirtschaftlichem Druck stehen, ohne formal insolvent zu werden. Die folgenden Werte messen den Druck selbst, gemessen an ${fmtEur(thresholds.tightEur)} (knapp) und ${fmtEur(thresholds.criticalEur)} (kritisch), Geldstand jeweils zu Tagesbeginn. Es sind reine Beobachtungen ohne Zielwerte — Untergrenzen dafür sollten aus gemessenem Verhalten kommen, nicht aus einer Annahme.`
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | Insolvenz | je < ${fmtEur(thresholds.tightEur)} | je < ${fmtEur(thresholds.criticalEur)} | Saldo 0 | Ø Tage < ${fmtEur(thresholds.tightEur)} | Drawdown Median | Drawdown P90 | Solventes P10-Endgeld | Median Insolvenztag | Kredit/Grant |`
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for (const scenario of payload.results) {
+      const f = scenario.summary?.financialStress
+      if (!f) continue
+      lines.push(
+        `| ${scenario.name} | ${fmtPct(f.bankruptcyRatePct)} | ${fmtPct(f.everBelowTightPct)} | ${fmtPct(f.everBelowCriticalPct)} | ${fmtPct(f.zeroBalancePct)} | ${f.avgDaysBelowTightThreshold} | ${fmtPct(f.medianMaxDrawdownPct)} | ${fmtPct(f.p90MaxDrawdownPct)} | ${fmtEurOrDash(f.solventFinalMoneyP10)} | ${f.medianBankruptcyDay ?? '—'} | ${fmtPct(f.creditOrGrantAssistedPct)} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      '„Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.'
+    )
+    lines.push('')
+    const tightShares = payload.results
+      .map(scenario => scenario.summary?.financialStress?.everBelowTightPct)
+      .filter(Number.isFinite)
+    const zeroShareMax = maximum(
+      payload.results
+        .map(scenario => scenario.summary?.financialStress?.zeroBalancePct)
+        .filter(Number.isFinite)
+    )
+    lines.push(
+      `Zur Lesart der beiden Schwellen: „je < ${fmtEur(thresholds.tightEur)}“ trennt die Szenarien inzwischen deutlich (${fmtPct(minimum(tightShares))} bis ${fmtPct(maximum(tightShares))}) und ist damit selbst ein Signal — ein früherer Stand dieses Reports erklärte die Spalte als bei 100% gesättigt, was für den damaligen Simulator ohne echte Routenwahl zutraf, für die vorliegenden Zahlen aber nicht mehr. „Saldo 0“ bleibt bei höchstens ${fmtPct(zeroShareMax)}, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
+    )
+    lines.push('')
+  }
+
+  // ── Tour paths (4F) ───────────────────────────────────────────────────────
+  const pathReference = payload.results.find(
+    scenario => scenario.summary?.tourPaths
+  )
+  if (pathReference) {
+    const depth = pathReference.summary.tourPaths.tourDepth
+    const finaleReachers = payload.results
+      .filter(scenario => (scenario.summary?.tourPaths?.finaleReachedPct ?? 0) > 0)
+      .map(scenario => ({
+        name: scenario.name,
+        share: scenario.summary.tourPaths.finaleReachedPct
+      }))
+    lines.push('## Reale Tourpfade')
+    lines.push('')
+    lines.push(
+      `Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nur auf einen oder zwei Knoten der nächsten Ebene, frühe Ebenen tragen leichte Venues, und das Finale liegt auf Ebene ${depth}. Vorher wurde jede Venue frei aus dem gesamten Katalog gezogen — eine Erreichbarkeit, die das Spiel nicht anbietet.`
+    )
+    lines.push('')
+    lines.push(
+      '„Finale erreicht“ und „Finale gespielt“ sind absichtlich zwei Spalten: die erste zählt die Ankunft am FINALE-Knoten, die zweite die tatsächlich absolvierte Show. Ein bei niedriger Harmony abgesagtes Finale steht deshalb in der ersten, aber nicht in der zweiten Spalte — eine Ankunft ist kein Beweis, dass gespielt wurde.'
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | Gigs | Ankünfte | Ebene erreicht (max ${depth}) | Finale erreicht | Finale gespielt | Ankünfte ohne Bühne | Ø blockierte Fahrten | davon Geld/Fuel/Zugang | Ø Tanken für Fahrt | Sackgassen |`
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|')
+    for (const scenario of payload.results) {
+      const t = scenario.summary?.tourPaths
+      if (!t) continue
+      lines.push(
+        `| ${scenario.name} | ${scenario.summary.avgGigsPlayed.toFixed(2)} | ${t.avgArrivals} | ${t.avgDeepestLayerReached} | ${fmtPct(t.finaleReachedPct)} | ${fmtPct(t.finaleCompletedPct)} | ${t.avgNonPerformingArrivals} | ${t.avgStrandedDays} | ${t.travelBlockedByReason.money}/${t.travelBlockedByReason.fuel}/${t.travelBlockedByReason.venue_access} | ${t.avgRefuelledToTravel} | ${t.avgRouteDeadEnds} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      `Knotentypen über alle Ankünfte: ${Object.entries(
+        pathReference.summary.tourPaths.nodeTypeSharePct
+      )
+        .sort((left, right) => right[1] - left[1])
+        .map(([type, share]) => `${type} ${share}%`)
+        .join(' · ')} (Beispiel ${pathReference.name}).`
+    )
+    lines.push('')
+    // Derived from the table directly above rather than asserted, so a change to
+    // map generation cannot leave the sentence contradicting its own data.
+    const performableSharePct = Number(
+      Object.entries(pathReference.summary.tourPaths.nodeTypeSharePct)
+        .filter(([type]) => PERFORMABLE_NODE_TYPES.has(type))
+        .reduce((total, [, share]) => total + share, 0)
+        .toFixed(2)
+    )
+    lines.push(
+      `**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — \`useHandleTravel\` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen ${finaleReachers.length} von ${payload.results.length} Szenarien das Finale (${finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') || 'keines'}), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da ${fmtPct(performableSharePct)} der besuchten Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.`
+    )
+    lines.push('')
+    lines.push(
+      'Modellgrenzen: Ein Ruhetag ist eine explizite Aktion und verbraucht den Tag am Ort; jeder andere Tag ist eine Fahrt, weil das Spiel keine Warten-Aktion kennt. `gigGapDays` steuert nur die Streckenpräferenz, nicht die Zahl der Hops. Nicht modelliert bleiben Notverkäufe, Kreditentscheidungen an realen Zeitpunkten und die Supply-Stop-Auswahl.'
+    )
+    lines.push('')
+  }
+
+  // ── Purchase paths (4D) ───────────────────────────────────────────────────
+  const purchaseReference = payload.results.find(
+    scenario => scenario.summary?.purchasePaths
+  )
+  if (purchaseReference) {
+    const catalogSize = purchaseReference.summary.purchasePaths.catalogSize
+    const [, midDayForShop] = SIMULATION_CONSTANTS.progressionCheckpointDays
+    lines.push('## Kaufpfade und Progression')
+    lines.push('')
+    lines.push(
+      `Am Ende genug Geld zu besitzen ist nicht dasselbe wie während der Tour sinnvoll kaufen zu können. Das Fame-Shop-Audit beantwortet nur die erste Frage; hier steht, *wann* gekauft wird, was erreichbar bleibt und was am Geld scheitert. Katalogumfang: ${catalogSize} Artikel.`
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | 1. Kauf (Median Tag) | Van erreicht | Van (Median Tag) | HQ erreicht | HQ (Median Tag) | Ø Artikel | Kataloganteil | Erster Kauf typisch | Ø Geld vor Kauf | Ø Restliquidität | Ø verpasste Käufe | Ø Liquiditätsvorbehalt | Unbezahlbar Tag ${midDayForShop} | Bezahlbar Tag ${midDayForShop} |`
+    )
+    lines.push(
+      '|---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|---:|---:|---:|---:|'
+    )
+    for (const scenario of payload.results) {
+      const p = scenario.summary?.purchasePaths
+      if (!p) continue
+      lines.push(
+        `| ${scenario.name} | ${p.firstPurchaseDayMedian ?? '—'} | ${fmtPct(p.vanUpgradeReachedPct)} | ${p.firstVanUpgradeDayMedian ?? '—'} | ${fmtPct(p.hqUpgradeReachedPct)} | ${p.firstHqUpgradeDayMedian ?? '—'} | ${p.avgDistinctItemsPurchased} | ${fmtPct(p.catalogSharePurchasedPct)} | ${p.modalFirstPurchaseCategory ?? '—'} | ${fmtEurOrDash(p.avgMoneyBeforePurchase)} | ${fmtEurOrDash(p.avgResidualMoneyAfterPurchase)} | ${p.avgMissedPurchases} | ${p.avgLiquidityDeferrals} | ${p.avgUnaffordableAtMidCheckpoint ?? '—'} | ${p.avgAffordableAtMidCheckpoint ?? '—'} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      '„Verpasste Käufe“ sind Artikel, die der simulierte Käufer wollte und nicht bezahlen konnte (`insufficient_funds`). „Liquiditätsvorbehalt“ zählt getrennt die Fälle, in denen derselbe Käufer den Artikel bezahlen könnte, aber seine Reserve nicht antasten will — zwei Tage der laufenden Verpflichtungen aus `getTotalDailyObligations`, mindestens €150 für den nächsten Hop. Beide Zahlen beschreiben das Entscheidungsmodell der Simulation, nicht das Verhalten echter Spieler; Kaufreihenfolge und Kaufanteil bleiben Heuristik-Artefakte und sind keine Designbefunde.'
+    )
+    lines.push('')
+  }
+
+  // ── Gig economics (4E) ────────────────────────────────────────────────────
+  const gigReference = payload.results.find(
+    scenario => scenario.summary?.gigEconomics
+  )
+  if (gigReference) {
+    const wearValues = payload.results
+      .map(scenario => scenario.summary?.gigEconomics)
+      .filter(Boolean)
+    const worstWear = {
+      stamina: Math.min(
+        ...wearValues.map(item => item.minMemberStaminaObserved ?? Infinity)
+      ),
+      mood: Math.min(
+        ...wearValues.map(item => item.minMemberMoodObserved ?? Infinity)
+      ),
+      harmony: Math.min(
+        ...wearValues.map(item => item.minHarmonyObserved ?? Infinity)
+      )
+    }
+    // Which scenarios rest, read from the table rather than asserted. The rounded
+    // `avgRestDays` column shows 0 for a scenario whose share is 0.04%, so naming
+    // "only the high-controversy scenario" contradicted the shares beside it.
+    const restingScenarios = payload.results
+      .filter(scenario => (scenario.summary?.gigEconomics?.restDaySharePct ?? 0) > 0)
+      .map(scenario => ({
+        name: scenario.name,
+        sharePct: scenario.summary.gigEconomics.restDaySharePct
+      }))
+      .sort((left, right) => right.sharePct - left.sharePct)
+    const topRestingScenario = restingScenarios[0]
+    lines.push('## Gig-Frequenz, Reisekosten und Amortisation')
+    lines.push('')
+    lines.push(
+      'Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler oder eine beabsichtigte Belohnung für aktiveres Spielen ist, wird hier gemessen und nicht entschieden.'
+    )
+    lines.push('')
+    lines.push(
+      '| Szenario | Gig-Netto/Kalendertag | Gig-Netto/Gig | Gigs/Kalendertag | Ø Ruhetage | Ruhetaganteil | Reisekosten je Gig | Reisekostenanteil am Netto | Katalog < 1 Gig |'
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for (const scenario of payload.results) {
+      const g = scenario.summary?.gigEconomics
+      if (!g) continue
+      lines.push(
+        `| ${scenario.name} | ${fmtEur(g.gigNetPerCalendarDay)} | ${fmtEur(g.gigNetPerGigDay)} | ${g.gigsPerCalendarDay} | ${g.avgRestDays} | ${fmtPct(g.restDaySharePct)} | ${fmtEur(g.avgTravelCostPerGigDay)} | ${fmtPct(g.travelCostShareOfGigNetPct)} | ${fmtPct(g.catalogItemsUnderOneGigNetPct)} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      `„Katalog < 1 Gig“ ist der Anteil der ${gigReference.summary.gigEconomics.moneyPricedCatalogSize} geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.`
+    )
+    lines.push('')
+    lines.push(
+      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. ${restingScenarios.length ? `Ruhetage treten in ${restingScenarios.length} von ${payload.results.length} Szenarien überhaupt auf (${restingScenarios.map(item => `${item.name} ${item.sharePct}%`).join(', ')}); nennenswert ist der Anteil nur bei ${topRestingScenario?.name ?? '—'}, alle übrigen liegen im Promillebereich.` : 'In keinem Szenario entstand ein messbarer Ruhetag.'} Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
+    )
+    lines.push('')
+  }
+
   lines.push('## Populationen')
   lines.push('')
   lines.push('| Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |')
@@ -3578,6 +5199,57 @@ lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push(`- Fehlgeschlagen: ${kpiCounts.failed}`)
   lines.push(`- Nicht bewertet: ${kpiCounts.not_evaluated}`)
   lines.push('')
+
+  // Safety verdict and design verdict are different questions, and after the
+  // payout raise they answer differently. Reporting only the first would read
+  // as "balance is fine" while most scenarios sit below their intended risk.
+  if (risk?.scenarios?.length) {
+    const riskCounts = risk.scenarios.reduce((acc, scenario) => {
+      acc[scenario.status] = (acc[scenario.status] ?? 0) + 1
+      return acc
+    }, {})
+    lines.push('### Designrisiko-Zusammenfassung (nicht blockierend)')
+    lines.push(
+      `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze; ${risk.scenarios.filter(scenario => scenario.status === 'not_evaluated').length} ohne Korridorurteil.`
+    )
+    // The blocking verdict has to appear in the summary too, otherwise the only
+    // non-blocking heading in the report is also the last word on safety.
+    if (payload.holdoutSafetyValidation) {
+      const safetySummary = payload.holdoutSafetyValidation
+      lines.push(
+        safetySummary.passed
+          ? '- ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.'
+          : `- ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (${[safetySummary.failures.map(failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), safetySummary.missingScenarioIds?.length ? `nicht gemessen: ${safetySummary.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' · ') || 'keine Evidenz'}). Keine Produktionsempfehlung.`
+      )
+    }
+    lines.push(
+      `- Risikobänder: ${Object.entries(riskCounts)
+        .map(([status, count]) => `${status} ${count}`)
+        .join(' · ')}.`
+    )
+    // Counted the same way the corridor section splits them: a hard-limit breach
+    // is not a soft warning, so it must not be tallied as one here either.
+    const softWarningCount = risk.warnings.filter(warning => {
+      const blocking = risk.scenarios
+        .filter(scenario => scenario.status === 'unsafe')
+        .map(scenario => scenario.id)
+      return !blocking.some(id => warning.startsWith(`${id}:`))
+    }).length
+    if (softWarningCount) {
+      lines.push(
+        `- ⚠️ ${softWarningCount} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
+      )
+    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
+      lines.push(
+        '- ✅ Alle bewerteten Szenarien liegen in ihrem Design-Risikokorridor.'
+      )
+    } else {
+      lines.push(
+        `- ⚪ Keine Warnungen, aber ${risk.scenarios.filter(scenario => scenario.status !== 'healthy').length} Szenario(en) ohne \`healthy\`-Status.`
+      )
+    }
+    lines.push('')
+  }
 
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)
@@ -3742,33 +5414,56 @@ export const runSimulationSuite = async (options = {}) => {
         }
       })
 
+      // `[].every(...)` is true, so a scenario whose bands could not be
+      // evaluated would report agreement on something that was never measured.
+      // A missing verdict is not a matching one — name it as a disagreement.
+      const disagreeingBands = checks.length
+        ? checks.filter(check => !check.agrees).map(check => check.label)
+        : ['keine KPI-Bänder ausgewertet']
+
       return {
         id: scenario.id,
         calibrationStatus: calibration?.summary.kpiStatus,
         holdoutStatus: evaluation.status,
-        agrees: checks.every(check => check.agrees),
-        disagreeingBands: checks
-          .filter(check => !check.agrees)
-          .map(check => check.label),
+        agrees: disagreeingBands.length === 0,
+        disagreeingBands,
         checks,
         holdoutAvgFinalMoney: summary.avgFinalMoney,
         holdoutBankruptcyRate: summary.bankruptcyRate,
+        // Count and cohort size, not just the rate: the design-risk review
+        // needs them to classify the holdout against the corridor and to
+        // recognise a cohort too small to judge.
+        holdoutBankruptcy: summary.bankruptcy,
+        holdoutFinancialStress: summary.financialStress,
         holdoutFameProgressPerGig: summary.avgFameProgressPerGig ?? null
       }
     })
+    // Same vacuous-truth trap one level up: with no KPI scenario at all the
+    // aggregate would claim the holdout confirmed the calibration verdict.
+    const disagreements = scenarioResults.length
+      ? scenarioResults
+          .filter(result => !result.agrees)
+          .flatMap(result =>
+            result.disagreeingBands.map(band => `${result.id}: ${band}`)
+          )
+      : ['keine KPI-Szenarien ausgewertet']
     return {
       seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
       runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
       comparison: 'per-kpi-band',
-      agrees: scenarioResults.every(result => result.agrees),
-      disagreements: scenarioResults
-        .filter(result => !result.agrees)
-        .flatMap(result =>
-          result.disagreeingBands.map(band => `${result.id}: ${band}`)
-        ),
+      agrees: disagreements.length === 0,
+      disagreements,
       scenarios: scenarioResults
     }
   })()
+
+  const designRiskReview = buildDesignRiskReview({
+    results,
+    holdoutScenarios: kpiHoldoutValidation.scenarios
+  })
+  const holdoutSafetyValidation = buildHoldoutSafetyValidation(
+    kpiHoldoutValidation.scenarios
+  )
 
   await fs.mkdir(REPORT_DIR, { recursive: true })
   const outputJsonPath = path.join(REPORT_DIR, SIMULATION_CONSTANTS.outputJson)
@@ -3799,11 +5494,14 @@ export const runSimulationSuite = async (options = {}) => {
       balanceSourceSha256: await getBalanceSourceHash(PROJECT_ROOT),
       scenarioConfigSha256,
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
+      riskTargetConfigSha256: getJsonHash(RISK_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index'
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     kpiHoldoutValidation,
+    holdoutSafetyValidation,
+    designRiskReview,
     featureInventory: buildFeatureInventory(),
     executionCoverage: buildExecutionCoverage(results),
     regressionComparison: buildRegressionComparison(baselinePayload, results),
