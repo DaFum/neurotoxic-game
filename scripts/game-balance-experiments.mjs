@@ -1120,7 +1120,14 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // different digest for identical scenario data.
       scenarioConfigSha256: getJsonHash(SCENARIOS),
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
-      seedStrategy: 'scenario-id-plus-run-index', pairingStrategy: 'same-scenario-same-run-index-same-seed'
+      // Derived from SEED_STREAMS, in the same machine-readable shape the cadence
+      // probe publishes: the roles were described elsewhere in the report but the
+      // exact seed derivation per stream was not, so the artifact could not be
+      // reproduced from its own metadata.
+      seedStrategy: Object.keys(SEED_STREAMS)
+        .map(stream => `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`)
+        .join('; '),
+      pairingStrategy: 'same-scenario-same-run-index-same-seed'
     },
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
@@ -1198,27 +1205,42 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       selectedAppliesNoChange,
       note: SELECTION_RATIONALE
     },
+    // No generic `passed` field. It used to mean "cleared calibration and selection",
+    // which reads as a release verdict and contradicted
+    // `recommendation.status: no-production-recommendation-final-validation-failed`
+    // in the same artifact — a parser or a downstream job keying on it would have
+    // treated a non-shippable combination as approved. The three facts are now
+    // separate, and `finalValidationPassed` is `null` for every combination the
+    // reserved stream never judged, which is all but one by design.
     combinationRanking: [...combinations].sort((left, right) =>
       Number(Boolean(right.validation?.passed && right.selectionGateValidation?.passed)) -
         Number(Boolean(left.validation?.passed && left.selectionGateValidation?.passed)) ||
       combinationImpact(left) - combinationImpact(right)
-    ).map(item => ({
-      bootstrap: item.bootstrap.id,
-      touring: item.touring.id,
-      impact: round(combinationImpact(item)),
-      // `passed` is the release verdict: both gates. `null` for the calibration
-      // side means the pair was rejected by the holdout gate before the paired
-      // comparison ran, which is different from having failed it.
-      // Selectable, not shippable: the final validation stream judges only the one
-      // combination the search settled on.
-      passed: Boolean(item.validation?.passed && item.selectionGateValidation?.passed),
-      calibrationPassed: item.calibrationEvaluated ? item.validation.passed : null,
-      calibrationFailures: item.calibrationEvaluated ? item.validation.failures : null,
-      selectionGatePassed: item.selectionGateValidation?.passed ?? null,
-      selectionGateFailures: (item.selectionGateValidation?.failures ?? []).map(
-        failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
-      )
-    })),
+    ).map(item => {
+      const isReported =
+        item.bootstrap.id === selectedBootstrap.id && item.touring.id === selectedTouring.id
+      const selectionPassed = item.selectionGateValidation?.passed ?? null
+      const calibrationPassed = item.calibrationEvaluated ? item.validation.passed : null
+      const finalValidationPassed = isReported ? holdoutSafetyValidation.passed : null
+      return {
+        bootstrap: item.bootstrap.id,
+        touring: item.touring.id,
+        impact: round(combinationImpact(item)),
+        // `null` on the calibration side means the pair was rejected by the
+        // selection gate before the paired comparison ran, which is different from
+        // having failed it.
+        calibrationPassed,
+        calibrationFailures: item.calibrationEvaluated ? item.validation.failures : null,
+        selectionPassed,
+        selectionFailures: (item.selectionGateValidation?.failures ?? []).map(
+          failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+        ),
+        finalValidationPassed,
+        // Shippable requires all three, and the reserved stream only judged one
+        // combination — so this is false everywhere it was never measured.
+        shippable: Boolean(calibrationPassed && selectionPassed && finalValidationPassed)
+      }
+    }),
     recommendation: {
       // Release readiness is decided by the safety gates alone, and there are now
       // two of them. `finalCombinedValidation` judges the candidate against the

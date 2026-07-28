@@ -2576,6 +2576,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
       applyDailyEvents(state, scenario, rng, counters)
+    observeEarlyRunwayMoney()
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2591,11 +2592,21 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       counters.sponsorSignings += 1
       counters.executionCoverage.sponsorship.successes++
     }
+    observeEarlyRunwayMoney()
     expireContrabandEffects(state, runCtx)
+    observeEarlyRunwayMoney()
     maybeApplyContrabandDrop(state, rng, counters, runCtx)
     observeEarlyRunwayMoney()
+    // One sample per money-moving call rather than one per group: a negative event
+    // followed by a brand-deal advance inside the same group would otherwise hide
+    // the trough between them. Mutations *inside* a single helper are still not
+    // sampled individually — that would mean threading an observer through the
+    // production-mirroring helpers, which is out of proportion to the question this
+    // field answers.
     maybeMaintainVanAndResources(state, scenario, rng, counters)
+    observeEarlyRunwayMoney()
     maybeBuyCatalogUpgrade(state, rng, counters)
+    observeEarlyRunwayMoney()
     maybeInvestInAssets(state, rng, counters)
     observeEarlyRunwayMoney()
 

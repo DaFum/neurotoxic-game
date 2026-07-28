@@ -1293,11 +1293,15 @@ test('the combination search rejects a cap breach and keeps looking', async () =
       item.bootstrap === 'bootstrap-none' && item.touring === 'touring-none'
   )
   assert.ok(neutral)
-  assert.equal(neutral.passed, false)
-  assert.equal(neutral.selectionGatePassed, false)
-  assert.deepEqual(neutral.selectionGateFailures, [
-    'cult_hypergrowth 25% > 12%'
-  ])
+  // No generic `passed`: it read as a release verdict while covering only two of the
+  // three stages, so a parser could take a non-shippable combination for approved.
+  assert.equal(Object.hasOwn(neutral, 'passed'), false)
+  assert.equal(neutral.shippable, false)
+  assert.equal(neutral.selectionPassed, false)
+  assert.deepEqual(neutral.selectionFailures, ['cult_hypergrowth 25% > 12%'])
+  // The reserved stream never judged this pair, so its verdict is unmeasured rather
+  // than failed.
+  assert.equal(neutral.finalValidationPassed, null)
   // Skipping the paired comparison for a pair that cannot ship must read as "not
   // measured", never as a pass.
   assert.equal(neutral.calibrationPassed, null)
