@@ -374,8 +374,12 @@ const describeRanking = ranking => {
       : ''
 }
 
+const NO_CHANGE_NOTE =
+  ' Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.'
+
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
+  const noChangeNote = report.combinationSearch.selectedAppliesNoChange ? NO_CHANGE_NOTE : ''
   const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
   const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis).flatMap(([tuning, profiles]) => profiles.flatMap(profile => profile.results.map(item => `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`))).join('\n')
   const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.earlyCheckpointDeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
@@ -403,7 +407,7 @@ ${report.phases.phase3B.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Bootstrap-Hebel
 
-\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
+\`${report.phases.phase3B.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.${noChangeNote}
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -440,7 +444,7 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Gewählter Late-Game-Hebel
 
-\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.
+\`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${report.combinationSearch.pairsEvaluated} of ${report.combinationSearch.pairsAvailable} pairs were evaluated, ${report.combinationSearch.pairsSkipped} skipped.${noChangeNote}
 
 ## Kombinierte Validierung
 
@@ -574,6 +578,11 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const combinationsSkipped = orderedPairs.length - pairsConsidered
   const selectedBootstrap = selected.bootstrap
   const selectedTouring = selected.touring
+  // Ordering by ascending impact makes the neutral pair the first thing tried,
+  // so "nothing ships" is a legitimate and expected outcome — but the selection
+  // sections then name a candidate id where a reader expects a lever. Flag it
+  // so the reports say outright that production tuning does not move.
+  const selectedAppliesNoChange = combinationImpact({ bootstrap: selectedBootstrap, touring: selectedTouring }) === 0
   selectedBootstrap.selectedForProduction = true
   selectedTouring.selectedForProduction = true
 
@@ -656,6 +665,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       pairsAvailable: orderedPairs.length,
       pairsEvaluated: pairsConsidered,
       pairsSkipped: combinationsSkipped,
+      selectedAppliesNoChange,
       note: SELECTION_RATIONALE
     },
     combinationRanking: [...combinations].sort((left, right) =>

@@ -3742,30 +3742,40 @@ export const runSimulationSuite = async (options = {}) => {
         }
       })
 
+      // `[].every(...)` is true, so a scenario whose bands could not be
+      // evaluated would report agreement on something that was never measured.
+      // A missing verdict is not a matching one — name it as a disagreement.
+      const disagreeingBands = checks.length
+        ? checks.filter(check => !check.agrees).map(check => check.label)
+        : ['keine KPI-Bänder ausgewertet']
+
       return {
         id: scenario.id,
         calibrationStatus: calibration?.summary.kpiStatus,
         holdoutStatus: evaluation.status,
-        agrees: checks.every(check => check.agrees),
-        disagreeingBands: checks
-          .filter(check => !check.agrees)
-          .map(check => check.label),
+        agrees: disagreeingBands.length === 0,
+        disagreeingBands,
         checks,
         holdoutAvgFinalMoney: summary.avgFinalMoney,
         holdoutBankruptcyRate: summary.bankruptcyRate,
         holdoutFameProgressPerGig: summary.avgFameProgressPerGig ?? null
       }
     })
+    // Same vacuous-truth trap one level up: with no KPI scenario at all the
+    // aggregate would claim the holdout confirmed the calibration verdict.
+    const disagreements = scenarioResults.length
+      ? scenarioResults
+          .filter(result => !result.agrees)
+          .flatMap(result =>
+            result.disagreeingBands.map(band => `${result.id}: ${band}`)
+          )
+      : ['keine KPI-Szenarien ausgewertet']
     return {
       seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
       runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
       comparison: 'per-kpi-band',
-      agrees: scenarioResults.every(result => result.agrees),
-      disagreements: scenarioResults
-        .filter(result => !result.agrees)
-        .flatMap(result =>
-          result.disagreeingBands.map(band => `${result.id}: ${band}`)
-        ),
+      agrees: disagreements.length === 0,
+      disagreements,
       scenarios: scenarioResults
     }
   })()
