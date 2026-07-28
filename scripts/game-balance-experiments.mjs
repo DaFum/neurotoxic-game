@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getBalanceSourceHash } from './utils/balance-report-metadata.mjs'
 
@@ -494,6 +494,14 @@ ${combinedRows}
 
 Final gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}**. Bootstrap Struggle bankruptcy must remain <= 60%.
 
+### Harte Sicherheitsgrenzen auf dem Holdout-Strom
+
+Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem disjunkten Seed-Strom gegen die harten \`KPI_TARGETS.bankruptcyMax\`-Obergrenzen geprüft. Der gepaarte Vergleich oben läuft auf dem Kalibrierungsstrom und kann eine Überschreitung, die nur auf unabhängigen Seeds auftritt, nicht sehen.
+
+Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
+
+${report.holdoutSafetyValidation?.passed ? '' : '**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'}
+
 ## Nebenwirkungen
 
 Fame per gig, harmony, bankruptcy, drawdown, and the early/mid progression checkpoints (days ${SIMULATION_CONSTANTS.progressionCheckpointDays[0]} and ${SIMULATION_CONSTANTS.progressionCheckpointDays[1]}) are explicit acceptance checks.
@@ -516,6 +524,7 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
 |---|---|
 | Phase 3B (Bootstrap-Insolvenz) | ${report.finalCombinedValidation.resultsByScenario.bootstrap_struggle?.scenarioValidation.passed ? 'bestanden' : 'fehlgeschlagen'} |
 | Finale Sicherheits-Gates | ${report.finalCombinedValidation.passed ? 'bestanden' : 'fehlgeschlagen'} |
+| Holdout-Sicherheitsgrenzen (harte Caps) | ${report.holdoutSafetyValidation?.passed ? 'bestanden' : 'fehlgeschlagen'} |
 | Late-Game-Snowball | ${gap.improved ? 'verbessert' : 'nicht verbessert'} |
 | Gap-1-Dominanz im Zielband | ${gap.objectiveMet ? 'erreicht' : 'nicht gelöst'} |
 | Phase 3C Gesamtstatus | ${report.phases.phase3C.objectiveStatus} |
@@ -672,6 +681,25 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const gigFrequencyValidation = evaluateGigGap(gapTradeoff.gap1VsGap2.control, gapTradeoff.gap1VsGap2.finalTuning)
   const objectiveStatus = gigFrequencyValidation.objectiveMet ? 'met' : 'partial'
   const objectiveNote = describeObjective(gigFrequencyValidation)
+  // The hard safety layer, measured on the tuning that would actually ship.
+  //
+  // `finalCombinedValidation` compares candidate against control on the
+  // calibration stream, so a cap breached only on independent seeds never
+  // reached the release decision: cult_hypergrowth passed at 10.38% while its
+  // holdout sat at 14.23% against a 12% ceiling, and the suite still reported
+  // `accepted-for-production-partial`. Same `#holdout` seed marker as the
+  // simulation report, so both artifacts judge the same stream.
+  const holdoutSafetyValidation = buildHoldoutSafetyValidation(
+    SCENARIOS.filter(item => Number.isFinite(KPI_TARGETS[item.id]?.bankruptcyMax)).map(scenario => {
+      const runs = Array.from({ length: runsPerScenario }, (_, runIndex) =>
+        compact(runner(scenario, createScenarioSeed(`${scenario.id}#holdout`, runIndex), finalTuning)))
+      const count = runs.filter(run => run.bankrupt).length
+      return {
+        id: scenario.id,
+        holdoutBankruptcy: { count, sampleSize: runs.length, ratePct: round(count / Math.max(1, runs.length) * 100) }
+      }
+    })
+  )
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 1,
@@ -696,6 +724,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote }
     },
     finalCombinedValidation,
+    holdoutSafetyValidation,
     combinationSearch: {
       strategy: 'ascending-impact-first-validated',
       pairsAvailable: orderedPairs.length,
@@ -708,12 +737,19 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       Number(right.validation.passed) - Number(left.validation.passed) || combinationImpact(left) - combinationImpact(right)
     ).map(item => ({ bootstrap: item.bootstrap.id, touring: item.touring.id, impact: round(combinationImpact(item)), passed: item.validation.passed, failures: item.validation.failures })),
     recommendation: {
-      // Release readiness is decided by the safety gates alone. The Phase 3C
-      // objective only distinguishes a full from a partial acceptance, so the
-      // status, the objective status and the process exit code always agree.
-      status: finalCombinedValidation.passed
-        ? gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial'
-        : 'rejected',
+      // Release readiness is decided by the safety gates alone, and there are now
+      // two of them. `finalCombinedValidation` judges the candidate against the
+      // control on the calibration stream; `holdoutSafetyValidation` judges the
+      // shipping tuning against the hard `bankruptcyMax` ceilings on independent
+      // seeds. A holdout breach cannot yield any `accepted-for-production-*`
+      // status — the measurement is complete, the baseline simply is not safe —
+      // but it does not suppress the diagnostic artifacts either. The Phase 3C
+      // objective only distinguishes a full from a partial acceptance.
+      status: !finalCombinedValidation.passed
+        ? 'rejected'
+        : !holdoutSafetyValidation.passed
+          ? 'no-production-recommendation-holdout-safety-failed'
+          : gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial',
       objectiveStatus,
       objectiveNote,
       bootstrap: selectedBootstrap.id,
@@ -752,5 +788,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   if (report.recommendation.objectiveStatus !== 'met') {
     console.warn(`[balance-experiments] ${report.recommendation.objectiveNote}`)
   }
-  process.exit(report.finalCombinedValidation.passed ? 0 : 1)
+  if (!report.holdoutSafetyValidation.passed) {
+    console.error(`[balance-experiments] holdout safety gate FAILED: ${report.holdoutSafetyValidation.failures.map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'no scenario could be evaluated'}`)
+  }
+  // Both hard gates decide the exit code. A holdout breach of bankruptcyMax is a
+  // release blocker, so it must not exit 0 just because the paired comparison
+  // held on the calibration stream.
+  process.exit(report.finalCombinedValidation.passed && report.holdoutSafetyValidation.passed ? 0 : 1)
 }

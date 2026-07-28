@@ -808,7 +808,13 @@ const DEFAULT_RANKING_ENTRIES = [
 
 const buildMarkdownReport = ({
   objectiveMet,
-  rankingEntries = DEFAULT_RANKING_ENTRIES
+  rankingEntries = DEFAULT_RANKING_ENTRIES,
+  holdoutSafety = {
+    blocking: true,
+    passed: true,
+    evaluatedScenarios: ['x'],
+    failures: []
+  }
 }) => {
   const candidate = {
     id: 'probe-candidate',
@@ -901,6 +907,7 @@ const buildMarkdownReport = ({
       pairsEvaluated: 1,
       pairsSkipped: 11
     },
+    holdoutSafetyValidation: holdoutSafety,
     recommendation: {
       status: objectiveMet
         ? 'accepted-for-production'
@@ -920,6 +927,46 @@ test('experiment markdown discloses an unmet Phase 3C objective', () => {
   assert.match(partial, /139\.81%/, 'Measured advantage must appear')
   assert.match(partial, /outside the 20-25% target/)
   assert.match(partial, /Structural Gap-1 dominance remains unresolved/)
+})
+
+test('experiment markdown discloses a failed holdout safety gate and withholds the recommendation', () => {
+  const failed = renderExperimentMarkdown(
+    buildMarkdownReport({
+      objectiveMet: true,
+      holdoutSafety: {
+        blocking: true,
+        passed: false,
+        evaluatedScenarios: ['cult_hypergrowth'],
+        failures: [
+          {
+            scenarioId: 'cult_hypergrowth',
+            metric: 'bankruptcyRate',
+            holdoutValuePct: 14.23,
+            maximumPct: 12,
+            sampleSize: 260
+          }
+        ]
+      }
+    })
+  )
+
+  assert.match(failed, /Holdout-Sicherheitsgate: \*\*FAIL\*\*/)
+  assert.match(failed, /cult_hypergrowth` bankruptcyRate 14\.23% > 12%/)
+  assert.match(failed, /Keine Produktionsempfehlung/)
+  assert.match(
+    failed,
+    /Holdout-Sicherheitsgrenzen \(harte Caps\) \| fehlgeschlagen/
+  )
+})
+
+test('a passing holdout safety gate withholds nothing', () => {
+  const passed = renderExperimentMarkdown(
+    buildMarkdownReport({ objectiveMet: true })
+  )
+
+  assert.match(passed, /Holdout-Sicherheitsgate: \*\*PASS\*\*/)
+  assert.doesNotMatch(passed, /Keine Produktionsempfehlung/)
+  assert.match(passed, /Holdout-Sicherheitsgrenzen \(harte Caps\) \| bestanden/)
 })
 
 test('experiment markdown reports a met Phase 3C objective without partial wording', () => {

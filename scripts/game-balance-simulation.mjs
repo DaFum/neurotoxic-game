@@ -1046,7 +1046,17 @@ const calculateModifiers = (scenario, rng) => {
   return modifiers
 }
 
-const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
+/**
+ * Events that happen because a day passed, not because the band drove.
+ *
+ * Split from the transport branch so that "no transport event without a trip
+ * that actually ran" is structural rather than a flag the caller has to pass
+ * correctly. The old single function took an `isTravelDay` boolean derived from
+ * a *planned* trip, and the plan was still revalidated afterwards — so a trip
+ * refused at the final money check left a road event already applied to a
+ * journey that never happened.
+ */
+const applyDailyEvents = (state, scenario, rng, eventCounts) => {
   const intensity = scenario.eventIntensity ?? 0.5
   let eventsApplied = 0
 
@@ -1086,8 +1096,26 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
     }
   }
 
-  // Process equipment events (transport)
-  if (isTravelDay && rng() < 0.06 * intensity) {
+  if (eventsApplied > 0) {
+    // In-game, event resolution feeds the EVENT_RESOLVED unlock context
+    applyUnlockContext(state, eventCounts, { type: 'EVENT_RESOLVED' })
+  }
+
+  return eventsApplied
+}
+
+/**
+ * Transport events, fired only after a trip has actually been executed.
+ *
+ * The caller reaching this function is the proof that the journey happened: the
+ * resource gate passed, the cost was deducted and the band arrived. There is no
+ * `isTravelDay` flag to get wrong.
+ */
+const applyTravelEvents = (state, scenario, rng, eventCounts) => {
+  const intensity = scenario.eventIntensity ?? 0.5
+  let eventsApplied = 0
+
+  if (rng() < 0.06 * intensity) {
     const event = eventEngine.checkEvent('transport', state, 'travel', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
@@ -1102,7 +1130,6 @@ const applyWorldEvents = (state, scenario, rng, eventCounts, isTravelDay) => {
   }
 
   if (eventsApplied > 0) {
-    // In-game, event resolution feeds the EVENT_RESOLVED unlock context
     applyUnlockContext(state, eventCounts, { type: 'EVENT_RESOLVED' })
   }
 
@@ -1714,18 +1741,23 @@ const buildAppFeatureSnapshot = () => {
   }
 }
 
-// One travel minigame per trip plus exactly ONE setup minigame per gig,
-// chosen with the same weighting as usePreGigHandlers (last game at 0.2).
-// Result values and their application mirror minigameReducer.ts: stress
-// reduces band harmony 1:1, rewards/repair costs hit money directly, and
-// damaged_gear follows the reducers' own predicates — equipmentDamage > 50
-// for roadie (handleCompleteRoadieMinigame) and ANY stress > 0 for
-// kabelsalat/amp (applyPostMinigameResult flags damaged_gear on stress > 0,
-// purge-induced stress included).
-const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
+/**
+ * The tourbus minigame, once per executed trip.
+ *
+ * Deliberately separate from the setup minigame. Both used to run in one call
+ * made after arrival at a performable, non-cancelled node, which tied the
+ * *travel* minigame to gigs played: a band with 9.78 arrivals and 8.48 gigs got
+ * 8.48 tourbus runs, and every rest stop, supply stop and cancelled show
+ * silently skipped its van damage, fuel pickup and follow-up repair. Production
+ * starts it when a confirmed trip begins (`useHandleTravel` calls
+ * `onStartTravelMinigame` before the arrival is processed), so it belongs to the
+ * trip, not to the show.
+ *
+ * Runs after the resource gate for the same reason production does: the fuel
+ * bonus must not be what makes a trip affordable.
+ */
+const runTravelMinigame = (state, scenario, rng, counters) => {
   const skill = scenario.minigameSkill ?? 0.5
-  let damagedGear = false
-
   const travelDamage = Math.round((1 - skill + rng() * 0.7) * 20)
   const collectedItems = rng() < 0.45 + skill * 0.25 ? ['FUEL'] : []
   const travelResult = calculateTravelMinigameResult(
@@ -1744,6 +1776,19 @@ const runMinigameLayer = (state, scenario, rng, counters, runCtx) => {
   if (collectedItems.length > 0) {
     counters.executionCoverage.minigamesTravel.completions++
   }
+}
+
+// Exactly ONE setup minigame per gig actually begun, chosen with the same
+// weighting as usePreGigHandlers (last game at 0.2). Result values and their
+// application mirror minigameReducer.ts: stress reduces band harmony 1:1,
+// rewards/repair costs hit money directly, and damaged_gear follows the
+// reducers' own predicates — equipmentDamage > 50 for roadie
+// (handleCompleteRoadieMinigame) and ANY stress > 0 for kabelsalat/amp
+// (applyPostMinigameResult flags damaged_gear on stress > 0, purge-induced
+// stress included).
+const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
+  const skill = scenario.minigameSkill ?? 0.5
+  let damagedGear = false
 
   const weights = { roadie: 1, kabelsalat: 1, amp: 1 }
   if (runCtx.lastMinigame && Object.hasOwn(weights, runCtx.lastMinigame)) {
@@ -2422,32 +2467,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       }
     }
 
-    // Plan the trip before world events so travel events can be gated on a trip
-    // that is actually going to happen. Production fires them on arrival; here
-    // the plan is re-verified immediately before the deduction, because events
-    // and shop purchases in between can still move money.
-    const reachable = currentMapNode
-      ? (tourAdjacency.get(currentMapNode.id) ?? [])
-      : []
-    state.player.currentMapNode = currentMapNode
-    let travelPlan = willRest
-      ? null
-      : planTravel({ reachable, state, rng, wantsToPerform })
-    // Canonical in-place fallback: an empty tank is not a dead end while a
-    // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
-    // re-planning on the refuelled state stays deterministic.
-    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
-      travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
-      if (!travelPlan.blocked) counters.refuelledToTravel += 1
-    }
-    const tripPlanned = Boolean(travelPlan && !travelPlan.blocked)
-
     const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
-      // `isTravelDay` means a trip that will actually happen — not merely a
-      // non-rest day. A refused trip must not fire road events.
-      applyWorldEvents(state, scenario, rng, counters, tripPlanned)
+      applyDailyEvents(state, scenario, rng, counters)
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeWorldEvents,
@@ -2541,29 +2564,38 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
     }
 
-    if (!tripPlanned) {
+    // Route planning comes last, after every decision that can move money or
+    // fuel: the day's events, maintenance, the shop visit and asset investment.
+    // Planning earlier meant costing a trip against a balance that no longer
+    // existed by the time it was taken, which needed a second validation pass
+    // and could still strand a day whose blocker a later windfall had removed.
+    // Now the plan is costed on the state the band actually travels in, so
+    // `planTravel`'s own `checkTravelResources` filter *is* the final gate.
+    const reachable = currentMapNode
+      ? (tourAdjacency.get(currentMapNode.id) ?? [])
+      : []
+    state.player.currentMapNode = currentMapNode
+    let travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
+    // Canonical in-place fallback: an empty tank is not a dead end while a
+    // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
+    // re-planning on the refuelled state stays deterministic.
+    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
+      travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
+      if (!travelPlan.blocked) counters.refuelledToTravel += 1
+    }
+
+    if (travelPlan.blocked) {
       // Stranded or out of forward edges. The day still passes — asset revenue
       // and liabilities tick — so the band may be able to move tomorrow. It does
-      // not arrive anywhere and it does not play.
-      recordNoTrip(travelPlan?.blocked ?? 'dead_end')
+      // not arrive anywhere and it does not play, and no road event fires.
+      recordNoTrip(travelPlan.blocked)
       continue
     }
 
-    // Re-verify against the state as it stands after events and purchases; the
-    // plan was costed before them.
-    const revalidated = checkTravelResources(
-      travelPlan.travel.totalCashImpact,
-      travelPlan.travel.fuelLiters,
-      state.player
-    )
-    if (!revalidated.allowed) {
-      recordNoTrip(
-        Math.max(0, state.player.van?.fuel ?? 0) < travelPlan.travel.fuelLiters
-          ? 'fuel'
-          : 'money'
-      )
-      continue
-    }
+    // The trip is happening. Production runs the tourbus minigame here, at the
+    // start of a confirmed journey and before the arrival is processed — after
+    // the gate, so its fuel bonus can never be what made the trip affordable.
+    runTravelMinigame(state, scenario, rng, counters)
 
     const nextNode = travelPlan.node
     const venue = nextNode.venue
@@ -2600,6 +2632,19 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     nodeTypesVisited[nextNode.type] =
       (nodeTypesVisited[nextNode.type] ?? 0) + 1
     if (nextNode.type === 'FINALE') finaleReached = true
+
+    // Road events, now that the journey is a fact rather than a plan. Production
+    // fires them after the day advances and before `handleNodeArrival`, which is
+    // where the node's own effects (rest-stop recovery, the show) follow below.
+    const fameBeforeTravelEvents = state.player.fame
+    counters.eventsApplied =
+      (counters.eventsApplied || 0) +
+      applyTravelEvents(state, scenario, rng, counters)
+    recordObservedFameChange(
+      counters.fameAccounting,
+      fameBeforeTravelEvents,
+      state.player.fame
+    )
 
     // Rest and supply stops are not stages. Routing prefers performable nodes,
     // but the map does not always offer one, and playing a gig at a rest stop
@@ -2694,11 +2739,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       continue
     }
 
-    // Only run minigames and performance if show is NOT cancelled.
+    // Only the setup minigame and the performance are gated on the show going
+    // ahead; the tourbus run already happened with the journey.
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
-    const damagedGear = runMinigameLayer(state, scenario, rng, counters, runCtx)
+    const damagedGear = runPreGigSetupMinigame(
+      state,
+      scenario,
+      rng,
+      counters,
+      runCtx
+    )
 
     const modifiers = calculateModifiers(scenario, rng)
     if (damagedGear) modifiers.damaged_gear = true
@@ -3691,12 +3743,15 @@ export const KPI_TARGETS = {
   //
   // Travel and performing are independent in the game (`useHandleTravel` gates a
   // trip on visibility, a directed edge and money/fuel, never on having played),
-  // so every non-rest day is now a hop for every scenario. The consequence is
-  // visible in these numbers: final money converges to roughly €22k-29k across
-  // all seven, because touring at all dominates every scenario knob. Same ×0.5 to
-  // ×1.6 rule around the new neutral-tuning mean. That the bands now barely
-  // discriminate between scenarios is a finding about the economy, not a
-  // calibration convenience — the spread wants a deliberate design pass.
+  // so every non-rest day now *attempts* a trip. It is not guaranteed one: the
+  // attempt goes through the same venue-access, cash and fuel gates production
+  // uses, and a refusal costs the day in place as a stranded day. Cadence
+  // therefore still separates the scenarios, through how often a band can afford
+  // to move and which nodes it routes toward. Observed KPI-scenario means
+  // currently span roughly €17,200-28,100, so the bands overlap heavily without
+  // collapsing onto one figure. Same ×0.5 to ×1.6 rule around the neutral-tuning
+  // mean. That they discriminate this weakly is a finding about the economy, not
+  // a calibration convenience — the spread wants a deliberate design pass.
   //
   // Bankruptcy caps express per-scenario risk tolerance and are horizon-
   // independent intent, so they are unchanged.
@@ -3950,6 +4005,53 @@ const RISK_STATUS_WARNING = {
   },
   insufficient_evidence: ({ id, ...streams }) =>
     `${id}: Stichprobe zu klein, um die Raten (${formatRiskStreams(streams)}) gegen den Korridor zu bewerten (mindestens ${RISK_EVIDENCE_MINIMUM_SAMPLE} Runs nötig).`
+}
+
+/**
+ * The hard safety layer, evaluated on the holdout stream.
+ *
+ * `bankruptcyMax` is a ceiling, not a hypothesis, so a breach is blocking
+ * wherever it is observed — and the calibration cohort alone cannot decide it.
+ * `cult_hypergrowth` reads 10.38% against its 12% cap on the cohort the bands
+ * were derived from and 14.23% on independent seeds. Because only the
+ * calibration rate reached the release gate, a hard limit could fail while the
+ * pipeline still recommended the tuning for production.
+ *
+ * Deliberately separate from `designRiskReview`, which stays non-blocking: a
+ * corridor states an intent, a cap states a limit. This block decides release
+ * readiness; it does not suppress the diagnostic report, because a run that
+ * fails the gate is exactly the run someone needs to read.
+ */
+export const buildHoldoutSafetyValidation = holdoutScenarios => {
+  const candidates = (holdoutScenarios ?? []).filter(
+    scenario =>
+      Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax) &&
+      Number.isFinite(scenario.holdoutBankruptcy?.ratePct)
+  )
+  const failures = candidates
+    .filter(
+      scenario =>
+        scenario.holdoutBankruptcy.ratePct >
+        KPI_TARGETS[scenario.id].bankruptcyMax
+    )
+    .map(scenario => ({
+      scenarioId: scenario.id,
+      metric: 'bankruptcyRate',
+      holdoutValuePct: scenario.holdoutBankruptcy.ratePct,
+      maximumPct: KPI_TARGETS[scenario.id].bankruptcyMax,
+      sampleSize: scenario.holdoutBankruptcy.sampleSize ?? null
+    }))
+  return {
+    blocking: true,
+    layer: 'hard-safety-limit',
+    metric: 'bankruptcyRate',
+    source: 'holdout',
+    // An empty candidate set is not a pass. The same vacuous-truth trap the
+    // holdout agreement had: claiming a gate held when nothing was measured.
+    passed: candidates.length > 0 && failures.length === 0,
+    evaluatedScenarios: candidates.map(scenario => scenario.id),
+    failures
+  }
 }
 
 /**
@@ -4387,6 +4489,41 @@ const buildMarkdownReport = payload => {
         ? '✅ Jedes einzelne KPI-Band urteilt auf unabhängigen Seeds gleich.'
         : `❌ Auf unabhängigen Seeds abweichende Bänder: ${holdout.disagreements.join('; ')}. Diese Bänder liegen auf einem Seed-Artefakt und sind neu abzuleiten.`
     )
+    lines.push('')
+  }
+
+  // ── Hard safety limits on the holdout stream ──────────────────────────────
+  const safety = payload.holdoutSafetyValidation
+  if (safety) {
+    lines.push('## Harte Sicherheitsgrenzen (Holdout)')
+    lines.push('')
+    lines.push(
+      'Diese Prüfung ist die einzige *blockierende* Schicht des Risikomodells. `KPI_TARGETS.bankruptcyMax` ist eine Obergrenze, keine Designhypothese — eine Überschreitung ist deshalb ein Fehler, egal auf welchem Seed-Strom sie auftritt. Die Kalibrierungskohorte allein kann das nicht entscheiden, weil die Bänder gegen genau diese Kohorte abgeleitet wurden. Die Zielkorridore in „Insolvenz-Zielkorridore“ bleiben davon getrennt und weiterhin nicht blockierend.'
+    )
+    lines.push('')
+    if (!safety.evaluatedScenarios.length) {
+      lines.push(
+        '⚪ Kein Szenario mit `bankruptcyMax` und Holdout-Rate auswertbar — das ist **kein** bestandenes Gate, sondern fehlende Evidenz.'
+      )
+    } else if (safety.passed) {
+      lines.push(
+        `✅ Alle ${safety.evaluatedScenarios.length} geprüften Szenarien bleiben auf unabhängigen Seeds unter ihrer harten Grenze.`
+      )
+    } else {
+      lines.push(
+        '| Szenario | Metrik | Holdout | Harte Grenze | Stichprobe |'
+      )
+      lines.push('|---|---|---:|---:|---:|')
+      for (const failure of safety.failures) {
+        lines.push(
+          `| ${failure.scenarioId} | ${failure.metric} | ${failure.holdoutValuePct}% | ${failure.maximumPct}% | ${failure.sampleSize ?? '—'} |`
+        )
+      }
+      lines.push('')
+      lines.push(
+        `❌ ${safety.failures.length} harte Sicherheitsgrenze(n) auf dem Holdout-Strom überschritten. Die Messimplementierung ist vollständig, aber die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht — es gibt daher **keine Produktionsempfehlung**, bis die betroffenen Szenarien neu balanciert sind.`
+      )
+    }
     lines.push('')
   }
 
@@ -5008,6 +5145,16 @@ lines.push('## KPI-Zielkorridore (Health Check)')
     lines.push(
       `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze; ${risk.scenarios.filter(scenario => scenario.status === 'not_evaluated').length} ohne Korridorurteil.`
     )
+    // The blocking verdict has to appear in the summary too, otherwise the only
+    // non-blocking heading in the report is also the last word on safety.
+    if (payload.holdoutSafetyValidation) {
+      const safetySummary = payload.holdoutSafetyValidation
+      lines.push(
+        safetySummary.passed
+          ? '- ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.'
+          : `- ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (${safetySummary.failures.map(failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'keine Evidenz'}). Keine Produktionsempfehlung.`
+      )
+    }
     lines.push(
       `- Risikobänder: ${Object.entries(riskCounts)
         .map(([status, count]) => `${status} ${count}`)
@@ -5239,6 +5386,9 @@ export const runSimulationSuite = async (options = {}) => {
     results,
     holdoutScenarios: kpiHoldoutValidation.scenarios
   })
+  const holdoutSafetyValidation = buildHoldoutSafetyValidation(
+    kpiHoldoutValidation.scenarios
+  )
 
   await fs.mkdir(REPORT_DIR, { recursive: true })
   const outputJsonPath = path.join(REPORT_DIR, SIMULATION_CONSTANTS.outputJson)
@@ -5275,6 +5425,7 @@ export const runSimulationSuite = async (options = {}) => {
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     kpiHoldoutValidation,
+    holdoutSafetyValidation,
     designRiskReview,
     featureInventory: buildFeatureInventory(),
     executionCoverage: buildExecutionCoverage(results),

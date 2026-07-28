@@ -21,6 +21,7 @@ import {
   accountFamePurchase,
   applyCatalogPurchase,
   buildDesignRiskReview,
+  buildHoldoutSafetyValidation,
   buildExecutionCoverage,
   buildTourAdjacency,
   buildFeatureInventory,
@@ -517,6 +518,66 @@ test('an unsafe warning names the stream that actually breached the safety cap',
   assert.match(review.warnings[0], /Holdout 14\.23% überschreitet/)
   assert.match(review.warnings[0], new RegExp(`Sicherheitsgrenze ${cap}%`))
   assert.doesNotMatch(review.warnings[0], /Kalibrierung 10\.38% überschreitet/)
+})
+
+test('a holdout breach of bankruptcyMax is a blocking safety failure', () => {
+  const cap = KPI_TARGETS.cult_hypergrowth.bankruptcyMax
+  const safety = buildHoldoutSafetyValidation([
+    {
+      id: 'cult_hypergrowth',
+      // Under the cap on the cohort the bands were derived from, over it on
+      // independent seeds — the case that reached the release gate as a pass.
+      holdoutBankruptcy: { count: 37, sampleSize: 260, ratePct: cap + 2.23 }
+    },
+    {
+      id: 'baseline_touring',
+      holdoutBankruptcy: { count: 6, sampleSize: 260, ratePct: 2.31 }
+    }
+  ])
+
+  assert.equal(safety.blocking, true)
+  assert.equal(safety.passed, false)
+  assert.deepEqual(safety.evaluatedScenarios, [
+    'cult_hypergrowth',
+    'baseline_touring'
+  ])
+  assert.equal(safety.failures.length, 1)
+  assert.deepEqual(safety.failures[0], {
+    scenarioId: 'cult_hypergrowth',
+    metric: 'bankruptcyRate',
+    holdoutValuePct: cap + 2.23,
+    maximumPct: cap,
+    sampleSize: 260
+  })
+})
+
+test('the holdout safety gate passes only on measured evidence', () => {
+  const withinCap = buildHoldoutSafetyValidation([
+    {
+      id: 'baseline_touring',
+      holdoutBankruptcy: { count: 6, sampleSize: 260, ratePct: 2.31 }
+    }
+  ])
+  assert.equal(withinCap.passed, true)
+
+  // Nothing measured is not a pass — the same vacuous-truth trap the holdout
+  // agreement had, and it would be worse here because this gate blocks release.
+  for (const empty of [
+    buildHoldoutSafetyValidation([]),
+    buildHoldoutSafetyValidation(undefined),
+    // A scenario with no cap configured cannot be judged against one.
+    buildHoldoutSafetyValidation([
+      { id: 'late_game_probe', holdoutBankruptcy: { ratePct: 0 } }
+    ]),
+    // Nor can one whose holdout rate never got measured.
+    buildHoldoutSafetyValidation([
+      { id: 'baseline_touring', holdoutBankruptcy: null }
+    ])
+  ]) {
+    assert.equal(empty.passed, false)
+    assert.deepEqual(empty.failures, [])
+    assert.deepEqual(empty.evaluatedScenarios, [])
+  }
 })
 
 test('buildDesignRiskReview reports an absent holdout instead of assuming agreement', () => {
@@ -1513,6 +1574,64 @@ test('every logged trip used a real directed map edge', () => {
   }
 })
 
+test('the tourbus minigame runs once per trip, not once per gig', () => {
+  // It used to be bundled with the setup minigame in one call made after arrival
+  // at a performable, non-cancelled node, so travel minigames tracked gigs
+  // played (8.48) instead of trips (9.78 arrivals) and every rest stop, supply
+  // stop and cancelled show skipped its van damage and fuel pickup. Production
+  // starts it when a confirmed trip begins, before the arrival is processed.
+  const runs = SCENARIOS.slice(0, 6).flatMap(scenario =>
+    Array.from({ length: 8 }, (_, index) =>
+      runSingleSimulation(
+        scenario,
+        createScenarioSeed(`travel-minigame-${scenario.id}`, index)
+      )
+    )
+  )
+
+  for (const run of runs) {
+    assert.equal(
+      run.travelMinigames,
+      run.travelLog.length,
+      'every executed trip runs exactly one tourbus minigame, and nothing else does'
+    )
+  }
+
+  // The coupling must actually be broken, not merely equal by coincidence: at
+  // least one run has to travel more often than it plays.
+  assert.ok(
+    runs.some(run => run.travelLog.length > run.gigsPlayed),
+    'trips must be able to outnumber gigs, otherwise the decoupling is untested'
+  )
+})
+
+test('no transport event fires without a trip that actually ran', () => {
+  // Travel events used to be gated on a *planned* trip and fired before the
+  // final money check, so a refused journey could leave a road event applied to
+  // a trip that never happened. Now they run after the arrival is a fact.
+  const runs = SCENARIOS.slice(0, 6).flatMap(scenario =>
+    Array.from({ length: 8 }, (_, index) =>
+      runSingleSimulation(
+        scenario,
+        createScenarioSeed(`transport-events-${scenario.id}`, index)
+      )
+    )
+  )
+
+  for (const run of runs) {
+    assert.ok(
+      run.equipmentEvents <= run.travelLog.length,
+      `run fired ${run.equipmentEvents} transport events across ${run.travelLog.length} trips`
+    )
+  }
+
+  // A run that never moves cannot produce a road event at all.
+  const immobile = runs.filter(run => run.travelLog.length === 0)
+  for (const run of immobile) {
+    assert.equal(run.equipmentEvents, 0)
+  }
+})
+
 test('a refuel rescues a fuel-blocked trip instead of losing the day', () => {
   const runs = SCENARIOS.slice(0, 4).flatMap(scenario =>
     Array.from({ length: 10 }, (_, index) =>
@@ -1526,12 +1645,11 @@ test('a refuel rescues a fuel-blocked trip instead of losing the day', () => {
   const fuelBlocked = runs.reduce((sum, run) => sum + run.travelBlocked.fuel, 0)
 
   assert.ok(rescued > 0, 'an affordable refuel must unblock trips')
-  // Not zero: a fuel block legitimately survives when the refuel is unaffordable,
-  // and again when the re-check after events and purchases fails on fuel — that
-  // path has no retry. Both are rare, so the property worth pinning is that the
-  // rescue is the normal outcome and the lost day the exception. Asserting zero
-  // passed only because 40 runs rarely hit either case; the published cohorts
-  // record surviving fuel blocks in three scenarios.
+  // Not zero: a fuel block legitimately survives when the refuel is
+  // unaffordable. That is rare, so the property worth pinning is that the rescue
+  // is the normal outcome and the lost day the exception. Asserting zero passed
+  // only because 40 runs rarely hit the case; the published cohorts record
+  // surviving fuel blocks in three scenarios.
   assert.ok(
     fuelBlocked < rescued,
     `the refuel fallback must dominate surviving fuel blocks, saw ${fuelBlocked} blocks vs ${rescued} rescues`
