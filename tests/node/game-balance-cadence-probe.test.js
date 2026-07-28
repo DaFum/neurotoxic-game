@@ -61,6 +61,10 @@ const seedIndex = scenarios => {
   for (const scenario of scenarios) {
     for (let runIndex = 0; runIndex < RUNS; runIndex++) {
       map.set(createScenarioSeed(`${scenario.id}#holdout`, runIndex), runIndex)
+      map.set(
+        createScenarioSeed(`${scenario.id}#selection`, runIndex),
+        runIndex
+      )
       map.set(createScenarioSeed(scenario.id, runIndex), runIndex)
     }
   }
@@ -132,6 +136,15 @@ test('a breach only the shipped policy carries is attributed to the phase', () =
       .sort()
   )
   assert.match(report.conclusion.verdict, /von FAIL \(25% gegen 12%\) auf PASS/)
+
+  // The phase effect has to show on a second, independent cohort too — otherwise it
+  // is a property of the sample it was found on rather than of the phase.
+  assert.equal(report.conclusion.independentConfirmation.stream, 'selection')
+  assert.equal(
+    report.conclusion.independentConfirmation.agreesWithHoldout,
+    true
+  )
+  assert.equal(report.conclusion.independentConfirmation.shippedCultRatePct, 25)
 })
 
 test('a breach every phase carries is not a simulation artifact', () => {

@@ -19,7 +19,10 @@ import {
 import {
   assertEqualControlCohorts,
   combinationImpact,
+  FAME_EVIDENCE_MIN_SHARE,
+  famePerGigWithinLimit,
   holdoutGateScenarios,
+  streamSeed,
   measureHoldoutGate,
   pairedFamePerGig,
   NoViableCandidateError,
@@ -53,7 +56,10 @@ const combinedSummary = ({
   fameDelta = 0,
   harmonyDelta = 0,
   drawdownDelta = 0,
-  sampleSize = 10
+  sampleSize = 10,
+  // The Fame limit reads the evidence object, not the bare delta, so a fixture has
+  // to carry it — a candidate with no comparable pairs must fail closed.
+  fameEvidence = true
 } = {}) => ({
   scenarioId,
   sampleSize,
@@ -71,6 +77,15 @@ const combinedSummary = ({
     }
   },
   famePerGigDeltaPct: fameDelta,
+  famePerGig: {
+    deltaPct: fameEvidence ? fameDelta : null,
+    sampleSize: fameEvidence ? sampleSize : 0,
+    minimumSampleSize: Math.max(
+      1,
+      Math.ceil(sampleSize * FAME_EVIDENCE_MIN_SHARE)
+    ),
+    sufficientEvidence: fameEvidence
+  },
   continuous: {
     finalHarmony: { pairedDelta: { median: harmonyDelta } },
     maxDrawdownPct: { pairedDelta: { median: drawdownDelta } }
@@ -137,10 +152,29 @@ test('final combined validation enforces hard acceptance and integrity gates', (
   assert.equal(
     evaluateFinalCombinedValidation(
       valid.map((item, index) =>
-        index === 0 ? { ...item, famePerGigDeltaPct: 5.01 } : item
+        index === 0
+          ? combinedSummary({ scenarioId: item.scenarioId, fameDelta: 5.01 })
+          : item
       )
     ).passed,
     false
+  )
+  // Fail closed: a candidate whose Fame comparison has no comparable pairs must not
+  // pass the limit on a delta nothing measured.
+  assert.equal(
+    evaluateFinalCombinedValidation(
+      valid.map((item, index) =>
+        index === 0
+          ? combinedSummary({
+              scenarioId: item.scenarioId,
+              fameDelta: 0,
+              fameEvidence: false
+            })
+          : item
+      )
+    ).passed,
+    false,
+    'Zero comparable pairs is not evidence of zero side effect'
   )
   assert.equal(
     evaluateFinalCombinedValidation(
@@ -1147,28 +1181,29 @@ test('ranking tie notice accounts for pass/fail ordering', () => {
 
 const STUB_RUNS_PER_SCENARIO = 4
 
-// The stub has to tell the two seed streams apart, and `createScenarioSeed`
+// The stub has to tell the three seed streams apart, and `createScenarioSeed`
 // returns a hashed number rather than the label it was built from.
-const holdoutSeedsFor = runsPerScenario => {
-  const holdout = new Map()
-  const calibration = new Set()
+const streamIndexFor = runsPerScenario => {
+  const streamOfSeed = new Map()
+  const indexOfSeed = new Map()
   for (const scenario of SCENARIOS) {
     for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
-      holdout.set(
-        createScenarioSeed(`${scenario.id}#holdout`, runIndex),
-        runIndex
-      )
-      calibration.add(createScenarioSeed(scenario.id, runIndex))
+      for (const stream of ['calibration', 'selection', 'validation']) {
+        const seed = streamSeed(stream, scenario.id, runIndex)
+        assert.equal(
+          streamOfSeed.has(seed),
+          false,
+          `Seed streams must stay disjoint (${stream} collides with ${streamOfSeed.get(seed)})`
+        )
+        streamOfSeed.set(seed, stream)
+        indexOfSeed.set(seed, runIndex)
+      }
     }
   }
-  for (const seed of holdout.keys()) {
-    assert.equal(
-      calibration.has(seed),
-      false,
-      'Seed streams must stay disjoint'
-    )
+  return {
+    streamOf: seed => streamOfSeed.get(seed) ?? null,
+    indexOf: seed => indexOfSeed.get(seed)
   }
-  return holdout
 }
 
 // Deliberately identical for control and candidate on the calibration stream, so
@@ -1194,16 +1229,22 @@ const stubRun = ({ bankrupt }) => ({
 
 /**
  * @param reliefClearsGate when true, an early-game obligation multiplier at or
- *   below 0.8 makes `cult_hypergrowth` hold on the holdout stream. When false no
- *   tuning can clear it, which is the situation the shipped economy is in.
+ *   below 0.8 makes `cult_hypergrowth` hold. When false no tuning can clear it,
+ *   which is the situation the shipped economy is in.
+ * @param breachingStreams which streams carry the breach. Defaults to both the
+ *   search stream and the reserved one; passing `['selection']` models the case the
+ *   split exists to catch — a candidate that looks safe on the stream it was chosen
+ *   on and breaches on the untouched one.
  */
 const makeStubRunner = ({
   reliefClearsGate,
-  runsPerScenario = STUB_RUNS_PER_SCENARIO
+  runsPerScenario = STUB_RUNS_PER_SCENARIO,
+  breachingStreams = ['selection', 'validation']
 }) => {
-  const holdoutSeeds = holdoutSeedsFor(runsPerScenario)
+  const streams = streamIndexFor(runsPerScenario)
   return (scenario, seed, tuning) => {
-    const runIndex = holdoutSeeds.get(seed)
+    const runIndex = streams.indexOf(seed)
+    const stream = streams.streamOf(seed)
     const baseId = scenario.id.replace(/_gap_\d+$/, '')
     const relieved =
       reliefClearsGate &&
@@ -1212,12 +1253,15 @@ const makeStubRunner = ({
     // below it. Every other scenario stays solvent, so the gate turns on this
     // scenario alone — exactly how the real breach reads.
     const bankrupt =
-      runIndex === 0 && baseId === 'cult_hypergrowth' && !relieved
+      runIndex === 0 &&
+      baseId === 'cult_hypergrowth' &&
+      !relieved &&
+      breachingStreams.includes(stream)
     return stubRun({ bankrupt })
   }
 }
 
-test('the combination search rejects a holdout breach and keeps looking', async () => {
+test('the combination search rejects a cap breach and keeps looking', async () => {
   const report = await runExperimentSuite({
     runsPerScenario: STUB_RUNS_PER_SCENARIO,
     writeReports: false,
@@ -1226,8 +1270,8 @@ test('the combination search rejects a holdout breach and keeps looking', async 
 
   assert.equal(report.combinationSearch.selectionOutcome, 'fully-validated')
   assert.ok(
-    report.combinationSearch.pairsRejectedByHoldoutGate > 0,
-    'The neutral pair passes calibration and must be rejected by the holdout gate'
+    report.combinationSearch.pairsRejectedBySelectionGate > 0,
+    'The neutral pair passes calibration and must be rejected by the selection gate'
   )
   assert.equal(report.holdoutSafetyValidation.passed, true)
   assert.equal(report.holdoutSafetyValidation.missingScenarioIds.length, 0)
@@ -1250,8 +1294,10 @@ test('the combination search rejects a holdout breach and keeps looking', async 
   )
   assert.ok(neutral)
   assert.equal(neutral.passed, false)
-  assert.equal(neutral.holdoutPassed, false)
-  assert.deepEqual(neutral.holdoutFailures, ['cult_hypergrowth 25% > 12%'])
+  assert.equal(neutral.selectionGatePassed, false)
+  assert.deepEqual(neutral.selectionGateFailures, [
+    'cult_hypergrowth 25% > 12%'
+  ])
   // Skipping the paired comparison for a pair that cannot ship must read as "not
   // measured", never as a pass.
   assert.equal(neutral.calibrationPassed, null)
@@ -1274,7 +1320,7 @@ test('no combination clearing both gates still produces the diagnostic report', 
     'Every available pair must be asked, not just the first that passed calibration'
   )
   assert.equal(
-    report.combinationSearch.pairsRejectedByHoldoutGate,
+    report.combinationSearch.pairsRejectedBySelectionGate,
     report.combinationSearch.pairsAvailable
   )
   assert.equal(report.holdoutSafetyValidation.passed, false)
@@ -1305,6 +1351,57 @@ test('no combination clearing both gates still produces the diagnostic report', 
   )
 })
 
+test('the reserved validation stream is measured once, on the selected pair only', async () => {
+  // The failure mode the three-way split exists for: a candidate that clears the
+  // caps on the stream it was selected on, and breaches on the untouched one.
+  // Searching further there would spend the independence the stream is for, so the
+  // outcome has to be "no recommendation" rather than "try the next candidate".
+  const report = await runExperimentSuite({
+    runsPerScenario: STUB_RUNS_PER_SCENARIO,
+    writeReports: false,
+    simulate: makeStubRunner({
+      reliefClearsGate: false,
+      breachingStreams: ['validation']
+    })
+  })
+
+  assert.equal(
+    report.selectionGateValidation.passed,
+    true,
+    'clean on selection'
+  )
+  assert.equal(
+    report.holdoutSafetyValidation.passed,
+    false,
+    'breaches on validation'
+  )
+  assert.deepEqual(
+    report.holdoutSafetyValidation.failures.map(failure => failure.scenarioId),
+    ['cult_hypergrowth']
+  )
+  assert.equal(
+    report.recommendation.status,
+    'no-production-recommendation-final-validation-failed'
+  )
+  // Nothing may be marked shippable, and the search must not have gone looking for
+  // a replacement on the validation stream.
+  assert.deepEqual(
+    [
+      ...report.phases.phase3B.candidates,
+      ...report.phases.phase3C.candidates
+    ].filter(item => item.selectedForProduction),
+    []
+  )
+  assert.equal(report.combinationSearch.selectionOutcome, 'fully-validated')
+  assert.equal(report.combinationSearch.pairsRejectedBySelectionGate, 0)
+  assert.deepEqual(report.holdoutSafetyValidation.missingScenarioIds, [])
+  assert.deepEqual(Object.keys(report.seedStreams).sort(), [
+    'calibration',
+    'selection',
+    'validation'
+  ])
+})
+
 test('holdout screening covers every capped scenario, tightest cap first', () => {
   const ordered = holdoutGateScenarios().map(scenario => scenario.id)
   const capped = SCENARIOS.filter(scenario =>
@@ -1326,8 +1423,10 @@ test('screening aborts at a breach but a full measurement covers the whole set',
   const screened = measureHoldoutGate({
     tuning,
     runsPerScenario: STUB_RUNS_PER_SCENARIO,
-    runner
+    runner,
+    stream: 'selection'
   })
+  assert.equal(screened.stream, 'selection')
   assert.equal(screened.validation.passed, false)
   assert.ok(
     screened.measured.length < holdoutGateScenarios().length,
@@ -1339,7 +1438,8 @@ test('screening aborts at a breach but a full measurement covers the whole set',
     tuning,
     runsPerScenario: STUB_RUNS_PER_SCENARIO,
     runner,
-    abortOnBreach: false
+    abortOnBreach: false,
+    stream: 'selection'
   })
   assert.equal(full.measured.length, holdoutGateScenarios().length)
   assert.deepEqual(full.validation.missingScenarioIds, [])
@@ -1381,8 +1481,25 @@ test('paired fame per gig compares the same denominator on both sides', () => {
   ]
   assert.equal(pairedFamePerGig(accelerated).deltaPct, 25)
 
-  // No comparable pair at all is a zero delta with a zero sample, not a crash.
+  // No comparable pair at all must not read as a measured zero: the delta is null,
+  // the evidence flag is false, and the limit fails closed on it.
   const none = pairedFamePerGig([pair(0, 0)])
   assert.equal(none.sampleSize, 0)
-  assert.equal(none.deltaPct, 0)
+  assert.equal(none.deltaPct, null)
+  assert.equal(none.sufficientEvidence, false)
+  assert.equal(famePerGigWithinLimit(none, 5), false)
+  assert.equal(famePerGigWithinLimit(measured, 5), true)
+
+  // Coverage is a share of the cohort, so the threshold tracks runsPerScenario
+  // instead of becoming unreachable on a small probe run.
+  const thin = pairedFamePerGig([
+    pair(4, 4),
+    pair(0, 5),
+    pair(0, 5),
+    pair(0, 5)
+  ])
+  assert.equal(thin.sampleSize, 1)
+  assert.equal(thin.minimumSampleSize, Math.ceil(4 * FAME_EVIDENCE_MIN_SHARE))
+  assert.equal(thin.sufficientEvidence, false)
+  assert.equal(thin.deltaPct, null)
 })

@@ -2423,6 +2423,19 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   // shop, and reporting €0 for it would understate the pre-gig spending of exactly
   // the cohort `earlyRunway` exists to describe.
   let spendBeforeFirstGig = null
+  // A running minimum has to be sampled after every step that can move money, not
+  // once per day. Sampling only after the daily tick left events, maintenance,
+  // refuelling, the shop, asset investment and the travel cost outside the window,
+  // so the reported "minimum" could sit ABOVE the balance at the end of that same
+  // window — €414 against €351.50 directly before the first gig. That is not a
+  // minimum, and it made this field unusable for the runway question it exists for.
+  const observeEarlyRunwayMoney = () => {
+    if (firstGigDay != null) return
+    lowestMoneyBeforeFirstGig = Math.min(
+      lowestMoneyBeforeFirstGig,
+      state.player.money
+    )
+  }
   let blockedTravelDaysBeforeFirstGig = 0
   let firstBlockedTravel = null
 
@@ -2506,13 +2519,8 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
     const dailyObligations = getTotalDailyObligations(state)
-    if (firstGigDay == null) {
-      obligationsBeforeFirstGig += dailyObligations
-      lowestMoneyBeforeFirstGig = Math.min(
-        lowestMoneyBeforeFirstGig,
-        state.player.money
-      )
-    }
+    if (firstGigDay == null) obligationsBeforeFirstGig += dailyObligations
+    observeEarlyRunwayMoney()
     if (
       shouldTriggerBankruptcy(
         state.player.money,
@@ -2585,9 +2593,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     }
     expireContrabandEffects(state, runCtx)
     maybeApplyContrabandDrop(state, rng, counters, runCtx)
+    observeEarlyRunwayMoney()
     maybeMaintainVanAndResources(state, scenario, rng, counters)
     maybeBuyCatalogUpgrade(state, rng, counters)
     maybeInvestInAssets(state, rng, counters)
+    observeEarlyRunwayMoney()
 
     if (willRest) {
       // Recovery day. Clinic heals per CLINIC_CONFIG (gameConstants.ts):
@@ -2649,7 +2659,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       continue
     }
 
+    observeEarlyRunwayMoney()
+
     const recordNoTrip = reason => {
+      observeEarlyRunwayMoney()
       if (firstGigDay == null) {
         blockedTravelDaysBeforeFirstGig += 1
         firstBlockedTravel ??= { day, reason }
@@ -2712,6 +2725,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
+    observeEarlyRunwayMoney()
 
     // Arrival bookkeeping: location keys regional reputation (mapUtils
     // getRegionKeyForLocation reads the venues:<id>.name display key) and
@@ -2849,6 +2863,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // Recorded before the setup minigame and the modifier purchases, which is
     // what "money directly before the first gig" has to mean for a runway
     // question — and it is also the anchor the `first-income` cadence keeps.
+    observeEarlyRunwayMoney()
     if (firstGigDay == null) {
       firstGigDay = day
       moneyBeforeFirstGig = state.player.money

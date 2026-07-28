@@ -27,6 +27,7 @@
  * Usage: pnpm run simulate:balance:cadence [--runs <n>] [--no-write]
  */
 import crypto from 'node:crypto'
+import { execSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -51,12 +52,20 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-cadence-probe-analysis.md')
 
-// The breach that motivates the probe is a holdout breach, so the holdout stream
-// is measured too — a variant that only helps the calibration cohort has not
-// answered the question. Same `#holdout` marker as both published reports, so all
-// three artifacts judge the same stream.
+// The breach that motivates the probe is a holdout breach, so that stream is
+// measured too — a variant that only helps the calibration cohort has not answered
+// the question. Same `#holdout` marker as both published reports, so all three
+// artifacts judge the same stream.
+//
+// `selection` is measured as well, and it is not decoration: the phase conclusion
+// would otherwise rest entirely on the one cohort it was found on. Agreement across
+// two independent streams is what makes "the phase, not the economy" a finding
+// rather than a property of a particular sample. The probe selects nothing, so it
+// does not consume the reserved stream's independence — but the eventual cadence
+// decision still wants its own confirmation run.
 const STREAMS = Object.freeze([
   { id: 'calibration', seedFor: (id, index) => createScenarioSeed(id, index) },
+  { id: 'selection', seedFor: (id, index) => createScenarioSeed(`${id}#selection`, index) },
   { id: 'holdout', seedFor: (id, index) => createScenarioSeed(`${id}#holdout`, index) }
 ])
 
@@ -215,7 +224,7 @@ export const runCadenceProbe = ({
     )
   }
   const cohortOf = (entry, scenarioId, stream) =>
-    entry.scenarios.find(scenario => scenario.scenarioId === scenarioId)?.streams[stream]
+    entry?.scenarios.find(scenario => scenario.scenarioId === scenarioId)?.streams?.[stream]
 
   // Corridors and caps come from the live configuration: RISK_TARGETS holds the
   // soft design bands, KPI_TARGETS the hard caps. A hardcoded figure here would
@@ -301,10 +310,42 @@ export const runCadenceProbe = ({
           (cultRateFor(variant) ?? Infinity) <= cultCap
       )
     : []
+  // The same question asked on the independent `selection` cohort. A phase effect
+  // that only appears on one stream is a sampling artifact, not a finding.
+  // `clearing` holds variants (gate verdicts); the per-stream cohorts live on
+  // `policies`. Look the cohort up by policy rather than passing a variant into
+  // `cohortOf`, which expects the cohort shape.
+  const cultRateOnStream = (policy, stream) =>
+    cohortOf(
+      policies.find(entry => entry.policy === policy),
+      cultId,
+      stream
+    )?.bankruptcyRatePct ?? null
+  const shippedSelectionRate = cultRateOnStream(SHIPPED_GIG_CADENCE_POLICY, 'selection')
+  const independentConfirmation = {
+    stream: 'selection',
+    shippedCultRatePct: shippedSelectionRate,
+    variantCultRatePct: Object.fromEntries(
+      policies
+        .filter(entry => entry.policy !== SHIPPED_GIG_CADENCE_POLICY)
+        .map(entry => [entry.policy, cultRateOnStream(entry.policy, 'selection')])
+    ),
+    // Direction, not magnitude: the streams are different cohorts, so the rates are
+    // not expected to match — only the sign of the effect has to.
+    agreesWithHoldout:
+      shippedBreaches &&
+      shippedSelectionRate != null &&
+      clearing.length > 0 &&
+      clearing.every(variant => {
+        const rate = cultRateOnStream(variant.policy, 'selection')
+        return rate != null && rate < shippedSelectionRate
+      })
+  }
   const conclusion = {
     // The question, in one field: did any phase variant turn the failing gate
     // into a passing one on the same seeds?
     phaseExplainsBreach: clearing.length > 0,
+    independentConfirmation,
     shippedPolicyBreachesCultCap: shippedBreaches,
     shippedCultHoldoutRatePct: shippedCultRate,
     cultHardCapPct: cultCap,
@@ -479,12 +520,35 @@ Anteil der Insolvenzen, die vor dem ersten Gig eintreten (\`${cult}\`, Holdout):
     .map(([policy, share]) => `\`${policy}\` ${fmtPct(share)}`)
     .join(' · ')}
 
+Bestätigung auf dem unabhängigen \`selection\`-Strom: ${
+    report.conclusion.independentConfirmation?.agreesWithHoldout
+      ? `**ja** — \`gap-aligned\` ${fmtPct(report.conclusion.independentConfirmation.shippedCultRatePct)} gegen ${Object.entries(
+          report.conclusion.independentConfirmation.variantCultRatePct
+        )
+          .map(([policy, rate]) => `\`${policy}\` ${fmtPct(rate)}`)
+          .join(' · ')}. Der Effekt ist damit nicht an die Kohorte gebunden, auf der er gefunden wurde.`
+      : '**nein** — der Effekt zeigt sich nicht in derselben Richtung auf dem zweiten Strom, ist also möglicherweise ein Stichprobeneffekt.'
+  }
+
 > Diese Auswertung ändert keinen Produktionswert. Sie entscheidet nur, ob der nächste Schritt eine Korrektur der Simulationspolitik oder ein echter Early-Runway-Eingriff ist. Eine Variante, die das Gate besteht, ist Evidenz — kein Grund, sie deshalb zu übernehmen: die Phase muss zu dem passen, was das Spiel vorgibt.
 `
 }
 
 const hashFile = async file =>
   crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
+
+const git = command => {
+  try {
+    return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
+  } catch {
+    return null
+  }
+}
+const gitRevision = () => process.env.GITHUB_SHA ?? git('git rev-parse HEAD')
+const gitWorkingTreeDirty = () => {
+  const status = git('git status --porcelain')
+  return status == null ? null : status.length > 0
+}
 
 const parseArgs = argv => {
   const options = { write: true, runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario }
@@ -511,6 +575,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     generatedAt: new Date().toISOString(),
     metadata: {
       nodeVersion: process.version,
+      // Same provenance the simulation and experiment artifacts carry. This report
+      // holds the PR's central conclusion, so "which source state produced it" has
+      // to be answerable from the file alone.
+      sourceBaseCommit: gitRevision(),
+      workingTreeDirty: gitWorkingTreeDirty(),
       // The shared list covers everything that can move a balance number; this
       // script's own contents decide what is measured, so it is hashed here
       // rather than added to that list — it cannot move the published simulation

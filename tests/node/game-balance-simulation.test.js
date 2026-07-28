@@ -1369,6 +1369,19 @@ test('a run reports the opening separately from the tour', () => {
       runway.bankruptBeforeFirstGig,
       run.bankrupt && runway.firstGigDay == null
     )
+    // A minimum cannot sit above the balance at the end of the same window. It did,
+    // while the sample only happened after the daily tick and every later money move
+    // (events, maintenance, refuel, shop, assets, travel cost) fell outside it.
+    if (runway.moneyBeforeFirstGig != null) {
+      assert.ok(
+        runway.lowestMoneyBeforeFirstGig <= runway.moneyBeforeFirstGig,
+        `lowest (${runway.lowestMoneyBeforeFirstGig}) must not exceed the balance directly before the first gig (${runway.moneyBeforeFirstGig})`
+      )
+    }
+    assert.ok(
+      runway.lowestMoneyBeforeFirstGig <= run.peakMoney,
+      'the pre-gig minimum cannot exceed the run peak'
+    )
     // A run that never played has still spent money on travel, fuel, repairs and
     // the shop. Reporting 0 for it would understate the pre-gig spending of exactly
     // the never-played cohort this block exists to describe.

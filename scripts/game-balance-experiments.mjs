@@ -107,7 +107,7 @@ export const evaluateFinalCombinedValidation = results => {
         ? result.bankruptcy.candidateRatePct <= 60
         : result.bankruptcy.deltaRatePct <= 2,
       kpi: !(result.controlKpiStatus === 'passed' && result.candidateKpiStatus === 'failed'),
-      famePerGig: Math.abs(result.famePerGigDeltaPct) <= 5,
+      famePerGig: famePerGigWithinLimit(result.famePerGig, 5),
       harmony: result.continuous.finalHarmony.pairedDelta.median >= -5,
       drawdown: result.continuous.maxDrawdownPct.pairedDelta.median <= 10
     }
@@ -122,7 +122,7 @@ export const evaluateFinalCombinedValidation = results => {
     bootstrapBankruptcy: (resultsByScenario.bootstrap_struggle?.bankruptcy.candidateRatePct ?? Infinity) <= 60,
     noPassedToFailed: results.every(result => !(result.controlKpiStatus === 'passed' && result.candidateKpiStatus === 'failed')),
     otherScenarioBankruptcy: results.every(result => result.scenarioId === 'bootstrap_struggle' || result.bankruptcy.deltaRatePct <= 2),
-    famePerGig: results.every(result => Math.abs(result.famePerGigDeltaPct) <= 5),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
     harmony: results.every(result => result.continuous.finalHarmony.pairedDelta.median >= -5),
     drawdown: results.every(result => result.continuous.maxDrawdownPct.pairedDelta.median <= 10),
     sampleSizesMatch: sampleSizes.size <= 1 && !sampleSizes.has(0),
@@ -181,7 +181,40 @@ export const holdoutGateScenarios = () =>
     .sort((left, right) => KPI_TARGETS[left.id].bankruptcyMax - KPI_TARGETS[right.id].bankruptcyMax)
 
 /**
- * Measures one tuning against the hard insolvency caps on the holdout stream.
+ * The three disjoint seed streams, and what each is allowed to decide.
+ *
+ * `calibration` carries the paired candidate-vs-control comparison. `selection` is
+ * where the search may try as many candidates as it likes against the hard caps.
+ * `validation` is measured exactly once, on the combination the search already
+ * settled on, and never feeds another candidate decision.
+ *
+ * The split exists because a stream that chose the candidate cannot also be the
+ * evidence that the candidate generalises. Running the cap check inside the search
+ * fixed a real control-flow bug — the gate used to be applied after selection, so
+ * 125 of 126 pairs were never asked whether they would hold — but pointing that
+ * search at the published `#holdout` stream turned it into a selection set: trying
+ * 154 candidates against one cohort and keeping the first that clears it makes
+ * sampling noise part of the selection criterion, and the surviving figure is then
+ * reported as independent robustness. Both gates still run inside the search; they
+ * just run on `selection`, which leaves `validation` untouched.
+ *
+ * `validation` keeps the `#holdout` marker so it stays the same stream the
+ * simulation report's `kpiHoldoutValidation` measures.
+ */
+export const SEED_STREAMS = Object.freeze({
+  calibration: id => id,
+  selection: id => `${id}#selection`,
+  validation: id => `${id}#holdout`
+})
+
+export const streamSeed = (stream, scenarioId, runIndex) => {
+  const label = SEED_STREAMS[stream]
+  if (!label) throw new RangeError(`Unknown seed stream: ${stream}`)
+  return createScenarioSeed(label(scenarioId), runIndex)
+}
+
+/**
+ * Measures one tuning against the hard insolvency caps on a given stream.
  *
  * The search used to check this only for the tuning it had already chosen, so a
  * combination was selected on the calibration stream and only then discovered to
@@ -201,20 +234,23 @@ export const measureHoldoutGate = ({
   runsPerScenario,
   runner = runSingleSimulation,
   scenarios = holdoutGateScenarios(),
-  abortOnBreach = true
+  abortOnBreach = true,
+  // Defaults to the search stream: the caller that measures the reserved
+  // validation stream has to say so explicitly, so it cannot happen by accident.
+  stream = 'selection'
 }) => {
   const measured = []
   let runsSpent = 0
   for (const scenario of scenarios) {
     const runs = Array.from({ length: runsPerScenario }, (_, runIndex) =>
-      compact(runner(scenario, createScenarioSeed(`${scenario.id}#holdout`, runIndex), tuning)))
+      compact(runner(scenario, streamSeed(stream, scenario.id, runIndex), tuning)))
     runsSpent += runs.length
     const count = runs.filter(run => run.bankrupt).length
     const ratePct = round((count / Math.max(1, runs.length)) * 100)
     measured.push({ id: scenario.id, holdoutBankruptcy: { count, sampleSize: runs.length, ratePct } })
     if (abortOnBreach && ratePct > KPI_TARGETS[scenario.id].bankruptcyMax) break
   }
-  return { validation: buildHoldoutSafetyValidation(measured), measured, runsSpent }
+  return { validation: buildHoldoutSafetyValidation(measured), measured, runsSpent, stream }
 }
 
 /**
@@ -231,13 +267,24 @@ export const measureHoldoutGate = ({
  * artifact of the denominator.
  *
  * A pair where either side never played carries no per-gig information, so it is
- * excluded rather than folded in as a zero. `sampleSize` travels with the delta:
- * a limit judged on a handful of pairs is worth knowing about.
+ * excluded rather than folded in as a zero.
+ *
+ * Excluding those pairs opens a second hole if the result is not also gated on
+ * coverage: a candidate that removes every comparable gig leaves zero pairs, the
+ * delta reads 0, and `Math.abs(0) <= 5` passes it as "no Fame side effect" on no
+ * evidence at all. So the delta is `null` when coverage is short, and
+ * `sufficientEvidence` has to be true for the limit to be satisfied — a missing
+ * measurement fails closed. The threshold is a share of the cohort rather than a
+ * fixed count so it tracks `runsPerScenario` instead of silently becoming
+ * unreachable on small probe runs.
  */
+export const FAME_EVIDENCE_MIN_SHARE = 0.5
 export const pairedFamePerGig = pairs => {
   const comparable = pairs.filter(
     pair => pair.control.gigsPlayed > 0 && pair.candidate.gigsPlayed > 0
   )
+  const minimumSampleSize = Math.max(1, Math.ceil(pairs.length * FAME_EVIDENCE_MIN_SHARE))
+  const sufficientEvidence = comparable.length >= minimumSampleSize
   const average = side =>
     comparable.length
       ? comparable.reduce((sum, pair) => sum + pair[side].fameEarned / pair[side].gigsPlayed, 0) /
@@ -248,11 +295,20 @@ export const pairedFamePerGig = pairs => {
   return {
     control: round(control),
     candidate: round(candidate),
-    deltaPct: percentageDelta(control, candidate),
+    // Null rather than 0 when coverage is short: a delta nothing measured must not
+    // be comparable against the limit.
+    deltaPct: sufficientEvidence ? percentageDelta(control, candidate) : null,
     sampleSize: comparable.length,
+    minimumSampleSize,
+    sufficientEvidence,
     excludedPairs: pairs.length - comparable.length
   }
 }
+
+/** The Fame side-effect limit, failing closed when the comparison has no evidence. */
+export const famePerGigWithinLimit = (famePerGig, maximumAbsDeltaPct) =>
+  Boolean(famePerGig?.sufficientEvidence) &&
+  Math.abs(famePerGig.deltaPct) <= maximumAbsDeltaPct
 
 // Staged obligation relief is expressed as cumulative `throughDay` boundaries, so
 // each stage's weight is its own segment length, not `throughDay` itself.
@@ -312,7 +368,7 @@ export const evaluateCandidate = (definition, pairs, summary) => {
         bankruptcyDelta: summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
         solventMedianMoney: median(candidateSolventMoney) <= criteria.solventMedianMoneyMax,
         solventP90Money: percentile(candidateSolventMoney, 0.9) <= criteria.solventP90MoneyMax,
-        famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct
+        famePerGig: famePerGigWithinLimit(famePerGig, criteria.famePerGigMaximumAbsDeltaPct)
       }
     : {
         medianFinalMoney: medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] && medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
@@ -320,7 +376,7 @@ export const evaluateCandidate = (definition, pairs, summary) => {
         earlyCheckpoint: earlyCheckpointDeltaPct >= criteria.earlyCheckpointMinimumDeltaPct,
         midCheckpoint: midCheckpointDeltaPct >= criteria.midCheckpointMinimumDeltaPct,
         bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.candidateBankruptcyRateMaxPct && summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
-        famePerGig: Math.abs(famePerGigDeltaPct) <= criteria.famePerGigMaximumAbsDeltaPct,
+        famePerGig: famePerGigWithinLimit(famePerGig, criteria.famePerGigMaximumAbsDeltaPct),
         harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
       }
   const passed = Object.values(checks).every(value => value === true)
@@ -340,7 +396,7 @@ export const evaluateCandidate = (definition, pairs, summary) => {
           medianFinalMoneyDeltaPct
       ) * 4)
   const overcorrectionPenalty = definition.phase === 'bootstrap' && summary.bankruptcy.candidateRatePct < bootstrapAnchorPct / 2 ? 50 : 0
-  const sideEffectPenalty = Math.abs(famePerGigDeltaPct) + Math.max(0, -summary.continuous.finalHarmony.pairedDelta.median)
+  const sideEffectPenalty = Math.abs(famePerGigDeltaPct ?? 0) + Math.max(0, -summary.continuous.finalHarmony.pairedDelta.median)
   const complexityPenalty = definition.id.includes('staged') || definition.id.includes('recovery') ? 2 : 1
   return {
     ...definition,
@@ -511,14 +567,15 @@ export const renderExperimentMarkdown = report => {
   // breakdown belongs to the evaluated side only — appending it to the skipped
   // count read as a breakdown of pairs that were never measured at all.
   const search = report.combinationSearch
-  const holdoutRejected = search.pairsRejectedByHoldoutGate ?? 0
+  const holdoutRejected = search.pairsRejectedBySelectionGate ?? 0
   const calibrationRejected = search.pairsRejectedByCalibrationGate ?? 0
   const selectedPairs = Math.max(0, search.pairsEvaluated - holdoutRejected - calibrationRejected)
   const pairAccounting =
-    `Of ${search.pairsAvailable} available pairs, ${search.pairsEvaluated} were evaluated ` +
-    `(${holdoutRejected} rejected by the holdout gate, ${calibrationRejected} by the calibration gate, ` +
+    `Of ${search.pairsAvailable} available pairs, ${search.pairsEvaluated} were evaluated on the \`selection\` stream ` +
+    `(${holdoutRejected} rejected by the hard caps, ${calibrationRejected} by the calibration gate, ` +
     `${selectedPairs} clearing both) and ${search.pairsSkipped} were never reached, because the search stops ` +
-    `at the first pair that clears both gates and every remaining pair carries higher impact.`
+    `at the first pair that clears both gates and every remaining pair carries higher impact. The reserved ` +
+    `\`validation\` stream is measured once, on that pair alone.`
   const selectionOutcomeNote =
     report.combinationSearch.selectionOutcome === 'no-combination-cleared-both-gates'
       ? ' **Keine Kombination hat beide Gates bestanden.** Die genannte Kombination ist nur die Basis, gegen die dieser Bericht geschrieben ist — sie wird nicht zur Auslieferung empfohlen.'
@@ -642,7 +699,9 @@ Kalibrierungs-Gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}
 
 ### Harte Sicherheitsgrenzen auf dem Holdout-Strom
 
-Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem disjunkten Seed-Strom gegen die harten \`KPI_TARGETS.bankruptcyMax\`-Obergrenzen geprüft. Der gepaarte Vergleich oben läuft auf dem Kalibrierungsstrom und kann eine Überschreitung, die nur auf unabhängigen Seeds auftritt, nicht sehen.
+Drei disjunkte Seed-Ströme, mit getrennten Aufgaben: \`calibration\` trägt den gepaarten Vergleich, \`selection\` trägt die Kandidatensuche gegen die harten \`KPI_TARGETS.bankruptcyMax\`-Obergrenzen, und \`validation\` wird **genau einmal** gemessen — auf der Kombination, die die Suche bereits gewählt hat. Ein Strom, auf dem bis zu ${report.combinationSearch.pairsAvailable} Kandidaten ausprobiert werden, kann nicht gleichzeitig belegen, dass der Gewinner generalisiert; deshalb entscheidet die Suche auf \`selection\` und \`validation\` bleibt unberührt.
+
+Suchstrom-Gate (\`selection\`, nicht der Unabhängigkeitsbeleg): **${report.selectionGateValidation?.passed ? 'PASS' : report.selectionGateValidation ? 'FAIL' : '—'}**
 
 Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation?.missingScenarioIds?.length ? ` — nicht gemessen: ${report.holdoutSafetyValidation.missingScenarioIds.map(id => `\`${id}\``).join(', ')} (unvollständige Abdeckung ist kein bestandenes Gate)` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length && !report.holdoutSafetyValidation.missingScenarioIds?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
 
@@ -792,7 +851,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   // order, since a pair has to clear both to be selectable.
   let selected = null
   let pairsConsidered = 0
-  let holdoutRejections = 0
+  let selectionRejections = 0
   let calibrationRejections = 0
   let leastImpactPair = null
   for (const pair of orderedPairs) {
@@ -804,9 +863,14 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       { earlyGame: pair.bootstrap.overrides.earlyGame, touring: touring.overrides.touring },
       ORIGINAL_CONTROL_BALANCE_TUNING
     )
-    const holdout = measureHoldoutGate({ tuning, runsPerScenario, runner })
-    if (!holdout.validation.passed) {
-      holdoutRejections++
+    const selectionGate = measureHoldoutGate({
+      tuning,
+      runsPerScenario,
+      runner,
+      stream: 'selection'
+    })
+    if (!selectionGate.validation.passed) {
+      selectionRejections++
       // Recorded without calibration figures: the pair cannot ship, so paying
       // 2860 more runs to describe how it would have compared is waste. The
       // `calibrationEvaluated` flag keeps that visible instead of letting an
@@ -817,15 +881,15 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
         tuning,
         validation: null,
         calibrationEvaluated: false,
-        holdoutSafetyValidation: holdout.validation,
-        holdoutMeasured: holdout.measured
+        selectionGateValidation: selectionGate.validation,
+        selectionGateMeasured: selectionGate.measured
       })
       continue
     }
     const combination = evaluateCombination(pair.bootstrap, touring)
     combination.calibrationEvaluated = true
-    combination.holdoutSafetyValidation = holdout.validation
-    combination.holdoutMeasured = holdout.measured
+    combination.selectionGateValidation = selectionGate.validation
+    combination.selectionGateMeasured = selectionGate.measured
     combinations.push(combination)
     if (combination.validation.passed) {
       selected = combination
@@ -855,7 +919,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
             evaluateCombination(leastImpactPair.bootstrap, leastImpactPair.touring),
             {
               calibrationEvaluated: true,
-              holdoutSafetyValidation: existing?.holdoutSafetyValidation ?? null
+              selectionGateValidation: existing?.selectionGateValidation ?? null
             }
           )
       if (!existing?.calibrationEvaluated) {
@@ -874,11 +938,9 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   // sections then name a candidate id where a reader expects a lever. Flag it
   // so the reports say outright that production tuning does not move.
   const selectedAppliesNoChange = combinationImpact({ bootstrap: selectedBootstrap, touring: selectedTouring }) === 0
-  // "Selected for production" has to mean it cleared both gates. When nothing did,
-  // the reported pair is only the baseline the artifacts are written against, and
-  // claiming selection there would recommend a lever the gates refused.
-  selectedBootstrap.selectedForProduction = Boolean(selected)
-  selectedTouring.selectedForProduction = Boolean(selected)
+  // "Selected for production" has to mean it cleared every gate, and the reserved
+  // validation stream has not been measured yet at this point — so the flag is set
+  // below, once it has. Until then only the reporting role is known.
   selectedBootstrap.reportedAsBaseline = true
   selectedTouring.reportedAsBaseline = true
 
@@ -891,7 +953,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     if (!evaluated.length) {
       return 'Not evaluated: a lower-impact combination already cleared both gates.'
     }
-    if (evaluated.some(c => c.validation?.passed && c.holdoutSafetyValidation?.passed)) {
+    if (evaluated.some(c => c.validation?.passed && c.selectionGateValidation?.passed)) {
       return 'A lower-impact combination cleared both gates and ranked higher.'
     }
     const calibrationFailures = [
@@ -905,7 +967,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     const holdoutFailures = [
       ...new Set(
         evaluated.flatMap(c =>
-          (c.holdoutSafetyValidation?.failures ?? []).map(
+          (c.selectionGateValidation?.failures ?? []).map(
             failure =>
               `with ${partnerOf(c)}: ${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
           )
@@ -964,18 +1026,24 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   // needed one), or whose screen stopped early at a breach, is measured across the
   // full set here: the artifact has to show all seven caps, not the prefix the
   // search happened to need.
-  const screenedFully =
-    reported.holdoutSafetyValidation &&
-    reported.holdoutSafetyValidation.missingScenarioIds.length === 0
-  const reportedHoldout = screenedFully
-    ? { validation: reported.holdoutSafetyValidation, measured: reported.holdoutMeasured }
-    : measureHoldoutGate({
-        tuning: finalTuning,
-        runsPerScenario,
-        runner,
-        abortOnBreach: false
-      })
+  // Measured exactly once, on the reserved `validation` stream, against the
+  // combination the search already settled on. It is never reused from the search
+  // and never feeds another candidate decision — that is the whole point of keeping
+  // it separate. `abortOnBreach: false` so the artifact reports all seven caps
+  // instead of the prefix a breach would have stopped at.
+  const reportedHoldout = measureHoldoutGate({
+    tuning: finalTuning,
+    runsPerScenario,
+    runner,
+    abortOnBreach: false,
+    stream: 'validation'
+  })
   const holdoutSafetyValidation = reportedHoldout.validation
+  // A combination that cleared both search gates and then breached a cap on the
+  // untouched stream is not shippable, so nothing may carry the production flag.
+  const shippable = Boolean(selected) && holdoutSafetyValidation.passed
+  selectedBootstrap.selectedForProduction = shippable
+  selectedTouring.selectedForProduction = shippable
   // `buildHoldoutSafetyValidation` names only the breaches, so the passing caps
   // never reached the artifact and a reader could not see how much headroom the
   // other six had. Publish the measured rate for every covered scenario.
@@ -1048,6 +1116,14 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote }
     },
     finalCombinedValidation,
+    // The stream each verdict rests on, so a reader never has to infer it. A stream
+    // that chose the candidate cannot also be the evidence that it generalises.
+    seedStreams: {
+      calibration: 'paired candidate-vs-control comparison',
+      selection: `candidate search, ${pairsConsidered} of ${orderedPairs.length} pairs measured against the hard caps`,
+      validation: 'measured once, on the selected combination only'
+    },
+    selectionGateValidation: reported.selectionGateValidation ?? null,
     holdoutSafetyValidation,
     holdoutBankruptcyByScenario,
     designRiskCorridors,
@@ -1056,7 +1132,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       pairsAvailable: orderedPairs.length,
       pairsEvaluated: pairsConsidered,
       pairsSkipped: combinationsSkipped,
-      pairsRejectedByHoldoutGate: holdoutRejections,
+      pairsRejectedBySelectionGate: selectionRejections,
       pairsRejectedByCalibrationGate: calibrationRejections,
       // Selection and reporting are the same thing only when something cleared
       // both gates. Otherwise the artifacts describe the least-impact baseline so
@@ -1066,8 +1142,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       note: SELECTION_RATIONALE
     },
     combinationRanking: [...combinations].sort((left, right) =>
-      Number(Boolean(right.validation?.passed && right.holdoutSafetyValidation?.passed)) -
-        Number(Boolean(left.validation?.passed && left.holdoutSafetyValidation?.passed)) ||
+      Number(Boolean(right.validation?.passed && right.selectionGateValidation?.passed)) -
+        Number(Boolean(left.validation?.passed && left.selectionGateValidation?.passed)) ||
       combinationImpact(left) - combinationImpact(right)
     ).map(item => ({
       bootstrap: item.bootstrap.id,
@@ -1076,11 +1152,13 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // `passed` is the release verdict: both gates. `null` for the calibration
       // side means the pair was rejected by the holdout gate before the paired
       // comparison ran, which is different from having failed it.
-      passed: Boolean(item.validation?.passed && item.holdoutSafetyValidation?.passed),
+      // Selectable, not shippable: the final validation stream judges only the one
+      // combination the search settled on.
+      passed: Boolean(item.validation?.passed && item.selectionGateValidation?.passed),
       calibrationPassed: item.calibrationEvaluated ? item.validation.passed : null,
       calibrationFailures: item.calibrationEvaluated ? item.validation.failures : null,
-      holdoutPassed: item.holdoutSafetyValidation?.passed ?? null,
-      holdoutFailures: (item.holdoutSafetyValidation?.failures ?? []).map(
+      selectionGatePassed: item.selectionGateValidation?.passed ?? null,
+      selectionGateFailures: (item.selectionGateValidation?.failures ?? []).map(
         failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
       )
     })),
@@ -1093,10 +1171,16 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // status — the measurement is complete, the baseline simply is not safe —
       // but it does not suppress the diagnostic artifacts either. The Phase 3C
       // objective only distinguishes a full from a partial acceptance.
+      // A candidate that clears both search gates and then breaches a cap on the
+      // untouched validation stream is not a candidate to retry against that stream:
+      // searching there is what would destroy its independence. The outcome is "no
+      // recommendation", and the next step is a new pre-declared candidate family.
       status: !finalCombinedValidation.passed
         ? 'rejected'
         : !holdoutSafetyValidation.passed
-          ? 'no-production-recommendation-holdout-safety-failed'
+          ? selected
+            ? 'no-production-recommendation-final-validation-failed'
+            : 'no-production-recommendation-holdout-safety-failed'
           : gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial',
       objectiveStatus,
       objectiveNote,
@@ -1107,7 +1191,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // read as production-ready tuning while `balanceTuning.ts` deliberately kept
       // production neutral, and nothing in the report said so.
       productionHold:
-        selected && BALANCE_RECOMMENDATION_HOLD
+        shippable && BALANCE_RECOMMENDATION_HOLD
           ? {
               adopted: false,
               heldFor: {
@@ -1120,7 +1204,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
                 BALANCE_RECOMMENDATION_HOLD.touring === selectedTouring.id,
               reason: BALANCE_RECOMMENDATION_HOLD.reason
             }
-          : { adopted: Boolean(selected), heldFor: null, matchesRecommendation: null, reason: null }
+          : { adopted: shippable, heldFor: null, matchesRecommendation: null, reason: null }
     },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }
