@@ -204,7 +204,7 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 12,
+  reportVersion: 13,
   runsPerScenario: 260,
   // A playthrough is bounded by the map, not by a free-running clock:
   // `MapGenerator.generateMap()` is always called with depth 10 and produces a
@@ -1877,6 +1877,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const [earlyCheckpointDay, midCheckpointDay, lateCheckpointDay] =
     SIMULATION_CONSTANTS.progressionCheckpointDays
 
+  // Liquidity pressure, sampled at the start of each day before that day's
+  // costs land. Insolvency is terminal and rare over ten days, so time spent
+  // near zero is what distinguishes a tense scenario from a safe one.
+  let daysBelowTightLiquidity = 0
+  let daysBelowCriticalLiquidity = 0
+  // A true running minimum. `lowestMoney` above is only sampled at gig
+  // checkpoints, which makes it "lowest balance seen around a gig" rather than
+  // the low-water mark of the run — a scenario that plays daily never appears
+  // to dip at all. Kept separate so the published `lowestMoney` statistics do
+  // not silently change meaning.
+  let lowestMoneyObserved = state.player.money
+
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
   let totalHitWindowSum = 0
@@ -1889,6 +1901,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const daysToRun = scenario.daysOverride ?? SIMULATION_CONSTANTS.daysPerRun
   for (let day = 1; day <= daysToRun; day++) {
     daysSurvived = day
+    if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.tight)
+      daysBelowTightLiquidity += 1
+    if (state.player.money < LIQUIDITY_STRESS_THRESHOLDS.critical)
+      daysBelowCriticalLiquidity += 1
+    lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
     if (state.player.money > peakMoney) peakMoney = state.player.money;
     else {
       const drop = calculateDrawdownPct(peakMoney, state.player.money)
@@ -2048,6 +2065,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     if (!shouldPlayGig) {
       peakMoney = Math.max(peakMoney, state.player.money)
       lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
       continue
     }
 
@@ -2297,6 +2315,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     if (gigNet >= MAX_GIG_NET) counters.gigCapHits += 1
     peakMoney = Math.max(peakMoney, state.player.money)
     lowestMoney = Math.min(lowestMoney, state.player.money)
+    lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
 
     // Calculate Peak-to-Trough drop percentage relative to the current peak.
     if (peakMoney > 0) {
@@ -2384,6 +2403,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     totalGigNet,
     peakMoney,
     lowestMoney,
+    lowestMoneyObserved,
+    daysBelowTightLiquidity,
+    daysBelowCriticalLiquidity,
+    emergencyGrantUsed: runCtx.emergencyGrantUsed,
     timeline,
     moneyAtEarlyCheckpoint,
     moneyAtMidCheckpoint,
@@ -2503,6 +2526,9 @@ export const summarizeScenario = runs => {
     upperPct: Number(preciseConfidence95.upperPct.toFixed(2)),
     method: preciseConfidence95.method
   }
+
+  const shareOfRunsPct = predicate =>
+    n > 0 ? Number(((runs.filter(predicate).length / n) * 100).toFixed(2)) : 0
 
   const finalMoneyMean = popAll.finalMoney ? popAll.finalMoney.mean : 0
   const finalFameMean = popAll.finalFame ? popAll.finalFame.mean : 0
@@ -2638,6 +2664,54 @@ export const summarizeScenario = runs => {
       ratePct: Number(bankruptcyRatePct.toFixed(2)),
       confidence95
     },
+    // Insolvency alone stopped being the tension indicator once payouts rose:
+    // over a ten-day tour it is a rare terminal event, so a scenario can be
+    // under sustained economic pressure and still report ~0%. These are
+    // observations only — no target, no gate — so that the corridors can be set
+    // from measured behaviour in a later pass rather than invented now.
+    financialStress: {
+      thresholds: {
+        tightEur: LIQUIDITY_STRESS_THRESHOLDS.tight,
+        criticalEur: LIQUIDITY_STRESS_THRESHOLDS.critical
+      },
+      bankruptcyRatePct: Number(bankruptcyRatePct.toFixed(2)),
+      everBelowTightPct: shareOfRunsPct(
+        run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.tight
+      ),
+      everBelowCriticalPct: shareOfRunsPct(
+        run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.critical
+      ),
+      zeroBalancePct: shareOfRunsPct(run => run.lowestMoneyObserved <= 0),
+      // "Assisted", not "would have failed without it": a counterfactual needs
+      // a paired run with the option removed, which this cohort does not have.
+      creditOrGrantAssistedPct: shareOfRunsPct(
+        run => (run.loansTaken ?? 0) > 0 || run.emergencyGrantUsed === true
+      ),
+      avgDaysBelowTightThreshold: Number(
+        mean(runs.map(run => run.daysBelowTightLiquidity ?? 0)).toFixed(2)
+      ),
+      avgDaysBelowCriticalThreshold: Number(
+        mean(runs.map(run => run.daysBelowCriticalLiquidity ?? 0)).toFixed(2)
+      ),
+      medianMaxDrawdownPct: Number(
+        median(runs.map(run => run.maxPeakToTroughDrop)).toFixed(2)
+      ),
+      p90MaxDrawdownPct: Number(
+        quantile(runs.map(run => run.maxPeakToTroughDrop), 0.9).toFixed(2)
+      ),
+      // The floor of the surviving population: a scenario whose solvent tail
+      // still ends comfortable is safer than its insolvency rate suggests.
+      solventFinalMoneyP10: popSolvent.finalMoney
+        ? popSolvent.finalMoney.p10
+        : null,
+      medianBankruptcyDay: bankruptRuns.length
+        ? Number(median(bankruptRuns.map(run => run.daysSurvived)).toFixed(2))
+        : null,
+      earliestBankruptcyDay: bankruptRuns.length
+        ? minimum(bankruptRuns.map(run => run.daysSurvived))
+        : null
+    },
+
     volatility: {
       finalMoneyStdDev: popAll.finalMoney ? popAll.finalMoney.stdDev : 0,
       finalMoneyCoefficientOfVariation: (popAll.finalMoney && popAll.finalMoney.mean !== 0)
@@ -2871,6 +2945,268 @@ export const KPI_TARGETS = {
     moneyMax: 31000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
+  }
+}
+
+/**
+ * Design risk corridors — the second of three insolvency layers.
+ *
+ * `KPI_TARGETS[id].bankruptcyMax` is layer one: a hard safety ceiling that only
+ * answers "is the scenario playable at all". After the payout raise that funds
+ * the shop catalogue within one tour, those ceilings stopped characterising the
+ * observed risk: Bootstrap Struggle sits at ~17% against a cap of 60%, every
+ * other main scenario near 0%. Almost any further income increase still
+ * "passes" while the game gets progressively risk-free, so the caps cannot
+ * measure balance quality any more — only catastrophic regressions.
+ *
+ * These corridors are layer two: the risk band a scenario is *intended* to
+ * occupy. They are DESIGN HYPOTHESES, not measured results, and deliberately
+ * NON-BLOCKING — `below_target` means "safer than intended", which is a
+ * conversation, not a build failure. Promoting any lower bound to a real gate
+ * is a separate decision that wants two or three more balance iterations and
+ * real playtests behind it.
+ *
+ * Every corridor must stay inside its scenario's `bankruptcyMax`; the corridor
+ * describes intent within the safety envelope, it never widens it.
+ */
+export const RISK_TARGETS = {
+  baseline_touring: {
+    bankruptcyTargetPct: [1, 5],
+    intent: 'Meist erfolgreich, einzelne Runs dürfen scheitern.'
+  },
+  bootstrap_struggle: {
+    bankruptcyTargetPct: [15, 30],
+    intent: 'Spürbar gefährlich, aber nicht frustrierend.'
+  },
+  aggressive_marketing: {
+    bankruptcyTargetPct: [2, 8],
+    intent: 'Risiko entsteht aus hohen Ausgaben.'
+  },
+  scandal_recovery: {
+    bankruptcyTargetPct: [8, 20],
+    intent: 'Bewusst schwieriger Erholungspfad.'
+  },
+  festival_push: {
+    bankruptcyTargetPct: [5, 15],
+    intent: 'Volatilität durch wenige wichtige Gigs.'
+  },
+  chaos_tour: {
+    bankruptcyTargetPct: [8, 20],
+    intent: 'Hohe Varianz ist der Kern des Szenarios.'
+  },
+  cult_hypergrowth: {
+    bankruptcyTargetPct: [2, 10],
+    intent: 'Starkes Wachstum mit einzelnen Kollapsrisiken.'
+  }
+}
+
+/**
+ * Liquidity marks for the financial stress profile. Insolvency is a terminal
+ * event and, over a ten-day horizon, a rare one: a run can be under constant
+ * economic pressure and still never formally go bankrupt. These thresholds
+ * measure the pressure itself, so a scenario can read as tense at a 3%
+ * insolvency rate.
+ */
+export const LIQUIDITY_STRESS_THRESHOLDS = Object.freeze({
+  tight: 500,
+  critical: 250
+})
+
+/** Below this cohort size a rate is noise, not a risk profile. */
+export const RISK_EVIDENCE_MINIMUM_SAMPLE = 30
+
+/**
+ * Where an observed insolvency rate sits across all three layers. Order
+ * matters: the safety ceiling outranks the corridor, and missing evidence
+ * outranks both — a rate from nine runs must not be reported as a design
+ * verdict either way.
+ */
+export const classifyBankruptcyRisk = ({
+  observedPct,
+  targetRangePct,
+  safetyMaximumPct,
+  sampleSize
+}) => {
+  if (!Array.isArray(targetRangePct) || targetRangePct.length !== 2) {
+    return 'not_evaluated'
+  }
+  if (!Number.isFinite(observedPct)) return 'not_evaluated'
+  if (!Number.isFinite(sampleSize) || sampleSize < RISK_EVIDENCE_MINIMUM_SAMPLE) {
+    return 'insufficient_evidence'
+  }
+  if (Number.isFinite(safetyMaximumPct) && observedPct > safetyMaximumPct) {
+    return 'above_safety_limit'
+  }
+  const [minimumPct, maximumPct] = targetRangePct
+  if (observedPct < minimumPct) return 'below_target'
+  if (observedPct > maximumPct) return 'above_target'
+  return 'within_target'
+}
+
+/**
+ * How the Wilson interval relates to the corridor. A point estimate inside the
+ * band still hides that the plausible range leaks out of it: Bootstrap at
+ * 45/260 reads 17.31% against a 15-30% corridor, but its 95% interval runs from
+ * roughly 13% to 22%, so the true rate is quite possibly under the intended
+ * minimum. That is not a failure — it is "sitting on the lower design edge",
+ * and it is exactly what a bare pass/fail cannot say.
+ */
+export const describeCorridorConfidence = ({ confidence95, targetRangePct }) => {
+  if (!Array.isArray(targetRangePct) || targetRangePct.length !== 2) {
+    return 'not_evaluated'
+  }
+  const lowerPct = confidence95?.lowerPct
+  const upperPct = confidence95?.upperPct
+  if (!Number.isFinite(lowerPct) || !Number.isFinite(upperPct)) {
+    return 'not_evaluated'
+  }
+  const [minimumPct, maximumPct] = targetRangePct
+  if (upperPct < minimumPct) return 'entirely_below'
+  if (lowerPct > maximumPct) return 'entirely_above'
+  if (lowerPct >= minimumPct && upperPct <= maximumPct) return 'contained'
+  if (lowerPct < minimumPct && upperPct > maximumPct) return 'spans_corridor'
+  return lowerPct < minimumPct ? 'straddles_lower' : 'straddles_upper'
+}
+
+/**
+ * Folds the calibration and holdout classifications into one scenario verdict.
+ * Agreement across disjoint seed streams is what separates "this is the risk
+ * profile" from "this was that cohort": a scenario that reads within_target on
+ * one stream and below_target on the other is on a boundary, and reporting
+ * either label alone would overstate what was measured.
+ */
+export const evaluateScenarioRiskStatus = ({
+  calibrationStatus,
+  holdoutStatus
+}) => {
+  const statuses = [calibrationStatus, holdoutStatus]
+  if (statuses.includes('insufficient_evidence')) return 'insufficient_evidence'
+  if (statuses.includes('above_safety_limit')) return 'unsafe'
+  if (statuses.includes('not_evaluated')) return 'not_evaluated'
+  if (calibrationStatus !== holdoutStatus) return 'unstable'
+  if (calibrationStatus === 'within_target') return 'healthy'
+  if (calibrationStatus === 'below_target') return 'low_risk'
+  return 'high_risk'
+}
+
+const RISK_STATUS_LABEL = {
+  healthy: '🟢 healthy',
+  low_risk: '🔵 low_risk',
+  high_risk: '🟠 high_risk',
+  unsafe: '🔴 unsafe',
+  unstable: '🟡 unstable',
+  insufficient_evidence: '⚪ insufficient_evidence',
+  not_evaluated: '⚪ not_evaluated'
+}
+
+const RISK_STATUS_WARNING = {
+  low_risk: (id, observed, range) =>
+    `${id}: Insolvenzrate ${observed}% liegt unter dem Zielkorridor ${range[0]}–${range[1]}% — das Szenario ist sicherer als beabsichtigt.`,
+  high_risk: (id, observed, range) =>
+    `${id}: Insolvenzrate ${observed}% liegt über dem Zielkorridor ${range[0]}–${range[1]}%, aber noch unter der Sicherheitsgrenze.`,
+  unstable: (id, observed, range) =>
+    `${id}: Kalibrierung und Holdout ordnen die Rate ${observed}% unterschiedlich zum Korridor ${range[0]}–${range[1]}% ein — das Szenario liegt auf einer Korridorgrenze.`,
+  unsafe: (id, observed) =>
+    `${id}: Insolvenzrate ${observed}% überschreitet die harte Sicherheitsgrenze — das ist ein Safety-Gate-Befund, kein Designhinweis.`,
+  insufficient_evidence: (id, observed) =>
+    `${id}: Stichprobe zu klein, um die Rate ${observed}% gegen den Korridor zu bewerten (mindestens ${RISK_EVIDENCE_MINIMUM_SAMPLE} Runs nötig).`
+}
+
+/**
+ * Layer three: the observed risk profile, expressed as a relation between
+ * measurement and intent instead of a bare pass/fail.
+ *
+ * Deliberately non-blocking. The simulation report has no exit code to fail and
+ * this block does not feed one; the corridors are hypotheses that need more
+ * iterations and real playtests before any lower bound becomes a gate. The
+ * warnings exist so that "safer than intended" is visible rather than hidden
+ * behind a hard cap the scenario passes with room to spare.
+ */
+export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
+  const scenarios = (results ?? [])
+    .filter(result => RISK_TARGETS[result.id])
+    .map(result => {
+      const targetRangePct = RISK_TARGETS[result.id].bankruptcyTargetPct
+      const safetyMaximumPct = KPI_TARGETS[result.id]?.bankruptcyMax ?? null
+      const bankruptcy = result.summary?.bankruptcy ?? {}
+      const observedPct = bankruptcy.ratePct
+      const calibrationStatus = classifyBankruptcyRisk({
+        observedPct,
+        targetRangePct,
+        safetyMaximumPct,
+        sampleSize: bankruptcy.sampleSize
+      })
+
+      const holdoutEntry = (holdoutScenarios ?? []).find(
+        item => item.id === result.id
+      )
+      const holdoutBankruptcy = holdoutEntry?.holdoutBankruptcy ?? null
+      const holdoutStatus = holdoutBankruptcy
+        ? classifyBankruptcyRisk({
+            observedPct: holdoutBankruptcy.ratePct,
+            targetRangePct,
+            safetyMaximumPct,
+            sampleSize: holdoutBankruptcy.sampleSize
+          })
+        : 'not_evaluated'
+
+      const status = evaluateScenarioRiskStatus({
+        calibrationStatus,
+        holdoutStatus
+      })
+
+      return {
+        id: result.id,
+        name: result.name,
+        intent: RISK_TARGETS[result.id].intent,
+        status,
+        bankruptcy: {
+          observedPct: observedPct ?? null,
+          count: bankruptcy.count ?? null,
+          sampleSize: bankruptcy.sampleSize ?? null,
+          targetRangePct,
+          safetyMaximumPct,
+          status: calibrationStatus,
+          confidence95: bankruptcy.confidence95 ?? null,
+          corridorConfidence: describeCorridorConfidence({
+            confidence95: bankruptcy.confidence95,
+            targetRangePct
+          })
+        },
+        holdout: {
+          observedPct: holdoutBankruptcy?.ratePct ?? null,
+          sampleSize: holdoutBankruptcy?.sampleSize ?? null,
+          status: holdoutStatus,
+          // Whether the scenario stays in the same risk band on a disjoint seed
+          // stream — a stricter question than "does it still pass".
+          riskBandResult:
+            holdoutStatus === 'not_evaluated'
+              ? 'not_evaluated'
+              : calibrationStatus === holdoutStatus
+                ? 'stable'
+                : 'unstable_boundary'
+        }
+      }
+    })
+
+  const warnings = scenarios.flatMap(scenario => {
+    const describe = RISK_STATUS_WARNING[scenario.status]
+    if (!describe) return []
+    return [
+      describe(
+        scenario.id,
+        scenario.bankruptcy.observedPct,
+        scenario.bankruptcy.targetRangePct
+      )
+    ]
+  })
+
+  return {
+    blocking: false,
+    note: 'Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax.',
+    evidenceMinimumSample: RISK_EVIDENCE_MINIMUM_SAMPLE,
+    scenarios,
+    warnings
   }
 }
 
@@ -3430,6 +3766,88 @@ const buildMarkdownReport = payload => {
   }
   lines.push('')
 
+  // ── Design risk corridors ─────────────────────────────────────────────────
+  const risk = payload.designRiskReview
+  if (risk?.scenarios?.length) {
+    lines.push('## Insolvenz-Zielkorridore (Designmetrik, nicht blockierend)')
+    lines.push('')
+    lines.push(
+      'Die Sicherheitsobergrenzen in `KPI_TARGETS.bankruptcyMax` beantworten nur, ob ein Szenario grundsätzlich spielbar ist. Nach dem Einkommensschub charakterisieren sie das beobachtete Risiko nicht mehr: fast jede weitere Einnahmenerhöhung besteht sie weiterhin, während das Spiel zunehmend risikofrei wird. Die Korridore hier beschreiben das *beabsichtigte* Risikoband.'
+    )
+    lines.push('')
+    lines.push(
+      `${risk.note} \`below_target\` heißt „sicherer als beabsichtigt“ — ein Hinweis, kein Fehlschlag.`
+    )
+    lines.push('')
+    lines.push(
+      '| Szenario | Beobachtet | Zielkorridor | Safety-Max | 95%-Intervall (Wilson) | Intervall vs. Korridor | Kalibrierung | Holdout | Risikoband | Status |'
+    )
+    lines.push('|---|---:|---:|---:|---:|---|---|---|---|---|')
+    for (const item of risk.scenarios) {
+      const b = item.bankruptcy
+      const c = b.confidence95
+      const interval = c
+        ? `${(c.lowerPct ?? 0).toFixed(2)}–${(c.upperPct ?? 0).toFixed(2)}%`
+        : '—'
+      lines.push(
+        `| ${item.name} | ${(b.observedPct ?? 0).toFixed(2)}% | ${b.targetRangePct[0]}–${b.targetRangePct[1]}% | ${b.safetyMaximumPct == null ? '—' : `${b.safetyMaximumPct}%`} | ${interval} | ${b.corridorConfidence} | ${b.status} | ${item.holdout.status} | ${item.holdout.riskBandResult} | ${RISK_STATUS_LABEL[item.status] ?? item.status} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      'Das Wilson-Intervall steht bewusst neben dem Punktwert: eine Rate kann im Korridor liegen, während der plausible Bereich darunter hinausreicht — das ist „auf der unteren Designgrenze“, was ein reines Pass/Fail nicht sagen kann.'
+    )
+    lines.push('')
+    lines.push('### Weiche Design-Warnungen')
+    lines.push('')
+    if (risk.warnings.length) {
+      lines.push(
+        'Diese Punkte erscheinen im Report, blockieren aber nichts:'
+      )
+      lines.push('')
+      for (const warning of risk.warnings) lines.push(`- ⚠️ ${warning}`)
+    } else {
+      lines.push(
+        '✅ Alle bewerteten Szenarien liegen in ihrem Zielkorridor und bleiben auf unabhängigen Seeds im selben Risikoband.'
+      )
+    }
+    lines.push('')
+  }
+
+  // ── Financial stress ──────────────────────────────────────────────────────
+  const stressReference = payload.results.find(
+    scenario => scenario.summary?.financialStress
+  )
+  if (stressReference) {
+    const thresholds = stressReference.summary.financialStress.thresholds
+    lines.push('## Financial-Stress-Profil')
+    lines.push('')
+    lines.push(
+      `Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft unter wirtschaftlichem Druck stehen, ohne formal insolvent zu werden. Die folgenden Werte messen den Druck selbst, gemessen an ${fmtEur(thresholds.tightEur)} (knapp) und ${fmtEur(thresholds.criticalEur)} (kritisch), Geldstand jeweils zu Tagesbeginn. Es sind reine Beobachtungen ohne Zielwerte — Untergrenzen dafür sollten aus gemessenem Verhalten kommen, nicht aus einer Annahme.`
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | Insolvenz | je < ${fmtEur(thresholds.tightEur)} | je < ${fmtEur(thresholds.criticalEur)} | Saldo 0 | Ø Tage < ${fmtEur(thresholds.tightEur)} | Drawdown Median | Drawdown P90 | Solventes P10-Endgeld | Median Insolvenztag | Kredit/Grant |`
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|')
+    for (const scenario of payload.results) {
+      const f = scenario.summary?.financialStress
+      if (!f) continue
+      lines.push(
+        `| ${scenario.name} | ${fmtPct(f.bankruptcyRatePct)} | ${fmtPct(f.everBelowTightPct)} | ${fmtPct(f.everBelowCriticalPct)} | ${fmtPct(f.zeroBalancePct)} | ${f.avgDaysBelowTightThreshold} | ${fmtPct(f.medianMaxDrawdownPct)} | ${fmtPct(f.p90MaxDrawdownPct)} | ${fmtEurOrDash(f.solventFinalMoneyP10)} | ${f.medianBankruptcyDay ?? '—'} | ${fmtPct(f.creditOrGrantAssistedPct)} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      '„Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.'
+    )
+    lines.push('')
+    lines.push(
+      `Zwei Spalten tragen kaum Signal und sagen warum: „je < ${fmtEur(thresholds.tightEur)}“ sättigt bei 100%, weil der Startstand selbst ${fmtEur(thresholds.tightEur)} beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die ${fmtEur(thresholds.criticalEur)}-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
+    )
+    lines.push('')
+  }
+
   lines.push('## Populationen')
   lines.push('')
   lines.push('| Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |')
@@ -3578,6 +3996,35 @@ lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push(`- Fehlgeschlagen: ${kpiCounts.failed}`)
   lines.push(`- Nicht bewertet: ${kpiCounts.not_evaluated}`)
   lines.push('')
+
+  // Safety verdict and design verdict are different questions, and after the
+  // payout raise they answer differently. Reporting only the first would read
+  // as "balance is fine" while most scenarios sit below their intended risk.
+  if (risk?.scenarios?.length) {
+    const riskCounts = risk.scenarios.reduce((acc, scenario) => {
+      acc[scenario.status] = (acc[scenario.status] ?? 0) + 1
+      return acc
+    }, {})
+    lines.push('### Designrisiko-Zusammenfassung (nicht blockierend)')
+    lines.push(
+      `- Sicherheitsgates: ${risk.scenarios.filter(scenario => scenario.status !== 'unsafe').length}/${risk.scenarios.length} Szenarien unter ihrer harten Insolvenzgrenze.`
+    )
+    lines.push(
+      `- Risikobänder: ${Object.entries(riskCounts)
+        .map(([status, count]) => `${status} ${count}`)
+        .join(' · ')}.`
+    )
+    if (risk.warnings.length) {
+      lines.push(
+        `- ⚠️ ${risk.warnings.length} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
+      )
+    } else {
+      lines.push(
+        '- ✅ Alle bewerteten Szenarien liegen in ihrem Design-Risikokorridor.'
+      )
+    }
+    lines.push('')
+  }
 
   if (failedKpis.length > 0) {
     lines.push(`- ❌ KPI-Verstöße: ${failedKpis.join(' · ')}`)
@@ -3758,6 +4205,11 @@ export const runSimulationSuite = async (options = {}) => {
         checks,
         holdoutAvgFinalMoney: summary.avgFinalMoney,
         holdoutBankruptcyRate: summary.bankruptcyRate,
+        // Count and cohort size, not just the rate: the design-risk review
+        // needs them to classify the holdout against the corridor and to
+        // recognise a cohort too small to judge.
+        holdoutBankruptcy: summary.bankruptcy,
+        holdoutFinancialStress: summary.financialStress,
         holdoutFameProgressPerGig: summary.avgFameProgressPerGig ?? null
       }
     })
@@ -3779,6 +4231,11 @@ export const runSimulationSuite = async (options = {}) => {
       scenarios: scenarioResults
     }
   })()
+
+  const designRiskReview = buildDesignRiskReview({
+    results,
+    holdoutScenarios: kpiHoldoutValidation.scenarios
+  })
 
   await fs.mkdir(REPORT_DIR, { recursive: true })
   const outputJsonPath = path.join(REPORT_DIR, SIMULATION_CONSTANTS.outputJson)
@@ -3809,11 +4266,13 @@ export const runSimulationSuite = async (options = {}) => {
       balanceSourceSha256: await getBalanceSourceHash(PROJECT_ROOT),
       scenarioConfigSha256,
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
+      riskTargetConfigSha256: getJsonHash(RISK_TARGETS),
       seedStrategy: 'scenario-id-plus-run-index'
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     kpiHoldoutValidation,
+    designRiskReview,
     featureInventory: buildFeatureInventory(),
     executionCoverage: buildExecutionCoverage(results),
     regressionComparison: buildRegressionComparison(baselinePayload, results),

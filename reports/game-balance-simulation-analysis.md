@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T05:08:18.743Z
+Erstellt am: 2026-07-28T06:48:04.359Z
 
 ## Reproduzierbarkeit
 
-- Report-Version: 12
+- Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: 0de4f88e59192859d350c6714d88c65ada99d350
-- Working Tree Dirty: Nein
-- Simulationsskript SHA-256: 1db8956ec41931218b16da1c482898cb24a20609092c33ff5b4b405425750fad
+- Basis-Commit: bd1512f3ce09a7cc922b6eefe1e4c56818c99a1d
+- Working Tree Dirty: Ja
+- Simulationsskript SHA-256: bdf8e15df63689bad29952304615c1545cb7cb7927fd256b94aefb7a42cecb25
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: 1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1
 - Seed-Strategie: scenario-id-plus-run-index
@@ -321,6 +321,58 @@ Verglichen wird jedes KPI-Band einzeln, nicht nur der Gesamtstatus: ein Szenario
 | Mid Game Probe (Fame 60–150) | 0 | 260 | 0.00% | 0.00% | 1.46% |
 | Late Game Probe (Fame 175+) | 0 | 260 | 0.00% | 0.00% | 1.46% |
 
+## Insolvenz-Zielkorridore (Designmetrik, nicht blockierend)
+
+Die Sicherheitsobergrenzen in `KPI_TARGETS.bankruptcyMax` beantworten nur, ob ein Szenario grundsätzlich spielbar ist. Nach dem Einkommensschub charakterisieren sie das beobachtete Risiko nicht mehr: fast jede weitere Einnahmenerhöhung besteht sie weiterhin, während das Spiel zunehmend risikofrei wird. Die Korridore hier beschreiben das *beabsichtigte* Risikoband.
+
+Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax. `below_target` heißt „sicherer als beabsichtigt“ — ein Hinweis, kein Fehlschlag.
+
+| Szenario | Beobachtet | Zielkorridor | Safety-Max | 95%-Intervall (Wilson) | Intervall vs. Korridor | Kalibrierung | Holdout | Risikoband | Status |
+|---|---:|---:|---:|---:|---|---|---|---|---|
+| Baseline Touring | 0.00% | 1–5% | 10% | 0.00–1.46% | straddles_lower | below_target | below_target | stable | 🔵 low_risk |
+| Bootstrap Struggle | 17.31% | 15–30% | 60% | 13.19–22.37% | straddles_lower | within_target | within_target | stable | 🟢 healthy |
+| Aggressive Marketing | 0.38% | 2–8% | 15% | 0.07–2.15% | straddles_lower | below_target | below_target | stable | 🔵 low_risk |
+| Scandal Recovery | 1.15% | 8–20% | 50% | 0.39–3.34% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
+| Festival Push | 0.77% | 5–15% | 35% | 0.21–2.76% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
+| Chaos Tour | 0.38% | 8–20% | 25% | 0.07–2.15% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
+| Cult Hypergrowth | 0.38% | 2–10% | 12% | 0.07–2.15% | straddles_lower | below_target | below_target | stable | 🔵 low_risk |
+
+Das Wilson-Intervall steht bewusst neben dem Punktwert: eine Rate kann im Korridor liegen, während der plausible Bereich darunter hinausreicht — das ist „auf der unteren Designgrenze“, was ein reines Pass/Fail nicht sagen kann.
+
+### Weiche Design-Warnungen
+
+Diese Punkte erscheinen im Report, blockieren aber nichts:
+
+- ⚠️ baseline_touring: Insolvenzrate 0% liegt unter dem Zielkorridor 1–5% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ aggressive_marketing: Insolvenzrate 0.38% liegt unter dem Zielkorridor 2–8% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ scandal_recovery: Insolvenzrate 1.15% liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ festival_push: Insolvenzrate 0.77% liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ chaos_tour: Insolvenzrate 0.38% liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ cult_hypergrowth: Insolvenzrate 0.38% liegt unter dem Zielkorridor 2–10% — das Szenario ist sicherer als beabsichtigt.
+
+## Financial-Stress-Profil
+
+Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft unter wirtschaftlichem Druck stehen, ohne formal insolvent zu werden. Die folgenden Werte messen den Druck selbst, gemessen an €500 (knapp) und €250 (kritisch), Geldstand jeweils zu Tagesbeginn. Es sind reine Beobachtungen ohne Zielwerte — Untergrenzen dafür sollten aus gemessenem Verhalten kommen, nicht aus einer Annahme.
+
+| Szenario | Insolvenz | je < €500 | je < €250 | Saldo 0 | Ø Tage < €500 | Drawdown Median | Drawdown P90 | Solventes P10-Endgeld | Median Insolvenztag | Kredit/Grant |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| Baseline Touring | 0% | 0% | 0% | 0% | 0 | 32.27% | 47.81% | €17.978 | — | 13.85% |
+| Bootstrap Struggle | 17.31% | 100% | 98.08% | 0% | 4.24 | 51.6% | 82.44% | €2.680 | 8 | 1.15% |
+| Aggressive Marketing | 0.38% | 100% | 0.38% | 0% | 1.02 | 17.2% | 56.41% | €12.611 | 10 | 12.69% |
+| Scandal Recovery | 1.15% | 100% | 6.54% | 0% | 2.36 | 34.4% | 47.68% | €5.652 | 5 | 9.23% |
+| Festival Push | 0.77% | 100% | 5.77% | 0% | 2.25 | 34.4% | 45.03% | €7.063 | 6 | 13.46% |
+| Chaos Tour | 0.38% | 100% | 0.38% | 0% | 1.08 | 17.2% | 50.32% | €10.462 | 4 | 13.85% |
+| Cult Hypergrowth | 0.38% | 100% | 1.15% | 0% | 1.03 | 17.2% | 57.19% | €12.829 | 4 | 18.46% |
+| No Social (Fame 0-50) | 0% | 100% | 0% | 0% | 1.15 | 17.2% | 50.28% | €10.355 | — | 14.62% |
+| High Controversy | 0.38% | 100% | 8.08% | 0% | 1.73 | 21.51% | 51.2% | €6.421 | 4 | 8.85% |
+| Early Game Probe (Fame 0–50) | 0% | 100% | 0.38% | 0% | 1.08 | 17.2% | 36.49% | €10.278 | — | 10.77% |
+| Mid Game Probe (Fame 60–150) | 0% | 0.38% | 0% | 0% | 0 | 8.18% | 51.75% | €11.425 | — | 16.92% |
+| Late Game Probe (Fame 175+) | 0% | 0% | 0% | 0% | 0 | 30.81% | 47.79% | €23.767 | — | 15.77% |
+
+„Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.
+
+Zwei Spalten tragen kaum Signal und sagen warum: „je < €500“ sättigt bei 100%, weil der Startstand selbst €500 beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die €250-Marke. „Saldo 0“ ist strukturell 0%, weil Bankrott bereits auslöst, wenn die absehbaren Tagespflichten nicht mehr gedeckt sind; ein echter Nullstand ist kein Zustand, den das Spiel erzeugt.
+
 ## Populationen
 
 | Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |
@@ -431,6 +483,11 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 - Bestanden: 7
 - Fehlgeschlagen: 0
 - Nicht bewertet: 5
+
+### Designrisiko-Zusammenfassung (nicht blockierend)
+- Sicherheitsgates: 7/7 Szenarien unter ihrer harten Insolvenzgrenze.
+- Risikobänder: low_risk 6 · healthy 1.
+- ⚠️ 6 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ✅ Alle KPI-Zielkorridore eingehalten.
 - Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.

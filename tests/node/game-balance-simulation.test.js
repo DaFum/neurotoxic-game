@@ -6,14 +6,22 @@ import { createInitialState } from '../../src/context/initialState.js'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
 
 import {
+  KPI_TARGETS,
+  LIQUIDITY_STRESS_THRESHOLDS,
   REGRESSION_METRICS,
+  RISK_EVIDENCE_MINIMUM_SAMPLE,
+  RISK_TARGETS,
   SCENARIOS,
   accountFameChange,
   accountFamePurchase,
   applyCatalogPurchase,
+  buildDesignRiskReview,
   buildExecutionCoverage,
   buildFeatureInventory,
   calculateDrawdownPct,
+  classifyBankruptcyRisk,
+  describeCorridorConfidence,
+  evaluateScenarioRiskStatus,
   reconcileFameLedger,
   runSingleSimulation,
   summarizeScenario
@@ -291,4 +299,284 @@ test('generated Markdown contains no undefined or NaN cells', async () => {
     'utf8'
   )
   assert.doesNotMatch(markdown, /undefined|NaN/)
+})
+
+// ── Design risk corridors ───────────────────────────────────────────────────
+
+// The corridor is layer two of three; it must describe intent *inside* the
+// safety envelope. A corridor that reaches past `bankruptcyMax` would let a
+// scenario read `within_target` while breaching the hard gate.
+test('every design corridor sits inside its scenario safety ceiling', () => {
+  for (const [id, target] of Object.entries(RISK_TARGETS)) {
+    const [minimumPct, maximumPct] = target.bankruptcyTargetPct
+    assert.ok(
+      SCENARIOS.some(scenario => scenario.id === id),
+      `${id} must be a configured scenario`
+    )
+    assert.ok(minimumPct < maximumPct, `${id} corridor must be ordered`)
+    assert.ok(minimumPct >= 0, `${id} corridor minimum must be non-negative`)
+    const safetyMaximumPct = KPI_TARGETS[id]?.bankruptcyMax
+    assert.ok(
+      Number.isFinite(safetyMaximumPct),
+      `${id} needs a safety ceiling to sit under`
+    )
+    assert.ok(
+      maximumPct <= safetyMaximumPct,
+      `${id} corridor (${maximumPct}%) must not exceed its safety ceiling (${safetyMaximumPct}%)`
+    )
+  }
+})
+
+test('classifyBankruptcyRisk ranks safety and evidence above the corridor', () => {
+  const base = {
+    targetRangePct: [15, 30],
+    safetyMaximumPct: 60,
+    sampleSize: 260
+  }
+
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 17.31 }),
+    'within_target'
+  )
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 0 }),
+    'below_target'
+  )
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 45 }),
+    'above_target'
+  )
+  // The safety ceiling outranks the corridor: 70% is above both, and reporting
+  // it as merely "above_target" would hide a hard-gate breach.
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 70 }),
+    'above_safety_limit'
+  )
+  // Missing evidence outranks everything, including the safety verdict.
+  assert.equal(
+    classifyBankruptcyRisk({
+      ...base,
+      observedPct: 70,
+      sampleSize: RISK_EVIDENCE_MINIMUM_SAMPLE - 1
+    }),
+    'insufficient_evidence'
+  )
+  // Boundaries are inclusive on both ends.
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 15 }),
+    'within_target'
+  )
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: 30 }),
+    'within_target'
+  )
+  // A scenario without a corridor is not silently judged against one.
+  assert.equal(
+    classifyBankruptcyRisk({
+      ...base,
+      targetRangePct: undefined,
+      observedPct: 5
+    }),
+    'not_evaluated'
+  )
+  assert.equal(
+    classifyBankruptcyRisk({ ...base, observedPct: Number.NaN }),
+    'not_evaluated'
+  )
+})
+
+test('describeCorridorConfidence names where the Wilson interval leaves the corridor', () => {
+  const targetRangePct = [15, 30]
+  const describe = (lowerPct, upperPct) =>
+    describeCorridorConfidence({
+      confidence95: { lowerPct, upperPct },
+      targetRangePct
+    })
+
+  assert.equal(describe(16, 29), 'contained')
+  // Bootstrap's real shape: point estimate inside the band, interval leaking
+  // under the intended minimum. That distinction is the whole reason the
+  // interval is reported next to the rate.
+  assert.equal(describe(13.19, 22.37), 'straddles_lower')
+  assert.equal(describe(20, 35), 'straddles_upper')
+  assert.equal(describe(10, 40), 'spans_corridor')
+  assert.equal(describe(0.07, 2.15), 'entirely_below')
+  assert.equal(describe(40, 55), 'entirely_above')
+  assert.equal(
+    describeCorridorConfidence({ confidence95: null, targetRangePct }),
+    'not_evaluated'
+  )
+})
+
+test('evaluateScenarioRiskStatus requires calibration and holdout to agree', () => {
+  const status = (calibrationStatus, holdoutStatus) =>
+    evaluateScenarioRiskStatus({ calibrationStatus, holdoutStatus })
+
+  assert.equal(status('within_target', 'within_target'), 'healthy')
+  assert.equal(status('below_target', 'below_target'), 'low_risk')
+  assert.equal(status('above_target', 'above_target'), 'high_risk')
+  // Disagreement across disjoint seed streams means the scenario sits on a
+  // corridor boundary; claiming either label alone would overstate the measurement.
+  assert.equal(status('within_target', 'below_target'), 'unstable')
+  assert.equal(status('above_safety_limit', 'within_target'), 'unsafe')
+  assert.equal(
+    status('insufficient_evidence', 'above_safety_limit'),
+    'insufficient_evidence'
+  )
+  assert.equal(status('within_target', 'not_evaluated'), 'not_evaluated')
+})
+
+test('buildDesignRiskReview stays non-blocking and warns on a below-target scenario', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'baseline_touring',
+        name: 'Baseline Touring',
+        summary: {
+          bankruptcy: {
+            count: 0,
+            sampleSize: 260,
+            ratePct: 0,
+            confidence95: { lowerPct: 0, upperPct: 1.46, method: 'wilson' }
+          }
+        }
+      },
+      // No corridor configured for probes, so they must not appear at all
+      // rather than be judged against a corridor that does not exist.
+      {
+        id: 'late_game_probe',
+        name: 'Late Game Probe',
+        summary: { bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 } }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'baseline_touring',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0 }
+      }
+    ]
+  })
+
+  assert.equal(review.blocking, false)
+  assert.deepEqual(
+    review.scenarios.map(scenario => scenario.id),
+    ['baseline_touring']
+  )
+
+  const [scenario] = review.scenarios
+  assert.equal(scenario.status, 'low_risk')
+  assert.equal(scenario.bankruptcy.status, 'below_target')
+  assert.deepEqual(scenario.bankruptcy.targetRangePct, [1, 5])
+  assert.equal(
+    scenario.bankruptcy.safetyMaximumPct,
+    KPI_TARGETS.baseline_touring.bankruptcyMax
+  )
+  assert.equal(scenario.holdout.riskBandResult, 'stable')
+  assert.equal(review.warnings.length, 1)
+  assert.match(review.warnings[0], /sicherer als beabsichtigt/)
+})
+
+test('buildDesignRiskReview reports an absent holdout instead of assuming agreement', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'bootstrap_struggle',
+        name: 'Bootstrap Struggle',
+        summary: {
+          bankruptcy: {
+            count: 45,
+            sampleSize: 260,
+            ratePct: 17.31,
+            confidence95: { lowerPct: 13.19, upperPct: 22.37, method: 'wilson' }
+          }
+        }
+      }
+    ],
+    holdoutScenarios: []
+  })
+
+  const [scenario] = review.scenarios
+  assert.equal(scenario.bankruptcy.status, 'within_target')
+  assert.equal(scenario.bankruptcy.corridorConfidence, 'straddles_lower')
+  assert.equal(scenario.holdout.status, 'not_evaluated')
+  assert.equal(scenario.holdout.riskBandResult, 'not_evaluated')
+  // A missing holdout is not agreement, so the composite must not read healthy.
+  assert.equal(scenario.status, 'not_evaluated')
+  assert.deepEqual(review.warnings, [])
+})
+
+test('financial stress profile measures liquidity pressure from a true running minimum', () => {
+  const runs = [
+    runSingleSimulation(SCENARIOS[1], 'stress-seed-a'),
+    runSingleSimulation(SCENARIOS[1], 'stress-seed-b')
+  ]
+  const stress = summarizeScenario(runs).financialStress
+
+  assert.equal(stress.thresholds.tightEur, LIQUIDITY_STRESS_THRESHOLDS.tight)
+  assert.equal(
+    stress.thresholds.criticalEur,
+    LIQUIDITY_STRESS_THRESHOLDS.critical
+  )
+
+  for (const run of runs) {
+    // The gig-anchored `lowestMoney` can never be below the true running
+    // minimum; if it were, the stress shares would be sampling the wrong series.
+    assert.ok(run.lowestMoneyObserved <= run.lowestMoney)
+    assert.ok(run.daysBelowTightLiquidity >= run.daysBelowCriticalLiquidity)
+    assert.ok(run.daysBelowTightLiquidity <= run.daysSurvived)
+  }
+
+  for (const key of [
+    'everBelowTightPct',
+    'everBelowCriticalPct',
+    'zeroBalancePct',
+    'creditOrGrantAssistedPct'
+  ]) {
+    assert.ok(
+      Number.isFinite(stress[key]) && stress[key] >= 0 && stress[key] <= 100,
+      `${key} must be a percentage`
+    )
+  }
+  assert.ok(stress.everBelowCriticalPct <= stress.everBelowTightPct)
+  assert.ok(
+    stress.avgDaysBelowCriticalThreshold <= stress.avgDaysBelowTightThreshold
+  )
+  assert.ok(stress.p90MaxDrawdownPct >= stress.medianMaxDrawdownPct)
+
+  const expectedTightPct =
+    (runs.filter(
+      run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.tight
+    ).length /
+      runs.length) *
+    100
+  assert.equal(stress.everBelowTightPct, Number(expectedTightPct.toFixed(2)))
+})
+
+test('committed report carries a non-blocking design risk review', async () => {
+  const raw = await fs.readFile(
+    new URL(
+      '../../reports/game-balance-simulation-results.json',
+      import.meta.url
+    ),
+    'utf8'
+  )
+  /** @type {unknown} */
+  const payload = JSON.parse(raw)
+  assert.ok(
+    typeof payload === 'object' &&
+      payload !== null &&
+      Object.hasOwn(payload, 'designRiskReview'),
+    'Report must carry designRiskReview; regenerate with pnpm run simulate:balance'
+  )
+  const review = /** @type {Record<string, unknown>} */ (payload)
+    .designRiskReview
+  assert.ok(typeof review === 'object' && review !== null)
+  assert.equal(/** @type {Record<string, unknown>} */ (review).blocking, false)
+  const scenarios = /** @type {Record<string, unknown>} */ (review).scenarios
+  assert.ok(Array.isArray(scenarios))
+  assert.deepEqual(
+    scenarios.map(scenario => scenario.id).sort(),
+    Object.keys(RISK_TARGETS).sort(),
+    'Every configured corridor must be evaluated in the committed report'
+  )
 })

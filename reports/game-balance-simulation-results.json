@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-28T05:08:18.743Z",
+  "generatedAt": "2026-07-28T06:48:04.359Z",
   "constants": {
-    "reportVersion": 12,
+    "reportVersion": 13,
     "runsPerScenario": 260,
     "daysPerRun": 10,
     "progressionCheckpointDays": [
@@ -433,12 +433,13 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "0de4f88e59192859d350c6714d88c65ada99d350",
-    "workingTreeDirty": false,
-    "simulationScriptSha256": "1db8956ec41931218b16da1c482898cb24a20609092c33ff5b4b405425750fad",
-    "balanceSourceSha256": "1378fa7c61bf89c2024fd03daacf561c5b8c02bc5bbe8460a34e3fadc1e1973d",
+    "sourceBaseCommit": "bd1512f3ce09a7cc922b6eefe1e4c56818c99a1d",
+    "workingTreeDirty": true,
+    "simulationScriptSha256": "bdf8e15df63689bad29952304615c1545cb7cb7927fd256b94aefb7a42cecb25",
+    "balanceSourceSha256": "f5cd27a248cf96f78d7ebc086142c3758a84611486add944022b9de5c9a1f859",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
+    "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
     "seedStrategy": "scenario-id-plus-run-index"
   },
   "appFeatureSnapshot": {
@@ -670,6 +671,34 @@
         ],
         "holdoutAvgFinalMoney": 27880,
         "holdoutBankruptcyRate": 0,
+        "holdoutBankruptcy": {
+          "count": 0,
+          "sampleSize": 260,
+          "ratePct": 0,
+          "confidence95": {
+            "lowerPct": 0,
+            "upperPct": 1.46,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 0,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 13.85,
+          "avgDaysBelowTightThreshold": 0,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 34,
+          "p90MaxDrawdownPct": 50.85,
+          "solventFinalMoneyP10": 16623,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
+        },
         "holdoutFameProgressPerGig": 1555.77
       },
       {
@@ -709,6 +738,34 @@
         ],
         "holdoutAvgFinalMoney": 4371,
         "holdoutBankruptcyRate": 16.92,
+        "holdoutBankruptcy": {
+          "count": 44,
+          "sampleSize": 260,
+          "ratePct": 16.92,
+          "confidence95": {
+            "lowerPct": 12.85,
+            "upperPct": 21.95,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 16.92,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 98.46,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 2.69,
+          "avgDaysBelowTightThreshold": 4.28,
+          "avgDaysBelowCriticalThreshold": 1.44,
+          "medianMaxDrawdownPct": 51.6,
+          "p90MaxDrawdownPct": 82.85,
+          "solventFinalMoneyP10": 2419,
+          "medianBankruptcyDay": 8,
+          "earliestBankruptcyDay": 6
+        },
         "holdoutFameProgressPerGig": 1448.9
       },
       {
@@ -748,6 +805,34 @@
         ],
         "holdoutAvgFinalMoney": 18646,
         "holdoutBankruptcyRate": 0,
+        "holdoutBankruptcy": {
+          "count": 0,
+          "sampleSize": 260,
+          "ratePct": 0,
+          "confidence95": {
+            "lowerPct": 0,
+            "upperPct": 1.46,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 15.38,
+          "avgDaysBelowTightThreshold": 1.02,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 53.67,
+          "solventFinalMoneyP10": 12624,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
+        },
         "holdoutFameProgressPerGig": 1532.36
       },
       {
@@ -787,6 +872,34 @@
         ],
         "holdoutAvgFinalMoney": 9533,
         "holdoutBankruptcyRate": 1.15,
+        "holdoutBankruptcy": {
+          "count": 3,
+          "sampleSize": 260,
+          "ratePct": 1.15,
+          "confidence95": {
+            "lowerPct": 0.39,
+            "upperPct": 3.34,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 1.15,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 6.15,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 10.38,
+          "avgDaysBelowTightThreshold": 2.42,
+          "avgDaysBelowCriticalThreshold": 0.07,
+          "medianMaxDrawdownPct": 34.4,
+          "p90MaxDrawdownPct": 49.24,
+          "solventFinalMoneyP10": 5800,
+          "medianBankruptcyDay": 6,
+          "earliestBankruptcyDay": 6
+        },
         "holdoutFameProgressPerGig": 1538.29
       },
       {
@@ -826,6 +939,34 @@
         ],
         "holdoutAvgFinalMoney": 11424,
         "holdoutBankruptcyRate": 0.77,
+        "holdoutBankruptcy": {
+          "count": 2,
+          "sampleSize": 260,
+          "ratePct": 0.77,
+          "confidence95": {
+            "lowerPct": 0.21,
+            "upperPct": 2.76,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.77,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 3.46,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 8.85,
+          "avgDaysBelowTightThreshold": 2.25,
+          "avgDaysBelowCriticalThreshold": 0.04,
+          "medianMaxDrawdownPct": 34.4,
+          "p90MaxDrawdownPct": 41.48,
+          "solventFinalMoneyP10": 7065,
+          "medianBankruptcyDay": 5.5,
+          "earliestBankruptcyDay": 5
+        },
         "holdoutFameProgressPerGig": 1651.29
       },
       {
@@ -865,6 +1006,34 @@
         ],
         "holdoutAvgFinalMoney": 16319,
         "holdoutBankruptcyRate": 0.77,
+        "holdoutBankruptcy": {
+          "count": 2,
+          "sampleSize": 260,
+          "ratePct": 0.77,
+          "confidence95": {
+            "lowerPct": 0.21,
+            "upperPct": 2.76,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.77,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0.77,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 13.46,
+          "avgDaysBelowTightThreshold": 1.07,
+          "avgDaysBelowCriticalThreshold": 0.01,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 52.62,
+          "solventFinalMoneyP10": 10355,
+          "medianBankruptcyDay": 5.5,
+          "earliestBankruptcyDay": 3
+        },
         "holdoutFameProgressPerGig": 1407.74
       },
       {
@@ -904,8 +1073,254 @@
         ],
         "holdoutAvgFinalMoney": 19656,
         "holdoutBankruptcyRate": 0,
+        "holdoutBankruptcy": {
+          "count": 0,
+          "sampleSize": 260,
+          "ratePct": 0,
+          "confidence95": {
+            "lowerPct": 0,
+            "upperPct": 1.46,
+            "method": "wilson"
+          }
+        },
+        "holdoutFinancialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 99.62,
+          "everBelowCriticalPct": 0.38,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 16.54,
+          "avgDaysBelowTightThreshold": 1.01,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 57.16,
+          "solventFinalMoneyP10": 12799,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
+        },
         "holdoutFameProgressPerGig": 1531.57
       }
+    ]
+  },
+  "designRiskReview": {
+    "blocking": false,
+    "note": "Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax.",
+    "evidenceMinimumSample": 30,
+    "scenarios": [
+      {
+        "id": "baseline_touring",
+        "name": "Baseline Touring",
+        "intent": "Meist erfolgreich, einzelne Runs dürfen scheitern.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 0,
+          "count": 0,
+          "sampleSize": 260,
+          "targetRangePct": [
+            1,
+            5
+          ],
+          "safetyMaximumPct": 10,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0,
+            "upperPct": 1.46,
+            "method": "wilson"
+          },
+          "corridorConfidence": "straddles_lower"
+        },
+        "holdout": {
+          "observedPct": 0,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "bootstrap_struggle",
+        "name": "Bootstrap Struggle",
+        "intent": "Spürbar gefährlich, aber nicht frustrierend.",
+        "status": "healthy",
+        "bankruptcy": {
+          "observedPct": 17.31,
+          "count": 45,
+          "sampleSize": 260,
+          "targetRangePct": [
+            15,
+            30
+          ],
+          "safetyMaximumPct": 60,
+          "status": "within_target",
+          "confidence95": {
+            "lowerPct": 13.19,
+            "upperPct": 22.37,
+            "method": "wilson"
+          },
+          "corridorConfidence": "straddles_lower"
+        },
+        "holdout": {
+          "observedPct": 16.92,
+          "sampleSize": 260,
+          "status": "within_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "aggressive_marketing",
+        "name": "Aggressive Marketing",
+        "intent": "Risiko entsteht aus hohen Ausgaben.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 0.38,
+          "count": 1,
+          "sampleSize": 260,
+          "targetRangePct": [
+            2,
+            8
+          ],
+          "safetyMaximumPct": 15,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0.07,
+            "upperPct": 2.15,
+            "method": "wilson"
+          },
+          "corridorConfidence": "straddles_lower"
+        },
+        "holdout": {
+          "observedPct": 0,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "scandal_recovery",
+        "name": "Scandal Recovery",
+        "intent": "Bewusst schwieriger Erholungspfad.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 1.15,
+          "count": 3,
+          "sampleSize": 260,
+          "targetRangePct": [
+            8,
+            20
+          ],
+          "safetyMaximumPct": 50,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0.39,
+            "upperPct": 3.34,
+            "method": "wilson"
+          },
+          "corridorConfidence": "entirely_below"
+        },
+        "holdout": {
+          "observedPct": 1.15,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "festival_push",
+        "name": "Festival Push",
+        "intent": "Volatilität durch wenige wichtige Gigs.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 0.77,
+          "count": 2,
+          "sampleSize": 260,
+          "targetRangePct": [
+            5,
+            15
+          ],
+          "safetyMaximumPct": 35,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0.21,
+            "upperPct": 2.76,
+            "method": "wilson"
+          },
+          "corridorConfidence": "entirely_below"
+        },
+        "holdout": {
+          "observedPct": 0.77,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "chaos_tour",
+        "name": "Chaos Tour",
+        "intent": "Hohe Varianz ist der Kern des Szenarios.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 0.38,
+          "count": 1,
+          "sampleSize": 260,
+          "targetRangePct": [
+            8,
+            20
+          ],
+          "safetyMaximumPct": 25,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0.07,
+            "upperPct": 2.15,
+            "method": "wilson"
+          },
+          "corridorConfidence": "entirely_below"
+        },
+        "holdout": {
+          "observedPct": 0.77,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      },
+      {
+        "id": "cult_hypergrowth",
+        "name": "Cult Hypergrowth",
+        "intent": "Starkes Wachstum mit einzelnen Kollapsrisiken.",
+        "status": "low_risk",
+        "bankruptcy": {
+          "observedPct": 0.38,
+          "count": 1,
+          "sampleSize": 260,
+          "targetRangePct": [
+            2,
+            10
+          ],
+          "safetyMaximumPct": 12,
+          "status": "below_target",
+          "confidence95": {
+            "lowerPct": 0.07,
+            "upperPct": 2.15,
+            "method": "wilson"
+          },
+          "corridorConfidence": "straddles_lower"
+        },
+        "holdout": {
+          "observedPct": 0,
+          "sampleSize": 260,
+          "status": "below_target",
+          "riskBandResult": "stable"
+        }
+      }
+    ],
+    "warnings": [
+      "baseline_touring: Insolvenzrate 0% liegt unter dem Zielkorridor 1–5% — das Szenario ist sicherer als beabsichtigt.",
+      "aggressive_marketing: Insolvenzrate 0.38% liegt unter dem Zielkorridor 2–8% — das Szenario ist sicherer als beabsichtigt.",
+      "scandal_recovery: Insolvenzrate 1.15% liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
+      "festival_push: Insolvenzrate 0.77% liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.",
+      "chaos_tour: Insolvenzrate 0.38% liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
+      "cult_hypergrowth: Insolvenzrate 0.38% liegt unter dem Zielkorridor 2–10% — das Szenario ist sicherer als beabsichtigt."
     ]
   },
   "featureInventory": {
@@ -1831,6 +2246,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 0,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 13.85,
+          "avgDaysBelowTightThreshold": 0,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 32.27,
+          "p90MaxDrawdownPct": 47.81,
+          "solventFinalMoneyP10": 17978,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
+        },
         "volatility": {
           "finalMoneyStdDev": 9778,
           "finalMoneyCoefficientOfVariation": 0.3275,
@@ -2712,6 +3145,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 17.31,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 98.08,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 1.15,
+          "avgDaysBelowTightThreshold": 4.24,
+          "avgDaysBelowCriticalThreshold": 1.45,
+          "medianMaxDrawdownPct": 51.6,
+          "p90MaxDrawdownPct": 82.44,
+          "solventFinalMoneyP10": 2680,
+          "medianBankruptcyDay": 8,
+          "earliestBankruptcyDay": 5
+        },
         "volatility": {
           "finalMoneyStdDev": 3531,
           "finalMoneyCoefficientOfVariation": 0.7922,
@@ -3461,6 +3912,24 @@
             "upperPct": 2.15,
             "method": "wilson"
           }
+        },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.38,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0.38,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 12.69,
+          "avgDaysBelowTightThreshold": 1.02,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 56.41,
+          "solventFinalMoneyP10": 12611,
+          "medianBankruptcyDay": 10,
+          "earliestBankruptcyDay": 10
         },
         "volatility": {
           "finalMoneyStdDev": 5224,
@@ -4260,6 +4729,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 1.15,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 6.54,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 9.23,
+          "avgDaysBelowTightThreshold": 2.36,
+          "avgDaysBelowCriticalThreshold": 0.07,
+          "medianMaxDrawdownPct": 34.4,
+          "p90MaxDrawdownPct": 47.68,
+          "solventFinalMoneyP10": 5652,
+          "medianBankruptcyDay": 5,
+          "earliestBankruptcyDay": 5
+        },
         "volatility": {
           "finalMoneyStdDev": 3912,
           "finalMoneyCoefficientOfVariation": 0.4102,
@@ -5027,6 +5514,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.77,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 5.77,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 13.46,
+          "avgDaysBelowTightThreshold": 2.25,
+          "avgDaysBelowCriticalThreshold": 0.06,
+          "medianMaxDrawdownPct": 34.4,
+          "p90MaxDrawdownPct": 45.03,
+          "solventFinalMoneyP10": 7063,
+          "medianBankruptcyDay": 6,
+          "earliestBankruptcyDay": 6
+        },
         "volatility": {
           "finalMoneyStdDev": 3955,
           "finalMoneyCoefficientOfVariation": 0.3551,
@@ -5791,6 +6296,24 @@
             "upperPct": 2.15,
             "method": "wilson"
           }
+        },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.38,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0.38,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 13.85,
+          "avgDaysBelowTightThreshold": 1.08,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 50.32,
+          "solventFinalMoneyP10": 10462,
+          "medianBankruptcyDay": 4,
+          "earliestBankruptcyDay": 4
         },
         "volatility": {
           "finalMoneyStdDev": 5648,
@@ -6575,6 +7098,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.38,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 1.15,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 18.46,
+          "avgDaysBelowTightThreshold": 1.03,
+          "avgDaysBelowCriticalThreshold": 0.01,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 57.19,
+          "solventFinalMoneyP10": 12829,
+          "medianBankruptcyDay": 4,
+          "earliestBankruptcyDay": 4
+        },
         "volatility": {
           "finalMoneyStdDev": 5679,
           "finalMoneyCoefficientOfVariation": 0.2937,
@@ -7271,6 +7812,24 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 14.62,
+          "avgDaysBelowTightThreshold": 1.15,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 50.28,
+          "solventFinalMoneyP10": 10355,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
         },
         "volatility": {
           "finalMoneyStdDev": 5144,
@@ -8019,6 +8578,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0.38,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 8.08,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 8.85,
+          "avgDaysBelowTightThreshold": 1.73,
+          "avgDaysBelowCriticalThreshold": 0.08,
+          "medianMaxDrawdownPct": 21.51,
+          "p90MaxDrawdownPct": 51.2,
+          "solventFinalMoneyP10": 6421,
+          "medianBankruptcyDay": 4,
+          "earliestBankruptcyDay": 4
+        },
         "volatility": {
           "finalMoneyStdDev": 5896,
           "finalMoneyCoefficientOfVariation": 0.4689,
@@ -8694,6 +9271,24 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 100,
+          "everBelowCriticalPct": 0.38,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 10.77,
+          "avgDaysBelowTightThreshold": 1.08,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 17.2,
+          "p90MaxDrawdownPct": 36.49,
+          "solventFinalMoneyP10": 10278,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
         },
         "volatility": {
           "finalMoneyStdDev": 4868,
@@ -9372,6 +9967,24 @@
             "method": "wilson"
           }
         },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 0.38,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 16.92,
+          "avgDaysBelowTightThreshold": 0,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 8.18,
+          "p90MaxDrawdownPct": 51.75,
+          "solventFinalMoneyP10": 11425,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
+        },
         "volatility": {
           "finalMoneyStdDev": 5613,
           "finalMoneyCoefficientOfVariation": 0.313,
@@ -10047,6 +10660,24 @@
             "upperPct": 1.46,
             "method": "wilson"
           }
+        },
+        "financialStress": {
+          "thresholds": {
+            "tightEur": 500,
+            "criticalEur": 250
+          },
+          "bankruptcyRatePct": 0,
+          "everBelowTightPct": 0,
+          "everBelowCriticalPct": 0,
+          "zeroBalancePct": 0,
+          "creditOrGrantAssistedPct": 15.77,
+          "avgDaysBelowTightThreshold": 0,
+          "avgDaysBelowCriticalThreshold": 0,
+          "medianMaxDrawdownPct": 30.81,
+          "p90MaxDrawdownPct": 47.79,
+          "solventFinalMoneyP10": 23767,
+          "medianBankruptcyDay": null,
+          "earliestBankruptcyDay": null
         },
         "volatility": {
           "finalMoneyStdDev": 10269,
