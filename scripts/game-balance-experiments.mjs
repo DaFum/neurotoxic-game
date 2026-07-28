@@ -317,10 +317,14 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     const before = controlTradeoff[profile].moneyPerDayAdvantagePct
     const after = finalTradeoff[profile].moneyPerDayAdvantagePct
     const withinTarget = after >= minimum && after <= maximum
+    const belowTarget = after < minimum
     if (!withinTarget) {
-      shortfalls.push(`${profile} money-per-day advantage ${after}% is outside the ${minimum}-${maximum}% target (was ${before}%)`)
+      // Naming the direction matters: an advantage under the band and one over it
+      // call for opposite responses, and "outside the target" alone reads as a
+      // dominance problem either way.
+      shortfalls.push(`${profile} money-per-day advantage ${after}% is ${belowTarget ? 'below' : 'above'} the ${minimum}-${maximum}% target (was ${before}%)`)
     }
-    return { before, after, reductionPct: round(before - after), withinTarget }
+    return { before, after, reductionPct: round(before - after), withinTarget, belowTarget }
   }
 
   const profiles = {
@@ -328,8 +332,12 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     low_resource_touring: profileObjective('low_resource_touring')
   }
   const objectiveMet = shortfalls.length === 0
+  const allBelowTarget = Object.values(profiles).every(
+    profile => profile.belowTarget
+  )
   return {
     objectiveMet,
+    allBelowTarget,
     isReleaseGate: false,
     targetRangePct: GIG_GAP_TARGET_RANGE_PCT,
     shortfalls,
@@ -633,7 +641,9 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const objectiveStatus = gigFrequencyValidation.objectiveMet ? 'met' : 'partial'
   const objectiveNote = gigFrequencyValidation.objectiveMet
     ? `Gap-1 money-per-day dominance was brought inside the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band for both profiles.`
-    : gigFrequencyValidation.improved
+    : gigFrequencyValidation.allBelowTarget
+      ? `Gap-1 money-per-day advantage now sits BELOW the ${GIG_GAP_TARGET_RANGE_PCT[0]}-${GIG_GAP_TARGET_RANGE_PCT[1]}% target band (${gigFrequencyValidation.shortfalls.join('; ')}). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.`
+      : gigFrequencyValidation.improved
       ? `Late-game compounding was reduced (${gigFrequencyValidation.shortfalls.join('; ')}), but structural Gap-1 dominance remains unresolved.`
       : `Gap-1 dominance is unchanged (${gigFrequencyValidation.shortfalls.join('; ')}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
   const sourceBaseCommit = git('git rev-parse HEAD')
