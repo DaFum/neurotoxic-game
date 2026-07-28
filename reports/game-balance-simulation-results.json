@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T09:00:00.247Z",
+  "generatedAt": "2026-07-28T09:13:49.265Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "fe086afbb3b412bb52714b46111b04de41061fb4",
+    "sourceBaseCommit": "a5f97941e2d779f474081766b3767d4e93e3fb87",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "47b6ab54bb69b387fbd1796d81a34a8adea411e741f0c72e4a3f68e7e807ef33",
-    "balanceSourceSha256": "95070685ad296b882de9f7ba8e5bce60d144b7e2461d5418341bf4ef0e3d6632",
+    "simulationScriptSha256": "f8e4d0c2b3d908461896e73c25276e316c3759cb923f600ac031aebac6ac19e5",
+    "balanceSourceSha256": "5362aeb14a4cb856658dff2fe537cd653ba26af3f3052b8909786d9498eaa3b5",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "3dc121493fa11aad91a76c1be2fbbaab48746efb7c7ed5adc560fc53e4e0ece3",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
@@ -1494,24 +1494,24 @@
       "name": "Baseline Touring",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0,
+          "previous": 0.38,
           "current": 0.38,
-          "delta": 0.38
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 29387,
+          "previous": 28913,
           "current": 28913,
-          "delta": -474
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1603.35,
+          "previous": 1636.26,
           "current": 1636.26,
-          "delta": 32.91
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 9.16,
+          "previous": 8.67,
           "current": 8.67,
-          "delta": -0.49
+          "delta": 0
         }
       }
     },
@@ -1520,24 +1520,24 @@
       "name": "Bootstrap Struggle",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 30.77,
+          "previous": 37.31,
           "current": 37.31,
-          "delta": 6.54
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 1081,
+          "previous": 913,
           "current": 913,
-          "delta": -168
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1483.23,
+          "previous": 1427.72,
           "current": 1427.72,
-          "delta": -55.51
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 1.57,
+          "previous": 1.42,
           "current": 1.42,
-          "delta": -0.15
+          "delta": 0
         }
       }
     },
@@ -1546,24 +1546,24 @@
       "name": "Aggressive Marketing",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 2.31,
+          "previous": 4.23,
           "current": 4.23,
-          "delta": 1.92
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 8199,
+          "previous": 7599,
           "current": 7599,
-          "delta": -600
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1618.74,
+          "previous": 1636.61,
           "current": 1636.61,
-          "delta": 17.87
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.51,
+          "previous": 4.15,
           "current": 4.15,
-          "delta": -0.36
+          "delta": 0
         }
       }
     },
@@ -1572,24 +1572,24 @@
       "name": "Scandal Recovery",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 6.92,
+          "previous": 10.38,
           "current": 10.38,
-          "delta": 3.46
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 3008,
+          "previous": 2787,
           "current": 2787,
-          "delta": -221
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1567.48,
+          "previous": 1518.26,
           "current": 1518.26,
-          "delta": -49.22
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 2.71,
+          "previous": 2.54,
           "current": 2.54,
-          "delta": -0.17
+          "delta": 0
         }
       }
     },
@@ -1598,24 +1598,24 @@
       "name": "Festival Push",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 2.69,
+          "previous": 7.31,
           "current": 7.31,
-          "delta": 4.62
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 4460,
+          "previous": 4085,
           "current": 4085,
-          "delta": -375
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1702.74,
+          "previous": 1654.71,
           "current": 1654.71,
-          "delta": -48.03
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 2.76,
+          "previous": 2.56,
           "current": 2.56,
-          "delta": -0.2
+          "delta": 0
         }
       }
     },
@@ -1624,24 +1624,24 @@
       "name": "Chaos Tour",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 3.08,
+          "previous": 4.23,
           "current": 4.23,
-          "delta": 1.15
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 5825,
+          "previous": 5618,
           "current": 5618,
-          "delta": -207
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1492.22,
+          "previous": 1510.59,
           "current": 1510.59,
-          "delta": 18.37
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.47,
+          "previous": 4.19,
           "current": 4.19,
-          "delta": -0.28
+          "delta": 0
         }
       }
     },
@@ -1650,24 +1650,24 @@
       "name": "Cult Hypergrowth",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0.38,
+          "previous": 5,
           "current": 5,
-          "delta": 4.62
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 8306,
+          "previous": 7563,
           "current": 7563,
-          "delta": -743
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1702.54,
+          "previous": 1670.63,
           "current": 1670.63,
-          "delta": -31.91
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.57,
+          "previous": 4.2,
           "current": 4.2,
-          "delta": -0.37
+          "delta": 0
         }
       }
     },
@@ -1676,24 +1676,24 @@
       "name": "No Social (Fame 0-50)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 2.31,
+          "previous": 7.69,
           "current": 7.69,
-          "delta": 5.38
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 5155,
+          "previous": 4668,
           "current": 4668,
-          "delta": -487
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1516.68,
+          "previous": 1501.91,
           "current": 1501.91,
-          "delta": -14.77
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.54,
+          "previous": 4.12,
           "current": 4.12,
-          "delta": -0.42
+          "delta": 0
         }
       }
     },
@@ -1702,24 +1702,24 @@
       "name": "High Controversy",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 14.62,
+          "previous": 19.62,
           "current": 19.62,
-          "delta": 5
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 2398,
+          "previous": 2288,
           "current": 2288,
-          "delta": -110
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1516.17,
+          "previous": 1525.7,
           "current": 1525.7,
-          "delta": 9.53
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.17,
+          "previous": 3.87,
           "current": 3.87,
-          "delta": -0.3
+          "delta": 0
         }
       }
     },
@@ -1728,24 +1728,24 @@
       "name": "Early Game Probe (Fame 0–50)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 3.85,
+          "previous": 6.54,
           "current": 6.54,
-          "delta": 2.69
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 5103,
+          "previous": 4655,
           "current": 4655,
-          "delta": -448
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1591.54,
+          "previous": 1598.32,
           "current": 1598.32,
-          "delta": 6.78
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.4,
+          "previous": 4.05,
           "current": 4.05,
-          "delta": -0.35
+          "delta": 0
         }
       }
     },
@@ -1754,24 +1754,24 @@
       "name": "Mid Game Probe (Fame 60–150)",
       "metrics": {
         "bankruptcyRate": {
-          "previous": 0.38,
+          "previous": 1.15,
           "current": 1.15,
-          "delta": 0.77
+          "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 6332,
+          "previous": 5902,
           "current": 5902,
-          "delta": -430
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1548.53,
+          "previous": 1555.42,
           "current": 1555.42,
-          "delta": 6.89
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 4.55,
+          "previous": 4.19,
           "current": 4.19,
-          "delta": -0.36
+          "delta": 0
         }
       }
     },
@@ -1785,19 +1785,19 @@
           "delta": 0
         },
         "avgFinalMoney": {
-          "previous": 32142,
+          "previous": 31245,
           "current": 31245,
-          "delta": -897
+          "delta": 0
         },
         "avgFameProgressPerGig": {
-          "previous": 1554.46,
+          "previous": 1574.63,
           "current": 1574.63,
-          "delta": 20.17
+          "delta": 0
         },
         "avgGigsPlayed": {
-          "previous": 9.3,
+          "previous": 8.79,
           "current": 8.79,
-          "delta": -0.51
+          "delta": 0
         }
       }
     }

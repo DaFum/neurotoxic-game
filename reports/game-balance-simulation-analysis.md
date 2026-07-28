@@ -1,16 +1,17 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T09:00:00.247Z
+Erstellt am: 2026-07-28T09:13:49.265Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: fe086afbb3b412bb52714b46111b04de41061fb4
+- Basis-Commit: a5f97941e2d779f474081766b3767d4e93e3fb87
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: 47b6ab54bb69b387fbd1796d81a34a8adea411e741f0c72e4a3f68e7e807ef33
+- Simulationsskript SHA-256: f8e4d0c2b3d908461896e73c25276e316c3759cb923f600ac031aebac6ac19e5
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: 3dc121493fa11aad91a76c1be2fbbaab48746efb7c7ed5adc560fc53e4e0ece3
+- Risikokorridor-Konfiguration SHA-256: 60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c
 - Seed-Strategie: scenario-id-plus-run-index
 
 ## Simulationseinstellungen
@@ -392,7 +393,7 @@ Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nu
 
 Knotentypen über alle Ankünfte: GIG 66.98% · FESTIVAL 10.03% · FINALE 9.95% · REST_STOP 4.94% · SUPPLY_STOP 4.32% · SPECIAL 3.78% (Beispiel Baseline Touring).
 
-**Das beantwortet die Gap-1-Frage strukturell.** Nur ein Szenario, das praktisch täglich spielt, legt die zehn Hops zurück und erreicht das Finale; bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.
+**Das beantwortet die Gap-1-Frage strukturell.** Das Finale erreichen nur 2 von 12 Szenarien (Baseline Touring 99.23%, Late Game Probe (Fame 175+) 100%) — und zwar genau die, die praktisch täglich spielen. Bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke, und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.
 
 Modellgrenze: Nicht-Gig-Tage verbrauchen keinen Hop. Im Spiel vergeht ein Tag nur durch Anreise, hier pausiert die Band am Ort. Die Gig-Kadenz bleibt damit die Szenario-Stellschraube `gigGapDays`, damit die Gap-Analyse aus Phase 3C weiter dasselbe misst; Streckenwahl, Erreichbarkeit und Entfernungen sind echt.
 
@@ -540,23 +541,6 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 | Mid Game Probe (Fame 60–150) | — | — | — | ⚪ Nicht bewertet | — |
 | Late Game Probe (Fame 175+) | — | — | — | ⚪ Nicht bewertet | — |
 
-## Rebalance-Regressionsvergleich (Alt vs Neu)
-
-| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
-|---|---:|---:|---:|---:|
-| Baseline Touring | 0.38% | €-474 | 32.91 | -0.49 |
-| Bootstrap Struggle | 6.54% | €-168 | -55.51 | -0.15 |
-| Aggressive Marketing | 1.92% | €-600 | 17.87 | -0.36 |
-| Scandal Recovery | 3.46% | €-221 | -49.22 | -0.17 |
-| Festival Push | 4.62% | €-375 | -48.03 | -0.2 |
-| Chaos Tour | 1.15% | €-207 | 18.37 | -0.28 |
-| Cult Hypergrowth | 4.62% | €-743 | -31.91 | -0.37 |
-| No Social (Fame 0-50) | 5.38% | €-487 | -14.77 | -0.42 |
-| High Controversy | 5% | €-110 | 9.53 | -0.3 |
-| Early Game Probe (Fame 0–50) | 2.69% | €-448 | 6.78 | -0.35 |
-| Mid Game Probe (Fame 60–150) | 0.77% | €-430 | 6.89 | -0.36 |
-| Late Game Probe (Fame 175+) | 0% | €-897 | 20.17 | -0.51 |
-
 ## Kurzfazit
 
 - Höchstes Risiko: **Bootstrap Struggle** mit 37.31% Insolvenzrate.
@@ -569,7 +553,7 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 - Nicht bewertet: 5
 
 ### Designrisiko-Zusammenfassung (nicht blockierend)
-- Sicherheitsgates: 7/7 Szenarien unter ihrer harten Insolvenzgrenze.
+- Sicherheitsgates: 7/7 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - Risikobänder: low_risk 2 · high_risk 1 · healthy 3 · unstable 1.
 - ⚠️ 4 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
