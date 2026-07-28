@@ -525,7 +525,7 @@ export const QuestsModal = ({
             <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
               {t('ui:quests.title')}
             </h2>
-            <Tooltip content={t('ui:quests.closeButton')}>
+            <Tooltip content={t('ui:quests.closeButton')} position='bottom'>
               <button
                 type='button'
                 onClick={onClose}
