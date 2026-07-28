@@ -289,9 +289,20 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
     const chassisSlotTypes = new Set<string>(
       CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]?.slots ?? []
     )
-    const sanitizedSlots = sanitizeSlots(clean.slots).filter(
-      s => s.addedByModuleId !== undefined || chassisSlotTypes.has(s.slotType)
-    )
+    // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
+    // Why: Eliminates intermediate array and closure allocations.
+    // Impact: Reduces GC pressure during asset sanitization.
+    const preSanitizedSlots = sanitizeSlots(clean.slots)
+    const sanitizedSlots = []
+    for (let i = 0; i < preSanitizedSlots.length; i++) {
+      const s = preSanitizedSlots[i]
+      if (
+        s &&
+        (s.addedByModuleId !== undefined || chassisSlotTypes.has(s.slotType))
+      ) {
+        sanitizedSlots.push(s)
+      }
+    }
 
     out.push({
       id: clean.id,

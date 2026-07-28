@@ -749,9 +749,17 @@ export const handleAdvanceDay = (
   // Expire quest cooldowns whose window has elapsed (mirrors the deadline check
   // pattern). Entries are kept while expiresOnDay is still in the future.
   const currentDay = finiteNumberOr(nextPlayer.day, 0)
-  const activeQuestCooldowns = (state.questCooldowns ?? []).filter(
-    cd => cd.expiresOnDay > currentDay
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
+  // Why: Eliminates intermediate array and closure allocations on hot path.
+  // Impact: Reduces GC pressure when advancing days.
+  const sourceQuestCooldowns = state.questCooldowns ?? []
+  const activeQuestCooldowns = []
+  for (let i = 0; i < sourceQuestCooldowns.length; i++) {
+    const cd = sourceQuestCooldowns[i]
+    if (cd && cd.expiresOnDay > currentDay) {
+      activeQuestCooldowns.push(cd)
+    }
+  }
 
   // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
   // day, while legacy untimed daily cooldowns (no `:`) reset every day as
@@ -759,13 +767,23 @@ export const handleAdvanceDay = (
   // entries would silently evaporate on the next advanceDay.
   // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
   // Legacy format without ':' will be intentionally dropped every day.
-  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
-    if (typeof cd !== 'string') return false
-    const idx = cd.indexOf(':')
-    if (idx < 0) return false // legacy daily entry → drop
-    const expiry = parseInt(cd.slice(idx + 1), 10)
-    return Number.isFinite(expiry) && expiry > currentDay
-  })
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
+  // Why: Eliminates intermediate array and closure allocations on hot path.
+  // Impact: Reduces GC pressure when advancing days.
+  const sourceEventCooldowns = state.eventCooldowns ?? []
+  const activeEventCooldowns = []
+  for (let i = 0; i < sourceEventCooldowns.length; i++) {
+    const cd = sourceEventCooldowns[i]
+    if (typeof cd === 'string') {
+      const idx = cd.indexOf(':')
+      if (idx >= 0) {
+        const expiry = parseInt(cd.slice(idx + 1), 10)
+        if (Number.isFinite(expiry) && expiry > currentDay) {
+          activeEventCooldowns.push(cd)
+        }
+      }
+    }
+  }
 
   let nextState: GameState = {
     ...state,
