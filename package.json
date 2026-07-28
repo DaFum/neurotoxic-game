@@ -20,6 +20,7 @@
     "simulate:balance": "node --import tsx scripts/game-balance-simulation.mjs",
     "simulate:balance:experiments": "node --import tsx scripts/game-balance-experiments.mjs",
     "simulate:balance:baseline": "node --import tsx scripts/game-balance-simulation.mjs --write-baseline reports/game-balance-simulation-baseline.json",
+    "simulate:balance:cadence": "node --import tsx scripts/game-balance-cadence-probe.mjs",
     "simulate:balance:compare": "node --import tsx scripts/game-balance-simulation.mjs --compare-baseline reports/game-balance-simulation-baseline.json",
     "symbols:check": "node scripts/update-symbols.mjs --check",
     "symbols:update": "node ./scripts/update-symbols.mjs",

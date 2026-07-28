@@ -1016,6 +1016,55 @@ export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true)
   return pool[Math.floor(rng() * pool.length)] ?? null
 }
 
+/**
+ * The three cadence policies a scenario can be simulated under.
+ *
+ * `gigGapDays` says how often a band wants to play, not *which* days those are,
+ * and the phase is not a free choice: it decides how many cost cycles land
+ * before the first payout. At `gigGapDays: 2` the shipped policy resolves to
+ * days 2, 4, 6, 8, 10 — the band deliberately declines to play on day 1 and
+ * routes around the opening gig node when the map offers an alternative. "Every
+ * other day" reads just as well as days 1, 3, 5, 7, 9, and on 500 EUR of
+ * starting cash that half-cycle offset is the difference between one and two
+ * unpaid cost days before the first income.
+ *
+ * - `gap-aligned`   days where `day % gap === 0` (shipped behaviour)
+ * - `gap-offset`    the same cadence phase-shifted to start on day 1
+ * - `first-income`  play the first gig the map offers, then keep the gap
+ *                   cadence anchored on that day
+ *
+ * At `gigGapDays: 1` all three agree, so a scenario that plays daily is
+ * unaffected by the choice.
+ */
+export const GIG_CADENCE_POLICIES = Object.freeze([
+  'gap-aligned',
+  'gap-offset',
+  'first-income'
+])
+
+export const resolveGigCadence = ({
+  day,
+  gigGapDays,
+  policy = 'gap-aligned',
+  firstGigDay = null
+}) => {
+  const gap = Math.max(
+    1,
+    gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays
+  )
+  // A typo'd policy must not silently resolve to the shipped one: the whole
+  // point of the comparison is that the variants differ, so a silent fallback
+  // would report three identical cohorts as evidence that phase does not matter.
+  if (!GIG_CADENCE_POLICIES.includes(policy)) {
+    throw new RangeError(`Unknown gig cadence policy: ${policy}`)
+  }
+  if (policy === 'gap-offset') return (day - 1) % gap === 0
+  if (policy === 'first-income') {
+    return firstGigDay == null ? true : (day - firstGigDay) % gap === 0
+  }
+  return day % gap === 0
+}
+
 const calculateModifiers = (scenario, rng) => {
   const modifiers = {
     promo: pickWeightedBool(
@@ -2340,6 +2389,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let minMemberStaminaObserved = Infinity
   let minMemberMoodObserved = Infinity
 
+  // Early-runway instrumentation. Insolvency that happens before the first
+  // payout is a different failure from one the economy caused: it says the run
+  // never reached the loop the economy describes. Averages over the whole tour
+  // cannot separate the two, so the opening is measured on its own.
+  let firstGigDay = null
+  let moneyBeforeFirstGig = null
+  let lowestMoneyBeforeFirstGig = state.player.money
+  let obligationsBeforeFirstGig = 0
+  let spendBeforeFirstGig = 0
+  let blockedTravelDaysBeforeFirstGig = 0
+  let firstBlockedTravel = null
+
   // Per-gig metric accumulators for calibration analysis
   let totalTravelCostGigs = 0
   let totalHitWindowSum = 0
@@ -2420,6 +2481,13 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // Bankruptcy from daily costs draining the player to zero
     const dailyNetChange = state.player.money - moneyBeforeDay
     const dailyObligations = getTotalDailyObligations(state)
+    if (firstGigDay == null) {
+      obligationsBeforeFirstGig += dailyObligations
+      lowestMoneyBeforeFirstGig = Math.min(
+        lowestMoneyBeforeFirstGig,
+        state.player.money
+      )
+    }
     if (
       shouldTriggerBankruptcy(
         state.player.money,
@@ -2438,8 +2506,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // made map reach a property of `gigGapDays` instead of the map, so a sparse
     // cadence looked like it could not finish the tour when in truth it had
     // simply never been allowed to drive.
-    const wantsToPerform =
-      day % (scenario.gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays) === 0
+    const wantsToPerform = resolveGigCadence({
+      day,
+      gigGapDays: scenario.gigGapDays,
+      policy: scenario.gigCadencePolicy ?? 'gap-aligned',
+      firstGigDay
+    })
 
     let willRest = false
     // Check if the band needs rest/clinic before travelling on.
@@ -2553,6 +2625,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     }
 
     const recordNoTrip = reason => {
+      if (firstGigDay == null) {
+        blockedTravelDaysBeforeFirstGig += 1
+        firstBlockedTravel ??= { day, reason }
+      }
       if (reason === 'dead_end') routeDeadEnds += 1
       else {
         strandedDays += 1
@@ -2744,6 +2820,20 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
+    // The show is going ahead, so this is the run's first income opportunity.
+    // Recorded before the setup minigame and the modifier purchases, which is
+    // what "money directly before the first gig" has to mean for a runway
+    // question — and it is also the anchor the `first-income` cadence keeps.
+    if (firstGigDay == null) {
+      firstGigDay = day
+      moneyBeforeFirstGig = state.player.money
+      spendBeforeFirstGig =
+        counters.travelSpend +
+        counters.refuelSpend +
+        counters.repairSpend +
+        counters.clinicSpend +
+        counters.catalogMoneySpent
+    }
     const damagedGear = runPreGigSetupMinigame(
       state,
       scenario,
@@ -3011,6 +3101,22 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
     daysBelowCriticalLiquidity,
+    // `daysBeforeFirstGig` counts unpaid days: for a run that never played, that
+    // is every day it survived. `spendBeforeFirstGig` covers the discretionary
+    // sinks (travel, fuel, repairs, clinic, shop); the recurring side is
+    // `obligationsBeforeFirstGig`, which the daily tick charges separately.
+    earlyRunway: {
+      firstGigDay,
+      bankruptBeforeFirstGig: counters.bankrupt && firstGigDay == null,
+      moneyBeforeFirstGig,
+      lowestMoneyBeforeFirstGig,
+      daysBeforeFirstGig:
+        firstGigDay == null ? daysSurvived : firstGigDay - 1,
+      obligationsBeforeFirstGig: Math.round(obligationsBeforeFirstGig),
+      spendBeforeFirstGig: Math.round(spendBeforeFirstGig),
+      blockedTravelDaysBeforeFirstGig,
+      firstBlockedTravel
+    },
     emergencyGrantUsed: runCtx.emergencyGrantUsed,
     timeline,
     moneyAtEarlyCheckpoint,
