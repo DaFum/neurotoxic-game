@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-28T16:08:56.472Z",
+  "generatedAt": "2026-07-28T16:40:35.605Z",
   "constants": {
     "reportVersion": 13,
     "runsPerScenario": 260,
@@ -433,10 +433,10 @@
   ],
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "3cdfea74b3ae553038843eaf663da10a63b4c472",
+    "sourceBaseCommit": "d427e3b917c52d1c6f9b793137fa819f718346e2",
     "workingTreeDirty": true,
     "simulationScriptSha256": "ccff9a1e09f6a7e40345082ae6469e0f4ef0f79ee22a1be696977de4af4a5455",
-    "balanceSourceSha256": "5b1ab138569ad5f6697416ab4ef7d62f01928400658660b8121f56b6289f0952",
+    "balanceSourceSha256": "b83f6d26f39000acd7a6d8f1cdb86cac9178e3a0596e89a48e0a2c36727f70b2",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",

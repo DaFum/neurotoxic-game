@@ -1,4 +1,8 @@
-import { DEFAULT_BALANCE_TUNING } from '../../src/utils/balanceTuning'
+import {
+  BALANCE_RECOMMENDATION_HOLD,
+  DEFAULT_BALANCE_TUNING,
+  ORIGINAL_CONTROL_BALANCE_TUNING
+} from '../../src/utils/balanceTuning'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import {
@@ -265,9 +269,29 @@ test('DEFAULT_BALANCE_TUNING match', async () => {
     `Experiment report \`recommendation.tuning\` is not an object; ${regenerate}`
   )
 
+  // Production normally has to equal the recommendation exactly — that is what
+  // keeps shipped tuning tied to the evidence. The one legitimate exception is a
+  // declared hold, and it is deliberately narrow: production must then sit on the
+  // control tuning, never on a third hand-edited state, and the hold must be
+  // cleared once the report stops recommending a lever. Without those two checks
+  // a hold would be an open door to any value at all.
+  if (BALANCE_RECOMMENDATION_HOLD === null) {
+    assert.deepEqual(
+      DEFAULT_BALANCE_TUNING,
+      tuning,
+      'Default tuning should exactly match recommended tuning from report'
+    )
+    return
+  }
+
   assert.deepEqual(
     DEFAULT_BALANCE_TUNING,
+    ORIGINAL_CONTROL_BALANCE_TUNING,
+    `BALANCE_RECOMMENDATION_HOLD is set, so production must stay on the control tuning: ${BALANCE_RECOMMENDATION_HOLD}`
+  )
+  assert.notDeepEqual(
     tuning,
-    'Default tuning should exactly match recommended tuning from report'
+    ORIGINAL_CONTROL_BALANCE_TUNING,
+    'The report recommends no lever, so BALANCE_RECOMMENDATION_HOLD is stale and must be set back to null'
   )
 })

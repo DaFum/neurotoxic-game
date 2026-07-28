@@ -53,8 +53,28 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
   })
 
 /**
+ * Why production does not carry the lever the committed experiment report
+ * recommends.
+ *
+ * `null` is the normal state and means production is expected to match
+ * `recommendation.tuning` in `reports/game-balance-experiments-results.json`
+ * exactly — that equality is what stops production tuning from drifting away
+ * from the evidence, in either direction.
+ *
+ * A non-null hold is the one legitimate exception: the report recommends a lever
+ * that has deliberately not been adopted. It exists so that decision is a
+ * reviewed line of code rather than a silent mismatch, and
+ * `tests/node/regionalGigHistory.test.js` then requires production to sit on
+ * `ORIGINAL_CONTROL_BALANCE_TUNING` — never on some third hand-edited state — and
+ * requires the hold to be cleared once the report stops recommending a lever.
+ */
+export const BALANCE_RECOMMENDATION_HOLD: string | null =
+  'The report recommends `bootstrap-emergency-250` (a one-off €250 grant below €100 through day 5). Two open questions have to be settled before it can ship. First, it clears every hard cap but pushes four of seven scenarios BELOW the lower bound of their `RISK_TARGETS` corridor (Bootstrap Struggle to 8.08% against 15-30%), which no gate checks — see `designRiskCorridors` in the report. Second, the breach it answers is `cult_hypergrowth` at 13.85% holdout insolvency, and 91.67% of those insolvencies happen before the first gig: `pnpm run simulate:balance:cadence` shows the cadence PHASE alone moves that to 1.92% with no lever at all. If the phase is what was wrong, this grant is a subsidy for a problem that does not exist. Decide the cadence policy first, then re-run the experiments and either adopt the recommendation or clear this hold.'
+
+/**
  * Production tuning. Currently neutral: Phase 3 selected no lever once the
- * simulated horizon was bounded by the map.
+ * simulated horizon was bounded by the map, and the lever the report now
+ * recommends is on hold — see `BALANCE_RECOMMENDATION_HOLD`.
  *
  * The levers it previously carried were calibrated against 75-day runs. A real
  * playthrough is 10 hops and ends at the FINALE node, so a "through day 60"
