@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 36095 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 18460 simulation runs in 40159 ms.
 
 ## Kontrollzustand
 
@@ -41,7 +41,7 @@ Original production-neutral tuning is the control for Phase 3B and final validat
 
 ## Gewählter Bootstrap-Hebel
 
-`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped.
+`bootstrap-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped. Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.
 
 ## Phase 3C – Gig-Frequenz
 ## Gig-Gap-Analyse
@@ -127,7 +127,7 @@ Gap-1 dominance is unchanged (baseline_touring money-per-day advantage 78.86% is
 
 ## Gewählter Late-Game-Hebel
 
-`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped.
+`touring-none` was selected by the combination search. Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected. 1 of 154 pairs were evaluated, 153 skipped. Der gewaehlte Kandidat ist der neutrale No-Op: Es wird kein Hebel ausgeliefert, die Produktions-Tuning-Werte bleiben unveraendert auf dem Kontrollzustand.
 
 ## Kombinierte Validierung
 

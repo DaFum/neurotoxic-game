@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-27T21:44:32.004Z",
+  "generatedAt": "2026-07-28T05:10:59.674Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "b4343614a9128be7b6766224473580426e30e474",
+    "sourceBaseCommit": "e5dbaff0a7b0339c969a519212479b84d2a03c0b",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "5a55192592b40ae8ba168af9ec855d57c9543ae9e1904111ca4532d99a1bc90f",
-    "balanceSourceSha256": "9db74b0b4b81f0362dfac371e5b9c08db1793c912265b86aea0d173302eeb957",
-    "experimentScriptSha256": "73e85f08ed8d65896776a5de5e186ea69b2c7810ddcdb9d845098f3817f4fabd",
+    "simulationScriptSha256": "1db8956ec41931218b16da1c482898cb24a20609092c33ff5b4b405425750fad",
+    "balanceSourceSha256": "1378fa7c61bf89c2024fd03daacf561c5b8c02bc5bbe8460a34e3fadc1e1973d",
+    "experimentScriptSha256": "fd49885c91a73bf228f7ab707b49f8e275b643b7665809f8821339da365c2a15",
     "experimentConfigSha256": "d203a1d726f71a5ac7370496fc73cbdac4c21e69e892bdb75917eeffe31b5178",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "1bb574c9754c41c53b184bf7b56710603d0fb2a49dc62b83ddb11722daea71b1",
@@ -26868,6 +26868,7 @@
     "pairsAvailable": 154,
     "pairsEvaluated": 1,
     "pairsSkipped": 153,
+    "selectedAppliesNoChange": true,
     "note": "Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that passes final combined validation; the remaining pairs carry higher impact and so could not have been selected."
   },
   "combinationRanking": [
@@ -26907,7 +26908,7 @@
     }
   },
   "runtime": {
-    "durationMs": 36095,
+    "durationMs": 40159,
     "candidates": 25,
     "totalRuns": 18460
   }
