@@ -498,7 +498,7 @@ Kalibrierungs-Gate: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}
 
 Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem disjunkten Seed-Strom gegen die harten \`KPI_TARGETS.bankruptcyMax\`-Obergrenzen geprüft. Der gepaarte Vergleich oben läuft auf dem Kalibrierungsstrom und kann eine Überschreitung, die nur auf unabhängigen Seeds auftritt, nicht sehen.
 
-Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
+Holdout-Sicherheitsgate: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**${report.holdoutSafetyValidation?.failures?.length ? ` — ${report.holdoutSafetyValidation.failures.map(failure => `\`${failure.scenarioId}\` ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}% (n=${failure.sampleSize ?? '—'})`).join('; ')}` : ''}${report.holdoutSafetyValidation?.missingScenarioIds?.length ? ` — nicht gemessen: ${report.holdoutSafetyValidation.missingScenarioIds.map(id => `\`${id}\``).join(', ')} (unvollständige Abdeckung ist kein bestandenes Gate)` : ''}${report.holdoutSafetyValidation && !report.holdoutSafetyValidation.passed && !report.holdoutSafetyValidation.failures?.length && !report.holdoutSafetyValidation.missingScenarioIds?.length ? ' — kein Szenario auswertbar, das ist kein bestandenes Gate' : ''}
 
 ${report.holdoutSafetyValidation?.passed ? '' : '**Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'}
 
@@ -793,7 +793,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     console.warn(`[balance-experiments] ${report.recommendation.objectiveNote}`)
   }
   if (!report.holdoutSafetyValidation.passed) {
-    console.error(`[balance-experiments] holdout safety gate FAILED: ${(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'no scenario could be evaluated'}`)
+    console.error(`[balance-experiments] holdout safety gate FAILED: ${[(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), (report.holdoutSafetyValidation.missingScenarioIds ?? []).length ? `unmeasured: ${report.holdoutSafetyValidation.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' | ') || 'no scenario could be evaluated'}`)
   }
   // Both hard gates decide the exit code. A holdout breach of bankruptcyMax is a
   // release blocker, so it must not exit 0 just because the paired comparison

@@ -4041,15 +4041,32 @@ export const buildHoldoutSafetyValidation = holdoutScenarios => {
       maximumPct: KPI_TARGETS[scenario.id].bankruptcyMax,
       sampleSize: scenario.holdoutBankruptcy.sampleSize ?? null
     }))
+  // Coverage is part of the verdict, not an assumption about the caller. An
+  // empty set was already refused, but a *partial* one passed just as happily:
+  // handing over only `baseline_touring` cleared the gate while six other hard
+  // limits went unmeasured. The expectation is derived from the configuration
+  // rather than from what arrived, so config drift or a refactor that narrows
+  // the caller's loop fails closed instead of silently shrinking the gate.
+  const expectedScenarioIds = SCENARIOS.filter(scenario =>
+    Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax)
+  ).map(scenario => scenario.id)
+  const evaluatedScenarios = candidates.map(scenario => scenario.id)
+  const missingScenarioIds = expectedScenarioIds.filter(
+    id => !evaluatedScenarios.includes(id)
+  )
+
   return {
     blocking: true,
     layer: 'hard-safety-limit',
     metric: 'bankruptcyRate',
     source: 'holdout',
-    // An empty candidate set is not a pass. The same vacuous-truth trap the
-    // holdout agreement had: claiming a gate held when nothing was measured.
-    passed: candidates.length > 0 && failures.length === 0,
-    evaluatedScenarios: candidates.map(scenario => scenario.id),
+    passed:
+      expectedScenarioIds.length > 0 &&
+      missingScenarioIds.length === 0 &&
+      failures.length === 0,
+    expectedScenarios: expectedScenarioIds,
+    evaluatedScenarios,
+    missingScenarioIds,
     failures
   }
 }
@@ -4501,15 +4518,21 @@ const buildMarkdownReport = payload => {
       'Diese Prüfung ist die einzige *blockierende* Schicht des Risikomodells. `KPI_TARGETS.bankruptcyMax` ist eine Obergrenze, keine Designhypothese — eine Überschreitung ist deshalb ein Fehler, egal auf welchem Seed-Strom sie auftritt. Die Kalibrierungskohorte allein kann das nicht entscheiden, weil die Bänder gegen genau diese Kohorte abgeleitet wurden. Die Zielkorridore in „Insolvenz-Zielkorridore“ bleiben davon getrennt und weiterhin nicht blockierend.'
     )
     lines.push('')
-    if (!safety.evaluatedScenarios.length) {
+    lines.push(
+      `Abdeckung: ${safety.evaluatedScenarios.length} von ${safety.expectedScenarios?.length ?? safety.evaluatedScenarios.length} Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Abdeckung ist selbst ein Fehlschlag — ein Gate, das nur einen Teil der harten Grenzen prüft, sagt über die übrigen nichts aus.`
+    )
+    lines.push('')
+    if (safety.missingScenarioIds?.length) {
       lines.push(
-        '⚪ Kein Szenario mit `bankruptcyMax` und Holdout-Rate auswertbar — das ist **kein** bestandenes Gate, sondern fehlende Evidenz.'
+        `⚪ Nicht gemessen: ${safety.missingScenarioIds.join(', ')}. Das ist **kein** bestandenes Gate, sondern fehlende Evidenz.`
       )
-    } else if (safety.passed) {
+      lines.push('')
+    }
+    if (safety.passed) {
       lines.push(
         `✅ Alle ${safety.evaluatedScenarios.length} geprüften Szenarien bleiben auf unabhängigen Seeds unter ihrer harten Grenze.`
       )
-    } else {
+    } else if (safety.failures.length) {
       lines.push(
         '| Szenario | Metrik | Holdout | Harte Grenze | Stichprobe |'
       )
@@ -4522,6 +4545,10 @@ const buildMarkdownReport = payload => {
       lines.push('')
       lines.push(
         `❌ ${safety.failures.length} harte Sicherheitsgrenze(n) auf dem Holdout-Strom überschritten. Die Messimplementierung ist vollständig, aber die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht — es gibt daher **keine Produktionsempfehlung**, bis die betroffenen Szenarien neu balanciert sind.`
+      )
+    } else {
+      lines.push(
+        '❌ Gate nicht bestanden, ohne überschrittene Grenze: die Abdeckung ist unvollständig. **Keine Produktionsempfehlung**, bis alle konfigurierten Grenzen gemessen sind.'
       )
     }
     lines.push('')
@@ -5192,7 +5219,7 @@ lines.push('## KPI-Zielkorridore (Health Check)')
       lines.push(
         safetySummary.passed
           ? '- ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.'
-          : `- ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (${safetySummary.failures.map(failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; ') || 'keine Evidenz'}). Keine Produktionsempfehlung.`
+          : `- ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (${[safetySummary.failures.map(failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), safetySummary.missingScenarioIds?.length ? `nicht gemessen: ${safetySummary.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' · ') || 'keine Evidenz'}). Keine Produktionsempfehlung.`
       )
     }
     lines.push(

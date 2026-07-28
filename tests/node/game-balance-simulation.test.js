@@ -551,14 +551,49 @@ test('a holdout breach of bankruptcyMax is a blocking safety failure', () => {
   })
 })
 
-test('the holdout safety gate passes only on measured evidence', () => {
-  const withinCap = buildHoldoutSafetyValidation([
+/** Every scenario the gate is configured to cover, each comfortably in bounds. */
+const cappedScenarioIds = () =>
+  SCENARIOS.filter(scenario =>
+    Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax)
+  ).map(scenario => scenario.id)
+
+const holdoutCohortWithinCaps = () =>
+  cappedScenarioIds().map(id => ({
+    id,
+    holdoutBankruptcy: {
+      count: 0,
+      sampleSize: 260,
+      ratePct: KPI_TARGETS[id].bankruptcyMax / 2
+    }
+  }))
+
+test('the holdout safety gate passes only on complete measured evidence', () => {
+  const expectedIds = cappedScenarioIds()
+  assert.ok(expectedIds.length > 1, 'more than one scenario must carry a cap')
+
+  const complete = buildHoldoutSafetyValidation(holdoutCohortWithinCaps())
+  assert.equal(complete.passed, true)
+  assert.deepEqual(complete.expectedScenarios, expectedIds)
+  assert.deepEqual(complete.missingScenarioIds, [])
+
+  // Partial coverage is the fail-open case this gate has to refuse: handing over
+  // one scenario used to clear the gate while every other hard limit went
+  // unmeasured, so the verdict said nothing about them.
+  const partial = buildHoldoutSafetyValidation([
     {
       id: 'baseline_touring',
       holdoutBankruptcy: { count: 6, sampleSize: 260, ratePct: 2.31 }
     }
   ])
-  assert.equal(withinCap.passed, true)
+  assert.equal(partial.passed, false)
+  assert.deepEqual(partial.evaluatedScenarios, ['baseline_touring'])
+  assert.deepEqual(
+    partial.missingScenarioIds,
+    expectedIds.filter(id => id !== 'baseline_touring')
+  )
+  // Nothing breached a limit — the gate fails purely on coverage, and the report
+  // has to be able to tell those two reasons apart.
+  assert.deepEqual(partial.failures, [])
 
   // The two scenario ids below carry the branches this test exercises. Pin that,
   // so adding a cap to the probe turns into an explicit failure here rather than
@@ -590,7 +625,31 @@ test('the holdout safety gate passes only on measured evidence', () => {
     assert.equal(empty.passed, false)
     assert.deepEqual(empty.failures, [])
     assert.deepEqual(empty.evaluatedScenarios, [])
+    assert.deepEqual(empty.missingScenarioIds, expectedIds)
   }
+})
+
+test('a breach still fails the gate on an otherwise complete cohort', () => {
+  // Coverage and breach are independent reasons to fail; this pins that adding the
+  // coverage requirement did not make a real breach depend on it.
+  const cohort = holdoutCohortWithinCaps()
+  const breached = cohort.map(scenario =>
+    scenario.id === 'cult_hypergrowth'
+      ? {
+          ...scenario,
+          holdoutBankruptcy: {
+            ...scenario.holdoutBankruptcy,
+            ratePct: KPI_TARGETS.cult_hypergrowth.bankruptcyMax + 1.85
+          }
+        }
+      : scenario
+  )
+  const safety = buildHoldoutSafetyValidation(breached)
+
+  assert.equal(safety.passed, false)
+  assert.deepEqual(safety.missingScenarioIds, [])
+  assert.equal(safety.failures.length, 1)
+  assert.equal(safety.failures[0].scenarioId, 'cult_hypergrowth')
 })
 
 test('buildDesignRiskReview reports an absent holdout instead of assuming agreement', () => {
