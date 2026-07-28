@@ -95,6 +95,7 @@ import { LOAN_PROFILES } from '../src/utils/loanProfiles.js'
 import { applySharedBandEffect } from '../src/utils/contrabandEffects.js'
 import {
   validatePurchase,
+  getAdjustedCost,
   processPurchaseEffect
 } from '../src/utils/purchaseLogicUtils.js'
 import {
@@ -931,7 +932,7 @@ export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
       state.social,
       state.assets,
       state.liabilities,
-      getActiveAssetModifiers(state.assets || [])
+      getActiveAssetModifiers(state.assets ?? [])
     )
   }))
 
@@ -951,9 +952,18 @@ export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
         ? candidate
         : best
     )
-    const fuelShort = costed.every(
+    // Fuel binds when at least one hop is payable in cash and fails *only* on
+    // the tank — that is the case the refuel retry can rescue. Requiring every
+    // candidate to be fuel-short classified a mixed set as `money`, which both
+    // mis-attributed the counter and skipped the refuel that would have freed
+    // the trip. Asking the production gate for zero litres isolates its money
+    // verdict instead of re-deriving one here.
+    const fuelShort = costed.some(
       candidate =>
-        Math.max(0, state.player.van?.fuel ?? 0) < candidate.travel.fuelLiters
+        Math.max(0, state.player.van?.fuel ?? 0) <
+          candidate.travel.fuelLiters &&
+        checkTravelResources(candidate.travel.totalCashImpact, 0, state.player)
+          .allowed
     )
     return {
       blocked: fuelShort ? 'fuel' : 'money',
@@ -1457,20 +1467,32 @@ const PURCHASE_RESERVE_DAYS = 2
 const PURCHASE_RESERVE_FLOOR = 150
 
 /**
- * Cheapest price in each currency, used only as a fast bail-out before the
- * fallback scan. `getAdjustedCost` can shave a band-specific discount off these,
- * so they are a floor and never a purchase decision on their own.
+ * Cheapest reachable price in each currency, used only as a fast bail-out before
+ * the fallback scan.
+ *
+ * The money side must be priced through `getAdjustedCost`, because it is
+ * band-dependent: `gear_nerd` takes 20% off money-priced GEAR, and three
+ * scenario trait packs carry that trait. Against the raw catalogue price a
+ * €125 item discounted to €100 was declared unaffordable while €110 was on
+ * hand, so the visit returned before the scan that would have bought it — the
+ * "behaviour is identical" claim below only holds once the guard prices items
+ * the way the purchase does. Fame prices carry no trait discount.
  */
-const cheapestCost = currencyMatches =>
+const cheapestAdjustedMoneyCost = band =>
   UPGRADE_CATALOG.reduce(
     (cheapest, item) =>
-      currencyMatches(item) && Number.isFinite(item.cost)
-        ? Math.min(cheapest, item.cost)
+      item.currency !== 'fame' && Number.isFinite(item.cost)
+        ? Math.min(cheapest, getAdjustedCost(item, band))
         : cheapest,
     Infinity
   )
-const CHEAPEST_MONEY_ITEM_COST = cheapestCost(item => item.currency !== 'fame')
-const CHEAPEST_FAME_ITEM_COST = cheapestCost(item => item.currency === 'fame')
+const CHEAPEST_FAME_ITEM_COST = UPGRADE_CATALOG.reduce(
+  (cheapest, item) =>
+    item.currency === 'fame' && Number.isFinite(item.cost)
+      ? Math.min(cheapest, item.cost)
+      : cheapest,
+  Infinity
+)
 
 const purchaseReserve = state =>
   Math.max(
@@ -1542,7 +1564,8 @@ const maybeBuyCatalogUpgrade = (state, rng, counters) => {
   // now visited every day, so skip it outright when nothing could possibly be
   // affordable. Behaviour is identical; only the broke case gets cheaper.
   if (
-    (state.player.money ?? 0) - reserve < CHEAPEST_MONEY_ITEM_COST &&
+    (state.player.money ?? 0) - reserve <
+      cheapestAdjustedMoneyCost(state.band) &&
     (state.player.fame ?? 0) < CHEAPEST_FAME_ITEM_COST
   ) {
     return
@@ -3412,12 +3435,18 @@ export const summarizeScenario = runs => {
         moneyPricedCatalogSize: moneyPriced.length,
         // Published so the report's wear statement is read from the data rather
         // than asserted from a hardcoded figure.
-        minHarmonyObserved: minimum(runs.map(run => run.minHarmonyObserved ?? 0)),
+        // A run without an observation reports null, and `?? 0` would have made
+        // that absence the smallest observation there is — pulling the published
+        // low-water mark, and the prose that reads it, down to a zero nobody
+        // measured. Drop the non-observations instead of defaulting them.
+        minHarmonyObserved: minimum(
+          runs.map(run => run.minHarmonyObserved).filter(Number.isFinite)
+        ),
         minMemberStaminaObserved: minimum(
-          runs.map(run => run.minMemberStaminaObserved ?? 0)
+          runs.map(run => run.minMemberStaminaObserved).filter(Number.isFinite)
         ),
         minMemberMoodObserved: minimum(
-          runs.map(run => run.minMemberMoodObserved ?? 0)
+          runs.map(run => run.minMemberMoodObserved).filter(Number.isFinite)
         )
       }
     })(),
@@ -4667,8 +4696,16 @@ const buildMarkdownReport = payload => {
       '„Kredit/Grant“ zählt Runs, die einen Kredit aufgenommen oder den Notfall-Zuschuss erhalten haben. Das ist *unterstützt*, nicht *ohne diese Option gescheitert* — dafür bräuchte es einen gepaarten Lauf mit entfernter Option.'
     )
     lines.push('')
+    const tightShares = payload.results
+      .map(scenario => scenario.summary?.financialStress?.everBelowTightPct)
+      .filter(Number.isFinite)
+    const zeroShareMax = maximum(
+      payload.results
+        .map(scenario => scenario.summary?.financialStress?.zeroBalancePct)
+        .filter(Number.isFinite)
+    )
     lines.push(
-      `Zwei Spalten tragen kaum Signal und sagen warum: „je < ${fmtEur(thresholds.tightEur)}“ sättigt bei 100%, weil der Startstand selbst ${fmtEur(thresholds.tightEur)} beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die ${fmtEur(thresholds.criticalEur)}-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
+      `Zur Lesart der beiden Schwellen: „je < ${fmtEur(thresholds.tightEur)}“ trennt die Szenarien inzwischen deutlich (${fmtPct(minimum(tightShares))} bis ${fmtPct(maximum(tightShares))}) und ist damit selbst ein Signal — ein früherer Stand dieses Reports erklärte die Spalte als bei 100% gesättigt, was für den damaligen Simulator ohne echte Routenwahl zutraf, für die vorliegenden Zahlen aber nicht mehr. „Saldo 0“ bleibt bei höchstens ${fmtPct(zeroShareMax)}, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
     )
     lines.push('')
   }
@@ -4712,8 +4749,16 @@ const buildMarkdownReport = payload => {
         .join(' · ')} (Beispiel ${pathReference.name}).`
     )
     lines.push('')
+    // Derived from the table directly above rather than asserted, so a change to
+    // map generation cannot leave the sentence contradicting its own data.
+    const performableSharePct = Number(
+      Object.entries(pathReference.summary.tourPaths.nodeTypeSharePct)
+        .filter(([type]) => PERFORMABLE_NODE_TYPES.has(type))
+        .reduce((total, [, share]) => total + share, 0)
+        .toFixed(2)
+    )
     lines.push(
-      `**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — \`useHandleTravel\` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen ${finaleReachers.length} von ${payload.results.length} Szenarien das Finale (${finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') || 'keines'}), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da rund 70 Prozent der Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.`
+      `**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — \`useHandleTravel\` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen ${finaleReachers.length} von ${payload.results.length} Szenarien das Finale (${finaleReachers.map(item => `${item.name} ${item.share}%`).join(', ') || 'keines'}), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da ${fmtPct(performableSharePct)} der besuchten Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.`
     )
     lines.push('')
     lines.push(
