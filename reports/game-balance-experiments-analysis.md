@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 20280 simulation runs in 42635 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 20280 simulation runs in 43022 ms.
 
 ## Kontrollzustand
 
@@ -146,7 +146,7 @@ The two profiles miss the 20-25% target band in OPPOSITE directions (baseline_to
 | mid_game_probe | not_evaluated | not_evaluated | 2.69% | 2.69% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 | late_game_probe | not_evaluated | not_evaluated | 0.38% | 0.38% | 0 pp | 0 | 0% | 0 | 0 | Pass |
 
-Final gate: **PASS**. Bootstrap Struggle bankruptcy must remain <= 60%.
+Kalibrierungs-Gate: **PASS**. Bootstrap Struggle bankruptcy must remain <= 60%. Dies ist nur das erste von zwei blockierenden Gates — das Gesamturteil steht unter „Release-Gesamtstatus“.
 
 ### Harte Sicherheitsgrenzen auf dem Holdout-Strom
 
@@ -155,6 +155,10 @@ Zweites blockierendes Gate: die ausgelieferte Tuning-Variante wird auf einem dis
 Holdout-Sicherheitsgate: **FAIL** — `cult_hypergrowth` bankruptcyRate 13.85% > 12% (n=260)
 
 **Keine Produktionsempfehlung.** Die Messimplementierung ist vollständig; die aktuelle produktionsneutrale Basis besteht die Holdout-Sicherheitsprüfung nicht. Die betroffenen Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.
+
+### Release-Gesamtstatus
+
+Beide Gates müssen bestehen. Kalibrierung: **PASS** · Holdout-Sicherheit: **FAIL** → Gesamt: **FAIL** (`no-production-recommendation-holdout-safety-failed`).
 
 ## Nebenwirkungen
 

@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 1,
-  "generatedAt": "2026-07-28T13:49:27.005Z",
+  "generatedAt": "2026-07-28T14:12:37.153Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "06ae5316025877955afcfb5cf4e17f66cd2e4575",
+    "sourceBaseCommit": "19b5d7cf6beca6e4a14f346312c8503bedcbcc2b",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "9e458a1705932f1ac16ca4564b0d54e98159dd9f3b464dd8f4673648719e7b77",
-    "balanceSourceSha256": "18966e5f165dfed40047ca377a967b1620d13d5ccd5c24dd67b7a8d533949dcf",
-    "experimentScriptSha256": "dc4a40359ebb0e4ee87de8b2378f1d2ad88fa5c3724a00d6e053cddb016829e1",
+    "simulationScriptSha256": "3c7c47f7d80659414e3f95fdb0720e32ca82819f2528e3acc6107c57930a90d1",
+    "balanceSourceSha256": "029b96f93c9110e51c2cf7f571f221411fd51f5d35ecbb41657fd5172c775f50",
+    "experimentScriptSha256": "dca94fafeef4a8a6016410f4c282248090876b258be6936014b65c1d43767e6e",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
@@ -26938,7 +26938,7 @@
     }
   },
   "runtime": {
-    "durationMs": 42635,
+    "durationMs": 43022,
     "candidates": 25,
     "totalRuns": 20280
   }

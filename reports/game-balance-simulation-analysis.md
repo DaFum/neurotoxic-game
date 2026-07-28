@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-28T13:48:28.207Z
+Erstellt am: 2026-07-28T14:11:37.445Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 13
 - Node-Version: v22.22.2
-- Basis-Commit: 06ae5316025877955afcfb5cf4e17f66cd2e4575
+- Basis-Commit: 19b5d7cf6beca6e4a14f346312c8503bedcbcc2b
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: 9e458a1705932f1ac16ca4564b0d54e98159dd9f3b464dd8f4673648719e7b77
+- Simulationsskript SHA-256: 3c7c47f7d80659414e3f95fdb0720e32ca82819f2528e3acc6107c57930a90d1
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92
 - Risikokorridor-Konfiguration SHA-256: 60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c
@@ -358,7 +358,8 @@ Diese Punkte erscheinen im Report, blockieren aber nichts:
 - ⚠️ aggressive_marketing: Insolvenzrate (Kalibrierung 10%, Holdout 11.92%) liegt über dem Zielkorridor 2–8%, aber noch unter der Sicherheitsgrenze.
 - ⚠️ scandal_recovery: Insolvenzrate (Kalibrierung 26.54%, Holdout 25.38%) liegt über dem Zielkorridor 8–20%, aber noch unter der Sicherheitsgrenze.
 - ⚠️ festival_push: Insolvenzrate (Kalibrierung 27.31%, Holdout 25.77%) liegt über dem Zielkorridor 5–15%, aber noch unter der Sicherheitsgrenze.
-- ⚠️ cult_hypergrowth: Holdout 13.85% überschreitet die harte Sicherheitsgrenze 12% — das ist ein Safety-Gate-Befund, kein Designhinweis.
+
+Nicht in dieser Kategorie: 1 Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.
 
 ## Financial-Stress-Profil
 
@@ -386,6 +387,8 @@ Zur Lesart der beiden Schwellen: „je < €500“ trennt die Szenarien inzwisch
 ## Reale Tourpfade
 
 Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nur auf einen oder zwei Knoten der nächsten Ebene, frühe Ebenen tragen leichte Venues, und das Finale liegt auf Ebene 10. Vorher wurde jede Venue frei aus dem gesamten Katalog gezogen — eine Erreichbarkeit, die das Spiel nicht anbietet.
+
+„Finale erreicht“ und „Finale gespielt“ sind absichtlich zwei Spalten: die erste zählt die Ankunft am FINALE-Knoten, die zweite die tatsächlich absolvierte Show. Ein bei niedriger Harmony abgesagtes Finale steht deshalb in der ersten, aber nicht in der zweiten Spalte — eine Ankunft ist kein Beweis, dass gespielt wurde.
 
 | Szenario | Gigs | Ankünfte | Ebene erreicht (max 10) | Finale erreicht | Finale gespielt | Ankünfte ohne Bühne | Ø blockierte Fahrten | davon Geld/Fuel/Zugang | Ø Tanken für Fahrt | Sackgassen |
 |---|---:|---:|---:|---:|---:|---:|---:|---|---:|---:|
@@ -450,7 +453,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 
 „Katalog < 1 Gig“ ist der Anteil der 43 geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.
 
-**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf 41 und die niedrigste Mood auf 44, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Messbar geruht wird bislang nur im Szenario mit hoher Controversy. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
+**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf 41 und die niedrigste Mood auf 44, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Ruhetage treten in 5 von 12 Szenarien überhaupt auf (High Controversy 0.54%, Scandal Recovery 0.05%, Aggressive Marketing 0.04%, Cult Hypergrowth 0.04%, Mid Game Probe (Fame 60–150) 0.04%); nennenswert ist der Anteil nur bei High Controversy, alle übrigen liegen im Promillebereich. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
 
 ## Populationen
 
@@ -552,23 +555,6 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 | Mid Game Probe (Fame 60–150) | — | — | — | ⚪ Nicht bewertet | — |
 | Late Game Probe (Fame 175+) | — | — | — | ⚪ Nicht bewertet | — |
 
-## Rebalance-Regressionsvergleich (Alt vs Neu)
-
-| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
-|---|---:|---:|---:|---:|
-| Baseline Touring | -0.39% | €74 | -72.86 | 0.06 |
-| Bootstrap Struggle | 0% | €7 | 122.23 | 0.01 |
-| Aggressive Marketing | -0.77% | €434 | 32.07 | 0.07 |
-| Scandal Recovery | 1.54% | €-426 | -45.11 | -0.12 |
-| Festival Push | 1.54% | €-152 | -9.41 | -0.06 |
-| Chaos Tour | 0% | €-660 | -15.65 | 0.08 |
-| Cult Hypergrowth | 0% | €172 | -10.36 | 0.01 |
-| No Social (Fame 0-50) | -1.15% | €577 | -5.13 | 0.1 |
-| High Controversy | 3.07% | €-281 | 27.6 | 0.01 |
-| Early Game Probe (Fame 0–50) | 3.46% | €-1.235 | -34.08 | -0.34 |
-| Mid Game Probe (Fame 60–150) | 0.38% | €-9 | 7.11 | 0.07 |
-| Late Game Probe (Fame 175+) | 0.38% | €247 | -38.64 | -0.01 |
-
 ## Kurzfazit
 
 - Höchstes Risiko: **High Controversy** mit 31.92% Insolvenzrate.
@@ -584,7 +570,7 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 - Sicherheitsgates: 6/7 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - ❌ **Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: fehlgeschlagen** (cult_hypergrowth 13.85% > 12%). Keine Produktionsempfehlung.
 - Risikobänder: healthy 2 · high_risk 4 · unsafe 1.
-- ⚠️ 5 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
+- ⚠️ 4 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ✅ Alle KPI-Zielkorridore eingehalten.
 - Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.
