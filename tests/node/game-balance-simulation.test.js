@@ -5,20 +5,26 @@ import { LOAN_PROFILES } from '../../src/utils/loanProfiles.js'
 import { createInitialState } from '../../src/context/initialState.js'
 import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
 
+import { MapGenerator } from '../../src/utils/mapGenerator.ts'
+
 import {
   KPI_TARGETS,
   LIQUIDITY_STRESS_THRESHOLDS,
+  PERFORMABLE_NODE_TYPES,
   REGRESSION_METRICS,
   RISK_EVIDENCE_MINIMUM_SAMPLE,
   RISK_TARGETS,
   SCENARIOS,
+  SIMULATION_CONSTANTS,
   accountFameChange,
   accountFamePurchase,
   applyCatalogPurchase,
   buildDesignRiskReview,
   buildExecutionCoverage,
+  buildTourAdjacency,
   buildFeatureInventory,
   calculateDrawdownPct,
+  chooseNextTourNode,
   createScenarioSeed,
   classifyBankruptcyRisk,
   describeCorridorConfidence,
@@ -982,4 +988,150 @@ test('wear pressure never reaches the thresholds the HUD warns at', () => {
   // Harmony, by contrast, does get low — it is simply not a reason to rest,
   // because resting does not repair it.
   assert.ok(Math.min(...runs.map(run => run.minHarmonyObserved)) < 40)
+})
+
+// ── Real tour paths (Phase 4F) ──────────────────────────────────────────────
+
+test('tour adjacency only ever points forward, one layer at a time', () => {
+  const tourMap = new MapGenerator(
+    createScenarioSeed('adjacency', 0)
+  ).generateMap(SIMULATION_CONSTANTS.daysPerRun)
+  const adjacency = buildTourAdjacency(tourMap)
+
+  assert.ok(adjacency.size > 0)
+  for (const [fromId, targets] of adjacency) {
+    const from = tourMap.nodes[fromId]
+    assert.ok(from, `unknown source node ${fromId}`)
+    for (const target of targets) {
+      assert.equal(
+        target.layer,
+        from.layer + 1,
+        'a connection must advance exactly one layer'
+      )
+    }
+  }
+  // The finale sits one layer past the last generated layer and is terminal.
+  const finale = tourMap.nodeList.find(node => node.type === 'FINALE')
+  assert.ok(finale)
+  assert.equal(finale.layer, SIMULATION_CONSTANTS.daysPerRun)
+  assert.equal(adjacency.get(finale.id), undefined)
+})
+
+test('route choice prefers a stage over a rest stop but takes what is offered', () => {
+  const state = createInitialState()
+  const node = (id, type, diff) => ({
+    id,
+    type,
+    layer: 1,
+    venue: { id: `venue_${id}`, diff, name: `venues:${id}.name` }
+  })
+  const rng = () => 0
+
+  const withStage = chooseNextTourNode(
+    [node('rest', 'REST_STOP', 2), node('gig', 'GIG', 2)],
+    state,
+    rng
+  )
+  assert.equal(
+    withStage.id,
+    'gig',
+    'a playable node wins when one is reachable'
+  )
+
+  // The map does not always offer a stage; the band still has to move.
+  const onlyStops = chooseNextTourNode(
+    [node('rest', 'REST_STOP', 2), node('supply', 'SUPPLY_STOP', 2)],
+    state,
+    rng
+  )
+  assert.ok(onlyStops, 'a non-performable node is still a valid destination')
+  assert.equal(PERFORMABLE_NODE_TYPES.has(onlyStops.type), false)
+
+  assert.equal(chooseNextTourNode([], state, rng), null)
+})
+
+test('daily touring walks the full map depth and finishes on the finale', () => {
+  const runs = Array.from({ length: 12 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('finale-reach', index))
+  )
+
+  for (const run of runs) {
+    assert.equal(
+      run.tourDepth,
+      SIMULATION_CONSTANTS.daysPerRun,
+      'the map depth must match the horizon'
+    )
+    assert.ok(
+      run.deepestLayerReached <= run.tourDepth,
+      'a run cannot pass the finale layer'
+    )
+    // Arrivals and gigs are different counts: rest and supply stops pay nothing.
+    assert.ok(run.gigsPlayed + run.nonPerformingArrivals <= run.daysSurvived)
+  }
+
+  const reached = runs.filter(run => run.tourCompleted).length
+  assert.ok(
+    reached > runs.length / 2,
+    `daily touring should usually finish the tour, saw ${reached}/${runs.length}`
+  )
+})
+
+test('sparse touring cannot reach the finale inside the horizon', () => {
+  // Bootstrap Struggle plays every fourth day, so it gets roughly two hops of a
+  // ten-hop map. This is the structural half of the Gap-1 question: dense
+  // touring is not compounding an advantage, it is the only pacing that
+  // finishes the tour at all.
+  const runs = Array.from({ length: 12 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[1], createScenarioSeed('sparse-reach', index))
+  )
+
+  for (const run of runs) {
+    assert.equal(run.tourCompleted, false)
+    assert.ok(
+      run.deepestLayerReached < run.tourDepth,
+      'a four-day cadence cannot walk ten layers in ten days'
+    )
+  }
+})
+
+test('the same seed still reproduces once the map is part of the run', () => {
+  // The map is seeded from the run seed, so reproducibility must survive it —
+  // otherwise paired experiment deltas would measure map drift.
+  const seed = createScenarioSeed('map-reproducibility', 0)
+  const first = runSingleSimulation(SCENARIOS[0], seed)
+  const second = runSingleSimulation(SCENARIOS[0], seed)
+
+  assert.deepEqual(
+    [
+      first.finalMoney,
+      first.gigsPlayed,
+      first.deepestLayerReached,
+      first.tourCompleted
+    ],
+    [
+      second.finalMoney,
+      second.gigsPlayed,
+      second.deepestLayerReached,
+      second.tourCompleted
+    ]
+  )
+})
+
+test('tour path aggregation reports reach, arrivals and node mix', () => {
+  const runs = Array.from({ length: 8 }, (_, index) =>
+    runSingleSimulation(SCENARIOS[0], createScenarioSeed('path-agg', index))
+  )
+  const paths = summarizeScenario(runs).tourPaths
+
+  assert.equal(paths.tourDepth, SIMULATION_CONSTANTS.daysPerRun)
+  assert.ok(paths.finaleReachedPct >= 0 && paths.finaleReachedPct <= 100)
+  assert.ok(paths.avgDeepestLayerReached <= paths.tourDepth)
+  assert.ok(paths.avgArrivals > 0)
+  const shares = Object.values(paths.nodeTypeSharePct)
+  assert.ok(shares.length > 0)
+  const total = shares.reduce((sum, value) => sum + value, 0)
+  assert.ok(
+    Math.abs(total - 100) < 0.5,
+    `node shares must sum to 100, saw ${total}`
+  )
 })

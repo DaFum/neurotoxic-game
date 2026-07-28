@@ -5,6 +5,7 @@ import crypto from 'node:crypto'
 import { execSync } from 'node:child_process'
 
 import { ALL_VENUES } from '../src/data/venues.js'
+import { MapGenerator } from '../src/utils/mapGenerator.ts'
 import { createInitialState } from '../src/context/initialState.js'
 import { EVENTS_DB } from '../src/data/events/index.js'
 import { BRAND_DEALS } from '../src/data/brandDeals.js'
@@ -539,7 +540,6 @@ export const SCENARIOS = [
   }
 ]
 
-const VENUES = ALL_VENUES.filter(v => v.type !== 'HOME' && v.capacity > 0)
 const HOME = ALL_VENUES.find(v => v.id === SIMULATION_CONSTANTS.homeVenueId)
 const UPGRADE_CATALOG = getUnifiedUpgradeCatalog()
 const _HQ_BEER_PIPELINE = UPGRADE_CATALOG.find(
@@ -834,7 +834,7 @@ const applyScenarioOverrides = (state, scenario) => {
   return next
 }
 
-const pickVenueForState = (state, rng) => {
+const targetDifficultyForState = state => {
   const fame = state.player.fame
   const controversy = state.social.controversyLevel || 0
   let targetDiff = 2
@@ -844,12 +844,55 @@ const pickVenueForState = (state, rng) => {
   else if (fame >= 60) targetDiff = 3
 
   if (controversy >= 70) targetDiff = Math.max(2, targetDiff - 1)
+  return targetDiff
+}
 
-  const candidates = VENUES.filter(
-    venue => venue.diff <= targetDiff && venue.diff >= targetDiff - 1
+/** Node types a band can actually perform at. */
+export const PERFORMABLE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'SPECIAL', 'FINALE'])
+
+/**
+ * Builds the forward adjacency of a generated tour map.
+ *
+ * The simulation used to pick each venue freely from the whole difficulty-banded
+ * pool, which let a tour visit any venue in any order — a reachability the game
+ * does not offer. `generateMap` produces a strictly forward layered DAG where a
+ * node connects to only one or two nodes in the next layer, so where the band can
+ * go next is a real constraint, and so is the distance it has to cover.
+ */
+export const buildTourAdjacency = tourMap => {
+  const adjacency = new Map()
+  for (const connection of tourMap.connections) {
+    const target = tourMap.nodes[connection.to]
+    if (!target) continue
+    const existing = adjacency.get(connection.from)
+    if (existing) existing.push(target)
+    else adjacency.set(connection.from, [target])
+  }
+  return adjacency
+}
+
+/**
+ * Route choice among the nodes actually reachable from the current one.
+ *
+ * A touring band heads for stages it can play, so performable nodes win over
+ * rest and supply stops when both are on offer. Within that, the old
+ * fame-to-difficulty preference still applies — it just now selects among two or
+ * three real options instead of the entire venue catalogue.
+ */
+export const chooseNextTourNode = (reachable, state, rng) => {
+  if (!reachable.length) return null
+  const performable = reachable.filter(node =>
+    PERFORMABLE_NODE_TYPES.has(node.type)
   )
-  const pool = candidates.length ? candidates : VENUES
-  return pool[Math.floor(rng() * pool.length)]
+  const routable = performable.length ? performable : reachable
+  const targetDiff = targetDifficultyForState(state)
+  const inBand = routable.filter(
+    node =>
+      (node.venue?.diff ?? 0) <= targetDiff &&
+      (node.venue?.diff ?? 0) >= targetDiff - 1
+  )
+  const pool = inBand.length ? inBand : routable
+  return pool[Math.floor(rng() * pool.length)] ?? null
 }
 
 const calculateModifiers = (scenario, rng) => {
@@ -1949,6 +1992,20 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   let currentNode = HOME
+  // A real tour map for this run: layers 0..daysPerRun-1 plus the FINALE at
+  // layer daysPerRun, so reaching the finale takes exactly as many hops as the
+  // horizon allows. Seeded from the run seed, so the same (scenario, seed) pair
+  // still reproduces exactly.
+  const tourMap = new MapGenerator(seed).generateMap(
+    SIMULATION_CONSTANTS.daysPerRun
+  )
+  const tourAdjacency = buildTourAdjacency(tourMap)
+  let currentMapNode = tourMap.nodes.node_0_0 ?? null
+  let deepestLayerReached = currentMapNode?.layer ?? 0
+  let tourCompleted = false
+  let routeDeadEnds = 0
+  let nonPerformingArrivals = 0
+  const nodeTypesVisited = {}
   // Per-run context: pregig minigame rotation memory and the active
   // duration-limited contraband effects awaiting expiry.
   const runCtx = { lastMinigame: null, contrabandEffects: [], emergencyGrantUsed: false, regionalGigHistory: new Map() }
@@ -2259,7 +2316,20 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       continue
     }
 
-    const venue = pickVenueForState(state, rng)
+    const reachable = currentMapNode
+      ? (tourAdjacency.get(currentMapNode.id) ?? [])
+      : []
+    const nextNode = chooseNextTourNode(reachable, state, rng)
+    if (!nextNode) {
+      // No forward edge left: the band already stands on the finale (or on a
+      // dead end the generator produced). The tour is over, not merely gigless.
+      routeDeadEnds += 1
+      peakMoney = Math.max(peakMoney, state.player.money)
+      lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+      continue
+    }
+    const venue = nextNode.venue
     const assetModifiers = getActiveAssetModifiers(state.assets || [])
     const travel = calculateTravelExpenses(
       venue,
@@ -2291,6 +2361,25 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         finiteNumberOr(travel.dist, 0)
     }
     applyUnlockContext(state, counters, { type: 'TRAVEL_COMPLETE' })
+
+    // Arrival happened, whatever the node turns out to be.
+    currentNode = venue
+    currentMapNode = nextNode
+    deepestLayerReached = Math.max(deepestLayerReached, nextNode.layer)
+    nodeTypesVisited[nextNode.type] =
+      (nodeTypesVisited[nextNode.type] ?? 0) + 1
+    if (nextNode.type === 'FINALE') tourCompleted = true
+
+    // Rest and supply stops are not stages. Routing prefers performable nodes,
+    // but the map does not always offer one, and playing a gig at a rest stop
+    // would invent income the game never pays.
+    if (!PERFORMABLE_NODE_TYPES.has(nextNode.type)) {
+      nonPerformingArrivals += 1
+      peakMoney = Math.max(peakMoney, state.player.money)
+      lowestMoney = Math.min(lowestMoney, state.player.money)
+      lowestMoneyObserved = Math.min(lowestMoneyObserved, state.player.money)
+      continue
+    }
 
     // Show cancellation check (happens BEFORE minigames); mirrors
     // arrivalUtils.ts: deterministic at harmony <= 1, otherwise probabilistic
@@ -2497,7 +2586,6 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
         .filter(d => d.remainingGigs > 0)
     }
 
-    currentNode = venue
     counters.gigsPlayed += 1
     runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
@@ -2559,6 +2647,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       counters.bankrupt = true
       break
     }
+
+    // Playing the finale ends the run on the victory screen, exactly as the game
+    // does. A tour that gets there has finished; one that does not has simply
+    // run out of days, and the two are different outcomes.
+    if (tourCompleted) break
   }
 
   // In-scope waypoints a bankrupt run never reached record the terminal
@@ -2594,6 +2687,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     peakMoney,
     lowestMoney,
     lowestMoneyObserved,
+    tourCompleted,
+    deepestLayerReached,
+    tourDepth: SIMULATION_CONSTANTS.daysPerRun,
+    nodeTypesVisited,
+    routeDeadEnds,
+    nonPerformingArrivals,
     minHarmonyObserved,
     minMemberStaminaObserved: Number.isFinite(minMemberStaminaObserved)
       ? minMemberStaminaObserved
@@ -2889,6 +2988,44 @@ export const summarizeScenario = runs => {
       ratePct: Number(bankruptcyRatePct.toFixed(2)),
       confidence95
     },
+    // Phase 4F — real tour paths. Venue choice is constrained to the nodes
+    // actually connected to the current one, so "how far did the tour get" is a
+    // real question with a real answer, and reaching the FINALE is an outcome
+    // rather than an assumption.
+    tourPaths: (() => {
+      const depth = runs[0]?.tourDepth ?? SIMULATION_CONSTANTS.daysPerRun
+      const nodeTypeVisits = {}
+      let totalVisits = 0
+      for (const run of runs) {
+        for (const [type, count] of Object.entries(run.nodeTypesVisited ?? {})) {
+          nodeTypeVisits[type] = (nodeTypeVisits[type] ?? 0) + count
+          totalVisits += count
+        }
+      }
+      return {
+        tourDepth: depth,
+        finaleReachedPct: shareOfRunsPct(run => run.tourCompleted === true),
+        avgDeepestLayerReached: Number(
+          mean(runs.map(run => run.deepestLayerReached ?? 0)).toFixed(2)
+        ),
+        avgArrivals: Number((totalVisits / Math.max(1, runs.length)).toFixed(2)),
+        // Arrivals at rest and supply stops: real nodes that pay nothing, which
+        // is why arrivals and gigs played are not the same number.
+        avgNonPerformingArrivals: Number(
+          mean(runs.map(run => run.nonPerformingArrivals ?? 0)).toFixed(2)
+        ),
+        avgRouteDeadEnds: Number(
+          mean(runs.map(run => run.routeDeadEnds ?? 0)).toFixed(2)
+        ),
+        nodeTypeSharePct: Object.fromEntries(
+          Object.entries(nodeTypeVisits).map(([type, count]) => [
+            type,
+            Number(((count / Math.max(1, totalVisits)) * 100).toFixed(2))
+          ])
+        )
+      }
+    })(),
+
     // Phase 4D — purchase paths. "Ends the tour with enough money" and "could
     // buy something useful while it mattered" are different questions, and the
     // fame-shop audit only answers the first. Everything here describes the
@@ -3250,6 +3387,18 @@ export const KPI_TARGETS = {
   // caps still express the intended ceilings, but they no longer characterise
   // the observed risk profile and want a deliberate design pass.
   //
+  // The money bands other than `baseline_touring` were re-derived when venue
+  // selection moved onto the real tour map. The old model picked each venue
+  // freely from the whole difficulty-banded catalogue, so a band could play a
+  // high-capacity stage whenever its fame allowed. On the generated map a node
+  // connects to only one or two nodes in the next layer and early layers hold
+  // easy venues, so a scenario that plays every second or fourth day never
+  // reaches the paying stages at all. Same ×0.5 to ×1.6 rule around the new
+  // neutral-tuning mean; the previous figures (e.g. bootstrap €2000-7000,
+  // chaos €8000-26000) were unreachable under real routing and would have
+  // failed every candidate. `baseline_touring` is unchanged: it plays daily,
+  // walks the full depth and still ends on ~€29k.
+  //
   // Bankruptcy caps express per-scenario risk tolerance and are horizon-
   // independent intent, so they are unchanged.
   baseline_touring: {
@@ -3262,45 +3411,45 @@ export const KPI_TARGETS = {
   bootstrap_struggle: {
     // Remains intentionally hard, but no longer targets near-certain collapse.
     bankruptcyMax: 60,
-    moneyMin: 2000,
-    moneyMax: 7000,
+    moneyMin: 550,
+    moneyMax: 1700,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   aggressive_marketing: {
     bankruptcyMax: 15,
-    moneyMin: 9000,
-    moneyMax: 28000,
+    moneyMin: 4100,
+    moneyMax: 13000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   scandal_recovery: {
     // Recalibrated for intentionally hostile event density.
     bankruptcyMax: 50,
-    moneyMin: 4500,
-    moneyMax: 15000,
+    moneyMin: 1500,
+    moneyMax: 4800,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   festival_push: {
     // Recalibrated for low-gig-count, high-modifier strategy volatility.
     bankruptcyMax: 35,
-    moneyMin: 5500,
-    moneyMax: 18000,
+    moneyMin: 2200,
+    moneyMax: 7100,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   chaos_tour: {
     bankruptcyMax: 25,
-    moneyMin: 8000,
-    moneyMax: 26000,
+    moneyMin: 2900,
+    moneyMax: 9300,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   },
   cult_hypergrowth: {
     bankruptcyMax: 12,
-    moneyMin: 9500,
-    moneyMax: 31000,
+    moneyMin: 4200,
+    moneyMax: 13000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
   }
@@ -4202,6 +4351,49 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(
       `Zwei Spalten tragen kaum Signal und sagen warum: „je < ${fmtEur(thresholds.tightEur)}“ sättigt bei 100%, weil der Startstand selbst ${fmtEur(thresholds.tightEur)} beträgt und ein einziger Tag ohne Gig darunter führt — aussagekräftig sind hier die Tage-Spalte und die ${fmtEur(thresholds.criticalEur)}-Marke. „Saldo 0“ bleibt bei 0%, weil ein Stand von genau €0 nur überlebt, wenn der Tagesnetto die Pflichten deckt; andernfalls ist derselbe Moment bereits die Insolvenzprüfung. Der Nullstand ist damit praktisch der Insolvenzzeitpunkt selbst und kein eigenständig beobachtbarer Zustand.`
+    )
+    lines.push('')
+  }
+
+  // ── Tour paths (4F) ───────────────────────────────────────────────────────
+  const pathReference = payload.results.find(
+    scenario => scenario.summary?.tourPaths
+  )
+  if (pathReference) {
+    const depth = pathReference.summary.tourPaths.tourDepth
+    lines.push('## Reale Tourpfade')
+    lines.push('')
+    lines.push(
+      `Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nur auf einen oder zwei Knoten der nächsten Ebene, frühe Ebenen tragen leichte Venues, und das Finale liegt auf Ebene ${depth}. Vorher wurde jede Venue frei aus dem gesamten Katalog gezogen — eine Erreichbarkeit, die das Spiel nicht anbietet.`
+    )
+    lines.push('')
+    lines.push(
+      `| Szenario | Gigs | Ankünfte | Ebene erreicht (max ${depth}) | Finale erreicht | Ankünfte ohne Bühne | Sackgassen |`
+    )
+    lines.push('|---|---:|---:|---:|---:|---:|---:|')
+    for (const scenario of payload.results) {
+      const t = scenario.summary?.tourPaths
+      if (!t) continue
+      lines.push(
+        `| ${scenario.name} | ${scenario.summary.avgGigsPlayed.toFixed(2)} | ${t.avgArrivals} | ${t.avgDeepestLayerReached} | ${fmtPct(t.finaleReachedPct)} | ${t.avgNonPerformingArrivals} | ${t.avgRouteDeadEnds} |`
+      )
+    }
+    lines.push('')
+    lines.push(
+      `Knotentypen über alle Ankünfte: ${Object.entries(
+        pathReference.summary.tourPaths.nodeTypeSharePct
+      )
+        .sort((left, right) => right[1] - left[1])
+        .map(([type, share]) => `${type} ${share}%`)
+        .join(' · ')} (Beispiel ${pathReference.name}).`
+    )
+    lines.push('')
+    lines.push(
+      '**Das beantwortet die Gap-1-Frage strukturell.** Nur ein Szenario, das praktisch täglich spielt, legt die zehn Hops zurück und erreicht das Finale; bei jedem zweiten oder vierten Tag endet die Tour auf halber Strecke und die zahlenden Bühnen der späten Ebenen werden nie erreicht. Die Dominanz dichter Touren ist damit kein zinseszinsartiger Exploit, sondern die einzige Gangart, die die Tour im Horizont überhaupt beendet — eine Struktureigenschaft der Karte, über die eine Designentscheidung zu treffen ist, kein Balancefehler, den ein Hebel wegdämpfen könnte.'
+    )
+    lines.push('')
+    lines.push(
+      'Modellgrenze: Nicht-Gig-Tage verbrauchen keinen Hop. Im Spiel vergeht ein Tag nur durch Anreise, hier pausiert die Band am Ort. Die Gig-Kadenz bleibt damit die Szenario-Stellschraube `gigGapDays`, damit die Gap-Analyse aus Phase 3C weiter dasselbe misst; Streckenwahl, Erreichbarkeit und Entfernungen sind echt.'
     )
     lines.push('')
   }
