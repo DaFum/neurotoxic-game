@@ -18,6 +18,7 @@ import {
   REGRESSION_METRICS,
   RISK_EVIDENCE_MINIMUM_SAMPLE,
   RISK_TARGETS,
+  SCENARIO_TENSION_TARGETS,
   SCENARIOS,
   SHIPPED_GIG_CADENCE_POLICY,
   SIMULATION_CONSTANTS,
@@ -26,6 +27,9 @@ import {
   applyCatalogPurchase,
   buildDesignRiskReview,
   buildHoldoutSafetyValidation,
+  buildScenarioTensionReview,
+  createLossAttributionTracker,
+  recordAttributedLoss,
   buildExecutionCoverage,
   buildTourAdjacency,
   buildFeatureInventory,
@@ -241,6 +245,59 @@ test('drawdown is consistently expressed as percent', () => {
   assert.equal(calculateDrawdownPct(100, 0), 100)
   assert.equal(calculateDrawdownPct(100, 100), 0)
   assert.equal(calculateDrawdownPct(0, -10), 0)
+})
+
+test('scenario tension contracts are non-blocking and fail closed on missing evidence', () => {
+  assert.deepEqual(Object.keys(SCENARIO_TENSION_TARGETS).sort(), [
+    'bootstrap_struggle',
+    'chaos_tour',
+    'festival_push',
+    'scandal_recovery'
+  ])
+  for (const target of Object.values(SCENARIO_TENSION_TARGETS)) {
+    assert.equal(target.blocking, false)
+    assert.deepEqual(Object.keys(target.metrics).sort(), [
+      'bankruptcyRatePct',
+      'everBelowCriticalPct',
+      'everBelowTightPct',
+      'finaleCompletedPct',
+      'p90MaxDrawdownPct'
+    ])
+  }
+
+  const review = buildScenarioTensionReview({
+    results: [{ id: 'bootstrap_struggle', summary: {} }],
+    minimumSampleSize: 2_000
+  })
+  assert.equal(review.blocking, false)
+  assert.equal(review.scenarios[0].status, 'insufficient_evidence')
+  assert.equal(review.scenarios[0].metrics.bankruptcyRatePct.observed, null)
+})
+
+test('loss attribution records only post-first-gig negative deltas', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 1_000,
+    moneyAfter: 900,
+    afterFirstGig: false
+  })
+  recordAttributedLoss(tracker, {
+    source: 'negative_events',
+    moneyBefore: 900,
+    moneyAfter: 950,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 950,
+    moneyAfter: 800,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.totals.travel, 150)
+  assert.equal(tracker.totals.negative_events, 0)
+  assert.equal(tracker.firstMaterialDrawdownSource, 'travel')
+  assert.equal(tracker.lastMaterialLossSource, 'travel')
 })
 
 test('execution coverage aggregates without leaking or duplicating IDs', () => {

@@ -126,6 +126,22 @@ describe('handleNodeArrival', () => {
   })
 
   const gigTypes = ['GIG', 'FESTIVAL', 'FINALE']
+  test('first reachable gig starts without a prior-performance prerequisite', () => {
+    const mocks = getMocks()
+    const venue = { id: 'first_reachable', name: 'First Reachable Venue' }
+    const result = handleNodeArrival({
+      node: { type: 'GIG', venue },
+      band: { harmony: 80 },
+      player: { fame: 0, stats: { gigsPlayed: 0 } },
+      rng: () => 1,
+      ...mocks
+    })
+
+    assert.equal(result.gigStarted, true)
+    assert.equal(mocks.startGig.mock.calls.length, 1)
+    assert.equal(mocks.startGig.mock.calls[0].arguments[0], venue)
+  })
+
   gigTypes.forEach(type => {
     test(`${type} - starts gig if harmony > 0`, () => {
       const mocks = getMocks()
