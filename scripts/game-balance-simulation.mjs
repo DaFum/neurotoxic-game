@@ -4519,9 +4519,7 @@ export const LOSS_ATTRIBUTION_SOURCES = Object.freeze([
   'maintenance_repairs',
   'negative_events',
   'clinic',
-  'modifiers',
   'assets_upgrades',
-  'contraband',
   'other',
   'gig_settlement'
 ])
@@ -4598,7 +4596,7 @@ export const buildScenarioTensionReview = ({
               key,
               {
                 observed: Number.isFinite(value) ? value : null,
-                targetRangePct: range,
+                targetRange: range,
                 status
               }
             ]

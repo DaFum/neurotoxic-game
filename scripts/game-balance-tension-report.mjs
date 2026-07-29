@@ -53,6 +53,35 @@ const phaseDecision = (evidence, completeStatus, rationale) =>
     ? { status: completeStatus, productionChange: false, rationale }
     : insufficientDecision(evidence?.reason ?? rationale)
 
+export const createEvidenceResult = (complete, reason, fields = {}) => ({
+  complete,
+  ...fields,
+  ...(complete ? {} : { reason })
+})
+
+export const hasCompleteTensionEvidence = (
+  scenarios,
+  calibrationReview,
+  holdoutReview
+) =>
+  scenarios.length > 0 &&
+  calibrationReview.scenarios.length === scenarios.length &&
+  holdoutReview.scenarios.length === scenarios.length &&
+  calibrationReview.scenarios.every(calibration => {
+    const holdout = holdoutReview.scenarios.find(
+      scenario => scenario.id === calibration.id
+    )
+    return (
+      holdout &&
+      Object.values(calibration.metrics).every(
+        metric => metric.status !== 'insufficient_evidence'
+      ) &&
+      Object.values(holdout.metrics).every(
+        metric => metric.status !== 'insufficient_evidence'
+      )
+    )
+  })
+
 export const buildPhaseDecisions = evidence => ({
   phase6B: phaseDecision(
     evidence.lossAttributionEvidence,
@@ -133,15 +162,11 @@ export const buildTensionReport = () => {
   const holdoutById = new Map(
     holdoutReview.scenarios.map(scenario => [scenario.id, scenario])
   )
-  const tensionComplete =
-    calibrationReview.scenarios.length === scenarios.length &&
-    holdoutReview.scenarios.length === scenarios.length &&
-    [...calibrationById].every(([id, calibration]) => {
-      const holdout = holdoutById.get(id)
-      return holdout &&
-        Object.values(calibration.metrics).every(metric => metric.status !== 'insufficient_evidence') &&
-        Object.values(holdout.metrics).every(metric => metric.status !== 'insufficient_evidence')
-    })
+  const tensionComplete = hasCompleteTensionEvidence(
+    scenarios,
+    calibrationReview,
+    holdoutReview
+  )
   const tensionUnstable = tensionComplete && [...calibrationById].some(([id, calibration]) => {
     const holdout = holdoutById.get(id)
     return Object.entries(calibration.metrics).some(
@@ -179,24 +204,24 @@ export const buildTensionReport = () => {
       complete: tensionComplete,
       status: tensionUnstable ? 'unstable' : tensionComplete ? 'stable' : 'insufficient_evidence'
     },
-    lossAttributionEvidence: {
-      complete: completeSamples(chaosSummaries) && chaosSummaries.every(
+    lossAttributionEvidence: createEvidenceResult(
+      completeSamples(chaosSummaries) && chaosSummaries.every(
         summary => summary?.actualLossAttribution && summary?.grossSpendAttribution
       ),
-      reason: 'Chaos actual-loss attribution is incomplete.'
-    },
-    controversyEvidence: {
-      complete: controversyComplete,
-      reason: 'All 0/50/65/80 controversy cohorts with 2,000 runs are required.'
-    },
-    bootstrapFestivalEvidence: {
-      complete: completeSamples(bootstrapFestivalSummaries),
-      reason: 'Bootstrap and Festival cohorts are incomplete.'
-    },
-    progressionEvidence: {
-      complete: completeSamples(bootstrapFestivalSummaries) && progressionFieldsPresent,
-      reason: 'Progression requires purchase timing, deferrals, catalogue share, residual money, and HQ/van/module payback.'
-    }
+      'Chaos actual-loss attribution is incomplete.'
+    ),
+    controversyEvidence: createEvidenceResult(
+      controversyComplete,
+      'All 0/50/65/80 controversy cohorts with 2,000 runs are required.'
+    ),
+    bootstrapFestivalEvidence: createEvidenceResult(
+      completeSamples(bootstrapFestivalSummaries),
+      'Bootstrap and Festival cohorts are incomplete.'
+    ),
+    progressionEvidence: createEvidenceResult(
+      completeSamples(bootstrapFestivalSummaries) && progressionFieldsPresent,
+      'Progression requires purchase timing, deferrals, catalogue share, residual money, and HQ/van/module payback.'
+    )
   }
   return {
     generatedAt: new Date().toISOString(),

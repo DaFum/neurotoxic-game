@@ -10,6 +10,8 @@ import {
   TENSION_RUNS_PER_SCENARIO,
   buildReportMetadata,
   buildPhaseDecisions,
+  createEvidenceResult,
+  hasCompleteTensionEvidence,
   writeTensionArtifacts
 } from '../../scripts/game-balance-tension-report.mjs'
 
@@ -102,4 +104,18 @@ test('phase decisions use independent evidence gates', () => {
   assert.equal(decisions.phase6C.status, 'insufficient_evidence')
   assert.equal(decisions.phase6D.status, 'boundary_uncertain')
   assert.equal(decisions.phase7.status, 'insufficient_evidence')
+})
+
+test('empty scenario sets are insufficient and completed evidence has no failure reason', () => {
+  assert.equal(
+    hasCompleteTensionEvidence([], { scenarios: [] }, { scenarios: [] }),
+    false
+  )
+  assert.deepEqual(createEvidenceResult(true, 'failure text'), {
+    complete: true
+  })
+  assert.deepEqual(createEvidenceResult(false, 'failure text'), {
+    complete: false,
+    reason: 'failure text'
+  })
 })

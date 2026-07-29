@@ -282,6 +282,16 @@ test('scenario tension contracts are non-blocking and fail closed on missing evi
   assert.equal(review.blocking, false)
   assert.equal(review.scenarios[0].status, 'insufficient_evidence')
   assert.equal(review.scenarios[0].metrics.bankruptcyRatePct.observed, null)
+  assert.deepEqual(
+    review.scenarios[0].metrics.bankruptcyRatePct.targetRange,
+    [5, 15]
+  )
+  assert.equal(
+    'targetRangePct' in review.scenarios[0].metrics.bankruptcyRatePct,
+    false
+  )
+  assert.equal(LOSS_ATTRIBUTION_SOURCES.includes('modifiers'), false)
+  assert.equal(LOSS_ATTRIBUTION_SOURCES.includes('contraband'), false)
 })
 
 test('scenario tension review separates bankruptcy before and after first income', () => {

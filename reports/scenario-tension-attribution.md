@@ -1,7 +1,7 @@
 # Phase 6A-7 Scenario Tension Diagnostics
 
-Generated: 2026-07-29T17:18:57.212Z
-Source: 38d19e979eb6f3fcc7a62003be06a7ab45bd6bf4; dirty: false
+Generated: 2026-07-29T17:35:00.073Z
+Source: 4a0b40ebbb3d58f14990f463168ca94190e670da; dirty: false
 Cohorts: 2000 runs each; calibration #scenario-tension-attribution-v1; holdout #scenario-tension-attribution-v1#holdout; candidate selection: false.
 
 ## Tension matrix

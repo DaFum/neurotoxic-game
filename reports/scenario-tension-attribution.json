@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-29T17:18:57.212Z",
+  "generatedAt": "2026-07-29T17:35:00.073Z",
   "metadata": {
-    "sourceBaseCommit": "38d19e979eb6f3fcc7a62003be06a7ab45bd6bf4",
+    "sourceBaseCommit": "4a0b40ebbb3d58f14990f463168ca94190e670da",
     "workingTreeDirty": false
   },
   "contract": {
@@ -677,25 +677,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 3696342,
               "median": 885,
               "p90": 4374,
               "firstMaterialDrawdownSharePct": 10.45,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -1575,25 +1561,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 5292044,
               "median": 1110,
               "p90": 8170,
               "firstMaterialDrawdownSharePct": 11.65,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -2474,25 +2446,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 7446950,
               "median": 1530,
               "p90": 12920,
               "firstMaterialDrawdownSharePct": 16.75,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -3370,25 +3328,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 5635288,
               "median": 1193,
               "p90": 9311,
               "firstMaterialDrawdownSharePct": 12.75,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -4270,25 +4214,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 3683449,
               "median": 855,
               "p90": 4452,
               "firstMaterialDrawdownSharePct": 9.35,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -5165,25 +5095,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 4757530,
               "median": 1085,
               "p90": 7754,
               "firstMaterialDrawdownSharePct": 12,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -6061,25 +5977,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 7829592,
               "median": 1573,
               "p90": 13023,
               "firstMaterialDrawdownSharePct": 14.9,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -6958,25 +6860,11 @@
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
-            "modifiers": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
-              "bankruptcyPredecessorSharePct": 0
-            },
             "assets_upgrades": {
               "total": 6088152,
               "median": 1298,
               "p90": 9836,
               "firstMaterialDrawdownSharePct": 12.4,
-              "bankruptcyPredecessorSharePct": 0
-            },
-            "contraband": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "other": {
@@ -7860,25 +7748,11 @@
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
-          "modifiers": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
-          },
           "assets_upgrades": {
             "total": 4810829,
             "median": 1050,
             "p90": 7575,
             "firstMaterialDrawdownSharePct": 12.05,
-            "bankruptcyPredecessorSharePct": 0
-          },
-          "contraband": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "other": {
@@ -8759,25 +8633,11 @@
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
-          "modifiers": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
-          },
           "assets_upgrades": {
             "total": 3723431,
             "median": 900,
             "p90": 4375,
             "firstMaterialDrawdownSharePct": 8.35,
-            "bankruptcyPredecessorSharePct": 0
-          },
-          "contraband": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "other": {
@@ -9656,25 +9516,11 @@
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
-          "modifiers": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
-          },
           "assets_upgrades": {
             "total": 3045693,
             "median": 720,
             "p90": 3231,
             "firstMaterialDrawdownSharePct": 4.45,
-            "bankruptcyPredecessorSharePct": 0
-          },
-          "contraband": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "other": {
@@ -10557,25 +10403,11 @@
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
-          "modifiers": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
-          },
           "assets_upgrades": {
             "total": 2045749,
             "median": 545,
             "p90": 2090,
             "firstMaterialDrawdownSharePct": 1.6,
-            "bankruptcyPredecessorSharePct": 0
-          },
-          "contraband": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "other": {
@@ -10806,7 +10638,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 7.6,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -10814,7 +10646,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.7,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -10822,7 +10654,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 6.9,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -10830,7 +10662,7 @@
             },
             "everBelowTightPct": {
               "observed": 17.45,
-              "targetRangePct": [
+              "targetRange": [
                 12,
                 25
               ],
@@ -10838,7 +10670,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 8.1,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -10846,7 +10678,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.34,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -10854,7 +10686,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.15,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -10862,7 +10694,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 24.47,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 80
               ],
@@ -10870,7 +10702,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 70.87,
-              "targetRangePct": [
+              "targetRange": [
                 60,
                 80
               ],
@@ -10878,7 +10710,7 @@
             },
             "finaleReachedPct": {
               "observed": 92,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -10886,7 +10718,7 @@
             },
             "finaleCompletedPct": {
               "observed": 91.6,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -10894,7 +10726,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 19700,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -10902,7 +10734,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 8.8,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -10918,7 +10750,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 5.45,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -10926,7 +10758,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.4,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -10934,7 +10766,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 5.05,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -10942,7 +10774,7 @@
             },
             "everBelowTightPct": {
               "observed": 13.45,
-              "targetRangePct": [
+              "targetRange": [
                 10,
                 25
               ],
@@ -10950,7 +10782,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 6,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -10958,7 +10790,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.24,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -10966,7 +10798,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.11,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -10974,7 +10806,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 21.83,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 80
               ],
@@ -10982,7 +10814,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 62.74,
-              "targetRangePct": [
+              "targetRange": [
                 55,
                 80
               ],
@@ -10990,7 +10822,7 @@
             },
             "finaleReachedPct": {
               "observed": 94.2,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -10998,7 +10830,7 @@
             },
             "finaleCompletedPct": {
               "observed": 94.05,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -11006,7 +10838,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 20228,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11014,7 +10846,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 11.7,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11030,7 +10862,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 3.95,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 12
               ],
@@ -11038,7 +10870,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.4,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 12
               ],
@@ -11046,7 +10878,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 3.55,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 12
               ],
@@ -11054,7 +10886,7 @@
             },
             "everBelowTightPct": {
               "observed": 11.35,
-              "targetRangePct": [
+              "targetRange": [
                 7,
                 20
               ],
@@ -11062,7 +10894,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 4.25,
-              "targetRangePct": [
+              "targetRange": [
                 2,
                 10
               ],
@@ -11070,7 +10902,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.19,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11078,7 +10910,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.08,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11086,7 +10918,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 21.1,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 75
               ],
@@ -11094,7 +10926,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 60.38,
-              "targetRangePct": [
+              "targetRange": [
                 50,
                 75
               ],
@@ -11102,7 +10934,7 @@
             },
             "finaleReachedPct": {
               "observed": 95.9,
-              "targetRangePct": [
+              "targetRange": [
                 75,
                 100
               ],
@@ -11110,7 +10942,7 @@
             },
             "finaleCompletedPct": {
               "observed": 95.9,
-              "targetRangePct": [
+              "targetRange": [
                 75,
                 100
               ],
@@ -11118,7 +10950,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 21301,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11126,7 +10958,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 13.85,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11142,7 +10974,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 3.45,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 15
               ],
@@ -11150,7 +10982,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.7,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -11158,7 +10990,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 2.75,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 15
               ],
@@ -11166,7 +10998,7 @@
             },
             "everBelowTightPct": {
               "observed": 11.45,
-              "targetRangePct": [
+              "targetRange": [
                 8,
                 22
               ],
@@ -11174,7 +11006,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 3.7,
-              "targetRangePct": [
+              "targetRange": [
                 2,
                 12
               ],
@@ -11182,7 +11014,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.19,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11190,7 +11022,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.07,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11198,7 +11030,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 18.2,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 70
               ],
@@ -11206,7 +11038,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 52.79,
-              "targetRangePct": [
+              "targetRange": [
                 45,
                 70
               ],
@@ -11214,7 +11046,7 @@
             },
             "finaleReachedPct": {
               "observed": 95.8,
-              "targetRangePct": [
+              "targetRange": [
                 65,
                 100
               ],
@@ -11222,7 +11054,7 @@
             },
             "finaleCompletedPct": {
               "observed": 95,
-              "targetRangePct": [
+              "targetRange": [
                 65,
                 100
               ],
@@ -11230,7 +11062,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 21046,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11238,7 +11070,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 11.9,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11261,7 +11093,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 8.8,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -11269,7 +11101,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.5,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -11277,7 +11109,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 8.3,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -11285,7 +11117,7 @@
             },
             "everBelowTightPct": {
               "observed": 19.15,
-              "targetRangePct": [
+              "targetRange": [
                 12,
                 25
               ],
@@ -11293,7 +11125,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 9.35,
-              "targetRangePct": [
+              "targetRange": [
                 5,
                 15
               ],
@@ -11301,7 +11133,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.38,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11309,7 +11141,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.17,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11317,7 +11149,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 24,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 80
               ],
@@ -11325,7 +11157,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 74.59,
-              "targetRangePct": [
+              "targetRange": [
                 60,
                 80
               ],
@@ -11333,7 +11165,7 @@
             },
             "finaleReachedPct": {
               "observed": 90.7,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -11341,7 +11173,7 @@
             },
             "finaleCompletedPct": {
               "observed": 90.15,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -11349,7 +11181,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 19857,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11357,7 +11189,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 10,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11373,7 +11205,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 6.5,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -11381,7 +11213,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.6,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -11389,7 +11221,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 5.9,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -11397,7 +11229,7 @@
             },
             "everBelowTightPct": {
               "observed": 16.15,
-              "targetRangePct": [
+              "targetRange": [
                 10,
                 25
               ],
@@ -11405,7 +11237,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 6.95,
-              "targetRangePct": [
+              "targetRange": [
                 4,
                 15
               ],
@@ -11413,7 +11245,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.3,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11421,7 +11253,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.13,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11429,7 +11261,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 21.99,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 80
               ],
@@ -11437,7 +11269,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 67.92,
-              "targetRangePct": [
+              "targetRange": [
                 55,
                 80
               ],
@@ -11445,7 +11277,7 @@
             },
             "finaleReachedPct": {
               "observed": 92.95,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -11453,7 +11285,7 @@
             },
             "finaleCompletedPct": {
               "observed": 92.9,
-              "targetRangePct": [
+              "targetRange": [
                 70,
                 100
               ],
@@ -11461,7 +11293,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 19945,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11469,7 +11301,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 11,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11485,7 +11317,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 2.65,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 12
               ],
@@ -11493,7 +11325,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.45,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 12
               ],
@@ -11501,7 +11333,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 2.2,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 12
               ],
@@ -11509,7 +11341,7 @@
             },
             "everBelowTightPct": {
               "observed": 9.4,
-              "targetRangePct": [
+              "targetRange": [
                 7,
                 20
               ],
@@ -11517,7 +11349,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 3.05,
-              "targetRangePct": [
+              "targetRange": [
                 2,
                 10
               ],
@@ -11525,7 +11357,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.15,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11533,7 +11365,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.06,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11541,7 +11373,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 21.65,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 75
               ],
@@ -11549,7 +11381,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 57.44,
-              "targetRangePct": [
+              "targetRange": [
                 50,
                 75
               ],
@@ -11557,7 +11389,7 @@
             },
             "finaleReachedPct": {
               "observed": 97.25,
-              "targetRangePct": [
+              "targetRange": [
                 75,
                 100
               ],
@@ -11565,7 +11397,7 @@
             },
             "finaleCompletedPct": {
               "observed": 97.25,
-              "targetRangePct": [
+              "targetRange": [
                 75,
                 100
               ],
@@ -11573,7 +11405,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 21106,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11581,7 +11413,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 14.95,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11597,7 +11429,7 @@
           "metrics": {
             "bankruptcyRatePct": {
               "observed": 3.75,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 15
               ],
@@ -11605,7 +11437,7 @@
             },
             "bankruptcyBeforeFirstGigPct": {
               "observed": 0.7,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 15
               ],
@@ -11613,7 +11445,7 @@
             },
             "bankruptcyAfterFirstGigPct": {
               "observed": 3.05,
-              "targetRangePct": [
+              "targetRange": [
                 3,
                 15
               ],
@@ -11621,7 +11453,7 @@
             },
             "everBelowTightPct": {
               "observed": 10.55,
-              "targetRangePct": [
+              "targetRange": [
                 8,
                 22
               ],
@@ -11629,7 +11461,7 @@
             },
             "everBelowCriticalPct": {
               "observed": 4.15,
-              "targetRangePct": [
+              "targetRange": [
                 2,
                 12
               ],
@@ -11637,7 +11469,7 @@
             },
             "avgDaysBelowTightThreshold": {
               "observed": 0.18,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 3
               ],
@@ -11645,7 +11477,7 @@
             },
             "avgDaysBelowCriticalThreshold": {
               "observed": 0.08,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 2
               ],
@@ -11653,7 +11485,7 @@
             },
             "medianMaxDrawdownPct": {
               "observed": 17.58,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 70
               ],
@@ -11661,7 +11493,7 @@
             },
             "p90MaxDrawdownPct": {
               "observed": 54.4,
-              "targetRangePct": [
+              "targetRange": [
                 45,
                 70
               ],
@@ -11669,7 +11501,7 @@
             },
             "finaleReachedPct": {
               "observed": 95.7,
-              "targetRangePct": [
+              "targetRange": [
                 65,
                 100
               ],
@@ -11677,7 +11509,7 @@
             },
             "finaleCompletedPct": {
               "observed": 95.05,
-              "targetRangePct": [
+              "targetRange": [
                 65,
                 100
               ],
@@ -11685,7 +11517,7 @@
             },
             "solventFinalMoneyP10": {
               "observed": 20802,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30000
               ],
@@ -11693,7 +11525,7 @@
             },
             "creditOrGrantAssistedPct": {
               "observed": 13.25,
-              "targetRangePct": [
+              "targetRange": [
                 0,
                 30
               ],
@@ -11710,16 +11542,13 @@
       "status": "unstable"
     },
     "lossAttributionEvidence": {
-      "complete": true,
-      "reason": "Chaos actual-loss attribution is incomplete."
+      "complete": true
     },
     "controversyEvidence": {
-      "complete": true,
-      "reason": "All 0/50/65/80 controversy cohorts with 2,000 runs are required."
+      "complete": true
     },
     "bootstrapFestivalEvidence": {
-      "complete": true,
-      "reason": "Bootstrap and Festival cohorts are incomplete."
+      "complete": true
     },
     "progressionEvidence": {
       "complete": false,
