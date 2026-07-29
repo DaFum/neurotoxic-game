@@ -9,6 +9,25 @@
   "status": "production-cadence-validation-passed",
   "approvedForProduction": true,
   "failedGates": [],
+  "expectedScenarios": [
+    "baseline_touring",
+    "bootstrap_struggle",
+    "aggressive_marketing",
+    "scandal_recovery",
+    "festival_push",
+    "chaos_tour",
+    "cult_hypergrowth"
+  ],
+  "evaluatedScenarios": [
+    "baseline_touring",
+    "bootstrap_struggle",
+    "aggressive_marketing",
+    "scandal_recovery",
+    "festival_push",
+    "chaos_tour",
+    "cult_hypergrowth"
+  ],
+  "missingScenarioIds": [],
   "acceptanceCriteria": {
     "allBankruptcyMaxCaps": true,
     "famePerGigPlayedRunsDeltaMaxPct": 5,
@@ -570,7 +589,8 @@
       },
       "finaleReachedDeltaPct": 0,
       "finaleCompletedDeltaPct": 0,
-      "bankruptBeforeFirstGigRateDeltaPct": 0
+      "bankruptBeforeFirstGigRateDeltaPct": 0,
+      "blockedTravelBeforeFirstGigRunsPctDelta": 0
     },
     "bootstrap_struggle": {
       "bankruptcyRateDeltaPct": -21.2,
@@ -594,7 +614,8 @@
       },
       "finaleReachedDeltaPct": 21.05,
       "finaleCompletedDeltaPct": 20.75,
-      "bankruptBeforeFirstGigRateDeltaPct": -25.6
+      "bankruptBeforeFirstGigRateDeltaPct": -25.6,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -25.25
     },
     "aggressive_marketing": {
       "bankruptcyRateDeltaPct": -10.9,
@@ -618,7 +639,8 @@
       },
       "finaleReachedDeltaPct": 10.5,
       "finaleCompletedDeltaPct": 10.5,
-      "bankruptBeforeFirstGigRateDeltaPct": -11.1
+      "bankruptBeforeFirstGigRateDeltaPct": -11.1,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -10.95
     },
     "scandal_recovery": {
       "bankruptcyRateDeltaPct": -19.4,
@@ -642,7 +664,8 @@
       },
       "finaleReachedDeltaPct": 19.25,
       "finaleCompletedDeltaPct": 19.15,
-      "bankruptBeforeFirstGigRateDeltaPct": -22.9
+      "bankruptBeforeFirstGigRateDeltaPct": -22.9,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -22.65
     },
     "festival_push": {
       "bankruptcyRateDeltaPct": -20.35,
@@ -666,7 +689,8 @@
       },
       "finaleReachedDeltaPct": 20.4,
       "finaleCompletedDeltaPct": 20.35,
-      "bankruptBeforeFirstGigRateDeltaPct": -22.15
+      "bankruptBeforeFirstGigRateDeltaPct": -22.15,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -22.05
     },
     "chaos_tour": {
       "bankruptcyRateDeltaPct": -12.2,
@@ -690,7 +714,8 @@
       },
       "finaleReachedDeltaPct": 11.95,
       "finaleCompletedDeltaPct": 11.6,
-      "bankruptBeforeFirstGigRateDeltaPct": -11.9
+      "bankruptBeforeFirstGigRateDeltaPct": -11.9,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -11.8
     },
     "cult_hypergrowth": {
       "bankruptcyRateDeltaPct": -10.9,
@@ -714,21 +739,22 @@
       },
       "finaleReachedDeltaPct": 10.85,
       "finaleCompletedDeltaPct": 10.9,
-      "bankruptBeforeFirstGigRateDeltaPct": -11.65
+      "bankruptBeforeFirstGigRateDeltaPct": -11.65,
+      "blockedTravelBeforeFirstGigRunsPctDelta": -11.4
     }
   },
-  "generatedAt": "2026-07-29T10:03:50.404Z",
+  "generatedAt": "2026-07-29T10:37:59.916Z",
   "metadata": {
-    "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "2414785fb24f4f48750e2649d4b66185f5865580",
+    "nodeVersion": "v24.13.0",
+    "sourceBaseCommit": "533898908fcb289856ce87e3eb96632e2fabd259",
     "workingTreeDirty": false,
-    "cadenceProbeScriptSha256": "5936af74add3911ed1250ab35aa731ed5b511a18792f66d39ca5fd44cfccab1a",
-    "balanceSourceSha256": "6642862ea9e79fbbe0c3129b30e1d135f7280edee13bd72704a96184f3e880a1",
+    "cadenceProbeScriptSha256": "3968d5f9094941bb2d541d041b39b722e4c2808eadb2acada4e464a4cb63dad9",
+    "balanceSourceSha256": "987fc50b9ba22cc1eca95c15b681e4a2b5ad8ceb3d3e25fbe11728fc1cd5a407",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
   },
   "runtime": {
-    "durationMs": 56225
+    "durationMs": 23053
   }
 }
