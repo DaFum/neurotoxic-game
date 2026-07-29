@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-29T17:35:00.073Z",
+  "generatedAt": "2026-07-29T17:53:01.955Z",
   "metadata": {
-    "sourceBaseCommit": "4a0b40ebbb3d58f14990f463168ca94190e670da",
+    "sourceBaseCommit": "5768aa36876e775d0a88c8c075c02f794cc7e17f",
     "workingTreeDirty": false
   },
   "contract": {
@@ -639,36 +639,36 @@
               "total": 3446589,
               "median": 1749,
               "p90": 2218,
-              "firstMaterialDrawdownSharePct": 38.4,
-              "bankruptcyPredecessorSharePct": 90.13
+              "firstMaterialDrawdownSharePct": 35.65,
+              "bankruptcyPredecessorSharePct": 68.42
             },
             "travel": {
               "total": 1214969,
               "median": 640,
               "p90": 728,
-              "firstMaterialDrawdownSharePct": 15.6,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 269452,
               "median": 140,
               "p90": 172,
-              "firstMaterialDrawdownSharePct": 0.05,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0,
+              "bankruptcyPredecessorSharePct": 3.95
             },
             "maintenance_repairs": {
               "total": 841104,
               "median": 444,
               "p90": 606,
-              "firstMaterialDrawdownSharePct": 0.15,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 2.95,
+              "bankruptcyPredecessorSharePct": 9.87
             },
             "negative_events": {
               "total": 22414,
               "median": 0,
               "p90": 40,
               "firstMaterialDrawdownSharePct": 0.15,
-              "bankruptcyPredecessorSharePct": 0.66
+              "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
               "total": 560,
@@ -681,14 +681,14 @@
               "total": 3696342,
               "median": 885,
               "p90": 4374,
-              "firstMaterialDrawdownSharePct": 10.45,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 19.8,
+              "bankruptcyPredecessorSharePct": 8.55
             },
             "other": {
               "total": 389705,
               "median": 190,
               "p90": 318,
-              "firstMaterialDrawdownSharePct": 34.5,
+              "firstMaterialDrawdownSharePct": 33.2,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -1523,35 +1523,35 @@
               "total": 3645047,
               "median": 1823,
               "p90": 2349,
-              "firstMaterialDrawdownSharePct": 34,
-              "bankruptcyPredecessorSharePct": 92.66
+              "firstMaterialDrawdownSharePct": 28.8,
+              "bankruptcyPredecessorSharePct": 66.06
             },
             "travel": {
               "total": 1286739,
               "median": 674,
               "p90": 755,
-              "firstMaterialDrawdownSharePct": 18.05,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 332934,
               "median": 149,
               "p90": 272,
-              "firstMaterialDrawdownSharePct": 0.15,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0.05,
+              "bankruptcyPredecessorSharePct": 4.59
             },
             "maintenance_repairs": {
               "total": 843738,
               "median": 486,
               "p90": 576,
-              "firstMaterialDrawdownSharePct": 0.35,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 1.3,
+              "bankruptcyPredecessorSharePct": 12.84
             },
             "negative_events": {
               "total": 31082,
               "median": 0,
               "p90": 55,
-              "firstMaterialDrawdownSharePct": 0.4,
+              "firstMaterialDrawdownSharePct": 0.1,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
@@ -1565,15 +1565,15 @@
               "total": 5292044,
               "median": 1110,
               "p90": 8170,
-              "firstMaterialDrawdownSharePct": 11.65,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 25.65,
+              "bankruptcyPredecessorSharePct": 8.26
             },
             "other": {
               "total": 365168,
               "median": 178,
               "p90": 296,
-              "firstMaterialDrawdownSharePct": 34.85,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 32.45,
+              "bankruptcyPredecessorSharePct": 0.92
             },
             "gig_settlement": {
               "total": 0,
@@ -2408,14 +2408,14 @@
               "total": 3948163,
               "median": 1952,
               "p90": 2593,
-              "firstMaterialDrawdownSharePct": 30.2,
-              "bankruptcyPredecessorSharePct": 88.61
+              "firstMaterialDrawdownSharePct": 23.95,
+              "bankruptcyPredecessorSharePct": 49.37
             },
             "travel": {
               "total": 1374116,
               "median": 711,
               "p90": 792,
-              "firstMaterialDrawdownSharePct": 15.6,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
@@ -2423,21 +2423,21 @@
               "median": 146,
               "p90": 274,
               "firstMaterialDrawdownSharePct": 0.05,
-              "bankruptcyPredecessorSharePct": 0
+              "bankruptcyPredecessorSharePct": 6.33
             },
             "maintenance_repairs": {
               "total": 641298,
               "median": 282,
               "p90": 510,
-              "firstMaterialDrawdownSharePct": 0.2,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0.65,
+              "bankruptcyPredecessorSharePct": 5.06
             },
             "negative_events": {
               "total": 18785,
               "median": 0,
               "p90": 10,
-              "firstMaterialDrawdownSharePct": 0.4,
-              "bankruptcyPredecessorSharePct": 1.27
+              "firstMaterialDrawdownSharePct": 0.15,
+              "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
               "total": 840,
@@ -2450,14 +2450,14 @@
               "total": 7446950,
               "median": 1530,
               "p90": 12920,
-              "firstMaterialDrawdownSharePct": 16.75,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 36.65,
+              "bankruptcyPredecessorSharePct": 29.11
             },
             "other": {
               "total": 291135,
               "median": 142,
               "p90": 240,
-              "firstMaterialDrawdownSharePct": 35.9,
+              "firstMaterialDrawdownSharePct": 23.65,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -3290,35 +3290,35 @@
               "total": 3697945,
               "median": 1819,
               "p90": 2354,
-              "firstMaterialDrawdownSharePct": 33.7,
-              "bankruptcyPredecessorSharePct": 79.71
+              "firstMaterialDrawdownSharePct": 26.7,
+              "bankruptcyPredecessorSharePct": 49.28
             },
             "travel": {
               "total": 1326056,
               "median": 682,
               "p90": 763,
-              "firstMaterialDrawdownSharePct": 16.9,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 329090,
               "median": 158,
               "p90": 267,
-              "firstMaterialDrawdownSharePct": 0.15,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0,
+              "bankruptcyPredecessorSharePct": 7.25
             },
             "maintenance_repairs": {
               "total": 870966,
               "median": 474,
               "p90": 630,
-              "firstMaterialDrawdownSharePct": 0.3,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 1.5,
+              "bankruptcyPredecessorSharePct": 10.14
             },
             "negative_events": {
               "total": 42936,
               "median": 0,
               "p90": 61,
-              "firstMaterialDrawdownSharePct": 0.7,
+              "firstMaterialDrawdownSharePct": 0.2,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
@@ -3332,14 +3332,14 @@
               "total": 5635288,
               "median": 1193,
               "p90": 9311,
-              "firstMaterialDrawdownSharePct": 12.75,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 25.85,
+              "bankruptcyPredecessorSharePct": 10.14
             },
             "other": {
               "total": 453339,
               "median": 225,
               "p90": 360,
-              "firstMaterialDrawdownSharePct": 34.75,
+              "firstMaterialDrawdownSharePct": 31.9,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -4176,35 +4176,35 @@
               "total": 3412155,
               "median": 1744,
               "p90": 2206,
-              "firstMaterialDrawdownSharePct": 36.45,
-              "bankruptcyPredecessorSharePct": 94.32
+              "firstMaterialDrawdownSharePct": 34.2,
+              "bankruptcyPredecessorSharePct": 61.93
             },
             "travel": {
               "total": 1204775,
               "median": 640,
               "p90": 730,
-              "firstMaterialDrawdownSharePct": 16.65,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 267750,
               "median": 140,
               "p90": 172,
-              "firstMaterialDrawdownSharePct": 0.1,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0,
+              "bankruptcyPredecessorSharePct": 4.55
             },
             "maintenance_repairs": {
               "total": 825972,
               "median": 444,
               "p90": 606,
-              "firstMaterialDrawdownSharePct": 0.1,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 2.8,
+              "bankruptcyPredecessorSharePct": 15.91
             },
             "negative_events": {
               "total": 18992,
               "median": 0,
               "p90": 35,
-              "firstMaterialDrawdownSharePct": 0.3,
+              "firstMaterialDrawdownSharePct": 0.15,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
@@ -4218,14 +4218,14 @@
               "total": 3683449,
               "median": 855,
               "p90": 4452,
-              "firstMaterialDrawdownSharePct": 9.35,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 18.75,
+              "bankruptcyPredecessorSharePct": 11.93
             },
             "other": {
               "total": 385669,
               "median": 190,
               "p90": 320,
-              "firstMaterialDrawdownSharePct": 36.5,
+              "firstMaterialDrawdownSharePct": 35.1,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -5057,36 +5057,36 @@
               "total": 3622749,
               "median": 1807,
               "p90": 2335,
-              "firstMaterialDrawdownSharePct": 34,
-              "bankruptcyPredecessorSharePct": 89.23
+              "firstMaterialDrawdownSharePct": 28.8,
+              "bankruptcyPredecessorSharePct": 63.85
             },
             "travel": {
               "total": 1273305,
               "median": 668,
               "p90": 751,
-              "firstMaterialDrawdownSharePct": 16.7,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 333355,
               "median": 151,
               "p90": 276,
-              "firstMaterialDrawdownSharePct": 0.1,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0.05,
+              "bankruptcyPredecessorSharePct": 2.31
             },
             "maintenance_repairs": {
               "total": 836928,
               "median": 480,
               "p90": 576,
-              "firstMaterialDrawdownSharePct": 0.25,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 1.8,
+              "bankruptcyPredecessorSharePct": 7.69
             },
             "negative_events": {
               "total": 34919,
               "median": 0,
               "p90": 55,
-              "firstMaterialDrawdownSharePct": 0.35,
-              "bankruptcyPredecessorSharePct": 1.54
+              "firstMaterialDrawdownSharePct": 0.25,
+              "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
               "total": 2699,
@@ -5099,15 +5099,15 @@
               "total": 4757530,
               "median": 1085,
               "p90": 7754,
-              "firstMaterialDrawdownSharePct": 12,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 24.1,
+              "bankruptcyPredecessorSharePct": 15.38
             },
             "other": {
               "total": 353807,
               "median": 172,
               "p90": 290,
-              "firstMaterialDrawdownSharePct": 35.9,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 33.05,
+              "bankruptcyPredecessorSharePct": 0.77
             },
             "gig_settlement": {
               "total": 0,
@@ -5939,35 +5939,35 @@
               "total": 3999600,
               "median": 1957,
               "p90": 2619,
-              "firstMaterialDrawdownSharePct": 32.05,
-              "bankruptcyPredecessorSharePct": 83.02
+              "firstMaterialDrawdownSharePct": 24.9,
+              "bankruptcyPredecessorSharePct": 54.72
             },
             "travel": {
               "total": 1387585,
               "median": 712,
               "p90": 795,
-              "firstMaterialDrawdownSharePct": 15.85,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
               "total": 346856,
               "median": 149,
               "p90": 272,
-              "firstMaterialDrawdownSharePct": 0.3,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0,
+              "bankruptcyPredecessorSharePct": 5.66
             },
             "maintenance_repairs": {
               "total": 643152,
               "median": 282,
               "p90": 504,
-              "firstMaterialDrawdownSharePct": 0.3,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 0.65,
+              "bankruptcyPredecessorSharePct": 13.21
             },
             "negative_events": {
               "total": 16868,
               "median": 0,
               "p90": 20,
-              "firstMaterialDrawdownSharePct": 0.3,
+              "firstMaterialDrawdownSharePct": 0.1,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
@@ -5981,14 +5981,14 @@
               "total": 7829592,
               "median": 1573,
               "p90": 13023,
-              "firstMaterialDrawdownSharePct": 14.9,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 35.25,
+              "bankruptcyPredecessorSharePct": 9.43
             },
             "other": {
               "total": 291984,
               "median": 144,
               "p90": 238,
-              "firstMaterialDrawdownSharePct": 35.65,
+              "firstMaterialDrawdownSharePct": 23.65,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -6822,14 +6822,14 @@
               "total": 3705373,
               "median": 1839,
               "p90": 2348,
-              "firstMaterialDrawdownSharePct": 33.95,
-              "bankruptcyPredecessorSharePct": 81.33
+              "firstMaterialDrawdownSharePct": 26.55,
+              "bankruptcyPredecessorSharePct": 53.33
             },
             "travel": {
               "total": 1326629,
               "median": 682,
               "p90": 765,
-              "firstMaterialDrawdownSharePct": 16.15,
+              "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
@@ -6837,20 +6837,20 @@
               "median": 158,
               "p90": 268,
               "firstMaterialDrawdownSharePct": 0.05,
-              "bankruptcyPredecessorSharePct": 0
+              "bankruptcyPredecessorSharePct": 2.67
             },
             "maintenance_repairs": {
               "total": 858822,
               "median": 468,
               "p90": 624,
-              "firstMaterialDrawdownSharePct": 0.4,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 1.35,
+              "bankruptcyPredecessorSharePct": 10.67
             },
             "negative_events": {
               "total": 46291,
               "median": 0,
               "p90": 80,
-              "firstMaterialDrawdownSharePct": 0.5,
+              "firstMaterialDrawdownSharePct": 0.15,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
@@ -6864,14 +6864,14 @@
               "total": 6088152,
               "median": 1298,
               "p90": 9836,
-              "firstMaterialDrawdownSharePct": 12.4,
-              "bankruptcyPredecessorSharePct": 0
+              "firstMaterialDrawdownSharePct": 26.1,
+              "bankruptcyPredecessorSharePct": 14.67
             },
             "other": {
               "total": 459976,
               "median": 228,
               "p90": 370,
-              "firstMaterialDrawdownSharePct": 35.75,
+              "firstMaterialDrawdownSharePct": 31.8,
               "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
@@ -7710,35 +7710,35 @@
             "total": 3624064,
             "median": 1821,
             "p90": 2326,
-            "firstMaterialDrawdownSharePct": 34.1,
-            "bankruptcyPredecessorSharePct": 87.18
+            "firstMaterialDrawdownSharePct": 29.2,
+            "bankruptcyPredecessorSharePct": 61.54
           },
           "travel": {
             "total": 1278483,
             "median": 669,
             "p90": 753,
-            "firstMaterialDrawdownSharePct": 16.55,
+            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
             "total": 334380,
             "median": 151,
             "p90": 275,
-            "firstMaterialDrawdownSharePct": 0.1,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 1.71
           },
           "maintenance_repairs": {
             "total": 844494,
             "median": 486,
             "p90": 576,
-            "firstMaterialDrawdownSharePct": 0.1,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 1.8,
+            "bankruptcyPredecessorSharePct": 10.26
           },
           "negative_events": {
             "total": 35589,
             "median": 0,
             "p90": 60,
-            "firstMaterialDrawdownSharePct": 0.65,
+            "firstMaterialDrawdownSharePct": 0.25,
             "bankruptcyPredecessorSharePct": 0
           },
           "clinic": {
@@ -7752,14 +7752,14 @@
             "total": 4810829,
             "median": 1050,
             "p90": 7575,
-            "firstMaterialDrawdownSharePct": 12.05,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 23.35,
+            "bankruptcyPredecessorSharePct": 13.68
           },
           "other": {
             "total": 355067,
             "median": 174,
             "p90": 286,
-            "firstMaterialDrawdownSharePct": 35.7,
+            "firstMaterialDrawdownSharePct": 33.4,
             "bankruptcyPredecessorSharePct": 0
           },
           "gig_settlement": {
@@ -8595,56 +8595,56 @@
             "total": 3501862,
             "median": 1788,
             "p90": 2267,
-            "firstMaterialDrawdownSharePct": 42.55,
-            "bankruptcyPredecessorSharePct": 92.44
+            "firstMaterialDrawdownSharePct": 40.8,
+            "bankruptcyPredecessorSharePct": 69.19
           },
           "travel": {
             "total": 1208153,
             "median": 643,
             "p90": 728,
-            "firstMaterialDrawdownSharePct": 13.4,
+            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
             "total": 329730,
             "median": 151,
             "p90": 276,
-            "firstMaterialDrawdownSharePct": 0.1,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 0.2,
+            "bankruptcyPredecessorSharePct": 3.49
           },
           "maintenance_repairs": {
             "total": 811014,
             "median": 456,
             "p90": 570,
-            "firstMaterialDrawdownSharePct": 0.2,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 1.4,
+            "bankruptcyPredecessorSharePct": 7.56
           },
           "negative_events": {
             "total": 32134,
             "median": 0,
             "p90": 55,
-            "firstMaterialDrawdownSharePct": 0.25,
+            "firstMaterialDrawdownSharePct": 0.1,
             "bankruptcyPredecessorSharePct": 0
           },
           "clinic": {
             "total": 18622,
             "median": 0,
             "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
+            "firstMaterialDrawdownSharePct": 0.05,
             "bankruptcyPredecessorSharePct": 0
           },
           "assets_upgrades": {
             "total": 3723431,
             "median": 900,
             "p90": 4375,
-            "firstMaterialDrawdownSharePct": 8.35,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 16.25,
+            "bankruptcyPredecessorSharePct": 12.21
           },
           "other": {
             "total": 348827,
             "median": 170,
             "p90": 294,
-            "firstMaterialDrawdownSharePct": 34.5,
+            "firstMaterialDrawdownSharePct": 33.25,
             "bankruptcyPredecessorSharePct": 0
           },
           "gig_settlement": {
@@ -9478,14 +9478,14 @@
             "total": 3265017,
             "median": 1738,
             "p90": 2154,
-            "firstMaterialDrawdownSharePct": 51.7,
-            "bankruptcyPredecessorSharePct": 96.11
+            "firstMaterialDrawdownSharePct": 51.95,
+            "bankruptcyPredecessorSharePct": 83.39
           },
           "travel": {
             "total": 1094347,
             "median": 609,
             "p90": 696,
-            "firstMaterialDrawdownSharePct": 8.75,
+            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
@@ -9493,41 +9493,41 @@
             "median": 149,
             "p90": 272,
             "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
+            "bankruptcyPredecessorSharePct": 2.83
           },
           "maintenance_repairs": {
             "total": 760362,
             "median": 390,
             "p90": 570,
-            "firstMaterialDrawdownSharePct": 0.1,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 1.35,
+            "bankruptcyPredecessorSharePct": 6.36
           },
           "negative_events": {
             "total": 34146,
             "median": 0,
             "p90": 55,
-            "firstMaterialDrawdownSharePct": 0.2,
-            "bankruptcyPredecessorSharePct": 0.35
+            "firstMaterialDrawdownSharePct": 0.1,
+            "bankruptcyPredecessorSharePct": 0
           },
           "clinic": {
             "total": 56944,
             "median": 0,
             "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0.35
           },
           "assets_upgrades": {
             "total": 3045693,
             "median": 720,
             "p90": 3231,
-            "firstMaterialDrawdownSharePct": 4.45,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 8.65,
+            "bankruptcyPredecessorSharePct": 3.53
           },
           "other": {
             "total": 334028,
             "median": 166,
             "p90": 290,
-            "firstMaterialDrawdownSharePct": 34.3,
+            "firstMaterialDrawdownSharePct": 33.85,
             "bankruptcyPredecessorSharePct": 0
           },
           "gig_settlement": {
@@ -10365,14 +10365,14 @@
             "total": 3058235,
             "median": 1691,
             "p90": 2095,
-            "firstMaterialDrawdownSharePct": 60.45,
-            "bankruptcyPredecessorSharePct": 95.05
+            "firstMaterialDrawdownSharePct": 60.95,
+            "bankruptcyPredecessorSharePct": 81.08
           },
           "travel": {
             "total": 961885,
             "median": 567,
             "p90": 652,
-            "firstMaterialDrawdownSharePct": 4.25,
+            "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
@@ -10380,41 +10380,41 @@
             "median": 146,
             "p90": 272,
             "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
+            "bankruptcyPredecessorSharePct": 3.83
           },
           "maintenance_repairs": {
             "total": 706902,
             "median": 366,
             "p90": 570,
-            "firstMaterialDrawdownSharePct": 0.05,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 1.05,
+            "bankruptcyPredecessorSharePct": 7.66
           },
           "negative_events": {
             "total": 27408,
             "median": 0,
             "p90": 50,
             "firstMaterialDrawdownSharePct": 0.15,
-            "bankruptcyPredecessorSharePct": 0.45
+            "bankruptcyPredecessorSharePct": 0
           },
           "clinic": {
             "total": 106523,
             "median": 0,
             "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0.68
           },
           "assets_upgrades": {
             "total": 2045749,
             "median": 545,
             "p90": 2090,
-            "firstMaterialDrawdownSharePct": 1.6,
-            "bankruptcyPredecessorSharePct": 0
+            "firstMaterialDrawdownSharePct": 3.6,
+            "bankruptcyPredecessorSharePct": 2.25
           },
           "other": {
             "total": 312751,
             "median": 158,
             "p90": 280,
-            "firstMaterialDrawdownSharePct": 32.5,
+            "firstMaterialDrawdownSharePct": 32.35,
             "bankruptcyPredecessorSharePct": 0
           },
           "gig_settlement": {
@@ -11548,7 +11548,8 @@
       "complete": true
     },
     "bootstrapFestivalEvidence": {
-      "complete": true
+      "complete": true,
+      "status": "unstable"
     },
     "progressionEvidence": {
       "complete": false,

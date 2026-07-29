@@ -82,6 +82,55 @@ export const hasCompleteTensionEvidence = (
     )
   })
 
+export const reviewsDifferForScenarioIds = (
+  calibrationReview,
+  holdoutReview,
+  scenarioIds
+) =>
+  scenarioIds.some(id => {
+    const calibration = calibrationReview.scenarios.find(item => item.id === id)
+    const holdout = holdoutReview.scenarios.find(item => item.id === id)
+    if (!calibration || !holdout) return false
+    return Object.entries(calibration.metrics).some(
+      ([metric, result]) => result.status !== holdout.metrics[metric]?.status
+    )
+  })
+
+const REPORT_ARTIFACT_PATHS = [
+  'reports/scenario-tension-attribution.json',
+  'reports/scenario-tension-attribution.md'
+]
+
+export const validateReportProvenance = (
+  report,
+  { runGit = execFileSync, head = 'HEAD' } = {}
+) => {
+  const source = report?.metadata?.sourceBaseCommit
+  if (!source) return { valid: false, reason: 'missing_source_commit' }
+  try {
+    runGit('git', ['cat-file', '-e', `${source}^{commit}`], { encoding: 'utf8' })
+    runGit('git', ['merge-base', '--is-ancestor', source, head], {
+      encoding: 'utf8'
+    })
+    const changedFiles = runGit(
+      'git',
+      ['diff', '--name-only', `${source}..${head}`],
+      { encoding: 'utf8' }
+    )
+      .trim()
+      .split('\n')
+      .filter(Boolean)
+      .sort()
+    const expected = [...REPORT_ARTIFACT_PATHS].sort()
+    return {
+      valid: JSON.stringify(changedFiles) === JSON.stringify(expected),
+      changedFiles
+    }
+  } catch {
+    return { valid: false, reason: 'unreachable_source_commit' }
+  }
+}
+
 export const buildPhaseDecisions = evidence => ({
   phase6B: phaseDecision(
     evidence.lossAttributionEvidence,
@@ -95,7 +144,9 @@ export const buildPhaseDecisions = evidence => ({
   ),
   phase6D: phaseDecision(
     evidence.bootstrapFestivalEvidence,
-    evidence.tensionEvidence?.status === 'unstable' ? 'boundary_uncertain' : 'diagnostic_complete',
+    evidence.bootstrapFestivalEvidence?.status === 'unstable'
+      ? 'boundary_uncertain'
+      : 'diagnostic_complete',
     'Bootstrap and Festival evidence is complete; corridor differences remain diagnostic.'
   ),
   phase7: phaseDecision(
@@ -156,23 +207,18 @@ export const buildTensionReport = () => {
         )
       }))
     : []
-  const calibrationById = new Map(
-    calibrationReview.scenarios.map(scenario => [scenario.id, scenario])
-  )
-  const holdoutById = new Map(
-    holdoutReview.scenarios.map(scenario => [scenario.id, scenario])
-  )
   const tensionComplete = hasCompleteTensionEvidence(
     scenarios,
     calibrationReview,
     holdoutReview
   )
-  const tensionUnstable = tensionComplete && [...calibrationById].some(([id, calibration]) => {
-    const holdout = holdoutById.get(id)
-    return Object.entries(calibration.metrics).some(
-      ([metric, result]) => result.status !== holdout.metrics[metric].status
+  const tensionUnstable =
+    tensionComplete &&
+    reviewsDifferForScenarioIds(
+      calibrationReview,
+      holdoutReview,
+      scenarios.map(scenario => scenario.id)
     )
-  })
   const summariesFor = id => [cohorts.calibration, cohorts.holdout]
     .map(stream => stream.find(scenario => scenario.id === id)?.summary)
   const completeSamples = summaries => summaries.every(
@@ -216,7 +262,16 @@ export const buildTensionReport = () => {
     ),
     bootstrapFestivalEvidence: createEvidenceResult(
       completeSamples(bootstrapFestivalSummaries),
-      'Bootstrap and Festival cohorts are incomplete.'
+      'Bootstrap and Festival cohorts are incomplete.',
+      {
+        status: reviewsDifferForScenarioIds(
+          calibrationReview,
+          holdoutReview,
+          ['bootstrap_struggle', 'festival_push']
+        )
+          ? 'unstable'
+          : 'stable'
+      }
     ),
     progressionEvidence: createEvidenceResult(
       completeSamples(bootstrapFestivalSummaries) && progressionFieldsPresent,
@@ -302,7 +357,20 @@ if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 ) {
-  const report = buildTensionReport()
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-  await writeTensionArtifacts(report, path.join(root, 'reports'))
+  const reportDir = path.join(root, 'reports')
+  if (process.argv.includes('--validate-provenance')) {
+    const report = JSON.parse(
+      await fs.readFile(
+        path.join(reportDir, 'scenario-tension-attribution.json'),
+        'utf8'
+      )
+    )
+    const validation = validateReportProvenance(report)
+    if (!validation.valid) {
+      throw new Error(`Invalid tension report provenance: ${validation.reason ?? validation.changedFiles?.join(', ')}`)
+    }
+  } else {
+    await writeTensionArtifacts(buildTensionReport(), reportDir)
+  }
 }

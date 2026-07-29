@@ -12,6 +12,8 @@ import {
   buildPhaseDecisions,
   createEvidenceResult,
   hasCompleteTensionEvidence,
+  reviewsDifferForScenarioIds,
+  validateReportProvenance,
   writeTensionArtifacts
 } from '../../scripts/game-balance-tension-report.mjs'
 
@@ -97,7 +99,7 @@ test('phase decisions use independent evidence gates', () => {
     tensionEvidence: { complete: true, status: 'unstable' },
     lossAttributionEvidence: { complete: true },
     controversyEvidence: { complete: false, reason: 'missing controversy' },
-    bootstrapFestivalEvidence: { complete: true },
+    bootstrapFestivalEvidence: { complete: true, status: 'unstable' },
     progressionEvidence: { complete: false, reason: 'missing payback' }
   })
   assert.equal(decisions.phase6B.status, 'diagnostic_complete')
@@ -118,4 +120,50 @@ test('empty scenario sets are insufficient and completed evidence has no failure
     complete: false,
     reason: 'failure text'
   })
+})
+
+test('phase stability only compares scenarios owned by that phase', () => {
+  const review = (chaos, festival) => ({
+    scenarios: [
+      { id: 'chaos_tour', metrics: { bankruptcyRatePct: { status: chaos } } },
+      {
+        id: 'festival_push',
+        metrics: { bankruptcyRatePct: { status: festival } }
+      }
+    ]
+  })
+  const calibration = review('below_target', 'within_target')
+  const holdout = review('within_target', 'within_target')
+  assert.equal(
+    reviewsDifferForScenarioIds(calibration, holdout, [
+      'bootstrap_struggle',
+      'festival_push'
+    ]),
+    false
+  )
+  assert.equal(
+    reviewsDifferForScenarioIds(calibration, holdout, ['chaos_tour']),
+    true
+  )
+})
+
+test('provenance validation requires an existing ancestor and reports-only diff', () => {
+  const calls = []
+  const runGit = (_command, args) => {
+    calls.push(args)
+    if (args[0] === 'diff')
+      return 'reports/scenario-tension-attribution.json\nreports/scenario-tension-attribution.md\n'
+    return ''
+  }
+  assert.equal(
+    validateReportProvenance(
+      { metadata: { sourceBaseCommit: 'source' } },
+      { runGit, head: 'HEAD' }
+    ).valid,
+    true
+  )
+  assert.deepEqual(
+    calls.map(args => args[0]),
+    ['cat-file', 'merge-base', 'diff']
+  )
 })

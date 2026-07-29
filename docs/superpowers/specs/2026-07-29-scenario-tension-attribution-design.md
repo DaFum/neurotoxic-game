@@ -26,12 +26,11 @@ The simulator observes negative money deltas after the first played gig at the s
 - maintenance and repairs
 - negative events
 - clinic
-- modifiers
 - assets and upgrades
-- contraband
 - other
+- gig settlement
 
-Positive movements never erase recorded losses. Per-run data records loss totals, the first source to produce a material drawdown of at least 10% from the prior money peak, and the last material loss source before bankruptcy. Scenario aggregation reports total, median, P90, first-material-drawdown share, and bankruptcy-predecessor share per source.
+Modifier, venue, tax, and other itemized gig expenses are recorded separately as gross spend; they do not become actual losses unless the resulting settlement lowers the real balance. Contraband drops and uses do not move money and therefore have no synthetic loss source. Positive movements never erase recorded actual losses. A loss is material only when that single mutation is at least 10% of the prior money peak. Per-run data records actual loss totals, the first material loss source, and the last material loss source before bankruptcy. Scenario aggregation reports total, median, P90, first-material-loss share, and bankruptcy-predecessor share per source.
 
 ## Diagnostic cohorts
 

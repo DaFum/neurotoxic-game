@@ -355,6 +355,23 @@ test('positive daily movements cannot erase a separately sampled obligation loss
   assert.equal(tracker.totals.assets_upgrades, 0)
 })
 
+test('a trivial later loss does not replace the last material loss source', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 1_000,
+    moneyAfter: 800,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'daily_obligations',
+    moneyBefore: 800,
+    moneyAfter: 795,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.lastMaterialLossSource, 'travel')
+})
+
 test('post-first-gig refuels are attributed to fuel', () => {
   const runs = Array.from({ length: 40 }, (_, index) =>
     runSingleSimulation(

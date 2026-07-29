@@ -4543,13 +4543,11 @@ export const recordAttributedLoss = (
   const loss = moneyBefore - moneyAfter
   if (loss <= 0) return
   tracker.totals[source] += loss
-  tracker.lastMaterialLossSource = source
-  if (
-    tracker.firstMaterialDrawdownSource == null &&
-    tracker.peakMoney > 0 &&
-    calculateDrawdownPct(tracker.peakMoney, moneyAfter) >= 10
-  )
-    tracker.firstMaterialDrawdownSource = source
+  const material = tracker.peakMoney > 0 && loss / tracker.peakMoney >= 0.1
+  if (material) {
+    tracker.lastMaterialLossSource = source
+    tracker.firstMaterialDrawdownSource ??= source
+  }
 }
 
 export const buildScenarioTensionReview = ({
