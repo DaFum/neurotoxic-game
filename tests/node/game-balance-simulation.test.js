@@ -1068,7 +1068,14 @@ test('rest threshold narrative names only the threshold that was crossed', () =>
       stamina: 36,
       mood: 41
     }),
-    'Stamina 36 bleibt über der Marke 35; Mood 41 unterschreitet die Marke 50.'
+    'Stamina 36 erreicht mindestens die Marke 35; Mood 41 unterschreitet die Marke 50.'
+  )
+  assert.equal(
+    balanceSimulation.describeRestThresholdCrossings({
+      stamina: 35,
+      mood: 50
+    }),
+    'Stamina 35 erreicht mindestens die Marke 35; Mood 50 erreicht mindestens die Marke 50.'
   )
 })
 
@@ -1461,6 +1468,50 @@ test('reading a simulation baseline ignores only a missing file', async () => {
     await Promise.all([
       fs.rm(malformedUrl, { force: true }),
       fs.rm(directoryUrl, { recursive: true, force: true })
+    ])
+  }
+})
+
+test('simulation report rejects an existing baseline without a results array', async () => {
+  const suffix = `${process.pid}-${Date.now()}`
+  const baselineName = `.invalid-balance-baseline-${suffix}.json`
+  const outputJson = `.invalid-balance-output-${suffix}.json`
+  const outputMarkdown = `.invalid-balance-output-${suffix}.md`
+  const baselineUrl = new URL(`../../reports/${baselineName}`, import.meta.url)
+  const outputJsonUrl = new URL(`../../reports/${outputJson}`, import.meta.url)
+  const outputMarkdownUrl = new URL(
+    `../../reports/${outputMarkdown}`,
+    import.meta.url
+  )
+  const original = {
+    runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
+    outputJson: SIMULATION_CONSTANTS.outputJson,
+    outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown
+  }
+
+  try {
+    SIMULATION_CONSTANTS.runsPerScenario = 1
+    SIMULATION_CONSTANTS.outputJson = outputJson
+    SIMULATION_CONSTANTS.outputMarkdown = outputMarkdown
+
+    for (const baselinePayload of [{}, { results: {} }]) {
+      await fs.writeFile(baselineUrl, JSON.stringify(baselinePayload))
+      await assert.rejects(
+        runSimulationSuite({
+          compareBaselinePath: `reports/${baselineName}`
+        }),
+        {
+          name: 'TypeError',
+          message: 'Simulation baseline must contain a results array'
+        }
+      )
+    }
+  } finally {
+    Object.assign(SIMULATION_CONSTANTS, original)
+    await Promise.all([
+      fs.rm(baselineUrl, { force: true }),
+      fs.rm(outputJsonUrl, { force: true }),
+      fs.rm(outputMarkdownUrl, { force: true })
     ])
   }
 })

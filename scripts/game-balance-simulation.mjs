@@ -769,7 +769,7 @@ const MEMBER_NEEDS_CARE = member =>
 const describeThreshold = (label, value, threshold) =>
   value < threshold
     ? `${label} ${value} unterschreitet die Marke ${threshold}`
-    : `${label} ${value} bleibt über der Marke ${threshold}`
+    : `${label} ${value} erreicht mindestens die Marke ${threshold}`
 
 export const describeRestThresholdCrossings = ({ stamina, mood }) =>
   `${describeThreshold('Stamina', stamina, MEMBER_CARE_THRESHOLDS.stamina)}; ${describeThreshold('Mood', mood, MEMBER_CARE_THRESHOLDS.mood)}.`
@@ -4466,7 +4466,10 @@ const simulationReportIdentity = report => ({
 })
 
 const buildRegressionComparison = (baselinePayload, currentPayload) => {
-  if (!baselinePayload?.results) return null
+  if (baselinePayload === null) return null
+  if (!Array.isArray(baselinePayload?.results)) {
+    throw new TypeError('Simulation baseline must contain a results array')
+  }
 
   const previous = simulationReportIdentity(baselinePayload)
   const current = simulationReportIdentity(currentPayload)
