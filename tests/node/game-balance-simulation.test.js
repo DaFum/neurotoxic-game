@@ -259,13 +259,19 @@ test('scenario tension contracts are non-blocking and fail closed on missing evi
   for (const target of Object.values(SCENARIO_TENSION_TARGETS)) {
     assert.equal(target.blocking, false)
     assert.deepEqual(Object.keys(target.metrics).sort(), [
+      'avgDaysBelowCriticalThreshold',
+      'avgDaysBelowTightThreshold',
       'bankruptcyAfterFirstGigPct',
       'bankruptcyBeforeFirstGigPct',
       'bankruptcyRatePct',
+      'creditOrGrantAssistedPct',
       'everBelowCriticalPct',
       'everBelowTightPct',
       'finaleCompletedPct',
-      'p90MaxDrawdownPct'
+      'finaleReachedPct',
+      'medianMaxDrawdownPct',
+      'p90MaxDrawdownPct',
+      'solventFinalMoneyP10'
     ])
   }
 
@@ -347,38 +353,57 @@ test('post-first-gig refuels are attributed to fuel', () => {
     )
   )
   assert.ok(runs.some(run => run.refuels > 0 && run.gigsPlayed > 0))
-  assert.ok(runs.some(run => run.lossAttribution.totals.fuel > 0))
+  assert.ok(runs.some(run => run.actualLossAttribution.totals.fuel > 0))
 })
 
-test('setup, gig settlement, and asset spending reach attribution buckets', () => {
-  const totals = Array.from(
-    { length: 60 },
-    (_, index) =>
-      runSingleSimulation(
-        probeScenario(10, {
-          gigGapDays: 1,
-          minigameSkill: 0,
-          modifierBias: {
-            promo: 1,
-            merch: 1,
-            catering: 1,
-            soundcheck: 1,
-            guestlist: 1
-          }
-        }),
-        createScenarioSeed('spend-attribution', index)
-      ).lossAttribution.totals
-  ).reduce(
+test('actual losses stay separate from gross gig spending', () => {
+  const runs = Array.from({ length: 60 }, (_, index) =>
+    runSingleSimulation(
+      probeScenario(10, {
+        gigGapDays: 1,
+        minigameSkill: 0,
+        modifierBias: {
+          promo: 1,
+          merch: 1,
+          catering: 1,
+          soundcheck: 1,
+          guestlist: 1
+        }
+      }),
+      createScenarioSeed('spend-attribution', index)
+    )
+  )
+  const totals = runs
+    .map(run => run.actualLossAttribution.totals)
+    .reduce(
+      (sum, run) => {
+        for (const [source, value] of Object.entries(run)) sum[source] += value
+        return sum
+      },
+      Object.fromEntries(LOSS_ATTRIBUTION_SOURCES.map(source => [source, 0]))
+    )
+  const gross = runs.reduce(
     (sum, run) => {
-      for (const [source, value] of Object.entries(run)) sum[source] += value
+      for (const [source, value] of Object.entries(run.grossSpendAttribution))
+        sum[source] += value
       return sum
     },
-    Object.fromEntries(LOSS_ATTRIBUTION_SOURCES.map(source => [source, 0]))
+    {
+      modifierGrossSpend: 0,
+      venueGrossSpend: 0,
+      taxGrossSpend: 0,
+      otherGrossSpend: 0
+    }
   )
 
   assert.ok(totals.other > 0)
-  assert.ok(totals.modifiers > 0)
   assert.ok(totals.assets_upgrades > 0)
+  assert.ok(gross.modifierGrossSpend > 0)
+  assert.ok(gross.taxGrossSpend > 0)
+  assert.ok(
+    totals.gig_settlement <
+      gross.modifierGrossSpend + gross.taxGrossSpend + gross.otherGrossSpend
+  )
 })
 
 test('execution coverage aggregates without leaking or duplicating IDs', () => {
@@ -449,9 +474,14 @@ test('holdout tension review is blocking and fails on a target breach', () => {
             bankruptcyAfterFirstGigPct: 19,
             everBelowTightPct: 12,
             everBelowCriticalPct: 4,
-            p90MaxDrawdownPct: 55
+            avgDaysBelowTightThreshold: 1,
+            avgDaysBelowCriticalThreshold: 0.5,
+            medianMaxDrawdownPct: 30,
+            p90MaxDrawdownPct: 55,
+            solventFinalMoneyP10: 5_000,
+            creditOrGrantAssistedPct: 2
           },
-          tourPaths: { finaleCompletedPct: 80 }
+          tourPaths: { finaleReachedPct: 90, finaleCompletedPct: 80 }
         }
       }
     ],

@@ -47,7 +47,19 @@ test('artifact writer creates a missing reports directory', async () => {
   const reportDir = path.join(root, 'nested', 'reports')
   try {
     await writeTensionArtifacts(
-      { generatedAt: 'test', decisions: {}, contract: { runsPerScenario: 0 } },
+      {
+        generatedAt: 'test',
+        metadata: { sourceBaseCommit: null, workingTreeDirty: false },
+        decisions: {},
+        contract: {
+          runsPerScenario: 0,
+          cohorts: {},
+          candidateSelection: false
+        },
+        cohorts: { calibration: [], holdout: [] },
+        controversyComparison: [],
+        evidence: { tensionEvidence: { status: 'insufficient_evidence' } }
+      },
       reportDir
     )
     assert.equal(
@@ -65,10 +77,7 @@ test('artifact writer creates a missing reports directory', async () => {
 })
 
 test('phase decisions fail closed without measured evidence', () => {
-  const decisions = buildPhaseDecisions({
-    calibrationReview: null,
-    holdoutReview: null
-  })
+  const decisions = buildPhaseDecisions({})
   assert.deepEqual(Object.keys(decisions), [
     'phase6B',
     'phase6C',
@@ -81,41 +90,16 @@ test('phase decisions fail closed without measured evidence', () => {
   }
 })
 
-test('phase decisions fail closed when holdout contradicts calibration', () => {
-  const review = status => ({
-    scenarios: [
-      {
-        id: 'chaos_tour',
-        status,
-        metrics: { bankruptcyRatePct: { status } }
-      }
-    ]
-  })
+test('phase decisions use independent evidence gates', () => {
   const decisions = buildPhaseDecisions({
-    calibrationReview: review('within_target'),
-    holdoutReview: review('review')
-  })
-  for (const decision of Object.values(decisions)) {
-    assert.equal(decision.status, 'insufficient_evidence')
-    assert.equal(decision.productionChange, false)
-  }
-})
-
-test('phase decisions complete only when calibration and holdout agree', () => {
-  const review = {
-    blocking: true,
-    passed: true,
-    scenarios: [
-      {
-        id: 'chaos_tour',
-        status: 'within_target',
-        metrics: { bankruptcyRatePct: { status: 'within_target' } }
-      }
-    ]
-  }
-  const decisions = buildPhaseDecisions({
-    calibrationReview: review,
-    holdoutReview: structuredClone(review)
+    tensionEvidence: { complete: true, status: 'unstable' },
+    lossAttributionEvidence: { complete: true },
+    controversyEvidence: { complete: false, reason: 'missing controversy' },
+    bootstrapFestivalEvidence: { complete: true },
+    progressionEvidence: { complete: false, reason: 'missing payback' }
   })
   assert.equal(decisions.phase6B.status, 'diagnostic_complete')
+  assert.equal(decisions.phase6C.status, 'insufficient_evidence')
+  assert.equal(decisions.phase6D.status, 'boundary_uncertain')
+  assert.equal(decisions.phase7.status, 'insufficient_evidence')
 })

@@ -2332,6 +2332,12 @@ const MODIFIER_EXPENSE_LABEL_KEYS = new Set([
   'economy:gigExpenses.soundcheck.label',
   'economy:gigExpenses.guestList.label'
 ])
+const GROSS_SPEND_SOURCES = [
+  'modifierGrossSpend',
+  'venueGrossSpend',
+  'taxGrossSpend',
+  'otherGrossSpend'
+]
 
 export const runSingleSimulation = (
   scenario,
@@ -2468,6 +2474,9 @@ export const runSingleSimulation = (
   let lowestMoney = state.player.money
   let maxPeakToTroughDrop = 0
   const lossAttribution = createLossAttributionTracker(state.player.money)
+  const grossSpendAttribution = Object.fromEntries(
+    GROSS_SPEND_SOURCES.map(source => [source, 0])
+  )
   let daysSurvived = 0
   const timeline = []
 
@@ -3124,24 +3133,19 @@ export const runSingleSimulation = (
     // The settlement combines income and expenses in one state update. Attribute
     // its expenses separately so a profitable gig cannot erase the losses.
     const expenseBreakdown = financials?.expenses?.breakdown ?? []
-    const modifierExpense = expenseBreakdown
-      .filter(item => MODIFIER_EXPENSE_LABEL_KEYS.has(item.labelKey))
-      .reduce((sum, item) => sum + Math.max(0, finiteNumberOr(item.value, 0)), 0)
-    const otherExpense = Math.max(
-      0,
-      finiteNumberOr(financials?.expenses?.total, 0) - modifierExpense
-    )
+    for (const item of expenseBreakdown) {
+      const value = Math.max(0, finiteNumberOr(item.value, 0))
+      const label = item.labelKey ?? ''
+      const source = MODIFIER_EXPENSE_LABEL_KEYS.has(label)
+        ? 'modifierGrossSpend'
+        : /venue|promoter/i.test(label)
+          ? 'venueGrossSpend'
+          : /tax|management|dampener|overage/i.test(label)
+            ? 'taxGrossSpend'
+            : 'otherGrossSpend'
+      grossSpendAttribution[source] += value
+    }
     const moneyBeforeSettlement = state.player.money
-    observeAttributedMoney(
-      'modifiers',
-      moneyBeforeSettlement,
-      moneyBeforeSettlement - modifierExpense
-    )
-    observeAttributedMoney(
-      'other',
-      moneyBeforeSettlement,
-      moneyBeforeSettlement - otherExpense
-    )
 
     // Standard post-gig adjustments
     applyPostGigState(
@@ -3160,6 +3164,7 @@ export const runSingleSimulation = (
       currentGigStats,
       counters
     )
+    observeAttributedLoss('gig_settlement', moneyBeforeSettlement)
 
     // Deplete merch inventory based on actual sold merch
     if (financials?.soldMerch) {
@@ -3334,7 +3339,7 @@ export const runSingleSimulation = (
     affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
     daysBelowCriticalLiquidity,
-    lossAttribution: {
+    actualLossAttribution: {
       totals: Object.fromEntries(
         Object.entries(lossAttribution.totals).map(([source, value]) => [
           source,
@@ -3346,6 +3351,12 @@ export const runSingleSimulation = (
         ? lossAttribution.lastMaterialLossSource
         : null
     },
+    grossSpendAttribution: Object.fromEntries(
+      Object.entries(grossSpendAttribution).map(([source, value]) => [
+        source,
+        Math.round(value)
+      ])
+    ),
     // `daysBeforeFirstGig` counts unpaid days: for a run that never played, that
     // is every day it survived. `spendBeforeFirstGig` covers the discretionary
     // sinks (travel, fuel, repairs, clinic, shop); the recurring side is
@@ -4060,14 +4071,14 @@ export const summarizeScenario = runs => {
         : null
     },
 
-    lossAttribution: Object.fromEntries(
+    actualLossAttribution: Object.fromEntries(
       LOSS_ATTRIBUTION_SOURCES.map(source => {
-        const losses = runs.map(run => run.lossAttribution?.totals?.[source] ?? 0)
+        const losses = runs.map(run => run.actualLossAttribution?.totals?.[source] ?? 0)
         const firstCount = runs.filter(
-          run => run.lossAttribution?.firstMaterialDrawdownSource === source
+          run => run.actualLossAttribution?.firstMaterialDrawdownSource === source
         ).length
         const bankruptcyCountForSource = bankruptRuns.filter(
-          run => run.lossAttribution?.bankruptcyPrecededBySource === source
+          run => run.actualLossAttribution?.bankruptcyPrecededBySource === source
         ).length
         return [source, {
           total: Math.round(losses.reduce((sum, loss) => sum + loss, 0)),
@@ -4079,6 +4090,16 @@ export const summarizeScenario = runs => {
           bankruptcyPredecessorSharePct: bankruptRuns.length
             ? Number(((bankruptcyCountForSource / bankruptRuns.length) * 100).toFixed(2))
             : null
+        }]
+      })
+    ),
+    grossSpendAttribution: Object.fromEntries(
+      GROSS_SPEND_SOURCES.map(source => {
+        const values = runs.map(run => run.grossSpendAttribution?.[source] ?? 0)
+        return [source, {
+          total: Math.round(values.reduce((sum, value) => sum + value, 0)),
+          median: Math.round(median(values)),
+          p90: Math.round(quantile(values, 0.9))
         }]
       })
     ),
@@ -4437,8 +4458,14 @@ const tensionMetrics = ({ bankruptcy, tight, critical, drawdown, finale }) =>
     bankruptcyAfterFirstGigPct: bankruptcy,
     everBelowTightPct: tight,
     everBelowCriticalPct: critical,
+    avgDaysBelowTightThreshold: [0, 3],
+    avgDaysBelowCriticalThreshold: [0, 2],
+    medianMaxDrawdownPct: [0, drawdown[1]],
     p90MaxDrawdownPct: drawdown,
-    finaleCompletedPct: finale
+    finaleReachedPct: finale,
+    finaleCompletedPct: finale,
+    solventFinalMoneyP10: [0, 30_000],
+    creditOrGrantAssistedPct: [0, 30]
   })
 
 /** Non-blocking design hypotheses; unlike KPI safety caps these never select a candidate. */
@@ -4495,7 +4522,8 @@ export const LOSS_ATTRIBUTION_SOURCES = Object.freeze([
   'modifiers',
   'assets_upgrades',
   'contraband',
-  'other'
+  'other',
+  'gig_settlement'
 ])
 
 export const createLossAttributionTracker = startingMoney => ({
@@ -4542,8 +4570,14 @@ export const buildScenarioTensionReview = ({
         bankruptcyAfterFirstGigPct: stress.bankruptcyAfterFirstGigPct,
         everBelowTightPct: stress.everBelowTightPct,
         everBelowCriticalPct: stress.everBelowCriticalPct,
+        avgDaysBelowTightThreshold: stress.avgDaysBelowTightThreshold,
+        avgDaysBelowCriticalThreshold: stress.avgDaysBelowCriticalThreshold,
+        medianMaxDrawdownPct: stress.medianMaxDrawdownPct,
         p90MaxDrawdownPct: stress.p90MaxDrawdownPct,
-        finaleCompletedPct: summary.tourPaths?.finaleCompletedPct
+        finaleReachedPct: summary.tourPaths?.finaleReachedPct,
+        finaleCompletedPct: summary.tourPaths?.finaleCompletedPct,
+        solventFinalMoneyP10: stress.solventFinalMoneyP10,
+        creditOrGrantAssistedPct: stress.creditOrGrantAssistedPct
       }
       const sampleSize = summary.bankruptcy?.sampleSize
       const enoughEvidence =
