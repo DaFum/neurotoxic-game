@@ -34,12 +34,34 @@ const insufficientDecision = rationale => ({
   rationale
 })
 
-export const buildPhaseDecisions = ({ tensionReview }) => {
-  const measured =
-    tensionReview?.scenarios?.length > 0 &&
-    tensionReview.scenarios.every(
+export const buildPhaseDecisions = ({ calibrationReview, holdoutReview }) => {
+  const isMeasured = review =>
+    review?.scenarios?.length > 0 &&
+    review.scenarios.every(
       scenario => scenario.status !== 'insufficient_evidence'
     )
+  const calibrationById = new Map(
+    (calibrationReview?.scenarios ?? []).map(scenario => [scenario.id, scenario])
+  )
+  const holdoutById = new Map(
+    (holdoutReview?.scenarios ?? []).map(scenario => [scenario.id, scenario])
+  )
+  const sameEvidence =
+    calibrationById.size === holdoutById.size &&
+    [...calibrationById].every(([id, calibration]) => {
+      const holdout = holdoutById.get(id)
+      if (!holdout || calibration.status !== holdout.status) return false
+      const calibrationMetrics = Object.entries(calibration.metrics ?? {})
+      return (
+        calibrationMetrics.length === Object.keys(holdout.metrics ?? {}).length &&
+        calibrationMetrics.every(
+          ([metric, result]) =>
+            result.status === holdout.metrics?.[metric]?.status
+        )
+      )
+    })
+  const measured =
+    isMeasured(calibrationReview) && isMeasured(holdoutReview) && sameEvidence
   if (!measured)
     return {
       phase6B: insufficientDecision(
@@ -106,8 +128,12 @@ export const buildTensionReport = () => {
       }))
     ])
   )
-  const tensionReview = buildScenarioTensionReview({
+  const calibrationReview = buildScenarioTensionReview({
     results: cohorts.calibration,
+    minimumSampleSize: TENSION_RUNS_PER_SCENARIO
+  })
+  const holdoutReview = buildScenarioTensionReview({
+    results: cohorts.holdout,
     minimumSampleSize: TENSION_RUNS_PER_SCENARIO
   })
   const scandal = scenarios.find(scenario => scenario.id === 'scandal_recovery')
@@ -139,8 +165,8 @@ export const buildTensionReport = () => {
     },
     cohorts,
     controversyComparison,
-    tensionReview,
-    decisions: buildPhaseDecisions({ tensionReview })
+    tensionReview: { calibration: calibrationReview, holdout: holdoutReview },
+    decisions: buildPhaseDecisions({ calibrationReview, holdoutReview })
   }
 }
 

@@ -1984,29 +1984,43 @@ const attemptRefuel = (state, counters) => {
   return true
 }
 
-const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
+const maybeMaintainVanAndResources = (
+  state,
+  scenario,
+  rng,
+  counters,
+  observeLoss = () => {}
+) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
   if (state.player.van.fuel < 35 && rng() < discipline) {
+    const moneyBeforeRefuel = state.player.money
     attemptRefuel(state, counters)
+    observeLoss('fuel', moneyBeforeRefuel, state.player.money)
   }
 
   if (state.player.van.condition < 62 && rng() < discipline) {
     const repairCost = calculateRepairCost(state.player.van.condition)
     if (state.player.money >= repairCost) {
+      const moneyBeforeRepair = state.player.money
       state.player.money = clampPlayerMoney(state.player.money - repairCost)
       state.player.van.condition = 100
       counters.repairs += 1
       counters.repairSpend += repairCost
+      observeLoss('maintenance_repairs', moneyBeforeRepair, state.player.money)
     }
   }
 
   if (state.player.money > HQ_UPGRADE_COST * 1.5 && rng() < 0.3) {
+    const moneyBeforeUpgrade = state.player.money
     applyCatalogPurchase(state, _HQ_BEER_PIPELINE, counters)
+    observeLoss('assets_upgrades', moneyBeforeUpgrade, state.player.money)
   }
 
   if (state.player.money > VAN_UPGRADE_COST * 1.5 && rng() < 0.2) {
+    const moneyBeforeUpgrade = state.player.money
     applyCatalogPurchase(state, _VAN_TUNING, counters)
+    observeLoss('assets_upgrades', moneyBeforeUpgrade, state.player.money)
   }
 }
 
@@ -2489,13 +2503,15 @@ export const runSingleSimulation = (
       state.player.money
     )
   }
-  const observeAttributedLoss = (source, moneyBefore) =>
+  const observeAttributedMoney = (source, moneyBefore, moneyAfter) =>
     recordAttributedLoss(lossAttribution, {
       source,
       moneyBefore,
-      moneyAfter: state.player.money,
+      moneyAfter,
       afterFirstGig: firstGigDay != null
     })
+  const observeAttributedLoss = (source, moneyBefore) =>
+    observeAttributedMoney(source, moneyBefore, state.player.money)
   let blockedTravelDaysBeforeFirstGig = 0
   let firstBlockedTravel = null
 
@@ -2541,17 +2557,42 @@ export const runSingleSimulation = (
     const moneyBeforeDay = state.player.money
     const fameBeforeDailyUpdates = state.player.fame
     let preState = state
+    let moneyBeforeStep = preState.player.money
     preState = processAssetTick(preState) || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     const liabilityResult = processLiabilityTick(preState)
     preState = liabilityResult.state || preState
+    observeAttributedMoney(
+      'daily_obligations',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     preState = processCrowdfundTick(preState) || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
     const assetCount = preState.assets ? preState.assets.length : 0
+    moneyBeforeStep = preState.player.money
     const riskResult = rollAssetRiskEvents(
       preState,
       Array.from({ length: assetCount * 2 + 10 }, () => rng()),
       0
     )
     preState = riskResult.state || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     const updates = calculateDailyUpdates(preState, rng, tuning)
     state = preState
     state = {
@@ -2560,7 +2601,11 @@ export const runSingleSimulation = (
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
-    observeAttributedLoss('daily_obligations', moneyBeforeDay)
+    observeAttributedMoney(
+      'daily_obligations',
+      moneyBeforeStep,
+      state.player.money
+    )
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeDailyUpdates,
@@ -2673,9 +2718,13 @@ export const runSingleSimulation = (
     // sampled individually — that would mean threading an observer through the
     // production-mirroring helpers, which is out of proportion to the question this
     // field answers.
-    const moneyBeforeMaintenance = state.player.money
-    maybeMaintainVanAndResources(state, scenario, rng, counters)
-    observeAttributedLoss('maintenance_repairs', moneyBeforeMaintenance)
+    maybeMaintainVanAndResources(
+      state,
+      scenario,
+      rng,
+      counters,
+      observeAttributedMoney
+    )
     observeEarlyRunwayMoney()
     const moneyBeforeCatalog = state.player.money
     maybeBuyCatalogUpgrade(state, rng, counters)
@@ -2786,7 +2835,9 @@ export const runSingleSimulation = (
     // Canonical in-place fallback: an empty tank is not a dead end while a
     // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
     // re-planning on the refuelled state stays deterministic.
+    const moneyBeforeFallbackRefuel = state.player.money
     if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
+      observeAttributedLoss('fuel', moneyBeforeFallbackRefuel)
       travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
       if (!travelPlan.blocked) counters.refuelledToTravel += 1
     }
@@ -3912,6 +3963,12 @@ export const summarizeScenario = runs => {
         criticalEur: LIQUIDITY_STRESS_THRESHOLDS.critical
       },
       bankruptcyRatePct: Number(bankruptcyRatePct.toFixed(2)),
+      bankruptcyBeforeFirstGigPct: shareOfRunsPct(
+        run => run.bankrupt && run.earlyRunway?.bankruptBeforeFirstGig === true
+      ),
+      bankruptcyAfterFirstGigPct: shareOfRunsPct(
+        run => run.bankrupt && run.earlyRunway?.bankruptBeforeFirstGig === false
+      ),
       everBelowTightPct: shareOfRunsPct(
         run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.tight
       ),
@@ -4325,6 +4382,8 @@ export const LIQUIDITY_STRESS_THRESHOLDS = Object.freeze({
 const tensionMetrics = ({ bankruptcy, tight, critical, drawdown, finale }) =>
   Object.freeze({
     bankruptcyRatePct: bankruptcy,
+    bankruptcyBeforeFirstGigPct: [0, bankruptcy[1]],
+    bankruptcyAfterFirstGigPct: bankruptcy,
     everBelowTightPct: tight,
     everBelowCriticalPct: critical,
     p90MaxDrawdownPct: drawdown,
@@ -4429,6 +4488,8 @@ export const buildScenarioTensionReview = ({
       const stress = summary.financialStress ?? {}
       const observed = {
         bankruptcyRatePct: summary.bankruptcy?.ratePct,
+        bankruptcyBeforeFirstGigPct: stress.bankruptcyBeforeFirstGigPct,
+        bankruptcyAfterFirstGigPct: stress.bankruptcyAfterFirstGigPct,
         everBelowTightPct: stress.everBelowTightPct,
         everBelowCriticalPct: stress.everBelowCriticalPct,
         p90MaxDrawdownPct: stress.p90MaxDrawdownPct,

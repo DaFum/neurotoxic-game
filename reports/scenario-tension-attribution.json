@@ -1,7 +1,7 @@
 {
-  "generatedAt": "2026-07-29T15:49:28.177Z",
+  "generatedAt": "2026-07-29T16:06:39.513Z",
   "metadata": {
-    "sourceBaseCommit": "222eda0a190258c6c48b2d73725cc99848799be1",
+    "sourceBaseCommit": "7523761c02ce840685aece8fbe51ebe7afc7f448",
     "workingTreeDirty": false
   },
   "contract": {
@@ -620,6 +620,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 7.6,
+            "bankruptcyBeforeFirstGigPct": 0.7,
+            "bankruptcyAfterFirstGigPct": 6.9,
             "everBelowTightPct": 17.45,
             "everBelowCriticalPct": 8.1,
             "zeroBalancePct": 0.05,
@@ -634,9 +636,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3451489,
-              "median": 1754,
-              "p90": 2228,
+              "total": 3446589,
+              "median": 1749,
+              "p90": 2218,
               "firstMaterialDrawdownSharePct": 61.15,
               "bankruptcyPredecessorSharePct": 90.13
             },
@@ -648,17 +650,17 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 269452,
+              "median": 140,
+              "p90": 172,
+              "firstMaterialDrawdownSharePct": 0.05,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 1678590,
-              "median": 560,
-              "p90": 755,
-              "firstMaterialDrawdownSharePct": 0.45,
+              "total": 841104,
+              "median": 444,
+              "p90": 606,
+              "firstMaterialDrawdownSharePct": 0.4,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -683,9 +685,9 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 3066298,
-              "median": 860,
-              "p90": 3622,
+              "total": 3696342,
+              "median": 885,
+              "p90": 4374,
               "firstMaterialDrawdownSharePct": 14.55,
               "bankruptcyPredecessorSharePct": 0
             },
@@ -1487,6 +1489,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 5.45,
+            "bankruptcyBeforeFirstGigPct": 0.4,
+            "bankruptcyAfterFirstGigPct": 5.05,
             "everBelowTightPct": 13.45,
             "everBelowCriticalPct": 6,
             "zeroBalancePct": 0,
@@ -1501,9 +1505,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3652845,
-              "median": 1830,
-              "p90": 2356,
+              "total": 3645047,
+              "median": 1823,
+              "p90": 2349,
               "firstMaterialDrawdownSharePct": 54.05,
               "bankruptcyPredecessorSharePct": 92.66
             },
@@ -1511,21 +1515,21 @@
               "total": 1286739,
               "median": 674,
               "p90": 755,
-              "firstMaterialDrawdownSharePct": 26.05,
+              "firstMaterialDrawdownSharePct": 25.9,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 332934,
+              "median": 149,
+              "p90": 272,
+              "firstMaterialDrawdownSharePct": 0.2,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 2511490,
-              "median": 623,
-              "p90": 804,
-              "firstMaterialDrawdownSharePct": 0.75,
+              "total": 843738,
+              "median": 486,
+              "p90": 576,
+              "firstMaterialDrawdownSharePct": 0.65,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -1550,10 +1554,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 3896452,
-              "median": 1030,
-              "p90": 4993,
-              "firstMaterialDrawdownSharePct": 17.75,
+              "total": 5292044,
+              "median": 1110,
+              "p90": 8170,
+              "firstMaterialDrawdownSharePct": 17.8,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -2355,6 +2359,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 3.95,
+            "bankruptcyBeforeFirstGigPct": 0.4,
+            "bankruptcyAfterFirstGigPct": 3.55,
             "everBelowTightPct": 11.35,
             "everBelowCriticalPct": 4.25,
             "zeroBalancePct": 0.05,
@@ -2369,9 +2375,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3961476,
-              "median": 1957,
-              "p90": 2602,
+              "total": 3948163,
+              "median": 1952,
+              "p90": 2593,
               "firstMaterialDrawdownSharePct": 46.15,
               "bankruptcyPredecessorSharePct": 88.61
             },
@@ -2379,21 +2385,21 @@
               "total": 1374116,
               "median": 711,
               "p90": 792,
-              "firstMaterialDrawdownSharePct": 24.5,
+              "firstMaterialDrawdownSharePct": 24.45,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 339574,
+              "median": 146,
+              "p90": 274,
+              "firstMaterialDrawdownSharePct": 0.25,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 3721431,
-              "median": 488,
-              "p90": 12873,
-              "firstMaterialDrawdownSharePct": 1.4,
+              "total": 641298,
+              "median": 282,
+              "p90": 510,
+              "firstMaterialDrawdownSharePct": 0.75,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -2418,10 +2424,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 4670690,
-              "median": 1190,
-              "p90": 6728,
-              "firstMaterialDrawdownSharePct": 25.8,
+              "total": 7446950,
+              "median": 1530,
+              "p90": 12920,
+              "firstMaterialDrawdownSharePct": 26.25,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -3220,6 +3226,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 3.45,
+            "bankruptcyBeforeFirstGigPct": 0.7,
+            "bankruptcyAfterFirstGigPct": 2.75,
             "everBelowTightPct": 11.45,
             "everBelowCriticalPct": 3.7,
             "zeroBalancePct": 0,
@@ -3234,9 +3242,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3707180,
-              "median": 1824,
-              "p90": 2368,
+              "total": 3697945,
+              "median": 1819,
+              "p90": 2354,
               "firstMaterialDrawdownSharePct": 50.7,
               "bankruptcyPredecessorSharePct": 79.71
             },
@@ -3244,21 +3252,21 @@
               "total": 1326056,
               "median": 682,
               "p90": 763,
-              "firstMaterialDrawdownSharePct": 25.75,
+              "firstMaterialDrawdownSharePct": 25.65,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 329090,
+              "median": 158,
+              "p90": 267,
+              "firstMaterialDrawdownSharePct": 0.2,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 2944386,
-              "median": 594,
-              "p90": 860,
-              "firstMaterialDrawdownSharePct": 1.25,
+              "total": 870966,
+              "median": 474,
+              "p90": 630,
+              "firstMaterialDrawdownSharePct": 0.95,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -3283,10 +3291,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 3763240,
-              "median": 1020,
-              "p90": 4642,
-              "firstMaterialDrawdownSharePct": 20.4,
+              "total": 5635288,
+              "median": 1193,
+              "p90": 9311,
+              "firstMaterialDrawdownSharePct": 20.6,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -4089,6 +4097,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 8.8,
+            "bankruptcyBeforeFirstGigPct": 0.5,
+            "bankruptcyAfterFirstGigPct": 8.3,
             "everBelowTightPct": 19.15,
             "everBelowCriticalPct": 9.35,
             "zeroBalancePct": 0,
@@ -4103,9 +4113,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3417967,
+              "total": 3412155,
               "median": 1744,
-              "p90": 2218,
+              "p90": 2206,
               "firstMaterialDrawdownSharePct": 59.55,
               "bankruptcyPredecessorSharePct": 94.32
             },
@@ -4117,17 +4127,17 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 267750,
+              "median": 140,
+              "p90": 172,
+              "firstMaterialDrawdownSharePct": 0.15,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 1760751,
-              "median": 556,
-              "p90": 757,
-              "firstMaterialDrawdownSharePct": 0.6,
+              "total": 825972,
+              "median": 444,
+              "p90": 606,
+              "firstMaterialDrawdownSharePct": 0.4,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -4152,10 +4162,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 2952496,
-              "median": 810,
-              "p90": 3571,
-              "firstMaterialDrawdownSharePct": 14.4,
+              "total": 3683449,
+              "median": 855,
+              "p90": 4452,
+              "firstMaterialDrawdownSharePct": 14.45,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -4953,6 +4963,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 6.5,
+            "bankruptcyBeforeFirstGigPct": 0.6,
+            "bankruptcyAfterFirstGigPct": 5.9,
             "everBelowTightPct": 16.15,
             "everBelowCriticalPct": 6.95,
             "zeroBalancePct": 0.1,
@@ -4967,9 +4979,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3631146,
-              "median": 1808,
-              "p90": 2352,
+              "total": 3622749,
+              "median": 1807,
+              "p90": 2335,
               "firstMaterialDrawdownSharePct": 54.2,
               "bankruptcyPredecessorSharePct": 89.23
             },
@@ -4981,17 +4993,17 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 333355,
+              "median": 151,
+              "p90": 276,
+              "firstMaterialDrawdownSharePct": 0.2,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 2165457,
-              "median": 604,
-              "p90": 793,
-              "firstMaterialDrawdownSharePct": 0.65,
+              "total": 836928,
+              "median": 480,
+              "p90": 576,
+              "firstMaterialDrawdownSharePct": 0.35,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -5016,10 +5028,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 3698884,
-              "median": 1020,
-              "p90": 4754,
-              "firstMaterialDrawdownSharePct": 18.85,
+              "total": 4757530,
+              "median": 1085,
+              "p90": 7754,
+              "firstMaterialDrawdownSharePct": 18.95,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -5818,6 +5830,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 2.65,
+            "bankruptcyBeforeFirstGigPct": 0.45,
+            "bankruptcyAfterFirstGigPct": 2.2,
             "everBelowTightPct": 9.4,
             "everBelowCriticalPct": 3.05,
             "zeroBalancePct": 0,
@@ -5832,9 +5846,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 4013939,
-              "median": 1960,
-              "p90": 2632,
+              "total": 3999600,
+              "median": 1957,
+              "p90": 2619,
               "firstMaterialDrawdownSharePct": 49,
               "bankruptcyPredecessorSharePct": 83.02
             },
@@ -5846,17 +5860,17 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 346856,
+              "median": 149,
+              "p90": 272,
+              "firstMaterialDrawdownSharePct": 0.5,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 3951499,
-              "median": 488,
-              "p90": 12887,
-              "firstMaterialDrawdownSharePct": 1.65,
+              "total": 643152,
+              "median": 282,
+              "p90": 504,
+              "firstMaterialDrawdownSharePct": 0.6,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -5881,10 +5895,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 4827364,
-              "median": 1210,
-              "p90": 7500,
-              "firstMaterialDrawdownSharePct": 23.4,
+              "total": 7829592,
+              "median": 1573,
+              "p90": 13023,
+              "firstMaterialDrawdownSharePct": 23.95,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -6684,6 +6698,8 @@
               "criticalEur": 250
             },
             "bankruptcyRatePct": 3.75,
+            "bankruptcyBeforeFirstGigPct": 0.7,
+            "bankruptcyAfterFirstGigPct": 3.05,
             "everBelowTightPct": 10.55,
             "everBelowCriticalPct": 4.15,
             "zeroBalancePct": 0,
@@ -6698,9 +6714,9 @@
           },
           "lossAttribution": {
             "daily_obligations": {
-              "total": 3715781,
-              "median": 1842,
-              "p90": 2373,
+              "total": 3705373,
+              "median": 1839,
+              "p90": 2348,
               "firstMaterialDrawdownSharePct": 52.4,
               "bankruptcyPredecessorSharePct": 81.33
             },
@@ -6708,21 +6724,21 @@
               "total": 1326629,
               "median": 682,
               "p90": 765,
-              "firstMaterialDrawdownSharePct": 24.5,
+              "firstMaterialDrawdownSharePct": 24.4,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 0,
-              "median": 0,
-              "p90": 0,
-              "firstMaterialDrawdownSharePct": 0,
+              "total": 330212,
+              "median": 158,
+              "p90": 268,
+              "firstMaterialDrawdownSharePct": 0.1,
               "bankruptcyPredecessorSharePct": 0
             },
             "maintenance_repairs": {
-              "total": 3042274,
-              "median": 584,
-              "p90": 859,
-              "firstMaterialDrawdownSharePct": 1.5,
+              "total": 858822,
+              "median": 468,
+              "p90": 624,
+              "firstMaterialDrawdownSharePct": 1.15,
               "bankruptcyPredecessorSharePct": 0
             },
             "negative_events": {
@@ -6747,10 +6763,10 @@
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 4102390,
-              "median": 1060,
-              "p90": 5480,
-              "firstMaterialDrawdownSharePct": 19.6,
+              "total": 6088152,
+              "median": 1298,
+              "p90": 9836,
+              "firstMaterialDrawdownSharePct": 19.95,
               "bankruptcyPredecessorSharePct": 0
             },
             "contraband": {
@@ -7555,6 +7571,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 5.85,
+          "bankruptcyBeforeFirstGigPct": 0.75,
+          "bankruptcyAfterFirstGigPct": 5.1,
           "everBelowTightPct": 15,
           "everBelowCriticalPct": 6.2,
           "zeroBalancePct": 0,
@@ -7569,9 +7587,9 @@
         },
         "lossAttribution": {
           "daily_obligations": {
-            "total": 3631611,
-            "median": 1826,
-            "p90": 2330,
+            "total": 3624064,
+            "median": 1821,
+            "p90": 2326,
             "firstMaterialDrawdownSharePct": 53.65,
             "bankruptcyPredecessorSharePct": 87.18
           },
@@ -7583,17 +7601,17 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
+            "total": 334380,
+            "median": 151,
+            "p90": 275,
+            "firstMaterialDrawdownSharePct": 0.35,
             "bankruptcyPredecessorSharePct": 0
           },
           "maintenance_repairs": {
-            "total": 2330691,
-            "median": 620,
-            "p90": 800,
-            "firstMaterialDrawdownSharePct": 0.75,
+            "total": 844494,
+            "median": 486,
+            "p90": 576,
+            "firstMaterialDrawdownSharePct": 0.35,
             "bankruptcyPredecessorSharePct": 0
           },
           "negative_events": {
@@ -7618,10 +7636,10 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "assets_upgrades": {
-            "total": 3602982,
-            "median": 970,
-            "p90": 4434,
-            "firstMaterialDrawdownSharePct": 19.2,
+            "total": 4810829,
+            "median": 1050,
+            "p90": 7575,
+            "firstMaterialDrawdownSharePct": 19.25,
             "bankruptcyPredecessorSharePct": 0
           },
           "contraband": {
@@ -8423,6 +8441,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 8.6,
+          "bankruptcyBeforeFirstGigPct": 0.65,
+          "bankruptcyAfterFirstGigPct": 7.95,
           "everBelowTightPct": 19.75,
           "everBelowCriticalPct": 9,
           "zeroBalancePct": 0,
@@ -8437,9 +8457,9 @@
         },
         "lossAttribution": {
           "daily_obligations": {
-            "total": 3507493,
-            "median": 1792,
-            "p90": 2275,
+            "total": 3501862,
+            "median": 1788,
+            "p90": 2267,
             "firstMaterialDrawdownSharePct": 66.7,
             "bankruptcyPredecessorSharePct": 92.44
           },
@@ -8447,21 +8467,21 @@
             "total": 1208153,
             "median": 643,
             "p90": 728,
-            "firstMaterialDrawdownSharePct": 19.65,
+            "firstMaterialDrawdownSharePct": 19.6,
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
-            "firstMaterialDrawdownSharePct": 0,
+            "total": 329730,
+            "median": 151,
+            "p90": 276,
+            "firstMaterialDrawdownSharePct": 0.3,
             "bankruptcyPredecessorSharePct": 0
           },
           "maintenance_repairs": {
-            "total": 1577988,
-            "median": 590,
-            "p90": 778,
-            "firstMaterialDrawdownSharePct": 0.8,
+            "total": 811014,
+            "median": 456,
+            "p90": 570,
+            "firstMaterialDrawdownSharePct": 0.55,
             "bankruptcyPredecessorSharePct": 0
           },
           "negative_events": {
@@ -8486,9 +8506,9 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "assets_upgrades": {
-            "total": 3230140,
-            "median": 875,
-            "p90": 4020,
+            "total": 3723431,
+            "median": 900,
+            "p90": 4375,
             "firstMaterialDrawdownSharePct": 11.65,
             "bankruptcyPredecessorSharePct": 0
           },
@@ -9289,6 +9309,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 14.15,
+          "bankruptcyBeforeFirstGigPct": 0.5,
+          "bankruptcyAfterFirstGigPct": 13.65,
           "everBelowTightPct": 32.1,
           "everBelowCriticalPct": 14.75,
           "zeroBalancePct": 0.05,
@@ -9303,8 +9325,8 @@
         },
         "lossAttribution": {
           "daily_obligations": {
-            "total": 3268066,
-            "median": 1739,
+            "total": 3265017,
+            "median": 1738,
             "p90": 2154,
             "firstMaterialDrawdownSharePct": 80.95,
             "bankruptcyPredecessorSharePct": 96.11
@@ -9317,16 +9339,16 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
+            "total": 311982,
+            "median": 149,
+            "p90": 272,
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "maintenance_repairs": {
-            "total": 1492582,
-            "median": 547,
-            "p90": 774,
+            "total": 760362,
+            "median": 390,
+            "p90": 570,
             "firstMaterialDrawdownSharePct": 0.15,
             "bankruptcyPredecessorSharePct": 0
           },
@@ -9352,9 +9374,9 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "assets_upgrades": {
-            "total": 2567534,
-            "median": 690,
-            "p90": 2704,
+            "total": 3045693,
+            "median": 720,
+            "p90": 3231,
             "firstMaterialDrawdownSharePct": 6.45,
             "bankruptcyPredecessorSharePct": 0
           },
@@ -10159,6 +10181,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 22.2,
+          "bankruptcyBeforeFirstGigPct": 1,
+          "bankruptcyAfterFirstGigPct": 21.2,
           "everBelowTightPct": 42.8,
           "everBelowCriticalPct": 22.9,
           "zeroBalancePct": 0.1,
@@ -10173,9 +10197,9 @@
         },
         "lossAttribution": {
           "daily_obligations": {
-            "total": 3059824,
-            "median": 1692,
-            "p90": 2096,
+            "total": 3058235,
+            "median": 1691,
+            "p90": 2095,
             "firstMaterialDrawdownSharePct": 90.65,
             "bankruptcyPredecessorSharePct": 95.05
           },
@@ -10187,16 +10211,16 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "fuel": {
-            "total": 0,
-            "median": 0,
-            "p90": 0,
+            "total": 290680,
+            "median": 146,
+            "p90": 272,
             "firstMaterialDrawdownSharePct": 0,
             "bankruptcyPredecessorSharePct": 0
           },
           "maintenance_repairs": {
-            "total": 1078648,
-            "median": 530,
-            "p90": 753,
+            "total": 706902,
+            "median": 366,
+            "p90": 570,
             "firstMaterialDrawdownSharePct": 0.1,
             "bankruptcyPredecessorSharePct": 0
           },
@@ -10222,9 +10246,9 @@
             "bankruptcyPredecessorSharePct": 0
           },
           "assets_upgrades": {
-            "total": 1919128,
-            "median": 540,
-            "p90": 2040,
+            "total": 2045749,
+            "median": 545,
+            "p90": 2090,
             "firstMaterialDrawdownSharePct": 2.5,
             "bankruptcyPredecessorSharePct": 0
           },
@@ -10421,223 +10445,551 @@
     }
   ],
   "tensionReview": {
-    "blocking": false,
-    "contract": "design-hypothesis",
-    "scenarios": [
-      {
-        "id": "bootstrap_struggle",
-        "blocking": false,
-        "sampleSize": 2000,
-        "status": "within_target",
-        "metrics": {
-          "bankruptcyRatePct": {
-            "observed": 7.6,
-            "targetRangePct": [
-              5,
-              15
-            ],
-            "status": "within_target"
-          },
-          "everBelowTightPct": {
-            "observed": 17.45,
-            "targetRangePct": [
-              12,
-              25
-            ],
-            "status": "within_target"
-          },
-          "everBelowCriticalPct": {
-            "observed": 8.1,
-            "targetRangePct": [
-              5,
-              15
-            ],
-            "status": "within_target"
-          },
-          "p90MaxDrawdownPct": {
-            "observed": 70.87,
-            "targetRangePct": [
-              60,
-              80
-            ],
-            "status": "within_target"
-          },
-          "finaleCompletedPct": {
-            "observed": 91.6,
-            "targetRangePct": [
-              70,
-              100
-            ],
-            "status": "within_target"
+    "calibration": {
+      "blocking": false,
+      "contract": "design-hypothesis",
+      "scenarios": [
+        {
+          "id": "bootstrap_struggle",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 7.6,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.7,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 6.9,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 17.45,
+              "targetRangePct": [
+                12,
+                25
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 8.1,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 70.87,
+              "targetRangePct": [
+                60,
+                80
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 91.6,
+              "targetRangePct": [
+                70,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "scandal_recovery",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 5.45,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.4,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 5.05,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 13.45,
+              "targetRangePct": [
+                10,
+                25
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 6,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 62.74,
+              "targetRangePct": [
+                55,
+                80
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 94.05,
+              "targetRangePct": [
+                70,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "festival_push",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 3.95,
+              "targetRangePct": [
+                3,
+                12
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.4,
+              "targetRangePct": [
+                0,
+                12
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 3.55,
+              "targetRangePct": [
+                3,
+                12
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 11.35,
+              "targetRangePct": [
+                7,
+                20
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 4.25,
+              "targetRangePct": [
+                2,
+                10
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 60.38,
+              "targetRangePct": [
+                50,
+                75
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 95.9,
+              "targetRangePct": [
+                75,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "chaos_tour",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "review",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 3.45,
+              "targetRangePct": [
+                3,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.7,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 2.75,
+              "targetRangePct": [
+                3,
+                15
+              ],
+              "status": "below_target"
+            },
+            "everBelowTightPct": {
+              "observed": 11.45,
+              "targetRangePct": [
+                8,
+                22
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 3.7,
+              "targetRangePct": [
+                2,
+                12
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 52.79,
+              "targetRangePct": [
+                45,
+                70
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 95,
+              "targetRangePct": [
+                65,
+                100
+              ],
+              "status": "within_target"
+            }
           }
         }
-      },
-      {
-        "id": "scandal_recovery",
-        "blocking": false,
-        "sampleSize": 2000,
-        "status": "within_target",
-        "metrics": {
-          "bankruptcyRatePct": {
-            "observed": 5.45,
-            "targetRangePct": [
-              4,
-              15
-            ],
-            "status": "within_target"
-          },
-          "everBelowTightPct": {
-            "observed": 13.45,
-            "targetRangePct": [
-              10,
-              25
-            ],
-            "status": "within_target"
-          },
-          "everBelowCriticalPct": {
-            "observed": 6,
-            "targetRangePct": [
-              4,
-              15
-            ],
-            "status": "within_target"
-          },
-          "p90MaxDrawdownPct": {
-            "observed": 62.74,
-            "targetRangePct": [
-              55,
-              80
-            ],
-            "status": "within_target"
-          },
-          "finaleCompletedPct": {
-            "observed": 94.05,
-            "targetRangePct": [
-              70,
-              100
-            ],
-            "status": "within_target"
+      ]
+    },
+    "holdout": {
+      "blocking": false,
+      "contract": "design-hypothesis",
+      "scenarios": [
+        {
+          "id": "bootstrap_struggle",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 8.8,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.5,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 8.3,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 19.15,
+              "targetRangePct": [
+                12,
+                25
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 9.35,
+              "targetRangePct": [
+                5,
+                15
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 74.59,
+              "targetRangePct": [
+                60,
+                80
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 90.15,
+              "targetRangePct": [
+                70,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "scandal_recovery",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 6.5,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.6,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 5.9,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 16.15,
+              "targetRangePct": [
+                10,
+                25
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 6.95,
+              "targetRangePct": [
+                4,
+                15
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 67.92,
+              "targetRangePct": [
+                55,
+                80
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 92.9,
+              "targetRangePct": [
+                70,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "festival_push",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "review",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 2.65,
+              "targetRangePct": [
+                3,
+                12
+              ],
+              "status": "below_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.45,
+              "targetRangePct": [
+                0,
+                12
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 2.2,
+              "targetRangePct": [
+                3,
+                12
+              ],
+              "status": "below_target"
+            },
+            "everBelowTightPct": {
+              "observed": 9.4,
+              "targetRangePct": [
+                7,
+                20
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 3.05,
+              "targetRangePct": [
+                2,
+                10
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 57.44,
+              "targetRangePct": [
+                50,
+                75
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 97.25,
+              "targetRangePct": [
+                75,
+                100
+              ],
+              "status": "within_target"
+            }
+          }
+        },
+        {
+          "id": "chaos_tour",
+          "blocking": false,
+          "sampleSize": 2000,
+          "status": "within_target",
+          "metrics": {
+            "bankruptcyRatePct": {
+              "observed": 3.75,
+              "targetRangePct": [
+                3,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyBeforeFirstGigPct": {
+              "observed": 0.7,
+              "targetRangePct": [
+                0,
+                15
+              ],
+              "status": "within_target"
+            },
+            "bankruptcyAfterFirstGigPct": {
+              "observed": 3.05,
+              "targetRangePct": [
+                3,
+                15
+              ],
+              "status": "within_target"
+            },
+            "everBelowTightPct": {
+              "observed": 10.55,
+              "targetRangePct": [
+                8,
+                22
+              ],
+              "status": "within_target"
+            },
+            "everBelowCriticalPct": {
+              "observed": 4.15,
+              "targetRangePct": [
+                2,
+                12
+              ],
+              "status": "within_target"
+            },
+            "p90MaxDrawdownPct": {
+              "observed": 54.4,
+              "targetRangePct": [
+                45,
+                70
+              ],
+              "status": "within_target"
+            },
+            "finaleCompletedPct": {
+              "observed": 95.05,
+              "targetRangePct": [
+                65,
+                100
+              ],
+              "status": "within_target"
+            }
           }
         }
-      },
-      {
-        "id": "festival_push",
-        "blocking": false,
-        "sampleSize": 2000,
-        "status": "within_target",
-        "metrics": {
-          "bankruptcyRatePct": {
-            "observed": 3.95,
-            "targetRangePct": [
-              3,
-              12
-            ],
-            "status": "within_target"
-          },
-          "everBelowTightPct": {
-            "observed": 11.35,
-            "targetRangePct": [
-              7,
-              20
-            ],
-            "status": "within_target"
-          },
-          "everBelowCriticalPct": {
-            "observed": 4.25,
-            "targetRangePct": [
-              2,
-              10
-            ],
-            "status": "within_target"
-          },
-          "p90MaxDrawdownPct": {
-            "observed": 60.38,
-            "targetRangePct": [
-              50,
-              75
-            ],
-            "status": "within_target"
-          },
-          "finaleCompletedPct": {
-            "observed": 95.9,
-            "targetRangePct": [
-              75,
-              100
-            ],
-            "status": "within_target"
-          }
-        }
-      },
-      {
-        "id": "chaos_tour",
-        "blocking": false,
-        "sampleSize": 2000,
-        "status": "within_target",
-        "metrics": {
-          "bankruptcyRatePct": {
-            "observed": 3.45,
-            "targetRangePct": [
-              3,
-              15
-            ],
-            "status": "within_target"
-          },
-          "everBelowTightPct": {
-            "observed": 11.45,
-            "targetRangePct": [
-              8,
-              22
-            ],
-            "status": "within_target"
-          },
-          "everBelowCriticalPct": {
-            "observed": 3.7,
-            "targetRangePct": [
-              2,
-              12
-            ],
-            "status": "within_target"
-          },
-          "p90MaxDrawdownPct": {
-            "observed": 52.79,
-            "targetRangePct": [
-              45,
-              70
-            ],
-            "status": "within_target"
-          },
-          "finaleCompletedPct": {
-            "observed": 95,
-            "targetRangePct": [
-              65,
-              100
-            ],
-            "status": "within_target"
-          }
-        }
-      }
-    ]
+      ]
+    }
   },
   "decisions": {
     "phase6B": {
-      "status": "diagnostic_complete",
+      "status": "insufficient_evidence",
       "productionChange": false,
-      "rationale": "No event-severity candidate is selected by diagnostic cohorts."
+      "rationale": "Chaos tuning requires complete tension attribution."
     },
     "phase6C": {
-      "status": "diagnostic_complete",
+      "status": "insufficient_evidence",
       "productionChange": false,
-      "rationale": "Controversy profiles are diagnostic and do not alter runtime values."
+      "rationale": "Scandal profile selection requires all controversy cohorts."
     },
     "phase6D": {
-      "status": "observe",
+      "status": "insufficient_evidence",
       "productionChange": false,
-      "rationale": "Bootstrap contracts and Festival uncertainty remain non-blocking."
+      "rationale": "Bootstrap and Festival remain observation-only without complete cohorts."
     },
     "phase7": {
-      "status": "diagnostic_complete",
+      "status": "insufficient_evidence",
       "productionChange": false,
-      "rationale": "Purchase paths are measured separately from economy tuning."
+      "rationale": "Progression tuning requires measured purchase-path evidence."
     }
   }
 }

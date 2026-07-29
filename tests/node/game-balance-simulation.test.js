@@ -257,6 +257,8 @@ test('scenario tension contracts are non-blocking and fail closed on missing evi
   for (const target of Object.values(SCENARIO_TENSION_TARGETS)) {
     assert.equal(target.blocking, false)
     assert.deepEqual(Object.keys(target.metrics).sort(), [
+      'bankruptcyAfterFirstGigPct',
+      'bankruptcyBeforeFirstGigPct',
       'bankruptcyRatePct',
       'everBelowCriticalPct',
       'everBelowTightPct',
@@ -272,6 +274,23 @@ test('scenario tension contracts are non-blocking and fail closed on missing evi
   assert.equal(review.blocking, false)
   assert.equal(review.scenarios[0].status, 'insufficient_evidence')
   assert.equal(review.scenarios[0].metrics.bankruptcyRatePct.observed, null)
+})
+
+test('scenario tension review separates bankruptcy before and after first income', () => {
+  const summary = summarizeScenario([
+    {
+      ...runSingleSimulation(probeScenario(2), 11),
+      bankrupt: true,
+      earlyRunway: { bankruptBeforeFirstGig: true }
+    },
+    {
+      ...runSingleSimulation(probeScenario(2), 12),
+      bankrupt: true,
+      earlyRunway: { bankruptBeforeFirstGig: false }
+    }
+  ])
+  assert.equal(summary.financialStress.bankruptcyBeforeFirstGigPct, 50)
+  assert.equal(summary.financialStress.bankruptcyAfterFirstGigPct, 50)
 })
 
 test('loss attribution records only post-first-gig negative deltas', () => {
@@ -298,6 +317,35 @@ test('loss attribution records only post-first-gig negative deltas', () => {
   assert.equal(tracker.totals.negative_events, 0)
   assert.equal(tracker.firstMaterialDrawdownSource, 'travel')
   assert.equal(tracker.lastMaterialLossSource, 'travel')
+})
+
+test('positive daily movements cannot erase a separately sampled obligation loss', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'assets_upgrades',
+    moneyBefore: 1_000,
+    moneyAfter: 1_100,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'daily_obligations',
+    moneyBefore: 1_100,
+    moneyAfter: 1_020,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.totals.daily_obligations, 80)
+  assert.equal(tracker.totals.assets_upgrades, 0)
+})
+
+test('post-first-gig refuels are attributed to fuel', () => {
+  const runs = Array.from({ length: 40 }, (_, index) =>
+    runSingleSimulation(
+      probeScenario(10, { gigGapDays: 1, maintenanceDiscipline: 1 }),
+      createScenarioSeed('fuel-attribution', index)
+    )
+  )
+  assert.ok(runs.some(run => run.refuels > 0 && run.gigsPlayed > 0))
+  assert.ok(runs.some(run => run.lossAttribution.totals.fuel > 0))
 })
 
 test('execution coverage aggregates without leaking or duplicating IDs', () => {

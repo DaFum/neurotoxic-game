@@ -25,7 +25,10 @@ test('generated diagnostics identify their clean source commit', () => {
 })
 
 test('phase decisions fail closed without measured evidence', () => {
-  const decisions = buildPhaseDecisions({ tensionReview: null })
+  const decisions = buildPhaseDecisions({
+    calibrationReview: null,
+    holdoutReview: null
+  })
   assert.deepEqual(Object.keys(decisions), [
     'phase6B',
     'phase6C',
@@ -36,4 +39,41 @@ test('phase decisions fail closed without measured evidence', () => {
     assert.equal(decision.productionChange, false)
     assert.equal(decision.status, 'insufficient_evidence')
   }
+})
+
+test('phase decisions fail closed when holdout contradicts calibration', () => {
+  const review = status => ({
+    scenarios: [
+      {
+        id: 'chaos_tour',
+        status,
+        metrics: { bankruptcyRatePct: { status } }
+      }
+    ]
+  })
+  const decisions = buildPhaseDecisions({
+    calibrationReview: review('within_target'),
+    holdoutReview: review('review')
+  })
+  for (const decision of Object.values(decisions)) {
+    assert.equal(decision.status, 'insufficient_evidence')
+    assert.equal(decision.productionChange, false)
+  }
+})
+
+test('phase decisions complete only when calibration and holdout agree', () => {
+  const review = {
+    scenarios: [
+      {
+        id: 'chaos_tour',
+        status: 'within_target',
+        metrics: { bankruptcyRatePct: { status: 'within_target' } }
+      }
+    ]
+  }
+  const decisions = buildPhaseDecisions({
+    calibrationReview: review,
+    holdoutReview: structuredClone(review)
+  })
+  assert.equal(decisions.phase6B.status, 'diagnostic_complete')
 })
