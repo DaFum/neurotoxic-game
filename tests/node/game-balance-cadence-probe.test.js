@@ -5,6 +5,7 @@ import {
   PRODUCTION_CADENCE_VALIDATION,
   cappedScenarios,
   parseArgs,
+  renderProductionCadenceMarkdown,
   runProductionCadenceValidation,
   runCadenceProbe,
   summarizeCohort
@@ -248,16 +249,38 @@ test('production cadence validation is predeclared and rejects undersized sample
 })
 
 test('--runs rejects production validation samples below the predeclared minimum', () => {
+  assert.throws(() => parseArgs(['--runs']), /--runs requires a value/)
   assert.throws(() => parseArgs(['--runs', '1999']), /--runs.*at least 2000/)
   assert.equal(parseArgs(['--runs', '2000']).runsPerScenario, 2000)
 })
 
+test('production cadence validation fails closed when an expected scenario is missing', () => {
+  const expectedScenarios = cappedScenarios().map(scenario => scenario.id)
+  const scenarios = [cappedScenarios()[0]]
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner: () => stubRun({ bankrupt: false }),
+    scenarios
+  })
+
+  assert.deepEqual(report.expectedScenarios, expectedScenarios)
+  assert.deepEqual(
+    report.evaluatedScenarios,
+    scenarios.map(scenario => scenario.id)
+  )
+  assert.deepEqual(report.missingScenarioIds, expectedScenarios.slice(1))
+  assert.equal(report.approvedForProduction, false)
+  assert.deepEqual(
+    report.failedGates,
+    expectedScenarios.slice(1).map(id => `${id}:missing-validation`)
+  )
+  const markdown = renderProductionCadenceMarkdown(report)
+  assert.match(markdown, /## Szenarioabdeckung/)
+  assert.match(markdown, new RegExp(`Fehlend:.*${expectedScenarios[1]}`))
+})
+
 test('production cadence validation applies the predeclared release gates', () => {
-  const scenarios = [
-    { ...cappedScenarios().find(item => item.id === 'cult_hypergrowth') },
-    { ...cappedScenarios().find(item => item.id === 'baseline_touring') },
-    { ...cappedScenarios().find(item => item.id === 'bootstrap_struggle') }
-  ]
+  const scenarios = cappedScenarios().map(scenario => ({ ...scenario }))
   const seedToIndex = new Map()
   for (const scenario of scenarios) {
     for (let index = 0; index < 2000; index++) {
@@ -285,7 +308,7 @@ test('production cadence validation applies the predeclared release gates', () =
   const runner = (scenario, seed) => {
     const index = seedToIndex.get(seed)
     const bankrupt =
-      index < bankruptcyCounts[scenario.gigCadencePolicy][scenario.id]
+      index < (bankruptcyCounts[scenario.gigCadencePolicy][scenario.id] ?? 0)
     return stubRun({ bankrupt, played: !bankrupt })
   }
 
@@ -319,20 +342,24 @@ test('production cadence validation applies the predeclared release gates', () =
 })
 
 test('production cadence side-effect gates use comparable seed pairs and fail closed', () => {
+  const scenarios = cappedScenarios().map(item => ({ ...item }))
   const scenario = {
-    ...cappedScenarios().find(item => item.id === 'baseline_touring')
+    ...scenarios.find(item => item.id === 'baseline_touring')
   }
   const seeds = new Map()
-  for (let index = 0; index < 2000; index++) {
-    seeds.set(
-      createScenarioSeed(
-        `${scenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+  for (const item of scenarios) {
+    for (let index = 0; index < 2000; index++) {
+      seeds.set(
+        createScenarioSeed(
+          `${item.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+          index
+        ),
         index
-      ),
-      index
-    )
+      )
+    }
   }
   const runner = (configured, seed) => {
+    if (configured.id !== scenario.id) return stubRun({ bankrupt: false })
     const index = seeds.get(seed)
     const control = configured.gigCadencePolicy === 'gap-aligned'
     const comparable = index < 1000
@@ -350,7 +377,7 @@ test('production cadence side-effect gates use comparable seed pairs and fail cl
   const report = runProductionCadenceValidation({
     runsPerScenario: 2000,
     runner,
-    scenarios: [scenario]
+    scenarios
   })
   const comparison = report.comparisons[scenario.id]
 
@@ -363,6 +390,7 @@ test('production cadence side-effect gates use comparable seed pairs and fail cl
   const thin = runProductionCadenceValidation({
     runsPerScenario: 2000,
     runner: (configured, seed) => {
+      if (configured.id !== scenario.id) return stubRun({ bankrupt: false })
       const index = seeds.get(seed)
       const comparable = index < 999
       return stubRun({
@@ -370,7 +398,7 @@ test('production cadence side-effect gates use comparable seed pairs and fail cl
         played: comparable
       })
     },
-    scenarios: [scenario]
+    scenarios
   })
   assert.equal(thin.comparisons[scenario.id].pairedFamePerGig.deltaPct, null)
   assert.equal(
@@ -385,22 +413,97 @@ test('production cadence side-effect gates use comparable seed pairs and fail cl
 })
 
 test('production cadence release gate uses finale completion, not arrival', () => {
+  const scenarios = cappedScenarios().map(item => ({ ...item }))
   const scenario = {
-    ...cappedScenarios().find(item => item.id === 'baseline_touring')
+    ...scenarios.find(item => item.id === 'baseline_touring')
   }
   const runner = configured => {
     const run = stubRun({ bankrupt: false })
     run.finaleReached = true
-    run.finaleCompleted = configured.gigCadencePolicy === 'gap-aligned'
+    run.finaleCompleted =
+      configured.id !== scenario.id ||
+      configured.gigCadencePolicy === 'gap-aligned'
     return run
   }
   const report = runProductionCadenceValidation({
     runsPerScenario: 2000,
     runner,
-    scenarios: [scenario]
+    scenarios
   })
 
   assert.equal(report.comparisons[scenario.id].finaleReachedDeltaPct, 0)
   assert.equal(report.comparisons[scenario.id].finaleCompletedDeltaPct, -100)
   assert.deepEqual(report.failedGates, [`${scenario.id}:finale-completed`])
+})
+
+test('production cadence stranding gate uses blocked travel before the first gig', () => {
+  const scenarios = cappedScenarios().map(item => ({ ...item }))
+  const scenarioId = 'baseline_touring'
+  const runner = configured => {
+    const run = stubRun({ bankrupt: false })
+    if (
+      configured.id === scenarioId &&
+      configured.gigCadencePolicy === 'first-income'
+    ) {
+      run.earlyRunway = runway({
+        blockedTravelDaysBeforeFirstGig: 1,
+        firstBlockedTravel: { day: 1, reason: 'money' }
+      })
+    }
+    return run
+  }
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner,
+    scenarios
+  })
+
+  assert.equal(
+    report.comparisons[scenarioId].blockedTravelBeforeFirstGigRunsPctDelta,
+    100
+  )
+  assert.equal(
+    report.comparisons[scenarioId].bankruptBeforeFirstGigRateDeltaPct,
+    0
+  )
+  assert.deepEqual(report.failedGates, [`${scenarioId}:pre-first-gig-stranded`])
+  const markdown = renderProductionCadenceMarkdown(report)
+  assert.match(markdown, /Δ blockierte Reise vor erstem Gig/)
+  assert.match(markdown, /Δ Insolvenz vor erstem Gig/)
+})
+
+test('production cadence stranding gate ignores bankruptcy without blocked travel', () => {
+  const scenarios = cappedScenarios().map(item => ({ ...item }))
+  const scenarioId = 'baseline_touring'
+  let runIndex = 0
+  const runner = configured => {
+    const run = stubRun({ bankrupt: false })
+    if (configured.gigCadencePolicy === 'gap-aligned') {
+      if (configured.id === scenarioId) runIndex = 0
+      return run
+    }
+    if (configured.id === scenarioId && runIndex++ === 0) {
+      run.bankrupt = true
+      run.earlyRunway = runway({ bankruptBeforeFirstGig: true })
+    }
+    return run
+  }
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner,
+    scenarios
+  })
+
+  assert.equal(
+    report.comparisons[scenarioId].blockedTravelBeforeFirstGigRunsPctDelta,
+    0
+  )
+  assert.equal(
+    report.comparisons[scenarioId].bankruptBeforeFirstGigRateDeltaPct,
+    0.05
+  )
+  assert.equal(
+    report.failedGates.includes(`${scenarioId}:pre-first-gig-stranded`),
+    false
+  )
 })

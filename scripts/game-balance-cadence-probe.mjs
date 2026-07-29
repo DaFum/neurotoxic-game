@@ -209,6 +209,11 @@ export const runProductionCadenceValidation = ({
     )
   }
 
+  const expectedScenarios = cappedScenarios().map(scenario => scenario.id)
+  const evaluatedScenarios = scenarios.map(scenario => scenario.id)
+  const missingScenarioIds = expectedScenarios.filter(
+    id => !evaluatedScenarios.includes(id)
+  )
   const [controlPolicy, candidatePolicy] = PRODUCTION_CADENCE_VALIDATION.policies
   const pairingByPolicy = {}
   const cohorts = Object.fromEntries(
@@ -253,7 +258,7 @@ export const runProductionCadenceValidation = ({
   )
   const control = cohorts[controlPolicy]
   const candidate = cohorts[candidatePolicy]
-  const failedGates = []
+  const failedGates = missingScenarioIds.map(id => `${id}:missing-validation`)
   const comparisons = Object.fromEntries(
     scenarios.map(scenario => {
       const baseline = control[scenario.id]
@@ -274,6 +279,10 @@ export const runProductionCadenceValidation = ({
         ),
         bankruptBeforeFirstGigRateDeltaPct: round(
           proposed.bankruptBeforeFirstGigRatePct - baseline.bankruptBeforeFirstGigRatePct
+        ),
+        blockedTravelBeforeFirstGigRunsPctDelta: round(
+          proposed.blockedTravelBeforeFirstGigRunsPct -
+            baseline.blockedTravelBeforeFirstGigRunsPct
         )
       }
       const cap = KPI_TARGETS[scenario.id]?.bankruptcyMax
@@ -298,7 +307,7 @@ export const runProductionCadenceValidation = ({
       if (comparison.finaleCompletedDeltaPct < 0) {
         failedGates.push(`${scenario.id}:finale-completed`)
       }
-      if (comparison.bankruptBeforeFirstGigRateDeltaPct > 0) {
+      if (comparison.blockedTravelBeforeFirstGigRunsPctDelta > 0) {
         failedGates.push(`${scenario.id}:pre-first-gig-stranded`)
       }
       return [scenario.id, comparison]
@@ -325,6 +334,9 @@ export const runProductionCadenceValidation = ({
       : 'no-production-cadence-recommendation-validation-failed',
     approvedForProduction,
     failedGates,
+    expectedScenarios,
+    evaluatedScenarios,
+    missingScenarioIds,
     acceptanceCriteria: {
       allBankruptcyMaxCaps: true,
       famePerGigPlayedRunsDeltaMaxPct:
@@ -734,7 +746,7 @@ export const renderProductionCadenceMarkdown = report => {
       const control = report.control.scenarios[id]
       const candidate = report.candidate.scenarios[id]
       const comparison = report.comparisons[id]
-      return `| \`${id}\` | ${fmtPct(control.bankruptcyRatePct)} | ${fmtPct(candidate.bankruptcyRatePct)} | ${fmtPct(comparison.pairedFamePerGig.deltaPct)} (${comparison.pairedFamePerGig.sampleSize}) | ${fmtPct(comparison.pairedSolventFinalMoney.deltaPct)} (${comparison.pairedSolventFinalMoney.sampleSize}) | ${fmtPct(comparison.finaleReachedDeltaPct)} | ${fmtPct(comparison.finaleCompletedDeltaPct)} | ${fmtPct(comparison.bankruptBeforeFirstGigRateDeltaPct)} |`
+      return `| \`${id}\` | ${fmtPct(control.bankruptcyRatePct)} | ${fmtPct(candidate.bankruptcyRatePct)} | ${fmtPct(comparison.pairedFamePerGig.deltaPct)} (${comparison.pairedFamePerGig.sampleSize}) | ${fmtPct(comparison.pairedSolventFinalMoney.deltaPct)} (${comparison.pairedSolventFinalMoney.sampleSize}) | ${fmtPct(comparison.finaleReachedDeltaPct)} | ${fmtPct(comparison.finaleCompletedDeltaPct)} | ${fmtPct(comparison.blockedTravelBeforeFirstGigRunsPctDelta)} | ${fmtPct(comparison.bankruptBeforeFirstGigRateDeltaPct)} |`
     })
     .join('\n')
   return `# Produktionsvalidierung der First-Income-Kadenz (Phase 5B)
@@ -749,8 +761,14 @@ Seed-Namensraum: \`${report.seedNamespace}\`
 - Produktionskandidat: \`first-income\`
 - Economy-Tuning: unverändert
 
-| Szenario | Insolvenz Kontrolle | Insolvenz Kandidat | gepaartes Δ Fame/Gig (n) | gepaartes Δ solventes Endgeld (n) | Δ Finale erreicht | Δ Finale abgeschlossen | Δ Insolvenz vor erstem Gig |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+## Szenarioabdeckung
+
+- Erwartet: ${report.expectedScenarios.map(id => `\`${id}\``).join(', ')}
+- Ausgewertet: ${report.evaluatedScenarios.map(id => `\`${id}\``).join(', ')}
+- Fehlend: ${report.missingScenarioIds.length ? report.missingScenarioIds.map(id => `\`${id}\``).join(', ') : 'keine'}
+
+| Szenario | Insolvenz Kontrolle | Insolvenz Kandidat | gepaartes Δ Fame/Gig (n) | gepaartes Δ solventes Endgeld (n) | Δ Finale erreicht | Δ Finale abgeschlossen | Δ blockierte Reise vor erstem Gig | Δ Insolvenz vor erstem Gig |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${scenarioRows}
 
 ## Nicht blockierende Designhinweise
@@ -793,7 +811,10 @@ export const parseArgs = argv => {
   }
   for (let index = 0; index < argv.length; index++) {
     if (argv[index] === '--no-write') options.write = false
-    if (argv[index] === '--runs' && argv[index + 1]) {
+    if (argv[index] === '--runs') {
+      if (argv[index + 1] == null) {
+        throw new RangeError('--runs requires a value')
+      }
       const runs = Number(argv[index + 1])
       if (
         !Number.isInteger(runs) ||
