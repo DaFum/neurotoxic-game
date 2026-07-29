@@ -4,6 +4,7 @@ import { execFileSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import {
+  LOSS_ATTRIBUTION_SOURCES,
   SCENARIOS,
   SCENARIO_TENSION_TARGETS,
   buildScenarioTensionReview,
@@ -18,6 +19,12 @@ export const ATTRIBUTION_COHORTS = Object.freeze({
   holdout: '#scenario-tension-attribution-v1#holdout'
 })
 export const CONTROVERSY_PROFILES = Object.freeze([0, 50, 65, 80])
+const GROSS_SPEND_SOURCES = [
+  'modifierGrossSpend',
+  'venueGrossSpend',
+  'taxGrossSpend',
+  'otherGrossSpend'
+]
 
 export const buildReportMetadata = ({
   runGit = execFileSync,
@@ -95,6 +102,58 @@ export const reviewsDifferForScenarioIds = (
       ([metric, result]) => result.status !== holdout.metrics[metric]?.status
     )
   })
+
+const finiteOrNull = value => value === null || Number.isFinite(value)
+const completeStats = (entry, includeShares) =>
+  entry &&
+  Number.isFinite(entry.total) &&
+  Number.isFinite(entry.median) &&
+  Number.isFinite(entry.p90) &&
+  (!includeShares ||
+    (finiteOrNull(entry.firstMaterialDrawdownSharePct) &&
+      finiteOrNull(entry.bankruptcyPredecessorSharePct)))
+
+export const hasCompleteAttributionEvidence = summary =>
+  LOSS_ATTRIBUTION_SOURCES.every(source =>
+    completeStats(summary?.actualLossAttribution?.[source], true)
+  ) &&
+  GROSS_SPEND_SOURCES.every(source =>
+    completeStats(summary?.grossSpendAttribution?.[source], false)
+  )
+
+export const hasCompleteControversyEvidence = profiles =>
+  profiles.length === CONTROVERSY_PROFILES.length &&
+  CONTROVERSY_PROFILES.every(level => {
+    const summary = profiles.find(
+      profile => profile.controversyLevel === level
+    )?.summary
+    return (
+      summary?.bankruptcy?.sampleSize === TENSION_RUNS_PER_SCENARIO &&
+      Number.isFinite(summary.bankruptcy.ratePct) &&
+      Number.isFinite(summary.tourPaths?.finaleCompletedPct) &&
+      Number.isFinite(summary.avgFinalControversy)
+    )
+  })
+
+export const hasCompleteScenarioReviewEvidence = (
+  calibrationReview,
+  holdoutReview,
+  scenarioIds
+) =>
+  scenarioIds.every(id =>
+    [calibrationReview, holdoutReview].every(review => {
+      const scenario = review.scenarios.find(item => item.id === id)
+      const metrics = Object.values(scenario?.metrics ?? {})
+      return (
+        metrics.length > 0 &&
+        metrics.every(
+          metric =>
+            metric.status !== 'insufficient_evidence' &&
+            Number.isFinite(metric.observed)
+        )
+      )
+    })
+  )
 
 const REPORT_ARTIFACT_PATHS = [
   'reports/scenario-tension-attribution.json',
@@ -229,11 +288,9 @@ export const buildTensionReport = () => {
     ...summariesFor('bootstrap_struggle'),
     ...summariesFor('festival_push')
   ]
-  const controversyComplete =
-    controversyComparison.length === CONTROVERSY_PROFILES.length &&
-    controversyComparison.every(
-      profile => profile.summary?.bankruptcy?.sampleSize === TENSION_RUNS_PER_SCENARIO
-    )
+  const controversyComplete = hasCompleteControversyEvidence(
+    controversyComparison
+  )
   const progressionFieldsPresent = bootstrapFestivalSummaries.every(summary => {
     const paths = summary?.purchasePaths
     return paths &&
@@ -252,7 +309,7 @@ export const buildTensionReport = () => {
     },
     lossAttributionEvidence: createEvidenceResult(
       completeSamples(chaosSummaries) && chaosSummaries.every(
-        summary => summary?.actualLossAttribution && summary?.grossSpendAttribution
+        hasCompleteAttributionEvidence
       ),
       'Chaos actual-loss attribution is incomplete.'
     ),
@@ -261,7 +318,12 @@ export const buildTensionReport = () => {
       'All 0/50/65/80 controversy cohorts with 2,000 runs are required.'
     ),
     bootstrapFestivalEvidence: createEvidenceResult(
-      completeSamples(bootstrapFestivalSummaries),
+      completeSamples(bootstrapFestivalSummaries) &&
+        hasCompleteScenarioReviewEvidence(
+          calibrationReview,
+          holdoutReview,
+          ['bootstrap_struggle', 'festival_push']
+        ),
       'Bootstrap and Festival cohorts are incomplete.',
       {
         status: reviewsDifferForScenarioIds(

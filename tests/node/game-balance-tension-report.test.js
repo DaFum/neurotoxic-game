@@ -12,6 +12,9 @@ import {
   buildPhaseDecisions,
   createEvidenceResult,
   hasCompleteTensionEvidence,
+  hasCompleteAttributionEvidence,
+  hasCompleteScenarioReviewEvidence,
+  hasCompleteControversyEvidence,
   reviewsDifferForScenarioIds,
   validateReportProvenance,
   writeTensionArtifacts
@@ -165,5 +168,37 @@ test('provenance validation requires an existing ancestor and reports-only diff'
   assert.deepEqual(
     calls.map(args => args[0]),
     ['cat-file', 'merge-base', 'diff']
+  )
+})
+
+test('phase evidence validators reject empty and non-finite output objects', () => {
+  assert.equal(hasCompleteAttributionEvidence({}), false)
+  assert.equal(
+    hasCompleteAttributionEvidence({
+      actualLossAttribution: {},
+      grossSpendAttribution: {}
+    }),
+    false
+  )
+  assert.equal(
+    hasCompleteControversyEvidence([
+      {
+        controversyLevel: 0,
+        summary: {
+          bankruptcy: { sampleSize: 2_000, ratePct: Number.NaN },
+          tourPaths: { finaleCompletedPct: 90 },
+          avgFinalControversy: 5
+        }
+      }
+    ]),
+    false
+  )
+  assert.equal(
+    hasCompleteScenarioReviewEvidence(
+      { scenarios: [{ id: 'festival_push', metrics: {} }] },
+      { scenarios: [{ id: 'festival_push', metrics: {} }] },
+      ['festival_push']
+    ),
+    false
   )
 })
