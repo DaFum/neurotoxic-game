@@ -2,28 +2,28 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 170000 simulation runs in 313808 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 170000 simulation runs in 230346 ms.
 
 ## Alt/Neu-Vergleich der vollständigen Reports
 
-Dieser Vergleich ist **deskriptiv und ungepaart**: Die Reports verwenden unterschiedliche Seed-Namensräume und Stichprobengrößen.
+Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `aead877fdefa97e25e126eb50cb079a420ac72f9` |
-| Runs je Szenario | 260 | 2000 |
-| Seed-Namensraum | `legacy` | `#first-income-full-reports-v1` |
-| Empfehlung | `no-production-recommendation-final-validation-failed` | `accepted-for-production-partial` |
+| Source-Commit | `aead877fdefa97e25e126eb50cb079a420ac72f9` | `913d1f10af97255ac89a55f97a49867e93a0126b` |
+| Runs je Szenario | 2000 | 2000 |
+| Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
+| Empfehlung | `accepted-for-production-partial` | `accepted-for-production-partial` |
 
 | Szenario | Insolvenz alt | Insolvenz neu | Delta | Stichprobe alt/neu |
 |---|---:|---:|---:|---:|
-| `aggressive_marketing` | 11.92% | 2.65% | -9.27 pp | 260 / 2000 |
-| `baseline_touring` | 1.15% | 1.6% | 0.45 pp | 260 / 2000 |
-| `bootstrap_struggle` | 33.46% | 8.5% | -24.96 pp | 260 / 2000 |
-| `chaos_tour` | 15% | 3.8% | -11.2 pp | 260 / 2000 |
-| `cult_hypergrowth` | 13.85% | 2.25% | -11.6 pp | 260 / 2000 |
-| `festival_push` | 25.77% | 3.95% | -21.82 pp | 260 / 2000 |
-| `scandal_recovery` | 25.38% | 5.75% | -19.63 pp | 260 / 2000 |
+| `aggressive_marketing` | 2.65% | 2.65% | 0 pp | 2000 / 2000 |
+| `baseline_touring` | 1.6% | 1.6% | 0 pp | 2000 / 2000 |
+| `bootstrap_struggle` | 8.5% | 8.5% | 0 pp | 2000 / 2000 |
+| `chaos_tour` | 3.8% | 3.8% | 0 pp | 2000 / 2000 |
+| `cult_hypergrowth` | 2.25% | 2.25% | 0 pp | 2000 / 2000 |
+| `festival_push` | 3.95% | 3.95% | 0 pp | 2000 / 2000 |
+| `scandal_recovery` | 5.75% | 5.75% | 0 pp | 2000 / 2000 |
 
 ## Kontrollzustand
 
@@ -108,7 +108,7 @@ Objective status: **partial**
 - baseline_touring money-per-day advantage 6.05% is below the 20-25% target (was 6.05%)
 - low_resource_touring money-per-day advantage 6.88% is below the 20-25% target (was 6.88%)
 
-Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_touring money-per-day advantage 6.05% is below the 20-25% target (was 6.05%); low_resource_touring money-per-day advantage 6.88% is below the 20-25% target (was 6.88%)). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.
+Gap-1 money-per-day advantage now sits BELOW the 20-25% target band. No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.
 
 ## Late-Game-Kandidaten
 

@@ -1,13 +1,13 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-29T11:20:59.865Z",
+  "generatedAt": "2026-07-29T11:51:56.313Z",
   "metadata": {
     "nodeVersion": "v24.13.0",
-    "sourceBaseCommit": "aead877fdefa97e25e126eb50cb079a420ac72f9",
+    "sourceBaseCommit": "913d1f10af97255ac89a55f97a49867e93a0126b",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "daa05607d0dc280b05deef4c532d398744280556519400a91bf7af2185d6bd75",
-    "balanceSourceSha256": "8f9a5b83482eef19a14f119c53376b47b9adfe29ce5824ac80526c027ae646da",
-    "experimentScriptSha256": "0af4c9fe0d36ba0e94131c7349a7b3b17108dea61bd00f83a0cebf7ba91cc5d8",
+    "simulationScriptSha256": "40fd5cfb769149c129027f66a32351e232f88a304a1a3a89091d5cc81c2ea835",
+    "balanceSourceSha256": "56598464abd4e0e878fb8c224923e789241e425bc8095fa6135799f3c93217ee",
+    "experimentScriptSha256": "921b706725ea33f8d4b571e65ae29a7def12053732fa9764ef15013db24cae22",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
@@ -9483,7 +9483,7 @@
           {
             "profile": "baseline_touring",
             "runsPerScenario": 2000,
-            "seedStrategy": "scenario-id-plus-run-index",
+            "seedStrategy": "scenario-id#first-income-full-reports-v1-plus-run-index",
             "results": [
               {
                 "profile": "baseline_touring",
@@ -9590,7 +9590,7 @@
           {
             "profile": "low_resource_touring",
             "runsPerScenario": 2000,
-            "seedStrategy": "scenario-id-plus-run-index",
+            "seedStrategy": "scenario-id#first-income-full-reports-v1-plus-run-index",
             "results": [
               {
                 "profile": "low_resource_touring",
@@ -9699,7 +9699,7 @@
           {
             "profile": "baseline_touring",
             "runsPerScenario": 2000,
-            "seedStrategy": "scenario-id-plus-run-index",
+            "seedStrategy": "scenario-id#first-income-full-reports-v1-plus-run-index",
             "results": [
               {
                 "profile": "baseline_touring",
@@ -9806,7 +9806,7 @@
           {
             "profile": "low_resource_touring",
             "runsPerScenario": 2000,
-            "seedStrategy": "scenario-id-plus-run-index",
+            "seedStrategy": "scenario-id#first-income-full-reports-v1-plus-run-index",
             "results": [
               {
                 "profile": "low_resource_touring",
@@ -22142,7 +22142,7 @@
       ],
       "selectedCandidateId": "touring-none",
       "objectiveStatus": "partial",
-      "objectiveNote": "Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_touring money-per-day advantage 6.05% is below the 20-25% target (was 6.05%); low_resource_touring money-per-day advantage 6.88% is below the 20-25% target (was 6.88%)). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting."
+      "objectiveNote": "Gap-1 money-per-day advantage now sits BELOW the 20-25% target band. No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting."
     }
   },
   "finalCombinedValidation": {
@@ -27459,7 +27459,7 @@
   "recommendation": {
     "status": "accepted-for-production-partial",
     "objectiveStatus": "partial",
-    "objectiveNote": "Gap-1 money-per-day advantage now sits BELOW the 20-25% target band (baseline_touring money-per-day advantage 6.05% is below the 20-25% target (was 6.05%); low_resource_touring money-per-day advantage 6.88% is below the 20-25% target (was 6.88%)). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.",
+    "objectiveNote": "Gap-1 money-per-day advantage now sits BELOW the 20-25% target band. No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.",
     "bootstrap": "bootstrap-none",
     "touring": "touring-none",
     "tuning": {
@@ -27491,27 +27491,28 @@
     }
   },
   "runtime": {
-    "durationMs": 313808,
+    "durationMs": 230346,
     "candidates": 25,
     "totalRuns": 170000
   },
   "previousReportComparison": {
     "comparison": "descriptive-unpaired",
-    "note": "The reports use different seed namespaces and cohort sizes. This is a descriptive before/after comparison, not a paired effect estimate.",
+    "cohortDifferences": [],
+    "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-28T22:12:38.668Z",
-      "sourceBaseCommit": "dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0",
-      "runsPerScenario": 260,
-      "seedNamespace": null,
-      "seedStrategy": "calibration: scenario-id-plus-run-index; selection: scenario-id#selection-plus-run-index; validation: scenario-id#holdout-plus-run-index",
-      "shippedGigCadencePolicy": null,
-      "recommendationStatus": "no-production-recommendation-final-validation-failed",
+      "generatedAt": "2026-07-29T11:20:59.865Z",
+      "sourceBaseCommit": "aead877fdefa97e25e126eb50cb079a420ac72f9",
+      "runsPerScenario": 2000,
+      "seedNamespace": "#first-income-full-reports-v1",
+      "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
+      "shippedGigCadencePolicy": "first-income",
+      "recommendationStatus": "accepted-for-production-partial",
       "bootstrapCandidate": "bootstrap-none",
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-29T11:20:59.865Z",
-      "sourceBaseCommit": "aead877fdefa97e25e126eb50cb079a420ac72f9",
+      "generatedAt": "2026-07-29T11:51:56.313Z",
+      "sourceBaseCommit": "913d1f10af97255ac89a55f97a49867e93a0126b",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -27523,58 +27524,58 @@
     "scenarios": [
       {
         "id": "aggressive_marketing",
-        "previousRatePct": 11.92,
+        "previousRatePct": 2.65,
         "currentRatePct": 2.65,
-        "deltaPct": -9.27,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "baseline_touring",
-        "previousRatePct": 1.15,
+        "previousRatePct": 1.6,
         "currentRatePct": 1.6,
-        "deltaPct": 0.45,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "bootstrap_struggle",
-        "previousRatePct": 33.46,
+        "previousRatePct": 8.5,
         "currentRatePct": 8.5,
-        "deltaPct": -24.96,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "chaos_tour",
-        "previousRatePct": 15,
+        "previousRatePct": 3.8,
         "currentRatePct": 3.8,
-        "deltaPct": -11.2,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "cult_hypergrowth",
-        "previousRatePct": 13.85,
+        "previousRatePct": 2.25,
         "currentRatePct": 2.25,
-        "deltaPct": -11.6,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "festival_push",
-        "previousRatePct": 25.77,
+        "previousRatePct": 3.95,
         "currentRatePct": 3.95,
-        "deltaPct": -21.82,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "scandal_recovery",
-        "previousRatePct": 25.38,
+        "previousRatePct": 5.75,
         "currentRatePct": 5.75,
-        "deltaPct": -19.63,
-        "previousSampleSize": 260,
+        "deltaPct": 0,
+        "previousSampleSize": 2000,
         "currentSampleSize": 2000
       }
     ]
