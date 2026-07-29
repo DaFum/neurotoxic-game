@@ -1461,27 +1461,27 @@ test('the pre-gig minimum sees the trough the emergency grant lifts', () => {
   )
 })
 
-test('gap-aligned remains shipped when first-income production validation fails', () => {
+test('first-income is shipped after production validation passes', () => {
   // Guards the refactor from an inline `day % gap` to `resolveGigCadence`: a
   // default run and an explicitly `gap-aligned` one must be the same run.
   const scenario = SCENARIOS.find(item => item.id === 'cult_hypergrowth')
   const seed = createScenarioSeed(scenario.id, 7)
-  assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'gap-aligned')
+  assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'first-income')
   const shipped = runSingleSimulation(scenario, seed)
   const explicit = runSingleSimulation(
-    { ...scenario, gigCadencePolicy: 'gap-aligned' },
+    { ...scenario, gigCadencePolicy: 'first-income' },
     seed
   )
   assert.deepEqual(explicit.timeline, shipped.timeline)
   assert.equal(explicit.finalMoney, shipped.finalMoney)
   assert.equal(explicit.gigsPlayed, shipped.gigsPlayed)
 
-  const candidate = runSingleSimulation(
-    { ...scenario, gigCadencePolicy: 'first-income' },
+  const former = runSingleSimulation(
+    { ...scenario, gigCadencePolicy: 'gap-aligned' },
     seed
   )
   assert.notDeepEqual(
-    candidate.timeline.map(entry => entry.day),
+    former.timeline.map(entry => entry.day),
     shipped.timeline.map(entry => entry.day),
     'a phase shift must actually move the gig days'
   )

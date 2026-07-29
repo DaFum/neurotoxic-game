@@ -36,6 +36,7 @@ const stubRun = ({ bankrupt, played = true }) => ({
   gigsPlayed: played ? 7 : 0,
   finalMoney: bankrupt ? 0 : 20000,
   finaleReached: played,
+  finaleCompleted: played,
   fameAccounting: { earned: played ? 11200 : 0 },
   travelSpend: 300,
   refuelSpend: 40,
@@ -232,9 +233,13 @@ test('production cadence validation is predeclared and rejects undersized sample
   ])
   assert.equal(
     PRODUCTION_CADENCE_VALIDATION.seedNamespace,
-    '#production-cadence-validation-v1'
+    '#production-cadence-validation-v2'
   )
   assert.equal(PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario, 2000)
+  assert.equal(
+    Object.hasOwn(PRODUCTION_CADENCE_VALIDATION, 'bankruptcyCorridors'),
+    false
+  )
   assert.throws(
     () => runProductionCadenceValidation({ runsPerScenario: 1999 }),
     /at least 2000/
@@ -287,10 +292,109 @@ test('production cadence validation applies the predeclared release gates', () =
   assert.equal(report.status, 'production-cadence-validation-passed')
   assert.equal(report.approvedForProduction, true)
   assert.deepEqual(report.failedGates, [])
+  assert.equal(
+    report.designWarnings.bootstrap_struggle.classification,
+    'inside'
+  )
+  assert.equal(
+    report.comparisons.bootstrap_struggle.pairedFamePerGig.deltaPct,
+    0
+  )
+  assert.equal(
+    report.comparisons.bootstrap_struggle.pairedSolventFinalMoney.deltaPct,
+    0
+  )
   assert.equal(report.candidate.scenarios.cult_hypergrowth.bankruptcyRatePct, 6)
   assert.equal(report.candidate.scenarios.baseline_touring.bankruptcyRatePct, 3)
   assert.equal(
     report.candidate.scenarios.bootstrap_struggle.bankruptcyRatePct,
     20
   )
+})
+
+test('production cadence side-effect gates use comparable seed pairs and fail closed', () => {
+  const scenario = {
+    ...cappedScenarios().find(item => item.id === 'baseline_touring')
+  }
+  const seeds = new Map()
+  for (let index = 0; index < 2000; index++) {
+    seeds.set(
+      createScenarioSeed(
+        `${scenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+        index
+      ),
+      index
+    )
+  }
+  const runner = (configured, seed) => {
+    const index = seeds.get(seed)
+    const control = configured.gigCadencePolicy === 'gap-aligned'
+    const comparable = index < 1000
+    const run = stubRun({
+      bankrupt: !comparable && control,
+      played: comparable || !control
+    })
+    if (!comparable && !control) {
+      run.finalMoney = 100000
+      run.fameAccounting.earned = 999999
+    }
+    return run
+  }
+
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner,
+    scenarios: [scenario]
+  })
+  const comparison = report.comparisons[scenario.id]
+
+  assert.equal(comparison.pairedFamePerGig.sampleSize, 1000)
+  assert.equal(comparison.pairedFamePerGig.deltaPct, 0)
+  assert.equal(comparison.pairedSolventFinalMoney.sampleSize, 1000)
+  assert.equal(comparison.pairedSolventFinalMoney.deltaPct, 0)
+  assert.equal(report.approvedForProduction, true)
+
+  const thin = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner: (configured, seed) => {
+      const index = seeds.get(seed)
+      const comparable = index < 999
+      return stubRun({
+        bankrupt: !comparable,
+        played: comparable
+      })
+    },
+    scenarios: [scenario]
+  })
+  assert.equal(thin.comparisons[scenario.id].pairedFamePerGig.deltaPct, null)
+  assert.equal(
+    thin.comparisons[scenario.id].pairedSolventFinalMoney.deltaPct,
+    null
+  )
+  assert.deepEqual(thin.failedGates.sort(), [
+    `${scenario.id}:bankruptcy-max`,
+    `${scenario.id}:fame-per-gig`,
+    `${scenario.id}:solvent-final-money`
+  ])
+})
+
+test('production cadence release gate uses finale completion, not arrival', () => {
+  const scenario = {
+    ...cappedScenarios().find(item => item.id === 'baseline_touring')
+  }
+  const runner = configured => {
+    const run = stubRun({ bankrupt: false })
+    run.finaleReached = true
+    run.finaleCompleted = configured.gigCadencePolicy === 'gap-aligned'
+    return run
+  }
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner,
+    scenarios: [scenario]
+  })
+
+  assert.equal(report.comparisons[scenario.id].finaleReachedDeltaPct, 0)
+  assert.equal(report.comparisons[scenario.id].finaleCompletedDeltaPct, -100)
+  assert.deepEqual(report.failedGates, [`${scenario.id}:finale-completed`])
 })

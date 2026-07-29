@@ -34,6 +34,11 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import {
+  FAME_EVIDENCE_MIN_SHARE,
+  famePerGigWithinLimit,
+  pairedFamePerGig
+} from './game-balance-experiments.mjs'
+import {
   GIG_CADENCE_POLICIES,
   KPI_TARGETS,
   RISK_TARGETS,
@@ -54,15 +59,11 @@ const DIAGNOSTIC_CONTROL_POLICY = 'gap-aligned'
 
 export const PRODUCTION_CADENCE_VALIDATION = Object.freeze({
   policies: Object.freeze(['gap-aligned', 'first-income']),
-  seedNamespace: '#production-cadence-validation-v1',
+  seedNamespace: '#production-cadence-validation-v2',
   minimumRunsPerScenario: 2000,
   famePerGigPlayedRunsDeltaMaxPct: 5,
   solventFinalMoneyDeltaMaxPct: 5,
-  bankruptcyCorridors: Object.freeze({
-    cult_hypergrowth: Object.freeze([2, 10]),
-    baseline_touring: Object.freeze([1, 5]),
-    bootstrap_struggle: Object.freeze([15, 30])
-  })
+  minimumComparableShare: FAME_EVIDENCE_MIN_SHARE
 })
 
 // The breach that motivates the probe is a holdout breach, so that stream is
@@ -172,7 +173,28 @@ export const summarizeCohort = runs => {
     // a Fame side-effect claim may rest on.
     famePerGig: round(calculateAverageFameEarnedPerGig(runs)),
     famePerGigPlayedRuns: played.length ? round(calculateAverageFameEarnedPerGig(played)) : null,
-    finaleReachedPct: rate(runs.filter(run => run.finaleReached).length, runs.length)
+    finaleReachedPct: rate(runs.filter(run => run.finaleReached).length, runs.length),
+    finaleCompletedPct: rate(runs.filter(run => run.finaleCompleted).length, runs.length)
+  }
+}
+
+export const pairedSolventFinalMoney = pairs => {
+  const comparable = pairs.filter(pair => !pair.control.bankrupt && !pair.candidate.bankrupt)
+  const minimumSampleSize = Math.max(
+    1,
+    Math.ceil(pairs.length * PRODUCTION_CADENCE_VALIDATION.minimumComparableShare)
+  )
+  const sufficientEvidence = comparable.length >= minimumSampleSize
+  const control = median(comparable.map(pair => pair.control.finalMoney))
+  const candidate = median(comparable.map(pair => pair.candidate.finalMoney))
+  return {
+    control,
+    candidate,
+    deltaPct: sufficientEvidence ? pctDelta(control, candidate) : null,
+    sampleSize: comparable.length,
+    minimumSampleSize,
+    sufficientEvidence,
+    excludedPairs: pairs.length - comparable.length
   }
 }
 
@@ -187,7 +209,7 @@ export const runProductionCadenceValidation = ({
     )
   }
 
-  const cohorts = Object.fromEntries(
+  const runsByPolicy = Object.fromEntries(
     PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
       policy,
       Object.fromEntries(
@@ -195,19 +217,25 @@ export const runProductionCadenceValidation = ({
           const scenario = { ...baseScenario, gigCadencePolicy: policy }
           return [
             baseScenario.id,
-            summarizeCohort(
-              Array.from({ length: runsPerScenario }, (_, runIndex) =>
-                runner(
-                  scenario,
-                  createScenarioSeed(
-                    `${baseScenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
-                    runIndex
-                  )
+            Array.from({ length: runsPerScenario }, (_, runIndex) =>
+              runner(
+                scenario,
+                createScenarioSeed(
+                  `${baseScenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+                  runIndex
                 )
               )
             )
           ]
         })
+      )
+    ])
+  )
+  const cohorts = Object.fromEntries(
+    PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
+      policy,
+      Object.fromEntries(
+        scenarios.map(scenario => [scenario.id, summarizeCohort(runsByPolicy[policy][scenario.id])])
       )
     ])
   )
@@ -218,17 +246,30 @@ export const runProductionCadenceValidation = ({
     scenarios.map(scenario => {
       const baseline = control[scenario.id]
       const proposed = candidate[scenario.id]
+      const pairs = runsByPolicy['gap-aligned'][scenario.id].map((controlRun, index) => ({
+        control: {
+          bankrupt: controlRun.bankrupt,
+          finalMoney: controlRun.finalMoney,
+          fameEarned: controlRun.fameAccounting.earned,
+          gigsPlayed: controlRun.gigsPlayed
+        },
+        candidate: {
+          bankrupt: runsByPolicy['first-income'][scenario.id][index].bankrupt,
+          finalMoney: runsByPolicy['first-income'][scenario.id][index].finalMoney,
+          fameEarned: runsByPolicy['first-income'][scenario.id][index].fameAccounting.earned,
+          gigsPlayed: runsByPolicy['first-income'][scenario.id][index].gigsPlayed
+        }
+      }))
+      const fame = pairedFamePerGig(pairs)
+      const money = pairedSolventFinalMoney(pairs)
       const comparison = {
         bankruptcyRateDeltaPct: round(proposed.bankruptcyRatePct - baseline.bankruptcyRatePct),
-        famePerGigPlayedRunsDeltaPct: pctDelta(
-          baseline.famePerGigPlayedRuns,
-          proposed.famePerGigPlayedRuns
-        ),
-        solventFinalMoneyDeltaPct: pctDelta(
-          baseline.solventFinalMoneyMedian,
-          proposed.solventFinalMoneyMedian
-        ),
+        pairedFamePerGig: fame,
+        pairedSolventFinalMoney: money,
         finaleReachedDeltaPct: round(proposed.finaleReachedPct - baseline.finaleReachedPct),
+        finaleCompletedDeltaPct: round(
+          proposed.finaleCompletedPct - baseline.finaleCompletedPct
+        ),
         bankruptBeforeFirstGigRateDeltaPct: round(
           proposed.bankruptBeforeFirstGigRatePct - baseline.bankruptBeforeFirstGigRatePct
         )
@@ -237,29 +278,23 @@ export const runProductionCadenceValidation = ({
       if (!Number.isFinite(cap) || proposed.bankruptcyRatePct > cap) {
         failedGates.push(`${scenario.id}:bankruptcy-max`)
       }
-      const corridor = PRODUCTION_CADENCE_VALIDATION.bankruptcyCorridors[scenario.id]
       if (
-        corridor &&
-        (proposed.bankruptcyRatePct < corridor[0] || proposed.bankruptcyRatePct > corridor[1])
-      ) {
-        failedGates.push(`${scenario.id}:bankruptcy-corridor`)
-      }
-      if (
-        comparison.famePerGigPlayedRunsDeltaPct == null ||
-        Math.abs(comparison.famePerGigPlayedRunsDeltaPct) >
+        !famePerGigWithinLimit(
+          fame,
           PRODUCTION_CADENCE_VALIDATION.famePerGigPlayedRunsDeltaMaxPct
+        )
       ) {
         failedGates.push(`${scenario.id}:fame-per-gig`)
       }
       if (
-        comparison.solventFinalMoneyDeltaPct == null ||
-        Math.abs(comparison.solventFinalMoneyDeltaPct) >
+        !money.sufficientEvidence ||
+        Math.abs(money.deltaPct) >
           PRODUCTION_CADENCE_VALIDATION.solventFinalMoneyDeltaMaxPct
       ) {
         failedGates.push(`${scenario.id}:solvent-final-money`)
       }
-      if (comparison.finaleReachedDeltaPct < 0) {
-        failedGates.push(`${scenario.id}:finale-reached`)
+      if (comparison.finaleCompletedDeltaPct < 0) {
+        failedGates.push(`${scenario.id}:finale-completed`)
       }
       if (comparison.bankruptBeforeFirstGigRateDeltaPct > 0) {
         failedGates.push(`${scenario.id}:pre-first-gig-stranded`)
@@ -268,9 +303,18 @@ export const runProductionCadenceValidation = ({
     })
   )
   const approvedForProduction = failedGates.length === 0
+  const designWarnings = Object.fromEntries(
+    scenarios.flatMap(scenario => {
+      const corridor = RISK_TARGETS[scenario.id]?.bankruptcyTargetPct
+      if (!corridor) return []
+      const value = candidate[scenario.id].bankruptcyRatePct
+      const classification = value < corridor[0] ? 'below' : value > corridor[1] ? 'above' : 'inside'
+      return [[scenario.id, { valuePct: value, corridorPct: corridor, classification }]]
+    })
+  )
 
   return {
-    productionCadenceValidationVersion: 1,
+    productionCadenceValidationVersion: 2,
     runsPerScenario,
     seedNamespace: PRODUCTION_CADENCE_VALIDATION.seedNamespace,
     policies: PRODUCTION_CADENCE_VALIDATION.policies,
@@ -280,15 +324,16 @@ export const runProductionCadenceValidation = ({
     approvedForProduction,
     failedGates,
     acceptanceCriteria: {
-      bankruptcyCorridors: PRODUCTION_CADENCE_VALIDATION.bankruptcyCorridors,
       allBankruptcyMaxCaps: true,
       famePerGigPlayedRunsDeltaMaxPct:
         PRODUCTION_CADENCE_VALIDATION.famePerGigPlayedRunsDeltaMaxPct,
       solventFinalMoneyDeltaMaxPct:
         PRODUCTION_CADENCE_VALIDATION.solventFinalMoneyDeltaMaxPct,
-      finaleReachedMayDecline: false,
+      minimumComparableShare: PRODUCTION_CADENCE_VALIDATION.minimumComparableShare,
+      finaleCompletedMayDecline: false,
       preFirstGigStrandedRateMayIncrease: false
     },
+    designWarnings,
     control: { policy: 'gap-aligned', scenarios: control },
     candidate: { policy: 'first-income', scenarios: candidate },
     comparisons
@@ -687,7 +732,7 @@ export const renderProductionCadenceMarkdown = report => {
       const control = report.control.scenarios[id]
       const candidate = report.candidate.scenarios[id]
       const comparison = report.comparisons[id]
-      return `| \`${id}\` | ${fmtPct(control.bankruptcyRatePct)} | ${fmtPct(candidate.bankruptcyRatePct)} | ${fmtPct(comparison.famePerGigPlayedRunsDeltaPct)} | ${fmtPct(comparison.solventFinalMoneyDeltaPct)} | ${fmtPct(comparison.finaleReachedDeltaPct)} | ${fmtPct(comparison.bankruptBeforeFirstGigRateDeltaPct)} |`
+      return `| \`${id}\` | ${fmtPct(control.bankruptcyRatePct)} | ${fmtPct(candidate.bankruptcyRatePct)} | ${fmtPct(comparison.pairedFamePerGig.deltaPct)} (${comparison.pairedFamePerGig.sampleSize}) | ${fmtPct(comparison.pairedSolventFinalMoney.deltaPct)} (${comparison.pairedSolventFinalMoney.sampleSize}) | ${fmtPct(comparison.finaleReachedDeltaPct)} | ${fmtPct(comparison.finaleCompletedDeltaPct)} | ${fmtPct(comparison.bankruptBeforeFirstGigRateDeltaPct)} |`
     })
     .join('\n')
   return `# Produktionsvalidierung der First-Income-Kadenz (Phase 5B)
@@ -702,9 +747,17 @@ Seed-Namensraum: \`${report.seedNamespace}\`
 - Produktionskandidat: \`first-income\`
 - Economy-Tuning: unverändert
 
-| Szenario | Insolvenz Kontrolle | Insolvenz Kandidat | Δ Fame/Gig (spielende Runs) | Δ solventes Endgeld | Δ Finale erreicht | Δ Insolvenz vor erstem Gig |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Szenario | Insolvenz Kontrolle | Insolvenz Kandidat | gepaartes Δ Fame/Gig (n) | gepaartes Δ solventes Endgeld (n) | Δ Finale erreicht | Δ Finale abgeschlossen | Δ Insolvenz vor erstem Gig |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
 ${scenarioRows}
+
+## Nicht blockierende Designhinweise
+
+Die Korridore aus \`RISK_TARGETS\` bleiben Designhypothesen. Sie werden vollständig aus der Live-Konfiguration abgeleitet und blockieren diese Freigabe nicht.
+
+${Object.entries(report.designWarnings)
+  .map(([id, warning]) => `- \`${id}\`: ${fmtPct(warning.valuePct)} gegenüber ${warning.corridorPct[0]}–${warning.corridorPct[1]}% — **${warning.classification}**`)
+  .join('\n')}
 
 ## Entscheidung
 

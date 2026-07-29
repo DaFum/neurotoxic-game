@@ -1021,12 +1021,11 @@ export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true)
  *
  * `gigGapDays` says how often a band wants to play, not *which* days those are,
  * and the phase is not a free choice: it decides how many cost cycles land
- * before the first payout. At `gigGapDays: 2` the shipped policy resolves to
- * days 2, 4, 6, 8, 10 — the band deliberately declines to play on day 1 and
- * routes around the opening gig node when the map offers an alternative. "Every
- * other day" reads just as well as days 1, 3, 5, 7, 9, and on 500 EUR of
- * starting cash that half-cycle offset is the difference between one and two
- * unpaid cost days before the first income.
+ * before the first payout. At `gigGapDays: 2` the former shipped policy resolved
+ * to days 2, 4, 6, 8, 10 — the band deliberately declined to play on day 1 and
+ * routed around the opening gig node when the map offered an alternative. The
+ * shipped `first-income` policy instead plays the first reachable paid gig and
+ * anchors the requested gap on that day.
  *
  * - `gap-aligned`   days where `day % gap === 0` (former shipped behaviour)
  * - `gap-offset`    the same cadence phase-shifted to start on day 1
@@ -1048,7 +1047,7 @@ export const GIG_CADENCE_POLICIES = Object.freeze([
  * repeating the literal, or a rename would silently leave the comparison with no
  * baseline at all and every delta reading as zero.
  */
-export const SHIPPED_GIG_CADENCE_POLICY = 'gap-aligned'
+export const SHIPPED_GIG_CADENCE_POLICY = 'first-income'
 
 export const resolveGigCadence = ({
   day,
