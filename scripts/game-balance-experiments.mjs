@@ -5,7 +5,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 
@@ -1209,12 +1209,22 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const report = {
     experimentReportVersion: 2,
     generatedAt: new Date().toISOString(),
-    metadata: await buildArtifactMetadata({
-      root: ROOT,
-      generatorPath: 'scripts/game-balance-experiments.mjs',
-      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
-      runsPerScenario
-    }),
+    metadata: {
+      ...(await buildArtifactMetadata({
+        root: ROOT,
+        generatorPath: 'scripts/game-balance-experiments.mjs',
+        seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+        runsPerScenario
+      })),
+      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY,
+      seedStrategy: Object.keys(SEED_STREAMS)
+        .map(
+          stream =>
+            `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`
+        )
+        .join('; '),
+      pairingStrategy: 'same-scenario-same-run-index-same-seed'
+    },
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },

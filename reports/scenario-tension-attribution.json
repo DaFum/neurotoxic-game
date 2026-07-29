@@ -1,8 +1,8 @@
 {
-  "generatedAt": "2026-07-29T18:54:21.912Z",
+  "generatedAt": "2026-07-29T19:30:02.144Z",
   "metadata": {
-    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
-    "generatorFingerprint": "e53f26b898ab2beb1e3c4a3fe2da5be8791c5a9cf58536efaba0afe27c0b5814",
+    "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
+    "generatorFingerprint": "4b35acc1774f2fe53d8013e08e09af7504aeaac7bc4fc00f93dc38011f0f5c94",
     "seedNamespace": "#scenario-tension-attribution-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -12143,35 +12143,35 @@
       },
       "actualLossAttribution": {
         "daily_obligations": {
-          "total": 3718435,
-          "median": 1843,
+          "total": 3718410,
+          "median": 1842,
           "p90": 2407,
           "firstMaterialDrawdownSharePct": 25.8,
           "bankruptcyPredecessorSharePct": 56.58
         },
         "travel": {
-          "total": 1321769,
+          "total": 1321720,
           "median": 684,
           "p90": 764,
           "firstMaterialDrawdownSharePct": 0,
           "bankruptcyPredecessorSharePct": 0
         },
         "fuel": {
-          "total": 323892,
+          "total": 323883,
           "median": 156,
           "p90": 266,
           "firstMaterialDrawdownSharePct": 0,
           "bankruptcyPredecessorSharePct": 3.95
         },
         "maintenance_repairs": {
-          "total": 857568,
+          "total": 857556,
           "median": 474,
           "p90": 636,
           "firstMaterialDrawdownSharePct": 1.65,
           "bankruptcyPredecessorSharePct": 3.95
         },
         "negative_events": {
-          "total": 56269,
+          "total": 56318,
           "median": 0,
           "p90": 95,
           "firstMaterialDrawdownSharePct": 0.35,
@@ -12185,14 +12185,14 @@
           "bankruptcyPredecessorSharePct": 0
         },
         "assets_upgrades": {
-          "total": 5915571,
+          "total": 5915546,
           "median": 1270,
           "p90": 9114,
           "firstMaterialDrawdownSharePct": 26.6,
           "bankruptcyPredecessorSharePct": 13.16
         },
         "other": {
-          "total": 453952,
+          "total": 453925,
           "median": 220,
           "p90": 365,
           "firstMaterialDrawdownSharePct": 31.75,
@@ -12407,8 +12407,13 @@
       }
     },
     "pairedFamePerGig": {
-      "comparablePairs": 1983,
-      "deltaPct": 0.01
+      "control": 1442.91,
+      "candidate": 1443.11,
+      "deltaPct": 0.01,
+      "sampleSize": 1983,
+      "minimumSampleSize": 1000,
+      "sufficientEvidence": true,
+      "excludedPairs": 17
     },
     "materialLossSources": [
       "assets_upgrades",

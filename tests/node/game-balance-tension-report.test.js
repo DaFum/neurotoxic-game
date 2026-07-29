@@ -10,6 +10,7 @@ import {
   CONTROVERSY_PROFILES,
   TENSION_RUNS_PER_SCENARIO,
   buildReportMetadata,
+  buildChaosCandidateAcceptance,
   buildPhaseDecisions,
   createEvidenceResult,
   hasCompleteTensionEvidence,
@@ -37,6 +38,26 @@ test('Chaos Tour evaluates one diagnostic event-loss candidate', () => {
     negativeFinancialEventMultiplier: 1.25,
     productionChange: false
   })
+})
+
+test('Chaos Fame acceptance fails closed without paired coverage', () => {
+  const acceptance = buildChaosCandidateAcceptance({
+    candidate: {
+      financialStress: {
+        bankruptcyRatePct: 5,
+        bankruptcyBeforeFirstGigPct: 0.5
+      },
+      tourPaths: { finaleCompletedPct: 95 }
+    },
+    famePerGig: {
+      deltaPct: 0,
+      sufficientEvidence: false
+    },
+    materialLossSources: ['negative_events']
+  })
+
+  assert.equal(acceptance.criteria.famePerGig, false)
+  assert.equal(acceptance.passed, false)
 })
 
 test('generated diagnostics identify source and generator fingerprints', async () => {

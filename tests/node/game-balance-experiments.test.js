@@ -1424,6 +1424,21 @@ test('experiment reports compare the previous and current full-report cohorts', 
     previousReport
   })
 
+  assert.equal(
+    report.metadata.pairingStrategy,
+    'same-scenario-same-run-index-same-seed'
+  )
+  assert.equal(report.metadata.shippedGigCadencePolicy, 'first-income')
+  assert.equal(
+    report.metadata.seedStrategy,
+    Object.keys(SEED_STREAMS)
+      .map(
+        stream =>
+          `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`
+      )
+      .join('; ')
+  )
+
   assert.doesNotMatch(
     report.phases.phase3C.objectiveNote,
     /baseline_touring money-per-day advantage/

@@ -15,6 +15,10 @@ import {
   runSingleSimulation,
   summarizeScenario
 } from './game-balance-simulation.mjs'
+import {
+  famePerGigWithinLimit,
+  pairedFamePerGig
+} from './game-balance-experiments.mjs'
 
 export const TENSION_RUNS_PER_SCENARIO = 2_000
 export const ATTRIBUTION_COHORTS = Object.freeze({
@@ -195,7 +199,23 @@ const runCohort = (scenario, namespace) => {
   return summarizeScenario(runs)
 }
 
-const round = value => Number(value.toFixed(2))
+export const buildChaosCandidateAcceptance = ({
+  candidate,
+  famePerGig,
+  materialLossSources
+}) => {
+  const criteria = {
+    bankruptcy:
+      candidate.financialStress.bankruptcyRatePct >= 4 &&
+      candidate.financialStress.bankruptcyRatePct <= 7,
+    bankruptcyBeforeFirstGig:
+      candidate.financialStress.bankruptcyBeforeFirstGigPct <= 1,
+    finaleCompleted: candidate.tourPaths.finaleCompletedPct >= 90,
+    famePerGig: famePerGigWithinLimit(famePerGig, 5),
+    negativeEventsMaterial: materialLossSources.includes('negative_events')
+  }
+  return { criteria, passed: Object.values(criteria).every(Boolean) }
+}
 
 export const buildChaosCandidateComparison = scenario => {
   const namespace = `${ATTRIBUTION_COHORTS.calibration}#chaos-event-loss-1.25`
@@ -215,54 +235,35 @@ export const buildChaosCandidateComparison = scenario => {
   })
   const control = summarizeScenario(pairs.map(pair => pair.control))
   const candidate = summarizeScenario(pairs.map(pair => pair.candidate))
-  const comparable = pairs.filter(
-    pair => pair.control.gigsPlayed > 0 && pair.candidate.gigsPlayed > 0
+  const famePerGig = pairedFamePerGig(
+    pairs.map(pair => ({
+      control: {
+        gigsPlayed: pair.control.gigsPlayed,
+        fameEarned: pair.control.fameAccounting.earned
+      },
+      candidate: {
+        gigsPlayed: pair.candidate.gigsPlayed,
+        fameEarned: pair.candidate.fameAccounting.earned
+      }
+    }))
   )
-  const controlFamePerGig = comparable.length
-    ? comparable.reduce(
-        (sum, pair) =>
-          sum + pair.control.fameAccounting.earned / pair.control.gigsPlayed,
-        0
-      ) / comparable.length
-    : null
-  const candidateFamePerGig = comparable.length
-    ? comparable.reduce(
-        (sum, pair) =>
-          sum + pair.candidate.fameAccounting.earned / pair.candidate.gigsPlayed,
-        0
-      ) / comparable.length
-    : null
-  const famePerGigDeltaPct = controlFamePerGig
-    ? round(((candidateFamePerGig - controlFamePerGig) / controlFamePerGig) * 100)
-    : null
   const materialLossSources = Object.entries(candidate.actualLossAttribution)
     .sort(([, left], [, right]) => right.total - left.total)
     .slice(0, 3)
     .map(([source]) => source)
-  const criteria = {
-    bankruptcy: candidate.financialStress.bankruptcyRatePct >= 4 &&
-      candidate.financialStress.bankruptcyRatePct <= 7,
-    bankruptcyBeforeFirstGig:
-      candidate.financialStress.bankruptcyBeforeFirstGigPct <= 1,
-    finaleCompleted: candidate.tourPaths.finaleCompletedPct >= 90,
-    famePerGig:
-      famePerGigDeltaPct !== null && Math.abs(famePerGigDeltaPct) <= 5,
-    negativeEventsMaterial: materialLossSources.includes('negative_events')
-  }
+  const acceptance = buildChaosCandidateAcceptance({
+    candidate,
+    famePerGig,
+    materialLossSources
+  })
   return {
     candidate: CHAOS_EVENT_LOSS_CANDIDATE,
     seedNamespace: namespace,
     control,
     result: candidate,
-    pairedFamePerGig: {
-      comparablePairs: comparable.length,
-      deltaPct: famePerGigDeltaPct
-    },
+    pairedFamePerGig: famePerGig,
     materialLossSources,
-    acceptance: {
-      criteria,
-      passed: Object.values(criteria).every(Boolean)
-    }
+    acceptance
   }
 }
 

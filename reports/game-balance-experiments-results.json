@@ -1,13 +1,16 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-29T19:05:45.400Z",
+  "generatedAt": "2026-07-29T19:38:35.044Z",
   "metadata": {
-    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
-    "generatorFingerprint": "51b43bdfab05c197440308e588acb499db38e53b963e85be6d152af6944483e6",
+    "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
+    "generatorFingerprint": "60671fa8ba1db01d489785ff31b6015b0f0ad7287d7dc0ce36cb1e3d60997230",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
-    "artifactSchemaVersion": 1
+    "artifactSchemaVersion": 1,
+    "shippedGigCadencePolicy": "first-income",
+    "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
+    "pairingStrategy": "same-scenario-same-run-index-same-seed"
   },
   "controlSnapshot": {
     "tuning": {
@@ -27484,28 +27487,17 @@
     }
   },
   "runtime": {
-    "durationMs": 476089,
+    "durationMs": 462384,
     "candidates": 25,
     "totalRuns": 170000
   },
   "previousReportComparison": {
     "comparison": "descriptive-unpaired",
-    "cohortDifferences": [
-      {
-        "field": "seedStrategy",
-        "previous": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
-        "current": null
-      },
-      {
-        "field": "shippedGigCadencePolicy",
-        "previous": "first-income",
-        "current": null
-      }
-    ],
-    "note": "Recorded cohort metadata differences: seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.",
+    "cohortDifferences": [],
+    "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T13:06:29.266Z",
-      "sourceFingerprint": null,
+      "generatedAt": "2026-07-29T19:05:45.400Z",
+      "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -27515,12 +27507,12 @@
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-29T19:05:45.400Z",
-      "sourceFingerprint": "4b10c7a77055f0f3f3ea33021b7f2ba4ef78f65a72f541d28e758c8100c1ab24",
+      "generatedAt": "2026-07-29T19:38:35.044Z",
+      "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
-      "seedStrategy": null,
-      "shippedGigCadencePolicy": null,
+      "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
+      "shippedGigCadencePolicy": "first-income",
       "recommendationStatus": "accepted-for-production-partial",
       "bootstrapCandidate": "bootstrap-none",
       "touringCandidate": "touring-none"
@@ -27576,9 +27568,9 @@
       },
       {
         "id": "scandal_recovery",
-        "previousRatePct": 5.75,
+        "previousRatePct": 7.9,
         "currentRatePct": 7.9,
-        "deltaPct": 2.15,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       }

@@ -39,6 +39,13 @@ test('balance source list has no duplicates', () => {
 // untouched silently breaks that claim, so the modules carrying the economy
 // scalars, fame rewards, catalogue prices and RNG batching are pinned here.
 const REQUIRED_SOURCES = [
+  'src/data/brandDeals.ts',
+  'src/data/postOptions.ts',
+  'src/data/events/index.ts',
+  'src/data/events/financial.ts',
+  'src/data/events/special.ts',
+  'src/data/events/transport.ts',
+  'src/data/events/gig.ts',
   'src/utils/crypto.ts',
   'src/utils/economy/constants.ts',
   'src/utils/gameState/constants.ts',

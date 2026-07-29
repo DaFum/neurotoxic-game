@@ -5,8 +5,8 @@ Erstellt am: 2026-07-29T18:56:14.684Z
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9
-- Generator-Fingerprint: cdf59b6f5949103c91af45e9ed6dd538091043bfe6c2d75c4a646c83b0d9a029
+- Source-Fingerprint: 9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184
+- Generator-Fingerprint: c8a75bee1f6f452dadde5ce4dfb08aed5b2453787fca0debb85445ef9e85d413
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -555,7 +555,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `—` | `36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9` |
+| Source-Fingerprint | `—` | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `nicht angegeben` |

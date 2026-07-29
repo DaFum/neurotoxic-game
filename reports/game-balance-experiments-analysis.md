@@ -2,15 +2,15 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `undefined`; 170000 simulation runs in 476089 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 170000 simulation runs in 462384 ms.
 
 ## Alt/Neu-Vergleich der vollständigen Reports
 
-Dieser Vergleich ist **deskriptiv und ungepaart**. Recorded cohort metadata differences: seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.
+Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `—` | `36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9` |
+| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Empfehlung | `accepted-for-production-partial` | `accepted-for-production-partial` |
@@ -23,7 +23,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. Recorded cohort metadata diff
 | `chaos_tour` | 3.8% | 3.8% | 0 pp | 2000 / 2000 |
 | `cult_hypergrowth` | 2.25% | 2.25% | 0 pp | 2000 / 2000 |
 | `festival_push` | 3.95% | 3.95% | 0 pp | 2000 / 2000 |
-| `scandal_recovery` | 5.75% | 7.9% | 2.15 pp | 2000 / 2000 |
+| `scandal_recovery` | 7.9% | 7.9% | 0 pp | 2000 / 2000 |
 
 ## Kontrollzustand
 

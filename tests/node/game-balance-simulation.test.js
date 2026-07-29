@@ -101,6 +101,10 @@ test('event loss multiplier scales only negative financial consequences', () => 
   const gainState = { player: { money: 1_100 } }
   applyNegativeFinancialEventMultiplier(gainState, 1_000, 1.25)
   assert.equal(gainState.player.money, 1_100)
+
+  const depletedState = { player: { money: 0 } }
+  applyNegativeFinancialEventMultiplier(depletedState, 100, 1.25)
+  assert.equal(depletedState.player.money, 0)
 })
 
 test('run-level Fame accounting records successful gigs and reconciles', () => {

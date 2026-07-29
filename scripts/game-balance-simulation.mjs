@@ -1142,7 +1142,9 @@ export const applyNegativeFinancialEventMultiplier = (
 ) => {
   const loss = moneyBeforeEvent - state.player.money
   if (loss > 0 && multiplier > 1) {
-    state.player.money -= loss * (multiplier - 1)
+    state.player.money = clampPlayerMoney(
+      state.player.money - loss * (multiplier - 1)
+    )
   }
 }
 
