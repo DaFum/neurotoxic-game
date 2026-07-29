@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 170000 simulation runs in 462384 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 170000 simulation runs in 451306 ms.
 
 ## Alt/Neu-Vergleich der vollständigen Reports
 
@@ -10,7 +10,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same rec
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` |
+| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Empfehlung | `accepted-for-production-partial` | `accepted-for-production-partial` |

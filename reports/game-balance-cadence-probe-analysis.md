@@ -1,6 +1,6 @@
 # Produktionsvalidierung der First-Income-Kadenz (Phase 5B)
 
-Erzeugt: 2026-07-29T18:57:32.028Z
+Erzeugt: 2026-07-29T20:21:31.356Z
 Runs pro Szenario: 2000
 Seed-Namensraum: `#production-cadence-validation-v2`
 

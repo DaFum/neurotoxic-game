@@ -1664,6 +1664,18 @@ test('simulation report labels a legacy baseline comparison as descriptive and u
     })
     const markdown = await fs.readFile(outputMarkdownUrl, 'utf8')
 
+    assert.equal(
+      report.metadata.seedStrategy,
+      'scenario-id-plus-first-income-full-report-namespace-plus-run-index'
+    )
+    assert.equal(
+      report.metadata.shippedGigCadencePolicy,
+      SHIPPED_GIG_CADENCE_POLICY
+    )
+    assert.equal(
+      report.regressionComparison.current.sourceFingerprint,
+      report.metadata.sourceFingerprint
+    )
     assert.equal(report.regressionComparison.comparison, 'descriptive-unpaired')
     assert.equal(report.regressionComparison.previous.runsPerScenario, 260)
     assert.equal(report.regressionComparison.current.runsPerScenario, 1)

@@ -1,7 +1,7 @@
 # Phase 6A-7 Scenario Tension Diagnostics
 
-Generated: 2026-07-29T19:30:02.144Z
-Source fingerprint: 9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184; generator fingerprint: 4b35acc1774f2fe53d8013e08e09af7504aeaac7bc4fc00f93dc38011f0f5c94; schema: 1; dirty: true
+Generated: 2026-07-29T20:19:12.275Z
+Source fingerprint: b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b; generator fingerprint: 4b35acc1774f2fe53d8013e08e09af7504aeaac7bc4fc00f93dc38011f0f5c94; schema: 1; dirty: false
 Cohorts: 2000 runs each; calibration #scenario-tension-attribution-v1; holdout #scenario-tension-attribution-v1#holdout; candidate selection: false.
 
 ## Tension matrix

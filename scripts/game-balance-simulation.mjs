@@ -6359,12 +6359,17 @@ export const runSimulationSuite = async (options = {}) => {
     outputJson: SIMULATION_CONSTANTS.outputJson,
     outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown,
     scenarios: SCENARIOS,
-    metadata: await buildArtifactMetadata({
-      root: PROJECT_ROOT,
-      generatorPath: 'scripts/game-balance-simulation.mjs',
-      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
-      runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario
-    }),
+    metadata: {
+      ...(await buildArtifactMetadata({
+        root: PROJECT_ROOT,
+        generatorPath: 'scripts/game-balance-simulation.mjs',
+        seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+        runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario
+      })),
+      seedStrategy:
+        'scenario-id-plus-first-income-full-report-namespace-plus-run-index',
+      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY
+    },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     kpiHoldoutValidation,

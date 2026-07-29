@@ -1,16 +1,16 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-29T18:56:14.684Z
+Erstellt am: 2026-07-29T20:20:32.812Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184
-- Generator-Fingerprint: c8a75bee1f6f452dadde5ce4dfb08aed5b2453787fca0debb85445ef9e85d413
+- Source-Fingerprint: b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b
+- Generator-Fingerprint: fef05d4b856ba9c0b9ac9ec8b7cabb6948ff625c9cef7d65d2d0325c72f666e1
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
-- Working Tree Dirty: Ja
+- Working Tree Dirty: Nein
 
 ## Simulationseinstellungen
 
@@ -555,18 +555,18 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `—` | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` |
+| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
-| Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `nicht angegeben` |
-| Ausgelieferte Harness-Kadenz | `first-income` | `nicht angegeben` |
+| Seed-Strategie | `nicht angegeben` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
+| Ausgelieferte Harness-Kadenz | `nicht angegeben` | `first-income` |
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
 | Baseline Touring | 0% | €0 | 0 | 0 |
 | Bootstrap Struggle | 0% | €0 | 0 | 0 |
 | Aggressive Marketing | 0% | €0 | 0 | 0 |
-| Scandal Recovery | 2.75% | €-1.428 | -7.42 | -0.12 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
 | Festival Push | 0% | €0 | 0 | 0 |
 | Chaos Tour | 0% | €0 | 0 | 0 |
 | Cult Hypergrowth | 0% | €0 | 0 | 0 |

@@ -13,6 +13,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.json')
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-experiments-analysis.md')
 const METRICS = ['daysSurvived', 'finalMoney', 'finalFame', 'fameEarned', 'gigsPlayed', 'finalHarmony', 'maxDrawdownPct']
+const PAIRING_STRATEGY = 'same-scenario-same-run-index-same-seed'
 
 /**
  * Raised when the experiment legitimately finds nothing shippable. Distinct
@@ -728,7 +729,7 @@ ${previousComparison.scenarios
 
 ## Reproduzierbarkeit
 
-Pairing: \`${report.metadata.pairingStrategy}\`; ${report.runtime.totalRuns} simulation runs in ${report.runtime.durationMs} ms.
+Pairing: \`${report.pairingStrategy}\`; ${report.runtime.totalRuns} simulation runs in ${report.runtime.durationMs} ms.
 
 ${previousComparisonSection}
 ## Kontrollzustand
@@ -1222,9 +1223,9 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
           stream =>
             `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`
         )
-        .join('; '),
-      pairingStrategy: 'same-scenario-same-run-index-same-seed'
+        .join('; ')
     },
+    pairingStrategy: PAIRING_STRATEGY,
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },

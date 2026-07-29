@@ -1,17 +1,17 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-29T19:38:35.044Z",
+  "generatedAt": "2026-07-29T20:29:15.480Z",
   "metadata": {
-    "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
-    "generatorFingerprint": "60671fa8ba1db01d489785ff31b6015b0f0ad7287d7dc0ce36cb1e3d60997230",
+    "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
+    "generatorFingerprint": "3537c4e29294616d1b568b56429c343beb53a0533c07da1adfa086079b89dd94",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
-    "workingTreeDirty": true,
+    "workingTreeDirty": false,
     "artifactSchemaVersion": 1,
     "shippedGigCadencePolicy": "first-income",
-    "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
-    "pairingStrategy": "same-scenario-same-run-index-same-seed"
+    "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index"
   },
+  "pairingStrategy": "same-scenario-same-run-index-same-seed",
   "controlSnapshot": {
     "tuning": {
       "earlyGame": {
@@ -27487,7 +27487,7 @@
     }
   },
   "runtime": {
-    "durationMs": 462384,
+    "durationMs": 451306,
     "candidates": 25,
     "totalRuns": 170000
   },
@@ -27496,7 +27496,7 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T19:05:45.400Z",
+      "generatedAt": "2026-07-29T19:38:35.044Z",
       "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
@@ -27507,8 +27507,8 @@
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-29T19:38:35.044Z",
-      "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
+      "generatedAt": "2026-07-29T20:29:15.480Z",
+      "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",

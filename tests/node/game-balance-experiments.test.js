@@ -1424,10 +1424,8 @@ test('experiment reports compare the previous and current full-report cohorts', 
     previousReport
   })
 
-  assert.equal(
-    report.metadata.pairingStrategy,
-    'same-scenario-same-run-index-same-seed'
-  )
+  assert.equal(report.metadata.pairingStrategy, undefined)
+  assert.equal(report.pairingStrategy, 'same-scenario-same-run-index-same-seed')
   assert.equal(report.metadata.shippedGigCadencePolicy, 'first-income')
   assert.equal(
     report.metadata.seedStrategy,
@@ -1438,6 +1436,7 @@ test('experiment reports compare the previous and current full-report cohorts', 
       )
       .join('; ')
   )
+  assert.doesNotMatch(renderExperimentMarkdown(report), /Pairing: `undefined`/)
 
   assert.doesNotMatch(
     report.phases.phase3C.objectiveNote,
