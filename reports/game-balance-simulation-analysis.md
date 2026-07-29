@@ -1,18 +1,16 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-29T13:02:26.790Z
+Erstellt am: 2026-07-29T21:29:51.376Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Node-Version: v24.13.0
-- Basis-Commit: 2d63aedc69ec97e73a0a0e8fca1e186174145110
+- Source-Fingerprint: 998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04
+- Generator-Fingerprint: 1aa3b55d9e420a68b8822e95bbd349778f43136fdcad2530c47116b553f3ce1a
+- Artefaktschema: 1
+- Seed-Namensraum: #first-income-full-reports-v1
+- Runs je Szenario: 2000
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: 78c69d2707aca67b650fa67e2ff863ecda7b6b763df4eb5486645b2abe959f77
-- Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
-- KPI-Zielkonfiguration SHA-256: febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92
-- Risikokorridor-Konfiguration SHA-256: 60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c
-- Seed-Strategie: scenario-id-plus-first-income-full-report-namespace-plus-run-index
 
 ## Simulationseinstellungen
 
@@ -79,7 +77,7 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 | Baseline Touring | €500 | 0 | €28.359 | 18.14% | 0.04 | 7.1% | 10268 | 7 | 48 | 4.96 | 8.54 | 0 | 1.4% | €4.103 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Bootstrap Struggle | €500 | 0 | €23.095 | 32.17% | 0.05 | 6.4% | 7027 | 5 | 41 | 4.4 | 6.65 | 0 | 7.85% | €3.960 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Aggressive Marketing | €500 | 0 | €28.695 | 23.99% | 0.04 | 10.5% | 9144 | 6 | 49 | 4.79 | 7.46 | 0 | 2% | €4.817 | ✅ Szenario liegt im robusten Simulationskorridor. |
-| Scandal Recovery | €500 | 0 | €23.921 | 30.58% | 0.05 | 8.4% | 7503 | 6 | 46 | 4.04 | 6.73 | 0 | 5.85% | €4.195 | ✅ Szenario liegt im robusten Simulationskorridor. |
+| Scandal Recovery | €500 | 0 | €22.493 | 32.86% | 0.05 | 7.3% | 7323 | 6 | 45 | 44.37 | 6.61 | 0.03 | 8.6% | €3.899 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Festival Push | €500 | 0 | €26.569 | 27.97% | 0.04 | 11.7% | 8709 | 6 | 53 | 3.65 | 6.84 | 0 | 4.05% | €4.692 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Chaos Tour | €500 | 0 | €25.711 | 23.9% | 0.05 | 5.6% | 7330 | 6 | 33 | 4.98 | 7.33 | 0 | 3.7% | €4.207 | ✅ Szenario liegt im robusten Simulationskorridor. |
 | Cult Hypergrowth | €500 | 0 | €28.895 | 24.74% | 0.04 | 10.9% | 8860 | 6 | 52 | 4.49 | 7.4 | 0 | 2.2% | €4.871 | ✅ Szenario liegt im robusten Simulationskorridor. |
@@ -96,7 +94,7 @@ Hinweis: Mathematisch ist alles kaufbar, weil gute Gigs mindestens 1 Fame geben.
 | Baseline Touring | €28.426 | €488 | €4.103 | 0.1 | 0.04 | 6.03 | 1.27 | 1.29 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
 | Bootstrap Struggle | €23.192 | €452 | €3.960 | 0.08 | 0.04 | 5.61 | 0.95 | 1.33 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
 | Aggressive Marketing | €28.754 | €483 | €4.817 | 0.1 | 0.06 | 6.03 | 1.24 | 1.34 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
-| Scandal Recovery | €24.002 | €463 | €4.195 | 0.09 | 0.04 | 5.71 | 1.19 | 1.43 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
+| Scandal Recovery | €22.622 | €449 | €3.899 | 0.08 | 0.04 | 5.54 | 1.18 | 1.39 | ✅ Ausgewogenes Einnahmen-Ausgaben-Profil. |
 | Festival Push | €26.641 | €473 | €4.692 | 0.08 | 0.05 | 5.96 | 1.24 | 1.17 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
 | Chaos Tour | €25.782 | €472 | €4.207 | 0.09 | 0.05 | 5.82 | 1.1 | 1.25 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
 | Cult Hypergrowth | €28.974 | €482 | €4.871 | 0.1 | 0.06 | 6.09 | 1.19 | 1.14 | ✅ Hohe Gig-Monetarisierung – Modifier-Setup trägt Früchte. |
@@ -123,9 +121,9 @@ Verglichen wird jedes KPI-Band einzeln, nicht nur der Gesamtstatus: ein Szenario
 | aggressive_marketing | Insolvenzrate | ≤ 15% | 2% ✅ | 2.65% ✅ | ✅ |
 | aggressive_marketing | Endgeld | €14.000 – €44.000 | €28.695 ✅ | €28.386 ✅ | ✅ |
 | aggressive_marketing | Fame-Fortschritt/Gig | 1000 – 2200 | 1640.16 ✅ | 1630.43 ✅ | ✅ |
-| scandal_recovery | Insolvenzrate | ≤ 50% | 5.85% ✅ | 5.75% ✅ | ✅ |
-| scandal_recovery | Endgeld | €12.000 – €39.000 | €23.921 ✅ | €24.267 ✅ | ✅ |
-| scandal_recovery | Fame-Fortschritt/Gig | 1000 – 2200 | 1556.46 ✅ | 1544.42 ✅ | ✅ |
+| scandal_recovery | Insolvenzrate | ≤ 50% | 8.6% ✅ | 7.9% ✅ | ✅ |
+| scandal_recovery | Endgeld | €12.000 – €39.000 | €22.493 ✅ | €22.818 ✅ | ✅ |
+| scandal_recovery | Fame-Fortschritt/Gig | 1000 – 2200 | 1549.04 ✅ | 1525.21 ✅ | ✅ |
 | festival_push | Insolvenzrate | ≤ 35% | 4.05% ✅ | 3.95% ✅ | ✅ |
 | festival_push | Endgeld | €13.000 – €43.000 | €26.569 ✅ | €26.453 ✅ | ✅ |
 | festival_push | Fame-Fortschritt/Gig | 1000 – 2200 | 1729.11 ✅ | 1715.81 ✅ | ✅ |
@@ -153,7 +151,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | €2.871 | €5.968 | €7.982 | €28.359 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Bootstrap Struggle | €1.934 | €3.614 | €4.984 | €23.095 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Aggressive Marketing | €2.972 | €6.207 | €8.301 | €28.695 | ✅ Kapitalaufbau im erwarteten Korridor. |
-| Scandal Recovery | €2.276 | €4.626 | €5.620 | €23.921 | ✅ Kapitalaufbau im erwarteten Korridor. |
+| Scandal Recovery | €1.965 | €3.940 | €4.783 | €22.493 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Festival Push | €2.788 | €5.959 | €7.338 | €26.569 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Chaos Tour | €2.370 | €4.772 | €6.314 | €25.711 | ✅ Kapitalaufbau im erwarteten Korridor. |
 | Cult Hypergrowth | €3.062 | €6.466 | €8.558 | €28.895 | ✅ Kapitalaufbau im erwarteten Korridor. |
@@ -170,7 +168,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | €4.103 | €89 | 46.3× | 3.05 | 0.2 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
 | Bootstrap Struggle | €3.960 | €98 | 42.1× | 3.16 | 0.2 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
 | Aggressive Marketing | €4.817 | €102 | 47.5× | 2.59 | 0.17 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
-| Scandal Recovery | €4.195 | €102 | 42.3× | 2.98 | 0.19 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
+| Scandal Recovery | €3.899 | €99 | 41.4× | 3.21 | 0.21 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
 | Festival Push | €4.692 | €107 | 44.5× | 2.66 | 0.17 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
 | Chaos Tour | €4.207 | €97 | 44.1× | 2.97 | 0.19 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
 | Cult Hypergrowth | €4.871 | €103 | 47.6× | 2.57 | 0.17 | ⚠️ Van-Upgrade zu günstig – Preis anpassen. |
@@ -187,7 +185,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 152 | 6.3 | 63 | 11.6% | 63.5% | 24.9% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 | Bootstrap Struggle | 152 | 7 | 59 | 22.3% | 62% | 15.7% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 | Aggressive Marketing | 152 | 6 | 65 | 8.9% | 59.3% | 31.8% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
-| Scandal Recovery | 157 | 6.5 | 62 | 14.6% | 63.2% | 22.2% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
+| Scandal Recovery | 157 | 6.7 | 61 | 17% | 62.7% | 20.3% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 | Festival Push | 152 | 5.2 | 69 | 4% | 47.5% | 48.4% | ⚠️ Kaum schlechte Gigs – Fame-Verlust-Druck zu gering. |
 | Chaos Tour | 152 | 7.4 | 57 | 29.8% | 56.1% | 14.1% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
 | Cult Hypergrowth | 152 | 6 | 65 | 7.9% | 61.8% | 30.4% | ✅ Gig-Performance im erwarteten Kalibrierungsbereich. |
@@ -204,7 +202,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 48 | 0 | 0.04 | 0.01 | 1.07 | 1.51 | ✅ Bandgesundheit im akzeptablen Bereich. |
 | Bootstrap Struggle | 41 | 0 | 0.04 | 0.01 | 1.06 | 1.2 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
 | Aggressive Marketing | 49 | 0 | 0.04 | 0 | 1.07 | 1.33 | ✅ Bandgesundheit im akzeptablen Bereich. |
-| Scandal Recovery | 46 | 0 | 0.04 | 0 | 1.07 | 1.19 | ✅ Bandgesundheit im akzeptablen Bereich. |
+| Scandal Recovery | 45 | 0.03 | 0.03 | 0 | 1.05 | 1.17 | ✅ Bandgesundheit im akzeptablen Bereich. |
 | Festival Push | 53 | 0 | 0.04 | 0.01 | 1.08 | 1.19 | ✅ Bandgesundheit im akzeptablen Bereich. |
 | Chaos Tour | 33 | 0 | 0.04 | 0.01 | 1.06 | 1.33 | ⚠️ Harmonie unter Sollwert – Recovery-Events stärken. |
 | Cult Hypergrowth | 52 | 0 | 0.04 | 0.01 | 1.08 | 1.33 | ✅ Bandgesundheit im akzeptablen Bereich. |
@@ -221,7 +219,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 0.11 | 0.2 | 0.21 | 0.14 | 0.56 | 1.22 | 11.71 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Bootstrap Struggle | 0.16 | 0.27 | 0.29 | 0.19 | 0.67 | 1.16 | 11 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Aggressive Marketing | 0.21 | 0.38 | 0.36 | 0.25 | 0.94 | 1.18 | 11.63 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
-| Scandal Recovery | 0.25 | 0.42 | 0.44 | 0.28 | 0.94 | 1.2 | 11.19 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
+| Scandal Recovery | 0.24 | 0.4 | 0.45 | 0.27 | 0.94 | 1.15 | 10.92 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Festival Push | 0.14 | 0.26 | 0.23 | 0.15 | 0.52 | 1.22 | 11.46 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Chaos Tour | 0.34 | 0.56 | 0.56 | 0.36 | 1.33 | 1.18 | 11.35 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
 | Cult Hypergrowth | 0.17 | 0.35 | 0.32 | 0.22 | 0.79 | 1.16 | 11.65 | ⚠️ Geringe Event-Dichte – Spielwelt wirkt möglicherweise statisch. |
@@ -238,7 +236,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 9.89 | 2.87 | 2.82 | 2.85 | 18.43 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
 | Bootstrap Struggle | 9.5 | 2.21 | 2.23 | 2.21 | 16.15 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
 | Aggressive Marketing | 9.86 | 2.5 | 2.47 | 2.5 | 17.33 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
-| Scandal Recovery | 9.61 | 2.27 | 2.22 | 2.24 | 16.34 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
+| Scandal Recovery | 9.42 | 2.22 | 2.19 | 2.19 | 16.02 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
 | Festival Push | 9.73 | 2.26 | 2.27 | 2.31 | 16.57 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
 | Chaos Tour | 9.73 | 2.41 | 2.45 | 2.46 | 17.05 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
 | Cult Hypergrowth | 9.84 | 2.47 | 2.44 | 2.49 | 17.24 | ⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt. |
@@ -255,7 +253,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 0.35 | 0.17 | 0.12 | 0.33 | 0.35 | 2.12 | €1 | 0 | 99.3% |
 | Bootstrap Struggle | 0.2 | 0.1 | 0.06 | 0.33 | 0.2 | 1.68 | €1 | 0 | 95.7% |
 | Aggressive Marketing | 0.4 | 0.16 | 0.15 | 0.3 | 0.4 | 1.53 | €1 | 0 | 99.4% |
-| Scandal Recovery | 0.24 | 0.12 | 0.09 | 0.32 | 0.24 | 1.76 | €1 | 0 | 97.7% |
+| Scandal Recovery | 0.2 | 0.1 | 0.06 | 0.32 | 0.2 | 1.72 | €9 | 0 | 97% |
 | Festival Push | 0.35 | 0.17 | 0.14 | 0.32 | 0.35 | 1.01 | €1 | 0 | 99.2% |
 | Chaos Tour | 0.3 | 0.13 | 0.11 | 0.33 | 0.3 | 1.59 | €1 | 0 | 94.8% |
 | Cult Hypergrowth | 0.43 | 0.19 | 0.17 | 0.3 | 0.43 | 1.96 | €0 | 0 | 99% |
@@ -284,7 +282,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 13515 | 3246 | 0 | 3246 | 0 | 0 | 2000/2000 |
 | Bootstrap Struggle | 9967 | 2939 | 0 | 2939 | 1 | 0 | 2000/2000 |
 | Aggressive Marketing | 12257 | 3113 | 0 | 3113 | 1 | 0 | 2000/2000 |
-| Scandal Recovery | 10508 | 3005 | 0 | 3005 | 1 | 0 | 2000/2000 |
+| Scandal Recovery | 10228 | 2904 | 0 | 2904 | 1 | 0 | 2000/2000 |
 | Festival Push | 11850 | 3140 | 0 | 3140 | 0 | 0 | 2000/2000 |
 | Chaos Tour | 10392 | 3059 | 0 | 3059 | 3 | 0 | 2000/2000 |
 | Cult Hypergrowth | 12026 | 3166 | 0 | 3166 | 0 | 0 | 2000/2000 |
@@ -303,7 +301,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | €28.359 | €28.509 | €6.182 | €21.930 | €35.184 |
 | Bootstrap Struggle | €23.095 | €24.314 | €8.001 | €16.779 | €30.552 |
 | Aggressive Marketing | €28.695 | €28.837 | €7.074 | €21.780 | €36.584 |
-| Scandal Recovery | €23.921 | €24.768 | €7.423 | €17.926 | €31.185 |
+| Scandal Recovery | €22.493 | €24.042 | €8.335 | €14.583 | €30.327 |
 | Festival Push | €26.569 | €27.078 | €7.641 | €20.241 | €34.578 |
 | Chaos Tour | €25.711 | €26.241 | €6.877 | €20.269 | €32.430 |
 | Cult Hypergrowth | €28.895 | €29.073 | €7.223 | €21.706 | €36.930 |
@@ -320,7 +318,7 @@ Abdeckung: 7 von 7 Szenarien mit konfigurierter Obergrenze gemessen. Fehlende Ab
 | Baseline Touring | 28 | 2000 | 1.40% | 0.97% | 2.02% |
 | Bootstrap Struggle | 157 | 2000 | 7.85% | 6.75% | 9.11% |
 | Aggressive Marketing | 40 | 2000 | 2.00% | 1.47% | 2.71% |
-| Scandal Recovery | 117 | 2000 | 5.85% | 4.90% | 6.97% |
+| Scandal Recovery | 172 | 2000 | 8.60% | 7.45% | 9.91% |
 | Festival Push | 81 | 2000 | 4.05% | 3.27% | 5.01% |
 | Chaos Tour | 74 | 2000 | 3.70% | 2.96% | 4.62% |
 | Cult Hypergrowth | 44 | 2000 | 2.20% | 1.64% | 2.94% |
@@ -341,7 +339,7 @@ Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben d
 | Baseline Touring | 1.40% | 1–5% | 10% | 0.97–2.02% | straddles_lower | within_target | within_target | stable | 🟢 healthy |
 | Bootstrap Struggle | 7.85% | 15–30% | 60% | 6.75–9.11% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
 | Aggressive Marketing | 2.00% | 2–8% | 15% | 1.47–2.71% | straddles_lower | within_target | within_target | stable | 🟢 healthy |
-| Scandal Recovery | 5.85% | 8–20% | 50% | 4.90–6.97% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
+| Scandal Recovery | 8.60% | 8–20% | 50% | 7.45–9.91% | straddles_lower | within_target | below_target | unstable_boundary | 🟡 unstable |
 | Festival Push | 4.05% | 5–15% | 35% | 3.27–5.01% | straddles_lower | below_target | below_target | stable | 🔵 low_risk |
 | Chaos Tour | 3.70% | 8–20% | 25% | 2.96–4.62% | entirely_below | below_target | below_target | stable | 🔵 low_risk |
 | Cult Hypergrowth | 2.20% | 2–10% | 12% | 1.64–2.94% | straddles_lower | within_target | within_target | stable | 🟢 healthy |
@@ -353,7 +351,7 @@ Das Wilson-Intervall steht bewusst neben dem Punktwert: eine Rate kann im Korrid
 Diese Punkte erscheinen im Report, blockieren aber nichts:
 
 - ⚠️ bootstrap_struggle: Insolvenzrate (Kalibrierung 7.85%, Holdout 8.5%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.
-- ⚠️ scandal_recovery: Insolvenzrate (Kalibrierung 5.85%, Holdout 5.75%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
+- ⚠️ scandal_recovery: Kalibrierung (within_target) und Holdout (below_target) ordnen die Raten unterschiedlich zum Korridor 8–20% ein — Kalibrierung 8.6%, Holdout 7.9%; das Szenario liegt auf einer Korridorgrenze.
 - ⚠️ festival_push: Insolvenzrate (Kalibrierung 4.05%, Holdout 3.95%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ chaos_tour: Insolvenzrate (Kalibrierung 3.7%, Holdout 3.8%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
 
@@ -366,7 +364,7 @@ Insolvenz ist über zehn Tage ein seltenes Endereignis: ein Run kann dauerhaft u
 | Baseline Touring | 1.4% | 6.25% | 1.6% | 0% | 0.09 | 11.45% | 46.22% | €22.375 | 5 | 15.85% |
 | Bootstrap Struggle | 7.85% | 17.95% | 8.25% | 0% | 0.35 | 25.43% | 70.84% | €19.893 | 6 | 9.75% |
 | Aggressive Marketing | 2% | 7.95% | 2.5% | 0% | 0.12 | 17.17% | 53.11% | €22.268 | 5 | 15.35% |
-| Scandal Recovery | 5.85% | 15.35% | 6.05% | 0% | 0.26 | 23.31% | 68.18% | €19.953 | 6 | 11.2% |
+| Scandal Recovery | 8.6% | 19.65% | 9% | 0% | 0.37 | 25.8% | 76.62% | €19.186 | 6 | 9.9% |
 | Festival Push | 4.05% | 10.55% | 4.35% | 0.05% | 0.19 | 20.96% | 62.33% | €21.220 | 6 | 15.85% |
 | Chaos Tour | 3.7% | 12% | 4% | 0.1% | 0.2 | 17.11% | 50.78% | €21.168 | 5 | 12.8% |
 | Cult Hypergrowth | 2.2% | 7.75% | 2.4% | 0.05% | 0.12 | 17.91% | 55.61% | €22.304 | 5 | 17.5% |
@@ -391,7 +389,7 @@ Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nu
 | Baseline Touring | 8.54 | 9.89 | 9.89 | 98.35% | 98.35% | 1.35 | 0.02 | 0.02/0/0 | 0.11 | 0 |
 | Bootstrap Struggle | 6.65 | 9.5 | 9.5 | 91.8% | 91.7% | 2.85 | 0.11 | 0.11/0/0 | 0.19 | 0 |
 | Aggressive Marketing | 7.46 | 9.86 | 9.86 | 97.8% | 97.8% | 2.4 | 0.03 | 0.03/0/0 | 0.15 | 0 |
-| Scandal Recovery | 6.73 | 9.61 | 9.61 | 93.95% | 93.9% | 2.88 | 0.08 | 0.08/0/0 | 0.16 | 0 |
+| Scandal Recovery | 6.61 | 9.42 | 9.42 | 90% | 89.9% | 2.81 | 0.12 | 0.12/0/0 | 0.17 | 0 |
 | Festival Push | 6.84 | 9.73 | 9.73 | 95.7% | 95.65% | 2.89 | 0.06 | 0.06/0/0 | 0.08 | 0 |
 | Chaos Tour | 7.33 | 9.73 | 9.73 | 95.95% | 94.7% | 2.39 | 0.05 | 0.05/0/0 | 0.39 | 0 |
 | Cult Hypergrowth | 7.40 | 9.84 | 9.84 | 97.55% | 97.55% | 2.44 | 0.03 | 0.03/0/0 | 0.19 | 0 |
@@ -403,7 +401,7 @@ Die Venue-Wahl läuft über eine echte generierte Karte: ein Knoten verbindet nu
 
 Knotentypen über alle Ankünfte: GIG 67.17% · FINALE 9.94% · FESTIVAL 9.25% · SPECIAL 4.6% · REST_STOP 4.54% · SUPPLY_STOP 4.49% (Beispiel Baseline Touring).
 
-**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — `useHandleTravel` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen 12 von 12 Szenarien das Finale (Baseline Touring 98.35%, Bootstrap Struggle 91.8%, Aggressive Marketing 97.8%, Scandal Recovery 93.95%, Festival Push 95.7%, Chaos Tour 95.95%, Cult Hypergrowth 97.55%, No Social (Fame 0-50) 95.1%, High Controversy 72.85%, Early Game Probe (Fame 0–50) 95.25%, Mid Game Probe (Fame 60–150) 99.15%, Late Game Probe (Fame 175+) 99.7%), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da 86.36% der besuchten Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.
+**Korrektur einer früheren Schlussfolgerung.** Ein vorheriger Stand dieses Reports las die Ebenenreichweite als Struktureigenschaft der Karte und schloss, nur täglich spielende Bands könnten die Tour beenden. Das war ein Artefakt des Simulators: Nicht-Auftrittstage beendeten den Tag vor jeder Routenbewegung, also reiste eine Band mit Vier-Tage-Kadenz nur zwei Hops weit und zahlte an den übrigen Tagen bloß Kosten. Reisen und Auftreten sind im Spiel unabhängig — `useHandleTravel` prüft Sichtbarkeit, gerichtete Kante und Geld/Treibstoff, nie ob am aktuellen Knoten gespielt wurde. Mit täglicher Fahrt erreichen 12 von 12 Szenarien das Finale (Baseline Touring 98.35%, Bootstrap Struggle 91.8%, Aggressive Marketing 97.8%, Scandal Recovery 90%, Festival Push 95.7%, Chaos Tour 95.95%, Cult Hypergrowth 97.55%, No Social (Fame 0-50) 95.1%, High Controversy 72.85%, Early Game Probe (Fame 0–50) 95.25%, Mid Game Probe (Fame 60–150) 99.15%, Late Game Probe (Fame 175+) 99.7%), und die Ebenenreichweite ist über alle Kadenzen praktisch gleich. Die Kadenz wirkt nur noch über die Streckenwahl: Ankunft an einem Gig-Knoten startet in Produktion immer die Show, es gibt kein Überspringen, und da 86.36% der besuchten Knoten bespielbar sind kann eine Band ihre Auftrittsdichte nur begrenzt drücken. Ein wirtschaftlicher Vorteil dichter Touren bleibt damit messbar, ist aber weit kleiner als zuvor berichtet — und er ist keine Aussage mehr darüber, wer die Tour überhaupt beenden kann.
 
 Modellgrenzen: Ein Ruhetag ist eine explizite Aktion und verbraucht den Tag am Ort; jeder andere Tag ist eine Fahrt, weil das Spiel keine Warten-Aktion kennt. `gigGapDays` steuert nur die Streckenpräferenz, nicht die Zahl der Hops. Nicht modelliert bleiben Notverkäufe, Kreditentscheidungen an realen Zeitpunkten und die Supply-Stop-Auswahl.
 
@@ -416,7 +414,7 @@ Am Ende genug Geld zu besitzen ist nicht dasselbe wie während der Tour sinnvoll
 | Baseline Touring | 1 | 98.35% | 3 | 93.7% | 3 | 10.54 | 15.73% | MERCH | €6.899,35 | €6.386,41 | 0.76 | 0.18 | 2.18 | 59.04 |
 | Bootstrap Struggle | 1 | 97.6% | 3 | 92.5% | 3 | 10.06 | 15.01% | MERCH | €4.489,86 | €4.245,04 | 0.97 | 0.26 | 4.4 | 56.81 |
 | Aggressive Marketing | 1 | 98.85% | 3 | 92.65% | 3 | 10.54 | 15.74% | MERCH | €7.258,94 | €6.681,13 | 0.82 | 0.18 | 2.61 | 58.58 |
-| Scandal Recovery | 1 | 97.9% | 3 | 90.4% | 3 | 10.18 | 15.2% | MERCH | €5.179,84 | €4.854,31 | 0.94 | 0.24 | 3.34 | 57.85 |
+| Scandal Recovery | 1 | 97.25% | 3 | 90.4% | 3 | 9.99 | 14.91% | MERCH | €4.636,76 | €4.363,49 | 0.95 | 0.28 | 3.81 | 57.37 |
 | Festival Push | 1 | 98.35% | 3 | 92.25% | 3 | 10.36 | 15.46% | MERCH | €6.494,41 | €6.030,33 | 0.82 | 0.2 | 2.86 | 58.32 |
 | Chaos Tour | 1 | 97.55% | 3 | 92.55% | 3 | 10.32 | 15.4% | MERCH | €5.729,22 | €5.386,96 | 0.89 | 0.2 | 3.17 | 58.04 |
 | Cult Hypergrowth | 1 | 98.1% | 3 | 94.15% | 3 | 10.53 | 15.72% | MERCH | €7.395,13 | €6.782,78 | 0.86 | 0.16 | 2.45 | 58.73 |
@@ -437,7 +435,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 | Baseline Touring | €3.549 | €4.125 | 0.86 | 0 | 0.03% | €89 | 2.16% | 95.35% |
 | Bootstrap Struggle | €2.836 | €4.136 | 0.686 | 0 | 0.02% | €98 | 2.38% | 95.35% |
 | Aggressive Marketing | €3.645 | €4.841 | 0.753 | 0 | 0.01% | €102 | 2.1% | 95.35% |
-| Scandal Recovery | €2.978 | €4.314 | 0.69 | 0 | 0.02% | €102 | 2.36% | 95.35% |
+| Scandal Recovery | €2.806 | €4.093 | 0.686 | 0.01 | 0.14% | €99 | 2.42% | 95.35% |
 | Festival Push | €3.320 | €4.770 | 0.696 | 0 | 0.02% | €107 | 2.25% | 95.35% |
 | Chaos Tour | €3.191 | €4.278 | 0.746 | 0 | 0.03% | €97 | 2.27% | 95.35% |
 | Cult Hypergrowth | €3.671 | €4.910 | 0.748 | 0 | 0.02% | €103 | 2.1% | 95.35% |
@@ -449,7 +447,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 
 „Katalog < 1 Gig“ ist der Anteil der 43 geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.
 
-**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien gilt: Stamina 36 erreicht mindestens die Marke 35; Mood 41 unterschreitet die Marke 50. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Ruhetage treten in 12 von 12 Szenarien überhaupt auf (High Controversy 0.84%, Baseline Touring 0.03%, Chaos Tour 0.03%, Early Game Probe (Fame 0–50) 0.03%, Bootstrap Struggle 0.02%, Scandal Recovery 0.02%, Festival Push 0.02%, Cult Hypergrowth 0.02%, Mid Game Probe (Fame 60–150) 0.02%, Late Game Probe (Fame 175+) 0.02%, Aggressive Marketing 0.01%, No Social (Fame 0-50) 0.01%); nennenswert ist der Anteil nur bei High Controversy, alle übrigen liegen im Promillebereich. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
+**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien gilt: Stamina 36 erreicht mindestens die Marke 35; Mood 41 unterschreitet die Marke 50. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Ruhetage treten in 12 von 12 Szenarien überhaupt auf (High Controversy 0.84%, Scandal Recovery 0.14%, Baseline Touring 0.03%, Chaos Tour 0.03%, Early Game Probe (Fame 0–50) 0.03%, Bootstrap Struggle 0.02%, Festival Push 0.02%, Cult Hypergrowth 0.02%, Mid Game Probe (Fame 60–150) 0.02%, Late Game Probe (Fame 175+) 0.02%, Aggressive Marketing 0.01%, No Social (Fame 0-50) 0.01%); nennenswert ist der Anteil nur bei High Controversy, alle übrigen liegen im Promillebereich. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
 
 ## Populationen
 
@@ -458,7 +456,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 | Baseline Touring | 2000 / €28.359 | 1972 / €28.762 | 28 / €0 |
 | Bootstrap Struggle | 2000 / €23.095 | 1843 / €25.063 | 157 / €0 |
 | Aggressive Marketing | 2000 / €28.695 | 1960 / €29.280 | 40 / €0 |
-| Scandal Recovery | 2000 / €23.921 | 1883 / €25.407 | 117 / €0 |
+| Scandal Recovery | 2000 / €22.493 | 1828 / €24.609 | 172 / €0 |
 | Festival Push | 2000 / €26.569 | 1919 / €27.690 | 81 / €0 |
 | Chaos Tour | 2000 / €25.711 | 1926 / €26.699 | 74 / €0 |
 | Cult Hypergrowth | 2000 / €28.895 | 1956 / €29.545 | 44 / €0 |
@@ -475,7 +473,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 | Baseline Touring | €6.182 | 0.218 | 18.14% | 46.22% |
 | Bootstrap Struggle | €8.001 | 0.3464 | 32.17% | 70.84% |
 | Aggressive Marketing | €7.074 | 0.2465 | 23.99% | 53.11% |
-| Scandal Recovery | €7.423 | 0.3103 | 30.58% | 68.18% |
+| Scandal Recovery | €8.335 | 0.3706 | 32.86% | 76.62% |
 | Festival Push | €7.641 | 0.2876 | 27.97% | 62.33% |
 | Chaos Tour | €6.877 | 0.2675 | 23.90% | 50.78% |
 | Cult Hypergrowth | €7.223 | 0.25 | 24.74% | 55.61% |
@@ -507,16 +505,16 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 
 | Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |
 |---|---|---:|---:|---:|
-| brandDeals | ✅ | 212119 | 1084 | 42 |
-| postOptions | ✅ | 28970 | 28970 | 28 |
-| socialTrends | ✅ | 233923 | 28238 | 5 |
-| contraband | ✅ | 233923 | 25446 | 37 |
-| minigamesTravel | ✅ | 232184 | 136008 | - |
-| minigamesRoadie | ✅ | 58728 | 52240 | - |
-| minigamesKabelsalat | ✅ | 58604 | 40596 | - |
-| minigamesAmp | ✅ | 59076 | 40944 | - |
-| sponsorship | ✅ | 214449 | 911 | - |
-| restStops | ✅ | 233923 | 3 | - |
+| brandDeals | ✅ | 211887 | 1073 | 42 |
+| postOptions | ✅ | 28928 | 28928 | 28 |
+| socialTrends | ✅ | 233637 | 28138 | 5 |
+| contraband | ✅ | 233637 | 25409 | 37 |
+| minigamesTravel | ✅ | 231788 | 135749 | - |
+| minigamesRoadie | ✅ | 58641 | 52175 | - |
+| minigamesKabelsalat | ✅ | 58544 | 40577 | - |
+| minigamesAmp | ✅ | 58970 | 40833 | - |
+| sponsorship | ✅ | 214163 | 903 | - |
+| restStops | ✅ | 233637 | 3 | - |
 
 ## KPI-Zielkorridore (Health Check)
 
@@ -533,9 +531,9 @@ Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kal
 | Aggressive Marketing | Insolvenzrate | ≤ 15% | 2% | ✅ | Solide – deutlich unter Risikogrenze. |
 | Aggressive Marketing | Endgeld | €14.000 – €44.000 | €28.695 | ✅ | Zentral im Zielband – sehr gute Balance. |
 | Aggressive Marketing | Fame-Fortschritt/Gig | 1000 – 2200 | 1640.16 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
-| Scandal Recovery | Insolvenzrate | ≤ 50% | 5.85% | ✅ | Solide – deutlich unter Risikogrenze. |
-| Scandal Recovery | Endgeld | €12.000 – €39.000 | €23.921 | ✅ | Zentral im Zielband – sehr gute Balance. |
-| Scandal Recovery | Fame-Fortschritt/Gig | 1000 – 2200 | 1556.46 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
+| Scandal Recovery | Insolvenzrate | ≤ 50% | 8.6% | ✅ | Solide – deutlich unter Risikogrenze. |
+| Scandal Recovery | Endgeld | €12.000 – €39.000 | €22.493 | ✅ | Zentral im Zielband – sehr gute Balance. |
+| Scandal Recovery | Fame-Fortschritt/Gig | 1000 – 2200 | 1549.04 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
 | Festival Push | Insolvenzrate | ≤ 35% | 4.05% | ✅ | Solide – deutlich unter Risikogrenze. |
 | Festival Push | Endgeld | €13.000 – €43.000 | €26.569 | ✅ | Zentral im Zielband – sehr gute Balance. |
 | Festival Push | Fame-Fortschritt/Gig | 1000 – 2200 | 1729.11 | ✅ | Zentral im Zielband – Fame-Fortschritt pro Gig stimmig. |
@@ -557,26 +555,26 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `2d63aedc69ec97e73a0a0e8fca1e186174145110` |
-| Runs je Szenario | 260 | 2000 |
-| Seed-Namensraum | `nicht angegeben` | `#first-income-full-reports-v1` |
-| Seed-Strategie | `scenario-id-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
-| Ausgelieferte Harness-Kadenz | `nicht angegeben` | `first-income` |
+| Source-Fingerprint | `—` | `998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04` |
+| Runs je Szenario | 2000 | 2000 |
+| Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
+| Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
+| Ausgelieferte Harness-Kadenz | `first-income` | `first-income` |
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | -1.29% | €326 | 20.63 | 0 |
-| Bootstrap Struggle | -22.53% | €5.864 | 268.84 | 1.94 |
-| Aggressive Marketing | -8% | €3.052 | 149.63 | 1.06 |
-| Scandal Recovery | -20.69% | €4.877 | 361.08 | 1.68 |
-| Festival Push | -23.26% | €5.905 | 479.25 | 1.72 |
-| Chaos Tour | -9.76% | €3.615 | 126.89 | 1.13 |
-| Cult Hypergrowth | -8.18% | €2.892 | 134.52 | 0.92 |
-| No Social (Fame 0-50) | -7.51% | €2.197 | 147.31 | 0.92 |
-| High Controversy | -11.87% | €2.283 | 140.31 | 1.14 |
-| Early Game Probe (Fame 0–50) | -11.42% | €3.997 | 162.08 | 1.42 |
-| Mid Game Probe (Fame 60–150) | -2.04% | €1.978 | -3.61 | 0.86 |
-| Late Game Probe (Fame 175+) | -0.28% | €-260 | 2.17 | -0.01 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 2.75% | €-1.428 | -7.42 | -0.12 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| No Social (Fame 0-50) | 0% | €0 | 0 | 0 |
+| High Controversy | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Kurzfazit
 
@@ -592,7 +590,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 ### Designrisiko-Zusammenfassung (nicht blockierend)
 - Sicherheitsgates: 7/7 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.
-- Risikobänder: healthy 3 · low_risk 4.
+- Risikobänder: healthy 3 · low_risk 3 · unstable 1.
 - ⚠️ 4 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ✅ Alle KPI-Zielkorridore eingehalten.

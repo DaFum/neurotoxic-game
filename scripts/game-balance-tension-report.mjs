@@ -1,7 +1,10 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { execFileSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import {
+  buildArtifactMetadata,
+  validateArtifactMetadata
+} from './utils/balance-report-metadata.mjs'
 
 import {
   LOSS_ATTRIBUTION_SOURCES,
@@ -12,6 +15,10 @@ import {
   runSingleSimulation,
   summarizeScenario
 } from './game-balance-simulation.mjs'
+import {
+  famePerGigWithinLimit,
+  pairedFamePerGig
+} from './game-balance-experiments.mjs'
 
 export const TENSION_RUNS_PER_SCENARIO = 2_000
 export const ATTRIBUTION_COHORTS = Object.freeze({
@@ -19,6 +26,12 @@ export const ATTRIBUTION_COHORTS = Object.freeze({
   holdout: '#scenario-tension-attribution-v1#holdout'
 })
 export const CONTROVERSY_PROFILES = Object.freeze([0, 50, 65, 80])
+export const CHAOS_EVENT_LOSS_CANDIDATE = Object.freeze({
+  id: 'negative-financial-events-1.25',
+  scenarioId: 'chaos_tour',
+  negativeFinancialEventMultiplier: 1.25,
+  productionChange: false
+})
 const GROSS_SPEND_SOURCES = [
   'modifierGrossSpend',
   'venueGrossSpend',
@@ -26,28 +39,23 @@ const GROSS_SPEND_SOURCES = [
   'otherGrossSpend'
 ]
 
-export const buildReportMetadata = ({
-  runGit = execFileSync,
-  env = process.env
-} = {}) => {
-  let sourceBaseCommit = env.GITHUB_SHA ?? null
-  let workingTreeDirty = false
-  try {
-    sourceBaseCommit = runGit('git', ['rev-parse', 'HEAD'], {
-      encoding: 'utf8'
-    }).trim()
-  } catch {
-    // CI archives may not include .git; GITHUB_SHA remains reproducible there.
-  }
-  try {
-    workingTreeDirty =
-      runGit('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()
-        .length > 0
-  } catch {
-    // Without a worktree there is no local dirty state to report.
-  }
-  return { sourceBaseCommit, workingTreeDirty }
-}
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-tension-report.mjs',
+  'scripts/game-balance-experiments.mjs',
+  'scripts/game-balance-experiment-config.mjs',
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/paired-statistics.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
+
+export const buildReportMetadata = () =>
+  buildArtifactMetadata({
+    root: ROOT,
+    generatorPaths: GENERATOR_PATHS,
+    seedNamespace: ATTRIBUTION_COHORTS.calibration,
+    runsPerScenario: TENSION_RUNS_PER_SCENARIO
+  })
 
 const insufficientDecision = rationale => ({
   status: 'insufficient_evidence',
@@ -155,40 +163,13 @@ export const hasCompleteScenarioReviewEvidence = (
     })
   )
 
-const REPORT_ARTIFACT_PATHS = [
-  'reports/scenario-tension-attribution.json',
-  'reports/scenario-tension-attribution.md'
-]
-
-export const validateReportProvenance = (
-  report,
-  { runGit = execFileSync, head = 'HEAD' } = {}
-) => {
-  const source = report?.metadata?.sourceBaseCommit
-  if (!source) return { valid: false, reason: 'missing_source_commit' }
-  try {
-    runGit('git', ['cat-file', '-e', `${source}^{commit}`], { encoding: 'utf8' })
-    runGit('git', ['merge-base', '--is-ancestor', source, head], {
-      encoding: 'utf8'
-    })
-    const changedFiles = runGit(
-      'git',
-      ['diff', '--name-only', `${source}..${head}`],
-      { encoding: 'utf8' }
-    )
-      .trim()
-      .split('\n')
-      .filter(Boolean)
-      .sort()
-    const expected = [...REPORT_ARTIFACT_PATHS].sort()
-    return {
-      valid: JSON.stringify(changedFiles) === JSON.stringify(expected),
-      changedFiles
-    }
-  } catch {
-    return { valid: false, reason: 'unreachable_source_commit' }
-  }
-}
+export const validateReportProvenance = report =>
+  validateArtifactMetadata(report?.metadata, {
+    root: ROOT,
+    generatorPaths: GENERATOR_PATHS,
+    seedNamespace: ATTRIBUTION_COHORTS.calibration,
+    runsPerScenario: TENSION_RUNS_PER_SCENARIO
+  })
 
 export const buildPhaseDecisions = evidence => ({
   phase6B: phaseDecision(
@@ -225,7 +206,75 @@ const runCohort = (scenario, namespace) => {
   return summarizeScenario(runs)
 }
 
-export const buildTensionReport = () => {
+export const buildChaosCandidateAcceptance = ({
+  candidate,
+  famePerGig,
+  materialLossSources
+}) => {
+  const criteria = {
+    bankruptcy:
+      candidate.financialStress.bankruptcyRatePct >= 4 &&
+      candidate.financialStress.bankruptcyRatePct <= 7,
+    bankruptcyBeforeFirstGig:
+      candidate.financialStress.bankruptcyBeforeFirstGigPct <= 1,
+    finaleCompleted: candidate.tourPaths.finaleCompletedPct >= 90,
+    famePerGig: famePerGigWithinLimit(famePerGig, 5),
+    negativeEventsMaterial: materialLossSources.includes('negative_events')
+  }
+  return { criteria, passed: Object.values(criteria).every(Boolean) }
+}
+
+export const buildChaosCandidateComparison = scenario => {
+  const namespace = `${ATTRIBUTION_COHORTS.calibration}#chaos-event-loss-1.25`
+  const pairs = Array.from({ length: TENSION_RUNS_PER_SCENARIO }, (_, index) => {
+    const seed = createScenarioSeed(`${scenario.id}${namespace}`, index)
+    return {
+      control: runSingleSimulation(scenario, seed),
+      candidate: runSingleSimulation(
+        {
+          ...scenario,
+          negativeFinancialEventMultiplier:
+            CHAOS_EVENT_LOSS_CANDIDATE.negativeFinancialEventMultiplier
+        },
+        seed
+      )
+    }
+  })
+  const control = summarizeScenario(pairs.map(pair => pair.control))
+  const candidate = summarizeScenario(pairs.map(pair => pair.candidate))
+  const famePerGig = pairedFamePerGig(
+    pairs.map(pair => ({
+      control: {
+        gigsPlayed: pair.control.gigsPlayed,
+        fameEarned: pair.control.fameAccounting.earned
+      },
+      candidate: {
+        gigsPlayed: pair.candidate.gigsPlayed,
+        fameEarned: pair.candidate.fameAccounting.earned
+      }
+    }))
+  )
+  const materialLossSources = Object.entries(candidate.actualLossAttribution)
+    .sort(([, left], [, right]) => right.total - left.total)
+    .slice(0, 3)
+    .map(([source]) => source)
+  const acceptance = buildChaosCandidateAcceptance({
+    candidate,
+    famePerGig,
+    materialLossSources
+  })
+  return {
+    candidate: CHAOS_EVENT_LOSS_CANDIDATE,
+    seedNamespace: namespace,
+    control,
+    result: candidate,
+    pairedFamePerGig: famePerGig,
+    materialLossSources,
+    acceptance
+  }
+}
+
+export const buildTensionReport = async () => {
   const scenarios = SCENARIOS.filter(
     scenario => SCENARIO_TENSION_TARGETS[scenario.id]
   )
@@ -284,6 +333,10 @@ export const buildTensionReport = () => {
     summary => summary?.bankruptcy?.sampleSize === TENSION_RUNS_PER_SCENARIO
   )
   const chaosSummaries = summariesFor('chaos_tour')
+  const chaos = scenarios.find(scenario => scenario.id === 'chaos_tour')
+  const chaosCandidateComparison = chaos
+    ? buildChaosCandidateComparison(chaos)
+    : null
   const bootstrapFestivalSummaries = [
     ...summariesFor('bootstrap_struggle'),
     ...summariesFor('festival_push')
@@ -342,7 +395,7 @@ export const buildTensionReport = () => {
   }
   return {
     generatedAt: new Date().toISOString(),
-    metadata: buildReportMetadata(),
+    metadata: await buildReportMetadata(),
     contract: {
       runsPerScenario: TENSION_RUNS_PER_SCENARIO,
       cohorts: ATTRIBUTION_COHORTS,
@@ -350,6 +403,7 @@ export const buildTensionReport = () => {
     },
     cohorts,
     controversyComparison,
+    chaosCandidateComparison,
     tensionReview: { calibration: calibrationReview, holdout: holdoutReview },
     evidence,
     decisions: buildPhaseDecisions(evidence)
@@ -379,10 +433,11 @@ const buildMarkdown = report => {
     const paths = scenario.summary.purchasePaths
     return `| ${scenario.name} | ${paths.firstPurchaseDayMedian ?? '—'} | ${paths.catalogSharePurchasedPct}% | ${paths.avgLiquidityDeferrals} | €${paths.avgResidualMoneyAfterPurchase ?? '—'} | ${scenario.summary.gigsToAffordHqUpgrade}/${scenario.summary.gigsToAffordVanUpgrade}/— |`
   })
+  const chaos = report.chaosCandidateComparison
   return [
     '# Phase 6A-7 Scenario Tension Diagnostics', '',
     `Generated: ${report.generatedAt}`,
-    `Source: ${report.metadata.sourceBaseCommit ?? 'unavailable'}; dirty: ${report.metadata.workingTreeDirty}`,
+    `Source fingerprint: ${report.metadata.sourceFingerprint}; generator fingerprint: ${report.metadata.generatorFingerprint}; schema: ${report.metadata.artifactSchemaVersion}; dirty: ${report.metadata.workingTreeDirty}`,
     `Cohorts: ${report.contract.runsPerScenario} runs each; calibration ${report.contract.cohorts.calibration}; holdout ${report.contract.cohorts.holdout}; candidate selection: ${report.contract.candidateSelection}.`, '',
     '## Tension matrix', '',
     '| Scenario | Cohort | Bankruptcy | Before gig | After gig | Ever <€500 | P90 drawdown | Finale completed |',
@@ -390,6 +445,10 @@ const buildMarkdown = report => {
     `Cohort comparison: **${report.evidence.tensionEvidence.status}**. Corridor differences are diagnostic, not missing evidence.`, '',
     '## Top actual loss sources (Calibration)', '', '| Scenario | Top 3 |', '| --- | --- |', ...lossRows, '',
     'Gross gig spending is published separately in JSON under `grossSpendAttribution` and never drives drawdown fields.', '',
+    '## Chaos event-loss candidate', '',
+    chaos
+      ? `Diagnostic only: ×${chaos.candidate.negativeFinancialEventMultiplier}; production change: ${chaos.candidate.productionChange ? 'yes' : 'no'}; bankruptcy: ${chaos.result.financialStress.bankruptcyRatePct}%; before first gig: ${chaos.result.financialStress.bankruptcyBeforeFirstGigPct}%; finale completed: ${chaos.result.tourPaths.finaleCompletedPct}%; paired Fame per gig: ${chaos.pairedFamePerGig.deltaPct}%; material loss sources: ${chaos.materialLossSources.join(', ')}; acceptance: ${chaos.acceptance.passed ? 'passed' : 'failed'}.`
+      : 'Chaos candidate was not measured.', '',
     '## Scandal controversy comparison', '', '| Start controversy | Bankruptcy | Final controversy | Finale completed |', '| ---: | ---: | ---: | ---: |', ...controversyRows, '',
     '## Progression diagnostics', '', '| Scenario | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |', '| --- | ---: | ---: | ---: | ---: | --- |', ...progressionRows, '',
     '## Phase decisions', '', ...Object.entries(report.decisions).map(
@@ -428,11 +487,11 @@ if (
         'utf8'
       )
     )
-    const validation = validateReportProvenance(report)
+    const validation = await validateReportProvenance(report)
     if (!validation.valid) {
       throw new Error(`Invalid tension report provenance: ${validation.reason ?? validation.changedFiles?.join(', ')}`)
     }
   } else {
-    await writeTensionArtifacts(buildTensionReport(), reportDir)
+    await writeTensionArtifacts(await buildTensionReport(), reportDir)
   }
 }

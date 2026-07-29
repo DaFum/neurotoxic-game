@@ -25,6 +25,7 @@ import {
   SIMULATION_CONSTANTS,
   accountFameChange,
   accountFamePurchase,
+  applyNegativeFinancialEventMultiplier,
   applyCatalogPurchase,
   buildDesignRiskReview,
   buildHoldoutSafetyValidation,
@@ -84,6 +85,26 @@ test('baseline compatibility metrics match the canonical contract', () => {
       'avgGigsPlayed'
     ]
   )
+})
+
+test('Scandal Recovery starts inside an existing public backlash', () => {
+  const scandal = SCENARIOS.find(scenario => scenario.id === 'scandal_recovery')
+  assert.equal(scandal.initialOverrides.social.controversyLevel, 50)
+  assert.match(scandal.description, /bestehenden öffentlichen Backlash/i)
+})
+
+test('event loss multiplier scales only negative financial consequences', () => {
+  const lossState = { player: { money: 900 } }
+  applyNegativeFinancialEventMultiplier(lossState, 1_000, 1.25)
+  assert.equal(lossState.player.money, 875)
+
+  const gainState = { player: { money: 1_100 } }
+  applyNegativeFinancialEventMultiplier(gainState, 1_000, 1.25)
+  assert.equal(gainState.player.money, 1_100)
+
+  const depletedState = { player: { money: 0 } }
+  applyNegativeFinancialEventMultiplier(depletedState, 100, 1.25)
+  assert.equal(depletedState.player.money, 0)
 })
 
 test('run-level Fame accounting records successful gigs and reconciles', () => {
@@ -1615,7 +1636,7 @@ test('simulation report labels a legacy baseline comparison as descriptive and u
       generatedAt: '2026-07-28T00:00:00.000Z',
       constants: { runsPerScenario: 260 },
       metadata: {
-        sourceBaseCommit: 'legacy-source',
+        sourceFingerprint: 'legacy-source',
         seedStrategy: 'scenario-id-plus-run-index',
         shippedGigCadencePolicy: 'gap-aligned'
       },
@@ -1643,6 +1664,18 @@ test('simulation report labels a legacy baseline comparison as descriptive and u
     })
     const markdown = await fs.readFile(outputMarkdownUrl, 'utf8')
 
+    assert.equal(
+      report.metadata.seedStrategy,
+      'scenario-id-plus-first-income-full-report-namespace-plus-run-index'
+    )
+    assert.equal(
+      report.metadata.shippedGigCadencePolicy,
+      SHIPPED_GIG_CADENCE_POLICY
+    )
+    assert.equal(
+      report.regressionComparison.current.sourceFingerprint,
+      report.metadata.sourceFingerprint
+    )
     assert.equal(report.regressionComparison.comparison, 'descriptive-unpaired')
     assert.equal(report.regressionComparison.previous.runsPerScenario, 260)
     assert.equal(report.regressionComparison.current.runsPerScenario, 1)

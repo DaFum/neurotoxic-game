@@ -7,9 +7,12 @@ import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 
 import {
+  ARTIFACT_SCHEMA_VERSION,
   BALANCE_SOURCE_FILES,
+  buildArtifactMetadata,
   getBalanceSourceHash,
-  getSourceWorkingTreeDirty
+  getSourceWorkingTreeDirty,
+  validateArtifactMetadata
 } from '../../scripts/utils/balance-report-metadata.mjs'
 
 const ROOT = process.cwd()
@@ -36,6 +39,13 @@ test('balance source list has no duplicates', () => {
 // untouched silently breaks that claim, so the modules carrying the economy
 // scalars, fame rewards, catalogue prices and RNG batching are pinned here.
 const REQUIRED_SOURCES = [
+  'src/data/brandDeals.ts',
+  'src/data/postOptions.ts',
+  'src/data/events/index.ts',
+  'src/data/events/financial.ts',
+  'src/data/events/special.ts',
+  'src/data/events/transport.ts',
+  'src/data/events/gig.ts',
   'src/utils/crypto.ts',
   'src/utils/economy/constants.ts',
   'src/utils/gameState/constants.ts',
@@ -49,6 +59,7 @@ const REQUIRED_SOURCES = [
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
   'scripts/game-balance-experiment-config.mjs',
+  'scripts/utils/balance-report-metadata.mjs',
   // Simulated tours walk a generated map, so route topology and arrival
   // semantics decide which venues are reached and which arrivals pay at all.
   'src/utils/mapGenerator.ts',
@@ -71,6 +82,132 @@ test('balance source hash is stable', async () => {
 
   assert.match(first, /^[a-f0-9]{64}$/)
   assert.equal(first, second, 'Hashing twice must be stable')
+})
+
+test('artifact metadata uses the shared six-field fingerprint contract', async () => {
+  const metadata = await buildArtifactMetadata({
+    root: ROOT,
+    generatorPaths: [
+      'scripts/game-balance-simulation.mjs',
+      'scripts/utils/balance-report-metadata.mjs'
+    ],
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  assert.deepEqual(Object.keys(metadata).sort(), [
+    'artifactSchemaVersion',
+    'generatorFingerprint',
+    'runsPerScenario',
+    'seedNamespace',
+    'sourceFingerprint',
+    'workingTreeDirty'
+  ])
+  assert.match(metadata.sourceFingerprint, /^[a-f0-9]{64}$/)
+  assert.match(metadata.generatorFingerprint, /^[a-f0-9]{64}$/)
+  assert.equal(metadata.artifactSchemaVersion, ARTIFACT_SCHEMA_VERSION)
+  assert.deepEqual(
+    await validateArtifactMetadata(metadata, {
+      root: ROOT,
+      generatorPaths: [
+        'scripts/game-balance-simulation.mjs',
+        'scripts/utils/balance-report-metadata.mjs'
+      ],
+      seedNamespace: '#test',
+      runsPerScenario: 2_000
+    }),
+    { valid: true }
+  )
+})
+
+test('artifact validation detects source and generator mismatches', async () => {
+  const metadata = await buildArtifactMetadata({
+    root: ROOT,
+    generatorPaths: [
+      'scripts/game-balance-simulation.mjs',
+      'scripts/utils/balance-report-metadata.mjs'
+    ],
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  assert.deepEqual(
+    await validateArtifactMetadata(
+      { ...metadata, sourceFingerprint: '0'.repeat(64) },
+      {
+        root: ROOT,
+        generatorPaths: [
+          'scripts/game-balance-simulation.mjs',
+          'scripts/utils/balance-report-metadata.mjs'
+        ],
+        seedNamespace: '#test',
+        runsPerScenario: 2_000
+      }
+    ),
+    { valid: false, reason: 'source_fingerprint_mismatch' }
+  )
+
+  assert.deepEqual(
+    await validateArtifactMetadata(
+      { ...metadata, generatorFingerprint: '0'.repeat(64) },
+      {
+        root: ROOT,
+        generatorPaths: [
+          'scripts/game-balance-simulation.mjs',
+          'scripts/utils/balance-report-metadata.mjs'
+        ],
+        seedNamespace: '#test',
+        runsPerScenario: 2_000
+      }
+    ),
+    { valid: false, reason: 'generator_fingerprint_mismatch' }
+  )
+})
+
+test('generator fingerprint covers transitive generator dependencies', async t => {
+  const sandbox = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'balance-generator-hash-')
+  )
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }))
+
+  for (const relativePath of BALANCE_SOURCE_FILES) {
+    const destination = path.join(sandbox, relativePath)
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(path.join(ROOT, relativePath), destination)
+  }
+
+  const generatorPaths = [
+    'scripts/game-balance-experiments.mjs',
+    'scripts/game-balance-experiment-config.mjs',
+    'scripts/game-balance-simulation.mjs',
+    'scripts/utils/paired-statistics.mjs',
+    'scripts/utils/balance-report-metadata.mjs'
+  ]
+  const metadata = await buildArtifactMetadata({
+    root: sandbox,
+    generatorPaths,
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  fs.appendFileSync(
+    path.join(sandbox, 'scripts/utils/paired-statistics.mjs'),
+    '\n// generator hash probe\n'
+  )
+  const metadataWithCurrentSources = {
+    ...metadata,
+    sourceFingerprint: await getBalanceSourceHash(sandbox)
+  }
+
+  assert.deepEqual(
+    await validateArtifactMetadata(metadataWithCurrentSources, {
+      root: sandbox,
+      generatorPaths,
+      seedNamespace: '#test',
+      runsPerScenario: 2_000
+    }),
+    { valid: false, reason: 'generator_fingerprint_mismatch' }
+  )
 })
 
 // The probe runs against a throwaway copy of the listed sources. Mutating the

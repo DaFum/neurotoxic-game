@@ -1,20 +1,26 @@
-import crypto from 'node:crypto'
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { execSync } from 'node:child_process'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
-import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
+import { BALANCE_EXPERIMENTS } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
-import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
+import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.json')
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-experiments-analysis.md')
 const METRICS = ['daysSurvived', 'finalMoney', 'finalFame', 'fameEarned', 'gigsPlayed', 'finalHarmony', 'maxDrawdownPct']
+const PAIRING_STRATEGY = 'same-scenario-same-run-index-same-seed'
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-experiments.mjs',
+  'scripts/game-balance-experiment-config.mjs',
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/paired-statistics.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
 
 /**
  * Raised when the experiment legitimately finds nothing shippable. Distinct
@@ -528,16 +534,17 @@ const describeObjective = validation => {
   return 'Gap-1 dominance is unchanged. The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.'
 }
 
-const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
-const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
 export const tryReadJson = async file => {
   try {
-    return JSON.parse(await fs.readFile(file, 'utf8'))
+    const parsed = JSON.parse(await fs.readFile(file, 'utf8'))
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : null
   } catch (error) {
     if (
       error &&
       typeof error === 'object' &&
-      'code' in error &&
+      Object.hasOwn(error, 'code') &&
       error.code === 'ENOENT'
     ) {
       return null
@@ -548,7 +555,7 @@ export const tryReadJson = async file => {
 
 const experimentReportIdentity = report => ({
   generatedAt: report?.generatedAt ?? null,
-  sourceBaseCommit: report?.metadata?.sourceBaseCommit ?? null,
+  sourceFingerprint: report?.metadata?.sourceFingerprint ?? null,
   runsPerScenario: report?.controlSnapshot?.runsPerScenario ?? null,
   seedNamespace: report?.metadata?.seedNamespace ?? null,
   seedStrategy: report?.metadata?.seedStrategy ?? null,
@@ -712,7 +719,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. ${previousComparison.note}
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Commit | \`${previousComparison.previous.sourceBaseCommit ?? '—'}\` | \`${previousComparison.current.sourceBaseCommit ?? '—'}\` |
+| Source-Fingerprint | \`${previousComparison.previous.sourceFingerprint ?? '—'}\` | \`${previousComparison.current.sourceFingerprint ?? '—'}\` |
 | Runs je Szenario | ${previousComparison.previous.runsPerScenario ?? '—'} | ${previousComparison.current.runsPerScenario ?? '—'} |
 | Seed-Namensraum | \`${previousComparison.previous.seedNamespace ?? 'legacy'}\` | \`${previousComparison.current.seedNamespace ?? '—'}\` |
 | Empfehlung | \`${previousComparison.previous.recommendationStatus ?? '—'}\` | \`${previousComparison.current.recommendationStatus ?? '—'}\` |
@@ -732,7 +739,7 @@ ${previousComparison.scenarios
 
 ## Reproduzierbarkeit
 
-Pairing: \`${report.metadata.pairingStrategy}\`; ${report.runtime.totalRuns} simulation runs in ${report.runtime.durationMs} ms.
+Pairing: \`${report.pairingStrategy}\`; ${report.runtime.totalRuns} simulation runs in ${report.runtime.durationMs} ms.
 
 ${previousComparisonSection}
 ## Kontrollzustand
@@ -1210,33 +1217,25 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   designRiskCorridors.aboveCorridor = designRiskCorridors.scenarios
     .filter(item => item.position === 'above')
     .map(item => item.scenarioId)
-  const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
     experimentReportVersion: 2,
     generatedAt: new Date().toISOString(),
     metadata: {
-      nodeVersion: process.version, sourceBaseCommit,
-      workingTreeDirty: getSourceWorkingTreeDirty(ROOT),
-      simulationScriptSha256: await hashFile(path.join(ROOT, 'scripts/game-balance-simulation.mjs')),
-      balanceSourceSha256: await getBalanceSourceHash(ROOT),
-      experimentScriptSha256: await hashFile(fileURLToPath(import.meta.url)),
-      experimentConfigSha256: hashExperimentConfig(BALANCE_EXPERIMENTS),
-      // Same helper the simulation report uses, so the two artifacts can be
-      // compared hash-for-hash. Hashing the array directly here produced a
-      // different digest for identical scenario data.
-      scenarioConfigSha256: getJsonHash(SCENARIOS),
-      kpiConfigSha256: getJsonHash(KPI_TARGETS),
-      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+      ...(await buildArtifactMetadata({
+        root: ROOT,
+        generatorPaths: GENERATOR_PATHS,
+        seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+        runsPerScenario
+      })),
       shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY,
-      // Derived from SEED_STREAMS, in the same machine-readable shape the cadence
-      // probe publishes: the roles were described elsewhere in the report but the
-      // exact seed derivation per stream was not, so the artifact could not be
-      // reproduced from its own metadata.
       seedStrategy: Object.keys(SEED_STREAMS)
-        .map(stream => `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`)
-        .join('; '),
-      pairingStrategy: 'same-scenario-same-run-index-same-seed'
+        .map(
+          stream =>
+            `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`
+        )
+        .join('; ')
     },
+    pairingStrategy: PAIRING_STRATEGY,
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },

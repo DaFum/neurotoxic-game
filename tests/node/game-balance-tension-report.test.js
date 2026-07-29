@@ -6,9 +6,11 @@ import path from 'node:path'
 
 import {
   ATTRIBUTION_COHORTS,
+  CHAOS_EVENT_LOSS_CANDIDATE,
   CONTROVERSY_PROFILES,
   TENSION_RUNS_PER_SCENARIO,
   buildReportMetadata,
+  buildChaosCandidateAcceptance,
   buildPhaseDecisions,
   createEvidenceResult,
   hasCompleteTensionEvidence,
@@ -29,24 +31,42 @@ test('tension cohorts are disjoint selection-free 2000-run diagnostics', () => {
   assert.deepEqual(CONTROVERSY_PROFILES, [0, 50, 65, 80])
 })
 
-test('generated diagnostics identify their clean source commit', () => {
-  const metadata = buildReportMetadata()
-  assert.match(metadata.sourceBaseCommit, /^[0-9a-f]{7,40}$/)
-  assert.equal(typeof metadata.workingTreeDirty, 'boolean')
+test('Chaos Tour evaluates one diagnostic event-loss candidate', () => {
+  assert.deepEqual(CHAOS_EVENT_LOSS_CANDIDATE, {
+    id: 'negative-financial-events-1.25',
+    scenarioId: 'chaos_tour',
+    negativeFinancialEventMultiplier: 1.25,
+    productionChange: false
+  })
 })
 
-test('report metadata falls back when git is unavailable', () => {
-  const unavailable = () => {
-    throw new Error('git unavailable')
-  }
-  assert.deepEqual(
-    buildReportMetadata({ runGit: unavailable, env: { GITHUB_SHA: 'ci-sha' } }),
-    { sourceBaseCommit: 'ci-sha', workingTreeDirty: false }
-  )
-  assert.deepEqual(buildReportMetadata({ runGit: unavailable, env: {} }), {
-    sourceBaseCommit: null,
-    workingTreeDirty: false
+test('Chaos Fame acceptance fails closed without paired coverage', () => {
+  const acceptance = buildChaosCandidateAcceptance({
+    candidate: {
+      financialStress: {
+        bankruptcyRatePct: 5,
+        bankruptcyBeforeFirstGigPct: 0.5
+      },
+      tourPaths: { finaleCompletedPct: 95 }
+    },
+    famePerGig: {
+      deltaPct: 0,
+      sufficientEvidence: false
+    },
+    materialLossSources: ['negative_events']
   })
+
+  assert.equal(acceptance.criteria.famePerGig, false)
+  assert.equal(acceptance.passed, false)
+})
+
+test('generated diagnostics identify source and generator fingerprints', async () => {
+  const metadata = await buildReportMetadata()
+  assert.match(metadata.sourceFingerprint, /^[0-9a-f]{64}$/)
+  assert.match(metadata.generatorFingerprint, /^[0-9a-f]{64}$/)
+  assert.equal(typeof metadata.workingTreeDirty, 'boolean')
+  assert.equal(metadata.seedNamespace, ATTRIBUTION_COHORTS.calibration)
+  assert.equal(metadata.runsPerScenario, TENSION_RUNS_PER_SCENARIO)
 })
 
 test('artifact writer creates a missing reports directory', async () => {
@@ -56,7 +76,14 @@ test('artifact writer creates a missing reports directory', async () => {
     await writeTensionArtifacts(
       {
         generatedAt: 'test',
-        metadata: { sourceBaseCommit: null, workingTreeDirty: false },
+        metadata: {
+          sourceFingerprint: '0'.repeat(64),
+          generatorFingerprint: '0'.repeat(64),
+          seedNamespace: ATTRIBUTION_COHORTS.calibration,
+          runsPerScenario: 0,
+          workingTreeDirty: false,
+          artifactSchemaVersion: 1
+        },
         decisions: {},
         contract: {
           runsPerScenario: 0,
@@ -150,25 +177,11 @@ test('phase stability only compares scenarios owned by that phase', () => {
   )
 })
 
-test('provenance validation requires an existing ancestor and reports-only diff', () => {
-  const calls = []
-  const runGit = (_command, args) => {
-    calls.push(args)
-    if (args[0] === 'diff')
-      return 'reports/scenario-tension-attribution.json\nreports/scenario-tension-attribution.md\n'
-    return ''
-  }
-  assert.equal(
-    validateReportProvenance(
-      { metadata: { sourceBaseCommit: 'source' } },
-      { runGit, head: 'HEAD' }
-    ).valid,
-    true
-  )
-  assert.deepEqual(
-    calls.map(args => args[0]),
-    ['cat-file', 'merge-base', 'diff']
-  )
+test('provenance validation rejects missing fingerprint metadata', async () => {
+  assert.deepEqual(await validateReportProvenance({ metadata: {} }), {
+    valid: false,
+    reason: 'invalid_artifact_metadata'
+  })
 })
 
 test('phase evidence validators reject empty and non-finite output objects', () => {

@@ -1399,7 +1399,7 @@ test('experiment reports compare the previous and current full-report cohorts', 
   const previousReport = {
     generatedAt: '2026-07-28T22:12:38.668Z',
     metadata: {
-      sourceBaseCommit: 'old-source',
+      sourceFingerprint: 'old-source',
       seedStrategy: 'old-seeds'
     },
     controlSnapshot: { runsPerScenario: 260 },
@@ -1424,6 +1424,20 @@ test('experiment reports compare the previous and current full-report cohorts', 
     previousReport
   })
 
+  assert.equal(report.metadata.pairingStrategy, undefined)
+  assert.equal(report.pairingStrategy, 'same-scenario-same-run-index-same-seed')
+  assert.equal(report.metadata.shippedGigCadencePolicy, 'first-income')
+  assert.equal(
+    report.metadata.seedStrategy,
+    Object.keys(SEED_STREAMS)
+      .map(
+        stream =>
+          `${stream}: ${SEED_STREAMS[stream]('scenario-id')}-plus-run-index`
+      )
+      .join('; ')
+  )
+  assert.doesNotMatch(renderExperimentMarkdown(report), /Pairing: `undefined`/)
+
   assert.doesNotMatch(
     report.phases.phase3C.objectiveNote,
     /baseline_touring money-per-day advantage/
@@ -1443,7 +1457,7 @@ test('experiment reports compare the previous and current full-report cohorts', 
     'descriptive-unpaired'
   )
   assert.equal(
-    report.previousReportComparison.previous.sourceBaseCommit,
+    report.previousReportComparison.previous.sourceFingerprint,
     'old-source'
   )
   assert.equal(report.previousReportComparison.previous.runsPerScenario, 260)
@@ -1506,6 +1520,7 @@ test('reading a previous experiment report ignores only a missing file', async (
     `../../reports/.missing-experiment-${suffix}.json`,
     import.meta.url
   )
+  const invalidSnapshotUrls = []
   await fs.writeFile(malformedUrl, '{not-json')
   await fs.mkdir(directoryUrl)
 
@@ -1519,10 +1534,24 @@ test('reading a previous experiment report ignores only a missing file', async (
       error => error?.code !== 'ENOENT'
     )
     assert.equal(await balanceExperiments.tryReadJson(missingUrl), null)
+
+    for (const value of [null, [], ['report'], 42, 'report']) {
+      const invalidSnapshotUrl = new URL(
+        `../../reports/.invalid-experiment-${suffix}-${typeof value}-${Array.isArray(value)}.json`,
+        import.meta.url
+      )
+      invalidSnapshotUrls.push(invalidSnapshotUrl)
+      await fs.writeFile(invalidSnapshotUrl, JSON.stringify(value))
+      assert.equal(
+        await balanceExperiments.tryReadJson(invalidSnapshotUrl),
+        null
+      )
+    }
   } finally {
     await Promise.all([
       fs.rm(malformedUrl, { force: true }),
-      fs.rm(directoryUrl, { recursive: true, force: true })
+      fs.rm(directoryUrl, { recursive: true, force: true }),
+      ...invalidSnapshotUrls.map(file => fs.rm(file, { force: true }))
     ])
   }
 })

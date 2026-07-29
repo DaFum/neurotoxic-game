@@ -13,6 +13,7 @@ import path from 'node:path'
  * `tests/node/balanceSourceFiles.test.js` guards the list against drift.
  */
 export const BALANCE_SOURCE_FILES = Object.freeze([
+  'scripts/utils/balance-report-metadata.mjs',
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
   'scripts/game-balance-experiment-config.mjs',
@@ -27,6 +28,39 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/context/reducers/sanitizers/stateSanitizers.ts',
   'src/utils/saveValidator.ts',
   'src/context/usePersistence.ts',
+  'src/data/brandDeals.ts',
+  'src/data/postOptions.ts',
+  'src/data/songs.ts',
+  'src/data/questRegistry.ts',
+  'src/data/contraband.ts',
+  'src/data/socialTrends.ts',
+  'src/data/platforms.ts',
+  'src/data/hqItems.ts',
+  'src/data/events/band.ts',
+  'src/data/events/categories.ts',
+  'src/data/events/consequences.ts',
+  'src/data/events/constants.ts',
+  'src/data/events/crisis.ts',
+  'src/data/events/financial.ts',
+  'src/data/events/gig.ts',
+  'src/data/events/index.ts',
+  'src/data/events/quests.ts',
+  'src/data/events/relationshipEvents.ts',
+  'src/data/events/special.ts',
+  'src/data/events/transport.ts',
+  'src/utils/eventEngine/applyResult.ts',
+  'src/utils/eventEngine/checkEvent.ts',
+  'src/utils/eventEngine/eventEffectHandlers.ts',
+  'src/utils/eventEngine/eventEngineCore.ts',
+  'src/utils/eventEngine/eventSelection.ts',
+  'src/utils/eventEngine/filterEvents.ts',
+  'src/utils/eventEngine/helpers.ts',
+  'src/utils/eventEngine/index.ts',
+  'src/utils/eventEngine/processOptions.ts',
+  'src/utils/eventEngine/resolveChoice.ts',
+  'src/utils/eventEngine/resolvers.ts',
+  'src/utils/eventEngine/templateResolver.ts',
+  'src/utils/eventEngine/types.ts',
   // Determinism: secureRandom's batching decides whether same-seed runs
   // reproduce at all.
   'src/utils/crypto.ts',
@@ -56,6 +90,8 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/data/hqItems/instruments.ts',
   'src/data/hqItems/van.ts'
 ])
+
+export const ARTIFACT_SCHEMA_VERSION = 1
 
 /**
  * Whether the SOURCE that produced a report was dirty.
@@ -97,4 +133,61 @@ export const getBalanceSourceHash = async root => {
     hash.update('\0')
   }
   return hash.digest('hex')
+}
+
+const getFilesHash = async (root, relativePaths) => {
+  const hash = crypto.createHash('sha256')
+  for (const relativePath of [...relativePaths].sort()) {
+    hash.update(`${relativePath}\0`)
+    hash.update(await fs.readFile(path.join(root, relativePath)))
+    hash.update('\0')
+  }
+  return hash.digest('hex')
+}
+
+export const buildArtifactMetadata = async ({
+  root,
+  generatorPaths,
+  seedNamespace,
+  runsPerScenario
+}) => ({
+  sourceFingerprint: await getBalanceSourceHash(root),
+  generatorFingerprint: await getFilesHash(root, generatorPaths),
+  seedNamespace,
+  runsPerScenario,
+  workingTreeDirty: getSourceWorkingTreeDirty(root) === true,
+  artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION
+})
+
+export const validateArtifactMetadata = async (
+  metadata,
+  { root, generatorPaths, seedNamespace, runsPerScenario }
+) => {
+  if (
+    !metadata ||
+    !/^[a-f0-9]{64}$/.test(metadata.sourceFingerprint) ||
+    !/^[a-f0-9]{64}$/.test(metadata.generatorFingerprint) ||
+    typeof metadata.seedNamespace !== 'string' ||
+    !Number.isInteger(metadata.runsPerScenario) ||
+    typeof metadata.workingTreeDirty !== 'boolean' ||
+    metadata.artifactSchemaVersion !== ARTIFACT_SCHEMA_VERSION
+  ) {
+    return { valid: false, reason: 'invalid_artifact_metadata' }
+  }
+  if (metadata.seedNamespace !== seedNamespace) {
+    return { valid: false, reason: 'seed_namespace_mismatch' }
+  }
+  if (metadata.runsPerScenario !== runsPerScenario) {
+    return { valid: false, reason: 'runs_per_scenario_mismatch' }
+  }
+  if (metadata.sourceFingerprint !== (await getBalanceSourceHash(root))) {
+    return { valid: false, reason: 'source_fingerprint_mismatch' }
+  }
+  if (
+    metadata.generatorFingerprint !==
+    (await getFilesHash(root, generatorPaths))
+  ) {
+    return { valid: false, reason: 'generator_fingerprint_mismatch' }
+  }
+  return { valid: true }
 }
