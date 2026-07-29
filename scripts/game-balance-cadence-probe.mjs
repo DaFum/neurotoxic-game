@@ -1,6 +1,6 @@
 /**
- * Phase 5, step 1: is the `cult_hypergrowth` holdout breach a property of the
- * economy, or of the simulation's cadence policy?
+ * Phase 5B: independently validate `first-income` against the former
+ * `gap-aligned` production control without changing any economy value.
  *
  * The released report has `cult_hypergrowth` at 10.38% insolvency on the
  * calibration stream and 13.85% on the holdout, against a 12% hard cap — and its
@@ -34,11 +34,15 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import {
+  FAME_EVIDENCE_MIN_SHARE,
+  famePerGigWithinLimit,
+  pairedFamePerGig
+} from './game-balance-experiments.mjs'
+import {
   GIG_CADENCE_POLICIES,
   KPI_TARGETS,
   RISK_TARGETS,
   SCENARIOS,
-  SHIPPED_GIG_CADENCE_POLICY,
   SIMULATION_CONSTANTS,
   buildHoldoutSafetyValidation,
   calculateAverageFameEarnedPerGig,
@@ -51,6 +55,16 @@ import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-cadence-probe-analysis.md')
+const DIAGNOSTIC_CONTROL_POLICY = 'gap-aligned'
+
+export const PRODUCTION_CADENCE_VALIDATION = Object.freeze({
+  policies: Object.freeze(['gap-aligned', 'first-income']),
+  seedNamespace: '#production-cadence-validation-v2',
+  minimumRunsPerScenario: 2000,
+  famePerGigPlayedRunsDeltaMaxPct: 5,
+  solventFinalMoneyDeltaMaxPct: 5,
+  minimumComparableShare: FAME_EVIDENCE_MIN_SHARE
+})
 
 // The breach that motivates the probe is a holdout breach, so that stream is
 // measured too — a variant that only helps the calibration cohort has not answered
@@ -159,7 +173,184 @@ export const summarizeCohort = runs => {
     // a Fame side-effect claim may rest on.
     famePerGig: round(calculateAverageFameEarnedPerGig(runs)),
     famePerGigPlayedRuns: played.length ? round(calculateAverageFameEarnedPerGig(played)) : null,
-    finaleReachedPct: rate(runs.filter(run => run.finaleReached).length, runs.length)
+    finaleReachedPct: rate(runs.filter(run => run.finaleReached).length, runs.length),
+    finaleCompletedPct: rate(runs.filter(run => run.finaleCompleted).length, runs.length)
+  }
+}
+
+export const pairedSolventFinalMoney = pairs => {
+  const comparable = pairs.filter(pair => !pair.control.bankrupt && !pair.candidate.bankrupt)
+  const minimumSampleSize = Math.max(
+    1,
+    Math.ceil(pairs.length * PRODUCTION_CADENCE_VALIDATION.minimumComparableShare)
+  )
+  const sufficientEvidence = comparable.length >= minimumSampleSize
+  const control = median(comparable.map(pair => pair.control.finalMoney))
+  const candidate = median(comparable.map(pair => pair.candidate.finalMoney))
+  return {
+    control,
+    candidate,
+    deltaPct: sufficientEvidence ? pctDelta(control, candidate) : null,
+    sampleSize: comparable.length,
+    minimumSampleSize,
+    sufficientEvidence,
+    excludedPairs: pairs.length - comparable.length
+  }
+}
+
+export const runProductionCadenceValidation = ({
+  runsPerScenario = PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario,
+  runner = runSingleSimulation,
+  scenarios = cappedScenarios()
+} = {}) => {
+  if (runsPerScenario < PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario) {
+    throw new RangeError(
+      `Production cadence validation requires at least ${PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario} runs per scenario`
+    )
+  }
+
+  const expectedScenarios = cappedScenarios().map(scenario => scenario.id)
+  const evaluatedScenarios = scenarios.map(scenario => scenario.id)
+  const missingScenarioIds = expectedScenarios.filter(
+    id => !evaluatedScenarios.includes(id)
+  )
+  const [controlPolicy, candidatePolicy] = PRODUCTION_CADENCE_VALIDATION.policies
+  const pairingByPolicy = {}
+  const cohorts = Object.fromEntries(
+    PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
+      policy,
+      Object.fromEntries(
+        scenarios.map(baseScenario => {
+          const scenario = { ...baseScenario, gigCadencePolicy: policy }
+          const cohortRuns = []
+          const pairingRuns = []
+          for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
+            const run = runner(
+              scenario,
+              createScenarioSeed(
+                `${baseScenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+                runIndex
+              )
+            )
+            cohortRuns.push({
+              bankrupt: run.bankrupt,
+              daysSurvived: run.daysSurvived,
+              gigsPlayed: run.gigsPlayed,
+              finalMoney: run.finalMoney,
+              finaleReached: run.finaleReached,
+              finaleCompleted: run.finaleCompleted,
+              fameAccounting: { earned: run.fameAccounting.earned },
+              earlyRunway: run.earlyRunway
+            })
+            pairingRuns.push({
+              bankrupt: run.bankrupt,
+              finalMoney: run.finalMoney,
+              fameEarned: run.fameAccounting.earned,
+              gigsPlayed: run.gigsPlayed
+            })
+          }
+          pairingByPolicy[policy] ??= {}
+          pairingByPolicy[policy][baseScenario.id] = pairingRuns
+          return [baseScenario.id, summarizeCohort(cohortRuns)]
+        })
+      )
+    ])
+  )
+  const control = cohorts[controlPolicy]
+  const candidate = cohorts[candidatePolicy]
+  const failedGates = missingScenarioIds.map(id => `${id}:missing-validation`)
+  const comparisons = Object.fromEntries(
+    scenarios.map(scenario => {
+      const baseline = control[scenario.id]
+      const proposed = candidate[scenario.id]
+      const pairs = pairingByPolicy[controlPolicy][scenario.id].map((controlRun, index) => ({
+        control: controlRun,
+        candidate: pairingByPolicy[candidatePolicy][scenario.id][index]
+      }))
+      const fame = pairedFamePerGig(pairs)
+      const money = pairedSolventFinalMoney(pairs)
+      const comparison = {
+        bankruptcyRateDeltaPct: round(proposed.bankruptcyRatePct - baseline.bankruptcyRatePct),
+        pairedFamePerGig: fame,
+        pairedSolventFinalMoney: money,
+        finaleReachedDeltaPct: round(proposed.finaleReachedPct - baseline.finaleReachedPct),
+        finaleCompletedDeltaPct: round(
+          proposed.finaleCompletedPct - baseline.finaleCompletedPct
+        ),
+        bankruptBeforeFirstGigRateDeltaPct: round(
+          proposed.bankruptBeforeFirstGigRatePct - baseline.bankruptBeforeFirstGigRatePct
+        ),
+        blockedTravelBeforeFirstGigRunsPctDelta: round(
+          proposed.blockedTravelBeforeFirstGigRunsPct -
+            baseline.blockedTravelBeforeFirstGigRunsPct
+        )
+      }
+      const cap = KPI_TARGETS[scenario.id]?.bankruptcyMax
+      if (!Number.isFinite(cap) || proposed.bankruptcyRatePct > cap) {
+        failedGates.push(`${scenario.id}:bankruptcy-max`)
+      }
+      if (
+        !famePerGigWithinLimit(
+          fame,
+          PRODUCTION_CADENCE_VALIDATION.famePerGigPlayedRunsDeltaMaxPct
+        )
+      ) {
+        failedGates.push(`${scenario.id}:fame-per-gig`)
+      }
+      if (
+        !money.sufficientEvidence ||
+        Math.abs(money.deltaPct) >
+          PRODUCTION_CADENCE_VALIDATION.solventFinalMoneyDeltaMaxPct
+      ) {
+        failedGates.push(`${scenario.id}:solvent-final-money`)
+      }
+      if (comparison.finaleCompletedDeltaPct < 0) {
+        failedGates.push(`${scenario.id}:finale-completed`)
+      }
+      if (comparison.blockedTravelBeforeFirstGigRunsPctDelta > 0) {
+        failedGates.push(`${scenario.id}:pre-first-gig-stranded`)
+      }
+      return [scenario.id, comparison]
+    })
+  )
+  const approvedForProduction = failedGates.length === 0
+  const designWarnings = Object.fromEntries(
+    scenarios.flatMap(scenario => {
+      const corridor = RISK_TARGETS[scenario.id]?.bankruptcyTargetPct
+      if (!corridor) return []
+      const value = candidate[scenario.id].bankruptcyRatePct
+      const classification = value < corridor[0] ? 'below' : value > corridor[1] ? 'above' : 'inside'
+      return [[scenario.id, { valuePct: value, corridorPct: corridor, classification }]]
+    })
+  )
+
+  return {
+    productionCadenceValidationVersion: 2,
+    runsPerScenario,
+    seedNamespace: PRODUCTION_CADENCE_VALIDATION.seedNamespace,
+    policies: PRODUCTION_CADENCE_VALIDATION.policies,
+    status: approvedForProduction
+      ? 'production-cadence-validation-passed'
+      : 'no-production-cadence-recommendation-validation-failed',
+    approvedForProduction,
+    failedGates,
+    expectedScenarios,
+    evaluatedScenarios,
+    missingScenarioIds,
+    acceptanceCriteria: {
+      allBankruptcyMaxCaps: true,
+      famePerGigPlayedRunsDeltaMaxPct:
+        PRODUCTION_CADENCE_VALIDATION.famePerGigPlayedRunsDeltaMaxPct,
+      solventFinalMoneyDeltaMaxPct:
+        PRODUCTION_CADENCE_VALIDATION.solventFinalMoneyDeltaMaxPct,
+      minimumComparableShare: PRODUCTION_CADENCE_VALIDATION.minimumComparableShare,
+      finaleCompletedMayDecline: false,
+      preFirstGigStrandedRateMayIncrease: false
+    },
+    designWarnings,
+    control: { policy: controlPolicy, scenarios: control },
+    candidate: { policy: candidatePolicy, scenarios: candidate },
+    comparisons
   }
 }
 
@@ -213,14 +404,14 @@ export const runCadenceProbe = ({
   )
 
   const shipped = policies.find(
-    entry => entry.policy === SHIPPED_GIG_CADENCE_POLICY
+    entry => entry.policy === DIAGNOSTIC_CONTROL_POLICY
   )
   // Failing loudly beats rendering a report whose baseline silently vanished: with
   // no shipped cohort every delta is null, nothing is `isShipped`, and the shipped
   // policy itself would qualify as a variant that "cleared" the gate.
   if (!shipped) {
     throw new RangeError(
-      `Shipped cadence policy ${SHIPPED_GIG_CADENCE_POLICY} is not among the compared policies`
+      `Diagnostic control policy ${DIAGNOSTIC_CONTROL_POLICY} is not among the compared policies`
     )
   }
   const cohortOf = (entry, scenarioId, stream) =>
@@ -263,7 +454,7 @@ export const runCadenceProbe = ({
     })
     return {
       policy: entry.policy,
-      isShipped: entry.policy === SHIPPED_GIG_CADENCE_POLICY,
+      isShipped: entry.policy === DIAGNOSTIC_CONTROL_POLICY,
       holdoutSafetyValidation: holdoutByPolicy[entry.policy],
       // Named separately from the gate because these are diagnostics on the
       // shipped-vs-variant comparison, not release conditions.
@@ -321,13 +512,13 @@ export const runCadenceProbe = ({
       cultId,
       stream
     )?.bankruptcyRatePct ?? null
-  const shippedSelectionRate = cultRateOnStream(SHIPPED_GIG_CADENCE_POLICY, 'selection')
+  const shippedSelectionRate = cultRateOnStream(DIAGNOSTIC_CONTROL_POLICY, 'selection')
   const independentConfirmation = {
     stream: 'selection',
     shippedCultRatePct: shippedSelectionRate,
     variantCultRatePct: Object.fromEntries(
       policies
-        .filter(entry => entry.policy !== SHIPPED_GIG_CADENCE_POLICY)
+        .filter(entry => entry.policy !== DIAGNOSTIC_CONTROL_POLICY)
         .map(entry => [entry.policy, cultRateOnStream(entry.policy, 'selection')])
     ),
     // Direction, not magnitude: the streams are different cohorts, so the rates are
@@ -549,6 +740,57 @@ Bestätigung auf dem unabhängigen \`selection\`-Strom: ${
 `
 }
 
+export const renderProductionCadenceMarkdown = report => {
+  const scenarioRows = Object.keys(report.candidate.scenarios)
+    .map(id => {
+      const control = report.control.scenarios[id]
+      const candidate = report.candidate.scenarios[id]
+      const comparison = report.comparisons[id]
+      return `| \`${id}\` | ${fmtPct(control.bankruptcyRatePct)} | ${fmtPct(candidate.bankruptcyRatePct)} | ${fmtPct(comparison.pairedFamePerGig.deltaPct)} (${comparison.pairedFamePerGig.sampleSize}) | ${fmtPct(comparison.pairedSolventFinalMoney.deltaPct)} (${comparison.pairedSolventFinalMoney.sampleSize}) | ${fmtPct(comparison.finaleReachedDeltaPct)} | ${fmtPct(comparison.finaleCompletedDeltaPct)} | ${fmtPct(comparison.blockedTravelBeforeFirstGigRunsPctDelta)} | ${fmtPct(comparison.bankruptBeforeFirstGigRateDeltaPct)} |`
+    })
+    .join('\n')
+  return `# Produktionsvalidierung der First-Income-Kadenz (Phase 5B)
+
+Erzeugt: ${report.generatedAt ?? '—'}
+Runs pro Szenario: ${report.runsPerScenario}
+Seed-Namensraum: \`${report.seedNamespace}\`
+
+## Vorab festgelegter Vergleich
+
+- Kontrolle: \`gap-aligned\`
+- Produktionskandidat: \`first-income\`
+- Economy-Tuning: unverändert
+
+## Szenarioabdeckung
+
+- Erwartet: ${report.expectedScenarios.map(id => `\`${id}\``).join(', ')}
+- Ausgewertet: ${report.evaluatedScenarios.map(id => `\`${id}\``).join(', ')}
+- Fehlend: ${report.missingScenarioIds.length ? report.missingScenarioIds.map(id => `\`${id}\``).join(', ') : 'keine'}
+
+| Szenario | Insolvenz Kontrolle | Insolvenz Kandidat | gepaartes Δ Fame/Gig (n) | gepaartes Δ solventes Endgeld (n) | Δ Finale erreicht | Δ Finale abgeschlossen | Δ blockierte Reise vor erstem Gig | Δ Insolvenz vor erstem Gig |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: |
+${scenarioRows}
+
+## Nicht blockierende Designhinweise
+
+Die Korridore aus \`RISK_TARGETS\` bleiben Designhypothesen. Sie werden vollständig aus der Live-Konfiguration abgeleitet und blockieren diese Freigabe nicht.
+
+${Object.entries(report.designWarnings)
+  .map(([id, warning]) => `- \`${id}\`: ${fmtPct(warning.valuePct)} gegenüber ${warning.corridorPct[0]}–${warning.corridorPct[1]}% — **${warning.classification}**`)
+  .join('\n')}
+
+## Entscheidung
+
+Status: **${report.status}**
+
+Freigabe für Produktion: **${report.approvedForProduction ? 'ja' : 'nein'}**
+
+Fehlgeschlagene Gates: ${report.failedGates.length ? report.failedGates.map(item => `\`${item}\``).join(', ') : 'keine'}
+
+Die Validierung verändert keine Geldwerte. Ein fehlgeschlagenes Gate führt geschlossen zu keiner Produktionsempfehlung; es wird kein Ersatzkandidat auf diesem Seed-Strom gesucht.
+`
+}
+
 const hashFile = async file =>
   crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 
@@ -562,14 +804,25 @@ const git = command => {
 const gitRevision = () => process.env.GITHUB_SHA ?? git('git rev-parse HEAD')
 const gitWorkingTreeDirty = () => getSourceWorkingTreeDirty(ROOT)
 
-const parseArgs = argv => {
-  const options = { write: true, runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario }
+export const parseArgs = argv => {
+  const options = {
+    write: true,
+    runsPerScenario: PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario
+  }
   for (let index = 0; index < argv.length; index++) {
     if (argv[index] === '--no-write') options.write = false
-    if (argv[index] === '--runs' && argv[index + 1]) {
+    if (argv[index] === '--runs') {
+      if (argv[index + 1] == null) {
+        throw new RangeError('--runs requires a value')
+      }
       const runs = Number(argv[index + 1])
-      if (!Number.isInteger(runs) || runs < 1) {
-        throw new RangeError(`--runs expects a positive integer, received ${argv[index + 1]}`)
+      if (
+        !Number.isInteger(runs) ||
+        runs < PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario
+      ) {
+        throw new RangeError(
+          `--runs expects an integer of at least ${PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario}, received ${argv[index + 1]}`
+        )
       }
       options.runsPerScenario = runs
       index += 1
@@ -583,7 +836,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const options = parseArgs(process.argv.slice(2))
   const started = Date.now()
   const report = {
-    ...runCadenceProbe({ runsPerScenario: options.runsPerScenario }),
+    ...runProductionCadenceValidation({ runsPerScenario: options.runsPerScenario }),
     generatedAt: new Date().toISOString(),
     metadata: {
       nodeVersion: process.version,
@@ -607,13 +860,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   if (options.write) {
     await fs.mkdir(path.dirname(OUTPUT_JSON), { recursive: true })
     await fs.writeFile(OUTPUT_JSON, `${JSON.stringify(report, null, 2)}\n`)
-    await fs.writeFile(OUTPUT_MARKDOWN, renderCadenceMarkdown(report))
+    await fs.writeFile(OUTPUT_MARKDOWN, renderProductionCadenceMarkdown(report))
   }
-  console.log(`[cadence-probe] ${report.runtime.durationMs} ms · ${report.conclusion.verdict}`)
-  for (const variant of report.variants) {
-    console.log(
-      `[cadence-probe] ${variant.policy}: holdout gate ${gate(variant.holdoutSafetyValidation.passed)}` +
-        `${variant.holdoutSafetyValidation.failures.map(failure => ` — ${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('')}`
-    )
-  }
+  console.log(`[cadence-probe] ${report.runtime.durationMs} ms · ${report.status}`)
+  console.log(
+    `[cadence-probe] failed gates: ${report.failedGates.length ? report.failedGates.join(', ') : 'none'}`
+  )
 }
