@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
 import test from 'node:test'
 
+import * as balanceExperiments from '../../scripts/game-balance-experiments.mjs'
 import {
   DEFAULT_BALANCE_TUNING,
   getEarlyGameObligationMultiplier,
@@ -18,6 +20,7 @@ import {
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
   assertEqualControlCohorts,
+  buildPreviousExperimentReportComparison,
   combinationImpact,
   FAME_EVIDENCE_MIN_SHARE,
   famePerGigWithinLimit,
@@ -1421,6 +1424,20 @@ test('experiment reports compare the previous and current full-report cohorts', 
     previousReport
   })
 
+  assert.doesNotMatch(
+    report.phases.phase3C.objectiveNote,
+    /baseline_touring money-per-day advantage/
+  )
+  const expectedGapSeedStrategy = `${SEED_STREAMS.calibration('scenario-id')}-plus-run-index`
+  for (const profiles of Object.values(
+    report.phases.phase3C.gigFrequencyAnalysis
+  )) {
+    assert.ok(
+      profiles.every(
+        profile => profile.seedStrategy === expectedGapSeedStrategy
+      )
+    )
+  }
   assert.equal(
     report.previousReportComparison.comparison,
     'descriptive-unpaired'
@@ -1451,6 +1468,63 @@ test('experiment reports compare the previous and current full-report cohorts', 
     renderExperimentMarkdown(report),
     /Alt\/Neu-Vergleich der vollständigen Reports/
   )
+
+  const sameContractComparison = buildPreviousExperimentReportComparison(
+    structuredClone({
+      ...report,
+      generatedAt: '2026-07-28T00:00:00.000Z'
+    }),
+    structuredClone({
+      ...report,
+      generatedAt: '2026-07-29T00:00:00.000Z'
+    })
+  )
+  assert.deepEqual(sameContractComparison.cohortDifferences, [])
+  assert.match(sameContractComparison.note, /same recorded cohort metadata/i)
+
+  report.previousReportComparison = sameContractComparison
+  const sameContractMarkdown = renderExperimentMarkdown(report)
+  assert.match(sameContractMarkdown, /same recorded cohort metadata/i)
+  assert.doesNotMatch(
+    sameContractMarkdown,
+    /unterschiedliche Seed-Namensräume und Stichprobengrößen/i
+  )
+})
+
+test('reading a previous experiment report ignores only a missing file', async () => {
+  assert.equal(typeof balanceExperiments.tryReadJson, 'function')
+  const suffix = `${process.pid}-${Date.now()}`
+  const malformedUrl = new URL(
+    `../../reports/.malformed-experiment-${suffix}.json`,
+    import.meta.url
+  )
+  const directoryUrl = new URL(
+    `../../reports/.unreadable-experiment-${suffix}`,
+    import.meta.url
+  )
+  const missingUrl = new URL(
+    `../../reports/.missing-experiment-${suffix}.json`,
+    import.meta.url
+  )
+  await fs.writeFile(malformedUrl, '{not-json')
+  await fs.mkdir(directoryUrl)
+
+  try {
+    await assert.rejects(
+      balanceExperiments.tryReadJson(malformedUrl),
+      SyntaxError
+    )
+    await assert.rejects(
+      balanceExperiments.tryReadJson(directoryUrl),
+      error => error?.code !== 'ENOENT'
+    )
+    assert.equal(await balanceExperiments.tryReadJson(missingUrl), null)
+  } finally {
+    await Promise.all([
+      fs.rm(malformedUrl, { force: true }),
+      fs.rm(directoryUrl, { recursive: true, force: true })
+    ])
+  }
 })
 
 test('no combination clearing both gates still produces the diagnostic report', async () => {

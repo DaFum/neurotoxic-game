@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 
@@ -513,29 +513,36 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
  */
 const describeObjective = validation => {
   const [minimum, maximum] = GIG_GAP_TARGET_RANGE_PCT
-  const shortfalls = validation.shortfalls.join('; ')
   if (validation.objectiveMet) {
     return `Gap-1 money-per-day dominance was brought inside the ${minimum}-${maximum}% target band for both profiles.`
   }
   if (validation.allBelowTarget) {
-    return `Gap-1 money-per-day advantage now sits BELOW the ${minimum}-${maximum}% target band (${shortfalls}). No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.`
+    return `Gap-1 money-per-day advantage now sits BELOW the ${minimum}-${maximum}% target band. No dampener is warranted — a lever here would push dense touring below paced touring. The target band was set when the simulator gated travel on the gig cadence, which made the advantage look far larger than it is; the band itself is what wants revisiting.`
   }
   if (validation.mixedDirections) {
-    return `The two profiles miss the ${minimum}-${maximum}% target band in OPPOSITE directions (${shortfalls}). No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.`
+    return `The two profiles miss the ${minimum}-${maximum}% target band in OPPOSITE directions. No single late-game dampener can serve both: the same lever that pulls the resource-constrained profile down would push the well-funded one further below the band. This is a target-definition question, not a tuning one.`
   }
   if (validation.improved) {
-    return `Late-game compounding was reduced (${shortfalls}), but structural Gap-1 dominance remains unresolved.`
+    return 'Late-game compounding was reduced, but structural Gap-1 dominance remains unresolved.'
   }
-  return `Gap-1 dominance is unchanged (${shortfalls}). The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.`
+  return 'Gap-1 dominance is unchanged. The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.'
 }
 
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
-const tryReadJson = async file => {
+export const tryReadJson = async file => {
   try {
     return JSON.parse(await fs.readFile(file, 'utf8'))
-  } catch {
-    return null
+  } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return null
+    }
+    throw error
   }
 }
 
@@ -553,16 +560,17 @@ const experimentReportIdentity = report => ({
 
 export const buildPreviousExperimentReportComparison = (previous, current) => {
   if (!previous) return null
+  const previousIdentity = experimentReportIdentity(previous)
+  const currentIdentity = experimentReportIdentity(current)
   const previousScenarios = previous.holdoutBankruptcyByScenario ?? {}
   const currentScenarios = current.holdoutBankruptcyByScenario ?? {}
   const scenarioIds = [
     ...new Set([...Object.keys(previousScenarios), ...Object.keys(currentScenarios)])
   ].sort()
   return {
-    comparison: 'descriptive-unpaired',
-    note: 'The reports use different seed namespaces and cohort sizes. This is a descriptive before/after comparison, not a paired effect estimate.',
-    previous: experimentReportIdentity(previous),
-    current: experimentReportIdentity(current),
+    ...buildDescriptiveCohortComparison(previousIdentity, currentIdentity),
+    previous: previousIdentity,
+    current: currentIdentity,
     scenarios: scenarioIds.map(id => {
       const previousMeasurement = previousScenarios[id] ?? {}
       const currentMeasurement = currentScenarios[id] ?? {}
@@ -700,7 +708,7 @@ ${
   const previousComparisonSection = previousComparison
     ? `## Alt/Neu-Vergleich der vollständigen Reports
 
-Dieser Vergleich ist **deskriptiv und ungepaart**: Die Reports verwenden unterschiedliche Seed-Namensräume und Stichprobengrößen.
+Dieser Vergleich ist **deskriptiv und ungepaart**. ${previousComparison.note}
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
@@ -1117,7 +1125,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const finalTuning = reported.tuning
   const finalCombinedValidation = reported.validation
   const lowResource = { ...baselineScenario, id: 'low_resource_touring', initialOverrides: { ...baselineScenario.initialOverrides, player: { money: 250, fame: 0 } } }
-  const gapProfiles = tuning => [baselineScenario, lowResource].map(profile => ({ profile: profile.id, runsPerScenario, seedStrategy: 'scenario-id-plus-run-index', results: buildGapAnalysis(profile, tuning, runsPerScenario, runner) }))
+  const gapProfiles = tuning => [baselineScenario, lowResource].map(profile => ({ profile: profile.id, runsPerScenario, seedStrategy: `${SEED_STREAMS.calibration('scenario-id')}-plus-run-index`, results: buildGapAnalysis(profile, tuning, runsPerScenario, runner) }))
   const controlGapProfiles = gapProfiles(intermediateTuning)
   const finalGapProfiles = gapProfiles(finalTuning)
   const gapTradeoff = { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }
