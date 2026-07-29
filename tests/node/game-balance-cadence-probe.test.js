@@ -4,6 +4,7 @@ import assert from 'node:assert/strict'
 import {
   PRODUCTION_CADENCE_VALIDATION,
   cappedScenarios,
+  parseArgs,
   runProductionCadenceValidation,
   runCadenceProbe,
   summarizeCohort
@@ -244,6 +245,11 @@ test('production cadence validation is predeclared and rejects undersized sample
     () => runProductionCadenceValidation({ runsPerScenario: 1999 }),
     /at least 2000/
   )
+})
+
+test('--runs rejects production validation samples below the predeclared minimum', () => {
+  assert.throws(() => parseArgs(['--runs', '1999']), /--runs.*at least 2000/)
+  assert.equal(parseArgs(['--runs', '2000']).runsPerScenario, 2000)
 })
 
 test('production cadence validation applies the predeclared release gates', () => {

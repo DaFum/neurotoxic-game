@@ -717,18 +717,18 @@
       "bankruptBeforeFirstGigRateDeltaPct": -11.65
     }
   },
-  "generatedAt": "2026-07-29T09:41:10.137Z",
+  "generatedAt": "2026-07-29T10:03:50.404Z",
   "metadata": {
     "nodeVersion": "v22.22.2",
-    "sourceBaseCommit": "468146a05718b00c525b3f35c7f33ab60dbd0d8f",
+    "sourceBaseCommit": "2414785fb24f4f48750e2649d4b66185f5865580",
     "workingTreeDirty": false,
-    "cadenceProbeScriptSha256": "87641430d2b5a54ff0fe8f06e3430f0a3e5f7bf3665fd4b797a2754c93fc6ea7",
+    "cadenceProbeScriptSha256": "5936af74add3911ed1250ab35aa731ed5b511a18792f66d39ca5fd44cfccab1a",
     "balanceSourceSha256": "6642862ea9e79fbbe0c3129b30e1d135f7280edee13bd72704a96184f3e880a1",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
     "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
     "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
   },
   "runtime": {
-    "durationMs": 33953
+    "durationMs": 56225
   }
 }

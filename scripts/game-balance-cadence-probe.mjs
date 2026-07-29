@@ -209,56 +209,58 @@ export const runProductionCadenceValidation = ({
     )
   }
 
-  const runsByPolicy = Object.fromEntries(
+  const [controlPolicy, candidatePolicy] = PRODUCTION_CADENCE_VALIDATION.policies
+  const pairingByPolicy = {}
+  const cohorts = Object.fromEntries(
     PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
       policy,
       Object.fromEntries(
         scenarios.map(baseScenario => {
           const scenario = { ...baseScenario, gigCadencePolicy: policy }
-          return [
-            baseScenario.id,
-            Array.from({ length: runsPerScenario }, (_, runIndex) =>
-              runner(
-                scenario,
-                createScenarioSeed(
-                  `${baseScenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
-                  runIndex
-                )
+          const cohortRuns = []
+          const pairingRuns = []
+          for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
+            const run = runner(
+              scenario,
+              createScenarioSeed(
+                `${baseScenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+                runIndex
               )
             )
-          ]
+            cohortRuns.push({
+              bankrupt: run.bankrupt,
+              daysSurvived: run.daysSurvived,
+              gigsPlayed: run.gigsPlayed,
+              finalMoney: run.finalMoney,
+              finaleReached: run.finaleReached,
+              finaleCompleted: run.finaleCompleted,
+              fameAccounting: { earned: run.fameAccounting.earned },
+              earlyRunway: run.earlyRunway
+            })
+            pairingRuns.push({
+              bankrupt: run.bankrupt,
+              finalMoney: run.finalMoney,
+              fameEarned: run.fameAccounting.earned,
+              gigsPlayed: run.gigsPlayed
+            })
+          }
+          pairingByPolicy[policy] ??= {}
+          pairingByPolicy[policy][baseScenario.id] = pairingRuns
+          return [baseScenario.id, summarizeCohort(cohortRuns)]
         })
       )
     ])
   )
-  const cohorts = Object.fromEntries(
-    PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
-      policy,
-      Object.fromEntries(
-        scenarios.map(scenario => [scenario.id, summarizeCohort(runsByPolicy[policy][scenario.id])])
-      )
-    ])
-  )
-  const control = cohorts['gap-aligned']
-  const candidate = cohorts['first-income']
+  const control = cohorts[controlPolicy]
+  const candidate = cohorts[candidatePolicy]
   const failedGates = []
   const comparisons = Object.fromEntries(
     scenarios.map(scenario => {
       const baseline = control[scenario.id]
       const proposed = candidate[scenario.id]
-      const pairs = runsByPolicy['gap-aligned'][scenario.id].map((controlRun, index) => ({
-        control: {
-          bankrupt: controlRun.bankrupt,
-          finalMoney: controlRun.finalMoney,
-          fameEarned: controlRun.fameAccounting.earned,
-          gigsPlayed: controlRun.gigsPlayed
-        },
-        candidate: {
-          bankrupt: runsByPolicy['first-income'][scenario.id][index].bankrupt,
-          finalMoney: runsByPolicy['first-income'][scenario.id][index].finalMoney,
-          fameEarned: runsByPolicy['first-income'][scenario.id][index].fameAccounting.earned,
-          gigsPlayed: runsByPolicy['first-income'][scenario.id][index].gigsPlayed
-        }
+      const pairs = pairingByPolicy[controlPolicy][scenario.id].map((controlRun, index) => ({
+        control: controlRun,
+        candidate: pairingByPolicy[candidatePolicy][scenario.id][index]
       }))
       const fame = pairedFamePerGig(pairs)
       const money = pairedSolventFinalMoney(pairs)
@@ -334,8 +336,8 @@ export const runProductionCadenceValidation = ({
       preFirstGigStrandedRateMayIncrease: false
     },
     designWarnings,
-    control: { policy: 'gap-aligned', scenarios: control },
-    candidate: { policy: 'first-income', scenarios: candidate },
+    control: { policy: controlPolicy, scenarios: control },
+    candidate: { policy: candidatePolicy, scenarios: candidate },
     comparisons
   }
 }
@@ -784,7 +786,7 @@ const git = command => {
 const gitRevision = () => process.env.GITHUB_SHA ?? git('git rev-parse HEAD')
 const gitWorkingTreeDirty = () => getSourceWorkingTreeDirty(ROOT)
 
-const parseArgs = argv => {
+export const parseArgs = argv => {
   const options = {
     write: true,
     runsPerScenario: PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario
@@ -793,8 +795,13 @@ const parseArgs = argv => {
     if (argv[index] === '--no-write') options.write = false
     if (argv[index] === '--runs' && argv[index + 1]) {
       const runs = Number(argv[index + 1])
-      if (!Number.isInteger(runs) || runs < 1) {
-        throw new RangeError(`--runs expects a positive integer, received ${argv[index + 1]}`)
+      if (
+        !Number.isInteger(runs) ||
+        runs < PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario
+      ) {
+        throw new RangeError(
+          `--runs expects an integer of at least ${PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario}, received ${argv[index + 1]}`
+        )
       }
       options.runsPerScenario = runs
       index += 1

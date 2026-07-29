@@ -1462,8 +1462,8 @@ test('the pre-gig minimum sees the trough the emergency grant lifts', () => {
 })
 
 test('first-income is shipped after production validation passes', () => {
-  // Guards the refactor from an inline `day % gap` to `resolveGigCadence`: a
-  // default run and an explicitly `gap-aligned` one must be the same run.
+  // The default run must match explicit `first-income` behavior and differ from
+  // the former `gap-aligned` production phase.
   const scenario = SCENARIOS.find(item => item.id === 'cult_hypergrowth')
   const seed = createScenarioSeed(scenario.id, 7)
   assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'first-income')
