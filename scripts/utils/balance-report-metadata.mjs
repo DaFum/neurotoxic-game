@@ -57,6 +57,8 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/data/hqItems/van.ts'
 ])
 
+export const ARTIFACT_SCHEMA_VERSION = 1
+
 /**
  * Whether the SOURCE that produced a report was dirty.
  *
@@ -97,4 +99,57 @@ export const getBalanceSourceHash = async root => {
     hash.update('\0')
   }
   return hash.digest('hex')
+}
+
+const getFileHash = async filePath => {
+  const hash = crypto.createHash('sha256')
+  hash.update(await fs.readFile(filePath))
+  return hash.digest('hex')
+}
+
+export const buildArtifactMetadata = async ({
+  root,
+  generatorPath,
+  seedNamespace,
+  runsPerScenario
+}) => ({
+  sourceFingerprint: await getBalanceSourceHash(root),
+  generatorFingerprint: await getFileHash(path.join(root, generatorPath)),
+  seedNamespace,
+  runsPerScenario,
+  workingTreeDirty: getSourceWorkingTreeDirty(root) === true,
+  artifactSchemaVersion: ARTIFACT_SCHEMA_VERSION
+})
+
+export const validateArtifactMetadata = async (
+  metadata,
+  { root, generatorPath, seedNamespace, runsPerScenario }
+) => {
+  if (
+    !metadata ||
+    !/^[a-f0-9]{64}$/.test(metadata.sourceFingerprint) ||
+    !/^[a-f0-9]{64}$/.test(metadata.generatorFingerprint) ||
+    typeof metadata.seedNamespace !== 'string' ||
+    !Number.isInteger(metadata.runsPerScenario) ||
+    typeof metadata.workingTreeDirty !== 'boolean' ||
+    metadata.artifactSchemaVersion !== ARTIFACT_SCHEMA_VERSION
+  ) {
+    return { valid: false, reason: 'invalid_artifact_metadata' }
+  }
+  if (metadata.seedNamespace !== seedNamespace) {
+    return { valid: false, reason: 'seed_namespace_mismatch' }
+  }
+  if (metadata.runsPerScenario !== runsPerScenario) {
+    return { valid: false, reason: 'runs_per_scenario_mismatch' }
+  }
+  if (metadata.sourceFingerprint !== (await getBalanceSourceHash(root))) {
+    return { valid: false, reason: 'source_fingerprint_mismatch' }
+  }
+  if (
+    metadata.generatorFingerprint !==
+    (await getFileHash(path.join(root, generatorPath)))
+  ) {
+    return { valid: false, reason: 'generator_fingerprint_mismatch' }
+  }
+  return { valid: true }
 }

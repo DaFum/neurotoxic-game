@@ -1,7 +1,7 @@
 # Phase 6A-7 Scenario Tension Diagnostics
 
-Generated: 2026-07-29T18:06:27.919Z
-Source: fb87eabba923ae09da6ffb2c8eec514fef90ad52; dirty: false
+Generated: 2026-07-29T18:54:21.912Z
+Source fingerprint: 36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9; generator fingerprint: e53f26b898ab2beb1e3c4a3fe2da5be8791c5a9cf58536efaba0afe27c0b5814; schema: 1; dirty: true
 Cohorts: 2000 runs each; calibration #scenario-tension-attribution-v1; holdout #scenario-tension-attribution-v1#holdout; candidate selection: false.
 
 ## Tension matrix
@@ -10,8 +10,8 @@ Cohorts: 2000 runs each; calibration #scenario-tension-attribution-v1; holdout #
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
 | Bootstrap Struggle | Calibration | 7.6% | 0.7% | 6.9% | 17.45% | 70.87% | 91.6% |
 | Bootstrap Struggle | Holdout | 8.8% | 0.5% | 8.3% | 19.15% | 74.59% | 90.15% |
-| Scandal Recovery | Calibration | 5.45% | 0.4% | 5.05% | 13.45% | 62.74% | 94.05% |
-| Scandal Recovery | Holdout | 6.5% | 0.6% | 5.9% | 16.15% | 67.92% | 92.9% |
+| Scandal Recovery | Calibration | 7.35% | 0.4% | 6.95% | 17.65% | 67.34% | 91.25% |
+| Scandal Recovery | Holdout | 8.55% | 0.6% | 7.95% | 20.5% | 76.25% | 89.7% |
 | Festival Push | Calibration | 3.95% | 0.4% | 3.55% | 11.35% | 60.38% | 95.9% |
 | Festival Push | Holdout | 2.65% | 0.45% | 2.2% | 9.4% | 57.44% | 97.25% |
 | Chaos Tour | Calibration | 3.45% | 0.7% | 2.75% | 11.45% | 52.79% | 95% |
@@ -24,11 +24,15 @@ Cohort comparison: **unstable**. Corridor differences are diagnostic, not missin
 | Scenario | Top 3 |
 | --- | --- |
 | Bootstrap Struggle | assets_upgrades: €3696342; daily_obligations: €3446589; travel: €1214969 |
-| Scandal Recovery | assets_upgrades: €5292044; daily_obligations: €3645047; travel: €1286739 |
+| Scandal Recovery | assets_upgrades: €4212393; daily_obligations: €3546300; travel: €1228352 |
 | Festival Push | assets_upgrades: €7446950; daily_obligations: €3948163; travel: €1374116 |
 | Chaos Tour | assets_upgrades: €5635288; daily_obligations: €3697945; travel: €1326056 |
 
 Gross gig spending is published separately in JSON under `grossSpendAttribution` and never drives drawdown fields.
+
+## Chaos event-loss candidate
+
+Diagnostic only: ×1.25; production change: no; bankruptcy: 3.8%; before first gig: 0.85%; finale completed: 94.7%; paired Fame per gig: 0.01%; material loss sources: assets_upgrades, daily_obligations, travel; acceptance: failed.
 
 ## Scandal controversy comparison
 
@@ -44,7 +48,7 @@ Gross gig spending is published separately in JSON under `grossSpendAttribution`
 | Scenario | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |
 | --- | ---: | ---: | ---: | ---: | --- |
 | Bootstrap Struggle | 1 | 15.03% | 0.25 | €4207.85 | 3.14/0.2/— |
-| Scandal Recovery | 1 | 15.21% | 0.22 | €4991.76 | 2.97/0.19/— |
+| Scandal Recovery | 1 | 15.04% | 0.27 | €4457.95 | 3.16/0.21/— |
 | Festival Push | 1 | 15.5% | 0.2 | €5978.19 | 2.65/0.17/— |
 | Chaos Tour | 1 | 15.41% | 0.2 | €5322.46 | 2.96/0.19/— |
 

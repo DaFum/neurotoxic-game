@@ -1399,7 +1399,7 @@ test('experiment reports compare the previous and current full-report cohorts', 
   const previousReport = {
     generatedAt: '2026-07-28T22:12:38.668Z',
     metadata: {
-      sourceBaseCommit: 'old-source',
+      sourceFingerprint: 'old-source',
       seedStrategy: 'old-seeds'
     },
     controlSnapshot: { runsPerScenario: 260 },
@@ -1443,7 +1443,7 @@ test('experiment reports compare the previous and current full-report cohorts', 
     'descriptive-unpaired'
   )
   assert.equal(
-    report.previousReportComparison.previous.sourceBaseCommit,
+    report.previousReportComparison.previous.sourceFingerprint,
     'old-source'
   )
   assert.equal(report.previousReportComparison.previous.runsPerScenario, 260)

@@ -1,20 +1,13 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-29T13:06:29.266Z",
+  "generatedAt": "2026-07-29T19:05:45.400Z",
   "metadata": {
-    "nodeVersion": "v24.13.0",
-    "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
-    "workingTreeDirty": false,
-    "simulationScriptSha256": "78c69d2707aca67b650fa67e2ff863ecda7b6b763df4eb5486645b2abe959f77",
-    "balanceSourceSha256": "50f511c4a3bf8e37d77fe3cd74b9f542ac795ab68f1292024679d5834a55387c",
-    "experimentScriptSha256": "921b706725ea33f8d4b571e65ae29a7def12053732fa9764ef15013db24cae22",
-    "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
-    "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
-    "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
+    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
+    "generatorFingerprint": "51b43bdfab05c197440308e588acb499db38e53b963e85be6d152af6944483e6",
     "seedNamespace": "#first-income-full-reports-v1",
-    "shippedGigCadencePolicy": "first-income",
-    "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
-    "pairingStrategy": "same-scenario-same-run-index-same-seed"
+    "runsPerScenario": 2000,
+    "workingTreeDirty": true,
+    "artifactSchemaVersion": 1
   },
   "controlSnapshot": {
     "tuning": {
@@ -23427,13 +23420,13 @@
         "sampleSize": 2000,
         "bankruptcy": {
           "bankruptcyTransitions": {
-            "bothSolvent": 1883,
+            "bothSolvent": 1828,
             "controlOnlyBankrupt": 0,
             "candidateOnlyBankrupt": 0,
-            "bothBankrupt": 117
+            "bothBankrupt": 172
           },
-          "controlRatePct": 5.85,
-          "candidateRatePct": 5.85,
+          "controlRatePct": 8.6,
+          "candidateRatePct": 8.6,
           "deltaRatePct": 0,
           "netRecoveredRuns": 0,
           "netHarmedRuns": 0
@@ -23441,25 +23434,25 @@
         "continuous": {
           "daysSurvived": {
             "control": {
-              "mean": 9.75,
+              "mean": 9.63,
               "median": 10,
-              "stdDev": 1.07,
+              "stdDev": 1.27,
               "p10": 10,
               "p25": 10,
               "p75": 10,
               "p90": 10,
-              "min": 2,
+              "min": 3,
               "max": 10
             },
             "candidate": {
-              "mean": 9.75,
+              "mean": 9.63,
               "median": 10,
-              "stdDev": 1.07,
+              "stdDev": 1.27,
               "p10": 10,
               "p25": 10,
               "p75": 10,
               "p90": 10,
-              "min": 2,
+              "min": 3,
               "max": 10
             },
             "pairedDelta": {
@@ -23495,26 +23488,26 @@
           },
           "finalMoney": {
             "control": {
-              "mean": 23920.9,
-              "median": 24768,
-              "stdDev": 7423.43,
-              "p10": 17925.6,
-              "p25": 21636.75,
-              "p75": 28248,
-              "p90": 31184.7,
+              "mean": 22492.85,
+              "median": 24042,
+              "stdDev": 8334.71,
+              "p10": 14582.9,
+              "p25": 20688.75,
+              "p75": 27350.25,
+              "p90": 30326.6,
               "min": 0,
-              "max": 45704
+              "max": 44966
             },
             "candidate": {
-              "mean": 23920.9,
-              "median": 24768,
-              "stdDev": 7423.43,
-              "p10": 17925.6,
-              "p25": 21636.75,
-              "p75": 28248,
-              "p90": 31184.7,
+              "mean": 22492.85,
+              "median": 24042,
+              "stdDev": 8334.71,
+              "p10": 14582.9,
+              "p25": 20688.75,
+              "p75": 27350.25,
+              "p90": 30326.6,
               "min": 0,
-              "max": 45704
+              "max": 44966
             },
             "pairedDelta": {
               "mean": 0,
@@ -23549,26 +23542,26 @@
           },
           "finalFame": {
             "control": {
-              "mean": 7502.9,
-              "median": 7368.5,
-              "stdDev": 4098.67,
-              "p10": 3340,
-              "p25": 5630.75,
-              "p75": 8991.5,
-              "p90": 10651,
+              "mean": 7322.9,
+              "median": 7277.5,
+              "stdDev": 4256.92,
+              "p10": 2853.5,
+              "p25": 5340,
+              "p75": 8915.75,
+              "p90": 10568.3,
               "min": 0,
-              "max": 41131
+              "max": 40846
             },
             "candidate": {
-              "mean": 7502.9,
-              "median": 7368.5,
-              "stdDev": 4098.67,
-              "p10": 3340,
-              "p25": 5630.75,
-              "p75": 8991.5,
-              "p90": 10651,
+              "mean": 7322.9,
+              "median": 7277.5,
+              "stdDev": 4256.92,
+              "p10": 2853.5,
+              "p25": 5340,
+              "p75": 8915.75,
+              "p90": 10568.3,
               "min": 0,
-              "max": 41131
+              "max": 40846
             },
             "pairedDelta": {
               "mean": 0,
@@ -23603,26 +23596,26 @@
           },
           "fameEarned": {
             "control": {
-              "mean": 10508.27,
-              "median": 10543,
-              "stdDev": 4160.29,
-              "p10": 7429.5,
-              "p25": 9060.75,
-              "p75": 11866.5,
-              "p90": 13241.5,
+              "mean": 10227.75,
+              "median": 10392.5,
+              "stdDev": 4409.91,
+              "p10": 6374.6,
+              "p25": 8817.5,
+              "p75": 11771.25,
+              "p90": 13130,
               "min": 0,
-              "max": 45981
+              "max": 44787
             },
             "candidate": {
-              "mean": 10508.27,
-              "median": 10543,
-              "stdDev": 4160.29,
-              "p10": 7429.5,
-              "p25": 9060.75,
-              "p75": 11866.5,
-              "p90": 13241.5,
+              "mean": 10227.75,
+              "median": 10392.5,
+              "stdDev": 4409.91,
+              "p10": 6374.6,
+              "p25": 8817.5,
+              "p75": 11771.25,
+              "p90": 13130,
               "min": 0,
-              "max": 45981
+              "max": 44787
             },
             "pairedDelta": {
               "mean": 0,
@@ -23657,10 +23650,10 @@
           },
           "gigsPlayed": {
             "control": {
-              "mean": 6.73,
+              "mean": 6.61,
               "median": 7,
-              "stdDev": 1.87,
-              "p10": 5,
+              "stdDev": 2.06,
+              "p10": 4,
               "p25": 6,
               "p75": 8,
               "p90": 9,
@@ -23668,10 +23661,10 @@
               "max": 10
             },
             "candidate": {
-              "mean": 6.73,
+              "mean": 6.61,
               "median": 7,
-              "stdDev": 1.87,
-              "p10": 5,
+              "stdDev": 2.06,
+              "p10": 4,
               "p25": 6,
               "p75": 8,
               "p90": 9,
@@ -23711,26 +23704,26 @@
           },
           "finalHarmony": {
             "control": {
-              "mean": 45.9,
-              "median": 45,
-              "stdDev": 13.44,
-              "p10": 31,
-              "p25": 38,
+              "mean": 44.99,
+              "median": 44,
+              "stdDev": 14.15,
+              "p10": 28,
+              "p25": 36,
               "p75": 52,
               "p90": 64,
               "min": 1,
-              "max": 95
+              "max": 99
             },
             "candidate": {
-              "mean": 45.9,
-              "median": 45,
-              "stdDev": 13.44,
-              "p10": 31,
-              "p25": 38,
+              "mean": 44.99,
+              "median": 44,
+              "stdDev": 14.15,
+              "p10": 28,
+              "p25": 36,
               "p75": 52,
               "p90": 64,
               "min": 1,
-              "max": 95
+              "max": 99
             },
             "pairedDelta": {
               "mean": 0,
@@ -23765,26 +23758,26 @@
           },
           "maxDrawdownPct": {
             "control": {
-              "mean": 30.58,
-              "median": 23.31,
-              "stdDev": 24.15,
-              "p10": 7.39,
-              "p25": 12.81,
-              "p75": 41.24,
-              "p90": 68.18,
+              "mean": 32.86,
+              "median": 25.8,
+              "stdDev": 25.32,
+              "p10": 8.21,
+              "p25": 14.1,
+              "p75": 43.29,
+              "p90": 76.62,
               "min": 0,
-              "max": 99.83
+              "max": 99.87
             },
             "candidate": {
-              "mean": 30.58,
-              "median": 23.31,
-              "stdDev": 24.15,
-              "p10": 7.39,
-              "p25": 12.81,
-              "p75": 41.24,
-              "p90": 68.18,
+              "mean": 32.86,
+              "median": 25.8,
+              "stdDev": 25.32,
+              "p10": 8.21,
+              "p25": 14.1,
+              "p75": 43.29,
+              "p90": 76.62,
               "min": 0,
-              "max": 99.83
+              "max": 99.87
             },
             "pairedDelta": {
               "mean": 0,
@@ -23822,8 +23815,8 @@
         "candidateKpiStatus": "passed",
         "famePerGigDeltaPct": 0,
         "famePerGig": {
-          "control": 1568.23,
-          "candidate": 1568.23,
+          "control": 1560.75,
+          "candidate": 1560.75,
           "deltaPct": 0,
           "sampleSize": 1985,
           "minimumSampleSize": 1000,
@@ -27269,8 +27262,8 @@
       "maximumPct": 35
     },
     "scandal_recovery": {
-      "ratePct": 6.1,
-      "count": 122,
+      "ratePct": 8.1,
+      "count": 162,
       "sampleSize": 2000,
       "maximumPct": 50
     },
@@ -27341,8 +27334,8 @@
       "maximumPct": 35
     },
     "scandal_recovery": {
-      "ratePct": 5.75,
-      "count": 115,
+      "ratePct": 7.9,
+      "count": 158,
       "sampleSize": 2000,
       "maximumPct": 50
     },
@@ -27406,7 +27399,7 @@
       },
       {
         "scenarioId": "scandal_recovery",
-        "ratePct": 5.75,
+        "ratePct": 7.9,
         "corridorPct": [
           8,
           20
@@ -27491,17 +27484,28 @@
     }
   },
   "runtime": {
-    "durationMs": 221162,
+    "durationMs": 476089,
     "candidates": 25,
     "totalRuns": 170000
   },
   "previousReportComparison": {
     "comparison": "descriptive-unpaired",
-    "cohortDifferences": [],
-    "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
+    "cohortDifferences": [
+      {
+        "field": "seedStrategy",
+        "previous": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
+        "current": null
+      },
+      {
+        "field": "shippedGigCadencePolicy",
+        "previous": "first-income",
+        "current": null
+      }
+    ],
+    "note": "Recorded cohort metadata differences: seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T12:46:46.381Z",
-      "sourceBaseCommit": "c19e60c3abc04330d6b6e04d4d766d9bd47cea92",
+      "generatedAt": "2026-07-29T13:06:29.266Z",
+      "sourceFingerprint": null,
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -27511,12 +27515,12 @@
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-29T13:06:29.266Z",
-      "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
+      "generatedAt": "2026-07-29T19:05:45.400Z",
+      "sourceFingerprint": "4b10c7a77055f0f3f3ea33021b7f2ba4ef78f65a72f541d28e758c8100c1ab24",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
-      "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
-      "shippedGigCadencePolicy": "first-income",
+      "seedStrategy": null,
+      "shippedGigCadencePolicy": null,
       "recommendationStatus": "accepted-for-production-partial",
       "bootstrapCandidate": "bootstrap-none",
       "touringCandidate": "touring-none"
@@ -27573,8 +27577,8 @@
       {
         "id": "scandal_recovery",
         "previousRatePct": 5.75,
-        "currentRatePct": 5.75,
-        "deltaPct": 0,
+        "currentRatePct": 7.9,
+        "deltaPct": 2.15,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       }

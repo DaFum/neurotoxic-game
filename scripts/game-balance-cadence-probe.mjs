@@ -26,8 +26,6 @@
  *
  * Usage: pnpm run simulate:balance:cadence [--runs <n>] [--no-write]
  */
-import crypto from 'node:crypto'
-import { execSync } from 'node:child_process'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
@@ -47,10 +45,9 @@ import {
   buildHoldoutSafetyValidation,
   calculateAverageFameEarnedPerGig,
   createScenarioSeed,
-  getJsonHash,
   runSingleSimulation
 } from './game-balance-simulation.mjs'
-import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
+import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
@@ -791,19 +788,6 @@ Die Validierung verändert keine Geldwerte. Ein fehlgeschlagenes Gate führt ges
 `
 }
 
-const hashFile = async file =>
-  crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
-
-const git = command => {
-  try {
-    return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim()
-  } catch {
-    return null
-  }
-}
-const gitRevision = () => process.env.GITHUB_SHA ?? git('git rev-parse HEAD')
-const gitWorkingTreeDirty = () => getSourceWorkingTreeDirty(ROOT)
-
 export const parseArgs = argv => {
   const options = {
     write: true,
@@ -838,23 +822,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
   const report = {
     ...runProductionCadenceValidation({ runsPerScenario: options.runsPerScenario }),
     generatedAt: new Date().toISOString(),
-    metadata: {
-      nodeVersion: process.version,
-      // Same provenance the simulation and experiment artifacts carry. This report
-      // holds the PR's central conclusion, so "which source state produced it" has
-      // to be answerable from the file alone.
-      sourceBaseCommit: gitRevision(),
-      workingTreeDirty: gitWorkingTreeDirty(),
-      // The shared list covers everything that can move a balance number; this
-      // script's own contents decide what is measured, so it is hashed here
-      // rather than added to that list — it cannot move the published simulation
-      // or experiment numbers, and claiming otherwise would invent a dependency.
-      cadenceProbeScriptSha256: await hashFile(fileURLToPath(import.meta.url)),
-      balanceSourceSha256: await getBalanceSourceHash(ROOT),
-      scenarioConfigSha256: getJsonHash(SCENARIOS),
-      kpiConfigSha256: getJsonHash(KPI_TARGETS),
-      riskTargetConfigSha256: getJsonHash(RISK_TARGETS)
-    }
+    metadata: await buildArtifactMetadata({
+      root: ROOT,
+      generatorPath: 'scripts/game-balance-cadence-probe.mjs',
+      seedNamespace: PRODUCTION_CADENCE_VALIDATION.seedNamespace,
+      runsPerScenario: options.runsPerScenario
+    })
   }
   report.runtime = { durationMs: Date.now() - started }
   if (options.write) {

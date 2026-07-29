@@ -2,7 +2,6 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import crypto from 'node:crypto'
-import { execSync } from 'node:child_process'
 
 import { ALL_VENUES } from '../src/data/venues.js'
 import { MapGenerator } from '../src/utils/mapGenerator.ts'
@@ -118,8 +117,7 @@ import {
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
 import {
-  getBalanceSourceHash,
-  getSourceWorkingTreeDirty
+  buildArtifactMetadata
 } from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
@@ -347,7 +345,7 @@ export const SCENARIOS = [
     id: 'scandal_recovery',
     name: 'Scandal Recovery',
     description:
-      'Konservative Tour unter hohem Event-Druck: seltene Modifikatoren, hohe Ereignisdichte.',
+      'Konservative Tour während eines bestehenden öffentlichen Backlashs.',
     gigGapDays: 3,
     ticketDiscountChance: 0.22,
     eventIntensity: 0.75,
@@ -364,7 +362,7 @@ export const SCENARIOS = [
     initialOverrides: {
       player: { money: 500, fame: 0 },
       band: { harmony: 80 },
-      social: { controversyLevel: 0, loyalty: 0, zealotry: 0 }
+      social: { controversyLevel: 50, loyalty: 0, zealotry: 0 }
     }
   },
   {
@@ -1137,6 +1135,17 @@ const calculateModifiers = (scenario, rng) => {
  * refused at the final money check left a road event already applied to a
  * journey that never happened.
  */
+export const applyNegativeFinancialEventMultiplier = (
+  state,
+  moneyBeforeEvent,
+  multiplier = 1
+) => {
+  const loss = moneyBeforeEvent - state.player.money
+  if (loss > 0 && multiplier > 1) {
+    state.player.money -= loss * (multiplier - 1)
+  }
+}
+
 const applyDailyEvents = (state, scenario, rng, eventCounts) => {
   const intensity = scenario.eventIntensity ?? 0.5
   let eventsApplied = 0
@@ -1150,7 +1159,13 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
       const { delta } = resolveEventChoice(choice, state, rng)
 
       if (delta) {
+        const moneyBeforeEvent = state.player.money
         Object.assign(state, applyEventDelta(state, delta))
+        applyNegativeFinancialEventMultiplier(
+          state,
+          moneyBeforeEvent,
+          scenario.negativeFinancialEventMultiplier
+        )
       }
 
       if (category === 'financial') {
@@ -1170,7 +1185,13 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
       const { delta } = resolveEventChoice(choice, state, rng)
 
       if (delta) {
+        const moneyBeforeEvent = state.player.money
         Object.assign(state, applyEventDelta(state, delta))
+        applyNegativeFinancialEventMultiplier(
+          state,
+          moneyBeforeEvent,
+          scenario.negativeFinancialEventMultiplier
+        )
       }
       eventCounts.bandEvents += 1
       eventsApplied++
@@ -1203,7 +1224,13 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
       const { delta } = resolveEventChoice(choice, state, rng)
 
       if (delta) {
+        const moneyBeforeEvent = state.player.money
         Object.assign(state, applyEventDelta(state, delta))
+        applyNegativeFinancialEventMultiplier(
+          state,
+          moneyBeforeEvent,
+          scenario.negativeFinancialEventMultiplier
+        )
       }
       eventCounts.equipmentEvents += 1
       eventsApplied++
@@ -1233,8 +1260,14 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const { delta } = resolveEventChoice(choice, state, rng)
   if (delta) {
     const oldFame = state.player.fame
+    const moneyBeforeEvent = state.player.money
     const rawDiff = delta.player?.fame
     Object.assign(state, applyEventDelta(state, delta))
+    applyNegativeFinancialEventMultiplier(
+      state,
+      moneyBeforeEvent,
+      scenario.negativeFinancialEventMultiplier
+    )
     const actualDiff = state.player.fame - oldFame
     accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
   }
@@ -5036,7 +5069,7 @@ export const buildDescriptiveCohortComparison = (previous, current) => {
 
 const simulationReportIdentity = report => ({
   generatedAt: report?.generatedAt ?? null,
-  sourceBaseCommit: report?.metadata?.sourceBaseCommit ?? null,
+  sourceFingerprint: report?.metadata?.sourceFingerprint ?? null,
   runsPerScenario: report?.constants?.runsPerScenario ?? null,
   seedNamespace: report?.metadata?.seedNamespace ?? null,
   seedStrategy: report?.metadata?.seedStrategy ?? null,
@@ -5150,23 +5183,12 @@ const buildMarkdownReport = payload => {
     lines.push('## Reproduzierbarkeit')
     lines.push('')
     lines.push(`- Report-Version: ${payload.constants.reportVersion}`)
-    lines.push(`- Node-Version: ${payload.metadata.nodeVersion}`)
-    lines.push(
-      `- Basis-Commit: ${payload.metadata.sourceBaseCommit || 'nicht verf\u00FCgbar'}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? 'unbekannt' : payload.metadata.workingTreeDirty ? 'Ja' : 'Nein'}`
-    )
-    lines.push(
-      `- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`
-    )
-    lines.push(
-      `- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`
-    )
-    lines.push(
-      `- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`
-    )
-    lines.push(
-      `- Risikokorridor-Konfiguration SHA-256: ${payload.metadata.riskTargetConfigSha256 || 'nicht verfügbar'}`
-    )
-    lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
+    lines.push(`- Source-Fingerprint: ${payload.metadata.sourceFingerprint}`)
+    lines.push(`- Generator-Fingerprint: ${payload.metadata.generatorFingerprint}`)
+    lines.push(`- Artefaktschema: ${payload.metadata.artifactSchemaVersion}`)
+    lines.push(`- Seed-Namensraum: ${payload.metadata.seedNamespace}`)
+    lines.push(`- Runs je Szenario: ${payload.metadata.runsPerScenario}`)
+    lines.push(`- Working Tree Dirty: ${payload.metadata.workingTreeDirty ? 'Ja' : 'Nein'}`)
     lines.push('')
   }
 
@@ -5971,7 +5993,7 @@ lines.push('## KPI-Zielkorridore (Health Check)')
     lines.push('| Kennzahl | Alt | Neu |')
     lines.push('|---|---|---|')
     lines.push(
-      `| Source-Commit | \`${comparison.previous.sourceBaseCommit ?? '—'}\` | \`${comparison.current.sourceBaseCommit ?? '—'}\` |`
+      `| Source-Fingerprint | \`${comparison.previous.sourceFingerprint ?? '—'}\` | \`${comparison.current.sourceFingerprint ?? '—'}\` |`
     )
     lines.push(
       `| Runs je Szenario | ${comparison.previous.runsPerScenario ?? '—'} | ${comparison.current.runsPerScenario ?? '—'} |`
@@ -6162,29 +6184,6 @@ export const tryReadJson = async filePath => {
   }
 }
 
-const getWorkingTreeDirty = () => getSourceWorkingTreeDirty(PROJECT_ROOT)
-
-const getSourceBaseCommit = () => {
-  if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
-  try {
-    return execSync('git rev-parse HEAD', {
-      encoding: 'utf8',
-      stdio: 'pipe'
-    }).trim()
-  } catch {
-    return null
-  }
-}
-
-const getFileHash = async filePath => {
-  try {
-    const content = await fs.readFile(filePath)
-    return crypto.createHash('sha256').update(content).digest('hex')
-  } catch {
-    return null
-  }
-}
-
 export const getJsonHash = (data, meta = {}) => {
   try {
     const obj = { ...data, ...meta }
@@ -6352,31 +6351,18 @@ export const runSimulationSuite = async (options = {}) => {
     : outputJsonPath
   const baselinePayload = await tryReadJson(baselinePath)
 
-  const simulationScriptSha256 = await getFileHash(
-    fileURLToPath(import.meta.url)
-  )
-  const scenarioConfigSha256 = getJsonHash(SCENARIOS)
-
   const payload = {
     generatedAt: new Date().toISOString(),
     constants: SIMULATION_CONSTANTS,
     outputJson: SIMULATION_CONSTANTS.outputJson,
     outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown,
     scenarios: SCENARIOS,
-    metadata: {
-      nodeVersion: process.version,
-      sourceBaseCommit: getSourceBaseCommit(),
-      workingTreeDirty: getWorkingTreeDirty(),
-      simulationScriptSha256,
-      balanceSourceSha256: await getBalanceSourceHash(PROJECT_ROOT),
-      scenarioConfigSha256,
-      kpiConfigSha256: getJsonHash(KPI_TARGETS),
-      riskTargetConfigSha256: getJsonHash(RISK_TARGETS),
+    metadata: await buildArtifactMetadata({
+      root: PROJECT_ROOT,
+      generatorPath: 'scripts/game-balance-simulation.mjs',
       seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
-      seedStrategy:
-        'scenario-id-plus-first-income-full-report-namespace-plus-run-index',
-      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY
-    },
+      runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario
+    }),
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
     kpiHoldoutValidation,

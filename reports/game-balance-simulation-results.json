@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T13:02:26.790Z",
+  "generatedAt": "2026-07-29T18:56:14.684Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -136,7 +136,7 @@
     {
       "id": "scandal_recovery",
       "name": "Scandal Recovery",
-      "description": "Konservative Tour unter hohem Event-Druck: seltene Modifikatoren, hohe Ereignisdichte.",
+      "description": "Konservative Tour während eines bestehenden öffentlichen Backlashs.",
       "gigGapDays": 3,
       "ticketDiscountChance": 0.22,
       "eventIntensity": 0.75,
@@ -162,7 +162,7 @@
           "harmony": 80
         },
         "social": {
-          "controversyLevel": 0,
+          "controversyLevel": 50,
           "loyalty": 0,
           "zealotry": 0
         }
@@ -433,17 +433,12 @@
     }
   ],
   "metadata": {
-    "nodeVersion": "v24.13.0",
-    "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
-    "workingTreeDirty": false,
-    "simulationScriptSha256": "78c69d2707aca67b650fa67e2ff863ecda7b6b763df4eb5486645b2abe959f77",
-    "balanceSourceSha256": "50f511c4a3bf8e37d77fe3cd74b9f542ac795ab68f1292024679d5834a55387c",
-    "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
-    "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
-    "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c",
+    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
+    "generatorFingerprint": "cdf59b6f5949103c91af45e9ed6dd538091043bfe6c2d75c4a646c83b0d9a029",
     "seedNamespace": "#first-income-full-reports-v1",
-    "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
-    "shippedGigCadencePolicy": "first-income"
+    "runsPerScenario": 2000,
+    "workingTreeDirty": true,
+    "artifactSchemaVersion": 1
   },
   "appFeatureSnapshot": {
     "venues": 45,
@@ -690,6 +685,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 1.6,
+          "bankruptcyBeforeFirstGigPct": 0.4,
+          "bankruptcyAfterFirstGigPct": 1.2,
           "everBelowTightPct": 7.25,
           "everBelowCriticalPct": 1.8,
           "zeroBalancePct": 0.05,
@@ -757,6 +754,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 8.5,
+          "bankruptcyBeforeFirstGigPct": 0.3,
+          "bankruptcyAfterFirstGigPct": 8.2,
           "everBelowTightPct": 18.95,
           "everBelowCriticalPct": 9.15,
           "zeroBalancePct": 0.05,
@@ -824,6 +823,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 2.65,
+          "bankruptcyBeforeFirstGigPct": 0.65,
+          "bankruptcyAfterFirstGigPct": 2,
           "everBelowTightPct": 8.8,
           "everBelowCriticalPct": 2.95,
           "zeroBalancePct": 0,
@@ -849,39 +850,39 @@
             "label": "Insolvenzrate",
             "target": "≤ 50%",
             "calibrationPass": true,
-            "calibrationActual": "5.85%",
+            "calibrationActual": "8.6%",
             "holdoutPass": true,
-            "holdoutActual": "5.75%",
+            "holdoutActual": "7.9%",
             "agrees": true
           },
           {
             "label": "Endgeld",
             "target": "€12.000 – €39.000",
             "calibrationPass": true,
-            "calibrationActual": "€23.921",
+            "calibrationActual": "€22.493",
             "holdoutPass": true,
-            "holdoutActual": "€24.267",
+            "holdoutActual": "€22.818",
             "agrees": true
           },
           {
             "label": "Fame-Fortschritt/Gig",
             "target": "1000 – 2200",
             "calibrationPass": true,
-            "calibrationActual": "1556.46",
+            "calibrationActual": "1549.04",
             "holdoutPass": true,
-            "holdoutActual": "1544.42",
+            "holdoutActual": "1525.21",
             "agrees": true
           }
         ],
-        "holdoutAvgFinalMoney": 24267,
-        "holdoutBankruptcyRate": 5.75,
+        "holdoutAvgFinalMoney": 22818,
+        "holdoutBankruptcyRate": 7.9,
         "holdoutBankruptcy": {
-          "count": 115,
+          "count": 158,
           "sampleSize": 2000,
-          "ratePct": 5.75,
+          "ratePct": 7.9,
           "confidence95": {
-            "lowerPct": 4.81,
-            "upperPct": 6.86,
+            "lowerPct": 6.8,
+            "upperPct": 9.16,
             "method": "wilson"
           }
         },
@@ -890,20 +891,22 @@
             "tightEur": 500,
             "criticalEur": 250
           },
-          "bankruptcyRatePct": 5.75,
-          "everBelowTightPct": 14.6,
-          "everBelowCriticalPct": 6.2,
+          "bankruptcyRatePct": 7.9,
+          "bankruptcyBeforeFirstGigPct": 0.65,
+          "bankruptcyAfterFirstGigPct": 7.25,
+          "everBelowTightPct": 18.15,
+          "everBelowCriticalPct": 8.2,
           "zeroBalancePct": 0.05,
-          "creditOrGrantAssistedPct": 11.65,
-          "avgDaysBelowTightThreshold": 0.27,
-          "avgDaysBelowCriticalThreshold": 0.12,
-          "medianMaxDrawdownPct": 22.06,
-          "p90MaxDrawdownPct": 64.61,
-          "solventFinalMoneyP10": 20297,
+          "creditOrGrantAssistedPct": 10.05,
+          "avgDaysBelowTightThreshold": 0.34,
+          "avgDaysBelowCriticalThreshold": 0.15,
+          "medianMaxDrawdownPct": 24.87,
+          "p90MaxDrawdownPct": 70.49,
+          "solventFinalMoneyP10": 19261,
           "medianBankruptcyDay": 6,
-          "earliestBankruptcyDay": 3
+          "earliestBankruptcyDay": 2
         },
-        "holdoutFameProgressPerGig": 1544.42
+        "holdoutFameProgressPerGig": 1525.21
       },
       {
         "id": "festival_push",
@@ -958,6 +961,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 3.95,
+          "bankruptcyBeforeFirstGigPct": 0.6,
+          "bankruptcyAfterFirstGigPct": 3.35,
           "everBelowTightPct": 10.9,
           "everBelowCriticalPct": 4.5,
           "zeroBalancePct": 0,
@@ -1025,6 +1030,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 3.8,
+          "bankruptcyBeforeFirstGigPct": 0.8,
+          "bankruptcyAfterFirstGigPct": 3,
           "everBelowTightPct": 12.1,
           "everBelowCriticalPct": 4.25,
           "zeroBalancePct": 0,
@@ -1092,6 +1099,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 2.25,
+          "bankruptcyBeforeFirstGigPct": 0.95,
+          "bankruptcyAfterFirstGigPct": 1.3,
           "everBelowTightPct": 7.25,
           "everBelowCriticalPct": 2.4,
           "zeroBalancePct": 0.05,
@@ -1231,29 +1240,29 @@
         "id": "scandal_recovery",
         "name": "Scandal Recovery",
         "intent": "Bewusst schwieriger Erholungspfad.",
-        "status": "low_risk",
+        "status": "unstable",
         "bankruptcy": {
-          "observedPct": 5.85,
-          "count": 117,
+          "observedPct": 8.6,
+          "count": 172,
           "sampleSize": 2000,
           "targetRangePct": [
             8,
             20
           ],
           "safetyMaximumPct": 50,
-          "status": "below_target",
+          "status": "within_target",
           "confidence95": {
-            "lowerPct": 4.9,
-            "upperPct": 6.97,
+            "lowerPct": 7.45,
+            "upperPct": 9.91,
             "method": "wilson"
           },
-          "corridorConfidence": "entirely_below"
+          "corridorConfidence": "straddles_lower"
         },
         "holdout": {
-          "observedPct": 5.75,
+          "observedPct": 7.9,
           "sampleSize": 2000,
           "status": "below_target",
-          "riskBandResult": "stable"
+          "riskBandResult": "unstable_boundary"
         }
       },
       {
@@ -1346,7 +1355,7 @@
     ],
     "warnings": [
       "bootstrap_struggle: Insolvenzrate (Kalibrierung 7.85%, Holdout 8.5%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.",
-      "scandal_recovery: Insolvenzrate (Kalibrierung 5.85%, Holdout 5.75%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
+      "scandal_recovery: Kalibrierung (within_target) und Holdout (below_target) ordnen die Raten unterschiedlich zum Korridor 8–20% ein — Kalibrierung 8.6%, Holdout 7.9%; das Szenario liegt auf einer Korridorgrenze.",
       "festival_push: Insolvenzrate (Kalibrierung 4.05%, Holdout 3.95%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.",
       "chaos_tour: Insolvenzrate (Kalibrierung 3.7%, Holdout 3.8%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt."
     ]
@@ -1368,8 +1377,8 @@
   },
   "executionCoverage": {
     "brandDeals": {
-      "evaluations": 212119,
-      "activations": 1084,
+      "evaluations": 211887,
+      "activations": 1073,
       "uniqueIdsSeen": [
         "basement_zine",
         "blood_bank_promo",
@@ -1418,8 +1427,8 @@
       "covered": true
     },
     "postOptions": {
-      "evaluations": 28970,
-      "activations": 28970,
+      "evaluations": 28928,
+      "activations": 28928,
       "uniqueIdsSeen": [
         "collab_influencer",
         "comm_loyalty_merch_drive",
@@ -1454,8 +1463,8 @@
       "covered": true
     },
     "socialTrends": {
-      "evaluations": 233923,
-      "activations": 28238,
+      "evaluations": 233637,
+      "activations": 28138,
       "uniqueIdsSeen": [
         "DRAMA",
         "MUSIC",
@@ -1467,8 +1476,8 @@
       "covered": true
     },
     "contraband": {
-      "evaluations": 233923,
-      "activations": 25446,
+      "evaluations": 233637,
+      "activations": 25409,
       "uniqueIdsSeen": [
         "c_abyssal_microphone",
         "c_abyssal_pendant",
@@ -1512,32 +1521,32 @@
       "covered": true
     },
     "minigamesTravel": {
-      "attempts": 232184,
-      "completions": 136008,
+      "attempts": 231788,
+      "completions": 135749,
       "covered": true
     },
     "minigamesRoadie": {
-      "attempts": 58728,
-      "completions": 52240,
+      "attempts": 58641,
+      "completions": 52175,
       "covered": true
     },
     "minigamesKabelsalat": {
-      "attempts": 58604,
-      "completions": 40596,
+      "attempts": 58544,
+      "completions": 40577,
       "covered": true
     },
     "minigamesAmp": {
-      "attempts": 59076,
-      "completions": 40944,
+      "attempts": 58970,
+      "completions": 40833,
       "covered": true
     },
     "sponsorship": {
-      "attempts": 214449,
-      "successes": 911,
+      "attempts": 214163,
+      "successes": 903,
       "covered": true
     },
     "restStops": {
-      "evaluations": 233923,
+      "evaluations": 233637,
       "activations": 3,
       "covered": true
     }
@@ -1546,42 +1555,32 @@
     "comparison": "descriptive-unpaired",
     "cohortDifferences": [
       {
-        "field": "runsPerScenario",
-        "previous": 260,
-        "current": 2000
-      },
-      {
-        "field": "seedNamespace",
-        "previous": null,
-        "current": "#first-income-full-reports-v1"
-      },
-      {
         "field": "seedStrategy",
-        "previous": "scenario-id-plus-run-index",
-        "current": "scenario-id-plus-first-income-full-report-namespace-plus-run-index"
+        "previous": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
+        "current": null
       },
       {
         "field": "shippedGigCadencePolicy",
-        "previous": null,
-        "current": "first-income"
+        "previous": "first-income",
+        "current": null
       }
     ],
-    "note": "Recorded cohort metadata differences: runsPerScenario, seedNamespace, seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.",
+    "note": "Recorded cohort metadata differences: seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-28T22:11:39.724Z",
-      "sourceBaseCommit": "dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0",
-      "runsPerScenario": 260,
-      "seedNamespace": null,
-      "seedStrategy": "scenario-id-plus-run-index",
-      "shippedGigCadencePolicy": null
-    },
-    "current": {
       "generatedAt": "2026-07-29T13:02:26.790Z",
-      "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
+      "sourceFingerprint": null,
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
+    },
+    "current": {
+      "generatedAt": "2026-07-29T18:56:14.684Z",
+      "sourceFingerprint": "4b10c7a77055f0f3f3ea33021b7f2ba4ef78f65a72f541d28e758c8100c1ab24",
+      "runsPerScenario": 2000,
+      "seedNamespace": "#first-income-full-reports-v1",
+      "seedStrategy": null,
+      "shippedGigCadencePolicy": null
     },
     "scenarios": [
       {
@@ -1589,19 +1588,19 @@
         "name": "Baseline Touring",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 2.69,
+            "previous": 1.4,
             "current": 1.4,
-            "delta": -1.29
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 28033,
+            "previous": 28359,
             "current": 28359,
-            "delta": 326
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1554.14,
+            "previous": 1574.77,
             "current": 1574.77,
-            "delta": 20.63
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 8.54,
@@ -1615,24 +1614,24 @@
         "name": "Bootstrap Struggle",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 30.38,
+            "previous": 7.85,
             "current": 7.85,
-            "delta": -22.53
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 17231,
+            "previous": 23095,
             "current": 23095,
-            "delta": 5864
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1235.68,
+            "previous": 1504.52,
             "current": 1504.52,
-            "delta": 268.84
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 4.71,
+            "previous": 6.65,
             "current": 6.65,
-            "delta": 1.94
+            "delta": 0
           }
         }
       },
@@ -1641,24 +1640,24 @@
         "name": "Aggressive Marketing",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 10,
+            "previous": 2,
             "current": 2,
-            "delta": -8
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 25643,
+            "previous": 28695,
             "current": 28695,
-            "delta": 3052
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1490.53,
+            "previous": 1640.16,
             "current": 1640.16,
-            "delta": 149.63
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 6.4,
+            "previous": 7.46,
             "current": 7.46,
-            "delta": 1.06
+            "delta": 0
           }
         }
       },
@@ -1667,24 +1666,24 @@
         "name": "Scandal Recovery",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 26.54,
-            "current": 5.85,
-            "delta": -20.69
+            "previous": 5.85,
+            "current": 8.6,
+            "delta": 2.75
           },
           "avgFinalMoney": {
-            "previous": 19044,
-            "current": 23921,
-            "delta": 4877
+            "previous": 23921,
+            "current": 22493,
+            "delta": -1428
           },
           "avgFameProgressPerGig": {
-            "previous": 1195.38,
-            "current": 1556.46,
-            "delta": 361.08
+            "previous": 1556.46,
+            "current": 1549.04,
+            "delta": -7.42
           },
           "avgGigsPlayed": {
-            "previous": 5.05,
-            "current": 6.73,
-            "delta": 1.68
+            "previous": 6.73,
+            "current": 6.61,
+            "delta": -0.12
           }
         }
       },
@@ -1693,24 +1692,24 @@
         "name": "Festival Push",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 27.31,
+            "previous": 4.05,
             "current": 4.05,
-            "delta": -23.26
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 20664,
+            "previous": 26569,
             "current": 26569,
-            "delta": 5905
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1249.86,
+            "previous": 1729.11,
             "current": 1729.11,
-            "delta": 479.25
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 5.12,
+            "previous": 6.84,
             "current": 6.84,
-            "delta": 1.72
+            "delta": 0
           }
         }
       },
@@ -1719,24 +1718,24 @@
         "name": "Chaos Tour",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 13.46,
+            "previous": 3.7,
             "current": 3.7,
-            "delta": -9.76
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 22096,
+            "previous": 25711,
             "current": 25711,
-            "delta": 3615
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1292.51,
+            "previous": 1419.4,
             "current": 1419.4,
-            "delta": 126.89
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 6.2,
+            "previous": 7.33,
             "current": 7.33,
-            "delta": 1.13
+            "delta": 0
           }
         }
       },
@@ -1745,24 +1744,24 @@
         "name": "Cult Hypergrowth",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 10.38,
+            "previous": 2.2,
             "current": 2.2,
-            "delta": -8.18
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 26003,
+            "previous": 28895,
             "current": 28895,
-            "delta": 2892
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1484.04,
+            "previous": 1618.56,
             "current": 1618.56,
-            "delta": 134.52
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 6.48,
+            "previous": 7.4,
             "current": 7.4,
-            "delta": 0.92
+            "delta": 0
           }
         }
       },
@@ -1771,24 +1770,24 @@
         "name": "No Social (Fame 0-50)",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 12.31,
+            "previous": 4.8,
             "current": 4.8,
-            "delta": -7.51
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 22720,
+            "previous": 24917,
             "current": 24917,
-            "delta": 2197
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1390.5,
+            "previous": 1537.81,
             "current": 1537.81,
-            "delta": 147.31
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 6.4,
+            "previous": 7.32,
             "current": 7.32,
-            "delta": 0.92
+            "delta": 0
           }
         }
       },
@@ -1797,24 +1796,24 @@
         "name": "High Controversy",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 31.92,
+            "previous": 20.05,
             "current": 20.05,
-            "delta": -11.87
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 14781,
+            "previous": 17064,
             "current": 17064,
-            "delta": 2283
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1352.82,
+            "previous": 1493.13,
             "current": 1493.13,
-            "delta": 140.31
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 5.33,
+            "previous": 6.47,
             "current": 6.47,
-            "delta": 1.14
+            "delta": 0
           }
         }
       },
@@ -1823,24 +1822,24 @@
         "name": "Early Game Probe (Fame 0–50)",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 15.77,
+            "previous": 4.35,
             "current": 4.35,
-            "delta": -11.42
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 21056,
+            "previous": 25053,
             "current": 25053,
-            "delta": 3997
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1358.62,
+            "previous": 1520.7,
             "current": 1520.7,
-            "delta": 162.08
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 5.92,
+            "previous": 7.34,
             "current": 7.34,
-            "delta": 1.42
+            "delta": 0
           }
         }
       },
@@ -1849,24 +1848,24 @@
         "name": "Mid Game Probe (Fame 60–150)",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 2.69,
+            "previous": 0.65,
             "current": 0.65,
-            "delta": -2.04
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 25253,
+            "previous": 27231,
             "current": 27231,
-            "delta": 1978
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1547.6,
+            "previous": 1543.99,
             "current": 1543.99,
-            "delta": -3.61
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 6.64,
+            "previous": 7.5,
             "current": 7.5,
-            "delta": 0.86
+            "delta": 0
           }
         }
       },
@@ -1875,24 +1874,24 @@
         "name": "Late Game Probe (Fame 175+)",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 0.38,
+            "previous": 0.1,
             "current": 0.1,
-            "delta": -0.28
+            "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 30986,
+            "previous": 30726,
             "current": 30726,
-            "delta": -260
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1619.98,
+            "previous": 1622.15,
             "current": 1622.15,
-            "delta": 2.17
+            "delta": 0
           },
           "avgGigsPlayed": {
-            "previous": 8.65,
+            "previous": 8.64,
             "current": 8.64,
-            "delta": -0.01
+            "delta": 0
           }
         }
       }
@@ -2506,6 +2505,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 1.4,
+          "bankruptcyBeforeFirstGigPct": 0.65,
+          "bankruptcyAfterFirstGigPct": 0.75,
           "everBelowTightPct": 6.25,
           "everBelowCriticalPct": 1.6,
           "zeroBalancePct": 0,
@@ -2517,6 +2518,93 @@
           "solventFinalMoneyP10": 22375,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 4295767,
+            "median": 2094,
+            "p90": 2683,
+            "firstMaterialDrawdownSharePct": 35.25,
+            "bankruptcyPredecessorSharePct": 32.14
+          },
+          "travel": {
+            "total": 1428883,
+            "median": 726,
+            "p90": 791,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 350435,
+            "median": 151,
+            "p90": 274,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "maintenance_repairs": {
+            "total": 711048,
+            "median": 306,
+            "p90": 522,
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 7.14
+          },
+          "negative_events": {
+            "total": 15265,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1120,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 8282729,
+            "median": 1631,
+            "p90": 13116,
+            "firstMaterialDrawdownSharePct": 30.75,
+            "bankruptcyPredecessorSharePct": 14.29
+          },
+          "other": {
+            "total": 310417,
+            "median": 156,
+            "p90": 236,
+            "firstMaterialDrawdownSharePct": 20,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 637974,
+            "median": 318,
+            "p90": 452
+          },
+          "venueGrossSpend": {
+            "total": 176708692,
+            "median": 85634,
+            "p90": 131684
+          },
+          "taxGrossSpend": {
+            "total": 68554929,
+            "median": 31945,
+            "p90": 53203
+          },
+          "otherGrossSpend": {
+            "total": 62664,
+            "median": 24,
+            "p90": 84
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 6182,
@@ -2688,7 +2776,7 @@
           "restStops": {
             "evaluations": 19827,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -3462,6 +3550,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 7.85,
+          "bankruptcyBeforeFirstGigPct": 0.75,
+          "bankruptcyAfterFirstGigPct": 7.1,
           "everBelowTightPct": 17.95,
           "everBelowCriticalPct": 8.25,
           "zeroBalancePct": 0,
@@ -3473,6 +3563,93 @@
           "solventFinalMoneyP10": 19893,
           "medianBankruptcyDay": 6,
           "earliestBankruptcyDay": 2
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3436153,
+            "median": 1739,
+            "p90": 2218,
+            "firstMaterialDrawdownSharePct": 34.6,
+            "bankruptcyPredecessorSharePct": 64.33
+          },
+          "travel": {
+            "total": 1212864,
+            "median": 641,
+            "p90": 727,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 272492,
+            "median": 140,
+            "p90": 172,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 1.91
+          },
+          "maintenance_repairs": {
+            "total": 854424,
+            "median": 474,
+            "p90": 606,
+            "firstMaterialDrawdownSharePct": 2.95,
+            "bankruptcyPredecessorSharePct": 12.1
+          },
+          "negative_events": {
+            "total": 17527,
+            "median": 0,
+            "p90": 30,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1120,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 3759160,
+            "median": 940,
+            "p90": 4484,
+            "firstMaterialDrawdownSharePct": 19.65,
+            "bankruptcyPredecessorSharePct": 11.46
+          },
+          "other": {
+            "total": 384943,
+            "median": 188,
+            "p90": 314,
+            "firstMaterialDrawdownSharePct": 33.25,
+            "bankruptcyPredecessorSharePct": 0.64
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 275546,
+            "median": 130,
+            "p90": 238
+          },
+          "venueGrossSpend": {
+            "total": 120260984,
+            "median": 56774,
+            "p90": 98432
+          },
+          "taxGrossSpend": {
+            "total": 46330322,
+            "median": 20617,
+            "p90": 41476
+          },
+          "otherGrossSpend": {
+            "total": 87396,
+            "median": 24,
+            "p90": 108
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 8001,
@@ -3649,7 +3826,7 @@
           "restStops": {
             "evaluations": 19231,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -4423,6 +4600,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 2,
+          "bankruptcyBeforeFirstGigPct": 0.45,
+          "bankruptcyAfterFirstGigPct": 1.55,
           "everBelowTightPct": 7.95,
           "everBelowCriticalPct": 2.5,
           "zeroBalancePct": 0,
@@ -4434,6 +4613,93 @@
           "solventFinalMoneyP10": 22268,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 4114511,
+            "median": 2006,
+            "p90": 2699,
+            "firstMaterialDrawdownSharePct": 20.4,
+            "bankruptcyPredecessorSharePct": 42.5
+          },
+          "travel": {
+            "total": 1425952,
+            "median": 731,
+            "p90": 802,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 343149,
+            "median": 149,
+            "p90": 272,
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "maintenance_repairs": {
+            "total": 764610,
+            "median": 348,
+            "p90": 540,
+            "firstMaterialDrawdownSharePct": 0.75,
+            "bankruptcyPredecessorSharePct": 12.5
+          },
+          "negative_events": {
+            "total": 30571,
+            "median": 0,
+            "p90": 55,
+            "firstMaterialDrawdownSharePct": 0.3,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1299,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 9663127,
+            "median": 1940,
+            "p90": 13481,
+            "firstMaterialDrawdownSharePct": 34.85,
+            "bankruptcyPredecessorSharePct": 22.5
+          },
+          "other": {
+            "total": 357200,
+            "median": 174,
+            "p90": 284,
+            "firstMaterialDrawdownSharePct": 29.85,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 1179594,
+            "median": 592,
+            "p90": 790
+          },
+          "venueGrossSpend": {
+            "total": 234472942,
+            "median": 117567,
+            "p90": 166015
+          },
+          "taxGrossSpend": {
+            "total": 93765126,
+            "median": 47287,
+            "p90": 68331
+          },
+          "otherGrossSpend": {
+            "total": 41964,
+            "median": 12,
+            "p90": 60
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 7074,
@@ -4612,7 +4878,7 @@
           "restStops": {
             "evaluations": 19781,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -4782,56 +5048,56 @@
     {
       "id": "scandal_recovery",
       "name": "Scandal Recovery",
-      "description": "Konservative Tour unter hohem Event-Druck: seltene Modifikatoren, hohe Ereignisdichte.",
+      "description": "Konservative Tour während eines bestehenden öffentlichen Backlashs.",
       "summary": {
-        "avgFinalMoney": 23921,
-        "avgFinalFame": 7503,
-        "avgFinalHarmony": 46,
-        "avgGigsPlayed": 6.73,
-        "avgGigNet": 4195,
-        "bankruptcyRate": 5.85,
-        "avgEventsApplied": 1.4,
+        "avgFinalMoney": 22493,
+        "avgFinalFame": 7323,
+        "avgFinalHarmony": 45,
+        "avgGigsPlayed": 6.61,
+        "avgGigNet": 3899,
+        "bankruptcyRate": 8.6,
+        "avgEventsApplied": 1.36,
         "avgGigEvents": 0.94,
-        "avgPerformanceScore": 62,
+        "avgPerformanceScore": 61,
         "statistics": {
           "finalMoney": {
-            "mean": 23921,
-            "median": 24768,
-            "stdDev": 7423,
+            "mean": 22493,
+            "median": 24042,
+            "stdDev": 8335,
             "min": 0,
-            "p10": 17926,
-            "p25": 21637,
-            "p75": 28248,
-            "p90": 31185,
-            "max": 45704
+            "p10": 14583,
+            "p25": 20689,
+            "p75": 27350,
+            "p90": 30327,
+            "max": 44966
           },
           "finalFame": {
-            "mean": 7503,
-            "median": 7369,
-            "stdDev": 4099,
+            "mean": 7323,
+            "median": 7278,
+            "stdDev": 4257,
             "min": 0,
-            "p10": 3340,
-            "p25": 5631,
-            "p75": 8992,
-            "p90": 10651,
-            "max": 41131
+            "p10": 2854,
+            "p25": 5340,
+            "p75": 8916,
+            "p90": 10568,
+            "max": 40846
           },
           "gigsPlayed": {
-            "mean": 6.73,
+            "mean": 6.61,
             "median": 7,
-            "stdDev": 1.87,
+            "stdDev": 2.06,
             "min": 0,
-            "p10": 5,
+            "p10": 4,
             "p25": 6,
             "p75": 8,
             "p90": 9,
             "max": 10
           },
           "daysSurvived": {
-            "mean": 9.75,
+            "mean": 9.63,
             "median": 10,
-            "stdDev": 1.07,
-            "min": 2,
+            "stdDev": 1.27,
+            "min": 3,
             "p10": 10,
             "p25": 10,
             "p75": 10,
@@ -4839,157 +5105,157 @@
             "max": 10
           },
           "gigNet": {
-            "mean": 4195,
-            "median": 4258,
-            "stdDev": 1147,
+            "mean": 3899,
+            "median": 4059,
+            "stdDev": 1267,
             "min": 0,
-            "p10": 3480,
-            "p25": 3843,
-            "p75": 4770,
-            "p90": 5322,
-            "max": 8816
+            "p10": 2826,
+            "p25": 3609,
+            "p75": 4541,
+            "p90": 5121,
+            "max": 7915
           },
           "performanceScore": {
-            "mean": 62,
-            "median": 62,
+            "mean": 61,
+            "median": 61,
             "stdDev": 8,
             "min": 0,
-            "p10": 54,
-            "p25": 58,
-            "p75": 66,
-            "p90": 70,
-            "max": 86
+            "p10": 53,
+            "p25": 57,
+            "p75": 65,
+            "p90": 69,
+            "max": 85
           },
           "lowestMoney": {
-            "mean": 463,
+            "mean": 449,
             "median": 500,
-            "stdDev": 109,
-            "min": 2,
-            "p10": 369,
+            "stdDev": 127,
+            "min": 1,
+            "p10": 316,
             "p25": 500,
             "p75": 500,
             "p90": 500,
             "max": 500
           },
           "peakMoney": {
-            "mean": 24002,
-            "median": 24777,
-            "stdDev": 7220,
+            "mean": 22622,
+            "median": 24048,
+            "stdDev": 8042,
             "min": 500,
-            "p10": 18037,
-            "p25": 21684,
-            "p75": 28256,
-            "p90": 31185,
-            "max": 45704
+            "p10": 14716,
+            "p25": 20711,
+            "p75": 27357,
+            "p90": 30327,
+            "max": 44966
           },
           "maxDrawdownPct": {
-            "mean": 30.58,
-            "median": 23.31,
-            "stdDev": 24.15,
+            "mean": 32.86,
+            "median": 25.8,
+            "stdDev": 25.32,
             "min": 0,
-            "p10": 7.39,
-            "p25": 12.81,
-            "p75": 41.24,
-            "p90": 68.18,
-            "max": 99.83
+            "p10": 8.21,
+            "p25": 14.1,
+            "p75": 43.29,
+            "p90": 76.62,
+            "max": 99.87
           },
           "finalHarmony": {
-            "mean": 46,
-            "median": 45,
-            "stdDev": 13,
+            "mean": 45,
+            "median": 44,
+            "stdDev": 14,
             "min": 1,
-            "p10": 31,
-            "p25": 38,
+            "p10": 28,
+            "p25": 36,
             "p75": 52,
             "p90": 64,
-            "max": 95
+            "max": 99
           },
           "eventsApplied": {
-            "mean": 1.4,
+            "mean": 1.36,
             "median": 1,
-            "stdDev": 1.16,
+            "stdDev": 1.13,
             "min": 0,
             "p10": 0,
             "p25": 1,
             "p75": 2,
             "p90": 3,
-            "max": 7
+            "max": 8
           },
           "gigEvents": {
             "mean": 0.94,
             "median": 1,
-            "stdDev": 0.97,
+            "stdDev": 0.94,
             "min": 0,
             "p10": 0,
             "p25": 0,
             "p75": 1,
             "p90": 2,
-            "max": 6
+            "max": 5
           },
           "fameEarned": {
-            "mean": 10508,
-            "median": 10543,
-            "stdDev": 4160,
+            "mean": 10228,
+            "median": 10393,
+            "stdDev": 4410,
             "min": 0,
-            "p10": 7430,
-            "p25": 9061,
-            "p75": 11867,
-            "p90": 13242,
-            "max": 45981
+            "p10": 6375,
+            "p25": 8818,
+            "p75": 11771,
+            "p90": 13130,
+            "max": 44787
           },
           "fameEarnedPerGig": {
-            "mean": 1556,
-            "median": 1512,
-            "stdDev": 453,
+            "mean": 1549,
+            "median": 1496,
+            "stdDev": 484,
             "min": 0,
-            "p10": 1339,
-            "p25": 1426,
-            "p75": 1600,
-            "p90": 1699,
-            "max": 7000
+            "p10": 1319,
+            "p25": 1407,
+            "p75": 1590,
+            "p90": 1704,
+            "max": 7005
           }
         },
         "population": {
           "allRuns": {
             "sampleSize": 2000,
             "finalMoney": {
-              "mean": 23921,
-              "median": 24768,
-              "stdDev": 7423,
+              "mean": 22493,
+              "median": 24042,
+              "stdDev": 8335,
               "min": 0,
-              "p10": 17926,
-              "p25": 21637,
-              "p75": 28248,
-              "p90": 31185,
-              "max": 45704
+              "p10": 14583,
+              "p25": 20689,
+              "p75": 27350,
+              "p90": 30327,
+              "max": 44966
             },
             "finalFame": {
-              "mean": 7503,
-              "median": 7369,
-              "stdDev": 4099,
+              "mean": 7323,
+              "median": 7278,
+              "stdDev": 4257,
               "min": 0,
-              "p10": 3340,
-              "p25": 5631,
-              "p75": 8992,
-              "p90": 10651,
-              "max": 41131
+              "p10": 2854,
+              "p25": 5340,
+              "p75": 8916,
+              "p90": 10568,
+              "max": 40846
             },
             "gigsPlayed": {
-              "mean": 6.73,
+              "mean": 6.61,
               "median": 7,
-              "stdDev": 1.87,
+              "stdDev": 2.06,
               "min": 0,
-              "p10": 5,
+              "p10": 4,
               "p25": 6,
               "p75": 8,
               "p90": 9,
               "max": 10
             },
             "daysSurvived": {
-              "mean": 9.75,
+              "mean": 9.63,
               "median": 10,
-              "stdDev": 1.07,
-              "min": 2,
+              "stdDev": 1.27,
+              "min": 3,
               "p10": 10,
               "p25": 10,
               "p75": 10,
@@ -4997,87 +5263,87 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 4195,
-              "median": 4258,
-              "stdDev": 1147,
+              "mean": 3899,
+              "median": 4059,
+              "stdDev": 1267,
               "min": 0,
-              "p10": 3480,
-              "p25": 3843,
-              "p75": 4770,
-              "p90": 5322,
-              "max": 8816
+              "p10": 2826,
+              "p25": 3609,
+              "p75": 4541,
+              "p90": 5121,
+              "max": 7915
             },
             "performanceScore": {
-              "mean": 62,
-              "median": 62,
+              "mean": 61,
+              "median": 61,
               "stdDev": 8,
               "min": 0,
-              "p10": 54,
-              "p25": 58,
-              "p75": 66,
-              "p90": 70,
-              "max": 86
+              "p10": 53,
+              "p25": 57,
+              "p75": 65,
+              "p90": 69,
+              "max": 85
             },
             "finalHarmony": {
-              "mean": 46,
-              "median": 45,
-              "stdDev": 13,
+              "mean": 45,
+              "median": 44,
+              "stdDev": 14,
               "min": 1,
-              "p10": 31,
-              "p25": 38,
+              "p10": 28,
+              "p25": 36,
               "p75": 52,
               "p90": 64,
-              "max": 95
+              "max": 99
             },
             "fameEarned": {
-              "mean": 10508,
-              "median": 10543,
-              "stdDev": 4160,
+              "mean": 10228,
+              "median": 10393,
+              "stdDev": 4410,
               "min": 0,
-              "p10": 7430,
-              "p25": 9061,
-              "p75": 11867,
-              "p90": 13242,
-              "max": 45981
+              "p10": 6375,
+              "p25": 8818,
+              "p75": 11771,
+              "p90": 13130,
+              "max": 44787
             },
             "fameEarnedPerGig": {
-              "mean": 1556,
-              "median": 1512,
-              "stdDev": 453,
+              "mean": 1549,
+              "median": 1496,
+              "stdDev": 484,
               "min": 0,
-              "p10": 1339,
-              "p25": 1426,
-              "p75": 1600,
-              "p90": 1699,
-              "max": 7000
+              "p10": 1319,
+              "p25": 1407,
+              "p75": 1590,
+              "p90": 1704,
+              "max": 7005
             }
           },
           "solventRuns": {
-            "sampleSize": 1883,
+            "sampleSize": 1828,
             "finalMoney": {
-              "mean": 25407,
-              "median": 25112,
-              "stdDev": 4555,
-              "min": 1168,
-              "p10": 19953,
-              "p25": 22292,
-              "p75": 28510,
-              "p90": 31303,
-              "max": 45704
+              "mean": 24609,
+              "median": 24498,
+              "stdDev": 4888,
+              "min": 100,
+              "p10": 19186,
+              "p25": 21659,
+              "p75": 27667,
+              "p90": 30528,
+              "max": 44966
             },
             "finalFame": {
-              "mean": 7912,
-              "median": 7561,
-              "stdDev": 3864,
-              "min": 720,
-              "p10": 4628,
-              "p25": 5960,
-              "p75": 9133,
-              "p90": 10739,
-              "max": 41131
+              "mean": 7904,
+              "median": 7520,
+              "stdDev": 3955,
+              "min": 640,
+              "p10": 4564,
+              "p25": 5924,
+              "p75": 9121,
+              "p90": 10692,
+              "max": 40846
             },
             "gigsPlayed": {
-              "mean": 7.08,
+              "mean": 7.11,
               "median": 7,
               "stdDev": 1.27,
               "min": 3,
@@ -5099,63 +5365,63 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 4422,
-              "median": 4312,
-              "stdDev": 713,
-              "min": 2001,
-              "p10": 3649,
-              "p25": 3921,
-              "p75": 4803,
-              "p90": 5371,
-              "max": 8816
+              "mean": 4216,
+              "median": 4134,
+              "stdDev": 757,
+              "min": 992,
+              "p10": 3437,
+              "p25": 3733,
+              "p75": 4597,
+              "p90": 5177,
+              "max": 7915
             },
             "performanceScore": {
-              "mean": 62,
-              "median": 62,
+              "mean": 61,
+              "median": 61,
               "stdDev": 6,
               "min": 42,
-              "p10": 54,
-              "p25": 58,
-              "p75": 66,
-              "p90": 69,
-              "max": 83
+              "p10": 53,
+              "p25": 57,
+              "p75": 65,
+              "p90": 68,
+              "max": 81
             },
             "finalHarmony": {
-              "mean": 45,
-              "median": 44,
+              "mean": 43,
+              "median": 43,
               "stdDev": 13,
               "min": 1,
-              "p10": 30,
-              "p25": 37,
+              "p10": 28,
+              "p25": 35,
               "p75": 50,
-              "p90": 60,
-              "max": 95
+              "p90": 59,
+              "max": 97
             },
             "fameEarned": {
-              "mean": 11047,
-              "median": 10700,
-              "stdDev": 3652,
-              "min": 4170,
-              "p10": 8106,
-              "p25": 9385,
-              "p75": 11978,
-              "p90": 13322,
-              "max": 45981
+              "mean": 10991,
+              "median": 10593,
+              "stdDev": 3765,
+              "min": 3855,
+              "p10": 8079,
+              "p25": 9255,
+              "p75": 11880,
+              "p90": 13217,
+              "max": 44787
             },
             "fameEarnedPerGig": {
-              "mean": 1566,
-              "median": 1510,
-              "stdDev": 444,
-              "min": 918,
-              "p10": 1344,
-              "p25": 1426,
-              "p75": 1593,
-              "p90": 1688,
-              "max": 7000
+              "mean": 1553,
+              "median": 1490,
+              "stdDev": 470,
+              "min": 916,
+              "p10": 1321,
+              "p25": 1406,
+              "p75": 1575,
+              "p90": 1677,
+              "max": 7005
             }
           },
           "bankruptRuns": {
-            "sampleSize": 117,
+            "sampleSize": 172,
             "finalMoney": {
               "mean": 0,
               "median": 0,
@@ -5168,32 +5434,32 @@
               "max": 0
             },
             "finalFame": {
-              "mean": 923,
-              "median": 815,
-              "stdDev": 910,
+              "mean": 1145,
+              "median": 885,
+              "stdDev": 1640,
               "min": 0,
-              "p10": 5,
-              "p25": 220,
-              "p75": 1186,
-              "p90": 1909,
-              "max": 4970
+              "p10": 30,
+              "p25": 360,
+              "p75": 1301,
+              "p90": 2527,
+              "max": 17970
             },
             "gigsPlayed": {
-              "mean": 1.15,
+              "mean": 1.26,
               "median": 1,
-              "stdDev": 0.76,
+              "stdDev": 0.85,
               "min": 0,
-              "p10": 0,
+              "p10": 1,
               "p25": 1,
               "p75": 1,
               "p90": 2,
-              "max": 4
+              "max": 6
             },
             "daysSurvived": {
-              "mean": 5.73,
+              "mean": 5.75,
               "median": 6,
               "stdDev": 1.54,
-              "min": 2,
+              "min": 3,
               "p10": 4,
               "p25": 5,
               "p75": 7,
@@ -5201,221 +5467,310 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 546,
-              "median": 461,
-              "stdDev": 385,
+              "mean": 530,
+              "median": 421,
+              "stdDev": 408,
               "min": 0,
-              "p10": 0,
-              "p25": 332,
-              "p75": 759,
-              "p90": 1176,
-              "max": 1646
+              "p10": 190,
+              "p25": 240,
+              "p75": 739,
+              "p90": 1035,
+              "max": 2597
             },
             "performanceScore": {
-              "mean": 58,
-              "median": 67,
-              "stdDev": 24,
+              "mean": 61,
+              "median": 66,
+              "stdDev": 21,
               "min": 0,
-              "p10": 0,
-              "p25": 57,
-              "p75": 72,
-              "p90": 77,
-              "max": 86
+              "p10": 51,
+              "p25": 60,
+              "p75": 73,
+              "p90": 78,
+              "max": 85
             },
             "finalHarmony": {
               "mean": 64,
               "median": 64,
-              "stdDev": 8,
-              "min": 50,
-              "p10": 54,
+              "stdDev": 9,
+              "min": 43,
+              "p10": 51,
               "p25": 59,
-              "p75": 70,
-              "p90": 75,
-              "max": 89
+              "p75": 69,
+              "p90": 74,
+              "max": 99
             },
             "fameEarned": {
-              "mean": 1841,
-              "median": 1661,
-              "stdDev": 1191,
+              "mean": 2119,
+              "median": 1675,
+              "stdDev": 1873,
               "min": 0,
-              "p10": 5,
-              "p25": 1450,
-              "p75": 1830,
-              "p90": 3337,
-              "max": 5770
+              "p10": 1272,
+              "p25": 1495,
+              "p75": 1915,
+              "p90": 3869,
+              "max": 18925
             },
             "fameEarnedPerGig": {
-              "mean": 1408,
-              "median": 1595,
-              "stdDev": 567,
+              "mean": 1512,
+              "median": 1598,
+              "stdDev": 614,
               "min": 0,
-              "p10": 0,
-              "p25": 1400,
-              "p75": 1715,
-              "p90": 1810,
-              "max": 2240
+              "p10": 1272,
+              "p25": 1479,
+              "p75": 1741,
+              "p90": 1850,
+              "max": 6308
             }
           }
         },
-        "avgFameProgress": 10508,
-        "avgFameProgressPerGig": 1556.46,
-        "avgPeakToTroughDrop": 30.58,
-        "avgPeakMoney": 24002,
-        "avgLowestMoney": 463,
-        "avgFinalControversy": 4.04,
-        "avgClinicVisits": 0,
-        "avgSponsorPayouts": 0.09,
-        "avgSponsorSignings": 0.04,
+        "avgFameProgress": 10228,
+        "avgFameProgressPerGig": 1549.04,
+        "avgPeakToTroughDrop": 32.86,
+        "avgPeakMoney": 22622,
+        "avgLowestMoney": 449,
+        "avgFinalControversy": 44.37,
+        "avgClinicVisits": 0.03,
+        "avgSponsorPayouts": 0.08,
+        "avgSponsorSignings": 0.03,
         "avgSponsorDrops": 0,
         "avgBrandDealsActivated": 0.04,
-        "avgRefuels": 1.19,
-        "avgRepairs": 1.43,
-        "avgHqUpgrades": 2.05,
-        "avgVanUpgrades": 3.66,
-        "avgCatalogUpgrades": 11.19,
-        "avgTravelMinigames": 9.61,
-        "avgRoadieMinigames": 2.27,
-        "avgKabelsalatMinigames": 2.22,
-        "avgAmpCalibrations": 2.24,
+        "avgRefuels": 1.18,
+        "avgRepairs": 1.39,
+        "avgHqUpgrades": 1.99,
+        "avgVanUpgrades": 3.55,
+        "avgCatalogUpgrades": 10.92,
+        "avgTravelMinigames": 9.42,
+        "avgRoadieMinigames": 2.22,
+        "avgKabelsalatMinigames": 2.19,
+        "avgAmpCalibrations": 2.19,
         "avgRestStops": 0,
-        "avgRestDays": 0,
-        "avgRestStopArrivals": 0.99,
-        "avgAssetsPurchased": 0.24,
-        "avgLoansTaken": 0.12,
-        "avgModulesInstalled": 0.09,
+        "avgRestDays": 0.01,
+        "avgRestStopArrivals": 0.95,
+        "avgAssetsPurchased": 0.2,
+        "avgLoansTaken": 0.1,
+        "avgModulesInstalled": 0.06,
         "avgCrowdfundsStarted": 0.32,
-        "avgTraitUnlocks": 1.76,
-        "avgFinalAssets": 0.24,
-        "avgTrendShifts": 1.2,
-        "avgSpecialEvents": 0.25,
-        "avgCashSwings": 0.42,
-        "avgBandEvents": 0.44,
-        "avgEquipmentEvents": 0.28,
-        "avgPostPulses": 1.19,
-        "avgContrabandDrops": 1.07,
-        "avgClinicSpend": 1,
-        "regionRepTouchedPct": 97.7,
-        "avgTravelCostPerGig": 102,
+        "avgTraitUnlocks": 1.72,
+        "avgFinalAssets": 0.2,
+        "avgTrendShifts": 1.15,
+        "avgSpecialEvents": 0.24,
+        "avgCashSwings": 0.4,
+        "avgBandEvents": 0.45,
+        "avgEquipmentEvents": 0.27,
+        "avgPostPulses": 1.17,
+        "avgContrabandDrops": 1.05,
+        "avgClinicSpend": 9,
+        "regionRepTouchedPct": 97,
+        "avgTravelCostPerGig": 99,
         "avgHitWindow": 157,
-        "avgMissesPerGig": 6.5,
-        "gigScorePctLow": 14.6,
-        "gigScorePctMid": 63.2,
-        "gigScorePctHigh": 22.2,
-        "gigNetToTravelRatio": 42.3,
+        "avgMissesPerGig": 6.7,
+        "gigScorePctLow": 17,
+        "gigScorePctMid": 62.7,
+        "gigScorePctHigh": 20.3,
+        "gigNetToTravelRatio": 41.4,
         "sinkToIncomeRatio": 0.05,
-        "gigCapHitPct": 8.4,
-        "gigsToAffordHqUpgrade": 2.98,
-        "gigsToAffordVanUpgrade": 0.19,
-        "avgMoneyAtEarlyCheckpoint": 2276,
-        "avgMoneyAtMidCheckpoint": 4626,
-        "avgMoneyAtLateCheckpoint": 5620,
+        "gigCapHitPct": 7.3,
+        "gigsToAffordHqUpgrade": 3.21,
+        "gigsToAffordVanUpgrade": 0.21,
+        "avgMoneyAtEarlyCheckpoint": 1965,
+        "avgMoneyAtMidCheckpoint": 3940,
+        "avgMoneyAtLateCheckpoint": 4783,
         "bankruptcy": {
-          "count": 117,
+          "count": 172,
           "sampleSize": 2000,
-          "ratePct": 5.85,
+          "ratePct": 8.6,
           "confidence95": {
-            "lowerPct": 4.9,
-            "upperPct": 6.97,
+            "lowerPct": 7.45,
+            "upperPct": 9.91,
             "method": "wilson"
           }
         },
         "tourPaths": {
           "tourDepth": 10,
-          "finaleReachedPct": 93.95,
-          "finaleCompletedPct": 93.9,
-          "avgDeepestLayerReached": 9.61,
-          "avgArrivals": 9.61,
-          "avgNonPerformingArrivals": 2.88,
+          "finaleReachedPct": 90,
+          "finaleCompletedPct": 89.9,
+          "avgDeepestLayerReached": 9.42,
+          "avgArrivals": 9.42,
+          "avgNonPerformingArrivals": 2.81,
           "avgRouteDeadEnds": 0,
-          "avgStrandedDays": 0.08,
-          "strandedRunsPct": 5.75,
+          "avgStrandedDays": 0.12,
+          "strandedRunsPct": 8.6,
           "travelBlockedByReason": {
-            "money": 0.08,
+            "money": 0.12,
             "fuel": 0,
             "venue_access": 0
           },
-          "avgRefuelledToTravel": 0.16,
+          "avgRefuelledToTravel": 0.17,
           "nodeTypeSharePct": {
-            "GIG": 53.43,
-            "REST_STOP": 10.25,
-            "FINALE": 9.77,
-            "FESTIVAL": 6.83,
-            "SPECIAL": 9.8,
-            "SUPPLY_STOP": 9.91
+            "GIG": 53.74,
+            "REST_STOP": 10.11,
+            "FINALE": 9.56,
+            "SUPPLY_STOP": 9.84,
+            "SPECIAL": 9.87,
+            "FESTIVAL": 6.88
           }
         },
         "purchasePaths": {
           "catalogSize": 67,
           "runsWithAnyPurchasePct": 100,
           "firstPurchaseDayMedian": 1,
-          "vanUpgradeReachedPct": 97.9,
+          "vanUpgradeReachedPct": 97.25,
           "firstVanUpgradeDayMedian": 3,
           "hqUpgradeReachedPct": 90.4,
           "firstHqUpgradeDayMedian": 3,
-          "avgDistinctItemsPurchased": 10.18,
-          "catalogSharePurchasedPct": 15.2,
+          "avgDistinctItemsPurchased": 9.99,
+          "catalogSharePurchasedPct": 14.91,
           "modalFirstPurchaseCategory": "MERCH",
-          "avgMoneyBeforePurchase": 5179.84,
-          "avgResidualMoneyAfterPurchase": 4854.31,
-          "avgMissedPurchases": 0.94,
-          "avgLiquidityDeferrals": 0.24,
-          "avgUnaffordableAtMidCheckpoint": 3.34,
-          "avgAffordableAtMidCheckpoint": 57.85,
-          "avgUnaffordableAtEnd": 2.77,
-          "avgAffordableAtEnd": 54.05
+          "avgMoneyBeforePurchase": 4636.76,
+          "avgResidualMoneyAfterPurchase": 4363.49,
+          "avgMissedPurchases": 0.95,
+          "avgLiquidityDeferrals": 0.28,
+          "avgUnaffordableAtMidCheckpoint": 3.81,
+          "avgAffordableAtMidCheckpoint": 57.37,
+          "avgUnaffordableAtEnd": 4.01,
+          "avgAffordableAtEnd": 52.95
         },
         "gigEconomics": {
-          "gigNetPerCalendarDay": 2978,
-          "gigNetPerGigDay": 4314,
-          "gigsPerCalendarDay": 0.69,
-          "avgRestDays": 0,
+          "gigNetPerCalendarDay": 2806,
+          "gigNetPerGigDay": 4093,
+          "gigsPerCalendarDay": 0.686,
+          "avgRestDays": 0.01,
           "avgFreeRestStops": 0,
-          "restDaySharePct": 0.02,
-          "foregoneGigNetPerRestDayUpperBound": 4314,
-          "travelCostShareOfGigNetPct": 2.36,
-          "avgTravelCostPerGigDay": 102,
+          "restDaySharePct": 0.14,
+          "foregoneGigNetPerRestDayUpperBound": 4093,
+          "travelCostShareOfGigNetPct": 2.42,
+          "avgTravelCostPerGigDay": 99,
           "catalogItemsUnderOneGigNetPct": 95.35,
           "moneyPricedCatalogSize": 43,
-          "minHarmonyObserved": 4,
-          "minMemberStaminaObserved": 38,
-          "minMemberMoodObserved": 47
+          "minHarmonyObserved": 1,
+          "minMemberStaminaObserved": 41,
+          "minMemberMoodObserved": 46
         },
         "financialStress": {
           "thresholds": {
             "tightEur": 500,
             "criticalEur": 250
           },
-          "bankruptcyRatePct": 5.85,
-          "everBelowTightPct": 15.35,
-          "everBelowCriticalPct": 6.05,
+          "bankruptcyRatePct": 8.6,
+          "bankruptcyBeforeFirstGigPct": 0.75,
+          "bankruptcyAfterFirstGigPct": 7.85,
+          "everBelowTightPct": 19.65,
+          "everBelowCriticalPct": 9,
           "zeroBalancePct": 0,
-          "creditOrGrantAssistedPct": 11.2,
-          "avgDaysBelowTightThreshold": 0.26,
-          "avgDaysBelowCriticalThreshold": 0.11,
-          "medianMaxDrawdownPct": 23.31,
-          "p90MaxDrawdownPct": 68.18,
-          "solventFinalMoneyP10": 19953,
+          "creditOrGrantAssistedPct": 9.9,
+          "avgDaysBelowTightThreshold": 0.37,
+          "avgDaysBelowCriticalThreshold": 0.17,
+          "medianMaxDrawdownPct": 25.8,
+          "p90MaxDrawdownPct": 76.62,
+          "solventFinalMoneyP10": 19186,
           "medianBankruptcyDay": 6,
-          "earliestBankruptcyDay": 2
+          "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3519811,
+            "median": 1808,
+            "p90": 2269,
+            "firstMaterialDrawdownSharePct": 40.4,
+            "bankruptcyPredecessorSharePct": 66.28
+          },
+          "travel": {
+            "total": 1212938,
+            "median": 649,
+            "p90": 730,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 332355,
+            "median": 151,
+            "p90": 276,
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 4.07
+          },
+          "maintenance_repairs": {
+            "total": 811704,
+            "median": 444,
+            "p90": 570,
+            "firstMaterialDrawdownSharePct": 1.4,
+            "bankruptcyPredecessorSharePct": 11.63
+          },
+          "negative_events": {
+            "total": 31408,
+            "median": 0,
+            "p90": 55,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 18880,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 4049542,
+            "median": 950,
+            "p90": 5061,
+            "firstMaterialDrawdownSharePct": 16.1,
+            "bankruptcyPredecessorSharePct": 9.3
+          },
+          "other": {
+            "total": 351260,
+            "median": 174,
+            "p90": 292,
+            "firstMaterialDrawdownSharePct": 33.3,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 491989,
+            "median": 248,
+            "p90": 388
+          },
+          "venueGrossSpend": {
+            "total": 132049180,
+            "median": 65160,
+            "p90": 109533
+          },
+          "taxGrossSpend": {
+            "total": 51758933,
+            "median": 24275,
+            "p90": 45211
+          },
+          "otherGrossSpend": {
+            "total": 67500,
+            "median": 24,
+            "p90": 84
+          }
         },
         "volatility": {
-          "finalMoneyStdDev": 7423,
-          "finalMoneyCoefficientOfVariation": 0.3103,
+          "finalMoneyStdDev": 8335,
+          "finalMoneyCoefficientOfVariation": 0.3706,
           "performanceScoreStdDev": 8,
-          "finalHarmonyStdDev": 13,
-          "maxDrawdownMeanPct": 30.58,
-          "maxDrawdownP90Pct": 68.18,
-          "moneyRangeMedian": 24289
+          "finalHarmonyStdDev": 14,
+          "maxDrawdownMeanPct": 32.86,
+          "maxDrawdownP90Pct": 76.62,
+          "moneyRangeMedian": 23551
         },
         "fameAccounting": {
           "startingFame": 0,
-          "earned": 10508,
-          "spentGross": 3005,
+          "earned": 10228,
+          "spentGross": 2904,
           "refunded": 0,
-          "spentNet": 3005,
+          "spentNet": 2904,
           "lost": 1,
           "clampAdjustment": 0,
-          "finalFame": 7502.9,
+          "finalFame": 7322.9,
           "reconciliationDelta": 0,
           "maxAbsReconciliationDelta": 0,
           "reconciledRuns": 2000,
@@ -5423,8 +5778,8 @@
         },
         "executionCoverage": {
           "brandDeals": {
-            "evaluations": 19166,
-            "activations": 86,
+            "evaluations": 18934,
+            "activations": 75,
             "uniqueIdsSeen": [
               "basement_zine",
               "blood_bank_promo",
@@ -5432,8 +5787,6 @@
               "charity_concerts",
               "community_radio",
               "corp_app",
-              "corp_automobile",
-              "corp_beverage",
               "corp_fast_food",
               "corp_tech",
               "cult_pamphlets",
@@ -5441,27 +5794,24 @@
               "good_rebel_fund",
               "gutter_brew",
               "hemp_merch",
-              "indie_label_void",
+              "indie_cult_label",
               "indie_vinyl_press",
               "local_pawn_shop",
               "neon_lung_vapes",
-              "neutral_telecom",
               "recycled_picks",
               "riot_apparel",
-              "solar_power_bank",
-              "sustainable_energy_provider",
-              "synapse_nootropics",
-              "underground_fight_club",
+              "upcycled_instruments",
               "youth_music_program"
             ],
             "availableIds": 54,
             "covered": true
           },
           "postOptions": {
-            "evaluations": 2383,
-            "activations": 2383,
+            "evaluations": 2341,
+            "activations": 2341,
             "uniqueIdsSeen": [
               "collab_influencer",
+              "comm_loyalty_merch_drive",
               "comm_sellout_ad",
               "drama_crowdsurf_fail",
               "drama_cryptic_teaser",
@@ -5474,6 +5824,7 @@
               "drama_political_take",
               "drama_tour_bus_prank",
               "lifestyle_behind_the_scenes",
+              "lifestyle_fan_dinner",
               "lifestyle_gear_care",
               "lifestyle_tour_diary",
               "music_theory_thread",
@@ -5483,6 +5834,7 @@
               "perf_smashed_gear",
               "perf_sound_guy_rant",
               "radicalize_fans",
+              "recovery_leaked_good_deed",
               "tech_rig_rundown",
               "wholesome_dinner"
             ],
@@ -5490,8 +5842,8 @@
             "covered": true
           },
           "socialTrends": {
-            "evaluations": 19383,
-            "activations": 2406,
+            "evaluations": 19097,
+            "activations": 2306,
             "uniqueIdsSeen": [
               "DRAMA",
               "MUSIC",
@@ -5503,8 +5855,8 @@
             "covered": true
           },
           "contraband": {
-            "evaluations": 19383,
-            "activations": 2131,
+            "evaluations": 19097,
+            "activations": 2094,
             "uniqueIdsSeen": [
               "c_abyssal_microphone",
               "c_abyssal_pendant",
@@ -5548,34 +5900,34 @@
             "covered": true
           },
           "minigamesTravel": {
-            "attempts": 19228,
-            "completions": 11026,
+            "attempts": 18832,
+            "completions": 10767,
             "covered": true
           },
           "minigamesRoadie": {
-            "attempts": 4530,
-            "completions": 3858,
+            "attempts": 4443,
+            "completions": 3793,
             "covered": true
           },
           "minigamesKabelsalat": {
-            "attempts": 4448,
-            "completions": 2985,
+            "attempts": 4388,
+            "completions": 2966,
             "covered": true
           },
           "minigamesAmp": {
-            "attempts": 4485,
-            "completions": 2729,
+            "attempts": 4379,
+            "completions": 2618,
             "covered": true
           },
           "sponsorship": {
-            "attempts": 19383,
-            "successes": 76,
+            "attempts": 19097,
+            "successes": 68,
             "covered": true
           },
           "restStops": {
-            "evaluations": 19383,
+            "evaluations": 19097,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -5585,21 +5937,21 @@
         {
           "label": "Insolvenzrate",
           "pass": true,
-          "actual": "5.85%",
+          "actual": "8.6%",
           "target": "≤ 50%",
           "bewertung": "Solide – deutlich unter Risikogrenze."
         },
         {
           "label": "Endgeld",
           "pass": true,
-          "actual": "€23.921",
+          "actual": "€22.493",
           "target": "€12.000 – €39.000",
           "bewertung": "Zentral im Zielband – sehr gute Balance."
         },
         {
           "label": "Fame-Fortschritt/Gig",
           "pass": true,
-          "actual": "1556.46",
+          "actual": "1549.04",
           "target": "1000 – 2200",
           "bewertung": "Zentral im Zielband – Fame-Fortschritt pro Gig stimmig."
         }
@@ -5609,30 +5961,30 @@
           "day": 1,
           "venueId": "kassel_goldgrube",
           "venueDiff": 2,
-          "performanceScore": 56,
-          "net": 1822,
+          "performanceScore": 55,
+          "net": 1530,
           "travelCost": 45,
-          "misses": 9,
+          "misses": 10,
           "modifierEffects": 3,
           "avgHitWindow": 157,
-          "money": 1811,
-          "fame": 1370,
-          "controversyLevel": 0,
+          "money": 1519,
+          "fame": 1350,
+          "controversyLevel": 49,
           "sponsorActive": false
         },
         {
           "day": 3,
           "venueId": "dresden_beatpol",
           "venueDiff": 3,
-          "performanceScore": 62,
-          "net": 2618,
+          "performanceScore": 61,
+          "net": 2299,
           "travelCost": 57,
           "misses": 5,
           "modifierEffects": 2,
           "avgHitWindow": 157,
-          "money": 4069,
-          "fame": 2860,
-          "controversyLevel": 0,
+          "money": 3458,
+          "fame": 2820,
+          "controversyLevel": 47,
           "sponsorActive": false
         },
         {
@@ -5640,74 +5992,74 @@
           "venueId": "hannover_chez",
           "venueDiff": 3,
           "performanceScore": 62,
-          "net": 1426,
+          "net": 1299,
           "travelCost": 67,
           "misses": 7,
           "modifierEffects": 2,
           "avgHitWindow": 157,
-          "money": 4901,
-          "fame": 3350,
-          "controversyLevel": 0,
+          "money": 4176,
+          "fame": 3310,
+          "controversyLevel": 61,
           "sponsorActive": false
         },
         {
           "day": 6,
           "venueId": "koeln_underground",
           "venueDiff": 3,
-          "performanceScore": 61,
-          "net": 1478,
-          "travelCost": 72,
+          "performanceScore": 60,
+          "net": 986,
+          "travelCost": 67,
           "misses": 8,
           "modifierEffects": 1,
           "avgHitWindow": 157,
-          "money": 5846,
-          "fame": 2980,
-          "controversyLevel": 0,
+          "money": 4639,
+          "fame": 2920,
+          "controversyLevel": 55,
           "sponsorActive": false
         },
         {
           "day": 7,
           "venueId": "leipzig_conne",
           "venueDiff": 4,
-          "performanceScore": 69,
-          "net": 2209,
-          "travelCost": 76,
+          "performanceScore": 68,
+          "net": 1931,
+          "travelCost": 71,
           "misses": 4,
           "modifierEffects": 0,
           "avgHitWindow": 157,
-          "money": 7899,
-          "fame": 4610,
-          "controversyLevel": 0,
+          "money": 5619,
+          "fame": 4530,
+          "controversyLevel": 74,
           "sponsorActive": false
         },
         {
           "day": 8,
           "venueId": "hamburg_markthalle",
           "venueDiff": 4,
-          "performanceScore": 46,
-          "net": 2057,
-          "travelCost": 89,
-          "misses": 10,
-          "modifierEffects": 2,
+          "performanceScore": 68,
+          "net": 1400,
+          "travelCost": 74,
+          "misses": 4,
+          "modifierEffects": 0,
           "avgHitWindow": 157,
-          "money": 9572,
-          "fame": 5780,
-          "controversyLevel": 0,
+          "money": 6169,
+          "fame": 6140,
+          "controversyLevel": 71,
           "sponsorActive": false
         },
         {
           "day": 10,
           "venueId": "leipzig_arena",
           "venueDiff": 5,
-          "performanceScore": 60,
+          "performanceScore": 56,
           "net": 14550,
-          "travelCost": 91,
-          "misses": 8,
-          "modifierEffects": 5,
+          "travelCost": 77,
+          "misses": 6,
+          "modifierEffects": 4,
           "avgHitWindow": 157,
-          "money": 22829,
-          "fame": 5610,
-          "controversyLevel": 0,
+          "money": 19857,
+          "fame": 7510,
+          "controversyLevel": 65,
           "sponsorActive": false
         }
       ]
@@ -6319,6 +6671,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 4.05,
+          "bankruptcyBeforeFirstGigPct": 0.65,
+          "bankruptcyAfterFirstGigPct": 3.4,
           "everBelowTightPct": 10.55,
           "everBelowCriticalPct": 4.35,
           "zeroBalancePct": 0.05,
@@ -6330,6 +6684,93 @@
           "solventFinalMoneyP10": 21220,
           "medianBankruptcyDay": 6,
           "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3974262,
+            "median": 1963,
+            "p90": 2604,
+            "firstMaterialDrawdownSharePct": 24.15,
+            "bankruptcyPredecessorSharePct": 60.49
+          },
+          "travel": {
+            "total": 1372199,
+            "median": 710,
+            "p90": 793,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 338430,
+            "median": 146,
+            "p90": 270,
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 2.47
+          },
+          "maintenance_repairs": {
+            "total": 633984,
+            "median": 282,
+            "p90": 510,
+            "firstMaterialDrawdownSharePct": 0.8,
+            "bankruptcyPredecessorSharePct": 8.64
+          },
+          "negative_events": {
+            "total": 19077,
+            "median": 0,
+            "p90": 25,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1120,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 7436184,
+            "median": 1500,
+            "p90": 12972,
+            "firstMaterialDrawdownSharePct": 33.35,
+            "bankruptcyPredecessorSharePct": 12.35
+          },
+          "other": {
+            "total": 286008,
+            "median": 140,
+            "p90": 236,
+            "firstMaterialDrawdownSharePct": 25.65,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 993773,
+            "median": 504,
+            "p90": 686
+          },
+          "venueGrossSpend": {
+            "total": 197957067,
+            "median": 100546,
+            "p90": 151432
+          },
+          "taxGrossSpend": {
+            "total": 79746068,
+            "median": 41461,
+            "p90": 64448
+          },
+          "otherGrossSpend": {
+            "total": 19692,
+            "median": 0,
+            "p90": 36
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 7641,
@@ -6507,7 +6948,7 @@
           "restStops": {
             "evaluations": 19579,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -7251,6 +7692,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 3.7,
+          "bankruptcyBeforeFirstGigPct": 0.9,
+          "bankruptcyAfterFirstGigPct": 2.8,
           "everBelowTightPct": 12,
           "everBelowCriticalPct": 4,
           "zeroBalancePct": 0.1,
@@ -7262,6 +7705,93 @@
           "solventFinalMoneyP10": 21168,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3675634,
+            "median": 1838,
+            "p90": 2333,
+            "firstMaterialDrawdownSharePct": 26.55,
+            "bankruptcyPredecessorSharePct": 50
+          },
+          "travel": {
+            "total": 1326557,
+            "median": 685,
+            "p90": 759,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 326399,
+            "median": 158,
+            "p90": 271,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 2.7
+          },
+          "maintenance_repairs": {
+            "total": 863346,
+            "median": 471,
+            "p90": 624,
+            "firstMaterialDrawdownSharePct": 1.95,
+            "bankruptcyPredecessorSharePct": 9.46
+          },
+          "negative_events": {
+            "total": 46089,
+            "median": 0,
+            "p90": 80,
+            "firstMaterialDrawdownSharePct": 0.1,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1400,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 5653083,
+            "median": 1257,
+            "p90": 8562,
+            "firstMaterialDrawdownSharePct": 25.85,
+            "bankruptcyPredecessorSharePct": 13.51
+          },
+          "other": {
+            "total": 451606,
+            "median": 222,
+            "p90": 362,
+            "firstMaterialDrawdownSharePct": 31.4,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 684113,
+            "median": 348,
+            "p90": 490
+          },
+          "venueGrossSpend": {
+            "total": 166432783,
+            "median": 87579,
+            "p90": 120760
+          },
+          "taxGrossSpend": {
+            "total": 66584376,
+            "median": 34480,
+            "p90": 49808
+          },
+          "otherGrossSpend": {
+            "total": 131412,
+            "median": 48,
+            "p90": 156
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 6877,
@@ -7441,7 +7971,7 @@
           "restStops": {
             "evaluations": 19570,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -8155,6 +8685,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 2.2,
+          "bankruptcyBeforeFirstGigPct": 0.85,
+          "bankruptcyAfterFirstGigPct": 1.35,
           "everBelowTightPct": 7.75,
           "everBelowCriticalPct": 2.4,
           "zeroBalancePct": 0.05,
@@ -8166,6 +8698,93 @@
           "solventFinalMoneyP10": 22304,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 2
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 4074220,
+            "median": 1982,
+            "p90": 2681,
+            "firstMaterialDrawdownSharePct": 22.2,
+            "bankruptcyPredecessorSharePct": 34.09
+          },
+          "travel": {
+            "total": 1430700,
+            "median": 734,
+            "p90": 805,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 336488,
+            "median": 151,
+            "p90": 272,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 2.27
+          },
+          "maintenance_repairs": {
+            "total": 662820,
+            "median": 306,
+            "p90": 504,
+            "firstMaterialDrawdownSharePct": 0.45,
+            "bankruptcyPredecessorSharePct": 4.55
+          },
+          "negative_events": {
+            "total": 26128,
+            "median": 0,
+            "p90": 50,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 840,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 10042376,
+            "median": 2113,
+            "p90": 13748,
+            "firstMaterialDrawdownSharePct": 41.7,
+            "bankruptcyPredecessorSharePct": 18.18
+          },
+          "other": {
+            "total": 257728,
+            "median": 126,
+            "p90": 205,
+            "firstMaterialDrawdownSharePct": 18.6,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 1259994,
+            "median": 640,
+            "p90": 820
+          },
+          "venueGrossSpend": {
+            "total": 242883401,
+            "median": 124357,
+            "p90": 168511
+          },
+          "taxGrossSpend": {
+            "total": 98192856,
+            "median": 49304,
+            "p90": 69949
+          },
+          "otherGrossSpend": {
+            "total": 39396,
+            "median": 12,
+            "p90": 60
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 7223,
@@ -8346,7 +8965,7 @@
           "restStops": {
             "evaluations": 19740,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "passed",
@@ -9120,6 +9739,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 4.8,
+          "bankruptcyBeforeFirstGigPct": 0.75,
+          "bankruptcyAfterFirstGigPct": 4.05,
           "everBelowTightPct": 12.7,
           "everBelowCriticalPct": 5,
           "zeroBalancePct": 0.05,
@@ -9131,6 +9752,93 @@
           "solventFinalMoneyP10": 20894,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 3
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3733742,
+            "median": 1877,
+            "p90": 2384,
+            "firstMaterialDrawdownSharePct": 37.4,
+            "bankruptcyPredecessorSharePct": 53.13
+          },
+          "travel": {
+            "total": 1285537,
+            "median": 668,
+            "p90": 744,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 330336,
+            "median": 153,
+            "p90": 274,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 6.25
+          },
+          "maintenance_repairs": {
+            "total": 795108,
+            "median": 399,
+            "p90": 570,
+            "firstMaterialDrawdownSharePct": 1.15,
+            "bankruptcyPredecessorSharePct": 9.38
+          },
+          "negative_events": {
+            "total": 25132,
+            "median": 0,
+            "p90": 41,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 560,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 4594353,
+            "median": 1020,
+            "p90": 7520,
+            "firstMaterialDrawdownSharePct": 18.25,
+            "bankruptcyPredecessorSharePct": 15.63
+          },
+          "other": {
+            "total": 379342,
+            "median": 185,
+            "p90": 308,
+            "firstMaterialDrawdownSharePct": 32.55,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 261978,
+            "median": 126,
+            "p90": 226
+          },
+          "venueGrossSpend": {
+            "total": 120881655,
+            "median": 56887,
+            "p90": 96402
+          },
+          "taxGrossSpend": {
+            "total": 45286411,
+            "median": 20957,
+            "p90": 39252
+          },
+          "otherGrossSpend": {
+            "total": 79812,
+            "median": 24,
+            "p90": 97
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 7058,
@@ -9256,7 +9964,7 @@
           "restStops": {
             "evaluations": 19474,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "not_evaluated",
@@ -9963,6 +10671,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 20.05,
+          "bankruptcyBeforeFirstGigPct": 0.6,
+          "bankruptcyAfterFirstGigPct": 19.45,
           "everBelowTightPct": 44.75,
           "everBelowCriticalPct": 20.35,
           "zeroBalancePct": 0.15,
@@ -9974,6 +10684,93 @@
           "solventFinalMoneyP10": 15401,
           "medianBankruptcyDay": 5,
           "earliestBankruptcyDay": 2
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3166681,
+            "median": 1739,
+            "p90": 2111,
+            "firstMaterialDrawdownSharePct": 62,
+            "bankruptcyPredecessorSharePct": 84.04
+          },
+          "travel": {
+            "total": 974457,
+            "median": 564,
+            "p90": 645,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 295155,
+            "median": 149,
+            "p90": 272,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 3.74
+          },
+          "maintenance_repairs": {
+            "total": 694518,
+            "median": 360,
+            "p90": 564,
+            "firstMaterialDrawdownSharePct": 0.5,
+            "bankruptcyPredecessorSharePct": 5.24
+          },
+          "negative_events": {
+            "total": 18745,
+            "median": 0,
+            "p90": 30,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 108457,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0.25
+          },
+          "assets_upgrades": {
+            "total": 2170415,
+            "median": 540,
+            "p90": 2041,
+            "firstMaterialDrawdownSharePct": 2.05,
+            "bankruptcyPredecessorSharePct": 3.74
+          },
+          "other": {
+            "total": 343901,
+            "median": 172,
+            "p90": 294,
+            "firstMaterialDrawdownSharePct": 33.9,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 377812,
+            "median": 194,
+            "p90": 330
+          },
+          "venueGrossSpend": {
+            "total": 69415665,
+            "median": 32575,
+            "p90": 71517
+          },
+          "taxGrossSpend": {
+            "total": 25883670,
+            "median": 11182,
+            "p90": 29181
+          },
+          "otherGrossSpend": {
+            "total": 104364,
+            "median": 36,
+            "p90": 132
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 9969,
@@ -10899,6 +11696,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 4.35,
+          "bankruptcyBeforeFirstGigPct": 0.5,
+          "bankruptcyAfterFirstGigPct": 3.85,
           "everBelowTightPct": 13.6,
           "everBelowCriticalPct": 4.55,
           "zeroBalancePct": 0,
@@ -10910,6 +11709,93 @@
           "solventFinalMoneyP10": 20730,
           "medianBankruptcyDay": 6,
           "earliestBankruptcyDay": 2
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3733153,
+            "median": 1861,
+            "p90": 2334,
+            "firstMaterialDrawdownSharePct": 36.6,
+            "bankruptcyPredecessorSharePct": 54.02
+          },
+          "travel": {
+            "total": 1295885,
+            "median": 672,
+            "p90": 745,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 338107,
+            "median": 154,
+            "p90": 274,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 8.05
+          },
+          "maintenance_repairs": {
+            "total": 857904,
+            "median": 486,
+            "p90": 582,
+            "firstMaterialDrawdownSharePct": 1.4,
+            "bankruptcyPredecessorSharePct": 13.79
+          },
+          "negative_events": {
+            "total": 12395,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0.05,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 2419,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 4623428,
+            "median": 1025,
+            "p90": 7500,
+            "firstMaterialDrawdownSharePct": 19.6,
+            "bankruptcyPredecessorSharePct": 11.49
+          },
+          "other": {
+            "total": 399569,
+            "median": 196,
+            "p90": 322,
+            "firstMaterialDrawdownSharePct": 33.1,
+            "bankruptcyPredecessorSharePct": 1.15
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 294610,
+            "median": 144,
+            "p90": 248
+          },
+          "venueGrossSpend": {
+            "total": 129660744,
+            "median": 59600,
+            "p90": 103152
+          },
+          "taxGrossSpend": {
+            "total": 49149788,
+            "median": 21947,
+            "p90": 42678
+          },
+          "otherGrossSpend": {
+            "total": 82224,
+            "median": 24,
+            "p90": 108
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 6997,
@@ -11085,7 +11971,7 @@
           "restStops": {
             "evaluations": 19566,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "not_evaluated",
@@ -11837,6 +12723,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 0.65,
+          "bankruptcyBeforeFirstGigPct": 0.05,
+          "bankruptcyAfterFirstGigPct": 0.6,
           "everBelowTightPct": 1.45,
           "everBelowCriticalPct": 0.7,
           "zeroBalancePct": 0,
@@ -11848,6 +12736,93 @@
           "solventFinalMoneyP10": 21534,
           "medianBankruptcyDay": 6,
           "earliestBankruptcyDay": 5
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 3889958,
+            "median": 1887,
+            "p90": 2450,
+            "firstMaterialDrawdownSharePct": 2.05,
+            "bankruptcyPredecessorSharePct": 7.69
+          },
+          "travel": {
+            "total": 1407081,
+            "median": 712,
+            "p90": 787,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 340764,
+            "median": 147,
+            "p90": 274,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "maintenance_repairs": {
+            "total": 817686,
+            "median": 402,
+            "p90": 552,
+            "firstMaterialDrawdownSharePct": 2.15,
+            "bankruptcyPredecessorSharePct": 15.38
+          },
+          "negative_events": {
+            "total": 17927,
+            "median": 0,
+            "p90": 30,
+            "firstMaterialDrawdownSharePct": 0.15,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 3057,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 6756532,
+            "median": 1500,
+            "p90": 12541,
+            "firstMaterialDrawdownSharePct": 64.2,
+            "bankruptcyPredecessorSharePct": 61.54
+          },
+          "other": {
+            "total": 366750,
+            "median": 182,
+            "p90": 288,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 482127,
+            "median": 238,
+            "p90": 360
+          },
+          "venueGrossSpend": {
+            "total": 156729287,
+            "median": 73046,
+            "p90": 122272
+          },
+          "taxGrossSpend": {
+            "total": 60206892,
+            "median": 26538,
+            "p90": 48487
+          },
+          "otherGrossSpend": {
+            "total": 70812,
+            "median": 24,
+            "p90": 96
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 5338,
@@ -12023,7 +12998,7 @@
           "restStops": {
             "evaluations": 19940,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "not_evaluated",
@@ -12745,6 +13720,8 @@
             "criticalEur": 250
           },
           "bankruptcyRatePct": 0.1,
+          "bankruptcyBeforeFirstGigPct": 0,
+          "bankruptcyAfterFirstGigPct": 0.1,
           "everBelowTightPct": 0.1,
           "everBelowCriticalPct": 0.1,
           "zeroBalancePct": 0,
@@ -12756,6 +13733,93 @@
           "solventFinalMoneyP10": 22831,
           "medianBankruptcyDay": 8.5,
           "earliestBankruptcyDay": 8
+        },
+        "actualLossAttribution": {
+          "daily_obligations": {
+            "total": 4871202,
+            "median": 2324,
+            "p90": 3173,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "travel": {
+            "total": 1647948,
+            "median": 835,
+            "p90": 868,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "fuel": {
+            "total": 344083,
+            "median": 146,
+            "p90": 270,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "maintenance_repairs": {
+            "total": 665718,
+            "median": 288,
+            "p90": 510,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "negative_events": {
+            "total": 22441,
+            "median": 0,
+            "p90": 40,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "clinic": {
+            "total": 1859,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "assets_upgrades": {
+            "total": 16273659,
+            "median": 7391,
+            "p90": 15568,
+            "firstMaterialDrawdownSharePct": 77.05,
+            "bankruptcyPredecessorSharePct": 100
+          },
+          "other": {
+            "total": 295131,
+            "median": 147,
+            "p90": 224,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          },
+          "gig_settlement": {
+            "total": 0,
+            "median": 0,
+            "p90": 0,
+            "firstMaterialDrawdownSharePct": 0,
+            "bankruptcyPredecessorSharePct": 0
+          }
+        },
+        "grossSpendAttribution": {
+          "modifierGrossSpend": {
+            "total": 1024702,
+            "median": 512,
+            "p90": 666
+          },
+          "venueGrossSpend": {
+            "total": 217301680,
+            "median": 108487,
+            "p90": 157855
+          },
+          "taxGrossSpend": {
+            "total": 86965155,
+            "median": 44832,
+            "p90": 67421
+          },
+          "otherGrossSpend": {
+            "total": 51384,
+            "median": 12,
+            "p90": 72
+          }
         },
         "volatility": {
           "finalMoneyStdDev": 6393,
@@ -12929,7 +13993,7 @@
           "restStops": {
             "evaluations": 19995,
             "activations": 0,
-            "covered": true
+            "covered": false
           }
         },
         "kpiStatus": "not_evaluated",

@@ -62,12 +62,12 @@
       "classification": "inside"
     },
     "scandal_recovery": {
-      "valuePct": 6.35,
+      "valuePct": 8.85,
       "corridorPct": [
         8,
         20
       ],
-      "classification": "below"
+      "classification": "inside"
     },
     "festival_push": {
       "valuePct": 4.15,
@@ -198,36 +198,36 @@
       },
       "scandal_recovery": {
         "sampleSize": 2000,
-        "bankruptcyRatePct": 25.75,
-        "bankruptcyCount": 515,
+        "bankruptcyRatePct": 27.25,
+        "bankruptcyCount": 545,
         "bankruptBeforeFirstGigCount": 468,
         "bankruptBeforeFirstGigRatePct": 23.4,
-        "bankruptBeforeFirstGigShareOfInsolvenciesPct": 90.87,
+        "bankruptBeforeFirstGigShareOfInsolvenciesPct": 85.87,
         "neverPlayedCount": 468,
         "firstGigDayMedian": 2,
         "firstGigDayEarliest": 1,
         "firstGigDayMean": 1.64,
         "insolventDayMedian": 4,
         "insolventDayEarliest": 3,
-        "insolventGigsPlayedMean": 0.12,
+        "insolventGigsPlayedMean": 0.19,
         "moneyBeforeFirstGigMedian": 236,
         "moneyBeforeFirstGigP10": 113,
         "lowestMoneyBeforeFirstGigMedian": 197,
         "daysBeforeFirstGigMean": 1.5,
         "obligationsBeforeFirstGigMean": 194.45,
-        "spendBeforeFirstGigMean": 185.54,
+        "spendBeforeFirstGigMean": 185.49,
         "blockedTravelBeforeFirstGigRunsPct": 23.15,
         "firstBlockedTravelDayMedian": 3,
         "firstBlockedTravelReasons": {
           "money": 463
         },
-        "gigsPlayedMean": 5.21,
-        "solventFinalMoneyMedian": 25845,
-        "solventFinalMoneyP10": 20779,
-        "famePerGig": 1202.39,
-        "famePerGigPlayedRuns": 1569.7,
-        "finaleReachedPct": 74.15,
-        "finaleCompletedPct": 74.1
+        "gigsPlayedMean": 5.13,
+        "solventFinalMoneyMedian": 25132,
+        "solventFinalMoneyP10": 20167,
+        "famePerGig": 1192.24,
+        "famePerGigPlayedRuns": 1556.45,
+        "finaleReachedPct": 72.15,
+        "finaleCompletedPct": 72.1
       },
       "festival_push": {
         "sampleSize": 2000,
@@ -434,18 +434,18 @@
       },
       "scandal_recovery": {
         "sampleSize": 2000,
-        "bankruptcyRatePct": 6.35,
-        "bankruptcyCount": 127,
+        "bankruptcyRatePct": 8.85,
+        "bankruptcyCount": 177,
         "bankruptBeforeFirstGigCount": 10,
         "bankruptBeforeFirstGigRatePct": 0.5,
-        "bankruptBeforeFirstGigShareOfInsolvenciesPct": 7.87,
+        "bankruptBeforeFirstGigShareOfInsolvenciesPct": 5.65,
         "neverPlayedCount": 10,
         "firstGigDayMedian": 1,
         "firstGigDayEarliest": 1,
         "firstGigDayMean": 1.03,
         "insolventDayMedian": 6,
-        "insolventDayEarliest": 3,
-        "insolventGigsPlayedMean": 1.17,
+        "insolventDayEarliest": 2,
+        "insolventGigsPlayedMean": 1.18,
         "moneyBeforeFirstGigMedian": 365,
         "moneyBeforeFirstGigP10": 235,
         "lowestMoneyBeforeFirstGigMedian": 365,
@@ -457,13 +457,13 @@
         "firstBlockedTravelReasons": {
           "money": 10
         },
-        "gigsPlayedMean": 6.73,
-        "solventFinalMoneyMedian": 25426,
-        "solventFinalMoneyP10": 20288,
-        "famePerGig": 1562.99,
-        "famePerGigPlayedRuns": 1570.84,
-        "finaleReachedPct": 93.4,
-        "finaleCompletedPct": 93.25
+        "gigsPlayedMean": 6.59,
+        "solventFinalMoneyMedian": 24485,
+        "solventFinalMoneyP10": 19481,
+        "famePerGig": 1540.04,
+        "famePerGigPlayedRuns": 1547.78,
+        "finaleReachedPct": 89.65,
+        "finaleCompletedPct": 89.55
       },
       "festival_push": {
         "sampleSize": 2000,
@@ -643,27 +643,27 @@
       "blockedTravelBeforeFirstGigRunsPctDelta": -10.95
     },
     "scandal_recovery": {
-      "bankruptcyRateDeltaPct": -19.4,
+      "bankruptcyRateDeltaPct": -18.4,
       "pairedFamePerGig": {
-        "control": 1569.7,
-        "candidate": 1574.86,
-        "deltaPct": 0.33,
+        "control": 1556.45,
+        "candidate": 1545.01,
+        "deltaPct": -0.74,
         "sampleSize": 1532,
         "minimumSampleSize": 1000,
         "sufficientEvidence": true,
         "excludedPairs": 468
       },
       "pairedSolventFinalMoney": {
-        "control": 25842,
-        "candidate": 25569.5,
-        "deltaPct": -1.05,
-        "sampleSize": 1424,
+        "control": 25182,
+        "candidate": 24576,
+        "deltaPct": -2.41,
+        "sampleSize": 1374,
         "minimumSampleSize": 1000,
         "sufficientEvidence": true,
-        "excludedPairs": 576
+        "excludedPairs": 626
       },
-      "finaleReachedDeltaPct": 19.25,
-      "finaleCompletedDeltaPct": 19.15,
+      "finaleReachedDeltaPct": 17.5,
+      "finaleCompletedDeltaPct": 17.45,
       "bankruptBeforeFirstGigRateDeltaPct": -22.9,
       "blockedTravelBeforeFirstGigRunsPctDelta": -22.65
     },
@@ -743,18 +743,16 @@
       "blockedTravelBeforeFirstGigRunsPctDelta": -11.4
     }
   },
-  "generatedAt": "2026-07-29T10:37:59.916Z",
+  "generatedAt": "2026-07-29T18:57:32.028Z",
   "metadata": {
-    "nodeVersion": "v24.13.0",
-    "sourceBaseCommit": "533898908fcb289856ce87e3eb96632e2fabd259",
-    "workingTreeDirty": false,
-    "cadenceProbeScriptSha256": "3968d5f9094941bb2d541d041b39b722e4c2808eadb2acada4e464a4cb63dad9",
-    "balanceSourceSha256": "987fc50b9ba22cc1eca95c15b681e4a2b5ad8ceb3d3e25fbe11728fc1cd5a407",
-    "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
-    "kpiConfigSha256": "febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92",
-    "riskTargetConfigSha256": "60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c"
+    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
+    "generatorFingerprint": "49bb815d375f92d3ca39bdaaec428092611e4d289291b8be0bfed38df5bde8c1",
+    "seedNamespace": "#production-cadence-validation-v2",
+    "runsPerScenario": 2000,
+    "workingTreeDirty": true,
+    "artifactSchemaVersion": 1
   },
   "runtime": {
-    "durationMs": 23053
+    "durationMs": 48470
   }
 }

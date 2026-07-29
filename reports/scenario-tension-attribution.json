@@ -1,8 +1,12 @@
 {
-  "generatedAt": "2026-07-29T18:06:27.919Z",
+  "generatedAt": "2026-07-29T18:54:21.912Z",
   "metadata": {
-    "sourceBaseCommit": "fb87eabba923ae09da6ffb2c8eec514fef90ad52",
-    "workingTreeDirty": false
+    "sourceFingerprint": "36d840e80b622080ecea1b64c1f5648a03a5e354a63fab10583c6b64ce00abf9",
+    "generatorFingerprint": "e53f26b898ab2beb1e3c4a3fe2da5be8791c5a9cf58536efaba0afe27c0b5814",
+    "seedNamespace": "#scenario-tension-attribution-v1",
+    "runsPerScenario": 2000,
+    "workingTreeDirty": true,
+    "artifactSchemaVersion": 1
   },
   "contract": {
     "runsPerScenario": 2000,
@@ -902,42 +906,42 @@
         "id": "scandal_recovery",
         "name": "Scandal Recovery",
         "summary": {
-          "avgFinalMoney": 24349,
-          "avgFinalFame": 7584,
+          "avgFinalMoney": 22997,
+          "avgFinalFame": 7410,
           "avgFinalHarmony": 45,
-          "avgGigsPlayed": 6.85,
-          "avgGigNet": 4202,
-          "bankruptcyRate": 5.45,
-          "avgEventsApplied": 1.42,
+          "avgGigsPlayed": 6.72,
+          "avgGigNet": 3951,
+          "bankruptcyRate": 7.35,
+          "avgEventsApplied": 1.39,
           "avgGigEvents": 0.96,
           "avgPerformanceScore": 61,
           "statistics": {
             "finalMoney": {
-              "mean": 24349,
-              "median": 25223,
-              "stdDev": 7467,
+              "mean": 22997,
+              "median": 24226,
+              "stdDev": 8009,
               "min": 0,
-              "p10": 18467,
-              "p25": 22049,
-              "p75": 28572,
-              "p90": 31513,
-              "max": 44623
+              "p10": 16236,
+              "p25": 20947,
+              "p75": 27542,
+              "p90": 30592,
+              "max": 43553
             },
             "finalFame": {
-              "mean": 7584,
-              "median": 7410,
-              "stdDev": 4045,
+              "mean": 7410,
+              "median": 7254,
+              "stdDev": 4232,
               "min": 0,
-              "p10": 3795,
-              "p25": 5696,
-              "p75": 9133,
-              "p90": 10671,
-              "max": 41994
+              "p10": 3348,
+              "p25": 5415,
+              "p75": 8954,
+              "p90": 10501,
+              "max": 41750
             },
             "gigsPlayed": {
-              "mean": 6.85,
+              "mean": 6.72,
               "median": 7,
-              "stdDev": 1.87,
+              "stdDev": 1.98,
               "min": 0,
               "p10": 5,
               "p25": 6,
@@ -946,9 +950,9 @@
               "max": 10
             },
             "daysSurvived": {
-              "mean": 9.76,
+              "mean": 9.68,
               "median": 10,
-              "stdDev": 1.06,
+              "stdDev": 1.19,
               "min": 2,
               "p10": 10,
               "p25": 10,
@@ -957,86 +961,86 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 4202,
-              "median": 4290,
-              "stdDev": 1105,
+              "mean": 3951,
+              "median": 4100,
+              "stdDev": 1200,
               "min": 0,
-              "p10": 3462,
-              "p25": 3873,
-              "p75": 4759,
-              "p90": 5306,
-              "max": 7433
+              "p10": 3080,
+              "p25": 3637,
+              "p75": 4605,
+              "p90": 5119,
+              "max": 8014
             },
             "performanceScore": {
               "mean": 61,
               "median": 61,
               "stdDev": 7,
               "min": 0,
-              "p10": 54,
-              "p25": 58,
+              "p10": 53,
+              "p25": 57,
               "p75": 65,
               "p90": 69,
-              "max": 83
+              "max": 86
             },
             "lowestMoney": {
-              "mean": 466,
+              "mean": 455,
               "median": 500,
-              "stdDev": 107,
-              "min": 2,
-              "p10": 378,
+              "stdDev": 121,
+              "min": 0,
+              "p10": 333,
               "p25": 500,
               "p75": 500,
               "p90": 500,
               "max": 500
             },
             "peakMoney": {
-              "mean": 24435,
-              "median": 25230,
-              "stdDev": 7247,
+              "mean": 23103,
+              "median": 24234,
+              "stdDev": 7744,
               "min": 500,
-              "p10": 18516,
-              "p25": 22089,
-              "p75": 28572,
-              "p90": 31513,
-              "max": 44623
+              "p10": 16242,
+              "p25": 20965,
+              "p75": 27542,
+              "p90": 30592,
+              "max": 43553
             },
             "maxDrawdownPct": {
-              "mean": 29.21,
-              "median": 21.83,
-              "stdDev": 23.4,
+              "mean": 31.4,
+              "median": 24.01,
+              "stdDev": 24.36,
               "min": 0,
-              "p10": 6.86,
-              "p25": 12.27,
-              "p75": 38.47,
-              "p90": 62.74,
-              "max": 99.89
+              "p10": 7.64,
+              "p25": 14.05,
+              "p75": 41.81,
+              "p90": 67.34,
+              "max": 100
             },
             "finalHarmony": {
               "mean": 45,
-              "median": 45,
+              "median": 44,
               "stdDev": 14,
               "min": 1,
-              "p10": 29,
-              "p25": 37,
+              "p10": 28,
+              "p25": 36,
               "p75": 51,
-              "p90": 64,
-              "max": 97
+              "p90": 62,
+              "max": 100
             },
             "eventsApplied": {
-              "mean": 1.42,
+              "mean": 1.39,
               "median": 1,
-              "stdDev": 1.14,
+              "stdDev": 1.18,
               "min": 0,
               "p10": 0,
               "p25": 1,
               "p75": 2,
               "p90": 3,
-              "max": 6
+              "max": 9
             },
             "gigEvents": {
               "mean": 0.96,
               "median": 1,
-              "stdDev": 0.95,
+              "stdDev": 0.96,
               "min": 0,
               "p10": 0,
               "p25": 0,
@@ -1045,57 +1049,57 @@
               "max": 5
             },
             "fameEarned": {
-              "mean": 10599,
-              "median": 10580,
-              "stdDev": 4083,
+              "mean": 10387,
+              "median": 10405,
+              "stdDev": 4315,
               "min": 0,
-              "p10": 7613,
-              "p25": 9145,
-              "p75": 12050,
-              "p90": 13331,
-              "max": 44154
+              "p10": 7098,
+              "p25": 8980,
+              "p75": 11782,
+              "p90": 13141,
+              "max": 43910
             },
             "fameEarnedPerGig": {
-              "mean": 1550,
-              "median": 1503,
-              "stdDev": 428,
+              "mean": 1554,
+              "median": 1491,
+              "stdDev": 483,
               "min": 0,
-              "p10": 1340,
-              "p25": 1414,
-              "p75": 1597,
-              "p90": 1694,
-              "max": 5553
+              "p10": 1321,
+              "p25": 1405,
+              "p75": 1584,
+              "p90": 1690,
+              "max": 7340
             }
           },
           "population": {
             "allRuns": {
               "sampleSize": 2000,
               "finalMoney": {
-                "mean": 24349,
-                "median": 25223,
-                "stdDev": 7467,
+                "mean": 22997,
+                "median": 24226,
+                "stdDev": 8009,
                 "min": 0,
-                "p10": 18467,
-                "p25": 22049,
-                "p75": 28572,
-                "p90": 31513,
-                "max": 44623
+                "p10": 16236,
+                "p25": 20947,
+                "p75": 27542,
+                "p90": 30592,
+                "max": 43553
               },
               "finalFame": {
-                "mean": 7584,
-                "median": 7410,
-                "stdDev": 4045,
+                "mean": 7410,
+                "median": 7254,
+                "stdDev": 4232,
                 "min": 0,
-                "p10": 3795,
-                "p25": 5696,
-                "p75": 9133,
-                "p90": 10671,
-                "max": 41994
+                "p10": 3348,
+                "p25": 5415,
+                "p75": 8954,
+                "p90": 10501,
+                "max": 41750
               },
               "gigsPlayed": {
-                "mean": 6.85,
+                "mean": 6.72,
                 "median": 7,
-                "stdDev": 1.87,
+                "stdDev": 1.98,
                 "min": 0,
                 "p10": 5,
                 "p25": 6,
@@ -1104,9 +1108,9 @@
                 "max": 10
               },
               "daysSurvived": {
-                "mean": 9.76,
+                "mean": 9.68,
                 "median": 10,
-                "stdDev": 1.06,
+                "stdDev": 1.19,
                 "min": 2,
                 "p10": 10,
                 "p25": 10,
@@ -1115,89 +1119,89 @@
                 "max": 10
               },
               "gigNet": {
-                "mean": 4202,
-                "median": 4290,
-                "stdDev": 1105,
+                "mean": 3951,
+                "median": 4100,
+                "stdDev": 1200,
                 "min": 0,
-                "p10": 3462,
-                "p25": 3873,
-                "p75": 4759,
-                "p90": 5306,
-                "max": 7433
+                "p10": 3080,
+                "p25": 3637,
+                "p75": 4605,
+                "p90": 5119,
+                "max": 8014
               },
               "performanceScore": {
                 "mean": 61,
                 "median": 61,
                 "stdDev": 7,
                 "min": 0,
-                "p10": 54,
-                "p25": 58,
+                "p10": 53,
+                "p25": 57,
                 "p75": 65,
                 "p90": 69,
-                "max": 83
+                "max": 86
               },
               "finalHarmony": {
                 "mean": 45,
-                "median": 45,
+                "median": 44,
                 "stdDev": 14,
                 "min": 1,
-                "p10": 29,
-                "p25": 37,
+                "p10": 28,
+                "p25": 36,
                 "p75": 51,
-                "p90": 64,
-                "max": 97
+                "p90": 62,
+                "max": 100
               },
               "fameEarned": {
-                "mean": 10599,
-                "median": 10580,
-                "stdDev": 4083,
+                "mean": 10387,
+                "median": 10405,
+                "stdDev": 4315,
                 "min": 0,
-                "p10": 7613,
-                "p25": 9145,
-                "p75": 12050,
-                "p90": 13331,
-                "max": 44154
+                "p10": 7098,
+                "p25": 8980,
+                "p75": 11782,
+                "p90": 13141,
+                "max": 43910
               },
               "fameEarnedPerGig": {
-                "mean": 1550,
-                "median": 1503,
-                "stdDev": 428,
+                "mean": 1554,
+                "median": 1491,
+                "stdDev": 483,
                 "min": 0,
-                "p10": 1340,
-                "p25": 1414,
-                "p75": 1597,
-                "p90": 1694,
-                "max": 5553
+                "p10": 1321,
+                "p25": 1405,
+                "p75": 1584,
+                "p90": 1690,
+                "max": 7340
               }
             },
             "solventRuns": {
-              "sampleSize": 1891,
+              "sampleSize": 1853,
               "finalMoney": {
-                "mean": 25753,
-                "median": 25610,
-                "stdDev": 4777,
-                "min": 13,
-                "p10": 20228,
-                "p25": 22604,
-                "p75": 28763,
-                "p90": 31694,
-                "max": 44623
+                "mean": 24821,
+                "median": 24611,
+                "stdDev": 4893,
+                "min": 23,
+                "p10": 19360,
+                "p25": 21797,
+                "p75": 27863,
+                "p90": 30861,
+                "max": 43553
               },
               "finalFame": {
-                "mean": 7968,
-                "median": 7565,
-                "stdDev": 3816,
-                "min": 1235,
-                "p10": 4560,
-                "p25": 5968,
-                "p75": 9263,
-                "p90": 10740,
-                "max": 41994
+                "mean": 7900,
+                "median": 7461,
+                "stdDev": 3977,
+                "min": 530,
+                "p10": 4485,
+                "p25": 5910,
+                "p75": 9100,
+                "p90": 10560,
+                "max": 41750
               },
               "gigsPlayed": {
-                "mean": 7.19,
+                "mean": 7.16,
                 "median": 7,
-                "stdDev": 1.29,
+                "stdDev": 1.28,
                 "min": 3,
                 "p10": 6,
                 "p25": 6,
@@ -1217,63 +1221,63 @@
                 "max": 10
               },
               "gigNet": {
-                "mean": 4412,
-                "median": 4334,
-                "stdDev": 686,
-                "min": 1054,
-                "p10": 3644,
-                "p25": 3948,
-                "p75": 4789,
-                "p90": 5328,
-                "max": 7433
+                "mean": 4223,
+                "median": 4167,
+                "stdDev": 733,
+                "min": 931,
+                "p10": 3409,
+                "p25": 3747,
+                "p75": 4656,
+                "p90": 5145,
+                "max": 8014
               },
               "performanceScore": {
                 "mean": 61,
                 "median": 61,
                 "stdDev": 6,
-                "min": 41,
-                "p10": 54,
-                "p25": 58,
-                "p75": 65,
-                "p90": 69,
-                "max": 81
+                "min": 40,
+                "p10": 53,
+                "p25": 57,
+                "p75": 64,
+                "p90": 68,
+                "max": 83
               },
               "finalHarmony": {
-                "mean": 44,
-                "median": 44,
+                "mean": 43,
+                "median": 43,
                 "stdDev": 13,
                 "min": 1,
-                "p10": 28,
-                "p25": 36,
+                "p10": 27,
+                "p25": 35,
                 "p75": 50,
-                "p90": 61,
-                "max": 97
+                "p90": 58,
+                "max": 100
               },
               "fameEarned": {
-                "mean": 11109,
-                "median": 10720,
-                "stdDev": 3580,
-                "min": 4111,
-                "p10": 8315,
-                "p25": 9430,
-                "p75": 12120,
-                "p90": 13410,
-                "max": 44154
+                "mean": 11034,
+                "median": 10579,
+                "stdDev": 3752,
+                "min": 4370,
+                "p10": 8186,
+                "p25": 9300,
+                "p75": 11930,
+                "p90": 13195,
+                "max": 43910
               },
               "fameEarnedPerGig": {
-                "mean": 1552,
-                "median": 1498,
-                "stdDev": 426,
-                "min": 832,
-                "p10": 1341,
-                "p25": 1413,
-                "p75": 1589,
-                "p90": 1678,
-                "max": 5553
+                "mean": 1548,
+                "median": 1486,
+                "stdDev": 459,
+                "min": 784,
+                "p10": 1320,
+                "p25": 1402,
+                "p75": 1573,
+                "p90": 1665,
+                "max": 5823
               }
             },
             "bankruptRuns": {
-              "sampleSize": 109,
+              "sampleSize": 147,
               "finalMoney": {
                 "mean": 0,
                 "median": 0,
@@ -1286,294 +1290,294 @@
                 "max": 0
               },
               "finalFame": {
-                "mean": 913,
-                "median": 800,
-                "stdDev": 736,
+                "mean": 1232,
+                "median": 950,
+                "stdDev": 1756,
                 "min": 0,
-                "p10": 90,
-                "p25": 337,
-                "p75": 1190,
-                "p90": 1806,
-                "max": 3420
+                "p10": 83,
+                "p25": 403,
+                "p75": 1448,
+                "p90": 2239,
+                "max": 14060
               },
               "gigsPlayed": {
-                "mean": 1.07,
+                "mean": 1.26,
                 "median": 1,
-                "stdDev": 0.5,
+                "stdDev": 0.75,
                 "min": 0,
                 "p10": 1,
                 "p25": 1,
                 "p75": 1,
                 "p90": 2,
-                "max": 3
+                "max": 6
               },
               "daysSurvived": {
-                "mean": 5.55,
+                "mean": 5.69,
                 "median": 5,
-                "stdDev": 1.34,
+                "stdDev": 1.44,
                 "min": 2,
                 "p10": 4,
                 "p25": 5,
                 "p75": 6,
-                "p90": 7,
+                "p90": 8,
                 "max": 10
               },
               "gigNet": {
-                "mean": 546,
+                "mean": 521,
                 "median": 452,
-                "stdDev": 325,
+                "stdDev": 336,
                 "min": 0,
-                "p10": 282,
-                "p25": 344,
-                "p75": 736,
-                "p90": 1013,
-                "max": 1363
+                "p10": 222,
+                "p25": 265,
+                "p75": 733,
+                "p90": 962,
+                "max": 1771
               },
               "performanceScore": {
-                "mean": 62,
-                "median": 66,
-                "stdDev": 19,
+                "mean": 64,
+                "median": 67,
+                "stdDev": 17,
                 "min": 0,
-                "p10": 53,
-                "p25": 60,
-                "p75": 72,
-                "p90": 76,
-                "max": 83
+                "p10": 55,
+                "p25": 62,
+                "p75": 74,
+                "p90": 77,
+                "max": 86
               },
               "finalHarmony": {
-                "mean": 66,
-                "median": 65,
-                "stdDev": 8,
-                "min": 50,
-                "p10": 57,
-                "p25": 61,
+                "mean": 64,
+                "median": 64,
+                "stdDev": 9,
+                "min": 49,
+                "p10": 51,
+                "p25": 59,
                 "p75": 70,
-                "p90": 78,
-                "max": 91
+                "p90": 76,
+                "max": 92
               },
               "fameEarned": {
-                "mean": 1754,
-                "median": 1630,
-                "stdDev": 877,
+                "mean": 2226,
+                "median": 1730,
+                "stdDev": 1999,
                 "min": 0,
-                "p10": 1315,
-                "p25": 1490,
-                "p75": 1790,
-                "p90": 3196,
-                "max": 5080
+                "p10": 1342,
+                "p25": 1510,
+                "p75": 1970,
+                "p90": 3467,
+                "max": 16390
               },
               "fameEarnedPerGig": {
-                "mean": 1507,
+                "mean": 1622,
                 "median": 1610,
-                "stdDev": 458,
+                "stdDev": 723,
                 "min": 0,
-                "p10": 1315,
-                "p25": 1470,
-                "p75": 1735,
+                "p10": 1342,
+                "p25": 1490,
+                "p75": 1768,
                 "p90": 1850,
-                "max": 2220
+                "max": 7340
               }
             }
           },
-          "avgFameProgress": 10599,
-          "avgFameProgressPerGig": 1549.85,
-          "avgPeakToTroughDrop": 29.21,
-          "avgPeakMoney": 24435,
-          "avgLowestMoney": 466,
-          "avgFinalControversy": 4.61,
-          "avgClinicVisits": 0,
+          "avgFameProgress": 10387,
+          "avgFameProgressPerGig": 1553.69,
+          "avgPeakToTroughDrop": 31.4,
+          "avgPeakMoney": 23103,
+          "avgLowestMoney": 455,
+          "avgFinalControversy": 44.51,
+          "avgClinicVisits": 0.02,
           "avgSponsorPayouts": 0.09,
           "avgSponsorSignings": 0.04,
           "avgSponsorDrops": 0.01,
           "avgBrandDealsActivated": 0.05,
-          "avgRefuels": 1.19,
-          "avgRepairs": 1.45,
-          "avgHqUpgrades": 2.12,
+          "avgRefuels": 1.18,
+          "avgRepairs": 1.44,
+          "avgHqUpgrades": 2.05,
           "avgVanUpgrades": 3.65,
-          "avgCatalogUpgrades": 11.21,
-          "avgTravelMinigames": 9.63,
-          "avgRoadieMinigames": 2.29,
-          "avgKabelsalatMinigames": 2.3,
-          "avgAmpCalibrations": 2.26,
+          "avgCatalogUpgrades": 11.06,
+          "avgTravelMinigames": 9.5,
+          "avgRoadieMinigames": 2.25,
+          "avgKabelsalatMinigames": 2.27,
+          "avgAmpCalibrations": 2.21,
           "avgRestStops": 0,
-          "avgRestDays": 0,
+          "avgRestDays": 0.01,
           "avgRestStopArrivals": 0.92,
-          "avgAssetsPurchased": 0.25,
-          "avgLoansTaken": 0.12,
-          "avgModulesInstalled": 0.09,
-          "avgCrowdfundsStarted": 0.35,
-          "avgTraitUnlocks": 1.77,
-          "avgFinalAssets": 0.25,
-          "avgTrendShifts": 1.14,
+          "avgAssetsPurchased": 0.21,
+          "avgLoansTaken": 0.11,
+          "avgModulesInstalled": 0.07,
+          "avgCrowdfundsStarted": 0.34,
+          "avgTraitUnlocks": 1.73,
+          "avgFinalAssets": 0.21,
+          "avgTrendShifts": 1.13,
           "avgSpecialEvents": 0.27,
-          "avgCashSwings": 0.41,
-          "avgBandEvents": 0.45,
+          "avgCashSwings": 0.39,
+          "avgBandEvents": 0.44,
           "avgEquipmentEvents": 0.29,
-          "avgPostPulses": 1.24,
-          "avgContrabandDrops": 1.06,
-          "avgClinicSpend": 1,
-          "regionRepTouchedPct": 98.1,
-          "avgTravelCostPerGig": 101,
+          "avgPostPulses": 1.23,
+          "avgContrabandDrops": 1.04,
+          "avgClinicSpend": 7,
+          "regionRepTouchedPct": 97.8,
+          "avgTravelCostPerGig": 98,
           "avgHitWindow": 157,
-          "avgMissesPerGig": 6.6,
-          "gigScorePctLow": 15.9,
-          "gigScorePctMid": 63.4,
-          "gigScorePctHigh": 20.7,
-          "gigNetToTravelRatio": 42.9,
+          "avgMissesPerGig": 6.7,
+          "gigScorePctLow": 17.7,
+          "gigScorePctMid": 63.1,
+          "gigScorePctHigh": 19.2,
+          "gigNetToTravelRatio": 41.8,
           "sinkToIncomeRatio": 0.05,
-          "gigCapHitPct": 7.9,
-          "gigsToAffordHqUpgrade": 2.97,
-          "gigsToAffordVanUpgrade": 0.19,
-          "avgMoneyAtEarlyCheckpoint": 2218,
-          "avgMoneyAtMidCheckpoint": 4666,
-          "avgMoneyAtLateCheckpoint": 5757,
+          "gigCapHitPct": 7.1,
+          "gigsToAffordHqUpgrade": 3.16,
+          "gigsToAffordVanUpgrade": 0.21,
+          "avgMoneyAtEarlyCheckpoint": 1909,
+          "avgMoneyAtMidCheckpoint": 4008,
+          "avgMoneyAtLateCheckpoint": 4910,
           "bankruptcy": {
-            "count": 109,
+            "count": 147,
             "sampleSize": 2000,
-            "ratePct": 5.45,
+            "ratePct": 7.35,
             "confidence95": {
-              "lowerPct": 4.54,
-              "upperPct": 6.53,
+              "lowerPct": 6.29,
+              "upperPct": 8.58,
               "method": "wilson"
             }
           },
           "tourPaths": {
             "tourDepth": 10,
-            "finaleReachedPct": 94.2,
-            "finaleCompletedPct": 94.05,
-            "avgDeepestLayerReached": 9.63,
-            "avgArrivals": 9.63,
+            "finaleReachedPct": 91.4,
+            "finaleCompletedPct": 91.25,
+            "avgDeepestLayerReached": 9.5,
+            "avgArrivals": 9.5,
             "avgNonPerformingArrivals": 2.77,
             "avgRouteDeadEnds": 0,
-            "avgStrandedDays": 0.07,
-            "strandedRunsPct": 5.6,
+            "avgStrandedDays": 0.1,
+            "strandedRunsPct": 7.45,
             "travelBlockedByReason": {
-              "money": 0.07,
+              "money": 0.1,
               "fuel": 0,
               "venue_access": 0
             },
-            "avgRefuelledToTravel": 0.17,
+            "avgRefuelledToTravel": 0.16,
             "nodeTypeSharePct": {
-              "GIG": 54.1,
-              "REST_STOP": 9.53,
-              "FESTIVAL": 7.33,
-              "FINALE": 9.78,
-              "SPECIAL": 9.84,
-              "SUPPLY_STOP": 9.43
+              "GIG": 54.09,
+              "REST_STOP": 9.67,
+              "FESTIVAL": 7.12,
+              "FINALE": 9.62,
+              "SPECIAL": 9.88,
+              "SUPPLY_STOP": 9.61
             }
           },
           "purchasePaths": {
             "catalogSize": 67,
             "runsWithAnyPurchasePct": 100,
             "firstPurchaseDayMedian": 1,
-            "vanUpgradeReachedPct": 97.75,
+            "vanUpgradeReachedPct": 97.55,
             "firstVanUpgradeDayMedian": 3,
-            "hqUpgradeReachedPct": 91.45,
+            "hqUpgradeReachedPct": 90.85,
             "firstHqUpgradeDayMedian": 3,
-            "avgDistinctItemsPurchased": 10.19,
-            "catalogSharePurchasedPct": 15.21,
+            "avgDistinctItemsPurchased": 10.08,
+            "catalogSharePurchasedPct": 15.04,
             "modalFirstPurchaseCategory": "MERCH",
-            "avgMoneyBeforePurchase": 5321.93,
-            "avgResidualMoneyAfterPurchase": 4991.76,
-            "avgMissedPurchases": 0.91,
-            "avgLiquidityDeferrals": 0.22,
-            "avgUnaffordableAtMidCheckpoint": 3.31,
-            "avgAffordableAtMidCheckpoint": 57.86,
-            "avgUnaffordableAtEnd": 2.57,
-            "avgAffordableAtEnd": 54.24
+            "avgMoneyBeforePurchase": 4733.73,
+            "avgResidualMoneyAfterPurchase": 4457.95,
+            "avgMissedPurchases": 0.95,
+            "avgLiquidityDeferrals": 0.27,
+            "avgUnaffordableAtMidCheckpoint": 3.75,
+            "avgAffordableAtMidCheckpoint": 57.43,
+            "avgUnaffordableAtEnd": 3.4,
+            "avgAffordableAtEnd": 53.51
           },
           "gigEconomics": {
-            "gigNetPerCalendarDay": 3034,
-            "gigNetPerGigDay": 4321,
-            "gigsPerCalendarDay": 0.702,
-            "avgRestDays": 0,
+            "gigNetPerCalendarDay": 2855,
+            "gigNetPerGigDay": 4112,
+            "gigsPerCalendarDay": 0.694,
+            "avgRestDays": 0.01,
             "avgFreeRestStops": 0,
-            "restDaySharePct": 0.02,
-            "foregoneGigNetPerRestDayUpperBound": 4321,
-            "travelCostShareOfGigNetPct": 2.33,
-            "avgTravelCostPerGigDay": 101,
+            "restDaySharePct": 0.11,
+            "foregoneGigNetPerRestDayUpperBound": 4112,
+            "travelCostShareOfGigNetPct": 2.39,
+            "avgTravelCostPerGigDay": 98,
             "catalogItemsUnderOneGigNetPct": 95.35,
             "moneyPricedCatalogSize": 43,
             "minHarmonyObserved": 1,
-            "minMemberStaminaObserved": 34,
-            "minMemberMoodObserved": 46
+            "minMemberStaminaObserved": 36,
+            "minMemberMoodObserved": 41
           },
           "financialStress": {
             "thresholds": {
               "tightEur": 500,
               "criticalEur": 250
             },
-            "bankruptcyRatePct": 5.45,
+            "bankruptcyRatePct": 7.35,
             "bankruptcyBeforeFirstGigPct": 0.4,
-            "bankruptcyAfterFirstGigPct": 5.05,
-            "everBelowTightPct": 13.45,
-            "everBelowCriticalPct": 6,
-            "zeroBalancePct": 0,
-            "creditOrGrantAssistedPct": 11.7,
-            "avgDaysBelowTightThreshold": 0.24,
-            "avgDaysBelowCriticalThreshold": 0.11,
-            "medianMaxDrawdownPct": 21.83,
-            "p90MaxDrawdownPct": 62.74,
-            "solventFinalMoneyP10": 20228,
+            "bankruptcyAfterFirstGigPct": 6.95,
+            "everBelowTightPct": 17.65,
+            "everBelowCriticalPct": 7.8,
+            "zeroBalancePct": 0.1,
+            "creditOrGrantAssistedPct": 10.4,
+            "avgDaysBelowTightThreshold": 0.33,
+            "avgDaysBelowCriticalThreshold": 0.14,
+            "medianMaxDrawdownPct": 24.01,
+            "p90MaxDrawdownPct": 67.34,
+            "solventFinalMoneyP10": 19360,
             "medianBankruptcyDay": 5,
             "earliestBankruptcyDay": 2
           },
           "actualLossAttribution": {
             "daily_obligations": {
-              "total": 3645047,
-              "median": 1823,
-              "p90": 2349,
-              "firstMaterialDrawdownSharePct": 28.8,
-              "bankruptcyPredecessorSharePct": 66.06
+              "total": 3546300,
+              "median": 1803,
+              "p90": 2282,
+              "firstMaterialDrawdownSharePct": 39.75,
+              "bankruptcyPredecessorSharePct": 67.35
             },
             "travel": {
-              "total": 1286739,
-              "median": 674,
-              "p90": 755,
+              "total": 1228352,
+              "median": 651,
+              "p90": 732,
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 332934,
-              "median": 149,
-              "p90": 272,
-              "firstMaterialDrawdownSharePct": 0.05,
-              "bankruptcyPredecessorSharePct": 4.59
+              "total": 330774,
+              "median": 151,
+              "p90": 274,
+              "firstMaterialDrawdownSharePct": 0.1,
+              "bankruptcyPredecessorSharePct": 4.76
             },
             "maintenance_repairs": {
-              "total": 843738,
+              "total": 836268,
               "median": 486,
               "p90": 576,
-              "firstMaterialDrawdownSharePct": 1.3,
-              "bankruptcyPredecessorSharePct": 12.84
+              "firstMaterialDrawdownSharePct": 1.5,
+              "bankruptcyPredecessorSharePct": 10.2
             },
             "negative_events": {
-              "total": 31082,
+              "total": 31626,
               "median": 0,
               "p90": 55,
-              "firstMaterialDrawdownSharePct": 0.1,
+              "firstMaterialDrawdownSharePct": 0.15,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
-              "total": 1176,
+              "total": 13203,
               "median": 0,
               "p90": 0,
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 5292044,
-              "median": 1110,
-              "p90": 8170,
-              "firstMaterialDrawdownSharePct": 25.65,
-              "bankruptcyPredecessorSharePct": 8.26
+              "total": 4212393,
+              "median": 940,
+              "p90": 5944,
+              "firstMaterialDrawdownSharePct": 17.65,
+              "bankruptcyPredecessorSharePct": 10.88
             },
             "other": {
-              "total": 365168,
-              "median": 178,
-              "p90": 296,
-              "firstMaterialDrawdownSharePct": 32.45,
-              "bankruptcyPredecessorSharePct": 0.92
+              "total": 356971,
+              "median": 176,
+              "p90": 298,
+              "firstMaterialDrawdownSharePct": 32.4,
+              "bankruptcyPredecessorSharePct": 1.36
             },
             "gig_settlement": {
               "total": 0,
@@ -1585,44 +1589,44 @@
           },
           "grossSpendAttribution": {
             "modifierGrossSpend": {
-              "total": 512162,
-              "median": 256,
-              "p90": 392
+              "total": 502906,
+              "median": 254,
+              "p90": 386
             },
             "venueGrossSpend": {
-              "total": 148998454,
-              "median": 73695,
-              "p90": 117181
+              "total": 133937110,
+              "median": 65898,
+              "p90": 112377
             },
             "taxGrossSpend": {
-              "total": 58270954,
-              "median": 27965,
-              "p90": 46916
+              "total": 52225186,
+              "median": 24349,
+              "p90": 45423
             },
             "otherGrossSpend": {
-              "total": 66192,
+              "total": 71100,
               "median": 24,
-              "p90": 84
+              "p90": 96
             }
           },
           "volatility": {
-            "finalMoneyStdDev": 7467,
-            "finalMoneyCoefficientOfVariation": 0.3067,
+            "finalMoneyStdDev": 8009,
+            "finalMoneyCoefficientOfVariation": 0.3483,
             "performanceScoreStdDev": 7,
             "finalHarmonyStdDev": 14,
-            "maxDrawdownMeanPct": 29.21,
-            "maxDrawdownP90Pct": 62.74,
-            "moneyRangeMedian": 24748
+            "maxDrawdownMeanPct": 31.4,
+            "maxDrawdownP90Pct": 67.34,
+            "moneyRangeMedian": 23735
           },
           "fameAccounting": {
             "startingFame": 0,
-            "earned": 10599,
-            "spentGross": 3015,
+            "earned": 10387,
+            "spentGross": 2976,
             "refunded": 0,
-            "spentNet": 3015,
+            "spentNet": 2976,
             "lost": 1,
             "clampAdjustment": 0,
-            "finalFame": 7583.8,
+            "finalFame": 7409.66,
             "reconciliationDelta": 0,
             "maxAbsReconciliationDelta": 0,
             "reconciledRuns": 2000,
@@ -1630,41 +1634,42 @@
           },
           "executionCoverage": {
             "brandDeals": {
-              "evaluations": 19199,
-              "activations": 98,
+              "evaluations": 19004,
+              "activations": 95,
               "uniqueIdsSeen": [
                 "basement_zine",
                 "blood_bank_promo",
+                "charity_concerts",
                 "community_radio",
                 "corp_beverage",
                 "corp_fashion_line",
                 "corp_fast_food",
+                "cult_pamphlets",
                 "energy_drink_cx",
-                "good_rebel_fund",
                 "gutter_brew",
                 "hemp_merch",
                 "indie_amp_builder",
-                "indie_cult_label",
-                "indie_festival",
                 "indie_label_void",
                 "indie_vinyl_press",
                 "local_pawn_shop",
                 "neon_lung_vapes",
+                "pmc_recruitment",
                 "recycled_picks",
                 "riot_apparel",
+                "solar_power_bank",
+                "sustainable_energy_provider",
                 "synapse_nootropics",
-                "underground_fight_club",
-                "upcycled_instruments",
-                "youth_music_program"
+                "upcycled_instruments"
               ],
               "availableIds": 54,
               "covered": true
             },
             "postOptions": {
-              "evaluations": 2480,
-              "activations": 2480,
+              "evaluations": 2456,
+              "activations": 2456,
               "uniqueIdsSeen": [
                 "collab_influencer",
+                "comm_loyalty_merch_drive",
                 "comm_sellout_ad",
                 "drama_crowdsurf_fail",
                 "drama_cryptic_teaser",
@@ -1686,6 +1691,7 @@
                 "perf_smashed_gear",
                 "perf_sound_guy_rant",
                 "radicalize_fans",
+                "recovery_leaked_good_deed",
                 "tech_rig_rundown",
                 "wholesome_dinner"
               ],
@@ -1693,8 +1699,8 @@
               "covered": true
             },
             "socialTrends": {
-              "evaluations": 19406,
-              "activations": 2278,
+              "evaluations": 19219,
+              "activations": 2261,
               "uniqueIdsSeen": [
                 "DRAMA",
                 "MUSIC",
@@ -1706,8 +1712,8 @@
               "covered": true
             },
             "contraband": {
-              "evaluations": 19406,
-              "activations": 2129,
+              "evaluations": 19219,
+              "activations": 2075,
               "uniqueIdsSeen": [
                 "c_abyssal_microphone",
                 "c_abyssal_pendant",
@@ -1751,32 +1757,32 @@
               "covered": true
             },
             "minigamesTravel": {
-              "attempts": 19256,
-              "completions": 11098,
+              "attempts": 18993,
+              "completions": 10986,
               "covered": true
             },
             "minigamesRoadie": {
-              "attempts": 4588,
-              "completions": 3876,
+              "attempts": 4496,
+              "completions": 3815,
               "covered": true
             },
             "minigamesKabelsalat": {
-              "attempts": 4598,
-              "completions": 3053,
+              "attempts": 4531,
+              "completions": 3041,
               "covered": true
             },
             "minigamesAmp": {
-              "attempts": 4518,
-              "completions": 2780,
+              "attempts": 4420,
+              "completions": 2684,
               "covered": true
             },
             "sponsorship": {
-              "attempts": 19406,
-              "successes": 81,
+              "attempts": 19219,
+              "successes": 79,
               "covered": true
             },
             "restStops": {
-              "evaluations": 19406,
+              "evaluations": 19219,
               "activations": 0,
               "covered": false
             }
@@ -4436,53 +4442,53 @@
         "id": "scandal_recovery",
         "name": "Scandal Recovery",
         "summary": {
-          "avgFinalMoney": 23854,
-          "avgFinalFame": 7494,
-          "avgFinalHarmony": 46,
-          "avgGigsPlayed": 6.7,
-          "avgGigNet": 4162,
-          "bankruptcyRate": 6.5,
-          "avgEventsApplied": 1.38,
-          "avgGigEvents": 0.97,
-          "avgPerformanceScore": 62,
+          "avgFinalMoney": 22458,
+          "avgFinalFame": 7184,
+          "avgFinalHarmony": 45,
+          "avgGigsPlayed": 6.57,
+          "avgGigNet": 3886,
+          "bankruptcyRate": 8.55,
+          "avgEventsApplied": 1.36,
+          "avgGigEvents": 0.94,
+          "avgPerformanceScore": 61,
           "statistics": {
             "finalMoney": {
-              "mean": 23854,
-              "median": 24793,
-              "stdDev": 7835,
+              "mean": 22458,
+              "median": 23886,
+              "stdDev": 8404,
               "min": 0,
-              "p10": 17571,
-              "p25": 21658,
-              "p75": 28198,
-              "p90": 31414,
-              "max": 47576
+              "p10": 13443,
+              "p25": 20515,
+              "p75": 27392,
+              "p90": 30462,
+              "max": 42802
             },
             "finalFame": {
-              "mean": 7494,
-              "median": 7283,
-              "stdDev": 4196,
+              "mean": 7184,
+              "median": 7105,
+              "stdDev": 4068,
               "min": 0,
-              "p10": 3558,
-              "p25": 5483,
-              "p75": 9056,
-              "p90": 10621,
-              "max": 43769
+              "p10": 2789,
+              "p25": 5185,
+              "p75": 8892,
+              "p90": 10425,
+              "max": 41898
             },
             "gigsPlayed": {
-              "mean": 6.7,
+              "mean": 6.57,
               "median": 7,
-              "stdDev": 1.92,
+              "stdDev": 2.05,
               "min": 0,
-              "p10": 5,
+              "p10": 4,
               "p25": 6,
               "p75": 8,
               "p90": 9,
               "max": 10
             },
             "daysSurvived": {
-              "mean": 9.74,
+              "mean": 9.64,
               "median": 10,
-              "stdDev": 1.05,
+              "stdDev": 1.24,
               "min": 3,
               "p10": 10,
               "p25": 10,
@@ -4491,86 +4497,86 @@
               "max": 10
             },
             "gigNet": {
-              "mean": 4162,
-              "median": 4252,
-              "stdDev": 1165,
+              "mean": 3886,
+              "median": 4052,
+              "stdDev": 1262,
               "min": 0,
-              "p10": 3395,
-              "p25": 3848,
-              "p75": 4755,
-              "p90": 5301,
-              "max": 8135
+              "p10": 2679,
+              "p25": 3603,
+              "p75": 4557,
+              "p90": 5089,
+              "max": 8495
             },
             "performanceScore": {
-              "mean": 62,
-              "median": 62,
+              "mean": 61,
+              "median": 61,
               "stdDev": 8,
               "min": 0,
-              "p10": 54,
-              "p25": 58,
+              "p10": 53,
+              "p25": 57,
               "p75": 66,
               "p90": 70,
-              "max": 88
+              "max": 89
             },
             "lowestMoney": {
-              "mean": 460,
+              "mean": 448,
               "median": 500,
-              "stdDev": 115,
+              "stdDev": 129,
               "min": 0,
-              "p10": 365,
+              "p10": 314,
               "p25": 500,
               "p75": 500,
               "p90": 500,
               "max": 500
             },
             "peakMoney": {
-              "mean": 23942,
-              "median": 24803,
-              "stdDev": 7595,
+              "mean": 22568,
+              "median": 23887,
+              "stdDev": 8149,
               "min": 500,
-              "p10": 17593,
-              "p25": 21658,
-              "p75": 28198,
-              "p90": 31414,
-              "max": 47576
+              "p10": 13870,
+              "p25": 20518,
+              "p75": 27392,
+              "p90": 30462,
+              "max": 42802
             },
             "maxDrawdownPct": {
-              "mean": 30.19,
-              "median": 21.99,
-              "stdDev": 24.62,
+              "mean": 33.04,
+              "median": 25.9,
+              "stdDev": 25.49,
               "min": 0,
-              "p10": 7.44,
-              "p25": 12.73,
-              "p75": 39.86,
-              "p90": 67.92,
+              "p10": 7.91,
+              "p25": 14.22,
+              "p75": 43.59,
+              "p90": 76.25,
               "max": 100
             },
             "finalHarmony": {
-              "mean": 46,
+              "mean": 45,
               "median": 45,
-              "stdDev": 13,
+              "stdDev": 14,
               "min": 1,
-              "p10": 30,
-              "p25": 38,
+              "p10": 28,
+              "p25": 37,
               "p75": 52,
-              "p90": 64,
-              "max": 96
+              "p90": 63,
+              "max": 95
             },
             "eventsApplied": {
-              "mean": 1.38,
+              "mean": 1.36,
               "median": 1,
-              "stdDev": 1.14,
+              "stdDev": 1.16,
               "min": 0,
               "p10": 0,
-              "p25": 1,
+              "p25": 0,
               "p75": 2,
               "p90": 3,
               "max": 8
             },
             "gigEvents": {
-              "mean": 0.97,
+              "mean": 0.94,
               "median": 1,
-              "stdDev": 0.98,
+              "stdDev": 0.95,
               "min": 0,
               "p10": 0,
               "p25": 0,
@@ -4579,68 +4585,68 @@
               "max": 5
             },
             "fameEarned": {
-              "mean": 10467,
-              "median": 10528,
-              "stdDev": 4281,
+              "mean": 10115,
+              "median": 10315,
+              "stdDev": 4177,
               "min": 0,
-              "p10": 7197,
-              "p25": 8944,
-              "p75": 11855,
-              "p90": 13299,
-              "max": 45279
+              "p10": 6557,
+              "p25": 8786,
+              "p75": 11696,
+              "p90": 12966,
+              "max": 47755
             },
             "fameEarnedPerGig": {
-              "mean": 1564,
-              "median": 1507,
-              "stdDev": 479,
+              "mean": 1547,
+              "median": 1495,
+              "stdDev": 461,
               "min": 0,
-              "p10": 1344,
-              "p25": 1421,
-              "p75": 1602,
-              "p90": 1695,
-              "max": 6925
+              "p10": 1325,
+              "p25": 1410,
+              "p75": 1593,
+              "p90": 1700,
+              "max": 7020
             }
           },
           "population": {
             "allRuns": {
               "sampleSize": 2000,
               "finalMoney": {
-                "mean": 23854,
-                "median": 24793,
-                "stdDev": 7835,
+                "mean": 22458,
+                "median": 23886,
+                "stdDev": 8404,
                 "min": 0,
-                "p10": 17571,
-                "p25": 21658,
-                "p75": 28198,
-                "p90": 31414,
-                "max": 47576
+                "p10": 13443,
+                "p25": 20515,
+                "p75": 27392,
+                "p90": 30462,
+                "max": 42802
               },
               "finalFame": {
-                "mean": 7494,
-                "median": 7283,
-                "stdDev": 4196,
+                "mean": 7184,
+                "median": 7105,
+                "stdDev": 4068,
                 "min": 0,
-                "p10": 3558,
-                "p25": 5483,
-                "p75": 9056,
-                "p90": 10621,
-                "max": 43769
+                "p10": 2789,
+                "p25": 5185,
+                "p75": 8892,
+                "p90": 10425,
+                "max": 41898
               },
               "gigsPlayed": {
-                "mean": 6.7,
+                "mean": 6.57,
                 "median": 7,
-                "stdDev": 1.92,
+                "stdDev": 2.05,
                 "min": 0,
-                "p10": 5,
+                "p10": 4,
                 "p25": 6,
                 "p75": 8,
                 "p90": 9,
                 "max": 10
               },
               "daysSurvived": {
-                "mean": 9.74,
+                "mean": 9.64,
                 "median": 10,
-                "stdDev": 1.05,
+                "stdDev": 1.24,
                 "min": 3,
                 "p10": 10,
                 "p25": 10,
@@ -4649,90 +4655,90 @@
                 "max": 10
               },
               "gigNet": {
-                "mean": 4162,
-                "median": 4252,
-                "stdDev": 1165,
+                "mean": 3886,
+                "median": 4052,
+                "stdDev": 1262,
                 "min": 0,
-                "p10": 3395,
-                "p25": 3848,
-                "p75": 4755,
-                "p90": 5301,
-                "max": 8135
+                "p10": 2679,
+                "p25": 3603,
+                "p75": 4557,
+                "p90": 5089,
+                "max": 8495
               },
               "performanceScore": {
-                "mean": 62,
-                "median": 62,
+                "mean": 61,
+                "median": 61,
                 "stdDev": 8,
                 "min": 0,
-                "p10": 54,
-                "p25": 58,
+                "p10": 53,
+                "p25": 57,
                 "p75": 66,
                 "p90": 70,
-                "max": 88
+                "max": 89
               },
               "finalHarmony": {
-                "mean": 46,
+                "mean": 45,
                 "median": 45,
-                "stdDev": 13,
+                "stdDev": 14,
                 "min": 1,
-                "p10": 30,
-                "p25": 38,
+                "p10": 28,
+                "p25": 37,
                 "p75": 52,
-                "p90": 64,
-                "max": 96
+                "p90": 63,
+                "max": 95
               },
               "fameEarned": {
-                "mean": 10467,
-                "median": 10528,
-                "stdDev": 4281,
+                "mean": 10115,
+                "median": 10315,
+                "stdDev": 4177,
                 "min": 0,
-                "p10": 7197,
-                "p25": 8944,
-                "p75": 11855,
-                "p90": 13299,
-                "max": 45279
+                "p10": 6557,
+                "p25": 8786,
+                "p75": 11696,
+                "p90": 12966,
+                "max": 47755
               },
               "fameEarnedPerGig": {
-                "mean": 1564,
-                "median": 1507,
-                "stdDev": 479,
+                "mean": 1547,
+                "median": 1495,
+                "stdDev": 461,
                 "min": 0,
-                "p10": 1344,
-                "p25": 1421,
-                "p75": 1602,
-                "p90": 1695,
-                "max": 6925
+                "p10": 1325,
+                "p25": 1410,
+                "p75": 1593,
+                "p90": 1700,
+                "max": 7020
               }
             },
             "solventRuns": {
-              "sampleSize": 1870,
+              "sampleSize": 1829,
               "finalMoney": {
-                "mean": 25513,
-                "median": 25300,
-                "stdDev": 4830,
-                "min": 6,
-                "p10": 19945,
-                "p25": 22377,
-                "p75": 28475,
-                "p90": 31616,
-                "max": 47576
+                "mean": 24558,
+                "median": 24470,
+                "stdDev": 5065,
+                "min": 45,
+                "p10": 18844,
+                "p25": 21452,
+                "p75": 27706,
+                "p90": 30749,
+                "max": 42802
               },
               "finalFame": {
-                "mean": 7934,
-                "median": 7503,
-                "stdDev": 3950,
-                "min": 20,
-                "p10": 4608,
-                "p25": 5903,
-                "p75": 9176,
-                "p90": 10801,
-                "max": 43769
+                "mean": 7747,
+                "median": 7400,
+                "stdDev": 3756,
+                "min": 241,
+                "p10": 4434,
+                "p25": 5870,
+                "p75": 9105,
+                "p90": 10532,
+                "max": 41898
               },
               "gigsPlayed": {
-                "mean": 7.08,
+                "mean": 7.07,
                 "median": 7,
-                "stdDev": 1.29,
-                "min": 2,
+                "stdDev": 1.27,
+                "min": 3,
                 "p10": 5,
                 "p25": 6,
                 "p75": 8,
@@ -4751,63 +4757,63 @@
                 "max": 10
               },
               "gigNet": {
-                "mean": 4408,
-                "median": 4300,
-                "stdDev": 714,
-                "min": 830,
-                "p10": 3614,
-                "p25": 3931,
-                "p75": 4794,
-                "p90": 5330,
-                "max": 8135
+                "mean": 4199,
+                "median": 4113,
+                "stdDev": 760,
+                "min": 586,
+                "p10": 3401,
+                "p25": 3740,
+                "p75": 4611,
+                "p90": 5137,
+                "max": 8495
               },
               "performanceScore": {
-                "mean": 62,
-                "median": 62,
+                "mean": 61,
+                "median": 61,
                 "stdDev": 6,
                 "min": 40,
-                "p10": 54,
-                "p25": 58,
-                "p75": 66,
+                "p10": 53,
+                "p25": 57,
+                "p75": 65,
                 "p90": 69,
-                "max": 88
+                "max": 87
               },
               "finalHarmony": {
-                "mean": 44,
-                "median": 45,
+                "mean": 43,
+                "median": 44,
                 "stdDev": 13,
                 "min": 1,
-                "p10": 30,
-                "p25": 37,
+                "p10": 28,
+                "p25": 36,
                 "p75": 50,
-                "p90": 60,
-                "max": 96
+                "p90": 59,
+                "max": 95
               },
               "fameEarned": {
-                "mean": 11051,
-                "median": 10670,
-                "stdDev": 3752,
-                "min": 3540,
-                "p10": 8160,
+                "mean": 10861,
+                "median": 10490,
+                "stdDev": 3495,
+                "min": 4590,
+                "p10": 8060,
                 "p25": 9230,
-                "p75": 11950,
-                "p90": 13396,
-                "max": 45279
+                "p75": 11850,
+                "p90": 13062,
+                "max": 47755
               },
               "fameEarnedPerGig": {
-                "mean": 1566,
-                "median": 1505,
-                "stdDev": 444,
-                "min": 729,
-                "p10": 1345,
-                "p25": 1422,
-                "p75": 1595,
-                "p90": 1686,
-                "max": 5537
+                "mean": 1542,
+                "median": 1491,
+                "stdDev": 406,
+                "min": 668,
+                "p10": 1326,
+                "p25": 1408,
+                "p75": 1582,
+                "p90": 1681,
+                "max": 5699
               }
             },
             "bankruptRuns": {
-              "sampleSize": 130,
+              "sampleSize": 171,
               "finalMoney": {
                 "mean": 0,
                 "median": 0,
@@ -4820,31 +4826,31 @@
                 "max": 0
               },
               "finalFame": {
-                "mean": 1170,
-                "median": 856,
-                "stdDev": 1903,
+                "mean": 1159,
+                "median": 875,
+                "stdDev": 1719,
                 "min": 0,
-                "p10": 24,
-                "p25": 328,
-                "p75": 1318,
-                "p90": 2397,
-                "max": 19350
+                "p10": 45,
+                "p25": 278,
+                "p75": 1400,
+                "p90": 2170,
+                "max": 18030
               },
               "gigsPlayed": {
-                "mean": 1.18,
+                "mean": 1.22,
                 "median": 1,
-                "stdDev": 0.68,
+                "stdDev": 0.7,
                 "min": 0,
                 "p10": 1,
                 "p25": 1,
                 "p75": 1,
                 "p90": 2,
-                "max": 4
+                "max": 5
               },
               "daysSurvived": {
-                "mean": 6,
+                "mean": 5.82,
                 "median": 6,
-                "stdDev": 1.45,
+                "stdDev": 1.44,
                 "min": 3,
                 "p10": 4,
                 "p25": 5,
@@ -4853,179 +4859,179 @@
                 "max": 10
               },
               "gigNet": {
-                "mean": 623,
-                "median": 558,
-                "stdDev": 400,
+                "mean": 534,
+                "median": 452,
+                "stdDev": 384,
                 "min": 0,
-                "p10": 264,
-                "p25": 352,
-                "p75": 861,
-                "p90": 1117,
-                "max": 2495
+                "p10": 209,
+                "p25": 269,
+                "p75": 721,
+                "p90": 953,
+                "max": 2326
               },
               "performanceScore": {
-                "mean": 61,
+                "mean": 62,
                 "median": 66,
-                "stdDev": 21,
+                "stdDev": 19,
                 "min": 0,
-                "p10": 51,
+                "p10": 52,
                 "p25": 57,
-                "p75": 73,
+                "p75": 74,
                 "p90": 78,
-                "max": 85
+                "max": 89
               },
               "finalHarmony": {
-                "mean": 64,
-                "median": 64,
+                "mean": 63,
+                "median": 62,
                 "stdDev": 8,
-                "min": 48,
-                "p10": 53,
-                "p25": 58,
-                "p75": 70,
-                "p90": 74,
-                "max": 88
+                "min": 40,
+                "p10": 51,
+                "p25": 57,
+                "p75": 69,
+                "p90": 73,
+                "max": 87
               },
               "fameEarned": {
-                "mean": 2076,
-                "median": 1671,
-                "stdDev": 2021,
+                "mean": 2136,
+                "median": 1680,
+                "stdDev": 1937,
                 "min": 0,
-                "p10": 1279,
-                "p25": 1400,
-                "p75": 1971,
-                "p90": 3460,
-                "max": 20530
+                "p10": 1310,
+                "p25": 1455,
+                "p75": 1965,
+                "p90": 3505,
+                "max": 20950
               },
               "fameEarnedPerGig": {
-                "mean": 1542,
+                "mean": 1604,
                 "median": 1590,
-                "stdDev": 836,
+                "stdDev": 851,
                 "min": 0,
-                "p10": 1279,
-                "p25": 1395,
-                "p75": 1730,
-                "p90": 1861,
-                "max": 6925
+                "p10": 1300,
+                "p25": 1431,
+                "p75": 1750,
+                "p90": 1890,
+                "max": 7020
               }
             }
           },
-          "avgFameProgress": 10467,
-          "avgFameProgressPerGig": 1564.38,
-          "avgPeakToTroughDrop": 30.19,
-          "avgPeakMoney": 23942,
-          "avgLowestMoney": 460,
-          "avgFinalControversy": 4.56,
-          "avgClinicVisits": 0,
-          "avgSponsorPayouts": 0.07,
-          "avgSponsorSignings": 0.03,
+          "avgFameProgress": 10115,
+          "avgFameProgressPerGig": 1547.17,
+          "avgPeakToTroughDrop": 33.04,
+          "avgPeakMoney": 22568,
+          "avgLowestMoney": 448,
+          "avgFinalControversy": 44.32,
+          "avgClinicVisits": 0.03,
+          "avgSponsorPayouts": 0.09,
+          "avgSponsorSignings": 0.04,
           "avgSponsorDrops": 0.01,
           "avgBrandDealsActivated": 0.04,
-          "avgRefuels": 1.19,
-          "avgRepairs": 1.44,
-          "avgHqUpgrades": 2.11,
-          "avgVanUpgrades": 3.62,
-          "avgCatalogUpgrades": 11.14,
-          "avgTravelMinigames": 9.58,
-          "avgRoadieMinigames": 2.24,
-          "avgKabelsalatMinigames": 2.22,
-          "avgAmpCalibrations": 2.24,
+          "avgRefuels": 1.17,
+          "avgRepairs": 1.41,
+          "avgHqUpgrades": 2.09,
+          "avgVanUpgrades": 3.57,
+          "avgCatalogUpgrades": 10.91,
+          "avgTravelMinigames": 9.43,
+          "avgRoadieMinigames": 2.18,
+          "avgKabelsalatMinigames": 2.2,
+          "avgAmpCalibrations": 2.19,
           "avgRestStops": 0,
-          "avgRestDays": 0,
-          "avgRestStopArrivals": 0.97,
-          "avgAssetsPurchased": 0.23,
-          "avgLoansTaken": 0.12,
-          "avgModulesInstalled": 0.07,
-          "avgCrowdfundsStarted": 0.33,
-          "avgTraitUnlocks": 1.78,
-          "avgFinalAssets": 0.23,
-          "avgTrendShifts": 1.17,
-          "avgSpecialEvents": 0.24,
-          "avgCashSwings": 0.42,
-          "avgBandEvents": 0.44,
+          "avgRestDays": 0.02,
+          "avgRestStopArrivals": 0.96,
+          "avgAssetsPurchased": 0.19,
+          "avgLoansTaken": 0.1,
+          "avgModulesInstalled": 0.05,
+          "avgCrowdfundsStarted": 0.32,
+          "avgTraitUnlocks": 1.71,
+          "avgFinalAssets": 0.19,
+          "avgTrendShifts": 1.12,
+          "avgSpecialEvents": 0.25,
+          "avgCashSwings": 0.41,
+          "avgBandEvents": 0.42,
           "avgEquipmentEvents": 0.28,
-          "avgPostPulses": 1.25,
-          "avgContrabandDrops": 1.07,
-          "avgClinicSpend": 1,
-          "regionRepTouchedPct": 97.7,
-          "avgTravelCostPerGig": 102,
+          "avgPostPulses": 1.22,
+          "avgContrabandDrops": 1.04,
+          "avgClinicSpend": 9,
+          "regionRepTouchedPct": 96.8,
+          "avgTravelCostPerGig": 99,
           "avgHitWindow": 157,
-          "avgMissesPerGig": 6.5,
-          "gigScorePctLow": 15.2,
-          "gigScorePctMid": 62.8,
-          "gigScorePctHigh": 22,
-          "gigNetToTravelRatio": 42.2,
+          "avgMissesPerGig": 6.7,
+          "gigScorePctLow": 16.4,
+          "gigScorePctMid": 62.5,
+          "gigScorePctHigh": 21,
+          "gigNetToTravelRatio": 41.1,
           "sinkToIncomeRatio": 0.05,
-          "gigCapHitPct": 8.1,
-          "gigsToAffordHqUpgrade": 3,
-          "gigsToAffordVanUpgrade": 0.19,
-          "avgMoneyAtEarlyCheckpoint": 2231,
-          "avgMoneyAtMidCheckpoint": 4590,
-          "avgMoneyAtLateCheckpoint": 5643,
+          "gigCapHitPct": 7.5,
+          "gigsToAffordHqUpgrade": 3.22,
+          "gigsToAffordVanUpgrade": 0.21,
+          "avgMoneyAtEarlyCheckpoint": 1926,
+          "avgMoneyAtMidCheckpoint": 3917,
+          "avgMoneyAtLateCheckpoint": 4782,
           "bankruptcy": {
-            "count": 130,
+            "count": 171,
             "sampleSize": 2000,
-            "ratePct": 6.5,
+            "ratePct": 8.55,
             "confidence95": {
-              "lowerPct": 5.5,
-              "upperPct": 7.67,
+              "lowerPct": 7.4,
+              "upperPct": 9.86,
               "method": "wilson"
             }
           },
           "tourPaths": {
             "tourDepth": 10,
-            "finaleReachedPct": 92.95,
-            "finaleCompletedPct": 92.9,
-            "avgDeepestLayerReached": 9.58,
-            "avgArrivals": 9.58,
-            "avgNonPerformingArrivals": 2.88,
+            "finaleReachedPct": 89.9,
+            "finaleCompletedPct": 89.7,
+            "avgDeepestLayerReached": 9.43,
+            "avgArrivals": 9.43,
+            "avgNonPerformingArrivals": 2.85,
             "avgRouteDeadEnds": 0,
-            "avgStrandedDays": 0.09,
-            "strandedRunsPct": 6.7,
+            "avgStrandedDays": 0.12,
+            "strandedRunsPct": 8.55,
             "travelBlockedByReason": {
-              "money": 0.09,
+              "money": 0.12,
               "fuel": 0,
               "venue_access": 0
             },
             "avgRefuelledToTravel": 0.17,
             "nodeTypeSharePct": {
-              "GIG": 53.38,
-              "SPECIAL": 9.77,
-              "REST_STOP": 10.15,
-              "FINALE": 9.7,
-              "SUPPLY_STOP": 10.16,
-              "FESTIVAL": 6.85
+              "GIG": 53.41,
+              "SPECIAL": 9.88,
+              "REST_STOP": 10.2,
+              "FINALE": 9.54,
+              "FESTIVAL": 6.8,
+              "SUPPLY_STOP": 10.18
             }
           },
           "purchasePaths": {
             "catalogSize": 67,
             "runsWithAnyPurchasePct": 100,
             "firstPurchaseDayMedian": 1,
-            "vanUpgradeReachedPct": 97.75,
+            "vanUpgradeReachedPct": 97.7,
             "firstVanUpgradeDayMedian": 3,
-            "hqUpgradeReachedPct": 92.15,
+            "hqUpgradeReachedPct": 91.3,
             "firstHqUpgradeDayMedian": 3,
-            "avgDistinctItemsPurchased": 10.15,
-            "catalogSharePurchasedPct": 15.15,
+            "avgDistinctItemsPurchased": 9.99,
+            "catalogSharePurchasedPct": 14.91,
             "modalFirstPurchaseCategory": "MERCH",
-            "avgMoneyBeforePurchase": 5181.95,
-            "avgResidualMoneyAfterPurchase": 4867.76,
-            "avgMissedPurchases": 0.92,
-            "avgLiquidityDeferrals": 0.23,
-            "avgUnaffordableAtMidCheckpoint": 3.59,
-            "avgAffordableAtMidCheckpoint": 57.57,
-            "avgUnaffordableAtEnd": 3.07,
-            "avgAffordableAtEnd": 53.75
+            "avgMoneyBeforePurchase": 4597.69,
+            "avgResidualMoneyAfterPurchase": 4342.25,
+            "avgMissedPurchases": 0.99,
+            "avgLiquidityDeferrals": 0.27,
+            "avgUnaffordableAtMidCheckpoint": 4.1,
+            "avgAffordableAtMidCheckpoint": 57.05,
+            "avgUnaffordableAtEnd": 4.04,
+            "avgAffordableAtEnd": 52.87
           },
           "gigEconomics": {
-            "gigNetPerCalendarDay": 2960,
-            "gigNetPerGigDay": 4305,
-            "gigsPerCalendarDay": 0.688,
-            "avgRestDays": 0,
+            "gigNetPerCalendarDay": 2780,
+            "gigNetPerGigDay": 4082,
+            "gigsPerCalendarDay": 0.681,
+            "avgRestDays": 0.02,
             "avgFreeRestStops": 0,
-            "restDaySharePct": 0.04,
-            "foregoneGigNetPerRestDayUpperBound": 4305,
-            "travelCostShareOfGigNetPct": 2.37,
-            "avgTravelCostPerGigDay": 102,
+            "restDaySharePct": 0.17,
+            "foregoneGigNetPerRestDayUpperBound": 4082,
+            "travelCostShareOfGigNetPct": 2.43,
+            "avgTravelCostPerGigDay": 99,
             "catalogItemsUnderOneGigNetPct": 95.35,
             "moneyPricedCatalogSize": 43,
             "minHarmonyObserved": 1,
@@ -5037,77 +5043,77 @@
               "tightEur": 500,
               "criticalEur": 250
             },
-            "bankruptcyRatePct": 6.5,
+            "bankruptcyRatePct": 8.55,
             "bankruptcyBeforeFirstGigPct": 0.6,
-            "bankruptcyAfterFirstGigPct": 5.9,
-            "everBelowTightPct": 16.15,
-            "everBelowCriticalPct": 6.95,
+            "bankruptcyAfterFirstGigPct": 7.95,
+            "everBelowTightPct": 20.5,
+            "everBelowCriticalPct": 8.85,
             "zeroBalancePct": 0.1,
-            "creditOrGrantAssistedPct": 11,
-            "avgDaysBelowTightThreshold": 0.3,
-            "avgDaysBelowCriticalThreshold": 0.13,
-            "medianMaxDrawdownPct": 21.99,
-            "p90MaxDrawdownPct": 67.92,
-            "solventFinalMoneyP10": 19945,
+            "creditOrGrantAssistedPct": 9.6,
+            "avgDaysBelowTightThreshold": 0.38,
+            "avgDaysBelowCriticalThreshold": 0.17,
+            "medianMaxDrawdownPct": 25.9,
+            "p90MaxDrawdownPct": 76.25,
+            "solventFinalMoneyP10": 18844,
             "medianBankruptcyDay": 6,
             "earliestBankruptcyDay": 3
           },
           "actualLossAttribution": {
             "daily_obligations": {
-              "total": 3622749,
-              "median": 1807,
-              "p90": 2335,
-              "firstMaterialDrawdownSharePct": 28.8,
-              "bankruptcyPredecessorSharePct": 63.85
+              "total": 3484752,
+              "median": 1769,
+              "p90": 2245,
+              "firstMaterialDrawdownSharePct": 39.1,
+              "bankruptcyPredecessorSharePct": 68.42
             },
             "travel": {
-              "total": 1273305,
-              "median": 668,
-              "p90": 751,
+              "total": 1209645,
+              "median": 646,
+              "p90": 731,
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "fuel": {
-              "total": 333355,
+              "total": 327966,
               "median": 151,
               "p90": 276,
-              "firstMaterialDrawdownSharePct": 0.05,
-              "bankruptcyPredecessorSharePct": 2.31
+              "firstMaterialDrawdownSharePct": 0,
+              "bankruptcyPredecessorSharePct": 4.68
             },
             "maintenance_repairs": {
-              "total": 836928,
-              "median": 480,
-              "p90": 576,
-              "firstMaterialDrawdownSharePct": 1.8,
-              "bankruptcyPredecessorSharePct": 7.69
+              "total": 818322,
+              "median": 474,
+              "p90": 570,
+              "firstMaterialDrawdownSharePct": 1.65,
+              "bankruptcyPredecessorSharePct": 11.7
             },
             "negative_events": {
-              "total": 34919,
+              "total": 32421,
               "median": 0,
               "p90": 55,
               "firstMaterialDrawdownSharePct": 0.25,
               "bankruptcyPredecessorSharePct": 0
             },
             "clinic": {
-              "total": 2699,
+              "total": 18332,
               "median": 0,
               "p90": 0,
               "firstMaterialDrawdownSharePct": 0,
               "bankruptcyPredecessorSharePct": 0
             },
             "assets_upgrades": {
-              "total": 4757530,
-              "median": 1085,
-              "p90": 7754,
-              "firstMaterialDrawdownSharePct": 24.1,
-              "bankruptcyPredecessorSharePct": 15.38
+              "total": 3734782,
+              "median": 880,
+              "p90": 4419,
+              "firstMaterialDrawdownSharePct": 17.05,
+              "bankruptcyPredecessorSharePct": 7.6
             },
             "other": {
-              "total": 353807,
-              "median": 172,
+              "total": 344788,
+              "median": 169,
               "p90": 290,
               "firstMaterialDrawdownSharePct": 33.05,
-              "bankruptcyPredecessorSharePct": 0.77
+              "bankruptcyPredecessorSharePct": 0
             },
             "gig_settlement": {
               "total": 0,
@@ -5119,44 +5125,44 @@
           },
           "grossSpendAttribution": {
             "modifierGrossSpend": {
-              "total": 500196,
+              "total": 491813,
               "median": 250,
               "p90": 382
             },
             "venueGrossSpend": {
-              "total": 146099646,
-              "median": 71957,
-              "p90": 116751
+              "total": 130967631,
+              "median": 63475,
+              "p90": 111042
             },
             "taxGrossSpend": {
-              "total": 57535263,
-              "median": 27112,
-              "p90": 47452
+              "total": 51498711,
+              "median": 23697,
+              "p90": 45910
             },
             "otherGrossSpend": {
-              "total": 62340,
-              "median": 12,
-              "p90": 84
+              "total": 66228,
+              "median": 24,
+              "p90": 96
             }
           },
           "volatility": {
-            "finalMoneyStdDev": 7835,
-            "finalMoneyCoefficientOfVariation": 0.3285,
+            "finalMoneyStdDev": 8404,
+            "finalMoneyCoefficientOfVariation": 0.3742,
             "performanceScoreStdDev": 8,
-            "finalHarmonyStdDev": 13,
-            "maxDrawdownMeanPct": 30.19,
-            "maxDrawdownP90Pct": 67.92,
-            "moneyRangeMedian": 24340
+            "finalHarmonyStdDev": 14,
+            "maxDrawdownMeanPct": 33.04,
+            "maxDrawdownP90Pct": 76.25,
+            "moneyRangeMedian": 23389
           },
           "fameAccounting": {
             "startingFame": 0,
-            "earned": 10467,
-            "spentGross": 2972,
+            "earned": 10115,
+            "spentGross": 2930,
             "refunded": 0,
-            "spentNet": 2972,
+            "spentNet": 2930,
             "lost": 1,
             "clampAdjustment": 0,
-            "finalFame": 7494.49,
+            "finalFame": 7184.02,
             "reconciliationDelta": 0,
             "maxAbsReconciliationDelta": 0,
             "reconciledRuns": 2000,
@@ -5164,39 +5170,41 @@
           },
           "executionCoverage": {
             "brandDeals": {
-              "evaluations": 19166,
-              "activations": 86,
+              "evaluations": 18895,
+              "activations": 82,
               "uniqueIdsSeen": [
                 "basement_zine",
                 "blood_bank_promo",
                 "charity_concerts",
                 "community_radio",
+                "corp_app",
                 "corp_beverage",
                 "corp_fast_food",
+                "designer_narcotics",
                 "energy_drink_cx",
+                "good_human_rights",
                 "good_rebel_fund",
                 "guitar_brand_shred",
                 "gutter_brew",
                 "hemp_merch",
                 "indie_amp_builder",
-                "indie_cult_label",
                 "indie_label_void",
                 "local_pawn_shop",
                 "neon_lung_vapes",
-                "neutral_telecom",
                 "recycled_picks",
                 "riot_apparel",
-                "underground_fight_club",
-                "upcycled_instruments"
+                "sustainable_energy_provider",
+                "synapse_nootropics"
               ],
               "availableIds": 54,
               "covered": true
             },
             "postOptions": {
-              "evaluations": 2509,
-              "activations": 2509,
+              "evaluations": 2430,
+              "activations": 2430,
               "uniqueIdsSeen": [
                 "collab_influencer",
+                "comm_loyalty_merch_drive",
                 "comm_sellout_ad",
                 "drama_crowdsurf_fail",
                 "drama_cryptic_teaser",
@@ -5213,10 +5221,12 @@
                 "lifestyle_tour_diary",
                 "music_theory_thread",
                 "perf_acoustic_cover",
+                "perf_apology_video",
                 "perf_band_selfie",
                 "perf_smashed_gear",
                 "perf_sound_guy_rant",
                 "radicalize_fans",
+                "recovery_leaked_good_deed",
                 "tech_rig_rundown",
                 "wholesome_dinner"
               ],
@@ -5224,8 +5234,8 @@
               "covered": true
             },
             "socialTrends": {
-              "evaluations": 19350,
-              "activations": 2342,
+              "evaluations": 19115,
+              "activations": 2242,
               "uniqueIdsSeen": [
                 "DRAMA",
                 "MUSIC",
@@ -5237,8 +5247,8 @@
               "covered": true
             },
             "contraband": {
-              "evaluations": 19350,
-              "activations": 2139,
+              "evaluations": 19115,
+              "activations": 2082,
               "uniqueIdsSeen": [
                 "c_abyssal_microphone",
                 "c_abyssal_pendant",
@@ -5282,32 +5292,32 @@
               "covered": true
             },
             "minigamesTravel": {
-              "attempts": 19159,
-              "completions": 11019,
+              "attempts": 18851,
+              "completions": 10880,
               "covered": true
             },
             "minigamesRoadie": {
-              "attempts": 4474,
-              "completions": 3793,
+              "attempts": 4364,
+              "completions": 3719,
               "covered": true
             },
             "minigamesKabelsalat": {
-              "attempts": 4449,
-              "completions": 2999,
+              "attempts": 4398,
+              "completions": 2976,
               "covered": true
             },
             "minigamesAmp": {
-              "attempts": 4471,
-              "completions": 2702,
+              "attempts": 4375,
+              "completions": 2693,
               "covered": true
             },
             "sponsorship": {
-              "attempts": 19350,
-              "successes": 65,
+              "attempts": 19115,
+              "successes": 70,
               "covered": true
             },
             "restStops": {
-              "evaluations": 19350,
+              "evaluations": 19115,
               "activations": 0,
               "covered": false
             }
@@ -10624,6 +10634,1798 @@
       }
     }
   ],
+  "chaosCandidateComparison": {
+    "candidate": {
+      "id": "negative-financial-events-1.25",
+      "scenarioId": "chaos_tour",
+      "negativeFinancialEventMultiplier": 1.25,
+      "productionChange": false
+    },
+    "seedNamespace": "#scenario-tension-attribution-v1#chaos-event-loss-1.25",
+    "control": {
+      "avgFinalMoney": 25457,
+      "avgFinalFame": 7330,
+      "avgFinalHarmony": 33,
+      "avgGigsPlayed": 7.3,
+      "avgGigNet": 4209,
+      "bankruptcyRate": 3.7,
+      "avgEventsApplied": 1.82,
+      "avgGigEvents": 1.33,
+      "avgPerformanceScore": 57,
+      "statistics": {
+        "finalMoney": {
+          "mean": 25457,
+          "median": 25993,
+          "stdDev": 7070,
+          "min": 0,
+          "p10": 19565,
+          "p25": 22680,
+          "p75": 29619,
+          "p90": 32686,
+          "max": 45538
+        },
+        "finalFame": {
+          "mean": 7330,
+          "median": 7178,
+          "stdDev": 3630,
+          "min": 0,
+          "p10": 3887,
+          "p25": 5460,
+          "p75": 8750,
+          "p90": 10342,
+          "max": 39283
+        },
+        "gigsPlayed": {
+          "mean": 7.3,
+          "median": 8,
+          "stdDev": 1.73,
+          "min": 0,
+          "p10": 6,
+          "p25": 7,
+          "p75": 8,
+          "p90": 9,
+          "max": 10
+        },
+        "daysSurvived": {
+          "mean": 9.83,
+          "median": 10,
+          "stdDev": 0.93,
+          "min": 3,
+          "p10": 10,
+          "p25": 10,
+          "p75": 10,
+          "p90": 10,
+          "max": 10
+        },
+        "gigNet": {
+          "mean": 4209,
+          "median": 4235,
+          "stdDev": 999,
+          "min": 0,
+          "p10": 3483,
+          "p25": 3834,
+          "p75": 4736,
+          "p90": 5249,
+          "max": 7983
+        },
+        "performanceScore": {
+          "mean": 57,
+          "median": 57,
+          "stdDev": 8,
+          "min": 0,
+          "p10": 48,
+          "p25": 52,
+          "p75": 61,
+          "p90": 65,
+          "max": 82
+        },
+        "lowestMoney": {
+          "mean": 472,
+          "median": 500,
+          "stdDev": 90,
+          "min": 1,
+          "p10": 395,
+          "p25": 500,
+          "p75": 500,
+          "p90": 500,
+          "max": 500
+        },
+        "peakMoney": {
+          "mean": 25533,
+          "median": 26013,
+          "stdDev": 6885,
+          "min": 500,
+          "p10": 19628,
+          "p25": 22687,
+          "p75": 29619,
+          "p90": 32686,
+          "max": 45538
+        },
+        "maxDrawdownPct": {
+          "mean": 25.49,
+          "median": 18.31,
+          "stdDev": 21.95,
+          "min": 0,
+          "p10": 5.43,
+          "p25": 9.83,
+          "p75": 33.47,
+          "p90": 57.38,
+          "max": 99.92
+        },
+        "finalHarmony": {
+          "mean": 33,
+          "median": 33,
+          "stdDev": 17,
+          "min": 1,
+          "p10": 10,
+          "p25": 22,
+          "p75": 44,
+          "p90": 53,
+          "max": 91
+        },
+        "eventsApplied": {
+          "mean": 1.82,
+          "median": 2,
+          "stdDev": 1.3,
+          "min": 0,
+          "p10": 0,
+          "p25": 1,
+          "p75": 3,
+          "p90": 4,
+          "max": 7
+        },
+        "gigEvents": {
+          "mean": 1.33,
+          "median": 1,
+          "stdDev": 1.13,
+          "min": 0,
+          "p10": 0,
+          "p25": 0,
+          "p75": 2,
+          "p90": 3,
+          "max": 7
+        },
+        "fameEarned": {
+          "mean": 10379,
+          "median": 10280,
+          "stdDev": 3599,
+          "min": 0,
+          "p10": 7655,
+          "p25": 8964,
+          "p75": 11633,
+          "p90": 12860,
+          "max": 42806
+        },
+        "fameEarnedPerGig": {
+          "mean": 1431,
+          "median": 1405,
+          "stdDev": 461,
+          "min": 0,
+          "p10": 1167,
+          "p25": 1300,
+          "p75": 1501,
+          "p90": 1607,
+          "max": 6440
+        }
+      },
+      "population": {
+        "allRuns": {
+          "sampleSize": 2000,
+          "finalMoney": {
+            "mean": 25457,
+            "median": 25993,
+            "stdDev": 7070,
+            "min": 0,
+            "p10": 19565,
+            "p25": 22680,
+            "p75": 29619,
+            "p90": 32686,
+            "max": 45538
+          },
+          "finalFame": {
+            "mean": 7330,
+            "median": 7178,
+            "stdDev": 3630,
+            "min": 0,
+            "p10": 3887,
+            "p25": 5460,
+            "p75": 8750,
+            "p90": 10342,
+            "max": 39283
+          },
+          "gigsPlayed": {
+            "mean": 7.3,
+            "median": 8,
+            "stdDev": 1.73,
+            "min": 0,
+            "p10": 6,
+            "p25": 7,
+            "p75": 8,
+            "p90": 9,
+            "max": 10
+          },
+          "daysSurvived": {
+            "mean": 9.83,
+            "median": 10,
+            "stdDev": 0.93,
+            "min": 3,
+            "p10": 10,
+            "p25": 10,
+            "p75": 10,
+            "p90": 10,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 4209,
+            "median": 4235,
+            "stdDev": 999,
+            "min": 0,
+            "p10": 3483,
+            "p25": 3834,
+            "p75": 4736,
+            "p90": 5249,
+            "max": 7983
+          },
+          "performanceScore": {
+            "mean": 57,
+            "median": 57,
+            "stdDev": 8,
+            "min": 0,
+            "p10": 48,
+            "p25": 52,
+            "p75": 61,
+            "p90": 65,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 33,
+            "median": 33,
+            "stdDev": 17,
+            "min": 1,
+            "p10": 10,
+            "p25": 22,
+            "p75": 44,
+            "p90": 53,
+            "max": 91
+          },
+          "fameEarned": {
+            "mean": 10379,
+            "median": 10280,
+            "stdDev": 3599,
+            "min": 0,
+            "p10": 7655,
+            "p25": 8964,
+            "p75": 11633,
+            "p90": 12860,
+            "max": 42806
+          },
+          "fameEarnedPerGig": {
+            "mean": 1431,
+            "median": 1405,
+            "stdDev": 461,
+            "min": 0,
+            "p10": 1167,
+            "p25": 1300,
+            "p75": 1501,
+            "p90": 1607,
+            "max": 6440
+          }
+        },
+        "solventRuns": {
+          "sampleSize": 1926,
+          "finalMoney": {
+            "mean": 26435,
+            "median": 26190,
+            "stdDev": 5102,
+            "min": 37,
+            "p10": 20796,
+            "p25": 23025,
+            "p75": 29744,
+            "p90": 32761,
+            "max": 45538
+          },
+          "finalFame": {
+            "mean": 7568,
+            "median": 7290,
+            "stdDev": 3472,
+            "min": 308,
+            "p10": 4338,
+            "p25": 5719,
+            "p75": 8851,
+            "p90": 10411,
+            "max": 39283
+          },
+          "gigsPlayed": {
+            "mean": 7.54,
+            "median": 8,
+            "stdDev": 1.23,
+            "min": 3,
+            "p10": 6,
+            "p25": 7,
+            "p75": 8,
+            "p90": 9,
+            "max": 10
+          },
+          "daysSurvived": {
+            "mean": 10,
+            "median": 10,
+            "stdDev": 0,
+            "min": 10,
+            "p10": 10,
+            "p25": 10,
+            "p75": 10,
+            "p90": 10,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 4351,
+            "median": 4262,
+            "stdDev": 695,
+            "min": 956,
+            "p10": 3595,
+            "p25": 3881,
+            "p75": 4763,
+            "p90": 5263,
+            "max": 7983
+          },
+          "performanceScore": {
+            "mean": 57,
+            "median": 57,
+            "stdDev": 6,
+            "min": 40,
+            "p10": 48,
+            "p25": 52,
+            "p75": 61,
+            "p90": 65,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 32,
+            "median": 32,
+            "stdDev": 16,
+            "min": 1,
+            "p10": 10,
+            "p25": 21,
+            "p75": 42,
+            "p90": 50,
+            "max": 91
+          },
+          "fameEarned": {
+            "mean": 10705,
+            "median": 10353,
+            "stdDev": 3228,
+            "min": 3996,
+            "p10": 8040,
+            "p25": 9150,
+            "p75": 11679,
+            "p90": 12885,
+            "max": 42806
+          },
+          "fameEarnedPerGig": {
+            "mean": 1431,
+            "median": 1403,
+            "stdDev": 408,
+            "min": 703,
+            "p10": 1173,
+            "p25": 1300,
+            "p75": 1494,
+            "p90": 1595,
+            "max": 6360
+          }
+        },
+        "bankruptRuns": {
+          "sampleSize": 74,
+          "finalMoney": {
+            "mean": 0,
+            "median": 0,
+            "stdDev": 0,
+            "min": 0,
+            "p10": 0,
+            "p25": 0,
+            "p75": 0,
+            "p90": 0,
+            "max": 0
+          },
+          "finalFame": {
+            "mean": 1153,
+            "median": 813,
+            "stdDev": 1646,
+            "min": 0,
+            "p10": 0,
+            "p25": 104,
+            "p75": 1308,
+            "p90": 2361,
+            "max": 9707
+          },
+          "gigsPlayed": {
+            "mean": 1.03,
+            "median": 1,
+            "stdDev": 0.88,
+            "min": 0,
+            "p10": 0,
+            "p25": 1,
+            "p75": 1,
+            "p90": 2,
+            "max": 6
+          },
+          "daysSurvived": {
+            "mean": 5.32,
+            "median": 5,
+            "stdDev": 1.53,
+            "min": 3,
+            "p10": 3.3,
+            "p25": 4,
+            "p75": 6,
+            "p90": 7,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 510,
+            "median": 454,
+            "stdDev": 404,
+            "min": 0,
+            "p10": 0,
+            "p25": 261,
+            "p75": 825,
+            "p90": 1062,
+            "max": 1891
+          },
+          "performanceScore": {
+            "mean": 51,
+            "median": 62,
+            "stdDev": 28,
+            "min": 0,
+            "p10": 0,
+            "p25": 54,
+            "p75": 68,
+            "p90": 75,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 66,
+            "median": 66,
+            "stdDev": 9,
+            "min": 40,
+            "p10": 53,
+            "p25": 60,
+            "p75": 72,
+            "p90": 79,
+            "max": 85
+          },
+          "fameEarned": {
+            "mean": 1887,
+            "median": 1590,
+            "stdDev": 2002,
+            "min": 0,
+            "p10": 0,
+            "p25": 1355,
+            "p75": 1866,
+            "p90": 3356,
+            "max": 12570
+          },
+          "fameEarnedPerGig": {
+            "mean": 1439,
+            "median": 1533,
+            "stdDev": 1201,
+            "min": 0,
+            "p10": 0,
+            "p25": 1335,
+            "p75": 1666,
+            "p90": 1884,
+            "max": 6440
+          }
+        }
+      },
+      "avgFameProgress": 10379,
+      "avgFameProgressPerGig": 1431.44,
+      "avgPeakToTroughDrop": 25.49,
+      "avgPeakMoney": 25533,
+      "avgLowestMoney": 472,
+      "avgFinalControversy": 5.36,
+      "avgClinicVisits": 0,
+      "avgSponsorPayouts": 0.12,
+      "avgSponsorSignings": 0.05,
+      "avgSponsorDrops": 0.01,
+      "avgBrandDealsActivated": 0.06,
+      "avgRefuels": 1.1,
+      "avgRepairs": 1.25,
+      "avgHqUpgrades": 2.13,
+      "avgVanUpgrades": 3.68,
+      "avgCatalogUpgrades": 11.37,
+      "avgTravelMinigames": 9.74,
+      "avgRoadieMinigames": 2.41,
+      "avgKabelsalatMinigames": 2.43,
+      "avgAmpCalibrations": 2.46,
+      "avgRestStops": 0,
+      "avgRestDays": 0,
+      "avgRestStopArrivals": 0.82,
+      "avgAssetsPurchased": 0.29,
+      "avgLoansTaken": 0.14,
+      "avgModulesInstalled": 0.11,
+      "avgCrowdfundsStarted": 0.33,
+      "avgTraitUnlocks": 1.61,
+      "avgFinalAssets": 0.29,
+      "avgTrendShifts": 1.11,
+      "avgSpecialEvents": 0.34,
+      "avgCashSwings": 0.58,
+      "avgBandEvents": 0.56,
+      "avgEquipmentEvents": 0.34,
+      "avgPostPulses": 1.31,
+      "avgContrabandDrops": 1.03,
+      "avgClinicSpend": 1,
+      "regionRepTouchedPct": 95.7,
+      "avgTravelCostPerGig": 97,
+      "avgHitWindow": 152,
+      "avgMissesPerGig": 7.4,
+      "gigScorePctLow": 29.5,
+      "gigScorePctMid": 56.8,
+      "gigScorePctHigh": 13.6,
+      "gigNetToTravelRatio": 44.1,
+      "sinkToIncomeRatio": 0.05,
+      "gigCapHitPct": 5.8,
+      "gigsToAffordHqUpgrade": 2.97,
+      "gigsToAffordVanUpgrade": 0.19,
+      "avgMoneyAtEarlyCheckpoint": 2295,
+      "avgMoneyAtMidCheckpoint": 4796,
+      "avgMoneyAtLateCheckpoint": 6310,
+      "bankruptcy": {
+        "count": 74,
+        "sampleSize": 2000,
+        "ratePct": 3.7,
+        "confidence95": {
+          "lowerPct": 2.96,
+          "upperPct": 4.62,
+          "method": "wilson"
+        }
+      },
+      "tourPaths": {
+        "tourDepth": 10,
+        "finaleReachedPct": 96.05,
+        "finaleCompletedPct": 94.8,
+        "avgDeepestLayerReached": 9.74,
+        "avgArrivals": 9.74,
+        "avgNonPerformingArrivals": 2.42,
+        "avgRouteDeadEnds": 0,
+        "avgStrandedDays": 0.05,
+        "strandedRunsPct": 3.75,
+        "travelBlockedByReason": {
+          "money": 0.05,
+          "fuel": 0,
+          "venue_access": 0
+        },
+        "avgRefuelledToTravel": 0.38,
+        "nodeTypeSharePct": {
+          "GIG": 57.4,
+          "SUPPLY_STOP": 8.02,
+          "FESTIVAL": 7.91,
+          "FINALE": 9.86,
+          "SPECIAL": 8.39,
+          "REST_STOP": 8.43
+        }
+      },
+      "purchasePaths": {
+        "catalogSize": 67,
+        "runsWithAnyPurchasePct": 100,
+        "firstPurchaseDayMedian": 1,
+        "vanUpgradeReachedPct": 98.2,
+        "firstVanUpgradeDayMedian": 3,
+        "hqUpgradeReachedPct": 92.35,
+        "firstHqUpgradeDayMedian": 3,
+        "avgDistinctItemsPurchased": 10.29,
+        "catalogSharePurchasedPct": 15.36,
+        "modalFirstPurchaseCategory": "MERCH",
+        "avgMoneyBeforePurchase": 5616.55,
+        "avgResidualMoneyAfterPurchase": 5248.26,
+        "avgMissedPurchases": 0.91,
+        "avgLiquidityDeferrals": 0.19,
+        "avgUnaffordableAtMidCheckpoint": 2.99,
+        "avgAffordableAtMidCheckpoint": 58.23,
+        "avgUnaffordableAtEnd": 1.82,
+        "avgAffordableAtEnd": 54.95
+      },
+      "gigEconomics": {
+        "gigNetPerCalendarDay": 3179,
+        "gigNetPerGigDay": 4281,
+        "gigsPerCalendarDay": 0.743,
+        "avgRestDays": 0,
+        "avgFreeRestStops": 0,
+        "restDaySharePct": 0.02,
+        "foregoneGigNetPerRestDayUpperBound": 4281,
+        "travelCostShareOfGigNetPct": 2.27,
+        "avgTravelCostPerGigDay": 97,
+        "catalogItemsUnderOneGigNetPct": 95.35,
+        "moneyPricedCatalogSize": 43,
+        "minHarmonyObserved": 1,
+        "minMemberStaminaObserved": 36,
+        "minMemberMoodObserved": 48
+      },
+      "financialStress": {
+        "thresholds": {
+          "tightEur": 500,
+          "criticalEur": 250
+        },
+        "bankruptcyRatePct": 3.7,
+        "bankruptcyBeforeFirstGigPct": 0.8,
+        "bankruptcyAfterFirstGigPct": 2.9,
+        "everBelowTightPct": 13.3,
+        "everBelowCriticalPct": 3.9,
+        "zeroBalancePct": 0,
+        "creditOrGrantAssistedPct": 13.25,
+        "avgDaysBelowTightThreshold": 0.2,
+        "avgDaysBelowCriticalThreshold": 0.07,
+        "medianMaxDrawdownPct": 18.31,
+        "p90MaxDrawdownPct": 57.38,
+        "solventFinalMoneyP10": 20796,
+        "medianBankruptcyDay": 5,
+        "earliestBankruptcyDay": 3
+      },
+      "actualLossAttribution": {
+        "daily_obligations": {
+          "total": 3721451,
+          "median": 1844,
+          "p90": 2407,
+          "firstMaterialDrawdownSharePct": 25.85,
+          "bankruptcyPredecessorSharePct": 56.76
+        },
+        "travel": {
+          "total": 1323098,
+          "median": 684,
+          "p90": 764,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "fuel": {
+          "total": 324542,
+          "median": 156,
+          "p90": 266,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 4.05
+        },
+        "maintenance_repairs": {
+          "total": 857946,
+          "median": 474,
+          "p90": 636,
+          "firstMaterialDrawdownSharePct": 1.7,
+          "bankruptcyPredecessorSharePct": 4.05
+        },
+        "negative_events": {
+          "total": 44809,
+          "median": 0,
+          "p90": 71,
+          "firstMaterialDrawdownSharePct": 0.2,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "clinic": {
+          "total": 1120,
+          "median": 0,
+          "p90": 0,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "assets_upgrades": {
+          "total": 5925625,
+          "median": 1270,
+          "p90": 9114,
+          "firstMaterialDrawdownSharePct": 26.85,
+          "bankruptcyPredecessorSharePct": 13.51
+        },
+        "other": {
+          "total": 454324,
+          "median": 221,
+          "p90": 365,
+          "firstMaterialDrawdownSharePct": 31.65,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "gig_settlement": {
+          "total": 0,
+          "median": 0,
+          "p90": 0,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        }
+      },
+      "grossSpendAttribution": {
+        "modifierGrossSpend": {
+          "total": 681204,
+          "median": 342,
+          "p90": 488
+        },
+        "venueGrossSpend": {
+          "total": 164985691,
+          "median": 87467,
+          "p90": 120790
+        },
+        "taxGrossSpend": {
+          "total": 66173329,
+          "median": 34313,
+          "p90": 49708
+        },
+        "otherGrossSpend": {
+          "total": 131724,
+          "median": 48,
+          "p90": 156
+        }
+      },
+      "volatility": {
+        "finalMoneyStdDev": 7070,
+        "finalMoneyCoefficientOfVariation": 0.2777,
+        "performanceScoreStdDev": 8,
+        "finalHarmonyStdDev": 17,
+        "maxDrawdownMeanPct": 25.49,
+        "maxDrawdownP90Pct": 57.38,
+        "moneyRangeMedian": 25516
+      },
+      "fameAccounting": {
+        "startingFame": 0,
+        "earned": 10379,
+        "spentGross": 3045,
+        "refunded": 0,
+        "spentNet": 3045,
+        "lost": 4,
+        "clampAdjustment": 0,
+        "finalFame": 7330.25,
+        "reconciliationDelta": 0,
+        "maxAbsReconciliationDelta": 0,
+        "reconciledRuns": 2000,
+        "sampleSize": 2000
+      },
+      "executionCoverage": {
+        "brandDeals": {
+          "evaluations": 19319,
+          "activations": 115,
+          "uniqueIdsSeen": [
+            "basement_zine",
+            "blood_bank_promo",
+            "charity_concerts",
+            "community_radio",
+            "corp_app",
+            "corp_beverage",
+            "corp_fashion_line",
+            "corp_fast_food",
+            "energy_drink_cx",
+            "good_rebel_fund",
+            "guitar_brand_shred",
+            "gutter_brew",
+            "hemp_merch",
+            "indie_amp_builder",
+            "indie_cult_label",
+            "indie_label_void",
+            "local_pawn_shop",
+            "neon_lung_vapes",
+            "recycled_picks",
+            "riot_apparel",
+            "solar_power_bank",
+            "synapse_nootropics"
+          ],
+          "availableIds": 54,
+          "covered": true
+        },
+        "postOptions": {
+          "evaluations": 2617,
+          "activations": 2617,
+          "uniqueIdsSeen": [
+            "collab_influencer",
+            "comm_sellout_ad",
+            "drama_crowdsurf_fail",
+            "drama_cryptic_teaser",
+            "drama_drunk_stream",
+            "drama_emotional_interview",
+            "drama_gear_flex",
+            "drama_leak_demo",
+            "drama_leaked_dms",
+            "drama_manufactured",
+            "drama_political_take",
+            "drama_tour_bus_prank",
+            "lifestyle_behind_the_scenes",
+            "lifestyle_fan_dinner",
+            "lifestyle_gear_care",
+            "lifestyle_tour_diary",
+            "music_theory_thread",
+            "perf_acoustic_cover",
+            "perf_apology_video",
+            "perf_band_selfie",
+            "perf_smashed_gear",
+            "perf_sound_guy_rant",
+            "perf_tech_playthrough",
+            "radicalize_fans",
+            "tech_rig_rundown",
+            "wholesome_dinner"
+          ],
+          "availableIds": 36,
+          "covered": true
+        },
+        "socialTrends": {
+          "evaluations": 19580,
+          "activations": 2230,
+          "uniqueIdsSeen": [
+            "DRAMA",
+            "MUSIC",
+            "NEUTRAL",
+            "TECH",
+            "WHOLESOME"
+          ],
+          "availableIds": 5,
+          "covered": true
+        },
+        "contraband": {
+          "evaluations": 19580,
+          "activations": 2062,
+          "uniqueIdsSeen": [
+            "c_abyssal_microphone",
+            "c_abyssal_pendant",
+            "c_amped_synth",
+            "c_blackout_mask",
+            "c_blood_pact",
+            "c_blood_pick",
+            "c_bone_dust",
+            "c_broken_compass",
+            "c_cursed_pick",
+            "c_cursed_setlist",
+            "c_cybernetic_plectrum_implant",
+            "c_fermented_void_juice",
+            "c_forgotten_road_map",
+            "c_gig_program",
+            "c_grimoire_page",
+            "c_gutter_amulet",
+            "c_hyper_adrenaline_ampoule",
+            "c_lucky_coin",
+            "c_merch_manifest",
+            "c_motivational_gramophone",
+            "c_mystery_pills",
+            "c_neon_patch",
+            "c_neuro_mold_spores",
+            "c_night_vision_glasses",
+            "c_phantom_strings",
+            "c_phase_metronome",
+            "c_radiant_pick",
+            "c_rusty_strings",
+            "c_shattered_ear",
+            "c_silver_tongue",
+            "c_sonic_resonator",
+            "c_sticky_logo_sticker",
+            "c_sticky_plectrum",
+            "c_void_ash",
+            "c_void_energy",
+            "c_warped_tape",
+            "c_weekender_coffee"
+          ],
+          "availableIds": 37,
+          "covered": true
+        },
+        "minigamesTravel": {
+          "attempts": 19474,
+          "completions": 10441,
+          "covered": true
+        },
+        "minigamesRoadie": {
+          "attempts": 4817,
+          "completions": 2845,
+          "covered": true
+        },
+        "minigamesKabelsalat": {
+          "attempts": 4859,
+          "completions": 2891,
+          "covered": true
+        },
+        "minigamesAmp": {
+          "attempts": 4919,
+          "completions": 1607,
+          "covered": true
+        },
+        "sponsorship": {
+          "attempts": 19580,
+          "successes": 100,
+          "covered": true
+        },
+        "restStops": {
+          "evaluations": 19580,
+          "activations": 0,
+          "covered": false
+        }
+      }
+    },
+    "result": {
+      "avgFinalMoney": 25440,
+      "avgFinalFame": 7322,
+      "avgFinalHarmony": 33,
+      "avgGigsPlayed": 7.29,
+      "avgGigNet": 4206,
+      "bankruptcyRate": 3.8,
+      "avgEventsApplied": 1.83,
+      "avgGigEvents": 1.33,
+      "avgPerformanceScore": 56,
+      "statistics": {
+        "finalMoney": {
+          "mean": 25440,
+          "median": 26006,
+          "stdDev": 7115,
+          "min": 0,
+          "p10": 19563,
+          "p25": 22651,
+          "p75": 29618,
+          "p90": 32686,
+          "max": 45526
+        },
+        "finalFame": {
+          "mean": 7322,
+          "median": 7169,
+          "stdDev": 3632,
+          "min": 0,
+          "p10": 3875,
+          "p25": 5458,
+          "p75": 8750,
+          "p90": 10332,
+          "max": 39283
+        },
+        "gigsPlayed": {
+          "mean": 7.29,
+          "median": 8,
+          "stdDev": 1.74,
+          "min": 0,
+          "p10": 6,
+          "p25": 7,
+          "p75": 8,
+          "p90": 9,
+          "max": 10
+        },
+        "daysSurvived": {
+          "mean": 9.82,
+          "median": 10,
+          "stdDev": 0.95,
+          "min": 3,
+          "p10": 10,
+          "p25": 10,
+          "p75": 10,
+          "p90": 10,
+          "max": 10
+        },
+        "gigNet": {
+          "mean": 4206,
+          "median": 4235,
+          "stdDev": 1007,
+          "min": 0,
+          "p10": 3480,
+          "p25": 3833,
+          "p75": 4737,
+          "p90": 5249,
+          "max": 7983
+        },
+        "performanceScore": {
+          "mean": 56,
+          "median": 57,
+          "stdDev": 8,
+          "min": 0,
+          "p10": 48,
+          "p25": 52,
+          "p75": 61,
+          "p90": 65,
+          "max": 82
+        },
+        "lowestMoney": {
+          "mean": 472,
+          "median": 500,
+          "stdDev": 91,
+          "min": 1,
+          "p10": 395,
+          "p25": 500,
+          "p75": 500,
+          "p90": 500,
+          "max": 500
+        },
+        "peakMoney": {
+          "mean": 25517,
+          "median": 26015,
+          "stdDev": 6929,
+          "min": 500,
+          "p10": 19628,
+          "p25": 22657,
+          "p75": 29618,
+          "p90": 32686,
+          "max": 45526
+        },
+        "maxDrawdownPct": {
+          "mean": 25.58,
+          "median": 18.36,
+          "stdDev": 22.05,
+          "min": 0,
+          "p10": 5.44,
+          "p25": 9.86,
+          "p75": 33.63,
+          "p90": 57.52,
+          "max": 99.92
+        },
+        "finalHarmony": {
+          "mean": 33,
+          "median": 33,
+          "stdDev": 17,
+          "min": 1,
+          "p10": 10,
+          "p25": 22,
+          "p75": 44,
+          "p90": 53,
+          "max": 91
+        },
+        "eventsApplied": {
+          "mean": 1.83,
+          "median": 2,
+          "stdDev": 1.3,
+          "min": 0,
+          "p10": 0,
+          "p25": 1,
+          "p75": 3,
+          "p90": 4,
+          "max": 7
+        },
+        "gigEvents": {
+          "mean": 1.33,
+          "median": 1,
+          "stdDev": 1.12,
+          "min": 0,
+          "p10": 0,
+          "p25": 0,
+          "p75": 2,
+          "p90": 3,
+          "max": 7
+        },
+        "fameEarned": {
+          "mean": 10370,
+          "median": 10280,
+          "stdDev": 3610,
+          "min": 0,
+          "p10": 7650,
+          "p25": 8969,
+          "p75": 11626,
+          "p90": 12860,
+          "max": 42806
+        },
+        "fameEarnedPerGig": {
+          "mean": 1431,
+          "median": 1405,
+          "stdDev": 462,
+          "min": 0,
+          "p10": 1167,
+          "p25": 1300,
+          "p75": 1501,
+          "p90": 1607,
+          "max": 6440
+        }
+      },
+      "population": {
+        "allRuns": {
+          "sampleSize": 2000,
+          "finalMoney": {
+            "mean": 25440,
+            "median": 26006,
+            "stdDev": 7115,
+            "min": 0,
+            "p10": 19563,
+            "p25": 22651,
+            "p75": 29618,
+            "p90": 32686,
+            "max": 45526
+          },
+          "finalFame": {
+            "mean": 7322,
+            "median": 7169,
+            "stdDev": 3632,
+            "min": 0,
+            "p10": 3875,
+            "p25": 5458,
+            "p75": 8750,
+            "p90": 10332,
+            "max": 39283
+          },
+          "gigsPlayed": {
+            "mean": 7.29,
+            "median": 8,
+            "stdDev": 1.74,
+            "min": 0,
+            "p10": 6,
+            "p25": 7,
+            "p75": 8,
+            "p90": 9,
+            "max": 10
+          },
+          "daysSurvived": {
+            "mean": 9.82,
+            "median": 10,
+            "stdDev": 0.95,
+            "min": 3,
+            "p10": 10,
+            "p25": 10,
+            "p75": 10,
+            "p90": 10,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 4206,
+            "median": 4235,
+            "stdDev": 1007,
+            "min": 0,
+            "p10": 3480,
+            "p25": 3833,
+            "p75": 4737,
+            "p90": 5249,
+            "max": 7983
+          },
+          "performanceScore": {
+            "mean": 56,
+            "median": 57,
+            "stdDev": 8,
+            "min": 0,
+            "p10": 48,
+            "p25": 52,
+            "p75": 61,
+            "p90": 65,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 33,
+            "median": 33,
+            "stdDev": 17,
+            "min": 1,
+            "p10": 10,
+            "p25": 22,
+            "p75": 44,
+            "p90": 53,
+            "max": 91
+          },
+          "fameEarned": {
+            "mean": 10370,
+            "median": 10280,
+            "stdDev": 3610,
+            "min": 0,
+            "p10": 7650,
+            "p25": 8969,
+            "p75": 11626,
+            "p90": 12860,
+            "max": 42806
+          },
+          "fameEarnedPerGig": {
+            "mean": 1431,
+            "median": 1405,
+            "stdDev": 462,
+            "min": 0,
+            "p10": 1167,
+            "p25": 1300,
+            "p75": 1501,
+            "p90": 1607,
+            "max": 6440
+          }
+        },
+        "solventRuns": {
+          "sampleSize": 1924,
+          "finalMoney": {
+            "mean": 26445,
+            "median": 26210,
+            "stdDev": 5103,
+            "min": 37,
+            "p10": 20806,
+            "p25": 23029,
+            "p75": 29738,
+            "p90": 32791,
+            "max": 45526
+          },
+          "finalFame": {
+            "mean": 7566,
+            "median": 7288,
+            "stdDev": 3470,
+            "min": 308,
+            "p10": 4342,
+            "p25": 5723,
+            "p75": 8847,
+            "p90": 10407,
+            "max": 39283
+          },
+          "gigsPlayed": {
+            "mean": 7.54,
+            "median": 8,
+            "stdDev": 1.23,
+            "min": 3,
+            "p10": 6,
+            "p25": 7,
+            "p75": 8,
+            "p90": 9,
+            "max": 10
+          },
+          "daysSurvived": {
+            "mean": 10,
+            "median": 10,
+            "stdDev": 0,
+            "min": 10,
+            "p10": 10,
+            "p25": 10,
+            "p75": 10,
+            "p90": 10,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 4352,
+            "median": 4262,
+            "stdDev": 697,
+            "min": 956,
+            "p10": 3595,
+            "p25": 3882,
+            "p75": 4765,
+            "p90": 5264,
+            "max": 7983
+          },
+          "performanceScore": {
+            "mean": 57,
+            "median": 57,
+            "stdDev": 6,
+            "min": 40,
+            "p10": 48,
+            "p25": 52,
+            "p75": 61,
+            "p90": 65,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 32,
+            "median": 32,
+            "stdDev": 16,
+            "min": 1,
+            "p10": 10,
+            "p25": 21,
+            "p75": 42,
+            "p90": 50,
+            "max": 91
+          },
+          "fameEarned": {
+            "mean": 10707,
+            "median": 10355,
+            "stdDev": 3228,
+            "min": 3996,
+            "p10": 8055,
+            "p25": 9154,
+            "p75": 11676,
+            "p90": 12880,
+            "max": 42806
+          },
+          "fameEarnedPerGig": {
+            "mean": 1431,
+            "median": 1403,
+            "stdDev": 408,
+            "min": 703,
+            "p10": 1175,
+            "p25": 1299,
+            "p75": 1494,
+            "p90": 1595,
+            "max": 6360
+          }
+        },
+        "bankruptRuns": {
+          "sampleSize": 76,
+          "finalMoney": {
+            "mean": 0,
+            "median": 0,
+            "stdDev": 0,
+            "min": 0,
+            "p10": 0,
+            "p25": 0,
+            "p75": 0,
+            "p90": 0,
+            "max": 0
+          },
+          "finalFame": {
+            "mean": 1138,
+            "median": 813,
+            "stdDev": 1628,
+            "min": 0,
+            "p10": 0,
+            "p25": 153,
+            "p75": 1303,
+            "p90": 2321,
+            "max": 9707
+          },
+          "gigsPlayed": {
+            "mean": 1.01,
+            "median": 1,
+            "stdDev": 0.87,
+            "min": 0,
+            "p10": 0,
+            "p25": 1,
+            "p75": 1,
+            "p90": 2,
+            "max": 6
+          },
+          "daysSurvived": {
+            "mean": 5.29,
+            "median": 5,
+            "stdDev": 1.52,
+            "min": 3,
+            "p10": 3.5,
+            "p25": 4,
+            "p75": 6,
+            "p90": 7,
+            "max": 10
+          },
+          "gigNet": {
+            "mean": 503,
+            "median": 454,
+            "stdDev": 403,
+            "min": 0,
+            "p10": 0,
+            "p25": 260,
+            "p75": 804,
+            "p90": 1042,
+            "max": 1891
+          },
+          "performanceScore": {
+            "mean": 51,
+            "median": 62,
+            "stdDev": 28,
+            "min": 0,
+            "p10": 0,
+            "p25": 54,
+            "p75": 68,
+            "p90": 75,
+            "max": 82
+          },
+          "finalHarmony": {
+            "mean": 66,
+            "median": 66,
+            "stdDev": 9,
+            "min": 40,
+            "p10": 53,
+            "p25": 60,
+            "p75": 72,
+            "p90": 77,
+            "max": 85
+          },
+          "fameEarned": {
+            "mean": 1858,
+            "median": 1583,
+            "stdDev": 1988,
+            "min": 0,
+            "p10": 0,
+            "p25": 1345,
+            "p75": 1859,
+            "p90": 3326,
+            "max": 12570
+          },
+          "fameEarnedPerGig": {
+            "mean": 1421,
+            "median": 1524,
+            "stdDev": 1196,
+            "min": 0,
+            "p10": 0,
+            "p25": 1329,
+            "p75": 1659,
+            "p90": 1880,
+            "max": 6440
+          }
+        }
+      },
+      "avgFameProgress": 10370,
+      "avgFameProgressPerGig": 1430.85,
+      "avgPeakToTroughDrop": 25.58,
+      "avgPeakMoney": 25517,
+      "avgLowestMoney": 472,
+      "avgFinalControversy": 5.37,
+      "avgClinicVisits": 0,
+      "avgSponsorPayouts": 0.12,
+      "avgSponsorSignings": 0.05,
+      "avgSponsorDrops": 0.01,
+      "avgBrandDealsActivated": 0.06,
+      "avgRefuels": 1.1,
+      "avgRepairs": 1.25,
+      "avgHqUpgrades": 2.13,
+      "avgVanUpgrades": 3.68,
+      "avgCatalogUpgrades": 11.36,
+      "avgTravelMinigames": 9.73,
+      "avgRoadieMinigames": 2.41,
+      "avgKabelsalatMinigames": 2.43,
+      "avgAmpCalibrations": 2.46,
+      "avgRestStops": 0,
+      "avgRestDays": 0,
+      "avgRestStopArrivals": 0.82,
+      "avgAssetsPurchased": 0.29,
+      "avgLoansTaken": 0.14,
+      "avgModulesInstalled": 0.1,
+      "avgCrowdfundsStarted": 0.33,
+      "avgTraitUnlocks": 1.61,
+      "avgFinalAssets": 0.29,
+      "avgTrendShifts": 1.12,
+      "avgSpecialEvents": 0.34,
+      "avgCashSwings": 0.58,
+      "avgBandEvents": 0.56,
+      "avgEquipmentEvents": 0.34,
+      "avgPostPulses": 1.31,
+      "avgContrabandDrops": 1.03,
+      "avgClinicSpend": 1,
+      "regionRepTouchedPct": 95.6,
+      "avgTravelCostPerGig": 97,
+      "avgHitWindow": 152,
+      "avgMissesPerGig": 7.4,
+      "gigScorePctLow": 29.6,
+      "gigScorePctMid": 56.8,
+      "gigScorePctHigh": 13.6,
+      "gigNetToTravelRatio": 44.1,
+      "sinkToIncomeRatio": 0.05,
+      "gigCapHitPct": 5.8,
+      "gigsToAffordHqUpgrade": 2.97,
+      "gigsToAffordVanUpgrade": 0.19,
+      "avgMoneyAtEarlyCheckpoint": 2292,
+      "avgMoneyAtMidCheckpoint": 4788,
+      "avgMoneyAtLateCheckpoint": 6302,
+      "bankruptcy": {
+        "count": 76,
+        "sampleSize": 2000,
+        "ratePct": 3.8,
+        "confidence95": {
+          "lowerPct": 3.05,
+          "upperPct": 4.73,
+          "method": "wilson"
+        }
+      },
+      "tourPaths": {
+        "tourDepth": 10,
+        "finaleReachedPct": 95.95,
+        "finaleCompletedPct": 94.7,
+        "avgDeepestLayerReached": 9.73,
+        "avgArrivals": 9.73,
+        "avgNonPerformingArrivals": 2.42,
+        "avgRouteDeadEnds": 0,
+        "avgStrandedDays": 0.05,
+        "strandedRunsPct": 3.85,
+        "travelBlockedByReason": {
+          "money": 0.05,
+          "fuel": 0,
+          "venue_access": 0
+        },
+        "avgRefuelledToTravel": 0.38,
+        "nodeTypeSharePct": {
+          "GIG": 57.4,
+          "SUPPLY_STOP": 8.02,
+          "FESTIVAL": 7.91,
+          "FINALE": 9.86,
+          "SPECIAL": 8.38,
+          "REST_STOP": 8.42
+        }
+      },
+      "purchasePaths": {
+        "catalogSize": 67,
+        "runsWithAnyPurchasePct": 100,
+        "firstPurchaseDayMedian": 1,
+        "vanUpgradeReachedPct": 98.15,
+        "firstVanUpgradeDayMedian": 3,
+        "hqUpgradeReachedPct": 92.25,
+        "firstHqUpgradeDayMedian": 3,
+        "avgDistinctItemsPurchased": 10.28,
+        "catalogSharePurchasedPct": 15.34,
+        "modalFirstPurchaseCategory": "MERCH",
+        "avgMoneyBeforePurchase": 5614.05,
+        "avgResidualMoneyAfterPurchase": 5246.48,
+        "avgMissedPurchases": 0.91,
+        "avgLiquidityDeferrals": 0.19,
+        "avgUnaffordableAtMidCheckpoint": 2.99,
+        "avgAffordableAtMidCheckpoint": 58.23,
+        "avgUnaffordableAtEnd": 1.87,
+        "avgAffordableAtEnd": 54.9
+      },
+      "gigEconomics": {
+        "gigNetPerCalendarDay": 3179,
+        "gigNetPerGigDay": 4281,
+        "gigsPerCalendarDay": 0.742,
+        "avgRestDays": 0,
+        "avgFreeRestStops": 0,
+        "restDaySharePct": 0.02,
+        "foregoneGigNetPerRestDayUpperBound": 4281,
+        "travelCostShareOfGigNetPct": 2.27,
+        "avgTravelCostPerGigDay": 97,
+        "catalogItemsUnderOneGigNetPct": 95.35,
+        "moneyPricedCatalogSize": 43,
+        "minHarmonyObserved": 1,
+        "minMemberStaminaObserved": 36,
+        "minMemberMoodObserved": 48
+      },
+      "financialStress": {
+        "thresholds": {
+          "tightEur": 500,
+          "criticalEur": 250
+        },
+        "bankruptcyRatePct": 3.8,
+        "bankruptcyBeforeFirstGigPct": 0.85,
+        "bankruptcyAfterFirstGigPct": 2.95,
+        "everBelowTightPct": 13.3,
+        "everBelowCriticalPct": 4,
+        "zeroBalancePct": 0,
+        "creditOrGrantAssistedPct": 13.15,
+        "avgDaysBelowTightThreshold": 0.21,
+        "avgDaysBelowCriticalThreshold": 0.08,
+        "medianMaxDrawdownPct": 18.36,
+        "p90MaxDrawdownPct": 57.52,
+        "solventFinalMoneyP10": 20806,
+        "medianBankruptcyDay": 5,
+        "earliestBankruptcyDay": 3
+      },
+      "actualLossAttribution": {
+        "daily_obligations": {
+          "total": 3718435,
+          "median": 1843,
+          "p90": 2407,
+          "firstMaterialDrawdownSharePct": 25.8,
+          "bankruptcyPredecessorSharePct": 56.58
+        },
+        "travel": {
+          "total": 1321769,
+          "median": 684,
+          "p90": 764,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "fuel": {
+          "total": 323892,
+          "median": 156,
+          "p90": 266,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 3.95
+        },
+        "maintenance_repairs": {
+          "total": 857568,
+          "median": 474,
+          "p90": 636,
+          "firstMaterialDrawdownSharePct": 1.65,
+          "bankruptcyPredecessorSharePct": 3.95
+        },
+        "negative_events": {
+          "total": 56269,
+          "median": 0,
+          "p90": 95,
+          "firstMaterialDrawdownSharePct": 0.35,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "clinic": {
+          "total": 1120,
+          "median": 0,
+          "p90": 0,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "assets_upgrades": {
+          "total": 5915571,
+          "median": 1270,
+          "p90": 9114,
+          "firstMaterialDrawdownSharePct": 26.6,
+          "bankruptcyPredecessorSharePct": 13.16
+        },
+        "other": {
+          "total": 453952,
+          "median": 220,
+          "p90": 365,
+          "firstMaterialDrawdownSharePct": 31.75,
+          "bankruptcyPredecessorSharePct": 0
+        },
+        "gig_settlement": {
+          "total": 0,
+          "median": 0,
+          "p90": 0,
+          "firstMaterialDrawdownSharePct": 0,
+          "bankruptcyPredecessorSharePct": 0
+        }
+      },
+      "grossSpendAttribution": {
+        "modifierGrossSpend": {
+          "total": 680304,
+          "median": 342,
+          "p90": 488
+        },
+        "venueGrossSpend": {
+          "total": 164903643,
+          "median": 87204,
+          "p90": 120790
+        },
+        "taxGrossSpend": {
+          "total": 66123652,
+          "median": 34237,
+          "p90": 49708
+        },
+        "otherGrossSpend": {
+          "total": 131544,
+          "median": 48,
+          "p90": 156
+        }
+      },
+      "volatility": {
+        "finalMoneyStdDev": 7115,
+        "finalMoneyCoefficientOfVariation": 0.2797,
+        "performanceScoreStdDev": 8,
+        "finalHarmonyStdDev": 17,
+        "maxDrawdownMeanPct": 25.58,
+        "maxDrawdownP90Pct": 57.52,
+        "moneyRangeMedian": 25522
+      },
+      "fameAccounting": {
+        "startingFame": 0,
+        "earned": 10370,
+        "spentGross": 3045,
+        "refunded": 0,
+        "spentNet": 3045,
+        "lost": 4,
+        "clampAdjustment": 0,
+        "finalFame": 7321.62,
+        "reconciliationDelta": 0,
+        "maxAbsReconciliationDelta": 0,
+        "reconciledRuns": 2000,
+        "sampleSize": 2000
+      },
+      "executionCoverage": {
+        "brandDeals": {
+          "evaluations": 19304,
+          "activations": 116,
+          "uniqueIdsSeen": [
+            "basement_zine",
+            "blood_bank_promo",
+            "charity_concerts",
+            "community_radio",
+            "corp_app",
+            "corp_beverage",
+            "corp_fashion_line",
+            "corp_fast_food",
+            "energy_drink_cx",
+            "good_rebel_fund",
+            "guitar_brand_shred",
+            "gutter_brew",
+            "hemp_merch",
+            "indie_amp_builder",
+            "indie_cult_label",
+            "indie_label_void",
+            "local_pawn_shop",
+            "neon_lung_vapes",
+            "recycled_picks",
+            "riot_apparel",
+            "solar_power_bank",
+            "synapse_nootropics"
+          ],
+          "availableIds": 54,
+          "covered": true
+        },
+        "postOptions": {
+          "evaluations": 2617,
+          "activations": 2617,
+          "uniqueIdsSeen": [
+            "collab_influencer",
+            "comm_sellout_ad",
+            "drama_crowdsurf_fail",
+            "drama_cryptic_teaser",
+            "drama_drunk_stream",
+            "drama_emotional_interview",
+            "drama_gear_flex",
+            "drama_leak_demo",
+            "drama_leaked_dms",
+            "drama_manufactured",
+            "drama_political_take",
+            "drama_tour_bus_prank",
+            "lifestyle_behind_the_scenes",
+            "lifestyle_fan_dinner",
+            "lifestyle_gear_care",
+            "lifestyle_tour_diary",
+            "music_theory_thread",
+            "perf_acoustic_cover",
+            "perf_apology_video",
+            "perf_band_selfie",
+            "perf_smashed_gear",
+            "perf_sound_guy_rant",
+            "perf_tech_playthrough",
+            "radicalize_fans",
+            "tech_rig_rundown",
+            "wholesome_dinner"
+          ],
+          "availableIds": 36,
+          "covered": true
+        },
+        "socialTrends": {
+          "evaluations": 19566,
+          "activations": 2233,
+          "uniqueIdsSeen": [
+            "DRAMA",
+            "MUSIC",
+            "NEUTRAL",
+            "TECH",
+            "WHOLESOME"
+          ],
+          "availableIds": 5,
+          "covered": true
+        },
+        "contraband": {
+          "evaluations": 19566,
+          "activations": 2063,
+          "uniqueIdsSeen": [
+            "c_abyssal_microphone",
+            "c_abyssal_pendant",
+            "c_amped_synth",
+            "c_blackout_mask",
+            "c_blood_pact",
+            "c_blood_pick",
+            "c_bone_dust",
+            "c_broken_compass",
+            "c_cursed_pick",
+            "c_cursed_setlist",
+            "c_cybernetic_plectrum_implant",
+            "c_fermented_void_juice",
+            "c_forgotten_road_map",
+            "c_gig_program",
+            "c_grimoire_page",
+            "c_gutter_amulet",
+            "c_hyper_adrenaline_ampoule",
+            "c_lucky_coin",
+            "c_merch_manifest",
+            "c_motivational_gramophone",
+            "c_mystery_pills",
+            "c_neon_patch",
+            "c_neuro_mold_spores",
+            "c_night_vision_glasses",
+            "c_phantom_strings",
+            "c_phase_metronome",
+            "c_radiant_pick",
+            "c_rusty_strings",
+            "c_shattered_ear",
+            "c_silver_tongue",
+            "c_sonic_resonator",
+            "c_sticky_logo_sticker",
+            "c_sticky_plectrum",
+            "c_void_ash",
+            "c_void_energy",
+            "c_warped_tape",
+            "c_weekender_coffee"
+          ],
+          "availableIds": 37,
+          "covered": true
+        },
+        "minigamesTravel": {
+          "attempts": 19457,
+          "completions": 10433,
+          "covered": true
+        },
+        "minigamesRoadie": {
+          "attempts": 4813,
+          "completions": 2843,
+          "covered": true
+        },
+        "minigamesKabelsalat": {
+          "attempts": 4855,
+          "completions": 2890,
+          "covered": true
+        },
+        "minigamesAmp": {
+          "attempts": 4915,
+          "completions": 1610,
+          "covered": true
+        },
+        "sponsorship": {
+          "attempts": 19566,
+          "successes": 101,
+          "covered": true
+        },
+        "restStops": {
+          "evaluations": 19566,
+          "activations": 0,
+          "covered": false
+        }
+      }
+    },
+    "pairedFamePerGig": {
+      "comparablePairs": 1983,
+      "deltaPct": 0.01
+    },
+    "materialLossSources": [
+      "assets_upgrades",
+      "daily_obligations",
+      "travel"
+    ],
+    "acceptance": {
+      "criteria": {
+        "bankruptcy": false,
+        "bankruptcyBeforeFirstGig": true,
+        "finaleCompleted": true,
+        "famePerGig": true,
+        "negativeEventsMaterial": false
+      },
+      "passed": false
+    }
+  },
   "tensionReview": {
     "calibration": {
       "blocking": false,
@@ -10749,7 +12551,7 @@
           "status": "within_target",
           "metrics": {
             "bankruptcyRatePct": {
-              "observed": 5.45,
+              "observed": 7.35,
               "targetRange": [
                 4,
                 15
@@ -10765,7 +12567,7 @@
               "status": "within_target"
             },
             "bankruptcyAfterFirstGigPct": {
-              "observed": 5.05,
+              "observed": 6.95,
               "targetRange": [
                 4,
                 15
@@ -10773,7 +12575,7 @@
               "status": "within_target"
             },
             "everBelowTightPct": {
-              "observed": 13.45,
+              "observed": 17.65,
               "targetRange": [
                 10,
                 25
@@ -10781,7 +12583,7 @@
               "status": "within_target"
             },
             "everBelowCriticalPct": {
-              "observed": 6,
+              "observed": 7.8,
               "targetRange": [
                 4,
                 15
@@ -10789,7 +12591,7 @@
               "status": "within_target"
             },
             "avgDaysBelowTightThreshold": {
-              "observed": 0.24,
+              "observed": 0.33,
               "targetRange": [
                 0,
                 3
@@ -10797,7 +12599,7 @@
               "status": "within_target"
             },
             "avgDaysBelowCriticalThreshold": {
-              "observed": 0.11,
+              "observed": 0.14,
               "targetRange": [
                 0,
                 2
@@ -10805,7 +12607,7 @@
               "status": "within_target"
             },
             "medianMaxDrawdownPct": {
-              "observed": 21.83,
+              "observed": 24.01,
               "targetRange": [
                 0,
                 80
@@ -10813,7 +12615,7 @@
               "status": "within_target"
             },
             "p90MaxDrawdownPct": {
-              "observed": 62.74,
+              "observed": 67.34,
               "targetRange": [
                 55,
                 80
@@ -10821,7 +12623,7 @@
               "status": "within_target"
             },
             "finaleReachedPct": {
-              "observed": 94.2,
+              "observed": 91.4,
               "targetRange": [
                 70,
                 100
@@ -10829,7 +12631,7 @@
               "status": "within_target"
             },
             "finaleCompletedPct": {
-              "observed": 94.05,
+              "observed": 91.25,
               "targetRange": [
                 70,
                 100
@@ -10837,7 +12639,7 @@
               "status": "within_target"
             },
             "solventFinalMoneyP10": {
-              "observed": 20228,
+              "observed": 19360,
               "targetRange": [
                 0,
                 30000
@@ -10845,7 +12647,7 @@
               "status": "within_target"
             },
             "creditOrGrantAssistedPct": {
-              "observed": 11.7,
+              "observed": 10.4,
               "targetRange": [
                 0,
                 30
@@ -11204,7 +13006,7 @@
           "status": "within_target",
           "metrics": {
             "bankruptcyRatePct": {
-              "observed": 6.5,
+              "observed": 8.55,
               "targetRange": [
                 4,
                 15
@@ -11220,7 +13022,7 @@
               "status": "within_target"
             },
             "bankruptcyAfterFirstGigPct": {
-              "observed": 5.9,
+              "observed": 7.95,
               "targetRange": [
                 4,
                 15
@@ -11228,7 +13030,7 @@
               "status": "within_target"
             },
             "everBelowTightPct": {
-              "observed": 16.15,
+              "observed": 20.5,
               "targetRange": [
                 10,
                 25
@@ -11236,7 +13038,7 @@
               "status": "within_target"
             },
             "everBelowCriticalPct": {
-              "observed": 6.95,
+              "observed": 8.85,
               "targetRange": [
                 4,
                 15
@@ -11244,7 +13046,7 @@
               "status": "within_target"
             },
             "avgDaysBelowTightThreshold": {
-              "observed": 0.3,
+              "observed": 0.38,
               "targetRange": [
                 0,
                 3
@@ -11252,7 +13054,7 @@
               "status": "within_target"
             },
             "avgDaysBelowCriticalThreshold": {
-              "observed": 0.13,
+              "observed": 0.17,
               "targetRange": [
                 0,
                 2
@@ -11260,7 +13062,7 @@
               "status": "within_target"
             },
             "medianMaxDrawdownPct": {
-              "observed": 21.99,
+              "observed": 25.9,
               "targetRange": [
                 0,
                 80
@@ -11268,7 +13070,7 @@
               "status": "within_target"
             },
             "p90MaxDrawdownPct": {
-              "observed": 67.92,
+              "observed": 76.25,
               "targetRange": [
                 55,
                 80
@@ -11276,7 +13078,7 @@
               "status": "within_target"
             },
             "finaleReachedPct": {
-              "observed": 92.95,
+              "observed": 89.9,
               "targetRange": [
                 70,
                 100
@@ -11284,7 +13086,7 @@
               "status": "within_target"
             },
             "finaleCompletedPct": {
-              "observed": 92.9,
+              "observed": 89.7,
               "targetRange": [
                 70,
                 100
@@ -11292,7 +13094,7 @@
               "status": "within_target"
             },
             "solventFinalMoneyP10": {
-              "observed": 19945,
+              "observed": 18844,
               "targetRange": [
                 0,
                 30000
@@ -11300,7 +13102,7 @@
               "status": "within_target"
             },
             "creditOrGrantAssistedPct": {
-              "observed": 11,
+              "observed": 9.6,
               "targetRange": [
                 0,
                 30

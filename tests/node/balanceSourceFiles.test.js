@@ -7,9 +7,12 @@ import path from 'node:path'
 import { execFileSync } from 'node:child_process'
 
 import {
+  ARTIFACT_SCHEMA_VERSION,
   BALANCE_SOURCE_FILES,
+  buildArtifactMetadata,
   getBalanceSourceHash,
-  getSourceWorkingTreeDirty
+  getSourceWorkingTreeDirty,
+  validateArtifactMetadata
 } from '../../scripts/utils/balance-report-metadata.mjs'
 
 const ROOT = process.cwd()
@@ -71,6 +74,58 @@ test('balance source hash is stable', async () => {
 
   assert.match(first, /^[a-f0-9]{64}$/)
   assert.equal(first, second, 'Hashing twice must be stable')
+})
+
+test('artifact metadata uses the shared six-field fingerprint contract', async () => {
+  const metadata = await buildArtifactMetadata({
+    root: ROOT,
+    generatorPath: 'scripts/game-balance-simulation.mjs',
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  assert.deepEqual(Object.keys(metadata).sort(), [
+    'artifactSchemaVersion',
+    'generatorFingerprint',
+    'runsPerScenario',
+    'seedNamespace',
+    'sourceFingerprint',
+    'workingTreeDirty'
+  ])
+  assert.match(metadata.sourceFingerprint, /^[a-f0-9]{64}$/)
+  assert.match(metadata.generatorFingerprint, /^[a-f0-9]{64}$/)
+  assert.equal(metadata.artifactSchemaVersion, ARTIFACT_SCHEMA_VERSION)
+  assert.deepEqual(
+    await validateArtifactMetadata(metadata, {
+      root: ROOT,
+      generatorPath: 'scripts/game-balance-simulation.mjs',
+      seedNamespace: '#test',
+      runsPerScenario: 2_000
+    }),
+    { valid: true }
+  )
+})
+
+test('artifact validation detects source and generator mismatches', async () => {
+  const metadata = await buildArtifactMetadata({
+    root: ROOT,
+    generatorPath: 'scripts/game-balance-simulation.mjs',
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  assert.deepEqual(
+    await validateArtifactMetadata(
+      { ...metadata, sourceFingerprint: '0'.repeat(64) },
+      {
+        root: ROOT,
+        generatorPath: 'scripts/game-balance-simulation.mjs',
+        seedNamespace: '#test',
+        runsPerScenario: 2_000
+      }
+    ),
+    { valid: false, reason: 'source_fingerprint_mismatch' }
+  )
 })
 
 // The probe runs against a throwaway copy of the listed sources. Mutating the
