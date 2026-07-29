@@ -1,12 +1,12 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-29T12:46:46.381Z",
+  "generatedAt": "2026-07-29T13:06:29.266Z",
   "metadata": {
     "nodeVersion": "v24.13.0",
-    "sourceBaseCommit": "c19e60c3abc04330d6b6e04d4d766d9bd47cea92",
+    "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
     "workingTreeDirty": false,
-    "simulationScriptSha256": "a3f067a2da726c7035a16d26d9bb8ebd6d56aa79f114485e329b2d03e67e9ae5",
-    "balanceSourceSha256": "a84840f2ea09f02a0943d3233876f23004b9d02cdad1eca473829cc80c890be5",
+    "simulationScriptSha256": "78c69d2707aca67b650fa67e2ff863ecda7b6b763df4eb5486645b2abe959f77",
+    "balanceSourceSha256": "50f511c4a3bf8e37d77fe3cd74b9f542ac795ab68f1292024679d5834a55387c",
     "experimentScriptSha256": "921b706725ea33f8d4b571e65ae29a7def12053732fa9764ef15013db24cae22",
     "experimentConfigSha256": "59e0351363f807d0b0f6765fe3d1a7d6f2e01c98e87c013ed6efd838345390b6",
     "scenarioConfigSha256": "924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa",
@@ -27491,7 +27491,7 @@
     }
   },
   "runtime": {
-    "durationMs": 218890,
+    "durationMs": 221162,
     "candidates": 25,
     "totalRuns": 170000
   },
@@ -27500,8 +27500,8 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T11:51:56.313Z",
-      "sourceBaseCommit": "913d1f10af97255ac89a55f97a49867e93a0126b",
+      "generatedAt": "2026-07-29T12:46:46.381Z",
+      "sourceBaseCommit": "c19e60c3abc04330d6b6e04d4d766d9bd47cea92",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -27511,8 +27511,8 @@
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-29T12:46:46.381Z",
-      "sourceBaseCommit": "c19e60c3abc04330d6b6e04d4d766d9bd47cea92",
+      "generatedAt": "2026-07-29T13:06:29.266Z",
+      "sourceBaseCommit": "2d63aedc69ec97e73a0a0e8fca1e186174145110",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",

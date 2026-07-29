@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-29T12:42:50.249Z
+Erstellt am: 2026-07-29T13:02:26.790Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
 - Node-Version: v24.13.0
-- Basis-Commit: c19e60c3abc04330d6b6e04d4d766d9bd47cea92
+- Basis-Commit: 2d63aedc69ec97e73a0a0e8fca1e186174145110
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: a3f067a2da726c7035a16d26d9bb8ebd6d56aa79f114485e329b2d03e67e9ae5
+- Simulationsskript SHA-256: 78c69d2707aca67b650fa67e2ff863ecda7b6b763df4eb5486645b2abe959f77
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92
 - Risikokorridor-Konfiguration SHA-256: 60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c
@@ -449,7 +449,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 
 „Katalog < 1 Gig“ ist der Anteil der 43 geldbepreisten Artikel, deren Kosten unter dem Netto eines einzelnen Gigs liegen — die messbare Form von „günstige Upgrades amortisieren sich in weniger als einem Gig“. Eine echte Amortisationszeit ist damit nicht berechnet: dafür bräuchte jeder Artikel ein modelliertes Ertragsdelta, das die Simulation nicht führt.
 
-**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien gilt: Stamina 36 bleibt über der Marke 35; Mood 41 unterschreitet die Marke 50. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Ruhetage treten in 12 von 12 Szenarien überhaupt auf (High Controversy 0.84%, Baseline Touring 0.03%, Chaos Tour 0.03%, Early Game Probe (Fame 0–50) 0.03%, Bootstrap Struggle 0.02%, Scandal Recovery 0.02%, Festival Push 0.02%, Cult Hypergrowth 0.02%, Mid Game Probe (Fame 60–150) 0.02%, Late Game Probe (Fame 175+) 0.02%, Aggressive Marketing 0.01%, No Social (Fame 0-50) 0.01%); nennenswert ist der Anteil nur bei High Controversy, alle übrigen liegen im Promillebereich. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
+**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien gilt: Stamina 36 erreicht mindestens die Marke 35; Mood 41 unterschreitet die Marke 50. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, `avgRestStopArrivals`), was die Mitglieder meist über der Pflegeschwelle hält. Ruhetage treten in 12 von 12 Szenarien überhaupt auf (High Controversy 0.84%, Baseline Touring 0.03%, Chaos Tour 0.03%, Early Game Probe (Fame 0–50) 0.03%, Bootstrap Struggle 0.02%, Scandal Recovery 0.02%, Festival Push 0.02%, Cult Hypergrowth 0.02%, Mid Game Probe (Fame 60–150) 0.02%, Late Game Probe (Fame 175+) 0.02%, Aggressive Marketing 0.01%, No Social (Fame 0-50) 0.01%); nennenswert ist der Anteil nur bei High Controversy, alle übrigen liegen im Promillebereich. Die Harmony sinkt bis 1 und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. `foregoneGigNetPerRestDayUpperBound` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.
 
 ## Populationen
 
@@ -557,7 +557,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `c19e60c3abc04330d6b6e04d4d766d9bd47cea92` |
+| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `2d63aedc69ec97e73a0a0e8fca1e186174145110` |
 | Runs je Szenario | 260 | 2000 |
 | Seed-Namensraum | `nicht angegeben` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
