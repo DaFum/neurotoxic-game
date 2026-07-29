@@ -117,7 +117,10 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
-import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
+import {
+  getBalanceSourceHash,
+  getSourceWorkingTreeDirty
+} from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
@@ -127,7 +130,10 @@ let simulationCryptoRandom = () => 0.5
 if (globalThis.crypto && typeof globalThis.crypto.randomUUID === 'function') {
   globalThis.crypto.randomUUID = () => `sim-uuid-${++uuidCounter}`
 }
-if (globalThis.crypto && typeof globalThis.crypto.getRandomValues === 'function') {
+if (
+  globalThis.crypto &&
+  typeof globalThis.crypto.getRandomValues === 'function'
+) {
   globalThis.crypto.getRandomValues = array => {
     for (let index = 0; index < array.length; index++) {
       array[index] = Math.floor(simulationCryptoRandom() * 2 ** 32)
@@ -156,7 +162,9 @@ const median = values => {
 const standardDeviation = values => {
   if (!values || values.length <= 1) return 0
   const m = mean(values)
-  const variance = values.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) / (values.length - 1)
+  const variance =
+    values.reduce((acc, val) => acc + Math.pow(val - m, 2), 0) /
+    (values.length - 1)
   return Math.sqrt(variance)
 }
 
@@ -200,7 +208,6 @@ const wilsonScoreInterval = (successes, n) => {
   }
 }
 // ─────────────────────────────────────────────────────────────────────────
-
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
@@ -565,15 +572,7 @@ const SHOP_FAME_CATALOG = UPGRADE_CATALOG.filter(
 const LEGACY_FAME_CATALOG = UPGRADE_CATALOG.filter(
   item => item.currency === 'fame' && !SHOP_FAME_ENTRY_IDS.has(item.id)
 )
-const FAME_AUDIT_PERFORMANCE_SCORES = [
-  45,
-  50,
-  55,
-  60,
-  70,
-  85,
-  100
-]
+const FAME_AUDIT_PERFORMANCE_SCORES = [45, 50, 55, 60, 70, 85, 100]
 
 const getCatalogFameRefund = item => {
   const effects = Array.isArray(item.effects)
@@ -670,8 +669,14 @@ const getFameCatalogTarget = totalFameCost => {
   return {
     totalFameCost,
     gigsPerTour,
-    minGigs: Math.max(1, Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.min)),
-    maxGigs: Math.max(1, Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.max))
+    minGigs: Math.max(
+      1,
+      Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.min)
+    ),
+    maxGigs: Math.max(
+      1,
+      Math.round(gigsPerTour * FAME_CATALOG_TARGET_SHARE.max)
+    )
   }
 }
 
@@ -736,8 +741,6 @@ const buildFameBalanceAudit = () => {
     scenarios
   }
 }
-
-
 
 export const createScenarioSeed = (id, runIndex) => {
   let h = 0x811c9dc5
@@ -1005,7 +1008,12 @@ export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
  * fame-to-difficulty preference still applies — it just now selects among two or
  * three real options instead of the entire venue catalogue.
  */
-export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true) => {
+export const chooseNextTourNode = (
+  reachable,
+  state,
+  rng,
+  wantsToPerform = true
+) => {
   if (!reachable.length) return null
   const performable = reachable.filter(node =>
     PERFORMABLE_NODE_TYPES.has(node.type)
@@ -1021,7 +1029,11 @@ export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true)
   // shortcut.
   const preferred = wantsToPerform ? performable : nonPerformable
   const fallback = wantsToPerform ? nonPerformable : performable
-  const routable = preferred.length ? preferred : fallback.length ? fallback : reachable
+  const routable = preferred.length
+    ? preferred
+    : fallback.length
+      ? fallback
+      : reachable
   const targetDiff = targetDifficultyForState(state)
   const inBand = routable.filter(
     node =>
@@ -1071,10 +1083,7 @@ export const resolveGigCadence = ({
   policy = SHIPPED_GIG_CADENCE_POLICY,
   firstGigDay = null
 }) => {
-  const gap = Math.max(
-    1,
-    gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays
-  )
+  const gap = Math.max(1, gigGapDays || SIMULATION_CONSTANTS.baseGigGapDays)
   // A typo'd policy must not silently resolve to the shipped one: the whole
   // point of the comparison is that the variants differ, so a silent fallback
   // would report three identical cohorts as evidence that phase does not matter.
@@ -1234,7 +1243,7 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
 }
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
-  counters.executionCoverage.socialTrends.evaluations++;
+  counters.executionCoverage.socialTrends.evaluations++
   if (rng() >= SIMULATION_CONSTANTS.trendShiftChance) return
   const nextTrend = ALLOWED_TRENDS[Math.floor(rng() * ALLOWED_TRENDS.length)]
   state.social.trend = nextTrend
@@ -1256,7 +1265,7 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
     return
   }
 
-  counters.executionCoverage.brandDeals.evaluations++;
+  counters.executionCoverage.brandDeals.evaluations++
   if (rng() >= SIMULATION_CONSTANTS.brandDealEvalChance) return
   const candidate = BRAND_DEALS[Math.floor(rng() * BRAND_DEALS.length)]
   if (!candidate) return
@@ -1348,7 +1357,7 @@ const maybeApplyPostPulse = (
 // same day. Duration-limited effects are tracked in runCtx and reverted by
 // expireContrabandEffects, matching processContrabandExpiry semantics.
 const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
-  counters.executionCoverage.contraband.evaluations++;
+  counters.executionCoverage.contraband.evaluations++
   if (rng() >= SIMULATION_CONSTANTS.contrabandDropChance) return
   const item = CONTRABAND_DB[Math.floor(rng() * CONTRABAND_DB.length)]
   if (!item) return
@@ -1447,7 +1456,10 @@ export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!validation.isValid) {
     // A purchase the player wanted and could not pay for is a progression
     // signal, not a no-op. `already_owned` and `missing_effect` are not.
-    if (validation.errorType === 'insufficient_funds' && counters.missedPurchases) {
+    if (
+      validation.errorType === 'insufficient_funds' &&
+      counters.missedPurchases
+    ) {
       counters.missedPurchases.push({
         day: counters.currentDay ?? null,
         id: candidate.id,
@@ -1858,7 +1870,14 @@ const runTravelMinigame = (state, scenario, rng, counters) => {
 // (handleCompleteRoadieMinigame) and ANY stress > 0 for kabelsalat/amp
 // (applyPostMinigameResult flags damaged_gear on stress > 0, purge-induced
 // stress included).
-const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
+const runPreGigSetupMinigame = (
+  state,
+  scenario,
+  rng,
+  counters,
+  runCtx,
+  observeLoss = () => {}
+) => {
   const skill = scenario.minigameSkill ?? 0.5
   let damagedGear = false
 
@@ -1889,6 +1908,7 @@ const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
     )
     // Record the actual deduction: the money clamp can eat less than quoted.
     counters.repairSpend += moneyBeforeRepair - state.player.money
+    observeLoss('other', moneyBeforeRepair, state.player.money)
     state.band.harmony = clampBandHarmony(
       state.band.harmony - roadieResult.stress
     )
@@ -1962,39 +1982,53 @@ const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
  * heuristic and by the travel fallback: a player who is told "Not enough fuel in
  * the tank!" refuels and then drives, rather than losing the day.
  */
-const attemptRefuel = (state, counters) => {
+const attemptRefuel = (state, counters, observeLoss = () => {}) => {
+  const moneyBeforeRefuel = state.player.money
   const refuelCost = calculateRefuelCost(state.player.van.fuel)
   if (state.player.money < refuelCost) return false
   state.player.money = clampPlayerMoney(state.player.money - refuelCost)
   state.player.van.fuel = 100
   counters.refuels += 1
   counters.refuelSpend += refuelCost
+  observeLoss('fuel', moneyBeforeRefuel, state.player.money)
   return true
 }
 
-const maybeMaintainVanAndResources = (state, scenario, rng, counters) => {
+const maybeMaintainVanAndResources = (
+  state,
+  scenario,
+  rng,
+  counters,
+  observeLoss = () => {}
+) => {
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
   if (state.player.van.fuel < 35 && rng() < discipline) {
-    attemptRefuel(state, counters)
+    attemptRefuel(state, counters, observeLoss)
   }
 
   if (state.player.van.condition < 62 && rng() < discipline) {
     const repairCost = calculateRepairCost(state.player.van.condition)
     if (state.player.money >= repairCost) {
+      const moneyBeforeRepair = state.player.money
       state.player.money = clampPlayerMoney(state.player.money - repairCost)
       state.player.van.condition = 100
       counters.repairs += 1
       counters.repairSpend += repairCost
+      observeLoss('maintenance_repairs', moneyBeforeRepair, state.player.money)
     }
   }
 
   if (state.player.money > HQ_UPGRADE_COST * 1.5 && rng() < 0.3) {
+    const moneyBeforeUpgrade = state.player.money
     applyCatalogPurchase(state, _HQ_BEER_PIPELINE, counters)
+    observeLoss('assets_upgrades', moneyBeforeUpgrade, state.player.money)
   }
 
   if (state.player.money > VAN_UPGRADE_COST * 1.5 && rng() < 0.2) {
+    const moneyBeforeUpgrade = state.player.money
     applyCatalogPurchase(state, _VAN_TUNING, counters)
+    observeLoss('assets_upgrades', moneyBeforeUpgrade, state.player.money)
   }
 }
 
@@ -2014,7 +2048,7 @@ const MODULES_BY_SLOT_TYPE = (() => {
 // purchaseChassis/handlePurchaseChassis (cash + loan incl. liabilities),
 // startCrowdfund/handleStartCrowdfund (materialized by processCrowdfundTick),
 // and installModule/handleInstallModule. All validation stays in game code.
-const maybeInvestInAssets = (state, rng, counters) => {
+const maybeInvestInAssets = (state, rng, counters, observeLoss = () => {}) => {
   if (rng() < SIMULATION_CONSTANTS.assetInvestChance) {
     const kind = ASSET_KINDS[Math.floor(rng() * ASSET_KINDS.length)]
     const flavor = rng() < 0.35 ? 'diy' : 'legit'
@@ -2038,7 +2072,13 @@ const maybeInvestInAssets = (state, rng, counters) => {
       if (canPayCash || raw.mode === 'loan') {
         const action = purchaseChassis(raw, state)
         if (action && action.type !== 'PURCHASE_CHASSIS_FAILED') {
+          const moneyBeforePurchase = state.player.money
           Object.assign(state, handlePurchaseChassis(state, action.payload))
+          observeLoss(
+            'assets_upgrades',
+            moneyBeforePurchase,
+            state.player.money
+          )
           counters.assetsPurchased += 1
           if (raw.mode === 'loan') counters.loansTaken += 1
         }
@@ -2087,6 +2127,7 @@ const maybeInvestInAssets = (state, rng, counters) => {
       if (action) {
         Object.assign(state, handleRepairChassis(state, action.payload))
         counters.repairSpend += Math.max(0, moneyBefore - state.player.money)
+        observeLoss('maintenance_repairs', moneyBefore, state.player.money)
       }
     }
   }
@@ -2109,7 +2150,9 @@ const maybeInvestInAssets = (state, rng, counters) => {
         state
       )
       if (action && action.type !== 'INSTALL_MODULE_FAILED') {
+        const moneyBeforeInstall = state.player.money
         Object.assign(state, handleInstallModule(state, action.payload))
+        observeLoss('assets_upgrades', moneyBeforeInstall, state.player.money)
         counters.modulesInstalled += 1
       }
     }
@@ -2178,7 +2221,7 @@ const applyPostGigState = (
   gigStatsPayload,
   counters
 ) => {
-  const oldFameGig = state.player.fame;
+  const oldFameGig = state.player.fame
   const continueStats = calculateContinueStats({
     player: state.player,
     perfScore: performanceScore,
@@ -2190,13 +2233,12 @@ const applyPostGigState = (
     clampPlayerFame,
     clampPlayerMoney,
     BALANCE_CONSTANTS
-  });
+  })
   recordObservedFameChange(
     counters.fameAccounting,
     oldFameGig,
     continueStats.newFame
   )
-
 
   state.player.money = continueStats.newMoney
   state.player.fame = continueStats.newFame
@@ -2228,7 +2270,9 @@ const applyPostGigState = (
 }
 
 export const calculateDrawdownPct = (peakMoney, currentMoney) =>
-  peakMoney > 0 ? Math.max(0, ((peakMoney - currentMoney) / peakMoney) * 100) : 0
+  peakMoney > 0
+    ? Math.max(0, ((peakMoney - currentMoney) / peakMoney) * 100)
+    : 0
 
 export const reconcileFameLedger = run =>
   run.startingFame +
@@ -2238,7 +2282,11 @@ export const reconcileFameLedger = run =>
   run.fameAccounting.lost -
   run.finalFame
 
-export const accountFameChange = (accounting, rawDifference, actualDifference) => {
+export const accountFameChange = (
+  accounting,
+  rawDifference,
+  actualDifference
+) => {
   const difference = Number.isFinite(rawDifference)
     ? rawDifference
     : actualDifference
@@ -2277,7 +2325,25 @@ const discretionarySpend = counters =>
   counters.clinicSpend +
   counters.catalogMoneySpent
 
-export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUNING) => {
+const MODIFIER_EXPENSE_LABEL_KEYS = new Set([
+  'economy:gigExpenses.catering.label',
+  'economy:gigExpenses.socialAds.label',
+  'economy:gigExpenses.merchStand.label',
+  'economy:gigExpenses.soundcheck.label',
+  'economy:gigExpenses.guestList.label'
+])
+const GROSS_SPEND_SOURCES = [
+  'modifierGrossSpend',
+  'venueGrossSpend',
+  'taxGrossSpend',
+  'otherGrossSpend'
+]
+
+export const runSingleSimulation = (
+  scenario,
+  seed,
+  tuning = DEFAULT_BALANCE_TUNING
+) => {
   // UUIDs are deterministic per run so candidate ordering cannot affect paired
   // gameplay through generated asset/campaign identifiers.
   uuidCounter = 0
@@ -2312,7 +2378,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   const nodeTypesVisited = {}
   // Per-run context: pregig minigame rotation memory and the active
   // duration-limited contraband effects awaiting expiry.
-  const runCtx = { lastMinigame: null, contrabandEffects: [], emergencyGrantUsed: false, regionalGigHistory: new Map() }
+  const runCtx = {
+    lastMinigame: null,
+    contrabandEffects: [],
+    emergencyGrantUsed: false,
+    regionalGigHistory: new Map()
+  }
 
   const counters = {
     gigsPlayed: 0,
@@ -2361,7 +2432,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     executionCoverage: {
       brandDeals: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
       postOptions: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
-      socialTrends: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
+      socialTrends: {
+        evaluations: 0,
+        activations: 0,
+        uniqueIdsSeen: new Set()
+      },
       contraband: { evaluations: 0, activations: 0, uniqueIdsSeen: new Set() },
       minigamesTravel: { attempts: 0, completions: 0 },
       minigamesRoadie: { attempts: 0, completions: 0 },
@@ -2372,7 +2447,14 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
-    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
+    fameAccounting: {
+      earned: 0,
+      spentGross: 0,
+      refunded: 0,
+      spentNet: 0,
+      lost: 0,
+      clampAdjustment: 0
+    },
     gigCapHits: 0,
     // Phase 4D purchase-path instrumentation. `currentDay` is the day context
     // every purchase site reads, so timing does not have to be threaded through
@@ -2391,6 +2473,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
   let peakMoney = state.player.money
   let lowestMoney = state.player.money
   let maxPeakToTroughDrop = 0
+  const lossAttribution = createLossAttributionTracker(state.player.money)
+  const grossSpendAttribution = Object.fromEntries(
+    GROSS_SPEND_SOURCES.map(source => [source, 0])
+  )
   let daysSurvived = 0
   const timeline = []
 
@@ -2451,6 +2537,15 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       state.player.money
     )
   }
+  const observeAttributedMoney = (source, moneyBefore, moneyAfter) =>
+    recordAttributedLoss(lossAttribution, {
+      source,
+      moneyBefore,
+      moneyAfter,
+      afterFirstGig: firstGigDay != null
+    })
+  const observeAttributedLoss = (source, moneyBefore) =>
+    observeAttributedMoney(source, moneyBefore, state.player.money)
   let blockedTravelDaysBeforeFirstGig = 0
   let firstBlockedTravel = null
 
@@ -2480,10 +2575,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       )
       minMemberMoodObserved = Math.min(minMemberMoodObserved, member.mood)
     }
-    if (state.player.money > peakMoney) peakMoney = state.player.money;
+    if (state.player.money > peakMoney) peakMoney = state.player.money
     else {
       const drop = calculateDrawdownPct(peakMoney, state.player.money)
-      if (drop > maxPeakToTroughDrop) maxPeakToTroughDrop = drop;
+      if (drop > maxPeakToTroughDrop) maxPeakToTroughDrop = drop
     }
     // Snapshot money at start of day (before any spending)
     if (day === earlyCheckpointDay) moneyAtEarlyCheckpoint = state.player.money
@@ -2496,17 +2591,42 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const moneyBeforeDay = state.player.money
     const fameBeforeDailyUpdates = state.player.fame
     let preState = state
+    let moneyBeforeStep = preState.player.money
     preState = processAssetTick(preState) || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     const liabilityResult = processLiabilityTick(preState)
     preState = liabilityResult.state || preState
+    observeAttributedMoney(
+      'daily_obligations',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     preState = processCrowdfundTick(preState) || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
     const assetCount = preState.assets ? preState.assets.length : 0
+    moneyBeforeStep = preState.player.money
     const riskResult = rollAssetRiskEvents(
       preState,
       Array.from({ length: assetCount * 2 + 10 }, () => rng()),
       0
     )
     preState = riskResult.state || preState
+    observeAttributedMoney(
+      'assets_upgrades',
+      moneyBeforeStep,
+      preState.player.money
+    )
+    moneyBeforeStep = preState.player.money
     const updates = calculateDailyUpdates(preState, rng, tuning)
     state = preState
     state = {
@@ -2515,6 +2635,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
+    observeAttributedMoney(
+      'daily_obligations',
+      moneyBeforeStep,
+      state.player.money
+    )
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeDailyUpdates,
@@ -2532,7 +2657,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       day <= tuning.earlyGame.emergencyGrantMaxDay &&
       state.player.money <= tuning.earlyGame.emergencyGrantTriggerMoney
     ) {
-      state.player.money = clampPlayerMoney(finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant)
+      state.player.money = clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + tuning.earlyGame.emergencyGrant
+      )
       runCtx.emergencyGrantUsed = true
       observeEarlyRunwayMoney()
     }
@@ -2592,10 +2719,12 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       }
     }
 
+    const moneyBeforeWorldEvents = state.player.money
     const fameBeforeWorldEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
       applyDailyEvents(state, scenario, rng, counters)
+    observeAttributedLoss('negative_events', moneyBeforeWorldEvents)
     observeEarlyRunwayMoney()
     recordObservedFameChange(
       counters.fameAccounting,
@@ -2623,11 +2752,19 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // sampled individually — that would mean threading an observer through the
     // production-mirroring helpers, which is out of proportion to the question this
     // field answers.
-    maybeMaintainVanAndResources(state, scenario, rng, counters)
+    maybeMaintainVanAndResources(
+      state,
+      scenario,
+      rng,
+      counters,
+      observeAttributedMoney
+    )
     observeEarlyRunwayMoney()
+    const moneyBeforeCatalog = state.player.money
     maybeBuyCatalogUpgrade(state, rng, counters)
+    observeAttributedLoss('assets_upgrades', moneyBeforeCatalog)
     observeEarlyRunwayMoney()
-    maybeInvestInAssets(state, rng, counters)
+    maybeInvestInAssets(state, rng, counters, observeAttributedMoney)
     observeEarlyRunwayMoney()
 
     if (willRest) {
@@ -2638,6 +2775,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // no longer afford to treat recover at a free REST_STOP node instead
       // (arrivalUtils.ts: +20 stamina / +10 mood).
       let usedRestStop = false
+      const moneyBeforeClinic = state.player.money
       state.band.members = state.band.members.map(member => {
         if (!MEMBER_NEEDS_CARE(member)) return member
 
@@ -2674,6 +2812,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
           mood: clampMemberMood(member.mood + 10)
         }
       })
+      observeAttributedLoss('clinic', moneyBeforeClinic)
       if (usedRestStop) {
         counters.restStops += 1
         counters.executionCoverage.restStops.activations++
@@ -2728,7 +2867,10 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // Canonical in-place fallback: an empty tank is not a dead end while a
     // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
     // re-planning on the refuelled state stays deterministic.
-    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
+    if (
+      travelPlan?.blocked === 'fuel' &&
+      attemptRefuel(state, counters, observeAttributedMoney)
+    ) {
       travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
       if (!travelPlan.blocked) counters.refuelledToTravel += 1
     }
@@ -2757,6 +2899,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     // eat less) feeds the real-money sink ratio.
     totalTravelCostGigs += totalTravelCost
     counters.travelSpend += moneyBeforeTravel - state.player.money
+    observeAttributedLoss('travel', moneyBeforeTravel)
     state.player.van.fuel = clampVanFuel(
       state.player.van.fuel - travel.fuelLiters + Math.max(0, rng() * 2 - 1)
     )
@@ -2779,17 +2922,18 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     travelLog.push({ from: currentMapNode?.id ?? null, to: nextNode.id })
     currentMapNode = nextNode
     deepestLayerReached = Math.max(deepestLayerReached, nextNode.layer)
-    nodeTypesVisited[nextNode.type] =
-      (nodeTypesVisited[nextNode.type] ?? 0) + 1
+    nodeTypesVisited[nextNode.type] = (nodeTypesVisited[nextNode.type] ?? 0) + 1
     if (nextNode.type === 'FINALE') finaleReached = true
 
     // Road events, now that the journey is a fact rather than a plan. Production
     // fires them after the day advances and before `handleNodeArrival`, which is
     // where the node's own effects (rest-stop recovery, the show) follow below.
+    const moneyBeforeTravelEvents = state.player.money
     const fameBeforeTravelEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
       applyTravelEvents(state, scenario, rng, counters)
+    observeAttributedLoss('negative_events', moneyBeforeTravelEvents)
     recordObservedFameChange(
       counters.fameAccounting,
       fameBeforeTravelEvents,
@@ -2839,16 +2983,16 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       // Show is cancelled due to poor harmony
       // Apply a penalty to fame directly as it doesn't go through standard score scaling
       {
-        const oldFame = state.player.fame;
-        const loss = SIMULATION_CONSTANTS.fameLossBadGig * 2;
-        const newFameRaw = oldFame - loss;
-        const newFameClamped = clampPlayerFame(newFameRaw);
+        const oldFame = state.player.fame
+        const loss = SIMULATION_CONSTANTS.fameLossBadGig * 2
+        const newFameRaw = oldFame - loss
+        const newFameClamped = clampPlayerFame(newFameRaw)
         accountFameChange(
           counters.fameAccounting,
           -loss,
           newFameClamped - oldFame
         )
-        state.player.fame = newFameClamped;
+        state.player.fame = newFameClamped
       }
       state.player.fameLevel = calculateFameLevel(state.player.fame)
 
@@ -2909,7 +3053,8 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       scenario,
       rng,
       counters,
-      runCtx
+      runCtx,
+      observeAttributedMoney
     )
 
     const modifiers = calculateModifiers(scenario, rng)
@@ -2927,7 +3072,9 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const physics = perfResults.physics
 
     // Mid-gig events from the EVENTS_DB `gig` category
+    const moneyBeforeGigEvent = state.player.money
     maybeApplyGigEvent(state, scenario, rng, counters)
+    observeAttributedLoss('negative_events', moneyBeforeGigEvent)
 
     // Misses/maxCombo are player-skill outputs of the rhythm game; the sim
     // derives stand-ins from the performance score (no canonical formula).
@@ -2952,8 +3099,11 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     const regionId = getRegionKeyForLocation(state.player.location) ?? 'Unknown'
     const regionalGigHistory = Object.fromEntries(runCtx.regionalGigHistory)
     state.player.day = day
-    const recentRegionalGigs = (runCtx.regionalGigHistory.get(regionId) ?? [])
-      .filter(gigDay => state.player.day - gigDay <= tuning.touring.repeatGigWindowDays)
+    const recentRegionalGigs = (
+      runCtx.regionalGigHistory.get(regionId) ?? []
+    ).filter(
+      gigDay => state.player.day - gigDay <= tuning.touring.repeatGigWindowDays
+    )
     const financials = deriveFinancials({
       currentGig: venue,
       lastGigStats: currentGigStats,
@@ -2980,6 +3130,23 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       repeatDemandContext: { day, regionId, regionalGigHistory, tuning }
     })
 
+    // The settlement combines income and expenses in one state update. Attribute
+    // its expenses separately so a profitable gig cannot erase the losses.
+    const expenseBreakdown = financials?.expenses?.breakdown ?? []
+    for (const item of expenseBreakdown) {
+      const value = Math.max(0, finiteNumberOr(item.value, 0))
+      const label = item.labelKey ?? ''
+      const source = MODIFIER_EXPENSE_LABEL_KEYS.has(label)
+        ? 'modifierGrossSpend'
+        : /venue|promoter/i.test(label)
+          ? 'venueGrossSpend'
+          : /tax|management|dampener|overage/i.test(label)
+            ? 'taxGrossSpend'
+            : 'otherGrossSpend'
+      grossSpendAttribution[source] += value
+    }
+    const moneyBeforeSettlement = state.player.money
+
     // Standard post-gig adjustments
     applyPostGigState(
       state,
@@ -2997,6 +3164,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       currentGigStats,
       counters
     )
+    observeAttributedLoss('gig_settlement', moneyBeforeSettlement)
 
     // Deplete merch inventory based on actual sold merch
     if (financials?.soldMerch) {
@@ -3171,6 +3339,24 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
     affordabilityAtEnd: summarizeCatalogAffordability(state),
     daysBelowTightLiquidity,
     daysBelowCriticalLiquidity,
+    actualLossAttribution: {
+      totals: Object.fromEntries(
+        Object.entries(lossAttribution.totals).map(([source, value]) => [
+          source,
+          Math.round(value)
+        ])
+      ),
+      firstMaterialDrawdownSource: lossAttribution.firstMaterialDrawdownSource,
+      bankruptcyPrecededBySource: counters.bankrupt
+        ? lossAttribution.lastMaterialLossSource
+        : null
+    },
+    grossSpendAttribution: Object.fromEntries(
+      Object.entries(grossSpendAttribution).map(([source, value]) => [
+        source,
+        Math.round(value)
+      ])
+    ),
     // `daysBeforeFirstGig` counts unpaid days: for a run that never played, that
     // is every day it survived. `spendBeforeFirstGig` covers the discretionary
     // sinks (travel, fuel, repairs, clinic, shop); the recurring side is
@@ -3180,8 +3366,7 @@ export const runSingleSimulation = (scenario, seed, tuning = DEFAULT_BALANCE_TUN
       bankruptBeforeFirstGig: counters.bankrupt && firstGigDay == null,
       moneyBeforeFirstGig,
       lowestMoneyBeforeFirstGig,
-      daysBeforeFirstGig:
-        firstGigDay == null ? daysSurvived : firstGigDay - 1,
+      daysBeforeFirstGig: firstGigDay == null ? daysSurvived : firstGigDay - 1,
       obligationsBeforeFirstGig: Math.round(obligationsBeforeFirstGig),
       spendBeforeFirstGig: Math.round(
         spendBeforeFirstGig ?? discretionarySpend(counters)
@@ -3230,11 +3415,18 @@ export const mergeExecutionCoverage = sources => {
     if (!source) continue
     for (const [key, target] of Object.entries(coverage)) {
       const current = source[key] ?? {}
-      for (const counter of ['evaluations', 'activations', 'attempts', 'completions', 'successes']) {
+      for (const counter of [
+        'evaluations',
+        'activations',
+        'attempts',
+        'completions',
+        'successes'
+      ]) {
         if (counter in target) target[counter] += current[counter] ?? 0
       }
       if (target.uniqueIdsSeen) {
-        for (const id of current.uniqueIdsSeen ?? []) target.uniqueIdsSeen.add(id)
+        for (const id of current.uniqueIdsSeen ?? [])
+          target.uniqueIdsSeen.add(id)
       }
     }
   }
@@ -3244,9 +3436,11 @@ export const mergeExecutionCoverage = sources => {
       metric.uniqueIdsSeen = Array.from(metric.uniqueIdsSeen).sort()
       metric.availableIds = COVERAGE_ID_INVENTORY[key]
     }
+    const successfulExecutions =
+      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0
     metric.covered =
-      (metric.evaluations ?? metric.attempts ?? 0) > 0 ||
-      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0 ||
+      successfulExecutions ||
+      (key !== 'restStops' && (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
       (metric.uniqueIdsSeen?.length ?? 0) > 0
   }
   return coverage
@@ -3300,21 +3494,49 @@ export const summarizeScenario = runs => {
   })
   const roundInteger = value => Math.round(value)
   const roundTwo = value => Number(value.toFixed(2))
-  const perGig = (run, value) => run.gigsPlayed > 0 ? value / run.gigsPlayed : 0
+  const perGig = (run, value) =>
+    run.gigsPlayed > 0 ? value / run.gigsPlayed : 0
 
   const calcStats = subset => {
     if (!subset || subset.length === 0) return null
     return {
       sampleSize: subset.length,
-      finalMoney: describe(subset.map(run => run.finalMoney), roundInteger),
-      finalFame: describe(subset.map(run => run.finalFame), roundInteger),
-      gigsPlayed: describe(subset.map(run => run.gigsPlayed), roundTwo),
-      daysSurvived: describe(subset.map(run => run.daysSurvived), roundTwo),
-      gigNet: describe(subset.map(run => perGig(run, run.totalGigNet)), roundInteger),
-      performanceScore: describe(subset.map(run => perGig(run, run.totalPerfScoreSum)), roundInteger),
-      finalHarmony: describe(subset.map(run => run.finalHarmony), roundInteger),
-      fameEarned: describe(subset.map(run => run.fameAccounting.earned), roundInteger),
-      fameEarnedPerGig: describe(subset.map(run => perGig(run, run.fameAccounting.earned)), roundInteger)
+      finalMoney: describe(
+        subset.map(run => run.finalMoney),
+        roundInteger
+      ),
+      finalFame: describe(
+        subset.map(run => run.finalFame),
+        roundInteger
+      ),
+      gigsPlayed: describe(
+        subset.map(run => run.gigsPlayed),
+        roundTwo
+      ),
+      daysSurvived: describe(
+        subset.map(run => run.daysSurvived),
+        roundTwo
+      ),
+      gigNet: describe(
+        subset.map(run => perGig(run, run.totalGigNet)),
+        roundInteger
+      ),
+      performanceScore: describe(
+        subset.map(run => perGig(run, run.totalPerfScoreSum)),
+        roundInteger
+      ),
+      finalHarmony: describe(
+        subset.map(run => run.finalHarmony),
+        roundInteger
+      ),
+      fameEarned: describe(
+        subset.map(run => run.fameAccounting.earned),
+        roundInteger
+      ),
+      fameEarnedPerGig: describe(
+        subset.map(run => perGig(run, run.fameAccounting.earned)),
+        roundInteger
+      )
     }
   }
 
@@ -3343,7 +3565,9 @@ export const summarizeScenario = runs => {
   const finalFameMean = popAll.finalFame ? popAll.finalFame.mean : 0
   const gigsPlayedMean = popAll.gigsPlayed ? popAll.gigsPlayed.mean : 0
 
-  const avgEventsApplied = Number(mean(runs.map(r => r.eventsApplied)).toFixed(2))
+  const avgEventsApplied = Number(
+    mean(runs.map(r => r.eventsApplied)).toFixed(2)
+  )
   const avgGigEvents = Number(mean(runs.map(r => r.gigEvents)).toFixed(2))
 
   return {
@@ -3355,7 +3579,9 @@ export const summarizeScenario = runs => {
     bankruptcyRate: Number(bankruptcyRatePct.toFixed(2)),
     avgEventsApplied,
     avgGigEvents,
-    avgPerformanceScore: popAll.performanceScore ? popAll.performanceScore.mean : 0,
+    avgPerformanceScore: popAll.performanceScore
+      ? popAll.performanceScore.mean
+      : 0,
 
     statistics: {
       finalMoney: popAll.finalMoney,
@@ -3369,10 +3595,30 @@ export const summarizeScenario = runs => {
         median: Math.round(median(runs.map(r => r.lowestMoney))),
         stdDev: Math.round(standardDeviation(runs.map(r => r.lowestMoney))),
         min: Math.round(minimum(runs.map(r => r.lowestMoney))),
-        p10: Math.round(quantile(runs.map(r => r.lowestMoney), 0.1)),
-        p25: Math.round(quantile(runs.map(r => r.lowestMoney), 0.25)),
-        p75: Math.round(quantile(runs.map(r => r.lowestMoney), 0.75)),
-        p90: Math.round(quantile(runs.map(r => r.lowestMoney), 0.9)),
+        p10: Math.round(
+          quantile(
+            runs.map(r => r.lowestMoney),
+            0.1
+          )
+        ),
+        p25: Math.round(
+          quantile(
+            runs.map(r => r.lowestMoney),
+            0.25
+          )
+        ),
+        p75: Math.round(
+          quantile(
+            runs.map(r => r.lowestMoney),
+            0.75
+          )
+        ),
+        p90: Math.round(
+          quantile(
+            runs.map(r => r.lowestMoney),
+            0.9
+          )
+        ),
         max: Math.round(maximum(runs.map(r => r.lowestMoney)))
       },
       peakMoney: {
@@ -3380,44 +3626,114 @@ export const summarizeScenario = runs => {
         median: Math.round(median(runs.map(r => r.peakMoney))),
         stdDev: Math.round(standardDeviation(runs.map(r => r.peakMoney))),
         min: Math.round(minimum(runs.map(r => r.peakMoney))),
-        p10: Math.round(quantile(runs.map(r => r.peakMoney), 0.1)),
-        p25: Math.round(quantile(runs.map(r => r.peakMoney), 0.25)),
-        p75: Math.round(quantile(runs.map(r => r.peakMoney), 0.75)),
-        p90: Math.round(quantile(runs.map(r => r.peakMoney), 0.9)),
+        p10: Math.round(
+          quantile(
+            runs.map(r => r.peakMoney),
+            0.1
+          )
+        ),
+        p25: Math.round(
+          quantile(
+            runs.map(r => r.peakMoney),
+            0.25
+          )
+        ),
+        p75: Math.round(
+          quantile(
+            runs.map(r => r.peakMoney),
+            0.75
+          )
+        ),
+        p90: Math.round(
+          quantile(
+            runs.map(r => r.peakMoney),
+            0.9
+          )
+        ),
         max: Math.round(maximum(runs.map(r => r.peakMoney)))
       },
       maxDrawdownPct: {
         mean: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
         median: Number(median(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
-        stdDev: Number(standardDeviation(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+        stdDev: Number(
+          standardDeviation(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)
+        ),
         min: Number(minimum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
-        p10: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.1).toFixed(2)),
-        p25: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.25).toFixed(2)),
-        p75: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.75).toFixed(2)),
-        p90: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.9).toFixed(2)),
+        p10: Number(
+          quantile(
+            runs.map(r => r.maxPeakToTroughDrop),
+            0.1
+          ).toFixed(2)
+        ),
+        p25: Number(
+          quantile(
+            runs.map(r => r.maxPeakToTroughDrop),
+            0.25
+          ).toFixed(2)
+        ),
+        p75: Number(
+          quantile(
+            runs.map(r => r.maxPeakToTroughDrop),
+            0.75
+          ).toFixed(2)
+        ),
+        p90: Number(
+          quantile(
+            runs.map(r => r.maxPeakToTroughDrop),
+            0.9
+          ).toFixed(2)
+        ),
         max: Number(maximum(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2))
       },
       finalHarmony: popAll.finalHarmony,
       eventsApplied: {
         mean: avgEventsApplied,
         median: Number(median(runs.map(r => r.eventsApplied)).toFixed(2)),
-        stdDev: Number(standardDeviation(runs.map(r => r.eventsApplied)).toFixed(2)),
+        stdDev: Number(
+          standardDeviation(runs.map(r => r.eventsApplied)).toFixed(2)
+        ),
         min: minimum(runs.map(r => r.eventsApplied)),
-        p10: quantile(runs.map(r => r.eventsApplied), 0.1),
-        p25: quantile(runs.map(r => r.eventsApplied), 0.25),
-        p75: quantile(runs.map(r => r.eventsApplied), 0.75),
-        p90: quantile(runs.map(r => r.eventsApplied), 0.9),
+        p10: quantile(
+          runs.map(r => r.eventsApplied),
+          0.1
+        ),
+        p25: quantile(
+          runs.map(r => r.eventsApplied),
+          0.25
+        ),
+        p75: quantile(
+          runs.map(r => r.eventsApplied),
+          0.75
+        ),
+        p90: quantile(
+          runs.map(r => r.eventsApplied),
+          0.9
+        ),
         max: maximum(runs.map(r => r.eventsApplied))
       },
       gigEvents: {
         mean: avgGigEvents,
         median: Number(median(runs.map(r => r.gigEvents)).toFixed(2)),
-        stdDev: Number(standardDeviation(runs.map(r => r.gigEvents)).toFixed(2)),
+        stdDev: Number(
+          standardDeviation(runs.map(r => r.gigEvents)).toFixed(2)
+        ),
         min: minimum(runs.map(r => r.gigEvents)),
-        p10: quantile(runs.map(r => r.gigEvents), 0.1),
-        p25: quantile(runs.map(r => r.gigEvents), 0.25),
-        p75: quantile(runs.map(r => r.gigEvents), 0.75),
-        p90: quantile(runs.map(r => r.gigEvents), 0.9),
+        p10: quantile(
+          runs.map(r => r.gigEvents),
+          0.1
+        ),
+        p25: quantile(
+          runs.map(r => r.gigEvents),
+          0.25
+        ),
+        p75: quantile(
+          runs.map(r => r.gigEvents),
+          0.75
+        ),
+        p90: quantile(
+          runs.map(r => r.gigEvents),
+          0.9
+        ),
         max: maximum(runs.map(r => r.gigEvents))
       },
       fameEarned: popAll.fameEarned,
@@ -3482,7 +3798,9 @@ export const summarizeScenario = runs => {
       const nodeTypeVisits = {}
       let totalVisits = 0
       for (const run of runs) {
-        for (const [type, count] of Object.entries(run.nodeTypesVisited ?? {})) {
+        for (const [type, count] of Object.entries(
+          run.nodeTypesVisited ?? {}
+        )) {
           nodeTypeVisits[type] = (nodeTypeVisits[type] ?? 0) + count
           totalVisits += count
         }
@@ -3496,7 +3814,9 @@ export const summarizeScenario = runs => {
         avgDeepestLayerReached: Number(
           mean(runs.map(run => run.deepestLayerReached ?? 0)).toFixed(2)
         ),
-        avgArrivals: Number((totalVisits / Math.max(1, runs.length)).toFixed(2)),
+        avgArrivals: Number(
+          (totalVisits / Math.max(1, runs.length)).toFixed(2)
+        ),
         // Arrivals at rest and supply stops: real nodes that pay nothing, which
         // is why arrivals and gigs played are not the same number.
         avgNonPerformingArrivals: Number(
@@ -3542,7 +3862,9 @@ export const summarizeScenario = runs => {
         .map(run => firstDayMatching(run.purchaseLog, () => true))
         .filter(day => day != null)
       const vanDays = runs
-        .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'VAN'))
+        .map(run =>
+          firstDayMatching(run.purchaseLog, e => e.category === 'VAN')
+        )
         .filter(day => day != null)
       const hqDays = runs
         .map(run => firstDayMatching(run.purchaseLog, e => e.category === 'HQ'))
@@ -3560,9 +3882,7 @@ export const summarizeScenario = runs => {
         runs.map(run => run[key]).filter(entry => entry != null)
       const meanOf = (entries, field) =>
         entries.length
-          ? Number(
-              mean(entries.map(entry => entry[field])).toFixed(2)
-            )
+          ? Number(mean(entries.map(entry => entry[field])).toFixed(2))
           : null
 
       return {
@@ -3583,7 +3903,10 @@ export const summarizeScenario = runs => {
         firstHqUpgradeDayMedian: medianOrNull(hqDays),
         avgDistinctItemsPurchased: Number(mean(distinctItems).toFixed(2)),
         catalogSharePurchasedPct: Number(
-          ((mean(distinctItems) / Math.max(1, UPGRADE_CATALOG.length)) * 100).toFixed(2)
+          (
+            (mean(distinctItems) / Math.max(1, UPGRADE_CATALOG.length)) *
+            100
+          ).toFixed(2)
         ),
         modalFirstPurchaseCategory: modalValue(firstCategories),
         avgMoneyBeforePurchase: meanOf(moneyPurchases, 'moneyBefore'),
@@ -3604,8 +3927,14 @@ export const summarizeScenario = runs => {
           affordability('affordabilityAtMidCheckpoint'),
           'affordable'
         ),
-        avgUnaffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'unaffordable'),
-        avgAffordableAtEnd: meanOf(affordability('affordabilityAtEnd'), 'affordable')
+        avgUnaffordableAtEnd: meanOf(
+          affordability('affordabilityAtEnd'),
+          'unaffordable'
+        ),
+        avgAffordableAtEnd: meanOf(
+          affordability('affordabilityAtEnd'),
+          'affordable'
+        )
       }
     })(),
 
@@ -3630,12 +3959,16 @@ export const summarizeScenario = runs => {
         item => item.currency !== 'fame' && Number.isFinite(item.cost)
       )
       return {
-        gigNetPerCalendarDay: Math.round(totalDays > 0 ? totalNet / totalDays : 0),
+        gigNetPerCalendarDay: Math.round(
+          totalDays > 0 ? totalNet / totalDays : 0
+        ),
         gigNetPerGigDay: Math.round(netPerGig),
         gigsPerCalendarDay: Number(
           (totalDays > 0 ? totalGigs / totalDays : 0).toFixed(3)
         ),
-        avgRestDays: Number((runs.length ? totalRest / runs.length : 0).toFixed(2)),
+        avgRestDays: Number(
+          (runs.length ? totalRest / runs.length : 0).toFixed(2)
+        ),
         // The free rest-stop fallback, i.e. rest days where the clinic was not
         // worth paying for. A subset of avgRestDays, not a synonym.
         avgFreeRestStops: Number(
@@ -3692,6 +4025,12 @@ export const summarizeScenario = runs => {
         criticalEur: LIQUIDITY_STRESS_THRESHOLDS.critical
       },
       bankruptcyRatePct: Number(bankruptcyRatePct.toFixed(2)),
+      bankruptcyBeforeFirstGigPct: shareOfRunsPct(
+        run => run.bankrupt && run.earlyRunway?.bankruptBeforeFirstGig === true
+      ),
+      bankruptcyAfterFirstGigPct: shareOfRunsPct(
+        run => run.bankrupt && run.earlyRunway?.bankruptBeforeFirstGig === false
+      ),
       everBelowTightPct: shareOfRunsPct(
         run => run.lowestMoneyObserved < LIQUIDITY_STRESS_THRESHOLDS.tight
       ),
@@ -3714,7 +4053,10 @@ export const summarizeScenario = runs => {
         median(runs.map(run => run.maxPeakToTroughDrop)).toFixed(2)
       ),
       p90MaxDrawdownPct: Number(
-        quantile(runs.map(run => run.maxPeakToTroughDrop), 0.9).toFixed(2)
+        quantile(
+          runs.map(run => run.maxPeakToTroughDrop),
+          0.9
+        ).toFixed(2)
       ),
       // The floor of the surviving population: a scenario whose solvent tail
       // still ends comfortable is safer than its insolvency rate suggests.
@@ -3728,6 +4070,39 @@ export const summarizeScenario = runs => {
         ? minimum(bankruptRuns.map(run => run.daysSurvived))
         : null
     },
+
+    actualLossAttribution: Object.fromEntries(
+      LOSS_ATTRIBUTION_SOURCES.map(source => {
+        const losses = runs.map(run => run.actualLossAttribution?.totals?.[source] ?? 0)
+        const firstCount = runs.filter(
+          run => run.actualLossAttribution?.firstMaterialDrawdownSource === source
+        ).length
+        const bankruptcyCountForSource = bankruptRuns.filter(
+          run => run.actualLossAttribution?.bankruptcyPrecededBySource === source
+        ).length
+        return [source, {
+          total: Math.round(losses.reduce((sum, loss) => sum + loss, 0)),
+          median: Math.round(median(losses)),
+          p90: Math.round(quantile(losses, 0.9)),
+          firstMaterialDrawdownSharePct: Number(
+            ((firstCount / Math.max(1, runs.length)) * 100).toFixed(2)
+          ),
+          bankruptcyPredecessorSharePct: bankruptRuns.length
+            ? Number(((bankruptcyCountForSource / bankruptRuns.length) * 100).toFixed(2))
+            : null
+        }]
+      })
+    ),
+    grossSpendAttribution: Object.fromEntries(
+      GROSS_SPEND_SOURCES.map(source => {
+        const values = runs.map(run => run.grossSpendAttribution?.[source] ?? 0)
+        return [source, {
+          total: Math.round(values.reduce((sum, value) => sum + value, 0)),
+          median: Math.round(median(values)),
+          p90: Math.round(quantile(values, 0.9))
+        }]
+      })
+    ),
 
     volatility: {
       finalMoneyStdDev: popAll.finalMoney ? popAll.finalMoney.stdDev : 0,
@@ -3747,24 +4122,40 @@ export const summarizeScenario = runs => {
       refunded: Math.round(mean(runs.map(r => r.fameAccounting.refunded))),
       spentNet: Math.round(mean(runs.map(r => r.fameAccounting.spentNet))),
       lost: Math.round(mean(runs.map(r => r.fameAccounting.lost))),
-      clampAdjustment: Number(mean(runs.map(r => r.fameAccounting.clampAdjustment)).toFixed(2)),
+      clampAdjustment: Number(
+        mean(runs.map(r => r.fameAccounting.clampAdjustment)).toFixed(2)
+      ),
       finalFame: Number(mean(runs.map(r => r.finalFame)).toFixed(2)),
-      reconciliationDelta: Number(mean(runs.map(r => r.reconciliationDelta)).toFixed(6)),
-      maxAbsReconciliationDelta: Number(maximum(runs.map(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment))).toFixed(6)),
-      reconciledRuns: runs.filter(r => Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment) <= 1e-9).length,
+      reconciliationDelta: Number(
+        mean(runs.map(r => r.reconciliationDelta)).toFixed(6)
+      ),
+      maxAbsReconciliationDelta: Number(
+        maximum(
+          runs.map(r =>
+            Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment)
+          )
+        ).toFixed(6)
+      ),
+      reconciledRuns: runs.filter(
+        r =>
+          Math.abs(r.reconciliationDelta + r.fameAccounting.clampAdjustment) <=
+          1e-9
+      ).length,
       sampleSize: runs.length
     },
     executionCoverage: aggregateCoverage
   }
 }
 
-
 export const getScenarioInsight = summary => {
   if (summary.bankruptcyRate >= 15) {
     return '⚠️ Deutliches Insolvenzrisiko – Early-Game-Puffer oder Kostenstruktur prüfen.'
   }
 
-  if (summary.avgFinalMoney >= 100000 && calculateFameLevel(summary.avgFinalFame) < 20) {
+  if (
+    summary.avgFinalMoney >= 100000 &&
+    calculateFameLevel(summary.avgFinalFame) < 20
+  ) {
     return '⚠️ Geldwachstum entkoppelt von Fame – Reputations- und Monetarisierungs-Kurve angleichen.'
   }
 
@@ -3774,11 +4165,11 @@ export const getScenarioInsight = summary => {
     return '⚠️ Harmonie zu instabil – mehr Recovery/Trade-offs in Events einbauen.'
   }
 
-  if (summary.kpiStatus === "not_evaluated") {
-    return "⚪ Szenario besitzt keine KPI-Zieldefinition."
+  if (summary.kpiStatus === 'not_evaluated') {
+    return '⚪ Szenario besitzt keine KPI-Zieldefinition.'
   }
 
-  return summary.kpiStatus === "passed"
+  return summary.kpiStatus === 'passed'
     ? '✅ Szenario liegt im robusten Simulationskorridor.'
     : '⚠️ KPI-Verstöße vorhanden – siehe Health Check.'
 }
@@ -3857,7 +4248,10 @@ const getMinigameInsight = s => {
 export const buildFeatureInventory = () => {
   return {
     venuesAvailable: ALL_VENUES.length,
-    eventsAvailable: Object.values(EVENTS_DB).reduce((acc, arr) => acc + arr.length, 0),
+    eventsAvailable: Object.values(EVENTS_DB).reduce(
+      (acc, arr) => acc + arr.length,
+      0
+    ),
     brandDealsAvailable: BRAND_DEALS.length,
     postOptionsAvailable: POST_OPTIONS.length,
     contrabandItemsAvailable: CONTRABAND_DB.length,
@@ -3868,7 +4262,11 @@ export const buildFeatureInventory = () => {
     questsAvailable: Object.keys(QUEST_REGISTRY).length,
     assetChassisAvailable: Object.values(CHASSIS_CONFIG).reduce(
       (total, flavors) =>
-        total + Object.values(flavors).reduce((sum, tiers) => sum + Object.keys(tiers).length, 0),
+        total +
+        Object.values(flavors).reduce(
+          (sum, tiers) => sum + Object.keys(tiers).length,
+          0
+        ),
       0
     ),
     assetModulesAvailable: Object.keys(MODULE_REGISTRY).length,
@@ -3877,7 +4275,9 @@ export const buildFeatureInventory = () => {
 }
 
 export const buildExecutionCoverage = results =>
-  mergeExecutionCoverage(results.map(result => result.summary.executionCoverage))
+  mergeExecutionCoverage(
+    results.map(result => result.summary.executionCoverage)
+  )
 
 const fmt = n => (n == null ? 0 : n).toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
@@ -4051,6 +4451,179 @@ export const LIQUIDITY_STRESS_THRESHOLDS = Object.freeze({
   critical: 250
 })
 
+const tensionMetrics = ({ bankruptcy, tight, critical, drawdown, finale }) =>
+  Object.freeze({
+    bankruptcyRatePct: bankruptcy,
+    bankruptcyBeforeFirstGigPct: [0, bankruptcy[1]],
+    bankruptcyAfterFirstGigPct: bankruptcy,
+    everBelowTightPct: tight,
+    everBelowCriticalPct: critical,
+    avgDaysBelowTightThreshold: [0, 3],
+    avgDaysBelowCriticalThreshold: [0, 2],
+    medianMaxDrawdownPct: [0, drawdown[1]],
+    p90MaxDrawdownPct: drawdown,
+    finaleReachedPct: finale,
+    finaleCompletedPct: finale,
+    solventFinalMoneyP10: [0, 30_000],
+    creditOrGrantAssistedPct: [0, 30]
+  })
+
+/** Non-blocking design hypotheses; unlike KPI safety caps these never select a candidate. */
+export const SCENARIO_TENSION_TARGETS = Object.freeze({
+  bootstrap_struggle: Object.freeze({
+    blocking: false,
+    metrics: tensionMetrics({
+      bankruptcy: [5, 15],
+      tight: [12, 25],
+      critical: [5, 15],
+      drawdown: [60, 80],
+      finale: [70, 100]
+    })
+  }),
+  scandal_recovery: Object.freeze({
+    blocking: false,
+    metrics: tensionMetrics({
+      bankruptcy: [4, 15],
+      tight: [10, 25],
+      critical: [4, 15],
+      drawdown: [55, 80],
+      finale: [70, 100]
+    })
+  }),
+  festival_push: Object.freeze({
+    blocking: false,
+    metrics: tensionMetrics({
+      bankruptcy: [3, 12],
+      tight: [7, 20],
+      critical: [2, 10],
+      drawdown: [50, 75],
+      finale: [75, 100]
+    })
+  }),
+  chaos_tour: Object.freeze({
+    blocking: false,
+    metrics: tensionMetrics({
+      bankruptcy: [3, 15],
+      tight: [8, 22],
+      critical: [2, 12],
+      drawdown: [45, 70],
+      finale: [65, 100]
+    })
+  })
+})
+
+export const LOSS_ATTRIBUTION_SOURCES = Object.freeze([
+  'daily_obligations',
+  'travel',
+  'fuel',
+  'maintenance_repairs',
+  'negative_events',
+  'clinic',
+  'assets_upgrades',
+  'other',
+  'gig_settlement'
+])
+
+export const createLossAttributionTracker = startingMoney => ({
+  peakMoney: Number.isFinite(startingMoney) ? startingMoney : 0,
+  totals: Object.fromEntries(
+    LOSS_ATTRIBUTION_SOURCES.map(source => [source, 0])
+  ),
+  firstMaterialDrawdownSource: null,
+  lastMaterialLossSource: null
+})
+
+export const recordAttributedLoss = (
+  tracker,
+  { source, moneyBefore, moneyAfter, afterFirstGig }
+) => {
+  if (!afterFirstGig || !LOSS_ATTRIBUTION_SOURCES.includes(source)) return
+  if (!Number.isFinite(moneyBefore) || !Number.isFinite(moneyAfter)) return
+  tracker.peakMoney = Math.max(tracker.peakMoney, moneyBefore, moneyAfter)
+  const loss = moneyBefore - moneyAfter
+  if (loss <= 0) return
+  tracker.totals[source] += loss
+  const material = tracker.peakMoney > 0 && loss / tracker.peakMoney >= 0.1
+  if (material) {
+    tracker.lastMaterialLossSource = source
+    tracker.firstMaterialDrawdownSource ??= source
+  }
+}
+
+export const buildScenarioTensionReview = ({
+  results,
+  minimumSampleSize = RISK_EVIDENCE_MINIMUM_SAMPLE,
+  blocking = false
+}) => {
+  const scenarios = (results ?? [])
+    .filter(result => SCENARIO_TENSION_TARGETS[result.id])
+    .map(result => {
+      const summary = result.summary ?? {}
+      const stress = summary.financialStress ?? {}
+      const observed = {
+        bankruptcyRatePct: summary.bankruptcy?.ratePct,
+        bankruptcyBeforeFirstGigPct: stress.bankruptcyBeforeFirstGigPct,
+        bankruptcyAfterFirstGigPct: stress.bankruptcyAfterFirstGigPct,
+        everBelowTightPct: stress.everBelowTightPct,
+        everBelowCriticalPct: stress.everBelowCriticalPct,
+        avgDaysBelowTightThreshold: stress.avgDaysBelowTightThreshold,
+        avgDaysBelowCriticalThreshold: stress.avgDaysBelowCriticalThreshold,
+        medianMaxDrawdownPct: stress.medianMaxDrawdownPct,
+        p90MaxDrawdownPct: stress.p90MaxDrawdownPct,
+        finaleReachedPct: summary.tourPaths?.finaleReachedPct,
+        finaleCompletedPct: summary.tourPaths?.finaleCompletedPct,
+        solventFinalMoneyP10: stress.solventFinalMoneyP10,
+        creditOrGrantAssistedPct: stress.creditOrGrantAssistedPct
+      }
+      const sampleSize = summary.bankruptcy?.sampleSize
+      const enoughEvidence =
+        Number.isFinite(sampleSize) && sampleSize >= minimumSampleSize
+      const metrics = Object.fromEntries(
+        Object.entries(SCENARIO_TENSION_TARGETS[result.id].metrics).map(
+          ([key, range]) => {
+            const value = observed[key]
+            const status =
+              enoughEvidence && Number.isFinite(value)
+                ? value < range[0]
+                  ? 'below_target'
+                  : value > range[1]
+                    ? 'above_target'
+                    : 'within_target'
+                : 'insufficient_evidence'
+            return [
+              key,
+              {
+                observed: Number.isFinite(value) ? value : null,
+                targetRange: range,
+                status
+              }
+            ]
+          }
+        )
+      )
+      const statuses = Object.values(metrics).map(metric => metric.status)
+      return {
+        id: result.id,
+        blocking: false,
+        sampleSize: Number.isFinite(sampleSize) ? sampleSize : null,
+        status: statuses.includes('insufficient_evidence')
+          ? 'insufficient_evidence'
+          : statuses.every(status => status === 'within_target')
+            ? 'within_target'
+            : 'review',
+        metrics
+      }
+    })
+  return {
+    blocking,
+    contract: 'design-hypothesis',
+    passed:
+      scenarios.length > 0 &&
+      scenarios.every(scenario => scenario.status === 'within_target'),
+    scenarios
+  }
+}
+
 /** Below this cohort size a rate is noise, not a risk profile. */
 export const RISK_EVIDENCE_MINIMUM_SAMPLE = 30
 
@@ -4070,7 +4643,10 @@ export const classifyBankruptcyRisk = ({
     return 'not_evaluated'
   }
   if (!Number.isFinite(observedPct)) return 'not_evaluated'
-  if (!Number.isFinite(sampleSize) || sampleSize < RISK_EVIDENCE_MINIMUM_SAMPLE) {
+  if (
+    !Number.isFinite(sampleSize) ||
+    sampleSize < RISK_EVIDENCE_MINIMUM_SAMPLE
+  ) {
     return 'insufficient_evidence'
   }
   if (Number.isFinite(safetyMaximumPct) && observedPct > safetyMaximumPct) {
@@ -4090,7 +4666,10 @@ export const classifyBankruptcyRisk = ({
  * minimum. That is not a failure — it is "sitting on the lower design edge",
  * and it is exactly what a bare pass/fail cannot say.
  */
-export const describeCorridorConfidence = ({ confidence95, targetRangePct }) => {
+export const describeCorridorConfidence = ({
+  confidence95,
+  targetRangePct
+}) => {
   if (!Array.isArray(targetRangePct) || targetRangePct.length !== 2) {
     return 'not_evaluated'
   }
@@ -4461,8 +5040,7 @@ const simulationReportIdentity = report => ({
   runsPerScenario: report?.constants?.runsPerScenario ?? null,
   seedNamespace: report?.metadata?.seedNamespace ?? null,
   seedStrategy: report?.metadata?.seedStrategy ?? null,
-  shippedGigCadencePolicy:
-    report?.metadata?.shippedGigCadencePolicy ?? null
+  shippedGigCadencePolicy: report?.metadata?.shippedGigCadencePolicy ?? null
 })
 
 const buildRegressionComparison = (baselinePayload, currentPayload) => {
@@ -4573,11 +5151,21 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(`- Report-Version: ${payload.constants.reportVersion}`)
     lines.push(`- Node-Version: ${payload.metadata.nodeVersion}`)
-    lines.push(`- Basis-Commit: ${payload.metadata.sourceBaseCommit || "nicht verf\u00FCgbar"}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? "unbekannt" : (payload.metadata.workingTreeDirty ? "Ja" : "Nein")}`)
-    lines.push(`- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`)
-    lines.push(`- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`)
-    lines.push(`- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`)
-    lines.push(`- Risikokorridor-Konfiguration SHA-256: ${payload.metadata.riskTargetConfigSha256 || 'nicht verfügbar'}`)
+    lines.push(
+      `- Basis-Commit: ${payload.metadata.sourceBaseCommit || 'nicht verf\u00FCgbar'}\n- Working Tree Dirty: ${payload.metadata.workingTreeDirty === null ? 'unbekannt' : payload.metadata.workingTreeDirty ? 'Ja' : 'Nein'}`
+    )
+    lines.push(
+      `- Simulationsskript SHA-256: ${payload.metadata.simulationScriptSha256 || 'nicht verfügbar'}`
+    )
+    lines.push(
+      `- Szenariokonfiguration SHA-256: ${payload.metadata.scenarioConfigSha256 || 'nicht verfügbar'}`
+    )
+    lines.push(
+      `- KPI-Zielkonfiguration SHA-256: ${payload.metadata.kpiConfigSha256 || 'nicht verfügbar'}`
+    )
+    lines.push(
+      `- Risikokorridor-Konfiguration SHA-256: ${payload.metadata.riskTargetConfigSha256 || 'nicht verfügbar'}`
+    )
     lines.push(`- Seed-Strategie: ${payload.metadata.seedStrategy}`)
     lines.push('')
   }
@@ -4759,9 +5347,7 @@ const buildMarkdownReport = payload => {
         `✅ Alle ${safety.evaluatedScenarios.length} geprüften Szenarien bleiben auf unabhängigen Seeds unter ihrer harten Grenze.`
       )
     } else if (safety.failures.length) {
-      lines.push(
-        '| Szenario | Metrik | Holdout | Harte Grenze | Stichprobe |'
-      )
+      lines.push('| Szenario | Metrik | Holdout | Harte Grenze | Stichprobe |')
       lines.push('|---|---|---:|---:|---:|')
       for (const failure of safety.failures) {
         lines.push(
@@ -4967,37 +5553,49 @@ const buildMarkdownReport = payload => {
 
   lines.push('## Fame-Bilanz')
   lines.push('')
-  lines.push('| Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Clamp-Anpassung | Reconciled Runs |')
+  lines.push(
+    '| Szenario | Verdient | Brutto Ausgegeben | Rückerstattet | Netto Ausgegeben | Verloren | Clamp-Anpassung | Reconciled Runs |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
     const s = scenario.summary
     const fa = s.fameAccounting ?? {}
-    lines.push(`| ${scenario.name} | ${fa.earned ?? 0} | ${fa.spentGross ?? 0} | ${fa.refunded ?? 0} | ${fa.spentNet ?? 0} | ${fa.lost ?? 0} | ${fa.clampAdjustment ?? 0} | ${fa.reconciledRuns ?? 0}/${fa.sampleSize ?? 0} |`)
+    lines.push(
+      `| ${scenario.name} | ${fa.earned ?? 0} | ${fa.spentGross ?? 0} | ${fa.refunded ?? 0} | ${fa.spentNet ?? 0} | ${fa.lost ?? 0} | ${fa.clampAdjustment ?? 0} | ${fa.reconciledRuns ?? 0}/${fa.sampleSize ?? 0} |`
+    )
   }
   lines.push('')
 
   lines.push('## Ergebnisverteilungen')
   lines.push('')
-  lines.push('*(Zeigt Mittelwert, Median, StdDev, P10, P90 für Endgeld über alle Runs)*')
+  lines.push(
+    '*(Zeigt Mittelwert, Median, StdDev, P10, P90 für Endgeld über alle Runs)*'
+  )
   lines.push('')
   lines.push('| Szenario | Mean | Median | StdDev | P10 | P90 |')
   lines.push('|---|---:|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
     const s = scenario.summary
     const m = s.statistics?.finalMoney || {}
-    lines.push(`| ${scenario.name} | ${fmtEur(m.mean)} | ${fmtEur(m.median)} | ${fmtEur(m.stdDev)} | ${fmtEur(m.p10)} | ${fmtEur(m.p90)} |`)
+    lines.push(
+      `| ${scenario.name} | ${fmtEur(m.mean)} | ${fmtEur(m.median)} | ${fmtEur(m.stdDev)} | ${fmtEur(m.p10)} | ${fmtEur(m.p90)} |`
+    )
   }
   lines.push('')
 
   lines.push('## Insolvenzrisiko')
   lines.push('')
-  lines.push('| Szenario | Insolvenzfälle | Stichprobe | Rate | Lower 95% (Wilson) | Upper 95% (Wilson) |')
+  lines.push(
+    '| Szenario | Insolvenzfälle | Stichprobe | Rate | Lower 95% (Wilson) | Upper 95% (Wilson) |'
+  )
   lines.push('|---|---:|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
     const s = scenario.summary
     const b = s.bankruptcy || {}
     const c = b.confidence95 || {}
-    lines.push(`| ${scenario.name} | ${b.count ?? 0} | ${b.sampleSize ?? 0} | ${(b.ratePct ?? 0).toFixed(2)}% | ${(c.lowerPct ?? 0).toFixed(2)}% | ${(c.upperPct ?? 0).toFixed(2)}% |`)
+    lines.push(
+      `| ${scenario.name} | ${b.count ?? 0} | ${b.sampleSize ?? 0} | ${(b.ratePct ?? 0).toFixed(2)}% | ${(c.lowerPct ?? 0).toFixed(2)}% | ${(c.upperPct ?? 0).toFixed(2)}% |`
+    )
   }
   lines.push('')
 
@@ -5051,9 +5649,7 @@ const buildMarkdownReport = payload => {
     )
     const blockingWarnings = risk.warnings.filter(isBlockingWarning)
     if (softWarnings.length) {
-      lines.push(
-        'Diese Punkte erscheinen im Report, blockieren aber nichts:'
-      )
+      lines.push('Diese Punkte erscheinen im Report, blockieren aber nichts:')
       lines.push('')
       for (const warning of softWarnings) lines.push(`- ⚠️ ${warning}`)
       if (blockingWarnings.length) {
@@ -5066,7 +5662,9 @@ const buildMarkdownReport = payload => {
       lines.push(
         `Keine weichen Warnungen. ${blockingWarnings.length} Befund(e) überschreiten eine harte Sicherheitsgrenze und blockieren die Produktionsempfehlung — siehe „Harte Sicherheitsgrenzen (Holdout)“.`
       )
-    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
+    } else if (
+      risk.scenarios.every(scenario => scenario.status === 'healthy')
+    ) {
       lines.push(
         '✅ Alle bewerteten Szenarien liegen in ihrem Zielkorridor und bleiben auf unabhängigen Seeds im selben Risikoband.'
       )
@@ -5132,7 +5730,9 @@ const buildMarkdownReport = payload => {
   if (pathReference) {
     const depth = pathReference.summary.tourPaths.tourDepth
     const finaleReachers = payload.results
-      .filter(scenario => (scenario.summary?.tourPaths?.finaleReachedPct ?? 0) > 0)
+      .filter(
+        scenario => (scenario.summary?.tourPaths?.finaleReachedPct ?? 0) > 0
+      )
       .map(scenario => ({
         name: scenario.name,
         share: scenario.summary.tourPaths.finaleReachedPct
@@ -5242,7 +5842,9 @@ const buildMarkdownReport = payload => {
     // `avgRestDays` column shows 0 for a scenario whose share is 0.04%, so naming
     // "only the high-controversy scenario" contradicted the shares beside it.
     const restingScenarios = payload.results
-      .filter(scenario => (scenario.summary?.gigEconomics?.restDaySharePct ?? 0) > 0)
+      .filter(
+        scenario => (scenario.summary?.gigEconomics?.restDaySharePct ?? 0) > 0
+      )
       .map(scenario => ({
         name: scenario.name,
         sharePct: scenario.summary.gigEconomics.restDaySharePct
@@ -5279,7 +5881,9 @@ const buildMarkdownReport = payload => {
 
   lines.push('## Populationen')
   lines.push('')
-  lines.push('| Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |')
+  lines.push(
+    '| Szenario | Alle Runs (Size / Endgeld Mean) | Solvente Runs (Size / Endgeld Mean) | Insolvente Runs (Size / Endgeld Mean) |'
+  )
   lines.push('|---|---|---|---|')
   for (const scenario of payload.results) {
     const s = scenario.summary
@@ -5287,18 +5891,24 @@ const buildMarkdownReport = payload => {
     const all = p.allRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
     const sol = p.solventRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
     const ban = p.bankruptRuns ?? { sampleSize: 0, finalMoney: { mean: 0 } }
-    lines.push(`| ${scenario.name} | ${all.sampleSize} / ${fmtEur(all.finalMoney?.mean)} | ${sol.sampleSize} / ${fmtEur(sol.finalMoney?.mean)} | ${ban.sampleSize} / ${fmtEur(ban.finalMoney?.mean)} |`)
+    lines.push(
+      `| ${scenario.name} | ${all.sampleSize} / ${fmtEur(all.finalMoney?.mean)} | ${sol.sampleSize} / ${fmtEur(sol.finalMoney?.mean)} | ${ban.sampleSize} / ${fmtEur(ban.finalMoney?.mean)} |`
+    )
   }
   lines.push('')
 
   lines.push('## Volatilität')
   lines.push('')
-  lines.push('| Szenario | Endgeld StdDev | CV (Endgeld) | Max Drawdown Mean | Max Drawdown P90 |')
+  lines.push(
+    '| Szenario | Endgeld StdDev | CV (Endgeld) | Max Drawdown Mean | Max Drawdown P90 |'
+  )
   lines.push('|---|---:|---:|---:|---:|')
   for (const scenario of payload.results) {
     const s = scenario.summary
     const v = s.volatility || {}
-    lines.push(`| ${scenario.name} | ${fmtEur(v.finalMoneyStdDev)} | ${v.finalMoneyCoefficientOfVariation ?? '—'} | ${(v.maxDrawdownMeanPct ?? 0).toFixed(2)}% | ${(v.maxDrawdownP90Pct ?? 0).toFixed(2)}% |`)
+    lines.push(
+      `| ${scenario.name} | ${fmtEur(v.finalMoneyStdDev)} | ${v.finalMoneyCoefficientOfVariation ?? '—'} | ${(v.maxDrawdownMeanPct ?? 0).toFixed(2)}% | ${(v.maxDrawdownP90Pct ?? 0).toFixed(2)}% |`
+    )
   }
   lines.push('')
 
@@ -5313,7 +5923,9 @@ const buildMarkdownReport = payload => {
   lines.push('')
   lines.push('## Ausführungsabdeckung (Coverage)')
   lines.push('')
-  lines.push(`| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`)
+  lines.push(
+    `| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`
+  )
   lines.push(`|---|---|---:|---:|---:|`)
   const cov = payload.executionCoverage || {}
   Object.keys(cov).forEach(k => {
@@ -5389,8 +6001,6 @@ lines.push('## KPI-Zielkorridore (Health Check)')
 
   // ── Feature Coverage ──────────────────────────────────────────────────────
 
-
-
   // ── Kurzfazit ─────────────────────────────────────────────────────────────
   lines.push('## Kurzfazit')
   lines.push('')
@@ -5431,7 +6041,8 @@ lines.push('## KPI-Zielkorridore (Health Check)')
 
   const kpiCounts = payload.results.reduce(
     (acc, scenario) => {
-      acc[scenario.summary.kpiStatus] = (acc[scenario.summary.kpiStatus] || 0) + 1
+      acc[scenario.summary.kpiStatus] =
+        (acc[scenario.summary.kpiStatus] || 0) + 1
       return acc
     },
     { passed: 0, failed: 0, not_evaluated: 0 }
@@ -5483,7 +6094,9 @@ lines.push('## KPI-Zielkorridore (Health Check)')
       lines.push(
         `- ⚠️ ${softWarningCount} weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.`
       )
-    } else if (risk.scenarios.every(scenario => scenario.status === 'healthy')) {
+    } else if (
+      risk.scenarios.every(scenario => scenario.status === 'healthy')
+    ) {
       lines.push(
         '- ✅ Alle bewerteten Szenarien liegen in ihrem Design-Risikokorridor.'
       )
@@ -5554,7 +6167,10 @@ const getWorkingTreeDirty = () => getSourceWorkingTreeDirty(PROJECT_ROOT)
 const getSourceBaseCommit = () => {
   if (process.env.GITHUB_SHA) return process.env.GITHUB_SHA
   try {
-    return execSync('git rev-parse HEAD', { encoding: 'utf8', stdio: 'pipe' }).trim()
+    return execSync('git rev-parse HEAD', {
+      encoding: 'utf8',
+      stdio: 'pipe'
+    }).trim()
   } catch {
     return null
   }
@@ -5571,8 +6187,8 @@ const getFileHash = async filePath => {
 
 export const getJsonHash = (data, meta = {}) => {
   try {
-    const obj = { ...data, ...meta };
-    delete obj.reportVersion;
+    const obj = { ...data, ...meta }
+    delete obj.reportVersion
     return crypto.createHash('sha256').update(JSON.stringify(obj)).digest('hex')
   } catch {
     return null
@@ -5736,7 +6352,9 @@ export const runSimulationSuite = async (options = {}) => {
     : outputJsonPath
   const baselinePayload = await tryReadJson(baselinePath)
 
-  const simulationScriptSha256 = await getFileHash(fileURLToPath(import.meta.url))
+  const simulationScriptSha256 = await getFileHash(
+    fileURLToPath(import.meta.url)
+  )
   const scenarioConfigSha256 = getJsonHash(SCENARIOS)
 
   const payload = {

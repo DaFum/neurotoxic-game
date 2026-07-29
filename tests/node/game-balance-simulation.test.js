@@ -14,10 +14,12 @@ import {
   GIG_CADENCE_POLICIES,
   KPI_TARGETS,
   LIQUIDITY_STRESS_THRESHOLDS,
+  LOSS_ATTRIBUTION_SOURCES,
   PERFORMABLE_NODE_TYPES,
   REGRESSION_METRICS,
   RISK_EVIDENCE_MINIMUM_SAMPLE,
   RISK_TARGETS,
+  SCENARIO_TENSION_TARGETS,
   SCENARIOS,
   SHIPPED_GIG_CADENCE_POLICY,
   SIMULATION_CONSTANTS,
@@ -26,9 +28,13 @@ import {
   applyCatalogPurchase,
   buildDesignRiskReview,
   buildHoldoutSafetyValidation,
+  buildScenarioTensionReview,
+  createLossAttributionTracker,
+  recordAttributedLoss,
   buildExecutionCoverage,
   buildTourAdjacency,
   buildFeatureInventory,
+  mergeExecutionCoverage,
   calculateDrawdownPct,
   chooseNextTourNode,
   createScenarioSeed,
@@ -243,6 +249,190 @@ test('drawdown is consistently expressed as percent', () => {
   assert.equal(calculateDrawdownPct(0, -10), 0)
 })
 
+test('scenario tension contracts are non-blocking and fail closed on missing evidence', () => {
+  assert.deepEqual(Object.keys(SCENARIO_TENSION_TARGETS).sort(), [
+    'bootstrap_struggle',
+    'chaos_tour',
+    'festival_push',
+    'scandal_recovery'
+  ])
+  for (const target of Object.values(SCENARIO_TENSION_TARGETS)) {
+    assert.equal(target.blocking, false)
+    assert.deepEqual(Object.keys(target.metrics).sort(), [
+      'avgDaysBelowCriticalThreshold',
+      'avgDaysBelowTightThreshold',
+      'bankruptcyAfterFirstGigPct',
+      'bankruptcyBeforeFirstGigPct',
+      'bankruptcyRatePct',
+      'creditOrGrantAssistedPct',
+      'everBelowCriticalPct',
+      'everBelowTightPct',
+      'finaleCompletedPct',
+      'finaleReachedPct',
+      'medianMaxDrawdownPct',
+      'p90MaxDrawdownPct',
+      'solventFinalMoneyP10'
+    ])
+  }
+
+  const review = buildScenarioTensionReview({
+    results: [{ id: 'bootstrap_struggle', summary: {} }],
+    minimumSampleSize: 2_000
+  })
+  assert.equal(review.blocking, false)
+  assert.equal(review.scenarios[0].status, 'insufficient_evidence')
+  assert.equal(review.scenarios[0].metrics.bankruptcyRatePct.observed, null)
+  assert.deepEqual(
+    review.scenarios[0].metrics.bankruptcyRatePct.targetRange,
+    [5, 15]
+  )
+  assert.equal(
+    'targetRangePct' in review.scenarios[0].metrics.bankruptcyRatePct,
+    false
+  )
+  assert.equal(LOSS_ATTRIBUTION_SOURCES.includes('modifiers'), false)
+  assert.equal(LOSS_ATTRIBUTION_SOURCES.includes('contraband'), false)
+})
+
+test('scenario tension review separates bankruptcy before and after first income', () => {
+  const summary = summarizeScenario([
+    {
+      ...runSingleSimulation(probeScenario(2), 11),
+      bankrupt: true,
+      earlyRunway: { bankruptBeforeFirstGig: true }
+    },
+    {
+      ...runSingleSimulation(probeScenario(2), 12),
+      bankrupt: true,
+      earlyRunway: { bankruptBeforeFirstGig: false }
+    }
+  ])
+  assert.equal(summary.financialStress.bankruptcyBeforeFirstGigPct, 50)
+  assert.equal(summary.financialStress.bankruptcyAfterFirstGigPct, 50)
+})
+
+test('loss attribution records only post-first-gig negative deltas', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 1_000,
+    moneyAfter: 900,
+    afterFirstGig: false
+  })
+  recordAttributedLoss(tracker, {
+    source: 'negative_events',
+    moneyBefore: 900,
+    moneyAfter: 950,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 950,
+    moneyAfter: 800,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.totals.travel, 150)
+  assert.equal(tracker.totals.negative_events, 0)
+  assert.equal(tracker.firstMaterialDrawdownSource, 'travel')
+  assert.equal(tracker.lastMaterialLossSource, 'travel')
+})
+
+test('positive daily movements cannot erase a separately sampled obligation loss', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'assets_upgrades',
+    moneyBefore: 1_000,
+    moneyAfter: 1_100,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'daily_obligations',
+    moneyBefore: 1_100,
+    moneyAfter: 1_020,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.totals.daily_obligations, 80)
+  assert.equal(tracker.totals.assets_upgrades, 0)
+})
+
+test('a trivial later loss does not replace the last material loss source', () => {
+  const tracker = createLossAttributionTracker(1_000)
+  recordAttributedLoss(tracker, {
+    source: 'travel',
+    moneyBefore: 1_000,
+    moneyAfter: 800,
+    afterFirstGig: true
+  })
+  recordAttributedLoss(tracker, {
+    source: 'daily_obligations',
+    moneyBefore: 800,
+    moneyAfter: 795,
+    afterFirstGig: true
+  })
+  assert.equal(tracker.lastMaterialLossSource, 'travel')
+})
+
+test('post-first-gig refuels are attributed to fuel', () => {
+  const runs = Array.from({ length: 40 }, (_, index) =>
+    runSingleSimulation(
+      probeScenario(10, { gigGapDays: 1, maintenanceDiscipline: 1 }),
+      createScenarioSeed('fuel-attribution', index)
+    )
+  )
+  assert.ok(runs.some(run => run.refuels > 0 && run.gigsPlayed > 0))
+  assert.ok(runs.some(run => run.actualLossAttribution.totals.fuel > 0))
+})
+
+test('actual losses stay separate from gross gig spending', () => {
+  const runs = Array.from({ length: 60 }, (_, index) =>
+    runSingleSimulation(
+      probeScenario(10, {
+        gigGapDays: 1,
+        minigameSkill: 0,
+        modifierBias: {
+          promo: 1,
+          merch: 1,
+          catering: 1,
+          soundcheck: 1,
+          guestlist: 1
+        }
+      }),
+      createScenarioSeed('spend-attribution', index)
+    )
+  )
+  const totals = runs
+    .map(run => run.actualLossAttribution.totals)
+    .reduce(
+      (sum, run) => {
+        for (const [source, value] of Object.entries(run)) sum[source] += value
+        return sum
+      },
+      Object.fromEntries(LOSS_ATTRIBUTION_SOURCES.map(source => [source, 0]))
+    )
+  const gross = runs.reduce(
+    (sum, run) => {
+      for (const [source, value] of Object.entries(run.grossSpendAttribution))
+        sum[source] += value
+      return sum
+    },
+    {
+      modifierGrossSpend: 0,
+      venueGrossSpend: 0,
+      taxGrossSpend: 0,
+      otherGrossSpend: 0
+    }
+  )
+
+  assert.ok(totals.other > 0)
+  assert.ok(totals.assets_upgrades > 0)
+  assert.ok(gross.modifierGrossSpend > 0)
+  assert.ok(gross.taxGrossSpend > 0)
+  assert.ok(
+    totals.gig_settlement <
+      gross.modifierGrossSpend + gross.taxGrossSpend + gross.otherGrossSpend
+  )
+})
+
 test('execution coverage aggregates without leaking or duplicating IDs', () => {
   const zero = buildExecutionCoverage([{ summary: {} }])
   assert.equal(zero.brandDeals.covered, false)
@@ -284,6 +474,50 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
       globalCoverage.minigamesAmp
     ].some(metric => metric.completions < metric.attempts)
   )
+})
+
+test('rest-stop coverage requires an activation, not only an evaluation', () => {
+  const inactive = mergeExecutionCoverage([
+    { restStops: { evaluations: 3, activations: 0 } }
+  ])
+  assert.equal(inactive.restStops.evaluations, 3)
+  assert.equal(inactive.restStops.covered, false)
+
+  const active = mergeExecutionCoverage([
+    { restStops: { evaluations: 3, activations: 1 } }
+  ])
+  assert.equal(active.restStops.covered, true)
+})
+
+test('holdout tension review is blocking and fails on a target breach', () => {
+  const review = buildScenarioTensionReview({
+    results: [
+      {
+        id: 'chaos_tour',
+        summary: {
+          bankruptcy: { ratePct: 20, sampleSize: 2_000 },
+          financialStress: {
+            bankruptcyBeforeFirstGigPct: 1,
+            bankruptcyAfterFirstGigPct: 19,
+            everBelowTightPct: 12,
+            everBelowCriticalPct: 4,
+            avgDaysBelowTightThreshold: 1,
+            avgDaysBelowCriticalThreshold: 0.5,
+            medianMaxDrawdownPct: 30,
+            p90MaxDrawdownPct: 55,
+            solventFinalMoneyP10: 5_000,
+            creditOrGrantAssistedPct: 2
+          },
+          tourPaths: { finaleReachedPct: 90, finaleCompletedPct: 80 }
+        }
+      }
+    ],
+    minimumSampleSize: 2_000,
+    blocking: true
+  })
+  assert.equal(review.blocking, true)
+  assert.equal(review.passed, false)
+  assert.equal(review.scenarios[0].status, 'review')
 })
 
 test('feature inventory is finite and matches the application snapshot', () => {
