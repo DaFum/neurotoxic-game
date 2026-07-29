@@ -19,14 +19,28 @@ export const ATTRIBUTION_COHORTS = Object.freeze({
 })
 export const CONTROVERSY_PROFILES = Object.freeze([0, 50, 65, 80])
 
-export const buildReportMetadata = () => ({
-  sourceBaseCommit: execFileSync('git', ['rev-parse', 'HEAD'], {
-    encoding: 'utf8'
-  }).trim(),
-  workingTreeDirty:
-    execFileSync('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()
-      .length > 0
-})
+export const buildReportMetadata = ({
+  runGit = execFileSync,
+  env = process.env
+} = {}) => {
+  let sourceBaseCommit = env.GITHUB_SHA ?? null
+  let workingTreeDirty = false
+  try {
+    sourceBaseCommit = runGit('git', ['rev-parse', 'HEAD'], {
+      encoding: 'utf8'
+    }).trim()
+  } catch {
+    // CI archives may not include .git; GITHUB_SHA remains reproducible there.
+  }
+  try {
+    workingTreeDirty =
+      runGit('git', ['status', '--porcelain'], { encoding: 'utf8' }).trim()
+        .length > 0
+  } catch {
+    // Without a worktree there is no local dirty state to report.
+  }
+  return { sourceBaseCommit, workingTreeDirty }
+}
 
 const insufficientDecision = rationale => ({
   status: 'insufficient_evidence',
@@ -61,7 +75,11 @@ export const buildPhaseDecisions = ({ calibrationReview, holdoutReview }) => {
       )
     })
   const measured =
-    isMeasured(calibrationReview) && isMeasured(holdoutReview) && sameEvidence
+    isMeasured(calibrationReview) &&
+    isMeasured(holdoutReview) &&
+    holdoutReview.blocking === true &&
+    holdoutReview.passed === true &&
+    sameEvidence
   if (!measured)
     return {
       phase6B: insufficientDecision(
@@ -134,7 +152,8 @@ export const buildTensionReport = () => {
   })
   const holdoutReview = buildScenarioTensionReview({
     results: cohorts.holdout,
-    minimumSampleSize: TENSION_RUNS_PER_SCENARIO
+    minimumSampleSize: TENSION_RUNS_PER_SCENARIO,
+    blocking: true
   })
   const scandal = scenarios.find(scenario => scenario.id === 'scandal_recovery')
   const controversyComparison = scandal
@@ -186,18 +205,23 @@ const buildMarkdown = report =>
     )
   ].join('\n')
 
+export const writeTensionArtifacts = async (report, reportDir) => {
+  await fs.mkdir(reportDir, { recursive: true })
+  await fs.writeFile(
+    path.join(reportDir, 'scenario-tension-attribution.json'),
+    `${JSON.stringify(report, null, 2)}\n`
+  )
+  await fs.writeFile(
+    path.join(reportDir, 'scenario-tension-attribution.md'),
+    `${buildMarkdown(report)}\n`
+  )
+}
+
 if (
   process.argv[1] &&
   import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
 ) {
   const report = buildTensionReport()
   const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-  await fs.writeFile(
-    path.join(root, 'reports/scenario-tension-attribution.json'),
-    `${JSON.stringify(report, null, 2)}\n`
-  )
-  await fs.writeFile(
-    path.join(root, 'reports/scenario-tension-attribution.md'),
-    `${buildMarkdown(report)}\n`
-  )
+  await writeTensionArtifacts(report, path.join(root, 'reports'))
 }

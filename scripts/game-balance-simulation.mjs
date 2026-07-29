@@ -1870,7 +1870,14 @@ const runTravelMinigame = (state, scenario, rng, counters) => {
 // (handleCompleteRoadieMinigame) and ANY stress > 0 for kabelsalat/amp
 // (applyPostMinigameResult flags damaged_gear on stress > 0, purge-induced
 // stress included).
-const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
+const runPreGigSetupMinigame = (
+  state,
+  scenario,
+  rng,
+  counters,
+  runCtx,
+  observeLoss = () => {}
+) => {
   const skill = scenario.minigameSkill ?? 0.5
   let damagedGear = false
 
@@ -1901,6 +1908,7 @@ const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
     )
     // Record the actual deduction: the money clamp can eat less than quoted.
     counters.repairSpend += moneyBeforeRepair - state.player.money
+    observeLoss('other', moneyBeforeRepair, state.player.money)
     state.band.harmony = clampBandHarmony(
       state.band.harmony - roadieResult.stress
     )
@@ -1974,13 +1982,15 @@ const runPreGigSetupMinigame = (state, scenario, rng, counters, runCtx) => {
  * heuristic and by the travel fallback: a player who is told "Not enough fuel in
  * the tank!" refuels and then drives, rather than losing the day.
  */
-const attemptRefuel = (state, counters) => {
+const attemptRefuel = (state, counters, observeLoss = () => {}) => {
+  const moneyBeforeRefuel = state.player.money
   const refuelCost = calculateRefuelCost(state.player.van.fuel)
   if (state.player.money < refuelCost) return false
   state.player.money = clampPlayerMoney(state.player.money - refuelCost)
   state.player.van.fuel = 100
   counters.refuels += 1
   counters.refuelSpend += refuelCost
+  observeLoss('fuel', moneyBeforeRefuel, state.player.money)
   return true
 }
 
@@ -1994,9 +2004,7 @@ const maybeMaintainVanAndResources = (
   const discipline = scenario.maintenanceDiscipline ?? 0.5
 
   if (state.player.van.fuel < 35 && rng() < discipline) {
-    const moneyBeforeRefuel = state.player.money
-    attemptRefuel(state, counters)
-    observeLoss('fuel', moneyBeforeRefuel, state.player.money)
+    attemptRefuel(state, counters, observeLoss)
   }
 
   if (state.player.van.condition < 62 && rng() < discipline) {
@@ -2040,7 +2048,7 @@ const MODULES_BY_SLOT_TYPE = (() => {
 // purchaseChassis/handlePurchaseChassis (cash + loan incl. liabilities),
 // startCrowdfund/handleStartCrowdfund (materialized by processCrowdfundTick),
 // and installModule/handleInstallModule. All validation stays in game code.
-const maybeInvestInAssets = (state, rng, counters) => {
+const maybeInvestInAssets = (state, rng, counters, observeLoss = () => {}) => {
   if (rng() < SIMULATION_CONSTANTS.assetInvestChance) {
     const kind = ASSET_KINDS[Math.floor(rng() * ASSET_KINDS.length)]
     const flavor = rng() < 0.35 ? 'diy' : 'legit'
@@ -2064,7 +2072,13 @@ const maybeInvestInAssets = (state, rng, counters) => {
       if (canPayCash || raw.mode === 'loan') {
         const action = purchaseChassis(raw, state)
         if (action && action.type !== 'PURCHASE_CHASSIS_FAILED') {
+          const moneyBeforePurchase = state.player.money
           Object.assign(state, handlePurchaseChassis(state, action.payload))
+          observeLoss(
+            'assets_upgrades',
+            moneyBeforePurchase,
+            state.player.money
+          )
           counters.assetsPurchased += 1
           if (raw.mode === 'loan') counters.loansTaken += 1
         }
@@ -2113,6 +2127,7 @@ const maybeInvestInAssets = (state, rng, counters) => {
       if (action) {
         Object.assign(state, handleRepairChassis(state, action.payload))
         counters.repairSpend += Math.max(0, moneyBefore - state.player.money)
+        observeLoss('maintenance_repairs', moneyBefore, state.player.money)
       }
     }
   }
@@ -2135,7 +2150,9 @@ const maybeInvestInAssets = (state, rng, counters) => {
         state
       )
       if (action && action.type !== 'INSTALL_MODULE_FAILED') {
+        const moneyBeforeInstall = state.player.money
         Object.assign(state, handleInstallModule(state, action.payload))
+        observeLoss('assets_upgrades', moneyBeforeInstall, state.player.money)
         counters.modulesInstalled += 1
       }
     }
@@ -2307,6 +2324,14 @@ const discretionarySpend = counters =>
   counters.repairSpend +
   counters.clinicSpend +
   counters.catalogMoneySpent
+
+const MODIFIER_EXPENSE_LABEL_KEYS = new Set([
+  'economy:gigExpenses.catering.label',
+  'economy:gigExpenses.socialAds.label',
+  'economy:gigExpenses.merchStand.label',
+  'economy:gigExpenses.soundcheck.label',
+  'economy:gigExpenses.guestList.label'
+])
 
 export const runSingleSimulation = (
   scenario,
@@ -2730,9 +2755,7 @@ export const runSingleSimulation = (
     maybeBuyCatalogUpgrade(state, rng, counters)
     observeAttributedLoss('assets_upgrades', moneyBeforeCatalog)
     observeEarlyRunwayMoney()
-    const moneyBeforeAssets = state.player.money
-    maybeInvestInAssets(state, rng, counters)
-    observeAttributedLoss('assets_upgrades', moneyBeforeAssets)
+    maybeInvestInAssets(state, rng, counters, observeAttributedMoney)
     observeEarlyRunwayMoney()
 
     if (willRest) {
@@ -2835,9 +2858,10 @@ export const runSingleSimulation = (
     // Canonical in-place fallback: an empty tank is not a dead end while a
     // refuel is affordable. `planTravel` consumes no rng before a fuel block, so
     // re-planning on the refuelled state stays deterministic.
-    const moneyBeforeFallbackRefuel = state.player.money
-    if (travelPlan?.blocked === 'fuel' && attemptRefuel(state, counters)) {
-      observeAttributedLoss('fuel', moneyBeforeFallbackRefuel)
+    if (
+      travelPlan?.blocked === 'fuel' &&
+      attemptRefuel(state, counters, observeAttributedMoney)
+    ) {
       travelPlan = planTravel({ reachable, state, rng, wantsToPerform })
       if (!travelPlan.blocked) counters.refuelledToTravel += 1
     }
@@ -3020,7 +3044,8 @@ export const runSingleSimulation = (
       scenario,
       rng,
       counters,
-      runCtx
+      runCtx,
+      observeAttributedMoney
     )
 
     const modifiers = calculateModifiers(scenario, rng)
@@ -3038,7 +3063,9 @@ export const runSingleSimulation = (
     const physics = perfResults.physics
 
     // Mid-gig events from the EVENTS_DB `gig` category
+    const moneyBeforeGigEvent = state.player.money
     maybeApplyGigEvent(state, scenario, rng, counters)
+    observeAttributedLoss('negative_events', moneyBeforeGigEvent)
 
     // Misses/maxCombo are player-skill outputs of the rhythm game; the sim
     // derives stand-ins from the performance score (no canonical formula).
@@ -3093,6 +3120,28 @@ export const runSingleSimulation = (
       assetModifiers: getActiveAssetModifiers(state.assets || []),
       repeatDemandContext: { day, regionId, regionalGigHistory, tuning }
     })
+
+    // The settlement combines income and expenses in one state update. Attribute
+    // its expenses separately so a profitable gig cannot erase the losses.
+    const expenseBreakdown = financials?.expenses?.breakdown ?? []
+    const modifierExpense = expenseBreakdown
+      .filter(item => MODIFIER_EXPENSE_LABEL_KEYS.has(item.labelKey))
+      .reduce((sum, item) => sum + Math.max(0, finiteNumberOr(item.value, 0)), 0)
+    const otherExpense = Math.max(
+      0,
+      finiteNumberOr(financials?.expenses?.total, 0) - modifierExpense
+    )
+    const moneyBeforeSettlement = state.player.money
+    observeAttributedMoney(
+      'modifiers',
+      moneyBeforeSettlement,
+      moneyBeforeSettlement - modifierExpense
+    )
+    observeAttributedMoney(
+      'other',
+      moneyBeforeSettlement,
+      moneyBeforeSettlement - otherExpense
+    )
 
     // Standard post-gig adjustments
     applyPostGigState(
@@ -3376,9 +3425,11 @@ export const mergeExecutionCoverage = sources => {
       metric.uniqueIdsSeen = Array.from(metric.uniqueIdsSeen).sort()
       metric.availableIds = COVERAGE_ID_INVENTORY[key]
     }
+    const successfulExecutions =
+      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0
     metric.covered =
-      (metric.evaluations ?? metric.attempts ?? 0) > 0 ||
-      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0 ||
+      successfulExecutions ||
+      (key !== 'restStops' && (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
       (metric.uniqueIdsSeen?.length ?? 0) > 0
   }
   return coverage
@@ -4477,11 +4528,10 @@ export const recordAttributedLoss = (
 
 export const buildScenarioTensionReview = ({
   results,
-  minimumSampleSize = RISK_EVIDENCE_MINIMUM_SAMPLE
-}) => ({
-  blocking: false,
-  contract: 'design-hypothesis',
-  scenarios: (results ?? [])
+  minimumSampleSize = RISK_EVIDENCE_MINIMUM_SAMPLE,
+  blocking = false
+}) => {
+  const scenarios = (results ?? [])
     .filter(result => SCENARIO_TENSION_TARGETS[result.id])
     .map(result => {
       const summary = result.summary ?? {}
@@ -4534,7 +4584,15 @@ export const buildScenarioTensionReview = ({
         metrics
       }
     })
-})
+  return {
+    blocking,
+    contract: 'design-hypothesis',
+    passed:
+      scenarios.length > 0 &&
+      scenarios.every(scenario => scenario.status === 'within_target'),
+    scenarios
+  }
+}
 
 /** Below this cohort size a rate is noise, not a risk profile. */
 export const RISK_EVIDENCE_MINIMUM_SAMPLE = 30

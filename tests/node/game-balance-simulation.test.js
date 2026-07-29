@@ -14,6 +14,7 @@ import {
   GIG_CADENCE_POLICIES,
   KPI_TARGETS,
   LIQUIDITY_STRESS_THRESHOLDS,
+  LOSS_ATTRIBUTION_SOURCES,
   PERFORMABLE_NODE_TYPES,
   REGRESSION_METRICS,
   RISK_EVIDENCE_MINIMUM_SAMPLE,
@@ -33,6 +34,7 @@ import {
   buildExecutionCoverage,
   buildTourAdjacency,
   buildFeatureInventory,
+  mergeExecutionCoverage,
   calculateDrawdownPct,
   chooseNextTourNode,
   createScenarioSeed,
@@ -348,6 +350,37 @@ test('post-first-gig refuels are attributed to fuel', () => {
   assert.ok(runs.some(run => run.lossAttribution.totals.fuel > 0))
 })
 
+test('setup, gig settlement, and asset spending reach attribution buckets', () => {
+  const totals = Array.from(
+    { length: 60 },
+    (_, index) =>
+      runSingleSimulation(
+        probeScenario(10, {
+          gigGapDays: 1,
+          minigameSkill: 0,
+          modifierBias: {
+            promo: 1,
+            merch: 1,
+            catering: 1,
+            soundcheck: 1,
+            guestlist: 1
+          }
+        }),
+        createScenarioSeed('spend-attribution', index)
+      ).lossAttribution.totals
+  ).reduce(
+    (sum, run) => {
+      for (const [source, value] of Object.entries(run)) sum[source] += value
+      return sum
+    },
+    Object.fromEntries(LOSS_ATTRIBUTION_SOURCES.map(source => [source, 0]))
+  )
+
+  assert.ok(totals.other > 0)
+  assert.ok(totals.modifiers > 0)
+  assert.ok(totals.assets_upgrades > 0)
+})
+
 test('execution coverage aggregates without leaking or duplicating IDs', () => {
   const zero = buildExecutionCoverage([{ summary: {} }])
   assert.equal(zero.brandDeals.covered, false)
@@ -389,6 +422,45 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
       globalCoverage.minigamesAmp
     ].some(metric => metric.completions < metric.attempts)
   )
+})
+
+test('rest-stop coverage requires an activation, not only an evaluation', () => {
+  const inactive = mergeExecutionCoverage([
+    { restStops: { evaluations: 3, activations: 0 } }
+  ])
+  assert.equal(inactive.restStops.evaluations, 3)
+  assert.equal(inactive.restStops.covered, false)
+
+  const active = mergeExecutionCoverage([
+    { restStops: { evaluations: 3, activations: 1 } }
+  ])
+  assert.equal(active.restStops.covered, true)
+})
+
+test('holdout tension review is blocking and fails on a target breach', () => {
+  const review = buildScenarioTensionReview({
+    results: [
+      {
+        id: 'chaos_tour',
+        summary: {
+          bankruptcy: { ratePct: 20, sampleSize: 2_000 },
+          financialStress: {
+            bankruptcyBeforeFirstGigPct: 1,
+            bankruptcyAfterFirstGigPct: 19,
+            everBelowTightPct: 12,
+            everBelowCriticalPct: 4,
+            p90MaxDrawdownPct: 55
+          },
+          tourPaths: { finaleCompletedPct: 80 }
+        }
+      }
+    ],
+    minimumSampleSize: 2_000,
+    blocking: true
+  })
+  assert.equal(review.blocking, true)
+  assert.equal(review.passed, false)
+  assert.equal(review.scenarios[0].status, 'review')
 })
 
 test('feature inventory is finite and matches the application snapshot', () => {
