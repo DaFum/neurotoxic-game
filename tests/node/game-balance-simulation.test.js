@@ -1429,6 +1429,42 @@ test('simulation report labels a legacy baseline comparison as descriptive and u
   }
 })
 
+test('reading a simulation baseline ignores only a missing file', async () => {
+  assert.equal(typeof balanceSimulation.tryReadJson, 'function')
+  const suffix = `${process.pid}-${Date.now()}`
+  const malformedUrl = new URL(
+    `../../reports/.malformed-simulation-${suffix}.json`,
+    import.meta.url
+  )
+  const directoryUrl = new URL(
+    `../../reports/.unreadable-simulation-${suffix}`,
+    import.meta.url
+  )
+  const missingUrl = new URL(
+    `../../reports/.missing-simulation-${suffix}.json`,
+    import.meta.url
+  )
+  await fs.writeFile(malformedUrl, '{not-json')
+  await fs.mkdir(directoryUrl)
+
+  try {
+    await assert.rejects(
+      balanceSimulation.tryReadJson(malformedUrl),
+      SyntaxError
+    )
+    await assert.rejects(
+      balanceSimulation.tryReadJson(directoryUrl),
+      error => error?.code !== 'ENOENT'
+    )
+    assert.equal(await balanceSimulation.tryReadJson(missingUrl), null)
+  } finally {
+    await Promise.all([
+      fs.rm(malformedUrl, { force: true }),
+      fs.rm(directoryUrl, { recursive: true, force: true })
+    ])
+  }
+})
+
 test('scenarios keep the shipped cadence phase unless a probe overrides it', () => {
   // The probe sets `gigCadencePolicy` per cohort. If it leaked into SCENARIOS the
   // published reports would silently change meaning and their config hash with it.

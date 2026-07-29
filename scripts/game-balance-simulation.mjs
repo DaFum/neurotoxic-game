@@ -5529,12 +5529,20 @@ const parseCliOptions = argv => {
   return options
 }
 
-const tryReadJson = async filePath => {
+export const tryReadJson = async filePath => {
   try {
     const content = await fs.readFile(filePath, 'utf8')
     return JSON.parse(content)
-  } catch {
-    return null
+  } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return null
+    }
+    throw error
   }
 }
 
