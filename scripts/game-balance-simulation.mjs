@@ -209,6 +209,10 @@ const wilsonScoreInterval = (successes, n) => {
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const PROJECT_ROOT = path.resolve(__dirname, '..')
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
 const REPORT_DIR = path.join(PROJECT_ROOT, 'reports')
 const REPORT_FILES = {
   outputJson: 'game-balance-simulation-results.json',
@@ -6362,7 +6366,7 @@ export const runSimulationSuite = async (options = {}) => {
     metadata: {
       ...(await buildArtifactMetadata({
         root: PROJECT_ROOT,
-        generatorPath: 'scripts/game-balance-simulation.mjs',
+        generatorPaths: GENERATOR_PATHS,
         seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
         runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario
       })),

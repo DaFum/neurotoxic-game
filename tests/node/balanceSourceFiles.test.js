@@ -59,6 +59,7 @@ const REQUIRED_SOURCES = [
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
   'scripts/game-balance-experiment-config.mjs',
+  'scripts/utils/balance-report-metadata.mjs',
   // Simulated tours walk a generated map, so route topology and arrival
   // semantics decide which venues are reached and which arrivals pay at all.
   'src/utils/mapGenerator.ts',
@@ -86,7 +87,10 @@ test('balance source hash is stable', async () => {
 test('artifact metadata uses the shared six-field fingerprint contract', async () => {
   const metadata = await buildArtifactMetadata({
     root: ROOT,
-    generatorPath: 'scripts/game-balance-simulation.mjs',
+    generatorPaths: [
+      'scripts/game-balance-simulation.mjs',
+      'scripts/utils/balance-report-metadata.mjs'
+    ],
     seedNamespace: '#test',
     runsPerScenario: 2_000
   })
@@ -105,7 +109,10 @@ test('artifact metadata uses the shared six-field fingerprint contract', async (
   assert.deepEqual(
     await validateArtifactMetadata(metadata, {
       root: ROOT,
-      generatorPath: 'scripts/game-balance-simulation.mjs',
+      generatorPaths: [
+        'scripts/game-balance-simulation.mjs',
+        'scripts/utils/balance-report-metadata.mjs'
+      ],
       seedNamespace: '#test',
       runsPerScenario: 2_000
     }),
@@ -116,7 +123,10 @@ test('artifact metadata uses the shared six-field fingerprint contract', async (
 test('artifact validation detects source and generator mismatches', async () => {
   const metadata = await buildArtifactMetadata({
     root: ROOT,
-    generatorPath: 'scripts/game-balance-simulation.mjs',
+    generatorPaths: [
+      'scripts/game-balance-simulation.mjs',
+      'scripts/utils/balance-report-metadata.mjs'
+    ],
     seedNamespace: '#test',
     runsPerScenario: 2_000
   })
@@ -126,12 +136,77 @@ test('artifact validation detects source and generator mismatches', async () => 
       { ...metadata, sourceFingerprint: '0'.repeat(64) },
       {
         root: ROOT,
-        generatorPath: 'scripts/game-balance-simulation.mjs',
+        generatorPaths: [
+          'scripts/game-balance-simulation.mjs',
+          'scripts/utils/balance-report-metadata.mjs'
+        ],
         seedNamespace: '#test',
         runsPerScenario: 2_000
       }
     ),
     { valid: false, reason: 'source_fingerprint_mismatch' }
+  )
+
+  assert.deepEqual(
+    await validateArtifactMetadata(
+      { ...metadata, generatorFingerprint: '0'.repeat(64) },
+      {
+        root: ROOT,
+        generatorPaths: [
+          'scripts/game-balance-simulation.mjs',
+          'scripts/utils/balance-report-metadata.mjs'
+        ],
+        seedNamespace: '#test',
+        runsPerScenario: 2_000
+      }
+    ),
+    { valid: false, reason: 'generator_fingerprint_mismatch' }
+  )
+})
+
+test('generator fingerprint covers transitive generator dependencies', async t => {
+  const sandbox = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'balance-generator-hash-')
+  )
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }))
+
+  for (const relativePath of BALANCE_SOURCE_FILES) {
+    const destination = path.join(sandbox, relativePath)
+    fs.mkdirSync(path.dirname(destination), { recursive: true })
+    fs.copyFileSync(path.join(ROOT, relativePath), destination)
+  }
+
+  const generatorPaths = [
+    'scripts/game-balance-experiments.mjs',
+    'scripts/game-balance-experiment-config.mjs',
+    'scripts/game-balance-simulation.mjs',
+    'scripts/utils/paired-statistics.mjs',
+    'scripts/utils/balance-report-metadata.mjs'
+  ]
+  const metadata = await buildArtifactMetadata({
+    root: sandbox,
+    generatorPaths,
+    seedNamespace: '#test',
+    runsPerScenario: 2_000
+  })
+
+  fs.appendFileSync(
+    path.join(sandbox, 'scripts/utils/paired-statistics.mjs'),
+    '\n// generator hash probe\n'
+  )
+  const metadataWithCurrentSources = {
+    ...metadata,
+    sourceFingerprint: await getBalanceSourceHash(sandbox)
+  }
+
+  assert.deepEqual(
+    await validateArtifactMetadata(metadataWithCurrentSources, {
+      root: sandbox,
+      generatorPaths,
+      seedNamespace: '#test',
+      runsPerScenario: 2_000
+    }),
+    { valid: false, reason: 'generator_fingerprint_mismatch' }
   )
 })
 

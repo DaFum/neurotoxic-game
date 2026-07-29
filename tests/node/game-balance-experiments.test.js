@@ -1520,6 +1520,7 @@ test('reading a previous experiment report ignores only a missing file', async (
     `../../reports/.missing-experiment-${suffix}.json`,
     import.meta.url
   )
+  const invalidSnapshotUrls = []
   await fs.writeFile(malformedUrl, '{not-json')
   await fs.mkdir(directoryUrl)
 
@@ -1533,10 +1534,24 @@ test('reading a previous experiment report ignores only a missing file', async (
       error => error?.code !== 'ENOENT'
     )
     assert.equal(await balanceExperiments.tryReadJson(missingUrl), null)
+
+    for (const value of [null, [], ['report'], 42, 'report']) {
+      const invalidSnapshotUrl = new URL(
+        `../../reports/.invalid-experiment-${suffix}-${typeof value}-${Array.isArray(value)}.json`,
+        import.meta.url
+      )
+      invalidSnapshotUrls.push(invalidSnapshotUrl)
+      await fs.writeFile(invalidSnapshotUrl, JSON.stringify(value))
+      assert.equal(
+        await balanceExperiments.tryReadJson(invalidSnapshotUrl),
+        null
+      )
+    }
   } finally {
     await Promise.all([
       fs.rm(malformedUrl, { force: true }),
-      fs.rm(directoryUrl, { recursive: true, force: true })
+      fs.rm(directoryUrl, { recursive: true, force: true }),
+      ...invalidSnapshotUrls.map(file => fs.rm(file, { force: true }))
     ])
   }
 })

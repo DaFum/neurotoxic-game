@@ -10,7 +10,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same rec
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b` |
+| Source-Fingerprint | `9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184` | `998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Empfehlung | `accepted-for-production-partial` | `accepted-for-production-partial` |
@@ -23,7 +23,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same rec
 | `chaos_tour` | 3.8% | 3.8% | 0 pp | 2000 / 2000 |
 | `cult_hypergrowth` | 2.25% | 2.25% | 0 pp | 2000 / 2000 |
 | `festival_push` | 3.95% | 3.95% | 0 pp | 2000 / 2000 |
-| `scandal_recovery` | 7.9% | 7.9% | 0 pp | 2000 / 2000 |
+| `scandal_recovery` | 5.75% | 7.9% | 2.15 pp | 2000 / 2000 |
 
 ## Kontrollzustand
 

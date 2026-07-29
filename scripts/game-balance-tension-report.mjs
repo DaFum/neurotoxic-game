@@ -40,12 +40,19 @@ const GROSS_SPEND_SOURCES = [
 ]
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const GENERATOR_PATH = 'scripts/game-balance-tension-report.mjs'
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-tension-report.mjs',
+  'scripts/game-balance-experiments.mjs',
+  'scripts/game-balance-experiment-config.mjs',
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/paired-statistics.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
 
 export const buildReportMetadata = () =>
   buildArtifactMetadata({
     root: ROOT,
-    generatorPath: GENERATOR_PATH,
+    generatorPaths: GENERATOR_PATHS,
     seedNamespace: ATTRIBUTION_COHORTS.calibration,
     runsPerScenario: TENSION_RUNS_PER_SCENARIO
   })
@@ -159,7 +166,7 @@ export const hasCompleteScenarioReviewEvidence = (
 export const validateReportProvenance = report =>
   validateArtifactMetadata(report?.metadata, {
     root: ROOT,
-    generatorPath: GENERATOR_PATH,
+    generatorPaths: GENERATOR_PATHS,
     seedNamespace: ATTRIBUTION_COHORTS.calibration,
     runsPerScenario: TENSION_RUNS_PER_SCENARIO
   })

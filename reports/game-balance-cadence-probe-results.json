@@ -743,16 +743,16 @@
       "blockedTravelBeforeFirstGigRunsPctDelta": -11.4
     }
   },
-  "generatedAt": "2026-07-29T20:21:31.356Z",
+  "generatedAt": "2026-07-29T21:31:07.060Z",
   "metadata": {
-    "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
-    "generatorFingerprint": "49bb815d375f92d3ca39bdaaec428092611e4d289291b8be0bfed38df5bde8c1",
+    "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
+    "generatorFingerprint": "05f52365236d3552125042c5e6c8f60d740f0e32417cc68f5173d16b9995d54b",
     "seedNamespace": "#production-cadence-validation-v2",
     "runsPerScenario": 2000,
     "workingTreeDirty": false,
     "artifactSchemaVersion": 1
   },
   "runtime": {
-    "durationMs": 45852
+    "durationMs": 62281
   }
 }

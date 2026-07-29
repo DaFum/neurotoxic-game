@@ -13,6 +13,7 @@ import path from 'node:path'
  * `tests/node/balanceSourceFiles.test.js` guards the list against drift.
  */
 export const BALANCE_SOURCE_FILES = Object.freeze([
+  'scripts/utils/balance-report-metadata.mjs',
   'scripts/game-balance-simulation.mjs',
   'scripts/game-balance-experiments.mjs',
   'scripts/game-balance-experiment-config.mjs',
@@ -134,20 +135,24 @@ export const getBalanceSourceHash = async root => {
   return hash.digest('hex')
 }
 
-const getFileHash = async filePath => {
+const getFilesHash = async (root, relativePaths) => {
   const hash = crypto.createHash('sha256')
-  hash.update(await fs.readFile(filePath))
+  for (const relativePath of [...relativePaths].sort()) {
+    hash.update(`${relativePath}\0`)
+    hash.update(await fs.readFile(path.join(root, relativePath)))
+    hash.update('\0')
+  }
   return hash.digest('hex')
 }
 
 export const buildArtifactMetadata = async ({
   root,
-  generatorPath,
+  generatorPaths,
   seedNamespace,
   runsPerScenario
 }) => ({
   sourceFingerprint: await getBalanceSourceHash(root),
-  generatorFingerprint: await getFileHash(path.join(root, generatorPath)),
+  generatorFingerprint: await getFilesHash(root, generatorPaths),
   seedNamespace,
   runsPerScenario,
   workingTreeDirty: getSourceWorkingTreeDirty(root) === true,
@@ -156,7 +161,7 @@ export const buildArtifactMetadata = async ({
 
 export const validateArtifactMetadata = async (
   metadata,
-  { root, generatorPath, seedNamespace, runsPerScenario }
+  { root, generatorPaths, seedNamespace, runsPerScenario }
 ) => {
   if (
     !metadata ||
@@ -180,7 +185,7 @@ export const validateArtifactMetadata = async (
   }
   if (
     metadata.generatorFingerprint !==
-    (await getFileHash(path.join(root, generatorPath)))
+    (await getFilesHash(root, generatorPaths))
   ) {
     return { valid: false, reason: 'generator_fingerprint_mismatch' }
   }

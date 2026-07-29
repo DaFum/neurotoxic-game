@@ -53,6 +53,11 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-cadence-probe-analysis.md')
 const DIAGNOSTIC_CONTROL_POLICY = 'gap-aligned'
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-cadence-probe.mjs',
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
 
 export const PRODUCTION_CADENCE_VALIDATION = Object.freeze({
   policies: Object.freeze(['gap-aligned', 'first-income']),
@@ -824,7 +829,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     generatedAt: new Date().toISOString(),
     metadata: await buildArtifactMetadata({
       root: ROOT,
-      generatorPath: 'scripts/game-balance-cadence-probe.mjs',
+      generatorPaths: GENERATOR_PATHS,
       seedNamespace: PRODUCTION_CADENCE_VALIDATION.seedNamespace,
       runsPerScenario: options.runsPerScenario
     })

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-07-29T20:20:32.812Z",
+  "generatedAt": "2026-07-29T21:29:51.376Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
-    "generatorFingerprint": "fef05d4b856ba9c0b9ac9ec8b7cabb6948ff625c9cef7d65d2d0325c72f666e1",
+    "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
+    "generatorFingerprint": "1aa3b55d9e420a68b8822e95bbd349778f43136fdcad2530c47116b553f3ce1a",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": false,
@@ -1555,30 +1555,19 @@
   },
   "regressionComparison": {
     "comparison": "descriptive-unpaired",
-    "cohortDifferences": [
-      {
-        "field": "seedStrategy",
-        "previous": null,
-        "current": "scenario-id-plus-first-income-full-report-namespace-plus-run-index"
-      },
-      {
-        "field": "shippedGigCadencePolicy",
-        "previous": null,
-        "current": "first-income"
-      }
-    ],
-    "note": "Recorded cohort metadata differences: seedStrategy, shippedGigCadencePolicy. This is a descriptive aggregate comparison, not a paired effect estimate.",
+    "cohortDifferences": [],
+    "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T18:56:14.684Z",
-      "sourceFingerprint": "9980f75d167f5cb2ff9826b9c6b632250dfb2c3bbcc4bea08520458b5f111184",
+      "generatedAt": "2026-07-29T13:02:26.790Z",
+      "sourceFingerprint": null,
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
-      "seedStrategy": null,
-      "shippedGigCadencePolicy": null
+      "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
+      "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-07-29T20:20:32.812Z",
-      "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
+      "generatedAt": "2026-07-29T21:29:51.376Z",
+      "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
@@ -1668,24 +1657,24 @@
         "name": "Scandal Recovery",
         "metrics": {
           "bankruptcyRate": {
-            "previous": 8.6,
+            "previous": 5.85,
             "current": 8.6,
-            "delta": 0
+            "delta": 2.75
           },
           "avgFinalMoney": {
-            "previous": 22493,
+            "previous": 23921,
             "current": 22493,
-            "delta": 0
+            "delta": -1428
           },
           "avgFameProgressPerGig": {
-            "previous": 1549.04,
+            "previous": 1556.46,
             "current": 1549.04,
-            "delta": 0
+            "delta": -7.42
           },
           "avgGigsPlayed": {
-            "previous": 6.61,
+            "previous": 6.73,
             "current": 6.61,
-            "delta": 0
+            "delta": -0.12
           }
         }
       },

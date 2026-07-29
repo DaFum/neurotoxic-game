@@ -14,6 +14,13 @@ const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.js
 const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-experiments-analysis.md')
 const METRICS = ['daysSurvived', 'finalMoney', 'finalFame', 'fameEarned', 'gigsPlayed', 'finalHarmony', 'maxDrawdownPct']
 const PAIRING_STRATEGY = 'same-scenario-same-run-index-same-seed'
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-experiments.mjs',
+  'scripts/game-balance-experiment-config.mjs',
+  'scripts/game-balance-simulation.mjs',
+  'scripts/utils/paired-statistics.mjs',
+  'scripts/utils/balance-report-metadata.mjs'
+])
 
 /**
  * Raised when the experiment legitimately finds nothing shippable. Distinct
@@ -529,12 +536,15 @@ const describeObjective = validation => {
 
 export const tryReadJson = async file => {
   try {
-    return JSON.parse(await fs.readFile(file, 'utf8'))
+    const parsed = JSON.parse(await fs.readFile(file, 'utf8'))
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
+      ? parsed
+      : null
   } catch (error) {
     if (
       error &&
       typeof error === 'object' &&
-      'code' in error &&
+      Object.hasOwn(error, 'code') &&
       error.code === 'ENOENT'
     ) {
       return null
@@ -1213,7 +1223,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     metadata: {
       ...(await buildArtifactMetadata({
         root: ROOT,
-        generatorPath: 'scripts/game-balance-experiments.mjs',
+        generatorPaths: GENERATOR_PATHS,
         seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
         runsPerScenario
       })),

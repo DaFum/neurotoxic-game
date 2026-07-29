@@ -2,8 +2,8 @@
   "experimentReportVersion": 2,
   "generatedAt": "2026-07-29T20:29:15.480Z",
   "metadata": {
-    "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
-    "generatorFingerprint": "3537c4e29294616d1b568b56429c343beb53a0533c07da1adfa086079b89dd94",
+    "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
+    "generatorFingerprint": "5d340c0cdbcdeea6107d80f8fec7f6cbbdd9e78b64e60f1681fedcfd7f2907fd",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": false,
@@ -27508,7 +27508,7 @@
     },
     "current": {
       "generatedAt": "2026-07-29T20:29:15.480Z",
-      "sourceFingerprint": "b20e1fa859f14c745572b3f5373100fe76b31011ce2e4059b3c8d38fabe0985b",
+      "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -27568,9 +27568,9 @@
       },
       {
         "id": "scandal_recovery",
-        "previousRatePct": 7.9,
+        "previousRatePct": 5.75,
         "currentRatePct": 7.9,
-        "deltaPct": 0,
+        "deltaPct": 2.15,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       }
