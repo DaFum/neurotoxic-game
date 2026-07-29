@@ -1,14 +1,14 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-07-29T11:47:43.912Z
+Erstellt am: 2026-07-29T12:42:50.249Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
 - Node-Version: v24.13.0
-- Basis-Commit: 913d1f10af97255ac89a55f97a49867e93a0126b
+- Basis-Commit: c19e60c3abc04330d6b6e04d4d766d9bd47cea92
 - Working Tree Dirty: Nein
-- Simulationsskript SHA-256: 40fd5cfb769149c129027f66a32351e232f88a304a1a3a89091d5cc81c2ea835
+- Simulationsskript SHA-256: a3f067a2da726c7035a16d26d9bb8ebd6d56aa79f114485e329b2d03e67e9ae5
 - Szenariokonfiguration SHA-256: 924af59511d59596f6e10d7f75d961a30e36b1f58565254d6a6f894787d969aa
 - KPI-Zielkonfiguration SHA-256: febc6b1b0d19adce4421249fb134fb2f1398be2a2a9993c84d3d18012ebe8e92
 - Risikokorridor-Konfiguration SHA-256: 60ee341d74d9b77808c2bb229cb19a0bfb0bca3ed8da41858778261c6fa3817c
@@ -557,7 +557,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `913d1f10af97255ac89a55f97a49867e93a0126b` |
+| Source-Commit | `dc6f86a53f0c1070d9ca3c74f92abeb58225ddf0` | `c19e60c3abc04330d6b6e04d4d766d9bd47cea92` |
 | Runs je Szenario | 260 | 2000 |
 | Seed-Namensraum | `nicht angegeben` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
