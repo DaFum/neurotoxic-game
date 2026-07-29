@@ -8,6 +8,7 @@ import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog.js'
 
 import { MapGenerator } from '../../src/utils/mapGenerator.ts'
 import { VENUES_BY_ID } from '../../src/data/venues.js'
+import * as balanceSimulation from '../../scripts/game-balance-simulation.mjs'
 
 import {
   GIG_CADENCE_POLICIES,
@@ -37,6 +38,7 @@ import {
   evaluateScenarioRiskStatus,
   reconcileFameLedger,
   resolveGigCadence,
+  runSimulationSuite,
   runSingleSimulation,
   summarizeCatalogAffordability,
   summarizeScenario
@@ -1056,6 +1058,27 @@ test('gig economics measures rest days from the model, which currently never res
   assert.equal(economics.restDaySharePct, 0)
 })
 
+test('rest threshold narrative names only the threshold that was crossed', () => {
+  assert.equal(
+    typeof balanceSimulation.describeRestThresholdCrossings,
+    'function'
+  )
+  assert.equal(
+    balanceSimulation.describeRestThresholdCrossings({
+      stamina: 36,
+      mood: 41
+    }),
+    'Stamina 36 erreicht mindestens die Marke 35; Mood 41 unterschreitet die Marke 50.'
+  )
+  assert.equal(
+    balanceSimulation.describeRestThresholdCrossings({
+      stamina: 35,
+      mood: 50
+    }),
+    'Stamina 35 erreicht mindestens die Marke 35; Mood 50 erreicht mindestens die Marke 50.'
+  )
+})
+
 test('a non-numeric seed is rejected instead of collapsing to one fixed stream', () => {
   // `seed + 0x6d2b79f5` concatenates for a string, the arithmetic then goes NaN,
   // and every string seed produces the SAME run — two "different" seeds would
@@ -1324,6 +1347,173 @@ test('cadence policies differ only in phase, and agree at a gap of one', () => {
     () => resolveGigCadence({ day: 1, gigGapDays: 2, policy: 'offset' }),
     RangeError
   )
+})
+
+test('full balance reports use a fresh first-income seed namespace and 2000-run cohorts', () => {
+  assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'first-income')
+  assert.equal(SIMULATION_CONSTANTS.runsPerScenario, 2000)
+  assert.equal(
+    SIMULATION_CONSTANTS.seedNamespace,
+    '#first-income-full-reports-v1'
+  )
+})
+
+test('simulation report labels a legacy baseline comparison as descriptive and unpaired', async () => {
+  const suffix = `${process.pid}-${Date.now()}`
+  const baselineName = `.balance-baseline-${suffix}.json`
+  const outputJson = `.balance-output-${suffix}.json`
+  const outputMarkdown = `.balance-output-${suffix}.md`
+  const baselineUrl = new URL(`../../reports/${baselineName}`, import.meta.url)
+  const outputJsonUrl = new URL(`../../reports/${outputJson}`, import.meta.url)
+  const outputMarkdownUrl = new URL(
+    `../../reports/${outputMarkdown}`,
+    import.meta.url
+  )
+  const original = {
+    runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
+    outputJson: SIMULATION_CONSTANTS.outputJson,
+    outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown
+  }
+
+  await fs.writeFile(
+    baselineUrl,
+    JSON.stringify({
+      generatedAt: '2026-07-28T00:00:00.000Z',
+      constants: { runsPerScenario: 260 },
+      metadata: {
+        sourceBaseCommit: 'legacy-source',
+        seedStrategy: 'scenario-id-plus-run-index',
+        shippedGigCadencePolicy: 'gap-aligned'
+      },
+      results: [
+        {
+          id: SCENARIOS[0].id,
+          summary: {
+            bankruptcyRate: 100,
+            avgFinalMoney: 0,
+            avgFameProgressPerGig: 0,
+            avgGigsPlayed: 0
+          }
+        }
+      ]
+    })
+  )
+
+  try {
+    SIMULATION_CONSTANTS.runsPerScenario = 1
+    SIMULATION_CONSTANTS.outputJson = outputJson
+    SIMULATION_CONSTANTS.outputMarkdown = outputMarkdown
+
+    const report = await runSimulationSuite({
+      compareBaselinePath: `reports/${baselineName}`
+    })
+    const markdown = await fs.readFile(outputMarkdownUrl, 'utf8')
+
+    assert.equal(report.regressionComparison.comparison, 'descriptive-unpaired')
+    assert.equal(report.regressionComparison.previous.runsPerScenario, 260)
+    assert.equal(report.regressionComparison.current.runsPerScenario, 1)
+    assert.deepEqual(
+      report.regressionComparison.cohortDifferences.map(
+        difference => difference.field
+      ),
+      [
+        'runsPerScenario',
+        'seedNamespace',
+        'seedStrategy',
+        'shippedGigCadencePolicy'
+      ]
+    )
+    assert.match(markdown, /deskriptiv und ungepaart/i)
+    assert.match(markdown, /Runs je Szenario/)
+    assert.match(markdown, /Seed-Namensraum/)
+  } finally {
+    Object.assign(SIMULATION_CONSTANTS, original)
+    await Promise.all([
+      fs.rm(baselineUrl, { force: true }),
+      fs.rm(outputJsonUrl, { force: true }),
+      fs.rm(outputMarkdownUrl, { force: true })
+    ])
+  }
+})
+
+test('reading a simulation baseline ignores only a missing file', async () => {
+  assert.equal(typeof balanceSimulation.tryReadJson, 'function')
+  const suffix = `${process.pid}-${Date.now()}`
+  const malformedUrl = new URL(
+    `../../reports/.malformed-simulation-${suffix}.json`,
+    import.meta.url
+  )
+  const directoryUrl = new URL(
+    `../../reports/.unreadable-simulation-${suffix}`,
+    import.meta.url
+  )
+  const missingUrl = new URL(
+    `../../reports/.missing-simulation-${suffix}.json`,
+    import.meta.url
+  )
+  await fs.writeFile(malformedUrl, '{not-json')
+  await fs.mkdir(directoryUrl)
+
+  try {
+    await assert.rejects(
+      balanceSimulation.tryReadJson(malformedUrl),
+      SyntaxError
+    )
+    await assert.rejects(
+      balanceSimulation.tryReadJson(directoryUrl),
+      error => error?.code !== 'ENOENT'
+    )
+    assert.equal(await balanceSimulation.tryReadJson(missingUrl), null)
+  } finally {
+    await Promise.all([
+      fs.rm(malformedUrl, { force: true }),
+      fs.rm(directoryUrl, { recursive: true, force: true })
+    ])
+  }
+})
+
+test('simulation report rejects an existing baseline without a results array', async () => {
+  const suffix = `${process.pid}-${Date.now()}`
+  const baselineName = `.invalid-balance-baseline-${suffix}.json`
+  const outputJson = `.invalid-balance-output-${suffix}.json`
+  const outputMarkdown = `.invalid-balance-output-${suffix}.md`
+  const baselineUrl = new URL(`../../reports/${baselineName}`, import.meta.url)
+  const outputJsonUrl = new URL(`../../reports/${outputJson}`, import.meta.url)
+  const outputMarkdownUrl = new URL(
+    `../../reports/${outputMarkdown}`,
+    import.meta.url
+  )
+  const original = {
+    runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
+    outputJson: SIMULATION_CONSTANTS.outputJson,
+    outputMarkdown: SIMULATION_CONSTANTS.outputMarkdown
+  }
+
+  try {
+    SIMULATION_CONSTANTS.runsPerScenario = 1
+    SIMULATION_CONSTANTS.outputJson = outputJson
+    SIMULATION_CONSTANTS.outputMarkdown = outputMarkdown
+
+    for (const baselinePayload of [{}, { results: {} }]) {
+      await fs.writeFile(baselineUrl, JSON.stringify(baselinePayload))
+      await assert.rejects(
+        runSimulationSuite({
+          compareBaselinePath: `reports/${baselineName}`
+        }),
+        {
+          name: 'TypeError',
+          message: 'Simulation baseline must contain a results array'
+        }
+      )
+    }
+  } finally {
+    Object.assign(SIMULATION_CONSTANTS, original)
+    await Promise.all([
+      fs.rm(baselineUrl, { force: true }),
+      fs.rm(outputJsonUrl, { force: true }),
+      fs.rm(outputMarkdownUrl, { force: true })
+    ])
+  }
 })
 
 test('scenarios keep the shipped cadence phase unless a probe overrides it', () => {

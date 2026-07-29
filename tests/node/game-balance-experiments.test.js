@@ -1,6 +1,8 @@
 import assert from 'node:assert/strict'
+import fs from 'node:fs/promises'
 import test from 'node:test'
 
+import * as balanceExperiments from '../../scripts/game-balance-experiments.mjs'
 import {
   DEFAULT_BALANCE_TUNING,
   getEarlyGameObligationMultiplier,
@@ -18,6 +20,7 @@ import {
 } from '../../scripts/game-balance-experiment-config.mjs'
 import {
   assertEqualControlCohorts,
+  buildPreviousExperimentReportComparison,
   combinationImpact,
   FAME_EVIDENCE_MIN_SHARE,
   famePerGigWithinLimit,
@@ -26,6 +29,7 @@ import {
   measureHoldoutGate,
   pairedFamePerGig,
   NoViableCandidateError,
+  SEED_STREAMS,
   runExperimentSuite,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
@@ -511,6 +515,28 @@ test('pairSimulationRuns uses the same scenario seed for control and candidate',
   assert.notEqual(
     createScenarioSeed('pairing_probe', 0),
     createScenarioSeed('other_probe', 0)
+  )
+})
+
+test('experiment streams share the fresh first-income full-report namespace', () => {
+  const namespace = SIMULATION_CONSTANTS.seedNamespace
+
+  assert.equal(namespace, '#first-income-full-reports-v1')
+  assert.equal(
+    SEED_STREAMS.calibration('baseline_touring'),
+    `baseline_touring${namespace}`
+  )
+  assert.equal(
+    SEED_STREAMS.selection('baseline_touring'),
+    `baseline_touring${namespace}#selection`
+  )
+  assert.equal(
+    SEED_STREAMS.validation('baseline_touring'),
+    `baseline_touring${namespace}#holdout`
+  )
+  assert.notEqual(
+    streamSeed('calibration', 'baseline_touring', 0),
+    createScenarioSeed('baseline_touring', 0)
   )
 })
 
@@ -1367,6 +1393,138 @@ test('the combination search rejects a cap breach and keeps looking', async () =
   // Skipping the paired comparison for a pair that cannot ship must read as "not
   // measured", never as a pass.
   assert.equal(neutral.calibrationPassed, null)
+})
+
+test('experiment reports compare the previous and current full-report cohorts', async () => {
+  const previousReport = {
+    generatedAt: '2026-07-28T22:12:38.668Z',
+    metadata: {
+      sourceBaseCommit: 'old-source',
+      seedStrategy: 'old-seeds'
+    },
+    controlSnapshot: { runsPerScenario: 260 },
+    recommendation: {
+      status: 'old-status',
+      bootstrap: 'bootstrap-old',
+      touring: 'touring-old'
+    },
+    holdoutBankruptcyByScenario: {
+      baseline_touring: {
+        ratePct: 10,
+        count: 26,
+        sampleSize: 260,
+        maximumPct: 5
+      }
+    }
+  }
+  const report = await runExperimentSuite({
+    runsPerScenario: STUB_RUNS_PER_SCENARIO,
+    writeReports: false,
+    simulate: makeStubRunner({ reliefClearsGate: true }),
+    previousReport
+  })
+
+  assert.doesNotMatch(
+    report.phases.phase3C.objectiveNote,
+    /baseline_touring money-per-day advantage/
+  )
+  const expectedGapSeedStrategy = `${SEED_STREAMS.calibration('scenario-id')}-plus-run-index`
+  for (const profiles of Object.values(
+    report.phases.phase3C.gigFrequencyAnalysis
+  )) {
+    assert.ok(
+      profiles.every(
+        profile => profile.seedStrategy === expectedGapSeedStrategy
+      )
+    )
+  }
+  assert.equal(
+    report.previousReportComparison.comparison,
+    'descriptive-unpaired'
+  )
+  assert.equal(
+    report.previousReportComparison.previous.sourceBaseCommit,
+    'old-source'
+  )
+  assert.equal(report.previousReportComparison.previous.runsPerScenario, 260)
+  assert.equal(
+    report.previousReportComparison.current.runsPerScenario,
+    STUB_RUNS_PER_SCENARIO
+  )
+  assert.deepEqual(
+    report.previousReportComparison.scenarios.find(
+      scenario => scenario.id === 'baseline_touring'
+    ),
+    {
+      id: 'baseline_touring',
+      previousRatePct: 10,
+      currentRatePct: 0,
+      deltaPct: -10,
+      previousSampleSize: 260,
+      currentSampleSize: STUB_RUNS_PER_SCENARIO
+    }
+  )
+  assert.match(
+    renderExperimentMarkdown(report),
+    /Alt\/Neu-Vergleich der vollständigen Reports/
+  )
+
+  const sameContractComparison = buildPreviousExperimentReportComparison(
+    structuredClone({
+      ...report,
+      generatedAt: '2026-07-28T00:00:00.000Z'
+    }),
+    structuredClone({
+      ...report,
+      generatedAt: '2026-07-29T00:00:00.000Z'
+    })
+  )
+  assert.deepEqual(sameContractComparison.cohortDifferences, [])
+  assert.match(sameContractComparison.note, /same recorded cohort metadata/i)
+
+  report.previousReportComparison = sameContractComparison
+  const sameContractMarkdown = renderExperimentMarkdown(report)
+  assert.match(sameContractMarkdown, /same recorded cohort metadata/i)
+  assert.doesNotMatch(
+    sameContractMarkdown,
+    /unterschiedliche Seed-Namensräume und Stichprobengrößen/i
+  )
+})
+
+test('reading a previous experiment report ignores only a missing file', async () => {
+  assert.equal(typeof balanceExperiments.tryReadJson, 'function')
+  const suffix = `${process.pid}-${Date.now()}`
+  const malformedUrl = new URL(
+    `../../reports/.malformed-experiment-${suffix}.json`,
+    import.meta.url
+  )
+  const directoryUrl = new URL(
+    `../../reports/.unreadable-experiment-${suffix}`,
+    import.meta.url
+  )
+  const missingUrl = new URL(
+    `../../reports/.missing-experiment-${suffix}.json`,
+    import.meta.url
+  )
+  await fs.writeFile(malformedUrl, '{not-json')
+  await fs.mkdir(directoryUrl)
+
+  try {
+    await assert.rejects(
+      balanceExperiments.tryReadJson(malformedUrl),
+      SyntaxError
+    )
+    await assert.rejects(
+      balanceExperiments.tryReadJson(directoryUrl),
+      error => error?.code !== 'ENOENT'
+    )
+    assert.equal(await balanceExperiments.tryReadJson(missingUrl), null)
+  } finally {
+    await Promise.all([
+      fs.rm(malformedUrl, { force: true }),
+      fs.rm(directoryUrl, { recursive: true, force: true })
+    ])
+  }
 })
 
 test('no combination clearing both gates still produces the diagnostic report', async () => {

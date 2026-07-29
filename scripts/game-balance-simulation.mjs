@@ -211,8 +211,9 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 13,
-  runsPerScenario: 260,
+  reportVersion: 14,
+  runsPerScenario: 2000,
+  seedNamespace: '#first-income-full-reports-v1',
   // A playthrough is bounded by the map, not by a free-running clock:
   // `MapGenerator.generateMap()` is always called with depth 10 and produces a
   // strictly forward layered DAG, so every route from START to the single
@@ -756,7 +757,22 @@ export const createScenarioSeed = (id, runIndex) => {
  * Both the rest decision and the rest effect read this one predicate; when they
  * disagreed, a rest day could consume a gig slot and heal nobody.
  */
-const MEMBER_NEEDS_CARE = member => member.stamina < 35 || member.mood < 50
+const MEMBER_CARE_THRESHOLDS = Object.freeze({
+  stamina: 35,
+  mood: 50
+})
+
+const MEMBER_NEEDS_CARE = member =>
+  member.stamina < MEMBER_CARE_THRESHOLDS.stamina ||
+  member.mood < MEMBER_CARE_THRESHOLDS.mood
+
+const describeThreshold = (label, value, threshold) =>
+  value < threshold
+    ? `${label} ${value} unterschreitet die Marke ${threshold}`
+    : `${label} ${value} erreicht mindestens die Marke ${threshold}`
+
+export const describeRestThresholdCrossings = ({ stamina, mood }) =>
+  `${describeThreshold('Stamina', stamina, MEMBER_CARE_THRESHOLDS.stamina)}; ${describeThreshold('Mood', mood, MEMBER_CARE_THRESHOLDS.mood)}.`
 
 const mulberry32 = seed => {
   // `seed + 0x6d2b79f5` is string concatenation for a non-numeric seed, and the
@@ -4412,14 +4428,56 @@ const checkKpi = (id, summary) => {
   return checks
 }
 
-const buildRegressionComparison = (baselinePayload, results) => {
-  if (!baselinePayload?.results) return null
+const COHORT_COMPARISON_FIELDS = [
+  'runsPerScenario',
+  'seedNamespace',
+  'seedStrategy',
+  'shippedGigCadencePolicy'
+]
 
+export const buildDescriptiveCohortComparison = (previous, current) => {
+  const cohortDifferences = COHORT_COMPARISON_FIELDS.filter(
+    field => previous[field] !== current[field]
+  ).map(field => ({
+    field,
+    previous: previous[field] ?? null,
+    current: current[field] ?? null
+  }))
+  const differenceSummary = cohortDifferences
+    .map(difference => difference.field)
+    .join(', ')
+  return {
+    comparison: 'descriptive-unpaired',
+    cohortDifferences,
+    note: cohortDifferences.length
+      ? `Recorded cohort metadata differences: ${differenceSummary}. This is a descriptive aggregate comparison, not a paired effect estimate.`
+      : 'The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.'
+  }
+}
+
+const simulationReportIdentity = report => ({
+  generatedAt: report?.generatedAt ?? null,
+  sourceBaseCommit: report?.metadata?.sourceBaseCommit ?? null,
+  runsPerScenario: report?.constants?.runsPerScenario ?? null,
+  seedNamespace: report?.metadata?.seedNamespace ?? null,
+  seedStrategy: report?.metadata?.seedStrategy ?? null,
+  shippedGigCadencePolicy:
+    report?.metadata?.shippedGigCadencePolicy ?? null
+})
+
+const buildRegressionComparison = (baselinePayload, currentPayload) => {
+  if (baselinePayload === null) return null
+  if (!Array.isArray(baselinePayload?.results)) {
+    throw new TypeError('Simulation baseline must contain a results array')
+  }
+
+  const previous = simulationReportIdentity(baselinePayload)
+  const current = simulationReportIdentity(currentPayload)
   const baselineById = new Map(
     baselinePayload.results.map(s => [s.id, s.summary || {}])
   )
 
-  return results
+  const scenarios = currentPayload.results
     .map(scenario => {
       const prev = baselineById.get(scenario.id)
       if (!prev) return null
@@ -4444,6 +4502,12 @@ const buildRegressionComparison = (baselinePayload, results) => {
       }
     })
     .filter(Boolean)
+  return {
+    ...buildDescriptiveCohortComparison(previous, current),
+    previous,
+    current,
+    scenarios
+  }
 }
 
 const getProgressionInsight = s => {
@@ -5208,7 +5272,7 @@ const buildMarkdownReport = payload => {
     )
     lines.push('')
     lines.push(
-      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter 35, Mood unter 50), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien sinkt die niedrigste Stamina auf ${worstWear.stamina} und die niedrigste Mood auf ${worstWear.mood}, die Marken werden also unterschritten. Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. ${restingScenarios.length ? `Ruhetage treten in ${restingScenarios.length} von ${payload.results.length} Szenarien überhaupt auf (${restingScenarios.map(item => `${item.name} ${item.sharePct}%`).join(', ')}); nennenswert ist der Anteil nur bei ${topRestingScenario?.name ?? '—'}, alle übrigen liegen im Promillebereich.` : 'In keinem Szenario entstand ein messbarer Ruhetag.'} Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
+      `**Ruhetage sind selten, aber nicht unmöglich — und der Grund hat sich mit der echten Reise verschoben.** Der Auslöser nutzt die Marken, die das Spiel im HUD als niedrig anzeigt (Stamina unter ${MEMBER_CARE_THRESHOLDS.stamina}, Mood unter ${MEMBER_CARE_THRESHOLDS.mood}), und wird inzwischen an jedem Tag geprüft, nicht nur an Auftrittstagen. Über alle Szenarien gilt: ${describeRestThresholdCrossings(worstWear)} Dass daraus fast keine Ruhetage entstehen, liegt an den Rastplatz-Knoten: bei täglicher Fahrt passiert eine Band im Schnitt rund einen pro Tour und erhält dort die kanonische Erholung (+20 Stamina / +10 Mood, \`avgRestStopArrivals\`), was die Mitglieder meist über der Pflegeschwelle hält. ${restingScenarios.length ? `Ruhetage treten in ${restingScenarios.length} von ${payload.results.length} Szenarien überhaupt auf (${restingScenarios.map(item => `${item.name} ${item.sharePct}%`).join(', ')}); nennenswert ist der Anteil nur bei ${topRestingScenario?.name ?? '—'}, alle übrigen liegen im Promillebereich.` : 'In keinem Szenario entstand ein messbarer Ruhetag.'} Die Harmony sinkt bis ${worstWear.harmony} und ist trotzdem kein Ruhegrund, weil Ruhe sie nicht repariert. Ein belastbarer Wert für die Opportunitätskosten einer Pause fehlt damit weiterhin, weil die Stichprobe an Ruhetagen zu klein ist. \`foregoneGigNetPerRestDayUpperBound\` entspricht bei null Ruhetagen genau dem Gig-Netto und ist deshalb nicht als Spalte geführt.`
     )
     lines.push('')
   }
@@ -5284,19 +5348,37 @@ lines.push('## KPI-Zielkorridore (Health Check)')
   }
   lines.push('')
 
-  if (
-    payload.regressionComparison?.length &&
-    payload.regressionComparison.some(s =>
-      Object.values(s.metrics).some(m => m.delta !== 0)
+  if (payload.regressionComparison?.scenarios?.length) {
+    const comparison = payload.regressionComparison
+    lines.push('## Alt/Neu-Vergleich der vollständigen Simulationsreports')
+    lines.push('')
+    lines.push(
+      'Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaarten Effektschätzungen.'
     )
-  ) {
-    lines.push('## Rebalance-Regressionsvergleich (Alt vs Neu)')
+    lines.push('')
+    lines.push('| Kennzahl | Alt | Neu |')
+    lines.push('|---|---|---|')
+    lines.push(
+      `| Source-Commit | \`${comparison.previous.sourceBaseCommit ?? '—'}\` | \`${comparison.current.sourceBaseCommit ?? '—'}\` |`
+    )
+    lines.push(
+      `| Runs je Szenario | ${comparison.previous.runsPerScenario ?? '—'} | ${comparison.current.runsPerScenario ?? '—'} |`
+    )
+    lines.push(
+      `| Seed-Namensraum | \`${comparison.previous.seedNamespace ?? 'nicht angegeben'}\` | \`${comparison.current.seedNamespace ?? 'nicht angegeben'}\` |`
+    )
+    lines.push(
+      `| Seed-Strategie | \`${comparison.previous.seedStrategy ?? 'nicht angegeben'}\` | \`${comparison.current.seedStrategy ?? 'nicht angegeben'}\` |`
+    )
+    lines.push(
+      `| Ausgelieferte Harness-Kadenz | \`${comparison.previous.shippedGigCadencePolicy ?? 'nicht angegeben'}\` | \`${comparison.current.shippedGigCadencePolicy ?? 'nicht angegeben'}\` |`
+    )
     lines.push('')
     lines.push(
       '| Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |'
     )
     lines.push('|---|---:|---:|---:|---:|')
-    for (const scenario of payload.regressionComparison) {
+    for (const scenario of comparison.scenarios) {
       const metrics = scenario.metrics
       lines.push(
         `| ${scenario.name} | ${metrics.bankruptcyRate.delta}% | ${fmtEur(metrics.avgFinalMoney.delta)} | ${metrics.avgFameProgressPerGig.delta} | ${metrics.avgGigsPlayed.delta} |`
@@ -5450,12 +5532,20 @@ const parseCliOptions = argv => {
   return options
 }
 
-const tryReadJson = async filePath => {
+export const tryReadJson = async filePath => {
   try {
     const content = await fs.readFile(filePath, 'utf8')
     return JSON.parse(content)
-  } catch {
-    return null
+  } catch (error) {
+    if (
+      error &&
+      typeof error === 'object' &&
+      'code' in error &&
+      error.code === 'ENOENT'
+    ) {
+      return null
+    }
+    throw error
   }
 }
 
@@ -5507,7 +5597,10 @@ export const runSimulationSuite = async (options = {}) => {
       runIndex < SIMULATION_CONSTANTS.runsPerScenario;
       runIndex++
     ) {
-      const seed = createScenarioSeed(scenario.id, runIndex)
+      const seed = createScenarioSeed(
+        `${scenario.id}${SIMULATION_CONSTANTS.seedNamespace}`,
+        runIndex
+      )
       runs.push(runSingleSimulation(scenario, seed))
     }
 
@@ -5551,7 +5644,10 @@ export const runSimulationSuite = async (options = {}) => {
         runs.push(
           runSingleSimulation(
             scenario,
-            createScenarioSeed(`${scenario.id}#holdout`, runIndex)
+            createScenarioSeed(
+              `${scenario.id}${SIMULATION_CONSTANTS.seedNamespace}#holdout`,
+              runIndex
+            )
           )
         )
       }
@@ -5610,7 +5706,8 @@ export const runSimulationSuite = async (options = {}) => {
           )
       : ['keine KPI-Szenarien ausgewertet']
     return {
-      seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
+      seedStrategy:
+        'scenario-id-plus-first-income-full-report-namespace-plus-holdout-marker-plus-run-index',
       runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
       comparison: 'per-kpi-band',
       agrees: disagreements.length === 0,
@@ -5657,7 +5754,10 @@ export const runSimulationSuite = async (options = {}) => {
       scenarioConfigSha256,
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
       riskTargetConfigSha256: getJsonHash(RISK_TARGETS),
-      seedStrategy: 'scenario-id-plus-run-index'
+      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+      seedStrategy:
+        'scenario-id-plus-first-income-full-report-namespace-plus-run-index',
+      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
@@ -5666,9 +5766,13 @@ export const runSimulationSuite = async (options = {}) => {
     designRiskReview,
     featureInventory: buildFeatureInventory(),
     executionCoverage: buildExecutionCoverage(results),
-    regressionComparison: buildRegressionComparison(baselinePayload, results),
+    regressionComparison: null,
     results
   }
+  payload.regressionComparison = buildRegressionComparison(
+    baselinePayload,
+    payload
+  )
 
   await fs.writeFile(
     outputJsonPath,
