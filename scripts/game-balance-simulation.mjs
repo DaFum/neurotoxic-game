@@ -1028,7 +1028,7 @@ export const chooseNextTourNode = (reachable, state, rng, wantsToPerform = true)
  * starting cash that half-cycle offset is the difference between one and two
  * unpaid cost days before the first income.
  *
- * - `gap-aligned`   days where `day % gap === 0` (shipped behaviour)
+ * - `gap-aligned`   days where `day % gap === 0` (former shipped behaviour)
  * - `gap-offset`    the same cadence phase-shifted to start on day 1
  * - `first-income`  play the first gig the map offers, then keep the gap
  *                   cadence anchored on that day
@@ -1048,7 +1048,7 @@ export const GIG_CADENCE_POLICIES = Object.freeze([
  * repeating the literal, or a rename would silently leave the comparison with no
  * baseline at all and every delta reading as zero.
  */
-export const SHIPPED_GIG_CADENCE_POLICY = GIG_CADENCE_POLICIES[0]
+export const SHIPPED_GIG_CADENCE_POLICY = 'gap-aligned'
 
 export const resolveGigCadence = ({
   day,

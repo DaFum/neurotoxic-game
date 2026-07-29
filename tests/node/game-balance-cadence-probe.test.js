@@ -2,7 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  PRODUCTION_CADENCE_VALIDATION,
   cappedScenarios,
+  runProductionCadenceValidation,
   runCadenceProbe,
   summarizeCohort
 } from '../../scripts/game-balance-cadence-probe.mjs'
@@ -221,4 +223,74 @@ test('cohort fame per gig publishes both denominators', () => {
     'The all-runs figure is halved by the gig-less run, which is the artifact'
   )
   assert.equal(cohort.firstBlockedTravelReasons.money, 1)
+})
+
+test('production cadence validation is predeclared and rejects undersized samples', () => {
+  assert.deepEqual(PRODUCTION_CADENCE_VALIDATION.policies, [
+    'gap-aligned',
+    'first-income'
+  ])
+  assert.equal(
+    PRODUCTION_CADENCE_VALIDATION.seedNamespace,
+    '#production-cadence-validation-v1'
+  )
+  assert.equal(PRODUCTION_CADENCE_VALIDATION.minimumRunsPerScenario, 2000)
+  assert.throws(
+    () => runProductionCadenceValidation({ runsPerScenario: 1999 }),
+    /at least 2000/
+  )
+})
+
+test('production cadence validation applies the predeclared release gates', () => {
+  const scenarios = [
+    { ...cappedScenarios().find(item => item.id === 'cult_hypergrowth') },
+    { ...cappedScenarios().find(item => item.id === 'baseline_touring') },
+    { ...cappedScenarios().find(item => item.id === 'bootstrap_struggle') }
+  ]
+  const seedToIndex = new Map()
+  for (const scenario of scenarios) {
+    for (let index = 0; index < 2000; index++) {
+      seedToIndex.set(
+        createScenarioSeed(
+          `${scenario.id}${PRODUCTION_CADENCE_VALIDATION.seedNamespace}`,
+          index
+        ),
+        index
+      )
+    }
+  }
+  const bankruptcyCounts = {
+    'gap-aligned': {
+      cult_hypergrowth: 260,
+      baseline_touring: 60,
+      bootstrap_struggle: 500
+    },
+    'first-income': {
+      cult_hypergrowth: 120,
+      baseline_touring: 60,
+      bootstrap_struggle: 400
+    }
+  }
+  const runner = (scenario, seed) => {
+    const index = seedToIndex.get(seed)
+    const bankrupt =
+      index < bankruptcyCounts[scenario.gigCadencePolicy][scenario.id]
+    return stubRun({ bankrupt, played: !bankrupt })
+  }
+
+  const report = runProductionCadenceValidation({
+    runsPerScenario: 2000,
+    runner,
+    scenarios
+  })
+
+  assert.equal(report.status, 'production-cadence-validation-passed')
+  assert.equal(report.approvedForProduction, true)
+  assert.deepEqual(report.failedGates, [])
+  assert.equal(report.candidate.scenarios.cult_hypergrowth.bankruptcyRatePct, 6)
+  assert.equal(report.candidate.scenarios.baseline_touring.bankruptcyRatePct, 3)
+  assert.equal(
+    report.candidate.scenarios.bootstrap_struggle.bankruptcyRatePct,
+    20
+  )
 })

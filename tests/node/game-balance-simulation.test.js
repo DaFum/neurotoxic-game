@@ -18,6 +18,7 @@ import {
   RISK_EVIDENCE_MINIMUM_SAMPLE,
   RISK_TARGETS,
   SCENARIOS,
+  SHIPPED_GIG_CADENCE_POLICY,
   SIMULATION_CONSTANTS,
   accountFameChange,
   accountFamePurchase,
@@ -1342,7 +1343,7 @@ test('a run reports the opening separately from the tour', () => {
   assert.ok(scenario)
   const runs = Array.from({ length: 40 }, (_, runIndex) =>
     runSingleSimulation(
-      scenario,
+      { ...scenario, gigCadencePolicy: 'gap-aligned' },
       createScenarioSeed(`${scenario.id}#holdout`, runIndex)
     )
   )
@@ -1460,11 +1461,12 @@ test('the pre-gig minimum sees the trough the emergency grant lifts', () => {
   )
 })
 
-test('the shipped cadence phase is what a default run uses', () => {
+test('gap-aligned remains shipped when first-income production validation fails', () => {
   // Guards the refactor from an inline `day % gap` to `resolveGigCadence`: a
   // default run and an explicitly `gap-aligned` one must be the same run.
   const scenario = SCENARIOS.find(item => item.id === 'cult_hypergrowth')
   const seed = createScenarioSeed(scenario.id, 7)
+  assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'gap-aligned')
   const shipped = runSingleSimulation(scenario, seed)
   const explicit = runSingleSimulation(
     { ...scenario, gigCadencePolicy: 'gap-aligned' },
@@ -1474,12 +1476,12 @@ test('the shipped cadence phase is what a default run uses', () => {
   assert.equal(explicit.finalMoney, shipped.finalMoney)
   assert.equal(explicit.gigsPlayed, shipped.gigsPlayed)
 
-  const offset = runSingleSimulation(
-    { ...scenario, gigCadencePolicy: 'gap-offset' },
+  const candidate = runSingleSimulation(
+    { ...scenario, gigCadencePolicy: 'first-income' },
     seed
   )
   assert.notDeepEqual(
-    offset.timeline.map(entry => entry.day),
+    candidate.timeline.map(entry => entry.day),
     shipped.timeline.map(entry => entry.day),
     'a phase shift must actually move the gig days'
   )
