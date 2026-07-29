@@ -13,7 +13,7 @@ import {
 } from './actionCreators'
 
 /**
- * Rival band dispatch actions interface.
+ * Defines the collection of dispatch wrappers for interacting with rival band operations.
  */
 export interface RivalBandDispatchActions {
   spawnRivalBand: () => void
@@ -22,15 +22,19 @@ export interface RivalBandDispatchActions {
   updateRivalBand: (patch: Partial<RivalBandState>) => void
 }
 
+/**
+ * Defines the required dependencies to instantiate rival band dispatch actions.
+ */
 export interface UseRivalBandDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   stateRef: MutableRefObject<GameState>
 }
 
 /**
- * Builds the memoized rival band dispatch wrappers.
- * @param props - Dispatch dependency and current state snapshot ref.
- * @returns Stable rival band dispatch methods.
+ * Constructs memoized dispatch wrappers for rival band operations.
+ *
+ * @param props - The configuration object containing the dispatch function and state reference.
+ * @returns An object providing stable methods for dispatching rival band actions.
  */
 export function useRivalBandDispatchActions({
   dispatch,
