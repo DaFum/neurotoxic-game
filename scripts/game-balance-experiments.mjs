@@ -7,7 +7,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS, hashExperimentConfig } from './game-balance-experiment-config.mjs'
 import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
-import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
+import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, getJsonHash, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getBalanceSourceHash, getSourceWorkingTreeDirty } from './utils/balance-report-metadata.mjs'
 
@@ -52,7 +52,7 @@ export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, c
   if (controlRuns && controlRuns.length !== runsPerScenario) throw new RangeError('Control cohort size must match runsPerScenario')
   const pairs = []
   for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
-    const seed = createScenarioSeed(scenario.id, runIndex)
+    const seed = streamSeed('calibration', scenario.id, runIndex)
     const control = controlRuns?.[runIndex] ?? compact(runner(scenario, seed, controlTuning))
     const candidate = compact(runner(scenario, seed, candidateTuning))
     pairs.push({
@@ -202,9 +202,9 @@ export const holdoutGateScenarios = () =>
  * simulation report's `kpiHoldoutValidation` measures.
  */
 export const SEED_STREAMS = Object.freeze({
-  calibration: id => id,
-  selection: id => `${id}#selection`,
-  validation: id => `${id}#holdout`
+  calibration: id => `${id}${SIMULATION_CONSTANTS.seedNamespace}`,
+  selection: id => `${id}${SIMULATION_CONSTANTS.seedNamespace}#selection`,
+  validation: id => `${id}${SIMULATION_CONSTANTS.seedNamespace}#holdout`
 })
 
 export const streamSeed = (stream, scenarioId, runIndex) => {
@@ -415,7 +415,7 @@ export const evaluateCandidate = (definition, pairs, summary) => {
 
 const buildGapAnalysis = (baseScenario, tuning, runsPerScenario, runner = runSingleSimulation) => [1, 2, 3, 4, 5].map(gigGapDays => {
   const scenario = { ...baseScenario, id: `${baseScenario.id}_gap_${gigGapDays}`, gigGapDays }
-  const runs = Array.from({ length: runsPerScenario }, (_, runIndex) => runner(scenario, createScenarioSeed(scenario.id, runIndex), tuning)).map(compact)
+  const runs = Array.from({ length: runsPerScenario }, (_, runIndex) => runner(scenario, streamSeed('calibration', scenario.id, runIndex), tuning)).map(compact)
   const average = key => runs.reduce((sum, run) => sum + run[key], 0) / Math.max(1, runs.length)
   const days = Math.max(1, average('daysSurvived'))
   return {
@@ -531,6 +531,57 @@ const describeObjective = validation => {
 
 const hashFile = async file => crypto.createHash('sha256').update(await fs.readFile(file)).digest('hex')
 const git = command => { try { return execSync(command, { cwd: ROOT, encoding: 'utf8', stdio: ['ignore', 'pipe', 'ignore'] }).trim() } catch { return null } }
+const tryReadJson = async file => {
+  try {
+    return JSON.parse(await fs.readFile(file, 'utf8'))
+  } catch {
+    return null
+  }
+}
+
+const experimentReportIdentity = report => ({
+  generatedAt: report?.generatedAt ?? null,
+  sourceBaseCommit: report?.metadata?.sourceBaseCommit ?? null,
+  runsPerScenario: report?.controlSnapshot?.runsPerScenario ?? null,
+  seedNamespace: report?.metadata?.seedNamespace ?? null,
+  seedStrategy: report?.metadata?.seedStrategy ?? null,
+  shippedGigCadencePolicy: report?.metadata?.shippedGigCadencePolicy ?? null,
+  recommendationStatus: report?.recommendation?.status ?? null,
+  bootstrapCandidate: report?.recommendation?.bootstrap ?? null,
+  touringCandidate: report?.recommendation?.touring ?? null
+})
+
+export const buildPreviousExperimentReportComparison = (previous, current) => {
+  if (!previous) return null
+  const previousScenarios = previous.holdoutBankruptcyByScenario ?? {}
+  const currentScenarios = current.holdoutBankruptcyByScenario ?? {}
+  const scenarioIds = [
+    ...new Set([...Object.keys(previousScenarios), ...Object.keys(currentScenarios)])
+  ].sort()
+  return {
+    comparison: 'descriptive-unpaired',
+    note: 'The reports use different seed namespaces and cohort sizes. This is a descriptive before/after comparison, not a paired effect estimate.',
+    previous: experimentReportIdentity(previous),
+    current: experimentReportIdentity(current),
+    scenarios: scenarioIds.map(id => {
+      const previousMeasurement = previousScenarios[id] ?? {}
+      const currentMeasurement = currentScenarios[id] ?? {}
+      const previousRatePct = previousMeasurement.ratePct ?? null
+      const currentRatePct = currentMeasurement.ratePct ?? null
+      return {
+        id,
+        previousRatePct,
+        currentRatePct,
+        deltaPct:
+          previousRatePct == null || currentRatePct == null
+            ? null
+            : round(currentRatePct - previousRatePct),
+        previousSampleSize: previousMeasurement.sampleSize ?? null,
+        currentSampleSize: currentMeasurement.sampleSize ?? null
+      }
+    })
+  }
+}
 
 const SELECTION_RATIONALE =
   'Candidate pairs are ordered by `combinationImpact`, which is derived from the candidate overrides alone, and the search stops at the first pair that clears BOTH blocking gates — the paired calibration validation and the hard holdout insolvency caps. The remaining pairs carry higher impact and so could not have been selected. A pair rejected by the holdout gate skips the paired comparison, so its calibration verdict is reported as not measured rather than as a pass.'
@@ -645,6 +696,29 @@ ${
     ? `\n**Riskanter als beabsichtigt:** ${corridor.aboveCorridor.map(id => `\`${id}\``).join(', ')}.`
     : ''
 }`
+  const previousComparison = report.previousReportComparison
+  const previousComparisonSection = previousComparison
+    ? `## Alt/Neu-Vergleich der vollständigen Reports
+
+Dieser Vergleich ist **deskriptiv und ungepaart**: Die Reports verwenden unterschiedliche Seed-Namensräume und Stichprobengrößen.
+
+| Kennzahl | Alt | Neu |
+|---|---|---|
+| Source-Commit | \`${previousComparison.previous.sourceBaseCommit ?? '—'}\` | \`${previousComparison.current.sourceBaseCommit ?? '—'}\` |
+| Runs je Szenario | ${previousComparison.previous.runsPerScenario ?? '—'} | ${previousComparison.current.runsPerScenario ?? '—'} |
+| Seed-Namensraum | \`${previousComparison.previous.seedNamespace ?? 'legacy'}\` | \`${previousComparison.current.seedNamespace ?? '—'}\` |
+| Empfehlung | \`${previousComparison.previous.recommendationStatus ?? '—'}\` | \`${previousComparison.current.recommendationStatus ?? '—'}\` |
+
+| Szenario | Insolvenz alt | Insolvenz neu | Delta | Stichprobe alt/neu |
+|---|---:|---:|---:|---:|
+${previousComparison.scenarios
+  .map(
+    scenario =>
+      `| \`${scenario.id}\` | ${scenario.previousRatePct ?? '—'}% | ${scenario.currentRatePct ?? '—'}% | ${scenario.deltaPct ?? '—'} pp | ${scenario.previousSampleSize ?? '—'} / ${scenario.currentSampleSize ?? '—'} |`
+  )
+  .join('\n')}
+`
+    : ''
   const combinedRows = Object.values(report.finalCombinedValidation.resultsByScenario).map(item => `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioValidation.passed ? 'Pass' : 'Fail'} |`).join('\n')
   return `# Game Balance Experiments – Phase 3
 
@@ -652,6 +726,7 @@ ${
 
 Pairing: \`${report.metadata.pairingStrategy}\`; ${report.runtime.totalRuns} simulation runs in ${report.runtime.durationMs} ms.
 
+${previousComparisonSection}
 ## Kontrollzustand
 
 Original production-neutral tuning is the control for Phase 3B and final validation.
@@ -795,9 +870,13 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
  * what order — is worth testing without a 120k-run simulation behind it. The
  * counter wraps whatever is injected, so `runtime.totalRuns` stays truthful.
  */
-export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANTS.runsPerScenario, writeReports = true, simulate = runSingleSimulation } = {}) => {
+export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANTS.runsPerScenario, writeReports = true, simulate = runSingleSimulation, previousReport } = {}) => {
   logger.setLevel(LOG_LEVELS.ERROR)
   const started = Date.now()
+  const previousReportSnapshot =
+    previousReport === undefined && writeReports
+      ? await tryReadJson(OUTPUT_JSON)
+      : previousReport ?? null
   let totalRuns = 0
   const runner = (...args) => {
     totalRuns++
@@ -808,7 +887,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const bootstrapScenario = SCENARIOS.find(item => item.id === 'bootstrap_struggle')
   const baselineScenario = SCENARIOS.find(item => item.id === 'baseline_touring')
   const runCandidates = (definitions, scenario, controlTuning) => {
-    const controlRuns = Array.from({ length: runsPerScenario }, (_, runIndex) => compact(runner(scenario, createScenarioSeed(scenario.id, runIndex), controlTuning)))
+    const controlRuns = Array.from({ length: runsPerScenario }, (_, runIndex) => compact(runner(scenario, streamSeed('calibration', scenario.id, runIndex), controlTuning)))
     const pairedCandidates = definitions.map(definition => {
       const candidateTuning = resolveBalanceTuning({
         earlyGame: { ...controlTuning.earlyGame, ...definition.overrides.earlyGame },
@@ -828,7 +907,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   const controlCohortFor = scenario => {
     if (!controlCohortByScenario.has(scenario.id)) {
       controlCohortByScenario.set(scenario.id, Array.from({ length: runsPerScenario },
-        (_, runIndex) => compact(runner(scenario, createScenarioSeed(scenario.id, runIndex), ORIGINAL_CONTROL_BALANCE_TUNING))))
+        (_, runIndex) => compact(runner(scenario, streamSeed('calibration', scenario.id, runIndex), ORIGINAL_CONTROL_BALANCE_TUNING))))
     }
     return controlCohortByScenario.get(scenario.id)
   }
@@ -1125,7 +1204,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     .map(item => item.scenarioId)
   const sourceBaseCommit = git('git rev-parse HEAD')
   const report = {
-    experimentReportVersion: 1,
+    experimentReportVersion: 2,
     generatedAt: new Date().toISOString(),
     metadata: {
       nodeVersion: process.version, sourceBaseCommit,
@@ -1139,6 +1218,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
       // different digest for identical scenario data.
       scenarioConfigSha256: getJsonHash(SCENARIOS),
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
+      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY,
       // Derived from SEED_STREAMS, in the same machine-readable shape the cadence
       // probe publishes: the roles were described elsewhere in the report but the
       // exact seed derivation per stream was not, so the artifact could not be
@@ -1317,6 +1398,10 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     },
     runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }
+  report.previousReportComparison = buildPreviousExperimentReportComparison(
+    previousReportSnapshot,
+    report
+  )
   if (writeReports && finalCombinedValidation.passed) {
     await fs.mkdir(path.dirname(OUTPUT_JSON), { recursive: true })
     await fs.writeFile(OUTPUT_JSON, `${JSON.stringify(report, null, 2)}\n`)

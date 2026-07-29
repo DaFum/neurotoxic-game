@@ -1326,6 +1326,15 @@ test('cadence policies differ only in phase, and agree at a gap of one', () => {
   )
 })
 
+test('full balance reports use a fresh first-income seed namespace and 2000-run cohorts', () => {
+  assert.equal(SHIPPED_GIG_CADENCE_POLICY, 'first-income')
+  assert.equal(SIMULATION_CONSTANTS.runsPerScenario, 2000)
+  assert.equal(
+    SIMULATION_CONSTANTS.seedNamespace,
+    '#first-income-full-reports-v1'
+  )
+})
+
 test('scenarios keep the shipped cadence phase unless a probe overrides it', () => {
   // The probe sets `gigCadencePolicy` per cohort. If it leaked into SCENARIOS the
   // published reports would silently change meaning and their config hash with it.

@@ -211,8 +211,9 @@ const REPORT_FILES = {
 }
 
 export const SIMULATION_CONSTANTS = {
-  reportVersion: 13,
-  runsPerScenario: 260,
+  reportVersion: 14,
+  runsPerScenario: 2000,
+  seedNamespace: '#first-income-full-reports-v1',
   // A playthrough is bounded by the map, not by a free-running clock:
   // `MapGenerator.generateMap()` is always called with depth 10 and produces a
   // strictly forward layered DAG, so every route from START to the single
@@ -5507,7 +5508,10 @@ export const runSimulationSuite = async (options = {}) => {
       runIndex < SIMULATION_CONSTANTS.runsPerScenario;
       runIndex++
     ) {
-      const seed = createScenarioSeed(scenario.id, runIndex)
+      const seed = createScenarioSeed(
+        `${scenario.id}${SIMULATION_CONSTANTS.seedNamespace}`,
+        runIndex
+      )
       runs.push(runSingleSimulation(scenario, seed))
     }
 
@@ -5551,7 +5555,10 @@ export const runSimulationSuite = async (options = {}) => {
         runs.push(
           runSingleSimulation(
             scenario,
-            createScenarioSeed(`${scenario.id}#holdout`, runIndex)
+            createScenarioSeed(
+              `${scenario.id}${SIMULATION_CONSTANTS.seedNamespace}#holdout`,
+              runIndex
+            )
           )
         )
       }
@@ -5610,7 +5617,8 @@ export const runSimulationSuite = async (options = {}) => {
           )
       : ['keine KPI-Szenarien ausgewertet']
     return {
-      seedStrategy: 'scenario-id-plus-holdout-marker-plus-run-index',
+      seedStrategy:
+        'scenario-id-plus-first-income-full-report-namespace-plus-holdout-marker-plus-run-index',
       runsPerScenario: SIMULATION_CONSTANTS.runsPerScenario,
       comparison: 'per-kpi-band',
       agrees: disagreements.length === 0,
@@ -5657,7 +5665,10 @@ export const runSimulationSuite = async (options = {}) => {
       scenarioConfigSha256,
       kpiConfigSha256: getJsonHash(KPI_TARGETS),
       riskTargetConfigSha256: getJsonHash(RISK_TARGETS),
-      seedStrategy: 'scenario-id-plus-run-index'
+      seedNamespace: SIMULATION_CONSTANTS.seedNamespace,
+      seedStrategy:
+        'scenario-id-plus-first-income-full-report-namespace-plus-run-index',
+      shippedGigCadencePolicy: SHIPPED_GIG_CADENCE_POLICY
     },
     appFeatureSnapshot: buildAppFeatureSnapshot(),
     fameBalanceAudit: buildFameBalanceAudit(),
