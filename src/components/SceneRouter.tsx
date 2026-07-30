@@ -71,11 +71,11 @@ interface SceneRouterProps {
  *
  * @remarks
  * Unrecognized or unhandled game phases will default to rendering the main menu to prevent
- * unrecoverable application blank states. Specific minigame phases require the matching
- * minigame type to route correctly.
+ * unrecoverable application blank states. For the PRE_GIG_MINIGAME phase, if minigameType is
+ * null or omitted, it intentionally falls back to mounting RoadieRunScene to preserve
+ * its completion overlay.
  *
- * @param currentScene - The current active game phase dictating which scene to mount
- * @param minigameType - The specific type of minigame to load when entering a minigame phase
+ * @param props - Scene routing inputs
  * @returns The scene component for the current phase, falling back to the main menu
  */
 export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
