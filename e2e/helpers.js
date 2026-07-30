@@ -1,8 +1,8 @@
 /**
- * Attempts to skip the intro video/scene to reach the main menu.
- * Handles potential race conditions between the skip button appearing and the menu loading.
- * @param {import('@playwright/test').Page} page
- * @param {{ navigate?: boolean }} [options] - Set `navigate` to false when the caller already reloaded the page.
+ * Navigates to and confirms the app's main menu, skipping the intro and any tutorial when available.
+ * @param {import('@playwright/test').Page} page - The Playwright page.
+ * @param {{ navigate?: boolean }} [options] - Navigation options.
+ * @param {boolean} [options.navigate=true] - Whether to navigate to the app root before reaching the menu.
  */
 export async function skipToMenu(page, { navigate = true } = {}) {
   try {

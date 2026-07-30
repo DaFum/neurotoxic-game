@@ -10,14 +10,14 @@ import { resolveLeaderboardId } from '../../lib/leaderboardSongIds.js'
 const MAX_SONG_ID_LENGTH = 64
 
 /**
- * Verarbeitet HTTP-Requests zum Speichern von Spieler-Scores (POST) und zum Abrufen der Highscore-Liste eines Songs (GET).
+ * Handles score submissions and leaderboard requests for songs.
  *
- * POST: Validiert Nutzlast gegen Prototype-Pollution, prüft Felder (playerId, playerName, songId, score), aktualisiert den Spielernamen in der Hash-Map und fügt den Score in die Song-Zeitreihe ein (nur wenn der neue Score größer ist). Gibt bei Erfolg HTTP 200 mit { success: true } zurück; bei Validierungsfehlern entsprechende 400-Antworten; bei internen Fehlern 500.
+ * POST requests validate and store player scores, retaining only higher scores.
+ * GET requests return ranked leaderboard entries with public player references and names.
+ * Other methods receive a 405 response.
  *
- * GET: Validiert query.songId und optionales query.limit, liest die Top-N-Einträge der Song-Leaderboard-Zeile und die zugehörigen Spielernamen und liefert ein Array mit Einträgen { rank, playerId, playerName, score }. Gibt 400 für fehlerhafte Abfragen, 200 mit dem Leaderboard oder einem leeren Array bei keinem Eintrag, und 500 bei internen Fehlern.
- *
- * @param {import('../../lib/apiTypes.js').ApiRequest} req
- * @param {import('../../lib/apiTypes.js').ApiResponse} res
+ * @param {import('../../lib/apiTypes.js').ApiRequest} req - The HTTP request.
+ * @param {import('../../lib/apiTypes.js').ApiResponse} res - The HTTP response.
  */
 export default async function handler(req, res) {
   if (req.method === 'POST') {

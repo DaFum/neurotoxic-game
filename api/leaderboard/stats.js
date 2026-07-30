@@ -26,8 +26,10 @@ const clampStat = val => {
 }
 
 /**
- * @param {import('../../lib/apiTypes.js').ApiRequest} req
- * @param {import('../../lib/apiTypes.js').ApiResponse} res
+ * Handles leaderboard stat updates and retrieval requests.
+ *
+ * @param {import('../../lib/apiTypes.js').ApiRequest} req - The incoming API request.
+ * @param {import('../../lib/apiTypes.js').ApiResponse} res - The response object.
  */
 export default async function handler(req, res) {
   if (req.method === 'POST') {

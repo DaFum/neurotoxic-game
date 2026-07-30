@@ -175,14 +175,14 @@ export function stopGigPlayback(): void {
 }
 
 /**
- * Starts gig playback using Web Audio buffer playback.
- * @param params - Playback params.
- * - `params.filename` - Audio filename to play.
- * - `params.bufferOffsetMs` - Offset into the buffer in ms. Defaults to `0`.
- * - `params.delayMs` - Delay before starting playback in ms. Defaults to `0`.
- * - `params.durationMs` - Optional playback duration in ms. Defaults to `null`.
- * - `params.onEnded` - Optional. Callback invoked after playback ends.
- * @returns True when playback starts.
+ * Starts gig playback from an audio file with optional offset, delay, duration, and completion handling.
+ *
+ * @param filename - The audio file to play.
+ * @param bufferOffsetMs - The starting offset within the audio buffer, in milliseconds.
+ * @param delayMs - The delay before playback starts, in milliseconds.
+ * @param durationMs - The maximum playback duration, in milliseconds, or `null` for the remaining buffer.
+ * @param onEnded - Callback invoked when playback ends naturally.
+ * @returns `true` if playback starts successfully or completes immediately due to zero duration, `false` otherwise.
  */
 export async function startGigPlayback({
   filename,
@@ -359,8 +359,9 @@ export function pauseGigPlayback(): void {
 }
 
 /**
- * Resumes gig playback from the stored offset.
- * @returns True on success or no-op, false on source.start() failure.
+ * Resumes paused gig playback from the stored offset.
+ *
+ * @returns `true` if playback is resumed or no action is needed, `false` if starting the audio source fails.
  */
 export function resumeGigPlayback(): boolean {
   if (!audioState.gigIsPaused) return true
