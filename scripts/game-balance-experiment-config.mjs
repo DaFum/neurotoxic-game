@@ -83,11 +83,11 @@ export const BALANCE_EXPERIMENTS = [
     ['baseline_touring'],
     { touring: {} }
   ),
-  candidate('harmony-recovery-none', 'recovery', 'Leaves critical harmony without an additional recovery decision.', 'The control establishes whether paid recovery improves outcomes.', ['bootstrap_struggle', 'chaos_tour'], { recovery: {} }),
+  candidate('harmony-recovery-none', 'touring', 'Leaves critical harmony without an additional recovery decision.', 'The control establishes whether paid recovery improves outcomes.', ['bootstrap_struggle', 'chaos_tour'], { recovery: {} }),
   ...[40, 45].flatMap(threshold => ['day', 'money'].map(costType =>
     candidate(
       `harmony-recovery-${threshold}-${costType}`,
-      'recovery',
+      'touring',
       `Offers harmony recovery below ${threshold} for a ${costType === 'day' ? 'tour day' : 'clinic-priced payment'}.`,
       'Critical harmony should become a costly pacing decision instead of an unavoidable decline.',
       ['bootstrap_struggle', 'chaos_tour'],

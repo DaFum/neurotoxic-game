@@ -51,7 +51,8 @@ const compact = run => ({
   totalGigNet: run.totalGigNet,
   clinicVisits: run.clinicVisits,
   repairs: run.repairs,
-  refuels: run.refuels
+  refuels: run.refuels,
+  harmonyRecovery: run.harmonyRecovery
 })
 
 export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner = runSingleSimulation }) => {
@@ -84,8 +85,17 @@ export const summarizePairedRuns = (pairs, experimentId, scenarioId) => ({
   continuous: Object.fromEntries(METRICS.map(metric => [metric, pairedMetricStatistics(
     pairs.map(pair => pair.control[metric]), pairs.map(pair => pair.candidate[metric]),
     { bootstrapSeed: `${experimentId}:${scenarioId}:${metric}`, resamples: 2000 }
-  )]))
+  )])),
+  harmonyRecovery: {
+    control: summarizeHarmonyRecovery(pairs.map(pair => pair.control)),
+    candidate: summarizeHarmonyRecovery(pairs.map(pair => pair.candidate))
+  }
 })
+
+const summarizeHarmonyRecovery = runs => Object.fromEntries(
+  ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
+    .map(key => [key, round(runs.reduce((sum, run) => sum + (run.harmonyRecovery?.[key] ?? 0), 0) / Math.max(1, runs.length))])
+)
 
 export const kpiStatusForRuns = runs => {
   const target = KPI_TARGETS[runs[0]?.scenarioId]
@@ -909,7 +919,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     const pairedCandidates = definitions.map(definition => {
       const candidateTuning = resolveBalanceTuning({
         earlyGame: { ...controlTuning.earlyGame, ...definition.overrides.earlyGame },
-        touring: { ...controlTuning.touring, ...definition.overrides.touring }
+        touring: { ...controlTuning.touring, ...definition.overrides.touring },
+        recovery: { ...controlTuning.recovery, ...definition.overrides.recovery }
       }, controlTuning)
       const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner })
       return { definition, pairs }
@@ -931,7 +942,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   }
 
   const evaluateCombination = (bootstrap, touring) => {
-    const tuning = resolveBalanceTuning({ earlyGame: bootstrap.overrides.earlyGame, touring: touring.overrides.touring }, ORIGINAL_CONTROL_BALANCE_TUNING)
+    const tuning = resolveBalanceTuning({ earlyGame: bootstrap.overrides.earlyGame, touring: touring.overrides.touring, recovery: touring.overrides.recovery }, ORIGINAL_CONTROL_BALANCE_TUNING)
     const results = SCENARIOS.map(scenario => {
       const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning: ORIGINAL_CONTROL_BALANCE_TUNING, candidateTuning: tuning, controlRuns: controlCohortFor(scenario), runner })
       const summary = summarizePairedRuns(pairs, `${bootstrap.id}+${touring.id}`, scenario.id)
@@ -984,7 +995,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     pairsConsidered++
     leastImpactPair ??= { bootstrap: pair.bootstrap, touring }
     const tuning = resolveBalanceTuning(
-      { earlyGame: pair.bootstrap.overrides.earlyGame, touring: touring.overrides.touring },
+      { earlyGame: pair.bootstrap.overrides.earlyGame, touring: touring.overrides.touring, recovery: touring.overrides.recovery },
       ORIGINAL_CONTROL_BALANCE_TUNING
     )
     const selectionGate = measureHoldoutGate({

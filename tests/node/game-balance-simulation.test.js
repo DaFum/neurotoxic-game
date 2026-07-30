@@ -32,6 +32,7 @@ import {
   buildScenarioTensionReview,
   createLossAttributionTracker,
   recordAttributedLoss,
+  renderExecutionCoverageRows,
   buildExecutionCoverage,
   buildTourAdjacency,
   buildFeatureInventory,
@@ -137,6 +138,29 @@ test('simulation distinguishes event trigger opportunities from quest coverage',
   assert.equal(run.executionCoverage.quests.completions, 0)
 })
 
+test('resolved trigger families record activations and render nested coverage', () => {
+  const coverage = buildExecutionCoverage(
+    Array.from({ length: 80 }, (_, index) => ({
+      summary: summarizeScenario([
+        runSingleSimulation(
+          {
+            ...SCENARIOS.find(scenario => scenario.id === 'chaos_tour'),
+            eventIntensity: 4
+          },
+          createScenarioSeed('trigger-activations', index)
+        )
+      ])
+    }))
+  )
+  for (const trigger of ['travel', 'preGig', 'gigMoments', 'postGig']) {
+    assert.ok(coverage.eventTriggers[trigger].evaluations > 0)
+    assert.ok(coverage.eventTriggers[trigger].activations > 0)
+  }
+  const rows = renderExecutionCoverageRows(coverage)
+  assert.match(rows, /eventTriggers\.travel/)
+  assert.match(rows, /eventTriggers\.postGig/)
+})
+
 test('paid harmony recovery records money and day trade-offs independently', () => {
   const scenario = probeScenario(10, {
     gigGapDays: 1,
@@ -154,6 +178,10 @@ test('paid harmony recovery records money and day trade-offs independently', () 
   assert.ok(money.harmonyRecovery.activations > 0)
   assert.ok(money.harmonyRecovery.moneySpent > 0)
   assert.equal(money.harmonyRecovery.daysConsumed, 0)
+  assert.ok(
+    money.earlyRunway.lowestMoneyBeforeFirstGig <=
+      scenario.initialOverrides.player.money - money.harmonyRecovery.moneySpent
+  )
   const day = runSingleSimulation(scenario, 123, {
     ...DEFAULT_BALANCE_TUNING,
     recovery: { threshold: 40, costType: 'day', moneyCost: 0, harmonyGain: 20 }
@@ -542,7 +570,7 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
   assert.equal(zero.brandDeals.covered, false)
 
   const run = runSingleSimulation(
-    { ...probeScenario(5), gigGapDays: 1, minigameSkill: 1 },
+    { ...probeScenario(5), gigGapDays: 1, minigameSkill: 0.7 },
     9876
   )
   const scenarioCoverage = summarizeScenario([run]).executionCoverage
@@ -1219,6 +1247,54 @@ const syntheticRun = (overrides = {}) => ({
   },
   timeline: [],
   ...overrides
+})
+
+test('scenario summaries preserve every harmony recovery counter', () => {
+  const summary = summarizeScenario([
+    syntheticRun({
+      harmonyRecovery: {
+        evaluations: 2,
+        activations: 1,
+        harmonyRestored: 20,
+        moneySpent: 100,
+        daysConsumed: 0,
+        gigOpportunitiesForgone: 0
+      }
+    }),
+    syntheticRun({
+      harmonyRecovery: {
+        evaluations: 4,
+        activations: 3,
+        harmonyRestored: 40,
+        moneySpent: 0,
+        daysConsumed: 2,
+        gigOpportunitiesForgone: 2
+      }
+    })
+  ])
+  assert.deepEqual(summary.harmonyRecovery, {
+    evaluations: 3,
+    activations: 2,
+    harmonyRestored: 30,
+    moneySpent: 50,
+    daysConsumed: 1,
+    gigOpportunitiesForgone: 1
+  })
+})
+
+test('event insight derives covered status from scenario execution coverage', () => {
+  const run = runSingleSimulation(
+    {
+      ...probeScenario(10),
+      gigGapDays: 1,
+      minigameSkill: 1,
+      eventIntensity: 4
+    },
+    9182
+  )
+  const summary = summarizeScenario([run])
+  assert.equal(summary.coverageStatus, 'covered')
+  assert.doesNotMatch(getEventsInsight(summary), /unzureichende Evidenz/i)
 })
 
 test('purchase path aggregation reports timing, reachability and residual liquidity', () => {

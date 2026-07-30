@@ -1254,13 +1254,13 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
 // gig_intro/gig_mid trigger points as maybeFireGigProgressEvent in-game.
 const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const intensity = scenario.eventIntensity ?? 0.5
-  if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return
+  if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return false
 
   const triggerPoint = rng() < 0.5 ? 'gig_intro' : 'gig_mid'
   const event =
     eventEngine.checkEvent('gig', state, triggerPoint, rng) ||
     eventEngine.checkEvent('gig', state, 'random', rng)
-  if (!event || !event.options || event.options.length === 0) return
+  if (!event || !event.options || event.options.length === 0) return false
 
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const { delta } = resolveEventChoice(choice, state, rng)
@@ -1279,6 +1279,40 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   }
   counters.gigEvents += 1
   applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
+  return true
+}
+
+const applyTriggerEvent = (state, scenario, rng, counters, categories, triggerPoint) => {
+  let category = null
+  let event = null
+  for (const candidate of categories) {
+    event = eventEngine.checkEvent(candidate, state, triggerPoint, rng)
+    if (event) {
+      category = candidate
+      break
+    }
+  }
+  if (!event?.options?.length || !category) return false
+  const choice = event.options[Math.floor(rng() * event.options.length)]
+  const { delta } = resolveEventChoice(choice, state, rng)
+  if (delta) {
+    const oldFame = state.player.fame
+    const moneyBeforeEvent = state.player.money
+    Object.assign(state, applyEventDelta(state, delta))
+    applyNegativeFinancialEventMultiplier(
+      state,
+      moneyBeforeEvent,
+      scenario.negativeFinancialEventMultiplier
+    )
+    recordObservedFameChange(counters.fameAccounting, oldFame, state.player.fame)
+  }
+  if (category === 'financial') counters.cashSwings += 1
+  else if (category === 'special') counters.specialEvents += 1
+  else if (category === 'band') counters.bandEvents += 1
+  else if (category === 'gig') counters.gigEvents += 1
+  counters.eventsApplied += 1
+  applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
+  return true
 }
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
@@ -2836,12 +2870,20 @@ export const runSingleSimulation = (
             state.player.money = clampPlayerMoney(state.player.money - recovery.moneyCost)
             counters.harmonyRecovery.moneySpent += beforeMoney - state.player.money
             observeAttributedLoss('clinic', beforeMoney)
+            observeEarlyRunwayMoney()
           } else if (recovery.costType === 'day') {
             counters.harmonyRecovery.daysConsumed += 1
             if (wantsToPerform) counters.harmonyRecovery.gigOpportunitiesForgone += 1
             willRest = true
           }
         }
+      }
+    }
+
+    if (willRest) {
+      if (!state.band.members.some(MEMBER_NEEDS_CARE)) {
+        willRest = false
+        counters.restDays -= 1
       }
     }
 
@@ -3009,9 +3051,10 @@ export const runSingleSimulation = (
     const moneyBeforeTravelEvents = state.player.money
     counters.executionCoverage.eventTriggers.travel.evaluations += 1
     const fameBeforeTravelEvents = state.player.fame
-    counters.eventsApplied =
-      (counters.eventsApplied || 0) +
-      applyTravelEvents(state, scenario, rng, counters)
+    const travelEventsApplied = applyTravelEvents(state, scenario, rng, counters)
+    counters.eventsApplied = (counters.eventsApplied || 0) + travelEventsApplied
+    counters.executionCoverage.eventTriggers.travel.activations +=
+      travelEventsApplied
     observeAttributedLoss('negative_events', moneyBeforeTravelEvents)
     recordObservedFameChange(
       counters.fameAccounting,
@@ -3119,6 +3162,12 @@ export const runSingleSimulation = (
     state.currentGig = venue
     counters.executionCoverage.eventTriggers.preGig.evaluations += 1
     counters.executionCoverage.eventTriggers.gigMoments.evaluations += 2
+    const moneyBeforePreGigEvent = state.player.money
+    if (applyTriggerEvent(state, scenario, rng, counters, ['band', 'gig'], 'pre_gig')) {
+      counters.executionCoverage.eventTriggers.preGig.activations += 1
+    }
+    observeAttributedLoss('negative_events', moneyBeforePreGigEvent)
+    observeEarlyRunwayMoney()
     // The show is going ahead, so this is the run's first income opportunity.
     // Recorded before the setup minigame and the modifier purchases, which is
     // what "money directly before the first gig" has to mean for a runway
@@ -3154,7 +3203,9 @@ export const runSingleSimulation = (
 
     // Mid-gig events from the EVENTS_DB `gig` category
     const moneyBeforeGigEvent = state.player.money
-    maybeApplyGigEvent(state, scenario, rng, counters)
+    if (maybeApplyGigEvent(state, scenario, rng, counters)) {
+      counters.executionCoverage.eventTriggers.gigMoments.activations += 1
+    }
     observeAttributedLoss('negative_events', moneyBeforeGigEvent)
 
     // Misses/maxCombo are player-skill outputs of the rhythm game; the sim
@@ -3296,6 +3347,11 @@ export const runSingleSimulation = (
 
     counters.gigsPlayed += 1
     counters.executionCoverage.eventTriggers.postGig.evaluations += 1
+    const moneyBeforePostGigEvent = state.player.money
+    if (applyTriggerEvent(state, scenario, rng, counters, ['financial', 'special', 'band'], 'post_gig')) {
+      counters.executionCoverage.eventTriggers.postGig.activations += 1
+    }
+    observeAttributedLoss('negative_events', moneyBeforePostGigEvent)
     runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
     totalGigNet += gigNet
@@ -3641,6 +3697,12 @@ export const summarizeScenario = runs => {
   const aggregateCoverage = mergeExecutionCoverage(
     runs.map(run => run.executionCoverage)
   )
+  const eventTriggerCoverage = Object.values(aggregateCoverage.eventTriggers)
+    .filter(metric => metric && typeof metric === 'object')
+  const coverageStatus = eventTriggerCoverage.length > 0 &&
+    eventTriggerCoverage.every(metric => metric.evaluations > 0)
+    ? 'covered'
+    : 'insufficient_evidence'
 
   const popAll = calcStats(runs) || { sampleSize: 0 }
   const popSolvent = calcStats(solventRuns) || { sampleSize: 0 }
@@ -3677,6 +3739,11 @@ export const summarizeScenario = runs => {
     bankruptcyRate: Number(bankruptcyRatePct.toFixed(2)),
     avgEventsApplied,
     avgGigEvents,
+    coverageStatus,
+    harmonyRecovery: Object.fromEntries(
+      ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
+        .map(key => [key, Number(mean(runs.map(run => run.harmonyRecovery?.[key] ?? 0)).toFixed(2))])
+    ),
     avgPerformanceScore: popAll.performanceScore
       ? popAll.performanceScore.mean
       : 0,
@@ -4375,6 +4442,26 @@ export const buildExecutionCoverage = results =>
   mergeExecutionCoverage(
     results.map(result => result.summary.executionCoverage)
   )
+
+export const renderExecutionCoverageRows = coverage => {
+  const rows = []
+  for (const [key, metric] of Object.entries(coverage ?? {})) {
+    if (key === 'eventTriggers') {
+      for (const [trigger, triggerMetric] of Object.entries(metric)) {
+        if (!triggerMetric || typeof triggerMetric !== 'object') continue
+        rows.push(
+          `| eventTriggers.${trigger} | ${triggerMetric.evaluations > 0 ? '✅' : '❌'} | ${triggerMetric.evaluations ?? 0} | ${triggerMetric.activations ?? 0} | - |`
+        )
+      }
+      continue
+    }
+    const evaluations = metric.evaluations ?? metric.attempts ?? 0
+    const activations = metric.activations ?? metric.completions ?? metric.successes ?? 0
+    const uniqueIds = metric.uniqueIdsSeen ? metric.uniqueIdsSeen.length : '-'
+    rows.push(`| ${key} | ${metric.covered ? '✅' : '❌'} | ${evaluations} | ${activations} | ${uniqueIds} |`)
+  }
+  return rows.join('\n')
+}
 
 const fmt = n => (n == null ? 0 : n).toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
@@ -6013,14 +6100,7 @@ const buildMarkdownReport = payload => {
     `| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`
   )
   lines.push(`|---|---|---:|---:|---:|`)
-  const cov = payload.executionCoverage || {}
-  Object.keys(cov).forEach(k => {
-    const c = cov[k] || {}
-    const evals = c.evaluations ?? c.attempts ?? 0
-    const acts = c.activations ?? c.completions ?? c.successes ?? 0
-    const uids = c.uniqueIdsSeen ? c.uniqueIdsSeen.length : '-'
-    lines.push(`| ${k} | ${c.covered ? '✅' : '❌'} | ${evals} | ${acts} | ${uids} |`)
-  })
+  lines.push(renderExecutionCoverageRows(payload.executionCoverage || {}))
   lines.push('')
 lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')

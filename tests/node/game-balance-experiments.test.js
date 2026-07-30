@@ -65,6 +65,47 @@ test('experiment registry contains the approved harmony recovery matrix and cont
       'harmony-recovery-45-money'
     ]
   )
+  assert.ok(recovery.every(item => item.phase === 'touring'))
+})
+
+test('experiment pipeline forwards non-neutral recovery tuning to simulations', async () => {
+  const observed = []
+  const baseRunner = makeStubRunner({ reliefClearsGate: true })
+  const report = await runExperimentSuite({
+    runsPerScenario: STUB_RUNS_PER_SCENARIO,
+    writeReports: false,
+    simulate: (scenario, seed, tuning) => {
+      if (tuning?.recovery?.threshold > 0) observed.push(tuning.recovery)
+      return {
+        ...baseRunner(scenario, seed, tuning),
+        harmonyRecovery: {
+          evaluations: tuning?.recovery?.threshold > 0 ? 2 : 0,
+          activations: tuning?.recovery?.threshold > 0 ? 1 : 0,
+          harmonyRestored: tuning?.recovery?.threshold > 0 ? 20 : 0,
+          moneySpent: tuning?.recovery?.costType === 'money' ? 100 : 0,
+          daysConsumed: tuning?.recovery?.costType === 'day' ? 1 : 0,
+          gigOpportunitiesForgone: tuning?.recovery?.costType === 'day' ? 1 : 0
+        }
+      }
+    }
+  })
+  assert.ok(
+    observed.some(item => item.threshold === 40 && item.costType === 'money')
+  )
+  assert.ok(
+    observed.some(item => item.threshold === 45 && item.costType === 'day')
+  )
+  const candidate = report.phases.phase3C.candidates.find(
+    item => item.id === 'harmony-recovery-40-money'
+  )
+  assert.equal(
+    candidate.aggregateResults.harmonyRecovery.candidate.activations,
+    1
+  )
+  assert.equal(
+    candidate.aggregateResults.harmonyRecovery.candidate.moneySpent,
+    100
+  )
 })
 
 const combinedSummary = ({
