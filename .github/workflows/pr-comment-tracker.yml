@@ -35,20 +35,11 @@ jobs:
             // Unsichtbarer Marker, um den Kommentar des Bots später wiederzufinden
             const marker = "<!-- PR_COMMENT_TRACKER_MARKER -->";
 
-            // 2. Den bestehenden Kommentar abrufen, um bereits gemeldete Threads zu identifizieren
+            // 2. Den bestehenden Zusammenfassungs-Kommentar abrufen
             const issueComments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number: prNumber });
             const existingBotComment = issueComments.find(
               c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
             );
-
-            // Bereits gemeldete Thread-IDs aus dem bestehenden Kommentar extrahieren
-            let reportedThreadIds = new Set();
-            if (existingBotComment) {
-              const match = existingBotComment.body.match(/<!-- REPORTED_THREADS: (.*?) -->/);
-              if (match && match[1]) {
-                reportedThreadIds = new Set(match[1].split(',').filter(Boolean));
-              }
-            }
 
             // 3. Ungelöste Review-Threads via GraphQL ermitteln
             let hasNextPage = true;
@@ -94,6 +85,12 @@ jobs:
               cursor = threads.pageInfo.endCursor;
             }
 
+            // Nur die aktuell offenen IDs persistieren. Damit verschwinden
+            // inzwischen gelöste Threads beim nächsten Lauf aus dem Marker.
+            const unresolvedThreadIds = new Set(
+              unresolvedThreads.map(thread => thread.id)
+            );
+
             // 4. Sanitize-Funktion, um HTML-Kommentare, <details> und Badges zu entfernen
             function sanitizeComment(text) {
               if (!text) return "";
@@ -123,9 +120,6 @@ jobs:
 
             // 5. Den kopierbaren Block formatieren - NUR offene Review Threads
             const seenSignatures = new Set();
-            const validThreads = [];
-            const newThreads = [];
-            const newThreadIds = new Set(reportedThreadIds);
 
             const formattedComments = unresolvedThreads.map(t => {
               const firstComment = t.comments.nodes[0];
@@ -144,14 +138,6 @@ jobs:
               }
               seenSignatures.add(signature);
 
-              validThreads.push(t);
-              newThreadIds.add(t.id); // Alle gültigen aktuellen Thread-IDs merken
-
-              // Für core.setFailed nur die neuen Threads filtern, die wir noch nicht gemeldet hatten
-              if (!reportedThreadIds.has(t.id)) {
-                newThreads.push(`- [${login}]: ${cleanBody}`);
-              }
-
               return `- [${login}]: ${cleanBody}`;
             }).filter(Boolean).join('\n');
 
@@ -159,14 +145,18 @@ jobs:
               ? formattedComments
               : "Keine offenen Review-Threads vorhanden.";
 
-            const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Wird automatisch aktualisiert, sobald sich Kommentare ändern.*\n\n\`\`\`text\n`;
+            const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Aktualisiert bei unterstützten PR- und Review-Ereignissen.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
+            const rerunUrl = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
+            const recoveryHint = unresolvedThreads.length > 0
+              ? `\n> GitHub Actions startet diesen Workflow beim reinen Auflösen eines Review-Threads nicht erneut. Nach dem Auflösen aller Threads: [Re-run failed jobs](${rerunUrl}) für diesen Lauf ausführen.\n`
+              : "";
 
             // Die Thread-IDs als versteckten HTML-Kommentar abspeichern
-            const idsStateMarker = `\n<!-- REPORTED_THREADS: ${Array.from(newThreadIds).join(',')} -->`;
+            const idsStateMarker = `\n<!-- REPORTED_THREADS: ${Array.from(unresolvedThreadIds).join(',')} -->`;
             const MAX_COMMENT_SIZE = 65536;
             const extraText = "\n... (truncated)";
-            const fixedLength = marker.length + header.length + footer.length + idsStateMarker.length;
+            const fixedLength = marker.length + header.length + footer.length + recoveryHint.length + idsStateMarker.length;
 
             if (fixedLength + copyableBlock.length > MAX_COMMENT_SIZE) {
               const allowedLength = MAX_COMMENT_SIZE - fixedLength - extraText.length;
@@ -174,7 +164,7 @@ jobs:
             }
 
             // Das endgültige Markdown für den Bot-Kommentar
-            const body = marker + header + copyableBlock + footer + idsStateMarker;
+            const body = marker + header + copyableBlock + footer + recoveryHint + idsStateMarker;
 
             // 6. Prüfen, ob der Zusammenfassungs-Kommentar bereits existiert und updaten/erstellen
             try {
@@ -199,11 +189,10 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 7. Workflow-Status auswerten - Bot blockiert nur anhand NEUER, noch nicht gemeldeter Review Threads
-            if (newThreads.length > 0) {
-              // Schreibe den formatierten Text der blockierenden NEUEN Review-Threads in core.setFailed
-              const newThreadsBlock = newThreads.join('\n');
-              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${newThreads.length} NEUE ungelöste(r) Review-Thread(s):\n\n${newThreadsBlock}`);
+            // 7. Jeder aktuell ungelöste Thread hält den erforderlichen Check rot.
+            if (unresolvedThreads.length > 0) {
+              const unresolvedThreadsBlock = formattedComments || "(Thread-Details nicht verfügbar)";
+              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedThreads.length} ungelöste(r) Review-Thread(s):\n\n${unresolvedThreadsBlock}${recoveryHint}`);
             } else {
-              console.log("Keine neuen blockierenden Review-Threads vorhanden. Workflow erfolgreich.");
+              console.log("Keine ungelösten Review-Threads vorhanden. Workflow erfolgreich.");
             }

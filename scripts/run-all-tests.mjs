@@ -28,11 +28,6 @@ import { computeWorkerCount } from './utils/parallelism.mjs'
 // ---------------------------------------------------------------------------
 const totalWorkers = Math.max(1, availableParallelism())
 
-// test:node and test:ui each get the full worker count; they never run
-// simultaneously so there is no contention.  test:vitest:logic is tiny
-// (~5 s, node-env only) and is capped at 1 vitest worker so it doesn't
-// compete with test:node's threads — the OS schedules it in the I/O gaps.
-const nodeWorkersDefault = totalWorkers
 const logicWorkers = 1
 const vitestUiWorkerCap = 12
 const highCoreParallelThreshold = 16
@@ -43,9 +38,20 @@ const fullyParallel =
   (process.env.NODE_ALL_PARALLEL !== '0' &&
     totalWorkers >= highCoreParallelThreshold)
 
+// In the phase-split mode, the CPU-heavy node and UI suites each receive the
+// full machine budget because they run sequentially. In fully parallel mode,
+// split the available workers between them and reserve one for the small logic
+// suite; otherwise the default 18-core allocation would start 27 workers.
+const parallelSuiteBudget = Math.max(2, totalWorkers - logicWorkers)
 const uiWorkersDefault = fullyParallel
-  ? Math.min(totalWorkers, parallelUiWorkerCap)
+  ? Math.max(
+      1,
+      Math.min(parallelUiWorkerCap, Math.floor(parallelSuiteBudget / 2))
+    )
   : Math.min(totalWorkers, vitestUiWorkerCap)
+const nodeWorkersDefault = fullyParallel
+  ? Math.max(1, totalWorkers - logicWorkers - uiWorkersDefault)
+  : totalWorkers
 
 const baseEnv = { ...process.env }
 if (!baseEnv.NODE_TEST_CONCURRENCY) {

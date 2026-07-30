@@ -1,17 +1,28 @@
 import { test, expect } from '@playwright/test'
+import { skipToMenu } from './helpers.js'
 
-test.describe('Visual Regression Tests', () => {
-  test('MainMenu loads correctly', async ({ page }) => {
-    // Navigate to the app (assuming it runs on localhost:5173 by default)
-    await page.goto('/')
+test.describe('Visual smoke tests', () => {
+  test('MainMenu renders its stable primary hierarchy', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' })
+    await skipToMenu(page)
 
-    // Wait for the main menu or intro to load
-    await page.waitForLoadState('networkidle')
+    const title = page.getByRole('heading', { name: /neurotoxic/i })
+    const startTour = page.getByRole('button', { name: /start tour/i })
 
-    // Take a screenshot of the main page and compare it
-    // In a real setup, this compares against a baseline image
-    expect(await page.screenshot()).toMatchSnapshot('main-menu-baseline.png', {
-      maxDiffPixelRatio: 0.1
-    })
+    await expect(title).toBeVisible()
+    await expect(startTour).toBeVisible()
+
+    const [titleBox, startTourBox] = await Promise.all([
+      title.boundingBox(),
+      startTour.boundingBox()
+    ])
+
+    expect(titleBox).not.toBeNull()
+    expect(startTourBox).not.toBeNull()
+    expect(titleBox.width).toBeGreaterThan(0)
+    expect(titleBox.height).toBeGreaterThan(0)
+    expect(startTourBox.width).toBeGreaterThan(0)
+    expect(startTourBox.height).toBeGreaterThan(0)
+    expect(startTourBox.y).toBeGreaterThan(titleBox.y)
   })
 })

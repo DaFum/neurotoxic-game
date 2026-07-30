@@ -436,8 +436,7 @@ const FIXTURES = {
     description: 'Clinic scene',
     state: {
       currentScene: 'CLINIC',
-      player: { money: 800, fame: 500 },
-      band: { harmony: 35 }
+      player: { money: 800, fame: 500 }
     },
     waitFor: async page => {
       // Clinic has no unique heading — wait for networkidle then stabilize

@@ -2,10 +2,13 @@
  * Attempts to skip the intro video/scene to reach the main menu.
  * Handles potential race conditions between the skip button appearing and the menu loading.
  * @param {import('@playwright/test').Page} page
+ * @param {{ navigate?: boolean }} [options] - Set `navigate` to false when the caller already reloaded the page.
  */
-export async function skipToMenu(page) {
+export async function skipToMenu(page, { navigate = true } = {}) {
   try {
-    await page.goto('/', { waitUntil: 'domcontentloaded' })
+    if (navigate) {
+      await page.goto('/', { waitUntil: 'domcontentloaded' })
+    }
 
     // Try to skip intro if button appears
     try {

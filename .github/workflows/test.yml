@@ -191,8 +191,31 @@ jobs:
       - name: Run core TypeScript checks
         run: pnpm run typecheck:core
 
+      - name: Run API and server TypeScript checks
+        run: pnpm run typecheck:server
+
       - name: Run reducer TypeScript checks
         run: pnpm run typecheck
+
+  playwright-e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E suite
+        run: pnpm run test:e2e
 
   locale-smoke-tests:
     name: Locale Smoke Tests

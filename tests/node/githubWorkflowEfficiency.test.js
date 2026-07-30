@@ -28,9 +28,55 @@ describe('GitHub Actions efficiency guardrails', () => {
     )
   })
 
-  it('runs all non-Playwright test suites in required PR CI', () => {
+  it('documents the supported rerun contract after review threads are resolved', () => {
+    const workflowText = readText('.github/workflows/pr-comment-tracker.yml')
+    const workflow = readWorkflow('.github/workflows/pr-comment-tracker.yml')
+
+    assert.equal(
+      Object.hasOwn(workflow.on, 'pull_request_review_thread'),
+      false,
+      'GitHub Actions does not expose the review-thread resolved webhook as a workflow event'
+    )
+    assert.match(
+      workflowText,
+      /const recoveryHint = unresolvedThreads\.length > 0/
+    )
+    assert.match(workflowText, /GITHUB_RUN_ID/)
+    assert.match(workflowText, /Re-run failed jobs/)
+    assert.match(
+      workflowText,
+      /const body = marker \+ header \+ copyableBlock \+ footer \+ recoveryHint \+ idsStateMarker/
+    )
+    assert.match(workflowText, /core\.setFailed\(`[\s\S]*\$\{recoveryHint\}`\)/)
+    assert.doesNotMatch(
+      workflowText,
+      /Wird automatisch aktualisiert, sobald sich Kommentare ändern/,
+      'thread resolution does not trigger this workflow automatically'
+    )
+  })
+
+  it('blocks on all current unresolved review threads and drops resolved marker ids', () => {
+    const workflowText = readText('.github/workflows/pr-comment-tracker.yml')
+
+    assert.match(
+      workflowText,
+      /new Set\(\s*unresolvedThreads\.map\(thread => thread\.id\)\s*\)/,
+      'the persisted marker must be rebuilt from current unresolved thread ids'
+    )
+    assert.match(
+      workflowText,
+      /if \(unresolvedThreads\.length > 0\)/,
+      'every current unresolved thread must keep the required check failing'
+    )
+    assert.doesNotMatch(
+      workflowText,
+      /new Set\(reportedThreadIds\)|if \(newThreads\.length > 0\)/,
+      'previously reported threads must not bypass the required check or remain in marker state'
+    )
+  })
+
+  it('runs all non-browser test suites in required PR CI', () => {
     const workflow = readWorkflow('.github/workflows/test.yml')
-    const workflowText = readText('.github/workflows/test.yml')
     const runCommands = Object.values(workflow.jobs)
       .flatMap(job => job.steps)
       .map(step => step.run ?? '')
@@ -44,11 +90,55 @@ describe('GitHub Actions efficiency guardrails', () => {
     assert.match(runCommands, /\bpnpm run test:perf\b/)
     assert.match(runCommands, /\bpnpm run typecheck:core\b/)
     assert.match(runCommands, /\bpnpm run typecheck\b(?!:)/)
-    assert.doesNotMatch(
-      workflowText,
-      /\b(playwright|test:e2e|test:e2e:shard[12])\b/,
-      'Playwright/e2e suites are intentionally excluded from required PR CI'
+  })
+
+  it('runs the server type gate from package scripts and required PR CI', () => {
+    const packageJson = JSON.parse(readText('package.json'))
+    const coreTypeConfig = JSON.parse(readText('tsconfig.json'))
+    const workflow = readWorkflow('.github/workflows/test.yml')
+    const runCommands = Object.values(workflow.jobs)
+      .flatMap(job => job.steps)
+      .map(step => step.run ?? '')
+      .join('\n')
+
+    assert.equal(packageJson.scripts['typecheck:core'], 'tsc -p tsconfig.json')
+    assert.deepEqual(coreTypeConfig.include, ['src'])
+    assert.equal(coreTypeConfig.compilerOptions.noUncheckedIndexedAccess, true)
+    assert.equal(
+      packageJson.scripts['typecheck:server'],
+      'tsc -p tsconfig.server.json'
     )
+    assert.match(runCommands, /\bpnpm run typecheck:server\b/)
+  })
+
+  it('keeps TypeScript migration instructions aligned with the core gate', () => {
+    const instructions = readText(
+      '.github/instructions/typescript-migration.instructions.md'
+    )
+
+    assert.match(
+      instructions,
+      /Full typecheck: `pnpm run typecheck:core` \(runs `tsc -p tsconfig\.json`/
+    )
+    assert.match(
+      instructions,
+      /`tsconfig\.json` applies `noUncheckedIndexedAccess` to all source files under `src\/`/
+    )
+    assert.doesNotMatch(instructions, /jsconfig\.checkjs\.json/)
+  })
+
+  it('runs Playwright with an explicit Chromium install in required PR CI', () => {
+    const workflow = readWorkflow('.github/workflows/test.yml')
+    const runCommands = Object.values(workflow.jobs)
+      .flatMap(job => job.steps)
+      .map(step => step.run ?? '')
+      .join('\n')
+
+    assert.match(
+      runCommands,
+      /\bpnpm exec playwright install --with-deps chromium\b/
+    )
+    assert.match(runCommands, /\bpnpm run test:e2e\b/)
   })
 
   it('detects lint-preview scripts without running package fixers', () => {
