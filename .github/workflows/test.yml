@@ -201,6 +201,10 @@ jobs:
     name: Playwright E2E
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Narrower than the workflow-level grant: this job only reads the tree to
+    # run the browser suite and never comments on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository

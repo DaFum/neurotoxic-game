@@ -108,6 +108,15 @@ export const useArrivalLogic = ({
         route.gigStartQueued = true
         // Keep the route pending until START_GIG commits and currentScene
         // triggers this effect again, so the save sees the committed gig state.
+        //
+        // INVARIANT: this handshake requires every non-`currentScene` dep below
+        // to be referentially stable. `startGig` dispatches inside
+        // `startTransition`, so if one of them changed identity in that window
+        // the effect would re-enter with `gigStartQueued` already true, consume
+        // the route and save PRE-commit — the exact bug this defers around.
+        // Today all are stable (`saveGame` → [addToast, stateRef, tRef]; the
+        // rest → [dispatch]). Keep them that way, or key this effect on
+        // `routeNonce`/`currentScene` alone.
         return
       } catch (error) {
         handleError(error, {
@@ -117,6 +126,11 @@ export const useArrivalLogic = ({
           })
         })
         route.gigVenue = null
+        // `route.scene` is the gig-side scene handleNodeArrival picked. Routing
+        // there after START_GIG failed would mount PreGig/Gig with no
+        // `currentGig`, so fall back to the overworld instead of a scene that
+        // cannot render.
+        route.scene = GAME_PHASES.OVERWORLD
       }
     }
 

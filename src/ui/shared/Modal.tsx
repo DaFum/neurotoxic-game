@@ -73,6 +73,16 @@ type BackgroundState = {
   owners: Set<symbol>
 }
 
+/**
+ * Delay before the dialog claims focus on open.
+ *
+ * @remarks
+ * Focus is deferred one frame-ish rather than set synchronously so a mount or
+ * entry transition on the dialog cannot immediately pull focus back. Tests that
+ * assert initial focus must advance timers past this.
+ */
+const INITIAL_FOCUS_DELAY_MS = 50
+
 const modalStack: ModalStackEntry[] = []
 const backgroundStates = new Map<Element, BackgroundState>()
 let stackOpener: HTMLElement | null = null
@@ -241,13 +251,15 @@ export const Modal = ({
     modalStack.push(entry)
 
     const timer = window.setTimeout(() => {
+      // Deferred so the dialog's own mount/entry animation cannot steal focus
+      // back; see INITIAL_FOCUS_DELAY_MS.
       if (
         modalStack[modalStack.length - 1] === entry &&
         !dialog.contains(document.activeElement)
       ) {
         dialog.focus()
       }
-    }, 50)
+    }, INITIAL_FOCUS_DELAY_MS)
 
     return () => {
       window.clearTimeout(timer)

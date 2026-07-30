@@ -1743,7 +1743,14 @@ export const sanitizeActiveQuests = (
         const deadline = finiteOptionalNumber(quest.deadline)
         if (deadline !== undefined) sanitized.deadline = deadline
       }
-      const required = finiteOptionalNumber(definition.required)
+      // The definition is authoritative so a tampered or stale save cannot
+      // inflate/deflate a quest's completion bar, but fall back to the
+      // persisted value when the definition carries no `required` — otherwise a
+      // definition that never declared one silently drops the field and the
+      // quest loses its target.
+      const required =
+        finiteOptionalNumber(definition.required) ??
+        finiteOptionalNumber(quest.required)
       if (required !== undefined) {
         sanitized.required = required
       }

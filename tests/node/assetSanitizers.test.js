@@ -440,3 +440,73 @@ describe('sanitizeRngSeed', () => {
     assert.equal(typeof sanitizeRngSeed(null), 'number')
   })
 })
+
+describe('load-time round trip of a valid pre-hardening save', () => {
+  // The hardening pass turned several coerce-to-zero paths into drops and began
+  // re-deriving chassis economics from CHASSIS_CONFIG. A realistic save that was
+  // valid before must still come back whole, or the change silently deletes
+  // player-owned assets and debt on upgrade.
+  const legacySave = {
+    assets: [
+      validAsset({ id: 'bus_1', condition: 63, acquiredOnDay: 12 }),
+      validAsset({
+        id: 'bus_2',
+        chassisTier: 2,
+        condition: 100,
+        acquisitionMode: 'loan'
+      })
+    ],
+    liabilities: {
+      loan_1: {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'bus_2',
+        principalRemaining: 4200,
+        interestRate: 0.08,
+        dailyPayment: 75,
+        termDaysRemaining: 56,
+        defaultCounter: 0
+      }
+    }
+  }
+
+  it('keeps every valid asset and preserves persisted per-save fields', () => {
+    const assets = sanitizeAssets(legacySave.assets)
+
+    assert.equal(assets.length, 2)
+    assert.deepEqual(
+      assets.map(a => a.id),
+      ['bus_1', 'bus_2']
+    )
+    // Per-save fields survive untouched...
+    assert.equal(assets[0].condition, 63)
+    assert.equal(assets[0].acquiredOnDay, 12)
+    assert.equal(assets[1].acquisitionMode, 'loan')
+    // ...while chassis economics are re-derived from the catalogue.
+    const tier1 = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+    assert.equal(assets[0].baseUpkeep, tier1.upkeep)
+    assert.equal(assets[0].baseDailyRevenue, tier1.revenue)
+    assert.equal(assets[0].baseRiskEventChance, tier1.baseRiskEventChance)
+  })
+
+  it('keeps a well-formed liability attached to a surviving asset', () => {
+    const assets = sanitizeAssets(legacySave.assets)
+    const liabilities = sanitizeLiabilities(legacySave.liabilities, assets)
+
+    assert.deepEqual(Object.keys(liabilities), ['loan_1'])
+    assert.deepEqual(liabilities.loan_1, legacySave.liabilities.loan_1)
+  })
+
+  it('drops a liability whose asset was itself dropped', () => {
+    // Cascade check: the asset is invalid, so its debt must not outlive it.
+    const assets = sanitizeAssets([
+      validAsset({ id: 'bus_2', chassisTier: 99 })
+    ])
+    assert.deepEqual(assets, [])
+    // Null-prototype accumulator, so compare keys rather than shape.
+    assert.deepEqual(
+      Object.keys(sanitizeLiabilities(legacySave.liabilities, assets)),
+      []
+    )
+  })
+})
