@@ -51,18 +51,32 @@ const AssetsScene = lazy(() =>
   import('./assets/AssetsScene.tsx').then(m => ({ default: m.AssetsScene }))
 )
 
+/**
+ * Represents the valid application states determining the top-level scene rendering.
+ */
 type ScenePhase = (typeof GAME_PHASES)[keyof typeof GAME_PHASES]
 
+/**
+ * Configuration properties for the application's top-level scene router.
+ */
 interface SceneRouterProps {
+  /** The current active game phase dictating which scene to mount. */
   currentScene: ScenePhase
+  /** The specific type of minigame to load when entering a minigame phase. */
   minigameType?: MinigameType | null
 }
 
 /**
- * Selects the active top-level scene for the current game phase.
+ * Selects and mounts the active top-level scene component corresponding to the current game phase.
  *
- * @param props - Scene routing inputs.
- * @returns The scene component for the current phase, falling back to the main menu.
+ * @remarks
+ * Unrecognized or unhandled game phases will default to rendering the main menu to prevent
+ * unrecoverable application blank states. For the PRE_GIG_MINIGAME phase, if minigameType is
+ * null, omitted, or any unrecognized type, it intentionally falls back to mounting RoadieRunScene
+ * to preserve its completion overlay.
+ *
+ * @param props - Scene routing inputs
+ * @returns The scene component for the current phase, falling back to the main menu
  */
 export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
   switch (currentScene) {
