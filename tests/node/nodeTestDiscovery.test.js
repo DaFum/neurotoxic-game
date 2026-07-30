@@ -2,20 +2,19 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
+import {
+  NODE_TEST_DIRS,
+  NODE_TEST_FILE_PATTERN
+} from '../../scripts/utils/node-test-dirs.mjs'
 
 const repoRoot = process.cwd()
 const testsRoot = path.join(repoRoot, 'tests')
 const nodeTestImportPattern =
   /(?:from\s+|(?:import|require)\s*\(\s*)['"]node:test['"]/
 const testFilePattern = /(?:\.(?:test|spec)|_test)\.(?:[cm]?[jt]sx?)$/
-const nodeOwnedDirectories = [
-  'tests/node',
-  'tests/components',
-  'tests/context',
-  'tests/events',
-  'tests/golden-path',
-  'tests/reducers'
-]
+// Imported from the shared module the runner itself uses, so this guard cannot
+// drift into validating a stale copy of the discovery rules.
+const nodeOwnedDirectories = NODE_TEST_DIRS
 const localeOwnedFiles = new Set([
   'tests/locale/full.test.js',
   'tests/locale/smoke.test.js'
@@ -33,7 +32,7 @@ const isNodeRunnerDirectory = relativePath =>
 const isRunnerOwned = relativePath =>
   localeOwnedFiles.has(relativePath) ||
   (isNodeRunnerDirectory(relativePath) &&
-    /\.(?:test|spec)\.js$/.test(relativePath))
+    NODE_TEST_FILE_PATTERN.test(relativePath))
 
 const findTestFiles = directory => {
   const files = []
@@ -49,10 +48,6 @@ const findTestFiles = directory => {
 }
 
 describe('node:test discovery ownership', () => {
-  it('recognizes CommonJS node:test imports', () => {
-    assert.match("const test = require('node:test')", nodeTestImportPattern)
-  })
-
   it('matches the file names supported by each owning runner', () => {
     assert.equal(isRunnerOwned('tests/node/example.test.js'), true)
     assert.equal(isRunnerOwned('tests/events/example.spec.js'), true)

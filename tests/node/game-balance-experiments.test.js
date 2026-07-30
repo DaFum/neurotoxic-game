@@ -71,22 +71,14 @@ test('experiment registry contains the approved harmony recovery matrix and cont
   assert.ok(recovery.every(item => item.phase === 'recovery'))
 })
 
-test('a rejected recovery candidate stays out of the production action surface', async () => {
-  const report = JSON.parse(
-    await fs.readFile(
-      new URL(
-        '../../reports/game-balance-experiments-results.json',
-        import.meta.url
-      ),
-      'utf8'
-    )
-  )
-
-  assert.equal(
-    report.phases.phase6E.outcome,
-    'no-production-recommendation-final-validation-failed'
-  )
-  assert.equal(report.recommendation.tuning.recovery.threshold, 0)
+test('a rejected recovery candidate stays out of the production action surface', () => {
+  // Only the production surface is asserted here. The two former assertions
+  // against reports/game-balance-experiments-results.json read a committed
+  // artifact and compared it to itself: nothing under src/ can change those
+  // values, so they could never fail and gave the test's name false weight.
+  // Pairing them with a provenance check is not possible yet — the committed
+  // artifacts' sourceFingerprint is already stale on main (it predates this
+  // branch), so such a check would fail for reasons unrelated to this guard.
   assert.equal(Object.hasOwn(ActionTypes, 'HARMONY_RECOVERY'), false)
 })
 
