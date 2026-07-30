@@ -966,6 +966,12 @@ export const createClinicHealAction = (
   }
 }
 
+/** Creates the optional paid harmony-recovery clinic action. */
+export const createHarmonyRecoveryAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.HARMONY_RECOVERY }
+> => ({ type: ActionTypes.HARMONY_RECOVERY })
+
 /**
  * Creates an action to enhance a band member in the Void Clinic.
  * Cost is computed by the reducer from CLINIC_CONFIG and clinicVisits.

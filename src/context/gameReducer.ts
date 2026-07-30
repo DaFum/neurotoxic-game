@@ -58,6 +58,7 @@ import {
 } from './reducers/minigameReducer'
 import {
   handleClinicHeal,
+  handleHarmonyRecovery,
   handleClinicEnhance,
   handleGraftNeuroOverclock,
   handleBloodBankDonate
@@ -174,6 +175,7 @@ const reducerMap: ReducerMap = {
   ) => QuestEvents.emit(state, payload),
   [ActionTypes.ADD_UNLOCK]: handleAddUnlock,
   [ActionTypes.CLINIC_HEAL]: handleClinicHeal,
+  [ActionTypes.HARMONY_RECOVERY]: handleHarmonyRecovery,
   [ActionTypes.CLINIC_ENHANCE]: handleClinicEnhance,
   [ActionTypes.GRAFT_NEURO_OVERCLOCK]: handleGraftNeuroOverclock,
   [ActionTypes.TRADE_VOID_ITEM]: handleTradeVoidItem,

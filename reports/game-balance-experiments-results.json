@@ -1,9 +1,9 @@
 {
   "experimentReportVersion": 2,
-  "generatedAt": "2026-07-30T07:46:33.892Z",
+  "generatedAt": "2026-07-30T09:33:06.466Z",
   "metadata": {
-    "sourceFingerprint": "a353b1135aa2c7ab9f1d754a8428e0bab85ca717abe5d343192eb8f821c1def1",
-    "generatorFingerprint": "c06c59b3846035303a0cef15f4661678b50124e4fc11e529e668ed66b8c1ead7",
+    "sourceFingerprint": "dc10477b09968a6b557ee1a597cea2457d1f43081e7ceb94a963118af0dfe394",
+    "generatorFingerprint": "98e91acdfc6ce71d1d47aa638035bc4cb2c8114f437ee1516dee7b98ef062dd1",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -32208,8 +32208,8 @@
           }
         }
       ],
-      "selectedCandidateId": "harmony-recovery-40-money",
-      "outcome": "candidate-validated-for-runtime-prototyping",
+      "selectedCandidateId": null,
+      "outcome": "no-production-recommendation-final-validation-failed",
       "validation": {
         "id": "harmony-recovery-40-money",
         "phase": "recovery",
@@ -32271,6 +32271,437 @@
         },
         "stream": "validation",
         "resultsByScenario": {
+          "baseline_touring": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1976,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 1,
+                "bothBankrupt": 23
+              },
+              "controlRatePct": 1.15,
+              "candidateRatePct": 1.2,
+              "deltaRatePct": 0.05,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 1
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.95,
+                  "median": 10,
+                  "stdDev": 0.53,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.94,
+                  "median": 10,
+                  "stdDev": 0.54,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.13,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -6,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 1,
+                  "unchangedCount": 1999,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.01,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 27938.33,
+                  "median": 28566.5,
+                  "stdDev": 6656.57,
+                  "p10": 20859.6,
+                  "p25": 24543.25,
+                  "p75": 31748,
+                  "p90": 35194.9,
+                  "min": 0,
+                  "max": 46957
+                },
+                "candidate": {
+                  "mean": 27930.54,
+                  "median": 28543,
+                  "stdDev": 6706.6,
+                  "p10": 20834.4,
+                  "p25": 24544,
+                  "p75": 31792.25,
+                  "p90": 35265.2,
+                  "min": 0,
+                  "max": 47598
+                },
+                "pairedDelta": {
+                  "mean": -7.79,
+                  "median": 0,
+                  "stdDev": 1656.68,
+                  "p10": -256,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -25531,
+                  "max": 18565,
+                  "count": 2000,
+                  "positiveCount": 80,
+                  "negativeCount": 374,
+                  "unchangedCount": 1546,
+                  "candidateWinRatePct": 4,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -81.48,
+                      "upper": 66.73,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 10298.21,
+                  "median": 9870,
+                  "stdDev": 4460.81,
+                  "p10": 6739,
+                  "p25": 8218,
+                  "p75": 11572.5,
+                  "p90": 13122.7,
+                  "min": 0,
+                  "max": 42560
+                },
+                "candidate": {
+                  "mean": 10462.43,
+                  "median": 10028.5,
+                  "stdDev": 4459.19,
+                  "p10": 6989,
+                  "p25": 8425,
+                  "p75": 11657.75,
+                  "p90": 13235.7,
+                  "min": 0,
+                  "max": 42560
+                },
+                "pairedDelta": {
+                  "mean": 164.22,
+                  "median": 0,
+                  "stdDev": 630.46,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 540,
+                  "min": -5545,
+                  "max": 9662,
+                  "count": 2000,
+                  "positiveCount": 425,
+                  "negativeCount": 23,
+                  "unchangedCount": 1552,
+                  "candidateWinRatePct": 21.25,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 138.77,
+                      "upper": 194.08,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 13586.49,
+                  "median": 13209.5,
+                  "stdDev": 4311.02,
+                  "p10": 10649.1,
+                  "p25": 11893.75,
+                  "p75": 14516.25,
+                  "p90": 15845.3,
+                  "min": 0,
+                  "max": 48874
+                },
+                "candidate": {
+                  "mean": 13755.76,
+                  "median": 13354,
+                  "stdDev": 4317.16,
+                  "p10": 10880,
+                  "p25": 12130,
+                  "p75": 14600,
+                  "p90": 15881.4,
+                  "min": 0,
+                  "max": 48874
+                },
+                "pairedDelta": {
+                  "mean": 169.27,
+                  "median": 0,
+                  "stdDev": 590.21,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 562,
+                  "min": -7505,
+                  "max": 8120,
+                  "count": 2000,
+                  "positiveCount": 432,
+                  "negativeCount": 17,
+                  "unchangedCount": 1551,
+                  "candidateWinRatePct": 21.6,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 144.08,
+                      "upper": 196.7,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 8.51,
+                  "median": 9,
+                  "stdDev": 1.32,
+                  "p10": 7,
+                  "p25": 8,
+                  "p75": 9,
+                  "p90": 10,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 8.51,
+                  "median": 9,
+                  "stdDev": 1.33,
+                  "p10": 7,
+                  "p25": 8,
+                  "p75": 9,
+                  "p90": 10,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.16,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -6,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 9,
+                  "negativeCount": 5,
+                  "unchangedCount": 1986,
+                  "candidateWinRatePct": 0.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.01,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 49.59,
+                  "median": 49,
+                  "stdDev": 16.11,
+                  "p10": 30,
+                  "p25": 39,
+                  "p75": 59,
+                  "p90": 71,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 53.13,
+                  "median": 51,
+                  "stdDev": 13.41,
+                  "p10": 38,
+                  "p25": 45,
+                  "p75": 60,
+                  "p90": 71,
+                  "min": 14,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 3.54,
+                  "median": 0,
+                  "stdDev": 8.26,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 16,
+                  "min": -23,
+                  "max": 59,
+                  "count": 2000,
+                  "positiveCount": 429,
+                  "negativeCount": 16,
+                  "unchangedCount": 1555,
+                  "candidateWinRatePct": 21.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 3.18,
+                      "upper": 3.91,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 18.19,
+                  "median": 11.39,
+                  "stdDev": 19.38,
+                  "p10": 0,
+                  "p25": 4.97,
+                  "p75": 25.98,
+                  "p90": 45.3,
+                  "min": 0,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 18.21,
+                  "median": 11.39,
+                  "stdDev": 19.37,
+                  "p10": 0,
+                  "p25": 5.05,
+                  "p75": 26,
+                  "p90": 44.86,
+                  "min": 0,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 0.02,
+                  "median": 0,
+                  "stdDev": 3.29,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -56.59,
+                  "max": 75.83,
+                  "count": 2000,
+                  "positiveCount": 132,
+                  "negativeCount": 19,
+                  "unchangedCount": 1849,
+                  "candidateWinRatePct": 6.6,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.13,
+                      "upper": 0.16,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.93,
+                "activations": 0.25,
+                "harmonyRestored": 5.09,
+                "moneySpent": 71.26,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 454,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": -0.15,
+            "bankruptcyDeltaPct": 0.05,
+            "famePerGig": {
+              "control": 1602.87,
+              "candidate": 1621.66,
+              "deltaPct": 1.17,
+              "sampleSize": 1992,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 8
+            },
+            "costsMeasured": true
+          },
           "bootstrap_struggle": {
             "sampleSize": 2000,
             "bankruptcy": {
@@ -32699,6 +33130,1299 @@
               "minimumSampleSize": 1000,
               "sufficientEvidence": true,
               "excludedPairs": 6
+            },
+            "costsMeasured": true
+          },
+          "aggressive_marketing": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1948,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 0,
+                "bothBankrupt": 52
+              },
+              "controlRatePct": 2.6,
+              "candidateRatePct": 2.6,
+              "deltaRatePct": 0,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 0
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.88,
+                  "median": 10,
+                  "stdDev": 0.77,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.88,
+                  "median": 10,
+                  "stdDev": 0.77,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": 0,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 0,
+                  "unchangedCount": 2000,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 27947.92,
+                  "median": 28259,
+                  "stdDev": 7658.25,
+                  "p10": 20871.4,
+                  "p25": 24457,
+                  "p75": 32219,
+                  "p90": 36835.6,
+                  "min": 0,
+                  "max": 50472
+                },
+                "candidate": {
+                  "mean": 27900.64,
+                  "median": 28225.5,
+                  "stdDev": 7665.18,
+                  "p10": 20847.9,
+                  "p25": 24429.5,
+                  "p75": 32113,
+                  "p90": 36823.2,
+                  "min": 0,
+                  "max": 50472
+                },
+                "pairedDelta": {
+                  "mean": -47.28,
+                  "median": 0,
+                  "stdDev": 1386.14,
+                  "p10": -255.1,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -26913,
+                  "max": 18548,
+                  "count": 2000,
+                  "positiveCount": 50,
+                  "negativeCount": 321,
+                  "unchangedCount": 1629,
+                  "candidateWinRatePct": 2.5,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -108.96,
+                      "upper": 17.5,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 8840.71,
+                  "median": 8692.5,
+                  "stdDev": 4032.56,
+                  "p10": 5114.5,
+                  "p25": 6816.5,
+                  "p75": 10408.5,
+                  "p90": 12056.4,
+                  "min": 0,
+                  "max": 44620
+                },
+                "candidate": {
+                  "mean": 8945.94,
+                  "median": 8809,
+                  "stdDev": 4020.11,
+                  "p10": 5170.1,
+                  "p25": 6978.75,
+                  "p75": 10498.5,
+                  "p90": 12107.3,
+                  "min": 0,
+                  "max": 44620
+                },
+                "pairedDelta": {
+                  "mean": 105.23,
+                  "median": 0,
+                  "stdDev": 447,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 380,
+                  "min": -8580,
+                  "max": 5737,
+                  "count": 2000,
+                  "positiveCount": 351,
+                  "negativeCount": 18,
+                  "unchangedCount": 1631,
+                  "candidateWinRatePct": 17.55,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 86.53,
+                      "upper": 124.66,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 11936.06,
+                  "median": 11730,
+                  "stdDev": 3949.91,
+                  "p10": 8925.4,
+                  "p25": 10320,
+                  "p75": 13340,
+                  "p90": 14579.3,
+                  "min": 0,
+                  "max": 47920
+                },
+                "candidate": {
+                  "mean": 12043.82,
+                  "median": 11845.5,
+                  "stdDev": 3944.29,
+                  "p10": 9085,
+                  "p25": 10463.75,
+                  "p75": 13410,
+                  "p90": 14715.5,
+                  "min": 0,
+                  "max": 47920
+                },
+                "pairedDelta": {
+                  "mean": 107.76,
+                  "median": 0,
+                  "stdDev": 396.96,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 400,
+                  "min": -5490,
+                  "max": 5785,
+                  "count": 2000,
+                  "positiveCount": 359,
+                  "negativeCount": 10,
+                  "unchangedCount": 1631,
+                  "candidateWinRatePct": 17.95,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 90.56,
+                      "upper": 126.24,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 7.36,
+                  "median": 8,
+                  "stdDev": 1.59,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 7.36,
+                  "median": 8,
+                  "stdDev": 1.59,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.07,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -2,
+                  "max": 1,
+                  "count": 2000,
+                  "positiveCount": 3,
+                  "negativeCount": 3,
+                  "unchangedCount": 1994,
+                  "candidateWinRatePct": 0.15,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 51.57,
+                  "median": 50,
+                  "stdDev": 16.38,
+                  "p10": 32,
+                  "p25": 42,
+                  "p75": 61,
+                  "p90": 73,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 54.57,
+                  "median": 52,
+                  "stdDev": 14.12,
+                  "p10": 39,
+                  "p25": 45,
+                  "p75": 63,
+                  "p90": 74,
+                  "min": 4,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 3,
+                  "median": 0,
+                  "stdDev": 7.83,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 15,
+                  "min": -22,
+                  "max": 70,
+                  "count": 2000,
+                  "positiveCount": 355,
+                  "negativeCount": 12,
+                  "unchangedCount": 1633,
+                  "candidateWinRatePct": 17.75,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 2.66,
+                      "upper": 3.36,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 24.52,
+                  "median": 17.74,
+                  "stdDev": 21.29,
+                  "p10": 4.97,
+                  "p25": 9.13,
+                  "p75": 33.39,
+                  "p90": 54.09,
+                  "min": 0,
+                  "max": 99.88
+                },
+                "candidate": {
+                  "mean": 24.62,
+                  "median": 17.92,
+                  "stdDev": 21.31,
+                  "p10": 5.27,
+                  "p25": 9.15,
+                  "p75": 33.52,
+                  "p90": 54.69,
+                  "min": 0,
+                  "max": 99.88
+                },
+                "pairedDelta": {
+                  "mean": 0.1,
+                  "median": 0,
+                  "stdDev": 1.98,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -43.79,
+                  "max": 32.13,
+                  "count": 2000,
+                  "positiveCount": 111,
+                  "negativeCount": 13,
+                  "unchangedCount": 1876,
+                  "candidateWinRatePct": 5.55,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0.18,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.86,
+                "activations": 0.2,
+                "harmonyRestored": 4.08,
+                "moneySpent": 57.12,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 372,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.05,
+            "bankruptcyDeltaPct": 0,
+            "famePerGig": {
+              "control": 1632.61,
+              "candidate": 1646.42,
+              "deltaPct": 0.85,
+              "sampleSize": 1987,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 13
+            },
+            "costsMeasured": true
+          },
+          "scandal_recovery": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1831,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 0,
+                "bothBankrupt": 169
+              },
+              "controlRatePct": 8.45,
+              "candidateRatePct": 8.45,
+              "deltaRatePct": 0,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 0
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.62,
+                  "median": 10,
+                  "stdDev": 1.3,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.62,
+                  "median": 10,
+                  "stdDev": 1.3,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": 0,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 0,
+                  "unchangedCount": 2000,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 21992.5,
+                  "median": 23754,
+                  "stdDev": 8801.08,
+                  "p10": 6698.1,
+                  "p25": 19889.5,
+                  "p75": 27432.5,
+                  "p90": 30902.6,
+                  "min": 0,
+                  "max": 41489
+                },
+                "candidate": {
+                  "mean": 22018.05,
+                  "median": 23794.5,
+                  "stdDev": 8779.39,
+                  "p10": 7299.9,
+                  "p25": 19989.5,
+                  "p75": 27344,
+                  "p90": 30797.7,
+                  "min": 0,
+                  "max": 41913
+                },
+                "pairedDelta": {
+                  "mean": 25.55,
+                  "median": 0,
+                  "stdDev": 1721.79,
+                  "p10": -263,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -19985,
+                  "max": 18752,
+                  "count": 2000,
+                  "positiveCount": 110,
+                  "negativeCount": 456,
+                  "unchangedCount": 1434,
+                  "candidateWinRatePct": 5.5,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -47.17,
+                      "upper": 103.35,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 7155,
+                  "median": 7055,
+                  "stdDev": 4118.3,
+                  "p10": 2639,
+                  "p25": 5210.75,
+                  "p75": 8829.75,
+                  "p90": 10405.8,
+                  "min": 0,
+                  "max": 40741
+                },
+                "candidate": {
+                  "mean": 7370.36,
+                  "median": 7325,
+                  "stdDev": 4176.34,
+                  "p10": 2914.5,
+                  "p25": 5455,
+                  "p75": 9042.5,
+                  "p90": 10631.5,
+                  "min": 0,
+                  "max": 40741
+                },
+                "pairedDelta": {
+                  "mean": 215.37,
+                  "median": 0,
+                  "stdDev": 728.6,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 100,
+                  "p90": 622,
+                  "min": -2653,
+                  "max": 8617,
+                  "count": 2000,
+                  "positiveCount": 527,
+                  "negativeCount": 32,
+                  "unchangedCount": 1441,
+                  "candidateWinRatePct": 26.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 183.94,
+                      "upper": 248.23,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 10074.84,
+                  "median": 10316.5,
+                  "stdDev": 4270.8,
+                  "p10": 6069.3,
+                  "p25": 8580,
+                  "p75": 11735,
+                  "p90": 13040.5,
+                  "min": 0,
+                  "max": 42561
+                },
+                "candidate": {
+                  "mean": 10285.79,
+                  "median": 10515,
+                  "stdDev": 4331.89,
+                  "p10": 6397.5,
+                  "p25": 8803.75,
+                  "p75": 11935.25,
+                  "p90": 13195.5,
+                  "min": 0,
+                  "max": 43697
+                },
+                "pairedDelta": {
+                  "mean": 210.95,
+                  "median": 0,
+                  "stdDev": 630.49,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 100,
+                  "p90": 640,
+                  "min": -1790,
+                  "max": 7920,
+                  "count": 2000,
+                  "positiveCount": 543,
+                  "negativeCount": 15,
+                  "unchangedCount": 1442,
+                  "candidateWinRatePct": 27.15,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 183.86,
+                      "upper": 238.99,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 6.56,
+                  "median": 7,
+                  "stdDev": 2.06,
+                  "p10": 4,
+                  "p25": 6,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 6.57,
+                  "median": 7,
+                  "stdDev": 2.06,
+                  "p10": 4,
+                  "p25": 6,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0.01,
+                  "median": 0,
+                  "stdDev": 0.14,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -1,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 25,
+                  "negativeCount": 10,
+                  "unchangedCount": 1965,
+                  "candidateWinRatePct": 1.25,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 45.85,
+                  "median": 46,
+                  "stdDev": 16.16,
+                  "p10": 25,
+                  "p25": 36,
+                  "p75": 55,
+                  "p90": 67,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 50.65,
+                  "median": 50,
+                  "stdDev": 12.33,
+                  "p10": 36,
+                  "p25": 43,
+                  "p75": 57,
+                  "p90": 68,
+                  "min": 15,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 4.8,
+                  "median": 0,
+                  "stdDev": 9.5,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 6,
+                  "p90": 20,
+                  "min": -12,
+                  "max": 68,
+                  "count": 2000,
+                  "positiveCount": 539,
+                  "negativeCount": 17,
+                  "unchangedCount": 1444,
+                  "candidateWinRatePct": 26.95,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 4.37,
+                      "upper": 5.23,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 32.31,
+                  "median": 25.51,
+                  "stdDev": 25.08,
+                  "p10": 7.66,
+                  "p25": 13.73,
+                  "p75": 42.82,
+                  "p90": 71.83,
+                  "min": 0,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 32.54,
+                  "median": 25.9,
+                  "stdDev": 25.01,
+                  "p10": 7.89,
+                  "p25": 13.96,
+                  "p75": 42.88,
+                  "p90": 71.65,
+                  "min": 0,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 0.22,
+                  "median": 0,
+                  "stdDev": 2.55,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -50.09,
+                  "max": 51.99,
+                  "count": 2000,
+                  "positiveCount": 165,
+                  "negativeCount": 22,
+                  "unchangedCount": 1813,
+                  "candidateWinRatePct": 8.25,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0.11,
+                      "upper": 0.33,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.54,
+                "activations": 0.33,
+                "harmonyRestored": 6.64,
+                "moneySpent": 92.96,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 566,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.25,
+            "bankruptcyDeltaPct": 0,
+            "famePerGig": {
+              "control": 1548.54,
+              "candidate": 1574.81,
+              "deltaPct": 1.7,
+              "sampleSize": 1987,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 13
+            },
+            "costsMeasured": true
+          },
+          "festival_push": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1914,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 1,
+                "bothBankrupt": 85
+              },
+              "controlRatePct": 4.25,
+              "candidateRatePct": 4.3,
+              "deltaRatePct": 0.05,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 1
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.82,
+                  "median": 10,
+                  "stdDev": 0.9,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.82,
+                  "median": 10,
+                  "stdDev": 0.9,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.04,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -2,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 1,
+                  "unchangedCount": 1999,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 26236.14,
+                  "median": 26805,
+                  "stdDev": 7817.01,
+                  "p10": 19390.4,
+                  "p25": 22967.5,
+                  "p75": 30872,
+                  "p90": 34483.3,
+                  "min": 0,
+                  "max": 49188
+                },
+                "candidate": {
+                  "mean": 26283.35,
+                  "median": 26858,
+                  "stdDev": 7831.53,
+                  "p10": 19410,
+                  "p25": 23015,
+                  "p75": 30901.25,
+                  "p90": 34558.1,
+                  "min": 0,
+                  "max": 49188
+                },
+                "pairedDelta": {
+                  "mean": 47.21,
+                  "median": 0,
+                  "stdDev": 1458.96,
+                  "p10": -194.3,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -25990,
+                  "max": 22972,
+                  "count": 2000,
+                  "positiveCount": 43,
+                  "negativeCount": 234,
+                  "unchangedCount": 1723,
+                  "candidateWinRatePct": 2.15,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -16.42,
+                      "upper": 112.46,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 8584.04,
+                  "median": 8361.5,
+                  "stdDev": 4490.48,
+                  "p10": 4586.5,
+                  "p25": 6479.5,
+                  "p75": 10190.75,
+                  "p90": 11815,
+                  "min": 0,
+                  "max": 44230
+                },
+                "candidate": {
+                  "mean": 8638.33,
+                  "median": 8456.5,
+                  "stdDev": 4493.94,
+                  "p10": 4649.5,
+                  "p25": 6528.75,
+                  "p75": 10273.25,
+                  "p90": 11858,
+                  "min": 0,
+                  "max": 45334
+                },
+                "pairedDelta": {
+                  "mean": 54.28,
+                  "median": 0,
+                  "stdDev": 513.27,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 220.8,
+                  "min": -18555,
+                  "max": 4587,
+                  "count": 2000,
+                  "positiveCount": 261,
+                  "negativeCount": 15,
+                  "unchangedCount": 1724,
+                  "candidateWinRatePct": 13.05,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 29.87,
+                      "upper": 73.71,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 11703.61,
+                  "median": 11546,
+                  "stdDev": 4474.84,
+                  "p10": 8555,
+                  "p25": 9920,
+                  "p75": 13106,
+                  "p90": 14671.3,
+                  "min": 0,
+                  "max": 46950
+                },
+                "candidate": {
+                  "mean": 11763,
+                  "median": 11586.5,
+                  "stdDev": 4483.2,
+                  "p10": 8637,
+                  "p25": 10003.75,
+                  "p75": 13197,
+                  "p90": 14730.1,
+                  "min": 0,
+                  "max": 46950
+                },
+                "pairedDelta": {
+                  "mean": 59.39,
+                  "median": 0,
+                  "stdDev": 498.4,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 220.8,
+                  "min": -18565,
+                  "max": 4140,
+                  "count": 2000,
+                  "positiveCount": 268,
+                  "negativeCount": 8,
+                  "unchangedCount": 1724,
+                  "candidateWinRatePct": 13.4,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 34.45,
+                      "upper": 78.12,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 6.79,
+                  "median": 7,
+                  "stdDev": 1.74,
+                  "p10": 5,
+                  "p25": 6,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 6.79,
+                  "median": 7,
+                  "stdDev": 1.74,
+                  "p10": 5,
+                  "p25": 6,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.11,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -4,
+                  "max": 1,
+                  "count": 2000,
+                  "positiveCount": 7,
+                  "negativeCount": 1,
+                  "unchangedCount": 1992,
+                  "candidateWinRatePct": 0.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 54.03,
+                  "median": 51,
+                  "stdDev": 15.96,
+                  "p10": 35,
+                  "p25": 44,
+                  "p75": 64,
+                  "p90": 76,
+                  "min": 3,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 56.03,
+                  "median": 53,
+                  "stdDev": 14.21,
+                  "p10": 40,
+                  "p25": 46,
+                  "p75": 65,
+                  "p90": 76,
+                  "min": 17,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 2.01,
+                  "median": 0,
+                  "stdDev": 6.26,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 10,
+                  "min": -34,
+                  "max": 48,
+                  "count": 2000,
+                  "positiveCount": 258,
+                  "negativeCount": 13,
+                  "unchangedCount": 1729,
+                  "candidateWinRatePct": 12.9,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 1.72,
+                      "upper": 2.28,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 28.09,
+                  "median": 20.41,
+                  "stdDev": 23.14,
+                  "p10": 6.43,
+                  "p25": 11.26,
+                  "p75": 37.56,
+                  "p90": 62.16,
+                  "min": 0,
+                  "max": 99.93
+                },
+                "candidate": {
+                  "mean": 28.1,
+                  "median": 20.5,
+                  "stdDev": 23.11,
+                  "p10": 6.54,
+                  "p25": 11.26,
+                  "p75": 37.51,
+                  "p90": 61.99,
+                  "min": 0,
+                  "max": 99.93
+                },
+                "pairedDelta": {
+                  "mean": 0.01,
+                  "median": 0,
+                  "stdDev": 2.96,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -60.69,
+                  "max": 60.08,
+                  "count": 2000,
+                  "positiveCount": 77,
+                  "negativeCount": 14,
+                  "unchangedCount": 1909,
+                  "candidateWinRatePct": 3.85,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.13,
+                      "upper": 0.12,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.78,
+                "activations": 0.15,
+                "harmonyRestored": 3.02,
+                "moneySpent": 42.28,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 277,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.15,
+            "bankruptcyDeltaPct": 0.05,
+            "famePerGig": {
+              "control": 1728.08,
+              "candidate": 1735.74,
+              "deltaPct": 0.44,
+              "sampleSize": 1988,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 12
             },
             "costsMeasured": true
           },
@@ -33132,6 +34856,2592 @@
               "excludedPairs": 16
             },
             "costsMeasured": true
+          },
+          "cult_hypergrowth": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1950,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 0,
+                "bothBankrupt": 50
+              },
+              "controlRatePct": 2.5,
+              "candidateRatePct": 2.5,
+              "deltaRatePct": 0,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 0
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.88,
+                  "median": 10,
+                  "stdDev": 0.77,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.88,
+                  "median": 10,
+                  "stdDev": 0.77,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": 0,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 0,
+                  "unchangedCount": 2000,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 28492.97,
+                  "median": 28870,
+                  "stdDev": 7586.57,
+                  "p10": 21214.4,
+                  "p25": 24829.75,
+                  "p75": 32932.75,
+                  "p90": 37094.5,
+                  "min": 0,
+                  "max": 50447
+                },
+                "candidate": {
+                  "mean": 28523.49,
+                  "median": 28917,
+                  "stdDev": 7561.67,
+                  "p10": 21337.3,
+                  "p25": 24882.25,
+                  "p75": 32969,
+                  "p90": 37048.9,
+                  "min": 0,
+                  "max": 50014
+                },
+                "pairedDelta": {
+                  "mean": 30.52,
+                  "median": 0,
+                  "stdDev": 1460.18,
+                  "p10": -199.1,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -16347,
+                  "max": 26862,
+                  "count": 2000,
+                  "positiveCount": 42,
+                  "negativeCount": 245,
+                  "unchangedCount": 1713,
+                  "candidateWinRatePct": 2.1,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -32.17,
+                      "upper": 95.77,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 8809.46,
+                  "median": 8552.5,
+                  "stdDev": 4044.6,
+                  "p10": 5153,
+                  "p25": 6931.5,
+                  "p75": 10295.5,
+                  "p90": 11890.5,
+                  "min": 0,
+                  "max": 43454
+                },
+                "candidate": {
+                  "mean": 8891.52,
+                  "median": 8643,
+                  "stdDev": 4040.34,
+                  "p10": 5260,
+                  "p25": 7019,
+                  "p75": 10386,
+                  "p90": 11983.6,
+                  "min": 0,
+                  "max": 43454
+                },
+                "pairedDelta": {
+                  "mean": 82.06,
+                  "median": 0,
+                  "stdDev": 454.09,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 280,
+                  "min": -5530,
+                  "max": 7950,
+                  "count": 2000,
+                  "positiveCount": 263,
+                  "negativeCount": 21,
+                  "unchangedCount": 1716,
+                  "candidateWinRatePct": 13.15,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 62.56,
+                      "upper": 102.92,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 11974.81,
+                  "median": 11797.5,
+                  "stdDev": 4017.27,
+                  "p10": 8924.5,
+                  "p25": 10449.5,
+                  "p75": 13170,
+                  "p90": 14671,
+                  "min": 0,
+                  "max": 47054
+                },
+                "candidate": {
+                  "mean": 12065.97,
+                  "median": 11887.5,
+                  "stdDev": 4019.89,
+                  "p10": 9050.5,
+                  "p25": 10542.5,
+                  "p75": 13255.75,
+                  "p90": 14706,
+                  "min": 0,
+                  "max": 47054
+                },
+                "pairedDelta": {
+                  "mean": 91.17,
+                  "median": 0,
+                  "stdDev": 432.71,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 280,
+                  "min": -5800,
+                  "max": 8085,
+                  "count": 2000,
+                  "positiveCount": 277,
+                  "negativeCount": 7,
+                  "unchangedCount": 1716,
+                  "candidateWinRatePct": 13.85,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 73.22,
+                      "upper": 110,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 7.37,
+                  "median": 8,
+                  "stdDev": 1.61,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 7.37,
+                  "median": 8,
+                  "stdDev": 1.61,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.09,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -1,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 6,
+                  "negativeCount": 6,
+                  "unchangedCount": 1988,
+                  "candidateWinRatePct": 0.3,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 54.46,
+                  "median": 52,
+                  "stdDev": 16.14,
+                  "p10": 35,
+                  "p25": 44,
+                  "p75": 65,
+                  "p90": 76,
+                  "min": 4,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 56.68,
+                  "median": 54,
+                  "stdDev": 14.28,
+                  "p10": 41,
+                  "p25": 47,
+                  "p75": 65,
+                  "p90": 77,
+                  "min": 16,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 2.21,
+                  "median": 0,
+                  "stdDev": 6.56,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 11,
+                  "min": -15,
+                  "max": 52,
+                  "count": 2000,
+                  "positiveCount": 267,
+                  "negativeCount": 12,
+                  "unchangedCount": 1721,
+                  "candidateWinRatePct": 13.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 1.93,
+                      "upper": 2.53,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 24.16,
+                  "median": 16.89,
+                  "stdDev": 21.32,
+                  "p10": 5.2,
+                  "p25": 8.74,
+                  "p75": 33.19,
+                  "p90": 53.93,
+                  "min": 0,
+                  "max": 99.85
+                },
+                "candidate": {
+                  "mean": 24.12,
+                  "median": 16.88,
+                  "stdDev": 21.27,
+                  "p10": 5.21,
+                  "p25": 8.86,
+                  "p75": 32.81,
+                  "p90": 53.88,
+                  "min": 0,
+                  "max": 99.85
+                },
+                "pairedDelta": {
+                  "mean": -0.04,
+                  "median": 0,
+                  "stdDev": 3.15,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -53.03,
+                  "max": 51.29,
+                  "count": 2000,
+                  "positiveCount": 87,
+                  "negativeCount": 14,
+                  "unchangedCount": 1899,
+                  "candidateWinRatePct": 4.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.18,
+                      "upper": 0.09,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.86,
+                "activations": 0.16,
+                "harmonyRestored": 3.11,
+                "moneySpent": 43.54,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 287,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.15,
+            "bankruptcyDeltaPct": 0,
+            "famePerGig": {
+              "control": 1630.24,
+              "candidate": 1641.66,
+              "deltaPct": 0.7,
+              "sampleSize": 1981,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 19
+            },
+            "costsMeasured": true
+          },
+          "no_social_probe": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1925,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 1,
+                "bothBankrupt": 74
+              },
+              "controlRatePct": 3.7,
+              "candidateRatePct": 3.75,
+              "deltaRatePct": 0.05,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 1
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.84,
+                  "median": 10,
+                  "stdDev": 0.86,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.84,
+                  "median": 10,
+                  "stdDev": 0.86,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 3,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.07,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -3,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 1,
+                  "unchangedCount": 1999,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 24739.54,
+                  "median": 25554,
+                  "stdDev": 6869.38,
+                  "p10": 18896.6,
+                  "p25": 22621.25,
+                  "p75": 28425,
+                  "p90": 31702.7,
+                  "min": 0,
+                  "max": 41334
+                },
+                "candidate": {
+                  "mean": 24702.48,
+                  "median": 25530,
+                  "stdDev": 6918.08,
+                  "p10": 18869.8,
+                  "p25": 22620.5,
+                  "p75": 28413.5,
+                  "p90": 31710.9,
+                  "min": 0,
+                  "max": 41141
+                },
+                "pairedDelta": {
+                  "mean": -37.06,
+                  "median": 0,
+                  "stdDev": 1480.01,
+                  "p10": -247.1,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -26705,
+                  "max": 23345,
+                  "count": 2000,
+                  "positiveCount": 79,
+                  "negativeCount": 447,
+                  "unchangedCount": 1474,
+                  "candidateWinRatePct": 3.95,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -102.47,
+                      "upper": 27.68,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 8289.44,
+                  "median": 8030,
+                  "stdDev": 4203.42,
+                  "p10": 4609.8,
+                  "p25": 6290,
+                  "p75": 9631.25,
+                  "p90": 11290,
+                  "min": 0,
+                  "max": 40752
+                },
+                "candidate": {
+                  "mean": 8471.74,
+                  "median": 8213.5,
+                  "stdDev": 4277.16,
+                  "p10": 4830,
+                  "p25": 6512.25,
+                  "p75": 9817.75,
+                  "p90": 11424.7,
+                  "min": 0,
+                  "max": 40752
+                },
+                "pairedDelta": {
+                  "mean": 182.3,
+                  "median": 0,
+                  "stdDev": 601.96,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 520,
+                  "min": -2350,
+                  "max": 10710,
+                  "count": 2000,
+                  "positiveCount": 497,
+                  "negativeCount": 24,
+                  "unchangedCount": 1479,
+                  "candidateWinRatePct": 24.85,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 156.85,
+                      "upper": 209.81,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 11375.67,
+                  "median": 11205,
+                  "stdDev": 4238.62,
+                  "p10": 8361,
+                  "p25": 9798.75,
+                  "p75": 12516.25,
+                  "p90": 13892.3,
+                  "min": 0,
+                  "max": 46152
+                },
+                "candidate": {
+                  "mean": 11549.52,
+                  "median": 11348,
+                  "stdDev": 4310.07,
+                  "p10": 8554.5,
+                  "p25": 9990,
+                  "p75": 12670.25,
+                  "p90": 13995.5,
+                  "min": 0,
+                  "max": 46152
+                },
+                "pairedDelta": {
+                  "mean": 173.84,
+                  "median": 0,
+                  "stdDev": 556.45,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 80,
+                  "p90": 520.3,
+                  "min": -2805,
+                  "max": 12250,
+                  "count": 2000,
+                  "positiveCount": 511,
+                  "negativeCount": 10,
+                  "unchangedCount": 1479,
+                  "candidateWinRatePct": 25.55,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 150.69,
+                      "upper": 199,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 7.34,
+                  "median": 8,
+                  "stdDev": 1.71,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 7.34,
+                  "median": 8,
+                  "stdDev": 1.71,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.11,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -4,
+                  "max": 1,
+                  "count": 2000,
+                  "positiveCount": 5,
+                  "negativeCount": 5,
+                  "unchangedCount": 1990,
+                  "candidateWinRatePct": 0.25,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.01,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 45.85,
+                  "median": 45,
+                  "stdDev": 14.91,
+                  "p10": 28,
+                  "p25": 37,
+                  "p75": 53,
+                  "p90": 65,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 50.24,
+                  "median": 49,
+                  "stdDev": 11.9,
+                  "p10": 37,
+                  "p25": 43,
+                  "p75": 56,
+                  "p90": 66,
+                  "min": 19,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 4.39,
+                  "median": 0,
+                  "stdDev": 8.77,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 3,
+                  "p90": 20,
+                  "min": -14,
+                  "max": 56,
+                  "count": 2000,
+                  "positiveCount": 509,
+                  "negativeCount": 7,
+                  "unchangedCount": 1484,
+                  "candidateWinRatePct": 25.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 4.02,
+                      "upper": 4.76,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 25.25,
+                  "median": 18.54,
+                  "stdDev": 21.14,
+                  "p10": 5.97,
+                  "p25": 10.72,
+                  "p75": 33.26,
+                  "p90": 53.4,
+                  "min": 0,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 25.41,
+                  "median": 18.9,
+                  "stdDev": 21.15,
+                  "p10": 6.01,
+                  "p25": 10.92,
+                  "p75": 33.41,
+                  "p90": 53.54,
+                  "min": 0,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 0.17,
+                  "median": 0,
+                  "stdDev": 2.26,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -41.87,
+                  "max": 58.52,
+                  "count": 2000,
+                  "positiveCount": 116,
+                  "negativeCount": 17,
+                  "unchangedCount": 1867,
+                  "candidateWinRatePct": 5.8,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0.08,
+                      "upper": 0.27,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.8,
+                "activations": 0.29,
+                "harmonyRestored": 5.82,
+                "moneySpent": 81.48,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 526,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": -0.05,
+            "bankruptcyDeltaPct": 0.05,
+            "famePerGig": {
+              "control": 1559.79,
+              "candidate": 1581.51,
+              "deltaPct": 1.39,
+              "sampleSize": 1992,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 8
+            },
+            "costsMeasured": true
+          },
+          "high_controversy_probe": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1483,
+                "controlOnlyBankrupt": 1,
+                "candidateOnlyBankrupt": 19,
+                "bothBankrupt": 497
+              },
+              "controlRatePct": 24.9,
+              "candidateRatePct": 25.8,
+              "deltaRatePct": 0.9,
+              "netRecoveredRuns": 1,
+              "netHarmedRuns": 19
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 8.87,
+                  "median": 10,
+                  "stdDev": 2.14,
+                  "p10": 5,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 8.85,
+                  "median": 10,
+                  "stdDev": 2.15,
+                  "p10": 5,
+                  "p25": 9,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": -0.02,
+                  "median": 0,
+                  "stdDev": 0.29,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -7,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 1,
+                  "negativeCount": 22,
+                  "unchangedCount": 1977,
+                  "candidateWinRatePct": 0.05,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.04,
+                      "upper": -0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 14558.95,
+                  "median": 18433.5,
+                  "stdDev": 10824.23,
+                  "p10": 0,
+                  "p25": 11,
+                  "p75": 23429,
+                  "p90": 27003.9,
+                  "min": 0,
+                  "max": 37604
+                },
+                "candidate": {
+                  "mean": 14600.76,
+                  "median": 18681,
+                  "stdDev": 10862.03,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 23440.5,
+                  "p90": 27012.9,
+                  "min": 0,
+                  "max": 38275
+                },
+                "pairedDelta": {
+                  "mean": 41.81,
+                  "median": 0,
+                  "stdDev": 2852.27,
+                  "p10": -267.1,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 16.5,
+                  "min": -25996,
+                  "max": 20206,
+                  "count": 2000,
+                  "positiveCount": 208,
+                  "negativeCount": 448,
+                  "unchangedCount": 1344,
+                  "candidateWinRatePct": 10.4,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -81.99,
+                      "upper": 162.93,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 6052.43,
+                  "median": 6256,
+                  "stdDev": 3798.45,
+                  "p10": 950,
+                  "p25": 3470,
+                  "p75": 8321.5,
+                  "p90": 9920,
+                  "min": 0,
+                  "max": 39890
+                },
+                "candidate": {
+                  "mean": 6319.13,
+                  "median": 6593,
+                  "stdDev": 3952.44,
+                  "p10": 950,
+                  "p25": 3650,
+                  "p75": 8651.25,
+                  "p90": 10220.5,
+                  "min": 0,
+                  "max": 40410
+                },
+                "pairedDelta": {
+                  "mean": 266.7,
+                  "median": 0,
+                  "stdDev": 973.66,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 200,
+                  "p90": 831,
+                  "min": -9192,
+                  "max": 13992,
+                  "count": 2000,
+                  "positiveCount": 582,
+                  "negativeCount": 65,
+                  "unchangedCount": 1353,
+                  "candidateWinRatePct": 29.1,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 224.31,
+                      "upper": 310.6,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 8698.47,
+                  "median": 9647.5,
+                  "stdDev": 4344.75,
+                  "p10": 1695,
+                  "p25": 6525,
+                  "p75": 11256.25,
+                  "p90": 12662.4,
+                  "min": 0,
+                  "max": 41173
+                },
+                "candidate": {
+                  "mean": 8958.14,
+                  "median": 10040.5,
+                  "stdDev": 4513.73,
+                  "p10": 1694.6,
+                  "p25": 6586.25,
+                  "p75": 11616.25,
+                  "p90": 12930.6,
+                  "min": 0,
+                  "max": 41693
+                },
+                "pairedDelta": {
+                  "mean": 259.67,
+                  "median": 0,
+                  "stdDev": 933.06,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 240,
+                  "p90": 840,
+                  "min": -14440,
+                  "max": 13964,
+                  "count": 2000,
+                  "positiveCount": 608,
+                  "negativeCount": 34,
+                  "unchangedCount": 1358,
+                  "candidateWinRatePct": 30.4,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 218.14,
+                      "upper": 300.63,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 5.98,
+                  "median": 7,
+                  "stdDev": 2.73,
+                  "p10": 1,
+                  "p25": 5,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 5.97,
+                  "median": 7,
+                  "stdDev": 2.75,
+                  "p10": 1,
+                  "p25": 4,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": -0.01,
+                  "median": 0,
+                  "stdDev": 0.38,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -5,
+                  "max": 4,
+                  "count": 2000,
+                  "positiveCount": 50,
+                  "negativeCount": 36,
+                  "unchangedCount": 1914,
+                  "candidateWinRatePct": 2.5,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.03,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 43.96,
+                  "median": 45,
+                  "stdDev": 16.44,
+                  "p10": 22,
+                  "p25": 34,
+                  "p75": 55,
+                  "p90": 65,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 50.17,
+                  "median": 49,
+                  "stdDev": 11.4,
+                  "p10": 36,
+                  "p25": 43,
+                  "p75": 57,
+                  "p90": 65,
+                  "min": 14,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 6.22,
+                  "median": 0,
+                  "stdDev": 11.1,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 11,
+                  "p90": 20,
+                  "min": -16,
+                  "max": 59,
+                  "count": 2000,
+                  "positiveCount": 648,
+                  "negativeCount": 18,
+                  "unchangedCount": 1334,
+                  "candidateWinRatePct": 32.4,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 5.76,
+                      "upper": 6.72,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 46.39,
+                  "median": 36.22,
+                  "stdDev": 30.41,
+                  "p10": 11.56,
+                  "p25": 21.95,
+                  "p75": 77.52,
+                  "p90": 94.61,
+                  "min": 0,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 47.14,
+                  "median": 37.21,
+                  "stdDev": 30.42,
+                  "p10": 12.18,
+                  "p25": 22.63,
+                  "p75": 79.4,
+                  "p90": 94.76,
+                  "min": 0,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 0.75,
+                  "median": 0,
+                  "stdDev": 4.9,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0.56,
+                  "min": -40.95,
+                  "max": 57.95,
+                  "count": 2000,
+                  "positiveCount": 222,
+                  "negativeCount": 44,
+                  "unchangedCount": 1734,
+                  "candidateWinRatePct": 11.1,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0.54,
+                      "upper": 0.97,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 8.59,
+                "activations": 0.42,
+                "harmonyRestored": 8.41,
+                "moneySpent": 117.74,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 669,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.8,
+            "bankruptcyDeltaPct": 0.9,
+            "famePerGig": {
+              "control": 1491.67,
+              "candidate": 1526.56,
+              "deltaPct": 2.34,
+              "sampleSize": 1985,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 15
+            },
+            "costsMeasured": true
+          },
+          "early_game_probe": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1892,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 4,
+                "bothBankrupt": 104
+              },
+              "controlRatePct": 5.2,
+              "candidateRatePct": 5.4,
+              "deltaRatePct": 0.2,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 4
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.76,
+                  "median": 10,
+                  "stdDev": 1.06,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.75,
+                  "median": 10,
+                  "stdDev": 1.08,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": -0.01,
+                  "median": 0,
+                  "stdDev": 0.16,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -4,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 6,
+                  "unchangedCount": 1994,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.02,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 24401,
+                  "median": 25563.5,
+                  "stdDev": 7556.98,
+                  "p10": 17886.4,
+                  "p25": 22355.5,
+                  "p75": 28719.5,
+                  "p90": 31629,
+                  "min": 0,
+                  "max": 42726
+                },
+                "candidate": {
+                  "mean": 24310.4,
+                  "median": 25563,
+                  "stdDev": 7603.11,
+                  "p10": 17853.9,
+                  "p25": 22311.25,
+                  "p75": 28644.5,
+                  "p90": 31416.4,
+                  "min": 0,
+                  "max": 42726
+                },
+                "pairedDelta": {
+                  "mean": -90.6,
+                  "median": 0,
+                  "stdDev": 2086.35,
+                  "p10": -268,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -34901,
+                  "max": 24313,
+                  "count": 2000,
+                  "positiveCount": 132,
+                  "negativeCount": 495,
+                  "unchangedCount": 1373,
+                  "candidateWinRatePct": 6.6,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -183.1,
+                      "upper": -1.26,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 7928.83,
+                  "median": 7844,
+                  "stdDev": 4057.5,
+                  "p10": 3970,
+                  "p25": 5985,
+                  "p75": 9456.5,
+                  "p90": 11175,
+                  "min": 0,
+                  "max": 41841
+                },
+                "candidate": {
+                  "mean": 8142.33,
+                  "median": 8031,
+                  "stdDev": 4141.14,
+                  "p10": 4130,
+                  "p25": 6227.25,
+                  "p75": 9701,
+                  "p90": 11365,
+                  "min": 0,
+                  "max": 41841
+                },
+                "pairedDelta": {
+                  "mean": 213.5,
+                  "median": 0,
+                  "stdDev": 731.83,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 160,
+                  "p90": 700,
+                  "min": -6380,
+                  "max": 10602,
+                  "count": 2000,
+                  "positiveCount": 582,
+                  "negativeCount": 43,
+                  "unchangedCount": 1375,
+                  "candidateWinRatePct": 29.1,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 182.71,
+                      "upper": 245.3,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 10969.26,
+                  "median": 10923,
+                  "stdDev": 4113.61,
+                  "p10": 7850,
+                  "p25": 9537.5,
+                  "p75": 12380,
+                  "p90": 13945.3,
+                  "min": 0,
+                  "max": 44011
+                },
+                "candidate": {
+                  "mean": 11183.07,
+                  "median": 11127,
+                  "stdDev": 4203.97,
+                  "p10": 8178,
+                  "p25": 9785,
+                  "p75": 12590,
+                  "p90": 14120,
+                  "min": 0,
+                  "max": 44011
+                },
+                "pairedDelta": {
+                  "mean": 213.8,
+                  "median": 0,
+                  "stdDev": 690.55,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 220,
+                  "p90": 692.8,
+                  "min": -5920,
+                  "max": 9992,
+                  "count": 2000,
+                  "positiveCount": 600,
+                  "negativeCount": 23,
+                  "unchangedCount": 1377,
+                  "candidateWinRatePct": 30,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 184.98,
+                      "upper": 244.9,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 7.22,
+                  "median": 7,
+                  "stdDev": 1.91,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 7.21,
+                  "median": 7,
+                  "stdDev": 1.92,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 0,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.21,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -5,
+                  "max": 1,
+                  "count": 2000,
+                  "positiveCount": 13,
+                  "negativeCount": 11,
+                  "unchangedCount": 1976,
+                  "candidateWinRatePct": 0.65,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.01,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 44.04,
+                  "median": 44,
+                  "stdDev": 16.12,
+                  "p10": 23,
+                  "p25": 34,
+                  "p75": 53,
+                  "p90": 64,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 49.62,
+                  "median": 49,
+                  "stdDev": 12.22,
+                  "p10": 35,
+                  "p25": 42,
+                  "p75": 56,
+                  "p90": 66,
+                  "min": 12,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 5.58,
+                  "median": 0,
+                  "stdDev": 10.45,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 10,
+                  "p90": 20,
+                  "min": -20,
+                  "max": 61,
+                  "count": 2000,
+                  "positiveCount": 604,
+                  "negativeCount": 15,
+                  "unchangedCount": 1381,
+                  "candidateWinRatePct": 30.2,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 5.16,
+                      "upper": 6.07,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 26.52,
+                  "median": 19.1,
+                  "stdDev": 23.09,
+                  "p10": 5.56,
+                  "p25": 10.51,
+                  "p75": 34.55,
+                  "p90": 57.97,
+                  "min": 0,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 26.85,
+                  "median": 19.31,
+                  "stdDev": 23.18,
+                  "p10": 5.91,
+                  "p25": 10.79,
+                  "p75": 35.18,
+                  "p90": 58.35,
+                  "min": 0,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 0.33,
+                  "median": 0,
+                  "stdDev": 2.66,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -32.42,
+                  "max": 46.89,
+                  "count": 2000,
+                  "positiveCount": 164,
+                  "negativeCount": 29,
+                  "unchangedCount": 1807,
+                  "candidateWinRatePct": 8.2,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0.23,
+                      "upper": 0.46,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.7,
+                "activations": 0.37,
+                "harmonyRestored": 7.37,
+                "moneySpent": 103.18,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 630,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": -0.05,
+            "bankruptcyDeltaPct": 0.2,
+            "famePerGig": {
+              "control": 1528.96,
+              "candidate": 1556.57,
+              "deltaPct": 1.81,
+              "sampleSize": 1979,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 21
+            },
+            "costsMeasured": true
+          },
+          "mid_game_probe": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1986,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 0,
+                "bothBankrupt": 14
+              },
+              "controlRatePct": 0.7,
+              "candidateRatePct": 0.7,
+              "deltaRatePct": 0,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 0
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.98,
+                  "median": 10,
+                  "stdDev": 0.28,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 4,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.98,
+                  "median": 10,
+                  "stdDev": 0.28,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 4,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.02,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -1,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 1,
+                  "unchangedCount": 1999,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 26852.98,
+                  "median": 26982,
+                  "stdDev": 5901.45,
+                  "p10": 20637,
+                  "p25": 23664.25,
+                  "p75": 30332,
+                  "p90": 33659.4,
+                  "min": 0,
+                  "max": 43995
+                },
+                "candidate": {
+                  "mean": 26777.59,
+                  "median": 26899,
+                  "stdDev": 5967.4,
+                  "p10": 20564.4,
+                  "p25": 23611,
+                  "p75": 30257,
+                  "p90": 33742.8,
+                  "min": 0,
+                  "max": 43995
+                },
+                "pairedDelta": {
+                  "mean": -75.39,
+                  "median": 0,
+                  "stdDev": 1970.96,
+                  "p10": -268,
+                  "p25": -67.5,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -27805,
+                  "max": 21236,
+                  "count": 2000,
+                  "positiveCount": 86,
+                  "negativeCount": 513,
+                  "unchangedCount": 1401,
+                  "candidateWinRatePct": 4.3,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -162.55,
+                      "upper": 3.4,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 8207.95,
+                  "median": 7930,
+                  "stdDev": 3861.5,
+                  "p10": 4696.8,
+                  "p25": 6190,
+                  "p75": 9510.75,
+                  "p90": 11146.8,
+                  "min": 60,
+                  "max": 42146
+                },
+                "candidate": {
+                  "mean": 8412.59,
+                  "median": 8088.5,
+                  "stdDev": 3918.77,
+                  "p10": 4879.5,
+                  "p25": 6429.25,
+                  "p75": 9676.75,
+                  "p90": 11250.2,
+                  "min": 60,
+                  "max": 42846
+                },
+                "pairedDelta": {
+                  "mean": 204.64,
+                  "median": 0,
+                  "stdDev": 929.51,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 140,
+                  "p90": 660,
+                  "min": -8609,
+                  "max": 27082,
+                  "count": 2000,
+                  "positiveCount": 560,
+                  "negativeCount": 37,
+                  "unchangedCount": 1403,
+                  "candidateWinRatePct": 28,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 167.63,
+                      "upper": 248.57,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 11468.55,
+                  "median": 11170,
+                  "stdDev": 3687.88,
+                  "p10": 8520.4,
+                  "p25": 9870,
+                  "p75": 12505,
+                  "p90": 13751.9,
+                  "min": 1325,
+                  "max": 45116
+                },
+                "candidate": {
+                  "mean": 11677.99,
+                  "median": 11390,
+                  "stdDev": 3745.56,
+                  "p10": 8700.9,
+                  "p25": 10028.75,
+                  "p75": 12688.5,
+                  "p90": 13889.7,
+                  "min": 1325,
+                  "max": 45816
+                },
+                "pairedDelta": {
+                  "mean": 209.44,
+                  "median": 0,
+                  "stdDev": 882.95,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 140,
+                  "p90": 680,
+                  "min": -8169,
+                  "max": 26485,
+                  "count": 2000,
+                  "positiveCount": 578,
+                  "negativeCount": 18,
+                  "unchangedCount": 1404,
+                  "candidateWinRatePct": 28.9,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 175.48,
+                      "upper": 252.95,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 7.46,
+                  "median": 8,
+                  "stdDev": 1.3,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 1,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 7.46,
+                  "median": 8,
+                  "stdDev": 1.31,
+                  "p10": 6,
+                  "p25": 7,
+                  "p75": 8,
+                  "p90": 9,
+                  "min": 1,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.12,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -2,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 9,
+                  "negativeCount": 9,
+                  "unchangedCount": 1982,
+                  "candidateWinRatePct": 0.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 45.32,
+                  "median": 45,
+                  "stdDev": 14.81,
+                  "p10": 27,
+                  "p25": 36,
+                  "p75": 53,
+                  "p90": 64,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 49.98,
+                  "median": 49,
+                  "stdDev": 11.74,
+                  "p10": 36,
+                  "p25": 43,
+                  "p75": 56,
+                  "p90": 65,
+                  "min": 3,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 4.66,
+                  "median": 0,
+                  "stdDev": 9.19,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 6.25,
+                  "p90": 20,
+                  "min": -25,
+                  "max": 61,
+                  "count": 2000,
+                  "positiveCount": 569,
+                  "negativeCount": 23,
+                  "unchangedCount": 1408,
+                  "candidateWinRatePct": 28.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 4.27,
+                      "upper": 5.07,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 21.19,
+                  "median": 14.89,
+                  "stdDev": 18.26,
+                  "p10": 5.53,
+                  "p25": 8.6,
+                  "p75": 27.46,
+                  "p90": 47.86,
+                  "min": 0,
+                  "max": 99.34
+                },
+                "candidate": {
+                  "mean": 21.38,
+                  "median": 15.31,
+                  "stdDev": 18.23,
+                  "p10": 5.75,
+                  "p25": 8.82,
+                  "p75": 27.58,
+                  "p90": 47.86,
+                  "min": 0,
+                  "max": 99.1
+                },
+                "pairedDelta": {
+                  "mean": 0.19,
+                  "median": 0,
+                  "stdDev": 3.57,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0.03,
+                  "min": -60.71,
+                  "max": 49.47,
+                  "count": 2000,
+                  "positiveCount": 207,
+                  "negativeCount": 27,
+                  "unchangedCount": 1766,
+                  "candidateWinRatePct": 10.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0.03,
+                      "upper": 0.35,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.97,
+                "activations": 0.34,
+                "harmonyRestored": 6.82,
+                "moneySpent": 95.48,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 601,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": -0.15,
+            "bankruptcyDeltaPct": 0,
+            "famePerGig": {
+              "control": 1543.17,
+              "candidate": 1569.31,
+              "deltaPct": 1.69,
+              "sampleSize": 2000,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 0
+            },
+            "costsMeasured": true
+          },
+          "late_game_probe": {
+            "sampleSize": 2000,
+            "bankruptcy": {
+              "bankruptcyTransitions": {
+                "bothSolvent": 1996,
+                "controlOnlyBankrupt": 0,
+                "candidateOnlyBankrupt": 0,
+                "bothBankrupt": 4
+              },
+              "controlRatePct": 0.2,
+              "candidateRatePct": 0.2,
+              "deltaRatePct": 0,
+              "netRecoveredRuns": 0,
+              "netHarmedRuns": 0
+            },
+            "continuous": {
+              "daysSurvived": {
+                "control": {
+                  "mean": 9.99,
+                  "median": 10,
+                  "stdDev": 0.13,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 6,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 9.99,
+                  "median": 10,
+                  "stdDev": 0.13,
+                  "p10": 10,
+                  "p25": 10,
+                  "p75": 10,
+                  "p90": 10,
+                  "min": 6,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": 0,
+                  "max": 0,
+                  "count": 2000,
+                  "positiveCount": 0,
+                  "negativeCount": 0,
+                  "unchangedCount": 2000,
+                  "candidateWinRatePct": 0,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalMoney": {
+                "control": {
+                  "mean": 30218.38,
+                  "median": 30050,
+                  "stdDev": 7182.1,
+                  "p10": 21802.9,
+                  "p25": 25231,
+                  "p75": 34811.75,
+                  "p90": 39571.3,
+                  "min": 0,
+                  "max": 54919
+                },
+                "candidate": {
+                  "mean": 30201.31,
+                  "median": 30020,
+                  "stdDev": 7154.8,
+                  "p10": 21866.5,
+                  "p25": 25234,
+                  "p75": 34804.75,
+                  "p90": 39483.4,
+                  "min": 0,
+                  "max": 54919
+                },
+                "pairedDelta": {
+                  "mean": -17.07,
+                  "median": 0,
+                  "stdDev": 1971.75,
+                  "p10": -237,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -30778,
+                  "max": 26107,
+                  "count": 2000,
+                  "positiveCount": 59,
+                  "negativeCount": 317,
+                  "unchangedCount": 1624,
+                  "candidateWinRatePct": 2.95,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -102.97,
+                      "upper": 70.16,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalFame": {
+                "control": {
+                  "mean": 10620.32,
+                  "median": 10250,
+                  "stdDev": 4352.71,
+                  "p10": 7049.7,
+                  "p25": 8535,
+                  "p75": 11879.25,
+                  "p90": 13450.6,
+                  "min": 2375,
+                  "max": 45327
+                },
+                "candidate": {
+                  "mean": 10769.7,
+                  "median": 10435,
+                  "stdDev": 4358.96,
+                  "p10": 7205,
+                  "p25": 8654,
+                  "p75": 11973,
+                  "p90": 13545.1,
+                  "min": 2375,
+                  "max": 45327
+                },
+                "pairedDelta": {
+                  "mean": 149.38,
+                  "median": 0,
+                  "stdDev": 559.14,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 484.7,
+                  "min": -1790,
+                  "max": 9152,
+                  "count": 2000,
+                  "positiveCount": 353,
+                  "negativeCount": 21,
+                  "unchangedCount": 1626,
+                  "candidateWinRatePct": 17.65,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 126.11,
+                      "upper": 174.61,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "fameEarned": {
+                "control": {
+                  "mean": 13787.43,
+                  "median": 13384.5,
+                  "stdDev": 4089.21,
+                  "p10": 10848.6,
+                  "p25": 12062.75,
+                  "p75": 14680,
+                  "p90": 15855.5,
+                  "min": 3161,
+                  "max": 46959
+                },
+                "candidate": {
+                  "mean": 13929.3,
+                  "median": 13535.5,
+                  "stdDev": 4089.38,
+                  "p10": 10970,
+                  "p25": 12240,
+                  "p75": 14770,
+                  "p90": 15910.1,
+                  "min": 3161,
+                  "max": 46959
+                },
+                "pairedDelta": {
+                  "mean": 141.88,
+                  "median": 0,
+                  "stdDev": 491.22,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 482,
+                  "min": -1475,
+                  "max": 9120,
+                  "count": 2000,
+                  "positiveCount": 364,
+                  "negativeCount": 9,
+                  "unchangedCount": 1627,
+                  "candidateWinRatePct": 18.2,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 120.02,
+                      "upper": 164.59,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "gigsPlayed": {
+                "control": {
+                  "mean": 8.54,
+                  "median": 9,
+                  "stdDev": 1.09,
+                  "p10": 7,
+                  "p25": 8,
+                  "p75": 9,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "candidate": {
+                  "mean": 8.55,
+                  "median": 9,
+                  "stdDev": 1.09,
+                  "p10": 7,
+                  "p25": 8,
+                  "p75": 9,
+                  "p90": 10,
+                  "min": 2,
+                  "max": 10
+                },
+                "pairedDelta": {
+                  "mean": 0,
+                  "median": 0,
+                  "stdDev": 0.1,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -1,
+                  "max": 2,
+                  "count": 2000,
+                  "positiveCount": 9,
+                  "negativeCount": 8,
+                  "unchangedCount": 1983,
+                  "candidateWinRatePct": 0.45,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 0,
+                      "upper": 0.01,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "finalHarmony": {
+                "control": {
+                  "mean": 54.11,
+                  "median": 52,
+                  "stdDev": 17.4,
+                  "p10": 33,
+                  "p25": 43,
+                  "p75": 66,
+                  "p90": 78,
+                  "min": 1,
+                  "max": 100
+                },
+                "candidate": {
+                  "mean": 57.15,
+                  "median": 55,
+                  "stdDev": 14.99,
+                  "p10": 40,
+                  "p25": 46,
+                  "p75": 67,
+                  "p90": 78,
+                  "min": 17,
+                  "max": 100
+                },
+                "pairedDelta": {
+                  "mean": 3.03,
+                  "median": 0,
+                  "stdDev": 7.94,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 15,
+                  "min": -32,
+                  "max": 60,
+                  "count": 2000,
+                  "positiveCount": 360,
+                  "negativeCount": 13,
+                  "unchangedCount": 1627,
+                  "candidateWinRatePct": 18,
+                  "confidence95": {
+                    "mean": {
+                      "lower": 2.67,
+                      "upper": 3.38,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              },
+              "maxDrawdownPct": {
+                "control": {
+                  "mean": 21.72,
+                  "median": 12.95,
+                  "stdDev": 20.96,
+                  "p10": 2.48,
+                  "p25": 5.05,
+                  "p75": 34.74,
+                  "p90": 53.18,
+                  "min": 0,
+                  "max": 99.68
+                },
+                "candidate": {
+                  "mean": 21.63,
+                  "median": 13.05,
+                  "stdDev": 20.89,
+                  "p10": 2.51,
+                  "p25": 5.06,
+                  "p75": 34.43,
+                  "p90": 52.99,
+                  "min": 0,
+                  "max": 99.68
+                },
+                "pairedDelta": {
+                  "mean": -0.09,
+                  "median": 0,
+                  "stdDev": 3.69,
+                  "p10": 0,
+                  "p25": 0,
+                  "p75": 0,
+                  "p90": 0,
+                  "min": -57.87,
+                  "max": 49.51,
+                  "count": 2000,
+                  "positiveCount": 127,
+                  "negativeCount": 35,
+                  "unchangedCount": 1838,
+                  "candidateWinRatePct": 6.35,
+                  "confidence95": {
+                    "mean": {
+                      "lower": -0.26,
+                      "upper": 0.07,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    },
+                    "median": {
+                      "lower": 0,
+                      "upper": 0,
+                      "method": "paired-bootstrap",
+                      "resamples": 2000
+                    }
+                  }
+                }
+              }
+            },
+            "harmonyRecovery": {
+              "control": {
+                "evaluations": 0,
+                "activations": 0,
+                "harmonyRestored": 0,
+                "moneySpent": 0,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              },
+              "candidate": {
+                "evaluations": 9.99,
+                "activations": 0.21,
+                "harmonyRestored": 4.26,
+                "moneySpent": 59.64,
+                "daysConsumed": 0,
+                "gigOpportunitiesForgone": 0
+              }
+            },
+            "activationEvidence": {
+              "activationRuns": 376,
+              "minimumActivationRuns": 100
+            },
+            "harmonyMedianDelta": 0,
+            "finaleCompletedDeltaPct": 0.1,
+            "bankruptcyDeltaPct": 0,
+            "famePerGig": {
+              "control": 1616.9,
+              "candidate": 1632.73,
+              "deltaPct": 0.98,
+              "sampleSize": 2000,
+              "minimumSampleSize": 1000,
+              "sufficientEvidence": true,
+              "excludedPairs": 0
+            },
+            "costsMeasured": true
           }
         },
         "aggregateResults": {
@@ -33146,14 +37456,14 @@
             },
             "candidate": {
               "evaluations": 9.7,
-              "activations": 0.58,
-              "harmonyRestored": 11.73,
-              "moneySpent": 164.22,
+              "activations": 0.32,
+              "harmonyRestored": 6.51,
+              "moneySpent": 91.09,
               "daysConsumed": 0,
               "gigOpportunitiesForgone": 0
             }
           },
-          "meanHarmonyMedianDelta": 3
+          "meanHarmonyMedianDelta": 0.5
         },
         "acceptance": {
           "passed": true,
@@ -33166,6 +37476,16 @@
             "famePerGig": true,
             "costsMeasured": true
           }
+        }
+      },
+      "globalSafety": {
+        "passed": false,
+        "checks": {
+          "completeScenarioMatrix": true,
+          "finaleNotWorse": false,
+          "bankruptcy": true,
+          "famePerGig": true,
+          "costsMeasured": true
         }
       }
     }
@@ -38737,17 +43057,17 @@
     }
   },
   "runtime": {
-    "durationMs": 872481,
+    "durationMs": 1210460,
     "candidates": 30,
-    "totalRuns": 226000
+    "totalRuns": 266000
   },
   "previousReportComparison": {
     "comparison": "descriptive-unpaired",
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-07-29T20:29:15.480Z",
-      "sourceFingerprint": "998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04",
+      "generatedAt": "2026-07-30T07:46:33.892Z",
+      "sourceFingerprint": "a353b1135aa2c7ab9f1d754a8428e0bab85ca717abe5d343192eb8f821c1def1",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -38757,8 +43077,8 @@
       "touringCandidate": "touring-none"
     },
     "current": {
-      "generatedAt": "2026-07-30T07:46:33.892Z",
-      "sourceFingerprint": "a353b1135aa2c7ab9f1d754a8428e0bab85ca717abe5d343192eb8f821c1def1",
+      "generatedAt": "2026-07-30T09:33:06.466Z",
+      "sourceFingerprint": "dc10477b09968a6b557ee1a597cea2457d1f43081e7ceb94a963118af0dfe394",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "calibration: scenario-id#first-income-full-reports-v1-plus-run-index; selection: scenario-id#first-income-full-reports-v1#selection-plus-run-index; validation: scenario-id#first-income-full-reports-v1#holdout-plus-run-index",
@@ -38770,57 +43090,57 @@
     "scenarios": [
       {
         "id": "aggressive_marketing",
-        "previousRatePct": 2.65,
+        "previousRatePct": 2.6,
         "currentRatePct": 2.6,
-        "deltaPct": -0.05,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "baseline_touring",
-        "previousRatePct": 1.6,
+        "previousRatePct": 1.15,
         "currentRatePct": 1.15,
-        "deltaPct": -0.45,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "bootstrap_struggle",
-        "previousRatePct": 8.5,
+        "previousRatePct": 8.05,
         "currentRatePct": 8.05,
-        "deltaPct": -0.45,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "chaos_tour",
-        "previousRatePct": 3.8,
+        "previousRatePct": 3.55,
         "currentRatePct": 3.55,
-        "deltaPct": -0.25,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "cult_hypergrowth",
-        "previousRatePct": 2.25,
+        "previousRatePct": 2.5,
         "currentRatePct": 2.5,
-        "deltaPct": 0.25,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "festival_push",
-        "previousRatePct": 3.95,
+        "previousRatePct": 4.25,
         "currentRatePct": 4.25,
-        "deltaPct": 0.3,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       },
       {
         "id": "scandal_recovery",
-        "previousRatePct": 7.9,
+        "previousRatePct": 8.45,
         "currentRatePct": 8.45,
-        "deltaPct": 0.55,
+        "deltaPct": 0,
         "previousSampleSize": 2000,
         "currentSampleSize": 2000
       }

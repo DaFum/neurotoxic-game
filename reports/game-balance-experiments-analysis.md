@@ -2,7 +2,7 @@
 
 ## Reproduzierbarkeit
 
-Pairing: `same-scenario-same-run-index-same-seed`; 226000 simulation runs in 872481 ms.
+Pairing: `same-scenario-same-run-index-same-seed`; 266000 simulation runs in 1210460 ms.
 
 ## Alt/Neu-Vergleich der vollständigen Reports
 
@@ -10,20 +10,20 @@ Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same rec
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04` | `a353b1135aa2c7ab9f1d754a8428e0bab85ca717abe5d343192eb8f821c1def1` |
+| Source-Fingerprint | `a353b1135aa2c7ab9f1d754a8428e0bab85ca717abe5d343192eb8f821c1def1` | `dc10477b09968a6b557ee1a597cea2457d1f43081e7ceb94a963118af0dfe394` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Empfehlung | `accepted-for-production-partial` | `accepted-for-production-partial` |
 
 | Szenario | Insolvenz alt | Insolvenz neu | Delta | Stichprobe alt/neu |
 |---|---:|---:|---:|---:|
-| `aggressive_marketing` | 2.65% | 2.6% | -0.05 pp | 2000 / 2000 |
-| `baseline_touring` | 1.6% | 1.15% | -0.45 pp | 2000 / 2000 |
-| `bootstrap_struggle` | 8.5% | 8.05% | -0.45 pp | 2000 / 2000 |
-| `chaos_tour` | 3.8% | 3.55% | -0.25 pp | 2000 / 2000 |
-| `cult_hypergrowth` | 2.25% | 2.5% | 0.25 pp | 2000 / 2000 |
-| `festival_push` | 3.95% | 4.25% | 0.3 pp | 2000 / 2000 |
-| `scandal_recovery` | 7.9% | 8.45% | 0.55 pp | 2000 / 2000 |
+| `aggressive_marketing` | 2.6% | 2.6% | 0 pp | 2000 / 2000 |
+| `baseline_touring` | 1.15% | 1.15% | 0 pp | 2000 / 2000 |
+| `bootstrap_struggle` | 8.05% | 8.05% | 0 pp | 2000 / 2000 |
+| `chaos_tour` | 3.55% | 3.55% | 0 pp | 2000 / 2000 |
+| `cult_hypergrowth` | 2.5% | 2.5% | 0 pp | 2000 / 2000 |
+| `festival_push` | 4.25% | 4.25% | 0 pp | 2000 / 2000 |
+| `scandal_recovery` | 8.45% | 8.45% | 0 pp | 2000 / 2000 |
 
 ## Kontrollzustand
 
@@ -167,7 +167,28 @@ Alle fünf Varianten werden auf `bootstrap_struggle` und `chaos_tour` vollständ
 | harmony-recovery-45-money | bootstrap_struggle | 1001/2000 | 0 | 0.25 pp | 0.25 pp | 2.87% | €179.06 | 0 | 0 | Fail |
 | harmony-recovery-45-money | chaos_tour | 1401/2000 | 12 | 0.25 pp | 0.15 pp | 6.09% | €298.2 | 0 | 0 | Fail |
 
-Outcome: **candidate-validated-for-runtime-prototyping**. Selected candidate: `harmony-recovery-40-money`.
+Outcome: **no-production-recommendation-final-validation-failed**. Selected candidate: `none`.
+
+### Globale Sicherheitsvalidierung des Gewinners
+
+Der fest ausgewählte Gewinner wird auf dem reservierten `validation`-Strom genau einmal über die vollständige Hauptszenario-Matrix geprüft; es findet keine Ersatzsuche statt.
+
+| Scenario | Activation runs | Median Harmony delta | Finale delta | Bankruptcy delta | Fame/Gig delta | Costs measured |
+|---|---:|---:|---:|---:|---:|---|
+| baseline_touring | 454/2000 | 0 | -0.15 pp | 0.05 pp | 1.17% | Pass |
+| bootstrap_struggle | 697/2000 | 0 | 0.55 pp | 0.05 pp | 2.32% | Pass |
+| aggressive_marketing | 372/2000 | 0 | 0.05 pp | 0 pp | 0.85% | Pass |
+| scandal_recovery | 566/2000 | 0 | 0.25 pp | 0 pp | 1.7% | Pass |
+| festival_push | 277/2000 | 0 | 0.15 pp | 0.05 pp | 0.44% | Pass |
+| chaos_tour | 1097/2000 | 6 | 1.35 pp | 0.1 pp | 4.75% | Pass |
+| cult_hypergrowth | 287/2000 | 0 | 0.15 pp | 0 pp | 0.7% | Pass |
+| no_social_probe | 526/2000 | 0 | -0.05 pp | 0.05 pp | 1.39% | Pass |
+| high_controversy_probe | 669/2000 | 0 | 0.8 pp | 0.9 pp | 2.34% | Pass |
+| early_game_probe | 630/2000 | 0 | -0.05 pp | 0.2 pp | 1.81% | Pass |
+| mid_game_probe | 601/2000 | 0 | -0.15 pp | 0 pp | 1.69% | Pass |
+| late_game_probe | 376/2000 | 0 | 0.1 pp | 0 pp | 0.98% | Pass |
+
+Global safety: **FAIL**.
 
 ## Kombinierte Validierung
 

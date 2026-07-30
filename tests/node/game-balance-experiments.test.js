@@ -34,6 +34,7 @@ import {
   evaluateFinalCombinedValidation,
   evaluateCandidate,
   evaluateRecoveryAcceptance,
+  evaluateRecoveryGlobalSafety,
   kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
@@ -144,6 +145,29 @@ test('recovery acceptance fails closed and requires measurable harmony benefit',
         chaos_tour: scenario({ activationRuns: 0, harmony: 0 })
       }
     }).passed,
+    false
+  )
+})
+
+test('global recovery safety fails closed across the complete scenario matrix', () => {
+  const safe = Object.fromEntries(
+    SCENARIOS.map(scenario => [
+      scenario.id,
+      {
+        finaleCompletedDeltaPct: 0,
+        bankruptcyDeltaPct: 0,
+        famePerGig: { deltaPct: 0, sufficientEvidence: true },
+        costsMeasured: true
+      }
+    ])
+  )
+  assert.equal(
+    evaluateRecoveryGlobalSafety({ resultsByScenario: safe }).passed,
+    true
+  )
+  delete safe.baseline_touring
+  assert.equal(
+    evaluateRecoveryGlobalSafety({ resultsByScenario: safe }).passed,
     false
   )
 })

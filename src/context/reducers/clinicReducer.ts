@@ -58,6 +58,48 @@ const findBandMember = (
 }
 
 /**
+ * Applies the optional paid recovery offered to bands below critical harmony.
+ * @param state - Current game state.
+ * @returns Updated resources, harmony, statistics, and toast; otherwise the original state.
+ */
+export const handleHarmonyRecovery = (state: GameState): GameState => {
+  const money = finiteNumberOr(state.player?.money, 0)
+  const harmony = finiteNumberOr(state.band?.harmony, 100)
+  const cost = CLINIC_CONFIG.HEAL_BASE_COST_MONEY
+
+  if (money < cost || harmony >= CLINIC_CONFIG.HARMONY_RECOVERY_THRESHOLD) {
+    return state
+  }
+
+  const nextHarmony = clampBandHarmony(
+    harmony + CLINIC_CONFIG.HARMONY_RECOVERY_GAIN
+  )
+  const recoveryCount = finiteNumberOr(state.player.stats?.harmonyRecoveries, 0)
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(money - cost),
+      stats: {
+        ...state.player.stats,
+        harmonyRecoveries: recoveryCount + 1
+      }
+    },
+    band: { ...state.band, harmony: nextHarmony },
+    toasts: [
+      ...(state.toasts || []),
+      {
+        id: buildDeterministicToastId('harmony-recovery', state.toasts),
+        messageKey: 'ui:clinic.harmony_recovery_success',
+        options: { harmony: nextHarmony - harmony },
+        type: 'success'
+      }
+    ]
+  }
+}
+
+/**
  * Common logic for clinic actions.
  *
  * @param state - Game state before the clinic action.

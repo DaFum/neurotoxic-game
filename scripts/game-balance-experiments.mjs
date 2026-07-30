@@ -611,6 +611,20 @@ export const evaluateRecoveryAcceptance = ({ resultsByScenario }) => {
   return { passed: Object.values(checks).every(Boolean), checks }
 }
 
+export const evaluateRecoveryGlobalSafety = ({ resultsByScenario }) => {
+  const results = Object.values(resultsByScenario ?? {})
+  const checks = {
+    completeScenarioMatrix: results.length === SCENARIOS.length,
+    finaleNotWorse: results.every(
+      result => result.finaleCompletedDeltaPct >= 0
+    ),
+    bankruptcy: results.every(result => result.bankruptcyDeltaPct <= 1),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
+    costsMeasured: results.every(result => result.costsMeasured === true)
+  }
+  return { passed: Object.values(checks).every(Boolean), checks }
+}
+
 export const runHarmonyRecoveryPhase = ({
   runsPerScenario,
   runner = runSingleSimulation
@@ -644,13 +658,13 @@ export const runHarmonyRecoveryPhase = ({
     return controlCache.get(key)
   }
 
-  const measure = (definition, stream) => {
+  const measure = (definition, stream, measuredScenarios = scenarios) => {
     const tuning = resolveBalanceTuning(
       { recovery: definition.overrides.recovery },
       ORIGINAL_CONTROL_BALANCE_TUNING
     )
     const resultsByScenario = Object.fromEntries(
-      scenarios.map(scenario => {
+      measuredScenarios.map(scenario => {
         const controlRuns = controlRunsFor(scenario, stream)
         const pairs = pairSimulationRuns({
           scenario,
@@ -681,7 +695,7 @@ export const runHarmonyRecoveryPhase = ({
         Object.values(resultsByScenario).reduce(
           (sum, result) => sum + result.harmonyMedianDelta,
           0
-        ) / scenarios.length
+        ) / measuredScenarios.length
       )
     }
     return {
@@ -692,7 +706,13 @@ export const runHarmonyRecoveryPhase = ({
       aggregateResults,
       acceptance: definition.id.endsWith('-none')
         ? { passed: false, checks: { controlOnly: true } }
-        : evaluateRecoveryAcceptance({ resultsByScenario })
+        : evaluateRecoveryAcceptance({
+            resultsByScenario: Object.fromEntries(
+              Object.entries(resultsByScenario).filter(([scenarioId]) =>
+                RECOVERY_TARGET_SCENARIO_IDS.includes(scenarioId)
+              )
+            )
+          })
     }
   }
 
@@ -731,8 +751,14 @@ export const runHarmonyRecoveryPhase = ({
   const validation = selected
     ? measure(
         definitions.find(definition => definition.id === selected.id),
-        'validation'
+        'validation',
+        SCENARIOS
       )
+    : null
+  const globalSafety = validation
+    ? evaluateRecoveryGlobalSafety({
+        resultsByScenario: validation.resultsByScenario
+      })
     : null
   return {
     id: 'phase6E',
@@ -740,13 +766,16 @@ export const runHarmonyRecoveryPhase = ({
     runsPerScenario,
     candidates,
     selectedCandidateId:
-      validation?.acceptance.passed === true ? selected.id : null,
+      validation?.acceptance.passed === true && globalSafety?.passed === true
+        ? selected.id
+        : null,
     outcome: !selected
       ? 'no-production-recommendation-no-candidate-passed'
-      : validation.acceptance.passed
+      : validation.acceptance.passed && globalSafety.passed
         ? 'candidate-validated-for-runtime-prototyping'
         : 'no-production-recommendation-final-validation-failed',
-    validation
+    validation,
+    globalSafety
   }
 }
 
@@ -961,6 +990,12 @@ ${previousComparison.scenarios
       `| ${candidate.id} | ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | €${result.harmonyRecovery.candidate.moneySpent} | ${result.harmonyRecovery.candidate.daysConsumed} | ${result.harmonyRecovery.candidate.gigOpportunitiesForgone} | ${candidate.acceptance.passed && candidate.selectionAcceptance.passed ? 'Pass' : 'Fail'} |`
     )
   ).join('\n')
+  const recoveryGlobalRows = Object.entries(
+    recoveryPhase.validation?.resultsByScenario ?? {}
+  ).map(
+    ([scenarioId, result]) =>
+      `| ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | ${result.costsMeasured ? 'Pass' : 'Fail'} |`
+  ).join('\n')
   return `# Game Balance Experiments – Phase 3
 
 ## Reproduzierbarkeit
@@ -1033,6 +1068,16 @@ Alle fünf Varianten werden auf \`bootstrap_struggle\` und \`chaos_tour\` vollst
 ${recoveryRows}
 
 Outcome: **${recoveryPhase.outcome}**. Selected candidate: \`${recoveryPhase.selectedCandidateId ?? 'none'}\`.
+
+### Globale Sicherheitsvalidierung des Gewinners
+
+Der fest ausgewählte Gewinner wird auf dem reservierten \`validation\`-Strom genau einmal über die vollständige Hauptszenario-Matrix geprüft; es findet keine Ersatzsuche statt.
+
+| Scenario | Activation runs | Median Harmony delta | Finale delta | Bankruptcy delta | Fame/Gig delta | Costs measured |
+|---|---:|---:|---:|---:|---:|---|
+${recoveryGlobalRows}
+
+Global safety: **${recoveryPhase.globalSafety?.passed ? 'PASS' : 'FAIL'}**.
 
 ## Kombinierte Validierung
 
