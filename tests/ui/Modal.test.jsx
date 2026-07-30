@@ -194,6 +194,33 @@ describe('Modal Component', () => {
     expect(lastFocusable).toHaveFocus()
   })
 
+  test('skips CSS-hidden candidates when looping focus', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <Modal isOpen={true} onClose={() => {}} title='Focus trap'>
+        <button type='button'>Visible action</button>
+        <a href='/hidden-action' style={{ display: 'none' }}>
+          Hidden action
+        </a>
+      </Modal>
+    )
+
+    const closeButton = screen.getByRole('button', { name: /close/i })
+    const visibleAction = screen.getByRole('button', {
+      name: 'Visible action'
+    })
+
+    // The trailing link is display:none, so the visible action is the last
+    // reachable candidate and Tab must wrap from it back to the close button.
+    visibleAction.focus()
+    await user.tab()
+    expect(closeButton).toHaveFocus()
+
+    await user.tab({ shift: true })
+    expect(visibleAction).toHaveFocus()
+  })
+
   test('returns focus to the opener after Escape closes the dialog', async () => {
     const user = userEvent.setup()
 

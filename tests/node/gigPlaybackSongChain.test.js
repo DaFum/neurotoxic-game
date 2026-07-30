@@ -133,18 +133,29 @@ test('gig playback aborts when stopped while its buffer is loading', async () =>
   mockEnsureAudioContext.mock.resetCalls()
   mockLoadAudioBuffer.mock.resetCalls()
 
+  let signalBufferLoad
+  const bufferLoadStarted = new Promise(resolve => {
+    signalBufferLoad = resolve
+  })
   let resolveBuffer
   mockLoadAudioBuffer.mock.mockImplementationOnce(
     () =>
       new Promise(resolve => {
         resolveBuffer = resolve
+        signalBufferLoad()
       })
   )
 
   const pendingPlayback = startGigPlayback({ filename: 'cancelled.ogg' })
-  while (mockLoadAudioBuffer.mock.calls.length === 0) {
-    await Promise.resolve()
-  }
+  await Promise.race([
+    bufferLoadStarted,
+    new Promise((_resolve, reject) =>
+      setTimeout(
+        () => reject(new Error('loadAudioBuffer was never called')),
+        5000
+      ).unref()
+    )
+  ])
   stopGigPlayback()
   resolveBuffer({
     duration: 30,

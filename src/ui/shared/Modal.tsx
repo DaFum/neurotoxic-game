@@ -19,6 +19,26 @@ const FOCUSABLE_SELECTOR = [
   '[tabindex]:not([tabindex="-1"])'
 ].join(',')
 
+/**
+ * Rejects focus candidates that match the selector but cannot take focus
+ * because CSS hides them; `preventDefault()` plus a no-op `focus()` would make
+ * Tab appear dead. `checkVisibility` also covers hidden ancestors where
+ * available; the computed-style fallback keeps non-browser DOMs working.
+ * @param element - Candidate focusable element inside the dialog.
+ * @returns Whether the element is rendered and can receive focus.
+ */
+const isRenderedCandidate = (element: HTMLElement): boolean => {
+  if (element === document.activeElement) return true
+
+  const checkVisibility = element.checkVisibility
+  if (typeof checkVisibility === 'function') {
+    return checkVisibility.call(element, { checkVisibilityCSS: true })
+  }
+
+  const style = window.getComputedStyle(element)
+  return style.display !== 'none' && style.visibility !== 'hidden'
+}
+
 type ModalProps = {
   isOpen: boolean
   onClose: () => void
@@ -66,7 +86,8 @@ const handleModalKeyDown = (event: KeyboardEvent) => {
     element =>
       !element.hidden &&
       element.getAttribute('aria-hidden') !== 'true' &&
-      !element.closest('[inert]')
+      !element.closest('[inert]') &&
+      isRenderedCandidate(element)
   )
 
   if (focusableElements.length === 0) {
@@ -149,13 +170,18 @@ export const Modal = ({
   const onCloseRef = useRef(onClose)
   const titleId = useId()
   const { t } = useTranslation(['ui'])
-  onCloseRef.current = onClose
   const dialogAriaLabel = ariaLabel || undefined
   const dialogAriaLabelledBy = dialogAriaLabel
     ? undefined
     : title
       ? titleId
       : undefined
+
+  // Sync in an effect, not during render: a discarded render must not leak its
+  // onClose into the module-level stack entry that Escape invokes.
+  useEffect(() => {
+    onCloseRef.current = onClose
+  }, [onClose])
 
   useEffect(() => {
     if (!isOpen) return

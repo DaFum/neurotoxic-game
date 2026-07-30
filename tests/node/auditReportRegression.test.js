@@ -179,6 +179,26 @@ test('ui guards reuse shared record-object utility', () => {
   }
 })
 
+test('negotiation feedback guard allowlists the exact key union', () => {
+  const modal = readSource('src/components/postGig/NegotiationModal.tsx')
+  const socialTypes = readSource('src/types/social.d.ts')
+
+  // A prefix check would let a malformed key render as a raw translation key.
+  assert.doesNotMatch(modal, /startsWith\('ui:deals\.feedback\./)
+
+  const unionKeys = [
+    ...socialTypes
+      .slice(socialTypes.indexOf('BrandDealNegotiationFeedbackKey ='))
+      .matchAll(/\|\s*'(ui:deals\.feedback\.[\w]+)'/g)
+  ].map(match => match[1])
+  const allowlistKeys = [
+    ...modal.matchAll(/'(ui:deals\.feedback\.[\w]+)'/g)
+  ].map(match => match[1])
+
+  assert.strictEqual(unionKeys.length, 6)
+  assert.deepStrictEqual([...allowlistKeys].sort(), [...unionKeys].sort())
+})
+
 test('milestones do not store raw action objects or raw toast actions', () => {
   const milestones = readSource('src/data/milestones/milestones.ts')
   const reducer = readSource('src/context/gameReducer.ts')

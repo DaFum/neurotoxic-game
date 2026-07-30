@@ -496,9 +496,9 @@ test.describe('Game Flow', () => {
     const firstSong = page.getByText('01 Kranker Schrank')
     await clickUnblockedTarget(firstSong)
 
+    // Anchored regexes: Playwright ignores `exact` for RegExp name matchers.
     const startShowBtn = page.getByRole('button', {
-      name: /start show/i,
-      exact: true
+      name: /^start show$/i
     })
     await expect(startShowBtn).toBeEnabled()
     await clickUnblockedTarget(startShowBtn)
@@ -507,12 +507,10 @@ test.describe('Game Flow', () => {
     // Use the player-facing skip action so the test waits for a mounted scene
     // instead of racing the DEV keyboard listener during a cold lazy load.
     const skipMinigameBtn = page.getByRole('button', {
-      name: /skip/i,
-      exact: true
+      name: /^skip$/i
     })
     const continueBtn = page.getByRole('button', {
-      name: /continue/i,
-      exact: true
+      name: /^continue$/i
     })
     const kabelsalatHeading = page.getByRole('heading', {
       name: /hardware.*rigging/i
@@ -533,6 +531,8 @@ test.describe('Game Flow', () => {
       await skipMinigameBtn.click()
     } else if (await continueBtn.isVisible()) {
       await continueBtn.click()
+    } else if (await gigReport.isVisible()) {
+      // The setup minigame already resolved and the report is showing.
     } else {
       // Kabelsalat has its own timed scene and advances automatically after
       // its terminal overlay; the Gig-report assertion below remains the
@@ -545,10 +545,7 @@ test.describe('Game Flow', () => {
     // 5. Gig (Rhythm Game)
     // The song plays automatically. Since we don't click, health fails but scene still advances.
     // Random gig events pause playback, so resolve them while waiting for the report.
-    const gigReportHeading = page.getByRole('heading', {
-      name: /gig report/i
-    })
-    await waitForUnblockedTarget(gigReportHeading, 60000)
+    await waitForUnblockedTarget(gigReport, 60000)
 
     // 6. PostGig Report
     await clickUnblockedTarget(
