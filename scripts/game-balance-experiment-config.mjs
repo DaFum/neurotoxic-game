@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { CLINIC_CONFIG } from '../src/context/gameConstants.ts'
 
 // Percentages in ids and descriptions come from fractional tuning values, and a
 // bare `value * 100` leaks binary float error into both (0.29 * 100 is
@@ -82,6 +83,17 @@ export const BALANCE_EXPERIMENTS = [
     ['baseline_touring'],
     { touring: {} }
   ),
+  candidate('harmony-recovery-none', 'recovery', 'Leaves critical harmony without an additional recovery decision.', 'The control establishes whether paid recovery improves outcomes.', ['bootstrap_struggle', 'chaos_tour'], { recovery: {} }),
+  ...[40, 45].flatMap(threshold => ['day', 'money'].map(costType =>
+    candidate(
+      `harmony-recovery-${threshold}-${costType}`,
+      'recovery',
+      `Offers harmony recovery below ${threshold} for a ${costType === 'day' ? 'tour day' : 'clinic-priced payment'}.`,
+      'Critical harmony should become a costly pacing decision instead of an unavoidable decline.',
+      ['bootstrap_struggle', 'chaos_tour'],
+      { recovery: { threshold, costType, moneyCost: costType === 'money' ? CLINIC_CONFIG.HEAL_BASE_COST_MONEY : 0, harmonyGain: 20 } }
+    )
+  )),
 
   ...[0.9, 0.8, 0.7].map(value =>
     candidate(

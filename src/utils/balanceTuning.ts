@@ -20,6 +20,12 @@ export interface BalanceTuning {
     denseScheduleRecoveryMultiplier: number
     denseScheduleMaintenanceMultiplier: number
   }
+  recovery: {
+    threshold: number
+    costType: 'none' | 'day' | 'money'
+    moneyCost: number
+    harmonyGain: number
+  }
 }
 
 const deepFreeze = <T>(value: T): Readonly<T> => {
@@ -49,6 +55,12 @@ export const ORIGINAL_CONTROL_BALANCE_TUNING: Readonly<BalanceTuning> =
       denseScheduleHarmonyPenalty: 0,
       denseScheduleRecoveryMultiplier: 1,
       denseScheduleMaintenanceMultiplier: 1
+    },
+    recovery: {
+      threshold: 0,
+      costType: 'none',
+      moneyCost: 0,
+      harmonyGain: 20
     }
   })
 
@@ -146,7 +158,10 @@ const RANGES = {
   denseScheduleThresholdDays: [0, 365],
   denseScheduleHarmonyPenalty: [0, 100],
   denseScheduleRecoveryMultiplier: [0, 1],
-  denseScheduleMaintenanceMultiplier: [1, 5]
+  denseScheduleMaintenanceMultiplier: [1, 5],
+  threshold: [0, 100],
+  moneyCost: [0, 100_000],
+  harmonyGain: [0, 100]
 } as const
 
 const validateNumber = (key: keyof typeof RANGES, value: unknown): number => {
@@ -164,6 +179,7 @@ export const resolveBalanceTuning = (
   overrides: Partial<{
     earlyGame: Partial<BalanceTuning['earlyGame']>
     touring: Partial<BalanceTuning['touring']>
+    recovery: Partial<BalanceTuning['recovery']>
   }> = {},
   base: Readonly<BalanceTuning> = DEFAULT_BALANCE_TUNING
 ): Readonly<BalanceTuning> => {
@@ -175,6 +191,7 @@ export const resolveBalanceTuning = (
 
   const earlyGame = { ...base.earlyGame }
   const touring = { ...base.touring }
+  const recovery = { ...base.recovery }
   for (const [key, value] of Object.entries(overrides.earlyGame ?? {})) {
     if (!Object.hasOwn(earlyGame, key))
       throw new TypeError(`Unknown earlyGame key: ${key}`)
@@ -221,5 +238,18 @@ export const resolveBalanceTuning = (
       [key]: validateNumber(key as keyof typeof RANGES, value)
     })
   }
-  return deepFreeze({ earlyGame, touring })
+  for (const [key, value] of Object.entries(overrides.recovery ?? {})) {
+    if (!Object.hasOwn(recovery, key))
+      throw new TypeError(`Unknown recovery key: ${key}`)
+    if (key === 'costType') {
+      if (!['none', 'day', 'money'].includes(String(value)))
+        throw new TypeError('Unknown recovery costType')
+      recovery.costType = value as BalanceTuning['recovery']['costType']
+      continue
+    }
+    Object.assign(recovery, {
+      [key]: validateNumber(key as keyof typeof RANGES, value)
+    })
+  }
+  return deepFreeze({ earlyGame, touring, recovery })
 }

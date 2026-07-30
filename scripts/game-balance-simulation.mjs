@@ -2482,7 +2482,22 @@ export const runSingleSimulation = (
       minigamesKabelsalat: { attempts: 0, completions: 0 },
       minigamesAmp: { attempts: 0, completions: 0 },
       sponsorship: { attempts: 0, successes: 0 },
-      restStops: { evaluations: 0, activations: 0 }
+      restStops: { evaluations: 0, activations: 0 },
+      eventTriggers: {
+        travel: { evaluations: 0, activations: 0 },
+        preGig: { evaluations: 0, activations: 0 },
+        gigMoments: { evaluations: 0, activations: 0 },
+        postGig: { evaluations: 0, activations: 0 }
+      },
+      quests: {
+        status: 'insufficient_evidence', offers: 0, activations: 0,
+        progress: 0, completions: 0, failures: 0, rewards: 0,
+        availableIds: Object.keys(QUEST_REGISTRY).length
+      }
+    },
+    harmonyRecovery: {
+      evaluations: 0, activations: 0, harmonyRestored: 0,
+      moneySpent: 0, daysConsumed: 0, gigOpportunitiesForgone: 0
     },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
@@ -2806,6 +2821,30 @@ export const runSingleSimulation = (
     maybeInvestInAssets(state, rng, counters, observeAttributedMoney)
     observeEarlyRunwayMoney()
 
+    const recovery = tuning.recovery
+    if (recovery?.threshold > 0) {
+      counters.harmonyRecovery.evaluations += 1
+      if (state.band.harmony < recovery.threshold) {
+        const canPay = recovery.costType !== 'money' || state.player.money >= recovery.moneyCost
+        if (canPay) {
+          const beforeHarmony = state.band.harmony
+          const beforeMoney = state.player.money
+          state.band.harmony = clampBandHarmony(finiteNumberOr(state.band.harmony, 1) + recovery.harmonyGain)
+          counters.harmonyRecovery.activations += 1
+          counters.harmonyRecovery.harmonyRestored += state.band.harmony - beforeHarmony
+          if (recovery.costType === 'money') {
+            state.player.money = clampPlayerMoney(state.player.money - recovery.moneyCost)
+            counters.harmonyRecovery.moneySpent += beforeMoney - state.player.money
+            observeAttributedLoss('clinic', beforeMoney)
+          } else if (recovery.costType === 'day') {
+            counters.harmonyRecovery.daysConsumed += 1
+            if (wantsToPerform) counters.harmonyRecovery.gigOpportunitiesForgone += 1
+            willRest = true
+          }
+        }
+      }
+    }
+
     if (willRest) {
       // Recovery day. Clinic heals per CLINIC_CONFIG (gameConstants.ts):
       // each treated member costs calculateClinicCost(HEAL_BASE_COST_MONEY,
@@ -2968,6 +3007,7 @@ export const runSingleSimulation = (
     // fires them after the day advances and before `handleNodeArrival`, which is
     // where the node's own effects (rest-stop recovery, the show) follow below.
     const moneyBeforeTravelEvents = state.player.money
+    counters.executionCoverage.eventTriggers.travel.evaluations += 1
     const fameBeforeTravelEvents = state.player.fame
     counters.eventsApplied =
       (counters.eventsApplied || 0) +
@@ -3077,6 +3117,8 @@ export const runSingleSimulation = (
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
+    counters.executionCoverage.eventTriggers.preGig.evaluations += 1
+    counters.executionCoverage.eventTriggers.gigMoments.evaluations += 2
     // The show is going ahead, so this is the run's first income opportunity.
     // Recorded before the setup minigame and the modifier purchases, which is
     // what "money directly before the first gig" has to mean for a runway
@@ -3253,6 +3295,7 @@ export const runSingleSimulation = (
     }
 
     counters.gigsPlayed += 1
+    counters.executionCoverage.eventTriggers.postGig.evaluations += 1
     runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
     totalGigNet += gigNet
@@ -3447,7 +3490,16 @@ export const mergeExecutionCoverage = sources => {
     minigamesKabelsalat: { attempts: 0, completions: 0 },
     minigamesAmp: { attempts: 0, completions: 0 },
     sponsorship: { attempts: 0, successes: 0 },
-    restStops: { evaluations: 0, activations: 0 }
+    restStops: { evaluations: 0, activations: 0 },
+    eventTriggers: {
+      travel: { evaluations: 0, activations: 0 }, preGig: { evaluations: 0, activations: 0 },
+      gigMoments: { evaluations: 0, activations: 0 }, postGig: { evaluations: 0, activations: 0 }
+    },
+    quests: {
+      status: 'insufficient_evidence', offers: 0, activations: 0,
+      progress: 0, completions: 0, failures: 0, rewards: 0,
+      availableIds: Object.keys(QUEST_REGISTRY).length
+    }
   }
 
   for (const source of sources) {
@@ -3467,6 +3519,13 @@ export const mergeExecutionCoverage = sources => {
         for (const id of current.uniqueIdsSeen ?? [])
           target.uniqueIdsSeen.add(id)
       }
+    }
+  }
+
+  for (const trigger of Object.keys(coverage.eventTriggers)) {
+    for (const source of sources) {
+      coverage.eventTriggers[trigger].evaluations += source?.eventTriggers?.[trigger]?.evaluations ?? 0
+      coverage.eventTriggers[trigger].activations += source?.eventTriggers?.[trigger]?.activations ?? 0
     }
   }
 
@@ -3818,7 +3877,9 @@ export const summarizeScenario = runs => {
     sinkToIncomeRatio: Number((runs.reduce((sum, r) => sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalGigNet, 0))).toFixed(2)),
     gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
-    gigsToAffordVanUpgrade: Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
+    gigsToAffordVanUpgrade: _VAN_TUNING?.currency === 'money'
+      ? Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2))
+      : null,
     avgMoneyAtEarlyCheckpoint: runs.some(r => r.moneyAtEarlyCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtEarlyCheckpoint != null).map(r => r.moneyAtEarlyCheckpoint))) : null,
     avgMoneyAtMidCheckpoint: runs.some(r => r.moneyAtMidCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtMidCheckpoint != null).map(r => r.moneyAtMidCheckpoint))) : null,
     avgMoneyAtLateCheckpoint: runs.some(r => r.moneyAtLateCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtLateCheckpoint != null).map(r => r.moneyAtLateCheckpoint))) : null,
@@ -4248,7 +4309,9 @@ const getBandHealthInsight = s => {
   return '✅ Bandgesundheit im akzeptablen Bereich.'
 }
 
-const getEventsInsight = s => {
+export const getEventsInsight = s => {
+  if (s.coverageStatus !== 'covered')
+    return '⚪ Unzureichende Evidenz – Event- und Quest-Lifecycle sind nur teilweise simuliert.'
   const totalEvents =
     s.avgSpecialEvents +
     s.avgCashSwings +
@@ -4269,19 +4332,14 @@ const getEventsInsight = s => {
   return '✅ Gesunde Event-Verteilung.'
 }
 
-const getMinigameInsight = s => {
-  const total =
-    s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames
-  if (total > 150) {
-    return '✅ Sehr hohe Minigame-Abdeckung – Tour-Intensität optimal.'
-  }
-  if (total > 80) {
-    return '✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion.'
-  }
-  if (total > 40) {
-    return '✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität.'
-  }
-  return '⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt.'
+export const getMinigameInsight = s => {
+  const completed = s.completed ?? s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames + (s.avgAmpCalibrations ?? 0)
+  const opportunities = s.opportunities ?? (s.avgTravelMinigames ?? 0) + (s.avgGigsPlayed ?? 0)
+  if (opportunities <= 0) return '⚪ Keine erreichbaren Minigame-Gelegenheiten.'
+  const coverage = completed / opportunities
+  if (coverage >= 0.8) return '✅ Hohe Minigame-Abdeckung – erreichbare Interaktionen werden genutzt.'
+  if (coverage >= 0.5) return '✅ Moderate Minigame-Abdeckung – entsprechend der Tourgelegenheiten.'
+  return '⚠️ Geringe Minigame-Abdeckung relativ zu erreichbaren Gelegenheiten.'
 }
 
 export const buildFeatureInventory = () => {
@@ -5165,7 +5223,7 @@ const getIncomeStructureInsight = s => {
     return '⚠️ Reisekosten zu gering – Travel-Kostendruck erhöhen.'
   if (s.gigsToAffordHqUpgrade < 2)
     return '⚠️ HQ-Upgrade amortisiert sich in weniger als zwei Gigs – Preis deutlich erhöhen.'
-  if (s.gigsToAffordVanUpgrade < 0.25)
+  if (s.gigsToAffordVanUpgrade != null && s.gigsToAffordVanUpgrade < 0.25)
     return '⚠️ Van-Upgrade zu günstig – Preis anpassen.'
   return '✅ Einkommensstruktur akzeptabel.'
 }

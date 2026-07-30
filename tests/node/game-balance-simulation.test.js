@@ -43,6 +43,8 @@ import {
   classifyBankruptcyRisk,
   describeCorridorConfidence,
   evaluateScenarioRiskStatus,
+  getEventsInsight,
+  getMinigameInsight,
   reconcileFameLedger,
   resolveGigCadence,
   runSimulationSuite,
@@ -84,6 +86,87 @@ test('baseline compatibility metrics match the canonical contract', () => {
       'avgFameProgressPerGig',
       'avgGigsPlayed'
     ]
+  )
+})
+
+test('density insights use reachable opportunities and fail closed on missing coverage', () => {
+  assert.match(
+    getMinigameInsight({ completed: 18, opportunities: 20 }),
+    /hohe Minigame-Abdeckung/i
+  )
+  assert.match(
+    getEventsInsight({ coverageStatus: 'insufficient_evidence' }),
+    /unzureichende Evidenz/i
+  )
+})
+
+test('fame-priced van upgrades are not compared with euro gig net', () => {
+  assert.equal(
+    summarizeScenario([runSingleSimulation(probeScenario(2), 441)])
+      .gigsToAffordVanUpgrade,
+    null
+  )
+})
+
+test('simulation distinguishes event trigger opportunities from quest coverage', () => {
+  const run = runSingleSimulation(
+    probeScenario(10, { gigGapDays: 1, minigameSkill: 1 }),
+    9182
+  )
+  assert.equal(
+    run.executionCoverage.eventTriggers.travel.evaluations,
+    run.travelLog.length
+  )
+  assert.equal(
+    run.executionCoverage.eventTriggers.preGig.evaluations,
+    run.gigsPlayed
+  )
+  assert.equal(
+    run.executionCoverage.eventTriggers.postGig.evaluations,
+    run.gigsPlayed
+  )
+  assert.equal(
+    run.executionCoverage.eventTriggers.gigMoments.evaluations,
+    run.gigsPlayed * 2
+  )
+  assert.equal(run.executionCoverage.quests.status, 'insufficient_evidence')
+  assert.equal(
+    run.executionCoverage.quests.availableIds,
+    buildFeatureInventory().questsAvailable
+  )
+  assert.equal(run.executionCoverage.quests.completions, 0)
+})
+
+test('paid harmony recovery records money and day trade-offs independently', () => {
+  const scenario = probeScenario(10, {
+    gigGapDays: 1,
+    initialOverrides: { band: { harmony: 20 } }
+  })
+  const money = runSingleSimulation(scenario, 123, {
+    ...DEFAULT_BALANCE_TUNING,
+    recovery: {
+      threshold: 40,
+      costType: 'money',
+      moneyCost: 100,
+      harmonyGain: 20
+    }
+  })
+  assert.ok(money.harmonyRecovery.activations > 0)
+  assert.ok(money.harmonyRecovery.moneySpent > 0)
+  assert.equal(money.harmonyRecovery.daysConsumed, 0)
+  const day = runSingleSimulation(scenario, 123, {
+    ...DEFAULT_BALANCE_TUNING,
+    recovery: { threshold: 40, costType: 'day', moneyCost: 0, harmonyGain: 20 }
+  })
+  assert.ok(day.harmonyRecovery.activations > 0)
+  assert.equal(day.harmonyRecovery.moneySpent, 0)
+  assert.equal(
+    day.harmonyRecovery.daysConsumed,
+    day.harmonyRecovery.activations
+  )
+  assert.equal(
+    day.harmonyRecovery.gigOpportunitiesForgone,
+    day.harmonyRecovery.activations
   )
 })
 

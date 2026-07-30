@@ -326,6 +326,7 @@ const stagedObligationRelief = stages => stages.reduce((sum, stage, index) => {
 export const combinationImpact = ({ bootstrap, touring }) => {
   const early = bootstrap.overrides.earlyGame ?? {}
   const late = touring.overrides.touring ?? {}
+  const recovery = touring.overrides.recovery ?? {}
   const obligationRelief = early.obligationStages?.length
     ? stagedObligationRelief(early.obligationStages)
     : (early.durationDays ?? 0) * (1 - (early.dailyObligationMultiplier ?? 1))
@@ -349,7 +350,9 @@ export const combinationImpact = ({ bootstrap, touring }) => {
     ((late.denseScheduleMaintenanceMultiplier ?? 1) - 1) * 10
   const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
     (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
-  return relief + saturation + denseSchedule
+  const recoveryDecision = (recovery.threshold ?? 0) / 100 +
+    (recovery.costType === 'day' ? 1 : 0) + (recovery.moneyCost ?? 0) / 1000
+  return relief + saturation + denseSchedule + recoveryDecision
 }
 
 export const evaluateCandidate = (definition, pairs, summary) => {

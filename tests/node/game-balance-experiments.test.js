@@ -51,6 +51,22 @@ import {
 } from '../../scripts/game-balance-simulation.mjs'
 import { applyRepeatDemandAdjustment } from '../../src/utils/postGig/derivations.ts'
 
+test('experiment registry contains the approved harmony recovery matrix and control', () => {
+  const recovery = BALANCE_EXPERIMENTS.filter(item =>
+    item.id.startsWith('harmony-recovery-')
+  )
+  assert.deepEqual(
+    recovery.map(item => item.id),
+    [
+      'harmony-recovery-none',
+      'harmony-recovery-40-day',
+      'harmony-recovery-40-money',
+      'harmony-recovery-45-day',
+      'harmony-recovery-45-money'
+    ]
+  )
+})
+
 const combinedSummary = ({
   scenarioId = 'baseline_touring',
   controlRate = 0,
