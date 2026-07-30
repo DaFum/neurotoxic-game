@@ -126,9 +126,9 @@ test('simulation distinguishes event trigger opportunities from quest coverage',
     run.executionCoverage.eventTriggers.postGig.evaluations,
     run.gigsPlayed
   )
-  assert.equal(
-    run.executionCoverage.eventTriggers.gigMoments.evaluations,
-    run.gigsPlayed * 2
+  assert.ok(
+    run.executionCoverage.eventTriggers.gigMoments.evaluations <
+      run.gigsPlayed * 2
   )
   assert.equal(run.executionCoverage.quests.status, 'insufficient_evidence')
   assert.equal(
@@ -184,7 +184,13 @@ test('paid harmony recovery records money and day trade-offs independently', () 
   )
   const day = runSingleSimulation(scenario, 123, {
     ...DEFAULT_BALANCE_TUNING,
-    recovery: { threshold: 40, costType: 'day', moneyCost: 0, harmonyGain: 20 }
+    recovery: {
+      ...DEFAULT_BALANCE_TUNING.recovery,
+      threshold: 40,
+      costType: 'day',
+      moneyCost: 0,
+      harmonyGain: 20
+    }
   })
   assert.ok(day.harmonyRecovery.activations > 0)
   assert.equal(day.harmonyRecovery.moneySpent, 0)
@@ -206,7 +212,13 @@ test('day recovery consumes travel and gig opportunities rather than only counte
   const control = runSingleSimulation(scenario, 1, DEFAULT_BALANCE_TUNING)
   const candidate = runSingleSimulation(scenario, 1, {
     ...DEFAULT_BALANCE_TUNING,
-    recovery: { threshold: 40, costType: 'day', moneyCost: 0, harmonyGain: 20 }
+    recovery: {
+      ...DEFAULT_BALANCE_TUNING.recovery,
+      threshold: 40,
+      costType: 'day',
+      moneyCost: 0,
+      harmonyGain: 20
+    }
   })
   assert.ok(candidate.harmonyRecovery.daysConsumed > 0)
   assert.ok(candidate.travelLog.length < control.travelLog.length)

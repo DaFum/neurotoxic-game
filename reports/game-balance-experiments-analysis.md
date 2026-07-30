@@ -6,7 +6,7 @@ Pairing: `same-scenario-same-run-index-same-seed`; 266000 simulation runs in 121
 
 ## Alt/Neu-Vergleich der vollständigen Reports
 
-Dieser Vergleich ist **deskriptiv und ungepaart**. The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.
+Dieser Vergleich ist **deskriptiv und ungepaart**. Übereinstimmende Kohortenfelder: Runs je Szenario und Seed-Namensraum. Die Source-Fingerprints unterscheiden sich; daraus wird kein gepaarter Effektschätzer abgeleitet.
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
@@ -152,7 +152,7 @@ Gap-1 money-per-day advantage now sits BELOW the 20-25% target band. No dampener
 
 ## Phase 6E – Harmony Recovery
 
-Alle fünf Varianten werden auf `bootstrap_struggle` und `chaos_tour` vollständig auf den getrennten `calibration`- und `selection`-Strömen gemessen. Nur der bereits ausgewählte Kandidat wird einmal auf `validation` geprüft.
+Alle 5 Varianten werden auf `bootstrap_struggle` und `chaos_tour` vollständig auf den getrennten `calibration`- und `selection`-Strömen gemessen. Nur der bereits ausgewählte Kandidat wird einmal auf `validation` geprüft.
 
 | Candidate | Scenario | Activation runs | Median Harmony delta | Finale delta | Bankruptcy delta | Fame/Gig delta | Avg money cost | Avg days | Avg gigs forgone | Calibration + Selection |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
@@ -167,7 +167,7 @@ Alle fünf Varianten werden auf `bootstrap_struggle` und `chaos_tour` vollständ
 | harmony-recovery-45-money | bootstrap_struggle | 1001/2000 | 0 | 0.25 pp | 0.25 pp | 2.87% | €179.06 | 0 | 0 | Fail |
 | harmony-recovery-45-money | chaos_tour | 1401/2000 | 12 | 0.25 pp | 0.15 pp | 6.09% | €298.2 | 0 | 0 | Fail |
 
-Outcome: **no-production-recommendation-final-validation-failed**. Selected candidate: `none`.
+Outcome: **no-production-recommendation-final-validation-failed**. Suchgewinner vor der finalen Validierung: `harmony-recovery-40-money`. Produktionsempfehlung nach der finalen Validierung: `none`.
 
 ### Globale Sicherheitsvalidierung des Gewinners
 
@@ -188,7 +188,7 @@ Der fest ausgewählte Gewinner wird auf dem reservierten `validation`-Strom gena
 | mid_game_probe | 601/2000 | 0 | -0.15 pp | 0 pp | 1.69% | Pass |
 | late_game_probe | 376/2000 | 0 | 0.1 pp | 0 pp | 0.98% | Pass |
 
-Global safety: **FAIL**.
+Global safety: **FAIL** — fehlgeschlagener Check: `finaleNotWorse` in `baseline_touring`, `early_game_probe` und `mid_game_probe`.
 
 ## Kombinierte Validierung
 
@@ -247,7 +247,7 @@ Die harten Caps sind Obergrenzen. Ein Hebel kann sie alle bestehen und trotzdem 
 
 ### Release-Gesamtstatus
 
-Beide Gates müssen bestehen. Kalibrierung: **PASS** · Holdout-Sicherheit: **PASS** → Gesamt: **PASS** (`accepted-for-production-partial`).
+Die folgenden Statuswerte betreffen nur die unabhängigen Phase-3-Balance-Gates: Kalibrierung **PASS** · Holdout-Sicherheit **PASS**. Phase 6E bleibt wegen der fehlgeschlagenen finalen Global-Safety-Validierung **FAIL** (`no-production-recommendation-final-validation-failed`); der Suchgewinner `harmony-recovery-40-money` ist keine Produktionsempfehlung.
 
 ## Nebenwirkungen
 
@@ -259,7 +259,7 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 
 ## Produktionsänderungen
 
-Only the selected bootstrap and touring defaults are intended for production.
+Only the selected bootstrap and touring defaults are intended for production. The rejected Phase 6E recovery search winner is not included.
 
 Recommendation: **accepted-for-production-partial**
 
@@ -276,4 +276,5 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
 | Gap-1-Dominanz im Zielband | nicht gelöst |
 | Phase 3C Gesamtstatus | partial |
 | Kombinationssuche | fully-validated |
-| Produktionskandidat | accepted-for-production-partial |
+| Produktionskandidat (nur Phase 3B/3C) | accepted-for-production-partial |
+| Phase-6E-Produktionsempfehlung | keine – finale Global-Safety-Validierung fehlgeschlagen |

@@ -570,8 +570,7 @@ const recoveryScenarioResult = (pairs, definition, scenarioId) => {
   const costsMeasured = costType === 'money'
     ? activationRuns === 0 || recovery.moneySpent > 0
     : costType === 'day'
-      ? activationRuns === 0 ||
-        (recovery.daysConsumed > 0 && recovery.gigOpportunitiesForgone >= 0)
+      ? activationRuns === 0 || recovery.daysConsumed > 0
       : true
   return {
     ...summary,
@@ -587,10 +586,12 @@ const recoveryScenarioResult = (pairs, definition, scenarioId) => {
 }
 
 export const evaluateRecoveryAcceptance = ({ resultsByScenario }) => {
-  const results = Object.values(resultsByScenario ?? {})
+  const scenarioResults = resultsByScenario ?? {}
+  const results = Object.values(scenarioResults)
   const checks = {
-    targetProfilesMeasured:
-      results.length === RECOVERY_TARGET_SCENARIO_IDS.length,
+    targetProfilesMeasured: RECOVERY_TARGET_SCENARIO_IDS.every(scenarioId =>
+      Object.hasOwn(scenarioResults, scenarioId)
+    ),
     activationEvidence:
       results.length > 0 &&
       results.every(
@@ -612,9 +613,12 @@ export const evaluateRecoveryAcceptance = ({ resultsByScenario }) => {
 }
 
 export const evaluateRecoveryGlobalSafety = ({ resultsByScenario }) => {
-  const results = Object.values(resultsByScenario ?? {})
+  const scenarioResults = resultsByScenario ?? {}
+  const results = Object.values(scenarioResults)
   const checks = {
-    completeScenarioMatrix: results.length === SCENARIOS.length,
+    completeScenarioMatrix: SCENARIOS.every(scenario =>
+      Object.hasOwn(scenarioResults, scenario.id)
+    ),
     finaleNotWorse: results.every(
       result => result.finaleCompletedDeltaPct >= 0
     ),
@@ -704,7 +708,7 @@ export const runHarmonyRecoveryPhase = ({
       stream,
       resultsByScenario,
       aggregateResults,
-      acceptance: definition.id.endsWith('-none')
+      acceptance: tuning.recovery.costType === 'none'
         ? { passed: false, checks: { controlOnly: true } }
         : evaluateRecoveryAcceptance({
             resultsByScenario: Object.fromEntries(
@@ -957,10 +961,20 @@ ${
     : ''
 }`
   const previousComparison = report.previousReportComparison
+  const matchingComparisonFields = previousComparison
+    ? [
+        previousComparison.previous.runsPerScenario === previousComparison.current.runsPerScenario
+          ? 'Runs je Szenario'
+          : null,
+        previousComparison.previous.seedNamespace === previousComparison.current.seedNamespace
+          ? 'Seed-Namensraum'
+          : null
+      ].filter(Boolean)
+    : []
   const previousComparisonSection = previousComparison
     ? `## Alt/Neu-Vergleich der vollständigen Reports
 
-Dieser Vergleich ist **deskriptiv und ungepaart**. ${previousComparison.note}
+Dieser Vergleich ist **deskriptiv und ungepaart**. Übereinstimmende Kohortenfelder: ${matchingComparisonFields.join(' und ') || 'keine der ausgewiesenen Kohortenangaben'}. Die Source-Fingerprints ${previousComparison.previous.sourceFingerprint === previousComparison.current.sourceFingerprint ? 'stimmen überein' : 'unterscheiden sich'}; daraus wird kein gepaarter Effektschätzer abgeleitet.
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
@@ -996,6 +1010,16 @@ ${previousComparison.scenarios
     ([scenarioId, result]) =>
       `| ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | ${result.costsMeasured ? 'Pass' : 'Fail'} |`
   ).join('\n')
+  const recoveryFinaleFailures = Object.entries(
+    recoveryPhase.validation?.resultsByScenario ?? {}
+  )
+    .filter(([, result]) => result.finaleCompletedDeltaPct < 0)
+    .map(([scenarioId]) => `\`${scenarioId}\``)
+    .join(', ')
+  const recoverySearchWinner = recoveryPhase.validation?.id ?? 'none'
+  const recoveryReleaseStatus = recoveryPhase.globalSafety?.passed
+    ? `Phase 6E hat die finale Global-Safety-Validierung **PASS** bestanden; Produktionsempfehlung: \`${recoveryPhase.selectedCandidateId}\`.`
+    : `Phase 6E bleibt wegen der fehlgeschlagenen finalen Global-Safety-Validierung **FAIL** (\`${recoveryPhase.outcome}\`); der Suchgewinner \`${recoverySearchWinner}\` ist keine Produktionsempfehlung.`
   return `# Game Balance Experiments – Phase 3
 
 ## Reproduzierbarkeit
@@ -1061,13 +1085,13 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 
 ## Phase 6E – Harmony Recovery
 
-Alle fünf Varianten werden auf \`bootstrap_struggle\` und \`chaos_tour\` vollständig auf den getrennten \`calibration\`- und \`selection\`-Strömen gemessen. Nur der bereits ausgewählte Kandidat wird einmal auf \`validation\` geprüft.
+Alle ${recoveryPhase.candidates.length} Varianten werden auf \`bootstrap_struggle\` und \`chaos_tour\` vollständig auf den getrennten \`calibration\`- und \`selection\`-Strömen gemessen. Nur der bereits ausgewählte Kandidat wird einmal auf \`validation\` geprüft.
 
 | Candidate | Scenario | Activation runs | Median Harmony delta | Finale delta | Bankruptcy delta | Fame/Gig delta | Avg money cost | Avg days | Avg gigs forgone | Calibration + Selection |
 |---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
 ${recoveryRows}
 
-Outcome: **${recoveryPhase.outcome}**. Selected candidate: \`${recoveryPhase.selectedCandidateId ?? 'none'}\`.
+Outcome: **${recoveryPhase.outcome}**. Suchgewinner vor der finalen Validierung: \`${recoverySearchWinner}\`. Produktionsempfehlung nach der finalen Validierung: \`${recoveryPhase.selectedCandidateId ?? 'none'}\`.
 
 ### Globale Sicherheitsvalidierung des Gewinners
 
@@ -1077,7 +1101,7 @@ Der fest ausgewählte Gewinner wird auf dem reservierten \`validation\`-Strom ge
 |---|---:|---:|---:|---:|---:|---|
 ${recoveryGlobalRows}
 
-Global safety: **${recoveryPhase.globalSafety?.passed ? 'PASS' : 'FAIL'}**.
+Global safety: **${recoveryPhase.globalSafety?.passed ? 'PASS' : 'FAIL'}**${recoveryFinaleFailures ? ` — fehlgeschlagener Check: \`finaleNotWorse\` in ${recoveryFinaleFailures}.` : '.'}
 
 ## Kombinierte Validierung
 
@@ -1113,7 +1137,7 @@ ${
 
 ### Release-Gesamtstatus
 
-Beide Gates müssen bestehen. Kalibrierung: **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}** · Holdout-Sicherheit: **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** → Gesamt: **${report.finalCombinedValidation.passed && report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}** (\`${report.recommendation.status}\`).
+Die folgenden Statuswerte betreffen nur die unabhängigen Phase-3-Balance-Gates: Kalibrierung **${report.finalCombinedValidation.passed ? 'PASS' : 'FAIL'}** · Holdout-Sicherheit **${report.holdoutSafetyValidation?.passed ? 'PASS' : 'FAIL'}**. ${recoveryReleaseStatus}
 
 ## Nebenwirkungen
 
@@ -1125,7 +1149,7 @@ Every unselected candidate carries a machine-readable rejection reason in the JS
 
 ## Produktionsänderungen
 
-Only the selected bootstrap and touring defaults are intended for production.
+Only the selected bootstrap and touring defaults are intended for production. The rejected Phase 6E recovery search winner is not included.
 
 Recommendation: **${report.recommendation.status}**${
     report.recommendation.productionHold?.held === true

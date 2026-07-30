@@ -88,7 +88,7 @@ export const handleHarmonyRecovery = (state: GameState): GameState => {
     },
     band: { ...state.band, harmony: nextHarmony },
     toasts: [
-      ...(state.toasts || []),
+      ...(state.toasts ?? []),
       {
         id: buildDeterministicToastId('harmony-recovery', state.toasts),
         messageKey: 'ui:clinic.harmony_recovery_success',

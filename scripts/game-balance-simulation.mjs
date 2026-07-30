@@ -1257,9 +1257,12 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return false
 
   const triggerPoint = rng() < 0.5 ? 'gig_intro' : 'gig_mid'
-  const event =
-    eventEngine.checkEvent('gig', state, triggerPoint, rng) ||
-    eventEngine.checkEvent('gig', state, 'random', rng)
+  counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
+  let event = eventEngine.checkEvent('gig', state, triggerPoint, rng)
+  if (!event) {
+    counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
+    event = eventEngine.checkEvent('gig', state, 'random', rng)
+  }
   if (!event || !event.options || event.options.length === 0) return false
 
   const choice = event.options[Math.floor(rng() * event.options.length)]
@@ -1287,7 +1290,7 @@ const applyTriggerEvent = (state, scenario, rng, counters, categories, triggerPo
   let event = null
   for (const candidate of categories) {
     event = eventEngine.checkEvent(candidate, state, triggerPoint, rng)
-    if (event) {
+    if (event?.options?.length) {
       category = candidate
       break
     }
@@ -3163,7 +3166,6 @@ export const runSingleSimulation = (
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
     counters.executionCoverage.eventTriggers.preGig.evaluations += 1
-    counters.executionCoverage.eventTriggers.gigMoments.evaluations += 2
     const moneyBeforePreGigEvent = state.player.money
     if (applyTriggerEvent(state, scenario, rng, counters, ['band', 'gig'], 'pre_gig')) {
       counters.executionCoverage.eventTriggers.preGig.activations += 1
@@ -3744,7 +3746,7 @@ export const summarizeScenario = runs => {
     coverageStatus,
     harmonyRecovery: Object.fromEntries(
       ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
-        .map(key => [key, Number(mean(runs.map(run => run.harmonyRecovery?.[key] ?? 0)).toFixed(2))])
+        .map(key => [key, Number(mean(runs.map(run => finiteNumberOr(run.harmonyRecovery?.[key], 0))).toFixed(2))])
     ),
     avgPerformanceScore: popAll.performanceScore
       ? popAll.performanceScore.mean
@@ -4459,7 +4461,9 @@ export const renderExecutionCoverageRows = coverage => {
     }
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
     const activations = metric.activations ?? metric.completions ?? metric.successes ?? 0
-    const uniqueIds = metric.uniqueIdsSeen ? metric.uniqueIdsSeen.length : '-'
+    const uniqueIds = metric.uniqueIdsSeen
+      ? new Set(metric.uniqueIdsSeen).size
+      : '-'
     rows.push(`| ${key} | ${metric.covered ? '✅' : '❌'} | ${evaluations} | ${activations} | ${uniqueIds} |`)
   }
   return rows.join('\n')

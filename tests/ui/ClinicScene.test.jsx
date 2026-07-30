@@ -34,7 +34,7 @@ vi.mock('../../src/hooks/useClinicLogic', () => ({
 const mockState = {
   player: { money: 1000, fame: 500, clinicVisits: 0 },
   band: {
-    harmony: 35,
+    harmony: 40,
     members: [
       { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
       {
@@ -145,6 +145,10 @@ describe('ClinicScene', () => {
   })
 
   it('offers optional harmony recovery only below the critical threshold', () => {
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      band: { ...mockState.band, harmony: 35 }
+    })
     const firstRender = renderComponent()
 
     fireEvent.click(screen.getByRole('button', { name: /RECOVER BAND/i }))
@@ -159,5 +163,21 @@ describe('ClinicScene', () => {
     expect(
       screen.queryByRole('button', { name: /RECOVER BAND/i })
     ).not.toBeInTheDocument()
+  })
+
+  it('disables harmony recovery when funds are too low', () => {
+    const recoverHarmony = vi.fn()
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      player: { ...mockState.player, money: mockState.harmonyRecoveryCost - 1 },
+      band: { ...mockState.band, harmony: 35 },
+      recoverHarmony
+    })
+
+    renderComponent()
+    const recoverButton = screen.getByRole('button', { name: /RECOVER BAND/i })
+    expect(recoverButton).toBeDisabled()
+    fireEvent.click(recoverButton)
+    expect(recoverHarmony).not.toHaveBeenCalled()
   })
 })
