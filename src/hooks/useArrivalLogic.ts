@@ -112,9 +112,18 @@ export const useArrivalLogic = ({
         // so the very commit that would re-trigger this effect unmounts the
         // component hosting it. A deferred save is therefore never written, and
         // the day advance, travel-event money/harmony and rival move are lost
-        // until the GIG→POST_GIG autosave. Saving in this same pass is safe:
-        // handleLoadGame hard-sets currentScene to OVERWORLD on load, so the
-        // pre-commit scene/gig fields in the snapshot are discarded anyway.
+        // until the GIG→POST_GIG autosave.
+        //
+        // KNOWN LIMITATION: startGig dispatches inside startTransition, so the
+        // snapshot saved below is still pre-START_GIG. handleLoadGame forces
+        // currentScene to OVERWORLD (systemReducer.ts:216) but RESTORES
+        // currentGig, gigModifiers and minigame (:215, :217, :229), so a reload
+        // straight after a gig arrival comes back on the overworld carrying the
+        // PREVIOUS gig's venue. The arrival data itself (day, cash, harmony,
+        // events, rival) is correct because those dispatches already committed.
+        // Saving late loses the whole arrival; saving now loses only the gig
+        // hand-off, so this is the lesser failure — but the real fix is to move
+        // this save to a lifecycle that outlives the scene change.
       } catch (error) {
         handleError(error, {
           addToast,

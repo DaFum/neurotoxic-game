@@ -1,8 +1,14 @@
 /**
  * Navigates to and confirms the app's main menu, skipping the intro and any tutorial when available.
+ *
+ * @remarks
+ * Every step is tolerant by design: the intro skip button and the menu race
+ * each other, so the helper must cope with the menu already being present, the
+ * skip button never appearing, and the tutorial overlay being absent.
+ *
  * @param {import('@playwright/test').Page} page - The Playwright page.
  * @param {{ navigate?: boolean }} [options] - Navigation options.
- * @param {boolean} [options.navigate=true] - Whether to navigate to the app root before reaching the menu.
+ * @param {boolean} [options.navigate=true] - Whether to navigate to the app root first. Pass `false` when the caller already reloaded the page.
  */
 export async function skipToMenu(page, { navigate = true } = {}) {
   try {

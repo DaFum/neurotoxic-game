@@ -175,14 +175,33 @@ export function stopGigPlayback(): void {
 }
 
 /**
- * Starts gig playback from an audio file with optional offset, delay, duration, and completion handling.
+ * Starts gig playback using Web Audio buffer playback.
  *
- * @param filename - The audio file to play.
- * @param bufferOffsetMs - The starting offset within the audio buffer, in milliseconds.
- * @param delayMs - The delay before playback starts, in milliseconds.
- * @param durationMs - The maximum playback duration, in milliseconds, or `null` for the remaining buffer.
- * @param onEnded - Callback invoked when playback ends naturally.
- * @returns `true` if playback starts successfully or completes immediately due to zero duration, `false` otherwise.
+ * @remarks
+ * Takes a single options object, not positional arguments.
+ *
+ * The call claims a generation id (`audioState.playRequestId`) up front and
+ * re-checks it after EVERY await — `ensureAudioContext()` and
+ * `loadAudioBuffer()` — because `stopGigPlayback()` bumps that id. This is what
+ * prevents a playback whose buffer was still loading when the gig ended from
+ * starting afterwards. Any new await added to this function needs the same
+ * re-check.
+ *
+ * CAVEAT for callers: a `false` return does NOT distinguish "cancelled by
+ * stopGigPlayback" from "could not start". `playbackStrategies` treats `false`
+ * as "strategy unavailable" and falls through to the next strategy, so a
+ * cancelled start can currently be followed by MIDI/procedural audio beginning
+ * after the gig was stopped. Distinguish the two before relying on the result
+ * for fallback decisions.
+ *
+ * @param params - Playback params.
+ * - `params.filename` - Audio filename to play.
+ * - `params.bufferOffsetMs` - Offset into the buffer in ms. Defaults to `0`.
+ * - `params.delayMs` - Delay before starting playback in ms. Defaults to `0`.
+ * - `params.durationMs` - Optional playback duration in ms. Defaults to `null`.
+ * - `params.onEnded` - Optional. Callback invoked after playback ends.
+ * @returns `true` when playback started (or completed immediately for a
+ * zero-length window); `false` when it failed OR was cancelled mid-load.
  */
 export async function startGigPlayback({
   filename,

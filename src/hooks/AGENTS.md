@@ -13,6 +13,8 @@
 ## Travel / Arrival
 
 - Travel confirmation/resource checks must include `getTotalDailyObligations(state)` (guaranteed daily cost plus asset upkeep/revenue and liability payments) for routes that call `advanceDay()` on completion or arrival. Do not call `calculateGuaranteedDailyCost` alone for these checks.
+- `useArrivalLogic` lives ONLY in `TourbusScene`, which `SceneRouter` renders solely for `TRAVEL_MINIGAME`. Any state change that leaves that scene (notably `START_GIG` → `PRE_GIG`) unmounts the hook, so its post-commit effect cannot get a second pass. Never defer the arrival save to a later effect run — it would simply never be written.
+- Consequence, currently accepted: the gig-arrival save is taken before the `startTransition` dispatch of `START_GIG` commits, and `handleLoadGame` restores `currentGig`/`gigModifiers`/`minigame` (it only forces `currentScene`). A reload right after a gig arrival therefore returns to the overworld carrying the previous gig's venue. Moving the arrival save to a lifecycle that outlives the scene change is the real fix.
 - `useArrivalLogic` keys `isHandlingRef` on the arriving `nodeId` with sentinel `undefined`. `player.currentNodeId` can be `null`, so `null` is a real guarded value and cannot mean "idle".
 - Do not reset `isHandlingRef` in the arrival success path; the `useEffect` cleanup keyed on `player.currentNodeId` owns that lifecycle. Error paths may reset it so the same node can be retried.
 - Band harmony is clamped to minimum `1` (never `0`). `arrivalUtils` uses `harmony <= 1` as the deterministic gig-cancellation check with probabilistic cancellation above that. A `harmony <= 0` branch is unreachable — do not reintroduce one.

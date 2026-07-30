@@ -12,8 +12,14 @@ const MAX_SONG_ID_LENGTH = 64
 /**
  * Handles score submissions and leaderboard requests for songs.
  *
- * POST requests validate and store player scores, retaining only higher scores.
- * GET requests return ranked leaderboard entries with public player references and names.
+ * POST validates the payload against prototype pollution, checks every field
+ * (playerId, playerName, songId, score), resolves each songId through the
+ * canonical leaderboard allowlist, and only then writes — validating the whole
+ * batch first so a mixed-validity submission cannot write partially. Scores use
+ * the GT flag, so a submission can only ever raise a player's best.
+ * GET returns ranked entries as `{ rank, playerRef, playerName, score }`.
+ * NOTE: `playerRef` is an opaque hash, never the raw `playerId` — see
+ * `toPublicPlayerRef` for why publishing the id would be a write-credential leak.
  * Other methods receive a 405 response.
  *
  * @param {import('../../lib/apiTypes.js').ApiRequest} req - The HTTP request.

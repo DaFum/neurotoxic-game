@@ -52,6 +52,11 @@ export interface FacilityDispatchActions {
 /**
  * Creates memoized dispatch wrappers for facility-related game actions.
  *
+ * @remarks
+ * Every helper depends on `dispatch` alone, so all returned references are
+ * stable for the provider's lifetime. Consumers rely on that stability in
+ * effect dependency arrays — do not introduce a dependency on state here.
+ *
  * @param dispatch - Game action dispatcher.
  * @returns Stable facility action dispatch methods.
  */

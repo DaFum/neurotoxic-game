@@ -17,6 +17,9 @@ resolving strict-mode errors. Defer to `AGENTS.md` for all project-wide rules.
 
 - Full typecheck: `pnpm run typecheck:core` (runs `tsc -p tsconfig.json` over
   the complete `src/` scope).
+- Server/API gate: `pnpm run typecheck:server` (runs `tsc -p tsconfig.server.json`
+  over `api/**` and `lib/**` — the serverless handlers and shared helpers, which
+  `typecheck:core`'s `include: ["src"]` does NOT cover).
 - Reducer gate (CI): `pnpm run typecheck` — fails on any error inside
   `gameReducer.ts`, `reducers/bandReducer.ts`, `reducers/eventReducer.ts`,
   `reducers/sceneReducer.ts`, or any non-zero `tsc` status.

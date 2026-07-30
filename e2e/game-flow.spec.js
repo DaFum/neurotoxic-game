@@ -516,22 +516,32 @@ test.describe('Game Flow', () => {
       name: /hardware.*rigging/i
     })
     const gigReport = page.getByRole('heading', { name: /gig report/i })
+    // Event dialogs also expose a "CONTINUE" button, which would satisfy the
+    // poll below and make the click land on the dialog instead of a minigame
+    // action. There is no scene wrapper element to scope the locator to, so
+    // clear any overlay first and only judge readiness on an unobstructed page.
     await expect
       .poll(
-        async () =>
-          (await skipMinigameBtn.isVisible().catch(() => false)) ||
-          (await continueBtn.isVisible().catch(() => false)) ||
-          (await kabelsalatHeading.isVisible().catch(() => false)) ||
-          (await gigReport.isVisible().catch(() => false)),
+        async () => {
+          if (await dismissTopEventDialog()) return false
+          return (
+            (await skipMinigameBtn.isVisible().catch(() => false)) ||
+            (await continueBtn.isVisible().catch(() => false)) ||
+            (await kabelsalatHeading.isVisible().catch(() => false)) ||
+            (await gigReport.isVisible().catch(() => false))
+          )
+        },
         { timeout: 10000, intervals: [250, 500, 1000] }
       )
       .toBe(true)
 
-    if (await skipMinigameBtn.isVisible()) {
-      await skipMinigameBtn.click()
-    } else if (await continueBtn.isVisible()) {
-      await continueBtn.click()
-    } else if (await gigReport.isVisible()) {
+    // `.catch(() => false)` on every re-check: the element can detach between
+    // the poll resolving and the branch running.
+    if (await skipMinigameBtn.isVisible().catch(() => false)) {
+      await clickUnblockedTarget(skipMinigameBtn)
+    } else if (await continueBtn.isVisible().catch(() => false)) {
+      await clickUnblockedTarget(continueBtn)
+    } else if (await gigReport.isVisible().catch(() => false)) {
       // The setup minigame already resolved and the report is showing.
     } else {
       // Kabelsalat has its own timed scene and advances automatically after

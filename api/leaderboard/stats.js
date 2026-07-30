@@ -28,6 +28,13 @@ const clampStat = val => {
 /**
  * Handles leaderboard stat updates and retrieval requests.
  *
+ * @remarks
+ * GET returns `{ rank, playerRef, playerName, score }`; `playerRef` is an opaque
+ * hash, never the raw `playerId` (see `toPublicPlayerRef`). Unlike `song.js`,
+ * the POST zAdds deliberately omit the GT flag: these boards track CURRENT
+ * stats and money legitimately decreases, so GT would silently redefine
+ * `lb:balance` as "peak balance ever".
+ *
  * @param {import('../../lib/apiTypes.js').ApiRequest} req - The incoming API request.
  * @param {import('../../lib/apiTypes.js').ApiResponse} res - The response object.
  */

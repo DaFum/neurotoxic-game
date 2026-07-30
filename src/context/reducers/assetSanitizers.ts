@@ -450,10 +450,17 @@ export const sanitizeLiabilities = (
       dropped.set(label, 'malformed financial fields')
       continue
     }
+    // The field only exists on crowdfund-generated liabilities. A 'loan' entry
+    // carrying it is malformed or hostile, so it is rejected rather than copied
+    // through into sanitized state.
     const hasCrowdfundFamePromised = Object.hasOwn(
       clean,
       'crowdfundFamePromised'
     )
+    if (hasCrowdfundFamePromised && clean.source !== 'crowdfund') {
+      dropped.set(label, 'crowdfundFamePromised on a non-crowdfund liability')
+      continue
+    }
     if (
       hasCrowdfundFamePromised &&
       (!isFiniteNumber(clean.crowdfundFamePromised) ||

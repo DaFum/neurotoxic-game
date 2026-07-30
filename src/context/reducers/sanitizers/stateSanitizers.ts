@@ -1750,9 +1750,14 @@ export const sanitizeActiveQuests = (
       // persisted value when the definition carries no `required` — otherwise a
       // definition that never declared one silently drops the field and the
       // quest loses its target.
-      const required =
+      // Only a POSITIVE requirement is meaningful: advanceQuest/setQuestProgress
+      // bail on `required <= 0`, so persisting 0 or a negative value would leave
+      // the quest permanently un-completable. Treat those as absent.
+      const rawRequired =
         finiteOptionalNumber(definition.required) ??
         finiteOptionalNumber(quest.required)
+      const required =
+        rawRequired !== undefined && rawRequired > 0 ? rawRequired : undefined
       if (required !== undefined) {
         sanitized.required = required
       }

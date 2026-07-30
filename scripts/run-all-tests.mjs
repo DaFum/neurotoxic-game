@@ -33,10 +33,16 @@ const vitestUiWorkerCap = 12
 const highCoreParallelThreshold = 16
 const parallelUiWorkerCap = 8
 
+// Fully parallel mode always starts three suites at once (logic + UI + node),
+// so it needs at least three workers to stay inside the machine budget. The
+// NODE_ALL_PARALLEL=1 override cannot lift that floor: on a 1- or 2-core runner
+// it would oversubscribe and run slower than the phase-split path.
+const minimumFullyParallelWorkers = 3
 const fullyParallel =
-  process.env.NODE_ALL_PARALLEL === '1' ||
-  (process.env.NODE_ALL_PARALLEL !== '0' &&
-    totalWorkers >= highCoreParallelThreshold)
+  totalWorkers >= minimumFullyParallelWorkers &&
+  (process.env.NODE_ALL_PARALLEL === '1' ||
+    (process.env.NODE_ALL_PARALLEL !== '0' &&
+      totalWorkers >= highCoreParallelThreshold))
 
 // In the phase-split mode, the CPU-heavy node and UI suites each receive the
 // full machine budget because they run sequentially. In fully parallel mode,
