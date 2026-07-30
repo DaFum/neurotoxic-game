@@ -10,6 +10,7 @@ import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
 import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
+import { toPublicPlayerRef } from '../../lib/apiUtils.js'
 
 const CANONICAL_SONG_ID = '01_kranker_schrank'
 const SECOND_CANONICAL_SONG_ID =
@@ -498,10 +499,25 @@ describe('Leaderboard API - Song', () => {
       ])
 
       assert.strictEqual(res.status.mock.calls[0][0], 200)
+      // playerRef is an opaque one-way reference: the raw playerId is the write
+      // credential and must never appear in a public response.
       assert.deepStrictEqual(res.json.mock.calls[0][0], [
-        { rank: 1, playerId: 'player1', playerName: 'Player One', score: 1000 },
-        { rank: 2, playerId: 'player2', playerName: 'Player Two', score: 500 }
+        {
+          rank: 1,
+          playerRef: toPublicPlayerRef('player1'),
+          playerName: 'Player One',
+          score: 1000
+        },
+        {
+          rank: 2,
+          playerRef: toPublicPlayerRef('player2'),
+          playerName: 'Player Two',
+          score: 500
+        }
       ])
+      const serialized = JSON.stringify(res.json.mock.calls[0][0])
+      assert.ok(!serialized.includes('player1'), 'must not leak raw playerId')
+      assert.ok(!serialized.includes('player2'), 'must not leak raw playerId')
     })
 
     test('handles missing player names fallback to Unknown', async () => {
@@ -521,7 +537,12 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(res.status.mock.calls[0][0], 200)
       assert.deepStrictEqual(res.json.mock.calls[0][0], [
-        { rank: 1, playerId: 'player1', playerName: 'Unknown', score: 1000 }
+        {
+          rank: 1,
+          playerRef: toPublicPlayerRef('player1'),
+          playerName: 'Unknown',
+          score: 1000
+        }
       ])
     })
 

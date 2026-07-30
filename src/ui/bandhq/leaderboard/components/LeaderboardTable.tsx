@@ -72,7 +72,7 @@ export const LeaderboardTable = ({
               {rankings.map(entry => {
                 return (
                   <tr
-                    key={entry.playerId}
+                    key={entry.playerRef}
                     className='border-b border-ash-gray/10 hover:bg-toxic-green/10 transition-colors'
                   >
                     <td className='py-2 px-2 text-toxic-green'>{entry.rank}</td>

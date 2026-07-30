@@ -2,7 +2,8 @@ import client from '../../lib/redis.js'
 import {
   normalizeIp,
   hasPrototypePollution,
-  sanitizePlayerName
+  sanitizePlayerName,
+  toPublicPlayerRef
 } from '../../lib/apiUtils.js'
 import { resolveLeaderboardId } from '../../lib/leaderboardSongIds.js'
 
@@ -190,9 +191,11 @@ export default async function handler(req, res) {
       const playerIds = range.map(r => r.value) // value not member
       const names = await client.hmGet('players', playerIds)
 
+      // playerId is the write credential and the raw Redis member key — never
+      // publish it. See toPublicPlayerRef.
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
-        playerId: entry.value,
+        playerRef: toPublicPlayerRef(entry.value),
         playerName: names[index] || 'Unknown',
         score: entry.score
       }))

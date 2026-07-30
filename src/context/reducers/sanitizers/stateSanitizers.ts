@@ -1001,7 +1001,9 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       }
       const rawStaminaMax = finiteOptionalNumber(m.staminaMax)
       const staminaMax =
-        rawStaminaMax !== undefined && rawStaminaMax >= 0
+        // Must be > 0: clampMemberStamina(x, 0) pins stamina at 0 forever, so a
+        // zero max is a permanently-exhausted member with no in-game recovery.
+        rawStaminaMax !== undefined && rawStaminaMax > 0
           ? rawStaminaMax
           : undefined
       const member: BandMember = {
@@ -1754,11 +1756,15 @@ export const sanitizeActiveQuests = (
       if (required !== undefined) {
         sanitized.required = required
       }
-      const progress = clampNonNegative(
-        finiteNumberOr(finiteOptionalNumber(quest.progress), 0)
+      const rawProgress = finiteNumberOr(
+        finiteOptionalNumber(quest.progress),
+        0
       )
-      sanitized.progress =
-        required !== undefined ? Math.min(progress, required) : progress
+      // Clamp AFTER the min: a negative `required` would otherwise drag progress
+      // negative and freeze the quest (advanceQuest bails on required <= 0).
+      sanitized.progress = clampNonNegative(
+        required !== undefined ? Math.min(rawProgress, required) : rawProgress
+      )
       if (
         typeof quest.scopeKey === 'string' &&
         !isForbiddenKey(quest.scopeKey)

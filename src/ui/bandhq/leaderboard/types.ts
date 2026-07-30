@@ -9,7 +9,8 @@ export type LeaderboardView =
 
 export type LeaderboardEntry = {
   rank: number
-  playerId: string
+  /** Opaque server-derived reference; never the internal player id. */
+  playerRef: string
   playerName: string
   score: number
 }

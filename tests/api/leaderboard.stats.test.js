@@ -9,6 +9,7 @@
 import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
+import { toPublicPlayerRef } from '../../lib/apiUtils.js'
 
 const mockMulti = {
   zAdd: vi.fn(),
@@ -157,7 +158,12 @@ describe('Leaderboard Stats API', () => {
 
     assert.strictEqual(res.status.mock.calls[0][0], 200)
     assert.strictEqual(res.json.mock.calls[0][0].length, 2)
-    assert.strictEqual(res.json.mock.calls[0][0][0].playerId, 'band1')
+    // Raw playerId (the write credential) must not be published.
+    assert.strictEqual(res.json.mock.calls[0][0][0].playerId, undefined)
+    assert.strictEqual(
+      res.json.mock.calls[0][0][0].playerRef,
+      toPublicPlayerRef('band1')
+    )
     assert.strictEqual(res.json.mock.calls[0][0][0].playerName, 'Band One')
     assert.strictEqual(res.json.mock.calls[0][0][0].score, 100)
   })

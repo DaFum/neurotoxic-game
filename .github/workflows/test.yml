@@ -167,6 +167,9 @@ jobs:
     name: TS Nocheck Guard
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -186,6 +189,9 @@ jobs:
     name: Typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -237,6 +243,9 @@ jobs:
     name: Locale Smoke Tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -265,6 +274,9 @@ jobs:
     name: Locale Full Tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -293,6 +305,9 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
@@ -321,6 +336,9 @@ jobs:
     name: Production Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository

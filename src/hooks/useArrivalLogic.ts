@@ -106,18 +106,15 @@ export const useArrivalLogic = ({
       try {
         startGig(route.gigVenue)
         route.gigStartQueued = true
-        // Keep the route pending until START_GIG commits and currentScene
-        // triggers this effect again, so the save sees the committed gig state.
-        //
-        // INVARIANT: this handshake requires every non-`currentScene` dep below
-        // to be referentially stable. `startGig` dispatches inside
-        // `startTransition`, so if one of them changed identity in that window
-        // the effect would re-enter with `gigStartQueued` already true, consume
-        // the route and save PRE-commit — the exact bug this defers around.
-        // Today all are stable (`saveGame` → [addToast, stateRef, tRef]; the
-        // rest → [dispatch]). Keep them that way, or key this effect on
-        // `routeNonce`/`currentScene` alone.
-        return
+        // Deliberately does NOT defer the save to a second effect pass.
+        // START_GIG sets currentScene = PRE_GIG, and this hook lives only in
+        // TourbusScene, which SceneRouter renders solely for TRAVEL_MINIGAME —
+        // so the very commit that would re-trigger this effect unmounts the
+        // component hosting it. A deferred save is therefore never written, and
+        // the day advance, travel-event money/harmony and rival move are lost
+        // until the GIG→POST_GIG autosave. Saving in this same pass is safe:
+        // handleLoadGame hard-sets currentScene to OVERWORLD on load, so the
+        // pre-commit scene/gig fields in the snapshot are discarded anyway.
       } catch (error) {
         handleError(error, {
           addToast,

@@ -229,7 +229,11 @@ export const Modal = ({
       for (const sibling of parentElement.children) {
         if (
           sibling === modalBranch ||
-          sibling.hasAttribute('data-modal-overlay')
+          sibling.hasAttribute('data-modal-overlay') ||
+          // Never mute an ARIA live region: aria-hidden on the toast container
+          // silences every announcement made while a modal is open, so a
+          // confirmation triggered from inside the dialog is never read out.
+          sibling.hasAttribute('data-modal-keep-announcing')
         ) {
           continue
         }
