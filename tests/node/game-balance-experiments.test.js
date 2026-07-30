@@ -1031,6 +1031,7 @@ const DEFAULT_RANKING_ENTRIES = [
 const buildMarkdownReport = ({
   objectiveMet,
   rankingEntries = DEFAULT_RANKING_ENTRIES,
+  recoveryPhase,
   // A blocking gate must not default to "passed" in a fixture: a test that forgot
   // to supply it would assert on a pass nothing validated. Fail closed, and make
   // the passing case state so explicitly.
@@ -1103,7 +1104,8 @@ const buildMarkdownReport = ({
             low_resource_touring: gapProfile
           }
         }
-      }
+      },
+      phase6E: recoveryPhase
     },
     finalCombinedValidation: {
       passed: true,
@@ -1270,7 +1272,7 @@ test('a passing holdout safety gate withholds nothing', () => {
   )
 })
 
-test('the overall release status fails when either gate fails', () => {
+test('release status distinguishes an unselected recovery candidate', () => {
   const holdoutFailed = renderExperimentMarkdown(
     buildMarkdownReport({ objectiveMet: true })
   )
@@ -1279,7 +1281,28 @@ test('the overall release status fails when either gate fails', () => {
   // — that is the whole point of the second gate.
   assert.match(holdoutFailed, /Kalibrierungs-Gate: \*\*PASS\*\*/)
   assert.match(holdoutFailed, /Holdout-Sicherheit \*\*FAIL\*\*/)
-  assert.match(holdoutFailed, /Phase 6E .* \*\*FAIL\*\*/)
+  assert.match(
+    holdoutFailed,
+    /keinen Kandidaten.*Kalibrierung und Auswahl bestanden/i
+  )
+  assert.doesNotMatch(holdoutFailed, /Global-Safety-Validierung \*\*FAIL\*\*/)
+})
+
+test('release status keeps successful recovery at runtime prototyping', () => {
+  const markdown = renderExperimentMarkdown(
+    buildMarkdownReport({
+      recoveryPhase: {
+        candidates: [],
+        validation: { id: 'harmony-recovery-40-money', resultsByScenario: {} },
+        globalSafety: { passed: true },
+        selectedCandidateId: 'harmony-recovery-40-money',
+        outcome: 'candidate-validated-for-runtime-prototyping'
+      }
+    })
+  )
+
+  assert.match(markdown, /für Runtime-Prototyping validiert/)
+  assert.doesNotMatch(markdown, /Produktionsempfehlung: `harmony-recovery/)
 })
 
 test('experiment markdown reports a met Phase 3C objective without partial wording', () => {

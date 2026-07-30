@@ -126,9 +126,9 @@ test('simulation distinguishes event trigger opportunities from quest coverage',
     run.executionCoverage.eventTriggers.postGig.evaluations,
     run.gigsPlayed
   )
-  assert.ok(
-    run.executionCoverage.eventTriggers.gigMoments.evaluations <
-      run.gigsPlayed * 2
+  assert.equal(
+    run.executionCoverage.eventTriggers.gigMoments.evaluations,
+    run.gigsPlayed
   )
   assert.equal(run.executionCoverage.quests.status, 'insufficient_evidence')
   assert.equal(

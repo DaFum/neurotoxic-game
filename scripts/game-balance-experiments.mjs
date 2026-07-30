@@ -1017,9 +1017,11 @@ ${previousComparison.scenarios
     .map(([scenarioId]) => `\`${scenarioId}\``)
     .join(', ')
   const recoverySearchWinner = recoveryPhase.validation?.id ?? 'none'
-  const recoveryReleaseStatus = recoveryPhase.globalSafety?.passed
-    ? `Phase 6E hat die finale Global-Safety-Validierung **PASS** bestanden; Produktionsempfehlung: \`${recoveryPhase.selectedCandidateId}\`.`
-    : `Phase 6E bleibt wegen der fehlgeschlagenen finalen Global-Safety-Validierung **FAIL** (\`${recoveryPhase.outcome}\`); der Suchgewinner \`${recoverySearchWinner}\` ist keine Produktionsempfehlung.`
+  const recoveryReleaseStatus = !recoveryPhase.validation
+    ? 'Phase 6E hat keinen Kandidaten, der Kalibrierung und Auswahl bestanden hat; der `validation`-Strom wurde nicht gemessen.'
+    : recoveryPhase.globalSafety?.passed
+      ? `Phase 6E hat die finale Global-Safety-Validierung **PASS** bestanden und \`${recoveryPhase.selectedCandidateId}\` für Runtime-Prototyping validiert; dies ist keine Produktionsempfehlung.`
+      : `Phase 6E bleibt wegen der fehlgeschlagenen finalen Global-Safety-Validierung **FAIL** (\`${recoveryPhase.outcome}\`); der Suchgewinner \`${recoverySearchWinner}\` ist keine Produktionsempfehlung.`
   return `# Game Balance Experiments – Phase 3
 
 ## Reproduzierbarkeit

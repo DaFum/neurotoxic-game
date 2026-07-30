@@ -1254,13 +1254,12 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
 // gig_intro/gig_mid trigger points as maybeFireGigProgressEvent in-game.
 const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const intensity = scenario.eventIntensity ?? 0.5
+  counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
   if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return false
 
   const triggerPoint = rng() < 0.5 ? 'gig_intro' : 'gig_mid'
-  counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
   let event = eventEngine.checkEvent('gig', state, triggerPoint, rng)
   if (!event) {
-    counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
     event = eventEngine.checkEvent('gig', state, 'random', rng)
   }
   if (!event || !event.options || event.options.length === 0) return false
