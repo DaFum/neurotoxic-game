@@ -47,6 +47,7 @@ describe('ActionTypes', () => {
       'ADD_UNLOCK',
       'USE_CONTRABAND',
       'CLINIC_HEAL',
+      'HARMONY_RECOVERY',
       'CLINIC_ENHANCE',
       'GRAFT_NEURO_OVERCLOCK',
       'PIRATE_BROADCAST',

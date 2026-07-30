@@ -9,7 +9,9 @@ vi.mock('../../src/context/gameConstants', async importOriginal => {
     ...actual,
     CLINIC_CONFIG: {
       CYBER_LUNGS_TRAIT_ID: 'cyber_lungs',
-      HEAL_MOOD_GAIN: 10
+      HEAL_MOOD_GAIN: 10,
+      HARMONY_RECOVERY_THRESHOLD: 40,
+      HARMONY_RECOVERY_GAIN: 20
     }
   }
 })
@@ -32,6 +34,7 @@ vi.mock('../../src/hooks/useClinicLogic', () => ({
 const mockState = {
   player: { money: 1000, fame: 500, clinicVisits: 0 },
   band: {
+    harmony: 40,
     members: [
       { id: 'm1', name: 'M1', stamina: 50, mood: 50, traits: {} },
       {
@@ -47,6 +50,8 @@ const mockState = {
   enhanceCostFame: 500,
   healMember: vi.fn(),
   enhanceMember: vi.fn(),
+  recoverHarmony: vi.fn(),
+  harmonyRecoveryCost: 280,
   leaveClinic: vi.fn()
 }
 
@@ -137,5 +142,42 @@ describe('ClinicScene', () => {
     fireEvent.click(leaveButton)
 
     expect(mockState.leaveClinic).toHaveBeenCalled()
+  })
+
+  it('offers optional harmony recovery only below the critical threshold', () => {
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      band: { ...mockState.band, harmony: 35 }
+    })
+    const firstRender = renderComponent()
+
+    fireEvent.click(screen.getByRole('button', { name: /RECOVER BAND/i }))
+    expect(mockState.recoverHarmony).toHaveBeenCalledOnce()
+    firstRender.unmount()
+
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      band: { ...mockState.band, harmony: 40 }
+    })
+    renderComponent()
+    expect(
+      screen.queryByRole('button', { name: /RECOVER BAND/i })
+    ).not.toBeInTheDocument()
+  })
+
+  it('disables harmony recovery when funds are too low', () => {
+    const recoverHarmony = vi.fn()
+    useClinicLogic.mockReturnValue({
+      ...mockState,
+      player: { ...mockState.player, money: mockState.harmonyRecoveryCost - 1 },
+      band: { ...mockState.band, harmony: 35 },
+      recoverHarmony
+    })
+
+    renderComponent()
+    const recoverButton = screen.getByRole('button', { name: /RECOVER BAND/i })
+    expect(recoverButton).toBeDisabled()
+    fireEvent.click(recoverButton)
+    expect(recoverHarmony).not.toHaveBeenCalled()
   })
 })

@@ -1254,13 +1254,15 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
 // gig_intro/gig_mid trigger points as maybeFireGigProgressEvent in-game.
 const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   const intensity = scenario.eventIntensity ?? 0.5
-  if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return
+  counters.executionCoverage.eventTriggers.gigMoments.evaluations += 1
+  if (rng() >= SIMULATION_CONSTANTS.gigEventChance * intensity) return false
 
   const triggerPoint = rng() < 0.5 ? 'gig_intro' : 'gig_mid'
-  const event =
-    eventEngine.checkEvent('gig', state, triggerPoint, rng) ||
-    eventEngine.checkEvent('gig', state, 'random', rng)
-  if (!event || !event.options || event.options.length === 0) return
+  let event = eventEngine.checkEvent('gig', state, triggerPoint, rng)
+  if (!event) {
+    event = eventEngine.checkEvent('gig', state, 'random', rng)
+  }
+  if (!event || !event.options || event.options.length === 0) return false
 
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const { delta } = resolveEventChoice(choice, state, rng)
@@ -1279,6 +1281,40 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   }
   counters.gigEvents += 1
   applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
+  return true
+}
+
+const applyTriggerEvent = (state, scenario, rng, counters, categories, triggerPoint) => {
+  let category = null
+  let event = null
+  for (const candidate of categories) {
+    event = eventEngine.checkEvent(candidate, state, triggerPoint, rng)
+    if (event?.options?.length) {
+      category = candidate
+      break
+    }
+  }
+  if (!event?.options?.length || !category) return false
+  const choice = event.options[Math.floor(rng() * event.options.length)]
+  const { delta } = resolveEventChoice(choice, state, rng)
+  if (delta) {
+    const oldFame = state.player.fame
+    const moneyBeforeEvent = state.player.money
+    Object.assign(state, applyEventDelta(state, delta))
+    applyNegativeFinancialEventMultiplier(
+      state,
+      moneyBeforeEvent,
+      scenario.negativeFinancialEventMultiplier
+    )
+    recordObservedFameChange(counters.fameAccounting, oldFame, state.player.fame)
+  }
+  if (category === 'financial') counters.cashSwings += 1
+  else if (category === 'special') counters.specialEvents += 1
+  else if (category === 'band') counters.bandEvents += 1
+  else if (category === 'gig') counters.gigEvents += 1
+  counters.eventsApplied += 1
+  applyUnlockContext(state, counters, { type: 'EVENT_RESOLVED' })
+  return true
 }
 
 const maybeShiftSocialTrend = (state, rng, counters) => {
@@ -2482,7 +2518,22 @@ export const runSingleSimulation = (
       minigamesKabelsalat: { attempts: 0, completions: 0 },
       minigamesAmp: { attempts: 0, completions: 0 },
       sponsorship: { attempts: 0, successes: 0 },
-      restStops: { evaluations: 0, activations: 0 }
+      restStops: { evaluations: 0, activations: 0 },
+      eventTriggers: {
+        travel: { evaluations: 0, activations: 0 },
+        preGig: { evaluations: 0, activations: 0 },
+        gigMoments: { evaluations: 0, activations: 0 },
+        postGig: { evaluations: 0, activations: 0 }
+      },
+      quests: {
+        status: 'insufficient_evidence', offers: 0, activations: 0,
+        progress: 0, completions: 0, failures: 0, rewards: 0,
+        availableIds: Object.keys(QUEST_REGISTRY).length
+      }
+    },
+    harmonyRecovery: {
+      evaluations: 0, activations: 0, harmonyRestored: 0,
+      moneySpent: 0, daysConsumed: 0, gigOpportunitiesForgone: 0
     },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
@@ -2733,6 +2784,7 @@ export const runSingleSimulation = (
     })
 
     let willRest = false
+    let recoveryDayConsumed = false
     // Check if the band needs rest/clinic before travelling on.
     //
     // The trigger is deliberately identical to `MEMBER_NEEDS_CARE` below, which
@@ -2805,6 +2857,39 @@ export const runSingleSimulation = (
     observeEarlyRunwayMoney()
     maybeInvestInAssets(state, rng, counters, observeAttributedMoney)
     observeEarlyRunwayMoney()
+
+    const recovery = tuning.recovery
+    if (recovery?.threshold > 0) {
+      counters.harmonyRecovery.evaluations += 1
+      if (state.band.harmony < recovery.threshold) {
+        const canPay = recovery.costType !== 'money' || state.player.money >= recovery.moneyCost
+        if (canPay) {
+          const beforeHarmony = state.band.harmony
+          const beforeMoney = state.player.money
+          state.band.harmony = clampBandHarmony(finiteNumberOr(state.band.harmony, 1) + recovery.harmonyGain)
+          counters.harmonyRecovery.activations += 1
+          counters.harmonyRecovery.harmonyRestored += state.band.harmony - beforeHarmony
+          if (recovery.costType === 'money') {
+            state.player.money = clampPlayerMoney(state.player.money - recovery.moneyCost)
+            counters.harmonyRecovery.moneySpent += beforeMoney - state.player.money
+            observeAttributedLoss('clinic', beforeMoney)
+            observeEarlyRunwayMoney()
+          } else if (recovery.costType === 'day') {
+            counters.harmonyRecovery.daysConsumed += 1
+            if (wantsToPerform) counters.harmonyRecovery.gigOpportunitiesForgone += 1
+            recoveryDayConsumed = true
+            willRest = true
+          }
+        }
+      }
+    }
+
+    if (willRest && !recoveryDayConsumed) {
+      if (!state.band.members.some(MEMBER_NEEDS_CARE)) {
+        willRest = false
+        counters.restDays -= 1
+      }
+    }
 
     if (willRest) {
       // Recovery day. Clinic heals per CLINIC_CONFIG (gameConstants.ts):
@@ -2968,10 +3053,12 @@ export const runSingleSimulation = (
     // fires them after the day advances and before `handleNodeArrival`, which is
     // where the node's own effects (rest-stop recovery, the show) follow below.
     const moneyBeforeTravelEvents = state.player.money
+    counters.executionCoverage.eventTriggers.travel.evaluations += 1
     const fameBeforeTravelEvents = state.player.fame
-    counters.eventsApplied =
-      (counters.eventsApplied || 0) +
-      applyTravelEvents(state, scenario, rng, counters)
+    const travelEventsApplied = applyTravelEvents(state, scenario, rng, counters)
+    counters.eventsApplied = (counters.eventsApplied || 0) + travelEventsApplied
+    counters.executionCoverage.eventTriggers.travel.activations +=
+      travelEventsApplied
     observeAttributedLoss('negative_events', moneyBeforeTravelEvents)
     recordObservedFameChange(
       counters.fameAccounting,
@@ -3077,6 +3164,13 @@ export const runSingleSimulation = (
     // currentGig is the venue object for the whole gig pipeline (gotcha:
     // event conditions and reducers read state.currentGig.capacity/.id).
     state.currentGig = venue
+    counters.executionCoverage.eventTriggers.preGig.evaluations += 1
+    const moneyBeforePreGigEvent = state.player.money
+    if (applyTriggerEvent(state, scenario, rng, counters, ['band', 'gig'], 'pre_gig')) {
+      counters.executionCoverage.eventTriggers.preGig.activations += 1
+    }
+    observeAttributedLoss('negative_events', moneyBeforePreGigEvent)
+    observeEarlyRunwayMoney()
     // The show is going ahead, so this is the run's first income opportunity.
     // Recorded before the setup minigame and the modifier purchases, which is
     // what "money directly before the first gig" has to mean for a runway
@@ -3112,7 +3206,9 @@ export const runSingleSimulation = (
 
     // Mid-gig events from the EVENTS_DB `gig` category
     const moneyBeforeGigEvent = state.player.money
-    maybeApplyGigEvent(state, scenario, rng, counters)
+    if (maybeApplyGigEvent(state, scenario, rng, counters)) {
+      counters.executionCoverage.eventTriggers.gigMoments.activations += 1
+    }
     observeAttributedLoss('negative_events', moneyBeforeGigEvent)
 
     // Misses/maxCombo are player-skill outputs of the rhythm game; the sim
@@ -3253,6 +3349,12 @@ export const runSingleSimulation = (
     }
 
     counters.gigsPlayed += 1
+    counters.executionCoverage.eventTriggers.postGig.evaluations += 1
+    const moneyBeforePostGigEvent = state.player.money
+    if (applyTriggerEvent(state, scenario, rng, counters, ['financial', 'special', 'band'], 'post_gig')) {
+      counters.executionCoverage.eventTriggers.postGig.activations += 1
+    }
+    observeAttributedLoss('negative_events', moneyBeforePostGigEvent)
     runCtx.regionalGigHistory.set(regionId, [...recentRegionalGigs, day])
     const gigNet = financials ? financials.net : 0
     totalGigNet += gigNet
@@ -3447,7 +3549,16 @@ export const mergeExecutionCoverage = sources => {
     minigamesKabelsalat: { attempts: 0, completions: 0 },
     minigamesAmp: { attempts: 0, completions: 0 },
     sponsorship: { attempts: 0, successes: 0 },
-    restStops: { evaluations: 0, activations: 0 }
+    restStops: { evaluations: 0, activations: 0 },
+    eventTriggers: {
+      travel: { evaluations: 0, activations: 0 }, preGig: { evaluations: 0, activations: 0 },
+      gigMoments: { evaluations: 0, activations: 0 }, postGig: { evaluations: 0, activations: 0 }
+    },
+    quests: {
+      status: 'insufficient_evidence', offers: 0, activations: 0,
+      progress: 0, completions: 0, failures: 0, rewards: 0,
+      availableIds: Object.keys(QUEST_REGISTRY).length
+    }
   }
 
   for (const source of sources) {
@@ -3467,6 +3578,13 @@ export const mergeExecutionCoverage = sources => {
         for (const id of current.uniqueIdsSeen ?? [])
           target.uniqueIdsSeen.add(id)
       }
+    }
+  }
+
+  for (const trigger of Object.keys(coverage.eventTriggers)) {
+    for (const source of sources) {
+      coverage.eventTriggers[trigger].evaluations += source?.eventTriggers?.[trigger]?.evaluations ?? 0
+      coverage.eventTriggers[trigger].activations += source?.eventTriggers?.[trigger]?.activations ?? 0
     }
   }
 
@@ -3582,6 +3700,12 @@ export const summarizeScenario = runs => {
   const aggregateCoverage = mergeExecutionCoverage(
     runs.map(run => run.executionCoverage)
   )
+  const eventTriggerCoverage = Object.values(aggregateCoverage.eventTriggers)
+    .filter(metric => metric && typeof metric === 'object')
+  const coverageStatus = eventTriggerCoverage.length > 0 &&
+    eventTriggerCoverage.every(metric => metric.evaluations > 0)
+    ? 'covered'
+    : 'insufficient_evidence'
 
   const popAll = calcStats(runs) || { sampleSize: 0 }
   const popSolvent = calcStats(solventRuns) || { sampleSize: 0 }
@@ -3618,6 +3742,11 @@ export const summarizeScenario = runs => {
     bankruptcyRate: Number(bankruptcyRatePct.toFixed(2)),
     avgEventsApplied,
     avgGigEvents,
+    coverageStatus,
+    harmonyRecovery: Object.fromEntries(
+      ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
+        .map(key => [key, Number(mean(runs.map(run => finiteNumberOr(run.harmonyRecovery?.[key], 0))).toFixed(2))])
+    ),
     avgPerformanceScore: popAll.performanceScore
       ? popAll.performanceScore.mean
       : 0,
@@ -3818,7 +3947,9 @@ export const summarizeScenario = runs => {
     sinkToIncomeRatio: Number((runs.reduce((sum, r) => sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalGigNet, 0))).toFixed(2)),
     gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
     gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
-    gigsToAffordVanUpgrade: Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
+    gigsToAffordVanUpgrade: _VAN_TUNING?.currency === 'money'
+      ? Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2))
+      : null,
     avgMoneyAtEarlyCheckpoint: runs.some(r => r.moneyAtEarlyCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtEarlyCheckpoint != null).map(r => r.moneyAtEarlyCheckpoint))) : null,
     avgMoneyAtMidCheckpoint: runs.some(r => r.moneyAtMidCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtMidCheckpoint != null).map(r => r.moneyAtMidCheckpoint))) : null,
     avgMoneyAtLateCheckpoint: runs.some(r => r.moneyAtLateCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtLateCheckpoint != null).map(r => r.moneyAtLateCheckpoint))) : null,
@@ -4248,7 +4379,9 @@ const getBandHealthInsight = s => {
   return '✅ Bandgesundheit im akzeptablen Bereich.'
 }
 
-const getEventsInsight = s => {
+export const getEventsInsight = s => {
+  if (s.coverageStatus !== 'covered')
+    return '⚪ Unzureichende Evidenz – Event- und Quest-Lifecycle sind nur teilweise simuliert.'
   const totalEvents =
     s.avgSpecialEvents +
     s.avgCashSwings +
@@ -4269,19 +4402,14 @@ const getEventsInsight = s => {
   return '✅ Gesunde Event-Verteilung.'
 }
 
-const getMinigameInsight = s => {
-  const total =
-    s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames
-  if (total > 150) {
-    return '✅ Sehr hohe Minigame-Abdeckung – Tour-Intensität optimal.'
-  }
-  if (total > 80) {
-    return '✅ Gute Minigame-Frequenz – ausreichend Spielinteraktion.'
-  }
-  if (total > 40) {
-    return '✅ Moderate Minigame-Nutzung – entsprechend Szenario-Intensität.'
-  }
-  return '⚠️ Geringe Minigame-Aktivität – Spieltiefe möglicherweise eingeschränkt.'
+export const getMinigameInsight = s => {
+  const completed = s.completed ?? s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames + (s.avgAmpCalibrations ?? 0)
+  const opportunities = s.opportunities ?? (s.avgTravelMinigames ?? 0) + (s.avgGigsPlayed ?? 0)
+  if (opportunities <= 0) return '⚪ Keine erreichbaren Minigame-Gelegenheiten.'
+  const coverage = completed / opportunities
+  if (coverage >= 0.8) return '✅ Hohe Minigame-Abdeckung – erreichbare Interaktionen werden genutzt.'
+  if (coverage >= 0.5) return '✅ Moderate Minigame-Abdeckung – entsprechend der Tourgelegenheiten.'
+  return '⚠️ Geringe Minigame-Abdeckung relativ zu erreichbaren Gelegenheiten.'
 }
 
 export const buildFeatureInventory = () => {
@@ -4317,6 +4445,28 @@ export const buildExecutionCoverage = results =>
   mergeExecutionCoverage(
     results.map(result => result.summary.executionCoverage)
   )
+
+export const renderExecutionCoverageRows = coverage => {
+  const rows = []
+  for (const [key, metric] of Object.entries(coverage ?? {})) {
+    if (key === 'eventTriggers') {
+      for (const [trigger, triggerMetric] of Object.entries(metric)) {
+        if (!triggerMetric || typeof triggerMetric !== 'object') continue
+        rows.push(
+          `| eventTriggers.${trigger} | ${triggerMetric.evaluations > 0 ? '✅' : '❌'} | ${triggerMetric.evaluations ?? 0} | ${triggerMetric.activations ?? 0} | - |`
+        )
+      }
+      continue
+    }
+    const evaluations = metric.evaluations ?? metric.attempts ?? 0
+    const activations = metric.activations ?? metric.completions ?? metric.successes ?? 0
+    const uniqueIds = metric.uniqueIdsSeen
+      ? new Set(metric.uniqueIdsSeen).size
+      : '-'
+    rows.push(`| ${key} | ${metric.covered ? '✅' : '❌'} | ${evaluations} | ${activations} | ${uniqueIds} |`)
+  }
+  return rows.join('\n')
+}
 
 const fmt = n => (n == null ? 0 : n).toLocaleString('de-DE')
 const fmtEur = n => `€${fmt(n)}`
@@ -5165,7 +5315,7 @@ const getIncomeStructureInsight = s => {
     return '⚠️ Reisekosten zu gering – Travel-Kostendruck erhöhen.'
   if (s.gigsToAffordHqUpgrade < 2)
     return '⚠️ HQ-Upgrade amortisiert sich in weniger als zwei Gigs – Preis deutlich erhöhen.'
-  if (s.gigsToAffordVanUpgrade < 0.25)
+  if (s.gigsToAffordVanUpgrade != null && s.gigsToAffordVanUpgrade < 0.25)
     return '⚠️ Van-Upgrade zu günstig – Preis anpassen.'
   return '✅ Einkommensstruktur akzeptabel.'
 }
@@ -5955,14 +6105,7 @@ const buildMarkdownReport = payload => {
     `| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`
   )
   lines.push(`|---|---|---:|---:|---:|`)
-  const cov = payload.executionCoverage || {}
-  Object.keys(cov).forEach(k => {
-    const c = cov[k] || {}
-    const evals = c.evaluations ?? c.attempts ?? 0
-    const acts = c.activations ?? c.completions ?? c.successes ?? 0
-    const uids = c.uniqueIdsSeen ? c.uniqueIdsSeen.length : '-'
-    lines.push(`| ${k} | ${c.covered ? '✅' : '❌'} | ${evals} | ${acts} | ${uids} |`)
-  })
+  lines.push(renderExecutionCoverageRows(payload.executionCoverage || {}))
   lines.push('')
 lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')

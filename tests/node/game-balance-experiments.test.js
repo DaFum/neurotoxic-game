@@ -33,6 +33,8 @@ import {
   runExperimentSuite,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
+  evaluateRecoveryAcceptance,
+  evaluateRecoveryGlobalSafety,
   kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
@@ -50,6 +52,161 @@ import {
   runSingleSimulation
 } from '../../scripts/game-balance-simulation.mjs'
 import { applyRepeatDemandAdjustment } from '../../src/utils/postGig/derivations.ts'
+
+test('experiment registry contains the approved harmony recovery matrix and control', () => {
+  const recovery = BALANCE_EXPERIMENTS.filter(item =>
+    item.id.startsWith('harmony-recovery-')
+  )
+  assert.deepEqual(
+    recovery.map(item => item.id),
+    [
+      'harmony-recovery-none',
+      'harmony-recovery-40-day',
+      'harmony-recovery-40-money',
+      'harmony-recovery-45-day',
+      'harmony-recovery-45-money'
+    ]
+  )
+  assert.ok(recovery.every(item => item.phase === 'recovery'))
+})
+
+test('experiment pipeline forwards non-neutral recovery tuning to simulations', async () => {
+  const observed = []
+  const baseRunner = makeStubRunner({ reliefClearsGate: true })
+  const report = await runExperimentSuite({
+    runsPerScenario: STUB_RUNS_PER_SCENARIO,
+    writeReports: false,
+    simulate: (scenario, seed, tuning) => {
+      if (tuning?.recovery?.threshold > 0) observed.push(tuning.recovery)
+      return {
+        ...baseRunner(scenario, seed, tuning),
+        harmonyRecovery: {
+          evaluations: tuning?.recovery?.threshold > 0 ? 2 : 0,
+          activations: tuning?.recovery?.threshold > 0 ? 1 : 0,
+          harmonyRestored: tuning?.recovery?.threshold > 0 ? 20 : 0,
+          moneySpent: tuning?.recovery?.costType === 'money' ? 100 : 0,
+          daysConsumed: tuning?.recovery?.costType === 'day' ? 1 : 0,
+          gigOpportunitiesForgone: tuning?.recovery?.costType === 'day' ? 1 : 0
+        }
+      }
+    }
+  })
+  assert.ok(
+    observed.some(item => item.threshold === 40 && item.costType === 'money')
+  )
+  assert.ok(
+    observed.some(item => item.threshold === 45 && item.costType === 'day')
+  )
+  const candidate = report.phases.phase6E.candidates.find(
+    item => item.id === 'harmony-recovery-40-money'
+  )
+  assert.equal(
+    candidate.aggregateResults.harmonyRecovery.candidate.activations,
+    1
+  )
+  assert.equal(
+    candidate.aggregateResults.harmonyRecovery.candidate.moneySpent,
+    100
+  )
+  assert.deepEqual(Object.keys(candidate.resultsByScenario).sort(), [
+    'bootstrap_struggle',
+    'chaos_tour'
+  ])
+})
+
+test('recovery acceptance fails closed for missing activation evidence', () => {
+  const scenario = ({
+    harmony = 4,
+    activationRuns = 2,
+    finale = 0,
+    bankruptcy = 1,
+    fame = 0
+  } = {}) => ({
+    activationEvidence: { activationRuns, minimumActivationRuns: 1 },
+    harmonyMedianDelta: harmony,
+    finaleCompletedDeltaPct: finale,
+    bankruptcyDeltaPct: bankruptcy,
+    famePerGig: { deltaPct: fame, sufficientEvidence: true },
+    costsMeasured: true
+  })
+  assert.equal(
+    evaluateRecoveryAcceptance({
+      resultsByScenario: {
+        bootstrap_struggle: scenario(),
+        chaos_tour: scenario({ harmony: 0 })
+      }
+    }).passed,
+    true
+  )
+  const acceptance = evaluateRecoveryAcceptance({
+    resultsByScenario: {
+      bootstrap_struggle: scenario({ activationRuns: 0 }),
+      chaos_tour: scenario()
+    }
+  })
+  assert.equal(acceptance.checks.activationEvidence, false)
+  assert.equal(acceptance.checks.harmonyBenefit, true)
+  assert.equal(acceptance.passed, false)
+})
+
+test('recovery acceptance fails closed without measurable harmony benefit', () => {
+  const scenario = harmony => ({
+    activationEvidence: { activationRuns: 2, minimumActivationRuns: 1 },
+    harmonyMedianDelta: harmony,
+    finaleCompletedDeltaPct: 0,
+    bankruptcyDeltaPct: 0,
+    famePerGig: { deltaPct: 0, sufficientEvidence: true },
+    costsMeasured: true
+  })
+  const acceptance = evaluateRecoveryAcceptance({
+    resultsByScenario: {
+      bootstrap_struggle: scenario(0),
+      chaos_tour: scenario(0)
+    }
+  })
+  assert.equal(acceptance.checks.activationEvidence, true)
+  assert.equal(acceptance.checks.harmonyBenefit, false)
+  assert.equal(acceptance.passed, false)
+})
+
+test('recovery acceptance requires the configured target scenario IDs', () => {
+  const result = {
+    activationEvidence: { activationRuns: 2, minimumActivationRuns: 1 },
+    harmonyMedianDelta: 4,
+    finaleCompletedDeltaPct: 0,
+    bankruptcyDeltaPct: 0,
+    famePerGig: { deltaPct: 0, sufficientEvidence: true },
+    costsMeasured: true
+  }
+  const acceptance = evaluateRecoveryAcceptance({
+    resultsByScenario: { bootstrap_struggle: result, unrelated_probe: result }
+  })
+  assert.equal(acceptance.checks.targetProfilesMeasured, false)
+  assert.equal(acceptance.passed, false)
+})
+
+test('global recovery safety fails closed across the complete scenario matrix', () => {
+  const safe = Object.fromEntries(
+    SCENARIOS.map(scenario => [
+      scenario.id,
+      {
+        finaleCompletedDeltaPct: 0,
+        bankruptcyDeltaPct: 0,
+        famePerGig: { deltaPct: 0, sufficientEvidence: true },
+        costsMeasured: true
+      }
+    ])
+  )
+  assert.equal(
+    evaluateRecoveryGlobalSafety({ resultsByScenario: safe }).passed,
+    true
+  )
+  safe.unrelated_probe = safe.baseline_touring
+  delete safe.baseline_touring
+  const acceptance = evaluateRecoveryGlobalSafety({ resultsByScenario: safe })
+  assert.equal(acceptance.checks.completeScenarioMatrix, false)
+  assert.equal(acceptance.passed, false)
+})
 
 const combinedSummary = ({
   scenarioId = 'baseline_touring',
@@ -874,6 +1031,7 @@ const DEFAULT_RANKING_ENTRIES = [
 const buildMarkdownReport = ({
   objectiveMet,
   rankingEntries = DEFAULT_RANKING_ENTRIES,
+  recoveryPhase,
   // A blocking gate must not default to "passed" in a fixture: a test that forgot
   // to supply it would assert on a pass nothing validated. Fail closed, and make
   // the passing case state so explicitly.
@@ -946,7 +1104,8 @@ const buildMarkdownReport = ({
             low_resource_touring: gapProfile
           }
         }
-      }
+      },
+      phase6E: recoveryPhase
     },
     finalCombinedValidation: {
       passed: true,
@@ -1107,10 +1266,13 @@ test('a passing holdout safety gate withholds nothing', () => {
   assert.match(passed, /Holdout-Sicherheitsgate: \*\*PASS\*\*/)
   assert.doesNotMatch(passed, /Keine Produktionsempfehlung/)
   assert.match(passed, /Holdout-Sicherheitsgrenzen \(harte Caps\) \| bestanden/)
-  assert.match(passed, /Gesamt: \*\*PASS\*\*/)
+  assert.match(
+    passed,
+    /unabhängigen Phase-3-Balance-Gates: Kalibrierung \*\*PASS\*\* · Holdout-Sicherheit \*\*PASS\*\*/
+  )
 })
 
-test('the overall release status fails when either gate fails', () => {
+test('release status distinguishes an unselected recovery candidate', () => {
   const holdoutFailed = renderExperimentMarkdown(
     buildMarkdownReport({ objectiveMet: true })
   )
@@ -1118,8 +1280,29 @@ test('the overall release status fails when either gate fails', () => {
   // Calibration passes in this fixture, so the overall verdict must still be FAIL
   // — that is the whole point of the second gate.
   assert.match(holdoutFailed, /Kalibrierungs-Gate: \*\*PASS\*\*/)
-  assert.match(holdoutFailed, /Holdout-Sicherheit: \*\*FAIL\*\*/)
-  assert.match(holdoutFailed, /Gesamt: \*\*FAIL\*\*/)
+  assert.match(holdoutFailed, /Holdout-Sicherheit \*\*FAIL\*\*/)
+  assert.match(
+    holdoutFailed,
+    /keinen Kandidaten.*Kalibrierung und Auswahl bestanden/i
+  )
+  assert.doesNotMatch(holdoutFailed, /Global-Safety-Validierung \*\*FAIL\*\*/)
+})
+
+test('release status keeps successful recovery at runtime prototyping', () => {
+  const markdown = renderExperimentMarkdown(
+    buildMarkdownReport({
+      recoveryPhase: {
+        candidates: [],
+        validation: { id: 'harmony-recovery-40-money', resultsByScenario: {} },
+        globalSafety: { passed: true },
+        selectedCandidateId: 'harmony-recovery-40-money',
+        outcome: 'candidate-validated-for-runtime-prototyping'
+      }
+    })
+  )
+
+  assert.match(markdown, /für Runtime-Prototyping validiert/)
+  assert.doesNotMatch(markdown, /Produktionsempfehlung: `harmony-recovery/)
 })
 
 test('experiment markdown reports a met Phase 3C objective without partial wording', () => {
@@ -1498,7 +1681,10 @@ test('experiment reports compare the previous and current full-report cohorts', 
 
   report.previousReportComparison = sameContractComparison
   const sameContractMarkdown = renderExperimentMarkdown(report)
-  assert.match(sameContractMarkdown, /same recorded cohort metadata/i)
+  assert.match(
+    sameContractMarkdown,
+    /Übereinstimmende Kohortenfelder: Runs je Szenario und Seed-Namensraum/
+  )
   assert.doesNotMatch(
     sameContractMarkdown,
     /unterschiedliche Seed-Namensräume und Stichprobengrößen/i
