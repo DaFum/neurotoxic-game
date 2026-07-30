@@ -83,26 +83,26 @@ export const useDealNegotiation = ({
           ...prev,
           [selectedDeal.id]: { status: 'REVOKED', deal: null }
         }))
-        addToast(result.feedback, 'error')
+        addToast(t(result.feedbackKey), 'error')
       } else if (result.status === 'FAILED') {
         setNegotiatedDeals(prev => ({
           ...prev,
           [selectedDeal.id]: { status: 'FAILED', deal: selectedDeal }
         }))
-        addToast(result.feedback, 'warning')
+        addToast(t(result.feedbackKey), 'warning')
       } else if (result.success) {
         setNegotiatedDeals(prev => ({
           ...prev,
           [selectedDeal.id]: { status: 'SUCCESS', deal: result.deal }
         }))
-        addToast(result.feedback, 'success')
+        addToast(t(result.feedbackKey), 'success')
       } else {
         // Accepted but worse terms (Persuasive fail)
         setNegotiatedDeals(prev => ({
           ...prev,
           [selectedDeal.id]: { status: 'WORSENED', deal: result.deal }
         }))
-        addToast(result.feedback, 'warning')
+        addToast(t(result.feedbackKey), 'warning')
       }
 
       if (negotiationTimerRef.current) {

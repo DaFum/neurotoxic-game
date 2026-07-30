@@ -14,6 +14,7 @@ Roles:
 ## Gig playback sequencing
 
 - In `gigPlayback.ts`, natural source-end cleanup must clear the ended source state before invoking `gigOnEnded`. Setlist chaining can synchronously start the next song clock; clearing after the callback erases that next-song state.
+- `stopGigPlayback()` must invalidate `playRequestId` so it cancels starts waiting in `ensureAudioContext()` or `loadAudioBuffer()`. Cleanup performed inside `startGigPlayback()` must use the non-invalidating internal path, and regressions must call the exported stop function instead of mutating `playRequestId` directly.
 
 ## Snapshots and subscription
 
@@ -34,3 +35,8 @@ Roles:
 
 - Decoding helpers (e.g. `decodeAudioDataWithTimeout`) must not double-check the same promise; rely on the outer abort/timeout path.
 - Audio fetch/decode failures warn and return `null` from load helpers; do not synthesize fallback `AudioBuffer` objects for corrupt data.
+
+## Playback cancellation
+
+- `startGigPlayback` claims a generation id (`audioState.playRequestId`) and re-checks it after every `await`; `stopGigPlayback` bumps that id. Any new `await` added to that function needs the same re-check, or a playback whose buffer was still loading when the gig ended will start afterwards.
+- Its `false` return currently means "failed OR cancelled" — the two are indistinguishable. `playbackStrategies` reads `false` as "strategy unavailable" and falls through, so a cancelled start can be followed by MIDI/procedural audio beginning after the gig stopped. Do not add new fallback decisions keyed on that boolean without distinguishing the two cases first.

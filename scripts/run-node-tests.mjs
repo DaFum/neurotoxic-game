@@ -3,6 +3,7 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
+import { NODE_TEST_DIRS } from './utils/node-test-dirs.mjs'
 
 const rawArgs = process.argv.slice(2)
 const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
@@ -67,14 +68,7 @@ const commandArgs = [
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
 
-const NODE_TEST_DIRS = [
-  'tests/node',
-  'tests/components',
-  'tests/context',
-  'tests/events',
-  'tests/golden-path',
-  'tests/reducers'
-]
+
 
 const HEAVY_NODE_TESTS = [
   'tests/node/CrowdManager.test.js',

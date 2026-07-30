@@ -10,7 +10,13 @@ import type {
 import type { RemoveByIdCallback, TranslationCallback } from './callbacks'
 import type { RefObject, MutableRefObject } from 'react'
 import type * as React from 'react'
-import type { BrandDeal, Platform, SocialPostOption } from './social'
+import type {
+  BrandDeal,
+  BrandDealNegotiationFeedbackKey,
+  BrandDealNegotiationResult,
+  Platform,
+  SocialPostOption
+} from './social'
 export type { AudioState, AudioControls } from './audio'
 
 /**
@@ -388,7 +394,7 @@ export interface DealActionsProps {
 export interface DealNegotiationState {
   deal?: BrandDeal | null
   status?: 'REVOKED' | 'FAILED' | 'SUCCESS' | 'WORSENED'
-  feedback?: string
+  feedbackKey?: BrandDealNegotiationFeedbackKey
   success?: boolean
   [key: string]: unknown
 }
@@ -396,12 +402,7 @@ export interface DealNegotiationState {
 /**
  * Resolved outcome of a brand-deal negotiation.
  */
-export interface NegotiationResult {
-  success: boolean
-  deal: BrandDeal | null
-  feedback: string
-  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
-}
+export type NegotiationResult = BrandDealNegotiationResult
 
 /**
  * State and handlers returned by the deal-negotiation hook.

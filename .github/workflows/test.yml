@@ -35,7 +35,9 @@ jobs:
 
     steps:
       - name: Checkout repository (merge ref)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -52,7 +54,7 @@ jobs:
 
       - name: Upload test log artifact (node)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-output-node-shard-${{ matrix.shard }}
           path: test-output-node-${{ matrix.shard }}.txt
@@ -78,7 +80,9 @@ jobs:
 
     steps:
       - name: Checkout repository (merge ref)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -95,7 +99,7 @@ jobs:
 
       - name: Upload test log artifact (vitest-logic)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-output-vitest-logic
           path: test-output-vitest-logic.txt
@@ -121,7 +125,9 @@ jobs:
 
     steps:
       - name: Checkout repository (merge ref)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -138,7 +144,7 @@ jobs:
 
       - name: Upload test log artifact (vitest-ui)
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: test-output-vitest-ui
           path: test-output-vitest-ui.txt
@@ -161,10 +167,15 @@ jobs:
     name: TS Nocheck Guard
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -178,10 +189,15 @@ jobs:
     name: Typecheck
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -191,17 +207,51 @@ jobs:
       - name: Run core TypeScript checks
         run: pnpm run typecheck:core
 
+      - name: Run API and server TypeScript checks
+        run: pnpm run typecheck:server
+
       - name: Run reducer TypeScript checks
         run: pnpm run typecheck
+
+  playwright-e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Narrower than the workflow-level grant: this job only reads the tree to
+    # run the browser suite and never comments on the PR.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run Playwright E2E suite
+        run: pnpm run test:e2e
 
   locale-smoke-tests:
     name: Locale Smoke Tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -224,10 +274,15 @@ jobs:
     name: Locale Full Tests
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -250,10 +305,15 @@ jobs:
     name: Performance Tests
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
@@ -276,10 +336,15 @@ jobs:
     name: Production Build
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm

@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { MINIGAME_REGISTRY } from '../src/utils/minigameRegistry.ts'
-import { GAME_PHASES } from '../src/context/gameConstants.ts'
+import { MINIGAME_REGISTRY } from '../../src/utils/minigameRegistry.ts'
+import { GAME_PHASES } from '../../src/context/gameConstants.ts'
 
 describe('MINIGAME_REGISTRY', () => {
   const KNOWN_MINIGAMES = ['travel', 'roadie', 'ampCalibration', 'kabelsalat']

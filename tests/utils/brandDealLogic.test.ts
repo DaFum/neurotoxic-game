@@ -94,7 +94,8 @@ describe('brandDealLogic', () => {
       expect(result.success).toBe(true)
       expect(result.status).toBe('ACCEPTED')
       expect(result.deal?.offer.upfront).toBe(1100) // 1000 * 1.1 = 1100
-      expect(result.feedback).toBe('Modest increase secured.')
+      expect(result.feedbackKey).toBe('ui:deals.feedback.safeSuccess')
+      expect(result).not.toHaveProperty('feedback')
     })
 
     it('handles SAFE strategy with failure', () => {
@@ -107,7 +108,7 @@ describe('brandDealLogic', () => {
       expect(result.success).toBe(false)
       expect(result.status).toBe('FAILED')
       expect(result.deal?.offer.upfront).toBe(1000) // No change
-      expect(result.feedback).toBe('They refused to budge.')
+      expect(result.feedbackKey).toBe('ui:deals.feedback.safeFailure')
     })
 
     it('handles PERSUASIVE strategy with success', () => {
@@ -121,6 +122,7 @@ describe('brandDealLogic', () => {
       expect(result.status).toBe('ACCEPTED')
       expect(result.deal?.offer.upfront).toBe(1200) // 1000 * 1.2
       expect(result.deal?.offer.perGig).toBe(110) // 100 * 1.1
+      expect(result.feedbackKey).toBe('ui:deals.feedback.persuasiveSuccess')
     })
 
     it('handles PERSUASIVE strategy with success when perGig is absent', () => {
@@ -156,6 +158,7 @@ describe('brandDealLogic', () => {
       expect(result.success).toBe(false)
       expect(result.status).toBe('ACCEPTED') // Status is ACCEPTED but worse terms
       expect(result.deal?.offer.upfront).toBe(900) // 1000 * 0.9
+      expect(result.feedbackKey).toBe('ui:deals.feedback.persuasiveFailure')
     })
 
     it('handles AGGRESSIVE strategy with success', () => {
@@ -168,6 +171,7 @@ describe('brandDealLogic', () => {
       expect(result.success).toBe(true)
       expect(result.status).toBe('ACCEPTED')
       expect(result.deal?.offer.upfront).toBe(1500) // 1000 * 1.5
+      expect(result.feedbackKey).toBe('ui:deals.feedback.aggressiveSuccess')
     })
 
     it('handles AGGRESSIVE strategy with failure (REVOKED)', () => {
@@ -181,6 +185,7 @@ describe('brandDealLogic', () => {
       expect(result.success).toBe(false)
       expect(result.status).toBe('REVOKED')
       expect(result.deal).toBeNull() // Deal should be null
+      expect(result.feedbackKey).toBe('ui:deals.feedback.aggressiveFailure')
     })
 
     it('applies modifier: rival proximity penalty', () => {

@@ -8,6 +8,17 @@ vi.mock('../../src/utils/errorHandler', () => ({
   handleError: vi.fn()
 }))
 
+vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
+  useTranslation: () => ({
+    t: (key, options) =>
+      key === 'ui:deals.feedback.safeSuccess'
+        ? 'Localized negotiation feedback'
+        : (options?.defaultValue ?? key),
+    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+  })
+}))
+
 const mockGameState = {
   player: { stats: {} },
   band: {},
@@ -25,7 +36,7 @@ vi.mock('../../src/utils/brandDealLogic', () => ({
   negotiateDeal: vi.fn().mockReturnValue({
     success: true,
     status: 'ACCEPTED',
-    feedback: 'Deal accepted!',
+    feedbackKey: 'ui:deals.feedback.safeSuccess',
     deal: {
       id: 'test-deal',
       name: 'Sponsorship',
@@ -100,7 +111,7 @@ test('DealsPhase renders offers and handles negotiation', async () => {
   const aggressiveBtn = screen.getByText('AGGRESSIVE (High Risk)')
   fireEvent.click(aggressiveBtn)
 
-  expect(screen.getByText('Deal accepted!')).toBeInTheDocument()
+  expect(screen.getByText('Localized negotiation feedback')).toBeInTheDocument()
 
   act(() => {
     vi.advanceTimersByTime(1500)

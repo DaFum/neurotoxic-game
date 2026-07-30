@@ -154,9 +154,9 @@ export const calculateGigPlaybackWindow = ({
 }
 
 /**
- * Stops gig playback and clears the gig clock state.
+ * Stops gig playback without invalidating pending requests.
  */
-export function stopGigPlayback() {
+const stopGigPlaybackInternal = (): void => {
   if (audioState.gigSource) {
     logger.debug(
       'AudioEngine',
@@ -167,14 +167,41 @@ export function stopGigPlayback() {
 }
 
 /**
+ * Stops gig playback, clears the gig clock state, and invalidates pending starts.
+ */
+export function stopGigPlayback(): void {
+  audioState.playRequestId++
+  stopGigPlaybackInternal()
+}
+
+/**
  * Starts gig playback using Web Audio buffer playback.
+ *
+ * @remarks
+ * Takes a single options object, not positional arguments.
+ *
+ * The call claims a generation id (`audioState.playRequestId`) up front and
+ * re-checks it after EVERY await — `ensureAudioContext()` and
+ * `loadAudioBuffer()` — because `stopGigPlayback()` bumps that id. This is what
+ * prevents a playback whose buffer was still loading when the gig ended from
+ * starting afterwards. Any new await added to this function needs the same
+ * re-check.
+ *
+ * CAVEAT for callers: a `false` return does NOT distinguish "cancelled by
+ * stopGigPlayback" from "could not start". `playbackStrategies` treats `false`
+ * as "strategy unavailable" and falls through to the next strategy, so a
+ * cancelled start can currently be followed by MIDI/procedural audio beginning
+ * after the gig was stopped. Distinguish the two before relying on the result
+ * for fallback decisions.
+ *
  * @param params - Playback params.
  * - `params.filename` - Audio filename to play.
  * - `params.bufferOffsetMs` - Offset into the buffer in ms. Defaults to `0`.
  * - `params.delayMs` - Delay before starting playback in ms. Defaults to `0`.
  * - `params.durationMs` - Optional playback duration in ms. Defaults to `null`.
  * - `params.onEnded` - Optional. Callback invoked after playback ends.
- * @returns True when playback starts.
+ * @returns `true` when playback started (or completed immediately for a
+ * zero-length window); `false` when it failed OR was cancelled mid-load.
  */
 export async function startGigPlayback({
   filename,
@@ -189,13 +216,14 @@ export async function startGigPlayback({
   durationMs?: number | null
   onEnded?: ((args: GigEndInfo) => void) | null
 }): Promise<boolean> {
+  const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
+  if (!unlocked || reqId !== audioState.playRequestId) return false
 
-  stopGigPlayback()
+  stopGigPlaybackInternal()
 
   const buffer = await loadAudioBuffer(filename)
-  if (!buffer) return false
+  if (!buffer || reqId !== audioState.playRequestId) return false
 
   const rawContext = getRawAudioContext()
   const source = createGigBufferSource({
@@ -350,8 +378,9 @@ export function pauseGigPlayback(): void {
 }
 
 /**
- * Resumes gig playback from the stored offset.
- * @returns True on success or no-op, false on source.start() failure.
+ * Resumes paused gig playback from the stored offset.
+ *
+ * @returns `true` if playback is resumed or no action is needed, `false` if starting the audio source fails.
  */
 export function resumeGigPlayback(): boolean {
   if (!audioState.gigIsPaused) return true
@@ -442,8 +471,3 @@ export function resumeGigPlayback(): boolean {
   }
   return true
 }
-
-/**
- * Internal function to stop audio without invalidating pending requests.
- * Used by playback functions to clear previous state.
- */

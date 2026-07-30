@@ -158,10 +158,12 @@ export const handleUpdateBand = (
       }
       if (
         Object.hasOwn(patch, 'staminaMax') &&
-        !isFiniteNumber(next.staminaMax)
+        (!isFiniteNumber(next.staminaMax) || next.staminaMax <= 0)
       ) {
         next.staminaMax =
-          existing && isFiniteNumber(existing.staminaMax)
+          existing &&
+          isFiniteNumber(existing.staminaMax) &&
+          existing.staminaMax > 0
             ? existing.staminaMax
             : DEFAULT_MEMBER_STAMINA_MAX
       }

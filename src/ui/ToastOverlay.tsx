@@ -144,6 +144,8 @@ export const ToastOverlay = () => {
       style={{ zIndex: 'var(--z-toast)' }}
       role='status'
       aria-live='polite'
+      // Keeps this live region audible while a modal mutes the background.
+      data-modal-keep-announcing=''
       aria-atomic='false'
     >
       <AnimatePresence>

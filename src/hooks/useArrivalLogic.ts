@@ -5,8 +5,10 @@ import {
   processHarmonyRegen,
   processTravelEvents
 } from '../utils/arrivalUtils'
+import { handleError } from '../utils/errorHandler'
+import i18n from '../i18n'
 import { GAME_PHASES } from '../context/gameConstants'
-import type { GamePhase } from '../types'
+import type { GamePhase, Venue } from '../types'
 
 type UseArrivalLogicOptions = {
   onShowHQ?: () => void
@@ -69,7 +71,8 @@ export const useArrivalLogic = ({
   // so it never has to call a setState synchronously inside the effect.
   const pendingRouteRef = useRef<{
     scene: GamePhase
-    gigStarted: boolean
+    gigVenue: Venue | null
+    gigStartQueued: boolean
   } | null>(null)
   const [routeNonce, setRouteNonce] = useState(0)
 
@@ -92,14 +95,53 @@ export const useArrivalLogic = ({
   useEffect(() => {
     const route = pendingRouteRef.current
     if (!route) return
-    // Consume the pending route exactly once
-    pendingRouteRef.current = null
-
     if (currentScene === GAME_PHASES.GAMEOVER) {
+      pendingRouteRef.current = null
       // GAMEOVER: save the post-bankruptcy state and do NOT overwrite the scene
       saveGame(false)
       return
     }
+
+    if (route.gigVenue && !route.gigStartQueued) {
+      try {
+        startGig(route.gigVenue)
+        route.gigStartQueued = true
+        // Deliberately does NOT defer the save to a second effect pass.
+        // START_GIG sets currentScene = PRE_GIG, and this hook lives only in
+        // TourbusScene, which SceneRouter renders solely for TRAVEL_MINIGAME —
+        // so the very commit that would re-trigger this effect unmounts the
+        // component hosting it. A deferred save is therefore never written, and
+        // the day advance, travel-event money/harmony and rival move are lost
+        // until the GIG→POST_GIG autosave.
+        //
+        // KNOWN LIMITATION: startGig dispatches inside startTransition, so the
+        // snapshot saved below is still pre-START_GIG. handleLoadGame forces
+        // currentScene to OVERWORLD (systemReducer.ts:216) but RESTORES
+        // currentGig, gigModifiers and minigame (:215, :217, :229), so a reload
+        // straight after a gig arrival comes back on the overworld carrying the
+        // PREVIOUS gig's venue. The arrival data itself (day, cash, harmony,
+        // events, rival) is correct because those dispatches already committed.
+        // Saving late loses the whole arrival; saving now loses only the gig
+        // hand-off, so this is the lesser failure — but the real fix is to move
+        // this save to a lifecycle that outlives the scene change.
+      } catch (error) {
+        handleError(error, {
+          addToast,
+          fallbackMessage: i18n.t('ui:arrival.failedToStartGig', {
+            defaultValue: 'Failed to start Gig.'
+          })
+        })
+        route.gigVenue = null
+        // `route.scene` is the gig-side scene handleNodeArrival picked. Routing
+        // there after START_GIG failed would mount PreGig/Gig with no
+        // `currentGig`, so fall back to the overworld instead of a scene that
+        // cannot render.
+        route.scene = GAME_PHASES.OVERWORLD
+      }
+    }
+
+    // Consume the pending route exactly once.
+    pendingRouteRef.current = null
 
     // Normal path: route then save.
     // The save snapshot may still carry the pre-route currentScene
@@ -110,11 +152,11 @@ export const useArrivalLogic = ({
     // and never restored. The post-arrival fields that DO matter (day, cash,
     // harmony, events, rivalBand) are captured correctly because this effect
     // runs after advanceDay() and the side-effect dispatches have committed.
-    if (!route.gigStarted) {
+    if (!route.gigStartQueued) {
       changeScene(route.scene)
     }
     saveGame(false)
-  }, [routeNonce, currentScene, saveGame, changeScene])
+  }, [routeNonce, currentScene, saveGame, changeScene, startGig, addToast])
 
   const handleArrivalSequence = useCallback(() => {
     const nodeId = player.currentNodeId
@@ -148,6 +190,7 @@ export const useArrivalLogic = ({
 
       // 4. Handle Node Arrival & Routing
       // Delegates routing (HQ, Gig, Rest Stop) to shared utility
+      let queuedGigVenue: Venue | null = null
       const arrivalResult = currentNode
         ? handleNodeArrival({
             node: currentNode,
@@ -156,7 +199,9 @@ export const useArrivalLogic = ({
             updateBand,
             updatePlayer,
             triggerEvent,
-            startGig,
+            startGig: venue => {
+              queuedGigVenue = venue
+            },
             addToast,
             onShowHQ:
               onShowHQ ??
@@ -178,7 +223,8 @@ export const useArrivalLogic = ({
       //    b) GAMEOVER from advanceDay bankruptcy is detected before routing (Task 9)
       pendingRouteRef.current = {
         scene: arrivalResult.scene,
-        gigStarted: arrivalResult.gigStarted
+        gigVenue: arrivalResult.gigStarted ? queuedGigVenue : null,
+        gigStartQueued: false
       }
       setRouteNonce(n => n + 1)
     } catch (e) {
@@ -195,7 +241,6 @@ export const useArrivalLogic = ({
     updateBand,
     updatePlayer,
     triggerEvent,
-    startGig,
     addToast,
     band,
     gameMap,

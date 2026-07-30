@@ -571,6 +571,28 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test('rejects negative loaded member staminaMax values', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      band: {
+        members: [
+          {
+            id: 'm1',
+            name: 'Matze',
+            stamina: 80,
+            staminaMax: -20
+          }
+        ]
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+    const member = nextState.band.members[0]
+
+    assert.equal(member.stamina, 80)
+    assert.equal(Object.hasOwn(member, 'staminaMax'), false)
+  })
+
   await t.test(
     'drops self-relationships and non-number relationship scores from loaded members',
     () => {
@@ -1023,6 +1045,69 @@ test('systemReducer - LOAD_GAME', async t => {
       ])
     }
   )
+
+  await t.test(
+    'uses registry required values and clamps loaded progress to 0..required',
+    () => {
+      const initialState = createInitialState()
+      const loadedState = {
+        activeQuests: [
+          {
+            id: 'quest_viral_dance',
+            progress: 999,
+            required: 1,
+            startedOnDay: 4
+          },
+          {
+            id: 'quest_apology_tour',
+            progress: -10,
+            required: 999,
+            startedOnDay: 2
+          }
+        ]
+      }
+
+      const nextState = handleLoadGame(initialState, loadedState)
+      const viralDance = nextState.activeQuests.find(
+        quest => quest.id === 'quest_viral_dance'
+      )
+      const apologyTour = nextState.activeQuests.find(
+        quest => quest.id === 'quest_apology_tour'
+      )
+
+      assert.equal(viralDance.required, 500)
+      assert.equal(viralDance.progress, 500)
+      assert.equal(apologyTour.required, 3)
+      assert.equal(apologyTour.progress, 0)
+    }
+  )
+
+  await t.test('preserves unknown legacy quest runtime fields on load', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      activeQuests: [
+        {
+          id: 'legacy_custom_quest',
+          label: 'Legacy custom quest',
+          progress: 2,
+          required: 7,
+          moneyReward: 100
+        }
+      ]
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+
+    assert.deepEqual(nextState.activeQuests, [
+      {
+        id: 'legacy_custom_quest',
+        label: 'Legacy custom quest',
+        progress: 2,
+        required: 7,
+        moneyReward: 100
+      }
+    ])
+  })
 
   await t.test(
     'drops loaded scoped registry quests without a scope key',

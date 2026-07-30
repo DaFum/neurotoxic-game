@@ -2,6 +2,13 @@ import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
 const rawContext = { currentTime: 10 }
+const mockEnsureAudioContext = mock.fn(async () => true)
+const mockLoadAudioBuffer = mock.fn(async () => ({
+  duration: 30,
+  length: 30000,
+  numberOfChannels: 2,
+  sampleRate: 44100
+}))
 const transport = {
   start: mock.fn(),
   stop: mock.fn(),
@@ -21,7 +28,7 @@ mock.module('tone', {
 
 mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
-    ensureAudioContext: mock.fn(async () => true),
+    ensureAudioContext: mockEnsureAudioContext,
     getRawAudioContext: () => rawContext,
     getAudioContextTimeSec: () => rawContext.currentTime
   }
@@ -29,12 +36,7 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
 
 mock.module(new URL('../../src/utils/audio/assets.ts', import.meta.url).href, {
   namedExports: {
-    loadAudioBuffer: mock.fn(async () => ({
-      duration: 30,
-      length: 30000,
-      numberOfChannels: 2,
-      sampleRate: 44100
-    }))
+    loadAudioBuffer: mockLoadAudioBuffer
   }
 })
 
@@ -72,7 +74,7 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   }
 })
 
-const { startGigClock, startGigPlayback } =
+const { startGigClock, startGigPlayback, stopGigPlayback } =
   await import('../../src/utils/audio/gigPlayback')
 const { audioState, resetGigState } =
   await import('../../src/utils/audio/state')
@@ -80,6 +82,8 @@ const { audioState, resetGigState } =
 test('gig source onended keeps synchronous next-song clock state', async () => {
   resetGigState()
   sources.length = 0
+  mockEnsureAudioContext.mock.resetCalls()
+  mockLoadAudioBuffer.mock.resetCalls()
   transport.start.mock.resetCalls()
   transport.stop.mock.resetCalls()
 
@@ -97,4 +101,77 @@ test('gig source onended keeps synchronous next-song clock state', async () => {
   sources[0].onended()
 
   assert.strictEqual(audioState.gigStartCtxTime, 42)
+})
+
+test('gig playback aborts when stopped while audio context unlock is pending', async () => {
+  resetGigState()
+  sources.length = 0
+  mockEnsureAudioContext.mock.resetCalls()
+  mockLoadAudioBuffer.mock.resetCalls()
+
+  let resolveContext
+  mockEnsureAudioContext.mock.mockImplementationOnce(
+    () =>
+      new Promise(resolve => {
+        resolveContext = resolve
+      })
+  )
+
+  const pendingPlayback = startGigPlayback({ filename: 'cancelled.ogg' })
+  await Promise.resolve()
+  stopGigPlayback()
+  resolveContext(true)
+
+  assert.strictEqual(await pendingPlayback, false)
+  assert.strictEqual(mockLoadAudioBuffer.mock.calls.length, 0)
+  assert.strictEqual(sources.length, 0)
+})
+
+test('gig playback aborts when stopped while its buffer is loading', async () => {
+  resetGigState()
+  sources.length = 0
+  mockEnsureAudioContext.mock.resetCalls()
+  mockLoadAudioBuffer.mock.resetCalls()
+
+  let signalBufferLoad
+  const bufferLoadStarted = new Promise(resolve => {
+    signalBufferLoad = resolve
+  })
+  let resolveBuffer
+  mockLoadAudioBuffer.mock.mockImplementationOnce(
+    () =>
+      new Promise(resolve => {
+        resolveBuffer = resolve
+        signalBufferLoad()
+      })
+  )
+
+  const pendingPlayback = startGigPlayback({ filename: 'cancelled.ogg' })
+  // The watchdog stays referenced so it can actually fire if loadAudioBuffer is
+  // never reached, and is cleared once the race settles so it never holds the
+  // event loop open for the full timeout on the happy path.
+  let watchdog
+  try {
+    await Promise.race([
+      bufferLoadStarted,
+      new Promise((_resolve, reject) => {
+        watchdog = setTimeout(
+          () => reject(new Error('loadAudioBuffer was never called')),
+          5000
+        )
+      })
+    ])
+  } finally {
+    clearTimeout(watchdog)
+  }
+  stopGigPlayback()
+  resolveBuffer({
+    duration: 30,
+    length: 30000,
+    numberOfChannels: 2,
+    sampleRate: 44100
+  })
+
+  assert.strictEqual(await pendingPlayback, false)
+  assert.strictEqual(sources.length, 0)
 })

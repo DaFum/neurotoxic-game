@@ -137,11 +137,9 @@ export const useClinicLogic = (): {
   band: BandState | undefined | null
   healCostMoney: number
   enhanceCostFame: number
-  harmonyRecoveryCost: number
   healMember: (memberId: string) => void
   graftNeuroOverclock: (memberId: string) => void
   enhanceMember: (memberId: string, traitId: string) => void
-  recoverHarmony: () => void
   leaveClinic: () => void
 } => {
   const { t } = useTranslation(['ui'])
@@ -151,7 +149,6 @@ export const useClinicLogic = (): {
     changeScene,
     addToast,
     clinicHeal,
-    recoverHarmony,
     clinicEnhance,
     graftNeuroOverclock
   } = useGameActions()
@@ -198,10 +195,8 @@ export const useClinicLogic = (): {
     band,
     healCostMoney,
     enhanceCostFame,
-    harmonyRecoveryCost: CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
     healMember,
     enhanceMember,
-    recoverHarmony,
     graftNeuroOverclock,
     leaveClinic
   }

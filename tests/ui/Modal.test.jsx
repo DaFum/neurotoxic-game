@@ -1,5 +1,13 @@
 import { describe, expect, test, vi } from 'vitest'
-import { render, fireEvent } from '@testing-library/react'
+import { useState } from 'react'
+import {
+  render,
+  fireEvent,
+  screen,
+  waitFor,
+  within
+} from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { Modal } from '../../src/ui/shared/Modal.tsx'
 
 describe('Modal Component', () => {
@@ -150,5 +158,347 @@ describe('Modal Component', () => {
     const closeBtn = getByRole('button', { name: /close/i })
     fireEvent.click(closeBtn)
     expect(onCloseMock).toHaveBeenCalledTimes(1)
+  })
+
+  test('loops Tab and Shift+Tab focus within the dialog', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <>
+        <button type='button'>Outside control</button>
+        <Modal isOpen={true} onClose={() => {}} title='Focus trap'>
+          <button type='button'>First action</button>
+          <a href='/last-action'>Last action</a>
+        </Modal>
+      </>
+    )
+
+    const dialog = screen.getByRole('dialog')
+    const closeButton = screen.getByRole('button', { name: /close/i })
+    const lastAction = screen.getByRole('link', { name: 'Last action' })
+    const focusableElements = Array.from(
+      dialog.querySelectorAll('button, a[href]')
+    )
+    const firstFocusable = focusableElements[0]
+    const lastFocusable = focusableElements[focusableElements.length - 1]
+
+    expect(firstFocusable).toBe(closeButton)
+    expect(lastFocusable).toBe(lastAction)
+
+    lastFocusable.focus()
+    await user.tab()
+    expect(firstFocusable).toHaveFocus()
+
+    firstFocusable.focus()
+    await user.tab({ shift: true })
+    expect(lastFocusable).toHaveFocus()
+  })
+
+  test('skips CSS-hidden candidates when looping focus', async () => {
+    const user = userEvent.setup()
+
+    render(
+      <Modal isOpen={true} onClose={() => {}} title='Focus trap'>
+        <button type='button'>Visible action</button>
+        <a href='/hidden-action' style={{ display: 'none' }}>
+          Hidden action
+        </a>
+        <div style={{ display: 'none' }}>
+          <button type='button'>Collapsed section action</button>
+        </div>
+      </Modal>
+    )
+
+    const closeButton = screen.getByRole('button', { name: /close/i })
+    const visibleAction = screen.getByRole('button', {
+      name: 'Visible action'
+    })
+
+    // The trailing link is display:none, so the visible action is the last
+    // reachable candidate and Tab must wrap from it back to the close button.
+    visibleAction.focus()
+    await user.tab()
+    expect(closeButton).toHaveFocus()
+
+    await user.tab({ shift: true })
+    expect(visibleAction).toHaveFocus()
+  })
+
+  test('returns focus to the opener after Escape closes the dialog', async () => {
+    const user = userEvent.setup()
+
+    const Harness = () => {
+      const [isOpen, setIsOpen] = useState(false)
+
+      return (
+        <>
+          <button type='button' onClick={() => setIsOpen(true)}>
+            Open dialog
+          </button>
+          <Modal
+            isOpen={isOpen}
+            onClose={() => setIsOpen(false)}
+            title='Return focus'
+          >
+            <button type='button'>Dialog action</button>
+          </Modal>
+        </>
+      )
+    }
+
+    render(<Harness />)
+
+    const opener = screen.getByRole('button', { name: 'Open dialog' })
+    await user.click(opener)
+    await waitFor(() => expect(screen.getByRole('dialog')).toHaveFocus())
+
+    await user.keyboard('{Escape}')
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    )
+    expect(opener).toHaveFocus()
+  })
+
+  test('marks background branches inert while preserving modal semantics', () => {
+    const preserveInertAttribute = element => {
+      if (element && !element.hasAttribute('inert')) {
+        element.setAttribute('inert', 'preserved')
+      }
+    }
+
+    const { rerender } = render(
+      <>
+        <main data-testid='background-content'>
+          <button type='button'>Background action</button>
+        </main>
+        <aside
+          data-testid='pre-hidden-background'
+          aria-hidden='false'
+          ref={preserveInertAttribute}
+        >
+          Preserved background state
+        </aside>
+        <Modal isOpen={true} onClose={() => {}} title='Semantic modal'>
+          Modal content
+        </Modal>
+      </>
+    )
+
+    const background = screen.getByTestId('background-content')
+    const preHiddenBackground = screen.getByTestId('pre-hidden-background')
+    const dialog = screen.getByRole('dialog', { name: 'Semantic modal' })
+
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+    expect(dialog.parentElement).toHaveAttribute('role', 'presentation')
+    expect(background).toHaveAttribute('aria-hidden', 'true')
+    expect(background).toHaveAttribute('inert')
+    expect(preHiddenBackground).toHaveAttribute('aria-hidden', 'true')
+    expect(preHiddenBackground).toHaveAttribute('inert')
+
+    rerender(
+      <>
+        <main data-testid='background-content'>
+          <button type='button'>Background action</button>
+        </main>
+        <aside
+          data-testid='pre-hidden-background'
+          aria-hidden='false'
+          ref={preserveInertAttribute}
+        >
+          Preserved background state
+        </aside>
+        <Modal isOpen={false} onClose={() => {}} title='Semantic modal'>
+          Modal content
+        </Modal>
+      </>
+    )
+
+    expect(background).not.toHaveAttribute('aria-hidden')
+    expect(background).not.toHaveAttribute('inert')
+    expect(preHiddenBackground).toHaveAttribute('aria-hidden', 'false')
+    expect(preHiddenBackground).toHaveAttribute('inert', 'preserved')
+  })
+
+  test('only the topmost stacked modal handles Escape and restores focus through the stack', async () => {
+    const user = userEvent.setup()
+    const outerClose = vi.fn()
+    const innerClose = vi.fn()
+
+    const Harness = () => {
+      const [outerOpen, setOuterOpen] = useState(false)
+      const [innerOpen, setInnerOpen] = useState(false)
+
+      return (
+        <>
+          <button type='button' onClick={() => setOuterOpen(true)}>
+            Open chassis acquisition
+          </button>
+          <Modal
+            isOpen={outerOpen}
+            onClose={() => {
+              outerClose()
+              setOuterOpen(false)
+            }}
+            title='Chassis acquisition'
+          >
+            <button type='button' onClick={() => setInnerOpen(true)}>
+              Configure crowdfunding
+            </button>
+          </Modal>
+          <Modal
+            isOpen={innerOpen}
+            onClose={() => {
+              innerClose()
+              setInnerOpen(false)
+            }}
+            title='Crowdfund setup'
+          >
+            <button type='button'>Confirm crowdfunding</button>
+          </Modal>
+        </>
+      )
+    }
+
+    render(<Harness />)
+
+    const outerOpener = screen.getByRole('button', {
+      name: 'Open chassis acquisition'
+    })
+    await user.click(outerOpener)
+    await waitFor(() =>
+      expect(
+        screen.getByRole('dialog', { name: 'Chassis acquisition' })
+      ).toHaveFocus()
+    )
+    const outerDialog = screen.getByRole('dialog', {
+      name: 'Chassis acquisition'
+    })
+
+    const innerOpener = screen.getByRole('button', {
+      name: 'Configure crowdfunding'
+    })
+    await user.click(innerOpener)
+    await waitFor(() =>
+      expect(
+        screen.getByRole('dialog', { name: 'Crowdfund setup' })
+      ).toHaveFocus()
+    )
+    const innerDialog = screen.getByRole('dialog', {
+      name: 'Crowdfund setup'
+    })
+    const innerLastAction = within(innerDialog).getByRole('button', {
+      name: 'Confirm crowdfunding'
+    })
+    const innerFirstAction = within(innerDialog).getByRole('button', {
+      name: /close/i
+    })
+    let outerReceivedFocus = false
+    const recordFocus = event => {
+      if (event.target instanceof Node && outerDialog.contains(event.target)) {
+        outerReceivedFocus = true
+      }
+    }
+
+    innerLastAction.focus()
+    document.addEventListener('focusin', recordFocus)
+    try {
+      await user.tab()
+    } finally {
+      document.removeEventListener('focusin', recordFocus)
+    }
+
+    expect(innerFirstAction).toHaveFocus()
+    expect(outerReceivedFocus).toBe(false)
+
+    await user.keyboard('{Escape}')
+
+    expect(innerClose).toHaveBeenCalledTimes(1)
+    expect(outerClose).not.toHaveBeenCalled()
+    expect(
+      screen.getByRole('dialog', { name: 'Chassis acquisition' })
+    ).toBeInTheDocument()
+    expect(innerOpener).toHaveFocus()
+
+    await user.keyboard('{Escape}')
+
+    expect(outerClose).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(outerOpener).toHaveFocus()
+  })
+
+  test('keeps the topmost sibling modal interactive when both are initially open', async () => {
+    render(
+      <>
+        <Modal
+          isOpen={true}
+          onClose={() => {}}
+          title='Initial chassis acquisition'
+        >
+          Chassis content
+        </Modal>
+        <Modal isOpen={true} onClose={() => {}} title='Initial crowdfund setup'>
+          Crowdfund content
+        </Modal>
+      </>
+    )
+
+    const [outerDialog, innerDialog] = screen.getAllByRole('dialog', {
+      hidden: true
+    })
+    const outerOverlay = outerDialog.parentElement
+    const innerOverlay = innerDialog.parentElement
+
+    expect(outerOverlay).toHaveAttribute('aria-hidden', 'true')
+    expect(outerOverlay).toHaveAttribute('inert')
+    expect(innerOverlay).not.toHaveAttribute('aria-hidden')
+    expect(innerOverlay).not.toHaveAttribute('inert')
+    await waitFor(() => expect(innerDialog).toHaveFocus())
+  })
+
+  test('restores shared background state after stacked modals close together', () => {
+    const preserveInertAttribute = element => {
+      if (element && !element.hasAttribute('inert')) {
+        element.setAttribute('inert', 'preserved')
+      }
+    }
+
+    const Stack = ({ outerOpen, innerOpen }) => (
+      <>
+        <main
+          data-testid='stacked-background'
+          aria-hidden='false'
+          ref={preserveInertAttribute}
+        >
+          Background content
+        </main>
+        <Modal
+          isOpen={outerOpen}
+          onClose={() => {}}
+          title='Chassis acquisition'
+        >
+          Chassis content
+        </Modal>
+        <Modal isOpen={innerOpen} onClose={() => {}} title='Crowdfund setup'>
+          Crowdfund content
+        </Modal>
+      </>
+    )
+
+    const { rerender } = render(<Stack outerOpen={true} innerOpen={false} />)
+    const background = screen.getByTestId('stacked-background')
+
+    expect(background).toHaveAttribute('aria-hidden', 'true')
+    expect(background).toHaveAttribute('inert')
+
+    rerender(<Stack outerOpen={true} innerOpen={true} />)
+
+    expect(background).toHaveAttribute('aria-hidden', 'true')
+    expect(background).toHaveAttribute('inert')
+
+    rerender(<Stack outerOpen={false} innerOpen={false} />)
+
+    expect(background).toHaveAttribute('aria-hidden', 'false')
+    expect(background).toHaveAttribute('inert', 'preserved')
   })
 })

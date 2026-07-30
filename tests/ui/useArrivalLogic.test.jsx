@@ -440,6 +440,30 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)
   })
 
+  test('does not start a queued gig when advanceDay commits GAMEOVER', () => {
+    const venue = { name: 'Bankruptcy Club' }
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      currentScene: GAME_PHASES.OVERWORLD,
+      gameMap: {
+        nodes: {
+          node_start: { type: 'GIG', venue }
+        }
+      },
+      band: { harmony: 50 }
+    })
+    mockGameState.advanceDay.mockImplementation(() => {
+      mockGameState.currentScene = GAME_PHASES.GAMEOVER
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(0)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+  })
+
   test('Task 9 negative proof: without GAMEOVER guard, changeScene IS called (proves the guard is needed)', () => {
     // This test documents the pre-fix behavior: if the GAMEOVER short-circuit
     // is removed, changeScene fires even when currentScene is GAMEOVER.
@@ -504,6 +528,39 @@ describe('useArrivalLogic', () => {
           c[0].includes('Failed to start Gig') ||
           c[0].includes('Gig Failed To Start')
       )
+    ).toBe(true)
+    // On failure the route must fall back to the overworld, never to the gig
+    // scene handleNodeArrival picked (PreGig with no currentGig cannot render).
+    expect(mockGameState.changeScene.mock.calls.length).toBe(1)
+    expect(mockGameState.changeScene.mock.calls[0][0]).toBe(
+      GAME_PHASES.OVERWORLD
     )
+  })
+
+  test('GIG arrival writes the arrival save in the same effect pass as startGig', () => {
+    // Regression guard: this hook lives only in TourbusScene, which SceneRouter
+    // renders solely for TRAVEL_MINIGAME. START_GIG sets currentScene=PRE_GIG,
+    // so the commit that would trigger a SECOND effect pass unmounts the
+    // component — a save deferred to that pass is never written and the whole
+    // arrival (day advance, travel-event money, rival move) is lost.
+    const venue = { name: 'Club' }
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      gameMap: {
+        nodes: {
+          node_start: { type: 'GIG', venue }
+        }
+      },
+      band: { harmony: 50 }
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    // One act() == one commit + effect flush. Both must have happened already.
+    expect(mockGameState.startGig.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+    // The gig scene change is owned by START_GIG, not changeScene.
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
   })
 })

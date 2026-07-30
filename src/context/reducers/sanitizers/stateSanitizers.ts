@@ -773,13 +773,7 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         typeof statsData.proveYourselfMode === 'boolean'
           ? statsData.proveYourselfMode
           : DEFAULT_PLAYER_STATE.stats.proveYourselfMode,
-      tourCompleted: statsData.tourCompleted === true,
-      harmonyRecoveries: clampNonNegative(
-        finiteNumberOr(
-          statsData.harmonyRecoveries,
-          DEFAULT_PLAYER_STATE.stats.harmonyRecoveries
-        )
-      )
+      tourCompleted: statsData.tourCompleted === true
     }
   }
 
@@ -1005,7 +999,13 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         selfRelationshipKeys.add(name)
         selfRelationshipKeys.add(name.toLowerCase())
       }
-      const staminaMax = finiteOptionalNumber(m.staminaMax)
+      const rawStaminaMax = finiteOptionalNumber(m.staminaMax)
+      const staminaMax =
+        // Must be > 0: clampMemberStamina(x, 0) pins stamina at 0 forever, so a
+        // zero max is a permanently-exhausted member with no in-game recovery.
+        rawStaminaMax !== undefined && rawStaminaMax > 0
+          ? rawStaminaMax
+          : undefined
       const member: BandMember = {
         id,
         traits: normalizeTraitMap(m.traits),
@@ -1745,14 +1745,31 @@ export const sanitizeActiveQuests = (
         const deadline = finiteOptionalNumber(quest.deadline)
         if (deadline !== undefined) sanitized.deadline = deadline
       }
-      const progress = finiteOptionalNumber(quest.progress)
-      sanitized.progress = isFiniteNumber(progress) ? progress : 0
-      const required = finiteOptionalNumber(quest.required)
+      // The definition is authoritative so a tampered or stale save cannot
+      // inflate/deflate a quest's completion bar, but fall back to the
+      // persisted value when the definition carries no `required` — otherwise a
+      // definition that never declared one silently drops the field and the
+      // quest loses its target.
+      // Only a POSITIVE requirement is meaningful: advanceQuest/setQuestProgress
+      // bail on `required <= 0`, so persisting 0 or a negative value would leave
+      // the quest permanently un-completable. Treat those as absent.
+      const rawRequired =
+        finiteOptionalNumber(definition.required) ??
+        finiteOptionalNumber(quest.required)
+      const required =
+        rawRequired !== undefined && rawRequired > 0 ? rawRequired : undefined
       if (required !== undefined) {
         sanitized.required = required
-      } else if (typeof definition.required === 'number') {
-        sanitized.required = definition.required
       }
+      const rawProgress = finiteNumberOr(
+        finiteOptionalNumber(quest.progress),
+        0
+      )
+      // Clamp AFTER the min: a negative `required` would otherwise drag progress
+      // negative and freeze the quest (advanceQuest bails on required <= 0).
+      sanitized.progress = clampNonNegative(
+        required !== undefined ? Math.min(rawProgress, required) : rawProgress
+      )
       if (
         typeof quest.scopeKey === 'string' &&
         !isForbiddenKey(quest.scopeKey)

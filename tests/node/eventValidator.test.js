@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { validateGameEvent } from '../src/utils/eventValidator.ts'
-import { EVENTS_DB } from '../src/data/events/index.ts'
+import { validateGameEvent } from '../../src/utils/eventValidator.ts'
+import { EVENTS_DB } from '../../src/data/events/index.ts'
 
 describe('validateGameEvent', () => {
   const baseEvent = {

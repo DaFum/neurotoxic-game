@@ -2,17 +2,28 @@ import client from '../../lib/redis.js'
 import {
   normalizeIp,
   hasPrototypePollution,
-  sanitizePlayerName
+  sanitizePlayerName,
+  toPublicPlayerRef
 } from '../../lib/apiUtils.js'
+import { resolveLeaderboardId } from '../../lib/leaderboardSongIds.js'
 
 const MAX_SONG_ID_LENGTH = 64
 
 /**
- * Verarbeitet HTTP-Requests zum Speichern von Spieler-Scores (POST) und zum Abrufen der Highscore-Liste eines Songs (GET).
+ * Handles score submissions and leaderboard requests for songs.
  *
- * POST: Validiert Nutzlast gegen Prototype-Pollution, prüft Felder (playerId, playerName, songId, score), aktualisiert den Spielernamen in der Hash-Map und fügt den Score in die Song-Zeitreihe ein (nur wenn der neue Score größer ist). Gibt bei Erfolg HTTP 200 mit { success: true } zurück; bei Validierungsfehlern entsprechende 400-Antworten; bei internen Fehlern 500.
+ * POST validates the payload against prototype pollution, checks every field
+ * (playerId, playerName, songId, score), resolves each songId through the
+ * canonical leaderboard allowlist, and only then writes — validating the whole
+ * batch first so a mixed-validity submission cannot write partially. Scores use
+ * the GT flag, so a submission can only ever raise a player's best.
+ * GET returns ranked entries as `{ rank, playerRef, playerName, score }`.
+ * NOTE: `playerRef` is an opaque hash, never the raw `playerId` — see
+ * `toPublicPlayerRef` for why publishing the id would be a write-credential leak.
+ * Other methods receive a 405 response.
  *
- * GET: Validiert query.songId und optionales query.limit, liest die Top-N-Einträge der Song-Leaderboard-Zeile und die zugehörigen Spielernamen und liefert ein Array mit Einträgen { rank, playerId, playerName, score }. Gibt 400 für fehlerhafte Abfragen, 200 mit dem Leaderboard oder einem leeren Array bei keinem Eintrag, und 500 bei internen Fehlern.
+ * @param {import('../../lib/apiTypes.js').ApiRequest} req - The HTTP request.
+ * @param {import('../../lib/apiTypes.js').ApiResponse} res - The HTTP response.
  */
 export default async function handler(req, res) {
   if (req.method === 'POST') {
@@ -47,7 +58,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
 
-      const { playerId, playerName, songId, score, scores } = req.body
+      const body = /** @type {Record<string, unknown>} */ (req.body)
+      const { playerId, playerName, songId, score, scores } = body
 
       // Basic Type Checks
       if (typeof playerId !== 'string' || typeof playerName !== 'string') {
@@ -73,6 +85,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid playerId format' })
       }
 
+      /** @type {unknown[]} */
       const itemsToProcess = hasScores ? scores : [{ songId, score }]
 
       if (itemsToProcess.length === 0) {
@@ -85,35 +98,45 @@ export default async function handler(req, res) {
       }
 
       // Validate all items before processing
+      /** @type {Array<{ songId: string, score: number }>} */
+      const validatedItems = []
       for (let i = 0; i < itemsToProcess.length; i++) {
         const item = itemsToProcess[i]
         if (!item || typeof item !== 'object') {
           return res.status(400).json({ error: 'Invalid score item' })
         }
-        if (typeof item.songId !== 'string' || typeof item.score !== 'number') {
+        const scoreItem = /** @type {Record<string, unknown>} */ (item)
+        if (
+          typeof scoreItem.songId !== 'string' ||
+          typeof scoreItem.score !== 'number'
+        ) {
           return res.status(400).json({ error: 'Missing required fields' })
         }
         if (
-          !Number.isFinite(item.score) ||
-          item.score < 0 ||
-          item.score > 10000000
+          !Number.isFinite(scoreItem.score) ||
+          scoreItem.score < 0 ||
+          scoreItem.score > 10000000
         ) {
           return res.status(400).json({ error: 'Invalid score value' })
         }
         if (
-          !/^[a-zA-Z0-9_-]+$/.test(item.songId) ||
-          item.songId.length > MAX_SONG_ID_LENGTH
+          !/^[a-zA-Z0-9_-]+$/.test(scoreItem.songId) ||
+          scoreItem.songId.length > MAX_SONG_ID_LENGTH
         ) {
           return res.status(400).json({ error: 'Invalid songId format' })
         }
+        const leaderboardId = resolveLeaderboardId(scoreItem.songId)
+        if (!leaderboardId) {
+          return res.status(400).json({ error: 'Unknown songId' })
+        }
+        validatedItems.push({ songId: leaderboardId, score: scoreItem.score })
       }
 
       // v4: hSet accepts object
       await client.hSet('players', { [playerId]: trimmedName })
 
       const multi = client.multi()
-      for (let i = 0; i < itemsToProcess.length; i++) {
-        const item = itemsToProcess[i]
+      for (const item of validatedItems) {
         multi.zAdd(
           `lb:song:${item.songId}`,
           { score: item.score, value: playerId },
@@ -129,18 +152,29 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      const { songId } = req.query
-      if (!songId) return res.status(400).json({ error: 'Missing songId' })
+      const songId = req.query?.songId
+      if (songId === undefined || songId === '') {
+        return res.status(400).json({ error: 'Missing songId' })
+      }
 
       if (
+        typeof songId !== 'string' ||
         !/^[a-zA-Z0-9_-]+$/.test(songId) ||
         songId.length > MAX_SONG_ID_LENGTH
       ) {
         return res.status(400).json({ error: 'Invalid songId format' })
       }
+      const leaderboardId = resolveLeaderboardId(songId)
+      if (!leaderboardId) {
+        return res.status(400).json({ error: 'Unknown songId' })
+      }
 
-      let limit = parseInt(req.query.limit, 10)
-      if (isNaN(limit)) limit = 100
+      const limitParam = req.query?.limit
+      let limit =
+        typeof limitParam === 'string'
+          ? Number.parseInt(limitParam, 10)
+          : Number.NaN
+      if (Number.isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
       // Ensure connection
@@ -150,7 +184,7 @@ export default async function handler(req, res) {
 
       // v4: zRangeWithScores(key, min, max, options)
       const range = await client.zRangeWithScores(
-        `lb:song:${songId}`,
+        `lb:song:${leaderboardId}`,
         0,
         limit - 1,
         {
@@ -163,9 +197,11 @@ export default async function handler(req, res) {
       const playerIds = range.map(r => r.value) // value not member
       const names = await client.hmGet('players', playerIds)
 
+      // playerId is the write credential and the raw Redis member key — never
+      // publish it. See toPublicPlayerRef.
       const leaderboard = range.map((entry, index) => ({
         rank: index + 1,
-        playerId: entry.value,
+        playerRef: toPublicPlayerRef(entry.value),
         playerName: names[index] || 'Unknown',
         score: entry.score
       }))

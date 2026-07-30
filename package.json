@@ -46,7 +46,8 @@
     "test:vitest:node": "pnpm run test:vitest:logic",
     "test:vitest:ui": "node ./scripts/run-vitest-ui.mjs",
     "typecheck": "node ./scripts/typecheck-reducers.mjs",
-    "typecheck:core": "tsc -p jsconfig.checkjs.json"
+    "typecheck:core": "tsc -p tsconfig.json",
+    "typecheck:server": "tsc -p tsconfig.server.json"
   },
   "standard": {
     "env": [

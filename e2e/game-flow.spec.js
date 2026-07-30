@@ -138,6 +138,18 @@ test.describe('Game Flow', () => {
     // This test goes through rhythm game and minigames, so it needs extra time.
     test.setTimeout(180000)
 
+    await page.addInitScript(mapSeed => {
+      const realDateNow = Date.now
+      Date.now = () => mapSeed
+      Object.defineProperty(globalThis, '__restoreGoldenPathClock', {
+        configurable: true,
+        value: () => {
+          Date.now = realDateNow
+          delete globalThis.__restoreGoldenPathClock
+        }
+      })
+    }, 1)
+
     await skipToMenu(page)
     const startBtn = page.getByRole('button', { name: /start tour/i })
     const identityDialog = page.getByRole('dialog')
@@ -244,25 +256,42 @@ test.describe('Game Flow', () => {
       await hqHeading.waitFor({ state: 'hidden' })
     }
 
-    // Find a reachable node and click it (avoid the current node 'Proberaum' or wherever the van currently is)
-    // Explicitly target a known gig or festival venue to ensure the PreGig and Roadie minigame actually occur
+    // Seed 1 exposes a reachable GIG in layer 1. Match the semantic marker
+    // rather than venue names, because a venue can be assigned another node type.
     const getTravelNode = () =>
       page
-        .getByRole('button', {
-          // Prefer known GIG venues only (exclude SPECIAL/REST style nodes)
-          name: /Travel to (Gold Mine|Goldgrube|The Distillery|Die Distille|Underground|UT Connewitz|Logo|K17|Black Eagle|Cassiopeia|Moritzhof|Centrum)/i
+        .getByRole('button', { name: /travel to/i })
+        .filter({
+          has: page.getByRole('img', {
+            name: /map marker: (?:gig|festival)/i
+          })
         })
         .first()
+    const tryStartTravel = async () => {
+      const travelNode = getTravelNode()
+      const selected = await travelNode
+        .click({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+      if (!selected) return false
+
+      const confirmVisible = await page
+        .getByText('CONFIRM?')
+        .filter({ visible: true })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+      if (!confirmVisible) return false
+
+      return travelNode
+        .click({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+    }
     await getTravelNode().waitFor({ state: 'visible', timeout: 5000 })
+    await page.evaluate(() => globalThis.__restoreGoldenPathClock?.())
 
-    // Click once to select/hover
-    await getTravelNode().click()
-
-    // Wait for the Confirm? state to appear then click again
-    await expect(
-      page.getByText('CONFIRM?').filter({ visible: true })
-    ).toBeVisible()
-    await getTravelNode().click()
+    expect(await tryStartTravel()).toBe(true)
 
     // 2. Tourbus Minigame -> Wait for completion
     // Wait for scene to load
@@ -295,16 +324,42 @@ test.describe('Game Flow', () => {
       const continueOption = eventDialog.getByRole('button', {
         name: /continue/i
       })
+      const availableAction = numberedOption.or(continueOption).first()
 
-      if (await numberedOption.isVisible().catch(() => false)) {
-        await numberedOption.click()
-        return true
-      }
-      if (await continueOption.isVisible().catch(() => false)) {
-        await continueOption.click()
-        return true
-      }
-      return false
+      const hasAction = await availableAction
+        .isVisible({ timeout: 500 })
+        .catch(() => false)
+      if (!hasAction) return false
+
+      return availableAction
+        .click({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+    }
+    const waitForUnblockedTarget = async (target, timeout = 10000) => {
+      await expect
+        .poll(
+          async () => {
+            if (await dismissTopEventDialog()) return false
+            return target.isVisible({ timeout: 500 }).catch(() => false)
+          },
+          { timeout, intervals: [250, 500, 1000] }
+        )
+        .toBe(true)
+    }
+    const clickUnblockedTarget = async (target, timeout = 10000) => {
+      await expect
+        .poll(
+          async () => {
+            if (await dismissTopEventDialog()) return false
+            return target
+              .click({ timeout: 1000 })
+              .then(() => true)
+              .catch(() => false)
+          },
+          { timeout, intervals: [250, 500, 1000] }
+        )
+        .toBe(true)
     }
     const isInTourbusScene = async () => {
       const byHeading = await tourbusHeading
@@ -382,11 +437,7 @@ test.describe('Game Flow', () => {
     // If we are still in overworld due to a detour event (e.g., MISSED EXIT),
     // retry one travel attempt to continue the golden path.
     if (await tourPlanHeading.isVisible().catch(() => false)) {
-      await getTravelNode().click()
-      await expect(
-        page.getByText('CONFIRM?').filter({ visible: true })
-      ).toBeVisible()
-      await getTravelNode().click()
+      await tryStartTravel()
 
       // Retry travel can put us into Tourbus again; bypass it the same way.
       await bypassTourbusScene()
@@ -424,11 +475,7 @@ test.describe('Game Flow', () => {
       } else if (
         await tourPlanHeading.isVisible({ timeout: 1000 }).catch(() => false)
       ) {
-        await getTravelNode().click()
-        await expect(
-          page.getByText('CONFIRM?').filter({ visible: true })
-        ).toBeVisible()
-        await getTravelNode().click()
+        await tryStartTravel()
         await bypassTourbusScene()
       }
 
@@ -447,99 +494,97 @@ test.describe('Game Flow', () => {
     await expect(preGigHeading).toBeVisible({ timeout: 15000 })
     // Select the first song to fulfill minimum requirements (1 song)
     const firstSong = page.getByText('01 Kranker Schrank')
-    await firstSong.waitFor({ state: 'visible', timeout: 5000 })
-    await firstSong.click()
+    await clickUnblockedTarget(firstSong)
 
+    // Anchored regexes: Playwright ignores `exact` for RegExp name matchers.
     const startShowBtn = page.getByRole('button', {
-      name: /start show/i,
-      exact: true
+      name: /^start show$/i
     })
     await expect(startShowBtn).toBeEnabled()
-    await startShowBtn.click()
+    await clickUnblockedTarget(startShowBtn)
 
-    // 4. Pre-Gig Minigame (Roadie or Kabelsalat)
-    // We arrive at either Roadie Run or Kabelsalat screen randomly.
-
-    // We can just use Shift+P backdoor for both. Wait for either the
-    // minigame canvas or a continue/gig-report element before proceeding.
-    await Promise.race([
-      page
-        .locator('canvas')
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .catch(() => null),
-      page
-        .getByRole('button', { name: /continue/i, exact: true })
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .catch(() => null),
-      page
-        .getByRole('heading', { name: /gig report/i })
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .catch(() => null)
-    ]).catch(() => {})
-
-    // Simulate keyboard presses to complete the minigame quickly using DEV backdoor
-    await page.keyboard.press('Shift+P')
-    await Promise.race([
-      page
-        .getByRole('button', { name: /continue/i, exact: true })
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .catch(() => null),
-      page
-        .getByRole('heading', { name: /gig report/i })
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .catch(() => null),
-      page
-        .locator('canvas')
-        .waitFor({ state: 'hidden', timeout: 2000 })
-        .catch(() => null)
-    ]).catch(() => {})
-
-    // Handle minigame specific continue buttons if any
-    const continueBtn = page.getByRole('button', {
-      name: /continue/i,
-      exact: true
+    // 4. Pre-Gig Minigame (Roadie, Kabelsalat, or Amp Calibration)
+    // Use the player-facing skip action so the test waits for a mounted scene
+    // instead of racing the DEV keyboard listener during a cold lazy load.
+    const skipMinigameBtn = page.getByRole('button', {
+      name: /^skip$/i
     })
-    if (await continueBtn.isVisible()) {
-      await continueBtn.click()
+    const continueBtn = page.getByRole('button', {
+      name: /^continue$/i
+    })
+    const kabelsalatHeading = page.getByRole('heading', {
+      name: /hardware.*rigging/i
+    })
+    const gigReport = page.getByRole('heading', { name: /gig report/i })
+    // Event dialogs also expose a "CONTINUE" button, which would satisfy the
+    // poll below and make the click land on the dialog instead of a minigame
+    // action. There is no scene wrapper element to scope the locator to, so
+    // clear any overlay first and only judge readiness on an unobstructed page.
+    await expect
+      .poll(
+        async () => {
+          if (await dismissTopEventDialog()) return false
+          return (
+            (await skipMinigameBtn.isVisible().catch(() => false)) ||
+            (await continueBtn.isVisible().catch(() => false)) ||
+            (await kabelsalatHeading.isVisible().catch(() => false)) ||
+            (await gigReport.isVisible().catch(() => false))
+          )
+        },
+        { timeout: 10000, intervals: [250, 500, 1000] }
+      )
+      .toBe(true)
+
+    // `.catch(() => false)` on every re-check: the element can detach between
+    // the poll resolving and the branch running.
+    if (await skipMinigameBtn.isVisible().catch(() => false)) {
+      await clickUnblockedTarget(skipMinigameBtn)
+    } else if (await continueBtn.isVisible().catch(() => false)) {
+      await clickUnblockedTarget(continueBtn)
+    } else if (await gigReport.isVisible().catch(() => false)) {
+      // The setup minigame already resolved and the report is showing.
     } else {
-      // Assert that we have actually advanced past the minigame if continue wasn't visible
-      const gigReport = page.getByRole('heading', { name: /gig report/i })
-      const isGigReportVisible = await gigReport.isVisible()
-      const isStillInMinigame = await page.locator('canvas').isVisible() // PixiStage canvas
-      if (!isGigReportVisible && isStillInMinigame) {
-        throw new Error(
-          'Minigame did not complete successfully after Shift+P backdoor.'
-        )
-      }
+      // Kabelsalat has its own timed scene and advances automatically after
+      // its terminal overlay; the Gig-report assertion below remains the
+      // binding completion condition.
+      await expect(kabelsalatHeading).toBeVisible()
     }
 
-    // Roadie/Kabelsalat Minigame completion leads directly to Gig.
+    // Setup minigame completion leads directly to Gig.
 
     // 5. Gig (Rhythm Game)
     // The song plays automatically. Since we don't click, health fails but scene still advances.
-    // We just wait for the gig report to show up.
-    await expect(
-      page.getByRole('heading', { name: /gig report/i })
-    ).toBeVisible({ timeout: 60000 })
+    // Random gig events pause playback, so resolve them while waiting for the report.
+    await waitForUnblockedTarget(gigReport, 60000)
 
     // 6. PostGig Report
-    await page.getByRole('button', { name: /continue to socials/i }).click()
+    await clickUnblockedTarget(
+      page.getByRole('button', { name: /continue to socials/i })
+    )
 
     // Social Strategy Phase
-    await expect(
+    await waitForUnblockedTarget(
       page.getByRole('heading', { name: /post to social media/i })
-    ).toBeVisible()
+    )
     const firstSocialOpt = page.locator('button:has-text("Platform")').first()
-    await firstSocialOpt.click()
+    await clickUnblockedTarget(firstSocialOpt)
 
-    // PostGig Viral/Flop Result
+    // Brand offers follow the social result before the completion phase.
+    await waitForUnblockedTarget(
+      page.getByRole('heading', { name: /incoming brand offers/i })
+    )
+    await clickUnblockedTarget(
+      page.getByRole('button', { name: /reject all offers/i })
+    )
+
+    // PostGig completion
     const backToTourBtn = page.getByRole('button', { name: /back to tour/i })
-    await backToTourBtn.waitFor({ state: 'visible' })
-    await backToTourBtn.click()
+    await clickUnblockedTarget(backToTourBtn)
 
     // 7. Back to Overworld
-    await expect(page.getByRole('heading', { name: /tour plan/i })).toBeVisible(
-      { timeout: 5000 }
+    await waitForUnblockedTarget(
+      page.getByRole('heading', { name: /tour plan/i }),
+      10000
     )
   })
 })

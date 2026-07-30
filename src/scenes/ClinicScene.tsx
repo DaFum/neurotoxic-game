@@ -3,24 +3,20 @@ import { GlitchButton } from '../ui/GlitchButton'
 import { useClinicLogic } from '../hooks/useClinicLogic'
 import { ClinicHeader } from '../components/clinic/ClinicHeader'
 import { ClinicMemberCard } from '../components/clinic/ClinicMemberCard'
-import { CLINIC_CONFIG } from '../context/gameConstants'
-import { formatCurrency } from '../utils/numberUtils'
 
 /**
  * Hosts the Void Clinic flow for healing or enhancing band members.
  */
 export const ClinicScene = () => {
-  const { t, i18n } = useTranslation(['ui'])
+  const { t } = useTranslation(['ui'])
   const {
     player,
     band,
     healCostMoney,
     enhanceCostFame,
-    harmonyRecoveryCost,
     healMember,
     enhanceMember,
     graftNeuroOverclock,
-    recoverHarmony,
     leaveClinic
   } = useClinicLogic()
 
@@ -39,33 +35,6 @@ export const ClinicScene = () => {
 
       <div className='z-10 w-full max-h-full max-w-4xl bg-void-black border-2 border-toxic-green p-4 sm:p-6 shadow-[0_0_20px_var(--color-toxic-green-20)] flex flex-col'>
         <ClinicHeader player={player} />
-
-        {band.harmony < CLINIC_CONFIG.HARMONY_RECOVERY_THRESHOLD && (
-          <section className='mt-4 border-2 border-warning-yellow p-4 font-mono'>
-            <h3 className='font-display text-warning-yellow uppercase'>
-              {t('ui:clinic.harmony_recovery_title', {
-                defaultValue: 'CRITICAL BAND RECOVERY'
-              })}
-            </h3>
-            <p className='my-2 text-sm text-star-white'>
-              {t('ui:clinic.harmony_recovery_description', {
-                defaultValue:
-                  'Restore {{harmony}} Harmony without losing a tour day.',
-                harmony: CLINIC_CONFIG.HARMONY_RECOVERY_GAIN
-              })}
-            </p>
-            <GlitchButton
-              onClick={recoverHarmony}
-              disabled={player.money < harmonyRecoveryCost}
-              variant='warning'
-            >
-              {t('ui:clinic.harmony_recovery_button', {
-                defaultValue: 'RECOVER BAND ({{cost}})',
-                cost: formatCurrency(harmonyRecoveryCost, i18n.language)
-              })}
-            </GlitchButton>
-          </section>
-        )}
 
         <div className='grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6 flex-1 min-h-0 overflow-y-auto py-4 sm:py-6 custom-scrollbar pr-2'>
           {band.members.map(member => (

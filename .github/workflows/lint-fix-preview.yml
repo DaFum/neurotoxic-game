@@ -28,8 +28,9 @@ jobs:
 
     steps:
       - name: Checkout repository (full history required for diffs)
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Setup Node.js and pnpm
@@ -42,7 +43,10 @@ jobs:
         run: |
           if [[ -d "src/app" ]]; then TARGET="src/app"; elif [[ -d "src" ]]; then TARGET="src"; else TARGET="."; fi
           echo "Running jscpd on: $TARGET"
-          pnpm dlx jscpd \
+          # pnpm exec, not dlx: jscpd is pinned in devDependencies (5.0.12), so
+          # this uses the locked version instead of resolving a fresh one from
+          # the registry on every run.
+          pnpm exec jscpd \
             --reporters json \
             --output ./jscpd-report \
             --min-lines "$JSCPD_MIN_LINES" \
@@ -74,7 +78,7 @@ jobs:
         if: |
           (env.POST_ON_DIFF_ONLY == 'true' && (steps.lint-preview.outputs.has_diff == '1' || steps.lint-preview.outputs.has_dup == '1')) ||
           (env.POST_ON_DIFF_ONLY != 'true' && steps.lint-preview.outputs.should_comment == '1')
-        uses: actions/github-script@v7
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7.1.0
         with:
           script: |
             const fs = require('fs');

@@ -94,10 +94,10 @@ export const LeaderboardTab = () => {
                 typeof (entry as Record<string, unknown>).rank === 'number'
                   ? ((entry as Record<string, unknown>).rank as number)
                   : 0,
-              playerId:
-                Object.hasOwn(entry, 'playerId') &&
-                typeof (entry as Record<string, unknown>).playerId === 'string'
-                  ? ((entry as Record<string, unknown>).playerId as string)
+              playerRef:
+                Object.hasOwn(entry, 'playerRef') &&
+                typeof (entry as Record<string, unknown>).playerRef === 'string'
+                  ? ((entry as Record<string, unknown>).playerRef as string)
                   : `unknown-player-${i}`,
               playerName:
                 Object.hasOwn(entry, 'playerName') &&

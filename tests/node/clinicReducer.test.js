@@ -1,11 +1,7 @@
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 
-import {
-  handleBloodBankDonate,
-  handleHarmonyRecovery
-} from '../../src/context/reducers/clinicReducer.ts'
-import { CLINIC_CONFIG } from '../../src/context/gameConstants.ts'
+import { handleBloodBankDonate } from '../../src/context/reducers/clinicReducer.ts'
 
 /**
  * Builds a minimal GameState suitable for blood-bank tests.
@@ -76,40 +72,5 @@ describe('handleBloodBankDonate — affordability guard', () => {
     assert.notStrictEqual(result, state)
     assert.strictEqual(result.player.money, 400)
     assert.strictEqual(result.band.harmony, 40)
-  })
-})
-
-describe('handleHarmonyRecovery', () => {
-  it('charges the clinic base price, restores harmony, and records the recovery', () => {
-    const state = {
-      player: { money: 500, stats: { harmonyRecoveries: 2 } },
-      band: { harmony: 35 },
-      toasts: []
-    }
-
-    const result = handleHarmonyRecovery(state)
-
-    assert.equal(result.player.money, 500 - CLINIC_CONFIG.HEAL_BASE_COST_MONEY)
-    assert.equal(result.band.harmony, 55)
-    assert.equal(result.player.stats.harmonyRecoveries, 3)
-  })
-
-  it('rejects recovery at the threshold or without enough money', () => {
-    const atThreshold = {
-      player: { money: 500, stats: {} },
-      band: { harmony: 40 },
-      toasts: []
-    }
-    const tooPoor = {
-      player: {
-        money: CLINIC_CONFIG.HEAL_BASE_COST_MONEY - 1,
-        stats: {}
-      },
-      band: { harmony: 20 },
-      toasts: []
-    }
-
-    assert.strictEqual(handleHarmonyRecovery(atThreshold), atThreshold)
-    assert.strictEqual(handleHarmonyRecovery(tooPoor), tooPoor)
   })
 })

@@ -67,17 +67,19 @@ describe('sanitizeAssets', () => {
     assert.equal(out2[0].condition, 0)
   })
 
-  it('coerces non-finite numeric fields via finiteNumberOr with sensible fallbacks', () => {
+  it('rebuilds chassis economy fields from CHASSIS_CONFIG', () => {
     const out = sanitizeAssets([
       validAsset({
-        baseUpkeep: Infinity,
+        baseUpkeep: -500,
         baseDailyRevenue: NaN,
+        baseRiskEventChance: -1,
         condition: NaN
       })
     ])
-    // Numeric monetary fields fall back to 0 (Infinity is rejected as non-finite).
-    assert.equal(out[0].baseUpkeep, 0)
-    assert.equal(out[0].baseDailyRevenue, 0)
+    const config = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+    assert.equal(out[0].baseUpkeep, config.upkeep)
+    assert.equal(out[0].baseDailyRevenue, config.revenue)
+    assert.equal(out[0].baseRiskEventChance, config.baseRiskEventChance)
     // Condition falls back to 100 (full health) when missing/NaN — sensible
     // default for restoring a partially-corrupted save without making players
     // start broken.
@@ -208,6 +210,43 @@ describe('sanitizeLiabilities', () => {
     )
     assert.equal(Object.keys(out).length, 1)
   })
+
+  it('drops liabilities with invalid persisted financial fields', () => {
+    const validLiability = {
+      id: 'l1',
+      source: 'loan',
+      assetId: 'a1',
+      principalRemaining: 100,
+      interestRate: 0.05,
+      dailyPayment: 10,
+      termDaysRemaining: 60,
+      defaultCounter: 0
+    }
+
+    for (const overrides of [
+      { principalRemaining: -100 },
+      { principalRemaining: 0 },
+      { principalRemaining: Number.NaN },
+      { principalRemaining: null },
+      { interestRate: -0.05 },
+      { interestRate: Number.POSITIVE_INFINITY },
+      { dailyPayment: -10 },
+      { dailyPayment: 0 },
+      { dailyPayment: Number.NaN },
+      { termDaysRemaining: -60 },
+      { termDaysRemaining: 0 },
+      { defaultCounter: -2 },
+      { crowdfundFamePromised: -50 },
+      { crowdfundFamePromised: Number.POSITIVE_INFINITY }
+    ]) {
+      const out = sanitizeLiabilities(
+        [{ ...validLiability, ...overrides }],
+        [{ id: 'a1' }]
+      )
+      assert.equal(out.l1, undefined)
+      assert.equal(Object.hasOwn(out, 'l1'), false)
+    }
+  })
 })
 
 describe('sanitizeCrowdfundCampaigns', () => {
@@ -241,7 +280,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         },
         targetAmount: 4000,
         fameStake: 50,
-        daysRemaining: 0,
+        daysRemaining: 1,
         plannedSuccessRoll: 0.4,
         resolvedOutcome: 'success'
       }
@@ -260,7 +299,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         },
         targetAmount: 4000,
         fameStake: 50,
-        daysRemaining: 0,
+        daysRemaining: 1,
         plannedSuccessRoll: 0.4,
         resolvedOutcome: 'maybe'
       }
@@ -349,6 +388,34 @@ describe('sanitizeCrowdfundCampaigns', () => {
       ['c1', 'c3']
     )
   })
+
+  it('drops campaigns that violate startCrowdfund financial bounds', () => {
+    const validCampaign = {
+      id: 'c1',
+      assetSpec: {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        chassisTier: 1
+      },
+      targetAmount: 4000,
+      fameStake: 50,
+      daysRemaining: 14,
+      plannedSuccessRoll: 0.4
+    }
+
+    for (const overrides of [
+      { targetAmount: 0 },
+      { targetAmount: -1 },
+      { fameStake: -1 },
+      { daysRemaining: 0 },
+      { daysRemaining: -1 }
+    ]) {
+      assert.deepEqual(
+        sanitizeCrowdfundCampaigns([{ ...validCampaign, ...overrides }]),
+        []
+      )
+    }
+  })
 })
 
 describe('sanitizeRngSeed', () => {
@@ -371,5 +438,75 @@ describe('sanitizeRngSeed', () => {
     assert.ok(Number.isFinite(sanitizeRngSeed(Infinity)))
     assert.equal(typeof sanitizeRngSeed('seed'), 'number')
     assert.equal(typeof sanitizeRngSeed(null), 'number')
+  })
+})
+
+describe('load-time round trip of a valid pre-hardening save', () => {
+  // The hardening pass turned several coerce-to-zero paths into drops and began
+  // re-deriving chassis economics from CHASSIS_CONFIG. A realistic save that was
+  // valid before must still come back whole, or the change silently deletes
+  // player-owned assets and debt on upgrade.
+  const legacySave = {
+    assets: [
+      validAsset({ id: 'bus_1', condition: 63, acquiredOnDay: 12 }),
+      validAsset({
+        id: 'bus_2',
+        chassisTier: 2,
+        condition: 100,
+        acquisitionMode: 'loan'
+      })
+    ],
+    liabilities: {
+      loan_1: {
+        id: 'loan_1',
+        source: 'loan',
+        assetId: 'bus_2',
+        principalRemaining: 4200,
+        interestRate: 0.08,
+        dailyPayment: 75,
+        termDaysRemaining: 56,
+        defaultCounter: 0
+      }
+    }
+  }
+
+  it('keeps every valid asset and preserves persisted per-save fields', () => {
+    const assets = sanitizeAssets(legacySave.assets)
+
+    assert.equal(assets.length, 2)
+    assert.deepEqual(
+      assets.map(a => a.id),
+      ['bus_1', 'bus_2']
+    )
+    // Per-save fields survive untouched...
+    assert.equal(assets[0].condition, 63)
+    assert.equal(assets[0].acquiredOnDay, 12)
+    assert.equal(assets[1].acquisitionMode, 'loan')
+    // ...while chassis economics are re-derived from the catalogue.
+    const tier1 = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+    assert.equal(assets[0].baseUpkeep, tier1.upkeep)
+    assert.equal(assets[0].baseDailyRevenue, tier1.revenue)
+    assert.equal(assets[0].baseRiskEventChance, tier1.baseRiskEventChance)
+  })
+
+  it('keeps a well-formed liability attached to a surviving asset', () => {
+    const assets = sanitizeAssets(legacySave.assets)
+    const liabilities = sanitizeLiabilities(legacySave.liabilities, assets)
+
+    assert.deepEqual(Object.keys(liabilities), ['loan_1'])
+    assert.deepEqual(liabilities.loan_1, legacySave.liabilities.loan_1)
+  })
+
+  it('drops a liability whose asset was itself dropped', () => {
+    // Cascade check: the asset is invalid, so its debt must not outlive it.
+    const assets = sanitizeAssets([
+      validAsset({ id: 'bus_2', chassisTier: 99 })
+    ])
+    assert.deepEqual(assets, [])
+    // Null-prototype accumulator, so compare keys rather than shape.
+    assert.deepEqual(
+      Object.keys(sanitizeLiabilities(legacySave.liabilities, assets)),
+      []
+    )
   })
 })

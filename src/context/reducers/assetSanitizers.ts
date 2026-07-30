@@ -5,6 +5,7 @@ import {
   isLooseRecord
 } from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
+import { logger } from '../../utils/logger'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import {
@@ -26,6 +27,29 @@ import type {
   RiskEventType,
   SlotType
 } from '../../types/assets'
+
+/**
+ * Reports entries discarded during load-time sanitization.
+ *
+ * @remarks
+ * Sanitization silently deleting player-owned data is the hardest class of
+ * save-corruption bug to diagnose, so every drop path reports here. Drops are
+ * aggregated into one warning per collection to keep the sanitizers cheap and
+ * the log readable on a badly corrupted save.
+ * @param collection - Name of the collection being sanitized.
+ * @param dropped - Reason keyed by the dropped entry's id (or index).
+ */
+const reportDroppedEntries = (
+  collection: string,
+  dropped: ReadonlyMap<string, string>
+): void => {
+  if (dropped.size === 0) return
+  const details = Array.from(dropped, ([id, reason]) => `${id} (${reason})`)
+  logger.warn(
+    'Persistence',
+    `Dropped ${dropped.size} invalid ${collection} entr${dropped.size === 1 ? 'y' : 'ies'} during load: ${details.join(', ')}`
+  )
+}
 
 const VALID_SOURCES: ReadonlySet<string> = new Set(['loan', 'crowdfund'])
 const VALID_OUTCOMES: ReadonlySet<string> = new Set(['success', 'fail'])
@@ -267,28 +291,61 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
   if (!Array.isArray(raw)) return []
   const out: LongTermAsset[] = []
   const seenIds = new Set<string>()
-  for (const item of raw) {
-    if (!isLooseRecord(item)) continue
-    const clean = stripHostileKeys(item)
-    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
-    if (!VALID_ASSET_KINDS.has(clean.kind as string)) continue
-    if (!VALID_ASSET_FLAVORS.has(clean.chassisFlavor as string)) continue
-    const tier = Number(clean.chassisTier)
-    if (!VALID_ASSET_TIERS.has(tier)) continue
-    if (!VALID_ASSET_ACQUISITION_MODES.has(clean.acquisitionMode as string))
+  const dropped = new Map<string, string>()
+  for (const [index, item] of raw.entries()) {
+    if (!isLooseRecord(item)) {
+      dropped.set(`#${index}`, 'not an object')
       continue
+    }
+    const clean = stripHostileKeys(item)
+    const label = typeof clean.id === 'string' ? clean.id : `#${index}`
+    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) {
+      dropped.set(label, 'missing or duplicate id')
+      continue
+    }
+    if (!VALID_ASSET_KINDS.has(clean.kind as string)) {
+      dropped.set(label, `invalid kind ${String(clean.kind)}`)
+      continue
+    }
+    if (!VALID_ASSET_FLAVORS.has(clean.chassisFlavor as string)) {
+      dropped.set(label, `invalid flavor ${String(clean.chassisFlavor)}`)
+      continue
+    }
+    const tier = Number(clean.chassisTier)
+    if (!VALID_ASSET_TIERS.has(tier)) {
+      dropped.set(label, `invalid tier ${String(clean.chassisTier)}`)
+      continue
+    }
+    if (!VALID_ASSET_ACQUISITION_MODES.has(clean.acquisitionMode as string)) {
+      dropped.set(
+        label,
+        `invalid acquisitionMode ${String(clean.acquisitionMode)}`
+      )
+      continue
+    }
 
     const kind = clean.kind as LongTermAsset['kind']
     const flavor = clean.chassisFlavor as AssetFlavor
     const chassisTier = tier as ChassisTier
+    const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]
+    if (!configTier) {
+      // The chassis economics below are re-derived from CHASSIS_CONFIG, so an
+      // asset whose tier no longer exists in the catalogue cannot be rebuilt
+      // and is discarded. Renaming or removing a shipped tier therefore
+      // deletes that asset from every existing save — this warning is the only
+      // signal that happened.
+      dropped.set(
+        label,
+        `no CHASSIS_CONFIG entry for ${kind}/${flavor}/${chassisTier}`
+      )
+      continue
+    }
     // Cross-check sanitized slots against the chassis layout: a slot is only
     // allowed if its slotType is either in the chassis config for this
     // kind/flavor/tier OR was dynamically added by an installed module
     // (addedByModuleId is set). Slots violating both rules are dropped to
     // prevent impossible topologies from surviving a load.
-    const chassisSlotTypes = new Set<string>(
-      CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]?.slots ?? []
-    )
+    const chassisSlotTypes = new Set<string>(configTier.slots)
     // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
     // Why: Eliminates intermediate array and closure allocations.
     // Impact: Reduces GC pressure during asset sanitization.
@@ -310,15 +367,16 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       chassisFlavor: flavor,
       chassisTier,
       condition: clamp0to100(finiteNumberOr(clean.condition, 100)),
-      baseUpkeep: finiteNumberOr(clean.baseUpkeep, 0),
-      baseDailyRevenue: finiteNumberOr(clean.baseDailyRevenue, 0),
+      baseUpkeep: configTier.upkeep,
+      baseDailyRevenue: configTier.revenue,
       slots: sanitizedSlots,
       acquiredOnDay: finiteNumberOr(clean.acquiredOnDay, 0),
       acquisitionMode: clean.acquisitionMode as AcquisitionMode,
-      baseRiskEventChance: finiteNumberOr(clean.baseRiskEventChance, 0)
+      baseRiskEventChance: configTier.baseRiskEventChance
     })
     seenIds.add(clean.id)
   }
+  reportDroppedEntries('asset', dropped)
   return out
 }
 
@@ -327,7 +385,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
  *
  * @param raw - Raw liability collection from loaded state.
  * @param assets - Sanitized assets used to validate liability ownership.
- * @returns Valid liabilities with unique ids and numeric fields normalized.
+ * @returns Valid liabilities with unique ids; malformed financial entries are dropped.
  */
 export const sanitizeLiabilities = (
   raw: unknown,
@@ -347,29 +405,87 @@ export const sanitizeLiabilities = (
     }
   }
   const out: Record<string, Liability> = Object.create(null)
-  for (const item of items) {
-    if (!isLooseRecord(item)) continue
-    const clean = stripHostileKeys(item)
-    if (typeof clean.id !== 'string') continue
-    if (!VALID_SOURCES.has(clean.source as string)) continue
-    if (typeof clean.assetId !== 'string' || !assetIds.has(clean.assetId))
+  const dropped = new Map<string, string>()
+  for (const [index, item] of items.entries()) {
+    if (!isLooseRecord(item)) {
+      dropped.set(`#${index}`, 'not an object')
       continue
+    }
+    const clean = stripHostileKeys(item)
+    const label = typeof clean.id === 'string' ? clean.id : `#${index}`
+    if (typeof clean.id !== 'string') {
+      dropped.set(label, 'missing id')
+      continue
+    }
+    if (!VALID_SOURCES.has(clean.source as string)) {
+      dropped.set(label, `invalid source ${String(clean.source)}`)
+      continue
+    }
+    if (typeof clean.assetId !== 'string' || !assetIds.has(clean.assetId)) {
+      dropped.set(
+        label,
+        `assetId ${String(clean.assetId)} has no surviving asset`
+      )
+      continue
+    }
+
+    const principalRemaining = clean.principalRemaining
+    const interestRate = clean.interestRate
+    const dailyPayment = clean.dailyPayment
+    const termDaysRemaining = clean.termDaysRemaining
+    const defaultCounter = clean.defaultCounter
+    if (
+      !isFiniteNumber(principalRemaining) ||
+      principalRemaining <= 0 ||
+      !isFiniteNumber(interestRate) ||
+      interestRate < 0 ||
+      !isFiniteNumber(dailyPayment) ||
+      dailyPayment < 0 ||
+      (clean.source === 'loan' && dailyPayment === 0) ||
+      !isFiniteNumber(termDaysRemaining) ||
+      termDaysRemaining <= 0 ||
+      !isFiniteNumber(defaultCounter) ||
+      defaultCounter < 0
+    ) {
+      dropped.set(label, 'malformed financial fields')
+      continue
+    }
+    // The field only exists on crowdfund-generated liabilities. A 'loan' entry
+    // carrying it is malformed or hostile, so it is rejected rather than copied
+    // through into sanitized state.
+    const hasCrowdfundFamePromised = Object.hasOwn(
+      clean,
+      'crowdfundFamePromised'
+    )
+    if (hasCrowdfundFamePromised && clean.source !== 'crowdfund') {
+      dropped.set(label, 'crowdfundFamePromised on a non-crowdfund liability')
+      continue
+    }
+    if (
+      hasCrowdfundFamePromised &&
+      (!isFiniteNumber(clean.crowdfundFamePromised) ||
+        clean.crowdfundFamePromised < 0)
+    ) {
+      dropped.set(label, 'malformed crowdfundFamePromised')
+      continue
+    }
 
     const result: Liability = {
       id: clean.id,
       source: clean.source as Liability['source'],
       assetId: clean.assetId,
-      principalRemaining: finiteNumberOr(clean.principalRemaining, 0),
-      interestRate: finiteNumberOr(clean.interestRate, 0),
-      dailyPayment: finiteNumberOr(clean.dailyPayment, 0),
-      termDaysRemaining: finiteNumberOr(clean.termDaysRemaining, 0),
-      defaultCounter: finiteNumberOr(clean.defaultCounter, 0)
+      principalRemaining,
+      interestRate,
+      dailyPayment,
+      termDaysRemaining,
+      defaultCounter
     }
-    if (isFiniteNumber(clean.crowdfundFamePromised)) {
-      result.crowdfundFamePromised = clean.crowdfundFamePromised
+    if (hasCrowdfundFamePromised) {
+      result.crowdfundFamePromised = clean.crowdfundFamePromised as number
     }
     out[result.id] = result
   }
+  reportDroppedEntries('liability', dropped)
   return out
 }
 
@@ -400,18 +516,52 @@ export const sanitizeCrowdfundCampaigns = (
   }
 
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
-  for (const item of raw) {
-    if (!isLooseRecord(item)) continue
+  const dropped = new Map<string, string>()
+  for (const [index, item] of raw.entries()) {
+    if (!isLooseRecord(item)) {
+      dropped.set(`#${index}`, 'not an object')
+      continue
+    }
     const clean = stripHostileKeys(item)
-    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) continue
-    if (!isLooseRecord(clean.assetSpec)) continue
+    const label = typeof clean.id === 'string' ? clean.id : `#${index}`
+    if (typeof clean.id !== 'string' || seenIds.has(clean.id)) {
+      dropped.set(label, 'missing or duplicate id')
+      continue
+    }
+    if (!isLooseRecord(clean.assetSpec)) {
+      dropped.set(label, 'missing assetSpec')
+      continue
+    }
     const spec = stripHostileKeys(clean.assetSpec)
-    if (!VALID_ASSET_KINDS.has(spec.kind as string)) continue
-    if (!VALID_ASSET_FLAVORS.has(spec.flavor as string)) continue
+    if (!VALID_ASSET_KINDS.has(spec.kind as string)) {
+      dropped.set(label, `invalid assetSpec.kind ${String(spec.kind)}`)
+      continue
+    }
+    if (!VALID_ASSET_FLAVORS.has(spec.flavor as string)) {
+      dropped.set(label, `invalid assetSpec.flavor ${String(spec.flavor)}`)
+      continue
+    }
     const tier = Number(spec.chassisTier)
-    if (!VALID_ASSET_TIERS.has(tier)) continue
+    if (!VALID_ASSET_TIERS.has(tier)) {
+      dropped.set(
+        label,
+        `invalid assetSpec.chassisTier ${String(spec.chassisTier)}`
+      )
+      continue
+    }
     const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
-    if (unavailableKinds.has(kind) || seenKinds.has(kind)) continue
+    if (unavailableKinds.has(kind) || seenKinds.has(kind)) {
+      dropped.set(label, `kind ${kind} already owned or campaigned`)
+      continue
+    }
+
+    const targetAmount = finiteNumberOr(clean.targetAmount, 0)
+    const fameStake = finiteNumberOr(clean.fameStake, 0)
+    const daysRemaining = finiteNumberOr(clean.daysRemaining, 0)
+    if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
+      dropped.set(label, 'malformed targetAmount/daysRemaining/fameStake')
+      continue
+    }
 
     const outcome = clean.resolvedOutcome
     // Materialized ids are required fields on the type (so processCrowdfundTick
@@ -435,9 +585,9 @@ export const sanitizeCrowdfundCampaigns = (
         flavor: spec.flavor as AssetFlavor,
         chassisTier: tier as ChassisTier
       },
-      targetAmount: finiteNumberOr(clean.targetAmount, 0),
-      fameStake: finiteNumberOr(clean.fameStake, 0),
-      daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
+      targetAmount,
+      fameStake,
+      daysRemaining,
       // Clamp to [0, 1] so a hostile/legacy save can't plant a roll outside
       // the mulberry32 output range and skew tick resolution.
       plannedSuccessRoll: Math.max(
@@ -460,6 +610,7 @@ export const sanitizeCrowdfundCampaigns = (
     seenIds.add(clean.id)
     seenKinds.add(kind)
   }
+  reportDroppedEntries('crowdfund campaign', dropped)
   return out
 }
 

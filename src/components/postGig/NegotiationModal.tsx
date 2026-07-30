@@ -4,6 +4,7 @@ import type {
   NegotiationModalProps,
   NegotiationResult
 } from '../../types/components'
+import type { BrandDealNegotiationFeedbackKey } from '../../types/social'
 import { isLooseRecord } from '../../utils/objectUtils'
 
 const TACTICS = [
@@ -40,23 +41,38 @@ const TACTICS = [
   }
 ] as const
 
+const FEEDBACK_KEYS = [
+  'ui:deals.feedback.safeSuccess',
+  'ui:deals.feedback.safeFailure',
+  'ui:deals.feedback.persuasiveSuccess',
+  'ui:deals.feedback.persuasiveFailure',
+  'ui:deals.feedback.aggressiveSuccess',
+  'ui:deals.feedback.aggressiveFailure'
+] as const satisfies readonly BrandDealNegotiationFeedbackKey[]
+
+const isFeedbackKey = (
+  value: unknown
+): value is BrandDealNegotiationFeedbackKey =>
+  typeof value === 'string' &&
+  (FEEDBACK_KEYS as readonly string[]).includes(value)
+
 const isNegotiationResult = (value: unknown): value is NegotiationResult => {
   if (!isLooseRecord(value)) return false
   if (
     !Object.hasOwn(value, 'status') ||
     !Object.hasOwn(value, 'success') ||
-    !Object.hasOwn(value, 'feedback')
+    !Object.hasOwn(value, 'feedbackKey')
   ) {
     return false
   }
   const record = value as {
     success?: unknown
-    feedback?: unknown
+    feedbackKey?: unknown
     status?: unknown
   }
   return (
     typeof record.success === 'boolean' &&
-    typeof record.feedback === 'string' &&
+    isFeedbackKey(record.feedbackKey) &&
     (record.status === 'ACCEPTED' ||
       record.status === 'REVOKED' ||
       record.status === 'FAILED')
@@ -121,10 +137,7 @@ export const NegotiationModal = ({
               : t('ui:deals.failure', { defaultValue: 'FAILURE' })}
           </div>
           <div className='text-base sm:text-lg font-bold text-star-white mb-2 break-words'>
-            {typedResult?.feedback ??
-              t('ui:deals.negotiationOutcomePending', {
-                defaultValue: 'Outcome pending.'
-              })}
+            {t(typedResult.feedbackKey)}
           </div>
           {typedResult?.status === 'REVOKED' && (
             <div className='text-blood-red font-mono uppercase tracking-widest mt-4 break-words'>

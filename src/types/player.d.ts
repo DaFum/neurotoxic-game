@@ -35,8 +35,6 @@ export interface PlayerState {
     proveYourselfMode: boolean
     /** Set when the FINALE gig was completed; routes to the victory end screen. */
     tourCompleted?: boolean
-    /** Number of paid band-harmony recoveries completed at the clinic. */
-    harmonyRecoveries?: number
   }
   [key: string]: unknown
 }

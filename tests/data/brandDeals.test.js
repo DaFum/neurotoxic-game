@@ -23,6 +23,23 @@ const readEconomyLocale = locale =>
     )
   )
 
+const readUiLocale = locale =>
+  JSON.parse(
+    fs.readFileSync(
+      path.join(__dirname, '..', '..', 'public', 'locales', locale, 'ui.json'),
+      'utf8'
+    )
+  )
+
+const NEGOTIATION_FEEDBACK_KEYS = [
+  'deals.feedback.safeSuccess',
+  'deals.feedback.safeFailure',
+  'deals.feedback.persuasiveSuccess',
+  'deals.feedback.persuasiveFailure',
+  'deals.feedback.aggressiveSuccess',
+  'deals.feedback.aggressiveFailure'
+]
+
 describe('BRAND_DEALS data module', () => {
   it('should be an array of brand deals', () => {
     assert(Array.isArray(BRAND_DEALS), 'BRAND_DEALS should be an array')
@@ -150,6 +167,27 @@ describe('BRAND_DEALS data module', () => {
         assert.ok(
           entries[descriptionKey].trim().length > 0,
           `${locale}/economy.json has empty ${descriptionKey}`
+        )
+      }
+    }
+  })
+
+  it('negotiation feedback keys have non-empty English and German copy', () => {
+    const locales = {
+      en: readUiLocale('en'),
+      de: readUiLocale('de')
+    }
+
+    for (const [locale, entries] of Object.entries(locales)) {
+      for (const key of NEGOTIATION_FEEDBACK_KEYS) {
+        assert.equal(
+          typeof entries[key],
+          'string',
+          `${locale}/ui.json missing ${key}`
+        )
+        assert.ok(
+          entries[key].trim().length > 0,
+          `${locale}/ui.json has empty ${key}`
         )
       }
     }

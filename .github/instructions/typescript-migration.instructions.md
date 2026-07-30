@@ -15,8 +15,11 @@ resolving strict-mode errors. Defer to `AGENTS.md` for all project-wide rules.
 
 ## Critical Commands
 
-- Full typecheck: `pnpm run typecheck:core` (runs `tsc --noEmit` over
-  `jsconfig.checkjs.json` scope).
+- Full typecheck: `pnpm run typecheck:core` (runs `tsc -p tsconfig.json` over
+  the complete `src/` scope).
+- Server/API gate: `pnpm run typecheck:server` (runs `tsc -p tsconfig.server.json`
+  over `api/**` and `lib/**` — the serverless handlers and shared helpers, which
+  `typecheck:core`'s `include: ["src"]` does NOT cover).
 - Reducer gate (CI): `pnpm run typecheck` — fails on any error inside
   `gameReducer.ts`, `reducers/bandReducer.ts`, `reducers/eventReducer.ts`,
   `reducers/sceneReducer.ts`, or any non-zero `tsc` status.
@@ -29,6 +32,8 @@ resolving strict-mode errors. Defer to `AGENTS.md` for all project-wide rules.
 ```bash
 pnpm install
 pnpm run guard:nocheck
+pnpm run typecheck:core
+pnpm run typecheck:server
 pnpm run typecheck
 pnpm run test:all
 pnpm run test:ui   # when touching UI or i18n
@@ -52,12 +57,10 @@ pnpm run test:ui   # when touching UI or i18n
 - Apply bounded-state clamps once, in the action creator, via
   `src/utils/gameStateUtils.ts`. Do not re-clamp in reducers.
 
-## Widening the Stricter Scope
+## Strict Source Scope
 
-`jsconfig.checkjs.json` adds `noUncheckedIndexedAccess` for migrated domains
-(`src/context`, `src/hooks/rhythmGame`, `src/utils/audio`, `src/ui/bandhq`).
-When graduating a new domain into this scope, add it to `include` in the same
-PR that lands the type-tightening.
+`tsconfig.json` applies `noUncheckedIndexedAccess` to all source files under `src/`.
+New source files under `src/` therefore join the core gate automatically.
 
 ## Suppression Policy
 

@@ -272,7 +272,6 @@ export type GameAction =
       { instanceId: string; contrabandId: string; memberId?: string }
     >
   | Action<ActionTypes['CLINIC_HEAL'], ClinicActionPayload>
-  | Action<ActionTypes['HARMONY_RECOVERY']>
   | Action<ActionTypes['CLINIC_ENHANCE'], ClinicActionPayload>
   | Action<ActionTypes['GRAFT_NEURO_OVERCLOCK'], { memberId: string }>
   | Action<ActionTypes['PIRATE_BROADCAST'], PirateBroadcastPayload>

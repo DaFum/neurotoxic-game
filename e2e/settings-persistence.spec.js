@@ -56,45 +56,46 @@ test.describe('Settings Persistence', () => {
 
     const modal = page.getByRole('dialog')
 
-    // Find the CRT toggle — it should be labelled or have accessible text
-    const crtToggle = modal
-      .getByRole('checkbox', { name: /crt/i })
-      .or(modal.getByLabel(/crt/i))
+    const crtToggle = modal.getByRole('switch', { name: /crt/i })
+    await expect(crtToggle).toBeVisible()
 
-    const initialChecked = await crtToggle.isChecked().catch(() => null)
+    const initialChecked = await crtToggle.getAttribute('aria-checked')
+    expect(['true', 'false']).toContain(initialChecked)
+    const toggledValue = initialChecked !== 'true'
 
-    if (initialChecked === null) {
-      // CRT toggle is not a native checkbox — find it by text and click
-      const crtBtn = modal
-        .locator('[data-testid*="crt"], button:has-text("CRT")')
-        .first()
+    await crtToggle.click()
+    await expect(crtToggle).toHaveAttribute(
+      'aria-checked',
+      String(toggledValue)
+    )
 
-      const isAvailable = await crtBtn.isVisible().catch(() => false)
-      if (!isAvailable) {
-        // Settings panel does not expose CRT on this build — skip gracefully
-        test.skip(true, 'CRT toggle not found in settings panel')
-        return
-      }
-
-      await crtBtn.click()
-    } else {
-      await crtToggle.click()
-    }
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          const rawSettings = localStorage.getItem('neurotoxic_global_settings')
+          if (rawSettings === null) return null
+          return JSON.parse(rawSettings).crtEnabled
+        })
+      )
+      .toBe(toggledValue)
 
     // Close modal and reload
     await page.keyboard.press('Escape')
+    await expect(page.getByRole('dialog')).toBeHidden()
     await page.reload({ waitUntil: 'domcontentloaded' })
 
-    // Navigate back to settings after reload
-    await page.getByRole('heading', { name: /neurotoxic/i }).waitFor({
-      state: 'visible',
-      timeout: 10000
-    })
+    // A hard reload can re-enter the intro before returning to the menu.
+    await skipToMenu(page, { navigate: false })
     await openSettings(page)
 
-    // Verify settings panel is still accessible after reload (state is preserved)
     const modalAfterReload = page.getByRole('dialog')
-    await expect(modalAfterReload).toBeVisible()
+    const crtToggleAfterReload = modalAfterReload.getByRole('switch', {
+      name: /crt/i
+    })
+    await expect(crtToggleAfterReload).toHaveAttribute(
+      'aria-checked',
+      String(toggledValue)
+    )
   })
 
   test('localStorage contains neurotoxic_settings key after visiting settings', async ({

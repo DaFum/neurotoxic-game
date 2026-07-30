@@ -5,7 +5,6 @@ import {
   createCraftItemAction,
   createUseContrabandAction,
   createClinicHealAction,
-  createHarmonyRecoveryAction,
   graftNeuroOverclock as createGraftNeuroOverclockAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
@@ -30,7 +29,6 @@ export interface FacilityDispatchActions {
     memberId?: Parameters<typeof createUseContrabandAction>[2]
   ) => void
   clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
-  recoverHarmony: () => void
   graftNeuroOverclock: (memberId: string) => void
   clinicEnhance: (
     payload: Parameters<typeof createClinicEnhanceAction>[0]
@@ -52,10 +50,15 @@ export interface FacilityDispatchActions {
 }
 
 /**
- * Builds the memoized facility dispatch wrappers.
- * Each helper only depends on `dispatch`.
+ * Creates memoized dispatch wrappers for facility-related game actions.
+ *
+ * @remarks
+ * Every helper depends on `dispatch` alone, so all returned references are
+ * stable for the provider's lifetime. Consumers rely on that stability in
+ * effect dependency arrays — do not introduce a dependency on state here.
+ *
  * @param dispatch - Game action dispatcher.
- * @returns Stable facility dispatch methods.
+ * @returns Stable facility action dispatch methods.
  */
 export function useFacilityDispatchActions(
   dispatch: Dispatch<GameAction>
@@ -85,11 +88,6 @@ export function useFacilityDispatchActions(
   const clinicHeal = useCallback(
     (payload: Parameters<typeof createClinicHealAction>[0]) =>
       dispatch(createClinicHealAction(payload)),
-    [dispatch]
-  )
-
-  const recoverHarmony = useCallback(
-    () => dispatch(createHarmonyRecoveryAction()),
     [dispatch]
   )
 
@@ -146,7 +144,6 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
-      recoverHarmony,
       graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,
@@ -161,7 +158,6 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
-      recoverHarmony,
       graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,
