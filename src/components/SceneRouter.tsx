@@ -72,8 +72,8 @@ interface SceneRouterProps {
  * @remarks
  * Unrecognized or unhandled game phases will default to rendering the main menu to prevent
  * unrecoverable application blank states. For the PRE_GIG_MINIGAME phase, if minigameType is
- * null or omitted, it intentionally falls back to mounting RoadieRunScene to preserve
- * its completion overlay.
+ * null, omitted, or any unrecognized type, it intentionally falls back to mounting RoadieRunScene
+ * to preserve its completion overlay.
  *
  * @param props - Scene routing inputs
  * @returns The scene component for the current phase, falling back to the main menu
