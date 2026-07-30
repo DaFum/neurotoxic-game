@@ -52,14 +52,15 @@ const compact = run => ({
   clinicVisits: run.clinicVisits,
   repairs: run.repairs,
   refuels: run.refuels,
+  finaleCompleted: run.finaleCompleted,
   harmonyRecovery: run.harmonyRecovery
 })
 
-export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner = runSingleSimulation }) => {
+export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner = runSingleSimulation, stream = 'calibration' }) => {
   if (controlRuns && controlRuns.length !== runsPerScenario) throw new RangeError('Control cohort size must match runsPerScenario')
   const pairs = []
   for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
-    const seed = streamSeed('calibration', scenario.id, runIndex)
+    const seed = streamSeed(stream, scenario.id, runIndex)
     const control = controlRuns?.[runIndex] ?? compact(runner(scenario, seed, controlTuning))
     const candidate = compact(runner(scenario, seed, candidateTuning))
     pairs.push({
@@ -547,6 +548,208 @@ const describeObjective = validation => {
   return 'Gap-1 dominance is unchanged. The selected combination applies no late-game dampener, so the remaining advantage reflects simply playing more gig nodes rather than a compounding effect a lever could remove.'
 }
 
+const RECOVERY_TARGET_SCENARIO_IDS = Object.freeze([
+  'bootstrap_struggle',
+  'chaos_tour'
+])
+
+const recoveryScenarioResult = (pairs, definition, scenarioId) => {
+  const summary = summarizePairedRuns(pairs, definition.id, scenarioId)
+  const activationRuns = pairs.filter(
+    pair => (pair.candidate.harmonyRecovery?.activations ?? 0) > 0
+  ).length
+  const minimumActivationRuns = Math.max(1, Math.ceil(pairs.length * 0.05))
+  const finaleRate = side =>
+    round(
+      pairs.filter(pair => pair[side].finaleCompleted).length /
+        Math.max(1, pairs.length) * 100
+    )
+  const famePerGig = pairedFamePerGig(pairs)
+  const recovery = summary.harmonyRecovery.candidate
+  const costType = definition.overrides.recovery?.costType ?? 'none'
+  const costsMeasured = costType === 'money'
+    ? activationRuns === 0 || recovery.moneySpent > 0
+    : costType === 'day'
+      ? activationRuns === 0 ||
+        (recovery.daysConsumed > 0 && recovery.gigOpportunitiesForgone >= 0)
+      : true
+  return {
+    ...summary,
+    activationEvidence: { activationRuns, minimumActivationRuns },
+    harmonyMedianDelta: summary.continuous.finalHarmony.pairedDelta.median,
+    finaleCompletedDeltaPct: round(
+      finaleRate('candidate') - finaleRate('control')
+    ),
+    bankruptcyDeltaPct: summary.bankruptcy.deltaRatePct,
+    famePerGig,
+    costsMeasured
+  }
+}
+
+export const evaluateRecoveryAcceptance = ({ resultsByScenario }) => {
+  const results = Object.values(resultsByScenario ?? {})
+  const checks = {
+    targetProfilesMeasured:
+      results.length === RECOVERY_TARGET_SCENARIO_IDS.length,
+    activationEvidence:
+      results.length > 0 &&
+      results.every(
+        result =>
+          result.activationEvidence.activationRuns >=
+          result.activationEvidence.minimumActivationRuns
+      ),
+    harmonyBenefit:
+      results.some(result => result.harmonyMedianDelta >= 3) &&
+      results.every(result => result.harmonyMedianDelta >= 0),
+    finaleNotWorse: results.every(
+      result => result.finaleCompletedDeltaPct >= 0
+    ),
+    bankruptcy: results.every(result => result.bankruptcyDeltaPct <= 1),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
+    costsMeasured: results.every(result => result.costsMeasured === true)
+  }
+  return { passed: Object.values(checks).every(Boolean), checks }
+}
+
+export const runHarmonyRecoveryPhase = ({
+  runsPerScenario,
+  runner = runSingleSimulation
+}) => {
+  const definitions = BALANCE_EXPERIMENTS.filter(
+    definition => definition.phase === 'recovery'
+  )
+  const scenarios = RECOVERY_TARGET_SCENARIO_IDS.map(id =>
+    SCENARIOS.find(scenario => scenario.id === id)
+  )
+  if (scenarios.some(scenario => !scenario)) {
+    throw new Error('Harmony recovery target scenario is missing')
+  }
+  const controlCache = new Map()
+  const controlRunsFor = (scenario, stream) => {
+    const key = `${stream}:${scenario.id}`
+    if (!controlCache.has(key)) {
+      controlCache.set(
+        key,
+        Array.from({ length: runsPerScenario }, (_, runIndex) =>
+          compact(
+            runner(
+              scenario,
+              streamSeed(stream, scenario.id, runIndex),
+              ORIGINAL_CONTROL_BALANCE_TUNING
+            )
+          )
+        )
+      )
+    }
+    return controlCache.get(key)
+  }
+
+  const measure = (definition, stream) => {
+    const tuning = resolveBalanceTuning(
+      { recovery: definition.overrides.recovery },
+      ORIGINAL_CONTROL_BALANCE_TUNING
+    )
+    const resultsByScenario = Object.fromEntries(
+      scenarios.map(scenario => {
+        const controlRuns = controlRunsFor(scenario, stream)
+        const pairs = pairSimulationRuns({
+          scenario,
+          runsPerScenario,
+          controlTuning: ORIGINAL_CONTROL_BALANCE_TUNING,
+          candidateTuning: tuning,
+          controlRuns,
+          runner,
+          stream
+        })
+        return [scenario.id, recoveryScenarioResult(pairs, definition, scenario.id)]
+      })
+    )
+    const aggregateResults = {
+      harmonyRecovery: {
+        control: summarizeHarmonyRecovery(
+          Object.values(resultsByScenario).map(result => ({
+            harmonyRecovery: result.harmonyRecovery.control
+          }))
+        ),
+        candidate: summarizeHarmonyRecovery(
+          Object.values(resultsByScenario).map(result => ({
+            harmonyRecovery: result.harmonyRecovery.candidate
+          }))
+        )
+      },
+      meanHarmonyMedianDelta: round(
+        Object.values(resultsByScenario).reduce(
+          (sum, result) => sum + result.harmonyMedianDelta,
+          0
+        ) / scenarios.length
+      )
+    }
+    return {
+      ...definition,
+      tuning,
+      stream,
+      resultsByScenario,
+      aggregateResults,
+      acceptance: definition.id.endsWith('-none')
+        ? { passed: false, checks: { controlOnly: true } }
+        : evaluateRecoveryAcceptance({ resultsByScenario })
+    }
+  }
+
+  const calibration = definitions.map(definition =>
+    measure(definition, 'calibration')
+  )
+  const selection = definitions.map(definition => measure(definition, 'selection'))
+  const candidates = calibration.map(candidate => {
+    const selectionCandidate = selection.find(item => item.id === candidate.id)
+    return {
+      ...candidate,
+      selectionAcceptance: selectionCandidate.acceptance,
+      selectionResultsByScenario: selectionCandidate.resultsByScenario
+    }
+  })
+  const eligible = candidates
+    .filter(
+      candidate =>
+        candidate.acceptance.passed && candidate.selectionAcceptance.passed
+    )
+    .sort(
+      (left, right) =>
+        right.aggregateResults.meanHarmonyMedianDelta -
+          left.aggregateResults.meanHarmonyMedianDelta ||
+        combinationImpact({
+          bootstrap: { overrides: { earlyGame: {} } },
+          touring: left
+        }) -
+          combinationImpact({
+            bootstrap: { overrides: { earlyGame: {} } },
+            touring: right
+          }) ||
+        left.id.localeCompare(right.id)
+    )
+  const selected = eligible[0] ?? null
+  const validation = selected
+    ? measure(
+        definitions.find(definition => definition.id === selected.id),
+        'validation'
+      )
+    : null
+  return {
+    id: 'phase6E',
+    targetScenarioIds: RECOVERY_TARGET_SCENARIO_IDS,
+    runsPerScenario,
+    candidates,
+    selectedCandidateId:
+      validation?.acceptance.passed === true ? selected.id : null,
+    outcome: !selected
+      ? 'no-production-recommendation-no-candidate-passed'
+      : validation.acceptance.passed
+        ? 'candidate-validated-for-runtime-prototyping'
+        : 'no-production-recommendation-final-validation-failed',
+    validation
+  }
+}
+
 export const tryReadJson = async file => {
   try {
     const parsed = JSON.parse(await fs.readFile(file, 'utf8'))
@@ -748,6 +951,16 @@ ${previousComparison.scenarios
 `
     : ''
   const combinedRows = Object.values(report.finalCombinedValidation.resultsByScenario).map(item => `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioValidation.passed ? 'Pass' : 'Fail'} |`).join('\n')
+  const recoveryPhase = report.phases.phase6E ?? {
+    candidates: [],
+    outcome: 'not-measured',
+    selectedCandidateId: null
+  }
+  const recoveryRows = recoveryPhase.candidates.flatMap(candidate =>
+    Object.entries(candidate.resultsByScenario).map(([scenarioId, result]) =>
+      `| ${candidate.id} | ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | €${result.harmonyRecovery.candidate.moneySpent} | ${result.harmonyRecovery.candidate.daysConsumed} | ${result.harmonyRecovery.candidate.gigOpportunitiesForgone} | ${candidate.acceptance.passed && candidate.selectionAcceptance.passed ? 'Pass' : 'Fail'} |`
+    )
+  ).join('\n')
   return `# Game Balance Experiments – Phase 3
 
 ## Reproduzierbarkeit
@@ -810,6 +1023,16 @@ ${report.phases.phase3C.ranking.map((item, index) => `${index + 1}. ${item.id}`)
 ## Gewählter Late-Game-Hebel
 
 \`${report.phases.phase3C.selectedCandidateId}\` was selected by the combination search. ${SELECTION_RATIONALE} ${pairAccounting}${selectionOutcomeNote}${noChangeNote}
+
+## Phase 6E – Harmony Recovery
+
+Alle fünf Varianten werden auf \`bootstrap_struggle\` und \`chaos_tour\` vollständig auf den getrennten \`calibration\`- und \`selection\`-Strömen gemessen. Nur der bereits ausgewählte Kandidat wird einmal auf \`validation\` geprüft.
+
+| Candidate | Scenario | Activation runs | Median Harmony delta | Finale delta | Bankruptcy delta | Fame/Gig delta | Avg money cost | Avg days | Avg gigs forgone | Calibration + Selection |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|---|
+${recoveryRows}
+
+Outcome: **${recoveryPhase.outcome}**. Selected candidate: \`${recoveryPhase.selectedCandidateId ?? 'none'}\`.
 
 ## Kombinierte Validierung
 
@@ -1231,6 +1454,7 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
   designRiskCorridors.aboveCorridor = designRiskCorridors.scenarios
     .filter(item => item.position === 'above')
     .map(item => item.scenarioId)
+  const recoveryPhase = runHarmonyRecoveryPhase({ runsPerScenario, runner })
   const report = {
     experimentReportVersion: 2,
     generatedAt: new Date().toISOString(),
@@ -1253,7 +1477,8 @@ export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANT
     controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
       phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },
-      phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote }
+      phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote },
+      phase6E: recoveryPhase
     },
     finalCombinedValidation,
     // The stream each verdict rests on, so a reader never has to infer it. A stream

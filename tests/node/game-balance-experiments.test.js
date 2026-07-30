@@ -33,6 +33,7 @@ import {
   runExperimentSuite,
   evaluateFinalCombinedValidation,
   evaluateCandidate,
+  evaluateRecoveryAcceptance,
   kpiStatusForRuns,
   pairSimulationRuns,
   rankCandidates,
@@ -65,7 +66,7 @@ test('experiment registry contains the approved harmony recovery matrix and cont
       'harmony-recovery-45-money'
     ]
   )
-  assert.ok(recovery.every(item => item.phase === 'touring'))
+  assert.ok(recovery.every(item => item.phase === 'recovery'))
 })
 
 test('experiment pipeline forwards non-neutral recovery tuning to simulations', async () => {
@@ -95,7 +96,7 @@ test('experiment pipeline forwards non-neutral recovery tuning to simulations', 
   assert.ok(
     observed.some(item => item.threshold === 45 && item.costType === 'day')
   )
-  const candidate = report.phases.phase3C.candidates.find(
+  const candidate = report.phases.phase6E.candidates.find(
     item => item.id === 'harmony-recovery-40-money'
   )
   assert.equal(
@@ -105,6 +106,45 @@ test('experiment pipeline forwards non-neutral recovery tuning to simulations', 
   assert.equal(
     candidate.aggregateResults.harmonyRecovery.candidate.moneySpent,
     100
+  )
+  assert.deepEqual(Object.keys(candidate.resultsByScenario).sort(), [
+    'bootstrap_struggle',
+    'chaos_tour'
+  ])
+})
+
+test('recovery acceptance fails closed and requires measurable harmony benefit', () => {
+  const scenario = ({
+    harmony = 4,
+    activationRuns = 2,
+    finale = 0,
+    bankruptcy = 1,
+    fame = 0
+  } = {}) => ({
+    activationEvidence: { activationRuns, minimumActivationRuns: 1 },
+    harmonyMedianDelta: harmony,
+    finaleCompletedDeltaPct: finale,
+    bankruptcyDeltaPct: bankruptcy,
+    famePerGig: { deltaPct: fame, sufficientEvidence: true },
+    costsMeasured: true
+  })
+  assert.equal(
+    evaluateRecoveryAcceptance({
+      resultsByScenario: {
+        bootstrap_struggle: scenario(),
+        chaos_tour: scenario({ harmony: 0 })
+      }
+    }).passed,
+    true
+  )
+  assert.equal(
+    evaluateRecoveryAcceptance({
+      resultsByScenario: {
+        bootstrap_struggle: scenario({ activationRuns: 0 }),
+        chaos_tour: scenario({ activationRuns: 0, harmony: 0 })
+      }
+    }).passed,
+    false
   )
 })
 

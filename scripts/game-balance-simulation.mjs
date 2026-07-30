@@ -2782,6 +2782,7 @@ export const runSingleSimulation = (
     })
 
     let willRest = false
+    let recoveryDayConsumed = false
     // Check if the band needs rest/clinic before travelling on.
     //
     // The trigger is deliberately identical to `MEMBER_NEEDS_CARE` below, which
@@ -2874,13 +2875,14 @@ export const runSingleSimulation = (
           } else if (recovery.costType === 'day') {
             counters.harmonyRecovery.daysConsumed += 1
             if (wantsToPerform) counters.harmonyRecovery.gigOpportunitiesForgone += 1
+            recoveryDayConsumed = true
             willRest = true
           }
         }
       }
     }
 
-    if (willRest) {
+    if (willRest && !recoveryDayConsumed) {
       if (!state.band.members.some(MEMBER_NEEDS_CARE)) {
         willRest = false
         counters.restDays -= 1

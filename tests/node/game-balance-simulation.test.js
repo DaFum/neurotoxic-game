@@ -198,6 +198,25 @@ test('paid harmony recovery records money and day trade-offs independently', () 
   )
 })
 
+test('day recovery consumes travel and gig opportunities rather than only counters', () => {
+  const scenario = probeScenario(3, {
+    gigGapDays: 1,
+    initialOverrides: { band: { harmony: 35, tourSuccess: 1 } }
+  })
+  const control = runSingleSimulation(scenario, 1, DEFAULT_BALANCE_TUNING)
+  const candidate = runSingleSimulation(scenario, 1, {
+    ...DEFAULT_BALANCE_TUNING,
+    recovery: { threshold: 40, costType: 'day', moneyCost: 0, harmonyGain: 20 }
+  })
+  assert.ok(candidate.harmonyRecovery.daysConsumed > 0)
+  assert.ok(candidate.travelLog.length < control.travelLog.length)
+  assert.ok(candidate.gigsPlayed < control.gigsPlayed)
+  assert.equal(
+    candidate.harmonyRecovery.gigOpportunitiesForgone,
+    control.gigsPlayed - candidate.gigsPlayed
+  )
+})
+
 test('Scandal Recovery starts inside an existing public backlash', () => {
   const scandal = SCENARIOS.find(scenario => scenario.id === 'scandal_recovery')
   assert.equal(scandal.initialOverrides.social.controversyLevel, 50)
