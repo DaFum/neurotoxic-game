@@ -537,12 +537,7 @@ describe('useArrivalLogic', () => {
     )
   })
 
-  test('GIG arrival writes the arrival save in the same effect pass as startGig', () => {
-    // Regression guard: this hook lives only in TourbusScene, which SceneRouter
-    // renders solely for TRAVEL_MINIGAME. START_GIG sets currentScene=PRE_GIG,
-    // so the commit that would trigger a SECOND effect pass unmounts the
-    // component — a save deferred to that pass is never written and the whole
-    // arrival (day advance, travel-event money, rival move) is lost.
+  test('GIG arrival queues a provider-level save after START_GIG commits', () => {
     const venue = { name: 'Club' }
     const { result } = setupArrivalScenario(useArrivalLogic, {
       gameMap: {
@@ -557,9 +552,9 @@ describe('useArrivalLogic', () => {
       result.current.handleArrivalSequence()
     })
 
-    // One act() == one commit + effect flush. Both must have happened already.
     expect(mockGameState.startGig.mock.calls.length).toBe(1)
-    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(0)
+    expect(mockGameState.saveGameAfterStateCommit.mock.calls.length).toBe(1)
     // The gig scene change is owned by START_GIG, not changeScene.
     expect(mockGameState.changeScene.mock.calls.length).toBe(0)
   })

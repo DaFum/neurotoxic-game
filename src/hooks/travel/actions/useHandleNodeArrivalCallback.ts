@@ -11,7 +11,6 @@ export const useHandleNodeArrivalCallback = ({
     updateBand,
     updatePlayer,
     triggerEvent,
-    startGig,
     addToast,
     onShowHQ,
     onShowSupplyStop,
@@ -27,7 +26,9 @@ export const useHandleNodeArrivalCallback = ({
         updateBand,
         updatePlayer,
         triggerEvent,
-        startGig,
+        // Gig startup belongs to useArrivalLogic's post-commit route. This
+        // legacy fallback must never synchronously change scenes here.
+        startGig: () => {},
         addToast,
         onShowHQ,
         onShowSupplyStop,
@@ -50,7 +51,6 @@ export const useHandleNodeArrivalCallback = ({
       updateBand,
       updatePlayer,
       triggerEvent,
-      startGig,
       addToast,
       onShowHQ,
       onShowSupplyStop,

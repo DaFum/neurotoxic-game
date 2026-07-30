@@ -53,4 +53,12 @@ describe('travel arrival parity', () => {
     assert.doesNotMatch(fallback, /includeGigNodes\s*:\s*true/)
     assert.doesNotMatch(arrival, /includeGigNodes\s*:\s*true/)
   })
+
+  it('does not pass the real startGig action into the legacy arrival utility', () => {
+    const callback = withoutComments(
+      read('src/hooks/travel/actions/useHandleNodeArrivalCallback.ts')
+    )
+
+    assert.doesNotMatch(callback, /handleNodeArrival\(\{[\s\S]*?\bstartGig,/)
+  })
 })

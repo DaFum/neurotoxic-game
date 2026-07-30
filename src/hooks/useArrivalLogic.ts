@@ -48,6 +48,7 @@ export const useArrivalLogic = ({
   const {
     advanceDay,
     saveGame,
+    saveGameAfterStateCommit,
     updateBand,
     updatePlayer,
     triggerEvent,
@@ -106,24 +107,7 @@ export const useArrivalLogic = ({
       try {
         startGig(route.gigVenue)
         route.gigStartQueued = true
-        // Deliberately does NOT defer the save to a second effect pass.
-        // START_GIG sets currentScene = PRE_GIG, and this hook lives only in
-        // TourbusScene, which SceneRouter renders solely for TRAVEL_MINIGAME —
-        // so the very commit that would re-trigger this effect unmounts the
-        // component hosting it. A deferred save is therefore never written, and
-        // the day advance, travel-event money/harmony and rival move are lost
-        // until the GIG→POST_GIG autosave.
-        //
-        // KNOWN LIMITATION: startGig dispatches inside startTransition, so the
-        // snapshot saved below is still pre-START_GIG. handleLoadGame forces
-        // currentScene to OVERWORLD (systemReducer.ts:216) but RESTORES
-        // currentGig, gigModifiers and minigame (:215, :217, :229), so a reload
-        // straight after a gig arrival comes back on the overworld carrying the
-        // PREVIOUS gig's venue. The arrival data itself (day, cash, harmony,
-        // events, rival) is correct because those dispatches already committed.
-        // Saving late loses the whole arrival; saving now loses only the gig
-        // hand-off, so this is the lesser failure — but the real fix is to move
-        // this save to a lifecycle that outlives the scene change.
+        saveGameAfterStateCommit()
       } catch (error) {
         handleError(error, {
           addToast,
@@ -155,8 +139,18 @@ export const useArrivalLogic = ({
     if (!route.gigStartQueued) {
       changeScene(route.scene)
     }
-    saveGame(false)
-  }, [routeNonce, currentScene, saveGame, changeScene, startGig, addToast])
+    if (!route.gigStartQueued) {
+      saveGame(false)
+    }
+  }, [
+    routeNonce,
+    currentScene,
+    saveGame,
+    saveGameAfterStateCommit,
+    changeScene,
+    startGig,
+    addToast
+  ])
 
   const handleArrivalSequence = useCallback(() => {
     const nodeId = player.currentNodeId
