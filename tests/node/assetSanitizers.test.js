@@ -67,17 +67,19 @@ describe('sanitizeAssets', () => {
     assert.equal(out2[0].condition, 0)
   })
 
-  it('coerces non-finite numeric fields via finiteNumberOr with sensible fallbacks', () => {
+  it('rebuilds chassis economy fields from CHASSIS_CONFIG', () => {
     const out = sanitizeAssets([
       validAsset({
-        baseUpkeep: Infinity,
+        baseUpkeep: -500,
         baseDailyRevenue: NaN,
+        baseRiskEventChance: -1,
         condition: NaN
       })
     ])
-    // Numeric monetary fields fall back to 0 (Infinity is rejected as non-finite).
-    assert.equal(out[0].baseUpkeep, 0)
-    assert.equal(out[0].baseDailyRevenue, 0)
+    const config = CHASSIS_CONFIG.tourbus_chassis.legit[1]
+    assert.equal(out[0].baseUpkeep, config.upkeep)
+    assert.equal(out[0].baseDailyRevenue, config.revenue)
+    assert.equal(out[0].baseRiskEventChance, config.baseRiskEventChance)
     // Condition falls back to 100 (full health) when missing/NaN — sensible
     // default for restoring a partially-corrupted save without making players
     // start broken.
@@ -208,6 +210,43 @@ describe('sanitizeLiabilities', () => {
     )
     assert.equal(Object.keys(out).length, 1)
   })
+
+  it('drops liabilities with invalid persisted financial fields', () => {
+    const validLiability = {
+      id: 'l1',
+      source: 'loan',
+      assetId: 'a1',
+      principalRemaining: 100,
+      interestRate: 0.05,
+      dailyPayment: 10,
+      termDaysRemaining: 60,
+      defaultCounter: 0
+    }
+
+    for (const overrides of [
+      { principalRemaining: -100 },
+      { principalRemaining: 0 },
+      { principalRemaining: Number.NaN },
+      { principalRemaining: null },
+      { interestRate: -0.05 },
+      { interestRate: Number.POSITIVE_INFINITY },
+      { dailyPayment: -10 },
+      { dailyPayment: 0 },
+      { dailyPayment: Number.NaN },
+      { termDaysRemaining: -60 },
+      { termDaysRemaining: 0 },
+      { defaultCounter: -2 },
+      { crowdfundFamePromised: -50 },
+      { crowdfundFamePromised: Number.POSITIVE_INFINITY }
+    ]) {
+      const out = sanitizeLiabilities(
+        [{ ...validLiability, ...overrides }],
+        [{ id: 'a1' }]
+      )
+      assert.equal(out.l1, undefined)
+      assert.equal(Object.hasOwn(out, 'l1'), false)
+    }
+  })
 })
 
 describe('sanitizeCrowdfundCampaigns', () => {
@@ -241,7 +280,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         },
         targetAmount: 4000,
         fameStake: 50,
-        daysRemaining: 0,
+        daysRemaining: 1,
         plannedSuccessRoll: 0.4,
         resolvedOutcome: 'success'
       }
@@ -260,7 +299,7 @@ describe('sanitizeCrowdfundCampaigns', () => {
         },
         targetAmount: 4000,
         fameStake: 50,
-        daysRemaining: 0,
+        daysRemaining: 1,
         plannedSuccessRoll: 0.4,
         resolvedOutcome: 'maybe'
       }
@@ -348,6 +387,34 @@ describe('sanitizeCrowdfundCampaigns', () => {
       out.map(campaign => campaign.id),
       ['c1', 'c3']
     )
+  })
+
+  it('drops campaigns that violate startCrowdfund financial bounds', () => {
+    const validCampaign = {
+      id: 'c1',
+      assetSpec: {
+        kind: 'tourbus_chassis',
+        flavor: 'legit',
+        chassisTier: 1
+      },
+      targetAmount: 4000,
+      fameStake: 50,
+      daysRemaining: 14,
+      plannedSuccessRoll: 0.4
+    }
+
+    for (const overrides of [
+      { targetAmount: 0 },
+      { targetAmount: -1 },
+      { fameStake: -1 },
+      { daysRemaining: 0 },
+      { daysRemaining: -1 }
+    ]) {
+      assert.deepEqual(
+        sanitizeCrowdfundCampaigns([{ ...validCampaign, ...overrides }]),
+        []
+      )
+    }
   })
 })
 

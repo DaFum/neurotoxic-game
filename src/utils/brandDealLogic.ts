@@ -15,6 +15,8 @@ import { buildBrandOffer } from './brandOfferFlavor'
 import { selectTop3ByScore } from './topSelection'
 import type {
   BrandDeal,
+  BrandDealNegotiationFeedbackKey,
+  BrandDealNegotiationResult,
   BrandOffer,
   SocialEngineGameState
 } from '../types/social'
@@ -250,22 +252,17 @@ export const generateBrandOffers = (
  * @param strategy - 'AGGRESSIVE', 'PERSUASIVE', 'SAFE'.
  * @param gameState - Social-engine state read for band traits, rival proximity, and player location that bias the odds.
  * @param rng - Random number generator.
- * @returns `success: boolean, deal: object, feedback: string, status: 'ACCEPTED'|'REVOKED'|'FAILED'`
+ * @returns Negotiation outcome with a typed UI feedback key.
  */
 export const negotiateDeal = (
   deal: BrandDeal,
   strategy: 'AGGRESSIVE' | 'PERSUASIVE' | 'SAFE',
   gameState: SocialEngineGameState,
   rng: RandomFn = secureRandom
-): {
-  success: boolean
-  deal: BrandDeal | null
-  feedback: string
-  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
-} => {
+): BrandDealNegotiationResult => {
   const band = gameState.band
   let successChance: number
-  let feedback: string
+  let feedbackKey: BrandDealNegotiationFeedbackKey
   let status: 'ACCEPTED' | 'REVOKED' | 'FAILED' = 'ACCEPTED'
 
   // Rival Penalty for Negotiations
@@ -295,10 +292,10 @@ export const negotiateDeal = (
 
       if (roll < successChance) {
         newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 1.1) // +10%
-        feedback = 'Modest increase secured.'
+        feedbackKey = 'ui:deals.feedback.safeSuccess'
         isSuccess = true
       } else {
-        feedback = 'They refused to budge.'
+        feedbackKey = 'ui:deals.feedback.safeFailure'
         // No change, but not revoked
         status = 'FAILED'
         isSuccess = false
@@ -315,11 +312,11 @@ export const negotiateDeal = (
         if (newDeal.offer.perGig) {
           newDeal.offer.perGig = Math.floor(newDeal.offer.perGig * 1.1) // +10%
         }
-        feedback = 'Great negotiation! Terms improved.'
+        feedbackKey = 'ui:deals.feedback.persuasiveSuccess'
         isSuccess = true
       } else {
         newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 0.9) // -10%
-        feedback = 'They were annoyed. Offer reduced.'
+        feedbackKey = 'ui:deals.feedback.persuasiveFailure'
         status = 'ACCEPTED' // Still accepted, but worse
         isSuccess = false
       }
@@ -331,10 +328,10 @@ export const negotiateDeal = (
 
       if (roll < successChance) {
         newDeal.offer.upfront = Math.floor(newDeal.offer.upfront * 1.5) // +50%
-        feedback = 'You dominated the room. Massive payout!'
+        feedbackKey = 'ui:deals.feedback.aggressiveSuccess'
         isSuccess = true
       } else {
-        feedback = 'They walked out. Deal revoked.'
+        feedbackKey = 'ui:deals.feedback.aggressiveFailure'
         status = 'REVOKED'
         isSuccess = false
       }
@@ -347,7 +344,7 @@ export const negotiateDeal = (
   return {
     success: isSuccess,
     deal: status === 'REVOKED' ? null : newDeal,
-    feedback,
+    feedbackKey,
     status
   }
 }

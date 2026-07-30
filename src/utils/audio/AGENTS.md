@@ -14,6 +14,7 @@ Roles:
 ## Gig playback sequencing
 
 - In `gigPlayback.ts`, natural source-end cleanup must clear the ended source state before invoking `gigOnEnded`. Setlist chaining can synchronously start the next song clock; clearing after the callback erases that next-song state.
+- `stopGigPlayback()` must invalidate `playRequestId` so it cancels starts waiting in `ensureAudioContext()` or `loadAudioBuffer()`. Cleanup performed inside `startGigPlayback()` must use the non-invalidating internal path, and regressions must call the exported stop function instead of mutating `playRequestId` directly.
 
 ## Snapshots and subscription
 

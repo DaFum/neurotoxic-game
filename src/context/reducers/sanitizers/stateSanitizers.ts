@@ -773,13 +773,7 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         typeof statsData.proveYourselfMode === 'boolean'
           ? statsData.proveYourselfMode
           : DEFAULT_PLAYER_STATE.stats.proveYourselfMode,
-      tourCompleted: statsData.tourCompleted === true,
-      harmonyRecoveries: clampNonNegative(
-        finiteNumberOr(
-          statsData.harmonyRecoveries,
-          DEFAULT_PLAYER_STATE.stats.harmonyRecoveries
-        )
-      )
+      tourCompleted: statsData.tourCompleted === true
     }
   }
 
@@ -1005,7 +999,11 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
         selfRelationshipKeys.add(name)
         selfRelationshipKeys.add(name.toLowerCase())
       }
-      const staminaMax = finiteOptionalNumber(m.staminaMax)
+      const rawStaminaMax = finiteOptionalNumber(m.staminaMax)
+      const staminaMax =
+        rawStaminaMax !== undefined && rawStaminaMax >= 0
+          ? rawStaminaMax
+          : undefined
       const member: BandMember = {
         id,
         traits: normalizeTraitMap(m.traits),
@@ -1745,14 +1743,15 @@ export const sanitizeActiveQuests = (
         const deadline = finiteOptionalNumber(quest.deadline)
         if (deadline !== undefined) sanitized.deadline = deadline
       }
-      const progress = finiteOptionalNumber(quest.progress)
-      sanitized.progress = isFiniteNumber(progress) ? progress : 0
-      const required = finiteOptionalNumber(quest.required)
+      const required = finiteOptionalNumber(definition.required)
       if (required !== undefined) {
         sanitized.required = required
-      } else if (typeof definition.required === 'number') {
-        sanitized.required = definition.required
       }
+      const progress = clampNonNegative(
+        finiteNumberOr(finiteOptionalNumber(quest.progress), 0)
+      )
+      sanitized.progress =
+        required !== undefined ? Math.min(progress, required) : progress
       if (
         typeof quest.scopeKey === 'string' &&
         !isForbiddenKey(quest.scopeKey)

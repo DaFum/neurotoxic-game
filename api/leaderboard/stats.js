@@ -15,11 +15,19 @@ const VALID_STATS = [
 ]
 const MAX_STAT_VALUE = 999999999999 // reasonable max for followers/fame
 
+/**
+ * @param {unknown} val
+ * @returns {number}
+ */
 const clampStat = val => {
-  if (!Number.isFinite(val)) return 0
+  if (typeof val !== 'number' || !Number.isFinite(val)) return 0
   return Math.min(Math.max(0, val), MAX_STAT_VALUE)
 }
 
+/**
+ * @param {import('../../lib/apiTypes.js').ApiRequest} req
+ * @param {import('../../lib/apiTypes.js').ApiResponse} res
+ */
 export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
@@ -51,6 +59,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Invalid payload structure' })
       }
 
+      const body = /** @type {Record<string, unknown>} */ (req.body)
       const {
         playerId,
         playerName,
@@ -60,7 +69,7 @@ export default async function handler(req, res) {
         distance,
         conflicts,
         stageDives
-      } = req.body
+      } = body
 
       // Basic Type Checks
       if (
@@ -117,12 +126,17 @@ export default async function handler(req, res) {
     }
   } else if (req.method === 'GET') {
     try {
-      let limit = parseInt(req.query.limit, 10)
-      if (isNaN(limit)) limit = 100
+      const limitParam = req.query?.limit
+      let limit =
+        typeof limitParam === 'string'
+          ? Number.parseInt(limitParam, 10)
+          : Number.NaN
+      if (Number.isNaN(limit)) limit = 100
       limit = Math.min(Math.max(1, limit), 100)
 
-      const stat = req.query.stat || 'balance'
-      if (!VALID_STATS.includes(stat)) {
+      const requestedStat = req.query?.stat
+      const stat = requestedStat === undefined ? 'balance' : requestedStat
+      if (typeof stat !== 'string' || !VALID_STATS.includes(stat)) {
         return res.status(400).json({ error: 'Invalid stat requested' })
       }
 
@@ -141,25 +155,18 @@ export default async function handler(req, res) {
       if (!range.length) return res.status(200).json([])
 
       // range is [{ value: 'id', score: 100 }, ...]
-      const len = range.length
-      const playerIds = new Array(len)
-      for (let i = 0; i < len; i++) {
-        playerIds[i] = range[i].value
-      }
+      const playerIds = range.map(entry => entry.value)
 
       // v4: hmGet returns string[] (aligned with keys)
       const names = await client.hmGet('players', playerIds)
 
       // hmGet returns array of values corresponding to keys
-      const leaderboard = new Array(len)
-      for (let i = 0; i < len; i++) {
-        leaderboard[i] = {
-          rank: i + 1,
-          playerId: playerIds[i], // 'value' not 'member' in node-redis v4
-          playerName: names[i] || 'Unknown',
-          score: range[i].score
-        }
-      }
+      const leaderboard = range.map((entry, index) => ({
+        rank: index + 1,
+        playerId: entry.value, // 'value' not 'member' in node-redis v4
+        playerName: names[index] || 'Unknown',
+        score: entry.score
+      }))
 
       return res.status(200).json(leaderboard)
     } catch (error) {

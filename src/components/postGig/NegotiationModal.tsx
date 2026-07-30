@@ -45,18 +45,19 @@ const isNegotiationResult = (value: unknown): value is NegotiationResult => {
   if (
     !Object.hasOwn(value, 'status') ||
     !Object.hasOwn(value, 'success') ||
-    !Object.hasOwn(value, 'feedback')
+    !Object.hasOwn(value, 'feedbackKey')
   ) {
     return false
   }
   const record = value as {
     success?: unknown
-    feedback?: unknown
+    feedbackKey?: unknown
     status?: unknown
   }
   return (
     typeof record.success === 'boolean' &&
-    typeof record.feedback === 'string' &&
+    typeof record.feedbackKey === 'string' &&
+    record.feedbackKey.startsWith('ui:deals.feedback.') &&
     (record.status === 'ACCEPTED' ||
       record.status === 'REVOKED' ||
       record.status === 'FAILED')
@@ -121,10 +122,7 @@ export const NegotiationModal = ({
               : t('ui:deals.failure', { defaultValue: 'FAILURE' })}
           </div>
           <div className='text-base sm:text-lg font-bold text-star-white mb-2 break-words'>
-            {typedResult?.feedback ??
-              t('ui:deals.negotiationOutcomePending', {
-                defaultValue: 'Outcome pending.'
-              })}
+            {t(typedResult.feedbackKey)}
           </div>
           {typedResult?.status === 'REVOKED' && (
             <div className='text-blood-red font-mono uppercase tracking-widest mt-4 break-words'>

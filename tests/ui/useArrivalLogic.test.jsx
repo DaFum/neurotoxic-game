@@ -440,6 +440,30 @@ describe('useArrivalLogic', () => {
     expect(mockGameState.saveGame.mock.calls.length).toBe(1)
   })
 
+  test('does not start a queued gig when advanceDay commits GAMEOVER', () => {
+    const venue = { name: 'Bankruptcy Club' }
+    const { result } = setupArrivalScenario(useArrivalLogic, {
+      currentScene: GAME_PHASES.OVERWORLD,
+      gameMap: {
+        nodes: {
+          node_start: { type: 'GIG', venue }
+        }
+      },
+      band: { harmony: 50 }
+    })
+    mockGameState.advanceDay.mockImplementation(() => {
+      mockGameState.currentScene = GAME_PHASES.GAMEOVER
+    })
+
+    act(() => {
+      result.current.handleArrivalSequence()
+    })
+
+    expect(mockGameState.startGig.mock.calls.length).toBe(0)
+    expect(mockGameState.changeScene.mock.calls.length).toBe(0)
+    expect(mockGameState.saveGame.mock.calls.length).toBe(1)
+  })
+
   test('Task 9 negative proof: without GAMEOVER guard, changeScene IS called (proves the guard is needed)', () => {
     // This test documents the pre-fix behavior: if the GAMEOVER short-circuit
     // is removed, changeScene fires even when currentScene is GAMEOVER.

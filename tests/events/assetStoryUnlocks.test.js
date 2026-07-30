@@ -71,6 +71,11 @@ describe('asset story unlock reachability', () => {
       assert.equal(eventAddsFlag(event, flag), true)
       assert.equal(event.condition({ activeStoryFlags: [] }), true)
       assert.equal(event.condition({ activeStoryFlags: [flag] }), false)
+      assert.equal(event.condition({ activeStoryFlags: new Set() }), true)
+      assert.equal(
+        event.condition({ activeStoryFlags: new Set([flag]) }),
+        false
+      )
     }
   })
 

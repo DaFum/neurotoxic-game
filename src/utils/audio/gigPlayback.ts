@@ -154,9 +154,9 @@ export const calculateGigPlaybackWindow = ({
 }
 
 /**
- * Stops gig playback and clears the gig clock state.
+ * Stops gig playback without invalidating pending requests.
  */
-export function stopGigPlayback() {
+const stopGigPlaybackInternal = (): void => {
   if (audioState.gigSource) {
     logger.debug(
       'AudioEngine',
@@ -164,6 +164,14 @@ export function stopGigPlayback() {
     )
   }
   cleanupGigPlayback()
+}
+
+/**
+ * Stops gig playback, clears the gig clock state, and invalidates pending starts.
+ */
+export function stopGigPlayback(): void {
+  audioState.playRequestId++
+  stopGigPlaybackInternal()
 }
 
 /**
@@ -189,13 +197,14 @@ export async function startGigPlayback({
   durationMs?: number | null
   onEnded?: ((args: GigEndInfo) => void) | null
 }): Promise<boolean> {
+  const reqId = ++audioState.playRequestId
   const unlocked = await ensureAudioContext()
-  if (!unlocked) return false
+  if (!unlocked || reqId !== audioState.playRequestId) return false
 
-  stopGigPlayback()
+  stopGigPlaybackInternal()
 
   const buffer = await loadAudioBuffer(filename)
-  if (!buffer) return false
+  if (!buffer || reqId !== audioState.playRequestId) return false
 
   const rawContext = getRawAudioContext()
   const source = createGigBufferSource({
@@ -442,8 +451,3 @@ export function resumeGigPlayback(): boolean {
   }
   return true
 }
-
-/**
- * Internal function to stop audio without invalidating pending requests.
- * Used by playback functions to clear previous state.
- */

@@ -281,14 +281,14 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
     const kind = clean.kind as LongTermAsset['kind']
     const flavor = clean.chassisFlavor as AssetFlavor
     const chassisTier = tier as ChassisTier
+    const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]
+    if (!configTier) continue
     // Cross-check sanitized slots against the chassis layout: a slot is only
     // allowed if its slotType is either in the chassis config for this
     // kind/flavor/tier OR was dynamically added by an installed module
     // (addedByModuleId is set). Slots violating both rules are dropped to
     // prevent impossible topologies from surviving a load.
-    const chassisSlotTypes = new Set<string>(
-      CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]?.slots ?? []
-    )
+    const chassisSlotTypes = new Set<string>(configTier.slots)
     // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
     // Why: Eliminates intermediate array and closure allocations.
     // Impact: Reduces GC pressure during asset sanitization.
@@ -310,12 +310,12 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       chassisFlavor: flavor,
       chassisTier,
       condition: clamp0to100(finiteNumberOr(clean.condition, 100)),
-      baseUpkeep: finiteNumberOr(clean.baseUpkeep, 0),
-      baseDailyRevenue: finiteNumberOr(clean.baseDailyRevenue, 0),
+      baseUpkeep: configTier.upkeep,
+      baseDailyRevenue: configTier.revenue,
       slots: sanitizedSlots,
       acquiredOnDay: finiteNumberOr(clean.acquiredOnDay, 0),
       acquisitionMode: clean.acquisitionMode as AcquisitionMode,
-      baseRiskEventChance: finiteNumberOr(clean.baseRiskEventChance, 0)
+      baseRiskEventChance: configTier.baseRiskEventChance
     })
     seenIds.add(clean.id)
   }
@@ -327,7 +327,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
  *
  * @param raw - Raw liability collection from loaded state.
  * @param assets - Sanitized assets used to validate liability ownership.
- * @returns Valid liabilities with unique ids and numeric fields normalized.
+ * @returns Valid liabilities with unique ids; malformed financial entries are dropped.
  */
 export const sanitizeLiabilities = (
   raw: unknown,
@@ -355,18 +355,50 @@ export const sanitizeLiabilities = (
     if (typeof clean.assetId !== 'string' || !assetIds.has(clean.assetId))
       continue
 
+    const principalRemaining = clean.principalRemaining
+    const interestRate = clean.interestRate
+    const dailyPayment = clean.dailyPayment
+    const termDaysRemaining = clean.termDaysRemaining
+    const defaultCounter = clean.defaultCounter
+    if (
+      !isFiniteNumber(principalRemaining) ||
+      principalRemaining <= 0 ||
+      !isFiniteNumber(interestRate) ||
+      interestRate < 0 ||
+      !isFiniteNumber(dailyPayment) ||
+      dailyPayment < 0 ||
+      (clean.source === 'loan' && dailyPayment === 0) ||
+      !isFiniteNumber(termDaysRemaining) ||
+      termDaysRemaining <= 0 ||
+      !isFiniteNumber(defaultCounter) ||
+      defaultCounter < 0
+    ) {
+      continue
+    }
+    const hasCrowdfundFamePromised = Object.hasOwn(
+      clean,
+      'crowdfundFamePromised'
+    )
+    if (
+      hasCrowdfundFamePromised &&
+      (!isFiniteNumber(clean.crowdfundFamePromised) ||
+        clean.crowdfundFamePromised < 0)
+    ) {
+      continue
+    }
+
     const result: Liability = {
       id: clean.id,
       source: clean.source as Liability['source'],
       assetId: clean.assetId,
-      principalRemaining: finiteNumberOr(clean.principalRemaining, 0),
-      interestRate: finiteNumberOr(clean.interestRate, 0),
-      dailyPayment: finiteNumberOr(clean.dailyPayment, 0),
-      termDaysRemaining: finiteNumberOr(clean.termDaysRemaining, 0),
-      defaultCounter: finiteNumberOr(clean.defaultCounter, 0)
+      principalRemaining,
+      interestRate,
+      dailyPayment,
+      termDaysRemaining,
+      defaultCounter
     }
-    if (isFiniteNumber(clean.crowdfundFamePromised)) {
-      result.crowdfundFamePromised = clean.crowdfundFamePromised
+    if (hasCrowdfundFamePromised) {
+      result.crowdfundFamePromised = clean.crowdfundFamePromised as number
     }
     out[result.id] = result
   }
@@ -413,6 +445,11 @@ export const sanitizeCrowdfundCampaigns = (
     const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
     if (unavailableKinds.has(kind) || seenKinds.has(kind)) continue
 
+    const targetAmount = finiteNumberOr(clean.targetAmount, 0)
+    const fameStake = finiteNumberOr(clean.fameStake, 0)
+    const daysRemaining = finiteNumberOr(clean.daysRemaining, 0)
+    if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) continue
+
     const outcome = clean.resolvedOutcome
     // Materialized ids are required fields on the type (so processCrowdfundTick
     // can consume them without runtime UUID generation). On a save from a
@@ -435,9 +472,9 @@ export const sanitizeCrowdfundCampaigns = (
         flavor: spec.flavor as AssetFlavor,
         chassisTier: tier as ChassisTier
       },
-      targetAmount: finiteNumberOr(clean.targetAmount, 0),
-      fameStake: finiteNumberOr(clean.fameStake, 0),
-      daysRemaining: finiteNumberOr(clean.daysRemaining, 0),
+      targetAmount,
+      fameStake,
+      daysRemaining,
       // Clamp to [0, 1] so a hostile/legacy save can't plant a roll outside
       // the mulberry32 output range and skew tick resolution.
       plannedSuccessRoll: Math.max(

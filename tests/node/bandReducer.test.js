@@ -101,6 +101,36 @@ describe('bandReducer', () => {
       assert.strictEqual(newMember.mood, 50)
     })
 
+    it('should reject negative staminaMax patches', () => {
+      baseState.band.members = [
+        {
+          id: 'm1',
+          name: 'Matze',
+          traits: {},
+          stamina: 80,
+          staminaMax: 120
+        }
+      ]
+
+      const nextState = handleUpdateBand(baseState, {
+        members: [
+          { id: 'm1', staminaMax: -20 },
+          { id: 'm2', name: 'Lars', stamina: 80, staminaMax: -20 }
+        ]
+      })
+      const existingMember = nextState.band.members.find(
+        member => member.id === 'm1'
+      )
+      const newMember = nextState.band.members.find(
+        member => member.id === 'm2'
+      )
+
+      assert.strictEqual(existingMember.stamina, 80)
+      assert.strictEqual(existingMember.staminaMax, 120)
+      assert.strictEqual(newMember.stamina, 80)
+      assert.strictEqual(newMember.staminaMax, 100)
+    })
+
     it('should strip self-relationships and non-finite values from member patches', () => {
       const nextState = handleUpdateBand(baseState, {
         members: [

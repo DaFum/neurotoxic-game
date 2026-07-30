@@ -23,8 +23,9 @@ vi.mock('../../src/context/GameState', () => ({
 
 // Mock useTranslation
 vi.mock('react-i18next', () => ({
+  initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
-    t: key => key
+    t: key => (key.startsWith('ui:deals.feedback.') ? `translated:${key}` : key)
   })
 }))
 
@@ -125,7 +126,7 @@ describe('useDealNegotiation', () => {
       status: 'ACCEPTED',
       success: true,
       deal: negotiatedDeal,
-      feedback: 'Success!'
+      feedbackKey: 'ui:deals.feedback.safeSuccess'
     })
 
     act(() => {
@@ -136,13 +137,16 @@ describe('useDealNegotiation', () => {
       status: 'ACCEPTED',
       success: true,
       deal: negotiatedDeal,
-      feedback: 'Success!'
+      feedbackKey: 'ui:deals.feedback.safeSuccess'
     })
     expect(result.current.negotiatedDeals['deal-1']).toEqual({
       status: 'SUCCESS',
       deal: negotiatedDeal
     })
-    expect(mockAddToast).toHaveBeenCalledWith('Success!', 'success')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'translated:ui:deals.feedback.safeSuccess',
+      'success'
+    )
 
     act(() => {
       vi.advanceTimersByTime(1500)
@@ -166,7 +170,7 @@ describe('useDealNegotiation', () => {
       status: 'REVOKED',
       success: false,
       deal: null,
-      feedback: 'Revoked!'
+      feedbackKey: 'ui:deals.feedback.aggressiveFailure'
     })
 
     act(() => {
@@ -177,7 +181,10 @@ describe('useDealNegotiation', () => {
       status: 'REVOKED',
       deal: null
     })
-    expect(mockAddToast).toHaveBeenCalledWith('Revoked!', 'error')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'translated:ui:deals.feedback.aggressiveFailure',
+      'error'
+    )
 
     act(() => {
       vi.advanceTimersByTime(1500)
@@ -201,7 +208,7 @@ describe('useDealNegotiation', () => {
       status: 'FAILED',
       success: false,
       deal: deal,
-      feedback: 'Failed!'
+      feedbackKey: 'ui:deals.feedback.safeFailure'
     })
 
     act(() => {
@@ -218,7 +225,10 @@ describe('useDealNegotiation', () => {
       status: 'FAILED',
       deal: deal
     })
-    expect(mockAddToast).toHaveBeenCalledWith('Failed!', 'warning')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'translated:ui:deals.feedback.safeFailure',
+      'warning'
+    )
   })
 
   it('handleNegotiationSubmit handles WORSENED outcome', () => {
@@ -236,7 +246,7 @@ describe('useDealNegotiation', () => {
       status: 'ACCEPTED',
       success: false,
       deal: worsenedDeal,
-      feedback: 'Worsened!'
+      feedbackKey: 'ui:deals.feedback.persuasiveFailure'
     })
 
     act(() => {
@@ -247,7 +257,10 @@ describe('useDealNegotiation', () => {
       status: 'WORSENED',
       deal: worsenedDeal
     })
-    expect(mockAddToast).toHaveBeenCalledWith('Worsened!', 'warning')
+    expect(mockAddToast).toHaveBeenCalledWith(
+      'translated:ui:deals.feedback.persuasiveFailure',
+      'warning'
+    )
   })
 
   it('handleNegotiationSubmit handles error during negotiation', () => {

@@ -8,6 +8,17 @@ import { useTranslation } from 'react-i18next'
 import { UIFrameCorner } from './Icons'
 import { Tooltip } from './Tooltip'
 
+const FOCUSABLE_SELECTOR = [
+  'a[href]',
+  'area[href]',
+  'button:not([disabled])',
+  'input:not([disabled]):not([type="hidden"])',
+  'select:not([disabled])',
+  'textarea:not([disabled])',
+  '[contenteditable]:not([contenteditable="false"])',
+  '[tabindex]:not([tabindex="-1"])'
+].join(',')
+
 type ModalProps = {
   isOpen: boolean
   onClose: () => void
@@ -16,6 +27,108 @@ type ModalProps = {
   children?: ReactNode
   contentClassName?: string
   className?: string
+}
+
+type ModalStackEntry = {
+  token: symbol
+  overlay: HTMLDivElement
+  dialog: HTMLDivElement
+  opener: HTMLElement | null
+  onCloseRef: { current: () => void }
+}
+
+type BackgroundState = {
+  ariaHidden: string | null
+  inert: string | null
+  owners: Set<symbol>
+}
+
+const modalStack: ModalStackEntry[] = []
+const backgroundStates = new Map<Element, BackgroundState>()
+let stackOpener: HTMLElement | null = null
+
+const handleModalKeyDown = (event: KeyboardEvent) => {
+  const activeModal = modalStack[modalStack.length - 1]
+  if (!activeModal) return
+
+  if (event.key === 'Escape') {
+    event.preventDefault()
+    activeModal.onCloseRef.current()
+    return
+  }
+
+  if (event.key !== 'Tab') return
+
+  const { dialog } = activeModal
+  const focusableElements = Array.from(
+    dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR)
+  ).filter(
+    element =>
+      !element.hidden &&
+      element.getAttribute('aria-hidden') !== 'true' &&
+      !element.closest('[inert]')
+  )
+
+  if (focusableElements.length === 0) {
+    event.preventDefault()
+    dialog.focus()
+    return
+  }
+
+  const firstFocusable = focusableElements[0]
+  const lastFocusable = focusableElements[focusableElements.length - 1]
+  const activeElement = document.activeElement
+
+  if (
+    activeElement === dialog ||
+    !dialog.contains(activeElement) ||
+    (event.shiftKey && activeElement === firstFocusable) ||
+    (!event.shiftKey && activeElement === lastFocusable)
+  ) {
+    event.preventDefault()
+    ;(event.shiftKey ? lastFocusable : firstFocusable)?.focus()
+  }
+}
+
+const muteBackground = (element: Element, owner: symbol) => {
+  const existingState = backgroundStates.get(element)
+
+  if (existingState) {
+    existingState.owners.add(owner)
+  } else {
+    backgroundStates.set(element, {
+      ariaHidden: element.getAttribute('aria-hidden'),
+      inert: element.getAttribute('inert'),
+      owners: new Set([owner])
+    })
+  }
+
+  element.setAttribute('aria-hidden', 'true')
+  element.setAttribute('inert', '')
+}
+
+const restoreBackground = (element: Element, owner: symbol) => {
+  const state = backgroundStates.get(element)
+  if (!state) return
+
+  state.owners.delete(owner)
+  if (state.owners.size > 0) {
+    element.setAttribute('aria-hidden', 'true')
+    element.setAttribute('inert', '')
+    return
+  }
+
+  if (state.ariaHidden === null) {
+    element.removeAttribute('aria-hidden')
+  } else {
+    element.setAttribute('aria-hidden', state.ariaHidden)
+  }
+  if (state.inert === null) {
+    element.removeAttribute('inert')
+  } else {
+    element.setAttribute('inert', state.inert)
+  }
+  backgroundStates.delete(element)
 }
 
 /**
@@ -31,9 +144,12 @@ export const Modal = ({
   contentClassName = 'flex-1 min-h-0 flex flex-col max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden',
   className = 'max-w-md'
 }: ModalProps) => {
+  const overlayRef = useRef<HTMLDivElement | null>(null)
   const dialogRef = useRef<HTMLDivElement | null>(null)
+  const onCloseRef = useRef(onClose)
   const titleId = useId()
   const { t } = useTranslation(['ui'])
+  onCloseRef.current = onClose
   const dialogAriaLabel = ariaLabel || undefined
   const dialogAriaLabelledBy = dialogAriaLabel
     ? undefined
@@ -42,37 +158,100 @@ export const Modal = ({
       : undefined
 
   useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose()
-      }
-    }
+    if (!isOpen) return
 
-    if (isOpen) {
-      window.addEventListener('keydown', handleKeyDown)
-      // Focus the dialog for accessibility ONLY if there isn't an input actively focused inside it
-      const timer = window.setTimeout(() => {
+    const overlay = overlayRef.current
+    const dialog = dialogRef.current
+    if (!overlay || !dialog) return
+
+    const opener =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null
+    const entry: ModalStackEntry = {
+      token: Symbol('modal'),
+      overlay,
+      dialog,
+      opener,
+      onCloseRef
+    }
+    const backgroundElements = new Set<Element>()
+    let modalBranch: Element | null = overlay
+
+    while (modalBranch?.parentElement) {
+      const parentElement: HTMLElement = modalBranch.parentElement
+      for (const sibling of parentElement.children) {
         if (
-          dialogRef.current &&
-          dialogRef.current instanceof HTMLElement &&
-          !dialogRef.current.contains(document.activeElement)
+          sibling === modalBranch ||
+          sibling.hasAttribute('data-modal-overlay')
         ) {
-          dialogRef.current.focus()
+          continue
         }
-      }, 50)
+        backgroundElements.add(sibling)
+        muteBackground(sibling, entry.token)
+      }
+      modalBranch = parentElement
+      if (parentElement === document.body) break
+    }
 
-      return () => {
-        window.removeEventListener('keydown', handleKeyDown)
-        clearTimeout(timer)
+    if (modalStack.length === 0) {
+      stackOpener = opener
+      window.addEventListener('keydown', handleModalKeyDown)
+    }
+    for (const stackedModal of modalStack) {
+      backgroundElements.add(stackedModal.overlay)
+      muteBackground(stackedModal.overlay, entry.token)
+    }
+    modalStack.push(entry)
+
+    const timer = window.setTimeout(() => {
+      if (
+        modalStack[modalStack.length - 1] === entry &&
+        !dialog.contains(document.activeElement)
+      ) {
+        dialog.focus()
+      }
+    }, 50)
+
+    return () => {
+      window.clearTimeout(timer)
+      for (const element of backgroundElements) {
+        restoreBackground(element, entry.token)
+      }
+
+      const entryIndex = modalStack.indexOf(entry)
+      const wasTopmost = entryIndex === modalStack.length - 1
+      if (entryIndex !== -1) {
+        modalStack.splice(entryIndex, 1)
+      }
+
+      const activeModal = modalStack[modalStack.length - 1]
+      if (!activeModal) {
+        window.removeEventListener('keydown', handleModalKeyDown)
+        if (stackOpener?.isConnected) {
+          stackOpener.focus()
+        }
+        stackOpener = null
+      } else if (wasTopmost) {
+        if (
+          entry.opener?.isConnected &&
+          activeModal.dialog.contains(entry.opener)
+        ) {
+          entry.opener.focus()
+        } else {
+          activeModal.dialog.focus()
+        }
       }
     }
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [isOpen, onClose])
+  }, [isOpen])
 
   if (!isOpen) return null
 
   return (
     <div
+      ref={overlayRef}
+      data-modal-overlay=''
+      role='presentation'
       className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 cursor-pointer p-3 sm:p-4'
       style={{ zIndex: 'var(--z-modal)' }}
       onClick={(e: MouseEvent<HTMLDivElement>) => {

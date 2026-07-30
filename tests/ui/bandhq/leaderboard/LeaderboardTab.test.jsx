@@ -1,4 +1,5 @@
 import { render, screen, waitFor } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LeaderboardTab } from '../../../../src/ui/bandhq/leaderboard/LeaderboardTab.tsx'
 
@@ -49,5 +50,47 @@ describe('LeaderboardTab', () => {
       'Leaderboard',
       expect.stringContaining('endpoint unavailable')
     )
+  })
+
+  it('keeps the active tab enabled and supports roving keyboard focus', async () => {
+    const user = userEvent.setup()
+    render(<LeaderboardTab />)
+
+    const tabs = screen.getAllByRole('tab')
+    const firstTab = tabs[0]
+    const secondTab = tabs[1]
+    const lastTab = tabs[tabs.length - 1]
+
+    expect(firstTab).toBeEnabled()
+    expect(firstTab).toHaveAttribute('aria-selected', 'true')
+    expect(firstTab).toHaveAttribute('tabindex', '0')
+    for (const tab of tabs.slice(1)) {
+      expect(tab).toHaveAttribute('tabindex', '-1')
+    }
+
+    firstTab.focus()
+    await user.keyboard('{ArrowRight}')
+
+    expect(secondTab).toHaveFocus()
+    expect(secondTab).toBeEnabled()
+    expect(secondTab).toHaveAttribute('aria-selected', 'true')
+    expect(secondTab).toHaveAttribute('tabindex', '0')
+    expect(firstTab).toHaveAttribute('tabindex', '-1')
+
+    await user.keyboard('{End}')
+    expect(lastTab).toHaveFocus()
+    expect(lastTab).toHaveAttribute('aria-selected', 'true')
+
+    await user.keyboard('{Home}')
+    expect(firstTab).toHaveFocus()
+    expect(firstTab).toHaveAttribute('aria-selected', 'true')
+
+    await user.keyboard('{ArrowLeft}')
+    expect(lastTab).toHaveFocus()
+    expect(lastTab).toHaveAttribute('aria-selected', 'true')
+
+    await user.keyboard('{ArrowRight}')
+    expect(firstTab).toHaveFocus()
+    expect(firstTab).toHaveAttribute('aria-selected', 'true')
   })
 })

@@ -1,10 +1,10 @@
 import type { GameState } from '../../types'
+import { hasStateItem } from '../../utils/gameState'
 
 const storyFlagNotSet =
   (flag: string) =>
   (state: GameState): boolean =>
-    !Array.isArray(state.activeStoryFlags) ||
-    !state.activeStoryFlags.includes(flag)
+    !hasStateItem(state.activeStoryFlags, flag)
 
 /** Raw band-category event definitions consumed by the event registry. */
 export const BAND_EVENTS = [

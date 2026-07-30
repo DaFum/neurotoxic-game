@@ -9,6 +9,7 @@ import {
   getRepeatDemandMultiplier,
   resolveBalanceTuning
 } from '../../src/utils/balanceTuning.ts'
+import { ActionTypes } from '../../src/context/actionTypes.ts'
 import {
   bankruptcyTransitions,
   deterministicBootstrapConfidence,
@@ -68,6 +69,25 @@ test('experiment registry contains the approved harmony recovery matrix and cont
     ]
   )
   assert.ok(recovery.every(item => item.phase === 'recovery'))
+})
+
+test('a rejected recovery candidate stays out of the production action surface', async () => {
+  const report = JSON.parse(
+    await fs.readFile(
+      new URL(
+        '../../reports/game-balance-experiments-results.json',
+        import.meta.url
+      ),
+      'utf8'
+    )
+  )
+
+  assert.equal(
+    report.phases.phase6E.outcome,
+    'no-production-recommendation-final-validation-failed'
+  )
+  assert.equal(report.recommendation.tuning.recovery.threshold, 0)
+  assert.equal(Object.hasOwn(ActionTypes, 'HARMONY_RECOVERY'), false)
 })
 
 test('experiment pipeline forwards non-neutral recovery tuning to simulations', async () => {

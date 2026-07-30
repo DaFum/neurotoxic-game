@@ -59,6 +59,27 @@ export interface BrandDeal {
 }
 
 /**
+ * Localized UI keys emitted by brand-deal negotiation outcomes.
+ */
+export type BrandDealNegotiationFeedbackKey =
+  | 'ui:deals.feedback.safeSuccess'
+  | 'ui:deals.feedback.safeFailure'
+  | 'ui:deals.feedback.persuasiveSuccess'
+  | 'ui:deals.feedback.persuasiveFailure'
+  | 'ui:deals.feedback.aggressiveSuccess'
+  | 'ui:deals.feedback.aggressiveFailure'
+
+/**
+ * Resolved outcome returned by the brand-deal negotiation engine.
+ */
+export interface BrandDealNegotiationResult {
+  success: boolean
+  deal: BrandDeal | null
+  feedbackKey: BrandDealNegotiationFeedbackKey
+  status: 'ACCEPTED' | 'REVOKED' | 'FAILED'
+}
+
+/**
  * Urgency tier used to flavor generated brand offers.
  */
 export type BrandOfferUrgency = 'low' | 'medium' | 'high'

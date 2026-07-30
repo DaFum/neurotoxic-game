@@ -5,7 +5,6 @@ import {
   createCraftItemAction,
   createUseContrabandAction,
   createClinicHealAction,
-  createHarmonyRecoveryAction,
   graftNeuroOverclock as createGraftNeuroOverclockAction,
   createClinicEnhanceAction,
   createPirateBroadcastAction,
@@ -30,7 +29,6 @@ export interface FacilityDispatchActions {
     memberId?: Parameters<typeof createUseContrabandAction>[2]
   ) => void
   clinicHeal: (payload: Parameters<typeof createClinicHealAction>[0]) => void
-  recoverHarmony: () => void
   graftNeuroOverclock: (memberId: string) => void
   clinicEnhance: (
     payload: Parameters<typeof createClinicEnhanceAction>[0]
@@ -88,11 +86,6 @@ export function useFacilityDispatchActions(
     [dispatch]
   )
 
-  const recoverHarmony = useCallback(
-    () => dispatch(createHarmonyRecoveryAction()),
-    [dispatch]
-  )
-
   const graftNeuroOverclock = useCallback(
     (memberId: string) => dispatch(createGraftNeuroOverclockAction(memberId)),
     [dispatch]
@@ -146,7 +139,6 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
-      recoverHarmony,
       graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,
@@ -161,7 +153,6 @@ export function useFacilityDispatchActions(
       craftItem,
       useContraband,
       clinicHeal,
-      recoverHarmony,
       graftNeuroOverclock,
       clinicEnhance,
       pirateBroadcast,

@@ -8,7 +8,12 @@
 
 import { test, describe, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert'
+import { SONGS_BY_ID } from '../../src/data/songs.ts'
 import { createApiRouteMocks } from '../utils/apiRouteMocks.js'
+
+const CANONICAL_SONG_ID = '01_kranker_schrank'
+const SECOND_CANONICAL_SONG_ID =
+  '02_the_lost_scriptures_of_the_elder_gods_akoasma_and_golgatha'
 
 const mockClient = {
   isOpen: true,
@@ -22,6 +27,26 @@ const mockClient = {
   disconnect: vi.fn(() => Promise.resolve()),
   on: vi.fn()
 }
+
+describe('Leaderboard API - canonical song allowlist', () => {
+  test('matches every production song leaderboardId without extras', async () => {
+    const leaderboardSongIdsModule =
+      await import('../../lib/leaderboardSongIds.js')
+    const exportedIds = leaderboardSongIdsModule.CANONICAL_LEADERBOARD_IDS
+
+    assert.ok(
+      Array.isArray(exportedIds),
+      'server allowlist must be exported for drift validation'
+    )
+
+    const productionIds = [...SONGS_BY_ID.values()]
+      .map(song => song.leaderboardId)
+      .sort()
+    const uniqueExportedIds = [...new Set(exportedIds)].sort()
+
+    assert.deepStrictEqual(uniqueExportedIds, productionIds)
+  })
+})
 
 vi.mock('../../lib/redis', () => ({
   default: mockClient
@@ -189,7 +214,7 @@ describe('Leaderboard API - Song', () => {
         body: {
           playerId: 'player1',
           playerName: 'Player One',
-          songId: 'song1',
+          songId: CANONICAL_SONG_ID,
           score: 1000
         }
       }
@@ -205,7 +230,7 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 1)
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
-        'lb:song:song1',
+        `lb:song:${CANONICAL_SONG_ID}`,
         { score: 1000, value: 'player1' },
         { GT: true }
       ])
@@ -224,8 +249,8 @@ describe('Leaderboard API - Song', () => {
           playerId: 'player1',
           playerName: 'Player One',
           scores: [
-            { songId: 'song1', score: 1000 },
-            { songId: 'song2', score: 2000 }
+            { songId: CANONICAL_SONG_ID, score: 1000 },
+            { songId: SECOND_CANONICAL_SONG_ID, score: 2000 }
           ]
         }
       }
@@ -241,12 +266,12 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(mockClient.zAdd.mock.calls.length, 2)
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[0], [
-        'lb:song:song1',
+        `lb:song:${CANONICAL_SONG_ID}`,
         { score: 1000, value: 'player1' },
         { GT: true }
       ])
       assert.deepStrictEqual(mockClient.zAdd.mock.calls[1], [
-        'lb:song:song2',
+        `lb:song:${SECOND_CANONICAL_SONG_ID}`,
         { score: 2000, value: 'player1' },
         { GT: true }
       ])
@@ -255,6 +280,52 @@ describe('Leaderboard API - Song', () => {
       assert.deepStrictEqual(res.json.mock.calls[0][0], {
         success: true
       })
+    })
+
+    test('syntactically valid unknown songId returns 400 before Redis writes', async () => {
+      const req = {
+        method: 'POST',
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          songId: 'unknown_but_well_formed',
+          score: 1000
+        }
+      }
+      const { res } = createApiRouteMocks()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Unknown songId'
+      })
+      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
+      assert.strictEqual(mockClient.zAdd.mock.calls.length, 0)
+    })
+
+    test('batch with an unknown songId returns 400 before Redis writes', async () => {
+      const req = {
+        method: 'POST',
+        body: {
+          playerId: 'player1',
+          playerName: 'Player One',
+          scores: [
+            { songId: CANONICAL_SONG_ID, score: 1000 },
+            { songId: 'unknown_but_well_formed', score: 2000 }
+          ]
+        }
+      }
+      const { res } = createApiRouteMocks()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Unknown songId'
+      })
+      assert.strictEqual(mockClient.hSet.mock.calls.length, 0)
+      assert.strictEqual(mockClient.zAdd.mock.calls.length, 0)
     })
 
     test('rate limit exceeded returns 429', async () => {
@@ -266,7 +337,7 @@ describe('Leaderboard API - Song', () => {
         body: {
           playerId: 'player1',
           playerName: 'Player One',
-          songId: 'song1',
+          songId: CANONICAL_SONG_ID,
           score: 1000
         }
       }
@@ -291,7 +362,7 @@ describe('Leaderboard API - Song', () => {
         body: {
           playerId: 'player1',
           playerName: 'Player',
-          songId: 'song1',
+          songId: CANONICAL_SONG_ID,
           score: 1000
         }
       }
@@ -345,12 +416,44 @@ describe('Leaderboard API - Song', () => {
       })
     })
 
+    test('syntactically valid unknown songId returns 400 for GET', async () => {
+      const req = {
+        method: 'GET',
+        query: { songId: 'unknown_but_well_formed' }
+      }
+      const { res } = createApiRouteMocks()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Unknown songId'
+      })
+      assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 0)
+    })
+
+    test('raw UI song id is not canonicalized by the endpoint', async () => {
+      const req = {
+        method: 'GET',
+        query: { songId: '01 Kranker Schrank' }
+      }
+      const { res } = createApiRouteMocks()
+
+      await handler(req, res)
+
+      assert.strictEqual(res.status.mock.calls[0][0], 400)
+      assert.deepStrictEqual(res.json.mock.calls[0][0], {
+        error: 'Invalid songId format'
+      })
+      assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 0)
+    })
+
     test('returns empty array if no results', async () => {
       mockClient.zRangeWithScores.mockImplementationOnce(async () => [])
 
       const req = {
         method: 'GET',
-        query: { songId: 'song1' }
+        query: { songId: CANONICAL_SONG_ID }
       }
       const { res } = createApiRouteMocks()
 
@@ -374,7 +477,7 @@ describe('Leaderboard API - Song', () => {
 
       const req = {
         method: 'GET',
-        query: { songId: 'song1', limit: '2' }
+        query: { songId: CANONICAL_SONG_ID, limit: '2' }
       }
       const { res } = createApiRouteMocks()
 
@@ -382,7 +485,7 @@ describe('Leaderboard API - Song', () => {
 
       assert.strictEqual(mockClient.zRangeWithScores.mock.calls.length, 1)
       assert.deepStrictEqual(mockClient.zRangeWithScores.mock.calls[0], [
-        'lb:song:song1',
+        `lb:song:${CANONICAL_SONG_ID}`,
         0,
         1,
         { REV: true }
@@ -410,7 +513,7 @@ describe('Leaderboard API - Song', () => {
 
       const req = {
         method: 'GET',
-        query: { songId: 'song1' }
+        query: { songId: CANONICAL_SONG_ID }
       }
       const { res } = createApiRouteMocks()
 
@@ -429,7 +532,7 @@ describe('Leaderboard API - Song', () => {
 
       const req = {
         method: 'GET',
-        query: { songId: 'song1' }
+        query: { songId: CANONICAL_SONG_ID }
       }
       const { res } = createApiRouteMocks()
 
@@ -474,7 +577,10 @@ describe('Leaderboard API - Song', () => {
       mockClient.isOpen = false
       mockClient.zRangeWithScores.mockImplementationOnce(async () => [])
 
-      const req = { method: 'GET', query: { songId: 'song1' } }
+      const req = {
+        method: 'GET',
+        query: { songId: CANONICAL_SONG_ID }
+      }
       const { res } = createApiRouteMocks()
 
       await handler(req, res)

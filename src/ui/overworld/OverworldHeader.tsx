@@ -18,10 +18,10 @@ export const OverworldHeader = React.memo(
   ({ t, locationName, isTraveling }: OverworldHeaderProps) => {
     return (
       <>
-        <div className='ow-title'>
+        <h1 className='ow-title'>
           {t('ui:overworld.header.tourPlan', { defaultValue: 'TOUR PLAN' })}:{' '}
           {locationName}
-        </div>
+        </h1>
         <div className='ow-status'>
           <div className='ow-status-main'>
             {isTraveling
