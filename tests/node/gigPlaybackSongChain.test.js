@@ -147,15 +147,23 @@ test('gig playback aborts when stopped while its buffer is loading', async () =>
   )
 
   const pendingPlayback = startGigPlayback({ filename: 'cancelled.ogg' })
-  await Promise.race([
-    bufferLoadStarted,
-    new Promise((_resolve, reject) =>
-      setTimeout(
-        () => reject(new Error('loadAudioBuffer was never called')),
-        5000
-      ).unref()
-    )
-  ])
+  // The watchdog stays referenced so it can actually fire if loadAudioBuffer is
+  // never reached, and is cleared once the race settles so it never holds the
+  // event loop open for the full timeout on the happy path.
+  let watchdog
+  try {
+    await Promise.race([
+      bufferLoadStarted,
+      new Promise((_resolve, reject) => {
+        watchdog = setTimeout(
+          () => reject(new Error('loadAudioBuffer was never called')),
+          5000
+        )
+      })
+    ])
+  } finally {
+    clearTimeout(watchdog)
+  }
   stopGigPlayback()
   resolveBuffer({
     duration: 30,

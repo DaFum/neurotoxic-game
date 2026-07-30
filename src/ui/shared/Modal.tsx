@@ -35,8 +35,18 @@ const isRenderedCandidate = (element: HTMLElement): boolean => {
     return checkVisibility.call(element, { checkVisibilityCSS: true })
   }
 
-  const style = window.getComputedStyle(element)
-  return style.display !== 'none' && style.visibility !== 'hidden'
+  // `visibility` is inherited, so the resolved value on the candidate already
+  // accounts for hidden ancestors *and* a descendant's `visibility: visible`
+  // override. `display` is not inherited, so the chain needs walking; an
+  // ancestor with `display: contents` is not `none` and keeps traversal going.
+  if (window.getComputedStyle(element).visibility === 'hidden') return false
+
+  let ancestor: HTMLElement | null = element
+  while (ancestor) {
+    if (window.getComputedStyle(ancestor).display === 'none') return false
+    ancestor = ancestor.parentElement
+  }
+  return true
 }
 
 type ModalProps = {

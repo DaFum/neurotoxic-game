@@ -203,6 +203,9 @@ describe('Modal Component', () => {
         <a href='/hidden-action' style={{ display: 'none' }}>
           Hidden action
         </a>
+        <div style={{ display: 'none' }}>
+          <button type='button'>Collapsed section action</button>
+        </div>
       </Modal>
     )
 

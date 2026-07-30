@@ -184,7 +184,11 @@ test('negotiation feedback guard allowlists the exact key union', () => {
   const socialTypes = readSource('src/types/social.d.ts')
 
   // A prefix check would let a malformed key render as a raw translation key.
-  assert.doesNotMatch(modal, /startsWith\('ui:deals\.feedback\./)
+  // Match any quote style, spacing, or a missing trailing dot.
+  assert.doesNotMatch(
+    modal,
+    /\bstartsWith\s*\(\s*(['"`])ui:deals\.feedback(?:\.|['"`])/
+  )
 
   const unionKeys = [
     ...socialTypes
