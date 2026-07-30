@@ -50,10 +50,10 @@ export interface FacilityDispatchActions {
 }
 
 /**
- * Builds the memoized facility dispatch wrappers.
- * Each helper only depends on `dispatch`.
+ * Creates memoized dispatch wrappers for facility-related game actions.
+ *
  * @param dispatch - Game action dispatcher.
- * @returns Stable facility dispatch methods.
+ * @returns Stable facility action dispatch methods.
  */
 export function useFacilityDispatchActions(
   dispatch: Dispatch<GameAction>
