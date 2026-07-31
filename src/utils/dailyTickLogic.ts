@@ -380,7 +380,7 @@ export const calculateDailyUpdates = (
 ) => {
   const nextPlayer = {
     ...currentState.player,
-    day: currentState.player.day + 1
+    day: Math.max(1, Math.floor(finiteNumberOr(currentState.player.day, 1))) + 1
   }
   const nextBand = { ...currentState.band }
   const nextSocial = { ...currentState.social }

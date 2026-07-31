@@ -81,7 +81,7 @@ export const checkTraitUnlocks = (
     }
     if (isLooseRecord(gigStats.song)) songs.push(gigStats.song)
     const hasAttemptedPerformance =
-      perfectHits > 0 || misses > 0 || maxCombo > 0 || songStats.length > 0
+      perfectHits > 0 || misses > 0 || maxCombo > 0 || songs.length > 0
     const isEligiblePerformance =
       gigStats.failed !== true && hasAttemptedPerformance
 

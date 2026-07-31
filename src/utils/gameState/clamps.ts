@@ -1,4 +1,5 @@
 import { EXPENSE_CONSTANTS } from '../economyEngine'
+import { finiteNumberOr } from '../finiteNumber'
 import {
   RELATIONSHIP_DEFAULT_SCORE,
   RELATIONSHIP_MAX_SCORE,
@@ -217,7 +218,7 @@ export const clampVanCondition = (condition: number): number =>
  * @returns Breakdown probability in the inclusive range 0..0.5.
  */
 export const clampVanBreakdownChance = (chance: number): number =>
-  Math.max(0, Math.min(0.5, chance))
+  Math.max(0, Math.min(0.5, finiteNumberOr(chance, 0)))
 
 /**
  * Wraps a flavor-clock hour into the 0..23 day range.

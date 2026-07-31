@@ -411,7 +411,10 @@ export const rollAssetRiskEvents = (
     const totalRiskChance =
       asset.baseRiskEventChance * diyRiskMult * riskChanceMult
 
-    const roll = dayRngStream[i++] ?? 1.0
+    const rawRoll = dayRngStream[i++]
+    const roll = Number.isFinite(rawRoll)
+      ? Math.min(Math.max(rawRoll!, 0), 1 - Number.EPSILON)
+      : 1
     if (roll >= totalRiskChance) continue
 
     // Build the candidate event-type pool from installed modules.
@@ -434,7 +437,10 @@ export const rollAssetRiskEvents = (
     // cash-purchased assets with no liabilities.
     let selectedType: RiskEventType = 'fire'
     if (typesArray.length > 0) {
-      const typeRoll = dayRngStream[i++] ?? 0
+      const rawTypeRoll = dayRngStream[i++]
+      const typeRoll = Number.isFinite(rawTypeRoll)
+        ? Math.min(Math.max(rawTypeRoll!, 0), 1 - Number.EPSILON)
+        : 0
       const index = pickIndex(typesArray, () => typeRoll)
       selectedType = typesArray[index]!
     }

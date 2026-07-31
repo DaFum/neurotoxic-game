@@ -36,6 +36,17 @@ describe('checkTraitUnlocks', () => {
       ])
     })
 
+    it('does not treat malformed song stats as attempted performance evidence', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+      const context = {
+        type: 'GIG_COMPLETE',
+        gigStats: { songStats: [{}] }
+      }
+
+      assert.deepStrictEqual(checkTraitUnlocks(state, context), [])
+    })
+
     it('unlocks Perfektionist for Matze with 100% accuracy', () => {
       const matze = createMember('Matze')
       const state = createState([matze])

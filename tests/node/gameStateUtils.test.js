@@ -12,9 +12,13 @@ import {
   calculateGigFameReward,
   FAME_PROGRESS_CONSTANTS,
   calculateAppliedDelta,
-  isForbiddenKey
+  isForbiddenKey,
+  isStashEntry
 } from '../../src/utils/gameState'
-import { wrapClockHour } from '../../src/utils/gameState/clamps'
+import {
+  clampVanBreakdownChance,
+  wrapClockHour
+} from '../../src/utils/gameState/clamps'
 
 test('wrapClockHour wraps fractional values correctly', () => {
   assert.strictEqual(wrapClockHour(11.5), 11.5)
@@ -28,6 +32,20 @@ test('clampNonNegative edge cases', () => {
   assert.strictEqual(clampNonNegative(NaN), 0)
   assert.strictEqual(clampNonNegative(Infinity), 0)
   assert.strictEqual(clampNonNegative(-Infinity), 0)
+})
+
+test('clampVanBreakdownChance recovers from non-finite input', () => {
+  assert.equal(clampVanBreakdownChance(Number.NaN), 0)
+  assert.equal(clampVanBreakdownChance(Number.POSITIVE_INFINITY), 0)
+})
+
+test('isStashEntry accepts only null or positive integer stack counts', () => {
+  assert.equal(isStashEntry({ stacks: null }), true)
+  assert.equal(isStashEntry({ stacks: 1 }), true)
+  assert.equal(isStashEntry({ stacks: Number.NaN }), false)
+  assert.equal(isStashEntry({ stacks: Number.POSITIVE_INFINITY }), false)
+  assert.equal(isStashEntry({ stacks: -1 }), false)
+  assert.equal(isStashEntry({ stacks: 1.5 }), false)
 })
 
 test('calculateFameLevel', () => {
@@ -163,6 +181,26 @@ test('applyEventDelta preserves deltas when persisted numeric bases are stale', 
   assert.equal(nextState.player.van.condition, 8)
   assert.equal(nextState.band.harmony, 5)
   assert.equal(nextState.band.luck, 3)
+})
+
+test('applyEventDelta normalizes day arithmetic and non-negative counters', () => {
+  const state = {
+    player: {
+      day: Number.NaN,
+      stats: { failedStageDives: 0 }
+    }
+  }
+  const delta = {
+    player: {
+      day: 2,
+      stats: { failedStageDives: -1 }
+    }
+  }
+
+  const nextState = applyEventDelta(state, delta)
+
+  assert.equal(nextState.player.day, 3)
+  assert.equal(nextState.player.stats.failedStageDives, 0)
 })
 
 test('applyEventDelta ignores non-finite luck/skill deltas and sanitizes non-finite member skill base', () => {

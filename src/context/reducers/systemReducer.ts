@@ -65,7 +65,6 @@ import { createInitialState } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
-import { getSafeRandom } from '../../utils/crypto'
 import {
   sanitizeAssets,
   sanitizeAssetKinds,
@@ -583,7 +582,7 @@ const applyDailyBankruptcyCheck = (state: GameState): GameState => {
  * Use the typed `advanceDay(state)` action creator so `dayRngStream` and
  * `nextRngSeed` are pre-generated. Payloadless dispatches (legacy callers,
  * direct reducer tests) derive the same deterministic stream from
- * `state.rngSeed`, so asset risk events run on every ADVANCE_DAY path.
+ * `state.rngSeed`, so every random daily outcome stays deterministic.
  *
  * @param state - Current game state before the day tick.
  * @param payload - Optional deterministic RNG stream and next seed supplied by the action creator.
@@ -617,19 +616,21 @@ export const handleAdvanceDay = (
   // reducer dispatches cannot skip asset risk-event integration. Pure: the
   // fallback seed is a fixed clamp, never Date.now().
   const baseSeed = finiteNumberOr(state.rngSeed, 0) >>> 0
-  const dayRngStream =
-    payload?.dayRngStream ??
-    createRngStream(
-      baseSeed,
-      (state.assets?.length ?? 0) * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
-    )
+  const dayRngStream = Array.isArray(payload?.dayRngStream)
+    ? payload.dayRngStream
+    : createRngStream(
+        baseSeed,
+        (state.assets?.length ?? 0) * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
+      )
+  let dayRngCursor = 0
   {
-    const { state: s, events } = rollAssetRiskEvents(
-      nextStatePre,
-      dayRngStream,
-      0
-    )
+    const {
+      state: s,
+      cursor,
+      events
+    } = rollAssetRiskEvents(nextStatePre, dayRngStream, 0)
     nextStatePre = s
+    dayRngCursor = cursor
     // Surface fired risk events as toasts so the player gets feedback. We
     // dedupe by `${assetId}:${eventType}` within this single tick, which is
     // naturally bounded (each asset can only fire one event per day) but
@@ -684,10 +685,17 @@ export const handleAdvanceDay = (
       }
     }
   }
-  const rngSeed = payload?.nextRngSeed ?? nextSeed(baseSeed)
+  const rngSeed = finiteNumberOr(payload?.nextRngSeed, nextSeed(baseSeed)) >>> 0
   state = { ...nextStatePre, rngSeed }
 
-  const rng = typeof payload?.rng === 'function' ? payload.rng : getSafeRandom
+  const rng =
+    typeof payload?.rng === 'function'
+      ? payload.rng
+      : () => {
+          const roll = dayRngStream[dayRngCursor++]
+          if (!Number.isFinite(roll)) return 1
+          return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
+        }
   const { player, band, social, pendingFlags } = calculateDailyUpdates(
     state,
     rng

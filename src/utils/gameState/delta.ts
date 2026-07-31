@@ -578,7 +578,7 @@ export const applyEventDelta = (
               ? nextPlayer.stats[key]
               : 0
           const boundedStat = clampNonNegative(currentStat)
-          nextPlayer.stats[key] = boundedStat + statDelta
+          nextPlayer.stats[key] = clampNonNegative(boundedStat + statDelta)
         } else if (
           typeof statDelta === 'string' ||
           typeof statDelta === 'boolean'
@@ -606,8 +606,13 @@ export const applyEventDelta = (
     if (delta.player.location) nextPlayer.location = delta.player.location
     if (delta.player.currentNodeId)
       nextPlayer.currentNodeId = delta.player.currentNodeId
-    if (isFiniteNumber(delta.player.day))
-      nextPlayer.day = nextPlayer.day + delta.player.day
+    if (isFiniteNumber(delta.player.day)) {
+      const currentDay = Math.max(
+        1,
+        Math.floor(finiteNumberOr(nextPlayer.day, 1))
+      )
+      nextPlayer.day = Math.max(1, Math.floor(currentDay + delta.player.day))
+    }
 
     nextState.player = nextPlayer
   }

@@ -15,6 +15,7 @@ import {
 } from '../../src/context/reducers/systemReducer'
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
+import { nextSeed } from '../../src/utils/seededRng'
 
 test('handleAdvanceDay ignores non-finite expired harmony effect values', () => {
   const createState = () => {
@@ -1680,6 +1681,78 @@ test('systemReducer - pending modal state', async t => {
 })
 
 test('systemReducer - ADVANCE_DAY core logic', async t => {
+  await t.test(
+    'uses the pre-rolled day stream for all daily randomness',
+    () => {
+      const initialState = createInitialState()
+      const state = {
+        ...initialState,
+        player: { ...initialState.player, money: 100_000, day: 1 },
+        social: { ...initialState.social, newsletter: 1_000 }
+      }
+      const payload = {
+        dayRngStream: new Array(16).fill(0),
+        nextRngSeed: 123
+      }
+
+      const first = handleAdvanceDay(state, payload)
+      const second = handleAdvanceDay(state, payload)
+
+      assert.deepEqual(first, second)
+      assert.equal(first.rngSeed, 123)
+    }
+  )
+
+  await t.test(
+    'normalizes malformed RNG payloads at the reducer boundary',
+    () => {
+      const initialState = createInitialState()
+      const state = {
+        ...initialState,
+        assets: [
+          {
+            id: 'asset_1',
+            kind: 'tourbus_chassis',
+            chassisFlavor: 'legit',
+            chassisTier: 1,
+            condition: 100,
+            baseUpkeep: 0,
+            baseDailyRevenue: 0,
+            slots: [],
+            acquiredOnDay: 1,
+            acquisitionMode: 'cash',
+            baseRiskEventChance: 0.5
+          }
+        ]
+      }
+
+      const next = handleAdvanceDay(state, {
+        dayRngStream: [Number.NaN],
+        nextRngSeed: Number.POSITIVE_INFINITY
+      })
+
+      assert.equal(next.assets[0].condition, 99.7)
+      assert.equal(next.pendingRiskEvent, null)
+      assert.equal(Number.isFinite(next.rngSeed), true)
+      assert.equal(next.rngSeed, nextSeed(initialState.rngSeed))
+    }
+  )
+
+  await t.test('normalizes a non-finite persisted day before advancing', () => {
+    const initialState = createInitialState()
+    const state = {
+      ...initialState,
+      player: { ...initialState.player, day: Number.NaN }
+    }
+
+    const next = handleAdvanceDay(state, {
+      dayRngStream: new Array(8).fill(1),
+      nextRngSeed: 123
+    })
+
+    assert.equal(next.player.day, 2)
+  })
+
   await t.test(
     'processes daily updates, resets event count, and handles scandal flag',
     () => {
