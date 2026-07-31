@@ -2,7 +2,6 @@
 import type { GameState } from '../../types'
 import type { UnknownRecord } from '../../types'
 import { calculateZealotryEffects } from '../../utils/socialEngine'
-import { secureRandom } from '../../utils/crypto'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
 import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
@@ -585,16 +584,13 @@ export const CRISIS_EVENTS = [
     title: 'events:crisis_police_raid_zealotry.title',
     description: 'events:crisis_police_raid_zealotry.desc',
     trigger: 'post_gig',
-    // The chance is explicitly set to the computed raidProbability from our new feature
-    chance: 1.0,
+    chance: (gs: GameState) =>
+      calculateZealotryEffects(gs.social?.zealotry ?? 0).raidProbability,
     condition: (gs: GameState) => {
       if ((gs.social?.zealotry ?? 0) === 0) return false
       if (hasStateItem(gs.eventCooldowns, 'crisis_police_raid_zealotry'))
         return false
-      const { raidProbability } = calculateZealotryEffects(gs.social.zealotry)
-      // Return true only if secureRandom() < raidProbability
-      // eventEngine checks `condition` before `chance`.
-      return secureRandom() < raidProbability
+      return true
     },
     options: [
       {

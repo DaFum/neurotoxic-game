@@ -125,6 +125,22 @@ test('Minigame Economy Calculations', async t => {
     )
     assert.strictEqual(resultFailPurge.stress, 10)
     assert.strictEqual(resultFailPurge.reward, 0)
+
+    const resultExtremePurges = calculateAmpCalibrationResult(
+      80,
+      { members: [] },
+      0,
+      Number.MAX_VALUE
+    )
+    assert.ok(Number.isFinite(resultExtremePurges.stress))
+
+    const resultNonFinitePurges = calculateAmpCalibrationResult(
+      80,
+      { members: [] },
+      0,
+      Number.POSITIVE_INFINITY
+    )
+    assert.strictEqual(resultNonFinitePurges.stress, 0)
   })
 
   await t.test('Kabelsalat Minigame Edge Cases', () => {

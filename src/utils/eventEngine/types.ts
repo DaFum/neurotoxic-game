@@ -15,7 +15,7 @@ export type EngineEvent = {
   id?: string
   trigger?: string
   category?: string
-  chance?: number
+  chance?: number | ((gameState: EngineGameState) => number)
   requiredFlag?: string
   title?: string
   description?: string
@@ -62,7 +62,7 @@ export type EngineGameState = {
   pendingEvents?: string[] | Set<string>
   player?: {
     money?: number
-    currentLocation?: string
+    location?: string
     time?: number
     fame?: number
     day?: number

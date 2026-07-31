@@ -179,7 +179,10 @@ const selectEvent = (
 
   for (const eligible of shuffled) {
     const { event, contextvars } = eligible
-    let chance = event.chance ?? 0
+    let chance =
+      typeof event.chance === 'function'
+        ? event.chance(optimizedState)
+        : (event.chance ?? 0)
 
     // Boost chance if flag matches
     if (event.requiredFlag && flagsSet.has(event.requiredFlag)) {
@@ -225,7 +228,7 @@ const selectEvent = (
       // Dynamic text parsing
       const variables: Record<string, string> = {
         ...contextvars,
-        venue: String(gameState.player?.currentLocation || 'the venue')
+        venue: String(gameState.player?.location || 'the venue')
       }
 
       let title = event.title || ''

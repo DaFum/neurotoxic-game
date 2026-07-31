@@ -180,11 +180,13 @@ export const calculatePostGigStateUpdates = (
     lastGigStats,
     currentGig,
     perfScore,
-    secureRandomValue
+    secureRandomValue,
+    selectionRandomValue,
+    viralRandomValue
   } = params
   const gameState = { player, band, social }
   const result = normalizeResolvedPost(
-    resolvePost(option, gameState, secureRandomValue)
+    resolvePost(option, gameState, secureRandomValue, selectionRandomValue)
   )
 
   const isGigViral = Boolean(
@@ -204,7 +206,7 @@ export const calculatePostGigStateUpdates = (
             ? lastGigStats.events
             : undefined
         },
-        roll: secureRandomValue
+        roll: viralRandomValue
       }
     )
   )

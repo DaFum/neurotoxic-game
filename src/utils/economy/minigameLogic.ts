@@ -95,11 +95,12 @@ export const calculateAmpCalibrationResult = (
     numResonance = 0
   }
   const safeScore = clamp0to100(numScore)
+  const success = safeScore >= 50
   const safeResonance = clamp0to100(numResonance)
   let stress = 0
   let reward = 0
 
-  if (safeScore < 50) {
+  if (!success) {
     // Failure or poor performance
     stress = Math.floor((50 - safeScore) / 2)
   } else {
@@ -116,8 +117,11 @@ export const calculateAmpCalibrationResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const safePurgesUsed = Math.max(0, finiteNumberOr(purgesUsed, 0))
-  stress += Math.floor(safePurgesUsed * 5)
+  const safePurgesUsed = Math.min(
+    Math.floor(Math.max(0, finiteNumberOr(purgesUsed, 0))),
+    Math.floor(Number.MAX_SAFE_INTEGER / 5)
+  )
+  stress += safePurgesUsed * 5
 
   // Kranker Schrank Hijack bonuses/mitigations
   const safeHijacksOverridden = Math.max(
@@ -127,7 +131,7 @@ export const calculateAmpCalibrationResult = (
   reward += safeHijacksOverridden * 10
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
 
-  return { stress, reward }
+  return { success, stress, reward }
 }
 
 /**
@@ -185,5 +189,5 @@ export const calculateKabelsalatMinigameResult = (
   )
   stress += safePurgesUsed * 5
 
-  return { stress, reward }
+  return { success: isPoweredOn, stress, reward }
 }

@@ -268,6 +268,20 @@ test('resolvePost returns consistent structure', () => {
   assert.ok(typeof result.message === 'string', 'Should have string message')
 })
 
+test('resolvePost preserves the failed stage-dive progression marker', () => {
+  const result = resolvePost(
+    {
+      id: 'crowdsurf',
+      platform: 'instagram',
+      resolve: () => ({ success: false, failedStageDive: true })
+    },
+    mockGameState,
+    0.1
+  )
+
+  assert.equal(result.failedStageDive, true)
+})
+
 const nullishPlatformVariants = [
   { label: 'undefined result platform', platform: undefined },
   { label: 'null result platform', platform: null }

@@ -174,7 +174,10 @@ export interface SocialPostOption {
   platform?: Platform
   condition: (gameState: SocialEngineGameState) => boolean
   resolve?: (
-    gameState: SocialEngineGameState & { diceRoll: number }
+    gameState: SocialEngineGameState & {
+      diceRoll: number
+      selectionRoll: number
+    }
   ) => Record<string, unknown>
   [key: string]: unknown
 }

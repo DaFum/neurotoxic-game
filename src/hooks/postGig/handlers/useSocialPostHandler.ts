@@ -12,6 +12,7 @@ export interface UseSocialPostHandlerProps {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
+  rivalBand: GameState['rivalBand']
   currentGig: Venue | null
   perfScore: number
   lastGigStats: PostGigSummary | null
@@ -30,6 +31,7 @@ export function useSocialPostHandler({
   player,
   band,
   social,
+  rivalBand,
   currentGig,
   perfScore,
   lastGigStats,
@@ -63,7 +65,9 @@ export function useSocialPostHandler({
           lastGigStats,
           currentGig,
           perfScore,
-          secureRandomValue: secureRandom()
+          secureRandomValue: secureRandom(),
+          selectionRandomValue: secureRandom(),
+          viralRandomValue: secureRandom()
         })
       } catch (e) {
         logger.error('PostGig', 'Failed to resolve selected post', e)
@@ -80,6 +84,7 @@ export function useSocialPostHandler({
           player,
           band,
           social,
+          rivalBand,
           t,
           dispatchers: {
             updateBand,
@@ -107,6 +112,7 @@ export function useSocialPostHandler({
       lastGigStats,
       perfScore,
       social,
+      rivalBand,
       player,
       band,
       updateSocial,

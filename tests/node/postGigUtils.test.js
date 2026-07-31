@@ -11,6 +11,7 @@ import {
   SPIN_STORY_CONTROVERSY_REDUCTION
 } from '../../src/utils/postGigUtils'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
+import { POST_OPTIONS } from '../../src/data/postOptions'
 
 test('calculatePerformanceScore clamps and rejects non-finite raw scores', () => {
   assert.equal(calculatePerformanceScore(15000), 100)
@@ -59,7 +60,9 @@ const buildPostGigParams = ({ result = {}, social = {} } = {}) => ({
   player: { money: 100, day: 1 },
   band: { harmony: 50, members: [] },
   social: buildSocial(social),
-  secureRandomValue: 0.5
+  secureRandomValue: 0.5,
+  selectionRandomValue: 0.5,
+  viralRandomValue: 0.99
 })
 
 test('calculateExcessMissMoneyPenalty rejects invalid numeric invariants', () => {
@@ -260,6 +263,75 @@ test('calculatePostGigStateUpdates boosts positive follower gains by band affini
   assert.equal(
     boosted.finalResult.totalFollowers,
     Math.round(base.finalResult.totalFollowers * 1.5)
+  )
+})
+
+test('calculatePostGigStateUpdates independently selects the crowdsurf member', () => {
+  const params = buildPostGigParams()
+  const option = POST_OPTIONS.find(
+    candidate => candidate.id === 'drama_crowdsurf_fail'
+  )
+  assert.ok(option)
+  const updates = calculatePostGigStateUpdates({
+    ...params,
+    option,
+    band: {
+      ...params.band,
+      members: [
+        { name: 'First', traits: {} },
+        { name: 'Second', traits: {} },
+        { name: 'Third', traits: {} },
+        { name: 'Fourth', traits: {} }
+      ]
+    },
+    secureRandomValue: 0.8,
+    selectionRandomValue: 0.6,
+    viralRandomValue: 0.9,
+    lastGigStats: { accuracy: 50, maxCombo: 10, score: 100 }
+  })
+
+  assert.equal(updates.finalResult.success, true)
+  assert.equal(updates.finalResult.followers, 1000)
+  assert.equal(updates.finalResult.targetMember, 'Third')
+})
+
+test('calculatePostGigStateUpdates independently applies the viral roll', () => {
+  const params = buildPostGigParams()
+  const option = POST_OPTIONS.find(
+    candidate => candidate.id === 'drama_crowdsurf_fail'
+  )
+  assert.ok(option)
+  const common = {
+    ...params,
+    option,
+    band: {
+      ...params.band,
+      members: [{ name: 'Only Member', traits: {} }]
+    },
+    secureRandomValue: 0.8,
+    selectionRandomValue: 0.2,
+    perfScore: 50,
+    lastGigStats: { accuracy: 50, maxCombo: 10, score: 100 }
+  }
+
+  const viral = calculatePostGigStateUpdates({
+    ...common,
+    viralRandomValue: 0
+  })
+  const nonViral = calculatePostGigStateUpdates({
+    ...common,
+    viralRandomValue: 0.99
+  })
+
+  assert.equal(viral.finalResult.targetMember, 'Only Member')
+  assert.equal(nonViral.finalResult.targetMember, 'Only Member')
+  assert.equal(viral.updatedSocial.viral, nonViral.updatedSocial.viral + 1)
+  assert.equal(
+    viral.updatedSocial.scenePresence,
+    nonViral.updatedSocial.scenePresence + 1
+  )
+  assert.ok(
+    viral.finalResult.totalFollowers > nonViral.finalResult.totalFollowers
   )
 })
 

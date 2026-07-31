@@ -272,4 +272,18 @@ describe('CRISIS_EVENTS', () => {
       )
     })
   })
+
+  test('police raid eligibility and probability are deterministic state functions', () => {
+    const event = CRISIS_EVENTS.find(
+      candidate => candidate.id === 'crisis_police_raid_zealotry'
+    )
+    assert.ok(event)
+    assert.strictEqual(event.condition({ social: { zealotry: 0 } }), false)
+    assert.strictEqual(
+      event.condition({ social: { zealotry: 50 }, eventCooldowns: [] }),
+      true
+    )
+    assert.strictEqual(typeof event.chance, 'function')
+    assert.ok(event.chance({ social: { zealotry: 50 } }) > 0)
+  })
 })

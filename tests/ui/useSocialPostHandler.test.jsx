@@ -26,6 +26,8 @@ import { applySocialPostResult } from '../../src/hooks/postGig/handlers/socialPo
 import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
+import { createSocialPostQuestEvents } from '../../src/quests/producers/socialQuestEvents'
+import { secureRandom } from '../../src/utils/crypto'
 
 vi.spyOn(logger, 'error').mockImplementation(() => {})
 
@@ -51,6 +53,7 @@ function makeProps(overrides = {}) {
     player: { money: 1000, fame: 10, day: 3, location: 'berlin' },
     band: { harmony: 80, members: [], inventory: {} },
     social: { followers: 500, brandReputation: {} },
+    rivalBand: null,
     currentGig: { id: 'venue_1' },
     perfScore: 75,
     lastGigStats: { misses: 1 },
@@ -218,6 +221,33 @@ describe('useSocialPostHandler (characterization)', () => {
     expect(calculatePostGigStateUpdates).toHaveBeenCalledTimes(1)
   })
 
+  it('draws independent random values for post, member selection, and virality', () => {
+    calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
+    secureRandom
+      .mockReturnValueOnce(0.11)
+      .mockReturnValueOnce(0.44)
+      .mockReturnValueOnce(0.88)
+    const props = makeProps()
+    const { result } = renderHook(() => useSocialPostHandler(props))
+
+    act(() => result.current({ id: 'post_1' }))
+
+    expect(calculatePostGigStateUpdates).toHaveBeenCalledWith(
+      expect.objectContaining({
+        secureRandomValue: 0.11,
+        selectionRandomValue: 0.44,
+        viralRandomValue: 0.88
+      })
+    )
+    expect(secureRandom).toHaveBeenCalledTimes(3)
+    expect(props.dispatchers.setPostResult).toHaveBeenCalledWith(
+      expect.objectContaining({ followers: 10 })
+    )
+    expect(props.dispatchers.updateSocial).toHaveBeenCalledWith({
+      followers: 510
+    })
+  })
+
   it('releases guard in the error path so the player can retry', () => {
     calculatePostGigStateUpdates.mockImplementation(() => {
       throw new Error('boom')
@@ -253,6 +283,7 @@ describe('applySocialPostResult', () => {
       },
       band: { harmony: 80, members: [], inventory: {} },
       social: { followers: 500, brandReputation: {} },
+      rivalBand: null,
       t,
       dispatchers,
       ...overrides
@@ -404,6 +435,20 @@ describe('applySocialPostResult', () => {
     )
   })
 
+  it('emits quest progress from the applied total follower gain', () => {
+    const props = makeApplyProps({
+      updatesOverrides: {
+        finalResult: { followers: 0, totalFollowers: 125 }
+      }
+    })
+    applySocialPostResult(props)
+
+    expect(createSocialPostQuestEvents).toHaveBeenCalledWith(
+      props.option,
+      expect.objectContaining({ followers: 125 })
+    )
+  })
+
   it('routes to DEALS phase when brand offers are generated', () => {
     generateBrandOffers.mockReturnValue([{ id: 'deal_1' }])
     const props = makeApplyProps()
@@ -420,5 +465,20 @@ describe('applySocialPostResult', () => {
     )
     expect(d.setBrandOffers).toHaveBeenCalledWith([{ id: 'deal_1' }])
     expect(d.setPhase).toHaveBeenCalledWith('DEALS')
+  })
+
+  it('passes rival-band state into post-gig brand offer generation', () => {
+    const rivalBand = {
+      id: 'rival_1',
+      currentLocationId: 'node_1',
+      powerLevel: 75
+    }
+    const props = makeApplyProps({ rivalBand })
+    applySocialPostResult(props)
+
+    expect(generateBrandOffers).toHaveBeenCalledWith(
+      expect.objectContaining({ rivalBand }),
+      expect.any(Function)
+    )
   })
 })

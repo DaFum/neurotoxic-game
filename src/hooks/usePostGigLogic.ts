@@ -22,6 +22,7 @@ export const usePostGigLogic = () => {
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
   const social = useGameSelector(state => state.social)
+  const rivalBand = useGameSelector(state => state.rivalBand)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
@@ -95,6 +96,7 @@ export const usePostGigLogic = () => {
     player,
     band,
     social,
+    rivalBand,
     lastGigStats,
     currentGig,
     postOptionsDerivationError,

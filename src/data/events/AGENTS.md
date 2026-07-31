@@ -13,3 +13,7 @@
 ## Tests
 
 - For each new or changed `condition`, test one state that returns truthy (`true` or a context object) and one state that returns `false`; call the condition directly instead of relying on random event selection.
+
+## Probability
+
+- State-derived event probability belongs in a functional `chance`; conditions only decide eligibility. Never draw entropy inside a condition, because `selectEvent` owns the injected RNG used for every probability roll.

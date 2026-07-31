@@ -11,6 +11,8 @@ export type CalculatePostGigStateParams = {
   currentGig?: Venue | null
   perfScore?: number
   secureRandomValue?: number
+  selectionRandomValue?: number
+  viralRandomValue?: number
 }
 
 /** Result of resolving a spin-story money effect: either no-op or the clamped next money + applied delta. */

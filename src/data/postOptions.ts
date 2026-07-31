@@ -712,9 +712,13 @@ export const POST_OPTIONS = [
     badges: [POST_BADGES.RISK],
     condition: ({ band }: GameState) =>
       Array.isArray(band?.members) && band.members.length > 0,
-    resolve: ({ band, diceRoll }: GameState & { diceRoll: number }) => {
+    resolve: ({
+      band,
+      diceRoll,
+      selectionRoll
+    }: GameState & { diceRoll: number; selectionRoll: number }) => {
       const members = requireBandMembers(band, 'drama_crowdsurf_fail')
-      const targetObj = selectRandomItem(members, () => diceRoll)
+      const targetObj = selectRandomItem(members, () => selectionRoll)
       const target =
         targetObj?.name ??
         i18n.t('ui:postOptions.errors.unknownMemberFallback', {

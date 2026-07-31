@@ -153,10 +153,11 @@ export const validateCrisisEvent = (event: unknown): boolean => {
   }
 
   if (
-    typeof e.chance !== 'number' ||
-    !Number.isFinite(e.chance) ||
-    (e.chance as number) < 0 ||
-    (e.chance as number) > 1
+    typeof e.chance !== 'function' &&
+    (typeof e.chance !== 'number' ||
+      !Number.isFinite(e.chance) ||
+      (e.chance as number) < 0 ||
+      (e.chance as number) > 1)
   ) {
     throw new Error(
       'Invalid chance: ' + String(e.chance) + ' for event ' + String(e.id)
@@ -324,7 +325,7 @@ export const validateGameEvent = (event: unknown): boolean => {
     }
   }
 
-  // Events with 'crisis' tag must start with 'crisis_' and have chance in [0,1]
+  // Events with 'crisis' tags use either a bounded static chance or a dynamic chance.
   if (Array.isArray(e.tags) && (e.tags as string[]).includes('crisis')) {
     if (typeof e.id !== 'string' || !e.id.startsWith('crisis_')) {
       throw new Error(
@@ -333,13 +334,14 @@ export const validateGameEvent = (event: unknown): boolean => {
     }
     const chance = e.chance
     if (
-      typeof chance !== 'number' ||
-      !Number.isFinite(chance) ||
-      chance < 0 ||
-      chance > 1
+      typeof chance !== 'function' &&
+      (typeof chance !== 'number' ||
+        !Number.isFinite(chance) ||
+        chance < 0 ||
+        chance > 1)
     ) {
       throw new Error(
-        `Crisis-tagged event "${e.id}": chance must be a number in [0, 1]`
+        `Crisis-tagged event "${e.id}": chance must be a number in [0, 1] or a function`
       )
     }
   }
