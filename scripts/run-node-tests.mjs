@@ -178,6 +178,13 @@ if (hasNonNodeSpecificFile) {
 
 const isSpecificFile = specificTestFileArgs.length > 0
 
+const reporterArgs = nodeTestArgs.filter(arg =>
+  arg.startsWith('--test-reporter')
+)
+const remainingNodeTestArgs = nodeTestArgs.filter(
+  arg => !arg.startsWith('--test-reporter')
+)
+
 if (!isSpecificFile && shouldOnlyHeavy) {
   const heavyOnlyFiles = filterByHeavyMode(getRemainingTestFiles())
   if (heavyOnlyFiles.length === 0) {
@@ -200,11 +207,12 @@ const applyShard = testFiles => {
 }
 
 const finalArgs = isSpecificFile
-  ? [...commandArgs, ...nodeTestArgs]
+  ? [...commandArgs, ...reporterArgs, ...remainingNodeTestArgs]
   : [
       ...commandArgs,
+      ...reporterArgs,
       ...applyShard(filterByHeavyMode(getRemainingTestFiles())),
-      ...nodeTestArgs
+      ...remainingNodeTestArgs
     ]
 
 const result = spawnSync('node', finalArgs, {
