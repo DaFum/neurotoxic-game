@@ -43,6 +43,54 @@ describe('Contraband Schema (with imagePrompt)', () => {
       assert.ok(result.errors.includes('item contains forbidden keys'))
     })
 
+    it('rejects cyclic catalog inputs without throwing', () => {
+      const item = {
+        id: 'c_cycle',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_cycle.name',
+        type: 'consumable',
+        effectType: 'stamina',
+        value: 1,
+        description: 'items:contraband.c_cycle.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false
+      }
+      item.self = item
+
+      const result = validateContrabandItem(item)
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+    })
+
+    it('rejects contraband definitions that violate effect lifecycle rules', () => {
+      const result = validateContrabandItem({
+        id: 'c_bad_equipment',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_bad_equipment.name',
+        type: 'equipment',
+        effectType: 'unsupported',
+        value: 1,
+        description: 'items:contraband.c_bad_equipment.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: true,
+        maxStacks: 1.5,
+        applyOnAdd: false
+      })
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('effectType must be supported'))
+      assert.ok(
+        result.errors.includes(
+          'maxStacks must be a positive integer when present'
+        )
+      )
+      assert.ok(result.errors.includes('equipment must not be stackable'))
+      assert.ok(result.errors.includes('equipment must use applyOnAdd=true'))
+    })
+
     it('should have all items with imagePrompt field', () => {
       for (const item of CONTRABAND_DB) {
         assert.equal(

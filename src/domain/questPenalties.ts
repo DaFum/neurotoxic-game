@@ -5,7 +5,8 @@ import {
   clampControversyLevel,
   clampLoyalty,
   finiteNumberOr,
-  isLooseRecord
+  isLooseRecord,
+  isFiniteNumber
 } from '../utils/gameState'
 import {
   applyBrandTrustDelta,
@@ -101,10 +102,52 @@ const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
 /**
  * Returns declarative failure penalties, falling back to legacy penalty fields.
  */
-export const getQuestPenalties = (quest: QuestState): QuestPenalty[] =>
-  Array.isArray(quest.failurePenalties) && quest.failurePenalties.length > 0
-    ? quest.failurePenalties
-    : normalizeLegacyPenalties(quest)
+const isOptionalString = (value: unknown): boolean =>
+  value === undefined || typeof value === 'string'
+
+const isQuestPenalty = (value: unknown): value is QuestPenalty => {
+  if (!isLooseRecord(value) || typeof value.type !== 'string') return false
+
+  switch (value.type) {
+    case 'band.harmony':
+    case 'social.loyalty':
+    case 'social.controversy':
+      return isFiniteNumber(value.amount)
+    case 'venue.reputation':
+    case 'region.reputation':
+      return isFiniteNumber(value.amount) && isOptionalString(value.scope)
+    case 'brand.trust':
+      return (
+        isFiniteNumber(value.amount) &&
+        isOptionalString(value.brandId) &&
+        isOptionalString(value.alignment)
+      )
+    case 'asset.damage':
+      return (
+        isFiniteNumber(value.amount) &&
+        isOptionalString(value.assetId) &&
+        isOptionalString(value.assetKind)
+      )
+    case 'flag.add':
+      return typeof value.flag === 'string' && value.flag.length > 0
+    case 'event.queue':
+      return typeof value.eventId === 'string' && value.eventId.length > 0
+    case 'quest.cooldown':
+      return isFiniteNumber(value.days)
+    default:
+      return false
+  }
+}
+
+export const getQuestPenalties = (quest: QuestState): QuestPenalty[] => {
+  if (
+    Array.isArray(quest.failurePenalties) &&
+    quest.failurePenalties.length > 0
+  ) {
+    return quest.failurePenalties.filter(isQuestPenalty)
+  }
+  return normalizeLegacyPenalties(quest)
+}
 
 // ⚡ BOLT OPTIMIZATION: Replaced Array.map with explicit index-based for loop
 // Why: Avoids creating closures and re-allocating unmodified array items in a hot path

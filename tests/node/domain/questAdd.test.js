@@ -43,6 +43,37 @@ test('addQuest', async t => {
     assert.equal(nextState, state)
   })
 
+  await t.test('rejects malformed structural quest fields', () => {
+    const state = { activeQuests: [] }
+    const malformedQuests = [
+      { id: 'bad_kind', kind: 'unbounded' },
+      { id: 'bad_repeat', repeatPolicy: 'whenever' },
+      { id: 'bad_flags', completionFlags: {} },
+      { id: 'bad_deadline', deadline: 'never' }
+    ]
+
+    for (const quest of malformedQuests) {
+      assert.equal(addQuest(state, quest), state)
+    }
+  })
+
+  await t.test(
+    'registry policy cannot be overridden by an inline payload',
+    () => {
+      const state = {
+        activeQuests: [],
+        completedQuestIds: ['quest_pick_of_destiny']
+      }
+
+      const nextState = addQuest(state, {
+        id: 'quest_pick_of_destiny',
+        repeatPolicy: 'cooldown'
+      })
+
+      assert.equal(nextState, state)
+    }
+  )
+
   await t.test('completes threshold quests seeded at their target', () => {
     const state = {
       player: { day: 1 },
@@ -129,9 +160,7 @@ test('addQuest', async t => {
   await t.test('handles non-finite deadlineOffset gracefully', () => {
     const state = { player: { day: 5 }, activeQuests: [] }
     const nextState = addQuest(state, { id: 'test1', deadlineOffset: NaN })
-    const addedQuest = nextState.activeQuests[0]
-    assert.equal(addedQuest.deadline, undefined)
-    assert.equal(addedQuest.deadlineOffset, undefined)
+    assert.equal(nextState, state)
   })
 
   await t.test(

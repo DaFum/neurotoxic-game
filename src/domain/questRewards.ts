@@ -16,7 +16,8 @@ import {
   clampPlayerFame,
   clampPlayerMoney,
   finiteNumberOr,
-  isFiniteNumber
+  isFiniteNumber,
+  isLooseRecord
 } from '../utils/gameState'
 import { applyTraitUnlocks } from '../utils/traitUtils'
 import { getQuestToastName } from './questHelpers'
@@ -87,10 +88,64 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
 /**
  * Returns declarative quest rewards, falling back to legacy reward fields.
  */
-export const getQuestRewards = (quest: QuestState): QuestReward[] =>
-  Array.isArray(quest.rewards) && quest.rewards.length > 0
-    ? quest.rewards
-    : normalizeLegacyRewards(quest)
+const isOptionalString = (value: unknown): boolean =>
+  value === undefined || typeof value === 'string'
+
+const isQuestReward = (value: unknown): value is QuestReward => {
+  if (!isLooseRecord(value) || typeof value.type !== 'string') return false
+
+  switch (value.type) {
+    case 'money':
+    case 'fame':
+    case 'band.harmony':
+    case 'social.loyalty':
+    case 'social.controversy':
+      return isFiniteNumber(value.amount)
+    case 'social.followers':
+      return isFiniteNumber(value.amount) && isOptionalString(value.platform)
+    case 'venue.reputation':
+    case 'region.reputation':
+      return isFiniteNumber(value.amount) && isOptionalString(value.scope)
+    case 'brand.trust':
+      return (
+        isFiniteNumber(value.amount) &&
+        isOptionalString(value.brandId) &&
+        isOptionalString(value.alignment)
+      )
+    case 'asset.repair':
+      return (
+        isFiniteNumber(value.amount) &&
+        isOptionalString(value.assetId) &&
+        isOptionalString(value.assetKind)
+      )
+    case 'item.add':
+      return (
+        typeof value.itemId === 'string' &&
+        (value.amount === undefined || isFiniteNumber(value.amount))
+      )
+    case 'trait.unlock':
+      return (
+        typeof value.traitId === 'string' && isOptionalString(value.memberId)
+      )
+    case 'skill_point':
+      return (
+        value.memberIndex === undefined || isFiniteNumber(value.memberIndex)
+      )
+    case 'flag.add':
+      return typeof value.flag === 'string' && value.flag.length > 0
+    case 'event.queue':
+      return typeof value.eventId === 'string' && value.eventId.length > 0
+    default:
+      return false
+  }
+}
+
+export const getQuestRewards = (quest: QuestState): QuestReward[] => {
+  if (Array.isArray(quest.rewards) && quest.rewards.length > 0) {
+    return quest.rewards.filter(isQuestReward)
+  }
+  return normalizeLegacyRewards(quest)
+}
 
 // ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop for asset repair
 // Why: Avoids iterating over the entire assets array and allocating intermediate arrays/closures.
@@ -139,9 +194,12 @@ const applySkillPointReward = (
   if (originalMembers.length === 0) return state
 
   const memberIdx = isFiniteNumber(reward.memberIndex)
-    ? Math.max(0, Math.min(originalMembers.length - 1, reward.memberIndex))
+    ? Math.max(
+        0,
+        Math.min(originalMembers.length - 1, Math.trunc(reward.memberIndex))
+      )
     : isFiniteNumber(randomIdx)
-      ? Math.max(0, Math.min(originalMembers.length - 1, randomIdx))
+      ? Math.max(0, Math.min(originalMembers.length - 1, Math.trunc(randomIdx)))
       : 0
 
   // ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop
