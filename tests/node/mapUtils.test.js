@@ -241,6 +241,20 @@ describe('mapUtils', () => {
       )
     })
 
+    test('negative daily obligations cannot subsidize the immediate travel cost', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10,
+        totalCost: 100
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 0)
+      const player = { currentNodeId: 'A', van: { fuel: 100 }, money: 75 }
+
+      assert.equal(
+        checkSoftlock(gameMap, player, null, { dailyObligations: -50 }),
+        true
+      )
+    })
+
     test('viable blood-bank donation defuses a stranded verdict', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 10,

@@ -265,7 +265,11 @@ export const checkSoftlock = (
           )
           if (
             fuel >= finiteNumberOr(fuelLiters, 0) &&
-            money >= finiteNumberOr(totalCost, 0) + activeDailyObligations
+            money >=
+              Math.max(
+                finiteNumberOr(totalCost, 0),
+                finiteNumberOr(totalCost, 0) + activeDailyObligations
+              )
           ) {
             return true
           }

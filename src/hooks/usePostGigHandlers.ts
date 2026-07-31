@@ -29,6 +29,7 @@ interface UsePostGigHandlersProps extends HandlerDispatchers {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
+  rivalBand: GameState['rivalBand']
   lastGigStats: PostGigSummary | null
   currentGig: Venue | null
   postOptionsDerivationError: unknown
@@ -51,6 +52,7 @@ export function usePostGigHandlers({
   player,
   band,
   social,
+  rivalBand,
   lastGigStats,
   currentGig,
   postOptionsDerivationError,
@@ -139,6 +141,7 @@ export function usePostGigHandlers({
     player,
     band,
     social,
+    rivalBand,
     currentGig,
     perfScore,
     lastGigStats,

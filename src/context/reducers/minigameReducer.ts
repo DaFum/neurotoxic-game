@@ -397,6 +397,7 @@ export const handleStartAmpCalibration = (
  */
 const applyPostMinigameResult = (
   state: GameState,
+  success: boolean,
   stress: number,
   reward: number,
   failureLogTag: string
@@ -409,7 +410,7 @@ const applyPostMinigameResult = (
   )
 
   const nextModifiers = { ...state.gigModifiers }
-  if (stress > 0) {
+  if (!success) {
     logger.warn('GameState', `${failureLogTag}: damaged_gear active`)
     nextModifiers.damaged_gear = true
   }
@@ -452,7 +453,7 @@ export const handleCompleteAmpCalibration = (
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
   // Apply Results
-  const { stress, reward } = calculateAmpCalibrationResult(
+  const { success, stress, reward } = calculateAmpCalibrationResult(
     safeScore,
     state.band,
     finiteNumberOr(voidResonance, 0),
@@ -462,6 +463,7 @@ export const handleCompleteAmpCalibration = (
 
   let nextState = applyPostMinigameResult(
     state,
+    success,
     stress,
     reward,
     'Amp Calibration failed'
@@ -470,11 +472,11 @@ export const handleCompleteAmpCalibration = (
     nextState,
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.AMP_CALIBRATION,
-      success: stress === 0,
+      success,
       score: safeScore
     })
   )
-  if (stress === 0) {
+  if (success && stress === 0) {
     nextState = QuestEvents.emit(
       nextState,
       createMinigamePerfectQuestEvent({
@@ -482,7 +484,7 @@ export const handleCompleteAmpCalibration = (
       })
     )
   }
-  return stress > 0
+  return !success
     ? QuestEvents.emit(
         nextState,
         createMinigameFailedQuestEvent({
@@ -541,13 +543,14 @@ export const handleCompleteKabelsalatMinigame = (
   logger.info('GameState', 'Kabelsalat Minigame Complete', payload)
 
   // Apply Results
-  const { stress, reward } = calculateKabelsalatMinigameResult(
+  const { success, stress, reward } = calculateKabelsalatMinigameResult(
     results,
     state.band
   )
 
   let nextState = applyPostMinigameResult(
     state,
+    success,
     stress,
     reward,
     'Kabelsalat failed'
@@ -556,10 +559,10 @@ export const handleCompleteKabelsalatMinigame = (
     nextState,
     createMinigameCompletedQuestEvent({
       minigameId: MINIGAME_TYPES.KABELSALAT,
-      success: stress === 0
+      success
     })
   )
-  if (stress === 0) {
+  if (success && stress === 0) {
     nextState = QuestEvents.emit(
       nextState,
       createMinigamePerfectQuestEvent({
@@ -567,7 +570,7 @@ export const handleCompleteKabelsalatMinigame = (
       })
     )
   }
-  return stress > 0
+  return !success
     ? QuestEvents.emit(
         nextState,
         createMinigameFailedQuestEvent({

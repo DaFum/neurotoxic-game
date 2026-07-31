@@ -263,6 +263,29 @@ test('calculatePostGigStateUpdates boosts positive follower gains by band affini
   )
 })
 
+test('calculatePostGigStateUpdates uses independent post, member, and viral rolls', () => {
+  const observed = {}
+  const params = buildPostGigParams()
+  calculatePostGigStateUpdates({
+    ...params,
+    option: {
+      id: 'independent-rolls',
+      platform: 'instagram',
+      resolve: ({ diceRoll, selectionRoll }) => {
+        observed.diceRoll = diceRoll
+        observed.selectionRoll = selectionRoll
+        return { followers: 0, success: true }
+      }
+    },
+    secureRandomValue: 0.2,
+    selectionRandomValue: 0.7,
+    viralRandomValue: 0.9,
+    lastGigStats: { accuracy: 100, maxCombo: 100, score: 100 }
+  })
+
+  assert.deepEqual(observed, { diceRoll: 0.2, selectionRoll: 0.7 })
+})
+
 test('calculatePostGigStateUpdates does not soften follower losses via affinity', () => {
   const params = buildPostGigParams({
     result: { followers: -500, success: false }

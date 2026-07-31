@@ -982,6 +982,27 @@ test('eventEngine.selectEvent handles condition errors gracefully', () => {
   assert.match(error.message, /Condition failed/)
 })
 
+test('eventEngine.selectEvent evaluates dynamic chance with the injected RNG', () => {
+  const state = buildGameState({
+    player: { day: 1, location: 'venues:berlin_so36.name' }
+  })
+  const event = {
+    id: 'dynamic_chance',
+    trigger: 'travel',
+    chance: currentState =>
+      currentState.player.location === 'venues:berlin_so36.name' ? 0.4 : 0,
+    condition: () => true,
+    description: 'Playing at {venue}'
+  }
+  const rolls = [0.2]
+  const selected = eventEngine.selectEvent([event], state, 'travel', () =>
+    rolls.shift()
+  )
+
+  assert.equal(selected?.id, 'dynamic_chance')
+  assert.equal(selected?.description, 'Playing at venues:berlin_so36.name')
+})
+
 test('eventEngine.processEvent handles condition errors and calls handleError with invalid states', () => {
   mockLogger.error.mock.resetCalls()
 

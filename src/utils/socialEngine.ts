@@ -250,12 +250,14 @@ export const generatePostOptions = (
  * @param postOption - The selected post option from POST_OPTIONS.
  * @param gameState - Current state required for resolution.
  * @param diceRoll - Random number between 0 and 1. Defaults to `secureRandom()`.
+ * @param selectionRoll - Independent random value for target selection.
  * @returns The full resolution map containing success, followers, and side effects.
  */
 export const resolvePost = (
   postOption: SocialPostOption,
   gameState: SocialEngineGameState,
-  diceRoll = secureRandom()
+  diceRoll = secureRandom(),
+  selectionRoll = secureRandom()
 ): Record<string, unknown> => {
   if (!postOption.resolve) {
     throw new StateError(
@@ -264,10 +266,11 @@ export const resolvePost = (
   }
 
   try {
-    const result = postOption.resolve({ ...gameState, diceRoll }) as Record<
-      string,
-      unknown
-    >
+    const result = postOption.resolve({
+      ...gameState,
+      diceRoll,
+      selectionRoll
+    }) as Record<string, unknown>
 
     // Safety bounds enforcement for resolved deltas
     // Note: Double-clamping occurs here and in hooks for defense-in-depth, ensuring
@@ -334,7 +337,8 @@ export const resolvePost = (
         ? result.reputationCooldownSet
         : undefined,
       unlockTrait: result.unlockTrait,
-      influencerUpdate: result.influencerUpdate
+      influencerUpdate: result.influencerUpdate,
+      failedStageDive: result.failedStageDive === true ? true : undefined
     }
   } catch (e) {
     throw new StateError(`Resolution failed for post ${postOption.id}`, {

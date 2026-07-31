@@ -20,6 +20,12 @@ describe('validateCrisisEvent', () => {
     ]
   })
 
+  test('accepts a state-derived chance function', () => {
+    const event = getValidEvent()
+    event.chance = () => 0.25
+    assert.strictEqual(validateCrisisEvent(event), true)
+  })
+
   test('returns true for a completely valid event', () => {
     assert.strictEqual(validateCrisisEvent(getValidEvent()), true)
   })

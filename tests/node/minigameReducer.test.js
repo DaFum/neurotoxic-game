@@ -286,6 +286,23 @@ describe('minigameReducer', () => {
       )
       assert.strictEqual(nextState.currentScene, GAME_PHASES.PRE_GIG_MINIGAME)
     })
+
+    it('treats a passing score with purge stress as successful but not perfect', () => {
+      const activeState = withActiveMinigame(
+        baseState,
+        MINIGAME_TYPES.AMP_CALIBRATION
+      )
+      const nextState = handleCompleteAmpCalibration(activeState, {
+        score: 80,
+        voidResonance: 0,
+        purgesUsed: 1,
+        hijacksOverridden: 0
+      })
+
+      assert.strictEqual(nextState.player.money, 1080)
+      assert.strictEqual(nextState.band.harmony, 45)
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
+    })
   })
 
   describe('handleStartKabelsalatMinigame', () => {
@@ -329,6 +346,20 @@ describe('minigameReducer', () => {
       assert.strictEqual(nextState.minigame.active, false)
       assert.strictEqual(nextState.minigame.type, MINIGAME_TYPES.KABELSALAT)
       assert.strictEqual(nextState.currentScene, baseState.currentScene)
+    })
+
+    it('treats a powered-on result with purge stress as successful but not perfect', () => {
+      const activeState = withActiveMinigame(
+        baseState,
+        MINIGAME_TYPES.KABELSALAT
+      )
+      const nextState = handleCompleteKabelsalatMinigame(activeState, {
+        results: { isPoweredOn: true, timeLeft: 30, voidSurgesPurged: 1 }
+      })
+
+      assert.strictEqual(nextState.player.money, 1150)
+      assert.strictEqual(nextState.band.harmony, 45)
+      assert.strictEqual(nextState.gigModifiers.damaged_gear, undefined)
     })
   })
 

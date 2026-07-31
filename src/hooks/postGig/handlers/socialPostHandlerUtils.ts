@@ -40,10 +40,12 @@ export function applySocialPostResult(params: {
   player: GameState['player']
   band: GameState['band']
   social: GameState['social']
+  rivalBand: GameState['rivalBand']
   t: import('i18next').TFunction
   dispatchers: SocialPostDispatchers
 }): void {
-  const { option, updates, player, band, social, t, dispatchers } = params
+  const { option, updates, player, band, social, rivalBand, t, dispatchers } =
+    params
   const {
     updateBand,
     updatePlayer,
@@ -130,7 +132,7 @@ export function applySocialPostResult(params: {
 
   updateSocial(updatedSocial)
 
-  const followersGained = finiteNumberOr(finalResult.followers, 0)
+  const followersGained = finiteNumberOr(finalResult.totalFollowers, 0)
   // Pass platform + category as context so per-quest filters can narrow
   // matches (e.g. TikTok-only viral_dance, Lifestyle-only outreach).
   for (const questEvent of createSocialPostQuestEvents(option, {
@@ -145,7 +147,8 @@ export function applySocialPostResult(params: {
   const updatedGameState: SocialEngineGameState = {
     player: playerUpdated,
     band: hasBandUpdates ? newBand : band,
-    social: { ...social, ...updatedSocial }
+    social: { ...social, ...updatedSocial },
+    rivalBand
   }
 
   const offers = generateBrandOffers(updatedGameState, secureRandom)
