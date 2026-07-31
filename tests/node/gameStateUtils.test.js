@@ -49,12 +49,12 @@ test('calculateGigFameReward scales successful gigs aggressively enough for shop
   // catalogue was scaled down by the same factor, so these move together.
   assert.strictEqual(
     calculateGigFameReward(70),
-    1650,
+    1860,
     'A solid gig should grant high raw fame'
   )
   assert.strictEqual(
     calculateGigFameReward(100),
-    2250,
+    2520,
     'A perfect gig should be able to reach the shop progression target'
   )
 })
