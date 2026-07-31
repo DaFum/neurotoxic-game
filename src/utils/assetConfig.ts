@@ -138,11 +138,15 @@ export const RNG_BASE_BUFFER = DAILY_UPDATE_MAX_RNG_ROLLS + 1
 /**
  * Calculates the complete pre-rolled stream length for one day tick.
  *
- * @param assetCount - Assets that can each consume a trigger and type roll.
+ * @param assetCount - Assets present before the day tick.
+ * @param potentialMaterializedAssets - Assets that may be created before risk rolls.
  * @returns Required stream length for asset and daily simulation rolls.
  */
-export const getAdvanceDayRngStreamLength = (assetCount: number): number =>
-  assetCount * RNG_ROLLS_PER_ASSET +
+export const getAdvanceDayRngStreamLength = (
+  assetCount: number,
+  potentialMaterializedAssets = 0
+): number =>
+  (assetCount + potentialMaterializedAssets) * RNG_ROLLS_PER_ASSET +
   Math.max(RNG_BASE_BUFFER, DAILY_UPDATE_MAX_RNG_ROLLS + 1)
 
 /**

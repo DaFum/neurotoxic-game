@@ -689,4 +689,15 @@ describe('advanceDay', () => {
     // 3 assets × 2 rolls + 9 buffer = 15
     assert.strictEqual(action.payload.dayRngStream.length, 15)
   })
+
+  it('reserves asset rolls for crowdfund campaigns that can materialize during the tick', () => {
+    const action = advanceDay({
+      rngSeed: 42,
+      assets: [],
+      crowdfundCampaigns: [{ daysRemaining: 1 }]
+    })
+
+    // One campaign can add one asset before risk rolls: 2 asset rolls + 9 base.
+    assert.strictEqual(action.payload.dayRngStream.length, 11)
+  })
 })

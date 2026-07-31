@@ -1201,7 +1201,11 @@ export const advanceDay = (
   // so the reducer never falls off the end (the neutral fallback still
   // defends against malformed or legacy actions).
   const assetCount = state.assets?.length ?? 0
-  const streamLength = getAdvanceDayRngStreamLength(assetCount)
+  const potentialMaterializedAssets = state.crowdfundCampaigns?.length ?? 0
+  const streamLength = getAdvanceDayRngStreamLength(
+    assetCount,
+    potentialMaterializedAssets
+  )
   return {
     type: ActionTypes.ADVANCE_DAY,
     payload: {

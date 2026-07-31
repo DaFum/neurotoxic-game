@@ -620,7 +620,7 @@ export const handleAdvanceDay = (
     ? payload.dayRngStream
     : createRngStream(
         baseSeed,
-        getAdvanceDayRngStreamLength(state.assets?.length ?? 0)
+        getAdvanceDayRngStreamLength(nextStatePre.assets?.length ?? 0)
       )
   let dayRngCursor = 0
   {
