@@ -40,6 +40,13 @@ jobs:
             const existingBotComment = issueComments.find(
               c => c.body && c.body.startsWith(marker) && c.user && c.user.type === "Bot"
             );
+            const reportedThreadsMatch = existingBotComment?.body?.match(/<!-- REPORTED_THREADS: ([^>]*) -->/);
+            const reportedThreadIds = new Set(
+              (reportedThreadsMatch?.[1] || "")
+                .split(',')
+                .map(id => id.trim())
+                .filter(Boolean)
+            );
 
             // 3. Ungelöste Review-Threads via GraphQL ermitteln
             let hasNextPage = true;
@@ -89,6 +96,9 @@ jobs:
             // inzwischen gelöste Threads beim nächsten Lauf aus dem Marker.
             const unresolvedThreadIds = new Set(
               unresolvedThreads.map(thread => thread.id)
+            );
+            const newThreads = unresolvedThreads.filter(
+              thread => !reportedThreadIds.has(thread.id)
             );
 
             // 4. Sanitize-Funktion, um HTML-Kommentare, <details> und Badges zu entfernen
@@ -148,8 +158,8 @@ jobs:
             const header = `\n### 📝 PR Kommentar-Zusammenfassung\n*Aktualisiert bei unterstützten PR- und Review-Ereignissen.*\n\n\`\`\`text\n`;
             const footer = `\n\`\`\`\n`;
             const rerunUrl = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${process.env.GITHUB_RUN_ID}`;
-            const recoveryHint = unresolvedThreads.length > 0
-              ? `\n> GitHub Actions startet diesen Workflow beim reinen Auflösen eines Review-Threads nicht erneut. Nach dem Auflösen aller Threads: [Re-run failed jobs](${rerunUrl}) für diesen Lauf ausführen.\n`
+            const recoveryHint = newThreads.length > 0
+              ? `\n> Diese Threads werden beim nächsten Commit nicht erneut als neu gemeldet. Alternativ kann [Re-run failed jobs](${rerunUrl}) diesen Lauf sofort erneut prüfen.\n`
               : "";
 
             // Die Thread-IDs als versteckten HTML-Kommentar abspeichern
@@ -189,10 +199,12 @@ jobs:
               core.warning(`Fehler beim Erstellen/Aktualisieren des Zusammenfassungs-Kommentars: ${err.message}`);
             }
 
-            // 7. Jeder aktuell ungelöste Thread hält den erforderlichen Check rot.
-            if (unresolvedThreads.length > 0) {
+            // 7. Nur erstmals gemeldete Threads lassen diesen Lauf fehlschlagen.
+            if (newThreads.length > 0) {
               const unresolvedThreadsBlock = formattedComments || "(Thread-Details nicht verfügbar)";
-              core.setFailed(`Der Workflow blockiert den PR. Es existieren ${unresolvedThreads.length} ungelöste(r) Review-Thread(s):\n\n${unresolvedThreadsBlock}${recoveryHint}`);
+              core.setFailed(`Es wurden ${newThreads.length} neue ungelöste Review-Thread(s) gemeldet:\n\n${unresolvedThreadsBlock}${recoveryHint}`);
+            } else if (unresolvedThreads.length > 0) {
+              console.log(`${unresolvedThreads.length} ungelöste Review-Thread(s) wurden bereits gemeldet. Workflow erfolgreich.`);
             } else {
               console.log("Keine ungelösten Review-Threads vorhanden. Workflow erfolgreich.");
             }
