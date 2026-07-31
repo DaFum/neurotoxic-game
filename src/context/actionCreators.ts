@@ -1,5 +1,5 @@
 import { createRngStream, nextSeed } from '../utils/seededRng'
-import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
+import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -1197,12 +1197,15 @@ export const advanceDay = (
 ): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_DAY }> => {
   // Size the stream proportionally to the number of assets: each asset can
   // consume up to two rolls in rollAssetRiskEvents (trigger + event-type).
-  // A constant buffer covers crowdfund jitter and any future tick stages so
-  // the reducer never falls off the end (which the neutral 1.0 fallback in
-  // rollAssetRiskEvents still defends against, but allocating correctly keeps
-  // determinism tight).
+  // A constant buffer covers daily simulation rolls after asset risk events,
+  // so the reducer never falls off the end (the neutral fallback still
+  // defends against malformed or legacy actions).
   const assetCount = state.assets?.length ?? 0
-  const streamLength = assetCount * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
+  const potentialMaterializedAssets = state.crowdfundCampaigns?.length ?? 0
+  const streamLength = getAdvanceDayRngStreamLength(
+    assetCount,
+    potentialMaterializedAssets
+  )
   return {
     type: ActionTypes.ADVANCE_DAY,
     payload: {

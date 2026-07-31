@@ -16,7 +16,10 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
 
   return (
     Object.hasOwn(obj, 'stacks') &&
-    (typeof obj.stacks === 'number' || obj.stacks === null)
+    (obj.stacks === null ||
+      (typeof obj.stacks === 'number' &&
+        Number.isInteger(obj.stacks) &&
+        obj.stacks > 0))
   )
 }
 

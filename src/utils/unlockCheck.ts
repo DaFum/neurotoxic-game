@@ -35,6 +35,14 @@ const hasRelationshipBelow = (
   return false
 }
 
+const isValidatedPerformanceSong = (
+  song: unknown
+): song is Record<string, unknown> => {
+  if (!isLooseRecord(song)) return false
+  if (typeof song.id === 'string' && SONGS_BY_ID.has(song.id)) return true
+  return Number.isFinite(song.bpm) || Number.isFinite(song.difficulty)
+}
+
 /**
  * Checks for trait unlocks based on game state changes.
  * @param state - The full game state (player, band, etc.).
@@ -79,9 +87,9 @@ export const checkTraitUnlocks = (
       const song = SONGS_BY_ID.get(songStat.songId)
       if (song) songs.push(song as unknown as Record<string, unknown>)
     }
-    if (isLooseRecord(gigStats.song)) songs.push(gigStats.song)
+    if (isValidatedPerformanceSong(gigStats.song)) songs.push(gigStats.song)
     const hasAttemptedPerformance =
-      perfectHits > 0 || misses > 0 || maxCombo > 0 || songStats.length > 0
+      perfectHits > 0 || misses > 0 || maxCombo > 0 || songs.length > 0
     const isEligiblePerformance =
       gigStats.failed !== true && hasAttemptedPerformance
 

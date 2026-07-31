@@ -125,9 +125,29 @@ export const FORECLOSURE_FAME_PENALTY = 10
 export const RNG_ROLLS_PER_ASSET = 2
 
 /**
- * Extra RNG rolls reserved for non-asset day tick stages.
+ * Maximum rolls consumed before daily checks complete: `calculateDailyUpdates`
+ * uses newsletter (1), wealth drain (2), ego focus (2), viral decay (1), and
+ * party-animal stamina (1); daily trend generation then uses one more roll.
+ * Add future random daily stages to this budget before consuming another roll.
  */
-export const RNG_BASE_BUFFER = 8
+export const DAILY_UPDATE_MAX_RNG_ROLLS = 1 + 2 + 2 + 1 + 1 + 1
+
+/** Daily-update budget plus one exhaustion safety roll. */
+export const RNG_BASE_BUFFER = DAILY_UPDATE_MAX_RNG_ROLLS + 1
+
+/**
+ * Calculates the complete pre-rolled stream length for one day tick.
+ *
+ * @param assetCount - Assets present before the day tick.
+ * @param potentialMaterializedAssets - Assets that may be created before risk rolls.
+ * @returns Required stream length for asset and daily simulation rolls.
+ */
+export const getAdvanceDayRngStreamLength = (
+  assetCount: number,
+  potentialMaterializedAssets = 0
+): number =>
+  (assetCount + potentialMaterializedAssets) * RNG_ROLLS_PER_ASSET +
+  Math.max(RNG_BASE_BUFFER, DAILY_UPDATE_MAX_RNG_ROLLS + 1)
 
 /**
  * Derives a DIY-flavor chassis tier from its legit counterpart by applying
