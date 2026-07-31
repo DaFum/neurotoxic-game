@@ -60,7 +60,9 @@ const buildPostGigParams = ({ result = {}, social = {} } = {}) => ({
   player: { money: 100, day: 1 },
   band: { harmony: 50, members: [] },
   social: buildSocial(social),
-  secureRandomValue: 0.5
+  secureRandomValue: 0.5,
+  selectionRandomValue: 0.5,
+  viralRandomValue: 0.99
 })
 
 test('calculateExcessMissMoneyPenalty rejects invalid numeric invariants', () => {
