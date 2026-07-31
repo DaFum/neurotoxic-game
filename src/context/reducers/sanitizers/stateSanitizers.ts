@@ -7,6 +7,7 @@ import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
+import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
@@ -717,7 +718,9 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       playerData.totalTravels,
       DEFAULT_PLAYER_STATE.totalTravels
     ),
-    hqUpgrades: sanitizeStringArray(playerData.hqUpgrades),
+    hqUpgrades: migrateLegacyHqUpgradeIds(
+      sanitizeStringArray(playerData.hqUpgrades)
+    ),
     clinicVisits: finiteNumberOr(
       playerData.clinicVisits,
       DEFAULT_PLAYER_STATE.clinicVisits
@@ -728,7 +731,9 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         vanData.condition,
         DEFAULT_PLAYER_STATE.van.condition
       ),
-      upgrades: sanitizeStringArray(vanData.upgrades),
+      upgrades: migrateLegacyHqUpgradeIds(
+        sanitizeStringArray(vanData.upgrades)
+      ),
       breakdownChance: finiteNumberOr(
         vanData.breakdownChance,
         DEFAULT_PLAYER_STATE.van.breakdownChance

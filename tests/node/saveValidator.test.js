@@ -167,6 +167,19 @@ describe('saveValidator', () => {
       assert.equal(data.band.members[0].stamina, 110)
     })
 
+    it('persists the fallback for invalid member staminaMax values', () => {
+      for (const staminaMax of [-20, Number.NaN, '120']) {
+        const data = getValidData()
+        data.band.members = [
+          { name: 'Matze', stamina: 150, staminaMax, mood: 80 }
+        ]
+
+        assert.equal(validateSaveData(data), true)
+        assert.equal(data.band.members[0].staminaMax, 100)
+        assert.equal(data.band.members[0].stamina, 100)
+      }
+    })
+
     it('throws if band is not an object', () => {
       const data = getValidData()
       data.band = 'not an object'

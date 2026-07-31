@@ -72,6 +72,41 @@ test('handleLoadGame restores bounded social and player state invariants', () =>
   assert.equal(nextState.gameMap, null)
 })
 
+test('handleLoadGame migrates duplicate legacy upgrade IDs to canonical IDs', () => {
+  const state = createInitialState()
+  const nextState = handleLoadGame(state, {
+    player: {
+      hqUpgrades: ['guitar_custom', 'hq_inst_guitar_custom', 'hq_room_coffee'],
+      van: {
+        upgrades: [
+          'van_suspension',
+          'hq_van_suspension',
+          'van_sound_system',
+          'van_storage',
+          'guitar_custom',
+          'drum_trigger',
+          'bass_sansamp',
+          'unrelated_upgrade'
+        ]
+      }
+    }
+  })
+
+  assert.deepEqual(nextState.player.hqUpgrades, [
+    'hq_inst_guitar_custom',
+    'hq_room_coffee'
+  ])
+  assert.deepEqual(nextState.player.van.upgrades, [
+    'hq_van_suspension',
+    'hq_van_sound_system',
+    'hq_van_storage',
+    'hq_inst_guitar_custom',
+    'hq_inst_drum_trigger',
+    'hq_inst_bass_sansamp',
+    'unrelated_upgrade'
+  ])
+})
+
 test('handleAdvanceDay ignores non-finite expired additive effect values', () => {
   const createState = () => {
     const state = createInitialState()

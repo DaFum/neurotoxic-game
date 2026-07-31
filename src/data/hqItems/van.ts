@@ -98,7 +98,7 @@ export const van = [
     currency: 'fame',
     img: 'ITEM_GLUE_TAPE',
     description: 'items:hq_van_tape_glue.description',
-    effect: { type: 'inventory_set', item: 'tape_glue', value: true }
+    effect: { type: 'inventory_add', item: 'tape_glue', value: 1 }
   },
   // Skurrile Van Upgrades
   {

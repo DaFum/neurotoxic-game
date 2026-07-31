@@ -5,12 +5,20 @@ import { getUnifiedUpgradeCatalog } from '../../src/data/upgradeCatalog'
 
 test('getUnifiedUpgradeCatalog includes only upgrade-tab sources', () => {
   const catalog = getUnifiedUpgradeCatalog()
+  const catalogIds = new Set(catalog.map(item => item.id))
 
   assert.ok(catalog.length > 0)
   assert.ok(catalog.some(item => item.id === 'hq_van_sound_system'))
   assert.ok(catalog.some(item => item.id === 'hq_room_coffee'))
   assert.ok(catalog.some(item => item.id === 'social_bot'))
   assert.ok(catalog.some(item => item.id === 'label_contact'))
+
+  for (const sourceItem of [...HQ_ITEMS.van, ...HQ_ITEMS.hq]) {
+    assert.ok(
+      catalogIds.has(sourceItem.id),
+      `${sourceItem.id} must be present in the unified catalog`
+    )
+  }
 
   const shopIds = new Set(
     [...HQ_ITEMS.gear, ...HQ_ITEMS.instruments].map(item => item.id)
@@ -22,6 +30,16 @@ test('getUnifiedUpgradeCatalog includes only upgrade-tab sources', () => {
       `${item.id} belongs in the shop tab, not the upgrades tab`
     )
   }
+})
+
+test('getUnifiedUpgradeCatalog keeps van repair consumables repeatable', () => {
+  const tapeGlue = getUnifiedUpgradeCatalog().find(
+    item => item.id === 'hq_van_tape_glue'
+  )
+
+  assert.deepEqual(tapeGlue?.effects, [
+    { type: 'inventory_add', item: 'tape_glue', value: 1 }
+  ])
 })
 
 test('getUnifiedUpgradeCatalog entries contain required purchase fields', () => {

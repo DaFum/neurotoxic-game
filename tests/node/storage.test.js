@@ -9,7 +9,10 @@ import {
 
 describe('storage operation wrappers', () => {
   test('safe item helpers catch a throwing localStorage property getter', () => {
-    const originalWindow = globalThis.window
+    const originalWindowDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'window'
+    )
     Object.defineProperty(globalThis, 'window', {
       configurable: true,
       value: {}
@@ -27,13 +30,10 @@ describe('storage operation wrappers', () => {
       })
       assert.doesNotThrow(() => setSafeStorageItem('blocked', 'value'))
     } finally {
-      if (originalWindow === undefined) {
+      if (originalWindowDescriptor === undefined) {
         delete globalThis.window
       } else {
-        Object.defineProperty(globalThis, 'window', {
-          configurable: true,
-          value: originalWindow
-        })
+        Object.defineProperty(globalThis, 'window', originalWindowDescriptor)
       }
     }
   })

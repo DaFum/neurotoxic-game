@@ -135,15 +135,34 @@ export const usePostGigDerivations = ({
         regionalGigHistory: social.regionalGigHistory
       }
     })
-    financialSnapshotRef.current = {
-      currentGig,
-      lastGigStats,
-      financials: nextFinancials
-    }
     return nextFinancials
   }, [
     currentGig,
     lastGigStats,
+    perfScore,
+    gigModifiers,
+    band.inventory,
+    band.merchPrices,
+    band.gigModifier,
+    player,
+    social,
+    reputationByRegion,
+    activeStoryFlags,
+    cityStates,
+    gigContext,
+    assetModifiers
+  ])
+
+  useEffect(() => {
+    financialSnapshotRef.current = {
+      currentGig,
+      lastGigStats,
+      financials
+    }
+  }, [
+    currentGig,
+    lastGigStats,
+    financials,
     perfScore,
     gigModifiers,
     band.inventory,

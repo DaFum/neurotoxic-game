@@ -144,14 +144,29 @@ const LEGACY_UPGRADES = [
   }
 ]
 
-const HQ_DUPLICATE_LEGACY_IDS = new Set([
-  'van_suspension',
-  'van_sound_system',
-  'van_storage',
-  'guitar_custom',
-  'drum_trigger',
-  'bass_sansamp'
-])
+export const HQ_DUPLICATE_LEGACY_IDS = {
+  van_suspension: 'hq_van_suspension',
+  van_sound_system: 'hq_van_sound_system',
+  van_storage: 'hq_van_storage',
+  guitar_custom: 'hq_inst_guitar_custom',
+  drum_trigger: 'hq_inst_drum_trigger',
+  bass_sansamp: 'hq_inst_bass_sansamp'
+} as const
+
+/**
+ * Replaces legacy duplicate upgrade IDs with their canonical HQ IDs.
+ *
+ * @param ids - Sanitized upgrade IDs loaded from a save.
+ * @returns Deduplicated IDs with unrelated entries preserved.
+ */
+export const migrateLegacyHqUpgradeIds = (ids: readonly string[]): string[] => {
+  const migrated = ids.map(id =>
+    Object.hasOwn(HQ_DUPLICATE_LEGACY_IDS, id)
+      ? HQ_DUPLICATE_LEGACY_IDS[id as keyof typeof HQ_DUPLICATE_LEGACY_IDS]
+      : id
+  )
+  return Array.from(new Set(migrated))
+}
 
 const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
   const { effect, effects: rawEffects, ...rest } = item
@@ -183,5 +198,7 @@ export const getUnifiedUpgradeCatalog = (): CatalogItem[] =>
   [
     ...HQ_ITEMS.van,
     ...HQ_ITEMS.hq,
-    ...LEGACY_UPGRADES.filter(item => !HQ_DUPLICATE_LEGACY_IDS.has(item.id))
+    ...LEGACY_UPGRADES.filter(
+      item => !Object.hasOwn(HQ_DUPLICATE_LEGACY_IDS, item.id)
+    )
   ].map(normalizeUpgradeShape)

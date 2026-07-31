@@ -62,6 +62,9 @@ export const appendToRegionalGigHistory = (
 ): Record<string, number[]> => {
   const normalized = normalizeRegionalGigHistory(history ?? {})
   if (isForbiddenKey(regionId)) return normalized
+  if (!Number.isFinite(day) || !Number.isInteger(day) || day < 1) {
+    return normalized
+  }
 
   const existing = Object.hasOwn(normalized, regionId)
     ? normalized[regionId]

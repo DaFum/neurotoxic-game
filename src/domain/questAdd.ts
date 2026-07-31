@@ -29,9 +29,8 @@ export const addQuest = (state: GameState, quest: unknown): GameState => {
   }
   if (hasActiveQuest(state.activeQuests, quest.id)) return state
 
-  // Merge static registry defaults under the provided payload so callers can
-  // dispatch `{ id }` and inherit label/deadline/penalty config, while inline
-  // overrides still win.
+  // Use the payload as the base, then let the registry definition replace
+  // matching fields while preserving the requested quest ID.
   const definition = getQuestDefinition(quest.id)
   const merged: QuestState = definition
     ? { ...quest, ...(definition as Partial<QuestState>), id: quest.id }

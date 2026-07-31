@@ -147,4 +147,35 @@ test('UnlockManager Unit Tests', async t => {
       mockStorage.setItem = originalSetItem
     }
   })
+
+  await t.test(
+    'addUnlock preserves legacy unlocks when the storage read fails',
+    () => {
+      mockStorage.setItem(
+        'neurotoxic_unlocks',
+        JSON.stringify(['legacy_unlock'])
+      )
+      const originalGetItem = mockStorage.getItem
+      mockStorage.getItem = () => {
+        throw new Error('Access Denied')
+      }
+
+      try {
+        assert.equal(addUnlock('new_unlock'), false)
+        assert.equal(
+          mockStorage.store.neurotoxic_unlocks,
+          JSON.stringify(['legacy_unlock'])
+        )
+        assert.equal(
+          Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:new_unlock'),
+          false
+        )
+      } finally {
+        mockStorage.getItem = originalGetItem
+      }
+
+      clearCache()
+      assert.deepEqual(getUnlocks(), ['legacy_unlock'])
+    }
+  )
 })

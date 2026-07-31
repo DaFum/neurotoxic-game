@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
+import { StrictMode } from 'react'
 import { usePostGigDerivations } from '../../../src/hooks/postGig/usePostGigDerivations'
 import * as postGigUtils from '../../../src/utils/postGigUtils'
 import * as mapGenerator from '../../../src/utils/mapGenerator'
@@ -202,5 +203,13 @@ describe('usePostGigDerivations', () => {
 
     expect(result.current.financials).toBe(initialFinancials)
     expect(postGigUtils.deriveFinancials).toHaveBeenCalledTimes(1)
+  })
+
+  it('does not commit the financial snapshot during a StrictMode render', () => {
+    renderHook(() => usePostGigDerivations(defaultProps), {
+      wrapper: StrictMode
+    })
+
+    expect(postGigUtils.deriveFinancials).toHaveBeenCalledTimes(2)
   })
 })

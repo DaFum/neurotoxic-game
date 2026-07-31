@@ -42,12 +42,15 @@ export const handleApplyEventDelta = (
 ): GameState => {
   logger.info('GameState', 'Applying Event Delta', payload)
   const appliedState = applyEventDelta(state, payload)
+  const currentGigEventScore = finiteNumberOr(state.gigEventScoreDelta, 0)
   const nextState =
     state.currentScene === GAME_PHASES.GIG && isFiniteNumber(payload.score)
       ? {
           ...appliedState,
-          gigEventScoreDelta:
-            finiteNumberOr(state.gigEventScoreDelta, 0) + payload.score
+          gigEventScoreDelta: finiteNumberOr(
+            currentGigEventScore + payload.score,
+            currentGigEventScore
+          )
         }
       : appliedState
 

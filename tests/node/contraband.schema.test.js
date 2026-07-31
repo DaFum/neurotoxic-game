@@ -89,6 +89,33 @@ describe('Contraband Schema (with imagePrompt)', () => {
       )
       assert.ok(result.errors.includes('equipment must not be stackable'))
       assert.ok(result.errors.includes('equipment must use applyOnAdd=true'))
+
+      const unsupportedEquipmentEffect = validateContrabandItem({
+        id: 'c_bad_equipment_effect',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_bad_equipment_effect.name',
+        type: 'equipment',
+        effectType: 'tempo',
+        value: 1,
+        description: 'items:contraband.c_bad_equipment_effect.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false,
+        applyOnAdd: true
+      })
+
+      assert.equal(unsupportedEquipmentEffect.ok, false)
+      assert.equal(
+        unsupportedEquipmentEffect.errors.includes(
+          'effectType must be supported'
+        ),
+        false
+      )
+      assert.ok(
+        unsupportedEquipmentEffect.errors.includes(
+          'equipment effectType must support applyOnAdd'
+        )
+      )
     })
 
     it('should have all items with imagePrompt field', () => {

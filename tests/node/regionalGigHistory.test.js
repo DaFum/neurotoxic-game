@@ -70,6 +70,16 @@ test('normalizeRegionalGigHistory limits to 100 regions', () => {
   assert.equal(Object.keys(normalized).length, 100)
 })
 
+test('appendToRegionalGigHistory rejects invalid days before region eviction', () => {
+  const history = Object.fromEntries(
+    Array.from({ length: 100 }, (_, index) => [`region${index}`, [index + 1]])
+  )
+
+  const updated = appendToRegionalGigHistory(history, 'invalid-region', 0)
+
+  assert.deepEqual(updated, normalizeRegionalGigHistory(history))
+})
+
 import { validateSaveData } from '../../src/utils/saveValidator'
 import { sanitizeSocial } from '../../src/context/reducers/sanitizers/stateSanitizers'
 import { createInitialState } from '../../src/context/initialState'

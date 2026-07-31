@@ -55,7 +55,11 @@ describe('HQ Items Data Integrity', () => {
       )
     }
     if (item.effect.type === 'passive') {
-      assert.ok(item.effect.key, `Item ${item.id} passive effect missing key`)
+      assert.ok(
+        typeof item.effect.key === 'string' &&
+          item.effect.key.trim().length > 0,
+        `Item ${item.id} passive effect missing key`
+      )
     }
   }
 

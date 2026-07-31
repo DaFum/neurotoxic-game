@@ -193,6 +193,7 @@ const validateBand = (band: unknown): void => {
       }
       const staminaMax =
         isFiniteNumber(m.staminaMax) && m.staminaMax > 0 ? m.staminaMax : 100
+      m.staminaMax = staminaMax
       for (const stat of ['mood', 'stamina'] as const) {
         const val = m[stat]
         // Treat null the same as missing (legacy saves) — matching the

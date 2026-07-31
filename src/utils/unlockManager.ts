@@ -15,6 +15,7 @@ const UNLOCK_MARKER_PREFIX = 'neurotoxic_unlock:'
 // In-memory cache for O(1) duplicate checks
 let unlocksCache: Set<string> | null = null
 let lastStorageSnapshot: string | null = null
+const UNLOCK_LOAD_FAILED = Symbol('UNLOCK_LOAD_FAILED')
 
 const readUnlockMarkers = (storage: Storage): string[] => {
   if (typeof storage.key !== 'function' || !Number.isFinite(storage.length)) {
@@ -49,10 +50,10 @@ const clearCache = (): void => {
  * Loads and validates unlocks from local storage.
  * @returns Array of unlocked strings.
  */
-export const getUnlocks = (): string[] => {
+const loadUnlocks = (): string[] | typeof UNLOCK_LOAD_FAILED => {
   let currentSnapshot: string | null = null
 
-  const maybe = safeStorageOperation<string[]>(
+  const maybe = safeStorageOperation<string[] | typeof UNLOCK_LOAD_FAILED>(
     'loadUnlocks',
     () => {
       const storage = localStorage
@@ -80,21 +81,32 @@ export const getUnlocks = (): string[] => {
 
       return Array.from(new Set([...legacyUnlocks, ...markerUnlocks]))
     },
-    []
+    UNLOCK_LOAD_FAILED
   )
+
+  if (maybe === UNLOCK_LOAD_FAILED) return UNLOCK_LOAD_FAILED
 
   if (
     currentSnapshot !== null &&
     currentSnapshot === lastStorageSnapshot &&
     unlocksCache
   ) {
-    return maybe ?? []
+    return maybe
   }
 
-  const result = maybe ?? []
-  unlocksCache = new Set(result)
+  unlocksCache = new Set(maybe)
   lastStorageSnapshot = currentSnapshot
-  return result
+  return maybe
+}
+
+/**
+ * Loads and validates unlocks from local storage.
+ * @returns Array of unlocked strings.
+ */
+export const getUnlocks = (): string[] => {
+  const result = loadUnlocks()
+  if (result !== UNLOCK_LOAD_FAILED) return result
+  return unlocksCache ? Array.from(unlocksCache) : []
 }
 
 /**
@@ -105,8 +117,9 @@ export const getUnlocks = (): string[] => {
 export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false
 
-  // Refresh cache from storage. getUnlocks will recreate the Set ONLY if storage actually changed
-  const currentUnlocks = getUnlocks()
+  // Refresh cache from storage. loadUnlocks recreates the Set only when storage changed.
+  const currentUnlocks = loadUnlocks()
+  if (currentUnlocks === UNLOCK_LOAD_FAILED) return false
   const cache = unlocksCache
 
   if (!cache) return false

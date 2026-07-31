@@ -307,7 +307,7 @@ test('Full locale validation tests', async t => {
       assert.ok(postOptionIds.length > 0, 'Expected post option ids in source')
       for (const locale of LOCALES) {
         const localeData = allData.get(`${locale}/ui`)
-        if (!localeData) continue
+        assert.ok(localeData, `${locale}/ui locale data must be loaded`)
         const entryMap = new Map(
           localeData.entries.map(entry => [entry.key, entry.value])
         )
