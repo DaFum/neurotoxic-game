@@ -75,9 +75,26 @@ test('questReducer - handleAddQuest', async t => {
       '{"id":"nested","rewardData":{"constructor":{"polluted":true}}}'
     )
 
+    assert.equal(Object.hasOwn(topLevel, '__proto__'), true)
     assert.equal(handleAddQuest(initialState, topLevel), initialState)
     assert.equal(handleAddQuest(initialState, nested), initialState)
   })
+
+  await t.test(
+    'rejects excessively deep quest payloads without throwing',
+    () => {
+      const initialState = { activeQuests: [] }
+      const quest = { id: 'too_deep' }
+      let cursor = quest
+      for (let depth = 0; depth < 10_000; depth++) {
+        cursor.nested = {}
+        cursor = cursor.nested
+      }
+
+      assert.doesNotThrow(() => handleAddQuest(initialState, quest))
+      assert.equal(handleAddQuest(initialState, quest), initialState)
+    }
+  )
 
   await t.test('uses the embedded venue id for current venue scope', () => {
     const state = {

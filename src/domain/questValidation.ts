@@ -48,20 +48,24 @@ const STRING_FIELDS = [
   'followupQuestId',
   'scopeKey'
 ] as const
+const MAX_QUEST_PAYLOAD_DEPTH = 64
 
 const hasForbiddenKeysDeep = (
   value: unknown,
-  seen: WeakSet<object> = new WeakSet()
+  seen: WeakSet<object> = new WeakSet(),
+  depth = 0
 ): boolean => {
   if (typeof value !== 'object' || value === null) return false
+  if (depth > MAX_QUEST_PAYLOAD_DEPTH) return true
   if (seen.has(value)) return true
   seen.add(value)
   if (Array.isArray(value)) {
-    return value.some(entry => hasForbiddenKeysDeep(entry, seen))
+    return value.some(entry => hasForbiddenKeysDeep(entry, seen, depth + 1))
   }
   if (!isLooseRecord(value)) return false
   return Object.keys(value).some(
-    key => isForbiddenKey(key) || hasForbiddenKeysDeep(value[key], seen)
+    key =>
+      isForbiddenKey(key) || hasForbiddenKeysDeep(value[key], seen, depth + 1)
   )
 }
 
