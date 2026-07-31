@@ -208,5 +208,9 @@
   "lucky_pick.name": "Pick of Destiny",
   "lucky_pick.description": "A battered guitar pick that survived three good gigs in a row. The band swears it hums.",
   "energy_drink.name": "Sponsor Energy Drink",
-  "energy_drink.description": "A crate of neon-green sponsor fuel. Tastes like battery acid and broken promises."
+  "energy_drink.description": "A crate of neon-green sponsor fuel. Tastes like battery acid and broken promises.",
+  "social_bot.name": "Bot Network",
+  "social_bot.description": "Passive +5 followers per day.",
+  "label_contact.name": "Label Contact",
+  "label_contact.description": "Gain +1,000 Fame immediately."
 }

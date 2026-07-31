@@ -4,9 +4,8 @@ import type { CatalogInputItem, CatalogItem } from '../types/components'
 
 /**
  * Legacy fame-based upgrades, previously in upgrades.js.
- * Kept inline here as part of the unified catalog. These provide
- * a fame-currency path alongside the money-based HQ_ITEMS for the
- * same capabilities (dual-currency design).
+ * Definitions stay available for compatibility, but aliases already represented
+ * by canonical HQ items are excluded from the active upgrades tab below.
  */
 const LEGACY_UPGRADES = [
   {
@@ -112,18 +111,18 @@ const LEGACY_UPGRADES = [
   },
   {
     id: 'social_bot',
-    name: 'Bot Network',
+    name: 'items:social_bot.name',
     category: 'PROMO',
     cost: 330,
     currency: 'fame',
-    description: 'Passive +5 followers/day.',
+    description: 'items:social_bot.description',
     requirements: {},
     effects: [{ type: 'passive', key: 'passive_followers', value: 5 }],
     oneTime: true
   },
   {
     id: 'label_contact',
-    name: 'Label Contact',
+    name: 'items:label_contact.name',
     category: 'PROMO',
     // Deliberately excluded from the catalogue-wide price rescale: this entry is
     // priced against its own +1000 Fame grant, not against earned Fame. Scaling
@@ -131,7 +130,7 @@ const LEGACY_UPGRADES = [
     // i.e. very nearly free.
     cost: 2000,
     currency: 'fame',
-    description: 'Gain +1000 Fame immediately.',
+    description: 'items:label_contact.description',
     requirements: {},
     effects: [
       {
@@ -144,6 +143,15 @@ const LEGACY_UPGRADES = [
     oneTime: true
   }
 ]
+
+const HQ_DUPLICATE_LEGACY_IDS = new Set([
+  'van_suspension',
+  'van_sound_system',
+  'van_storage',
+  'guitar_custom',
+  'drum_trigger',
+  'bass_sansamp'
+])
 
 const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
   const { effect, effects: rawEffects, ...rest } = item
@@ -166,8 +174,8 @@ const normalizeUpgradeShape = (item: CatalogInputItem): CatalogItem => {
 
 /**
  * Returns the active purchase catalog for the BandHQ upgrades tab.
- * Merges HQ_ITEMS (money-based) and legacy fame-based upgrades
- * into a single selector for UI consumption.
+ * Shop-only gear and instruments remain in the SHOP tab; this selector merges
+ * canonical van/HQ upgrades with the remaining unique legacy upgrades.
  *
  * @returns Unified list of upgrade/shop entries.
  */
@@ -175,7 +183,5 @@ export const getUnifiedUpgradeCatalog = (): CatalogItem[] =>
   [
     ...HQ_ITEMS.van,
     ...HQ_ITEMS.hq,
-    ...HQ_ITEMS.gear,
-    ...HQ_ITEMS.instruments,
-    ...LEGACY_UPGRADES
+    ...LEGACY_UPGRADES.filter(item => !HQ_DUPLICATE_LEGACY_IDS.has(item.id))
   ].map(normalizeUpgradeShape)

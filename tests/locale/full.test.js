@@ -294,6 +294,36 @@ test('Full locale validation tests', async t => {
   )
 
   await t.test(
+    'social post option names are localized at render time',
+    async () => {
+      const source = await fs.readFile(
+        path.join(__dirname, '..', '..', 'src', 'data', 'postOptions.ts'),
+        'utf8'
+      )
+      const postOptionIds = [...source.matchAll(/^\s{4}id:\s*'([^']+)'/gm)].map(
+        match => match[1]
+      )
+
+      assert.ok(postOptionIds.length > 0, 'Expected post option ids in source')
+      for (const locale of LOCALES) {
+        const localeData = allData.get(`${locale}/ui`)
+        if (!localeData) continue
+        const entryMap = new Map(
+          localeData.entries.map(entry => [entry.key, entry.value])
+        )
+        for (const id of postOptionIds) {
+          const key = `postOptions.${id}.name`
+          assert.equal(
+            typeof entryMap.get(key),
+            'string',
+            `${locale}/ui.json missing ${key}`
+          )
+        }
+      }
+    }
+  )
+
+  await t.test(
     'economy.json uses consistent currency formatting and placeholders',
     async () => {
       for (const locale of LOCALES) {

@@ -22,7 +22,7 @@ export const van = [
     currency: 'fame',
     img: 'ITEM_VAN_STUDIO',
     description: 'items:hq_van_sound_system.description',
-    effect: { type: 'unlock_upgrade', id: 'van_sound_system' }
+    effect: { type: 'passive', key: 'harmony_regen_travel' }
   },
   {
     id: 'hq_van_storage',

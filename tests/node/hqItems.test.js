@@ -38,7 +38,8 @@ describe('HQ Items Data Integrity', () => {
       'inventory_add',
       'stat_modifier',
       'unlock_upgrade',
-      'unlock_hq'
+      'unlock_hq',
+      'passive'
     ]
     assert.ok(
       validTypes.includes(item.effect.type),
@@ -52,6 +53,9 @@ describe('HQ Items Data Integrity', () => {
         typeof item.effect.value === 'number',
         `Item ${item.id} stat_modifier missing value`
       )
+    }
+    if (item.effect.type === 'passive') {
+      assert.ok(item.effect.key, `Item ${item.id} passive effect missing key`)
     }
   }
 

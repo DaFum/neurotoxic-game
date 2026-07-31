@@ -207,7 +207,9 @@ test('paid harmony recovery records money and day trade-offs independently', () 
 test('day recovery consumes travel and gig opportunities rather than only counters', () => {
   const scenario = probeScenario(3, {
     gigGapDays: 1,
-    initialOverrides: { band: { harmony: 35, tourSuccess: 1 } }
+    // Stay below the recovery threshold even if the deterministic catalog draw
+    // buys the strongest immediate Harmony item before recovery is evaluated.
+    initialOverrides: { band: { harmony: 5, tourSuccess: 1 } }
   })
   const control = runSingleSimulation(scenario, 1, DEFAULT_BALANCE_TUNING)
   const candidate = runSingleSimulation(scenario, 1, {

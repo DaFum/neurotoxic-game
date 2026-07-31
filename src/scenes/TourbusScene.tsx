@@ -40,6 +40,7 @@ export const TourbusScene = () => {
       completionTitle={t('minigame:tourbus.destination_reached', {
         defaultValue: 'DESTINATION REACHED'
       })}
+      completionButtonText={t('ui:continue', { defaultValue: 'CONTINUE' })}
       renderCompletionStats={(state: unknown) => {
         const damage =
           state && typeof state === 'object' && Object.hasOwn(state, 'damage')
