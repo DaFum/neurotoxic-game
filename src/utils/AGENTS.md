@@ -29,7 +29,7 @@ baseline instead of duplicating formulas.
 
 ### Gig financial reconciliation
 
-- `MAX_GIG_NET = 7500` in `economyEngine.ts`. Excess net is added back to expenses as an `overageFee` line (`economy:gigExpenses.overageFee.*` i18n keys), not silently truncated. `calculateGigFinancials()` must reconcile `net === income.total - expenses.total`.
+- `MAX_GIG_NET` in `economy/constants.ts` is the live gig-net cap. Excess net is added back to expenses as an `overageFee` line (`economy:gigExpenses.overageFee.*` i18n keys), not silently truncated. `calculateGigFinancials()` must reconcile `net === income.total - expenses.total`; do not duplicate the cap value in guidance or consumers.
 - Management cut is fame-progressive: `MANAGEMENT_CUT_RATE (0.15) × Math.min(1, playerFame / 200)`. Required to keep Bootstrap bankruptcy below the simulation gate.
 
 ### Shared formulas and simulations
@@ -52,7 +52,7 @@ baseline instead of duplicating formulas.
 - `getCityKeyFromVenueId(venueId)` in `mapGenerator.ts` extracts the prefix before the first `_`; returns `''` if no underscore. Use this helper instead of `node.venue.city` (which does not exist).
 - When accessing venue IDs from `MapNode` objects, support both the current `venueId` property and the legacy `venue?.id` structure.
 - `GeneratedMapNode.type` union includes `'SUPPLY_STOP'` (legacy saves with `'supplyStop'` are migrated on load in `systemReducer`). When adding map node types, use SCREAMING_SNAKE_CASE and update the union, `_populateCityStates`, rollout logic, and any consumers that switch on `type`.
-- Attention span in `_buildCityProfile` (`mapGenerator.ts`) is hash-derived: `15 + ((h >>> 8) % 45)` (range 15–59). It must stay deterministic from the city key — do not switch it to `Math.random()` or `getSafeRandom()`.
+- Attention span in `deriveCityTraits` (`mapGenerator/cityTraits.ts`) is hash-derived: `15 + ((h >>> 8) % 45)` (range 15–59). It must stay deterministic from the city key — do not switch it to `Math.random()` or `getSafeRandom()`.
 
 ## Crypto / probability
 
