@@ -44,7 +44,8 @@ export class MapGenerator {
    */
   constructor(seed: number) {
     const s = Number(seed)
-    this.seed = Number.isFinite(s) ? s : Date.now()
+    const finiteSeed = Number.isFinite(s) ? s : Date.now()
+    this.seed = ((finiteSeed % 233280) + 233280) % 233280
   }
 
   /**

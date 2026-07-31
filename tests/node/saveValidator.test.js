@@ -48,6 +48,7 @@ describe('saveValidator', () => {
   it('rejects malformed or unbounded regional gig history', () => {
     for (const history of [
       { berlin: '4' },
+      { berlin: [0] },
       { berlin: [-1] },
       { berlin: [1.5] },
       { berlin: [Infinity] },
@@ -90,6 +91,14 @@ describe('saveValidator', () => {
   })
 
   describe('player validation', () => {
+    it('normalizes player.day to a 1-based integer', () => {
+      const data = getValidData()
+      data.player.day = 3.75
+
+      assert.equal(validateSaveData(data), true)
+      assert.equal(data.player.day, 3)
+    })
+
     it('throws if player is not an object', () => {
       const data = getValidData()
       data.player = 'not an object'
@@ -136,9 +145,28 @@ describe('saveValidator', () => {
         })
       })
     })
+
+    it('clamps persisted van condition and breakdown chance', () => {
+      const data = getValidData()
+      data.player.van = { condition: 140, breakdownChance: -2 }
+
+      assert.equal(validateSaveData(data), true)
+      assert.equal(data.player.van.condition, 100)
+      assert.equal(data.player.van.breakdownChance, 0)
+    })
   })
 
   describe('band validation', () => {
+    it('preserves stamina above 100 when staminaMax supports it', () => {
+      const data = getValidData()
+      data.band.members = [
+        { name: 'Matze', stamina: 110, staminaMax: 110, mood: 80 }
+      ]
+
+      assert.equal(validateSaveData(data), true)
+      assert.equal(data.band.members[0].stamina, 110)
+    })
+
     it('throws if band is not an object', () => {
       const data = getValidData()
       data.band = 'not an object'
@@ -382,6 +410,13 @@ describe('saveValidator', () => {
   })
 
   describe('gameMap validation', () => {
+    it('accepts the persisted nullable gameMap contract', () => {
+      const data = getValidData()
+      data.gameMap = null
+
+      assert.equal(validateSaveData(data), true)
+    })
+
     it('throws if gameMap is not an object', () => {
       const data = getValidData()
       data.gameMap = 'not an object'

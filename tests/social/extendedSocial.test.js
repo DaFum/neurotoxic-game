@@ -178,6 +178,7 @@ describe('Extended Social & Trait Systems', () => {
         type: 'GIG_COMPLETE',
         gigStats: {
           accuracy: 100,
+          perfectHits: 1,
           song: { difficulty: 4 }
         }
       }

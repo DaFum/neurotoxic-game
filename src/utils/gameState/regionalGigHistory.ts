@@ -26,7 +26,7 @@ export const normalizeRegionalGigHistory = (
         typeof day === 'number' &&
         Number.isFinite(day) &&
         Number.isInteger(day) &&
-        day >= 0
+        day >= 1
     )
 
     normalized[regionId] = [...new Set(validDays)]

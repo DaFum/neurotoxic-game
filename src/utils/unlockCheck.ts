@@ -1,6 +1,7 @@
 import { finiteNumberOr } from './finiteNumber'
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
+import { SONGS_BY_ID } from '../data/songs'
 import { isLooseRecord } from './objectUtils'
 import type { GameState } from '../types'
 
@@ -64,38 +65,71 @@ export const checkTraitUnlocks = (
     const gigStats = ctx.gigStats
     const accuracy = finiteNumberOr(gigStats.accuracy, 0)
     const misses = finiteNumberOr(gigStats.misses, 0)
-    const song = isLooseRecord(gigStats.song) ? gigStats.song : undefined
+    const perfectHits = finiteNumberOr(gigStats.perfectHits, 0)
     const maxCombo = finiteNumberOr(gigStats.maxCombo, 0)
+    const songStats = Array.isArray(gigStats.songStats)
+      ? gigStats.songStats
+      : []
+    const songs: Record<string, unknown>[] = []
+    for (let i = 0; i < songStats.length; i++) {
+      const songStat = songStats[i]
+      if (!isLooseRecord(songStat) || typeof songStat.songId !== 'string') {
+        continue
+      }
+      const song = SONGS_BY_ID.get(songStat.songId)
+      if (song) songs.push(song as unknown as Record<string, unknown>)
+    }
+    if (isLooseRecord(gigStats.song)) songs.push(gigStats.song)
+    const hasAttemptedPerformance =
+      perfectHits > 0 || misses > 0 || maxCombo > 0 || songStats.length > 0
+    const isEligiblePerformance =
+      gigStats.failed !== true && hasAttemptedPerformance
 
     // Virtuoso (Matze): 100% Accuracy (0 Misses)
-    if (Matze && !hasTrait(Matze, 'virtuoso') && misses === 0) {
+    if (
+      isEligiblePerformance &&
+      Matze &&
+      !hasTrait(Matze, 'virtuoso') &&
+      misses === 0
+    ) {
       newUnlocks.push({ memberId: Matze.name, traitId: 'virtuoso' })
     }
 
     // Perfektionist (Matze): 100% Accuracy (match UI hint)
-    if (Matze && !hasTrait(Matze, 'perfektionist') && accuracy === 100) {
+    if (
+      isEligiblePerformance &&
+      Matze &&
+      !hasTrait(Matze, 'perfektionist') &&
+      accuracy === 100
+    ) {
       newUnlocks.push({ memberId: Matze.name, traitId: 'perfektionist' })
     }
 
     // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
-    if (Marius && !hasTrait(Marius, 'blast_machine')) {
-      const isFast = typeof song?.bpm === 'number' && song?.bpm > 160
+    if (isEligiblePerformance && Marius && !hasTrait(Marius, 'blast_machine')) {
+      const isFast = songs.some(
+        song => typeof song.bpm === 'number' && song.bpm > 160
+      )
       if (isFast && maxCombo > 50) {
         newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
       }
     }
 
     // Melodic Genius (Lars): Slow Song (<120 BPM) && Max Combo > 30
-    if (Lars && !hasTrait(Lars, 'melodic_genius')) {
-      const isSlow = typeof song?.bpm === 'number' && song?.bpm < 120
+    if (isEligiblePerformance && Lars && !hasTrait(Lars, 'melodic_genius')) {
+      const isSlow = songs.some(
+        song => typeof song.bpm === 'number' && song.bpm < 120
+      )
       if (isSlow && maxCombo > 30) {
         newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
       }
     }
 
     // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
-    if (Matze && !hasTrait(Matze, 'tech_wizard')) {
-      const isTechnical = (Number(song?.['difficulty']) || 0) > 3
+    if (isEligiblePerformance && Matze && !hasTrait(Matze, 'tech_wizard')) {
+      const isTechnical = songs.some(
+        song => finiteNumberOr(song.difficulty, 0) > 3
+      )
       if (isTechnical && accuracy === 100) {
         newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
       }

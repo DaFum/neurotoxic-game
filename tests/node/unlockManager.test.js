@@ -4,6 +4,12 @@ import assert from 'node:assert/strict'
 // Mock localStorage globally
 const mockStorage = {
   store: {},
+  get length() {
+    return Object.keys(this.store).length
+  },
+  key(index) {
+    return Object.keys(this.store)[index] ?? null
+  },
   getItem(key) {
     return this.store[key] || null
   },
@@ -112,6 +118,21 @@ test('UnlockManager Unit Tests', async t => {
     assert.equal(result, false)
     assert.deepEqual(getUnlocks(), ['item1'])
   })
+
+  await t.test(
+    'per-unlock markers survive a stale aggregate overwrite from another tab',
+    () => {
+      assert.equal(addUnlock('first_unlock'), true)
+      mockStorage.setItem(
+        'neurotoxic_unlocks',
+        JSON.stringify(['second_unlock'])
+      )
+
+      clearCache()
+
+      assert.deepEqual(getUnlocks(), ['second_unlock', 'first_unlock'])
+    }
+  )
 
   await t.test('addUnlock returns false if storage fails', () => {
     const originalSetItem = mockStorage.setItem

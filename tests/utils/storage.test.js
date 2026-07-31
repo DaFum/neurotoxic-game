@@ -1,6 +1,6 @@
 import { describe, it, beforeEach, afterEach, vi } from 'vitest'
 import assert from 'node:assert/strict'
-import { setSafeStorageItem } from '../../src/utils/storage'
+import { getSafeStorageItem, setSafeStorageItem } from '../../src/utils/storage'
 import { handleError, StorageError } from '../../src/utils/errorHandler'
 
 vi.mock('../../src/utils/errorHandler', async () => {
@@ -12,6 +12,21 @@ vi.mock('../../src/utils/errorHandler', async () => {
 })
 
 describe('storage', () => {
+  it('falls back when accessing the localStorage property throws', () => {
+    vi.stubGlobal('window', {})
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('denied', 'SecurityError')
+      }
+    })
+
+    assert.deepEqual(getSafeStorageItem('testKey', { fallback: true }), {
+      fallback: true
+    })
+    assert.doesNotThrow(() => setSafeStorageItem('testKey', 'value'))
+  })
+
   describe('setSafeStorageItem', () => {
     let mockStorage
 

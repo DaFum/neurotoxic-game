@@ -80,7 +80,7 @@ test('regionalGigHistory roundtrip integration', () => {
   if (!state.gameMap) state.gameMap = { nodes: [] }
   const history = {}
   // fill history up to limit
-  for (let i = 0; i < 256; i++) {
+  for (let i = 1; i <= 256; i++) {
     const updated = appendToRegionalGigHistory(history, 'stendal', i)
     Object.assign(history, updated)
   }

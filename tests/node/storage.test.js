@@ -1,9 +1,43 @@
 import assert from 'node:assert/strict'
 import { describe, test } from 'node:test'
 
-import { safeStorageOperation } from '../../src/utils/storage'
+import {
+  getSafeStorageItem,
+  safeStorageOperation,
+  setSafeStorageItem
+} from '../../src/utils/storage'
 
 describe('storage operation wrappers', () => {
+  test('safe item helpers catch a throwing localStorage property getter', () => {
+    const originalWindow = globalThis.window
+    Object.defineProperty(globalThis, 'window', {
+      configurable: true,
+      value: {}
+    })
+    Object.defineProperty(globalThis.window, 'localStorage', {
+      configurable: true,
+      get() {
+        throw new DOMException('denied', 'SecurityError')
+      }
+    })
+
+    try {
+      assert.deepEqual(getSafeStorageItem('blocked', { fallback: true }), {
+        fallback: true
+      })
+      assert.doesNotThrow(() => setSafeStorageItem('blocked', 'value'))
+    } finally {
+      if (originalWindow === undefined) {
+        delete globalThis.window
+      } else {
+        Object.defineProperty(globalThis, 'window', {
+          configurable: true,
+          value: originalWindow
+        })
+      }
+    }
+  })
+
   test('safeStorageOperation returns fallback when storage work fails', () => {
     const result = safeStorageOperation(
       'testStorageFallback',

@@ -10,17 +10,39 @@ import { safeJsonParse } from './objectUtils'
  */
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
+const UNLOCK_MARKER_PREFIX = 'neurotoxic_unlock:'
 
 // In-memory cache for O(1) duplicate checks
 let unlocksCache: Set<string> | null = null
-let lastRawUnlocks: string | null = null
+let lastStorageSnapshot: string | null = null
+
+const readUnlockMarkers = (storage: Storage): string[] => {
+  if (typeof storage.key !== 'function' || !Number.isFinite(storage.length)) {
+    return []
+  }
+
+  const markerUnlocks: string[] = []
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i)
+    if (!key?.startsWith(UNLOCK_MARKER_PREFIX)) continue
+    try {
+      markerUnlocks.push(
+        decodeURIComponent(key.slice(UNLOCK_MARKER_PREFIX.length))
+      )
+    } catch (_error) {
+      // Ignore malformed marker keys written outside this module.
+    }
+  }
+  markerUnlocks.sort()
+  return markerUnlocks
+}
 
 /**
  * Clears the in-memory cache. Used primarily for testing.
  */
 const clearCache = (): void => {
   unlocksCache = null
-  lastRawUnlocks = null
+  lastStorageSnapshot = null
 }
 
 /**
@@ -28,46 +50,50 @@ const clearCache = (): void => {
  * @returns Array of unlocked strings.
  */
 export const getUnlocks = (): string[] => {
-  let currentRaw: string | null = null
+  let currentSnapshot: string | null = null
 
   const maybe = safeStorageOperation<string[]>(
     'loadUnlocks',
     () => {
-      currentRaw = localStorage.getItem(UNLOCKS_KEY)
+      const storage = localStorage
+      const currentRaw = storage.getItem(UNLOCKS_KEY)
+      const markerUnlocks = readUnlockMarkers(storage)
+      currentSnapshot = `${currentRaw ?? ''}\u0000${markerUnlocks.join('\u0000')}`
 
-      if (
-        currentRaw !== null &&
-        currentRaw === lastRawUnlocks &&
-        unlocksCache
-      ) {
+      if (currentSnapshot === lastStorageSnapshot && unlocksCache) {
         return Array.from(unlocksCache)
       }
 
-      if (!currentRaw) return []
-
-      let parsed: unknown
-      try {
-        parsed = safeJsonParse(currentRaw)
-      } catch (_e) {
-        return []
+      let legacyUnlocks: string[] = []
+      if (currentRaw) {
+        try {
+          const parsed: unknown = safeJsonParse(currentRaw)
+          if (Array.isArray(parsed)) {
+            legacyUnlocks = parsed.filter(
+              (item): item is string => typeof item === 'string'
+            )
+          }
+        } catch (_e) {
+          legacyUnlocks = []
+        }
       }
 
-      if (!Array.isArray(parsed)) return []
-
-      // Filter out non-string elements to ensure type safety
-      return parsed.filter(item => typeof item === 'string') as string[]
+      return Array.from(new Set([...legacyUnlocks, ...markerUnlocks]))
     },
     []
   )
 
-  // If the raw string hasn't changed and we have a cache, just return it
-  if (currentRaw !== null && currentRaw === lastRawUnlocks && unlocksCache) {
+  if (
+    currentSnapshot !== null &&
+    currentSnapshot === lastStorageSnapshot &&
+    unlocksCache
+  ) {
     return maybe ?? []
   }
 
   const result = maybe ?? []
   unlocksCache = new Set(result)
-  lastRawUnlocks = currentRaw
+  lastStorageSnapshot = currentSnapshot
   return result
 }
 
@@ -88,30 +114,38 @@ export const addUnlock = (unlockId: string): boolean => {
   // Prevent duplicates in O(1) time
   if (cache.has(unlockId)) return false
 
-  cache.add(unlockId)
-  currentUnlocks.push(unlockId)
-
-  const success =
+  const markerSuccess =
     safeStorageOperation<boolean>(
-      'saveUnlocks',
+      'saveUnlockMarker',
       () => {
-        const newRaw = JSON.stringify(currentUnlocks)
-        localStorage.setItem(UNLOCKS_KEY, newRaw)
-        // Update our cache reference immediately so we don't invalidate our own write
-        lastRawUnlocks = newRaw
+        localStorage.setItem(
+          `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
+          '1'
+        )
         return true
       },
       false
     ) ?? false
 
-  if (!success) {
-    // Roll back cache mutation if persistence fails
-    cache.delete(unlockId)
-    // Force a fresh read next time since we don't know the exact valid storage state
-    lastRawUnlocks = null
-  }
+  if (!markerSuccess) return false
 
-  return success
+  cache.add(unlockId)
+  currentUnlocks.push(unlockId)
+
+  // Keep the legacy aggregate for existing saves and callers. The per-unlock
+  // marker is authoritative for cross-tab safety: distinct marker keys cannot
+  // overwrite each other when two tabs unlock different items concurrently.
+  safeStorageOperation<boolean>(
+    'saveUnlocks',
+    () => {
+      localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
+      return true
+    },
+    false
+  )
+  lastStorageSnapshot = null
+
+  return true
 }
 
 /**

@@ -189,7 +189,10 @@ export const handleLoadGame = (
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
-    gameMap: normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap,
+    gameMap:
+      Object.hasOwn(loadedState, 'gameMap') && loadedState.gameMap === null
+        ? null
+        : (normalizeLoadedGameMap(loadedState.gameMap) ?? state.gameMap),
     setlist: sanitizeSetlist(loadedState.setlist),
     activeStoryFlags: sanitizeStringArray(loadedState.activeStoryFlags),
     pendingEvents: sanitizeStringArray(loadedState.pendingEvents),
