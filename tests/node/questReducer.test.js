@@ -96,6 +96,24 @@ test('questReducer - handleAddQuest', async t => {
     }
   )
 
+  await t.test(
+    'rejects accessor-bearing quest payloads without throwing',
+    () => {
+      const initialState = { activeQuests: [] }
+      const rewardData = {}
+      Object.defineProperty(rewardData, 'dangerous', {
+        enumerable: true,
+        get() {
+          throw new Error('accessor evaluated')
+        }
+      })
+      const quest = { id: 'accessor', rewardData }
+
+      assert.doesNotThrow(() => handleAddQuest(initialState, quest))
+      assert.equal(handleAddQuest(initialState, quest), initialState)
+    }
+  )
+
   await t.test('uses the embedded venue id for current venue scope', () => {
     const state = {
       player: { currentNodeId: 'node_3_1' },
@@ -126,6 +144,21 @@ test('questReducer - handleAddQuest', async t => {
       ),
       'legacy_current_gig'
     )
+    const legacyState = {
+      player: { currentNodeId: 'legacy_node' },
+      activeQuests: [],
+      gameMap: {
+        nodes: { legacy_node: { id: 'legacy_node', type: 'GIG' } }
+      }
+    }
+    assert.deepEqual(
+      canAcceptQuest(legacyState, {
+        id: 'legacy_venue_quest',
+        repeatPolicy: 'perVenue'
+      }),
+      { ok: true, scopeKey: 'legacy_node' }
+    )
+    assert.equal(getVenueReputationKey(legacyState, 'current'), 'legacy_node')
   })
 })
 

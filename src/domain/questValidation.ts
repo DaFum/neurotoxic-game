@@ -59,14 +59,13 @@ const hasForbiddenKeysDeep = (
   if (depth > MAX_QUEST_PAYLOAD_DEPTH) return true
   if (seen.has(value)) return true
   seen.add(value)
-  if (Array.isArray(value)) {
-    return value.some(entry => hasForbiddenKeysDeep(entry, seen, depth + 1))
-  }
-  if (!isLooseRecord(value)) return false
-  return Object.keys(value).some(
-    key =>
-      isForbiddenKey(key) || hasForbiddenKeysDeep(value[key], seen, depth + 1)
-  )
+  if (!Array.isArray(value) && !isLooseRecord(value)) return false
+  return Object.keys(value).some(key => {
+    if (isForbiddenKey(key)) return true
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
+    return hasForbiddenKeysDeep(descriptor.value, seen, depth + 1)
+  })
 }
 
 /**

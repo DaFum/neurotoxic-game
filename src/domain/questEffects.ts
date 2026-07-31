@@ -19,7 +19,7 @@ export const getCurrentVenueId = (state: GameState): string | undefined => {
   if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
   const node = state.gameMap?.nodes?.[nodeId]
   if (node?.type !== 'GIG') return undefined
-  const venueId = node.venue?.id ?? node.venueId
+  const venueId = node.venue?.id ?? node.venueId ?? nodeId
   return isValidReputationKey(venueId) ? venueId : undefined
 }
 
