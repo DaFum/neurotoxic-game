@@ -70,7 +70,6 @@ describe('usePersistence', () => {
     }
 
     vi.spyOn(Storage.prototype, 'getItem')
-    vi.spyOn(Storage.prototype, 'setItem')
     vi.spyOn(Storage.prototype, 'removeItem')
 
     vi.mocked(safeStorageOperation).mockImplementation((_operation, fn) => fn())
