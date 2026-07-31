@@ -119,6 +119,9 @@ export const validateContrabandItem = (
   if (item.applyOnAdd !== undefined && typeof item.applyOnAdd !== 'boolean') {
     errors.push('applyOnAdd must be boolean when present')
   }
+  if (item.type !== 'equipment' && item.applyOnAdd === true) {
+    errors.push('only equipment may use applyOnAdd=true')
+  }
   if (item.type === 'equipment') {
     if (item.stackable !== false) errors.push('equipment must not be stackable')
     if (item.applyOnAdd !== true) {

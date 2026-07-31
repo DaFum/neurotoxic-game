@@ -1,5 +1,5 @@
 import type { UnknownRecord } from './game'
-import type { BrandDealType } from './social'
+import type { BrandDealType, Platform } from './social'
 
 /**
  * Quest category used for story, side, repeatable, and tutorial flows.
@@ -199,14 +199,14 @@ export type QuestReward =
   | QuestEffectCommon
   | { type: 'money'; amount: number }
   | { type: 'fame'; amount: number }
-  | { type: 'social.followers'; platform?: string; amount: number }
+  | { type: 'social.followers'; platform?: Platform; amount: number }
   | {
       type: 'asset.repair'
       assetId?: string
       assetKind?: string
       amount: number
     }
-  | { type: 'item.add'; itemId: string; amount?: number }
+  | { type: 'item.add'; itemId: string }
   | { type: 'trait.unlock'; memberId?: string; traitId: string }
   | { type: 'skill_point'; memberIndex?: number }
 

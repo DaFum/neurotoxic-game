@@ -4,6 +4,7 @@ import { hasActiveQuest } from '../utils/questUtils'
 import { finiteNumberOr, hasStateItem } from '../utils/gameState'
 import { getRegionKeyForLocation } from '../utils/mapUtils'
 import { isQuestStateLike } from './questValidation'
+import { getCurrentVenueId } from './questEffects'
 
 /**
  * Maximum active quest slots by quest kind.
@@ -64,14 +65,7 @@ const hasQuestSlot = (
  * @returns The scoped venue identifier, or undefined if not actively in a gig node.
  */
 const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
-  const currentGigId = state.currentGig?.id
-  if (typeof currentGigId === 'string' && currentGigId.length > 0) {
-    return currentGigId
-  }
-
-  const nodeId = state.player?.currentNodeId
-  if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
-  return state.gameMap?.nodes?.[nodeId]?.type === 'GIG' ? nodeId : undefined
+  return getCurrentVenueId(state)
 }
 
 /**

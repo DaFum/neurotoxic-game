@@ -83,6 +83,7 @@ function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
           questId: questToAdd.id,
           deadlineOffset: rawOffset
         })
+        continue
       }
       delete questToAdd.deadlineOffset
     }
@@ -195,6 +196,13 @@ export function resolveEvent(
   // payload in `result.value`. Re-map it so downstream handling can consistently use the
   // normalized `delta.flags` fields (`unlock`, `addQuest`, and `gameOver`).
   remapStoryFlag(flags, result)
+  if (
+    flags.addStoryFlag === 'addQuest' ||
+    flags.addStoryFlag === 'unlock' ||
+    flags.addStoryFlag === 'gameOver'
+  ) {
+    delete flags.addStoryFlag
+  }
 
   const actions: GameAction[] = []
   const sideEffects: SideEffect[] = []
@@ -204,7 +212,10 @@ export function resolveEvent(
     : {}
 
   if (delta) {
-    const deltaAction = createApplyEventDeltaAction(delta as EventDeltaPayload)
+    const normalizedDelta = { ...delta, flags }
+    const deltaAction = createApplyEventDeltaAction(
+      normalizedDelta as EventDeltaPayload
+    )
     actions.push(deltaAction)
 
     if (flags.addQuest) {
@@ -244,7 +255,7 @@ export function resolveEvent(
       })
     }
 
-    if (flags.gameOver) {
+    if (flags.gameOver === true) {
       sideEffects.push({
         type: 'gameOverToast',
         descriptionKey: description,

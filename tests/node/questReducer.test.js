@@ -12,6 +12,8 @@ import {
 import { getQuestPenalties } from '../../src/domain/questPenalties'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
+import { canAcceptQuest } from '../../src/domain/questAcceptance'
+import { getVenueReputationKey } from '../../src/domain/questEffects'
 
 const handleCompleteQuest = QuestLifecycle.completeQuest
 const handleFailQuests = QuestLifecycle.checkDeadlines
@@ -38,6 +40,75 @@ test('questReducer - handleAddQuest', async t => {
     assert.equal(nextState.activeQuests.length, 1)
     // Reducer should return the identical state object if nothing changed
     assert.equal(initialState, nextState)
+  })
+
+  await t.test('rejects non-positive quest requirements', () => {
+    const initialState = { activeQuests: [] }
+
+    assert.equal(
+      handleAddQuest(initialState, { id: 'zero', required: 0 }),
+      initialState
+    )
+    assert.equal(
+      handleAddQuest(initialState, { id: 'negative', required: -1 }),
+      initialState
+    )
+  })
+
+  await t.test('rejects resolved ad-hoc quests', () => {
+    const initialState = { activeQuests: [] }
+
+    assert.equal(
+      handleAddQuest(initialState, { id: 'done', status: 'completed' }),
+      initialState
+    )
+    assert.equal(
+      handleAddQuest(initialState, { id: 'lost', status: 'failed' }),
+      initialState
+    )
+  })
+
+  await t.test('rejects hostile own keys anywhere in quest payloads', () => {
+    const initialState = { activeQuests: [] }
+    const topLevel = JSON.parse('{"id":"hostile","__proto__":{}}')
+    const nested = JSON.parse(
+      '{"id":"nested","rewardData":{"constructor":{"polluted":true}}}'
+    )
+
+    assert.equal(handleAddQuest(initialState, topLevel), initialState)
+    assert.equal(handleAddQuest(initialState, nested), initialState)
+  })
+
+  await t.test('uses the embedded venue id for current venue scope', () => {
+    const state = {
+      player: { currentNodeId: 'node_3_1' },
+      activeQuests: [],
+      gameMap: {
+        nodes: {
+          node_3_1: {
+            id: 'node_3_1',
+            type: 'GIG',
+            venue: { id: 'venue_canonical' }
+          }
+        }
+      }
+    }
+
+    assert.deepEqual(
+      canAcceptQuest(state, {
+        id: 'venue_quest',
+        repeatPolicy: 'perVenue'
+      }),
+      { ok: true, scopeKey: 'venue_canonical' }
+    )
+    assert.equal(getVenueReputationKey(state, 'current'), 'venue_canonical')
+    assert.equal(
+      getVenueReputationKey(
+        { ...state, currentGig: { id: 'legacy_current_gig' } },
+        'current'
+      ),
+      'legacy_current_gig'
+    )
   })
 })
 
@@ -315,6 +386,37 @@ test('questRewards - payload safety', async t => {
     assert.deepEqual(rewards, [{ type: 'money', amount: 25 }])
     assert.deepEqual(penalties, [{ type: 'band.harmony', amount: -5 }])
   })
+
+  await t.test('rejects follower rewards targeting non-platform fields', () => {
+    const rewards = getQuestRewards({
+      id: 'q_followers',
+      rewards: [
+        { type: 'social.followers', platform: 'loyalty', amount: 5 },
+        { type: 'social.followers', platform: 'instagram', amount: 5 }
+      ]
+    })
+
+    assert.deepEqual(rewards, [
+      { type: 'social.followers', platform: 'instagram', amount: 5 }
+    ])
+  })
+
+  await t.test(
+    'rejects item quantities unsupported by boolean inventory',
+    () => {
+      const rewards = getQuestRewards({
+        id: 'q_items',
+        rewards: [
+          { type: 'item.add', itemId: 'valid' },
+          { type: 'item.add', itemId: 'positive', amount: 3 },
+          { type: 'item.add', itemId: 'zero', amount: 0 },
+          { type: 'item.add', itemId: 'negative', amount: -1 }
+        ]
+      })
+
+      assert.deepEqual(rewards, [{ type: 'item.add', itemId: 'valid' }])
+    }
+  )
 
   await t.test(
     'skill_point rewards convert fractional targets to integers',

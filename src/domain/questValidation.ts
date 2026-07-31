@@ -19,7 +19,7 @@ const QUEST_REPEAT_POLICIES = new Set<QuestRepeatPolicy>([
   'perVenue',
   'perRegion'
 ])
-const QUEST_STATUSES = new Set<QuestStatus>(['active', 'completed', 'failed'])
+const QUEST_STATUSES = new Set<QuestStatus>(['active'])
 const ARRAY_FIELDS = [
   'progressRules',
   'rewards',
@@ -49,6 +49,22 @@ const STRING_FIELDS = [
   'scopeKey'
 ] as const
 
+const hasForbiddenKeysDeep = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet()
+): boolean => {
+  if (typeof value !== 'object' || value === null) return false
+  if (seen.has(value)) return true
+  seen.add(value)
+  if (Array.isArray(value)) {
+    return value.some(entry => hasForbiddenKeysDeep(entry, seen))
+  }
+  if (!isLooseRecord(value)) return false
+  return Object.keys(value).some(
+    key => isForbiddenKey(key) || hasForbiddenKeysDeep(value[key], seen)
+  )
+}
+
 /**
  * Narrows a raw quest payload before it reaches lifecycle code.
  * Unknown benign fields are retained for legacy compatibility, while fields
@@ -56,6 +72,7 @@ const STRING_FIELDS = [
  */
 export const isQuestStateLike = (value: unknown): value is QuestState => {
   if (!isLooseRecord(value)) return false
+  if (hasForbiddenKeysDeep(value)) return false
   if (
     typeof value.id !== 'string' ||
     value.id.length === 0 ||
@@ -98,6 +115,12 @@ export const isQuestStateLike = (value: unknown): value is QuestState => {
     ) {
       return false
     }
+  }
+  if (
+    value.required !== undefined &&
+    (!isFiniteNumber(value.required) || value.required <= 0)
+  ) {
+    return false
   }
   for (const field of STRING_FIELDS) {
     if (value[field] !== undefined && typeof value[field] !== 'string') {
