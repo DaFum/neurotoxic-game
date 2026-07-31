@@ -118,6 +118,27 @@ describe('Contraband Schema (with imagePrompt)', () => {
       )
     })
 
+    it('rejects applyOnAdd for non-equipment items', () => {
+      const result = validateContrabandItem({
+        id: 'c_bad_consumable',
+        imagePrompt: 'ITEM_TEST',
+        name: 'items:contraband.c_bad_consumable.name',
+        type: 'consumable',
+        effectType: 'stamina',
+        value: 1,
+        description: 'items:contraband.c_bad_consumable.description',
+        rarity: 'common',
+        icon: 'icon_test',
+        stackable: false,
+        applyOnAdd: true
+      })
+
+      assert.equal(result.ok, false)
+      assert.ok(
+        result.errors.includes('only equipment may use applyOnAdd=true')
+      )
+    })
+
     it('should have all items with imagePrompt field', () => {
       for (const item of CONTRABAND_DB) {
         assert.equal(

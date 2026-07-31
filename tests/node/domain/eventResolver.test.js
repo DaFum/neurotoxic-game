@@ -275,7 +275,7 @@ test('resolveEvent: choice with string deadlineOffset parses correctly', () => {
 })
 
 // --- quest flag: invalid deadlineOffset ---
-test('resolveEvent: choice with invalid deadlineOffset logs warning and ignores offset', () => {
+test('resolveEvent: choice with invalid deadlineOffset rejects the timed quest', () => {
   const choice = {
     label: 'Accept quest invalid offset',
     outcomeText: '',
@@ -291,11 +291,7 @@ test('resolveEvent: choice with invalid deadlineOffset logs warning and ignores 
   const state = buildState()
   const { actions } = resolveEvent(choice, state)
   const questActions = actions.filter(a => a.type === 'ADD_QUEST')
-  assert.equal(questActions.length, 2)
-  assert.equal(questActions[0].payload.id, 'q3')
-  assert.ok(!Object.hasOwn(questActions[0].payload, 'deadline')) // no deadline added
-  assert.equal(questActions[1].payload.id, 'q4')
-  assert.ok(!Object.hasOwn(questActions[1].payload, 'deadline'))
+  assert.equal(questActions.length, 0)
 })
 
 // --- quest flag: malformed quest ---
@@ -357,6 +353,8 @@ test('resolveEvent: remaps addStoryFlag for addQuest', () => {
   const questActions = actions.filter(a => a.type === 'ADD_QUEST')
   assert.equal(questActions.length, 1)
   assert.equal(questActions[0].payload.id, 'storyQuest')
+  const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
+  assert.equal(deltaAction.payload.flags.addStoryFlag, undefined)
 })
 
 test('resolveEvent: remaps addStoryFlag for unlock', () => {
@@ -378,6 +376,32 @@ test('resolveEvent: remaps addStoryFlag for unlock', () => {
   const unlockAction = actions.find(a => a.type === 'ADD_UNLOCK')
   assert.ok(unlockAction)
   assert.equal(unlockAction.payload, 'storyunlock')
+  const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
+  assert.equal(deltaAction.payload.flags.addStoryFlag, undefined)
+})
+
+test('resolveEvent: ignores truthy non-boolean gameOver payloads', () => {
+  const choice = {
+    _precomputedResult: {
+      delta: { flags: { gameOver: 'false' } },
+      result: null
+    }
+  }
+
+  const { sideEffects } = resolveEvent(choice, buildState())
+
+  assert.equal(
+    sideEffects.some(effect => effect.type === 'gameOverToast'),
+    false
+  )
+  assert.equal(
+    sideEffects.some(effect => effect.type === 'saveGame'),
+    false
+  )
+  assert.equal(
+    sideEffects.some(effect => effect.type === 'changeScene'),
+    false
+  )
 })
 
 test('resolveEvent: remaps addStoryFlag for gameOver', () => {
@@ -395,11 +419,13 @@ test('resolveEvent: remaps addStoryFlag for gameOver', () => {
     }
   }
   const state = buildState()
-  const { sideEffects } = resolveEvent(choice, state)
+  const { actions, sideEffects } = resolveEvent(choice, state)
   const gameOver = sideEffects.find(
     e => e.type === 'changeScene' && e.scene === 'GAMEOVER'
   )
   assert.ok(gameOver)
+  const deltaAction = actions.find(a => a.type === 'APPLY_EVENT_DELTA')
+  assert.equal(deltaAction.payload.flags.addStoryFlag, undefined)
 })
 
 test('resolveEvent: no quests if flags.addQuest is not array', () => {

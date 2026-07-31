@@ -10,6 +10,19 @@ import { getRegionKeyForLocation } from '../utils/mapUtils'
 const isValidReputationKey = (key: unknown): key is string =>
   typeof key === 'string' && key.length > 0 && !isForbiddenKey(key)
 
+/** Resolves the canonical venue id for the current gig context. */
+export const getCurrentVenueId = (state: GameState): string | undefined => {
+  const currentGigId = state.currentGig?.id
+  if (isValidReputationKey(currentGigId)) return currentGigId
+
+  const nodeId = state.player?.currentNodeId
+  if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
+  const node = state.gameMap?.nodes?.[nodeId]
+  if (node?.type !== 'GIG') return undefined
+  const venueId = node.venue?.id ?? node.venueId ?? nodeId
+  return isValidReputationKey(venueId) ? venueId : undefined
+}
+
 const applyReputationMapDelta = (
   state: GameState,
   mapName: 'reputationByRegion' | 'reputationByVenue',
@@ -37,7 +50,7 @@ export const getVenueReputationKey = (
 ): string | undefined => {
   const key =
     scope === 'current' || scope === null || scope === undefined
-      ? (state.currentGig?.id ?? state.player?.currentNodeId)
+      ? getCurrentVenueId(state)
       : scope
   return isValidReputationKey(key) ? key : undefined
 }

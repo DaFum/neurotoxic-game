@@ -19,7 +19,7 @@ const QUEST_REPEAT_POLICIES = new Set<QuestRepeatPolicy>([
   'perVenue',
   'perRegion'
 ])
-const QUEST_STATUSES = new Set<QuestStatus>(['active', 'completed', 'failed'])
+const QUEST_STATUSES = new Set<QuestStatus>(['active'])
 const ARRAY_FIELDS = [
   'progressRules',
   'rewards',
@@ -48,6 +48,25 @@ const STRING_FIELDS = [
   'followupQuestId',
   'scopeKey'
 ] as const
+const MAX_QUEST_PAYLOAD_DEPTH = 64
+
+const hasForbiddenKeysDeep = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet(),
+  depth = 0
+): boolean => {
+  if (typeof value !== 'object' || value === null) return false
+  if (depth > MAX_QUEST_PAYLOAD_DEPTH) return true
+  if (seen.has(value)) return true
+  seen.add(value)
+  if (!Array.isArray(value) && !isLooseRecord(value)) return false
+  return Object.keys(value).some(key => {
+    if (isForbiddenKey(key)) return true
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
+    return hasForbiddenKeysDeep(descriptor.value, seen, depth + 1)
+  })
+}
 
 /**
  * Narrows a raw quest payload before it reaches lifecycle code.
@@ -56,6 +75,7 @@ const STRING_FIELDS = [
  */
 export const isQuestStateLike = (value: unknown): value is QuestState => {
   if (!isLooseRecord(value)) return false
+  if (hasForbiddenKeysDeep(value)) return false
   if (
     typeof value.id !== 'string' ||
     value.id.length === 0 ||
@@ -98,6 +118,12 @@ export const isQuestStateLike = (value: unknown): value is QuestState => {
     ) {
       return false
     }
+  }
+  if (
+    value.required !== undefined &&
+    (!isFiniteNumber(value.required) || value.required <= 0)
+  ) {
+    return false
   }
   for (const field of STRING_FIELDS) {
     if (value[field] !== undefined && typeof value[field] !== 'string') {

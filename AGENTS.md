@@ -8,7 +8,7 @@
 
 ## Critical Commands
 
-- Fast tests: `pnpm run test`; full PR gate: `pnpm run test:all`; UI: `pnpm run test:ui`; node: `pnpm run test:node`; perf/locale: `pnpm run test:additional`.
+- Fast tests: `pnpm run test`; compact dot-reporter output: `pnpm run test:dot`; full PR gate: `pnpm run test:all`; UI: `pnpm run test:ui`; node: `pnpm run test:node`; perf/locale: `pnpm run test:additional`.
 - Type gates: `pnpm run typecheck:core`; reducer gate: `pnpm run typecheck`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.

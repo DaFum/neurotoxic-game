@@ -91,6 +91,13 @@ const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
 const isOptionalString = (value: unknown): boolean =>
   value === undefined || typeof value === 'string'
 
+const FOLLOWER_PLATFORMS = new Set([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter'
+])
+
 const isQuestReward = (value: unknown): value is QuestReward => {
   if (!isLooseRecord(value) || typeof value.type !== 'string') return false
 
@@ -102,7 +109,12 @@ const isQuestReward = (value: unknown): value is QuestReward => {
     case 'social.controversy':
       return isFiniteNumber(value.amount)
     case 'social.followers':
-      return isFiniteNumber(value.amount) && isOptionalString(value.platform)
+      return (
+        isFiniteNumber(value.amount) &&
+        (value.platform === undefined ||
+          (typeof value.platform === 'string' &&
+            FOLLOWER_PLATFORMS.has(value.platform)))
+      )
     case 'venue.reputation':
     case 'region.reputation':
       return isFiniteNumber(value.amount) && isOptionalString(value.scope)
@@ -119,10 +131,7 @@ const isQuestReward = (value: unknown): value is QuestReward => {
         isOptionalString(value.assetKind)
       )
     case 'item.add':
-      return (
-        typeof value.itemId === 'string' &&
-        (value.amount === undefined || isFiniteNumber(value.amount))
-      )
+      return typeof value.itemId === 'string' && value.amount === undefined
     case 'trait.unlock':
       return (
         typeof value.traitId === 'string' && isOptionalString(value.memberId)
