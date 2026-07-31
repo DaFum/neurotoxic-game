@@ -59,6 +59,11 @@ describe('travel arrival parity', () => {
       read('src/hooks/travel/actions/useHandleNodeArrivalCallback.ts')
     )
 
+    assert.match(
+      callback,
+      /handleNodeArrival\(\{[\s\S]*?\bstartGig\s*:\s*\(\)\s*=>\s*\{\s*\}/,
+      'legacy arrival receives a no-op startGig callback'
+    )
     assert.doesNotMatch(callback, /handleNodeArrival\(\{[\s\S]*?\bstartGig,/)
   })
 })
