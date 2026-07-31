@@ -71,6 +71,11 @@ const REPO_ROOT = path.resolve(SCRIPT_DIR, '..')
 
 
 const HEAVY_NODE_TESTS = [
+  'tests/node/game-balance-cadence-probe.test.js',
+  'tests/node/game-balance-experiments.test.js',
+  'tests/node/game-balance-simulation.test.js',
+  'tests/node/game-balance-tension-report.test.js',
+  'tests/node/updateSymbols.test.js',
   'tests/node/CrowdManager.test.js',
   'tests/node/LaneManager.test.js',
   'tests/node/NoteManager.test.js',
