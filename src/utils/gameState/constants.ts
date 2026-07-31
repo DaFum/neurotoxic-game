@@ -10,8 +10,8 @@
  * Re-derive both together; moving one alone breaks the target.
  */
 export const FAME_PROGRESS_CONSTANTS = Object.freeze({
-  GIG_BASE_REWARD: 250,
-  GIG_SCORE_MULTIPLIER: 20,
+  GIG_BASE_REWARD: 320,
+  GIG_SCORE_MULTIPLIER: 22,
   DIMINISHING_RETURNS_START: 30000,
   DIMINISHING_RETURNS_RATE: 0.0001
 })
@@ -22,7 +22,7 @@ export const FAME_PROGRESS_CONSTANTS = Object.freeze({
  */
 export const BALANCE_CONSTANTS = {
   FAME_LOSS_BAD_GIG: 9,
-  MAX_FAME_GAIN: 2000,
+  MAX_FAME_GAIN: 3000,
   LOW_HARMONY_THRESHOLD: 15,
   LOW_HARMONY_CANCELLATION_CHANCE: 0.2,
   // Miss-penalty on bad gigs (perfScore < 62)
