@@ -203,7 +203,9 @@ export const POST_OPTIONS = [
   // --- CATEGORY: CULT OF THE SCHRANK ---
   {
     id: 'radicalize_fans',
-    name: 'Radicalize Fans',
+    name: i18n.t('ui:postOptions.radicalize_fans.name', {
+      defaultValue: 'Radicalize Fans'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
@@ -225,7 +227,9 @@ export const POST_OPTIONS = [
   // --- CATEGORY: RECOVERY & CRISIS ---
   {
     id: 'recovery_apology_tour_promo',
-    name: 'Apology Tour Promo',
+    name: i18n.t('ui:postOptions.recovery_apology_tour_promo.name', {
+      defaultValue: 'Apology Tour Promo'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK, POST_BADGES.STORY],
@@ -248,7 +252,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'recovery_leaked_good_deed',
-    name: 'Leaked Good Deed',
+    name: i18n.t('ui:postOptions.recovery_leaked_good_deed.name', {
+      defaultValue: 'Leaked Good Deed'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
@@ -292,7 +298,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'recovery_prove_yourself_clip',
-    name: 'Gritty Small Venue Clip',
+    name: i18n.t('ui:postOptions.recovery_prove_yourself_clip.name', {
+      defaultValue: 'Gritty Small Venue Clip'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
@@ -313,7 +321,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'comm_loyalty_merch_drive',
-    name: 'Emergency Newsletter Merch Drive',
+    name: i18n.t('ui:postOptions.comm_loyalty_merch_drive.name', {
+      defaultValue: 'Emergency Newsletter Merch Drive'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
@@ -341,7 +351,9 @@ export const POST_OPTIONS = [
   // --- CATEGORY: PERFORMANCE & STAGE ANTICS ---
   {
     id: 'perf_smashed_gear',
-    name: 'Instrument Destruction Clip',
+    name: i18n.t('ui:postOptions.perf_smashed_gear.name', {
+      defaultValue: 'Instrument Destruction Clip'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -377,7 +389,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_acoustic_cover',
-    name: 'Acoustic Backstage Cover',
+    name: i18n.t('ui:postOptions.perf_acoustic_cover.name', {
+      defaultValue: 'Acoustic Backstage Cover'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
@@ -397,7 +411,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_ego_flex',
-    name: 'Vocalist Ego Flex',
+    name: i18n.t('ui:postOptions.perf_ego_flex.name', {
+      defaultValue: 'Vocalist Ego Flex'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
@@ -436,7 +452,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_sound_guy_rant',
-    name: 'Calling Out the Sound Guy',
+    name: i18n.t('ui:postOptions.perf_sound_guy_rant.name', {
+      defaultValue: 'Calling Out the Sound Guy'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -458,7 +476,9 @@ export const POST_OPTIONS = [
 
   {
     id: 'perf_moshpit_chaos',
-    name: 'Moshpit Chaos Clip',
+    name: i18n.t('ui:postOptions.perf_moshpit_chaos.name', {
+      defaultValue: 'Moshpit Chaos Clip'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Performance',
     badges: [POST_BADGES.VIRAL],
@@ -478,7 +498,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_tech_playthrough',
-    name: 'Technical Playthrough',
+    name: i18n.t('ui:postOptions.perf_tech_playthrough.name', {
+      defaultValue: 'Technical Playthrough'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
@@ -506,7 +528,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_band_selfie',
-    name: 'Sweaty Band Selfie',
+    name: i18n.t('ui:postOptions.perf_band_selfie.name', {
+      defaultValue: 'Sweaty Band Selfie'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Performance',
     badges: [POST_BADGES.SAFE],
@@ -525,7 +549,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'perf_apology_video',
-    name: 'Apology Video',
+    name: i18n.t('ui:postOptions.perf_apology_video.name', {
+      defaultValue: 'Apology Video'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Performance',
     badges: [POST_BADGES.RISK],
@@ -548,7 +574,9 @@ export const POST_OPTIONS = [
 
   {
     id: 'drama_drunk_stream',
-    name: 'Drunk Afterparty Stream',
+    name: i18n.t('ui:postOptions.drama_drunk_stream.name', {
+      defaultValue: 'Drunk Afterparty Stream'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -585,7 +613,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_political_take',
-    name: 'Edgy Political Hot Take',
+    name: i18n.t('ui:postOptions.drama_political_take.name', {
+      defaultValue: 'Edgy Political Hot Take'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
@@ -605,7 +635,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_van_breakdown',
-    name: 'Tour Van Breakdown Rant',
+    name: i18n.t('ui:postOptions.drama_van_breakdown.name', {
+      defaultValue: 'Tour Van Breakdown Rant'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
@@ -627,7 +659,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_leak_demo',
-    name: 'Leaked Demo Snippet',
+    name: i18n.t('ui:postOptions.drama_leak_demo.name', {
+      defaultValue: 'Leaked Demo Snippet'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.STORY],
@@ -648,7 +682,9 @@ export const POST_OPTIONS = [
 
   {
     id: 'drama_manufactured',
-    name: 'Manufactured Band Drama',
+    name: i18n.t('ui:postOptions.drama_manufactured.name', {
+      defaultValue: 'Manufactured Band Drama'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -668,7 +704,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_crowdsurf_fail',
-    name: 'Crowd Surfing Fail',
+    name: i18n.t('ui:postOptions.drama_crowdsurf_fail.name', {
+      defaultValue: 'Crowd Surfing Fail'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama',
     badges: [POST_BADGES.RISK],
@@ -723,7 +761,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_gear_flex',
-    name: 'Gear Flex',
+    name: i18n.t('ui:postOptions.drama_gear_flex.name', {
+      defaultValue: 'Gear Flex'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Drama', // or Lifestyle
     badges: [POST_BADGES.SAFE],
@@ -753,7 +793,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_cryptic_teaser',
-    name: 'Cryptic Teaser',
+    name: i18n.t('ui:postOptions.drama_cryptic_teaser.name', {
+      defaultValue: 'Cryptic Teaser'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY],
@@ -771,7 +813,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_tour_bus_prank',
-    name: 'Tour Bus Prank',
+    name: i18n.t('ui:postOptions.drama_tour_bus_prank.name', {
+      defaultValue: 'Tour Bus Prank'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -803,7 +847,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_emotional_interview',
-    name: 'Emotional Backstage Interview',
+    name: i18n.t('ui:postOptions.drama_emotional_interview.name', {
+      defaultValue: 'Emotional Backstage Interview'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Drama',
     badges: [POST_BADGES.STORY, POST_BADGES.SAFE],
@@ -847,7 +893,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'comm_tour_merch',
-    name: 'Limited "Tour Only" Merch Drop',
+    name: i18n.t('ui:postOptions.comm_tour_merch.name', {
+      defaultValue: 'Limited "Tour Only" Merch Drop'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL],
@@ -873,7 +921,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'comm_crowdfund',
-    name: 'Crowdfunding Begging',
+    name: i18n.t('ui:postOptions.comm_crowdfund.name', {
+      defaultValue: 'Crowdfunding Begging'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.COMMERCIAL, POST_BADGES.RISK],
@@ -894,7 +944,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'comm_gear_review',
-    name: 'Exquisite Gear Review',
+    name: i18n.t('ui:postOptions.comm_gear_review.name', {
+      defaultValue: 'Exquisite Gear Review'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial',
     badges: [POST_BADGES.SAFE, POST_BADGES.COMMERCIAL],
@@ -940,7 +992,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'collab_influencer',
-    name: 'Influencer Collaboration',
+    name: i18n.t('ui:postOptions.collab_influencer.name', {
+      defaultValue: 'Influencer Collaboration'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Commercial',
     badges: [POST_BADGES.VIRAL, POST_BADGES.COMMERCIAL],
@@ -1050,7 +1104,9 @@ export const POST_OPTIONS = [
 
   {
     id: 'tech_rig_rundown',
-    name: 'Detailed Rig Rundown',
+    name: i18n.t('ui:postOptions.tech_rig_rundown.name', {
+      defaultValue: 'Detailed Rig Rundown'
+    }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
     category: 'Commercial', // Fits TECH trend
     badges: [POST_BADGES.SAFE, POST_BADGES.STORY],
@@ -1071,7 +1127,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'wholesome_dinner',
-    name: 'Wholesome Band Dinner',
+    name: i18n.t('ui:postOptions.wholesome_dinner.name', {
+      defaultValue: 'Wholesome Band Dinner'
+    }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
     category: 'Lifestyle', // Fits WHOLESOME trend logic
     badges: [POST_BADGES.SAFE],
@@ -1091,7 +1149,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'music_theory_thread',
-    name: 'Deep Music Theory Thread',
+    name: i18n.t('ui:postOptions.music_theory_thread.name', {
+      defaultValue: 'Deep Music Theory Thread'
+    }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
     category: 'Performance', // Fits MUSIC trend
     badges: [POST_BADGES.STORY],
@@ -1112,7 +1172,9 @@ export const POST_OPTIONS = [
   },
   {
     id: 'drama_leaked_dms',
-    name: '"Accidentally" Leaked DMs',
+    name: i18n.t('ui:postOptions.drama_leaked_dms.name', {
+      defaultValue: '"Accidentally" Leaked DMs'
+    }),
     platform: SOCIAL_PLATFORMS.TIKTOK.id,
     category: 'Drama', // Fits DRAMA trend
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
@@ -1147,7 +1209,7 @@ export const POST_OPTIONS = [
   },
   {
     id: 'lifestyle_tour_diary',
-    name: i18n.t('ui:postOptions.lifestyle.lifestyle_tour_diary.name', {
+    name: i18n.t('ui:postOptions.lifestyle_tour_diary.name', {
       defaultValue: 'Tour Diary Entry'
     }),
     platform: SOCIAL_PLATFORMS.NEWSLETTER.id,
@@ -1167,7 +1229,7 @@ export const POST_OPTIONS = [
   },
   {
     id: 'lifestyle_fan_dinner',
-    name: i18n.t('ui:postOptions.lifestyle.lifestyle_fan_dinner.name', {
+    name: i18n.t('ui:postOptions.lifestyle_fan_dinner.name', {
       defaultValue: 'Dinner With Fans'
     }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
@@ -1187,7 +1249,7 @@ export const POST_OPTIONS = [
   },
   {
     id: 'lifestyle_behind_the_scenes',
-    name: i18n.t('ui:postOptions.lifestyle.lifestyle_behind_the_scenes.name', {
+    name: i18n.t('ui:postOptions.lifestyle_behind_the_scenes.name', {
       defaultValue: 'Behind The Scenes Reel'
     }),
     platform: SOCIAL_PLATFORMS.INSTAGRAM.id,
@@ -1211,7 +1273,7 @@ export const POST_OPTIONS = [
   },
   {
     id: 'lifestyle_gear_care',
-    name: i18n.t('ui:postOptions.lifestyle.lifestyle_gear_care.name', {
+    name: i18n.t('ui:postOptions.lifestyle_gear_care.name', {
       defaultValue: 'Gear Care Sunday'
     }),
     platform: SOCIAL_PLATFORMS.YOUTUBE.id,
