@@ -26,7 +26,7 @@ import {
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
 import { createRngStream, nextSeed } from '../../utils/seededRng'
-import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../../utils/assetConfig'
+import { getAdvanceDayRngStreamLength } from '../../utils/assetConfig'
 import { QuestEvents } from '../../utils/questProgress'
 import { sanitizeSettingsPayload } from '../../utils/settingsSanitizer'
 import { DEFAULT_PLAYER_STATE } from '../initialState'
@@ -620,7 +620,7 @@ export const handleAdvanceDay = (
     ? payload.dayRngStream
     : createRngStream(
         baseSeed,
-        (state.assets?.length ?? 0) * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
+        getAdvanceDayRngStreamLength(state.assets?.length ?? 0)
       )
   let dayRngCursor = 0
   {

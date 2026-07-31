@@ -1,5 +1,5 @@
 import { createRngStream, nextSeed } from '../utils/seededRng'
-import { RNG_BASE_BUFFER, RNG_ROLLS_PER_ASSET } from '../utils/assetConfig'
+import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 /**
  * Action Creators Module
  * Factory functions for creating dispatch actions.
@@ -1201,7 +1201,7 @@ export const advanceDay = (
   // so the reducer never falls off the end (the neutral fallback still
   // defends against malformed or legacy actions).
   const assetCount = state.assets?.length ?? 0
-  const streamLength = assetCount * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER
+  const streamLength = getAdvanceDayRngStreamLength(assetCount)
   return {
     type: ActionTypes.ADVANCE_DAY,
     payload: {

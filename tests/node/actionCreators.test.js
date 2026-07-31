@@ -6,6 +6,10 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
+  DAILY_UPDATE_MAX_RNG_ROLLS,
+  RNG_BASE_BUFFER
+} from '../../src/utils/assetConfig'
+import {
   createChangeSceneAction,
   createUpdatePlayerAction,
   createUpdateBandAction,
@@ -658,13 +662,22 @@ describe('Action Creators', () => {
 
 describe('advanceDay', () => {
   it('creates ADVANCE_DAY action with rng stream and next seed', () => {
-    // No assets → stream = 0 * RNG_ROLLS_PER_ASSET + RNG_BASE_BUFFER = 8
+    // No assets still reserves every daily-update roll plus a safety margin.
     const mockState = { rngSeed: 12345, assets: [] }
     const action = advanceDay(mockState)
     assert.strictEqual(action.type, ActionTypes.ADVANCE_DAY)
     assert.ok(Array.isArray(action.payload.dayRngStream))
-    assert.strictEqual(action.payload.dayRngStream.length, 8)
+    assert.strictEqual(action.payload.dayRngStream.length, 9)
     assert.ok(typeof action.payload.nextRngSeed === 'number')
+  })
+
+  it('reserves more rolls than the maximum daily update consumption', () => {
+    assert.equal(DAILY_UPDATE_MAX_RNG_ROLLS, 8)
+    assert.ok(RNG_BASE_BUFFER > DAILY_UPDATE_MAX_RNG_ROLLS)
+    assert.equal(
+      advanceDay({ rngSeed: 1, assets: [] }).payload.dayRngStream.length,
+      RNG_BASE_BUFFER
+    )
   })
 
   it('sizes dayRngStream proportionally to asset count', () => {
@@ -673,7 +686,7 @@ describe('advanceDay', () => {
       assets: [{ id: 'a' }, { id: 'b' }, { id: 'c' }]
     }
     const action = advanceDay(mockState)
-    // 3 assets × 2 rolls + 8 buffer = 14
-    assert.strictEqual(action.payload.dayRngStream.length, 14)
+    // 3 assets × 2 rolls + 9 buffer = 15
+    assert.strictEqual(action.payload.dayRngStream.length, 15)
   })
 })

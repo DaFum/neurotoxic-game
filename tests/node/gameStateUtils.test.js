@@ -42,6 +42,7 @@ test('clampVanBreakdownChance recovers from non-finite input', () => {
 test('isStashEntry accepts only null or positive integer stack counts', () => {
   assert.equal(isStashEntry({ stacks: null }), true)
   assert.equal(isStashEntry({ stacks: 1 }), true)
+  assert.equal(isStashEntry({ stacks: 0 }), false)
   assert.equal(isStashEntry({ stacks: Number.NaN }), false)
   assert.equal(isStashEntry({ stacks: Number.POSITIVE_INFINITY }), false)
   assert.equal(isStashEntry({ stacks: -1 }), false)
