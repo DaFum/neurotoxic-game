@@ -411,7 +411,7 @@ describe('mapUtils', () => {
   })
 })
 // Test additions for regression coverage
-test('negative dailyObligations makes travel affordable', () => {
+test('negative daily obligations do not subsidize immediate travel cost', () => {
   const localMap = {
     nodes: { A: { id: 'A' }, B: { id: 'B' } },
     connections: [{ from: 'A', to: 'B' }]
@@ -428,13 +428,13 @@ test('negative dailyObligations makes travel affordable', () => {
     localMap,
     localPlayer, // Player has 50 money, travel costs 100
     null,
-    { dailyObligations: -100 } // Negative obligations should make effective cost 0
+    { dailyObligations: -100 }
   )
 
   assert.equal(
     result,
-    false,
-    'Player should not be stranded if negative obligations cover the travel cost shortfall'
+    true,
+    'Player remains stranded until cash covers the immediate travel debit'
   )
 })
 

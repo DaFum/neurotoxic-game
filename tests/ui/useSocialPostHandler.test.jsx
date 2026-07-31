@@ -27,6 +27,7 @@ import { logger } from '../../src/utils/logger'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 import { createSocialPostQuestEvents } from '../../src/quests/producers/socialQuestEvents'
+import { secureRandom } from '../../src/utils/crypto'
 
 vi.spyOn(logger, 'error').mockImplementation(() => {})
 
@@ -222,6 +223,10 @@ describe('useSocialPostHandler (characterization)', () => {
 
   it('draws independent random values for post, member selection, and virality', () => {
     calculatePostGigStateUpdates.mockReturnValue(makeUpdates())
+    secureRandom
+      .mockReturnValueOnce(0.11)
+      .mockReturnValueOnce(0.44)
+      .mockReturnValueOnce(0.88)
     const props = makeProps()
     const { result } = renderHook(() => useSocialPostHandler(props))
 
@@ -229,11 +234,18 @@ describe('useSocialPostHandler (characterization)', () => {
 
     expect(calculatePostGigStateUpdates).toHaveBeenCalledWith(
       expect.objectContaining({
-        secureRandomValue: 0.5,
-        selectionRandomValue: 0.5,
-        viralRandomValue: 0.5
+        secureRandomValue: 0.11,
+        selectionRandomValue: 0.44,
+        viralRandomValue: 0.88
       })
     )
+    expect(secureRandom).toHaveBeenCalledTimes(3)
+    expect(props.dispatchers.setPostResult).toHaveBeenCalledWith(
+      expect.objectContaining({ followers: 10 })
+    )
+    expect(props.dispatchers.updateSocial).toHaveBeenCalledWith({
+      followers: 510
+    })
   })
 
   it('releases guard in the error path so the player can retry', () => {

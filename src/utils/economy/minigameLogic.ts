@@ -117,8 +117,11 @@ export const calculateAmpCalibrationResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const safePurgesUsed = Math.max(0, finiteNumberOr(purgesUsed, 0))
-  stress += Math.floor(safePurgesUsed * 5)
+  const safePurgesUsed = Math.min(
+    Math.floor(Math.max(0, finiteNumberOr(purgesUsed, 0))),
+    Math.floor(Number.MAX_SAFE_INTEGER / 5)
+  )
+  stress += safePurgesUsed * 5
 
   // Kranker Schrank Hijack bonuses/mitigations
   const safeHijacksOverridden = Math.max(
