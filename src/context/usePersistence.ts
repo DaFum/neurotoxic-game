@@ -22,7 +22,9 @@ import { createLoadGameAction } from './actionCreators'
 import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 
-/** Local-storage key for the current persisted game save. */
+/**
+ * The string identifier used to store and retrieve the game's save payload in local storage.
+ */
 export const SAVE_KEY = 'neurotoxic_v3_save'
 const LOADABLE_SAVE_KEYS = [
   'version',
@@ -59,6 +61,13 @@ const LOADABLE_SAVE_KEYS = [
   'rivalBand'
 ] as const
 
+/**
+ * Core dependencies required for initializing persistence features.
+ *
+ * @remarks
+ * Encapsulates stable references to React context elements (dispatch, state snapshot)
+ * alongside utility services like toast notifications and localization.
+ */
 type UsePersistenceParams = {
   currentScene: GameState['currentScene']
   stateRef: MutableRefObject<GameState>
@@ -159,6 +168,17 @@ export const createRawLoadPayload = (
   return payload
 }
 
+/**
+ * Serializes the current active game state into a format suitable for local storage persistence.
+ *
+ * @remarks
+ * This function builds a targeted snapshot, intentionally stripping ephemeral properties
+ * or UI-specific state variants, while normalizing collections like the band's setlist
+ * using dedicated save formatting logic.
+ *
+ * @param currentState - The full state tree to snapshot.
+ * @returns An object containing only the serialized, persistable slice of the game state.
+ */
 export const createPersistedState = (currentState: GameState) => {
   const {
     version,
