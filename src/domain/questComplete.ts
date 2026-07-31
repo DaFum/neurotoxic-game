@@ -52,7 +52,7 @@ export const completeQuest = (
 
   const completionFlags = addStoryFlags(nextState.activeStoryFlags, [
     quest.rewardFlag,
-    ...(quest.completionFlags ?? [])
+    ...(Array.isArray(quest.completionFlags) ? quest.completionFlags : [])
   ])
   if (completionFlags !== nextState.activeStoryFlags) {
     nextState.activeStoryFlags = completionFlags

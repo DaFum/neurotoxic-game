@@ -59,4 +59,16 @@ describe('OverworldMenu', () => {
 
     expect(actions.openCultIndoctrination).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps the logistics menu open for the second rest-in-van click', () => {
+    const actions = defaultActions()
+    render(<Harness actions={actions} />)
+
+    fireEvent.click(screen.getByRole('button', { name: /LOGISTICS/i }))
+    const restButton = screen.getByRole('button', { name: /CRASH IN VAN/i })
+    fireEvent.click(restButton)
+
+    expect(actions.handleRestInVan).toHaveBeenCalledTimes(1)
+    expect(restButton).toBeInTheDocument()
+  })
 })

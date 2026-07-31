@@ -79,6 +79,7 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
+    gigEventScoreDelta: 0,
     minigame: { ...DEFAULT_MINIGAME_STATE }
   }
 }

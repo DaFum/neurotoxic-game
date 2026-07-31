@@ -212,6 +212,14 @@ export const clampVanCondition = (condition: number): number =>
   clamp0to100(condition)
 
 /**
+ * Clamps the van's persisted breakdown probability to its gameplay range.
+ * @param chance - Candidate breakdown probability.
+ * @returns Breakdown probability in the inclusive range 0..0.5.
+ */
+export const clampVanBreakdownChance = (chance: number): number =>
+  Math.max(0, Math.min(0.5, chance))
+
+/**
  * Wraps a flavor-clock hour into the 0..23 day range.
  *
  * @remarks

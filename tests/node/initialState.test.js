@@ -38,3 +38,16 @@ test('createInitialState accepts persistedData', () => {
   })
   assert.notEqual(createdState.unlocks, createdState2.unlocks)
 })
+
+test('createInitialState rejects coercive persisted settings values', () => {
+  const baseline = createInitialState()
+  const created = createInitialState({
+    settings: {
+      crtEnabled: 'false',
+      tutorialSeen: '1',
+      logLevel: '2'
+    }
+  })
+
+  assert.deepEqual(created.settings, baseline.settings)
+})

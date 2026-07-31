@@ -242,6 +242,15 @@ describe('travelUtils', () => {
         errorKey: 'ui:travel.errors.notEnoughFuel'
       },
       {
+        label: 'denies if persisted fuel is non-finite',
+        cost: 0,
+        fuel: 1,
+        money: 200,
+        vanFuel: Number.NaN,
+        allowed: false,
+        errorKey: 'ui:travel.errors.notEnoughFuel'
+      },
+      {
         label: 'allows if enough resources',
         cost: 100,
         fuel: 10,
@@ -304,7 +313,8 @@ describe('travelUtils', () => {
         totalCost: 50,
         fuelLiters: 10,
         dailyCost: 20,
-        totalCashImpact: 70
+        totalCashImpact: 70,
+        cashRequired: 70
       })
 
       assert.strictEqual(
@@ -335,6 +345,29 @@ describe('travelUtils', () => {
           }
         ]
       )
+    })
+
+    test('does not let expected daily income subsidize the immediate travel debit', () => {
+      vi.mocked(calculateTravelExpenses).mockReturnValue({
+        dist: 100,
+        totalCost: 100,
+        fuelLiters: 10
+      })
+      vi.mocked(getTotalDailyObligations).mockReturnValue(-200)
+
+      const result = calculateTravelCostsAndImpact(
+        { id: 'node_1' },
+        { id: 'node_0' },
+        { money: 0 },
+        {},
+        {},
+        [],
+        {},
+        {}
+      )
+
+      assert.equal(result.totalCashImpact, -100)
+      assert.equal(result.cashRequired, 100)
     })
   })
 })

@@ -208,5 +208,9 @@
   "lucky_pick.name": "Plektrum des Schicksals",
   "lucky_pick.description": "Ein ramponiertes Plektrum, das drei gute Gigs in Folge überlebt hat. Die Band schwört, es summt.",
   "energy_drink.name": "Sponsoren-Energydrink",
-  "energy_drink.description": "Eine Kiste neongrüner Sponsorenbrause. Schmeckt nach Batteriesäure und gebrochenen Versprechen."
+  "energy_drink.description": "Eine Kiste neongrüner Sponsorenbrause. Schmeckt nach Batteriesäure und gebrochenen Versprechen.",
+  "social_bot.name": "Bot-Netzwerk",
+  "social_bot.description": "Passiv +5 Follower pro Tag.",
+  "label_contact.name": "Label-Kontakt",
+  "label_contact.description": "Erhalte sofort +1.000 Ruhm."
 }

@@ -128,7 +128,7 @@ describe('checkTraitUnlocks', () => {
       const state = createState([matze])
       const context = {
         type: 'GIG_COMPLETE',
-        gigStats: { song: { difficulty: 4 }, accuracy: 100 }
+        gigStats: { song: { difficulty: 4 }, accuracy: 100, maxCombo: 1 }
       }
 
       const unlocks = checkTraitUnlocks(state, context)
@@ -150,6 +150,63 @@ describe('checkTraitUnlocks', () => {
 
       const unlocks = checkTraitUnlocks(state, context)
       assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('does not award perfect-performance traits for failed or empty gigs', () => {
+      const matze = createMember('Matze')
+      const state = createState([matze])
+
+      for (const gigStats of [
+        { failed: true, misses: 0, accuracy: 100, perfectHits: 20 },
+        { failed: false, misses: 0, accuracy: 100, perfectHits: 0 }
+      ]) {
+        assert.deepStrictEqual(
+          checkTraitUnlocks(state, { type: 'GIG_COMPLETE', gigStats }),
+          []
+        )
+      }
+    })
+
+    it('resolves fast songs from production songStats for Blast Machine', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: {
+          failed: false,
+          maxCombo: 51,
+          songStats: [{ songId: '01 Kranker Schrank' }]
+        }
+      })
+
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'blast_machine' }
+      ])
+    })
+
+    it('resolves slow and technical songs from production songStats', () => {
+      const lars = createMember('Lars')
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' },
+        virtuoso: { id: 'virtuoso' }
+      })
+      const state = createState([lars, matze])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: {
+          failed: false,
+          accuracy: 100,
+          maxCombo: 31,
+          songStats: [{ songId: '08 Systemsprenger' }]
+        }
+      })
+
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Lars', traitId: 'melodic_genius' },
+        { memberId: 'Matze', traitId: 'tech_wizard' }
+      ])
     })
 
     it('does not unlock Tech Wizard if accuracy is < 100', () => {
@@ -468,17 +525,14 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [])
     })
 
-    it('skips empty members in band array', () => {
+    it('skips empty members and does not treat an empty gig as perfect', () => {
       const state = createState([null, undefined, createMember('Matze')])
       const context = {
         type: 'GIG_COMPLETE',
         gigStats: { misses: 0, accuracy: 100 }
       }
       const unlocks = checkTraitUnlocks(state, context)
-      assert.deepStrictEqual(unlocks, [
-        { memberId: 'Matze', traitId: 'virtuoso' },
-        { memberId: 'Matze', traitId: 'perfektionist' }
-      ])
+      assert.deepStrictEqual(unlocks, [])
     })
 
     it('returns empty array for unknown context type', () => {

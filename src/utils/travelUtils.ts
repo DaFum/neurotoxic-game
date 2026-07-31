@@ -240,10 +240,10 @@ export const checkTravelPrerequisites = (
 /**
  * Checks whether the player can pay the money and fuel costs for travel.
  *
- * @param totalCashRequired - Total cash the trip must cover. Arrival also
- * calls `advanceDay()`, so callers must pass the `totalCashImpact` from
- * `calculateTravelCostsAndImpact` (travel cost plus
- * `getTotalDailyObligations(state)`), never the travel cost alone.
+ * @param totalCashRequired - Cash the trip must cover. Callers pass the
+ * `cashRequired` from `calculateTravelCostsAndImpact`, which includes positive
+ * daily obligations without letting expected daily income subsidize the
+ * immediate travel debit.
  * @param fuelLiters - Required fuel in liters.
  * @param player - Player state used for current money and van fuel.
  * @returns Access result with localized error metadata when resources are short.
@@ -261,7 +261,7 @@ export const checkTravelResources = (
     }
   }
 
-  if (Math.max(0, player.van?.fuel ?? 0) < fuelLiters) {
+  if (clampVanFuel(finiteNumberOr(player.van?.fuel, 0)) < fuelLiters) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.notEnoughFuel',
@@ -365,6 +365,8 @@ export interface TravelCostsResult {
   dailyCost: number
   /** Sum of immediate costs and daily obligations. */
   totalCashImpact: number
+  /** Cash needed up front; expected daily income cannot fund the travel debit. */
+  cashRequired: number
 }
 
 /**
@@ -405,6 +407,14 @@ export function calculateTravelCostsAndImpact(
     liabilities
   } as GameState)
   const totalCashImpact = totalCost + dailyCost
+  const cashRequired = Math.max(totalCost, totalCashImpact)
 
-  return { dist, totalCost, fuelLiters, dailyCost, totalCashImpact }
+  return {
+    dist,
+    totalCost,
+    fuelLiters,
+    dailyCost,
+    totalCashImpact,
+    cashRequired
+  }
 }

@@ -9,6 +9,7 @@ import {
   applyQuestRewards,
   getQuestRewards
 } from '../../src/domain/questRewards'
+import { getQuestPenalties } from '../../src/domain/questPenalties'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 
@@ -292,4 +293,50 @@ test('questRewards - payload safety', async t => {
     const rewards = getQuestRewards({ id: 'q_money', moneyReward: 50 })
     assert.deepEqual(rewards, [{ type: 'money', amount: 50 }])
   })
+
+  await t.test('filters malformed declarative rewards and penalties', () => {
+    const rewards = getQuestRewards({
+      id: 'q_rewards',
+      rewards: [
+        null,
+        { type: 'money', amount: '5' },
+        { type: 'money', amount: 25 }
+      ]
+    })
+    const penalties = getQuestPenalties({
+      id: 'q_penalties',
+      failurePenalties: [
+        null,
+        { type: 'band.harmony', amount: '5' },
+        { type: 'band.harmony', amount: -5 }
+      ]
+    })
+
+    assert.deepEqual(rewards, [{ type: 'money', amount: 25 }])
+    assert.deepEqual(penalties, [{ type: 'band.harmony', amount: -5 }])
+  })
+
+  await t.test(
+    'skill_point rewards convert fractional targets to integers',
+    () => {
+      const state = {
+        band: {
+          members: [
+            { name: 'A', baseStats: { skill: 3 } },
+            { name: 'B', baseStats: { skill: 3 } }
+          ]
+        }
+      }
+      const quest = {
+        id: 'q_fractional_skill',
+        rewards: [{ type: 'skill_point', memberIndex: 0.5 }]
+      }
+
+      const { state: nextState, toasts } = applyQuestRewards(state, quest)
+
+      assert.equal(nextState.band.members[0].baseStats.skill, 4)
+      assert.equal(nextState.band.members[1].baseStats.skill, 3)
+      assert.equal(toasts[0].options.member, 'A')
+    }
+  )
 })

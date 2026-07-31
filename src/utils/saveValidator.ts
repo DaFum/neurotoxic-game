@@ -9,7 +9,9 @@ import { StateError } from './errorHandler'
 import {
   clampBandHarmony,
   clampPlayerMoney,
-  clampNonNegative
+  clampNonNegative,
+  clampVanCondition,
+  clampVanBreakdownChance
 } from './gameState'
 import { FORBIDDEN_KEYS, isForbiddenKey, isLooseRecord } from './objectUtils'
 import { isFiniteNumber, finiteNumberOr } from './finiteNumber'
@@ -43,7 +45,7 @@ export const validateSaveData = (data: unknown): boolean => {
 
   const requiredTopLevelKeys = ['player', 'band', 'social', 'gameMap']
   for (const key of requiredTopLevelKeys) {
-    if (!data[key]) {
+    if (!Object.hasOwn(data, key)) {
       throw new StateError(`Missing required top-level key: ${key}`)
     }
   }
@@ -62,8 +64,8 @@ export const validateSaveData = (data: unknown): boolean => {
   validateSocial(data.social)
 
   // Validate GameMap (simplified check)
-  if (!isLooseRecord(data.gameMap)) {
-    throw new StateError('gameMap must be an object')
+  if (data.gameMap !== null && !isLooseRecord(data.gameMap)) {
+    throw new StateError('gameMap must be an object or null')
   }
 
   return true
@@ -90,7 +92,7 @@ const validatePlayer = (player: unknown): void => {
   }
   // Day is 1-based; clamp corrupted saves up to the minimum valid day.
   if (typeof p.day === 'number') {
-    p.day = Math.max(1, finiteNumberOr(p.day, 1))
+    p.day = Math.max(1, Math.floor(finiteNumberOr(p.day, 1)))
   }
 
   if (p.money !== undefined) {
@@ -102,6 +104,22 @@ const validatePlayer = (player: unknown): void => {
 
   if (p.van != null && !isLooseRecord(p.van)) {
     throw new StateError('player.van must be an object')
+  }
+  if (isLooseRecord(p.van)) {
+    if (p.van.condition !== undefined) {
+      if (!isFiniteNumber(p.van.condition)) {
+        throw new StateError('player.van.condition must be a finite number')
+      }
+      p.van.condition = clampVanCondition(p.van.condition)
+    }
+    if (p.van.breakdownChance !== undefined) {
+      if (!isFiniteNumber(p.van.breakdownChance)) {
+        throw new StateError(
+          'player.van.breakdownChance must be a finite number'
+        )
+      }
+      p.van.breakdownChance = clampVanBreakdownChance(p.van.breakdownChance)
+    }
   }
 
   // Backfill/Validate clinicVisits
@@ -173,6 +191,9 @@ const validateBand = (band: unknown): void => {
       if (typeof m.name !== 'string') {
         throw new StateError(`band.members[${index}].name must be a string`)
       }
+      const staminaMax =
+        isFiniteNumber(m.staminaMax) && m.staminaMax > 0 ? m.staminaMax : 100
+      m.staminaMax = staminaMax
       for (const stat of ['mood', 'stamina'] as const) {
         const val = m[stat]
         // Treat null the same as missing (legacy saves) — matching the
@@ -183,7 +204,10 @@ const validateBand = (band: unknown): void => {
               `band.members[${index}].${stat} must be a finite number`
             )
           }
-          m[stat] = Math.min(100, clampNonNegative(val as number))
+          m[stat] =
+            stat === 'mood'
+              ? Math.min(100, clampNonNegative(val as number))
+              : Math.min(staminaMax, clampNonNegative(val as number))
         }
       }
       for (const stat of [
@@ -343,11 +367,11 @@ const validateSocial = (social: unknown): void => {
           )
         if (
           !days.every(
-            day => Number.isFinite(day) && Number.isInteger(day) && day >= 0
+            day => Number.isFinite(day) && Number.isInteger(day) && day >= 1
           )
         )
           throw new StateError(
-            `social.regionalGigHistory.${regionId} must contain non-negative integer days`
+            `social.regionalGigHistory.${regionId} must contain positive integer days`
           )
       }
       continue

@@ -18,9 +18,9 @@ import type {
   EventDeltaPayload,
   GameAction,
   GamePhase,
-  GameState,
-  QuestState
+  GameState
 } from '../types'
+import { isQuestStateLike } from './questValidation'
 
 /**
  * Typed side effects returned by event resolution for callers to execute.
@@ -51,11 +51,6 @@ type EventResolution = {
   description: string
   result: unknown
 }
-
-const isQuestStateLike = (value: unknown): value is QuestState =>
-  isLooseRecord(value) &&
-  Object.hasOwn(value, 'id') &&
-  typeof (value as Record<string, unknown>).id === 'string'
 
 function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   if (!Array.isArray(quests)) return []

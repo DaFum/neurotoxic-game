@@ -8,7 +8,9 @@ const handleArrivalSequence = vi.fn()
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
-  useTranslation: () => ({ t: (_k, o) => o?.defaultValue || _k })
+  useTranslation: () => ({
+    t: (_k, o) => (_k === 'ui:continue' ? 'WEITER' : (o?.defaultValue ?? _k))
+  })
 }))
 
 vi.mock('../../src/hooks/minigames/useTourbusLogic', () => ({
@@ -30,9 +32,16 @@ vi.mock('../../src/components/stage/TourbusStageController', () => ({
 }))
 
 vi.mock('../../src/components/MinigameSceneFrame', () => ({
-  MinigameSceneFrame: ({ children, onComplete, renderCompletionStats }) => (
+  MinigameSceneFrame: ({
+    children,
+    onComplete,
+    completionButtonText,
+    renderCompletionStats
+  }) => (
     <div>
-      <button onClick={() => onComplete()}>finish-minigame</button>
+      <button type='button' onClick={() => onComplete()}>
+        {completionButtonText}
+      </button>
       <div>{renderCompletionStats({ damage: 40 })}</div>
       {children}
     </div>
@@ -47,10 +56,12 @@ describe('TourbusScene', () => {
     expect(screen.getByText(/DISTANCE:/)).toBeInTheDocument()
     expect(screen.getByText(/DAMAGE:/)).toBeInTheDocument()
     expect(screen.getByText('Condition Loss: 20%')).toBeInTheDocument()
+    const completionButton = screen.getByRole('button', { name: 'WEITER' })
+    expect(completionButton).toBeInTheDocument()
 
     fireEvent.click(screen.getByLabelText('Move Left'))
     fireEvent.click(screen.getByLabelText('Move Right'))
-    fireEvent.click(screen.getByText('finish-minigame'))
+    fireEvent.click(completionButton)
 
     expect(moveLeft).toHaveBeenCalled()
     expect(moveRight).toHaveBeenCalled()

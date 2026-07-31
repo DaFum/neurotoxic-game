@@ -81,5 +81,45 @@ describe('eventReducer', () => {
       assert.ok(matze.traits['tech_wizard'])
       assert.ok(nextState.toasts.length > 0)
     })
+
+    it('accumulates raw in-gig score effects for the rhythm HUD', () => {
+      baseState.currentScene = 'GIG'
+      baseState.gigEventScoreDelta = 0
+      baseState.player.score = 0
+
+      const increased = handleApplyEventDelta(baseState, {
+        score: 150,
+        player: {},
+        band: {},
+        social: {},
+        flags: {}
+      })
+      const decreased = handleApplyEventDelta(increased, {
+        score: -300,
+        player: {},
+        band: {},
+        social: {},
+        flags: {}
+      })
+
+      assert.strictEqual(increased.gigEventScoreDelta, 150)
+      assert.strictEqual(decreased.gigEventScoreDelta, -150)
+    })
+
+    it('keeps the cumulative in-gig score finite when addition overflows', () => {
+      baseState.currentScene = 'GIG'
+      baseState.gigEventScoreDelta = Number.MAX_VALUE
+
+      const nextState = handleApplyEventDelta(baseState, {
+        score: Number.MAX_VALUE,
+        player: {},
+        band: {},
+        social: {},
+        flags: {}
+      })
+
+      assert.strictEqual(nextState.gigEventScoreDelta, Number.MAX_VALUE)
+      assert.equal(Number.isFinite(nextState.gigEventScoreDelta), true)
+    })
   })
 })

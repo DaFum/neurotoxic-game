@@ -78,7 +78,7 @@ export const useOnTravelComplete = ({
           refs.gameMapRef.current?.nodes[player.currentNodeId]
 
         // Calculate and validate costs at arrival.
-        const { fuelLiters, totalCost, totalCashImpact } =
+        const { fuelLiters, totalCost, cashRequired } =
           calculateTravelCostsAndImpact(
             node,
             currentStartNode,
@@ -91,7 +91,7 @@ export const useOnTravelComplete = ({
           )
 
         const resourceCheck = checkTravelResources(
-          totalCashImpact,
+          cashRequired,
           fuelLiters,
           player
         )

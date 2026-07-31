@@ -7,6 +7,7 @@ import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
+import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
@@ -32,6 +33,9 @@ import {
   finiteNumberOr,
   clampNonNegative,
   clampVanFuel,
+  clampVanCondition,
+  clampVanBreakdownChance,
+  clamp0to100,
   clampControversyLevel,
   clampLoyalty,
   clampZealotry,
@@ -250,13 +254,9 @@ export const sanitizeBandInventory = (
     const raw = value[key]
 
     if (typeof fallback === 'number') {
-      const numeric =
-        typeof raw === 'number'
-          ? raw
-          : typeof raw === 'string' && raw.trim().length > 0
-            ? Number(raw)
-            : Number.NaN
-      sanitized[key] = Number.isFinite(numeric) ? numeric : fallback
+      sanitized[key] = isFiniteNumber(raw)
+        ? Math.max(0, Math.floor(raw))
+        : fallback
       continue
     }
 
@@ -718,7 +718,9 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
       playerData.totalTravels,
       DEFAULT_PLAYER_STATE.totalTravels
     ),
-    hqUpgrades: sanitizeStringArray(playerData.hqUpgrades),
+    hqUpgrades: migrateLegacyHqUpgradeIds(
+      sanitizeStringArray(playerData.hqUpgrades)
+    ),
     clinicVisits: finiteNumberOr(
       playerData.clinicVisits,
       DEFAULT_PLAYER_STATE.clinicVisits
@@ -729,7 +731,9 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
         vanData.condition,
         DEFAULT_PLAYER_STATE.van.condition
       ),
-      upgrades: sanitizeStringArray(vanData.upgrades),
+      upgrades: migrateLegacyHqUpgradeIds(
+        sanitizeStringArray(vanData.upgrades)
+      ),
       breakdownChance: finiteNumberOr(
         vanData.breakdownChance,
         DEFAULT_PLAYER_STATE.van.breakdownChance
@@ -784,11 +788,13 @@ export const sanitizePlayer = (loadedPlayer: unknown): PlayerState => {
     money: clampPlayerMoney(rawPlayer.money),
     fame: validatedFame,
     fameLevel: calculateFameLevel(validatedFame),
-    day: Math.max(1, rawPlayer.day),
+    day: Math.max(1, Math.floor(rawPlayer.day)),
     time: wrapClockHour(rawPlayer.time),
     van: {
       ...rawPlayer.van,
-      fuel: clampVanFuel(rawPlayer.van.fuel)
+      fuel: clampVanFuel(rawPlayer.van.fuel),
+      condition: clampVanCondition(rawPlayer.van.condition),
+      breakdownChance: clampVanBreakdownChance(rawPlayer.van.breakdownChance)
     }
   }
 }
@@ -1260,6 +1266,11 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   ] as const) {
     const parsed = finiteOptionalNumber(safeValue[key])
     if (parsed !== undefined) sanitized[key] = clampFn(parsed)
+  }
+
+  const scenePresence = finiteOptionalNumber(safeValue.scenePresence)
+  if (scenePresence !== undefined) {
+    sanitized.scenePresence = clamp0to100(scenePresence)
   }
 
   for (const key of [

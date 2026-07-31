@@ -10,17 +10,93 @@ import { safeJsonParse } from './objectUtils'
  */
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
+const UNLOCK_MARKER_PREFIX = 'neurotoxic_unlock:'
 
 // In-memory cache for O(1) duplicate checks
 let unlocksCache: Set<string> | null = null
-let lastRawUnlocks: string | null = null
+let lastStorageSnapshot: string | null = null
+const UNLOCK_LOAD_FAILED = Symbol('UNLOCK_LOAD_FAILED')
+
+const readUnlockMarkers = (storage: Storage): string[] => {
+  if (typeof storage.key !== 'function' || !Number.isFinite(storage.length)) {
+    return []
+  }
+
+  const markerUnlocks: string[] = []
+  for (let i = 0; i < storage.length; i++) {
+    const key = storage.key(i)
+    if (!key?.startsWith(UNLOCK_MARKER_PREFIX)) continue
+    try {
+      markerUnlocks.push(
+        decodeURIComponent(key.slice(UNLOCK_MARKER_PREFIX.length))
+      )
+    } catch (_error) {
+      // Ignore malformed marker keys written outside this module.
+    }
+  }
+  markerUnlocks.sort()
+  return markerUnlocks
+}
 
 /**
  * Clears the in-memory cache. Used primarily for testing.
  */
 const clearCache = (): void => {
   unlocksCache = null
-  lastRawUnlocks = null
+  lastStorageSnapshot = null
+}
+
+/**
+ * Loads and validates unlocks from local storage.
+ * @returns Array of unlocked strings.
+ */
+const loadUnlocks = (): string[] | typeof UNLOCK_LOAD_FAILED => {
+  let currentSnapshot: string | null = null
+
+  const maybe = safeStorageOperation<string[] | typeof UNLOCK_LOAD_FAILED>(
+    'loadUnlocks',
+    () => {
+      const storage = localStorage
+      const currentRaw = storage.getItem(UNLOCKS_KEY)
+      const markerUnlocks = readUnlockMarkers(storage)
+      currentSnapshot = `${currentRaw ?? ''}\u0000${markerUnlocks.join('\u0000')}`
+
+      if (currentSnapshot === lastStorageSnapshot && unlocksCache) {
+        return Array.from(unlocksCache)
+      }
+
+      let legacyUnlocks: string[] = []
+      if (currentRaw) {
+        try {
+          const parsed: unknown = safeJsonParse(currentRaw)
+          if (Array.isArray(parsed)) {
+            legacyUnlocks = parsed.filter(
+              (item): item is string => typeof item === 'string'
+            )
+          }
+        } catch (_e) {
+          legacyUnlocks = []
+        }
+      }
+
+      return Array.from(new Set([...legacyUnlocks, ...markerUnlocks]))
+    },
+    UNLOCK_LOAD_FAILED
+  )
+
+  if (maybe === UNLOCK_LOAD_FAILED) return UNLOCK_LOAD_FAILED
+
+  if (
+    currentSnapshot !== null &&
+    currentSnapshot === lastStorageSnapshot &&
+    unlocksCache
+  ) {
+    return maybe
+  }
+
+  unlocksCache = new Set(maybe)
+  lastStorageSnapshot = currentSnapshot
+  return maybe
 }
 
 /**
@@ -28,47 +104,9 @@ const clearCache = (): void => {
  * @returns Array of unlocked strings.
  */
 export const getUnlocks = (): string[] => {
-  let currentRaw: string | null = null
-
-  const maybe = safeStorageOperation<string[]>(
-    'loadUnlocks',
-    () => {
-      currentRaw = localStorage.getItem(UNLOCKS_KEY)
-
-      if (
-        currentRaw !== null &&
-        currentRaw === lastRawUnlocks &&
-        unlocksCache
-      ) {
-        return Array.from(unlocksCache)
-      }
-
-      if (!currentRaw) return []
-
-      let parsed: unknown
-      try {
-        parsed = safeJsonParse(currentRaw)
-      } catch (_e) {
-        return []
-      }
-
-      if (!Array.isArray(parsed)) return []
-
-      // Filter out non-string elements to ensure type safety
-      return parsed.filter(item => typeof item === 'string') as string[]
-    },
-    []
-  )
-
-  // If the raw string hasn't changed and we have a cache, just return it
-  if (currentRaw !== null && currentRaw === lastRawUnlocks && unlocksCache) {
-    return maybe ?? []
-  }
-
-  const result = maybe ?? []
-  unlocksCache = new Set(result)
-  lastRawUnlocks = currentRaw
-  return result
+  const result = loadUnlocks()
+  if (result !== UNLOCK_LOAD_FAILED) return result
+  return unlocksCache ? Array.from(unlocksCache) : []
 }
 
 /**
@@ -79,8 +117,9 @@ export const getUnlocks = (): string[] => {
 export const addUnlock = (unlockId: string): boolean => {
   if (typeof unlockId !== 'string') return false
 
-  // Refresh cache from storage. getUnlocks will recreate the Set ONLY if storage actually changed
-  const currentUnlocks = getUnlocks()
+  // Refresh cache from storage. loadUnlocks recreates the Set only when storage changed.
+  const currentUnlocks = loadUnlocks()
+  if (currentUnlocks === UNLOCK_LOAD_FAILED) return false
   const cache = unlocksCache
 
   if (!cache) return false
@@ -88,30 +127,38 @@ export const addUnlock = (unlockId: string): boolean => {
   // Prevent duplicates in O(1) time
   if (cache.has(unlockId)) return false
 
-  cache.add(unlockId)
-  currentUnlocks.push(unlockId)
-
-  const success =
+  const markerSuccess =
     safeStorageOperation<boolean>(
-      'saveUnlocks',
+      'saveUnlockMarker',
       () => {
-        const newRaw = JSON.stringify(currentUnlocks)
-        localStorage.setItem(UNLOCKS_KEY, newRaw)
-        // Update our cache reference immediately so we don't invalidate our own write
-        lastRawUnlocks = newRaw
+        localStorage.setItem(
+          `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
+          '1'
+        )
         return true
       },
       false
     ) ?? false
 
-  if (!success) {
-    // Roll back cache mutation if persistence fails
-    cache.delete(unlockId)
-    // Force a fresh read next time since we don't know the exact valid storage state
-    lastRawUnlocks = null
-  }
+  if (!markerSuccess) return false
 
-  return success
+  cache.add(unlockId)
+  currentUnlocks.push(unlockId)
+
+  // Keep the legacy aggregate for existing saves and callers. The per-unlock
+  // marker is authoritative for cross-tab safety: distinct marker keys cannot
+  // overwrite each other when two tabs unlock different items concurrently.
+  safeStorageOperation<boolean>(
+    'saveUnlocks',
+    () => {
+      localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
+      return true
+    },
+    false
+  )
+  lastStorageSnapshot = null
+
+  return true
 }
 
 /**

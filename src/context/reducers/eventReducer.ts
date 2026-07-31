@@ -1,9 +1,15 @@
 import { logger } from '../../utils/logger'
-import { applyEventDelta, isForbiddenKey } from '../../utils/gameState'
+import {
+  applyEventDelta,
+  finiteNumberOr,
+  isFiniteNumber,
+  isForbiddenKey
+} from '../../utils/gameState'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import { createStoryFlagAddedQuestEvent } from '../../quests/producers/storyQuestEvents'
+import { GAME_PHASES } from '../gameConstants'
 import type { EventDeltaPayload, GameEvent, GameState } from '../../types'
 
 /**
@@ -35,7 +41,18 @@ export const handleApplyEventDelta = (
   payload: EventDeltaPayload
 ): GameState => {
   logger.info('GameState', 'Applying Event Delta', payload)
-  const nextState = applyEventDelta(state, payload)
+  const appliedState = applyEventDelta(state, payload)
+  const currentGigEventScore = finiteNumberOr(state.gigEventScoreDelta, 0)
+  const nextState =
+    state.currentScene === GAME_PHASES.GIG && isFiniteNumber(payload.score)
+      ? {
+          ...appliedState,
+          gigEventScoreDelta: finiteNumberOr(
+            currentGigEventScore + payload.score,
+            currentGigEventScore
+          )
+        }
+      : appliedState
 
   const eventUnlocks = checkTraitUnlocks(nextState, {
     type: 'EVENT_RESOLVED'

@@ -79,11 +79,10 @@ function getStorage(): Storage | null {
  * @returns Parsed value or fallback
  */
 export function getSafeStorageItem<T>(key: string, fallback: T): T {
-  const storage = getStorage()
-  if (!storage) return fallback
-
   let raw: string | null
   try {
+    const storage = getStorage()
+    if (!storage) return fallback
     raw = storage.getItem(key)
   } catch (error) {
     // Storage access itself failed (SecurityError in private mode, tampered
@@ -126,10 +125,9 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
  * @param value - JSON-serializable value to store.
  */
 export function setSafeStorageItem(key: string, value: unknown): void {
-  const storage = getStorage()
-  if (!storage) return
-
   try {
+    const storage = getStorage()
+    if (!storage) return
     storage.setItem(key, JSON.stringify(value))
   } catch (error) {
     handleError(

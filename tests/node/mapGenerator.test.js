@@ -28,6 +28,18 @@ test('MapGenerator keeps a Number.MAX_VALUE seed finite', () => {
   )
 })
 
+test('MapGenerator normalizes negative seeds into the documented RNG range', () => {
+  const generator = new MapGenerator(-100)
+
+  for (let i = 0; i < 20; i++) {
+    const value = generator.random()
+    assert.ok(
+      value >= 0 && value < 1,
+      `random value ${value} must be in [0, 1)`
+    )
+  }
+})
+
 test('MapGenerator guarantees start node', () => {
   const generator = new MapGenerator()
   const map = generator.generateMap()

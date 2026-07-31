@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useCallback } from 'react'
+import { useMemo, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
@@ -44,6 +44,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const setlist = useGameSelector(state => state.setlist)
   const band = useGameSelector(state => state.band)
   const activeEvent = useGameSelector(state => state.activeEvent)
+  const gigEventScoreDelta = useGameSelector(state =>
+    finiteNumberOr(state.gigEventScoreDelta, 0)
+  )
   const gameMap = useGameSelector(state => state.gameMap)
   const player = useGameSelector(state => state.player)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
@@ -53,6 +56,20 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
 
   // 1. Core State (React + Ref)
   const { gameStateRef, state, setters } = useRhythmGameState()
+  const appliedEventScoreDeltaRef = useRef(0)
+
+  useEffect(() => {
+    const scoreDelta = gigEventScoreDelta - appliedEventScoreDeltaRef.current
+    appliedEventScoreDeltaRef.current = gigEventScoreDelta
+    if (scoreDelta === 0) return
+
+    const nextScore = Math.max(
+      0,
+      finiteNumberOr(gameStateRef.current.score, 0) + scoreDelta
+    )
+    gameStateRef.current.score = nextScore
+    setters.setScore(nextScore)
+  }, [gameStateRef, gigEventScoreDelta, setters])
 
   // Memoize venue to node mapping to avoid O(N) lookup on every effect run
   const venueIdToNodeIdMap = useMemo(() => {

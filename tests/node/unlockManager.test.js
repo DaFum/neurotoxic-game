@@ -4,6 +4,12 @@ import assert from 'node:assert/strict'
 // Mock localStorage globally
 const mockStorage = {
   store: {},
+  get length() {
+    return Object.keys(this.store).length
+  },
+  key(index) {
+    return Object.keys(this.store)[index] ?? null
+  },
   getItem(key) {
     return this.store[key] || null
   },
@@ -113,6 +119,21 @@ test('UnlockManager Unit Tests', async t => {
     assert.deepEqual(getUnlocks(), ['item1'])
   })
 
+  await t.test(
+    'per-unlock markers survive a stale aggregate overwrite from another tab',
+    () => {
+      assert.equal(addUnlock('first_unlock'), true)
+      mockStorage.setItem(
+        'neurotoxic_unlocks',
+        JSON.stringify(['second_unlock'])
+      )
+
+      clearCache()
+
+      assert.deepEqual(getUnlocks(), ['second_unlock', 'first_unlock'])
+    }
+  )
+
   await t.test('addUnlock returns false if storage fails', () => {
     const originalSetItem = mockStorage.setItem
     mockStorage.setItem = () => {
@@ -126,4 +147,35 @@ test('UnlockManager Unit Tests', async t => {
       mockStorage.setItem = originalSetItem
     }
   })
+
+  await t.test(
+    'addUnlock preserves legacy unlocks when the storage read fails',
+    () => {
+      mockStorage.setItem(
+        'neurotoxic_unlocks',
+        JSON.stringify(['legacy_unlock'])
+      )
+      const originalGetItem = mockStorage.getItem
+      mockStorage.getItem = () => {
+        throw new Error('Access Denied')
+      }
+
+      try {
+        assert.equal(addUnlock('new_unlock'), false)
+        assert.equal(
+          mockStorage.store.neurotoxic_unlocks,
+          JSON.stringify(['legacy_unlock'])
+        )
+        assert.equal(
+          Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:new_unlock'),
+          false
+        )
+      } finally {
+        mockStorage.getItem = originalGetItem
+      }
+
+      clearCache()
+      assert.deepEqual(getUnlocks(), ['legacy_unlock'])
+    }
+  )
 })

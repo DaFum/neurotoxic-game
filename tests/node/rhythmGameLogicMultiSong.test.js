@@ -404,6 +404,46 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
     cleanup()
   })
 
+  test('applies event score deltas to both the rhythm state and HUD score', async () => {
+    const mockState = {
+      setlist: [],
+      band: { members: [], harmony: 100, performance: {} },
+      activeEvent: null,
+      gigEventScoreDelta: 0,
+      hasUpgrade: () => false,
+      setLastGigStats: mockSetLastGigStats,
+      addToast: () => {},
+      gameMap: { nodes: { node1: { layer: 0 } } },
+      player: { currentNodeId: 'node1', money: 0 },
+      changeScene: mockChangeScene,
+      gigModifiers: {},
+      endGig: mockEndGig,
+      triggerEvent: () => false
+    }
+    mockUseGameState.mock.mockImplementation(() => mockState)
+    mockAudioEngine.startGigPlayback.mock.mockImplementation(async () => true)
+    mockAudioManager.ensureAudioContext.mock.mockImplementation(
+      async () => true
+    )
+
+    const { result, rerender } = renderHook(() => rhythmGameLogicHook())
+    await act(async () => {
+      await flushPromises()
+    })
+
+    mockState.gigEventScoreDelta = 150
+    act(() => rerender())
+
+    assert.strictEqual(result.current.stats.score, 150)
+    assert.strictEqual(result.current.gameStateRef.current.score, 150)
+
+    mockState.gigEventScoreDelta = -150
+    act(() => rerender())
+
+    assert.strictEqual(result.current.stats.score, 0)
+    assert.strictEqual(result.current.gameStateRef.current.score, 0)
+  })
+
   test('bootstraps first song and notes correctly', async () => {
     const song1 = {
       id: 'song1',

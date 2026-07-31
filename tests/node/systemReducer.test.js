@@ -45,6 +45,68 @@ test('handleAdvanceDay ignores non-finite expired harmony effect values', () => 
   assert.equal(nextState.band.harmony, controlNextState.band.harmony)
 })
 
+test('handleLoadGame restores bounded social and player state invariants', () => {
+  const initialState = {
+    ...createInitialState(),
+    gameMap: { nodes: { stale: { id: 'stale' } }, connections: [] }
+  }
+  const nextState = handleLoadGame(initialState, {
+    player: {
+      day: 4.8,
+      van: { condition: -20, breakdownChance: 9 }
+    },
+    band: {
+      inventory: { shirts: -10, hoodies: 1.75, patches: '12' }
+    },
+    social: { scenePresence: 72 },
+    gameMap: null
+  })
+
+  assert.equal(nextState.player.day, 4)
+  assert.equal(nextState.player.van.condition, 0)
+  assert.equal(nextState.player.van.breakdownChance, 0.5)
+  assert.equal(nextState.band.inventory.shirts, 0)
+  assert.equal(nextState.band.inventory.hoodies, 1)
+  assert.equal(nextState.band.inventory.patches, 100)
+  assert.equal(nextState.social.scenePresence, 72)
+  assert.equal(nextState.gameMap, null)
+})
+
+test('handleLoadGame migrates duplicate legacy upgrade IDs to canonical IDs', () => {
+  const state = createInitialState()
+  const nextState = handleLoadGame(state, {
+    player: {
+      hqUpgrades: ['guitar_custom', 'hq_inst_guitar_custom', 'hq_room_coffee'],
+      van: {
+        upgrades: [
+          'van_suspension',
+          'hq_van_suspension',
+          'van_sound_system',
+          'van_storage',
+          'guitar_custom',
+          'drum_trigger',
+          'bass_sansamp',
+          'unrelated_upgrade'
+        ]
+      }
+    }
+  })
+
+  assert.deepEqual(nextState.player.hqUpgrades, [
+    'hq_inst_guitar_custom',
+    'hq_room_coffee'
+  ])
+  assert.deepEqual(nextState.player.van.upgrades, [
+    'hq_van_suspension',
+    'hq_van_sound_system',
+    'hq_van_storage',
+    'hq_inst_guitar_custom',
+    'hq_inst_drum_trigger',
+    'hq_inst_bass_sansamp',
+    'unrelated_upgrade'
+  ])
+})
+
 test('handleAdvanceDay ignores non-finite expired additive effect values', () => {
   const createState = () => {
     const state = createInitialState()
@@ -666,7 +728,7 @@ test('systemReducer - LOAD_GAME', async t => {
 
       assert.deepEqual(nextState.band.inventory, {
         ...initialState.band.inventory,
-        shirts: 35,
+        shirts: initialState.band.inventory.shirts,
         hoodies: initialState.band.inventory.hoodies,
         patches: initialState.band.inventory.patches,
         strings: initialState.band.inventory.strings,

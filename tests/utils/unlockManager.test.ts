@@ -15,6 +15,10 @@ describe('unlockManager', () => {
     // Setup local storage mock
     mockStorage = {}
     const localStorageMock = {
+      get length() {
+        return Object.keys(mockStorage).length
+      },
+      key: vi.fn((index: number) => Object.keys(mockStorage)[index] ?? null),
       getItem: vi.fn((key: string) => mockStorage[key] || null),
       setItem: vi.fn((key: string, value: string) => {
         mockStorage[key] = value
@@ -149,6 +153,15 @@ describe('unlockManager', () => {
 
       // Cache should have been rolled back
       expect(getUnlocks()).toEqual([])
+    })
+
+    it('recovers unlocks from per-unlock markers after a stale array overwrite', () => {
+      expect(addUnlock('first_unlock')).toBe(true)
+      mockStorage['neurotoxic_unlocks'] = JSON.stringify(['second_unlock'])
+
+      __testInternals.clearCache()
+
+      expect(getUnlocks()).toEqual(['second_unlock', 'first_unlock'])
     })
   })
 

@@ -107,6 +107,7 @@ describe('ShopTab', () => {
     expect(screen.getByTestId('shop-item-passive1')).toBeInTheDocument()
     expect(screen.getByTestId('shop-item-inst1')).toBeInTheDocument()
     expect(screen.getByTestId('shop-item-instPerformance')).toBeInTheDocument()
+    expect(screen.getAllByTestId(/^shop-item-/)).toHaveLength(4)
   })
 
   test('passes correct props to ShopItem', () => {

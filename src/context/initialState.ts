@@ -4,9 +4,10 @@
  */
 
 import { CHARACTERS } from '../data/characters'
-import { LOG_LEVELS, isValidLogLevel } from '../utils/logger'
+import { LOG_LEVELS } from '../utils/logger'
 import { isLooseRecord } from '../utils/gameState'
 import { readGlobalSettings } from '../utils/storage'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type {
@@ -234,37 +235,6 @@ const DEFAULT_SETTINGS = {
       : LOG_LEVELS.WARN
 }
 
-const sanitizeSettings = (
-  input: unknown
-): {
-  crtEnabled?: boolean
-  tutorialSeen?: boolean
-  logLevel?: number
-} => {
-  if (!isLooseRecord(input)) return {}
-
-  const next: {
-    crtEnabled?: boolean
-    tutorialSeen?: boolean
-    logLevel?: number
-  } = {}
-
-  if (Object.hasOwn(input, 'crtEnabled')) {
-    next.crtEnabled = Boolean(input.crtEnabled)
-  }
-  if (Object.hasOwn(input, 'tutorialSeen')) {
-    next.tutorialSeen = Boolean(input.tutorialSeen)
-  }
-  if (Object.hasOwn(input, 'logLevel')) {
-    const numeric = Number(input.logLevel)
-    if (isValidLogLevel(numeric)) {
-      next.logLevel = numeric
-    }
-  }
-
-  return next
-}
-
 /**
  * Complete initial state for the game
  */
@@ -295,6 +265,7 @@ const initialState: GameState = {
   settings: { ...DEFAULT_SETTINGS },
   npcs: {},
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
+  gigEventScoreDelta: 0,
   minigame: { ...DEFAULT_MINIGAME_STATE },
   unlocks: [],
   pendingBandHQOpen: false,
@@ -348,8 +319,8 @@ export const createInitialState = (
   },
   settings: {
     ...DEFAULT_SETTINGS,
-    ...sanitizeSettings(getSavedSettings()),
-    ...sanitizeSettings(persistedData.settings)
+    ...sanitizeSettingsPayload(getSavedSettings()),
+    ...sanitizeSettingsPayload(persistedData.settings ?? {})
   },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
   minigame: { ...DEFAULT_MINIGAME_STATE },

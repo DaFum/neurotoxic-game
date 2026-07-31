@@ -22,7 +22,7 @@ export const van = [
     currency: 'fame',
     img: 'ITEM_VAN_STUDIO',
     description: 'items:hq_van_sound_system.description',
-    effect: { type: 'unlock_upgrade', id: 'van_sound_system' }
+    effect: { type: 'passive', key: 'harmony_regen_travel' }
   },
   {
     id: 'hq_van_storage',
@@ -98,7 +98,7 @@ export const van = [
     currency: 'fame',
     img: 'ITEM_GLUE_TAPE',
     description: 'items:hq_van_tape_glue.description',
-    effect: { type: 'inventory_set', item: 'tape_glue', value: true }
+    effect: { type: 'inventory_add', item: 'tape_glue', value: 1 }
   },
   // Skurrile Van Upgrades
   {

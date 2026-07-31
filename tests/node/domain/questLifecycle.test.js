@@ -677,6 +677,20 @@ test('QuestLifecycle', async t => {
       ])
     })
 
+    await t.test(
+      'ignores malformed completionFlags on persisted quests',
+      () => {
+        const state = {
+          activeQuests: [{ id: 'q1', completionFlags: {} }],
+          activeStoryFlags: ['existing_flag']
+        }
+
+        const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
+
+        assert.deepEqual(nextState.activeStoryFlags, ['existing_flag'])
+      }
+    )
+
     await t.test('handles hardcoded QUEST_PROVE_YOURSELF', () => {
       const state = {
         activeQuests: [{ id: QUEST_PROVE_YOURSELF }],

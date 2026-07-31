@@ -3,6 +3,7 @@ import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
 import { finiteNumberOr, hasStateItem } from '../utils/gameState'
 import { getRegionKeyForLocation } from '../utils/mapUtils'
+import { isQuestStateLike } from './questValidation'
 
 /**
  * Maximum active quest slots by quest kind.
@@ -23,7 +24,8 @@ export const QUEST_SLOT_LIMITS: Record<QuestKind, number> = {
 const getQuestKindForSlots = (quest: Partial<QuestState>): QuestKind => {
   const definition = getQuestDefinition(quest.id ?? '') as
     Partial<QuestState> | undefined
-  return quest.kind ?? definition?.kind ?? 'side'
+  const kind = quest.kind ?? definition?.kind ?? 'side'
+  return Object.hasOwn(QUEST_SLOT_LIMITS, kind) ? kind : 'side'
 }
 
 /**
@@ -79,7 +81,14 @@ export type CanAcceptQuestResult =
   | { ok: true; scopeKey?: string }
   | {
       ok: false
-      reason: 'active' | 'completed' | 'flag' | 'cooldown' | 'scope' | 'slot'
+      reason:
+        | 'active'
+        | 'completed'
+        | 'flag'
+        | 'cooldown'
+        | 'scope'
+        | 'slot'
+        | 'invalid'
     }
 
 /**
@@ -98,6 +107,12 @@ export const canAcceptQuest = (
   state: GameState,
   questOrId: string | QuestState
 ): CanAcceptQuestResult => {
+  if (
+    (typeof questOrId === 'string' && questOrId.length === 0) ||
+    (typeof questOrId !== 'string' && !isQuestStateLike(questOrId))
+  ) {
+    return { ok: false, reason: 'invalid' }
+  }
   const questId = typeof questOrId === 'string' ? questOrId : questOrId.id
   if (hasActiveQuest(state.activeQuests, questId)) {
     return { ok: false, reason: 'active' }
@@ -107,7 +122,9 @@ export const canAcceptQuest = (
   const merged: Partial<QuestState> =
     typeof questOrId === 'string'
       ? { id: questId, ...(definition ?? {}) }
-      : { ...(definition ?? {}), ...questOrId }
+      : definition
+        ? { ...questOrId, ...definition, id: questId }
+        : { ...questOrId }
 
   const repeatPolicy = merged.repeatPolicy
   let scopeKey: string | undefined
@@ -117,7 +134,7 @@ export const canAcceptQuest = (
     }
     const activeFlags = state.activeStoryFlags ?? []
     const completionFlags = [
-      ...(merged.completionFlags ?? []),
+      ...(Array.isArray(merged.completionFlags) ? merged.completionFlags : []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
     for (let i = 0; i < completionFlags.length; i++) {

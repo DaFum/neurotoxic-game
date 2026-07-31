@@ -1,9 +1,21 @@
 import type { Rarity } from '../types'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
+import {
+  ADDITIVE_BAND_EFFECT_FIELDS,
+  EQUIPMENT_APPLY_ON_ADD_EFFECTS
+} from '../utils/contrabandEffects'
 
 const VALID_TYPES = new Set(['consumable', 'equipment', 'relic'])
 const VALID_RARITIES = new Set<Rarity>(['common', 'uncommon', 'rare', 'epic'])
+const VALID_EFFECT_TYPES = new Set([
+  ...Object.keys(ADDITIVE_BAND_EFFECT_FIELDS),
+  'stamina',
+  'mood',
+  'stamina_max',
+  'stress',
+  'guitar_difficulty'
+])
 
 export type SanitizedContrabandItem = {
   id: string
@@ -30,13 +42,20 @@ export interface ContrabandValidationResult {
 const readString = (item: Record<string, unknown>, key: string): boolean =>
   typeof item[key] === 'string' && item[key].length > 0
 
-const hasForbiddenKeys = (value: unknown): boolean => {
+const hasForbiddenKeys = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet()
+): boolean => {
+  if (typeof value === 'object' && value !== null) {
+    if (seen.has(value)) return true
+    seen.add(value)
+  }
   if (Array.isArray(value)) {
-    return value.some(entry => hasForbiddenKeys(entry))
+    return value.some(entry => hasForbiddenKeys(entry, seen))
   }
   if (!isLooseRecord(value)) return false
   for (const key of Object.keys(value)) {
-    if (isForbiddenKey(key) || hasForbiddenKeys(value[key])) return true
+    if (isForbiddenKey(key) || hasForbiddenKeys(value[key], seen)) return true
   }
   return false
 }
@@ -77,20 +96,40 @@ export const validateContrabandItem = (
     errors.push('rarity must be a supported contraband rarity')
   }
   if (!isFiniteNumber(item.value)) errors.push('value must be finite')
+  if (
+    typeof item.effectType !== 'string' ||
+    !VALID_EFFECT_TYPES.has(item.effectType)
+  ) {
+    errors.push('effectType must be supported')
+  }
   if (typeof item.stackable !== 'boolean') {
     errors.push('stackable must be a boolean')
   }
   if (
     item.maxStacks !== undefined &&
-    (!isFiniteNumber(item.maxStacks) || item.maxStacks <= 0)
+    (!isFiniteNumber(item.maxStacks) ||
+      !Number.isInteger(item.maxStacks) ||
+      item.maxStacks <= 0)
   ) {
-    errors.push('maxStacks must be a positive finite number when present')
+    errors.push('maxStacks must be a positive integer when present')
   }
   if (item.duration !== undefined && !isFiniteNumber(item.duration)) {
     errors.push('duration must be finite when present')
   }
   if (item.applyOnAdd !== undefined && typeof item.applyOnAdd !== 'boolean') {
     errors.push('applyOnAdd must be boolean when present')
+  }
+  if (item.type === 'equipment') {
+    if (item.stackable !== false) errors.push('equipment must not be stackable')
+    if (item.applyOnAdd !== true) {
+      errors.push('equipment must use applyOnAdd=true')
+    }
+    if (
+      typeof item.effectType === 'string' &&
+      !EQUIPMENT_APPLY_ON_ADD_EFFECTS.has(item.effectType)
+    ) {
+      errors.push('equipment effectType must support applyOnAdd')
+    }
   }
 
   const sanitized: SanitizedContrabandItem | null =

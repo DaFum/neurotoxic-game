@@ -78,6 +78,24 @@ test('All POST_OPTIONS have unique IDs', () => {
   })
 })
 
+test('All POST_OPTIONS use their ui locale key for names', () => {
+  const source = readFileSync('src/data/postOptions.ts', 'utf8')
+
+  for (const option of POST_OPTIONS) {
+    const optionBlockPattern = new RegExp(
+      `id:\\s*'${escapeRegExp(option.id)}'[\\s\\S]*?\\n  }`
+    )
+    const optionBlock = source.match(optionBlockPattern)?.[0] ?? ''
+    const nameKey = `postOptions.${option.id}.name`
+
+    assert.match(
+      optionBlock,
+      new RegExp(`name:\\s*i18n\\.t\\(\\s*'ui:${escapeRegExp(nameKey)}'`),
+      `${option.id} should read its name from ui:${nameKey}`
+    )
+  }
+})
+
 test('POST_OPTIONS condition functions execute without errors', () => {
   const dummyState = {
     social: { reputationCooldown: 0, controversyLevel: 50 },
@@ -140,7 +158,7 @@ test('Lifestyle POST_OPTIONS use locale keys for names and messages', () => {
   for (const id of LIFESTYLE_POST_IDS) {
     const optionBlockPattern = new RegExp(`id:\\s*'${id}'[\\s\\S]*?\\n  }`)
     const optionBlock = source.match(optionBlockPattern)?.[0] ?? ''
-    const nameKey = `postOptions.lifestyle.${id}.name`
+    const nameKey = `postOptions.${id}.name`
     const messageKey = `postOptions.lifestyle.${id}.message`
 
     assert.match(

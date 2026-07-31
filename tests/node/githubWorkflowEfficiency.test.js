@@ -28,7 +28,7 @@ describe('GitHub Actions efficiency guardrails', () => {
     )
   })
 
-  it('documents the supported rerun contract after review threads are resolved', () => {
+  it('fails only for unresolved review threads that have not been reported yet', () => {
     const workflowText = readText('.github/workflows/pr-comment-tracker.yml')
     const workflow = readWorkflow('.github/workflows/pr-comment-tracker.yml')
 
@@ -37,16 +37,19 @@ describe('GitHub Actions efficiency guardrails', () => {
       false,
       'GitHub Actions does not expose the review-thread resolved webhook as a workflow event'
     )
+    assert.match(workflowText, /REPORTED_THREADS:\s*\(\[\^>\]\*\)/)
+    assert.match(workflowText, /const reportedThreadIds = new Set/)
     assert.match(
       workflowText,
-      /const recoveryHint = unresolvedThreads\.length > 0/
+      /const newThreads = unresolvedThreads\.filter\([\s\S]*!reportedThreadIds\.has\(thread\.id\)/
     )
-    assert.match(workflowText, /GITHUB_RUN_ID/)
-    assert.match(workflowText, /Re-run failed jobs/)
+    assert.match(workflowText, /const recoveryHint = newThreads\.length > 0/)
+    assert.match(workflowText, /beim nächsten Commit nicht erneut/)
     assert.match(
       workflowText,
       /const body = marker \+ header \+ copyableBlock \+ footer \+ recoveryHint \+ idsStateMarker/
     )
+    assert.match(workflowText, /if \(newThreads\.length > 0\)/)
     assert.match(workflowText, /core\.setFailed\(`[\s\S]*\$\{recoveryHint\}`\)/)
     assert.doesNotMatch(
       workflowText,
@@ -55,7 +58,7 @@ describe('GitHub Actions efficiency guardrails', () => {
     )
   })
 
-  it('blocks on all current unresolved review threads and drops resolved marker ids', () => {
+  it('keeps current unresolved marker ids and drops resolved marker ids', () => {
     const workflowText = readText('.github/workflows/pr-comment-tracker.yml')
 
     assert.match(
@@ -65,13 +68,8 @@ describe('GitHub Actions efficiency guardrails', () => {
     )
     assert.match(
       workflowText,
-      /if \(unresolvedThreads\.length > 0\)/,
-      'every current unresolved thread must keep the required check failing'
-    )
-    assert.doesNotMatch(
-      workflowText,
-      /new Set\(reportedThreadIds\)|if \(newThreads\.length > 0\)/,
-      'previously reported threads must not bypass the required check or remain in marker state'
+      /if \(newThreads\.length > 0\)/,
+      'only newly reported threads should fail the check'
     )
   })
 

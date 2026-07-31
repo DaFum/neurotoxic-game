@@ -1,10 +1,12 @@
 import type { GameState, QuestState } from '../types'
-import { finiteNumberOr, isForbiddenKey } from '../utils/gameState'
+import { finiteNumberOr } from '../utils/gameState'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
 import { createActiveQuestRuntime } from './questHelpers'
 import { canAcceptQuest } from './questAcceptance'
 import { completeQuest } from './questComplete'
+import { isQuestStateLike } from './questValidation'
+import { logger } from '../utils/logger'
 
 /**
  * Integrates a new quest or restores a dormant quest into the active game state.
@@ -20,22 +22,18 @@ import { completeQuest } from './questComplete'
  * @param quest - The partial quest payload containing override parameters and identification.
  * @returns The updated game state featuring the active or instantly completed quest.
  */
-export const addQuest = (state: GameState, quest: QuestState): GameState => {
-  if (
-    typeof quest.id !== 'string' ||
-    quest.id.length === 0 ||
-    isForbiddenKey(quest.id)
-  ) {
+export const addQuest = (state: GameState, quest: unknown): GameState => {
+  if (!isQuestStateLike(quest)) {
+    logger.warn('QuestLifecycle', 'Skipping malformed quest payload', quest)
     return state
   }
   if (hasActiveQuest(state.activeQuests, quest.id)) return state
 
-  // Merge static registry defaults under the provided payload so callers can
-  // dispatch `{ id }` and inherit label/deadline/penalty config, while inline
-  // overrides still win.
+  // Use the payload as the base, then let the registry definition replace
+  // matching fields while preserving the requested quest ID.
   const definition = getQuestDefinition(quest.id)
   const merged: QuestState = definition
-    ? { ...(definition as Partial<QuestState>), ...quest }
+    ? { ...quest, ...(definition as Partial<QuestState>), id: quest.id }
     : { ...quest }
 
   // Repeat-policy gating delegates to canAcceptQuest so event conditions can

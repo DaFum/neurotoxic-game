@@ -15,6 +15,7 @@ vi.mock('../../../src/utils/socialEngine', async importOriginal => {
 describe('derivePostOptions', () => {
   it('returns successful options from generatePostOptions', () => {
     const mockOptions = [{ id: 'opt1' }]
+    const activeQuests = [{ id: 'quest_apology_tour' }]
     vi.mocked(socialEngine.generatePostOptions).mockReturnValue(
       mockOptions as unknown as socialEngine.SocialPostOption[]
     )
@@ -25,11 +26,16 @@ describe('derivePostOptions', () => {
       player: { money: 100 } as unknown as GameState['player'],
       band: { name: 'The Testers' } as unknown as GameState['band'],
       social: { followers: 1000 } as unknown as GameState['social'],
-      activeEvent: null as unknown as GameState['activeEvent']
+      activeEvent: null as unknown as GameState['activeEvent'],
+      activeQuests: activeQuests as GameState['activeQuests']
     })
 
     expect(result.options).toEqual(mockOptions)
     expect(result.error).toBeNull()
+    expect(socialEngine.generatePostOptions).toHaveBeenCalledWith(
+      expect.anything(),
+      expect.objectContaining({ activeQuests })
+    )
   })
 
   it('catches and returns generatePostOptions errors', () => {
@@ -44,7 +50,8 @@ describe('derivePostOptions', () => {
       player: { money: 100 } as unknown as GameState['player'],
       band: { name: 'The Testers' } as unknown as GameState['band'],
       social: { followers: 1000 } as unknown as GameState['social'],
-      activeEvent: null as unknown as GameState['activeEvent']
+      activeEvent: null as unknown as GameState['activeEvent'],
+      activeQuests: []
     })
 
     expect(result.options).toEqual([])
@@ -58,7 +65,8 @@ describe('derivePostOptions', () => {
       player: {} as unknown as GameState['player'],
       band: {} as unknown as GameState['band'],
       social: {} as unknown as GameState['social'],
-      activeEvent: null as unknown as GameState['activeEvent']
+      activeEvent: null as unknown as GameState['activeEvent'],
+      activeQuests: []
     })
 
     expect(result.options).toEqual([])
