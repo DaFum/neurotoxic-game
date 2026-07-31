@@ -159,23 +159,7 @@ export const usePostGigDerivations = ({
       lastGigStats,
       financials
     }
-  }, [
-    currentGig,
-    lastGigStats,
-    financials,
-    perfScore,
-    gigModifiers,
-    band.inventory,
-    band.merchPrices,
-    band.gigModifier,
-    player,
-    social,
-    reputationByRegion,
-    activeStoryFlags,
-    cityStates,
-    gigContext,
-    assetModifiers
-  ])
+  }, [currentGig, lastGigStats, financials])
 
   // Derive post options purely without triggering a re-render loop
   const { options: postOptions, error: postOptionsDerivationError } =
