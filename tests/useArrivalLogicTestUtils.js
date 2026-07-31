@@ -5,6 +5,7 @@ import { renderHook } from '@testing-library/react'
 const mockGameState = {
   advanceDay: vi.fn(),
   saveGame: vi.fn(),
+  saveGameAfterStateCommit: vi.fn(),
   updateBand: vi.fn(),
   updatePlayer: vi.fn(),
   triggerEvent: vi.fn(),
@@ -43,6 +44,7 @@ export const resetMockGameState = () => {
 
   mockGameState.advanceDay.mockReset()
   mockGameState.saveGame.mockReset()
+  mockGameState.saveGameAfterStateCommit.mockReset()
   mockGameState.updateBand.mockReset()
   mockGameState.updatePlayer.mockReset()
   mockGameState.triggerEvent.mockReset()

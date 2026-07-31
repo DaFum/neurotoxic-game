@@ -119,6 +119,7 @@ type BaseGameDispatchActions = {
   consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
   advanceDay: () => void
   saveGame: (showToast?: boolean, stateSnapshot?: GameState) => void
+  saveGameAfterStateCommit: () => void
   loadGame: () => boolean
   deleteSave: () => void
   resetState: () => void
@@ -245,13 +246,14 @@ export function useGameDispatchActions({
     [dispatch]
   )
 
-  const { deleteSave, saveGame, loadGame } = usePersistence({
-    currentScene: state.currentScene,
-    stateRef,
-    dispatch,
-    addToast,
-    tRef
-  })
+  const { deleteSave, saveGame, saveGameAfterStateCommit, loadGame } =
+    usePersistence({
+      currentScene: state.currentScene,
+      stateRef,
+      dispatch,
+      addToast,
+      tRef
+    })
 
   const { setActiveEvent, triggerEvent, resolveEvent } = useEventSystem({
     stateRef,
@@ -492,6 +494,7 @@ export function useGameDispatchActions({
       consumeItem,
       advanceDay,
       saveGame,
+      saveGameAfterStateCommit,
       loadGame,
       deleteSave,
       resetState,
@@ -528,6 +531,7 @@ export function useGameDispatchActions({
       consumeItem,
       advanceDay,
       saveGame,
+      saveGameAfterStateCommit,
       loadGame,
       deleteSave,
       resetState,

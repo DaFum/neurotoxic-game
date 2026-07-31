@@ -12,6 +12,7 @@
 ## Persistence
 
 - Autosave is centralized in `usePersistence`'s `shouldAutosaveOnTransition` effect (fires on `GIG → POST_GIG` and `POST_GIG → (GAMEOVER | OVERWORLD)`). Do not add explicit `saveGame()` calls to handlers that perform those same transitions; intentional travel/arrival/Overworld manual saves are separate.
+- Use `saveGameAfterStateCommit()` when a scene-changing transition will unmount the calling hook before it can observe committed state. The provider-level persistence effect owns that flush.
 - Save key is `SAVE_KEY = 'neurotoxic_v3_save'`; `createRawLoadPayload` whitelists `LOADABLE_SAVE_KEYS` only. New persisted fields require this checklist:
   1. Add the field to `LOADABLE_SAVE_KEYS`.
   2. Include it in `createPersistedState` — **both** the destructure of `currentState` and the returned object.

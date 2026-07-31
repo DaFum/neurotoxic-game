@@ -120,6 +120,37 @@ describe('usePersistence', () => {
     })
   })
 
+  it('flushes a queued save after the provider observes committed state', () => {
+    const { result, rerender } = renderHook(
+      ({ currentScene }) =>
+        usePersistence({
+          currentScene,
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        }),
+      { initialProps: { currentScene: 'TRAVEL_MINIGAME' } }
+    )
+
+    act(() => {
+      result.current.saveGameAfterStateCommit()
+    })
+    expect(safeStorageOperation).not.toHaveBeenCalled()
+
+    mockStateRef.current = {
+      currentScene: 'PRE_GIG',
+      currentGig: { id: 'venue_1' }
+    }
+    rerender({ currentScene: 'PRE_GIG' })
+
+    expect(safeStorageOperation).toHaveBeenCalledTimes(1)
+    expect(JSON.parse(localStorage.getItem(SAVE_KEY) ?? '{}')).toMatchObject({
+      currentScene: 'PRE_GIG',
+      currentGig: { id: 'venue_1' }
+    })
+  })
+
   describe('createRawLoadPayload', () => {
     it('accepts finite number and string versions', () => {
       expect(createRawLoadPayload({ version: 3 }, []).version).toBe(3)

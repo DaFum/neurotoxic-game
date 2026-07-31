@@ -303,6 +303,10 @@ export function usePersistence({
   )
 
   const previousSceneRef = useRef(currentScene)
+  const saveAfterStateCommitRef = useRef(false)
+  const saveGameAfterStateCommit = useCallback(() => {
+    saveAfterStateCommitRef.current = true
+  }, [])
 
   useEffect(() => {
     const previousScene = previousSceneRef.current
@@ -315,7 +319,10 @@ export function usePersistence({
         (currentScene === GAME_PHASES.GAMEOVER ||
           currentScene === GAME_PHASES.OVERWORLD))
 
-    if (shouldAutosaveOnTransition) {
+    if (saveAfterStateCommitRef.current) {
+      saveAfterStateCommitRef.current = false
+      saveGame(false)
+    } else if (shouldAutosaveOnTransition) {
       saveGame(false)
     }
   }, [currentScene, saveGame])
@@ -401,5 +408,5 @@ export function usePersistence({
     )
   }, [addToast, dispatch, tRef])
 
-  return { deleteSave, saveGame, loadGame }
+  return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }
