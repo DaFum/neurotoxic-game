@@ -9,7 +9,7 @@ inputs:
   pnpm-version:
     description: pnpm version to install.
     required: false
-    default: '11.2.2'
+    default: '11.18.0'
   install-args:
     description: Arguments passed to pnpm install.
     required: false
