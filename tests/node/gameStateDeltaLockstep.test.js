@@ -63,6 +63,7 @@ const buildState = () => ({
     controversyLevel: 20,
     viral: 10,
     loyalty: 10,
+    zealotry: 10,
     followers: 100,
     influencers: {},
     egoFocus: null,
@@ -253,6 +254,13 @@ const FIELD_CASES = [
     stateDiff: (b, a) => a.social.loyalty - b.social.loyalty
   },
   {
+    name: 'social.zealotry',
+    delta: withDelta({ social: { zealotry: 5 } }),
+    expect: 'both',
+    previewValue: p => p.social.zealotry,
+    stateDiff: (b, a) => a.social.zealotry - b.social.zealotry
+  },
+  {
     // Apply handles ANY numeric social key generically; preview only reports
     // the three named channels above. Known asymmetry.
     name: 'social.<generic numeric channel> (followers)',
@@ -428,4 +436,25 @@ test('EventDelta lockstep on the fully-populated combined delta', () => {
       `combined run: previewed delta diverges from applied state diff for ${fieldCase.name}`
     )
   }
+})
+
+test('EventDelta clamps luck, loyalty, and zealotry identically in preview and apply', () => {
+  const state = buildState()
+  state.band.luck = 0
+  state.social.loyalty = 99
+  state.social.zealotry = 98
+  const delta = withDelta({
+    band: { luck: -1 },
+    social: { loyalty: 5, zealotry: 5 }
+  })
+
+  const preview = calculateAppliedDelta(state, delta)
+  const applied = applyEventDelta(state, delta)
+
+  assert.equal(preview.band.luck, 0)
+  assert.equal(applied.band.luck, 0)
+  assert.equal(preview.social.loyalty, 1)
+  assert.equal(applied.social.loyalty, 100)
+  assert.equal(preview.social.zealotry, 2)
+  assert.equal(applied.social.zealotry, 100)
 })

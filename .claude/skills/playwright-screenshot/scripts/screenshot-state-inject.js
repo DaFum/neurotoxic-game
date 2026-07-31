@@ -172,6 +172,7 @@ export const BASE_STATE = {
     catering: false,
     guestlist: false
   },
+  gigEventScoreDelta: 0,
   lastGigStats: null,
   activeEvent: null,
   pendingEvents: [],

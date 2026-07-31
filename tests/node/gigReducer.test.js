@@ -33,6 +33,7 @@ describe('gigReducer', () => {
       currentGig: null,
       currentScene: GAME_PHASES.OVERWORLD,
       gigModifiers: {},
+      gigEventScoreDelta: 0,
       reputationByRegion: { some: 0 },
       activeQuests: [],
       activeStoryFlags: [],
@@ -69,6 +70,13 @@ describe('gigReducer', () => {
       const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
 
       assert.deepStrictEqual(nextState.minigame, DEFAULT_MINIGAME_STATE)
+    })
+
+    it('resets score effects accumulated during the prior gig', () => {
+      baseState.gigEventScoreDelta = 150
+      const nextState = handleStartGig(baseState, { id: 'gig2', name: 'Gig' })
+
+      assert.strictEqual(nextState.gigEventScoreDelta, 0)
     })
 
     it('does not clear lastGigStats (needed by gig milestones on ADVANCE_DAY)', () => {

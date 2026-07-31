@@ -53,6 +53,7 @@ interface MenuItem {
   v: MenuVariant
   action: MenuAction
   cond?: MenuCondition
+  keepOpen?: boolean
 }
 
 interface MenuCategory {
@@ -187,7 +188,7 @@ const MenuSubmenu = React.memo(
             disabled={isDisabled(item)}
             onClick={() => {
               actions[item.action]()
-              handleClose()
+              if (!item.keepOpen) handleClose()
             }}
             size='sm'
           >
@@ -353,7 +354,8 @@ const useMenuCategories = (
             }),
             icon: '💤',
             v: 'w',
-            action: 'handleRestInVan'
+            action: 'handleRestInVan',
+            keepOpen: true
           },
           {
             label: t('ui:blood_bank.button', { defaultValue: 'BLOOD BANK' }),

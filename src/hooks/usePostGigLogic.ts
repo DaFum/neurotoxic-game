@@ -25,6 +25,7 @@ export const usePostGigLogic = () => {
   const lastGigStats = useGameSelector(state => state.lastGigStats)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
+  const activeQuests = useGameSelector(state => state.activeQuests)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)
   // FINALE detection: the finale node has no outgoing connections, so the
   // continue handler ends the run on the victory screen instead.
@@ -75,6 +76,7 @@ export const usePostGigLogic = () => {
       lastGigStats,
       reputationByRegion,
       activeStoryFlags,
+      activeQuests,
       cityStates,
       triggerEvent
     })

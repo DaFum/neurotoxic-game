@@ -58,6 +58,7 @@ export type EventDelta = {
     controversyLevel?: number
     viral?: number
     loyalty?: number
+    zealotry?: number
   }
   flags: Record<string, unknown> & {
     queueEvent?: string

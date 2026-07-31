@@ -146,6 +146,8 @@ export interface GameState {
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers
+  /** Cumulative raw score adjustment emitted by events during the active gig. */
+  gigEventScoreDelta: number
   minigame: MinigameState
   unlocks: string[]
   pendingBandHQOpen: boolean

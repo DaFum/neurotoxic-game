@@ -167,20 +167,26 @@ export const useHandleTravel = ({
         return
       }
 
-      const { dist, totalCost, fuelLiters, dailyCost, totalCashImpact } =
-        calculateTravelCostsAndImpact(
-          node,
-          currentStartNode,
-          player,
-          band,
-          social,
-          assets,
-          liabilities,
-          assetModifiers
-        )
+      const {
+        dist,
+        totalCost,
+        fuelLiters,
+        dailyCost,
+        totalCashImpact,
+        cashRequired
+      } = calculateTravelCostsAndImpact(
+        node,
+        currentStartNode,
+        player,
+        band,
+        social,
+        assets,
+        liabilities,
+        assetModifiers
+      )
 
       const resourceCheck = checkTravelResources(
-        totalCashImpact,
+        cashRequired,
         fuelLiters,
         player
       )

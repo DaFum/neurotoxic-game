@@ -20,6 +20,8 @@ import {
   clampRelationship,
   clampNonNegative,
   clampControversyLevel,
+  clampLoyalty,
+  clampZealotry,
   clampVanCondition,
   clampVanFuel,
   wrapClockHour
@@ -95,6 +97,15 @@ const calculateClampedControversyDelta = (
   return nextValue - baseValue
 }
 
+const calculateBoundedSocialDelta = (
+  currentValue: number | null | undefined,
+  deltaValue: number,
+  clamp: (value: number) => number
+): number => {
+  const baseValue = finiteNumberOr(currentValue, 0)
+  return clamp(baseValue + deltaValue) - baseValue
+}
+
 /**
  * Copies enumerable own properties from source to a new object, filtering out forbidden keys.
  * @param source - Source object to copy from.
@@ -142,6 +153,7 @@ type DeltaPreviewState = {
     controversyLevel?: number
     viral?: number
     loyalty?: number
+    zealotry?: number
   }
 }
 
@@ -276,9 +288,17 @@ export const calculateAppliedDelta = (
       )
     }
     if (isFiniteNumber(delta.social.loyalty)) {
-      applied.social.loyalty = calculateClampedStatDelta(
+      applied.social.loyalty = calculateBoundedSocialDelta(
         state.social?.loyalty,
-        delta.social.loyalty
+        delta.social.loyalty,
+        clampLoyalty
+      )
+    }
+    if (isFiniteNumber(delta.social.zealotry)) {
+      applied.social.zealotry = calculateBoundedSocialDelta(
+        state.social?.zealotry,
+        delta.social.zealotry,
+        clampZealotry
       )
     }
   }
@@ -851,7 +871,7 @@ export const applyEventDelta = (
     if (Number.isFinite(rawLuckDelta)) {
       const luckDelta = finiteNumberOr(rawLuckDelta, 0)
       const boundedLuck = Math.max(0, finiteNumberOr(nextBand.luck, 0))
-      nextBand.luck = boundedLuck + luckDelta
+      nextBand.luck = Math.max(0, boundedLuck + luckDelta)
     }
     nextState.band = nextBand
   }
@@ -871,6 +891,18 @@ export const applyEventDelta = (
             finiteNumberOr(nextSocial[key], 0) + value
           )
           nextSocial[key] = newValue
+        }
+      } else if (key === 'loyalty') {
+        if (isFiniteNumber(value)) {
+          nextSocial[key] = clampLoyalty(
+            finiteNumberOr(nextSocial[key], 0) + value
+          )
+        }
+      } else if (key === 'zealotry') {
+        if (isFiniteNumber(value)) {
+          nextSocial[key] = clampZealotry(
+            finiteNumberOr(nextSocial[key], 0) + value
+          )
         }
       } else if (key === 'influencers') {
         if (isLooseRecord(value)) {

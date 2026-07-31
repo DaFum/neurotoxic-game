@@ -32,6 +32,7 @@ describe('usePostGigDerivations', () => {
     lastGigStats: { score: 85 } as GigStats,
     reputationByRegion: {} as Record<string, unknown>,
     activeStoryFlags: [],
+    activeQuests: [],
     cityStates: undefined,
     triggerEvent: mockTriggerEvent
   })
@@ -112,7 +113,8 @@ describe('usePostGigDerivations', () => {
         player: defaultProps.player,
         band: defaultProps.band,
         social: defaultProps.social,
-        activeEvent: defaultProps.activeEvent
+        activeEvent: defaultProps.activeEvent,
+        activeQuests: defaultProps.activeQuests
       })
     )
   })
@@ -174,5 +176,31 @@ describe('usePostGigDerivations', () => {
         cityTraits: { tech_hub: false }
       })
     )
+  })
+
+  it('keeps the financial report stable while a post-gig event updates state', () => {
+    const initialFinancials = {
+      income: { total: 100 },
+      expenses: { total: 0 },
+      net: 100
+    } as ReturnType<typeof postGigUtils.deriveFinancials>
+    vi.mocked(postGigUtils.deriveFinancials).mockReturnValue(initialFinancials)
+
+    const { result, rerender } = renderHook(
+      props => usePostGigDerivations(props),
+      { initialProps: defaultProps }
+    )
+
+    rerender({
+      ...defaultProps,
+      activeEvent: {
+        type: 'some_event',
+        id: 'some'
+      } as import('../../../src/types').GameEvent,
+      social: { loyalty: 75, controversyLevel: 20 } as SocialState
+    })
+
+    expect(result.current.financials).toBe(initialFinancials)
+    expect(postGigUtils.deriveFinancials).toHaveBeenCalledTimes(1)
   })
 })
