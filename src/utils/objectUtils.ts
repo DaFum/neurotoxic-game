@@ -41,6 +41,60 @@ export const hasForbiddenOwnKeys = (obj: object): boolean => {
 }
 
 /**
+ * Depth ceiling for {@link hasForbiddenKeysDeep}; payloads nested deeper are
+ * rejected rather than traversed, so hostile input cannot overflow the stack.
+ */
+const MAX_FORBIDDEN_KEY_SCAN_DEPTH = 64
+
+const scanForForbiddenKeys = (
+  value: unknown,
+  path: WeakSet<object>,
+  cleared: WeakSet<object>,
+  depth: number
+): boolean => {
+  if (typeof value !== 'object' || value === null) return false
+  if (depth > MAX_FORBIDDEN_KEY_SCAN_DEPTH) return true
+  // `path` holds only the current recursion ancestors, so a repeat is a real
+  // cycle. `cleared` memoizes subtrees already proven safe, which keeps a
+  // shared (DAG) child from being re-walked — accepting it without the
+  // exponential blowup that re-traversal would cost on hostile input.
+  if (path.has(value)) return true
+  if (cleared.has(value)) return false
+  if (!Array.isArray(value) && !isLooseRecord(value)) return false
+
+  path.add(value)
+  // `getOwnPropertyNames`, not `Object.keys`: a non-enumerable own key hides
+  // from enumeration but still pollutes on copy, and a non-enumerable accessor
+  // would otherwise be invoked later by the caller's field reads.
+  const found = Object.getOwnPropertyNames(value).some(key => {
+    if (isForbiddenKey(key)) return true
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
+    return scanForForbiddenKeys(descriptor.value, path, cleared, depth + 1)
+  })
+  path.delete(value)
+  if (!found) cleared.add(value)
+  return found
+}
+
+/**
+ * Recursively checks an untrusted payload for prototype-polluting own keys at
+ * every object and array level.
+ *
+ * Traversal is deliberately hostile-input safe: it is depth-bounded, rejects
+ * cycles, inspects non-enumerable own properties, and reads values through
+ * property descriptors so accessors are never invoked (a throwing getter would
+ * otherwise escape a validator, and a stateful one could report different
+ * values to the validation and output-construction passes). Shared child
+ * references are legitimate and accepted.
+ *
+ * @param value - Arbitrary value from a JSON, storage, or generated-data boundary.
+ * @returns True when the payload is unsafe to copy.
+ */
+export const hasForbiddenKeysDeep = (value: unknown): boolean =>
+  scanForForbiddenKeys(value, new WeakSet(), new WeakSet(), 0)
+
+/**
  * Filters a value to the subset of its entries that are strings.
  *
  * Non-arrays yield an empty array, so the result is always a safe `string[]`.

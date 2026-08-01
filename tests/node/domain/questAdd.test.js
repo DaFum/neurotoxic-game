@@ -163,6 +163,41 @@ test('addQuest', async t => {
     assert.equal(nextState, state)
   })
 
+  await t.test('rejects a quest whose deadline overflows to Infinity', () => {
+    // Admitting it without a deadline would be just as bad as an infinite one:
+    // checkDeadlines only expires finite deadlines, so the slot never frees.
+    const state = { player: { day: Number.MAX_VALUE }, activeQuests: [] }
+    const nextState = addQuest(state, {
+      id: 'test1',
+      deadlineOffset: Number.MAX_VALUE
+    })
+    assert.equal(nextState, state)
+  })
+
+  await t.test('rejects malformed progressRules entries', () => {
+    const state = { activeQuests: [] }
+    const malformedQuests = [
+      { id: 'bad_rule_null', progressRules: [null] },
+      { id: 'bad_rule_primitive', progressRules: ['gig.completed'] },
+      { id: 'bad_rule_no_event', progressRules: [{ amount: 'fixed' }] }
+    ]
+
+    for (const quest of malformedQuests) {
+      assert.equal(addQuest(state, quest), state)
+    }
+  })
+
+  await t.test('accepts well-formed ad-hoc progressRules', () => {
+    const state = { player: { day: 1 }, activeQuests: [] }
+    const nextState = addQuest(state, {
+      id: 'adhoc_rules',
+      required: 2,
+      progress: 0,
+      progressRules: [{ event: 'gig.completed', amount: 'fixed' }]
+    })
+    assert.equal(nextState.activeQuests[0].id, 'adhoc_rules')
+  })
+
   await t.test(
     'sets up nextStoryFlags if merged.startFlags are provided (small array)',
     () => {

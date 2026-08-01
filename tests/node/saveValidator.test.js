@@ -198,6 +198,23 @@ describe('saveValidator', () => {
       })
     })
 
+    it('throws if band.members is a falsy non-array value', () => {
+      for (const members of [false, 0, '']) {
+        const data = getValidData()
+        data.band.members = members
+        assert.throws(() => validateSaveData(data), {
+          name: 'StateError',
+          message: /band.members must be an array/
+        })
+      }
+    })
+
+    it('accepts a null band.members as a legacy missing roster', () => {
+      const data = getValidData()
+      data.band.members = null
+      assert.strictEqual(validateSaveData(data), true)
+    })
+
     it('throws if band member is not an object', () => {
       const data = getValidData()
       data.band.members = ['not an object']
@@ -365,6 +382,55 @@ describe('saveValidator', () => {
         name: 'StateError',
         message: /activeDeals\[0\].remainingGigs must be a number/
       })
+    })
+
+    it('drops activeDeals whose remainingGigs is fractional or non-positive', () => {
+      for (const remainingGigs of [0.5, 0, -1]) {
+        const data = getValidData()
+        data.social.activeDeals = [
+          { id: 'deal1', remainingGigs },
+          { id: 'deal2', remainingGigs: 2 }
+        ]
+
+        // The save still loads; only the unhydratable deal is removed, matching
+        // what sanitizeSocial would have done.
+        assert.strictEqual(validateSaveData(data), true)
+        assert.deepEqual(data.social.activeDeals, [
+          { id: 'deal2', remainingGigs: 2 }
+        ])
+      }
+    })
+
+    it('clamps negative social counters to zero', () => {
+      const data = getValidData()
+      data.social.instagram = -5000
+      data.social.tiktok = -1
+      data.social.youtube = -2
+      data.social.newsletter = -3
+      data.social.viral = -20
+      data.social.reputationCooldown = -100
+
+      assert.strictEqual(validateSaveData(data), true)
+      assert.strictEqual(data.social.instagram, 0)
+      assert.strictEqual(data.social.tiktok, 0)
+      assert.strictEqual(data.social.youtube, 0)
+      assert.strictEqual(data.social.newsletter, 0)
+      assert.strictEqual(data.social.viral, 0)
+      assert.strictEqual(data.social.reputationCooldown, 0)
+    })
+
+    it('clamps negative social counters during hydration', () => {
+      const state = createInitialState()
+      state.gameMap = {}
+      const parsed = JSON.parse(JSON.stringify(createPersistedState(state)))
+      parsed.social.instagram = -5000
+      parsed.social.viral = -20
+      parsed.social.reputationCooldown = -100
+
+      const loaded = handleLoadGame(state, createRawLoadPayload(parsed, []))
+      assert.equal(loaded.social.instagram, 0)
+      assert.equal(loaded.social.viral, 0)
+      assert.equal(loaded.social.reputationCooldown, 0)
     })
 
     describe('influencers validation', () => {

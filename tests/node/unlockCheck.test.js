@@ -231,6 +231,86 @@ describe('checkTraitUnlocks', () => {
       ])
     })
 
+    it('ignores forged bpm on a direct song carrying a known id', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: {
+          maxCombo: 51,
+          // Canonical bpm is 100 (slow); the forged Infinity must not count.
+          song: { id: '08 Systemsprenger', bpm: Number.POSITIVE_INFINITY }
+        }
+      })
+
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('uses canonical metadata when a direct song understates its bpm', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: {
+          maxCombo: 51,
+          song: { id: '01 Kranker Schrank', bpm: 10 }
+        }
+      })
+
+      assert.deepStrictEqual(unlocks, [
+        { memberId: 'Marius', traitId: 'blast_machine' }
+      ])
+    })
+
+    it('drops a direct song whose id is unknown', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: { maxCombo: 51, song: { id: 'not-a-real-song', bpm: 200 } }
+      })
+
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('drops a direct song whose id is present but not a string', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: { maxCombo: 51, song: { id: 0, bpm: 200 } }
+      })
+
+      assert.deepStrictEqual(unlocks, [])
+    })
+
+    it('ignores non-finite numerics on an id-less legacy song', () => {
+      const lars = createMember('Lars')
+      const matze = createMember('Matze', {
+        perfektionist: { id: 'perfektionist' },
+        virtuoso: { id: 'virtuoso' }
+      })
+      const state = createState([lars, matze])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: {
+          accuracy: 100,
+          maxCombo: 31,
+          song: {
+            bpm: Number.NEGATIVE_INFINITY,
+            difficulty: Number.POSITIVE_INFINITY
+          }
+        }
+      })
+
+      assert.deepStrictEqual(unlocks, [])
+    })
+
     it('does not unlock Tech Wizard if accuracy is < 100', () => {
       const matze = createMember('Matze', {
         perfektionist: { id: 'perfektionist' },

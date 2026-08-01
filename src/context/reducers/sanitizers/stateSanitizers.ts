@@ -1279,7 +1279,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
     'reputationCooldown'
   ] as const) {
     const parsed = finiteOptionalNumber(safeValue[key])
-    if (parsed !== undefined) sanitized[key] = parsed
+    if (parsed !== undefined) sanitized[key] = Math.max(0, parsed)
   }
 
   for (const [key, clampFn] of [

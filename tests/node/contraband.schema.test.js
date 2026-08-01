@@ -10,6 +10,19 @@ import { validateContrabandItem } from '../../src/schemas/contraband'
 
 const CONTRABAND_DB = Object.values(CONTRABAND_BY_RARITY).flat()
 
+const VALID_ITEM = {
+  id: 'c_test',
+  imagePrompt: 'ITEM_TEST',
+  name: 'items:contraband.c_test.name',
+  type: 'consumable',
+  effectType: 'stamina',
+  value: 1,
+  description: 'items:contraband.c_test.description',
+  rarity: 'common',
+  icon: 'icon_test',
+  stackable: false
+}
+
 describe('Contraband Schema (with imagePrompt)', () => {
   describe('CONTRABAND_DB structure', () => {
     it('records no validation failures while initializing the raw source catalog', () => {
@@ -62,6 +75,77 @@ describe('Contraband Schema (with imagePrompt)', () => {
 
       assert.equal(result.ok, false)
       assert.ok(result.errors.includes('item contains forbidden keys'))
+    })
+
+    it('rejects hostile keys owned by nested arrays', () => {
+      const nested = [1]
+      nested.constructor = 'polluted'
+      const result = validateContrabandItem({ ...VALID_ITEM, nested })
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+    })
+
+    it('rejects deeply nested payloads without overflowing the stack', () => {
+      let leaf = {}
+      const root = leaf
+      for (let i = 0; i < 20000; i++) {
+        leaf.next = {}
+        leaf = leaf.next
+      }
+
+      const result = validateContrabandItem({ ...VALID_ITEM, nested: root })
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+    })
+
+    it('rejects accessor properties without evaluating them', () => {
+      const item = { ...VALID_ITEM }
+      let getterCalls = 0
+      Object.defineProperty(item, 'trap', {
+        enumerable: true,
+        get() {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+
+      const result = validateContrabandItem(item)
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+      assert.equal(getterCalls, 0)
+    })
+
+    it('rejects a non-enumerable accessor on a required field', () => {
+      const item = { ...VALID_ITEM }
+      let getterCalls = 0
+      Object.defineProperty(item, 'id', {
+        enumerable: false,
+        get() {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+
+      const result = validateContrabandItem(item)
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+      assert.equal(getterCalls, 0)
+    })
+
+    it('rejects contraband ids that are prototype-polluting keys', () => {
+      for (const id of ['__proto__', 'constructor', 'prototype']) {
+        const result = validateContrabandItem({ ...VALID_ITEM, id })
+
+        assert.equal(result.ok, false, id)
+        assert.ok(
+          result.errors.includes('id must not be a prototype-polluting key'),
+          id
+        )
+      }
     })
 
     it('rejects contraband definitions that violate effect lifecycle rules', () => {

@@ -5,6 +5,7 @@ import type {
   QuestStatus
 } from '../types'
 import { isForbiddenKey, isLooseRecord } from '../utils/gameState'
+import { hasForbiddenKeysDeep } from '../utils/objectUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
 
 const QUEST_KINDS = new Set<QuestKind>([
@@ -48,25 +49,8 @@ const STRING_FIELDS = [
   'followupQuestId',
   'scopeKey'
 ] as const
-const MAX_QUEST_PAYLOAD_DEPTH = 64
-
-const hasForbiddenKeysDeep = (
-  value: unknown,
-  seen: WeakSet<object> = new WeakSet(),
-  depth = 0
-): boolean => {
-  if (typeof value !== 'object' || value === null) return false
-  if (depth > MAX_QUEST_PAYLOAD_DEPTH) return true
-  if (seen.has(value)) return true
-  seen.add(value)
-  if (!Array.isArray(value) && !isLooseRecord(value)) return false
-  return Object.keys(value).some(key => {
-    if (isForbiddenKey(key)) return true
-    const descriptor = Object.getOwnPropertyDescriptor(value, key)
-    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
-    return hasForbiddenKeysDeep(descriptor.value, seen, depth + 1)
-  })
-}
+const isProgressRuleLike = (value: unknown): boolean =>
+  isLooseRecord(value) && typeof value.event === 'string'
 
 /**
  * Narrows a raw quest payload before it reaches lifecycle code.
@@ -131,7 +115,20 @@ export const isQuestStateLike = (value: unknown): value is QuestState => {
     }
   }
 
-  if (value.progressRule !== undefined && !isLooseRecord(value.progressRule)) {
+  // Element shape matters here, not just the container: `QuestProgress` maps
+  // over every declared rule and dereferences `rule.match`, so a primitive
+  // entry would throw on the next quest event instead of being inert.
+  if (
+    value.progressRules !== undefined &&
+    !(value.progressRules as unknown[]).every(isProgressRuleLike)
+  ) {
+    return false
+  }
+
+  if (
+    value.progressRule !== undefined &&
+    !isProgressRuleLike(value.progressRule)
+  ) {
     return false
   }
   if (value.offer !== undefined && !isLooseRecord(value.offer)) return false

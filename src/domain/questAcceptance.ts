@@ -1,7 +1,11 @@
 import type { GameState, QuestKind, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { hasActiveQuest } from '../utils/questUtils'
-import { finiteNumberOr, hasStateItem } from '../utils/gameState'
+import {
+  finiteNumberOr,
+  hasStateItem,
+  isForbiddenKey
+} from '../utils/gameState'
 import { getRegionKeyForLocation } from '../utils/mapUtils'
 import { isQuestStateLike } from './questValidation'
 import { getCurrentVenueId } from './questEffects'
@@ -101,8 +105,11 @@ export const canAcceptQuest = (
   state: GameState,
   questOrId: string | QuestState
 ): CanAcceptQuestResult => {
+  // The string branch must reject the same ids `isQuestStateLike` refuses,
+  // otherwise the offer gate approves a quest that `addQuest` then discards.
   if (
-    (typeof questOrId === 'string' && questOrId.length === 0) ||
+    (typeof questOrId === 'string' &&
+      (questOrId.length === 0 || isForbiddenKey(questOrId))) ||
     (typeof questOrId !== 'string' && !isQuestStateLike(questOrId))
   ) {
     return { ok: false, reason: 'invalid' }

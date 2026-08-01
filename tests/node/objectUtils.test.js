@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  hasForbiddenKeysDeep,
   isLooseRecord,
   isPlainRecord,
   sanitizeTraversableValue
@@ -17,6 +18,43 @@ test('record guards expose loose and strict object semantics explicitly', () => 
   assert.equal(isPlainRecord(custom), false)
   assert.equal(isLooseRecord([]), false)
   assert.equal(isPlainRecord([]), false)
+})
+
+test('hasForbiddenKeysDeep accepts shared child references', () => {
+  const shared = { keep: true }
+  const sharedArray = ['shared']
+
+  assert.equal(hasForbiddenKeysDeep({ left: shared, right: shared }), false)
+  assert.equal(hasForbiddenKeysDeep([shared, shared]), false)
+  assert.equal(hasForbiddenKeysDeep({ a: sharedArray, b: sharedArray }), false)
+  // A repeat on the active path is still a cycle.
+  const cyclic = { nested: {} }
+  cyclic.nested.back = cyclic
+  assert.equal(hasForbiddenKeysDeep(cyclic), true)
+})
+
+test('hasForbiddenKeysDeep inspects non-enumerable own properties', () => {
+  const hidden = { keep: true }
+  Object.defineProperty(hidden, 'constructor', {
+    enumerable: false,
+    value: 'polluted'
+  })
+  assert.equal(hasForbiddenKeysDeep(hidden), true)
+
+  const hiddenAccessor = { keep: true }
+  let getterCalls = 0
+  Object.defineProperty(hiddenAccessor, 'id', {
+    enumerable: false,
+    get() {
+      getterCalls++
+      throw new Error('getter must not run')
+    }
+  })
+  assert.equal(hasForbiddenKeysDeep(hiddenAccessor), true)
+  assert.equal(getterCalls, 0)
+
+  // Array `length` is non-enumerable but benign.
+  assert.equal(hasForbiddenKeysDeep({ list: [1, 2, 3] }), false)
 })
 
 test('sanitizeTraversableValue applies shared recursion rules', () => {

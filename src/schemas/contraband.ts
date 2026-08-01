@@ -1,5 +1,9 @@
 import type { Rarity } from '../types'
-import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
+import {
+  hasForbiddenKeysDeep,
+  isForbiddenKey,
+  isLooseRecord
+} from '../utils/objectUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import {
   ADDITIVE_BAND_EFFECT_FIELDS,
@@ -42,24 +46,6 @@ export interface ContrabandValidationResult {
 const readString = (item: Record<string, unknown>, key: string): boolean =>
   typeof item[key] === 'string' && item[key].length > 0
 
-const hasForbiddenKeys = (
-  value: unknown,
-  seen: WeakSet<object> = new WeakSet()
-): boolean => {
-  if (typeof value === 'object' && value !== null) {
-    if (seen.has(value)) return true
-    seen.add(value)
-  }
-  if (Array.isArray(value)) {
-    return value.some(entry => hasForbiddenKeys(entry, seen))
-  }
-  if (!isLooseRecord(value)) return false
-  for (const key of Object.keys(value)) {
-    if (isForbiddenKey(key) || hasForbiddenKeys(value[key], seen)) return true
-  }
-  return false
-}
-
 /**
  * Validates a contraband definition at the data-module boundary.
  * @param value - Unknown catalog entry to validate.
@@ -72,7 +58,16 @@ export const validateContrabandItem = (
   if (!isLooseRecord(value)) {
     return { ok: false, errors: ['item must be an object'], value: null }
   }
-  if (hasForbiddenKeys(value)) errors.push('item contains forbidden keys')
+  // Bail out before any property is read: the traversal also rejects accessor
+  // properties, so this keeps a throwing or stateful getter from running during
+  // the field checks below.
+  if (hasForbiddenKeysDeep(value)) {
+    return {
+      ok: false,
+      errors: ['item contains forbidden keys'],
+      value: null
+    }
+  }
 
   const item = value as Record<string, unknown>
   for (const key of [
@@ -84,6 +79,11 @@ export const validateContrabandItem = (
     'icon'
   ]) {
     if (!readString(item, key)) errors.push(`${key} must be a non-empty string`)
+  }
+  // The acquisition path (addContrabandHelper) refuses forbidden ids, so a
+  // catalog entry using one could never be acquired.
+  if (typeof item.id === 'string' && isForbiddenKey(item.id)) {
+    errors.push('id must not be a prototype-polluting key')
   }
 
   if (typeof item.type !== 'string' || !VALID_TYPES.has(item.type)) {
