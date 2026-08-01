@@ -351,6 +351,67 @@ test('QuestLifecycle', async t => {
       assert.equal(nextState.toasts.length, 5)
     })
 
+    await t.test('drops item.add rewards with hostile or empty ids', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q_hostile_item',
+            rewards: [
+              { type: 'item.add', itemId: 'constructor' },
+              { type: 'item.add', itemId: '' }
+            ]
+          }
+        ],
+        player: {},
+        band: { inventory: {} },
+        toasts: []
+      }
+
+      const nextState = QuestLifecycle.completeQuest(state, {
+        questId: 'q_hostile_item'
+      })
+
+      assert.equal(
+        Object.hasOwn(nextState.band.inventory, 'constructor'),
+        false
+      )
+      assert.deepEqual(Object.keys(nextState.band.inventory), [])
+      assert.equal(
+        nextState.toasts.some(
+          toast => toast.messageKey === 'ui:toast.quest_complete_item'
+        ),
+        false
+      )
+    })
+
+    await t.test('keeps follower rewards finite on overflow', () => {
+      const state = {
+        activeQuests: [
+          {
+            id: 'q_follower_overflow',
+            rewards: [
+              {
+                type: 'social.followers',
+                platform: 'instagram',
+                amount: Number.MAX_VALUE
+              }
+            ]
+          }
+        ],
+        player: {},
+        band: { inventory: {} },
+        social: { instagram: Number.MAX_VALUE },
+        toasts: []
+      }
+
+      const nextState = QuestLifecycle.completeQuest(state, {
+        questId: 'q_follower_overflow'
+      })
+
+      assert.ok(Number.isFinite(nextState.social.instagram))
+      assert.equal(nextState.social.instagram, Number.MAX_VALUE)
+    })
+
     await t.test('applies backbone reward types through appliers', () => {
       const state = {
         activeQuests: [
@@ -1336,6 +1397,25 @@ test('QuestLifecycle', async t => {
         )
       }
     )
+
+    await t.test('rejects forbidden quest ids passed as a string', () => {
+      const state = {
+        player: { day: 1 },
+        activeQuests: [],
+        activeStoryFlags: [],
+        completedQuestIds: [],
+        completedQuestScopes: [],
+        questCooldowns: []
+      }
+
+      for (const questId of ['__proto__', 'constructor', 'prototype']) {
+        assert.deepEqual(canAcceptQuest(state, questId), {
+          ok: false,
+          reason: 'invalid'
+        })
+        assert.equal(QuestLifecycle.addQuest(state, { id: questId }), state)
+      }
+    })
 
     await t.test('perVenue quests can fall back to a gig current node', () => {
       const state = {

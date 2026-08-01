@@ -48,7 +48,11 @@ export const addQuest = (state: GameState, quest: unknown): GameState => {
     const offset = finiteNumberOr(merged.deadlineOffset, Number.NaN)
     if (Number.isFinite(offset)) {
       const currentDay = finiteNumberOr(state.player?.day, 0)
-      merged.deadline = currentDay + offset
+      // Two finite operands can still sum to Infinity; an infinite deadline
+      // never satisfies checkDeadlines, so the quest would hold its slot
+      // forever instead of expiring. Leave the deadline unset in that case.
+      const deadline = currentDay + offset
+      if (Number.isFinite(deadline)) merged.deadline = deadline
     }
   }
   delete merged.deadlineOffset

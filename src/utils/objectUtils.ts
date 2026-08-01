@@ -41,6 +41,46 @@ export const hasForbiddenOwnKeys = (obj: object): boolean => {
 }
 
 /**
+ * Depth ceiling for {@link hasForbiddenKeysDeep}; payloads nested deeper are
+ * rejected rather than traversed, so hostile input cannot overflow the stack.
+ */
+const MAX_FORBIDDEN_KEY_SCAN_DEPTH = 64
+
+/**
+ * Recursively checks an untrusted payload for prototype-polluting own keys at
+ * every object and array level.
+ *
+ * Traversal is deliberately hostile-input safe: it is depth-bounded, treats
+ * cycles as forbidden, and reads values through property descriptors so
+ * enumerable accessors are never invoked (a throwing getter would otherwise
+ * escape a validator, and a stateful one could report different values to the
+ * validation and output-construction passes). Non-index own properties on
+ * arrays are inspected too, since `Object.keys` reports them.
+ *
+ * @param value - Arbitrary value from a JSON, storage, or generated-data boundary.
+ * @param seen - Internal cycle tracker.
+ * @param depth - Internal recursion depth.
+ * @returns True when the payload is unsafe to copy.
+ */
+export const hasForbiddenKeysDeep = (
+  value: unknown,
+  seen: WeakSet<object> = new WeakSet(),
+  depth = 0
+): boolean => {
+  if (typeof value !== 'object' || value === null) return false
+  if (depth > MAX_FORBIDDEN_KEY_SCAN_DEPTH) return true
+  if (seen.has(value)) return true
+  seen.add(value)
+  if (!Array.isArray(value) && !isLooseRecord(value)) return false
+  return Object.keys(value).some(key => {
+    if (isForbiddenKey(key)) return true
+    const descriptor = Object.getOwnPropertyDescriptor(value, key)
+    if (!descriptor || !Object.hasOwn(descriptor, 'value')) return true
+    return hasForbiddenKeysDeep(descriptor.value, seen, depth + 1)
+  })
+}
+
+/**
  * Filters a value to the subset of its entries that are strings.
  *
  * Non-arrays yield an empty array, so the result is always a safe `string[]`.

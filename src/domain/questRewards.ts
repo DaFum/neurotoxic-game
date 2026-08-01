@@ -17,6 +17,7 @@ import {
   clampPlayerMoney,
   finiteNumberOr,
   isFiniteNumber,
+  isForbiddenKey,
   isLooseRecord
 } from '../utils/gameState'
 import { applyTraitUnlocks } from '../utils/traitUtils'
@@ -128,7 +129,14 @@ const isQuestReward = (value: unknown): value is QuestReward => {
         isOptionalString(value.assetKind)
       )
     case 'item.add':
-      return typeof value.itemId === 'string' && value.amount === undefined
+      // The id becomes a computed inventory key, so it must clear the same
+      // hostile-key bar the reducers apply to item/contraband ids.
+      return (
+        typeof value.itemId === 'string' &&
+        value.itemId.length > 0 &&
+        !isForbiddenKey(value.itemId) &&
+        value.amount === undefined
+      )
     case 'trait.unlock':
       return (
         typeof value.traitId === 'string' && isOptionalString(value.memberId)
@@ -375,7 +383,13 @@ export const applyQuestRewards = (
       case 'social.followers': {
         const platform = reward.platform ?? 'instagram'
         const previous = finiteNumberOr(nextState.social?.[platform], 0)
-        const next = Math.max(0, previous + reward.amount)
+        // Follower counts have no upper clamp, so the sum of two finite
+        // operands can overflow to Infinity; keep the previous count instead
+        // of writing a non-finite value into state.
+        const next = Math.max(
+          0,
+          finiteNumberOr(previous + reward.amount, previous)
+        )
         nextState = {
           ...nextState,
           social: { ...nextState.social, [platform]: next }
