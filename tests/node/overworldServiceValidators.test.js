@@ -2,7 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import { validateBloodBankDonation } from '../../src/utils/bloodBankUtils'
-import { validateDarkWebLeak } from '../../src/utils/darkWebLeakUtils'
+import { validateZealotryAction } from '../../src/utils/dailySocialActionUtils'
 
 const leakConfig = {
   COST: 100,
@@ -13,13 +13,25 @@ const leakConfig = {
   REQUIRED_CONTROVERSY: 20
 }
 
+const leakAction = {
+  dayField: 'lastDarkWebLeakDay',
+  thresholdField: 'controversyLevel',
+  thresholdRequired: leakConfig.REQUIRED_CONTROVERSY,
+  config: leakConfig,
+  loggerScope: 'DarkWebLeak',
+  validationFailureMessage: 'test',
+  successMessageKey: 'ui:dark_web_leak.success'
+}
+
+const validateDarkWebLeak = (social, player, band) =>
+  validateZealotryAction(social, player, band, leakAction)
+
 test('validateDarkWebLeak rejects non-finite resource values', () => {
   assert.equal(
     validateDarkWebLeak(
       { controversyLevel: 50 },
       { money: Number.NaN, day: 1 },
-      { harmony: 50 },
-      leakConfig
+      { harmony: 50 }
     ),
     false
   )
@@ -27,8 +39,7 @@ test('validateDarkWebLeak rejects non-finite resource values', () => {
     validateDarkWebLeak(
       { controversyLevel: Number.NaN },
       { money: 500, day: 1 },
-      { harmony: 50 },
-      leakConfig
+      { harmony: 50 }
     ),
     false
   )
@@ -36,8 +47,7 @@ test('validateDarkWebLeak rejects non-finite resource values', () => {
     validateDarkWebLeak(
       { controversyLevel: 50 },
       { money: 500, day: 1 },
-      { harmony: Number.POSITIVE_INFINITY },
-      leakConfig
+      { harmony: Number.POSITIVE_INFINITY }
     ),
     false
   )

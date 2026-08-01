@@ -1,4 +1,4 @@
-import { useCallback, useMemo, startTransition, type Dispatch } from 'react'
+import { useMemo, startTransition, type Dispatch } from 'react'
 import type { GameAction } from '../types'
 import { secureRandom } from '../utils/crypto'
 import {
@@ -37,117 +37,61 @@ export type MinigameDispatchActions = Pick<
 export function useMinigameDispatchActions(
   dispatch: Dispatch<GameAction>
 ): MinigameDispatchActions {
-  const startTravelMinigame = useCallback(
-    (payload: Parameters<typeof createStartTravelMinigameAction>[0]) =>
-      startTransition(() => dispatch(createStartTravelMinigameAction(payload))),
-    [dispatch]
-  )
-
-  const completeTravelMinigame = useCallback(
-    (
-      damageTaken: Parameters<typeof createCompleteTravelMinigameAction>[0],
-      itemsCollected: Parameters<typeof createCompleteTravelMinigameAction>[1]
-    ) => {
-      const rngValue = secureRandom() as number
-      dispatch(
-        createCompleteTravelMinigameAction(
-          damageTaken,
-          itemsCollected,
-          rngValue
-        )
-      )
-    },
-    [dispatch]
-  )
-
-  const startRoadieMinigame = useCallback(
-    (payload: Parameters<typeof createStartRoadieMinigameAction>[0]) =>
-      startTransition(() => dispatch(createStartRoadieMinigameAction(payload))),
-    [dispatch]
-  )
-
-  const completeRoadieMinigame = useCallback(
-    (
-      equipmentDamage: Parameters<typeof createCompleteRoadieMinigameAction>[0],
-      contrabandDelivered?: Parameters<
-        typeof createCompleteRoadieMinigameAction
-      >[1],
-      deliveredStashItemId?: Parameters<
-        typeof createCompleteRoadieMinigameAction
-      >[2]
-    ) =>
-      dispatch(
-        createCompleteRoadieMinigameAction(
-          equipmentDamage,
-          contrabandDelivered,
-          deliveredStashItemId
-        )
-      ),
-    [dispatch]
-  )
-
-  const startKabelsalatMinigame = useCallback(
-    (payload: Parameters<typeof createStartKabelsalatMinigameAction>[0]) =>
-      startTransition(() =>
-        dispatch(createStartKabelsalatMinigameAction(payload))
-      ),
-    [dispatch]
-  )
-
-  const completeKabelsalatMinigame = useCallback(
-    (payload: Parameters<typeof createCompleteKabelsalatMinigameAction>[0]) =>
-      dispatch(createCompleteKabelsalatMinigameAction(payload)),
-    [dispatch]
-  )
-
-  const startAmpCalibration = useCallback(
-    (payload: Parameters<typeof createStartAmpCalibrationAction>[0]) =>
-      startTransition(() => dispatch(createStartAmpCalibrationAction(payload))),
-    [dispatch]
-  )
-
-  const completeAmpCalibration = useCallback(
-    (
-      score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
-      voidResonance: Parameters<
-        typeof createCompleteAmpCalibrationAction
-      >[1] = 0,
-      purgesUsed: Parameters<typeof createCompleteAmpCalibrationAction>[2] = 0,
-      hijacksOverridden: Parameters<
-        typeof createCompleteAmpCalibrationAction
-      >[3] = 0
-    ) =>
-      dispatch(
-        createCompleteAmpCalibrationAction(
-          score,
-          voidResonance,
-          purgesUsed,
-          hijacksOverridden
-        )
-      ),
-    [dispatch]
-  )
-
   return useMemo(
     () => ({
-      startTravelMinigame,
-      completeTravelMinigame,
-      startRoadieMinigame,
-      completeRoadieMinigame,
-      startKabelsalatMinigame,
-      completeKabelsalatMinigame,
-      startAmpCalibration,
-      completeAmpCalibration
+      startTravelMinigame: payload =>
+        startTransition(() =>
+          dispatch(createStartTravelMinigameAction(payload))
+        ),
+      completeTravelMinigame: (damageTaken, itemsCollected) =>
+        dispatch(
+          createCompleteTravelMinigameAction(
+            damageTaken,
+            itemsCollected,
+            secureRandom() as number
+          )
+        ),
+      startRoadieMinigame: payload =>
+        startTransition(() =>
+          dispatch(createStartRoadieMinigameAction(payload))
+        ),
+      completeRoadieMinigame: (
+        equipmentDamage,
+        contrabandDelivered,
+        deliveredStashItemId
+      ) =>
+        dispatch(
+          createCompleteRoadieMinigameAction(
+            equipmentDamage,
+            contrabandDelivered,
+            deliveredStashItemId
+          )
+        ),
+      startKabelsalatMinigame: payload =>
+        startTransition(() =>
+          dispatch(createStartKabelsalatMinigameAction(payload))
+        ),
+      completeKabelsalatMinigame: payload =>
+        dispatch(createCompleteKabelsalatMinigameAction(payload)),
+      startAmpCalibration: payload =>
+        startTransition(() =>
+          dispatch(createStartAmpCalibrationAction(payload))
+        ),
+      completeAmpCalibration: (
+        score,
+        voidResonance = 0,
+        purgesUsed = 0,
+        hijacksOverridden = 0
+      ) =>
+        dispatch(
+          createCompleteAmpCalibrationAction(
+            score,
+            voidResonance,
+            purgesUsed,
+            hijacksOverridden
+          )
+        )
     }),
-    [
-      startTravelMinigame,
-      completeTravelMinigame,
-      startRoadieMinigame,
-      completeRoadieMinigame,
-      startKabelsalatMinigame,
-      completeKabelsalatMinigame,
-      startAmpCalibration,
-      completeAmpCalibration
-    ]
+    [dispatch]
   )
 }

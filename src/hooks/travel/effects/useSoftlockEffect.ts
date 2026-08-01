@@ -4,7 +4,6 @@ import {
   getActiveAssetModifiers,
   getTotalDailyObligations
 } from '../../../utils/assetSelectors'
-import type { GameState } from '../../../types'
 import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { GAME_PHASES } from '../../../context/gameConstants'

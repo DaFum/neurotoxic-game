@@ -29,12 +29,8 @@ test('GameStateProvider Re-render Benchmark', async () => {
   const React = await import('react')
   const { render, act } = await import('@testing-library/react')
   // We need to import the provider. Note that it might have side effects.
-  const {
-    GameStateProvider,
-    useGameActions,
-    useGameSelector,
-    useGameDispatch
-  } = await import('../../src/context/GameState.tsx')
+  const { GameStateProvider, useGameActions, useGameSelector } =
+    await import('../../src/context/GameState.tsx')
 
   let consumerRenders = 0
 
@@ -62,7 +58,7 @@ test('GameStateProvider Re-render Benchmark', async () => {
 
   let optimizedRenders = 0
   const OptimizedTrigger = React.memo(() => {
-    const { updatePlayer } = useGameDispatch()
+    const { updatePlayer } = useGameActions()
     optimizedRenders++
     return (
       <button

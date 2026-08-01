@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  type Dispatch,
-  type MutableRefObject
-} from 'react'
+import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState, RivalBandState } from '../types'
 import {
   createSpawnRivalBandAction,
@@ -40,37 +35,23 @@ export function useRivalBandDispatchActions({
   dispatch,
   stateRef
 }: UseRivalBandDispatchActionsProps): RivalBandDispatchActions {
-  const spawnRivalBand = useCallback(
-    () => dispatch(createSpawnRivalBandAction(stateRef.current)),
-    [dispatch, stateRef]
-  )
-
-  const moveRivalBand = useCallback(() => {
-    const currentState = stateRef.current
-    if (!currentState.rivalBand || !currentState.gameMap) return
-    dispatch(
-      createMoveRivalBandAction(currentState.rivalBand, currentState.gameMap)
-    )
-  }, [dispatch, stateRef])
-
-  const checkRivalEncounter = useCallback(
-    () => dispatch(createCheckRivalEncounterAction()),
-    [dispatch]
-  )
-
-  const updateRivalBand = useCallback(
-    (patch: Partial<RivalBandState>) =>
-      dispatch(createUpdateRivalBandAction(patch)),
-    [dispatch]
-  )
-
   return useMemo(
     () => ({
-      spawnRivalBand,
-      moveRivalBand,
-      checkRivalEncounter,
-      updateRivalBand
+      spawnRivalBand: () =>
+        dispatch(createSpawnRivalBandAction(stateRef.current)),
+      moveRivalBand: () => {
+        const currentState = stateRef.current
+        if (!currentState.rivalBand || !currentState.gameMap) return
+        dispatch(
+          createMoveRivalBandAction(
+            currentState.rivalBand,
+            currentState.gameMap
+          )
+        )
+      },
+      checkRivalEncounter: () => dispatch(createCheckRivalEncounterAction()),
+      updateRivalBand: patch => dispatch(createUpdateRivalBandAction(patch))
     }),
-    [spawnRivalBand, moveRivalBand, checkRivalEncounter, updateRivalBand]
+    [dispatch, stateRef]
   )
 }

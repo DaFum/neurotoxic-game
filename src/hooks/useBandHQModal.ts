@@ -15,6 +15,9 @@ export const useBandHQModal = () => {
   // persisted `pendingBandHQOpen` flag; consume it and clear it.
   useEffect(() => {
     if (!pendingBandHQOpen) return
+    // Syncing local visibility from the persisted cross-scene flag is the
+    // point of this effect; the state update is intentional.
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
     setShowHQ(true)
     setPendingBandHQOpen(false)
   }, [pendingBandHQOpen, setPendingBandHQOpen])

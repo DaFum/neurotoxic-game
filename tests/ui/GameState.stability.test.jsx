@@ -3,8 +3,7 @@ import { renderHook, act } from '@testing-library/react'
 import {
   GameStateProvider,
   useGameActions,
-  useGameSelector,
-  useGameDispatch
+  useGameSelector
 } from '../../src/context/GameState.tsx'
 
 beforeEach(() => {
@@ -156,9 +155,6 @@ describe('hook bounds', () => {
     const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
 
     try {
-      expect(() => renderHook(() => useGameDispatch())).toThrow(
-        'useGameDispatch must be used within GameStateProvider'
-      )
       expect(() => renderHook(() => useGameActions())).toThrow(
         'useGameActions must be used within GameStateProvider'
       )
