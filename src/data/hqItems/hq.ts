@@ -1,3 +1,11 @@
+/**
+ * Defines the comprehensive collection of obtainable Headquarters (HQ) items, upgrades, and room enhancements.
+ *
+ * @remarks
+ * These items intrinsically influence band statistics (e.g., harmony, fame) and act as progression gateways
+ * by unlocking specific narrative or visual dimensions of the player's HQ. Currently, items manifesting the
+ * `unlock_hq` effect type merely track ownership and presence, with full runtime gameplay effects pending implementation.
+ */
 export const hq = [
   // Items with type: 'unlock_hq' are currently tracked for ownership only.
   // Gameplay effects (e.g. immediate stat boosts) are pending implementation.
