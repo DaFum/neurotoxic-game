@@ -6,6 +6,7 @@ import {
   calculateExcessMissMoneyPenalty,
   calculatePerformanceScore,
   calculatePostGigStateUpdates,
+  buildPerGigSocialReconciliation,
   getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
@@ -448,4 +449,65 @@ test('getAcceptDealSocialUpdateFactory handles missing social state values grace
   assert.equal(updates.controversyLevel, 20)
   assert.equal(updates.brandReputation.CORPORATE, 5)
   assert.equal(updates.brandReputation.INDIE, 0)
+})
+
+test('buildPerGigSocialReconciliation records the gig and decrements active deals', () => {
+  const updates = buildPerGigSocialReconciliation({
+    player: { day: 12, location: 'venues:berlin_kb_club.name' },
+    social: buildSocial({
+      activeDeals: [
+        { id: 'deal_multi', remainingGigs: 3 },
+        { id: 'deal_final', remainingGigs: 1 }
+      ],
+      regionalGigHistory: { berlin: [9] }
+    }),
+    currentGig: { diff: 4 }
+  })
+
+  assert.equal(updates.lastGigDay, 12)
+  assert.equal(updates.lastGigDifficulty, 4)
+  assert.deepEqual(updates.regionalGigHistory, { berlin: [9, 12] })
+  // A deal on its final gig expires instead of persisting at 0.
+  assert.deepEqual(updates.activeDeals, [
+    { id: 'deal_multi', remainingGigs: 2 }
+  ])
+})
+
+test('buildPerGigSocialReconciliation falls back to difficulty 1 and leaves history untouched without a region', () => {
+  const updates = buildPerGigSocialReconciliation({
+    // An unresolvable location yields no region key, so the gig cannot be
+    // attributed to one — the existing history must survive unchanged.
+    player: { day: 3, location: undefined },
+    social: buildSocial({ regionalGigHistory: { berlin: [1] } }),
+    currentGig: null
+  })
+
+  assert.equal(updates.lastGigDifficulty, 1)
+  assert.deepEqual(updates.regionalGigHistory, { berlin: [1] })
+  assert.deepEqual(updates.activeDeals, [])
+})
+
+test('buildPerGigSocialReconciliation guards a non-finite player day', () => {
+  for (const day of [Number.NaN, Infinity]) {
+    const updates = buildPerGigSocialReconciliation({
+      player: { day, location: 'venues:berlin_kb_club.name' },
+      social: buildSocial({}),
+      currentGig: { difficulty: 2 }
+    })
+    assert.equal(updates.lastGigDay, 0, `day ${String(day)} must collapse to 0`)
+  }
+})
+
+test('buildPerGigSocialReconciliation rejects a hostile remainingGigs', () => {
+  assert.throws(
+    () =>
+      buildPerGigSocialReconciliation({
+        player: { day: 5, location: 'venues:berlin_kb_club.name' },
+        social: buildSocial({
+          activeDeals: [{ id: 'deal_bad', remainingGigs: -2 }]
+        }),
+        currentGig: { diff: 1 }
+      }),
+    /Invalid remainingGigs for active deal deal_bad/
+  )
 })

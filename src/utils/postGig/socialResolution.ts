@@ -214,7 +214,7 @@ export const buildPerGigSocialReconciliation = ({
   }
 
   return {
-    lastGigDay: player.day,
+    lastGigDay: finiteNumberOr(player.day, 0),
     lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
     regionalGigHistory,
     activeDeals
