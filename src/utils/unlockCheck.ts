@@ -4,7 +4,7 @@ import { CHARACTERS } from '../data/characters'
 import { SONGS_BY_ID } from '../data/songs'
 import { isLooseRecord } from './objectUtils'
 import { isEmptyObject } from './gameState'
-import type { GameState } from '../types'
+import type { BandMember, GameState } from '../types'
 
 /**
  * Domain logic for trait unlock evaluation.
@@ -16,24 +16,58 @@ import type { GameState } from '../types'
 
 type UnlockCheckState = Pick<GameState, 'player' | 'band' | 'social'>
 
+/** Band members that trait unlocks can target. */
+type UnlockMemberKey = 'MATZE' | 'MARIUS' | 'LARS'
+
+/** Context envelope kinds that can produce trait unlocks. */
+type UnlockEventType =
+  | 'GIG_COMPLETE'
+  | 'TRAVEL_COMPLETE'
+  | 'PURCHASE'
+  | 'SOCIAL_UPDATE'
+  | 'EVENT_RESOLVED'
+
+/**
+ * Gig metrics derived once per `GIG_COMPLETE` envelope and shared by every
+ * performance rule. Absent when the gig failed or nothing was actually played.
+ */
+type PerformanceContext = {
+  accuracy: number
+  misses: number
+  maxCombo: number
+  songs: Record<string, unknown>[]
+}
+
+/** Everything an unlock predicate may read. */
+type UnlockRuleContext = {
+  state: UnlockCheckState
+  ctx: Record<string, unknown>
+  performance: PerformanceContext | undefined
+}
+
+/**
+ * One declarative trait-unlock rule.
+ *
+ * @remarks
+ * The member lookup, existing-trait check, and result construction are handled
+ * by {@link checkTraitUnlocks}; a rule only declares when it is earned.
+ */
+type UnlockRule = {
+  eventType: UnlockEventType
+  member: UnlockMemberKey
+  traitId: string
+  predicate: (context: UnlockRuleContext, member: BandMember) => boolean
+}
+
 const hasRelationshipBelow = (
   relationships: unknown,
   threshold: number
 ): boolean => {
   if (!isLooseRecord(relationships)) return false
-  for (const key in relationships) {
-    if (Object.hasOwn(relationships, key)) {
-      const score = relationships[key]
-      if (
-        typeof score === 'number' &&
-        Number.isFinite(score) &&
-        score < threshold
-      ) {
-        return true
-      }
-    }
-  }
-  return false
+  return Object.values(relationships).some(
+    score =>
+      typeof score === 'number' && Number.isFinite(score) && score < threshold
+  )
 }
 
 /**
@@ -62,6 +96,174 @@ const resolvePerformanceSong = (
 }
 
 /**
+ * Builds the shared performance metrics for a `GIG_COMPLETE` envelope.
+ *
+ * @returns Derived metrics, or `undefined` when the gig failed or nothing was played.
+ */
+const buildPerformanceContext = (
+  ctx: Record<string, unknown>
+): PerformanceContext | undefined => {
+  if (ctx.type !== 'GIG_COMPLETE' || !isLooseRecord(ctx.gigStats)) {
+    return undefined
+  }
+  const gigStats = ctx.gigStats
+  const misses = finiteNumberOr(gigStats.misses, 0)
+  const perfectHits = finiteNumberOr(gigStats.perfectHits, 0)
+  const maxCombo = finiteNumberOr(gigStats.maxCombo, 0)
+
+  const songStats = Array.isArray(gigStats.songStats) ? gigStats.songStats : []
+  const songs = songStats.flatMap(songStat => {
+    if (!isLooseRecord(songStat) || typeof songStat.songId !== 'string') {
+      return []
+    }
+    const song = SONGS_BY_ID.get(songStat.songId)
+    return song ? [song as unknown as Record<string, unknown>] : []
+  })
+  const directSong = resolvePerformanceSong(gigStats.song)
+  if (directSong) songs.push(directSong)
+
+  const hasAttemptedPerformance =
+    perfectHits > 0 || misses > 0 || maxCombo > 0 || songs.length > 0
+  if (gigStats.failed === true || !hasAttemptedPerformance) return undefined
+
+  return {
+    accuracy: finiteNumberOr(gigStats.accuracy, 0),
+    misses,
+    maxCombo,
+    songs
+  }
+}
+
+const hasSongBpm = (
+  songs: Record<string, unknown>[],
+  predicate: (bpm: number) => boolean
+): boolean =>
+  songs.some(song => typeof song.bpm === 'number' && predicate(song.bpm))
+
+const UNLOCK_RULES: readonly UnlockRule[] = [
+  // 1. Performance unlocks (post-gig)
+  {
+    eventType: 'GIG_COMPLETE',
+    member: 'MATZE',
+    traitId: 'virtuoso',
+    predicate: ({ performance }) => performance?.misses === 0
+  },
+  {
+    eventType: 'GIG_COMPLETE',
+    member: 'MATZE',
+    traitId: 'perfektionist',
+    predicate: ({ performance }) => performance?.accuracy === 100
+  },
+  {
+    eventType: 'GIG_COMPLETE',
+    member: 'MARIUS',
+    traitId: 'blast_machine',
+    predicate: ({ performance }) =>
+      !!performance &&
+      hasSongBpm(performance.songs, bpm => bpm > 160) &&
+      performance.maxCombo > 50
+  },
+  {
+    eventType: 'GIG_COMPLETE',
+    member: 'LARS',
+    traitId: 'melodic_genius',
+    predicate: ({ performance }) =>
+      !!performance &&
+      hasSongBpm(performance.songs, bpm => bpm < 120) &&
+      performance.maxCombo > 30
+  },
+  {
+    eventType: 'GIG_COMPLETE',
+    member: 'MATZE',
+    traitId: 'tech_wizard',
+    predicate: ({ performance }) =>
+      !!performance &&
+      performance.songs.some(song => finiteNumberOr(song.difficulty, 0) > 3) &&
+      performance.accuracy === 100
+  },
+
+  // 2. Travel unlocks
+  {
+    eventType: 'TRAVEL_COMPLETE',
+    member: 'LARS',
+    traitId: 'road_warrior',
+    predicate: ({ state }) =>
+      finiteNumberOr(state.player.stats?.totalDistance, 0) >= 5000
+  },
+
+  // 3. Purchase unlocks
+  {
+    eventType: 'PURCHASE',
+    member: 'MARIUS',
+    traitId: 'party_animal',
+    predicate: ({ ctx, state }) => {
+      const item = isLooseRecord(ctx.item) ? ctx.item : undefined
+      return (
+        item?.id === 'hq_room_cheap_beer_fridge' ||
+        (state.player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')
+      )
+    }
+  },
+  {
+    eventType: 'PURCHASE',
+    member: 'MATZE',
+    traitId: 'gear_nerd',
+    // gearCount is pre-calculated by usePurchaseLogic after filtering
+    // inventory against HQ gear/instrument categories.
+    predicate: ({ ctx }) => finiteNumberOr(ctx.gearCount, 0) >= 5
+  },
+
+  // 4. Social unlocks
+  {
+    eventType: 'SOCIAL_UPDATE',
+    member: 'LARS',
+    traitId: 'social_manager',
+    predicate: ({ state }) =>
+      Math.max(
+        finiteNumberOr(state.social?.instagram, 0),
+        finiteNumberOr(state.social?.tiktok, 0),
+        finiteNumberOr(state.social?.youtube, 0)
+      ) >= 1000
+  },
+  {
+    eventType: 'SOCIAL_UPDATE',
+    member: 'MARIUS',
+    traitId: 'clumsy',
+    predicate: ({ state }) =>
+      finiteNumberOr(state.player.stats?.failedStageDives, 0) >= 2
+  },
+
+  // 5. Event unlocks
+  {
+    eventType: 'EVENT_RESOLVED',
+    member: 'LARS',
+    traitId: 'bandleader',
+    predicate: ({ state }) =>
+      finiteNumberOr(state.player.stats?.conflictsResolved, 0) >= 3
+  },
+  {
+    eventType: 'EVENT_RESOLVED',
+    member: 'MARIUS',
+    traitId: 'showman',
+    predicate: ({ state }) =>
+      finiteNumberOr(state.player.stats?.stageDives, 0) >= 3
+  },
+  {
+    eventType: 'EVENT_RESOLVED',
+    member: 'MATZE',
+    traitId: 'grudge_holder',
+    predicate: (_context, member) =>
+      !!member.relationships && hasRelationshipBelow(member.relationships, 30)
+  },
+  {
+    eventType: 'EVENT_RESOLVED',
+    member: 'LARS',
+    traitId: 'peacemaker',
+    predicate: ({ state }) => (state.band.harmony ?? 1) >= 90
+  }
+]
+
+/**
  * Checks for trait unlocks based on game state changes.
  * @param state - The full game state (player, band, etc.).
  * @param context - Contextual data (gigStats, purchaseItem, etc.).
@@ -71,185 +273,36 @@ export const checkTraitUnlocks = (
   state: UnlockCheckState,
   context: unknown = {}
 ) => {
-  const newUnlocks: { memberId: string; traitId: string }[] = []
   const ctx: Record<string, unknown> = isLooseRecord(context) ? context : {}
-  const { band, player, social } = state
-  const members = band?.members || []
+  const members = state.band?.members || []
 
-  // Helpers to find members in a single pass (O(N) instead of O(3N))
-  let Matze, Marius, Lars
-  for (let i = 0; i < members.length; i++) {
-    const m = members[i]
-    if (!m) continue
-    if (m.name === CHARACTERS.MATZE.name) Matze = m
-    else if (m.name === CHARACTERS.MARIUS.name) Marius = m
-    else if (m.name === CHARACTERS.LARS.name) Lars = m
+  // Resolve the three rule-targeted members in a single pass.
+  const byKey: Partial<Record<UnlockMemberKey, BandMember>> = {}
+  for (const member of members) {
+    if (!member) continue
+    if (member.name === CHARACTERS.MATZE.name) byKey.MATZE = member
+    else if (member.name === CHARACTERS.MARIUS.name) byKey.MARIUS = member
+    else if (member.name === CHARACTERS.LARS.name) byKey.LARS = member
   }
 
-  // 1. Performance Unlocks (Post-Gig)
-  if (ctx?.['type'] === 'GIG_COMPLETE' && isLooseRecord(ctx.gigStats)) {
-    const gigStats = ctx.gigStats
-    const accuracy = finiteNumberOr(gigStats.accuracy, 0)
-    const misses = finiteNumberOr(gigStats.misses, 0)
-    const perfectHits = finiteNumberOr(gigStats.perfectHits, 0)
-    const maxCombo = finiteNumberOr(gigStats.maxCombo, 0)
-    const songStats = Array.isArray(gigStats.songStats)
-      ? gigStats.songStats
-      : []
-    const songs: Record<string, unknown>[] = []
-    for (let i = 0; i < songStats.length; i++) {
-      const songStat = songStats[i]
-      if (!isLooseRecord(songStat) || typeof songStat.songId !== 'string') {
-        continue
-      }
-      const song = SONGS_BY_ID.get(songStat.songId)
-      if (song) songs.push(song as unknown as Record<string, unknown>)
-    }
-    const directSong = resolvePerformanceSong(gigStats.song)
-    if (directSong) songs.push(directSong)
-    const hasAttemptedPerformance =
-      perfectHits > 0 || misses > 0 || maxCombo > 0 || songs.length > 0
-    const isEligiblePerformance =
-      gigStats.failed !== true && hasAttemptedPerformance
-
-    // Virtuoso (Matze): 100% Accuracy (0 Misses)
-    if (
-      isEligiblePerformance &&
-      Matze &&
-      !hasTrait(Matze, 'virtuoso') &&
-      misses === 0
-    ) {
-      newUnlocks.push({ memberId: Matze.name, traitId: 'virtuoso' })
-    }
-
-    // Perfektionist (Matze): 100% Accuracy (match UI hint)
-    if (
-      isEligiblePerformance &&
-      Matze &&
-      !hasTrait(Matze, 'perfektionist') &&
-      accuracy === 100
-    ) {
-      newUnlocks.push({ memberId: Matze.name, traitId: 'perfektionist' })
-    }
-
-    // Blast Machine (Marius): Fast song (>160 BPM) && Max Combo > 50
-    if (isEligiblePerformance && Marius && !hasTrait(Marius, 'blast_machine')) {
-      const isFast = songs.some(
-        song => typeof song.bpm === 'number' && song.bpm > 160
-      )
-      if (isFast && maxCombo > 50) {
-        newUnlocks.push({ memberId: Marius.name, traitId: 'blast_machine' })
-      }
-    }
-
-    // Melodic Genius (Lars): Slow Song (<120 BPM) && Max Combo > 30
-    if (isEligiblePerformance && Lars && !hasTrait(Lars, 'melodic_genius')) {
-      const isSlow = songs.some(
-        song => typeof song.bpm === 'number' && song.bpm < 120
-      )
-      if (isSlow && maxCombo > 30) {
-        newUnlocks.push({ memberId: Lars.name, traitId: 'melodic_genius' })
-      }
-    }
-
-    // Tech Wizard (Matze): Technical Song (Difficulty > 3) && 100% Accuracy
-    if (isEligiblePerformance && Matze && !hasTrait(Matze, 'tech_wizard')) {
-      const isTechnical = songs.some(
-        song => finiteNumberOr(song.difficulty, 0) > 3
-      )
-      if (isTechnical && accuracy === 100) {
-        newUnlocks.push({ memberId: Matze.name, traitId: 'tech_wizard' })
-      }
-    }
+  const ruleContext: UnlockRuleContext = {
+    state,
+    ctx,
+    performance: buildPerformanceContext(ctx)
   }
 
-  // 2. Travel Unlocks
-  if (ctx?.['type'] === 'TRAVEL_COMPLETE') {
-    // Road Warrior (Lars): Travel 5000km total (match UI hint)
-    if (Lars && !hasTrait(Lars, 'road_warrior')) {
-      if (finiteNumberOr(player.stats?.totalDistance, 0) >= 5000) {
-        newUnlocks.push({ memberId: Lars.name, traitId: 'road_warrior' })
-      }
-    }
-  }
-
-  // 3. Purchase Unlocks
-  if (ctx?.['type'] === 'PURCHASE') {
-    const item = isLooseRecord(ctx.item) ? ctx.item : undefined
-
-    // Party Animal (Marius): Own a Beer Fridge
-    if (Marius && !hasTrait(Marius, 'party_animal')) {
-      if (
-        (typeof item?.id === 'string' &&
-          item.id === 'hq_room_cheap_beer_fridge') ||
-        (player.hqUpgrades || []).includes('hq_room_cheap_beer_fridge')
-      ) {
-        newUnlocks.push({ memberId: Marius.name, traitId: 'party_animal' })
-      }
-    }
-
-    // Gear Nerd (Matze): Own 5+ Gear/Instrument items
-    if (Matze && !hasTrait(Matze, 'gear_nerd')) {
-      // gearCount is pre-calculated by usePurchaseLogic after filtering
-      // inventory against HQ gear/instrument categories.
-      const gearCount = finiteNumberOr(ctx.gearCount, 0)
-      if (gearCount >= 5) {
-        newUnlocks.push({ memberId: Matze.name, traitId: 'gear_nerd' })
-      }
-    }
-  }
-
-  // 4. Social Unlocks
-  if (ctx?.['type'] === 'SOCIAL_UPDATE') {
-    // Social Manager (Lars): 1000+ Followers on any channel
-    if (Lars && !hasTrait(Lars, 'social_manager')) {
-      const maxFollowers = Math.max(
-        finiteNumberOr(social?.instagram, 0),
-        finiteNumberOr(social?.tiktok, 0),
-        finiteNumberOr(social?.youtube, 0)
-      )
-      if (maxFollowers >= 1000) {
-        newUnlocks.push({ memberId: Lars.name, traitId: 'social_manager' })
-      }
-    }
-
-    // Clumsy (Marius): 2 failed stage dives (tracked via social drama posts)
-    if (Marius && !hasTrait(Marius, 'clumsy')) {
-      if (finiteNumberOr(player.stats?.failedStageDives, 0) >= 2) {
-        newUnlocks.push({ memberId: Marius.name, traitId: 'clumsy' })
-      }
-    }
-  }
-
-  // 5. Event Unlocks
-  if (ctx?.['type'] === 'EVENT_RESOLVED') {
-    // Bandleader (Lars): Resolve 3 conflicts
-    if (Lars && !hasTrait(Lars, 'bandleader')) {
-      if (finiteNumberOr(player.stats?.conflictsResolved, 0) >= 3) {
-        newUnlocks.push({ memberId: Lars.name, traitId: 'bandleader' })
-      }
-    }
-
-    // Showman (Marius): Perform 3 Stage Dives
-    if (Marius && !hasTrait(Marius, 'showman')) {
-      if (finiteNumberOr(player.stats?.stageDives, 0) >= 3) {
-        newUnlocks.push({ memberId: Marius.name, traitId: 'showman' })
-      }
-    }
-
-    // Grudge Holder (Matze): Relationship < 30
-    if (Matze && !hasTrait(Matze, 'grudge_holder') && Matze.relationships) {
-      if (hasRelationshipBelow(Matze.relationships, 30)) {
-        newUnlocks.push({ memberId: Matze.name, traitId: 'grudge_holder' })
-      }
-    }
-
-    // Peacemaker (Lars): High Band Harmony (e.g. > 90)
-    if (Lars && !hasTrait(Lars, 'peacemaker')) {
-      if ((band.harmony ?? 1) >= 90) {
-        newUnlocks.push({ memberId: Lars.name, traitId: 'peacemaker' })
-      }
-    }
+  const newUnlocks: { memberId: string; traitId: string }[] = []
+  for (const rule of UNLOCK_RULES) {
+    if (ctx.type !== rule.eventType) continue
+    const member = byKey[rule.member]
+    if (!member || hasTrait(member, rule.traitId)) continue
+    if (!rule.predicate(ruleContext, member)) continue
+    // `member` was matched by name against this character, so the canonical
+    // character name is the member id.
+    newUnlocks.push({
+      memberId: CHARACTERS[rule.member].name,
+      traitId: rule.traitId
+    })
   }
 
   return newUnlocks

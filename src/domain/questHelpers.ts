@@ -1,5 +1,6 @@
 import type { ActiveQuestState, GameState, QuestState } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
+import { clamp0to100, finiteNumberOr } from '../utils/gameState'
 
 /**
  * Merges a quest instance with its registry definition when available.
@@ -54,4 +55,39 @@ export const addStoryFlags = (
     if (!nextFlags.includes(flag)) nextFlags.push(flag)
   }
   return nextFlags
+}
+
+/**
+ * Applies a signed condition delta to the first asset matching `assetId`, or —
+ * when no id is given — the first asset of `assetKind`.
+ *
+ * @param state - Current game state.
+ * @param match - Asset id (preferred) or asset kind to target.
+ * @param delta - Signed condition change; the result is clamped to 0–100.
+ * @returns A new state with the matched asset updated, or `state` when nothing matched.
+ */
+export const updateFirstMatchingAssetCondition = (
+  state: GameState,
+  match: { assetId?: string; assetKind?: string },
+  delta: number
+): GameState => {
+  const assets = state.assets
+  if (!assets?.length) return state
+
+  const byId = typeof match.assetId === 'string'
+  const byKind = match.assetId == null && typeof match.assetKind === 'string'
+  if (!byId && !byKind) return state
+
+  const index = assets.findIndex(asset =>
+    byId ? asset?.id === match.assetId : asset?.kind === match.assetKind
+  )
+  const asset = index === -1 ? undefined : assets[index]
+  if (!asset) return state
+
+  const nextAssets = [...assets]
+  nextAssets[index] = {
+    ...asset,
+    condition: clamp0to100(finiteNumberOr(asset.condition, 0) + delta)
+  }
+  return { ...state, assets: nextAssets }
 }
