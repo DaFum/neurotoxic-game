@@ -16,6 +16,7 @@ import { logger } from '../../utils/logger'
 import { ALLOWED_TRENDS } from '../../data/socialTrends'
 import {
   clampPlayerMoney,
+  clampReputation,
   clampBandHarmony,
   clampPlayerFame,
   calculateFameLevel,
@@ -552,7 +553,7 @@ export const handleUnblacklistVenue = (
   ) {
     nextState.reputationByRegion = {
       ...(nextState.reputationByRegion ?? {}),
-      [location]: REGION_BLACKLIST_THRESHOLD + 1
+      [location]: clampReputation(REGION_BLACKLIST_THRESHOLD + 1)
     }
   }
 

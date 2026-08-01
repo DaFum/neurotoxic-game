@@ -139,7 +139,8 @@ describe('gigStats', () => {
         peakHype: 50
       }
 
-      const snapshot = buildGigStatsSnapshot(1000, stats, 5, [], false)
+      // Exercises the songStats default rather than an explicit empty array.
+      const snapshot = buildGigStatsSnapshot(1000, stats, 5, undefined, false)
 
       expect(snapshot).toEqual({
         score: 1000,
