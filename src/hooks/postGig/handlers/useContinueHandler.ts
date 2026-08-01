@@ -112,11 +112,6 @@ export function useContinueHandler({
         money: stats.newMoney,
         fame: stats.newFame,
         fameLevel: stats.fameLevel,
-        // Stamps the node as played out: the travel gate refuses to re-enter
-        // it (`useHandleTravel`) and the softlock check stops counting it as
-        // an escape hatch (`checkSoftlock`). Without this the same gig can be
-        // farmed indefinitely.
-        lastGigNodeId: player.currentNodeId,
         // Surviving the FINALE gig completes the tour; the flag persists in
         // the save and drives the victory variant of the game-over screen.
         ...(isFinaleGig && !bankrupt

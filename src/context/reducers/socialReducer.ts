@@ -444,6 +444,29 @@ export const handleAddVenueBlacklist = (
         type: 'info'
       }
     ]
+
+    // The caller (`handleSetLastGigStats`) only reaches this once regional
+    // reputation is at or below the ban threshold. Sparing the blacklist
+    // alone would leave the region gated with no way out: amends require a
+    // `venueBlacklist` entry, and the defense just prevented one. So lift the
+    // region back over the line too. Repetition is bounded by loyalty — each
+    // defense costs VENUE_DEFENSE_LOYALTY_COST and needs
+    // VENUE_DEFENSE_LOYALTY_THRESHOLD to trigger.
+    const location = getRegionKeyForLocation(`venues:${venueId}.name`)
+    const regionRep = finiteNumberOr(
+      location ? nextState.reputationByRegion?.[location] : undefined,
+      0
+    )
+    if (
+      location &&
+      !isForbiddenKey(location) &&
+      regionRep <= REGION_BLACKLIST_THRESHOLD
+    ) {
+      nextState.reputationByRegion = {
+        ...(nextState.reputationByRegion ?? {}),
+        [location]: clampReputation(REGION_BLACKLIST_THRESHOLD + 1)
+      }
+    }
   } else {
     nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueId]
     nextState.toasts = [

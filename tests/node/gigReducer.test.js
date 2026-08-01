@@ -157,6 +157,37 @@ describe('gigReducer', () => {
       assert.strictEqual(nextState.reputationByRegion.some, 0) // no rep change
     })
 
+    it('stamps the played node before the POST_GIG autosave can run', () => {
+      // `usePersistence` autosaves on GIG -> POST_GIG, i.e. before the player
+      // presses Continue. If the stamp only landed in the continue handler, a
+      // reload at that point would restore a save whose lastGigNodeId still
+      // points at the previous gig, and useHandleTravel's current-node branch
+      // (`node.id === player.lastGigNodeId`) would let the same gig be
+      // replayed for unlimited money and fame.
+      baseState.currentGig = { id: 'v1', name: 'Test Venue' }
+      baseState.player.currentNodeId = 'node_7'
+      baseState.player.lastGigNodeId = 'node_3'
+
+      const nextState = handleSetLastGigStats(baseState, {
+        score: 7100,
+        accuracy: 80
+      })
+
+      assert.strictEqual(nextState.player.lastGigNodeId, 'node_7')
+    })
+
+    it('does not stamp the played node for practice gigs', () => {
+      // Practice is startable from BandHQ while standing on an unplayed gig
+      // node; stamping there would block the real gig.
+      baseState.currentGig = { isPractice: true }
+      baseState.player.currentNodeId = 'node_7'
+      baseState.player.lastGigNodeId = 'node_3'
+
+      const nextState = handleSetLastGigStats(baseState, { score: 95 })
+
+      assert.strictEqual(nextState.player.lastGigNodeId, 'node_3')
+    })
+
     it('should process bad show correctly', () => {
       baseState.currentGig = { id: 'v1', name: 'Test Venue' }
       // Gating uses 0-100 accuracy; the raw rhythm score stays untouched.

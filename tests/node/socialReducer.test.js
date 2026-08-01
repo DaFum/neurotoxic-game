@@ -235,7 +235,7 @@ describe('socialReducer', () => {
       )
     })
 
-    it('does not hand out regional reputation when fans defend the band', () => {
+    it('leaves no unrecoverable region behind when fans defend the band', () => {
       baseState.social.loyalty = 30
       baseState.reputationByRegion = { venue: -50 }
       const nextState = handleAddVenueBlacklist(baseState, {
@@ -243,9 +243,25 @@ describe('socialReducer', () => {
         toastId: 'test_toast_id'
       })
 
-      // Being defended already spares the blacklist; it must not also lift
-      // the regional booking ban, or the defense becomes a rep laundromat.
-      assert.strictEqual(nextState.reputationByRegion.venue, -50)
+      // The defense spares the blacklist, which is also the only route to
+      // amends. If the region stayed at or below the ban threshold the player
+      // would be locked out of it with no recovery action at all.
+      assert.ok(!nextState.venueBlacklist.includes('venue_123'))
+      assert.ok(
+        nextState.reputationByRegion.venue > -30,
+        `region must stay bookable, got ${nextState.reputationByRegion.venue}`
+      )
+    })
+
+    it('leaves an already-bookable region untouched', () => {
+      baseState.social.loyalty = 30
+      baseState.reputationByRegion = { venue: 40 }
+      const nextState = handleAddVenueBlacklist(baseState, {
+        venueId: 'venue_123',
+        toastId: 'test_toast_id'
+      })
+
+      assert.strictEqual(nextState.reputationByRegion.venue, 40)
     })
 
     it('should blacklist at loyalty exactly 29', () => {
