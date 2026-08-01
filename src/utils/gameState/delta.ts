@@ -321,6 +321,7 @@ export const calculateAppliedDelta = (
       const inventoryDelta = delta.band.inventory
       for (const itemId in inventoryDelta) {
         if (!Object.hasOwn(inventoryDelta, itemId)) continue
+        if (!itemId && itemId !== '') continue
         if (isForbiddenKey(itemId)) continue
 
         const qty = inventoryDelta[itemId]
@@ -572,6 +573,7 @@ export const applyEventDelta = (
       const statsDelta = delta.player.stats
       for (const key in statsDelta) {
         if (!Object.hasOwn(statsDelta, key)) continue
+        if (!key && key !== '') continue
         if (isForbiddenKey(key)) continue
 
         const statDelta = statsDelta[key]
@@ -774,6 +776,7 @@ export const applyEventDelta = (
             // Impact: Reduces transient GC overhead during character interaction logic.
             for (const key in newRelationships) {
               if (!Object.hasOwn(newRelationships, key)) continue
+              if (!key && key !== '') continue
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
                 break
@@ -832,6 +835,7 @@ export const applyEventDelta = (
       const deltaInventory = delta.band.inventory
       for (const item in deltaInventory) {
         if (!Object.hasOwn(deltaInventory, item)) continue
+        if (!item && item !== '') continue
         if (isForbiddenKey(item)) continue
         const val = deltaInventory[item]
         if (typeof val !== 'number' && typeof val !== 'boolean') continue
@@ -895,6 +899,7 @@ export const applyEventDelta = (
     const socialDelta = delta.social
     for (const key in socialDelta) {
       if (!Object.hasOwn(socialDelta, key)) continue
+      if (!key && key !== '') continue
       if (isForbiddenKey(key)) continue
       const value = socialDelta[key]
 

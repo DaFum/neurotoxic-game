@@ -175,6 +175,7 @@ const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
   // Impact: Reduces transient GC overhead on hot paths when validating incoming nested properties.
   for (const k in obj) {
     if (!Object.hasOwn(obj, k)) continue
+    if (!k && k !== '') continue
     if (isForbiddenKey(k)) continue
     out[k] = obj[k]
   }
