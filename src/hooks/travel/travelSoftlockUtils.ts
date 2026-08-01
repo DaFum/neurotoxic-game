@@ -111,7 +111,7 @@ export const getPostSaleScenarios = (
           social,
           assets: retainedAssets,
           liabilities: retainedLiabilities
-        } as GameState),
+        }),
         assetModifiers: getActiveAssetModifiers(retainedAssets)
       })
     }

@@ -6,7 +6,13 @@ import {
   getAssetAggregateBoni,
   getAssetTotalDailyRevenue
 } from './assetFinancials'
-import { NEUTRAL_ASSET_MODIFIERS, BROKEN_THRESHOLD } from './constants'
+import {
+  NEUTRAL_ASSET_MODIFIERS,
+  BROKEN_THRESHOLD,
+  MULTIPLIER_MODIFIER_KEYS,
+  ADDITIVE_MODIFIER_KEYS,
+  FLAG_MODIFIER_KEYS
+} from './constants'
 import { finiteNumberOr } from '../finiteNumber'
 
 /**
@@ -26,33 +32,32 @@ export const getActiveAssetModifiers = (
   for (const a of assets) {
     if (a.condition < BROKEN_THRESHOLD) continue
     const b = getAssetAggregateBoni(a)
-    // Use !== undefined rather than truthy checks: a multiplier of 0 is
-    // semantically valid (e.g., a module granting "free fuel") and must be
-    // applied. Truthy checks would silently drop it as if undefined.
-    if (b.fuelMultiplier !== undefined) m.fuelMultiplier *= b.fuelMultiplier
-    if (b.merchCostMultiplier !== undefined)
-      m.merchCostMultiplier *= b.merchCostMultiplier
-    if (b.songCostMultiplier !== undefined)
-      m.songCostMultiplier *= b.songCostMultiplier
-    if (b.trainingCostMultiplier !== undefined)
-      m.trainingCostMultiplier *= b.trainingCostMultiplier
-    if (b.baseRiskChanceMultiplier !== undefined)
-      m.baseRiskChanceMultiplier *= b.baseRiskChanceMultiplier
-    m.staminaRegenBonusPerDay += b.staminaRegenBonusPerDay ?? 0
-    m.travelStaminaRegen += b.travelStaminaRegen ?? 0
-    m.merchCapacityBonus += b.merchCapacityBonus ?? 0
-    m.songQualityBonus += b.songQualityBonus ?? 0
-    m.avgMerchSalePriceBonus += b.avgMerchSalePriceBonus ?? 0
-    m.famePassivePerDay += b.famePassivePerDay ?? 0
-    m.bandMoodPerDay += b.bandMoodPerDay ?? 0
-    m.tipBonusGigs += b.tipBonusGigs ?? 0
-    m.flags.infightingDamper ||= b.infightingDamper ?? false
-    m.flags.enablesReRecording ||= b.enablesReRecording ?? false
-    m.flags.enablesLimitedEditions ||= b.enablesLimitedEditions ?? false
-    m.flags.reducesTheftRiskTravel ||= b.reducesTheftRiskTravel ?? false
+    for (const key of MULTIPLIER_MODIFIER_KEYS) {
+      // Use !== undefined rather than a truthy check: a multiplier of 0 is
+      // semantically valid (e.g., a module granting "free fuel") and must be
+      // applied. A truthy check would silently drop it as if undefined.
+      const value = b[key]
+      if (value !== undefined) m[key] *= value
+    }
+    for (const key of ADDITIVE_MODIFIER_KEYS) {
+      m[key] += b[key] ?? 0
+    }
+    for (const key of FLAG_MODIFIER_KEYS) {
+      m.flags[key] ||= b[key] ?? false
+    }
   }
   return m
 }
+
+/**
+ * The state slices {@link getTotalDailyObligations} reads. Narrower than
+ * `GameState` so callers can assemble the five slices directly instead of
+ * casting a partial object.
+ */
+export type DailyObligationsState = Pick<
+  GameState,
+  'player' | 'band' | 'social' | 'assets' | 'liabilities'
+>
 
 /**
  * Sum of all daily obligations that the bankruptcy check must cover:
@@ -64,10 +69,12 @@ export const getActiveAssetModifiers = (
  * installments (or zero for active crowdfund campaigns, since crowdfund
  * resolution doesn't bill daily).
  *
- * @param state - Current game state containing player, band, social, asset, and liability slices.
+ * @param state - Player, band, social, asset, and liability slices.
  * @returns Guaranteed daily cost plus asset upkeep and liability payments, minus asset revenue.
  */
-export const getTotalDailyObligations = (state: GameState): number => {
+export const getTotalDailyObligations = (
+  state: DailyObligationsState
+): number => {
   const base = calculateGuaranteedDailyCost(
     state.player,
     state.band,

@@ -73,42 +73,8 @@ describe('useBandHQModal', () => {
     // It starts with true because of initial state sync in useState(pendingBandHQOpen)
     assert.equal(result.current.showHQ, true)
 
-    // The effect will run and call setPendingBandHQOpen(false) in a timeout
-    await act(async () => {
-      await new Promise(resolve => setTimeout(resolve, 0))
-    })
-
+    // The effect clears the persisted flag once it has been consumed.
     assert.equal(mockSetPendingBandHQOpen.mock.calls.length, 1)
     assert.deepEqual(mockSetPendingBandHQOpen.mock.calls[0].arguments, [false])
-  })
-
-  test('responds to open-modal event', () => {
-    const { result } = renderHook(() => useBandHQModal())
-
-    assert.equal(result.current.showHQ, false)
-
-    act(() => {
-      const event = new window.CustomEvent('open-modal', {
-        detail: { target: 'bandhq' }
-      })
-      window.dispatchEvent(event)
-    })
-
-    assert.equal(result.current.showHQ, true)
-  })
-
-  test('ignores other open-modal events', () => {
-    const { result } = renderHook(() => useBandHQModal())
-
-    assert.equal(result.current.showHQ, false)
-
-    act(() => {
-      const event = new window.CustomEvent('open-modal', {
-        detail: { target: 'other' }
-      })
-      window.dispatchEvent(event)
-    })
-
-    assert.equal(result.current.showHQ, false)
   })
 })

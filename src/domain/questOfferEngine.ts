@@ -11,18 +11,16 @@ const matchesSocialCondition = (
   const controversy = finiteNumberOr(state.social?.controversyLevel, 0)
   const tiktok = finiteNumberOr(state.social?.tiktok, 0)
 
-  // ⚡ BOLT OPTIMIZATION: Replaced intermediate array allocation and .some(Boolean) check
-  let hasDamageCheck = false
-  let damageCheckPassed = false
-
-  if (typeof social.loyaltyBelow === 'number') {
-    hasDamageCheck = true
-    if (loyalty < social.loyaltyBelow) damageCheckPassed = true
-  }
-  if (typeof social.controversyAbove === 'number') {
-    hasDamageCheck = true
-    if (controversy > social.controversyAbove) damageCheckPassed = true
-  }
+  // "Social damage" is an OR of the two optional thresholds; when neither is
+  // declared the check does not apply at all.
+  const hasDamageCheck =
+    typeof social.loyaltyBelow === 'number' ||
+    typeof social.controversyAbove === 'number'
+  const damageCheckPassed =
+    (typeof social.loyaltyBelow === 'number' &&
+      loyalty < social.loyaltyBelow) ||
+    (typeof social.controversyAbove === 'number' &&
+      controversy > social.controversyAbove)
 
   if (hasDamageCheck && !damageCheckPassed) {
     return false
@@ -62,16 +60,9 @@ const matchesOfferCondition = (
   }
 
   if (condition.requiredAssetKind) {
-    let hasAsset = false
-    const assets = state.assets ?? []
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
-    for (let i = 0; i < assets.length; i++) {
-      const asset = assets[i]
-      if (asset && asset?.kind === condition.requiredAssetKind) {
-        hasAsset = true
-        break
-      }
-    }
+    const hasAsset = (state.assets ?? []).some(
+      asset => asset?.kind === condition.requiredAssetKind
+    )
     if (!hasAsset) return false
   }
 
@@ -104,14 +95,23 @@ const matchesOfferCondition = (
 
 /**
  * Evaluates quest offer availability for triggers and current game state.
+ *
+ * @param state - The active game state context.
+ * @param questId - Identifier of the quest whose offer is being evaluated.
+ * @returns True when the offer condition passes and the quest can be accepted.
  */
-export const QuestOfferEngine = {
-  canOfferQuest: (state: GameState, questId: string): boolean => {
-    const definition = getQuestDefinition(questId)
-    if (!definition?.offer) return canAcceptQuest(state, questId).ok
-
-    if (!matchesOfferCondition(state, definition.offer.condition)) return false
-
-    return canAcceptQuest(state, questId).ok
+export const canOfferQuest = (state: GameState, questId: string): boolean => {
+  const definition = getQuestDefinition(questId)
+  if (
+    definition?.offer &&
+    !matchesOfferCondition(state, definition.offer.condition)
+  ) {
+    return false
   }
+  return canAcceptQuest(state, questId).ok
 }
+
+/**
+ * Namespaced offer API referenced by `src/data/AGENTS.md` and event conditions.
+ */
+export const QuestOfferEngine = { canOfferQuest }

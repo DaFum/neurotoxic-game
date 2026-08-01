@@ -49,27 +49,10 @@ const hasQuestSlot = (
 
   if (limit <= 0) return false
 
-  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().length with a single-pass loop and early exit
-  const activeQuests = state.activeQuests ?? []
-  let activeCount = 0
-  for (let i = 0; i < activeQuests.length; i++) {
-    const activeQuest = activeQuests[i]
-    if (activeQuest && getQuestKindForSlots(activeQuest) === kind) {
-      activeCount++
-      if (activeCount >= limit) return false
-    }
-  }
-  return true
-}
-
-/**
- * Extracts the current venue context identifier for location-scoped repeat policies.
- *
- * @param state - The active game state context.
- * @returns The scoped venue identifier, or undefined if not actively in a gig node.
- */
-const getCurrentVenueScopeKey = (state: GameState): string | undefined => {
-  return getCurrentVenueId(state)
+  const activeCount = (state.activeQuests ?? []).filter(
+    activeQuest => activeQuest && getQuestKindForSlots(activeQuest) === kind
+  ).length
+  return activeCount < limit
 }
 
 /**
@@ -138,55 +121,36 @@ export const canAcceptQuest = (
       ...(Array.isArray(merged.completionFlags) ? merged.completionFlags : []),
       ...(merged.rewardFlag ? [merged.rewardFlag] : [])
     ]
-    for (let i = 0; i < completionFlags.length; i++) {
-      const flag = completionFlags[i]
-      if (typeof flag === 'string' && hasStateItem(activeFlags, flag)) {
-        return { ok: false, reason: 'flag' }
-      }
-    }
+    const hasCompletionFlag = completionFlags.some(
+      flag => typeof flag === 'string' && hasStateItem(activeFlags, flag)
+    )
+    if (hasCompletionFlag) return { ok: false, reason: 'flag' }
   }
   // Cooldowns gate every repeat policy, not just 'cooldown': failure
   // penalties (`quest.cooldown`) write `questCooldowns` entries keyed by the
   // quest id for 'never' story quests too, so their retry delay must hold.
-  {
-    const currentDay = finiteNumberOr(state.player?.day, 0)
-    const cooldowns = state.questCooldowns ?? []
-    let onCooldown = false
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
-    for (let i = 0; i < cooldowns.length; i++) {
-      const cd = cooldowns[i]
-      if (
-        cd &&
-        cd.questId === questId &&
-        finiteNumberOr(cd.expiresOnDay, 0) > currentDay
-      ) {
-        onCooldown = true
-        break
-      }
-    }
-    if (onCooldown) return { ok: false, reason: 'cooldown' }
-  }
+  const currentDay = finiteNumberOr(state.player?.day, 0)
+  const onCooldown = (state.questCooldowns ?? []).some(
+    cd =>
+      cd &&
+      cd.questId === questId &&
+      finiteNumberOr(cd.expiresOnDay, 0) > currentDay
+  )
+  if (onCooldown) return { ok: false, reason: 'cooldown' }
   if (repeatPolicy === 'perVenue' || repeatPolicy === 'perRegion') {
     scopeKey =
       merged.scopeKey ??
       (repeatPolicy === 'perVenue'
-        ? getCurrentVenueScopeKey(state)
+        ? getCurrentVenueId(state)
         : // perRegion scopes are stamped with the canonical city key so
           // region quest events (also city-keyed) can match progress.
           (getRegionKeyForLocation(state.player?.location) ?? undefined))
     if (typeof scopeKey !== 'string' || scopeKey.length === 0) {
       return { ok: false, reason: 'scope' }
     }
-    const scopes = state.completedQuestScopes ?? []
-    let alreadyDone = false
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some with a procedural loop
-    for (let i = 0; i < scopes.length; i++) {
-      const c = scopes[i]
-      if (c && c.questId === questId && c.scopeKey === scopeKey) {
-        alreadyDone = true
-        break
-      }
-    }
+    const alreadyDone = (state.completedQuestScopes ?? []).some(
+      c => c && c.questId === questId && c.scopeKey === scopeKey
+    )
     if (alreadyDone) return { ok: false, reason: 'scope' }
   }
   if (!hasQuestSlot(state, merged)) {

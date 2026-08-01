@@ -31,28 +31,27 @@ export const submitLeaderboardScores = async ({
 }) => {
   if (!player.playerId || !player.playerName) return
 
-  // ⚡ BOLT OPTIMIZATION: Collapsed .map() and separate filter loop into a single procedural pass
-  // Why: Avoids intermediate array allocations and closure allocations on hot path
-  // Impact: Reduces GC pressure and iteration time when preparing batch submissions
   const scoresToSubmit: SongStat[] = []
 
   const songStats = lastGigStats?.songStats
 
   if (songStats && songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    const statsLen = songStats.length
-    for (let i = 0; i < statsLen; i++) {
-      const stat = songStats[i]
-      if (!stat) continue
-      const leaderboardSongId = SONGS_BY_ID.get(stat.songId)?.leaderboardId
-      if (leaderboardSongId) {
-        scoresToSubmit.push({
-          songId: leaderboardSongId,
-          score: finiteNumberOr(stat.score, 0),
-          accuracy: finiteNumberOr(stat.accuracy, 0)
-        })
-      }
-    }
+    scoresToSubmit.push(
+      ...songStats.flatMap(stat => {
+        const leaderboardSongId =
+          stat && SONGS_BY_ID.get(stat.songId)?.leaderboardId
+        return leaderboardSongId
+          ? [
+              {
+                songId: leaderboardSongId,
+                score: finiteNumberOr(stat.score, 0),
+                accuracy: finiteNumberOr(stat.accuracy, 0)
+              }
+            ]
+          : []
+      })
+    )
   } else {
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
@@ -91,8 +90,6 @@ export const submitLeaderboardScores = async ({
       signal: controller.signal
     })
 
-    clearTimeout(timeoutId)
-
     if (res.status === 404) {
       logger.info(
         'PostGig',
@@ -105,7 +102,8 @@ export const submitLeaderboardScores = async ({
       throw new Error(`HTTP ${res.status}: ${err}`)
     }
   } catch (err) {
-    clearTimeout(timeoutId)
     logger.error('PostGig', `Batch score submit failed`, err)
+  } finally {
+    clearTimeout(timeoutId)
   }
 }

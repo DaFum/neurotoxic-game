@@ -18,38 +18,30 @@ export const useBloodBank = () => {
   const openBloodBank = useCallback(() => setShowBloodBank(true), [])
   const closeBloodBank = useCallback(() => setShowBloodBank(false), [])
 
-  const config = useMemo(() => {
+  const { config, marrowConfig } = useMemo(() => {
     const multiplier = 1 + (player?.fameLevel ?? 0) * 0.2
     return {
-      moneyGain: Math.floor(
-        GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * multiplier
-      ),
-      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
-      staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
-      controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN
+      config: {
+        moneyGain: Math.floor(
+          GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * multiplier
+        ),
+        harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
+        staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
+        controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN
+      },
+      marrowConfig: {
+        moneyGain: Math.floor(
+          GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * multiplier
+        ),
+        harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+        staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
+        controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN
+      }
     }
   }, [player?.fameLevel])
 
-  const marrowConfig = useMemo(() => {
-    const multiplier = 1 + (player?.fameLevel ?? 0) * 0.2
-    return {
-      moneyGain: Math.floor(
-        GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * multiplier
-      ),
-      harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
-      staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
-      controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN
-    }
-  }, [player?.fameLevel])
-
-  const canDonate = useMemo(
-    () => validateBloodBankDonation(band, config),
-    [band, config]
-  )
-  const canDonateMarrow = useMemo(
-    () => validateBloodBankDonation(band, marrowConfig),
-    [band, marrowConfig]
-  )
+  const canDonate = validateBloodBankDonation(band, config)
+  const canDonateMarrow = validateBloodBankDonation(band, marrowConfig)
 
   const triggerDonate = useCallback(
     (type: 'blood' | 'marrow' = 'blood') => {

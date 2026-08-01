@@ -9,7 +9,6 @@ import {
   getNodeVisibility as getNodeVisibilityUtil
 } from '../../utils/mapUtils'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
-import type { GameState } from '../../types'
 import type { TravelLogicParams } from './types'
 
 /**
@@ -52,7 +51,7 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     assets: params.assets,
     liabilities: params.liabilities,
     social: params.social
-  } as GameState)
+  })
 
   const { handleRefuel, handleRepair, handleRestInVan } = useVanMaintenance({
     isTravelingRef: refs.isTravelingRef,
@@ -92,21 +91,12 @@ export const useTravelLogic = (params: TravelLogicParams) => {
     [params.gameMap, params.player?.currentNodeId]
   )
 
-  // ⚡ Bolt Optimization: Memoize getNodeVisibility to stabilize the prop reference
-  // passed to OverworldMap.tsx and prevent downstream re-renders.
-  const getNodeVisibility = useCallback(
-    (nodeLayer: number, currentLayer: number) => {
-      return getNodeVisibilityUtil(nodeLayer, currentLayer)
-    },
-    []
-  )
-
   return {
     isTraveling: state.isTraveling,
     travelTarget: state.travelTarget,
     pendingTravelNode: state.pendingTravelNode,
     isConnected,
-    getNodeVisibility,
+    getNodeVisibility: getNodeVisibilityUtil,
     handleTravel,
     handleRefuel,
     handleRepair,

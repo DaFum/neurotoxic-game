@@ -1,4 +1,4 @@
-import type { AssetModifiers } from '../../types/assets'
+import type { AssetBoni, AssetModifiers } from '../../types/assets'
 
 /**
  * The baseline immutable modifiers representing a neutral asset state.
@@ -27,6 +27,43 @@ export const NEUTRAL_ASSET_MODIFIERS: AssetModifiers = Object.freeze({
     reducesTheftRiskTravel: false
   })
 }) as AssetModifiers
+
+/**
+ * Modifier keys combined multiplicatively when aggregating asset boni.
+ */
+export const MULTIPLIER_MODIFIER_KEYS = [
+  'fuelMultiplier',
+  'merchCostMultiplier',
+  'songCostMultiplier',
+  'trainingCostMultiplier',
+  'baseRiskChanceMultiplier'
+] as const satisfies ReadonlyArray<keyof AssetModifiers & keyof AssetBoni>
+
+/**
+ * Modifier keys summed when aggregating asset boni.
+ */
+export const ADDITIVE_MODIFIER_KEYS = [
+  'staminaRegenBonusPerDay',
+  'travelStaminaRegen',
+  'merchCapacityBonus',
+  'songQualityBonus',
+  'avgMerchSalePriceBonus',
+  'famePassivePerDay',
+  'bandMoodPerDay',
+  'tipBonusGigs'
+] as const satisfies ReadonlyArray<keyof AssetModifiers & keyof AssetBoni>
+
+/**
+ * Boolean modifier keys OR-combined into `AssetModifiers.flags`.
+ */
+export const FLAG_MODIFIER_KEYS = [
+  'infightingDamper',
+  'enablesReRecording',
+  'enablesLimitedEditions',
+  'reducesTheftRiskTravel'
+] as const satisfies ReadonlyArray<
+  keyof AssetModifiers['flags'] & keyof AssetBoni
+>
 
 /**
  * The numerical durability threshold below which an asset module is considered non-functional.

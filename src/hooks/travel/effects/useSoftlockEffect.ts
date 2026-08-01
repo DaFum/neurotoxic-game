@@ -64,7 +64,7 @@ export const useSoftlockEffect = ({
         social,
         assets,
         liabilities
-      } as GameState),
+      }),
       assetModifiers: getActiveAssetModifiers(assets ?? []),
       postSaleScenarios,
       // Reuse the real booking gate rather than re-deriving it here, so a

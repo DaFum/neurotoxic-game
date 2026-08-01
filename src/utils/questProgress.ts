@@ -12,6 +12,7 @@ import type {
 } from '../types'
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
+import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
@@ -95,45 +96,7 @@ const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   story_flag_added: 'story.flagAdded'
 }
 
-const CANONICAL_EVENT_TYPE_VALUES = [
-  'gig.completed',
-  'gig.good',
-  'gig.smallVenueGood',
-  'social.postResolved',
-  'social.followersGained',
-  'social.loyaltyChanged',
-  'social.controversyChanged',
-  'social.trendMatched',
-  'brand.offerAccepted',
-  'brand.dealCompleted',
-  'brand.dealFailed',
-  'brand.trustChanged',
-  'asset.acquired',
-  'asset.repaired',
-  'asset.moduleInstalled',
-  'asset.riskTriggered',
-  'asset.riskResolved',
-  'asset.conditionChanged',
-  'item.collected',
-  'item.used',
-  'item.crafted',
-  'item.delivered',
-  'minigame.completed',
-  'minigame.perfect',
-  'minigame.failed',
-  'travel.completed',
-  'economy.moneyEarned',
-  'fame.gained',
-  'band.harmonyChanged',
-  'venue.gigCompleted',
-  'venue.goodGig',
-  'venue.blacklisted',
-  'venue.unblacklisted',
-  'region.reputationChanged',
-  'story.flagAdded'
-] as const satisfies readonly QuestEventType[]
-
-const CANONICAL_EVENT_TYPES = new Set<string>(CANONICAL_EVENT_TYPE_VALUES)
+const CANONICAL_EVENT_TYPES = new Set<string>(CANONICAL_QUEST_EVENT_TYPES)
 const BRAND_DEAL_TYPES = new Set<string>([
   'SPONSORSHIP',
   'ENDORSEMENT',
@@ -197,11 +160,25 @@ const canonicalizeEventType = (
   return LEGACY_EVENT_TYPES[eventType as QuestProgressSource]
 }
 
-const getEventRecord = (event: QuestProgressEvent): Record<string, unknown> =>
-  event as unknown as Record<string, unknown>
+/**
+ * A quest event reduced to its canonical, hardened form.
+ *
+ * @remarks
+ * Legacy and canonical event shapes are converted into this structure exactly
+ * once per emitted event, so rule matching and progress calculation never
+ * re-parse untrusted input.
+ */
+export type NormalizedQuestEvent = {
+  type: QuestEventType
+  context: QuestEventContext
+  amount: number | undefined
+  success: boolean | undefined
+  tags: readonly string[]
+}
 
-const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
-  const eventRecord = getEventRecord(event)
+const buildEventContext = (
+  eventRecord: Record<string, unknown>
+): QuestEventContext => {
   const context = Object.create(null) as QuestEventContext
   const rawContext = Object.hasOwn(eventRecord, 'context')
     ? eventRecord.context
@@ -266,15 +243,25 @@ const getEventContext = (event: QuestProgressEvent): QuestEventContext => {
   return context
 }
 
-const getEventAmount = (event: QuestProgressEvent): number | undefined =>
-  readOwnNumber(getEventRecord(event), 'amount')
-
-const getEventSuccess = (event: QuestProgressEvent): boolean | undefined =>
-  readOwnBoolean(getEventRecord(event), 'success')
-
-const getEventTags = (event: QuestProgressEvent): string[] => {
-  const tags = readOwnStringArray(getEventRecord(event), 'tags')
-  return tags ?? []
+/**
+ * Converts a legacy or canonical quest event into its normalized form.
+ *
+ * @param event - Emitted quest event, possibly in a legacy shape.
+ * @returns The normalized event, or `undefined` when the type is unknown.
+ */
+const normalizeQuestEvent = (
+  event: QuestProgressEvent
+): NormalizedQuestEvent | undefined => {
+  const type = canonicalizeEventType(event.type)
+  if (!type) return undefined
+  const eventRecord = event as unknown as Record<string, unknown>
+  return {
+    type,
+    context: buildEventContext(eventRecord),
+    amount: readOwnNumber(eventRecord, 'amount'),
+    success: readOwnBoolean(eventRecord, 'success'),
+    tags: readOwnStringArray(eventRecord, 'tags') ?? []
+  }
 }
 
 const withDefaultScope = (
@@ -366,41 +353,53 @@ const matchesScope = (
   return true
 }
 
+/**
+ * Match fields whose rule key and event-context key are the same name and
+ * compare with plain string equality.
+ */
+const STRING_MATCH_FIELDS = [
+  'platform',
+  'postCategory',
+  'dealType',
+  'brandId',
+  'brandAlignment',
+  'assetKind',
+  'moduleId',
+  'slotType',
+  'riskType',
+  'minigameId',
+  'itemId',
+  'recipeId'
+] as const satisfies ReadonlyArray<
+  keyof QuestProgressRuleMatch & keyof QuestEventContext
+>
+
 const questRuleMatchesEvent = (
   quest: QuestState,
   rule: QuestProgressRule,
-  event: QuestProgressEvent
+  event: NormalizedQuestEvent
 ): boolean => {
   const ruleEvent = canonicalizeEventType(rule.event)
-  const actualEvent = canonicalizeEventType(event.type)
-  if (!ruleEvent || !actualEvent || ruleEvent !== actualEvent) return false
+  if (!ruleEvent || ruleEvent !== event.type) return false
 
-  const context = getEventContext(event)
+  const { context } = event
   const match = rule.match
   if (!matchesScope(quest, match, context)) return false
   if (!match) return true
 
-  if (!matchesString(match.platform, context.platform)) return false
-  if (!matchesString(match.postCategory, context.postCategory)) return false
+  for (const field of STRING_MATCH_FIELDS) {
+    if (!matchesString(match[field], context[field])) return false
+  }
+  // `category` falls back to the post category so social rules can match
+  // either spelling.
   if (
     !matchesString(match.category, context.category ?? context.postCategory)
   ) {
     return false
   }
-  if (!matchesString(match.dealType, context.dealType)) return false
-  if (!matchesString(match.brandId, context.brandId)) return false
-  if (!matchesString(match.brandAlignment, context.brandAlignment)) return false
-  if (!matchesString(match.assetKind, context.assetKind)) return false
-  if (!matchesString(match.moduleId, context.moduleId)) return false
-  if (!matchesString(match.slotType, context.slotType)) return false
-  if (!matchesString(match.riskType, context.riskType)) return false
-  if (!matchesString(match.minigameId, context.minigameId)) return false
-  if (!matchesString(match.itemId, context.itemId)) return false
-  if (!matchesString(match.recipeId, context.recipeId)) return false
 
-  if (match.success !== undefined) {
-    const success = getEventSuccess(event)
-    if (success !== match.success) return false
+  if (match.success !== undefined && event.success !== match.success) {
+    return false
   }
 
   if (match.minScore !== undefined) {
@@ -414,8 +413,7 @@ const questRuleMatchesEvent = (
   }
 
   if (Array.isArray(match.tags) && match.tags.length > 0) {
-    const tags = getEventTags(event)
-    if (!match.tags.every(tag => tags.includes(tag))) return false
+    if (!match.tags.every(tag => event.tags.includes(tag))) return false
   }
 
   return true
@@ -423,9 +421,8 @@ const questRuleMatchesEvent = (
 
 const getThresholdValue = (
   rule: QuestProgressRule,
-  event: QuestProgressEvent
+  { context }: NormalizedQuestEvent
 ): number => {
-  const context = getEventContext(event)
   switch (rule.thresholdField) {
     case 'social.loyalty':
       return isFiniteNumber(context.loyalty)
@@ -445,15 +442,13 @@ const getThresholdValue = (
 
 const calculateProgressAmount = (
   rule: QuestProgressRule,
-  event: QuestProgressEvent
+  event: NormalizedQuestEvent
 ): number => {
   switch (rule.amount) {
     case 'event.amount':
-      return getEventAmount(event) ?? 0
-    case 'event.score': {
-      const score = getEventContext(event).score
-      return finiteNumberOr(score, 0)
-    }
+      return event.amount ?? 0
+    case 'event.score':
+      return finiteNumberOr(event.context.score, 0)
     case 'threshold':
       return getThresholdValue(rule, event)
     case 'fixed':
@@ -473,6 +468,10 @@ export const QuestProgress = {
     let nextState = { ...state }
     if (!nextState.activeQuests) return nextState
 
+    // Parse the untrusted event once; every quest and rule reads the result.
+    const normalizedEvent = normalizeQuestEvent(event)
+    if (!normalizedEvent) return nextState
+
     for (const activeQuest of nextState.activeQuests) {
       if (!activeQuest) continue
       const registryEntry = getQuestDefinition(activeQuest.id)
@@ -486,9 +485,9 @@ export const QuestProgress = {
       if (rules.length === 0) continue
 
       for (const rule of rules) {
-        if (!questRuleMatchesEvent(quest, rule, event)) continue
+        if (!questRuleMatchesEvent(quest, rule, normalizedEvent)) continue
 
-        const amount = calculateProgressAmount(rule, event)
+        const amount = calculateProgressAmount(rule, normalizedEvent)
         if (rule.amount === 'threshold') {
           if (!Number.isFinite(amount)) break
           nextState = QuestLifecycle.setQuestProgress(nextState, {

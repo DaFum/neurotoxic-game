@@ -85,19 +85,14 @@ export const hasActiveSponsorship = (
   if (!Array.isArray(activeDeals)) {
     return false
   }
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid intermediate allocations and reduce GC pressure.
-  for (let i = 0; i < activeDeals.length; i++) {
-    const deal = activeDeals[i]
-    if (!isLooseRecord(deal)) continue
+  return activeDeals.some(deal => {
+    if (!isLooseRecord(deal)) return false
     const d: SponsorshipDealLike = deal
-    if (
+    return (
       d.type === 'SPONSORSHIP' &&
       (typeof d.remainingGigs === 'number' ? d.remainingGigs : 1) > 0
-    ) {
-      return true
-    }
-  }
-  return false
+    )
+  })
 }
 
 /**
@@ -120,11 +115,8 @@ export const isOnCooldown = (
 
   const currentDay = finiteNumberOr(gameState.player?.day, 0)
 
-  const cooldowns = Array.isArray(gameState.eventCooldowns)
-    ? gameState.eventCooldowns
-    : Array.from(gameState.eventCooldowns)
-
-  for (const cd of cooldowns) {
+  // Arrays and Sets share the iterable interface, so no conversion is needed.
+  for (const cd of gameState.eventCooldowns) {
     const [key, expiryStr] = (typeof cd === 'string' ? cd : '').split(':')
     if (!key) continue
 

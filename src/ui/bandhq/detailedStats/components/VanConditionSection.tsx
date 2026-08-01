@@ -1,31 +1,17 @@
 import { DetailRow } from './DetailRow'
 import type { PlayerState } from '../../../../types'
 import type { BasicTProps } from '../types'
-import { Panel, ProgressBar } from '../../../shared'
+import { Panel } from '../../../shared'
+import { VanStatusBars } from '../../VanStatusBars'
 
 export const VanConditionSection = ({
   player,
   t
 }: { player: PlayerState } & BasicTProps) => (
   <Panel title={t('ui:stats.van_condition', { defaultValue: 'Van Condition' })}>
-    {/* jscpd:ignore-start */}
-    <div className='mb-4 space-y-2'>
-      <ProgressBar
-        label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
-        value={player.van?.fuel}
-        max={100}
-        color='bg-fuel-yellow'
-        size='sm'
-      />
-      <ProgressBar
-        label={t('ui:stats.condition', { defaultValue: 'Condition' })}
-        value={player.van?.condition}
-        max={100}
-        color='bg-condition-blue'
-        size='sm'
-      />
+    <div className='mb-4'>
+      <VanStatusBars van={player.van} t={t} fuelSize='sm' />
     </div>
-    {/* jscpd:ignore-end */}
     <DetailRow
       label={t('ui:detailedStats.breakdownChance', {
         defaultValue: 'Breakdown Chance'

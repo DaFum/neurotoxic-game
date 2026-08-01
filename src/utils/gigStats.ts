@@ -1,5 +1,14 @@
-import { clamp0to100 } from './gameState'
-import type { RhythmLiveStats } from '../types/rhythmGame'
+import { clamp0to100, finiteNumberOr } from './gameState'
+import type {
+  GigStats,
+  RhythmLiveStats,
+  RhythmSongStatsEntry
+} from '../types/rhythmGame'
+
+/**
+ * A {@link GigStats} snapshot plus the failure flag the post-gig outcome gates read.
+ */
+export type GigStatsSnapshot = GigStats & { failed: boolean }
 
 /**
  * Calculates hit accuracy as a percentage (0–100).
@@ -40,50 +49,14 @@ export const updateGigPerformanceStats = (
  * @param songStats - Array of stats for individual songs completed in the gig. Defaults to `[]`.
  * @returns Gig stats snapshot.
  */
-import { finiteNumberOr } from './gameState'
-
 export const buildGigStatsSnapshot = (
   score: number,
   stats: RhythmLiveStats,
   toxicTimeTotal: number,
-  songStats: Array<{
-    songId: string
-    score: number
-    accuracy: number
-    index: number
-  }> = [],
+  songStats: readonly RhythmSongStatsEntry[] = [],
   failed: boolean
-): {
-  score: number
-  misses: number
-  perfectHits: number
-  maxCombo: number
-  peakHype: number
-  failed: boolean
-  corruptionLevel: number
-  toxicTimeTotal: number
-  accuracy: number
-  songStats: Array<{
-    songId: string
-    score: number
-    accuracy: number
-    index: number
-  }>
-} => {
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with procedural loop to avoid closure allocation
-  const len = songStats ? songStats.length : 0
-  const nextSongStats = new Array<{
-    songId: string
-    score: number
-    accuracy: number
-    index: number
-  }>(len)
-  for (let i = 0; i < len; i++) {
-    const s = songStats[i]
-    if (s) {
-      nextSongStats[i] = { ...s }
-    }
-  }
+): GigStatsSnapshot => {
+  const nextSongStats = (songStats ?? []).map(entry => ({ ...entry }))
 
   const misses = finiteNumberOr(stats?.misses, 0)
   const perfectHits = finiteNumberOr(stats?.perfectHits, 0)

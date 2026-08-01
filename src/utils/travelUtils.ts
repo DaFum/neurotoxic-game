@@ -449,7 +449,7 @@ export function calculateTravelCostsAndImpact(
     social,
     assets,
     liabilities
-  } as GameState)
+  })
   const totalCashImpact = totalCost + dailyCost
   const cashRequired = Math.max(totalCost, totalCashImpact)
 

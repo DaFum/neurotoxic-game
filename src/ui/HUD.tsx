@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { useGameSelector, useGameDispatch } from '../context/GameState'
+import { useGameSelector, useGameActions } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
 import { Map as MapIcon, DollarSign, Skull } from 'lucide-react'
@@ -42,7 +42,7 @@ export const HUD = memo(() => {
       state.currentScene === GAME_PHASES.PRACTICE
   )
 
-  const { toggleNeuroDecimator } = useGameDispatch()
+  const { toggleNeuroDecimator } = useGameActions()
   const { t, i18n } = useTranslation(['ui', 'venues'])
   const locationName = translateLocation(t, playerLocation, playerLocation)
 
