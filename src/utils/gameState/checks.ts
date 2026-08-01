@@ -1,6 +1,6 @@
 import { finiteNumberOr } from '../finiteNumber'
 
-import { hasForbiddenOwnKeys, isLooseRecord } from '../objectUtils'
+import { isLooseRecord } from '../objectUtils'
 
 import type { StashEntry } from '../../types'
 
@@ -24,31 +24,13 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
 }
 
 /**
- * High-performance check for object emptiness.
- * Returns true if the object has no enumerable properties.
- * Avoids the array allocation of Object.keys().length === 0.
+ * Checks whether an object has no own enumerable properties.
  *
  * @param obj - The object to check
  * @returns True if empty, false otherwise
  */
-export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
-  for (const key in obj) {
-    if (Object.hasOwn(obj, key)) {
-      return false
-    }
-  }
-  return true
-}
-
-/**
- * Optimized check for forbidden keys in an object.
- * Avoids `Object.keys(obj).some(isForbiddenKey)` which allocates an array.
- *
- * @param obj - The object to check
- * @returns True if the object has any forbidden keys
- */
-export const hasForbiddenKeys = (obj: Record<string, unknown>): boolean =>
-  hasForbiddenOwnKeys(obj)
+export const isEmptyObject = (obj: Record<string, unknown>): boolean =>
+  Object.keys(obj).length === 0
 
 /**
  * Checks if a collection (Set or Array) contains an item.
@@ -138,22 +120,11 @@ export const isOnCooldown = (
 }
 
 /**
- * High-performance object key counting.
- * Returns the number of enumerable own properties.
- * Avoids the array allocation of Object.keys().length.
+ * Counts an object's own enumerable properties.
  *
  * @param obj - The object to count keys for
  * @returns The number of keys
  */
 export const countKeys = (
   obj: Record<string, unknown> | null | undefined
-): number => {
-  if (!obj) return 0
-  let count = 0
-  for (const key in obj) {
-    if (Object.hasOwn(obj, key)) {
-      count++
-    }
-  }
-  return count
-}
+): number => (obj ? Object.keys(obj).length : 0)
