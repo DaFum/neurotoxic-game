@@ -163,15 +163,15 @@ test('addQuest', async t => {
     assert.equal(nextState, state)
   })
 
-  await t.test('does not store a deadline that overflows to Infinity', () => {
+  await t.test('rejects a quest whose deadline overflows to Infinity', () => {
+    // Admitting it without a deadline would be just as bad as an infinite one:
+    // checkDeadlines only expires finite deadlines, so the slot never frees.
     const state = { player: { day: Number.MAX_VALUE }, activeQuests: [] }
     const nextState = addQuest(state, {
       id: 'test1',
       deadlineOffset: Number.MAX_VALUE
     })
-    const addedQuest = nextState.activeQuests[0]
-    assert.equal(addedQuest.deadline, undefined)
-    assert.equal(addedQuest.deadlineOffset, undefined)
+    assert.equal(nextState, state)
   })
 
   await t.test('rejects malformed progressRules entries', () => {

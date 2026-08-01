@@ -276,6 +276,18 @@ describe('checkTraitUnlocks', () => {
       assert.deepStrictEqual(unlocks, [])
     })
 
+    it('drops a direct song whose id is present but not a string', () => {
+      const marius = createMember('Marius')
+      const state = createState([marius])
+
+      const unlocks = checkTraitUnlocks(state, {
+        type: 'GIG_COMPLETE',
+        gigStats: { maxCombo: 51, song: { id: 0, bpm: 200 } }
+      })
+
+      assert.deepStrictEqual(unlocks, [])
+    })
+
     it('ignores non-finite numerics on an id-less legacy song', () => {
       const lars = createMember('Lars')
       const matze = createMember('Matze', {

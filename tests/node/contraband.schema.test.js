@@ -118,6 +118,24 @@ describe('Contraband Schema (with imagePrompt)', () => {
       assert.equal(getterCalls, 0)
     })
 
+    it('rejects a non-enumerable accessor on a required field', () => {
+      const item = { ...VALID_ITEM }
+      let getterCalls = 0
+      Object.defineProperty(item, 'id', {
+        enumerable: false,
+        get() {
+          getterCalls++
+          throw new Error('getter must not run')
+        }
+      })
+
+      const result = validateContrabandItem(item)
+
+      assert.equal(result.ok, false)
+      assert.ok(result.errors.includes('item contains forbidden keys'))
+      assert.equal(getterCalls, 0)
+    })
+
     it('rejects contraband ids that are prototype-polluting keys', () => {
       for (const id of ['__proto__', 'constructor', 'prototype']) {
         const result = validateContrabandItem({ ...VALID_ITEM, id })

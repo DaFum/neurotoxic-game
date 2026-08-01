@@ -3,6 +3,7 @@ import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import { SONGS_BY_ID } from '../data/songs'
 import { isLooseRecord } from './objectUtils'
+import { isEmptyObject } from './gameState'
 import type { GameState } from '../types'
 
 /**
@@ -45,7 +46,10 @@ const resolvePerformanceSong = (
   song: unknown
 ): Record<string, unknown> | undefined => {
   if (!isLooseRecord(song)) return undefined
-  if (typeof song.id === 'string') {
+  // A present id must resolve: only an absent one falls back to legacy
+  // metadata, so a malformed id cannot smuggle forged bpm/difficulty through.
+  if (Object.hasOwn(song, 'id')) {
+    if (typeof song.id !== 'string') return undefined
     const canonical = SONGS_BY_ID.get(song.id)
     return canonical
       ? (canonical as unknown as Record<string, unknown>)
@@ -54,7 +58,7 @@ const resolvePerformanceSong = (
   const resolved: Record<string, unknown> = {}
   if (isFiniteNumber(song.bpm)) resolved.bpm = song.bpm
   if (isFiniteNumber(song.difficulty)) resolved.difficulty = song.difficulty
-  return Object.keys(resolved).length > 0 ? resolved : undefined
+  return isEmptyObject(resolved) ? undefined : resolved
 }
 
 /**

@@ -343,7 +343,11 @@ const validateSocial = (social: unknown): void => {
     if (key === 'activeDeals') {
       if (!Array.isArray(val))
         throw new StateError('social.activeDeals must be an array')
-      ;(val as unknown[]).forEach((deal, i) => {
+      // Deals the load sanitizer would silently drop are removed here instead,
+      // so validation and hydration agree on the surviving set. Throwing would
+      // be worse than the original mismatch: a rejected save aborts the whole
+      // load, discarding every other bit of progress over one stale deal.
+      const survivingDeals = (val as unknown[]).filter((deal, i) => {
         if (!isLooseRecord(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
         const d = deal as Record<string, unknown>
@@ -360,14 +364,11 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a finite number`
           )
-        // Match the load sanitizer's contract: it only hydrates deals with a
-        // positive integer progress counter and drops everything else, so
-        // fractional or non-positive values are corruption, not a migration.
-        if (!Number.isInteger(d.remainingGigs) || d.remainingGigs <= 0)
-          throw new StateError(
-            `activeDeals[${i}].remainingGigs must be an integer greater than zero`
-          )
+        return Number.isInteger(d.remainingGigs) && d.remainingGigs > 0
       })
+      if (survivingDeals.length !== (val as unknown[]).length) {
+        typedSocial[key] = survivingDeals
+      }
       continue
     }
 

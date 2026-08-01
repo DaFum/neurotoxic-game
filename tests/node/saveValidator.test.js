@@ -384,15 +384,20 @@ describe('saveValidator', () => {
       })
     })
 
-    it('throws if activeDeals remainingGigs is fractional or non-positive', () => {
+    it('drops activeDeals whose remainingGigs is fractional or non-positive', () => {
       for (const remainingGigs of [0.5, 0, -1]) {
         const data = getValidData()
-        data.social.activeDeals = [{ id: 'deal1', remainingGigs }]
-        assert.throws(() => validateSaveData(data), {
-          name: 'StateError',
-          message:
-            /activeDeals\[0\].remainingGigs must be an integer greater than zero/
-        })
+        data.social.activeDeals = [
+          { id: 'deal1', remainingGigs },
+          { id: 'deal2', remainingGigs: 2 }
+        ]
+
+        // The save still loads; only the unhydratable deal is removed, matching
+        // what sanitizeSocial would have done.
+        assert.strictEqual(validateSaveData(data), true)
+        assert.deepEqual(data.social.activeDeals, [
+          { id: 'deal2', remainingGigs: 2 }
+        ])
       }
     })
 
