@@ -30,6 +30,14 @@ const PLAYER_NON_NEGATIVE_FIELDS: ReadonlySet<string> = new Set([
   'fame',
   'fameLevel'
 ])
+const SOCIAL_NON_NEGATIVE_FIELDS: ReadonlySet<string> = new Set([
+  'instagram',
+  'tiktok',
+  'youtube',
+  'newsletter',
+  'viral',
+  'reputationCooldown'
+])
 
 /**
  * Validates the structure and types of the save data.
@@ -176,7 +184,14 @@ const validateBand = (band: unknown): void => {
   if (!isLooseRecord(band)) throw new StateError('band must be an object')
 
   const typedBand = band as Record<string, unknown>
-  if (typedBand.members && !Array.isArray(typedBand.members)) {
+  // Presence, not truthiness: `members: false`/`0`/`''` are corrupt shapes that
+  // hydration would silently replace with the default roster. `null` stays a
+  // supported legacy stand-in for a missing roster.
+  if (
+    Object.hasOwn(typedBand, 'members') &&
+    typedBand.members != null &&
+    !Array.isArray(typedBand.members)
+  ) {
     throw new StateError('band.members must be an array')
   }
 
@@ -332,6 +347,9 @@ const validateSocial = (social: unknown): void => {
         if (!isLooseRecord(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
         const d = deal as Record<string, unknown>
+        // Ids are not checked against BRAND_DEALS_BY_ID here: a deal retired
+        // in a patch is a migration, not corruption, and the load sanitizer
+        // drops those entries rather than hydrating a stub.
         if (typeof d.id !== 'string')
           throw new StateError(`activeDeals[${i}].id must be a string`)
         if (typeof d.remainingGigs !== 'number')
@@ -341,6 +359,13 @@ const validateSocial = (social: unknown): void => {
         if (!Number.isFinite(d.remainingGigs))
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a finite number`
+          )
+        // Match the load sanitizer's contract: it only hydrates deals with a
+        // positive integer progress counter and drops everything else, so
+        // fractional or non-positive values are corruption, not a migration.
+        if (!Number.isInteger(d.remainingGigs) || d.remainingGigs <= 0)
+          throw new StateError(
+            `activeDeals[${i}].remainingGigs must be an integer greater than zero`
           )
       })
       continue
@@ -429,6 +454,12 @@ const validateSocial = (social: unknown): void => {
       throw new StateError(
         `Social value "${key}" must be a finite number: ${val}`
       )
+    }
+    // Follower counts, viral tokens and the reputation countdown are
+    // non-negative by construction in every gameplay writer; clamp corrupted
+    // saves instead of letting negatives reach threshold and growth math.
+    if (SOCIAL_NON_NEGATIVE_FIELDS.has(key)) {
+      typedSocial[key] = clampNonNegative(val)
     }
   }
 }

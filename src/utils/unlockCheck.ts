@@ -1,4 +1,4 @@
-import { finiteNumberOr } from './finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 import { hasTrait } from './traitUtils'
 import { CHARACTERS } from '../data/characters'
 import { SONGS_BY_ID } from '../data/songs'
@@ -35,12 +35,26 @@ const hasRelationshipBelow = (
   return false
 }
 
-const isValidatedPerformanceSong = (
+/**
+ * Resolves the singular `gigStats.song` envelope into metadata that is safe to
+ * evaluate traits against. Songs carrying an id are resolved through
+ * `SONGS_BY_ID` and their embedded bpm/difficulty is discarded; id-less legacy
+ * objects keep only the numeric fields that are actually finite.
+ */
+const resolvePerformanceSong = (
   song: unknown
-): song is Record<string, unknown> => {
-  if (!isLooseRecord(song)) return false
-  if (typeof song.id === 'string' && SONGS_BY_ID.has(song.id)) return true
-  return Number.isFinite(song.bpm) || Number.isFinite(song.difficulty)
+): Record<string, unknown> | undefined => {
+  if (!isLooseRecord(song)) return undefined
+  if (typeof song.id === 'string') {
+    const canonical = SONGS_BY_ID.get(song.id)
+    return canonical
+      ? (canonical as unknown as Record<string, unknown>)
+      : undefined
+  }
+  const resolved: Record<string, unknown> = {}
+  if (isFiniteNumber(song.bpm)) resolved.bpm = song.bpm
+  if (isFiniteNumber(song.difficulty)) resolved.difficulty = song.difficulty
+  return Object.keys(resolved).length > 0 ? resolved : undefined
 }
 
 /**
@@ -87,7 +101,8 @@ export const checkTraitUnlocks = (
       const song = SONGS_BY_ID.get(songStat.songId)
       if (song) songs.push(song as unknown as Record<string, unknown>)
     }
-    if (isValidatedPerformanceSong(gigStats.song)) songs.push(gigStats.song)
+    const directSong = resolvePerformanceSong(gigStats.song)
+    if (directSong) songs.push(directSong)
     const hasAttemptedPerformance =
       perfectHits > 0 || misses > 0 || maxCombo > 0 || songs.length > 0
     const isEligiblePerformance =
