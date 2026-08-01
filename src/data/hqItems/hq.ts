@@ -1,6 +1,11 @@
+/**
+ * Defines the comprehensive collection of obtainable Headquarters (HQ) items, upgrades, and room enhancements.
+ *
+ * @remarks
+ * These items intrinsically influence band statistics (e.g., harmony, fame) and act as progression gateways
+ * by unlocking specific narrative or visual dimensions of the player's HQ. When an `unlock_hq` item is purchased, the purchase handler merely records ownership of its ID. However, the runtime engine (e.g., `updatePassiveEffectsAndMembers` and `unlockCheck`) actively reads these IDs to apply passive gameplay effects like stamina/mood recovery and to enable trait progression.
+ */
 export const hq = [
-  // Items with type: 'unlock_hq' are currently tracked for ownership only.
-  // Gameplay effects (e.g. immediate stat boosts) are pending implementation.
   {
     id: 'hq_room_coffee',
     name: 'items:hq_room_coffee.name',
