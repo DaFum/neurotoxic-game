@@ -137,8 +137,11 @@ const makeProgressEvent = (source, rule) => {
       return {
         type: eventSource,
         amount: 10,
-        region: firstMatchValue(match.region) ?? 'test_region',
-        reason: 'test'
+        success: true,
+        context: {
+          region: firstMatchValue(match.region) ?? 'test_region',
+          reason: 'test'
+        }
       }
     default:
       throw new Error(`No minimal event payload for ${source}`)

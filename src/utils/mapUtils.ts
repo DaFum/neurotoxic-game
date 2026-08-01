@@ -273,7 +273,12 @@ export const checkSoftlock = (
             n.type === 'FESTIVAL' ||
             n.type === 'FINALE'
           ) {
-            const normalizedId = normalizeVenueId(n.venue)
+            const canonicalVenueId =
+              normalizeVenueId(n.venue) ??
+              (typeof (n as { venueId?: string }).venueId === 'string'
+                ? normalizeVenueId((n as { venueId?: string }).venueId)
+                : null)
+            const normalizedId = canonicalVenueId
             if (normalizedId) {
               if (context.venueBlacklist?.includes(normalizedId)) {
                 accessAllowed = false

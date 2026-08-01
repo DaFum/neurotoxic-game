@@ -492,3 +492,27 @@ test('questRewards - payload safety', async t => {
     }
   )
 })
+
+test('quest_venue_regular completion increases regional reputation', () => {
+  const baseState = {
+    player: { location: 'venues:leipzig_arena.name' },
+    social: {},
+    band: { members: [] },
+    reputationByRegion: { leipzig: 10 },
+    activeQuests: [
+      {
+        id: 'quest_venue_regular',
+        layerAssigned: 1,
+        dayAssigned: 1,
+        progress: 30,
+        state: {}
+      }
+    ],
+    completedQuestIds: [],
+    completedQuestScopes: []
+  }
+  const nextState = handleCompleteQuest(baseState, {
+    questId: 'quest_venue_regular'
+  })
+  assert.equal(nextState.reputationByRegion.leipzig, 25)
+})
