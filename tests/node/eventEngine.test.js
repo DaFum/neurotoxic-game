@@ -188,12 +188,13 @@ test('eventEngine.selectEvent dampens random band events when harmony < 30', () 
 
   const state = { band: { harmony: 20 }, activeStoryFlags: [] }
 
-  // Mock secureRandom with a sequence:
-  //  - First call > 0.5 so the Fisher-Yates shuffle does not swap the two elements
-  //  - Second call = 0.3 so 'random_one' would normally pass its 0.4 chance
-  //    but should be rejected due to harmony dampening (effective 0.2)
-  //  - Third call = 0.3 so 'control_event' can still be selected with its 0.6 chance
-  const secureRandomSequence = [0.6, 0.3, 0.3]
+  // Each selectEvent call spends exactly two rng values: the Fisher-Yates
+  // shuffle, then the weighted selection roll. The sequence alternates the
+  // shuffle value (0.6 keeps the order, 0.1 swaps it) so both orderings are
+  // exercised, and always rolls 0.3 for the selection. Undampened, the 0.4
+  // chance of 'random_one' would claim the 0.3 roll whenever it sorts first;
+  // dampened to 0.2 the roll falls through to 'control_event' either way.
+  const secureRandomSequence = [0.6, 0.3, 0.1, 0.3]
   let secureRandomIndex = 0
   mockSecureRandom.mock.mockImplementation(() => {
     const value =
@@ -264,6 +265,64 @@ test('eventEngine.selectEvent does not dampen non-random band events even at low
       'band_pregig',
       'Non-random band event should not be dampened by death-spiral logic'
     )
+  } finally {
+    mockSecureRandom.mock.mockImplementation(() => 0.5)
+  }
+})
+
+test('eventEngine.selectEvent keeps each authored chance as its final probability', () => {
+  // Mirrors the transport pool: police_contraband documents chance 0.1 as its
+  // final probability while police_control (0.05) is eligible at the same
+  // trigger. Sequential first-success-wins rolls would drop the 0.1 event to
+  // 0.0975 (or lower with more candidates).
+  const MOCK_POOL = [
+    { id: 'police_contraband', trigger: 'travel', chance: 0.1 },
+    { id: 'police_control', trigger: 'travel', chance: 0.05 }
+  ]
+  const state = { band: { harmony: 80 }, activeStoryFlags: [] }
+  const SAMPLES = 1000
+
+  // Each selectEvent call spends one rng value on the shuffle and one on the
+  // selection roll. Sweeping the selection roll across [0, 1) makes the hit
+  // count an exact measurement of the marginal probability.
+  const runSweep = shuffleValue => {
+    const counts = { police_contraband: 0, police_control: 0, none: 0 }
+    for (let i = 0; i < SAMPLES; i++) {
+      let call = 0
+      mockSecureRandom.mock.mockImplementation(() => {
+        call += 1
+        return call === 1 ? shuffleValue : i / SAMPLES
+      })
+      const selected = eventEngine.selectEvent(MOCK_POOL, state, 'travel')
+      counts[selected?.id ?? 'none'] += 1
+    }
+    return counts
+  }
+
+  // One sample of slack absorbs float error at the cumulative band boundary.
+  const assertHits = (actual, expected, label) =>
+    assert.ok(
+      Math.abs(actual - expected) <= 1,
+      `${label}: expected ~${expected} hits, got ${actual}`
+    )
+
+  try {
+    // 0.6 keeps the shuffled order, 0.1 swaps it: neither ordering may change
+    // the odds.
+    for (const shuffleValue of [0.6, 0.1]) {
+      const counts = runSweep(shuffleValue)
+      assertHits(
+        counts.police_contraband,
+        0.1 * SAMPLES,
+        `police_contraband must fire at its authored 0.1 (shuffle ${shuffleValue})`
+      )
+      assertHits(
+        counts.police_control,
+        0.05 * SAMPLES,
+        `police_control must fire at its authored 0.05 (shuffle ${shuffleValue})`
+      )
+      assertHits(counts.none, 0.85 * SAMPLES, 'no-event share')
+    }
   } finally {
     mockSecureRandom.mock.mockImplementation(() => 0.5)
   }

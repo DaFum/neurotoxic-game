@@ -191,7 +191,7 @@ describe('travelUtils', () => {
       )
     })
 
-    test('allows nodes carrying neither venue nor venueId', () => {
+    test('allows non-booking nodes carrying neither venue nor venueId', () => {
       assert.strictEqual(
         checkVenueAccess({
           node: { type: 'REST' },
@@ -200,6 +200,36 @@ describe('travelUtils', () => {
         }).allowed,
         true
       )
+    })
+
+    test('denies booking nodes carrying neither venue nor venueId', () => {
+      // A booking node with no venue cannot be gated at all, so waving it
+      // through is a silent bypass of every check below.
+      for (const type of ['GIG', 'FESTIVAL', 'FINALE']) {
+        const result = checkVenueAccess({
+          node: { type },
+          venuesMap,
+          getLocationName: mockGetLocationName
+        })
+        assert.strictEqual(result.allowed, false, `node type ${type}`)
+        assert.strictEqual(result.errorKey, 'ui:errors.invalidVenueData')
+      }
+    })
+
+    test('denies booking nodes whose venue never resolves to a full venue', () => {
+      // `{ id, name }` with no venuesMap entry has no capacity; treating the
+      // missing value as 0 would clear the proveYourselfMode cap.
+      const result = checkVenueAccess({
+        node: {
+          type: 'GIG',
+          venue: { id: 'unknown_venue', name: 'Unknown Venue' }
+        },
+        player: { stats: { proveYourselfMode: true } },
+        venuesMap,
+        getLocationName: mockGetLocationName
+      })
+      assert.strictEqual(result.allowed, false)
+      assert.strictEqual(result.errorKey, 'ui:errors.invalidVenueData')
     })
 
     test('allows access if all checks pass', () => {

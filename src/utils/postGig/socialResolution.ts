@@ -164,6 +164,64 @@ const normalizeResolvedPost = (
 }
 
 /**
+ * Builds the per-gig social bookkeeping that must be applied once for every
+ * completed gig, independent of which social post (if any) the player picks:
+ * the gig markers, the regional gig history entry, and the active-deal
+ * countdown.
+ *
+ * Pure — callers dispatch the returned patch. `activeDeals` is the decremented
+ * list; consumers that price a deal's final gig (for example the
+ * `comm_sellout_ad` penalty) must keep reading the pre-decrement
+ * `social.activeDeals`.
+ *
+ * @throws When an active deal carries a non-integer or negative `remainingGigs`.
+ */
+export const buildPerGigSocialReconciliation = ({
+  player,
+  social,
+  currentGig
+}: {
+  player: GameState['player']
+  social: GameState['social']
+  currentGig?: GameState['currentGig']
+}): Partial<GameState['social']> => {
+  const regionId = getRegionKeyForLocation(player.location)
+  // The canonical helper owns every bound the save validator enforces (region
+  // count, key safety, day dedup/sort/limit); appending inline here would let a
+  // gig in a new region push a full history past the validator's region cap.
+  const regionalGigHistory = regionId
+    ? appendToRegionalGigHistory(
+        social.regionalGigHistory,
+        regionId,
+        finiteNumberOr(player.day, 0)
+      )
+    : { ...(social.regionalGigHistory ?? {}) }
+
+  // Automatically decrement all active deals every gig
+  let activeDeals = social.activeDeals
+  if (activeDeals && activeDeals.length > 0) {
+    const nextDeals: UnknownRecord[] = []
+    for (let i = 0; i < activeDeals.length; i++) {
+      const deal = activeDeals[i]
+      if (!deal || typeof deal !== 'object') continue
+      const dealRecord = deal as UnknownRecord
+      const nextRemainingGigs = normalizeRemainingGigs(dealRecord) - 1
+      if (nextRemainingGigs > 0) {
+        nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
+      }
+    }
+    activeDeals = nextDeals
+  }
+
+  return {
+    lastGigDay: finiteNumberOr(player.day, 0),
+    lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
+    regionalGigHistory,
+    activeDeals
+  }
+}
+
+/**
  * Resolves a selected social post into the full set of post-gig state updates:
  * the final result, band/social/player deltas (clamped), applied harmony/money
  * deltas, and whether band updates are needed. Pure — owns the math the
@@ -300,17 +358,11 @@ export const calculatePostGigStateUpdates = (
       (result.success ? 1 : 0) +
       gigViralBonus
   )
-  const regionId = getRegionKeyForLocation(player.location)
-  // The canonical helper owns every bound the save validator enforces (region
-  // count, key safety, day dedup/sort/limit); appending inline here would let a
-  // gig in a new region push a full history past the validator's region cap.
-  const regionalGigHistory = regionId
-    ? appendToRegionalGigHistory(
-        social.regionalGigHistory,
-        regionId,
-        finiteNumberOr(player.day, 0)
-      )
-    : { ...(social.regionalGigHistory ?? {}) }
+  const perGigReconciliation = buildPerGigSocialReconciliation({
+    player,
+    social,
+    currentGig
+  })
 
   const updatedSocial: Partial<GameState['social']> = {
     [result.platform]: Math.max(
@@ -321,9 +373,7 @@ export const calculatePostGigStateUpdates = (
       0,
       finiteNumberOr(social.viral, 0) + (result.success ? 1 : 0) + gigViralBonus
     ),
-    lastGigDay: player.day,
-    lastGigDifficulty: currentGig?.diff ?? currentGig?.difficulty ?? 1,
-    regionalGigHistory,
+    ...perGigReconciliation,
     controversyLevel: clampControversyLevel(
       finiteNumberOr(social.controversyLevel, 0) +
         (result.controversyChange ?? 0)
@@ -345,23 +395,7 @@ export const calculatePostGigStateUpdates = (
         ? result.egoDrop
         : social.egoFocus,
     trend: social.trend,
-    activeDeals: social.activeDeals,
     influencers: social.influencers
-  }
-
-  // Automatically decrement all active deals every gig
-  if (updatedSocial.activeDeals && updatedSocial.activeDeals.length > 0) {
-    const nextDeals: UnknownRecord[] = []
-    for (let i = 0; i < updatedSocial.activeDeals.length; i++) {
-      const deal = updatedSocial.activeDeals[i]
-      if (!deal || typeof deal !== 'object') continue
-      const dealRecord = deal as UnknownRecord
-      const nextRemainingGigs = normalizeRemainingGigs(dealRecord) - 1
-      if (nextRemainingGigs > 0) {
-        nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
-      }
-    }
-    updatedSocial.activeDeals = nextDeals
   }
 
   // Handle comm_sellout_ad

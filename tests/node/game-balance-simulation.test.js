@@ -211,8 +211,12 @@ test('day recovery consumes travel and gig opportunities rather than only counte
     // buys the strongest immediate Harmony item before recovery is evaluated.
     initialOverrides: { band: { harmony: 5, tourSuccess: 1 } }
   })
-  const control = runSingleSimulation(scenario, 1, DEFAULT_BALANCE_TUNING)
-  const candidate = runSingleSimulation(scenario, 1, {
+  // Seed 2, not 1: the control run must fit a gig on every one of the three
+  // days for the forgone-gig delta to be observable. On seed 1 the control run
+  // itself only plays two gigs, so the recovery day costs travel but no gig and
+  // the assertion measures the seed rather than the recovery cost.
+  const control = runSingleSimulation(scenario, 2, DEFAULT_BALANCE_TUNING)
+  const candidate = runSingleSimulation(scenario, 2, {
     ...DEFAULT_BALANCE_TUNING,
     recovery: {
       ...DEFAULT_BALANCE_TUNING.recovery,

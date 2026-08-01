@@ -262,7 +262,9 @@ export const createTravelLogicProps = (overrides = {}) => ({
         id: 'node_target',
         layer: 1,
         type: 'GIG',
-        venue: { id: 'club_stage', name: 'Club' }
+        // Booking nodes carry the full venue shape (capacity included), like
+        // the generated map nodes checkVenueAccess gates.
+        venue: { id: 'club_stage', name: 'Club', capacity: 120 }
       }
     },
     connections: [{ from: 'node_start', to: 'node_target' }]
