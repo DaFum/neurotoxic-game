@@ -1,3 +1,4 @@
+import { VENUES_BY_ID } from '../../../data/venues'
 import { useEffect } from 'react'
 import { checkSoftlock } from '../../../utils/mapUtils'
 import {
@@ -66,7 +67,8 @@ export const useSoftlockEffect = ({
       assetModifiers: getActiveAssetModifiers(assets ?? []),
       postSaleScenarios,
       venueBlacklist: params.venueBlacklist,
-      reputationByRegion: params.reputationByRegion
+      reputationByRegion: params.reputationByRegion,
+      venuesMap: VENUES_BY_ID
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {

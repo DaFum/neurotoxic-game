@@ -116,6 +116,7 @@ export interface SoftlockContext {
   }[]
   venueBlacklist?: string[]
   reputationByRegion?: Record<string, number>
+  venuesMap?: Map<string, unknown>
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -306,14 +307,29 @@ export const checkSoftlock = (
               typeof player.stats === 'object' &&
               (player.stats as Record<string, unknown>).proveYourselfMode
             ) {
-              const cap =
-                n.venue && typeof n.venue === 'object' && 'capacity' in n.venue
-                  ? finiteNumberOr(
-                      (n.venue as { capacity?: number }).capacity,
-                      0
-                    )
-                  : 0
-              if (cap > 150) accessAllowed = false
+              let resolvedVenue: Record<string, unknown> | null = null
+              if (n.venue && typeof n.venue === 'object') {
+                resolvedVenue = n.venue as Record<string, unknown>
+              } else if (
+                normalizedId &&
+                context.venuesMap &&
+                context.venuesMap.has(normalizedId)
+              ) {
+                resolvedVenue = context.venuesMap.get(normalizedId) as Record<
+                  string,
+                  unknown
+                > | null
+              }
+
+              if (!resolvedVenue) {
+                accessAllowed = false
+              } else {
+                const cap =
+                  'capacity' in resolvedVenue
+                    ? finiteNumberOr(resolvedVenue.capacity as number, 0)
+                    : 0
+                if (cap > 150) accessAllowed = false
+              }
             }
           }
           if (
