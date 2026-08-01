@@ -109,7 +109,7 @@ describe('gigStats', () => {
         { songId: 'song1', score: 500, accuracy: 90, index: 0 },
         { songId: 'song2', score: 500, accuracy: 85, index: 1 }
       ]
-      const snapshot = buildGigStatsSnapshot(1000, stats, 15, songStats)
+      const snapshot = buildGigStatsSnapshot(1000, stats, 15, songStats, false)
 
       expect(snapshot).toEqual({
         score: 1000,
@@ -139,7 +139,7 @@ describe('gigStats', () => {
         peakHype: 50
       }
 
-      const snapshot = buildGigStatsSnapshot(1000, stats, 5)
+      const snapshot = buildGigStatsSnapshot(1000, stats, 5, [], false)
 
       expect(snapshot).toEqual({
         score: 1000,

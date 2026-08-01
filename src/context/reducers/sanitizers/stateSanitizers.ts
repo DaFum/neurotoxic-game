@@ -45,6 +45,7 @@ import {
   clampMemberStamina,
   clampPlayerMoney,
   clampBandHarmony,
+  clampReputation,
   clampBandStress,
   wrapClockHour
 } from '../../../utils/gameState'
@@ -1216,12 +1217,14 @@ export const sanitizeReputationByRegion = (
 ): GameState['reputationByRegion'] => {
   if (!isLooseRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
+  let count = 0;
   for (const key in value) {
+    if (count++ >= 100) break;
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const reputation = value[key]
     if (isFiniteNumber(reputation)) {
-      sanitized[key] = reputation
+      sanitized[key] = clampReputation(reputation)
     }
   }
   return sanitized

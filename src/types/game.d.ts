@@ -142,7 +142,11 @@ export interface GameState {
   completedQuestIds: string[]
   completedQuestScopes: QuestScopeCompletion[]
   reputationByRegion: Record<string, number>
-  reputationByVenue: Record<string, number>
+  gigContextSnapshot?: {
+    reputationByRegionAtStart?: Record<string, number>
+    fameAtStart?: number
+    ticketPriceAtStart?: number
+  }
   settings: GameSettings
   npcs: Record<string, CharacterProfile>
   gigModifiers: GigModifiers

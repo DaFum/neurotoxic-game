@@ -100,9 +100,19 @@ export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
     const definition = getQuestDefinition(questId)
     if (!definition?.offer) return canAcceptQuest(state, questId).ok
-    return (
-      canAcceptQuest(state, questId).ok &&
-      matchesOfferCondition(state, definition.offer.condition)
-    )
+
+    const baseMatch = matchesOfferCondition(state, definition.offer.condition)
+    if (!baseMatch) return false
+
+    if (questId === 'quest_make_amends') {
+      if (!state.venueBlacklist || state.venueBlacklist.length === 0) return false
+    }
+
+    if (questId === 'quest_region_takeover') {
+      // Very basic check: just ensure there's at least one location or we aren't completely locked
+      if (!state.player?.location) return false
+    }
+
+    return canAcceptQuest(state, questId).ok
   }
 }

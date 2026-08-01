@@ -113,6 +113,8 @@ export interface SoftlockContext {
     dailyObligations: number
     assetModifiers: AssetModifiers
   }[]
+  venueBlacklist?: string[]
+  reputationByRegion?: Record<string, number>
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -263,7 +265,24 @@ export const checkSoftlock = (
             bandStateForTravel,
             activeAssetModifiers
           )
+          // GIG, FESTIVAL, FINALE can be blocked by reputation or blacklist
+          let accessAllowed = true
+          if (n.type === 'GIG' || n.type === 'FESTIVAL' || n.type === 'FINALE') {
+            const venueId = n.venue ? (typeof n.venue === 'string' ? n.venue : (n.venue as { id?: string }).id) : null
+            if (venueId && typeof venueId === 'string') {
+               const cleanVenueId = venueId.replace(/^venues:/, '').replace(/\.name$/, '')
+               if (context.venueBlacklist?.includes(cleanVenueId)) {
+                 accessAllowed = false
+               } else if (context.reputationByRegion) {
+                 const regionId = cleanVenueId.split('_')[0]
+                 if (finiteNumberOr(context.reputationByRegion[regionId], 0) <= REGION_BLACKLIST_THRESHOLD) {
+                   accessAllowed = false
+                 }
+               }
+            }
+          }
           if (
+            accessAllowed &&
             fuel >= finiteNumberOr(fuelLiters, 0) &&
             money >=
               Math.max(

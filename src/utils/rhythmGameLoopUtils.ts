@@ -263,7 +263,8 @@ export const finalizeGig = (
       stateRef.score,
       stateRef.stats,
       stateRef.toxicTimeTotal,
-      stateRef.songStats
+      stateRef.songStats,
+      false
     )
   )
   stopAudio()

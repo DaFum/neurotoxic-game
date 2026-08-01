@@ -94,7 +94,8 @@ describe('useGigSession', () => {
         corruptionLevel: 0
       },
       0,
-      []
+      [],
+      true
     )
     expect(mockGameStateRef.current.hasSubmittedResults).toBe(true)
   })
@@ -143,7 +144,8 @@ describe('useGigSession', () => {
         corruptionLevel: 0
       },
       0,
-      []
+      [],
+      true
     )
   })
 

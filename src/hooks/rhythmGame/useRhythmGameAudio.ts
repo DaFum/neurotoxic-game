@@ -90,7 +90,8 @@ const handleHarmonyGuard = ({
             corruptionLevel: 0
           },
           0,
-          []
+          [],
+          true
         )
       )
       currentEndGig()

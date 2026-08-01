@@ -9,7 +9,7 @@ import { isGigNode } from '../../../utils/arrivalUtils'
 import { getActiveAssetModifiers } from '../../../utils/assetSelectors'
 import {
   resolveTravelVenue,
-  checkVenueAccess,
+  getNodeAccessStatus,
   checkTravelPrerequisites,
   checkTravelResources,
   calculateTravelCostsAndImpact
@@ -128,7 +128,7 @@ export const useHandleTravel = ({
       const currentLayer = currentStartNode?.layer ?? 0
       const visibility = getNodeVisibilityUtil(node.layer, currentLayer)
 
-      const accessCheck = checkVenueAccess({
+      const accessCheck = getNodeAccessStatus({
         node,
         player,
         reputationByRegion: refs.reputationByRegionRef.current,

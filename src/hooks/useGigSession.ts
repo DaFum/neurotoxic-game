@@ -108,7 +108,8 @@ export const useGigSession = ({
         score,
         statsSnapshot,
         toxicTime,
-        gameStateRef.current?.songStats ?? []
+        gameStateRef.current?.songStats ?? [],
+        true
       )
       setLastGigStats(snapshot)
       endGig()

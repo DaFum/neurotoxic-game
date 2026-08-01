@@ -205,9 +205,7 @@ export const handleLoadGame = (
     reputationByRegion: sanitizeReputationByRegion(
       loadedState.reputationByRegion
     ),
-    reputationByVenue: sanitizeReputationByRegion(
-      loadedState.reputationByVenue
-    ),
+
     venueBlacklist: sanitizeStringArray(loadedState.venueBlacklist),
     activeQuests: sanitizeActiveQuests(loadedState.activeQuests),
     questCooldowns: sanitizeQuestCooldowns(loadedState.questCooldowns),

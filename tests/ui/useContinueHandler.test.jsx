@@ -256,8 +256,7 @@ describe('useContinueHandler hook', () => {
       money: 1100,
       fame: 20,
       fameLevel: 2,
-      lastGigNodeId: 'n1'
-    })
+          })
 
     // submit leaderboard
     expect(submitLeaderboardScores).toHaveBeenCalled()

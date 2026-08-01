@@ -64,7 +64,9 @@ export const useSoftlockEffect = ({
         liabilities
       } as GameState),
       assetModifiers: getActiveAssetModifiers(assets ?? []),
-      postSaleScenarios
+      postSaleScenarios,
+      venueBlacklist: params.venueBlacklist,
+      reputationByRegion: params.reputationByRegion
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {
@@ -106,6 +108,8 @@ export const useSoftlockEffect = ({
     saveGame,
     changeScene,
     state.isTraveling,
-    refs.timeoutRef
+    refs.timeoutRef,
+    params.venueBlacklist,
+    params.reputationByRegion
   ])
 }
