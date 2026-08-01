@@ -3,7 +3,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { PostGig } from '../../src/scenes/PostGig'
 import { useGameActions } from '../../src/context/GameState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
-import * as economyEngine from '../../src/utils/economyEngine'
+import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 

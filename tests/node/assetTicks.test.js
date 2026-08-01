@@ -7,7 +7,7 @@ import {
   rollAssetRiskEvents
 } from '../../src/utils/assetTicks.ts'
 import { MODULE_REGISTRY } from '../../src/utils/assetModuleRegistry.ts'
-import { calculateFameLevel } from '../../src/utils/gameStateUtils.ts'
+import { calculateFameLevel } from '../../src/utils/gameState/index.ts'
 
 test('processAssetTick - condition decay and condition floor at 0', () => {
   const state = {

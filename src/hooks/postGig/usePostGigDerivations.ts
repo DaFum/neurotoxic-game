@@ -4,7 +4,7 @@ import {
   deriveGigContext,
   deriveFinancials,
   derivePostOptions
-} from '../../utils/postGigUtils'
+} from '../../utils/postGig'
 import {
   deriveCityTraits,
   getCityKeyFromVenueId

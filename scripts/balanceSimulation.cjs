@@ -1,12 +1,12 @@
 // Dev-only balance simulation runner.
 // Usage: node --import tsx/cjs scripts/balanceSimulation.cjs [--tours N] [--days N]
 
-const { calculateGigFinancials } = require('../src/utils/economyEngine.ts')
+const { calculateGigFinancials } = require('../src/utils/economy/index.ts')
 const {
   calculateFameGain,
   clampPlayerMoney,
   clampBandHarmony
-} = require('../src/utils/gameStateUtils.ts')
+} = require('../src/utils/gameState/index.ts')
 const { calculateSocialGrowth } = require('../src/utils/socialEngine.ts')
 const { logger, LOG_LEVELS } = require('../src/utils/logger.ts')
 

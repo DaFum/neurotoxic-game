@@ -6,7 +6,7 @@ import {
   GAME_PHASES,
   NEUROTOXIC_PEDAL_HARMONY_PENALTY
 } from '../../src/context/gameConstants'
-import * as economyEngine from '../../src/utils/economyEngine'
+import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import { BRAND_ALIGNMENTS } from '../../src/context/initialState'

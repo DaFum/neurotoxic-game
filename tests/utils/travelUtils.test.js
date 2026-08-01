@@ -10,10 +10,10 @@ import {
   checkTravelResources,
   calculateTravelCostsAndImpact
 } from '../../src/utils/travelUtils'
-import { calculateTravelExpenses } from '../../src/utils/economyEngine'
+import { calculateTravelExpenses } from '../../src/utils/economy'
 import { getTotalDailyObligations } from '../../src/utils/assetSelectors'
 
-vi.mock('../../src/utils/economyEngine', async importOriginal => ({
+vi.mock('../../src/utils/economy', async importOriginal => ({
   ...(await importOriginal()),
   calculateTravelExpenses: vi.fn()
 }))

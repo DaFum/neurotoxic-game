@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
-vi.mock('../../src/utils/postGigUtils', () => ({
+vi.mock('../../src/utils/postGig', () => ({
   getSpinStoryMoneyUpdate: vi.fn(() => ({
     success: true,
     nextMoney: 900,
@@ -101,8 +101,7 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
   })
 
   it('does not set hasSpun when not enough cash (retry allowed)', async () => {
-    const { getSpinStoryMoneyUpdate } =
-      await import('../../src/utils/postGigUtils')
+    const { getSpinStoryMoneyUpdate } = await import('../../src/utils/postGig')
     getSpinStoryMoneyUpdate.mockReturnValueOnce({
       success: false,
       nextMoney: 0,
@@ -145,7 +144,7 @@ describe('useMinorHandlers — handleNextPhase', () => {
 
   it('still reconciles per-gig social state when post options failed', async () => {
     const { buildPerGigSocialReconciliation } =
-      await import('../../src/utils/postGigUtils')
+      await import('../../src/utils/postGig')
     const props = makeProps({
       postOptionsDerivationError: new Error('boom')
     })
@@ -171,7 +170,7 @@ describe('useMinorHandlers — handleNextPhase', () => {
 
   it('completes the phase even when reconciliation throws', async () => {
     const { buildPerGigSocialReconciliation } =
-      await import('../../src/utils/postGigUtils')
+      await import('../../src/utils/postGig')
     buildPerGigSocialReconciliation.mockImplementationOnce(() => {
       throw new Error('invalid remainingGigs')
     })

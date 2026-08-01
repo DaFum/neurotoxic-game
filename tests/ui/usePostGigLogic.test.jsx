@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { usePostGigLogic } from '../../src/hooks/usePostGigLogic'
 import * as GameState from '../../src/context/GameState'
-import * as economyEngine from '../../src/utils/economyEngine'
+import * as economyEngine from '../../src/utils/economy'
 import * as socialEngine from '../../src/utils/socialEngine'
 import * as brandDealLogic from '../../src/utils/brandDealLogic'
 import * as crypto from '../../src/utils/crypto'
@@ -30,7 +30,7 @@ vi.mock('../../src/context/GameState', () => {
     extractActions
   }
 })
-vi.mock('../../src/utils/economyEngine', () => ({
+vi.mock('../../src/utils/economy', () => ({
   calculateGigFinancials: vi.fn(),
   shouldTriggerBankruptcy: vi.fn()
 }))

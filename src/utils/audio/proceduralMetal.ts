@@ -4,7 +4,7 @@ import { prepareTransportPlayback } from './playbackUtils'
 import { playDrumNote } from './drumMappings'
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { selectRandomItem } from './selectionUtils'
+import { selectRandomItem } from '../selectionUtils'
 import type { Song } from '../../types/audio'
 
 /**

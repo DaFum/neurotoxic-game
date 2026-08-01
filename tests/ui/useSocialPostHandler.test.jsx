@@ -3,7 +3,7 @@ import { renderHook, act } from '@testing-library/react'
 
 // Mock the pure utils so the test characterizes the hook's *orchestration*
 // (which dispatchers fire, in what order) rather than the math those utils own.
-vi.mock('../../src/utils/postGigUtils', () => ({
+vi.mock('../../src/utils/postGig', () => ({
   calculatePostGigStateUpdates: vi.fn()
 }))
 vi.mock('../../src/utils/brandDealLogic', () => ({
@@ -24,7 +24,7 @@ vi.mock('../../src/utils/crypto', () => ({
 import { useSocialPostHandler } from '../../src/hooks/postGig/handlers/useSocialPostHandler'
 import { applySocialPostResult } from '../../src/hooks/postGig/handlers/socialPostHandlerUtils'
 import { logger } from '../../src/utils/logger'
-import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
+import { calculatePostGigStateUpdates } from '../../src/utils/postGig'
 import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 import { createSocialPostQuestEvents } from '../../src/quests/producers/socialQuestEvents'
 import { secureRandom } from '../../src/utils/crypto'

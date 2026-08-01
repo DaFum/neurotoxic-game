@@ -6,7 +6,7 @@
 - Processing locks (e.g. `processingItemId`) must clean up in `finally`, including pre-effect validation failures.
 - `usePreGigLogic` "spend money to increase harmony" flows must refund and toast "maxed out" when `band.harmony >= 100`; clamps don't refund money.
 - `usePostGigHandlers`: the `soldMerch` deduction and all state-mutation side effects inside `handleContinue` must run inside the `isProcessingActionRef` guard, not before it. Wrap the handler body in try/catch so the ref always resets.
-- `deriveFinancials` in `src/utils/postGigUtils.ts` accepts optional `bandMerchPrices`; pass `band.merchPrices` from post-gig hooks.
+- `deriveFinancials` in `src/utils/postGig/` accepts optional `bandMerchPrices`; pass `band.merchPrices` from post-gig hooks.
 - Use `?? 0` (not `|| 0`) when reading numeric inventory or merch values that can legitimately be `0`.
 - `useSettingsActions` intentionally omits `settings.crtEnabled` from its `useCallback` dep array — the latest value is mirrored into a ref via `useLayoutEffect` so the toggle callback identity stays stable. Adding `crtEnabled` to deps (e.g. to silence a lint rule) re-creates the callback on every toggle and breaks downstream memoization.
 

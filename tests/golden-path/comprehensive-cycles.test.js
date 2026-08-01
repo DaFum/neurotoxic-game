@@ -15,7 +15,7 @@ import assert from 'node:assert/strict'
 import { gameReducer, ActionTypes } from '../../src/context/gameReducer'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { createInitialState } from '../../src/context/initialState'
-import { calculateGigFinancials } from '../../src/utils/economyEngine'
+import { calculateGigFinancials } from '../../src/utils/economy'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 
 // --- Test Helpers ---

@@ -68,7 +68,7 @@ mock.module(
 let currentMockSelectRandomItem = (arr, _rng) =>
   arr && arr.length > 0 ? arr[0] : null
 mock.module(
-  new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href,
+  new URL('../../src/utils/selectionUtils.ts', import.meta.url).href,
   {
     namedExports: {
       selectRandomItem: (..._args) => currentMockSelectRandomItem(..._args)

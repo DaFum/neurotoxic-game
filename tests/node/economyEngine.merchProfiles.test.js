@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { calculateMerchIncome } from '../../src/utils/economyEngine'
+import { calculateMerchIncome } from '../../src/utils/economy'
 
 const buildInventory = (overrides = {}) => ({
   shirts: 50,

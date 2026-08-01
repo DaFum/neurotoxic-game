@@ -66,7 +66,7 @@ vi.mock('../../src/utils/crypto', () => ({
 vi.mock('../../src/utils/simulationUtils', () => ({
   getGigModifiers: vi.fn(() => ({ activeEffects: [] }))
 }))
-vi.mock('../../src/utils/economyEngine', () => ({
+vi.mock('../../src/utils/economy', () => ({
   MODIFIER_COSTS: {
     soundcheck: 50,
     promo: 100,

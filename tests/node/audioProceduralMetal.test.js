@@ -145,7 +145,7 @@ mock.module(new URL('../../src/utils/rhythmUtils.ts', import.meta.url).href, {
 })
 
 mock.module(
-  new URL('../../src/utils/audio/selectionUtils.ts', import.meta.url).href,
+  new URL('../../src/utils/selectionUtils.ts', import.meta.url).href,
   {
     namedExports: {
       selectRandomItem: mock.fn()

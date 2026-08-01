@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook } from '@testing-library/react'
 import { StrictMode } from 'react'
 import { usePostGigDerivations } from '../../../src/hooks/postGig/usePostGigDerivations'
-import * as postGigUtils from '../../../src/utils/postGigUtils'
+import * as postGigUtils from '../../../src/utils/postGig'
 import * as mapGenerator from '../../../src/utils/mapGenerator'
 import * as mapUtils from '../../../src/utils/mapUtils'
 import * as assetSelectors from '../../../src/utils/assetSelectors'
@@ -14,7 +14,7 @@ import type {
   GigStats
 } from '../../../src/types'
 
-vi.mock('../../../src/utils/postGigUtils')
+vi.mock('../../../src/utils/postGig')
 vi.mock('../../../src/utils/mapGenerator')
 vi.mock('../../../src/utils/mapUtils')
 vi.mock('../../../src/utils/assetSelectors')

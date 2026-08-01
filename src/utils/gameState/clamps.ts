@@ -1,4 +1,4 @@
-import { EXPENSE_CONSTANTS } from '../economyEngine'
+import { EXPENSE_CONSTANTS } from '../economy'
 import { finiteNumberOr } from '../finiteNumber'
 import {
   RELATIONSHIP_DEFAULT_SCORE,

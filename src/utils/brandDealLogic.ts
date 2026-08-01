@@ -11,7 +11,7 @@ import { BRAND_DEALS_BY_ID } from '../data/brandDeals'
 import { bandHasTrait } from './traitUtils'
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { finiteNumberOr } from './gameState'
-import { buildBrandOffer } from './brandOfferFlavor'
+import { buildBrandOffer } from './brandOfferFlavor/index'
 import { selectTop3ByScore } from './topSelection'
 import type {
   BrandDeal,

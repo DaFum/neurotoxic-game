@@ -1,13 +1,11 @@
-import type { GameMap, RivalBandState } from '../types'
+import type { BrandAlignment, GameMap, RivalBandState } from '../types'
 
 import { BRAND_ALIGNMENTS } from '../context/initialState'
-import { generateBrandName } from './socialEngine'
+import { generateBrandName } from './brandOfferFlavor/index'
 import { secureRandom } from './crypto'
 import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 import { isEmptyObject } from './gameState'
 import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
-
-import type { BrandAlignment } from '../types'
 
 /**
  * Creates a rival band scaled to the current campaign day.

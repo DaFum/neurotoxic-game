@@ -55,7 +55,7 @@ import {
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
 import { calculateDailyUpdates } from '../../utils/simulationUtils'
-import { shouldTriggerBankruptcy } from '../../utils/economyEngine'
+import { shouldTriggerBankruptcy } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { generateDailyTrend } from '../../utils/socialEngine'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'

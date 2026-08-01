@@ -4,7 +4,7 @@ import { Tooltip, ProgressBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
-import { finiteNumberOr } from '../../../utils/gameStateUtils'
+import { finiteNumberOr } from '../../../utils/gameState'
 
 export const VanStatusMiniBars = memo(
   ({

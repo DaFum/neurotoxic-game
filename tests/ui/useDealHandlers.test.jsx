@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
-vi.mock('../../src/utils/postGigUtils', () => ({
+vi.mock('../../src/utils/postGig', () => ({
   getAcceptDealMoneyUpdate: vi.fn(() => ({
     nextMoney: 1500,
     appliedMoneyDelta: 500
