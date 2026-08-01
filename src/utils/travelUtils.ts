@@ -130,6 +130,8 @@ export const getLocationName = (
  * @returns Access result with localized error metadata when travel is blocked.
  */
 
+const BOOKING_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
+
 /**
  * Wraps checkVenueAccess to only enforce venue access restrictions on specific node types.
  *
@@ -147,12 +149,7 @@ export const getNodeAccessStatus = (params: {
     venueId: string | null | undefined
   ) => string
 }): VenueAccessResult => {
-  if (
-    !params.node.type ||
-    (params.node.type !== 'GIG' &&
-      params.node.type !== 'FESTIVAL' &&
-      params.node.type !== 'FINALE')
-  ) {
+  if (!params.node.type || !BOOKING_NODE_TYPES.has(params.node.type)) {
     return { allowed: true }
   }
   return checkVenueAccess(params)
@@ -183,13 +180,23 @@ export const checkVenueAccess = ({
     normalizeVenueId(node.venue) ??
     (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
 
-  if (node.type === 'START' || (!node.venue && !venueId)) {
+  // Booking nodes must identify the venue they book: without one, none of the
+  // gates below can run, so waving them through is a silent bypass.
+  const isBookingNode = Boolean(node.type && BOOKING_NODE_TYPES.has(node.type))
+
+  if (node.type === 'START' || (!isBookingNode && !node.venue && !venueId)) {
     return { allowed: true }
   }
 
   const resolvedVenue = resolveVenue(node.venue ?? venueId, venueId, venuesMap)
 
-  if (!resolvedVenue) {
+  // A booking node needs the full venue shape: an unresolved partial such as
+  // `{ id, name }` has no capacity, which the proveYourselfMode gate would read
+  // as 0 and clear.
+  if (
+    !resolvedVenue ||
+    (isBookingNode && !isResolvedTravelVenue(resolvedVenue))
+  ) {
     return {
       allowed: false,
       errorKey: 'ui:errors.invalidVenueData',

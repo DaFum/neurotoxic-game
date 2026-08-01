@@ -4,6 +4,7 @@ import { logger } from '../../../utils/logger'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
 import {
+  buildPerGigSocialReconciliation,
   getSpinStoryMoneyUpdate,
   getSpinStorySocialUpdateFactory
 } from '../../../utils/postGigUtils'
@@ -12,6 +13,8 @@ import type { HandlerDispatchers } from './types'
 /** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */
 export interface UseMinorHandlersProps {
   player: GameState['player']
+  social: GameState['social']
+  currentGig: GameState['currentGig']
   postOptionsDerivationError: unknown
   hasSpunRef: React.MutableRefObject<boolean>
   setHasSpun: React.Dispatch<React.SetStateAction<boolean>>
@@ -28,6 +31,8 @@ export interface UseMinorHandlersProps {
  */
 export function useMinorHandlers({
   player,
+  social,
+  currentGig,
   postOptionsDerivationError,
   hasSpunRef,
   setHasSpun,
@@ -43,6 +48,17 @@ export function useMinorHandlers({
       )
       const fallbackMsg = t('ui:postGig.socialOptionsUnavailable')
 
+      // The gig still happened: apply the per-gig social bookkeeping the
+      // social-post path would otherwise own, so a failed option generation
+      // does not freeze deal countdowns or the gig-history markers.
+      try {
+        updateSocial(
+          buildPerGigSocialReconciliation({ player, social, currentGig })
+        )
+      } catch (e) {
+        logger.error('PostGig', 'Failed to reconcile per-gig social state', e)
+      }
+
       setPostResult({
         type: 'ERROR',
         success: false,
@@ -56,7 +72,17 @@ export function useMinorHandlers({
     } else {
       setPhase('SOCIAL')
     }
-  }, [setPhase, postOptionsDerivationError, t, addToast, setPostResult])
+  }, [
+    setPhase,
+    postOptionsDerivationError,
+    player,
+    social,
+    currentGig,
+    updateSocial,
+    t,
+    addToast,
+    setPostResult
+  ])
 
   const handleSpinStory = useCallback(() => {
     if (hasSpunRef.current) return

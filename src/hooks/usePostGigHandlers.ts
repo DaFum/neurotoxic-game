@@ -160,6 +160,8 @@ export function usePostGigHandlers({
   })
   const { handleNextPhase, handleSpinStory } = useMinorHandlers({
     player,
+    social,
+    currentGig,
     postOptionsDerivationError,
     hasSpunRef,
     setHasSpun,

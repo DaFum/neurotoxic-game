@@ -177,8 +177,20 @@ const selectEvent = (
     )
   })
 
+  // Weighted single-roll selection. Rolling each candidate in sequence and
+  // taking the first success would make every event's odds conditional on all
+  // earlier candidates failing, so an authored `chance` would shrink as soon as
+  // another event is eligible. Accumulating the effective chances and spending
+  // one roll keeps each `chance` as the event's final probability while the
+  // pool total stays within 1, and degrades proportionally once it exceeds 1.
+  const weighted: Array<{
+    eligible: (typeof shuffled)[number]
+    chance: number
+  }> = []
+  let totalChance = 0
+
   for (const eligible of shuffled) {
-    const { event, contextvars } = eligible
+    const { event } = eligible
     let chance =
       typeof event.chance === 'function'
         ? event.chance(optimizedState)
@@ -220,25 +232,36 @@ const selectEvent = (
 
     if (!Number.isFinite(chance)) chance = 0
     if (chance > 1) chance = 1
-    if (chance < 0) chance = 0
+    if (chance <= 0) continue
 
-    if (rng() < chance) {
-      logger.debug('EventEngine', 'Event Selected', event.id)
+    totalChance += chance
+    weighted.push({ eligible, chance })
+  }
 
-      // Dynamic text parsing
-      const variables: Record<string, string> = {
-        ...contextvars,
-        venue: String(gameState.player?.location || 'the venue')
-      }
+  if (totalChance <= 0) return null
 
-      let title = event.title || ''
-      let description = event.description || ''
+  let roll = rng() * Math.max(1, totalChance)
 
-      title = resolveTemplateString(title, variables)
-      description = resolveTemplateString(description, variables)
+  for (const { eligible, chance } of weighted) {
+    roll -= chance
+    if (roll >= 0) continue
 
-      return { ...event, title, description, context: variables }
+    const { event, contextvars } = eligible
+    logger.debug('EventEngine', 'Event Selected', event.id)
+
+    // Dynamic text parsing
+    const variables: Record<string, string> = {
+      ...contextvars,
+      venue: String(gameState.player?.location || 'the venue')
     }
+
+    let title = event.title || ''
+    let description = event.description || ''
+
+    title = resolveTemplateString(title, variables)
+    description = resolveTemplateString(description, variables)
+
+    return { ...event, title, description, context: variables }
   }
   return null
 }

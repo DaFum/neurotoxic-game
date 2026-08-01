@@ -7,7 +7,13 @@ vi.mock('../../src/utils/postGigUtils', () => ({
     nextMoney: 900,
     appliedDelta: -100
   })),
-  getSpinStorySocialUpdateFactory: vi.fn(() => prev => prev)
+  getSpinStorySocialUpdateFactory: vi.fn(() => prev => prev),
+  buildPerGigSocialReconciliation: vi.fn(() => ({
+    lastGigDay: 7,
+    lastGigDifficulty: 3,
+    regionalGigHistory: { BERLIN: [7] },
+    activeDeals: []
+  }))
 }))
 
 import { useMinorHandlers } from '../../src/hooks/postGig/handlers/useMinorHandlers'
@@ -29,7 +35,9 @@ function makeProps(overrides = {}) {
   const hasSpunRef = overrides.hasSpunRef ?? { current: false }
   const setHasSpun = overrides.setHasSpun ?? vi.fn()
   return {
-    player: { money: 1000 },
+    player: { money: 1000, day: 7, location: 'venues:berlin_club.name' },
+    social: { activeDeals: [{ id: 'deal_1', remainingGigs: 2 }] },
+    currentGig: { id: 'berlin_club', diff: 3 },
     postOptionsDerivationError: null,
     hasSpunRef,
     setHasSpun,
@@ -119,5 +127,67 @@ describe('useMinorHandlers — handleSpinStory single-shot guard', () => {
     act(() => result.current.handleSpinStory())
 
     expect(props.dispatchers.updatePlayer).not.toHaveBeenCalled()
+  })
+})
+
+describe('useMinorHandlers — handleNextPhase', () => {
+  beforeEach(() => vi.clearAllMocks())
+
+  it('routes to SOCIAL without touching social state when options generated', () => {
+    const props = makeProps()
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleNextPhase())
+
+    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('SOCIAL')
+    expect(props.dispatchers.updateSocial).not.toHaveBeenCalled()
+  })
+
+  it('still reconciles per-gig social state when post options failed', async () => {
+    const { buildPerGigSocialReconciliation } =
+      await import('../../src/utils/postGigUtils')
+    const props = makeProps({
+      postOptionsDerivationError: new Error('boom')
+    })
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleNextPhase())
+
+    // The gig happened, so deal countdowns and gig markers must advance even
+    // though the player never reaches the social-post step.
+    expect(buildPerGigSocialReconciliation).toHaveBeenCalledWith({
+      player: props.player,
+      social: props.social,
+      currentGig: props.currentGig
+    })
+    expect(props.dispatchers.updateSocial).toHaveBeenCalledWith({
+      lastGigDay: 7,
+      lastGigDifficulty: 3,
+      regionalGigHistory: { BERLIN: [7] },
+      activeDeals: []
+    })
+    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
+  })
+
+  it('completes the phase even when reconciliation throws', async () => {
+    const { buildPerGigSocialReconciliation } =
+      await import('../../src/utils/postGigUtils')
+    buildPerGigSocialReconciliation.mockImplementationOnce(() => {
+      throw new Error('invalid remainingGigs')
+    })
+
+    const props = makeProps({
+      postOptionsDerivationError: new Error('boom')
+    })
+    const { result } = renderHook(() => useMinorHandlers(props))
+
+    act(() => result.current.handleNextPhase())
+
+    expect(props.dispatchers.updateSocial).not.toHaveBeenCalled()
+    expect(props.dispatchers.setPhase).toHaveBeenCalledWith('COMPLETE')
+    expect(props.dispatchers.addToast).toHaveBeenCalledWith(
+      expect.any(String),
+      'error'
+    )
   })
 })
