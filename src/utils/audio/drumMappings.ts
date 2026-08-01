@@ -1,17 +1,11 @@
 import { audioState } from './state'
 import { clampUnit } from '../numberUtils'
 
-// ⚡ BOLT OPTIMIZATION: Direct handler dispatch avoids string comparisons and property lookups
-// on the critical audio scheduling path.
-const DRUM_HANDLER_IDX = {
-  KICK: 0,
-  SNARE: 1,
-  HIHAT: 2,
-  CRASH: 3
-}
+/** Voice a MIDI percussion pitch is routed to. */
+type DrumKind = 'kick' | 'snare' | 'hihat' | 'crash'
 
 type DrumMap = {
-  handler: number
+  kind: DrumKind
   note?: string
   duration?: string
   freq?: number
@@ -21,148 +15,145 @@ type DrumMap = {
 type DrumKit = NonNullable<typeof audioState.drumKit>
 
 /**
- * Direct dispatch table for MIDI drum events after note-to-handler mapping.
+ * Dispatch table for MIDI drum events, keyed by the mapped voice.
  */
-export const DRUM_HANDLERS: Array<
+export const DRUM_HANDLERS: Record<
+  DrumKind,
   (kit: DrumKit, map: DrumMap, time: number, vel: number) => void
-> = [
-  // 0: Kick (note, duration)
-  (kit, map, time, vel) =>
+> = {
+  kick: (kit, map, time, vel) =>
     kit.kick.triggerAttackRelease(
       map.note ?? 'C1',
       map.duration ?? '8n',
       time,
       vel
     ),
-  // 1: Snare (duration)
-  (kit, map, time, vel) =>
+  snare: (kit, map, time, vel) =>
     kit.snare.triggerAttackRelease(map.duration ?? '16n', time, vel),
-  // 2: HiHat (freq, duration)
-  (kit, map, time, vel) =>
+  hihat: (kit, map, time, vel) =>
     kit.hihat.triggerAttackRelease(
       map.freq ?? 8000,
       map.duration ?? '32n',
       time,
       vel
     ),
-  // 3: Crash (freq, duration)
-  (kit, map, time, vel) =>
+  crash: (kit, map, time, vel) =>
     kit.crash.triggerAttackRelease(
       map.freq ?? 4000,
       map.duration ?? '4n',
       time,
       vel
     )
-]
+}
 
 const DRUM_MAPPING = new Array(128)
 // Kick
 DRUM_MAPPING[35] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'C1',
   duration: '8n',
   velScale: 1
 }
 DRUM_MAPPING[36] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'C1',
   duration: '8n',
   velScale: 1
 }
 // Snare (LayeredSnare takes duration, time, velocity)
 DRUM_MAPPING[37] = {
-  handler: DRUM_HANDLER_IDX.SNARE,
+  kind: 'snare',
   duration: '32n',
   velScale: 0.4
 }
 DRUM_MAPPING[38] = {
-  handler: DRUM_HANDLER_IDX.SNARE,
+  kind: 'snare',
   duration: '16n',
   velScale: 1
 }
 DRUM_MAPPING[40] = {
-  handler: DRUM_HANDLER_IDX.SNARE,
+  kind: 'snare',
   duration: '16n',
   velScale: 1
 }
 // HiHat (MetalSynth takes frequency, duration, time, velocity)
 DRUM_MAPPING[42] = {
-  handler: DRUM_HANDLER_IDX.HIHAT,
+  kind: 'hihat',
   freq: 8000,
   duration: '32n',
   velScale: 0.7
 }
 DRUM_MAPPING[44] = {
-  handler: DRUM_HANDLER_IDX.HIHAT,
+  kind: 'hihat',
   freq: 8000,
   duration: '32n',
   velScale: 0.7
 }
 DRUM_MAPPING[46] = {
-  handler: DRUM_HANDLER_IDX.HIHAT,
+  kind: 'hihat',
   freq: 6000,
   duration: '16n',
   velScale: 0.8
 }
 // Crash
 DRUM_MAPPING[49] = {
-  handler: DRUM_HANDLER_IDX.CRASH,
+  kind: 'crash',
   freq: 4000,
   duration: '4n',
   velScale: 0.7
 }
 DRUM_MAPPING[57] = {
-  handler: DRUM_HANDLER_IDX.CRASH,
+  kind: 'crash',
   freq: 4000,
   duration: '4n',
   velScale: 0.7
 }
 // Ride (mapped to HiHat)
 DRUM_MAPPING[51] = {
-  handler: DRUM_HANDLER_IDX.HIHAT,
+  kind: 'hihat',
   freq: 5000,
   duration: '8n',
   velScale: 0.5
 }
 DRUM_MAPPING[59] = {
-  handler: DRUM_HANDLER_IDX.HIHAT,
+  kind: 'hihat',
   freq: 5000,
   duration: '8n',
   velScale: 0.5
 }
 // Toms (mapped to Kick)
 DRUM_MAPPING[41] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'G1',
   duration: '8n',
   velScale: 0.8
 }
 DRUM_MAPPING[43] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'G1',
   duration: '8n',
   velScale: 0.8
 }
 DRUM_MAPPING[45] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'D2',
   duration: '8n',
   velScale: 0.7
 }
 DRUM_MAPPING[47] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'D2',
   duration: '8n',
   velScale: 0.7
 }
 DRUM_MAPPING[48] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'A2',
   duration: '8n',
   velScale: 0.6
 }
 DRUM_MAPPING[50] = {
-  handler: DRUM_HANDLER_IDX.KICK,
+  kind: 'kick',
   note: 'A2',
   duration: '8n',
   velScale: 0.6
@@ -190,7 +181,7 @@ export function playDrumNote(
   const vel = clampUnit(velRaw)
 
   const map = DRUM_MAPPING[midiPitch] as DrumMap | undefined
-  const handler = map ? DRUM_HANDLERS[map.handler] : null
+  const handler = map ? DRUM_HANDLERS[map.kind] : null
 
   if (handler && map) {
     try {

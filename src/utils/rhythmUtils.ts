@@ -24,6 +24,29 @@ interface ParsedGameNote {
  * - `options.random` - Optional random function (returns 0-1) for deterministic generation.
  * @returns Array of note objects.
  */
+/**
+ * Decides whether a beat spawns a note, scaling density with difficulty.
+ *
+ * @param difficulty - Song difficulty (1-5+).
+ * @param beatIndex - Zero-based beat index within the song.
+ * @param random - RNG returning `[0, 1)`.
+ * @returns True when a note should spawn on this beat.
+ */
+const shouldSpawnNote = (
+  difficulty: number,
+  beatIndex: number,
+  random: RandomFn
+): boolean => {
+  const beatInBar = beatIndex % 4
+  if (difficulty <= 2) {
+    return beatInBar === 0 || (beatIndex % 8 === 4 && random() > 0.2)
+  }
+  if (difficulty <= 4) {
+    return beatInBar === 0 || beatInBar === 2 || random() > 0.6
+  }
+  return random() > 0.3 // 70% density
+}
+
 export const generateNotesForSong = (
   song: Pick<Song, 'id' | 'bpm' | 'duration' | 'difficulty'>,
   options: { leadIn?: number; random?: RandomFn } = {}
@@ -32,6 +55,8 @@ export const generateNotesForSong = (
   const notes: ParsedGameNote[] = []
   const beatInterval = 60000 / Math.max(1, song.bpm || 120)
   const songDurationMs = song.duration * 1000
+  // Every beat index below this bound already satisfies
+  // `leadIn + i * beatInterval < leadIn + songDurationMs`.
   const totalBeats = Math.floor(songDurationMs / beatInterval)
   const diff = song.difficulty || 2
 
@@ -39,37 +64,22 @@ export const generateNotesForSong = (
   const laneMap = [1, 0, 2, 0]
 
   for (let i = 0; i < totalBeats; i += 1) {
-    const noteTime = leadIn + i * beatInterval
-    // Ensure we don't exceed duration buffer
-    if (noteTime < leadIn + songDurationMs) {
-      // Difficulty Scaling: Higher diff = more density
-      const beatInBar = i % 4
+    if (!shouldSpawnNote(diff, i, random)) continue
 
-      const shouldSpawn =
-        diff <= 2
-          ? beatInBar === 0 || (i % 8 === 4 && random() > 0.2)
-          : diff <= 4
-            ? beatInBar === 0 || beatInBar === 2 || random() > 0.6
-            : random() > 0.3 // 70% density
+    // Lane selection based on beat index, with variation for harder levels.
+    const laneIndex =
+      diff > 3 && random() > 0.7
+        ? pickBoundedIndex(3, random)
+        : (laneMap[i % 4] ?? 0)
 
-      if (shouldSpawn) {
-        // Lane selection based on beat index
-        let laneIndex = laneMap[i % 4] ?? 0
-        // Add some variation for harder levels
-        if (diff > 3 && random() > 0.7) {
-          laneIndex = pickBoundedIndex(3, random)
-        }
-
-        notes.push({
-          time: noteTime ?? 0,
-          laneIndex,
-          hit: false,
-          visible: true,
-          songId: song.id,
-          type: 'note'
-        })
-      }
-    }
+    notes.push({
+      time: leadIn + i * beatInterval,
+      laneIndex,
+      hit: false,
+      visible: true,
+      songId: song.id,
+      type: 'note'
+    })
   }
 
   return notes

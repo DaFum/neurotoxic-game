@@ -10,7 +10,6 @@ import type {
 import {
   calculateFameLevel,
   clampBandHarmony,
-  clamp0to100,
   clampControversyLevel,
   clampLoyalty,
   clampPlayerFame,
@@ -21,7 +20,10 @@ import {
   isLooseRecord
 } from '../utils/gameState'
 import { applyTraitUnlocks } from '../utils/traitUtils'
-import { getQuestToastName } from './questHelpers'
+import {
+  getQuestToastName,
+  updateFirstMatchingAssetCondition
+} from './questHelpers'
 import {
   applyBrandTrustDelta,
   applyReputationDelta,
@@ -159,42 +161,6 @@ export const getQuestRewards = (quest: QuestState): QuestReward[] => {
     return quest.rewards.filter(isQuestReward)
   }
   return normalizeLegacyRewards(quest)
-}
-
-// ⚡ BOLT OPTIMIZATION: Replaced .map with a procedural for-loop for asset repair
-// Why: Avoids iterating over the entire assets array and allocating intermediate arrays/closures.
-// Impact: Significant speedup in early-match scenarios (e.g. from ~180ms to ~15ms for 10k ops) and overall allocation reduction.
-const applyAssetRepair = (
-  state: GameState,
-  reward: Extract<QuestReward, { type: 'asset.repair' }>
-): GameState => {
-  const assets = state.assets
-  if (!assets || assets.length === 0) return state
-
-  for (let i = 0; i < assets.length; i++) {
-    const asset = assets[i]
-    if (!asset) continue
-
-    const matchesId =
-      typeof reward.assetId === 'string' && asset?.id === reward.assetId
-    const matchesKind =
-      reward.assetId == null &&
-      typeof reward.assetKind === 'string' &&
-      asset?.kind === reward.assetKind
-
-    if (matchesId || matchesKind) {
-      const newAssets = [...assets]
-      newAssets[i] = {
-        ...asset,
-        condition: clamp0to100(
-          finiteNumberOr(asset?.condition, 0) + reward.amount
-        )
-      }
-      return { ...state, assets: newAssets }
-    }
-  }
-
-  return state
 }
 
 const applySkillPointReward = (
@@ -368,7 +334,11 @@ export const applyQuestRewards = (
         break
       }
       case 'asset.repair':
-        nextState = applyAssetRepair(nextState, reward)
+        nextState = updateFirstMatchingAssetCondition(
+          nextState,
+          reward,
+          reward.amount
+        )
         break
       case 'region.reputation':
         nextState = applyReputationDelta(

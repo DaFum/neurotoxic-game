@@ -388,7 +388,7 @@ export const getTravelArrivalUpdates = ({
   return { nextPlayer, nextBand }
 }
 
-import { calculateTravelExpenses } from './economyEngine'
+import { calculateTravelExpenses } from './economy'
 import {
   getTotalDailyObligations,
   getActiveAssetModifiers
@@ -449,7 +449,7 @@ export function calculateTravelCostsAndImpact(
     social,
     assets,
     liabilities
-  } as GameState)
+  })
   const totalCashImpact = totalCost + dailyCost
   const cashRequired = Math.max(totalCost, totalCashImpact)
 

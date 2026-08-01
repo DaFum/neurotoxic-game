@@ -482,14 +482,6 @@ export const generateDailyTrend = (
 }
 
 /**
- * Generates a dynamic brand-style name. Re-exported from `brandOfferFlavor`
- * so existing callers (e.g. `rivalEngine.generateRivalBand`) keep working.
- * Brand-deal offers use `buildBrandOffer()` instead and never overwrite
- * the canonical `deal.name` from the static catalog.
- */
-export { generateBrandName } from './brandOfferFlavor'
-
-/**
  * Calculates passive income and raid chance from social zealotry.
  *
  * @param zealotry - Raw zealotry score before clamping.
@@ -504,6 +496,3 @@ export const calculateZealotryEffects = (
     raidProbability: (z / 100) * 0.08
   }
 }
-
-// Compatibility surface for legacy tests and consumers that still import brand-deal helpers through socialEngine.
-export { generateBrandOffers, negotiateDeal } from './brandDealLogic'

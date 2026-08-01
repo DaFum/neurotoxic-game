@@ -1,6 +1,6 @@
 import { logger } from '../../utils/logger'
+import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import {
-  hasForbiddenKeys,
   isLooseRecord,
   clampPlayerMoney,
   clampPlayerFame,
@@ -31,7 +31,7 @@ export const handleUpdatePlayer = <TState extends WithPlayer>(
   const updates =
     typeof payload === 'function' ? payload(state.player) : payload
 
-  if (!isLooseRecord(updates) || hasForbiddenKeys(updates)) {
+  if (!isLooseRecord(updates) || hasForbiddenOwnKeys(updates)) {
     return state
   }
 

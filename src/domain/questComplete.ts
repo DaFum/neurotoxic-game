@@ -1,7 +1,6 @@
-import type { GameState, QuestState, ToastPayload } from '../types'
+import type { GameState, ToastPayload } from '../types'
 import { finiteNumberOr } from '../utils/gameState'
 import { QUEST_PROVE_YOURSELF } from '../data/questsConstants'
-import { getQuestDefinition } from '../data/questRegistry'
 import { applyQuestRewards } from './questRewards'
 import {
   getQuestWithDefinition,
@@ -15,16 +14,7 @@ export const completeQuest = (
   { questId, randomIdx }: { questId: string; randomIdx?: number }
 ): GameState => {
   if (!state.activeQuests) return state
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.findIndex with procedural loop
-  // Why: Avoids callback allocation per iteration in a hot path
-  // Impact: ~23% faster index lookups, reducing garbage collection pressure
-  let questIndex = -1
-  for (let i = 0; i < state.activeQuests.length; i++) {
-    if (state.activeQuests[i]?.id === questId) {
-      questIndex = i
-      break
-    }
-  }
+  const questIndex = state.activeQuests.findIndex(q => q?.id === questId)
   if (questIndex === -1) return state
 
   const activeQuest = state.activeQuests[questIndex]
@@ -71,16 +61,10 @@ export const completeQuest = (
 
   // Scope-policy quests record (id, scopeKey) so other scopes stay open.
   if (typeof quest.scopeKey === 'string' && quest.scopeKey.length > 0) {
-    // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid closure allocation.
     const scopes = nextState.completedQuestScopes ?? []
-    let exists = false
-    for (let i = 0; i < scopes.length; i++) {
-      const c = scopes[i]
-      if (c?.questId === quest.id && c?.scopeKey === quest.scopeKey) {
-        exists = true
-        break
-      }
-    }
+    const exists = scopes.some(
+      c => c?.questId === quest.id && c?.scopeKey === quest.scopeKey
+    )
     if (!exists) {
       nextState.completedQuestScopes = [
         ...(nextState.completedQuestScopes ?? []),
@@ -101,29 +85,16 @@ export const completeQuest = (
   }
   if (toClear.size > 0) {
     const activeFlags = nextState.activeStoryFlags ?? []
-    const newFlags: string[] = []
-    let changed = false
-    for (const f of activeFlags) {
-      if (!toClear.has(f)) {
-        newFlags.push(f)
-      } else {
-        changed = true
-      }
-    }
-    if (changed) {
+    const newFlags = activeFlags.filter(f => !toClear.has(f))
+    if (newFlags.length !== activeFlags.length) {
       nextState.activeStoryFlags = newFlags
     }
   }
 
-  // Cooldown-policy quests start a re-add cooldown on completion.
-  const definition = getQuestDefinition(quest.id) as
-    Partial<QuestState> | undefined
-  const repeatPolicy = quest.repeatPolicy ?? definition?.repeatPolicy
-  const cooldownDays = finiteNumberOr(
-    quest.cooldownDays ?? definition?.cooldownDays,
-    0
-  )
-  if (repeatPolicy === 'cooldown' && cooldownDays > 0) {
+  // Cooldown-policy quests start a re-add cooldown on completion. `quest` is
+  // already merged with its registry definition, so no second lookup is needed.
+  const cooldownDays = finiteNumberOr(quest.cooldownDays, 0)
+  if (quest.repeatPolicy === 'cooldown' && cooldownDays > 0) {
     const currentDay = finiteNumberOr(nextState.player?.day, 0)
     nextState.questCooldowns = [
       ...(nextState.questCooldowns ?? []),
@@ -145,7 +116,7 @@ export const completeQuest = (
   // Story arcs may branch into a follow-up quest declared either inline or in
   // the registry definition. We addQuest through the same gating path so
   // repeat-policy and scope checks still apply to the follow-up.
-  const followupId = quest.followupQuestId ?? definition?.followupQuestId
+  const followupId = quest.followupQuestId
   if (typeof followupId === 'string' && followupId.length > 0) {
     return addQuest(nextState, { id: followupId })
   }

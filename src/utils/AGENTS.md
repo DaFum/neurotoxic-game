@@ -2,11 +2,11 @@
 
 ## Object emptiness
 
-- Do not use `Object.keys(obj).length > 0` for emptiness checks; use `isEmptyObject` from `src/utils/gameStateUtils.ts`.
+- Do not use `Object.keys(obj).length > 0` for emptiness checks; use `isEmptyObject` from `src/utils/gameState/`.
 
 ## Random selection
 
-- Random element/index picks must use `selectRandomItem`/`pickIndex` from `src/utils/selectionUtils.ts`; do not inline `Math.floor(rng() * arr.length)`. The old `src/utils/audio/selectionUtils.ts` path is a back-compat re-export.
+- Random element/index picks must use `selectRandomItem`/`pickIndex` from `src/utils/selectionUtils.ts`; do not inline `Math.floor(rng() * arr.length)`.
 
 ## Brand colors
 
@@ -23,8 +23,8 @@
 ## Economy invariants
 
 Source-of-truth priority: runtime helpers/constants win. If simulations,
-tooltips, or docs disagree with `economyEngine.ts`, `gameStateUtils.ts`, or
-`postGigUtils.ts`, update the consumers and rerun the required simulation
+tooltips, or docs disagree with `economy/`, `gameState/`, or
+`postGig/`, update the consumers and rerun the required simulation
 baseline instead of duplicating formulas.
 
 ### Gig financial reconciliation
@@ -35,17 +35,17 @@ baseline instead of duplicating formulas.
 ### Shared formulas and simulations
 
 - `MAX_GIG_NET`, `MANAGEMENT_CUT_RATE`, and `BASE_DRAW_RATIO` are mirrored by `scripts/game-balance-simulation.mjs` via direct import. Changing them invalidates `reports/game-balance-simulation-baseline.json`; re-run `pnpm run simulate:balance:baseline`.
-- Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameStateUtils.ts`). External formulas (sim scripts, tooltips) must import this helper, not duplicate the math.
-- Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGigUtils.ts`. Simulation scripts must import `calculatePerformanceScore()` rather than re-implement it.
+- Fame level is `Math.floor(Math.sqrt(fame / 200))` (`calculateFameLevel` in `gameState/`). External formulas (sim scripts, tooltips) must import this helper, not duplicate the math.
+- Gig pass/fail uses `perfScore >= 31` with `PERF_SCORE_MIN = 30` and `PERF_SCORE_SCALER = 150` in `postGig/`. Simulation scripts must import `calculatePerformanceScore()` rather than re-implement it.
 - The `damaged_gear` gigModifier (set by botched setup minigames in `minigameReducer`) is consumed in `getGigModifiers` (`gigModifiersUtils.ts`): it forces `noteJitter`, subtracts 10ms `hitWindowBonus`, and multiplies `guitarScoreMult` by 0.9. It is a live mechanic — do not treat it as dead code or remove the setter.
 
 ## Gig / merch threading
 
 - `calculateTravelMinigameResult()` is the source of truth for Tourbus condition loss; its 50% damage-to-condition scaling must stay aligned with the reducer and completion UI.
-- `postGigUtils.calculatePostGigStateUpdates` reads `social.activeDeals` (pre-decrement), not `updatedSocial.activeDeals`, for `comm_sellout_ad` penalty resolution; otherwise sponsorship penalties on the deal's final expiring gig are silently dropped.
+- `postGig.calculatePostGigStateUpdates` reads `social.activeDeals` (pre-decrement), not `updatedSocial.activeDeals`, for `comm_sellout_ad` penalty resolution; otherwise sponsorship penalties on the deal's final expiring gig are silently dropped.
 - `EconomyContext.merchPrices` is a direct top-level field, not nested under `context.social`. Passing via `context.social.merchPrices` is silently ignored by `calculateMerchIncome`.
 - Post-gig merch derives `context.cityTraits?: CityTraitState` from the normalized venue ID city key: use `state.gameMap?.cityStates?.[cityKey]` when present, otherwise call `deriveCityTraits(cityKey)`. If the city key is empty or `context.cityTraits` is omitted, `calculateMerchIncome` uses neutral 1.0 multipliers. Unrecognized trait fields fall through to merch profile lookup defaults; never read `cityStates` from top-level `GameState`.
-- Per-item merch demand profiles live in `src/data/merch.ts` (`MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`). `DEFAULT_MERCH_PRICES` is re-exported from there; do not redefine merch prices in `economyEngine.ts`.
+- Per-item merch demand profiles live in `src/data/merch.ts` (`MERCH_PROFILES`, `SPENDING_PROFILE_MERCH_MULTIPLIER`). `DEFAULT_MERCH_PRICES` is re-exported from there; do not redefine merch prices in `economy/`.
 
 ## Map / venues
 
@@ -65,7 +65,7 @@ baseline instead of duplicating formulas.
 
 ## Merch demand
 
-- `calculateMerchIncome` in `economyEngine.ts` computes `rawShare` for every item regardless of inventory; the cap is applied only at allocation (`sold = min(desired, inventory)`). Out-of-stock demand is intentionally lost, not redistributed — skipping zero-stock items at the share step would normalize in-stock shares to 1.0 and silently absorb missed sales.
+- `calculateMerchIncome` in `economy/` computes `rawShare` for every item regardless of inventory; the cap is applied only at allocation (`sold = min(desired, inventory)`). Out-of-stock demand is intentionally lost, not redistributed — skipping zero-stock items at the share step would normalize in-stock shares to 1.0 and silently absorb missed sales.
 
 ## Purchase effects
 
@@ -94,7 +94,7 @@ baseline instead of duplicating formulas.
 - `processLiabilityTick` splits each payment into an interest portion (`principalRemaining × interestRate / 365`) and a principal reduction so `principalRemaining` tracks the amortization balance priced by `computeAmortization`; the final payment charges `min(dailyPayment, payoff)`, never a full installment past the payoff. Do not revert to subtracting the whole payment from principal.
 - Crowdfund success grants the materialized asset plus `fameStake` only — `targetAmount` is NOT paid out as cash on top (the raised funds pay for the build). Paying it out would make crowdfunding strictly dominate cash/loan acquisition.
 - `resolveCrowdfundProbability(fame, scenePresence, target)` is exported from `assetTicks.ts` and is the SoT for the crowdfund odds formula. `CrowdfundSetupModal` uses it for its preview AND passes the computed value into `startCrowdfund` as `plannedSuccessProbability`; the action creator stamps it on the campaign, and `processCrowdfundTick` resolves `roll < probability`. Tune the formula in one place and both surfaces stay aligned.
-- `economyEngine.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
+- `economy.calculateMerchIncome`: `merchCapacityBonus` is a carry-cap modifier (raises the restock ceiling), NOT phantom sellable stock. At gig time, `sold = min(desired, inventoryCount)` — do not add `capacityBonus` to the sell-time allocation.
 - `loanProfiles.computeAmortization` short-circuits to 0 on non-finite inputs or `termDays <= 0`. Callers can rely on a safe numeric return; do not pre-guard inputs at every call site.
 - `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
 - `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.

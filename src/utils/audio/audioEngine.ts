@@ -52,7 +52,7 @@ export { playRandomAmbientMidi, playRandomAmbientOgg } from './ambient'
 export * from './midiUtils'
 // playbackUtils functions are internal to src/utils/audio/ and not re-exported.
 // Import directly from './playbackUtils' if needed for testing.
-export * from './selectionUtils'
+export * from '../selectionUtils'
 export * from './songUtils'
 export * from './timingUtils'
 export { setupGigPhysics } from './gigPhysics'

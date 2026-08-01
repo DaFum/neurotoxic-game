@@ -2,6 +2,7 @@ import type { GameState, PostGigSummary, Venue } from '../../types'
 import type { GigModifiers } from '../../types/gig'
 import type { RhythmSetlistEntry } from '../../types/rhythmGame'
 import { logger } from '../../utils/logger'
+import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { buildDeterministicToastId } from './toastSanitizers'
 import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
@@ -13,7 +14,6 @@ import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from '../gameConstants'
 import {
   isForbiddenKey,
   isLooseRecord,
-  hasForbiddenKeys,
   isEmptyObject,
   finiteNumberOr,
   clampBandHarmony,
@@ -120,7 +120,7 @@ export const handleSetGigModifiers = (
   const updates =
     (typeof payload === 'function' ? payload(state.gigModifiers) : payload) ??
     {}
-  if (!isLooseRecord(updates) || hasForbiddenKeys(updates)) {
+  if (!isLooseRecord(updates) || hasForbiddenOwnKeys(updates)) {
     return state
   }
   // Final authority: re-whitelist even creator-normalized payloads so a raw

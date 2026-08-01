@@ -264,19 +264,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
 }
 
 /**
- * Hook to access the global game dispatch functions only with a stable reference.
- *
- * @returns An object containing the bound game action dispatchers.
- */
-export const useGameDispatch = () => {
-  return useRequiredContext(GameDispatchContext, 'useGameDispatch')
-}
-
-/**
  * Hook to access stable game actions only.
- *
- * @remarks
- * This is the preferred action surface for new code.
  *
  * @returns An object containing the bound game action dispatchers.
  */

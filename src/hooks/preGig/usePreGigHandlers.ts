@@ -11,10 +11,7 @@ import type { Song } from '../../types/audio'
 import type { AssetModifiers } from '../../types/assets'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { UpdatePlayerPayload } from '../../types'
-import {
-  MODIFIER_COSTS,
-  calculateGigModifierCost
-} from '../../utils/economyEngine'
+import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import {
   clampPlayerMoney,
   clampBandHarmony,

@@ -11,34 +11,16 @@ export const useBandHQModal = () => {
 
   const [showHQ, setShowHQ] = useState(pendingBandHQOpen)
 
+  // Cross-scene opening (e.g. from MainMenu into Overworld) arrives as the
+  // persisted `pendingBandHQOpen` flag; consume it and clear it.
   useEffect(() => {
-    let timeoutId: ReturnType<typeof window.setTimeout> | undefined = undefined
-
-    if (pendingBandHQOpen) {
-      timeoutId = window.setTimeout(() => {
-        setShowHQ(true)
-        setPendingBandHQOpen(false)
-      }, 0)
-    }
-
-    return () => {
-      if (timeoutId !== undefined) {
-        window.clearTimeout(timeoutId)
-      }
-    }
+    if (!pendingBandHQOpen) return
+    // Syncing local visibility from the persisted cross-scene flag is the
+    // point of this effect; the state update is intentional.
+    // eslint-disable-next-line @eslint-react/set-state-in-effect
+    setShowHQ(true)
+    setPendingBandHQOpen(false)
   }, [pendingBandHQOpen, setPendingBandHQOpen])
-
-  useEffect(() => {
-    const handleOpen = (event: CustomEvent<{ target: string }>) => {
-      if (event.detail?.target === 'bandhq') {
-        setShowHQ(true)
-      }
-    }
-    window.addEventListener('open-modal', handleOpen as EventListener)
-    return () => {
-      window.removeEventListener('open-modal', handleOpen as EventListener)
-    }
-  }, [])
 
   const openHQ = useCallback(() => setShowHQ(true), [])
   const closeHQ = useCallback(() => setShowHQ(false), [])

@@ -9,7 +9,7 @@ import {
   getAcceptDealMoneyUpdate,
   getAcceptDealBandUpdateFactory,
   getAcceptDealSocialUpdateFactory
-} from '../../../utils/postGigUtils'
+} from '../../../utils/postGig'
 import { getTranslatedBrandDealDisplay } from '../../../utils/brandDealI18n'
 import { buildAcceptDealQuestEvents } from './dealHandlerUtils'
 import type { HandlerDispatchers } from './types'

@@ -1,5 +1,6 @@
 import type { UnknownRecord } from './game'
 import type { BrandDealType, Platform } from './social'
+import type { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
 
 /**
  * Quest category used for story, side, repeatable, and tutorial flows.
@@ -43,43 +44,12 @@ export type QuestProgressSource =
 
 /**
  * Canonical quest event identifiers emitted by gameplay systems.
+ *
+ * @remarks
+ * Derived from `CANONICAL_QUEST_EVENT_TYPES` so the runtime membership check
+ * and this union cannot drift apart.
  */
-export type QuestEventType =
-  | 'gig.completed'
-  | 'gig.good'
-  | 'gig.smallVenueGood'
-  | 'social.postResolved'
-  | 'social.followersGained'
-  | 'social.loyaltyChanged'
-  | 'social.controversyChanged'
-  | 'social.trendMatched'
-  | 'brand.offerAccepted'
-  | 'brand.dealCompleted'
-  | 'brand.dealFailed'
-  | 'brand.trustChanged'
-  | 'asset.acquired'
-  | 'asset.repaired'
-  | 'asset.moduleInstalled'
-  | 'asset.riskTriggered'
-  | 'asset.riskResolved'
-  | 'asset.conditionChanged'
-  | 'item.collected'
-  | 'item.used'
-  | 'item.crafted'
-  | 'item.delivered'
-  | 'minigame.completed'
-  | 'minigame.perfect'
-  | 'minigame.failed'
-  | 'travel.completed'
-  | 'economy.moneyEarned'
-  | 'fame.gained'
-  | 'band.harmonyChanged'
-  | 'venue.gigCompleted'
-  | 'venue.goodGig'
-  | 'venue.blacklisted'
-  | 'venue.unblacklisted'
-  | 'region.reputationChanged'
-  | 'story.flagAdded'
+export type QuestEventType = (typeof CANONICAL_QUEST_EVENT_TYPES)[number]
 
 /**
  * Structured context attached to quest events for rule matching.

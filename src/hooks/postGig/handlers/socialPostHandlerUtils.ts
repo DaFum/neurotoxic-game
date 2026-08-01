@@ -5,7 +5,7 @@ import type {
 } from '../../../types/social'
 import i18n from '../../../i18n'
 import { formatCurrency } from '../../../utils/numberUtils'
-import { calculatePostGigStateUpdates } from '../../../utils/postGigUtils'
+import { calculatePostGigStateUpdates } from '../../../utils/postGig'
 import { generateBrandOffers } from '../../../utils/brandDealLogic'
 import { createHarmonyChangedQuestEvent } from '../../../quests/producers/gigQuestEvents'
 import { createSocialPostQuestEvents } from '../../../quests/producers/socialQuestEvents'

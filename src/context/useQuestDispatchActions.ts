@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type Dispatch } from 'react'
+import { useMemo, type Dispatch } from 'react'
 import type { GameAction } from '../types'
 import {
   createAddQuestAction,
@@ -29,32 +29,13 @@ export interface QuestDispatchActions {
 export function useQuestDispatchActions(
   dispatch: Dispatch<GameAction>
 ): QuestDispatchActions {
-  const addQuest = useCallback(
-    (payload: Parameters<typeof createAddQuestAction>[0]) =>
-      dispatch(createAddQuestAction(payload)),
-    [dispatch]
-  )
-
-  const advanceQuest = useCallback(
-    (
-      questId: Parameters<typeof createAdvanceQuestAction>[0],
-      progressAmount: Parameters<typeof createAdvanceQuestAction>[1]
-    ) => dispatch(createAdvanceQuestAction(questId, progressAmount)),
-    [dispatch]
-  )
-
-  const applyQuestEvent = useCallback(
-    (event: Parameters<typeof createApplyQuestEventAction>[0]) =>
-      dispatch(createApplyQuestEventAction(event)),
-    [dispatch]
-  )
-
   return useMemo(
     () => ({
-      addQuest,
-      advanceQuest,
-      applyQuestEvent
+      addQuest: payload => dispatch(createAddQuestAction(payload)),
+      advanceQuest: (questId, progressAmount) =>
+        dispatch(createAdvanceQuestAction(questId, progressAmount)),
+      applyQuestEvent: event => dispatch(createApplyQuestEventAction(event))
     }),
-    [addQuest, advanceQuest, applyQuestEvent]
+    [dispatch]
   )
 }

@@ -1,10 +1,9 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
  * Displays the credits footer and return control.
  */
-export const CreditFooter = React.memo(() => {
+export const CreditFooter = () => {
   const { t } = useTranslation(['ui'])
   return (
     <div className='pt-16'>
@@ -20,5 +19,4 @@ export const CreditFooter = React.memo(() => {
       </div>
     </div>
   )
-})
-CreditFooter.displayName = 'CreditFooter'
+}
