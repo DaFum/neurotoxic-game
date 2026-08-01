@@ -129,6 +129,35 @@ export const getLocationName = (
  * - `params.getLocationName` - Helper to get location name
  * @returns Access result with localized error metadata when travel is blocked.
  */
+
+/**
+ * Wraps checkVenueAccess to only enforce venue access restrictions on specific node types.
+ *
+ * @param params - Same parameters as checkVenueAccess.
+ * @returns Access result. Always allowed for non-booking node types.
+ */
+export const getNodeAccessStatus = (params: {
+  node: MapNode & { type?: string; venue?: VenueLike | string }
+  player: PlayerState
+  reputationByRegion?: Record<string, number>
+  venueBlacklist?: string[]
+  venuesMap: VenueMap
+  getLocationName: (
+    location: string | undefined,
+    venueId: string | null | undefined
+  ) => string
+}): VenueAccessResult => {
+  if (
+    !params.node.type ||
+    (params.node.type !== 'GIG' &&
+      params.node.type !== 'FESTIVAL' &&
+      params.node.type !== 'FINALE')
+  ) {
+    return { allowed: true }
+  }
+  return checkVenueAccess(params)
+}
+
 export const checkVenueAccess = ({
   node,
   player,
@@ -147,12 +176,18 @@ export const checkVenueAccess = ({
     venueId: string | null | undefined
   ) => string
 }): VenueAccessResult => {
-  if (node.type === 'START' || !node.venue) {
+  // `sanitizeMapNodes` drops `node.venue` on load and keeps only `venueId`,
+  // so a gate keyed on `node.venue` alone goes silent for every node in a
+  // reloaded save. Accept either shape.
+  const venueId =
+    normalizeVenueId(node.venue) ??
+    (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
+
+  if (node.type === 'START' || (!node.venue && !venueId)) {
     return { allowed: true }
   }
 
-  const venueId = normalizeVenueId(node.venue)
-  const resolvedVenue = resolveVenue(node.venue, venueId, venuesMap)
+  const resolvedVenue = resolveVenue(node.venue ?? venueId, venueId, venuesMap)
 
   if (!resolvedVenue) {
     return {
@@ -331,6 +366,8 @@ export const getTravelArrivalUpdates = ({
             maxStamina
           )
         })
+      } else {
+        updatedMembers.push(member)
       }
     }
 

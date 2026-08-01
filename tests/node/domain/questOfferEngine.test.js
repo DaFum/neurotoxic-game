@@ -82,6 +82,23 @@ test('QuestOfferEngine', async t => {
     )
   })
 
+  await t.test('gates amends offers on a non-empty venue blacklist', () => {
+    const state = baseState()
+
+    // Nothing to un-blacklist: the quest could never be completed.
+    assert.equal(
+      QuestOfferEngine.canOfferQuest(state, 'quest_make_amends'),
+      false
+    )
+    assert.equal(
+      QuestOfferEngine.canOfferQuest(
+        { ...state, venueBlacklist: ['stendal_adler'] },
+        'quest_make_amends'
+      ),
+      true
+    )
+  })
+
   await t.test(
     'handles optimized story flag sets when checking completion flags',
     () => {

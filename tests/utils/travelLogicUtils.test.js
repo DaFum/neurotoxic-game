@@ -173,5 +173,32 @@ describe('travelUtils', () => {
 
       assert.strictEqual(result.nextBand.members[0].stamina, 20)
     })
+
+    test('keeps fully rested members in the roster during stamina regen', () => {
+      const player = { money: 1000, van: { fuel: 50 } }
+      const band = {
+        harmony: 50,
+        members: [
+          { id: 'rested', stamina: 20, staminaMax: 20 },
+          { id: 'tired', stamina: 10, staminaMax: 20 }
+        ]
+      }
+      const node = { id: 'node_1', venue: 'venue_1' }
+
+      const result = getTravelArrivalUpdates({
+        player,
+        band,
+        node,
+        fuelLiters: 5,
+        totalCost: 50,
+        assetModifiers: { travelStaminaRegen: 5 }
+      })
+
+      // Regeneration must not drop members who had nothing to regenerate.
+      assert.strictEqual(result.nextBand.members.length, 2)
+      assert.strictEqual(result.nextBand.members[0].id, 'rested')
+      assert.strictEqual(result.nextBand.members[0].stamina, 20)
+      assert.strictEqual(result.nextBand.members[1].stamina, 15)
+    })
   })
 })

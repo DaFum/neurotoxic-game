@@ -17,6 +17,27 @@ import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
 
+test('handleLoadGame clamps and bounds persisted regional reputation', () => {
+  // JSON.parse keeps __proto__ as an own key, unlike an object literal.
+  const hostile = JSON.parse('{"__proto__": 5}')
+  hostile.berlin = 9000
+  hostile.hamburg = -9000
+  // Underscore-free keys: the load migration folds `a_b` into region `a`.
+  for (let i = 0; i < 150; i++) hostile[`junk${i}`] = 1
+
+  const nextState = handleLoadGame(createInitialState(), {
+    reputationByRegion: hostile
+  })
+
+  const result = nextState.reputationByRegion
+  assert.equal(result.berlin, 100)
+  assert.equal(result.hamburg, -100)
+  assert.ok(!Object.hasOwn(result, '__proto__'))
+  // The cap counts accepted entries, so real regions are never crowded out
+  // by junk keys ahead of them.
+  assert.equal(Object.keys(result).length, 100)
+})
+
 test('handleAdvanceDay ignores non-finite expired harmony effect values', () => {
   const createState = () => {
     const state = createInitialState()

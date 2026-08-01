@@ -52,7 +52,7 @@ export const buildGigStatsSnapshot = (
     accuracy: number
     index: number
   }> = [],
-  failed: boolean = false
+  failed: boolean
 ): {
   score: number
   misses: number

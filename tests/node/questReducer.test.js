@@ -13,7 +13,7 @@ import { getQuestPenalties } from '../../src/domain/questPenalties'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 import { canAcceptQuest } from '../../src/domain/questAcceptance'
-import { getVenueReputationKey } from '../../src/domain/questEffects'
+import { getCurrentVenueId } from '../../src/domain/questEffects'
 
 const handleCompleteQuest = QuestLifecycle.completeQuest
 const handleFailQuests = QuestLifecycle.checkDeadlines
@@ -136,12 +136,12 @@ test('questReducer - handleAddQuest', async t => {
       }),
       { ok: true, scopeKey: 'venue_canonical' }
     )
-    assert.equal(getVenueReputationKey(state, 'current'), 'venue_canonical')
+    assert.equal(getCurrentVenueId(state), 'venue_canonical')
     assert.equal(
-      getVenueReputationKey(
-        { ...state, currentGig: { id: 'legacy_current_gig' } },
-        'current'
-      ),
+      getCurrentVenueId({
+        ...state,
+        currentGig: { id: 'legacy_current_gig' }
+      }),
       'legacy_current_gig'
     )
     const legacyState = {
@@ -158,7 +158,7 @@ test('questReducer - handleAddQuest', async t => {
       }),
       { ok: true, scopeKey: 'legacy_node' }
     )
-    assert.equal(getVenueReputationKey(legacyState, 'current'), 'legacy_node')
+    assert.equal(getCurrentVenueId(legacyState), 'legacy_node')
   })
 })
 
@@ -491,4 +491,31 @@ test('questRewards - payload safety', async t => {
       assert.equal(toasts[0].options.member, 'A')
     }
   )
+})
+
+test('quest_venue_regular completion increases regional reputation', () => {
+  // Both supported location shapes must resolve to the same city key.
+  for (const location of ['venues:leipzig_arena.name', 'leipzig_arena']) {
+    const baseState = {
+      player: { location },
+      social: {},
+      band: { members: [] },
+      reputationByRegion: { leipzig: 10 },
+      activeQuests: [
+        {
+          id: 'quest_venue_regular',
+          layerAssigned: 1,
+          dayAssigned: 1,
+          progress: 30,
+          state: {}
+        }
+      ],
+      completedQuestIds: [],
+      completedQuestScopes: []
+    }
+    const nextState = handleCompleteQuest(baseState, {
+      questId: 'quest_venue_regular'
+    })
+    assert.equal(nextState.reputationByRegion.leipzig, 25, location)
+  }
 })

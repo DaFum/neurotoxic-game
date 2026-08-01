@@ -23,38 +23,6 @@ export const getCurrentVenueId = (state: GameState): string | undefined => {
   return isValidReputationKey(venueId) ? venueId : undefined
 }
 
-const applyReputationMapDelta = (
-  state: GameState,
-  mapName: 'reputationByRegion' | 'reputationByVenue',
-  key: string | undefined,
-  amount: number
-): GameState => {
-  if (!key) return state
-  const reputationMap = state[mapName] ?? {}
-  const previous = finiteNumberOr(reputationMap[key], 0)
-  return {
-    ...state,
-    [mapName]: {
-      ...reputationMap,
-      [key]: clampReputation(previous + amount)
-    }
-  }
-}
-
-/**
- * Resolves the venue reputation key for current or explicit quest scopes.
- */
-export const getVenueReputationKey = (
-  state: GameState,
-  scope: 'current' | string | null | undefined
-): string | undefined => {
-  const key =
-    scope === 'current' || scope === null || scope === undefined
-      ? getCurrentVenueId(state)
-      : scope
-  return isValidReputationKey(key) ? key : undefined
-}
-
 /**
  * Resolves the region reputation key for current or explicit quest scopes.
  */
@@ -79,18 +47,16 @@ export const applyReputationDelta = (
   key: string | undefined,
   amount: number
 ): GameState => {
-  return applyReputationMapDelta(state, 'reputationByRegion', key, amount)
-}
-
-/**
- * Applies a clamped venue reputation delta to game state.
- */
-export const applyVenueReputationDelta = (
-  state: GameState,
-  key: string | undefined,
-  amount: number
-): GameState => {
-  return applyReputationMapDelta(state, 'reputationByVenue', key, amount)
+  if (!key) return state
+  const reputationMap = state.reputationByRegion ?? {}
+  const previous = finiteNumberOr(reputationMap[key], 0)
+  return {
+    ...state,
+    reputationByRegion: {
+      ...reputationMap,
+      [key]: clampReputation(previous + amount)
+    }
+  }
 }
 
 /**

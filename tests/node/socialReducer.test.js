@@ -235,6 +235,35 @@ describe('socialReducer', () => {
       )
     })
 
+    it('leaves no unrecoverable region behind when fans defend the band', () => {
+      baseState.social.loyalty = 30
+      baseState.reputationByRegion = { venue: -50 }
+      const nextState = handleAddVenueBlacklist(baseState, {
+        venueId: 'venue_123',
+        toastId: 'test_toast_id'
+      })
+
+      // The defense spares the blacklist, which is also the only route to
+      // amends. If the region stayed at or below the ban threshold the player
+      // would be locked out of it with no recovery action at all.
+      assert.ok(!nextState.venueBlacklist.includes('venue_123'))
+      assert.ok(
+        nextState.reputationByRegion.venue > -30,
+        `region must stay bookable, got ${nextState.reputationByRegion.venue}`
+      )
+    })
+
+    it('leaves an already-bookable region untouched', () => {
+      baseState.social.loyalty = 30
+      baseState.reputationByRegion = { venue: 40 }
+      const nextState = handleAddVenueBlacklist(baseState, {
+        venueId: 'venue_123',
+        toastId: 'test_toast_id'
+      })
+
+      assert.strictEqual(nextState.reputationByRegion.venue, 40)
+    })
+
     it('should blacklist at loyalty exactly 29', () => {
       baseState.social.loyalty = 29
       const nextState = handleAddVenueBlacklist(baseState, {
@@ -385,6 +414,46 @@ describe('socialReducer', () => {
             t.type === 'error' && t.messageKey === 'ui:toast.amendsTooExpensive'
         )
       )
+    })
+
+    it('lifts the regional booking ban for the venue city', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = {
+        ...makeState(cost, [VENUE]),
+        reputationByRegion: { stendal: -80 }
+      }
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      // -30 is the ban threshold; amends must land strictly above it or the
+      // player pays for nothing.
+      assert.strictEqual(next.reputationByRegion.stendal, -29)
+    })
+
+    it('leaves regional reputation alone when the city is not banned', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = {
+        ...makeState(cost, [VENUE]),
+        reputationByRegion: { stendal: 40 }
+      }
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.strictEqual(next.reputationByRegion.stendal, 40)
+    })
+
+    it('survives a save with no reputationByRegion map', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const next = handleUnblacklistVenue(makeState(cost, [VENUE]), {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.ok(!next.venueBlacklist.includes(VENUE))
     })
 
     it('returns state unchanged when the venue is not blacklisted', () => {

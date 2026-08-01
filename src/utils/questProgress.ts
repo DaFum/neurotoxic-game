@@ -91,7 +91,7 @@ const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
   asset_risk_resolved: 'asset.riskResolved',
   venue_blacklisted: 'venue.blacklisted',
   venue_unblacklisted: 'venue.unblacklisted',
-  venue_reputation_changed: 'venue.reputationChanged',
+  region_reputation_changed: 'region.reputationChanged',
   story_flag_added: 'story.flagAdded'
 }
 
@@ -127,7 +127,6 @@ const CANONICAL_EVENT_TYPE_VALUES = [
   'band.harmonyChanged',
   'venue.gigCompleted',
   'venue.goodGig',
-  'venue.reputationChanged',
   'venue.blacklisted',
   'venue.unblacklisted',
   'region.reputationChanged',

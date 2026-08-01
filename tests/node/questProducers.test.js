@@ -40,7 +40,6 @@ import { createStoryFlagAddedQuestEvent } from '../../src/quests/producers/story
 import {
   createVenueGigCompletedQuestEvent,
   createVenueGoodGigQuestEvent,
-  createVenueReputationChangedQuestEvent,
   createRegionReputationChangedQuestEvent,
   createVenueBlacklistedQuestEvent,
   createVenueUnblacklistedQuestEvent
@@ -369,7 +368,6 @@ test('quest producers create canonical events with matchable context', async t =
           currentScene: GAME_PHASES.POST_GIG,
           gigModifiers: {},
           reputationByRegion: { some: 0 },
-          reputationByVenue: { venue_1: 0 },
           activeQuests: [],
           activeStoryFlags: [],
           toasts: [],
@@ -383,13 +381,6 @@ test('quest producers create canonical events with matchable context', async t =
 
     const venueGoodGig = emitted.find(event => event.type === 'venue.goodGig')
     assert.equal(venueGoodGig?.context?.capacity, 0)
-    assert.equal(
-      createVenueReputationChangedQuestEvent({
-        venueId: 'venue_1',
-        amount: 5
-      }).type,
-      'venue.reputationChanged'
-    )
     assert.equal(
       createRegionReputationChangedQuestEvent({
         region: 'berlin',

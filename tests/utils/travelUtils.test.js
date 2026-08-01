@@ -5,6 +5,7 @@ import {
   resolveTravelVenue,
   getLocationName,
   checkVenueAccess,
+  getNodeAccessStatus,
   checkTravelPrerequisites,
   checkTravelResources,
   calculateTravelCostsAndImpact
@@ -163,6 +164,44 @@ describe('travelUtils', () => {
       )
     })
 
+    test('gates venueId-only nodes the same as venue-backed nodes', () => {
+      // Loaded saves carry venueId only: sanitizeMapNodes drops node.venue.
+      const blacklisted = checkVenueAccess({
+        node: { type: 'GIG', venueId: 'venue_1' },
+        venueBlacklist: ['venue_1'],
+        venuesMap,
+        getLocationName: mockGetLocationName
+      })
+      assert.strictEqual(blacklisted.allowed, false)
+      assert.strictEqual(
+        blacklisted.errorKey,
+        'ui:travel.errors.bookingRefusedBlacklisted'
+      )
+
+      const tooBig = checkVenueAccess({
+        node: { type: 'GIG', venueId: 'venue_2' },
+        player: { stats: { proveYourselfMode: true } },
+        venuesMap,
+        getLocationName: mockGetLocationName
+      })
+      assert.strictEqual(tooBig.allowed, false)
+      assert.strictEqual(
+        tooBig.errorKey,
+        'ui:travel.errors.proveYourselfVenueTooBig'
+      )
+    })
+
+    test('allows nodes carrying neither venue nor venueId', () => {
+      assert.strictEqual(
+        checkVenueAccess({
+          node: { type: 'REST' },
+          venuesMap,
+          getLocationName: mockGetLocationName
+        }).allowed,
+        true
+      )
+    })
+
     test('allows access if all checks pass', () => {
       const result = checkVenueAccess({
         node: { type: 'GIG', venue: { id: 'venue_1', name: 'Ok' } },
@@ -171,6 +210,41 @@ describe('travelUtils', () => {
       })
       assert.strictEqual(result.allowed, true)
       assert.strictEqual(result.resolvedVenue.id, 'venue_1')
+    })
+  })
+
+  describe('getNodeAccessStatus', () => {
+    const mockGetLocationName = name => name
+
+    test('skips venue gating for non-booking node types', () => {
+      for (const type of ['REST', 'EVENT', 'START', undefined]) {
+        assert.strictEqual(
+          getNodeAccessStatus({
+            node: { type, venue: { id: 'venue_1', name: 'Black' } },
+            venueBlacklist: ['venue_1'],
+            venuesMap,
+            getLocationName: mockGetLocationName
+          }).allowed,
+          true,
+          `node type ${String(type)} should not be venue-gated`
+        )
+      }
+    })
+
+    test('delegates to checkVenueAccess for booking node types', () => {
+      for (const type of ['GIG', 'FESTIVAL', 'FINALE']) {
+        const result = getNodeAccessStatus({
+          node: { type, venue: { id: 'venue_1', name: 'Black' } },
+          venueBlacklist: ['venue_1'],
+          venuesMap,
+          getLocationName: mockGetLocationName
+        })
+        assert.strictEqual(result.allowed, false, `node type ${type}`)
+        assert.strictEqual(
+          result.errorKey,
+          'ui:travel.errors.bookingRefusedBlacklisted'
+        )
+      }
     })
   })
 

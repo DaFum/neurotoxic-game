@@ -113,6 +113,13 @@ export interface SoftlockContext {
     dailyObligations: number
     assetModifiers: AssetModifiers
   }[]
+  /**
+   * Booking-gate predicate for a candidate neighbor. Callers pass a closure
+   * over `getNodeAccessStatus` so the softlock verdict cannot drift from the
+   * gate `useHandleTravel` actually enforces. Omitted means "no gate", which
+   * keeps legacy callers conservative.
+   */
+  isNodeAccessible?: (node: unknown) => boolean
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -263,7 +270,11 @@ export const checkSoftlock = (
             bandStateForTravel,
             activeAssetModifiers
           )
+          // A neighbor the booking gate refuses (blacklist, regional ban,
+          // prove-yourself capacity cap) is not a real escape route.
+          const accessAllowed = context.isNodeAccessible?.(n) ?? true
           if (
+            accessAllowed &&
             fuel >= finiteNumberOr(fuelLiters, 0) &&
             money >=
               Math.max(

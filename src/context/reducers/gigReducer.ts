@@ -33,7 +33,6 @@ import {
 } from '../../quests/producers/gigQuestEvents'
 import {
   createRegionReputationChangedQuestEvent,
-  createVenueReputationChangedQuestEvent,
   createVenueGigCompletedQuestEvent,
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
@@ -80,7 +79,14 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
     gigEventScoreDelta: 0,
-    minigame: { ...DEFAULT_MINIGAME_STATE }
+    minigame: { ...DEFAULT_MINIGAME_STATE },
+    // Post-gig payout screens must report the standing the player walked in
+    // with; the reducer has already applied this gig's reputation delta by
+    // the time they render. Deliberately not persisted — a save reloaded
+    // mid-gig falls back to live reputation.
+    gigContextSnapshot: {
+      reputationByRegionAtStart: { ...state.reputationByRegion }
+    }
   }
 }
 
@@ -253,6 +259,16 @@ export const handleSetLastGigStats = (
   let nextState: GameState = {
     ...state,
     lastGigStats: safePayload,
+    // Stamp the node as played out here, not in the post-gig continue
+    // handler: `usePersistence` autosaves on GIG -> POST_GIG, so a reload
+    // before the player presses Continue would otherwise restore a save
+    // whose `lastGigNodeId` still points at the previous gig, and the
+    // current-node branch in `useHandleTravel` would let the same gig be
+    // replayed. Practice returns earlier, so it never reaches this.
+    player: {
+      ...state.player,
+      lastGigNodeId: state.player?.currentNodeId ?? state.player?.lastGigNodeId
+    },
     band: {
       ...traitResult.band,
       // Real gigs build up band stress; days decay it (handleAdvanceDay)
@@ -262,8 +278,7 @@ export const handleSetLastGigStats = (
       )
     },
     toasts: traitResult.toasts,
-    reputationByRegion: { ...state.reputationByRegion },
-    reputationByVenue: { ...state.reputationByVenue }
+    reputationByRegion: { ...state.reputationByRegion }
   }
 
   const score = finiteNumberOr(safePayload.score, 0)
@@ -280,7 +295,6 @@ export const handleSetLastGigStats = (
   // canonical city key — checkVenueAccess reads the same key for the
   // regional booking ban.
   const location = getRegionKeyForLocation(state.player?.location) || 'Unknown'
-  const venueId = state.currentGig?.id || ''
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)
@@ -320,7 +334,7 @@ export const handleSetLastGigStats = (
           nextState,
           createRegionReputationChangedQuestEvent({
             region: location,
-            amount: -10,
+            amount: nextRep - currentRep,
             reason: 'bad_gig'
           })
         )
@@ -342,24 +356,7 @@ export const handleSetLastGigStats = (
         })
       }
     }
-    if (venueId && !isForbiddenKey(venueId)) {
-      const currentVenueRep = finiteNumberOr(
-        nextState.reputationByVenue[venueId],
-        0
-      )
-      const nextVenueRep = clampReputation(currentVenueRep - 10)
-      if (nextVenueRep < currentVenueRep) {
-        nextState.reputationByVenue[venueId] = nextVenueRep
-        nextState = QuestEvents.emit(
-          nextState,
-          createVenueReputationChangedQuestEvent({
-            venueId,
-            amount: -10,
-            reason: 'bad_gig'
-          })
-        )
-      }
-    }
+
     nextState = handleRecordBadShow(nextState)
   } else if (accuracy >= 60) {
     // Increase reputation on good gigs up to 100 max
@@ -376,32 +373,13 @@ export const handleSetLastGigStats = (
           nextState,
           createRegionReputationChangedQuestEvent({
             region: location,
-            amount: bonus,
+            amount: nextRep - currentRep,
             reason: 'good_gig'
           })
         )
         logger.info(
           'GameState',
           `Regional reputation gain in ${location} (+${bonus})`
-        )
-      }
-    }
-    if (venueId && !isForbiddenKey(venueId)) {
-      const currentVenueRep = finiteNumberOr(
-        nextState.reputationByVenue[venueId],
-        0
-      )
-      const venueBonus = accuracy >= 90 ? 10 : 5
-      const nextVenueRep = clampReputation(currentVenueRep + venueBonus)
-      if (nextVenueRep > currentVenueRep) {
-        nextState.reputationByVenue[venueId] = nextVenueRep
-        nextState = QuestEvents.emit(
-          nextState,
-          createVenueReputationChangedQuestEvent({
-            venueId,
-            amount: venueBonus,
-            reason: 'good_gig'
-          })
         )
       }
     }
@@ -435,6 +413,14 @@ export const handleSetLastGigStats = (
           region: location
         })
       )
+    }
+  } else if (accuracy >= 30 && accuracy < 60) {
+    nextState.player = {
+      ...nextState.player,
+      stats: {
+        ...nextState.player.stats,
+        consecutiveBadShows: 0
+      }
     }
   }
 

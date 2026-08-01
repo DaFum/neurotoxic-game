@@ -11,9 +11,7 @@ import {
 import {
   applyBrandTrustDelta,
   applyReputationDelta,
-  applyVenueReputationDelta,
   getRegionReputationKey,
-  getVenueReputationKey,
   queueEvent
 } from './questEffects'
 
@@ -113,7 +111,6 @@ const isQuestPenalty = (value: unknown): value is QuestPenalty => {
     case 'social.loyalty':
     case 'social.controversy':
       return isFiniteNumber(value.amount)
-    case 'venue.reputation':
     case 'region.reputation':
       return isFiniteNumber(value.amount) && isOptionalString(value.scope)
     case 'brand.trust':
@@ -234,13 +231,6 @@ export const applyQuestFailurePenalties = (
       }
       case 'asset.damage':
         nextState = applyAssetDamage(nextState, penalty)
-        break
-      case 'venue.reputation':
-        nextState = applyVenueReputationDelta(
-          nextState,
-          getVenueReputationKey(nextState, penalty.scope),
-          penalty.amount
-        )
         break
       case 'region.reputation':
         nextState = applyReputationDelta(

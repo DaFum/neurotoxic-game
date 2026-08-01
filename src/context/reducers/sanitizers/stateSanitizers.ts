@@ -45,6 +45,7 @@ import {
   clampMemberStamina,
   clampPlayerMoney,
   clampBandHarmony,
+  clampReputation,
   clampBandStress,
   wrapClockHour
 } from '../../../utils/gameState'
@@ -1203,6 +1204,20 @@ export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
 }
 
 /**
+ * Upper bound on persisted region reputation entries. The map is keyed by
+ * city and the campaign ships far fewer than this, so the cap only ever
+ * trips on a corrupted or hostile save.
+ */
+const MAX_REGION_REPUTATION_ENTRIES = 100
+
+/**
+ * Hard bound on keys examined. Accepted entries are counted separately, so
+ * without this a save carrying thousands of non-finite keys would still walk
+ * every one of them before the entry cap could ever trip.
+ */
+const MAX_REGION_REPUTATION_KEYS_SCANNED = 1000
+
+/**
  * Sanitizes regional reputation metrics mapped by region keys.
  *
  * @remarks
@@ -1216,12 +1231,20 @@ export const sanitizeReputationByRegion = (
 ): GameState['reputationByRegion'] => {
   if (!isLooseRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
+  let accepted = 0
+  let scanned = 0
   for (const key in value) {
+    // Bound a hostile save two ways: on entries actually kept, so junk keys
+    // cannot crowd out real regions, and on keys examined, so a flood of
+    // rejected keys cannot stall the load.
+    if (accepted >= MAX_REGION_REPUTATION_ENTRIES) break
+    if (scanned++ >= MAX_REGION_REPUTATION_KEYS_SCANNED) break
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const reputation = value[key]
     if (isFiniteNumber(reputation)) {
-      sanitized[key] = reputation
+      sanitized[key] = clampReputation(reputation)
+      accepted++
     }
   }
   return sanitized

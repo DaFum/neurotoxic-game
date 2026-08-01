@@ -14,7 +14,7 @@ export const quest_flawless_run = {
   required: 3,
   offer: { trigger: 'random', category: 'band', chance: 0.08 },
   rewards: [
-    { type: 'venue.reputation', scope: 'current', amount: 15 },
+    { type: 'region.reputation', scope: 'current', amount: 15 },
     { type: 'fame', amount: 150 }
   ],
   failurePenalties: [{ type: 'social.loyalty', amount: -5 }]

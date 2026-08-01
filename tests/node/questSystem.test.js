@@ -133,6 +133,16 @@ const makeProgressEvent = (source, rule) => {
       }
     case 'story.flagAdded':
       return { type: eventSource, flag: 'test_flag' }
+    case 'region.reputationChanged':
+      return {
+        type: eventSource,
+        amount: 10,
+        success: true,
+        context: {
+          region: firstMatchValue(match.region) ?? 'test_region',
+          reason: 'test'
+        }
+      }
     default:
       throw new Error(`No minimal event payload for ${source}`)
   }

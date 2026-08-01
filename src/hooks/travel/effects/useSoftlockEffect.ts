@@ -14,6 +14,8 @@ import type {
   TravelLogicParams
 } from '../types'
 import { getSellableAssets, getPostSaleScenarios } from '../travelSoftlockUtils'
+import { getNodeAccessStatus } from '../../../utils/travelUtils'
+import { VENUES_BY_ID } from '../../../data/venues'
 
 export const useSoftlockEffect = ({
   refs,
@@ -64,7 +66,18 @@ export const useSoftlockEffect = ({
         liabilities
       } as GameState),
       assetModifiers: getActiveAssetModifiers(assets ?? []),
-      postSaleScenarios
+      postSaleScenarios,
+      // Reuse the real booking gate rather than re-deriving it here, so a
+      // neighbor the player would be refused at cannot count as an escape.
+      isNodeAccessible: (node: unknown) =>
+        getNodeAccessStatus({
+          node: node as Parameters<typeof getNodeAccessStatus>[0]['node'],
+          player,
+          reputationByRegion: params.reputationByRegion,
+          venueBlacklist: params.venueBlacklist,
+          venuesMap: VENUES_BY_ID,
+          getLocationName: name => name ?? ''
+        }).allowed
     }
 
     if (checkSoftlock(gameMap, player, band, softlockContext)) {
@@ -106,6 +119,8 @@ export const useSoftlockEffect = ({
     saveGame,
     changeScene,
     state.isTraveling,
-    refs.timeoutRef
+    refs.timeoutRef,
+    params.venueBlacklist,
+    params.reputationByRegion
   ])
 }

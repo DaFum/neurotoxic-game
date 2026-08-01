@@ -90,6 +90,15 @@ const matchesOfferCondition = (
     return false
   }
 
+  // Amends-style quests are unwinnable with an empty blacklist: there is
+  // nothing to un-blacklist, so the offer would be a dead end.
+  if (
+    condition.requireBlacklistedVenue &&
+    !(state.venueBlacklist?.length ?? 0)
+  ) {
+    return false
+  }
+
   return true
 }
 
@@ -100,9 +109,9 @@ export const QuestOfferEngine = {
   canOfferQuest: (state: GameState, questId: string): boolean => {
     const definition = getQuestDefinition(questId)
     if (!definition?.offer) return canAcceptQuest(state, questId).ok
-    return (
-      canAcceptQuest(state, questId).ok &&
-      matchesOfferCondition(state, definition.offer.condition)
-    )
+
+    if (!matchesOfferCondition(state, definition.offer.condition)) return false
+
+    return canAcceptQuest(state, questId).ok
   }
 }

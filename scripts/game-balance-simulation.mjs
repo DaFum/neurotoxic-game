@@ -8,7 +8,7 @@ import { MapGenerator } from '../src/utils/mapGenerator.ts'
 import {
   calculateTravelCostsAndImpact,
   checkTravelResources,
-  checkVenueAccess
+  getNodeAccessStatus
 } from '../src/utils/travelUtils.ts'
 import { VENUES_BY_ID } from '../src/data/venues.js'
 import { createInitialState } from '../src/context/initialState.js'
@@ -911,7 +911,7 @@ export const buildTourAdjacency = tourMap => {
  * The simulation used to deduct travel cost and fuel and clamp both at zero, so
  * a broke band with an empty tank still arrived, still played the gig at the
  * destination and was rescued by its payout. Production refuses the trip before
- * any of that: `checkVenueAccess` rejects blacklisted venues, oversized venues in
+ * any of that: `getNodeAccessStatus` rejects blacklisted venues, oversized venues in
  * prove-yourself mode and regions whose reputation has bottomed out, and
  * `checkTravelResources` requires the full fuel and the travel cost PLUS the
  * day's obligations (`totalCashImpact`) to be covered.
@@ -926,7 +926,7 @@ export const planTravel = ({ reachable, state, rng, wantsToPerform }) => {
   const accessible = []
   let accessRejections = 0
   for (const node of reachable) {
-    const access = checkVenueAccess({
+    const access = getNodeAccessStatus({
       node,
       player: state.player,
       reputationByRegion: state.reputationByRegion ?? {},

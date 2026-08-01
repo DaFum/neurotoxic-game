@@ -42,25 +42,6 @@ export const createVenueGoodGigQuestEvent = ({
 })
 
 /**
- * Creates a `venue.reputationChanged` quest event for venue reputation deltas.
- */
-export const createVenueReputationChangedQuestEvent = ({
-  venueId,
-  amount,
-  reason
-}: {
-  venueId: string
-  amount: number
-  reason?: string
-}): QuestEvent => ({
-  type: 'venue.reputationChanged',
-  amount,
-  success: amount >= 0,
-  context: { venueId, reason },
-  tags: sanitizeStringArray([venueId, reason])
-})
-
-/**
  * Creates a `region.reputationChanged` quest event for regional reputation deltas.
  */
 export const createRegionReputationChangedQuestEvent = ({
