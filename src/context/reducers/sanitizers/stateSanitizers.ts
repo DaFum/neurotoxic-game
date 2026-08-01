@@ -807,7 +807,11 @@ const parseNumericStats = (
 ): Record<string, number> => {
   if (!isLooseRecord(obj)) return {}
   const result: Record<string, number> = {}
-  for (const key of Object.keys(obj)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+  // Why: Avoids unnecessary array allocation during data sanitization.
+  // Impact: Reduces GC overhead during high-frequency sanitization parses of nested state blocks.
+  for (const key in obj) {
+    if (!Object.hasOwn(obj, key)) continue
     if (isForbiddenKey(key)) continue
     if (ignoredKeys && ignoredKeys.has(key)) continue
 
@@ -969,7 +973,11 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
   ) {
     const raw = bandData.merchPrices as Record<string, unknown>
     const sanitized: Record<string, number> = {}
-    for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+    // Why: Avoids array allocation when mapping a static configuration object into sanitized state.
+    // Impact: Small reduction in memory allocations during state hydration/save loading.
+    for (const k in DEFAULT_MERCH_PRICES) {
+      if (!Object.hasOwn(DEFAULT_MERCH_PRICES, k)) continue
       if (!Object.hasOwn(raw, k)) continue
       const v = raw[k]
       if (isFiniteNumber(v) && v >= 0) {
@@ -1560,7 +1568,11 @@ export const sanitizeGigModifiers = (
 ): GameState['gigModifiers'] => {
   const sanitized = { ...DEFAULT_GIG_MODIFIERS }
   if (!isLooseRecord(value)) return sanitized
-  for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+  // Why: Avoids allocating a temporary array from DEFAULT_GIG_MODIFIERS's keys.
+  // Impact: Reduces garbage collection pressure in save-file parsing.
+  for (const key in DEFAULT_GIG_MODIFIERS) {
+    if (!Object.hasOwn(DEFAULT_GIG_MODIFIERS, key)) continue
     if (
       Object.hasOwn(value, key) &&
       typeof (value as Record<string, unknown>)[key] === 'boolean'

@@ -170,9 +170,13 @@ export const sanitizeRiskEventDescriptor = (
  */
 const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
   const out: Record<string, unknown> = {}
-  for (const k of Object.keys(obj)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+  // Why: Avoids unnecessary array allocation when checking keys during data sanitization.
+  // Impact: Reduces transient GC overhead on hot paths when validating incoming nested properties.
+  for (const k in obj) {
+    if (!Object.hasOwn(obj, k)) continue
     if (isForbiddenKey(k)) continue
-    if (Object.hasOwn(obj, k)) out[k] = obj[k]
+    out[k] = obj[k]
   }
   return out as T
 }
