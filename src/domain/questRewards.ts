@@ -24,9 +24,7 @@ import { getQuestToastName } from './questHelpers'
 import {
   applyBrandTrustDelta,
   applyReputationDelta,
-  applyVenueReputationDelta,
   getRegionReputationKey,
-  getVenueReputationKey,
   queueEvent
 } from './questEffects'
 
@@ -115,7 +113,6 @@ const isQuestReward = (value: unknown): value is QuestReward => {
           (typeof value.platform === 'string' &&
             FOLLOWER_PLATFORMS.has(value.platform)))
       )
-    case 'venue.reputation':
     case 'region.reputation':
       return isFiniteNumber(value.amount) && isOptionalString(value.scope)
     case 'brand.trust':
@@ -364,13 +361,6 @@ export const applyQuestRewards = (
       }
       case 'asset.repair':
         nextState = applyAssetRepair(nextState, reward)
-        break
-      case 'venue.reputation':
-        nextState = applyVenueReputationDelta(
-          nextState,
-          getVenueReputationKey(nextState, reward.scope),
-          reward.amount
-        )
         break
       case 'region.reputation':
         nextState = applyReputationDelta(

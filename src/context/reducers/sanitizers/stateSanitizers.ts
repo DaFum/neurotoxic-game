@@ -1204,6 +1204,13 @@ export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
 }
 
 /**
+ * Upper bound on persisted region reputation entries. The map is keyed by
+ * city and the campaign ships far fewer than this, so the cap only ever
+ * trips on a corrupted or hostile save.
+ */
+const MAX_REGION_REPUTATION_ENTRIES = 100
+
+/**
  * Sanitizes regional reputation metrics mapped by region keys.
  *
  * @remarks
@@ -1217,14 +1224,17 @@ export const sanitizeReputationByRegion = (
 ): GameState['reputationByRegion'] => {
   if (!isLooseRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
-  let count = 0
+  let accepted = 0
   for (const key in value) {
-    if (count++ >= 100) break
+    // Bound a hostile save that ships thousands of region keys. Counts
+    // accepted entries only, so junk keys cannot crowd out real regions.
+    if (accepted >= MAX_REGION_REPUTATION_ENTRIES) break
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const reputation = value[key]
     if (isFiniteNumber(reputation)) {
       sanitized[key] = clampReputation(reputation)
+      accepted++
     }
   }
   return sanitized

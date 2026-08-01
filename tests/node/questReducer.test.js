@@ -13,7 +13,7 @@ import { getQuestPenalties } from '../../src/domain/questPenalties'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 import { canAcceptQuest } from '../../src/domain/questAcceptance'
-import { getVenueReputationKey } from '../../src/domain/questEffects'
+import { getCurrentVenueId } from '../../src/domain/questEffects'
 
 const handleCompleteQuest = QuestLifecycle.completeQuest
 const handleFailQuests = QuestLifecycle.checkDeadlines
@@ -136,12 +136,12 @@ test('questReducer - handleAddQuest', async t => {
       }),
       { ok: true, scopeKey: 'venue_canonical' }
     )
-    assert.equal(getVenueReputationKey(state, 'current'), 'venue_canonical')
+    assert.equal(getCurrentVenueId(state), 'venue_canonical')
     assert.equal(
-      getVenueReputationKey(
-        { ...state, currentGig: { id: 'legacy_current_gig' } },
-        'current'
-      ),
+      getCurrentVenueId({
+        ...state,
+        currentGig: { id: 'legacy_current_gig' }
+      }),
       'legacy_current_gig'
     )
     const legacyState = {
@@ -158,7 +158,7 @@ test('questReducer - handleAddQuest', async t => {
       }),
       { ok: true, scopeKey: 'legacy_node' }
     )
-    assert.equal(getVenueReputationKey(legacyState, 'current'), 'legacy_node')
+    assert.equal(getCurrentVenueId(legacyState), 'legacy_node')
   })
 })
 

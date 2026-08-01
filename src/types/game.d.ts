@@ -144,8 +144,6 @@ export interface GameState {
   reputationByRegion: Record<string, number>
   gigContextSnapshot?: {
     reputationByRegionAtStart?: Record<string, number>
-    fameAtStart?: number
-    ticketPriceAtStart?: number
   }
   settings: GameSettings
   npcs: Record<string, CharacterProfile>

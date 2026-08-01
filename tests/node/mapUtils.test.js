@@ -171,6 +171,24 @@ describe('mapUtils', () => {
       assert.equal(checkSoftlock(gigMap, player), false)
     })
 
+    test('does not count a neighbor the booking gate refuses as an escape', () => {
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 10
+      }))
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      const player = { currentNodeId: 'A', van: { fuel: 20 }, money: 0 }
+
+      // Affordable in fuel and cash, so reachable without a gate...
+      assert.equal(checkSoftlock(gameMap, player), false)
+      // ...but stranded once the gate refuses the only neighbor.
+      assert.equal(
+        checkSoftlock(gameMap, player, null, {
+          isNodeAccessible: () => false
+        }),
+        true
+      )
+    })
+
     test('handles missing van object gracefully', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 10

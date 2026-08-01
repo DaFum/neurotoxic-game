@@ -235,6 +235,19 @@ describe('socialReducer', () => {
       )
     })
 
+    it('does not hand out regional reputation when fans defend the band', () => {
+      baseState.social.loyalty = 30
+      baseState.reputationByRegion = { venue: -50 }
+      const nextState = handleAddVenueBlacklist(baseState, {
+        venueId: 'venue_123',
+        toastId: 'test_toast_id'
+      })
+
+      // Being defended already spares the blacklist; it must not also lift
+      // the regional booking ban, or the defense becomes a rep laundromat.
+      assert.strictEqual(nextState.reputationByRegion.venue, -50)
+    })
+
     it('should blacklist at loyalty exactly 29', () => {
       baseState.social.loyalty = 29
       const nextState = handleAddVenueBlacklist(baseState, {
@@ -385,6 +398,46 @@ describe('socialReducer', () => {
             t.type === 'error' && t.messageKey === 'ui:toast.amendsTooExpensive'
         )
       )
+    })
+
+    it('lifts the regional booking ban for the venue city', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = {
+        ...makeState(cost, [VENUE]),
+        reputationByRegion: { stendal: -80 }
+      }
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      // -30 is the ban threshold; amends must land strictly above it or the
+      // player pays for nothing.
+      assert.strictEqual(next.reputationByRegion.stendal, -29)
+    })
+
+    it('leaves regional reputation alone when the city is not banned', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const state = {
+        ...makeState(cost, [VENUE]),
+        reputationByRegion: { stendal: 40 }
+      }
+      const next = handleUnblacklistVenue(state, {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.strictEqual(next.reputationByRegion.stendal, 40)
+    })
+
+    it('survives a save with no reputationByRegion map', () => {
+      const cost = getUnblacklistCost(VENUE)
+      const next = handleUnblacklistVenue(makeState(cost, [VENUE]), {
+        venueId: VENUE,
+        toastId: 'amends_toast'
+      })
+
+      assert.ok(!next.venueBlacklist.includes(VENUE))
     })
 
     it('returns state unchanged when the venue is not blacklisted', () => {

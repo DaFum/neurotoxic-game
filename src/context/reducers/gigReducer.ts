@@ -80,14 +80,12 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
     gigEventScoreDelta: 0,
     minigame: { ...DEFAULT_MINIGAME_STATE },
+    // Post-gig payout screens must report the standing the player walked in
+    // with; the reducer has already applied this gig's reputation delta by
+    // the time they render. Deliberately not persisted — a save reloaded
+    // mid-gig falls back to live reputation.
     gigContextSnapshot: {
-      reputationByRegionAtStart: { ...state.reputationByRegion },
-      fameAtStart: state.player?.fame,
-      ticketPriceAtStart:
-        typeof payload?.ticketPrice === 'number' &&
-        Number.isFinite(payload.ticketPrice)
-          ? payload.ticketPrice
-          : undefined
+      reputationByRegionAtStart: { ...state.reputationByRegion }
     }
   }
 }

@@ -6,12 +6,11 @@ import {
 import { validateBloodBankDonation } from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
-import { isForbiddenKey } from './gameState'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
 type RawMapConnection = { from?: unknown; to?: unknown }
-type GameNode = { type?: unknown; venue?: unknown }
+type GameNode = { type?: unknown }
 type GameMapLike =
   | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
   | null
@@ -114,8 +113,13 @@ export interface SoftlockContext {
     dailyObligations: number
     assetModifiers: AssetModifiers
   }[]
-  venueBlacklist?: string[]
-  reputationByRegion?: Record<string, number>
+  /**
+   * Booking-gate predicate for a candidate neighbor. Callers pass a closure
+   * over `getNodeAccessStatus` so the softlock verdict cannot drift from the
+   * gate `useHandleTravel` actually enforces. Omitted means "no gate", which
+   * keeps legacy callers conservative.
+   */
+  isNodeAccessible?: (node: unknown) => boolean
 }
 
 const GIG_LIKE_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
@@ -266,56 +270,9 @@ export const checkSoftlock = (
             bandStateForTravel,
             activeAssetModifiers
           )
-          // GIG, FESTIVAL, FINALE can be blocked by reputation or blacklist
-          let accessAllowed = true
-          if (
-            n.type === 'GIG' ||
-            n.type === 'FESTIVAL' ||
-            n.type === 'FINALE'
-          ) {
-            const canonicalVenueId =
-              normalizeVenueId(n.venue) ??
-              (typeof (n as { venueId?: string }).venueId === 'string'
-                ? normalizeVenueId((n as { venueId?: string }).venueId)
-                : null)
-            const normalizedId = canonicalVenueId
-            if (normalizedId) {
-              if (context.venueBlacklist?.includes(normalizedId)) {
-                accessAllowed = false
-              } else if (context.reputationByRegion) {
-                const regionId = getRegionKeyForLocation(
-                  `venues:${normalizedId}.name`
-                )
-                if (
-                  regionId &&
-                  Object.hasOwn(context.reputationByRegion, regionId) &&
-                  !isForbiddenKey(regionId)
-                ) {
-                  if (
-                    finiteNumberOr(context.reputationByRegion[regionId], 0) <=
-                    REGION_BLACKLIST_THRESHOLD
-                  ) {
-                    accessAllowed = false
-                  }
-                }
-              }
-            }
-            if (
-              accessAllowed &&
-              player.stats &&
-              typeof player.stats === 'object' &&
-              (player.stats as Record<string, unknown>).proveYourselfMode
-            ) {
-              const cap =
-                n.venue && typeof n.venue === 'object' && 'capacity' in n.venue
-                  ? finiteNumberOr(
-                      (n.venue as { capacity?: number }).capacity,
-                      0
-                    )
-                  : 0
-              if (cap > 150) accessAllowed = false
-            }
-          }
+          // A neighbor the booking gate refuses (blacklist, regional ban,
+          // prove-yourself capacity cap) is not a real escape route.
+          const accessAllowed = context.isNodeAccessible?.(n) ?? true
           if (
             accessAllowed &&
             fuel >= finiteNumberOr(fuelLiters, 0) &&

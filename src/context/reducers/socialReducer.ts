@@ -443,18 +443,6 @@ export const handleAddVenueBlacklist = (
         type: 'info'
       }
     ]
-
-    const location = getRegionKeyForLocation(`venues:${venueId}.name`)
-    const regionRep = finiteNumberOr(
-      nextState.reputationByRegion?.[location || ''],
-      0
-    )
-    if (location && regionRep <= REGION_BLACKLIST_THRESHOLD) {
-      nextState.reputationByRegion = {
-        ...(nextState.reputationByRegion || {}),
-        [location]: Math.max(regionRep, REGION_BLACKLIST_THRESHOLD + 1)
-      }
-    }
   } else {
     nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueId]
     nextState.toasts = [
@@ -533,8 +521,14 @@ export const handleUnblacklistVenue = (
     }
   }
 
+  // Paying amends also lifts the regional booking ban that the blacklisted
+  // venue's city may be sitting under, otherwise the amends leave the player
+  // in the same dead end they paid to escape.
   const location = getRegionKeyForLocation(`venues:${venueId}.name`)
-  const regionRep = finiteNumberOr(state.reputationByRegion[location || ''], 0)
+  const regionRep = finiteNumberOr(
+    location ? state.reputationByRegion?.[location] : undefined,
+    0
+  )
 
   const nextState: GameState = {
     ...state,
@@ -551,10 +545,14 @@ export const handleUnblacklistVenue = (
     ]
   }
 
-  if (location && regionRep <= REGION_BLACKLIST_THRESHOLD) {
+  if (
+    location &&
+    !isForbiddenKey(location) &&
+    regionRep <= REGION_BLACKLIST_THRESHOLD
+  ) {
     nextState.reputationByRegion = {
-      ...nextState.reputationByRegion,
-      [location]: Math.max(regionRep, REGION_BLACKLIST_THRESHOLD + 1)
+      ...(nextState.reputationByRegion ?? {}),
+      [location]: REGION_BLACKLIST_THRESHOLD + 1
     }
   }
 

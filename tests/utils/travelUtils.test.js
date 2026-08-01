@@ -5,6 +5,7 @@ import {
   resolveTravelVenue,
   getLocationName,
   checkVenueAccess,
+  getNodeAccessStatus,
   checkTravelPrerequisites,
   checkTravelResources,
   calculateTravelCostsAndImpact
@@ -171,6 +172,41 @@ describe('travelUtils', () => {
       })
       assert.strictEqual(result.allowed, true)
       assert.strictEqual(result.resolvedVenue.id, 'venue_1')
+    })
+  })
+
+  describe('getNodeAccessStatus', () => {
+    const mockGetLocationName = name => name
+
+    test('skips venue gating for non-booking node types', () => {
+      for (const type of ['REST', 'EVENT', 'START', undefined]) {
+        assert.strictEqual(
+          getNodeAccessStatus({
+            node: { type, venue: { id: 'venue_1', name: 'Black' } },
+            venueBlacklist: ['venue_1'],
+            venuesMap,
+            getLocationName: mockGetLocationName
+          }).allowed,
+          true,
+          `node type ${String(type)} should not be venue-gated`
+        )
+      }
+    })
+
+    test('delegates to checkVenueAccess for booking node types', () => {
+      for (const type of ['GIG', 'FESTIVAL', 'FINALE']) {
+        const result = getNodeAccessStatus({
+          node: { type, venue: { id: 'venue_1', name: 'Black' } },
+          venueBlacklist: ['venue_1'],
+          venuesMap,
+          getLocationName: mockGetLocationName
+        })
+        assert.strictEqual(result.allowed, false, `node type ${type}`)
+        assert.strictEqual(
+          result.errorKey,
+          'ui:travel.errors.bookingRefusedBlacklisted'
+        )
+      }
     })
   })
 

@@ -38,7 +38,7 @@ export type QuestProgressSource =
   | 'asset_risk_resolved'
   | 'venue_blacklisted'
   | 'venue_unblacklisted'
-  | 'venue_reputation_changed'
+  | 'region_reputation_changed'
   | 'story_flag_added'
 
 /**
@@ -76,7 +76,6 @@ export type QuestEventType =
   | 'band.harmonyChanged'
   | 'venue.gigCompleted'
   | 'venue.goodGig'
-  | 'venue.reputationChanged'
   | 'venue.blacklisted'
   | 'venue.unblacklisted'
   | 'region.reputationChanged'
@@ -181,7 +180,6 @@ export type QuestEffectCommon =
   | { type: 'social.loyalty'; amount: number }
   | { type: 'social.controversy'; amount: number }
   | { type: 'band.harmony'; amount: number }
-  | { type: 'venue.reputation'; amount: number; scope?: 'current' | string }
   | { type: 'region.reputation'; amount: number; scope?: 'current' | string }
   | {
       type: 'brand.trust'
@@ -240,6 +238,8 @@ export interface QuestOfferCondition {
   requiredAssetKind?: string
   minFame?: number
   requireLocation?: boolean
+  /** Only offer while at least one venue is blacklisted. */
+  requireBlacklistedVenue?: boolean
 }
 
 /**

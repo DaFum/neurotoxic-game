@@ -7,7 +7,7 @@ export const quest_venue_regular = {
   deadlineOffset: 18,
   repeatPolicy: 'cooldown',
   cooldownDays: 12,
-  progressSource: 'venue_reputation_changed',
+  progressSource: 'region_reputation_changed',
   progressRules: [
     { event: 'region.reputationChanged', amount: 'event.amount' }
   ],
