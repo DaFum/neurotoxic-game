@@ -176,12 +176,18 @@ export const checkVenueAccess = ({
     venueId: string | null | undefined
   ) => string
 }): VenueAccessResult => {
-  if (node.type === 'START' || !node.venue) {
+  // `sanitizeMapNodes` drops `node.venue` on load and keeps only `venueId`,
+  // so a gate keyed on `node.venue` alone goes silent for every node in a
+  // reloaded save. Accept either shape.
+  const venueId =
+    normalizeVenueId(node.venue) ??
+    (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
+
+  if (node.type === 'START' || (!node.venue && !venueId)) {
     return { allowed: true }
   }
 
-  const venueId = normalizeVenueId(node.venue)
-  const resolvedVenue = resolveVenue(node.venue, venueId, venuesMap)
+  const resolvedVenue = resolveVenue(node.venue ?? venueId, venueId, venuesMap)
 
   if (!resolvedVenue) {
     return {
