@@ -25,7 +25,7 @@ export const getCurrentVenueId = (state: GameState): string | undefined => {
 
 const applyReputationMapDelta = (
   state: GameState,
-  mapName: 'reputationByRegion' | 'reputationByVenue',
+  mapName: 'reputationByRegion',
   key: string | undefined,
   amount: number
 ): GameState => {
@@ -87,10 +87,10 @@ export const applyReputationDelta = (
  */
 export const applyVenueReputationDelta = (
   state: GameState,
-  key: string | undefined,
-  amount: number
+  _key: string | undefined,
+  _amount: number
 ): GameState => {
-  return applyReputationMapDelta(state, 'reputationByVenue', key, amount)
+  return state
 }
 
 /**

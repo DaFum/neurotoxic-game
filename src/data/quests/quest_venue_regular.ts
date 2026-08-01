@@ -8,7 +8,9 @@ export const quest_venue_regular = {
   repeatPolicy: 'cooldown',
   cooldownDays: 12,
   progressSource: 'venue_reputation_changed',
-  progressRules: [{ event: 'venue.reputationChanged', amount: 'event.amount' }],
+  progressRules: [
+    { event: 'region.reputationChanged', amount: 'event.amount' }
+  ],
   required: 30,
   offer: { trigger: 'random', category: 'gig', chance: 0.06 },
   failurePenalties: [{ type: 'social.loyalty', amount: -5 }],

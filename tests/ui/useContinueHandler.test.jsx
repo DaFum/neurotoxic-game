@@ -255,8 +255,8 @@ describe('useContinueHandler hook', () => {
     expect(d.updatePlayer).toHaveBeenCalledWith({
       money: 1100,
       fame: 20,
-      fameLevel: 2,
-          })
+      fameLevel: 2
+    })
 
     // submit leaderboard
     expect(submitLeaderboardScores).toHaveBeenCalled()

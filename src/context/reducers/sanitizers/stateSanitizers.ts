@@ -1217,9 +1217,9 @@ export const sanitizeReputationByRegion = (
 ): GameState['reputationByRegion'] => {
   if (!isLooseRecord(value)) return {}
   const sanitized: GameState['reputationByRegion'] = {}
-  let count = 0;
+  let count = 0
   for (const key in value) {
-    if (count++ >= 100) break;
+    if (count++ >= 100) break
     if (!Object.hasOwn(value, key)) continue
     if (isForbiddenKey(key)) continue
     const reputation = value[key]

@@ -1,4 +1,7 @@
-import { getRegionKeyForLocation, REGION_BLACKLIST_THRESHOLD } from '../../utils/mapUtils'
+import {
+  getRegionKeyForLocation,
+  REGION_BLACKLIST_THRESHOLD
+} from '../../utils/mapUtils'
 import i18n from '../../i18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import type {
@@ -442,14 +445,17 @@ export const handleAddVenueBlacklist = (
     ]
 
     const location = getRegionKeyForLocation(`venues:${venueId}.name`)
-    const regionRep = finiteNumberOr(nextState.reputationByRegion?.[location || ''], 0)
+    const regionRep = finiteNumberOr(
+      nextState.reputationByRegion?.[location || ''],
+      0
+    )
     if (location && regionRep <= REGION_BLACKLIST_THRESHOLD) {
       nextState.reputationByRegion = {
         ...(nextState.reputationByRegion || {}),
         [location]: Math.max(regionRep, REGION_BLACKLIST_THRESHOLD + 1)
       }
     }
-} else {
+  } else {
     nextState.venueBlacklist = [...(nextState.venueBlacklist || []), venueId]
     nextState.toasts = [
       ...(nextState.toasts || []),
@@ -528,7 +534,7 @@ export const handleUnblacklistVenue = (
   }
 
   const location = getRegionKeyForLocation(`venues:${venueId}.name`)
-  const regionRep = finiteNumberOr(state.reputationByRegion[location], 0)
+  const regionRep = finiteNumberOr(state.reputationByRegion[location || ''], 0)
 
   const nextState: GameState = {
     ...state,

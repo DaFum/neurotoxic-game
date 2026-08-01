@@ -6,11 +6,12 @@ import {
 import { validateBloodBankDonation } from './bloodBankUtils'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { finiteNumberOr } from './finiteNumber'
+import { isForbiddenKey } from './gameState'
 import type { BandState } from '../types'
 import type { AssetModifiers } from '../types/assets'
 
 type RawMapConnection = { from?: unknown; to?: unknown }
-type GameNode = { type?: unknown }
+type GameNode = { type?: unknown; venue?: unknown }
 type GameMapLike =
   | { connections?: unknown; nodes?: Record<string, GameNode | undefined> }
   | null
@@ -267,18 +268,47 @@ export const checkSoftlock = (
           )
           // GIG, FESTIVAL, FINALE can be blocked by reputation or blacklist
           let accessAllowed = true
-          if (n.type === 'GIG' || n.type === 'FESTIVAL' || n.type === 'FINALE') {
-            const venueId = n.venue ? (typeof n.venue === 'string' ? n.venue : (n.venue as { id?: string }).id) : null
-            if (venueId && typeof venueId === 'string') {
-               const cleanVenueId = venueId.replace(/^venues:/, '').replace(/\.name$/, '')
-               if (context.venueBlacklist?.includes(cleanVenueId)) {
-                 accessAllowed = false
-               } else if (context.reputationByRegion) {
-                 const regionId = cleanVenueId.split('_')[0]
-                 if (finiteNumberOr(context.reputationByRegion[regionId], 0) <= REGION_BLACKLIST_THRESHOLD) {
-                   accessAllowed = false
-                 }
-               }
+          if (
+            n.type === 'GIG' ||
+            n.type === 'FESTIVAL' ||
+            n.type === 'FINALE'
+          ) {
+            const normalizedId = normalizeVenueId(n.venue)
+            if (normalizedId) {
+              if (context.venueBlacklist?.includes(normalizedId)) {
+                accessAllowed = false
+              } else if (context.reputationByRegion) {
+                const regionId = getRegionKeyForLocation(
+                  `venues:${normalizedId}.name`
+                )
+                if (
+                  regionId &&
+                  Object.hasOwn(context.reputationByRegion, regionId) &&
+                  !isForbiddenKey(regionId)
+                ) {
+                  if (
+                    finiteNumberOr(context.reputationByRegion[regionId], 0) <=
+                    REGION_BLACKLIST_THRESHOLD
+                  ) {
+                    accessAllowed = false
+                  }
+                }
+              }
+            }
+            if (
+              accessAllowed &&
+              player.stats &&
+              typeof player.stats === 'object' &&
+              (player.stats as Record<string, unknown>).proveYourselfMode
+            ) {
+              const cap =
+                n.venue && typeof n.venue === 'object' && 'capacity' in n.venue
+                  ? finiteNumberOr(
+                      (n.venue as { capacity?: number }).capacity,
+                      0
+                    )
+                  : 0
+              if (cap > 150) accessAllowed = false
             }
           }
           if (

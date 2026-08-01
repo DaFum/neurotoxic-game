@@ -24,7 +24,11 @@ export const usePostGigLogic = () => {
   const social = useGameSelector(state => state.social)
   const rivalBand = useGameSelector(state => state.rivalBand)
   const lastGigStats = useGameSelector(state => state.lastGigStats)
-  const reputationByRegion = useGameSelector(state => state.gigContextSnapshot?.reputationByRegionAtStart ?? state.reputationByRegion)
+  const reputationByRegion = useGameSelector(
+    state =>
+      state.gigContextSnapshot?.reputationByRegionAtStart ??
+      state.reputationByRegion
+  )
   const activeStoryFlags = useGameSelector(state => state.activeStoryFlags)
   const activeQuests = useGameSelector(state => state.activeQuests)
   const cityStates = useGameSelector(state => state.gameMap?.cityStates)

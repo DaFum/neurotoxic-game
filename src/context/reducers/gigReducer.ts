@@ -83,7 +83,11 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     gigContextSnapshot: {
       reputationByRegionAtStart: { ...state.reputationByRegion },
       fameAtStart: state.player?.fame,
-      ticketPriceAtStart: payload?.ticketPrice
+      ticketPriceAtStart:
+        typeof payload?.ticketPrice === 'number' &&
+        Number.isFinite(payload.ticketPrice)
+          ? payload.ticketPrice
+          : undefined
     }
   }
 }
@@ -240,11 +244,7 @@ export const handleSetLastGigStats = (
     return {
       ...state,
       lastGigStats: safePayload,
-    player: {
-      ...state.player,
-      lastGigNodeId: state.player?.currentNodeId
-    },
-    band: {
+      band: {
         ...state.band,
         harmony: clampBandHarmony(
           finiteNumberOr(state.band.harmony, 1) + harmonyGain
@@ -261,10 +261,6 @@ export const handleSetLastGigStats = (
   let nextState: GameState = {
     ...state,
     lastGigStats: safePayload,
-    player: {
-      ...state.player,
-      lastGigNodeId: state.player?.currentNodeId
-    },
     band: {
       ...traitResult.band,
       // Real gigs build up band stress; days decay it (handleAdvanceDay)
@@ -379,7 +375,6 @@ export const handleSetLastGigStats = (
         )
       }
     }
-
 
     nextState = handleRecordGoodShow(nextState)
     nextState = QuestEvents.emit(

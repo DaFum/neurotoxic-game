@@ -105,7 +105,8 @@ export const QuestOfferEngine = {
     if (!baseMatch) return false
 
     if (questId === 'quest_make_amends') {
-      if (!state.venueBlacklist || state.venueBlacklist.length === 0) return false
+      if (!state.venueBlacklist || state.venueBlacklist.length === 0)
+        return false
     }
 
     if (questId === 'quest_region_takeover') {
