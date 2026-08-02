@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
+import { withAudioContext } from './context'
 import {
   pauseGigPlayback,
   resumeGigPlayback,
@@ -77,9 +78,13 @@ export async function pauseAudio(): Promise<void> {
  */
 export async function resumeAudio(): Promise<boolean> {
   try {
-    if (Tone.getTransport().state === 'paused') {
-      await Tone.getTransport().start()
-    }
+    // Guarded: a resume triggered while the context is still suspended would
+    // otherwise start a transport that produces no sound.
+    await withAudioContext(async () => {
+      if (Tone.getTransport().state === 'paused') {
+        await Tone.getTransport().start()
+      }
+    }, 'resumeAudio')
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
   }

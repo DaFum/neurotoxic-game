@@ -42,6 +42,69 @@ export const getToneStartTimeSec = (rawStartTimeSec: number): number => {
 }
 
 /**
+ * Runs `fn` only when the audio context is running, resuming it first if it can.
+ *
+ * @param fn - Operation that touches Tone.js transport or source nodes.
+ * @param label - Short name used in the failure log line.
+ * @returns `fn`'s result, or `null` when the context could not be brought to
+ * `running`.
+ *
+ * @remarks
+ * Browser autoplay policies leave the context `suspended` until a user gesture,
+ * and iOS Safari adds an `interrupted` state. Calling `start`/`stop` against
+ * either produces the worst failure mode available: the game looks like it is
+ * playing but is silent, or the node throws. Routing those calls through this
+ * guard means a blocked context is reported once, with a reason, instead of
+ * surfacing as mystery silence.
+ *
+ * This is a gate, not an error boundary — an exception thrown by `fn` itself
+ * propagates so real bugs stay visible.
+ */
+export async function withAudioContext<T>(
+  fn: () => T | Promise<T>,
+  label: string
+): Promise<T | null> {
+  let state: string
+  try {
+    state = getPreferredAudioContextState({
+      rawContextState: getRawAudioContext()?.state,
+      toneContextState: Tone.context?.state
+    })
+  } catch (error) {
+    logger.warn(
+      'AudioEngine',
+      `${label}: audio context state read failed`,
+      error
+    )
+    return null
+  }
+
+  if (state !== 'running' && canResumeAudioContextState(state)) {
+    try {
+      await Tone.context.resume()
+    } catch (error) {
+      logger.warn('AudioEngine', `${label}: context resume failed`, error)
+    }
+    state = getPreferredAudioContextState({
+      rawContextState: getRawAudioContext()?.state,
+      toneContextState: Tone.context?.state
+    })
+  }
+
+  if (state !== 'running') {
+    // `ensureAudioContext()` owns rebuilding a closed context; this guard only
+    // refuses to poke one, so a caller cannot silently produce no sound.
+    logger.warn(
+      'AudioEngine',
+      `${label}: skipped because the audio context is ${state}`
+    )
+    return null
+  }
+
+  return await fn()
+}
+
+/**
  * Ensures the AudioContext is running and initialized.
  * @returns True if the AudioContext is running.
  */

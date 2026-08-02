@@ -5,12 +5,18 @@
  * parse strings; callers that intentionally accept numeric strings should use
  * a clearly named parser at that boundary.
  *
+ * Negative zero is normalized to `+0`: it compares equal to `0` but survives
+ * `JSON.stringify` as `0` while rendering as `-0` and flipping `signDisplay`
+ * output, so letting it past this boundary makes state and UI disagree.
+ *
  * @param value - Unknown value crossing a state, storage, or payload boundary.
  * @param fallback - Number to use when `value` is not finite.
  * @returns `value` as a number, or `fallback` for non-numeric, `NaN`, or infinite input.
  */
-export const finiteNumberOr = (value: unknown, fallback: number): number =>
-  typeof value === 'number' && Number.isFinite(value) ? value : fallback
+export const finiteNumberOr = (value: unknown, fallback: number): number => {
+  if (typeof value !== 'number' || !Number.isFinite(value)) return fallback
+  return value === 0 ? 0 : value
+}
 
 /**
  * Checks whether an unknown value is a finite JavaScript number.

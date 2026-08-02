@@ -56,7 +56,11 @@ export const calculateFuelCost = (
   bandState: Pick<BandState, 'members'> | null = null,
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
-  if (dist < 0) return { fuelLiters: 0, fuelCost: 0 }
+  // `dist < 0` alone lets NaN and Infinity through: NaN fails every comparison
+  // and Infinity is "positive", so both would reach the arithmetic below.
+  if (!Number.isFinite(dist) || dist < 0) {
+    return { fuelLiters: 0, fuelCost: 0 }
+  }
 
   let fuelLiters = (dist / 100) * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PER_100KM
 
@@ -75,7 +79,7 @@ export const calculateFuelCost = (
     fuelLiters *= 0.85
   }
 
-  fuelLiters *= assetModifiers.fuelMultiplier ?? 1.0
+  fuelLiters *= finiteNumberOr(assetModifiers.fuelMultiplier, 1.0)
 
   const fuelCost = Math.floor(
     fuelLiters * EXPENSE_CONSTANTS.TRANSPORT.FUEL_PRICE

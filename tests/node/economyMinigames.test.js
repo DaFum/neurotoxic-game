@@ -198,3 +198,59 @@ test('Minigame Economy Calculations', async t => {
     assert.strictEqual(resultTrait.reward, 202) // 135 * 1.5 = 202.5 -> floor -> 202
   })
 })
+
+test('Minigame calculators reject hostile numeric input', async t => {
+  const HOSTILE = [NaN, Infinity, -Infinity, -0]
+  const bandState = { members: [{ id: 'a' }, { id: 'b' }] }
+
+  // Every result field must be a finite, non-negative, `-0`-free number so a
+  // hostile payload cannot land in van condition, stress, or money.
+  const assertSafeNumbers = (result, label) => {
+    for (const [field, value] of Object.entries(result)) {
+      if (typeof value !== 'number') continue
+      assert.ok(Number.isFinite(value), `${label}.${field} finite`)
+      assert.ok(value >= 0, `${label}.${field} non-negative`)
+      assert.ok(!Object.is(value, -0), `${label}.${field} not -0`)
+    }
+  }
+
+  await t.test('calculateTravelMinigameResult', () => {
+    for (const value of HOSTILE) {
+      const result = calculateTravelMinigameResult(value, ['FUEL'])
+      assertSafeNumbers(result, `travel(${value})`)
+      assert.ok(result.conditionLoss <= 50)
+    }
+  })
+
+  await t.test('calculateRoadieMinigameResult', () => {
+    for (const value of HOSTILE) {
+      const result = calculateRoadieMinigameResult(value, bandState, value)
+      assertSafeNumbers(result, `roadie(${value})`)
+    }
+  })
+
+  await t.test('calculateAmpCalibrationResult', () => {
+    for (const value of HOSTILE) {
+      const result = calculateAmpCalibrationResult(
+        value,
+        bandState,
+        value,
+        value,
+        value
+      )
+      assertSafeNumbers(result, `amp(${value})`)
+      assert.strictEqual(typeof result.success, 'boolean')
+    }
+  })
+
+  await t.test('calculateKabelsalatMinigameResult', () => {
+    for (const value of HOSTILE) {
+      const result = calculateKabelsalatMinigameResult(
+        { isPoweredOn: true, timeLeft: value, cablesConnected: value },
+        bandState
+      )
+      assertSafeNumbers(result, `kabelsalat(${value})`)
+      assert.strictEqual(typeof result.success, 'boolean')
+    }
+  })
+})

@@ -1,0 +1,98 @@
+name: Dead Code Report
+run-name: Dead Code Report - PR #${{ github.event.pull_request.number }}
+
+# REPORT-ONLY (issue #2677). This job never fails on findings: it runs knip,
+# posts the list as a sticky PR comment, and exits 0. Promotion to a blocking
+# gate is a config change — triage the initial report, lower `max` in
+# .ci/dead-code-budget.json, then add `pnpm run deadcode:budget` as a required
+# step in test.yml. Do not add `core.setFailed` here while the check is
+# report-only.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  PNPM_VERSION: '11.18.0'
+
+jobs:
+  dead-code:
+    name: knip (report only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout repository (merge ref)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+
+      - name: Run knip
+        run: |
+          # pnpm exec, not dlx: knip is pinned in devDependencies, so this uses
+          # the locked version. `|| true` because knip exits non-zero whenever it
+          # has findings, which is expected while the check is report-only.
+          pnpm run deadcode:check > knip-report.json || true
+          if [[ ! -s knip-report.json ]]; then
+            echo '{"issues":[]}' > knip-report.json
+            echo "knip produced no report; treating as empty."
+          fi
+
+      - name: Build Markdown summary
+        run: |
+          node scripts/summarize-dead-code.mjs knip-report.json > dead-code-comment.md
+          cat dead-code-comment.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Print budget status
+        run: pnpm run deadcode:budget || true
+
+      - name: Post dead-code report to PR
+        # Forks cannot be commented on with the read-only token they receive.
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const fs = require('fs');
+            const marker = '<!-- dead-code-report: do-not-edit -->';
+            const body = fs.readFileSync('dead-code-comment.md', 'utf8');
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+            const issue_number = context.issue.number;
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number,
+            });
+
+            const existing = comments.find(c => c.body && c.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body,
+              });
+            }

@@ -30,9 +30,12 @@ export const calculateTicketIncome = (
 
   // Logarithmic fame scaling: fame matters more at low levels, flattens at high levels.
   // Denominator scales with venue capacity so large venues require proportionally more fame.
+  // `Math.max(0, NaN)` is NaN, which would carry through fillRate into
+  // ticketsSold and revenue.
+  const safeFame = Math.max(0, finiteNumberOr(playerFame, 0))
   const fameRatio = Math.min(
     1.0,
-    Math.log(Math.max(0, playerFame) + 1) /
+    Math.log(safeFame + 1) /
       Math.log(safeCapacity * TICKET_SALES_CONSTANTS.FAME_CAPACITY_SCALER + 1)
   )
   let fillRate =

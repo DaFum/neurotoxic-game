@@ -1,0 +1,36 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "entry": [
+    "src/main.tsx",
+    "api/**/*.js",
+    "scripts/*.{mjs,cjs,js}",
+    "e2e/**/*.{js,ts}",
+    "tests/**/*.{js,jsx,ts,tsx,mjs}",
+    "*.config.{js,ts}",
+    "vitest.config.node.js",
+    "vitest.config.perf.js",
+    "dot-reporter.mjs",
+    "vitest-dot-reporter.mjs"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx,js,jsx}",
+    "api/**/*.js",
+    "lib/**/*.js",
+    "scripts/**/*.{mjs,cjs,js}"
+  ],
+  "ignore": ["src/types/**", "**/*.d.ts"],
+  "ignoreDependencies": ["@tailwindcss/postcss"],
+  "vite": {
+    "config": ["vite.config.js"]
+  },
+  "vitest": {
+    "config": [
+      "vitest.config.js",
+      "vitest.config.node.js",
+      "vitest.config.perf.js"
+    ]
+  },
+  "playwright": {
+    "config": ["playwright.config.js"]
+  }
+}
