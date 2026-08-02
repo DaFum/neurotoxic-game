@@ -37,6 +37,21 @@ import {
  * @param quest - Quest carrying legacy `moneyReward`/`rewardType`/`rewardData`.
  * @returns Equivalent tagged rewards, empty when no legacy reward is present.
  */
+/**
+ * Reads a legacy `rewardData` amount without coercing it.
+ *
+ * @remarks
+ * Deliberately not `Number(value)`. Coercion would accept a string such as
+ * `'1000000'` as a real amount, and throws outright on a null-prototype object
+ * because it has no `toString`. Both are reachable: `isQuestStateLike` only
+ * checks that `rewardData` is a record.
+ *
+ * @param value - Raw legacy amount from an untrusted reward bag.
+ * @returns The amount when it is a finite number, otherwise undefined.
+ */
+const legacyAmount = (value: unknown): number | undefined =>
+  isFiniteNumber(value) ? value : undefined
+
 const rewardsFromLegacyFields = (quest: QuestState): QuestReward[] => {
   const rewards: QuestReward[] = []
   // clampNonNegative on money/fame/harmony preserves what createAddQuestAction
@@ -51,43 +66,49 @@ const rewardsFromLegacyFields = (quest: QuestState): QuestReward[] => {
   }
 
   if (quest.rewardType === 'item' && quest.rewardData?.item) {
-    rewards.push({ type: 'item.add', itemId: String(quest.rewardData.item) })
+    // typeof guard for the same reason as legacyAmount: String() throws on a
+    // null-prototype object.
+    const itemId = quest.rewardData.item
+    if (typeof itemId === 'string' && itemId.length > 0) {
+      rewards.push({ type: 'item.add', itemId })
+    }
   } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
-    rewards.push({
-      type: 'fame',
-      amount: clampNonNegative(finiteNumberOr(Number(quest.rewardData.fame), 0))
-    })
+    const amount = legacyAmount(quest.rewardData.fame)
+    if (amount !== undefined) {
+      rewards.push({ type: 'fame', amount: clampNonNegative(amount) })
+    }
   } else if (quest.rewardType === 'skill_point') {
     const memberIndex = isFiniteNumber(quest.rewardData?.memberIndex)
       ? quest.rewardData.memberIndex
       : undefined
     rewards.push({ type: 'skill_point', memberIndex })
   } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
-    rewards.push({
-      type: 'band.harmony',
-      amount: clampNonNegative(
-        finiteNumberOr(Number(quest.rewardData.harmony), 0)
-      )
-    })
+    const amount = legacyAmount(quest.rewardData.harmony)
+    if (amount !== undefined) {
+      rewards.push({ type: 'band.harmony', amount: clampNonNegative(amount) })
+    }
   } else if (quest.rewardType === 'fans' && quest.rewardData?.fans) {
-    rewards.push({
-      type: 'social.followers',
-      platform: 'instagram',
-      amount: finiteNumberOr(Number(quest.rewardData.fans), 0)
-    })
+    const amount = legacyAmount(quest.rewardData.fans)
+    if (amount !== undefined) {
+      rewards.push({
+        type: 'social.followers',
+        platform: 'instagram',
+        amount
+      })
+    }
   } else if (quest.rewardType === 'loyalty' && quest.rewardData?.loyalty) {
-    rewards.push({
-      type: 'social.loyalty',
-      amount: finiteNumberOr(Number(quest.rewardData.loyalty), 0)
-    })
+    const amount = legacyAmount(quest.rewardData.loyalty)
+    if (amount !== undefined) {
+      rewards.push({ type: 'social.loyalty', amount })
+    }
   } else if (
     quest.rewardType === 'controversy_reduction' &&
     quest.rewardData?.controversy
   ) {
-    rewards.push({
-      type: 'social.controversy',
-      amount: -Math.abs(finiteNumberOr(Number(quest.rewardData.controversy), 0))
-    })
+    const amount = legacyAmount(quest.rewardData.controversy)
+    if (amount !== undefined) {
+      rewards.push({ type: 'social.controversy', amount: -Math.abs(amount) })
+    }
   }
 
   return rewards
@@ -248,8 +269,12 @@ export const migrateLegacyQuestSchema = <T extends QuestState>(quest: T): T => {
   // bare progressSource are the two older ones. progressSource is NOT removed
   // when consumed: QuestsModal, questHintViewModel and continueHandlerUtils
   // still read it as a display/semantic tag, independent of progress rules.
+  // `.length > 0`, not just Array.isArray: normalizeProgressRules used to fall
+  // through to progressSource whenever the declared array was empty. Treating
+  // [] as authoritative would admit a quest that no event can ever advance.
+  // Matches the populated-array precedence the reward and penalty paths use.
   const needsProgressRules =
-    !Array.isArray(quest.progressRules) &&
+    !(Array.isArray(quest.progressRules) && quest.progressRules.length > 0) &&
     (quest.progressRule != null || quest.progressSource != null)
   // Stripped even when progressRules already won, so no legacy container
   // survives migration and a later reader cannot pick the wrong one.

@@ -2,6 +2,7 @@ import { useCallback } from 'react'
 import type { BandMember } from '../types'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState, BandState } from '../types'
 import type { ValidationResult } from '../types/validation'
@@ -40,7 +41,10 @@ export const useClinicLogic = (): {
     graftNeuroOverclock
   } = useGameActions()
 
-  const currentVisits = player?.clinicVisits ?? 0
+  // finiteNumberOr, not `?? 0`: a NaN money or fame would make the
+  // affordability comparison in the validators false, silently letting the
+  // action through. clinicVisits feeds the cost curve for the same reason.
+  const currentVisits = finiteNumberOr(player?.clinicVisits, 0)
   const members = band?.members
   const healCostMoney = calculateClinicCost(
     CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
@@ -79,7 +83,7 @@ export const useClinicLogic = (): {
       const member = findMember(memberId)
       const validation = validateHealMember(
         member,
-        player?.money ?? 0,
+        finiteNumberOr(player?.money, 0),
         healCostMoney
       )
       if (!reportRejection(validation)) return
@@ -112,7 +116,7 @@ export const useClinicLogic = (): {
       const validation = validateEnhanceMember(
         member,
         trait,
-        player?.fame ?? 0,
+        finiteNumberOr(player?.fame, 0),
         enhanceCostFame
       )
       if (!reportRejection(validation)) return

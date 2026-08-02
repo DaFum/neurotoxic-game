@@ -95,6 +95,58 @@ test('migrateLegacyQuestSchema - rewards', async t => {
     }
   })
 
+  await t.test('rejects non-numeric legacy amounts instead of coercing', () => {
+    // Regression: Number('1000000') granted a million fame from a string
+    // payload that the old action-creator guard had floored to 0.
+    assert.deepEqual(
+      migrateLegacyQuestSchema({
+        id: 'q',
+        rewardType: 'fame',
+        rewardData: { fame: '1000000' }
+      }).rewards,
+      undefined
+    )
+
+    for (const [rewardType, key] of [
+      ['harmony', 'harmony'],
+      ['fans', 'fans'],
+      ['loyalty', 'loyalty'],
+      ['controversy_reduction', 'controversy']
+    ]) {
+      assert.equal(
+        migrateLegacyQuestSchema({
+          id: 'q',
+          rewardType,
+          rewardData: { [key]: '999' }
+        }).rewards,
+        undefined,
+        rewardType
+      )
+    }
+  })
+
+  await t.test('does not throw on a null-prototype legacy amount', () => {
+    // Number(Object.create(null)) throws: it has no toString. isQuestStateLike
+    // only checks that rewardData is a record, so this payload is reachable
+    // and must not abort the dispatch.
+    const hostile = Object.create(null)
+
+    assert.doesNotThrow(() =>
+      migrateLegacyQuestSchema({
+        id: 'q',
+        rewardType: 'fame',
+        rewardData: { fame: hostile }
+      })
+    )
+    assert.doesNotThrow(() =>
+      migrateLegacyQuestSchema({
+        id: 'q',
+        rewardType: 'item',
+        rewardData: { item: hostile }
+      })
+    )
+  })
+
   await t.test('a populated rewards array wins over legacy fields', () => {
     const migrated = migrateLegacyQuestSchema({
       id: 'q',
@@ -153,7 +205,11 @@ test('migrateLegacyQuestSchema - penalties', async t => {
     assert.deepEqual(migrated.failurePenalties, [
       { type: 'band.harmony', amount: -5 }
     ])
-    assert.equal(Object.hasOwn({}, 'polluted'), false)
+    // Inherited, not own: Object.hasOwn({}, 'polluted') is vacuously false
+    // whether or not Object.prototype was polluted, so it verified nothing.
+    // Real pollution surfaces as an inherited read on a fresh object.
+    assert.equal({}.polluted, undefined)
+    assert.equal(Object.hasOwn(migrated, '__proto__'), false)
   })
 })
 
@@ -210,6 +266,27 @@ test('migrateLegacyQuestSchema - progress rules', async t => {
     })
 
     assert.equal(migrated.progressSource, 'gig_completed')
+  })
+
+  await t.test('an EMPTY progressRules array does not win', () => {
+    // Regression: treating [] as canonical skipped synthesis and then deleted
+    // progressRule anyway, admitting a quest no event could ever advance.
+    // Matches the populated-array precedence rewards and penalties use.
+    const fromSource = migrateLegacyQuestSchema({
+      id: 'q',
+      progressRules: [],
+      progressSource: 'gig_completed'
+    })
+    assert.equal(fromSource.progressRules.length, 1)
+    assert.equal(fromSource.progressRules[0].event, 'gig_completed')
+
+    const rule = { event: 'gig.completed', amount: 'fixed', fixedAmount: 1 }
+    const fromRule = migrateLegacyQuestSchema({
+      id: 'q',
+      progressRules: [],
+      progressRule: rule
+    })
+    assert.deepEqual(fromRule.progressRules, [rule])
   })
 
   await t.test('a declared progressRules array wins', () => {
