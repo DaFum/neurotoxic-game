@@ -250,3 +250,19 @@ export const clampVanFuel = (
   if (!Number.isFinite(fuel)) return 0
   return Math.max(0, Math.min(maxFuel, fuel))
 }
+
+/**
+ * Truncates an unknown numerical input into a safe, bounded non-negative integer.
+ *
+ * @param value - Unknown value to coerce.
+ * @param max - Maximum allowed value.
+ * @returns Non-negative integer between 0 and max, or 0 for non-finite input.
+ */
+export const toBoundedNonNegativeInteger = (
+  value: unknown,
+  max: number
+): number => {
+  const n = Number(value)
+  if (!Number.isFinite(n) || n < 0) return 0
+  return Math.min(Math.floor(n), Math.floor(max))
+}

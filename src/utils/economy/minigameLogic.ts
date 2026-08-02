@@ -1,4 +1,8 @@
-import { clamp0to100, finiteNumberOr } from '../gameState'
+import {
+  clamp0to100,
+  finiteNumberOr,
+  toBoundedNonNegativeInteger
+} from '../gameState'
 import { bandHasTrait } from '../traitUtils'
 import type { BandState } from '../../types'
 
@@ -50,10 +54,7 @@ export const calculateRoadieMinigameResult = (
   bandState: Pick<BandState, 'members'> | null | undefined,
   contrabandDelivered: number = 0
 ) => {
-  const safeEquipmentDamage = Number.isFinite(Number(equipmentDamage))
-    ? Number(equipmentDamage)
-    : 0
-  const safeDamage = Math.max(0, safeEquipmentDamage)
+  const safeDamage = toBoundedNonNegativeInteger(equipmentDamage, 1000)
   const stress = Math.floor(safeDamage / 5)
   let repairCost = Math.floor(safeDamage * 2)
 
@@ -117,16 +118,13 @@ export const calculateAmpCalibrationResult = (
   }
 
   // Stress penalty for relying on neurotoxic purges
-  const safePurgesUsed = Math.min(
-    Math.floor(Math.max(0, finiteNumberOr(purgesUsed, 0))),
-    Math.floor(Number.MAX_SAFE_INTEGER / 5)
-  )
+  const safePurgesUsed = toBoundedNonNegativeInteger(purgesUsed, 100)
   stress += safePurgesUsed * 5
 
   // Kranker Schrank Hijack bonuses/mitigations
-  const safeHijacksOverridden = Math.max(
-    0,
-    finiteNumberOr(hijacksOverridden, 0)
+  const safeHijacksOverridden = toBoundedNonNegativeInteger(
+    hijacksOverridden,
+    100
   )
   reward += safeHijacksOverridden * 10
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
@@ -156,7 +154,7 @@ export const calculateKabelsalatMinigameResult = (
   const rawTimeLeft = Object.hasOwn(source, 'timeLeft')
     ? source.timeLeft
     : undefined
-  const timeLeft = finiteNumberOr(rawTimeLeft, 0)
+  const timeLeft = toBoundedNonNegativeInteger(rawTimeLeft, 300)
   let stress = 0
   let reward = 0
 
@@ -178,15 +176,7 @@ export const calculateKabelsalatMinigameResult = (
   const rawPurged = Object.hasOwn(source, 'voidSurgesPurged')
     ? source.voidSurgesPurged
     : undefined
-  let safePurgesUsed = Number(rawPurged)
-  if (!Number.isFinite(safePurgesUsed) || safePurgesUsed < 0) {
-    safePurgesUsed = 0
-  }
-  // Clamp to prevent overflow when multiplying by 5
-  safePurgesUsed = Math.min(
-    Math.floor(safePurgesUsed),
-    Math.floor(Number.MAX_SAFE_INTEGER / 5)
-  )
+  const safePurgesUsed = toBoundedNonNegativeInteger(rawPurged, 100)
   stress += safePurgesUsed * 5
 
   return { success: isPoweredOn, stress, reward }

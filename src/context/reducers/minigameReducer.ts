@@ -12,7 +12,8 @@ import {
   countKeys,
   finiteNumberOr,
   isForbiddenKey,
-  isFiniteNumber
+  isFiniteNumber,
+  toBoundedNonNegativeInteger
 } from '../../utils/gameState'
 import { clampUnit } from '../../utils/numberUtils'
 import {
@@ -456,9 +457,9 @@ export const handleCompleteAmpCalibration = (
   const { success, stress, reward } = calculateAmpCalibrationResult(
     safeScore,
     state.band,
-    finiteNumberOr(voidResonance, 0),
-    finiteNumberOr(purgesUsed, 0),
-    finiteNumberOr(hijacksOverridden, 0)
+    clamp0to100(finiteNumberOr(voidResonance, 0)),
+    toBoundedNonNegativeInteger(purgesUsed, 100),
+    toBoundedNonNegativeInteger(hijacksOverridden, 100)
   )
 
   let nextState = applyPostMinigameResult(
@@ -605,7 +606,7 @@ export const handleCompleteRoadieMinigame = (
     return state
   }
   const { equipmentDamage, contrabandDelivered, deliveredStashItemId } = payload
-  const safeEquipmentDamage = Math.max(0, finiteNumberOr(equipmentDamage, 0))
+  const safeEquipmentDamage = toBoundedNonNegativeInteger(equipmentDamage, 1000)
   logger.info('GameState', 'Roadie Minigame Complete', payload)
 
   // Contraband bonus only applies when a real stash item was loaded and delivered.

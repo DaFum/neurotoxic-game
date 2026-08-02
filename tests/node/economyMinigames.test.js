@@ -132,7 +132,7 @@ test('Minigame Economy Calculations', async t => {
       0,
       Number.MAX_VALUE
     )
-    assert.ok(Number.isFinite(resultExtremePurges.stress))
+    assert.strictEqual(resultExtremePurges.stress, 500) // 100 max * 5
 
     const resultNonFinitePurges = calculateAmpCalibrationResult(
       80,
@@ -143,6 +143,46 @@ test('Minigame Economy Calculations', async t => {
     assert.strictEqual(resultNonFinitePurges.stress, 0)
   })
 
+  await t.test('Roadie Minigame Caps Maximum Bounds', () => {
+    // Number.MAX_VALUE damage should cap at 1000
+    // 1000 / 5 = 200 stress
+    // 1000 * 2 = 2000 repair cost
+    const resultExtreme = calculateRoadieMinigameResult(Number.MAX_VALUE)
+    assert.strictEqual(resultExtreme.stress, 200)
+    assert.strictEqual(resultExtreme.repairCost, 2000)
+  })
+
+  await t.test('Kabelsalat Minigame Caps Maximum Bounds', () => {
+    // Number.MAX_VALUE timeLeft should cap at 300
+    // timeBonus = 300 / 5 = 60
+    // reward = 60 + 60 * 15 = 960
+    // Number.MAX_VALUE purges should cap at 100
+    // stress = 100 * 5 = 500
+    const resultExtreme = calculateKabelsalatMinigameResult(
+      {
+        isPoweredOn: true,
+        timeLeft: Number.MAX_VALUE,
+        voidSurgesPurged: Number.MAX_VALUE
+      },
+      { members: [] }
+    )
+    assert.strictEqual(resultExtreme.stress, 500)
+    assert.strictEqual(resultExtreme.reward, 960)
+  })
+
+  await t.test('Amp Calibration Caps Maximum Bounds for Hijacks', () => {
+    // Number.MAX_VALUE hijacksOverridden should cap at 100
+    // reward = 80 + 100 * 10 = 1080
+    // stress mitigated by 100 * 2 = 200 (stays 0 since it can't be negative)
+    const resultExtreme = calculateAmpCalibrationResult(
+      80,
+      { members: [] },
+      0,
+      0,
+      Number.MAX_VALUE
+    )
+    assert.strictEqual(resultExtreme.reward, 1080)
+  })
   await t.test('Kabelsalat Minigame Edge Cases', () => {
     // With Matze's Tech Wizard trait -> reward multiplied by 1.5
     const resultTrait = calculateKabelsalatMinigameResult(
