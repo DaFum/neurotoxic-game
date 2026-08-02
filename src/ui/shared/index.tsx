@@ -18,8 +18,10 @@ export {
   useKeyboardShortcuts
 } from './KeyboardShortcuts'
 import { UIFrameCorner } from './Icons'
+import { FrameCorners } from './FrameCorners'
 
 export { UIFrameCorner }
+export { FrameCorners }
 
 export {
   RazorPlayIcon,

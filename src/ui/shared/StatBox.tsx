@@ -4,7 +4,7 @@
 
 import { memo, type ReactNode } from 'react'
 
-import { UIFrameCorner } from './Icons'
+import { FrameCorners } from './FrameCorners'
 
 /**
  * StatBox - Displays a single statistic with an icon
@@ -31,10 +31,7 @@ export const StatBox = memo(function StatBox({
     <div
       className={`relative bg-charcoal-gray p-3 flex flex-col items-center justify-center border border-steel-gray group overflow-hidden ${className}`}
     >
-      <UIFrameCorner className='absolute top-0 left-0 w-3 h-3 text-steel-gray opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute top-0 right-0 w-3 h-3 text-steel-gray rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 right-0 w-3 h-3 text-steel-gray rotate-180 opacity-30 transition-opacity group-hover:opacity-60' />
-      <UIFrameCorner className='absolute bottom-0 left-0 w-3 h-3 text-steel-gray -rotate-90 opacity-30 transition-opacity group-hover:opacity-60' />
+      <FrameCorners className='w-3 h-3 text-steel-gray opacity-30 transition-opacity group-hover:opacity-60' />
 
       <div className='relative flex flex-col items-center'>
         <div className='text-2xl mb-1 text-toxic-green-bright'>{icon}</div>
