@@ -3,6 +3,8 @@
 This note collects concrete improvement opportunities found during a focused read of state flow, event handling, travel/arrival, and economy systems.
 
 > **Status verification:** re-checked against the codebase on 2026-08-02. The `**Status:**` lines in §1–§6 reflect that check; §7–§9 remain unannotated backlog.
+>
+> **Prioritization:** see [TODO-code-audit-2026-05-01-priority.md](TODO-code-audit-2026-05-01-priority.md).
 
 ## 1) State + Reducer Reliability
 

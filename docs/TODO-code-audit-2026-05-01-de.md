@@ -3,6 +3,8 @@
 Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussierten Durchsicht von Zustandsfluss, Ereignisbehandlung, Reise-/Ankunftslogik und Wirtschaftssystemen entdeckt wurden.
 
 > **Status‑Verifikation:** 2026-08-02 gegen den aktuellen Stand gegengeprüft. Die `**Status:**`‑Zeilen in §1–§6 spiegeln diesen Stand; §7–§9 sind unmarkiertes Backlog.
+>
+> **Priorisierung:** siehe [TODO-code-audit-2026-05-01-prioritaet-de.md](TODO-code-audit-2026-05-01-prioritaet-de.md).
 
 ## 1) Zuverlässigkeit von Zustand & Reducern
 
