@@ -2,26 +2,30 @@
 
 Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussierten Durchsicht von Zustandsfluss, Ereignisbehandlung, Reise-/Ankunftslogik und Wirtschaftssystemen entdeckt wurden.
 
+> **Status‑Verifikation:** 2026-08-02 gegen den aktuellen Stand gegengeprüft. Die `**Status:**`‑Zeilen in §1–§6 spiegeln diesen Stand; §7–§9 sind unmarkiertes Backlog.
+>
+> **Priorisierung:** siehe [TODO-code-audit-2026-05-01-prioritaet-de.md](TODO-code-audit-2026-05-01-prioritaet-de.md).
+
 ## 1) Zuverlässigkeit von Zustand & Reducern
 
 - [ ] **Vollständige Absicherung gegen unbekannte Actions im `gameReducer` härten**: Der Default‑Zweig ruft bereits `logger.warn` und `assertNever` auf; erweitere ihn um einen strukturierten Telemetriezähler (nicht nur eine Konsolenmeldung), damit die Häufigkeit unbekannter Actions in der Überwachung sichtbar wird und nicht nur in der Dev‑Konsole.
   - Best Practice: Schütze das Erhöhen der Metrik mit `import.meta.env.DEV` (Konvention im Codebase; `process.env.VITE_*` nur dort verwenden, wo Node/Test‑Parität nötig ist) und prüfe `logLevel >= 'warn'`; der Zähler selbst sollte in einen nur‑Dev Ringpuffer schreiben, den das Debug‑Overlay anzeigen und zwischen Sitzungen zurücksetzen kann.
   - Muster: `default: { logger.warn(…); devMetrics.increment('unknownAction', action.type); return assertNever(action as never); }` — `devMetrics` ist in Produktion ein `NullMetrics` No‑Op und in Dev/Test ein echter Zähler; die Form ist `Record<string, number>`.
   - Fallstrick: Der aktuelle `gameReducer.ts` Default‑Zweig übergibt das vollständige `action`‑Objekt an `logger.warn`, wodurch sensible Payload‑Daten (Geldbeträge, Spielernamen) in der Konsole landen; die Log‑Nachricht sollte auf `action.type` und den Reducer‑Namen beschränkt werden, niemals auf die komplette Payload.
-  - **Status:** TEILWEISE — `gameReducer` loggt und verwendet `assertNever` als Laufzeit‑Trap; strukturierte Telemetrie/Dev‑Metrik fehlt. Beleg: [src/context/gameReducer.ts](src/context/gameReducer.ts#L228-L262)
+  - **Status:** TEILWEISE — `gameReducer` loggt und verwendet `assertNever` als Laufzeit‑Trap; strukturierte Telemetrie/Dev‑Metrik fehlt. Beleg: [src/context/gameReducer.ts](src/context/gameReducer.ts#L272-L292)
 
 - [ ] **`as ReducerMap` Cast durch `satisfies ReducerMap` ersetzen**: `gameReducer.ts` verwendet bereits einen typisierten `ReducerMap`‑Mapped Type, dichtet ihn aber mit einem `as`‑Cast ab, der Zuweisungsfehler unterdrückt; ein Wechsel zu `satisfies` erhält die Narrowing‑Vorteile und zeigt Handler mit driftenden Payload‑Typen an.
   - Best Practice: `satisfies` prüft die Form des Objektliterals ohne die inferierte Typverbreiterung, so erhalten Handler weiterhin engste Action‑Typen; `as` unterdrückt Fehler und die Narrowing‑Vorteile.
   - Muster: Halte jeden Handler als benannte Funktion in einer eigenen Datei (`handlers/setMoney.ts`) und importiere sie in die Handler‑Map; per‑Handler Unit‑Tests benötigen dann keinen Reducer‑Import.
   - Fallstrick: Der bestehende `as ReducerMap`‑Cast erlaubt es, einen Handler mit falschem Payload‑Typ leise zu kompilieren; der Cast muss entfernt oder ersetzt werden, damit die typisierte Map Compile‑Zeit‑Sicherheit bietet.
-  - **Status:** INTENTIONELL / NICHT GEÄNDERT — Das `assertNever(action as never)`‑Pattern ist in der Codebase als absichtlicher Runtime‑Trap dokumentiert; eine Umstellung auf `satisfies` wäre möglich, ist aber eine nicht‑triviale Änderung. Beleg: [src/context/reducers/AGENTS.md](src/context/reducers/AGENTS.md#L20) und [src/context/gameReducer.ts](src/context/gameReducer.ts#L228-L262)
+  - **Status:** INTENTIONELL / NICHT GEÄNDERT — Das `assertNever(action as never)`‑Pattern ist in der Codebase als absichtlicher Runtime‑Trap dokumentiert; eine Umstellung auf `satisfies` wäre möglich, ist aber eine nicht‑triviale Änderung. Beleg: [src/context/reducers/AGENTS.md](src/context/reducers/AGENTS.md#L20) und [src/context/gameReducer.ts](src/context/gameReducer.ts#L272-L292)
 
 - [ ] **Test‑Suite für Reducer‑Invarianten hinzufügen**: Validiere Post‑Action‑Garantien (Geld nicht negativ, Harmony‑Bounds, keine ungültigen Szenenwechsel).
   - Best Practice: Modelle Invarianten als reine Funktion `checkInvariants(state: GameState): InvariantViolation[]` und rufe sie an zwei Stellen auf: als Assertion in der Invarianten‑Test‑Suite und optional im Reducer‑`default`‑Zweig in Dev‑Mode als Post‑Action‑Audit.
   - Muster: Parametrisiere den Test über alle Action‑Typen — für jeden Action‑Creator generiere ein gültiges Payload, wende es auf `createInitialState()` an und führe `checkInvariants` aus; eine Schleife deckt die ganze Oberfläche ab statt separate Tests pro Action.
   - Fallstrick: Invarianten nur gegen Happy‑Path‑Payloads zu testen übersieht die Randfälle, die tatsächlich Grenzen verletzen; teste deshalb auch Grenz‑ und feindliche Eingaben (`money: 0`, `harmony: 1`, `harmony: 100` sowie `money: -1`, `harmony: 0`, `harmony: 101`).
   - Fallstrick: Reklamps im Reducer können den echten Fehler verschleiern (der Action‑Creator schickte einen ungültigen Wert); Invarianten‑Tests müssen laut fehlschlagen, wenn ein Out‑Of‑Range‑Wert den Reducer erreicht, und dürfen nicht still passen, weil der Reducer ihn still korrigiert.
-  - **Status:** NICHT IMPLEMENTIERT — Es gibt keine zentrale `checkInvariants(state)`‑Helperfunktion oder dedizierte Invarianten‑Test‑Suite im Repo. Empfehlung: `tests/node/reducerInvariants.test.js` als Starter anlegen.
+  - **Status:** TEILWEISE (2026-08-02) — `tests/node/reducerInvariants.test.js` enthält einen `checkInvariants(state)`‑Helper und prüft Geld (≥ 0, Integer), Fame, Harmony (1–100), Stamina/Mood (0–100) sowie Van‑Fuel/Condition gegen Happy‑Path‑, Grenz‑ und feindliche Eingaben. Offen bleibt die im Muster geforderte Parametrisierung über **alle** Action‑Creator durch `gameReducer` — abgedeckt sind nur `handleUpdatePlayer`, `handleUpdateBand` und die Clamp‑Helfer — sowie die Invariante gegen ungültige Szenenwechsel. Beleg: [tests/node/reducerInvariants.test.js](tests/node/reducerInvariants.test.js#L205-L337)
 
 ## 2) Robustheit des Ereignissystems
 
@@ -29,7 +33,7 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Best Practice: Modeliere die Resolver‑Signatur als `resolveEvent(event: GameEvent, state: GameState, rng: PRNG): EventResolution` wobei `EventResolution = { actions: GameAction[]; sideEffects: SideEffect[] }` — kein Dispatch, kein React‑Context, keine Importe aus der Hook‑Schicht; die Funktion ist eine pure Transformation und in Node ohne DOM testbar.
   - Muster: Wende die zurückgegebenen `actions` in der Hook via `actions.forEach(dispatch)` an; `sideEffects` werden über einen Side‑Effect‑Runner angewendet, der in Tests gestubbt werden kann — so trennt man „was geschehen soll“ (rein, vollständig testbar) von „wie es ausgelöst wird“ (effektbehaftet, mit einem Integration‑Smoke‑Test abgedeckt).
   - Fallstrick: Ein Resolver, der intern `dispatch` aufruft, macht Rollbacks unmöglich — wenn z. B. die zweite Aktion fehlschlägt oder verworfen wird, wurde die erste bereits angewendet; Batch‑then‑dispatch ist die sichere Variante.
-  - **Status:** IMPLEMENTIERT — Ein reiner Resolver ist vorhanden: `resolveEvent` in [src/domain/eventResolver.ts](src/domain/eventResolver.ts#L1-L200) gibt `actions` und `sideEffects` zurück; `useEventSystem` wendet diese an. Beleg: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L132-L160)
+  - **Status:** IMPLEMENTIERT — Ein reiner Resolver ist vorhanden: `resolveEvent` in [src/domain/eventResolver.ts](src/domain/eventResolver.ts#L153-L270) gibt `actions` und `sideEffects` zurück; `useEventSystem` wendet diese an. Die Anwendung ist allerdings ein sequenzielles `dispatch` pro Action, kein atomarer Commit — die Extraktion ist erledigt, echte Rollback‑Sicherheit wäre ein eigener Schritt. Beleg: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L252-L297)
 
 - [ ] **Deterministische Replay‑Tests für Event‑Deltas erstellen**: Snapshotte Vorher/Nachher‑Zustände für Event‑Entscheidungen (inkl. `flags.addQuest` + Unlocks), um Regressionen zu verhindern.
   - Best Practice: Speichere Snapshots als committed JSON‑Fixtures (`tests/fixtures/events/<eventId>.<choiceIndex>.json`) mit Form `{ before: GameState, choice: string, after: GameState }`; führe den Resolver gegen `before` aus und vergleiche das Ergebnis mit `after` per `toStrictEqual` — Änderungen an Event‑Logik erzeugen sichtbare Diffs in der Fixture.
@@ -40,8 +44,8 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
 - [ ] **Tägliche Kappen nach Kategorie hinzufügen**: Aktuell ist `eventsTriggeredToday >= 2` global; erwäge kategorie‑basierte Drosselungen, um seltene Event‑Ketten nicht auszuzehren.
   - Best Practice: Speichere Caps als `dailyCaps: Record<EventCategory, number>` in der Balance‑Konfiguration (siehe §4), nicht hartkodiert im Event‑Engine — so lässt sich die Policy ohne Codeänderungen anpassen.
   - Muster: Initialisiere `eventsTriggeredByCategory: Partial<Record<EventCategory, number>>` im GameState und setze es bei Tageswechsel zurück; die Engine prüft `(eventsTriggeredByCategory[category] ?? 0) >= dailyCaps[category]`.
-  - Fallstrick: Eine neue Event‑Kategorie ohne Cap‑Eintrag führt zu `undefined >= 2` → `false` (niemals blockiert); default den Lookup auf `dailyCaps.default ?? 1`, nicht `Infinity`.
-  - **Status:** NICHT IMPLEMENTIERT — Aktuelle Implementation prüft nur `player.eventsTriggeredToday >= 2` (global); keine kategorie‑basierten dailyCaps implementiert. Beleg: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L132-L160)
+  - Fallstrick: Eine neue Event‑Kategorie ohne Cap‑Eintrag führt zu `undefined >= 2` → `false` (niemals blockiert); default den Lookup auf ein explizites `defaultDailyCap`, nicht auf `Infinity`.
+  - **Status:** NICHT IMPLEMENTIERT — Aktuelle Implementation prüft nur `player.eventsTriggeredToday >= 2` (global); keine kategorie‑basierten dailyCaps implementiert. Beleg: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L195-L236)
 
 - [ ] **Strukturierte Event‑Analytics‑Hooks**: Zähle Trigger‑Versuche, Trigger‑Erfolgsraten und Skip‑Gründe (Scene Lock, Cap erreicht, kein Match).
   - Best Practice: Definiere ein `IEventAnalytics`‑Interface mit `recordAttempt`, `recordTrigger`, `recordSkip(reason: SkipReason)`; injiziere `NullEventAnalytics` (No‑Ops) in Produktion und `RecordingEventAnalytics` in Tests/Dev — Analytics dürfen die Logik nicht beeinflussen.
@@ -55,19 +59,19 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Best Practice: Der Reset‑Trigger sollte eine benannte Konstante sein und explizit getestet werden — `ARRIVAL_REF_RESET_TRIGGER = 'nodeId'` in der Hook‑JSDoc dokumentieren; ein Test prüft, dass ein Navigieren zu einem anderen Node nach einem fehlgeschlagenen Ankunftsversuch die neue Ankunft korrekt verarbeitet ohne Reload.
   - Muster: Setze `isHandlingRef.current = false` in einem `useEffect`‑Cleanup, der auf `[nodeId]` keyed ist, so resetet sich der Ref automatisch bei Node‑Änderung — kein manuelles Reset erforderlich.
   - Fallstrick: Ein boolean `useRef` funktioniert für Single‑Node‑Arrivals, bricht aber, wenn zwei schnelle Node‑Wechsel vor dem ersten `useEffect` entstehen; verwende `nodeId` als Idempotency‑Key: `isHandlingRef.current === nodeId` bedeutet „dieses Node wird bereits verarbeitet“.
-  - **Status:** IMPLEMENTIERT — `useArrivalLogic` verwendet `isHandlingRef` keyed auf `player.currentNodeId` und resetet den Guard im `useEffect`‑Cleanup. Beleg: [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L56-L70)
+  - **Status:** IMPLEMENTIERT — `useArrivalLogic` verwendet `isHandlingRef` keyed auf `player.currentNodeId` und resetet den Guard im `useEffect`‑Cleanup. Beleg: [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L65-L86)
 
 - [ ] **Ankunfts‑Routing‑Contract vereinheitlichen**: Schiebe die finale Szenen‑Routing‑Verantwortung vollständig in `handleNodeArrival`, damit Hooks nicht Business‑Routing vs. Fallback‑Routing splitten.
   - Best Practice: Definiere `ArrivalResult = { scene: SceneId; actions: GameAction[] }` als Rückgabewert von `handleNodeArrival`; die Hook wendet `actions` an und navigiert zu `scene` — keine Routing‑Logik im Hook‑Body.
   - Muster: Modeliere jeden Node‑Handler als reine Funktion `handleGigNode(node, state) => ArrivalResult`, `handleRestNode(node, state) => ArrivalResult` usw., registriert in einer `nodeHandlers`‑Map — neue Node‑Typen sind ein neuer Map‑Eintrag, kein `if`/`else` im Hook.
   - Fallstrick: Ein „Fallback“ im Hook ist ein stiller Catch‑All, der unbehandelte Node‑Typen verschluckt; ersetze ihn durch ein `assertNever`‑ähnliches Log + Metrik‑Call und ein explizites `OVERWORLD`‑Return, damit unhandelte Node‑Typen in Analytics sichtbar werden.
-  - **Status:** IMPLEMENTIERT (Contract vorhanden) — `handleNodeArrival` gibt `ArrivalResult = { scene, gigStarted }`; Hook respektiert `gigStarted` und ruft `changeScene` nur bei `!gigStarted`. Beleg: [src/utils/arrivalUtils.ts](src/utils/arrivalUtils.ts#L1-L120) und [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L100-L140)
+  - **Status:** IMPLEMENTIERT (Contract vorhanden) — `handleNodeArrival` gibt `ArrivalResult = { scene, gigStarted }`; Hook respektiert `gigStarted` und ruft `changeScene` nur bei `!gigStarted`. Die Form weicht bewusst vom vorgeschlagenen `{ scene, actions }` ab: der Hook dispatcht die Actions weiterhin selbst, zentralisiert ist nur die Routing‑Entscheidung. Beleg: [src/utils/arrivalUtils.ts](src/utils/arrivalUtils.ts#L54-L60) und [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L88-L160)
 
 - [ ] **Abbruchwahrscheinlichkeiten für Nutzer sichtbar machen**: Niedrige‑Harmony‑Gig‑Abbrüche fühlen sich aktuell undurchsichtig an; zeige Vor‑Reise Warntext und %-Risiko in der UI.
   - Best Practice: Extrahiere die Abbruchwahrscheinlichkeit in eine pure Funktion `calcCancellationRisk(harmony: number, modifiers: CancellationModifiers): number` in `gameStateUtils.ts`; die UI ruft dieselbe Funktion wie die Engine — Anzeige und tatsächliche Würfelung müssen identisch sein.
   - Muster: Zeige das Risiko als farbkodiertes Badge (`< 10%` grün, `10–30%` gelb, `> 30%` rot), berechnet aus dem aktuellen Harmony über die gemeinsame Funktion; aktualisiere das Badge reaktiv, während Harmony sich in der Pre‑Travel‑Zusammenfassung ändert.
   - Fallstrick: Ein gerundeter Prozentwert („~25%“) während die Engine einen präzisen Float benutzt, führt zu Misstrauen, wenn dreimal hintereinander abbricht; zeige einen Dezimalwert (1 Nachkommastelle) und erkläre die Stichprobengröße („1 von 4 Chance pro Versuch“), um Erwartungen zu kalibrieren.
-  - **Status:** TEILWEISE — Engine berechnet Abbruch/Wahrscheinlichkeit in `handleNodeArrival` (BALANCE_CONSTANTS + RNG) und zeigt Toasts; jedoch fehlt eine dedizierte pure `calcCancellationRisk`‑Funktion und keine UI‑Badge/Pre‑Travel Anzeige. Beleg: [src/utils/arrivalUtils.ts](src/utils/arrivalUtils.ts#L80-L130)
+  - **Status:** TEILWEISE (2026-08-02) — `calcCancellationRisk(harmony, threshold, chance)` ist eine pure Funktion in [src/utils/gameState/calculations.ts](src/utils/gameState/calculations.ts#L80-L90), die Map‑UI zeigt ein farbkodiertes Badge mit einer Nachkommastelle und Stichprobengröße, und es gibt Tests (`tests/node/calcCancellationRisk.test.js`). **Die Formel ist aber noch nicht wirklich geteilt:** die UI ruft `calcCancellationRisk(harmony)` mit dem Default‑`chance`, während die Engine `LOW_HARMONY_CANCELLATION_CHANCE * (1 - tourSuccess)` würfelt. Bei `band.tourSuccess > 0` zeigt das Badge damit ein zu hohes Risiko — genau der im Fallstrick beschriebene Vertrauensverlust. Beleg: [src/utils/arrivalUtils.ts](src/utils/arrivalUtils.ts#L234-L242) und [src/components/MapNodeView.tsx](src/components/MapNodeView.tsx#L96-L110)
 
 - [ ] **Property‑Tests für Reiseergebnisse**: Verifiziere, dass Erholungs‑ und Abbruchzweige stets Clamp‑Funktionen respektieren und niemals Grenzen überschreiten.
   - Best Practice: Nutze fast‑check oder ein eigenes Property‑Harness, um beliebige `(harmony, stamina, modifier)`‑Tripel über den vollen Bereich zu generieren und zu asserten, dass jedes Ergebnis `harmony >= 1 && harmony <= 100 && money >= 0` erfüllt; ein Property‑Test deckt mehr ab als Dutzende Beispieltests.
@@ -81,7 +85,7 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Best Practice: Definiere `BalanceConfig` als typisiertes Objekt mit Gruppen (`attendance`, `penalties`, `modifiers`, `caps`) und `configVersion: number`; speichere es in `src/config/balance.ts` und importiere es in der Engine — Config‑Swap für A/B ist dann ein einzelner Importwechsel.
   - Muster: Validere die Config beim Start mit `parseBalanceConfig(raw: unknown): BalanceConfig` Guard; ist die Config ungültig (z. B. Cap unter dem Minimum), wirf beim Boot deskriptive Fehler statt zur Laufzeit sinnlose Werte zu produzieren.
   - Fallstrick: Wenn du Konstanten zwar extrahierst, aber modul‑weit per `const { TICKET_BASE } = balanceConfig` bei Modul‑Scope importierst, verhinderst du Tree‑Shaking und koppelst Tests an Live‑Config; Übergib Config als Parameter an Engine‑Funktionen.
-  - **Status:** TEILWEISE — Viele Tuning‑Konstanten (z. B. `MODIFIER_COSTS`) leben noch in `src/utils/economyEngine.ts`; eine zentrale `src/config/balance.ts` fehlt. Beleg: [src/utils/economyEngine.ts](src/utils/economyEngine.ts#L32-L44)
+  - **Status:** TEILWEISE — `src/utils/balanceTuning.ts` liefert bereits ein typisiertes `BalanceTuning`‑Objekt, doch Engine‑Konstanten (z. B. `MODIFIER_COSTS`) leben weiter in `src/utils/economy/constants.ts`; eine zentrale `src/config/balance.ts` mit `configVersion` und `parseBalanceConfig`‑Guard fehlt. Beleg: [src/utils/economy/constants.ts](src/utils/economy/constants.ts#L25-L35) und [src/utils/balanceTuning.ts](src/utils/balanceTuning.ts#L1-L30)
 
 - [ ] **Wirtschafts‑Breakdown Trace‑Modus**: Gib per Schritt Beiträge (Attendance, Penalties, Modifiers, Caps) zur Fehlersuche aus.
   - Best Practice: Modeliere Trace als optionalen Akkumulator `calculateGigEconomy(state, config, trace?: BreakdownTrace)` — wenn `trace` gesetzt ist, fügt die Engine Schritt‑Einträge hinzu; wenn nicht, bleibt der Pfad zero‑overhead.
@@ -99,7 +103,7 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Best Practice: Definiere `BREAKDOWN_LABEL_KEYS` (`{ TICKET_REVENUE: 'economy.breakdown.ticketRevenue', … }`) und verwende nur Keys aus diesem Objekt in `EconomyBreakdown`‑Zeilen — ein i18n‑Checker kann dann `Object.values(BREAKDOWN_LABEL_KEYS)` gegen Locale‑Dateien linter.
   - Muster: Füge neben `labelKey` ein `description`‑Feld (ebenfalls i18n‑Key) in das DTO, das eine einzeilige Mechanik‑Erklärung liefert — benutzt für Debug‑Panel und In‑Game‑Glossar.
   - Fallstrick: Neue Formel‑Schritte ohne `BREAKDOWN_LABEL_KEYS`‑Eintrag erscheinen im Trace, aber nicht in der Spieleransicht — teste, dass `Object.keys(traceSteps)` Teilmenge von `Object.values(BREAKDOWN_LABEL_KEYS)` ist.
-  - **Status:** TEILWEISE — Viele Breakdown‑Zeilen liefern bereits `labelKey`, aber ein zentraler `BREAKDOWN_LABEL_KEYS`‑Linter/Check fehlt. Beleg: [src/utils/economyEngine.ts](src/utils/economyEngine.ts#L188-L220)
+  - **Status:** TEILWEISE — Viele Breakdown‑Zeilen liefern bereits `labelKey`, aber ein zentrales `BREAKDOWN_LABEL_KEYS`‑Objekt samt Linter/Check fehlt. Beleg: [src/utils/economy/gigLogic/index.ts](src/utils/economy/gigLogic/index.ts#L111-L215)
 
 ## 5) Karten‑Generierung & Recovery‑UX
 
@@ -107,19 +111,19 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Best Practice: Erzeuge Seed einmal bei Run‑Erstellung (`runSeed = crypto.getRandomValues(new Uint32Array(1))[0]`), persistiere ihn im `GameState` und übergebe ihn an `MapGenerator` — Seed ist dann automatisch Teil eines jeden Bug‑Reports.
   - Muster: Lese `?seed=<n>` Query‑Param in Dev/Staging und übergebe ihn als Override — QA kann Seeds einfach reproduzieren; Parameter wird in Prod ignoriert.
   - Fallstrick: `Date.now()` als Seed führt bei Sessions im selben Millisekundenfenster zu gleichen Maps (z. B. Automatisierte Tests) — nutze `crypto.getRandomValues` statt `Date.now()`.
-  - **Status:** NICHT IMPLEMENTIERT — `useMapGeneration` verwendet aktuell `Date.now()` für den Seed; empfohlen: persistierbarer `runSeed` im `GameState`. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L1-L56)
+  - **Status:** NICHT IMPLEMENTIERT — `useMapGeneration` verwendet aktuell `Date.now()` für den Seed; empfohlen: persistierbarer `runSeed` im `GameState`. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L75)
 
 - [ ] **Inkrementelles Fallback bei Generationsfehlern**: Statt direkt zum Menü zurückzukehren, probiere bekannte sichere Template‑Maps als Graceful‑Fallback.
   - Best Practice: Commite die Template‑Map als statische JSON (`src/data/fallbackMap.json`) und validiere sie gegen `MapSchema` in CI — der Fallback kann so nicht still ungültig werden.
   - Muster: Drei‑Stufen‑Recovery: (1) Retry Generation bis `MAX_RETRIES` mit Sub‑Seed‑Offsets; (2) falls scheitert, lade die Template‑Map und sende Telemetrie; (3) nur bei Validierungsfehlern des Templates zurück ins Menü.
   - Fallstrick: Ein Fallback mit einer einzigen, geradlinigen Route ist zwar valide, aber langweilig; definiere Mindest‑Diversitätsanforderungen (mind. `N` Verzweigungen, mind. `M` Nicht‑Gig‑Nodes) im Schema.
-  - **Status:** NICHT IMPLEMENTIERT — Keine statischen Template‑Fallbacks gefunden; bei Generationsexception wird nach Retries ins Menü zurückgegangen. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L1-L120)
+  - **Status:** NICHT IMPLEMENTIERT — Keine statischen Template‑Fallbacks gefunden; bei Generationsexception wird nach Retries ins Menü zurückgegangen. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L21-L110)
 
 - [ ] **Map‑Failure‑Signatures loggen**: Einschluss der Generations‑Parameter und der fehlgeschlagenen Phase zur Fehleranalyse.
   - Best Practice: Strukturiere das Failure‑Log: `{ seed, attempt, phase: GenerationPhase, nodeCount, edgeCount, errorMessage, stack }` und emittiere es über den strukturierten Logger — konsistente Form vereinfacht Aggregation/Filterung.
   - Muster: `GenerationPhase` als String‑Literal‑Union (`'nodeLayout' | 'edgeConnection' | 'validation' | 'invariantCheck'`) definieren.
   - Fallstrick: Den ganzen Node‑Graph loggen kann MB‑große Einträge produzieren; logge nur die strukturelle Zusammenfassung und biete einen Debug‑Flag, um die volle Graph‑Datei lokal zu schreiben.
-  - **Status:** TEILWEISE — Map‑Fehler werden geloggt, aber kein dediziertes strukturiertes Failure‑Signature‑Objekt mit `phase/nodeCount/edgeCount` gefunden. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L1-L120), [src/utils/errorHandler.ts](src/utils/errorHandler.ts#L1-L80)
+  - **Status:** TEILWEISE — Map‑Fehler werden geloggt, aber kein dediziertes strukturiertes Failure‑Signature‑Objekt mit `phase/nodeCount/edgeCount` gefunden. Beleg: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L75-L110), [src/utils/errorHandler.ts](src/utils/errorHandler.ts#L1-L80)
 
 ## 6) Prioritäre Test‑Lücken
 
@@ -192,7 +196,7 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
 
 - [ ] **Adaptive Crowd Behavior**
 - [ ] **Encore Decision Mechanic**
-- [ ] **Heckler Interaction Windows**
+- [ ] **Heckler Interaction Windows** — _Teilweise: `HecklerOverlay.tsx` + `hecklerLogic.ts` liefern bereits Heckler‑Projektile als Gig‑Hazard; ein Entscheidungs‑/Reaktionsfenster für den Spieler fehlt._
 - [ ] **Spotlight Moments pro Bandmember**
 - [ ] **Difficulty Assist Toggles**
 
