@@ -9,6 +9,7 @@ import { isLooseRecord } from '../utils/gameState'
 import { readGlobalSettings } from '../utils/storage'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
+import { CURRENT_SAVE_VERSION } from './reducers/migrations'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import type {
   GameState,
@@ -239,7 +240,7 @@ const DEFAULT_SETTINGS = {
  * Complete initial state for the game
  */
 const initialState: GameState = {
-  version: 2,
+  version: CURRENT_SAVE_VERSION,
   currentScene: GAME_PHASES.INTRO,
   player: { ...DEFAULT_PLAYER_STATE },
   band: { ...DEFAULT_BAND_STATE },

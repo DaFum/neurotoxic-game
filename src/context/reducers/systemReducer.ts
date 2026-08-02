@@ -25,6 +25,7 @@ import {
   processCrowdfundTick,
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
+import { CURRENT_SAVE_VERSION, runSaveMigrations } from './migrations'
 import { createRngStream, nextSeed } from '../../utils/seededRng'
 import { getAdvanceDayRngStreamLength } from '../../utils/assetConfig'
 import { QuestEvents } from '../../utils/questProgress'
@@ -155,8 +156,23 @@ export const handleLoadGame = (
 ): GameState => {
   logger.info('GameState', 'Game Loaded')
 
-  const loadedState: Record<string, unknown> = (
+  const rawState: Record<string, unknown> = (
     typeof payload === 'object' && payload !== null ? payload : {}
+  ) as Record<string, unknown>
+
+  const rawVersion = Object.hasOwn(rawState, 'version')
+    ? rawState.version
+    : state.version
+  const parsedVersion = Number(rawVersion)
+  const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
+
+  // Fold the raw payload through every migration step above its stored version
+  // before any sanitizer runs, so each step sees the layout it was written for.
+  const migratedPayload = runSaveMigrations(rawState, explicitVersion)
+  const loadedState: Record<string, unknown> = (
+    typeof migratedPayload === 'object' && migratedPayload !== null
+      ? migratedPayload
+      : {}
   ) as Record<string, unknown>
 
   // 1. Sanitize Player
@@ -167,12 +183,6 @@ export const handleLoadGame = (
   const mergedSocial = sanitizeSocial(loadedState.social)
 
   // 4. Construct Safe State (Whitelist)
-  const rawVersion = Object.hasOwn(loadedState, 'version')
-    ? loadedState.version
-    : state.version
-  const parsedVersion = Number(rawVersion)
-  const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
-
   // Assets must be sanitized before liabilities so orphan-detection
   // (sanitizeLiabilities filters out liabilities pointing at non-existent assets)
   // sees the validated asset set.
@@ -184,7 +194,7 @@ export const handleLoadGame = (
 
   const safeState: GameState = {
     ...state,
-    version: explicitVersion,
+    version: Math.max(explicitVersion, CURRENT_SAVE_VERSION),
     player: mergedPlayer,
     band: validatedBand,
     social: mergedSocial,
@@ -281,12 +291,6 @@ export const handleLoadGame = (
       safeState.completedQuestScopes,
       scope => scope.questId
     )
-  }
-
-  // Version Migration Map
-  if (migratedState.version < 2) {
-    // 1.0 -> 2 additions (if any structured layout changes need applying)
-    migratedState.version = 2
   }
 
   return migratedState
