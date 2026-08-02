@@ -2,12 +2,12 @@ import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
 import {
   getTransportState,
-  getGigTimeMs,
   pauseAudio,
   resumeAudio,
   stopAudio,
   setCorruptionEffect
 } from '../../utils/audio/audioEngine'
+import { useAudioEngine } from '../../context/AudioEngineContext'
 import {
   processRhythmGameTick,
   finalizeGig
@@ -45,6 +45,7 @@ export const useRhythmGameLoop = ({
   contextState,
   contextActions
 }: RhythmGameLoopParams) => {
+  const audioEngine = useAudioEngine()
   const { handleMiss } = scoringActions
   const { setIsToxicMode, setIsCorruptionBurstActive, setCorruptionState } =
     setters
@@ -101,7 +102,7 @@ export const useRhythmGameLoop = ({
         setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
-        getGigTimeMs,
+        getGigTimeMs: audioEngine.getGigTimeMs,
         pauseAudio,
         resumeAudio,
         setCorruptionState,
@@ -110,6 +111,7 @@ export const useRhythmGameLoop = ({
     },
     [
       activeEvent,
+      audioEngine,
       finalizeGigCallback,
       gameStateRef,
       handleCollision,

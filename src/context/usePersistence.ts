@@ -27,6 +27,7 @@ import { quarantineSave } from '../utils/saveQuarantine'
 import { systemClock } from '../utils/clock'
 import type { IClock } from '../utils/clock'
 import { useClock } from './ClockContext'
+import { useStorage } from './StorageContext'
 import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { createLoadGameAction } from './actionCreators'
@@ -236,13 +237,14 @@ export function usePersistence({
   tRef
 }: UsePersistenceParams) {
   const clock = useClock()
+  const storage = useStorage()
 
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
-      removeStorageItem(SAVE_KEY)
+      removeStorageItem(SAVE_KEY, storage)
     })
     window.location.reload()
-  }, [])
+  }, [storage])
 
   // Storage that refuses writes (private browsing, disabled by policy) degrades
   // to an in-memory store for the session. The player is told once — repeating
@@ -290,7 +292,7 @@ export function usePersistence({
               `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
-          return writeStorageItem(SAVE_KEY, serialized)
+          return writeStorageItem(SAVE_KEY, serialized, storage)
         },
         false
       )
@@ -307,7 +309,7 @@ export function usePersistence({
         handleError(new StorageError('Failed to save game'), { addToast })
       }
     },
-    [addToast, clock, notifyStorageDegraded, stateRef, tRef]
+    [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
   )
 
   const previousSceneRef = useRef(currentScene)
@@ -342,7 +344,7 @@ export function usePersistence({
         let parsed: unknown
         let rawSave: string
         try {
-          const saved = readStorageItem(SAVE_KEY)
+          const saved = readStorageItem(SAVE_KEY, storage)
           if (!saved) return false
           rawSave = saved
           parsed = safeJsonParse(saved)
@@ -424,7 +426,7 @@ export function usePersistence({
       },
       false
     )
-  }, [addToast, dispatch, tRef])
+  }, [addToast, dispatch, storage, tRef])
 
   return { deleteSave, saveGame, saveGameAfterStateCommit, loadGame }
 }

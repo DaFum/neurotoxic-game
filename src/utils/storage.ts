@@ -10,6 +10,8 @@ import {
   runSafeStorageOperation
 } from './errorHandler'
 import { isLooseRecord, safeJsonParse } from './objectUtils'
+import { InMemoryAdapter, LocalStorageAdapter } from './storageAdapter'
+import type { IStorageAdapter, StorageFailureReporter } from './storageAdapter'
 
 /**
  * localStorage key for settings shared outside the active save file.
@@ -56,30 +58,36 @@ export function safeStorageOperation<T>(
   return runSafeStorageOperation(operation, fn)
 }
 
-/**
- * Resolves the available localStorage instance across browser and server environments.
- * @returns localStorage instance or null if unavailable
- */
-function getStorage(): Storage | null {
-  if (typeof window !== 'undefined') {
-    return window.localStorage
-  }
-  if (typeof globalThis !== 'undefined') {
-    return globalThis.localStorage
-  }
-  return null
+const reportStorageFailure: StorageFailureReporter = (
+  operation,
+  key,
+  error
+) => {
+  handleError(
+    new StorageError(`Storage ${operation} failed for "${key}"`, {
+      originalError: error instanceof Error ? error.message : String(error)
+    }),
+    { silent: true }
+  )
 }
+
+/**
+ * Production storage singleton, mirroring how `clock.ts` exports `systemClock`.
+ *
+ * @remarks
+ * Constructed here rather than in `storageAdapter.ts` so the adapter module
+ * stays free of any dependency on error handling, which reaches back into it
+ * through the logger.
+ */
+export const defaultStorageAdapter: IStorageAdapter = new LocalStorageAdapter(
+  reportStorageFailure
+)
 
 /**
  * Session-scoped fallback store used once persistent storage refuses writes
  * (private browsing, storage disabled by policy, quota exhausted).
- *
- * @remarks
- * Deliberately a plain module-level map rather than a class: the planned
- * `StorageAdapter` abstraction absorbs this as its `InMemoryAdapter` without
- * any call site needing to change.
  */
-const memoryStore = new Map<string, string>()
+const memoryStore = new InMemoryAdapter()
 
 let storageDegraded = false
 
@@ -104,34 +112,32 @@ export const resetStorageFallback = (): void => {
  *
  * @param key - Storage key.
  * @param value - Serialized value to store.
+ * @param adapter - Storage backend; defaults to the production singleton.
  * @returns `true` when the value reached persistent storage, `false` when it
  * was kept in the session-scoped memory store instead.
  *
  * @remarks
  * `localStorage.setItem` raises `QuotaExceededError`/`SecurityError` in private
  * browsing and when storage is disabled by policy. Every write goes through
- * here so that is a degraded mode rather than a crash class.
+ * here so that is a degraded mode rather than a crash class. The adapter
+ * reports the underlying failure; this layer owns the fallback and the
+ * degraded flag.
  */
-export function writeStorageItem(key: string, value: string): boolean {
-  try {
-    const storage = getStorage()
-    if (!storage) throw new Error('No storage available')
-    storage.setItem(key, value)
+export function writeStorageItem(
+  key: string,
+  value: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): boolean {
+  if (adapter.set(key, value)) {
     // Persistence recovered for this key, so the memory entry is no longer the
     // newest value and must stop shadowing the persisted one.
-    memoryStore.delete(key)
+    memoryStore.remove(key)
     return true
-  } catch (error) {
-    memoryStore.set(key, value)
-    handleError(
-      new StorageError(`Storage write failed for "${key}"`, {
-        originalError: error instanceof Error ? error.message : String(error)
-      }),
-      { silent: true }
-    )
-    storageDegraded = true
-    return false
   }
+
+  memoryStore.set(key, value)
+  storageDegraded = true
+  return false
 }
 
 /**
@@ -139,6 +145,7 @@ export function writeStorageItem(key: string, value: string): boolean {
  * for keys whose write was refused this session.
  *
  * @param key - Storage key.
+ * @param adapter - Storage backend; defaults to the production singleton.
  * @returns Stored string, or `null` when the key is unknown or unreadable.
  *
  * @remarks
@@ -147,42 +154,27 @@ export function writeStorageItem(key: string, value: string): boolean {
  * always the newest value: reading persistent storage first would serve the
  * stale pre-degradation save while the current one stayed unreachable.
  */
-export function readStorageItem(key: string): string | null {
-  const buffered = memoryStore.get(key)
-  if (buffered !== undefined) return buffered
+export function readStorageItem(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): string | null {
+  if (memoryStore.has(key)) return memoryStore.get(key)
 
-  try {
-    const storage = getStorage()
-    const raw = storage ? storage.getItem(key) : null
-    if (raw !== null) return raw
-  } catch (error) {
-    handleError(
-      new StorageError(`Storage read failed for "${key}"`, {
-        originalError: error instanceof Error ? error.message : String(error)
-      }),
-      { silent: true }
-    )
-  }
-  return memoryStore.get(key) ?? null
+  return adapter.get(key)
 }
 
 /**
  * Removes a key from persistent storage and the in-memory fallback.
  *
  * @param key - Storage key.
+ * @param adapter - Storage backend; defaults to the production singleton.
  */
-export function removeStorageItem(key: string): void {
-  memoryStore.delete(key)
-  try {
-    getStorage()?.removeItem(key)
-  } catch (error) {
-    handleError(
-      new StorageError(`Storage removal failed for "${key}"`, {
-        originalError: error instanceof Error ? error.message : String(error)
-      }),
-      { silent: true }
-    )
-  }
+export function removeStorageItem(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): void {
+  memoryStore.remove(key)
+  adapter.remove(key)
 }
 
 /**
@@ -191,13 +183,18 @@ export function removeStorageItem(key: string): void {
  * @typeParam T - The expected type of the value
  * @param key - localStorage key
  * @param fallback - Fallback value if missing or invalid
+ * @param adapter - Storage backend; defaults to the production singleton.
  * @returns Parsed value or fallback
  */
-export function getSafeStorageItem<T>(key: string, fallback: T): T {
+export function getSafeStorageItem<T>(
+  key: string,
+  fallback: T,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): T {
   // Storage access itself can fail (SecurityError in private mode, tampered
   // getter, etc.); readStorageItem logs that distinctly from a missing key and
   // serves values written after storage degraded to the memory fallback.
-  const raw = readStorageItem(key)
+  const raw = readStorageItem(key, adapter)
 
   if (raw === null) return fallback
 
@@ -227,8 +224,13 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
  * `isStorageDegraded()`.
  * @param key - localStorage key.
  * @param value - JSON-serializable value to store.
+ * @param adapter - Storage backend; defaults to the production singleton.
  */
-export function setSafeStorageItem(key: string, value: unknown): void {
+export function setSafeStorageItem(
+  key: string,
+  value: unknown,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): void {
   let serialized: string
   try {
     serialized = JSON.stringify(value)
@@ -241,22 +243,30 @@ export function setSafeStorageItem(key: string, value: unknown): void {
     )
     return
   }
-  writeStorageItem(key, serialized)
+  writeStorageItem(key, serialized, adapter)
 }
 
 /**
  * Reads global settings from storage as a loose object.
+ *
+ * @param adapter - Storage backend; defaults to the production singleton.
  */
-export const readGlobalSettings = (): Record<string, unknown> => {
-  const settings = getSafeStorageItem<unknown>(GLOBAL_SETTINGS_KEY, {})
+export const readGlobalSettings = (
+  adapter: IStorageAdapter = defaultStorageAdapter
+): Record<string, unknown> => {
+  const settings = getSafeStorageItem<unknown>(GLOBAL_SETTINGS_KEY, {}, adapter)
   return isLooseRecord(settings) ? settings : {}
 }
 
 /**
  * Writes global settings to storage.
+ *
+ * @param settings - Settings object to persist.
+ * @param adapter - Storage backend; defaults to the production singleton.
  */
 export const writeGlobalSettings = (
-  settings: Record<string, unknown>
+  settings: Record<string, unknown>,
+  adapter: IStorageAdapter = defaultStorageAdapter
 ): void => {
-  setSafeStorageItem(GLOBAL_SETTINGS_KEY, settings)
+  setSafeStorageItem(GLOBAL_SETTINGS_KEY, settings, adapter)
 }

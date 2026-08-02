@@ -127,16 +127,14 @@ mock.module(
   }
 )
 
+// The controller takes its gig clock from `options.audioEngine`, so the stub
+// goes in through that seam rather than through a module mock.
 const mockAudioEngine = {
-  getGigTimeMs: mock.fn(() => 1234)
+  getGigTimeMs: mock.fn(() => 1234),
+  startGig: mock.fn(async () => true),
+  stopGig: mock.fn(),
+  scheduleNote: mock.fn()
 }
-
-mock.module(
-  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
-  {
-    namedExports: mockAudioEngine
-  }
-)
 
 describe('PixiStageController', () => {
   let controller
@@ -197,7 +195,8 @@ describe('PixiStageController', () => {
     controller = createPixiStageController({
       containerRef,
       gameStateRef,
-      updateRef
+      updateRef,
+      audioEngine: mockAudioEngine
     })
   })
 
@@ -464,7 +463,8 @@ describe('PixiStageController', () => {
     const newController = createPixiStageController({
       containerRef,
       gameStateRef,
-      updateRef
+      updateRef,
+      audioEngine: mockAudioEngine
     })
 
     // Start init but don't await it yet

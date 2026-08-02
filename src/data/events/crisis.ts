@@ -5,6 +5,7 @@ import { calculateZealotryEffects } from '../../utils/socialEngine'
 import { validateCrisisEvent } from '../../utils/eventValidator'
 import { logger } from '../../utils/logger'
 import { hasStateItem, finiteNumberOr } from '../../utils/gameState'
+import { FLAGS } from '../flags.registry'
 
 // Crisis Events — reputation damage, recovery arcs, and social fallout
 // These fire when controversyLevel crosses key thresholds.
@@ -509,14 +510,14 @@ export const CRISIS_EVENTS = [
     chance: 1.0,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 50 &&
-      !hasStateItem(gs.activeStoryFlags, 'saw_crisis_50'),
+      !hasStateItem(gs.activeStoryFlags, FLAGS.SAW_CRISIS_50),
     options: [
       {
         label: 'events:crisis_notice_50.opt1.label',
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'saw_crisis_50' },
+            { type: 'flag', flag: FLAGS.SAW_CRISIS_50 },
             { type: 'stat', stat: 'fame', value: -10 },
             { type: 'stat', stat: 'mood', value: -5 }
           ]
@@ -535,14 +536,14 @@ export const CRISIS_EVENTS = [
     chance: 1.0,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 80 &&
-      !hasStateItem(gs.activeStoryFlags, 'saw_crisis_80'),
+      !hasStateItem(gs.activeStoryFlags, FLAGS.SAW_CRISIS_80),
     options: [
       {
         label: 'events:crisis_notice_80.opt1.label',
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'saw_crisis_80' },
+            { type: 'flag', flag: FLAGS.SAW_CRISIS_80 },
             { type: 'stat', stat: 'fame', value: -25 },
             { type: 'stat', stat: 'stamina', value: -5 }
           ]
@@ -561,14 +562,14 @@ export const CRISIS_EVENTS = [
     chance: 1.0,
     condition: (gs: GameState) =>
       (gs.social?.controversyLevel ?? 0) >= 100 &&
-      !hasStateItem(gs.activeStoryFlags, 'saw_crisis_100'),
+      !hasStateItem(gs.activeStoryFlags, FLAGS.SAW_CRISIS_100),
     options: [
       {
         label: 'events:crisis_notice_100.opt1.label',
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'saw_crisis_100' },
+            { type: 'flag', flag: FLAGS.SAW_CRISIS_100 },
             { type: 'stat', stat: 'fame', value: -50 },
             { type: 'stat', stat: 'mood', value: -10 }
           ]

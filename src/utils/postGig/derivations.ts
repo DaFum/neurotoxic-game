@@ -13,6 +13,7 @@ import type { GameState } from '../../types'
 import type { CityTraitState } from '../../types/game'
 import type { AssetModifiers } from '../../types/assets'
 import type { BalanceTuning } from '../balanceTuning'
+import { FLAGS } from '../../data/flags.registry'
 
 export interface RepeatDemandContext {
   day: number
@@ -147,7 +148,7 @@ export const deriveFinancials = ({
         loyalty: social.loyalty ?? 0,
         zealotry: social.zealotry ?? 0,
         discountedTickets: activeStoryFlags.includes(
-          'discounted_tickets_active'
+          FLAGS.DISCOUNTED_TICKETS_ACTIVE
         ),
         daysSinceLastGig: gigContext?.daysSinceLastGig ?? 0,
         lastGigDifficulty: gigContext?.lastGigDifficulty ?? undefined,

@@ -1,5 +1,6 @@
 import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
+import { FLAGS } from '../../data/flags.registry'
 
 /**
  * Studio module catalogue registered into `MODULE_REGISTRY` on import.
@@ -116,7 +117,7 @@ const MODULES: readonly AssetModule[] = [
     removalRefundFraction: 0.0,
     boni: { songQualityBonus: 0.12 },
     riskEventTypes: ['paranormal'],
-    unlock: { requiredStoryFlags: ['old_basement_secret'] },
+    unlock: { requiredStoryFlags: [FLAGS.OLD_BASEMENT_SECRET] },
     imagePromptKey: 'st_haunted_reverb_chamber'
   },
   {

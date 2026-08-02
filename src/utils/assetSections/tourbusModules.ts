@@ -1,5 +1,6 @@
 import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
+import { FLAGS } from '../../data/flags.registry'
 
 /**
  * Tourbus module catalogue registered into `MODULE_REGISTRY` on import.
@@ -55,7 +56,7 @@ const MODULES: readonly AssetModule[] = [
     installCost: 50,
     removalRefundFraction: 0.5,
     boni: { bandMoodPerDay: 2 },
-    unlock: { requiredStoryFlags: ['found_record_collection'] },
+    unlock: { requiredStoryFlags: [FLAGS.FOUND_RECORD_COLLECTION] },
     imagePromptKey: 'tb_vintage_stereo'
   },
   {
@@ -91,7 +92,7 @@ const MODULES: readonly AssetModule[] = [
     installCost: 50,
     removalRefundFraction: 0.3,
     boni: { famePassivePerDay: 0.4 },
-    unlock: { requiredStoryFlags: ['underground_show'] },
+    unlock: { requiredStoryFlags: [FLAGS.UNDERGROUND_SHOW] },
     imagePromptKey: 'tb_neon_underglow'
   },
   {

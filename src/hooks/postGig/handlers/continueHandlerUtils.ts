@@ -15,6 +15,7 @@ import {
 } from '../../../quests/producers/economyQuestEvents'
 import { getRegionKeyForLocation } from '../../../utils/mapUtils'
 import type { HandlerDispatchers } from './types'
+import { FLAGS } from '../../../data/flags.registry'
 
 // Pure/orchestration seams for useContinueHandler, kept in a dedicated module
 // so they can be unit-tested directly while the hook module exports only the
@@ -58,7 +59,7 @@ export function buildStoryFlagQuests(params: {
   const { activeStoryFlags, day, bandHarmony, postPenaltyHarmony } = params
   const quests: AddQuestInput[] = []
 
-  if (activeStoryFlags?.includes('cancel_quest_active')) {
+  if (activeStoryFlags?.includes(FLAGS.CANCEL_QUEST_ACTIVE)) {
     const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
     if (def) {
       quests.push({
@@ -70,7 +71,7 @@ export function buildStoryFlagQuests(params: {
     }
   }
 
-  if (activeStoryFlags?.includes('breakup_quest_active')) {
+  if (activeStoryFlags?.includes(FLAGS.BREAKUP_QUEST_ACTIVE)) {
     const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
     if (def) {
       // Threshold-style harmony quest: seed progress with current band harmony

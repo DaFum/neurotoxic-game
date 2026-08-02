@@ -1,6 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getGigTimeMs } from '../../utils/audio/audioEngine'
+import { useAudioEngine } from '../../context/AudioEngineContext'
 import { clampUnit } from '../../utils/numberUtils'
 import type {
   RhythmGameRefState,
@@ -73,6 +73,7 @@ export const useRhythmGameScoring = ({
   contextActions
 }: RhythmGameScoringParams): RhythmGameScoringReturn => {
   const { t } = useTranslation('ui')
+  const audioEngine = useAudioEngine()
   const { setIsToxicMode } = setters
   const { addToast } = contextActions
 
@@ -102,9 +103,9 @@ export const useRhythmGameScoring = ({
   const activateToxicMode = useCallback(() => {
     setIsToxicMode(true)
     gameStateRef.current.isToxicMode = true
-    gameStateRef.current.toxicModeEndTime = getGigTimeMs() + 10000
+    gameStateRef.current.toxicModeEndTime = audioEngine.getGigTimeMs() + 10000
     addToast(t('ui:gig.toasts.toxicOverload', 'TOXIC OVERLOAD!'), 'success')
-  }, [addToast, gameStateRef, setIsToxicMode, t])
+  }, [addToast, audioEngine, gameStateRef, setIsToxicMode, t])
 
   const handleMiss = useHandleMiss({
     gameStateRef,

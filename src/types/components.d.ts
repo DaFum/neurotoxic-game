@@ -169,6 +169,12 @@ export interface StageControllerOptions<TState = unknown> {
   containerRef: RefObject<HTMLElement | null>
   gameStateRef: RefObject<TState>
   updateRef: MutableRefObject<((dt: number) => void) | null>
+  /**
+   * Gig-audio engine supplying the stage clock. Omit to use the real Tone.js
+   * engine; the gig stage host forwards the injected engine so tests can run
+   * the render loop without an `AudioContext`.
+   */
+  audioEngine?: import('../utils/audio/audioEngineInterface').IAudioEngine
 }
 
 /**
