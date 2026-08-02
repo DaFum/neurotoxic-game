@@ -31,10 +31,12 @@ describe('clinicLogicUtils', () => {
     })
 
     it('returns error when player does not have enough money', () => {
-      const result = validateHealMember(VALID_MEMBER, 40, 50)
-      assert.strictEqual(result.isValid, false)
-      assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_money')
-      assert.strictEqual(result.defaultMessage, 'Not enough money.')
+      assert.deepStrictEqual(validateHealMember(VALID_MEMBER, 40, 50), {
+        isValid: false,
+        silent: false,
+        errorKey: 'ui:clinic.not_enough_money',
+        defaultMessage: 'Not enough money.'
+      })
     })
   })
 
@@ -65,12 +67,14 @@ describe('clinicLogicUtils', () => {
     })
 
     it('returns error when player does not have enough fame', () => {
-      const result = validateEnhanceMember(VALID_MEMBER, 'cool_trait', 40, 50)
-      assert.strictEqual(result.isValid, false)
-      assert.strictEqual(result.errorKey, 'ui:clinic.not_enough_fame')
-      assert.strictEqual(
-        result.defaultMessage,
-        'Not enough fame. The void demands sacrifice.'
+      assert.deepStrictEqual(
+        validateEnhanceMember(VALID_MEMBER, 'cool_trait', 40, 50),
+        {
+          isValid: false,
+          silent: false,
+          errorKey: 'ui:clinic.not_enough_fame',
+          defaultMessage: 'Not enough fame. The void demands sacrifice.'
+        }
       )
     })
   })

@@ -8,26 +8,22 @@
  * shape upward.
  *
  * @remarks
- * A false result with `silent: true` means the caller should stop without
- * showing an error. A false result with `errorKey` and `defaultMessage` is meant
- * for user-facing feedback.
+ * `silent` is the discriminant between the two failure branches. A false
+ * result with `silent: false` is the user-facing branch and carries
+ * `errorKey` and `defaultMessage`. A false result with `silent: true` is the
+ * no-message branch: the caller should stop without showing an error.
  */
 export type ValidationResult =
   | {
       isValid: true
-      errorKey?: undefined
-      defaultMessage?: undefined
-      silent?: boolean
     }
   | {
       isValid: false
+      silent: false
       errorKey: string
       defaultMessage: string
-      silent?: boolean
     }
   | {
       isValid: false
       silent: true
-      errorKey?: undefined
-      defaultMessage?: undefined
     }

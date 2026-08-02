@@ -31,7 +31,7 @@ export const useContrabandStash = () => {
     (instanceId: string, item: ContrabandStashItem) => {
       const validation = validateStashItemSelection(item, selectedMember)
       if (!validation.isValid) {
-        if (validation.errorKey) {
+        if (!validation.silent) {
           addToast(
             t(validation.errorKey, {
               defaultValue: validation.defaultMessage

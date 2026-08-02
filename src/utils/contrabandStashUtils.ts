@@ -23,6 +23,7 @@ export const validateStashItemSelection = (
   ) {
     return {
       isValid: false,
+      silent: false,
       errorKey: 'ui:stash.selectMemberFirst',
       defaultMessage: 'Select a band member first!'
     }
