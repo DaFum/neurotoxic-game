@@ -4,13 +4,15 @@
 
 import { memo, type HTMLAttributes } from 'react'
 
-const SIZE_CLASSES: Record<string, string> = {
+import { finiteNumberOr } from '../../utils/finiteNumber'
+
+type ProgressBarSize = 'sm' | 'md' | 'mini'
+
+const SIZE_CLASSES: Record<ProgressBarSize, string> = {
   sm: 'h-3',
   md: 'h-5',
   mini: 'h-1.5'
 }
-
-type ProgressBarSize = 'sm' | 'md' | 'mini'
 
 interface ProgressBarProps extends Omit<
   HTMLAttributes<HTMLDivElement>,
@@ -41,7 +43,8 @@ export const ProgressBar = memo(function ProgressBar({
   className = '',
   ...props
 }: ProgressBarProps) {
-  const safeMax = max > 0 ? max : 1
+  const finiteMax = finiteNumberOr(max, 1)
+  const safeMax = finiteMax > 0 ? finiteMax : 1
   const safeValue = Number.isFinite(value) ? Math.max(0, value) : 0
   const pct = Math.min(100, (safeValue / safeMax) * 100)
   const isMini = size === 'mini'
@@ -61,7 +64,7 @@ export const ProgressBar = memo(function ProgressBar({
           {label && <span className='text-ash-gray'>{label}</span>}
           {showValue && (
             <span className='text-ash-gray'>
-              {Math.floor(safeValue)}/{max}
+              {Math.floor(safeValue)}/{safeMax}
             </span>
           )}
         </div>
@@ -71,7 +74,7 @@ export const ProgressBar = memo(function ProgressBar({
           isMini
             ? 'border-steel-gray overflow-hidden'
             : 'border-2 border-toxic-green'
-        } ${SIZE_CLASSES[size] || SIZE_CLASSES.mini}`}
+        } ${SIZE_CLASSES[size]}`}
       >
         <div
           className={`h-full ${color} transition-all duration-500 ${warn ? 'animate-fuel-warning' : ''}`}
