@@ -32,7 +32,7 @@ beforeEach(() => {
     createMockGameState({ canLoad: true })
   )
 
-  globalThis.localStorage = {
+  const storageStub = {
     getItem: mock.fn(key => {
       if (key === 'neurotoxic_player_id') return '123'
       if (key === 'neurotoxic_player_name') return 'TestPlayer'
@@ -41,6 +41,17 @@ beforeEach(() => {
     setItem: mock.fn(),
     removeItem: mock.fn()
   }
+
+  globalThis.localStorage = storageStub
+  // The guarded reader in `src/utils/storage.ts` resolves `window.localStorage`
+  // first, so stubbing only the global would leave the hook reading jsdom's
+  // empty store — the identity would come back null and the name prompt would
+  // open instead of the tour starting.
+  Object.defineProperty(globalThis.window, 'localStorage', {
+    value: storageStub,
+    configurable: true,
+    writable: true
+  })
 })
 
 afterEach(() => {
