@@ -2,6 +2,7 @@ import { useState, useCallback, useMemo } from 'react'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_CONSTANTS } from '../context/gameConstants'
 import { validateBloodBankDonation } from '../utils/bloodBankUtils'
+import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
  * Coordinates blood-bank modal state, donation eligibility, and donation dispatch.
@@ -19,7 +20,9 @@ export const useBloodBank = () => {
   const closeBloodBank = useCallback(() => setShowBloodBank(false), [])
 
   const { config, marrowConfig } = useMemo(() => {
-    const multiplier = 1 + (player?.fameLevel ?? 0) * 0.2
+    // finiteNumberOr, not `?? 0`: a NaN fameLevel would otherwise poison
+    // `multiplier` and dispatch a NaN moneyGain into bloodBankDonate.
+    const multiplier = 1 + finiteNumberOr(player?.fameLevel, 0) * 0.2
     return {
       config: {
         moneyGain: Math.floor(

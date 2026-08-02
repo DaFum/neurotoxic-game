@@ -33,14 +33,14 @@ export const getActiveAssetModifiers = (
     if (a.condition < BROKEN_THRESHOLD) continue
     const b = getAssetAggregateBoni(a)
     for (const key of MULTIPLIER_MODIFIER_KEYS) {
-      // Use !== undefined rather than a truthy check: a multiplier of 0 is
-      // semantically valid (e.g., a module granting "free fuel") and must be
-      // applied. A truthy check would silently drop it as if undefined.
-      const value = b[key]
-      if (value !== undefined) m[key] *= value
+      // finiteNumberOr with an identity fallback of 1: a missing or non-finite
+      // multiplier must be a no-op, while a multiplier of 0 is semantically
+      // valid (e.g. a module granting "free fuel") and is preserved.
+      m[key] *= finiteNumberOr(b[key], 1)
     }
     for (const key of ADDITIVE_MODIFIER_KEYS) {
-      m[key] += b[key] ?? 0
+      // `?? 0` would let a NaN bonus poison every downstream economy figure.
+      m[key] += finiteNumberOr(b[key], 0)
     }
     for (const key of FLAG_MODIFIER_KEYS) {
       m.flags[key] ||= b[key] ?? false

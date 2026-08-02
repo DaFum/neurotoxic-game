@@ -2,7 +2,7 @@ import { Modal } from './shared/Modal'
 import { GlitchButton } from './GlitchButton'
 import { useTranslation } from 'react-i18next'
 import type { ZealotryActionConfig } from '../types'
-import { formatCurrency } from '../utils/numberUtils'
+import { formatCurrency, formatNumber } from '../utils/numberUtils'
 
 /**
  * Pre-translated strings for one zealotry action modal.
@@ -53,21 +53,24 @@ export const ZealotryActionModal = ({
     <Modal title={labels.title} onClose={onCancel} isOpen={true}>
       <div className='flex flex-col gap-4 p-4 border border-toxic-green bg-void-black/90 text-star-white'>
         <p className='text-sm'>{labels.description}</p>
-        <div className='flex flex-col gap-1 text-sm bg-black/50 p-2 border border-toxic-green/50'>
+        <div className='flex flex-col gap-1 text-sm bg-void-black/50 p-2 border border-toxic-green/50'>
           <div className='text-error-red'>
             {labels.costLabel} {formatCurrency(config.COST, i18n.language)}
           </div>
           <div className='text-stamina-green'>
-            {labels.fameLabel} +{config.FAME_GAIN}
+            {labels.fameLabel} +{formatNumber(config.FAME_GAIN, i18n.language)}
           </div>
           <div className='text-warning-yellow'>
-            {labels.zealotryLabel} +{config.ZEALOTRY_GAIN}
+            {labels.zealotryLabel} +
+            {formatNumber(config.ZEALOTRY_GAIN, i18n.language)}
           </div>
           <div className='text-toxic-green'>
-            {labels.controversyLabel} +{config.CONTROVERSY_GAIN}
+            {labels.controversyLabel} +
+            {formatNumber(config.CONTROVERSY_GAIN, i18n.language)}
           </div>
           <div className='text-error-red'>
-            {labels.harmonyCostLabel} -{config.HARMONY_COST}
+            {labels.harmonyCostLabel} -
+            {formatNumber(config.HARMONY_COST, i18n.language)}
           </div>
         </div>
         {hasRunToday && (
