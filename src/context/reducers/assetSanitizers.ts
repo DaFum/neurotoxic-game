@@ -6,6 +6,7 @@ import {
 } from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { logger } from '../../utils/logger'
+import { getSecureRandomUint32 } from '../../utils/crypto'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { CHASSIS_CONFIG } from '../../utils/assetConfig'
 import {
@@ -636,4 +637,22 @@ export const sanitizeRngSeed = (raw: unknown): number => {
   // seed is missing/corrupt. A fresh wall-clock seed is preferable to a fixed
   // constant (which would make every recovered save share one RNG timeline).
   return Date.now() >>> 0
+}
+
+/**
+ * Sanitizes a persisted run seed into the unsigned 32-bit range.
+ *
+ * @param raw - Raw seed value.
+ * @returns Non-negative UInt32 seed used for map generation.
+ *
+ * @remarks
+ * A save that predates `runSeed`, or carries a corrupt one, gets a fresh
+ * crypto-derived seed rather than a constant — otherwise every recovered save
+ * would generate the same map.
+ */
+export const sanitizeRunSeed = (raw: unknown): number => {
+  if (isFiniteNumber(raw)) {
+    return Math.trunc(raw) >>> 0
+  }
+  return getSecureRandomUint32()
 }

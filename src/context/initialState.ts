@@ -6,6 +6,7 @@
 import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
 import { isLooseRecord } from '../utils/gameState'
+import { getSecureRandomUint32 } from '../utils/crypto'
 import { readGlobalSettings } from '../utils/storage'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
@@ -278,7 +279,10 @@ const initialState: GameState = {
   crowdfundCampaigns: [],
   // Seeded RNG for deterministic asset ticks. Replaced by sanitizer on load
   // when missing; falls back to Date.now() & 0xFFFFFFFF on fresh start.
-  rngSeed: Date.now() >>> 0
+  rngSeed: Date.now() >>> 0,
+  // Stable map seed for this run. Crypto-derived so two sessions started in the
+  // same millisecond do not share a map.
+  runSeed: getSecureRandomUint32()
 }
 
 /**
@@ -331,5 +335,6 @@ export const createInitialState = (
   assets: [],
   liabilities: {},
   crowdfundCampaigns: [],
-  rngSeed: Date.now() >>> 0
+  rngSeed: Date.now() >>> 0,
+  runSeed: getSecureRandomUint32()
 })

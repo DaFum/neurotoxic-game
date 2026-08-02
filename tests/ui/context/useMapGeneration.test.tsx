@@ -13,6 +13,12 @@ import { handleError } from '../../../src/utils/errorHandler'
 vi.mock('../../../src/utils/mapGenerator', () => {
   return {
     MapGenerator: class MockMapGenerator {
+      seed: unknown
+
+      constructor(seed: unknown) {
+        this.seed = seed
+      }
+
       generateMap() {
         return { id: 'mocked-map' }
       }
@@ -34,6 +40,7 @@ vi.mock('../../../src/utils/errorHandler', () => {
 })
 
 describe('useMapGeneration', () => {
+  const TEST_RUN_SEED = 123456
   const mockDispatch = vi.fn()
   const mockTRef: MutableRefObject<TFunction> = {
     current: vi
@@ -65,6 +72,7 @@ describe('useMapGeneration', () => {
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -86,6 +94,7 @@ describe('useMapGeneration', () => {
     renderHook(() =>
       useMapGeneration({
         gameMap: mockGameMap as GameMap,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -105,6 +114,7 @@ describe('useMapGeneration', () => {
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -137,6 +147,7 @@ describe('useMapGeneration', () => {
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -186,6 +197,7 @@ describe('useMapGeneration', () => {
     const { result } = renderHook(() =>
       useMapGeneration({
         gameMap: null,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -214,6 +226,7 @@ describe('useMapGeneration', () => {
     renderHook(() =>
       useMapGeneration({
         gameMap: null,
+        runSeed: TEST_RUN_SEED,
         dispatch: mockDispatch,
         tRef: mockTRef
       })
@@ -237,5 +250,77 @@ describe('useMapGeneration', () => {
       }),
       expect.anything()
     )
+  })
+
+  describe('seeding', () => {
+    /**
+     * Records the seed each MapGenerator instance was constructed with.
+     */
+    const captureSeeds = (throwOnGenerate = false) => {
+      const seeds: unknown[] = []
+      vi.spyOn(MapGenerator.prototype, 'generateMap').mockImplementation(
+        function (this: { seed?: number }) {
+          seeds.push(this.seed)
+          if (throwOnGenerate) throw new Error('generation failed')
+          return { id: 'seeded-map' } as unknown as GameMap
+        }
+      )
+      return seeds
+    }
+
+    it('seeds MapGenerator with the persisted runSeed', () => {
+      const seeds = captureSeeds()
+
+      renderHook(() =>
+        useMapGeneration({
+          gameMap: null,
+          runSeed: TEST_RUN_SEED,
+          dispatch: mockDispatch,
+          tRef: mockTRef
+        })
+      )
+
+      expect(seeds).toEqual([TEST_RUN_SEED])
+    })
+
+    it('reuses the same seed across retries', () => {
+      const seeds = captureSeeds(true)
+
+      renderHook(() =>
+        useMapGeneration({
+          gameMap: null,
+          runSeed: TEST_RUN_SEED,
+          dispatch: mockDispatch,
+          tRef: mockTRef
+        })
+      )
+
+      act(() => {
+        vi.advanceTimersByTime(250)
+      })
+
+      expect(seeds.length).toBeGreaterThan(1)
+      expect(new Set(seeds)).toEqual(new Set([TEST_RUN_SEED]))
+    })
+
+    it('honors a ?seed= override outside production builds', () => {
+      const seeds = captureSeeds()
+      window.history.replaceState({}, '', '/?seed=999')
+
+      try {
+        renderHook(() =>
+          useMapGeneration({
+            gameMap: null,
+            runSeed: TEST_RUN_SEED,
+            dispatch: mockDispatch,
+            tRef: mockTRef
+          })
+        )
+
+        expect(seeds).toEqual([999])
+      } finally {
+        window.history.replaceState({}, '', '/')
+      }
+    })
   })
 })

@@ -2035,3 +2035,34 @@ test('systemReducer - rivalBand persistence', async t => {
     }
   )
 })
+
+test('handleLoadGame sanitizes the persisted runSeed', async t => {
+  await t.test('preserves a valid persisted seed', () => {
+    const nextState = handleLoadGame(createInitialState(), { runSeed: 987654 })
+    assert.equal(nextState.runSeed, 987654)
+  })
+
+  await t.test('coerces a seed into the unsigned 32-bit range', () => {
+    const nextState = handleLoadGame(createInitialState(), { runSeed: -1.5 })
+    assert.equal(nextState.runSeed, -1 >>> 0)
+  })
+
+  for (const [label, runSeed] of [
+    ['NaN', Number.NaN],
+    ['Infinity', Number.POSITIVE_INFINITY],
+    ['a string', '123'],
+    ['null', null]
+  ]) {
+    await t.test(`replaces ${label} with a fresh finite seed`, () => {
+      const nextState = handleLoadGame(createInitialState(), { runSeed })
+      assert.equal(Number.isFinite(nextState.runSeed), true)
+      assert.equal(Number.isInteger(nextState.runSeed), true)
+      assert.ok(nextState.runSeed >= 0 && nextState.runSeed <= 0xffffffff)
+    })
+  }
+
+  await t.test('fills in a seed for saves that predate the field', () => {
+    const nextState = handleLoadGame(createInitialState(), {})
+    assert.equal(Number.isFinite(nextState.runSeed), true)
+  })
+})

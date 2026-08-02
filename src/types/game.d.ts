@@ -166,6 +166,12 @@ export interface GameState {
    * `advanceDay`) read this to pre-roll a `dayRngStream` for the reducer.
    */
   rngSeed: number
+  /**
+   * Stable per-run seed for map generation. Generated once at run creation and
+   * persisted with the save, so any reported run reproduces the same map.
+   * Consumed by `useMapGeneration`; unlike `rngSeed` it never rotates.
+   */
+  runSeed: number
 }
 
 /**

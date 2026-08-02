@@ -78,6 +78,39 @@ export const getSafeRandom = (): number => {
 }
 
 /**
+ * Returns a cryptographically secure unsigned 32-bit integer.
+ *
+ * @returns A random integer in the range `[0, 2^32)`.
+ *
+ * @remarks
+ * Used for run seeds, where the seed must be unpredictable and unique across
+ * sessions started in the same millisecond. Falls back to `getSafeRandom()`
+ * (which logs once and degrades to `Math.random()`) when Web Crypto is
+ * unavailable.
+ */
+export const getSecureRandomUint32 = (): number => {
+  const crypto =
+    globalThis.crypto ||
+    (typeof window !== 'undefined' ? window.crypto : undefined)
+
+  try {
+    if (typeof crypto?.getRandomValues !== 'function') {
+      throw new Error('getRandomValues not supported')
+    }
+    const buffer = new Uint32Array(1)
+    ;(crypto as CryptoGetRandom).getRandomValues(buffer)
+    return (buffer[0] ?? 0) >>> 0
+  } catch (error) {
+    handleError(error, {
+      silent: true,
+      severity: 'medium',
+      fallbackMessage: 'Crypto API unavailable, falling back to Math.random.'
+    })
+    return Math.floor(getSafeRandom() * 4294967296) >>> 0
+  }
+}
+
+/**
  * A safe wrapper for generating UUIDs that prefers crypto.randomUUID()
  * but falls back to a generated string if unavailable.
  * @returns A UUID string.

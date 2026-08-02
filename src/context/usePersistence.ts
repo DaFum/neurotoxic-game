@@ -88,6 +88,7 @@ const PERSISTED_FIELDS = {
   liabilities: isObjectOrArray,
   crowdfundCampaigns: Array.isArray,
   rngSeed: isFiniteNumber,
+  runSeed: isFiniteNumber,
   rivalBand: isNullableObject
 } satisfies Partial<Record<keyof GameState, (value: unknown) => boolean>>
 

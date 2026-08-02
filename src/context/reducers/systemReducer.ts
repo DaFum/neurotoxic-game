@@ -72,7 +72,8 @@ import {
   sanitizeCrowdfundCampaigns,
   sanitizeLiabilities,
   sanitizeRiskEventDescriptor,
-  sanitizeRngSeed
+  sanitizeRngSeed,
+  sanitizeRunSeed
 } from './assetSanitizers'
 import type { RiskEventDescriptor } from '../../types/assets'
 
@@ -250,6 +251,7 @@ export const handleLoadGame = (
       sanitizedAssets
     ),
     rngSeed: sanitizeRngSeed(loadedState.rngSeed),
+    runSeed: sanitizeRunSeed(loadedState.runSeed),
     rivalBand: sanitizeRivalBand(loadedState.rivalBand)
   }
 
