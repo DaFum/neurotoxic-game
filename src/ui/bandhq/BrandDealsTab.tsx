@@ -5,11 +5,27 @@ import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { resolveGenImageUrl } from '../../utils/imageGen'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
+import { BRAND_ALIGNMENTS } from '../../context/initialState'
 import type { ActiveBrandDeal, SocialState } from '../../types'
+import type { BrandAlignment } from '../../types/social'
 
 interface BrandDealsTabProps {
   social: SocialState
 }
+
+const ALIGNMENT_CLASSES = {
+  [BRAND_ALIGNMENTS.EVIL]: 'text-blood-red',
+  [BRAND_ALIGNMENTS.GOOD]: 'text-star-white',
+  [BRAND_ALIGNMENTS.SUSTAINABLE]: 'text-stamina-green',
+  [BRAND_ALIGNMENTS.INDIE]: 'text-mood-pink',
+  [BRAND_ALIGNMENTS.CORPORATE]: 'text-warning-yellow',
+  [BRAND_ALIGNMENTS.NEUTRAL]: 'text-ash-gray'
+} as const satisfies Record<BrandAlignment, string>
+
+const getAlignmentClass = (alignment: string): string =>
+  Object.hasOwn(ALIGNMENT_CLASSES, alignment)
+    ? ALIGNMENT_CLASSES[alignment as BrandAlignment]
+    : 'text-ash-gray'
 
 /**
  * Displays active brand deals and reputation context inside Band HQ.
@@ -91,19 +107,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
                   {t('ui:brandDeals.alignment', { defaultValue: 'Alignment:' })}
                 </span>
                 <span
-                  className={`font-bold ${
-                    deal.alignment === 'EVIL'
-                      ? 'text-blood-red'
-                      : deal.alignment === 'GOOD'
-                        ? 'text-star-white'
-                        : deal.alignment === 'SUSTAINABLE'
-                          ? 'text-stamina-green'
-                          : deal.alignment === 'INDIE'
-                            ? 'text-mood-pink'
-                            : deal.alignment === 'CORPORATE'
-                              ? 'text-warning-yellow'
-                              : 'text-ash-gray'
-                  }`}
+                  className={`font-bold ${getAlignmentClass(deal.alignment)}`}
                 >
                   {t(`ui:deals.alignment.${deal.alignment.toLowerCase()}`, {
                     defaultValue: deal.alignment
