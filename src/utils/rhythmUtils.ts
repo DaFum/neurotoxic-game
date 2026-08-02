@@ -39,7 +39,7 @@ const shouldSpawnNote = (
 ): boolean => {
   const beatInBar = beatIndex % 4
   if (difficulty <= 2) {
-    return beatInBar === 0 || (beatIndex % 8 === 4 && random() > 0.2)
+    return beatIndex % 8 === 0 || (beatIndex % 8 === 4 && random() > 0.2)
   }
   if (difficulty <= 4) {
     return beatInBar === 0 || beatInBar === 2 || random() > 0.6
