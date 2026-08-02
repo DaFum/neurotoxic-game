@@ -43,7 +43,11 @@ export const StatMiniBar = memo(function StatMiniBar({
   const isLow = value < threshold
   const resolvedAriaLabel =
     ariaLabel ?? (typeof label === 'string' ? label : undefined)
-  const readout = `${Math.floor(value)}%`
+  // The stacked variant floors its readout; the inline variant renders the
+  // sanitized value as-is because member stats carry half points (e.g.
+  // `bh_zine_library` grants `bandMoodPerDay: 0.5`, which `processAssetTick`
+  // preserves through the 0..100 clamp).
+  const readout = variant === 'stacked' ? `${Math.floor(value)}%` : `${value}%`
 
   if (variant === 'stacked') {
     return (
