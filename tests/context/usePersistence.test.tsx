@@ -13,9 +13,14 @@ vi.mock('../../src/utils/errorHandler', () => ({
   StorageError: class StorageError extends Error {}
 }))
 
-vi.mock('../../src/utils/storage', () => ({
-  safeStorageOperation: vi.fn((_operation, fn) => fn())
-}))
+vi.mock('../../src/utils/storage', async importOriginal => {
+  const actual =
+    await importOriginal<typeof import('../../src/utils/storage')>()
+  return {
+    ...actual,
+    safeStorageOperation: vi.fn((_operation, fn) => fn())
+  }
+})
 
 vi.mock('../../src/utils/gameState', async importOriginal => {
   const actual =

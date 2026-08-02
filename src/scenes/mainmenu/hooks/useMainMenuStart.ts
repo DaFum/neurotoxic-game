@@ -1,6 +1,6 @@
 import { useCallback } from 'react'
 import type { MutableRefObject } from 'react'
-import { safeStorageOperation } from '../../../utils/storage'
+import { safeStorageOperation, writeStorageItem } from '../../../utils/storage'
 import { getSafeUUID } from '../../../utils/crypto'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { SAVE_KEY } from '../../../context/usePersistence'
@@ -116,10 +116,10 @@ export const useMainMenuStart = ({
       const newId = getSafeUUID()
 
       safeStorageOperation('setPlayerId', () =>
-        localStorage.setItem('neurotoxic_player_id', newId)
+        writeStorageItem('neurotoxic_player_id', newId)
       )
       safeStorageOperation('setPlayerName', () =>
-        localStorage.setItem('neurotoxic_player_name', resolvedName)
+        writeStorageItem('neurotoxic_player_name', resolvedName)
       )
 
       updatePlayer({

@@ -1617,6 +1617,7 @@
   "roadieRun.itemTypes.unknown": "Unbekannt",
   "save.corruptFailed": "Speicherstand ist beschädigt oder ungültig.",
   "save.migrationFailed": "Speicherstand konnte nicht aktualisiert werden. Eine Kopie wurde zur Wiederherstellung gesichert; greife auf Anfangszustand zurück.",
+  "save.storageUnavailable": "Speicher ist in diesem Browsermodus nicht verfügbar. Fortschritt bleibt nur für diese Sitzung erhalten und wird nicht gespeichert.",
   "save.parseFailed": "Speicherstand-Parsing fehlgeschlagen. Greife auf Anfangszustand zurück.",
   "scene.loading": "Szene wird geladen...",
   "seconds": "{{count}} Sek.",

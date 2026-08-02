@@ -13,7 +13,13 @@ import {
 } from '../utils/gameState'
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
-import { safeStorageOperation } from '../utils/storage'
+import {
+  isStorageDegraded,
+  readStorageItem,
+  removeStorageItem,
+  safeStorageOperation,
+  writeStorageItem
+} from '../utils/storage'
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
@@ -223,10 +229,26 @@ export function usePersistence({
 }: UsePersistenceParams) {
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
-      localStorage.removeItem(SAVE_KEY)
+      removeStorageItem(SAVE_KEY)
     })
     window.location.reload()
   }, [])
+
+  // Storage that refuses writes (private browsing, disabled by policy) degrades
+  // to an in-memory store for the session. The player is told once — repeating
+  // it on every autosave would be noise.
+  const storageNoticeShownRef = useRef(false)
+  const notifyStorageDegraded = useCallback(() => {
+    if (storageNoticeShownRef.current) return
+    storageNoticeShownRef.current = true
+    addToast(
+      tRef.current('ui:save.storageUnavailable', {
+        defaultValue:
+          'Storage is unavailable in this browser mode. Progress is kept for this session only and will not persist.'
+      }),
+      'error'
+    )
+  }, [addToast, tRef])
 
   const saveGame = useCallback(
     (showToast = true, stateSnapshot: GameState = stateRef.current) => {
@@ -258,8 +280,7 @@ export function usePersistence({
               `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
-          localStorage.setItem(SAVE_KEY, serialized)
-          return true
+          return writeStorageItem(SAVE_KEY, serialized)
         },
         false
       )
@@ -269,11 +290,14 @@ export function usePersistence({
           addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
         logger.info('System', 'Game Saved Successfully', null)
+      } else if (isStorageDegraded()) {
+        notifyStorageDegraded()
+        logger.warn('System', 'Game saved to in-memory fallback store')
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
     },
-    [addToast, stateRef, tRef]
+    [addToast, notifyStorageDegraded, stateRef, tRef]
   )
 
   const previousSceneRef = useRef(currentScene)
@@ -308,7 +332,7 @@ export function usePersistence({
         let parsed: unknown
         let rawSave: string
         try {
-          const saved = localStorage.getItem(SAVE_KEY)
+          const saved = readStorageItem(SAVE_KEY)
           if (!saved) return false
           rawSave = saved
           parsed = safeJsonParse(saved)

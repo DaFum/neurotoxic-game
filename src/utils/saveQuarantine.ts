@@ -1,4 +1,5 @@
 import { logger } from './logger'
+import { writeStorageItem } from './storage'
 
 /**
  * Key prefix for quarantined save payloads. One slot per source version, so a
@@ -34,16 +35,14 @@ export const quarantineSave = (
   reason: string
 ): boolean => {
   const key = getQuarantineKey(version)
-  try {
-    localStorage.setItem(key, JSON.stringify({ version, reason, raw }))
+  const stored = writeStorageItem(key, JSON.stringify({ version, reason, raw }))
+  if (stored) {
     logger.warn('Persistence', `Quarantined unmigrated save at ${key}`)
-    return true
-  } catch (error) {
+  } else {
     logger.error(
       'Persistence',
-      `Failed to quarantine save at ${key}`,
-      error instanceof Error ? error.message : String(error)
+      `Quarantined save at ${key} could not be persisted; kept in memory only`
     )
-    return false
   }
+  return stored
 }
