@@ -26,39 +26,66 @@ import type { OptionalToastCallback } from '../types/callbacks'
  * The string identifier used to store and retrieve the game's save payload in local storage.
  */
 export const SAVE_KEY = 'neurotoxic_v3_save'
-const LOADABLE_SAVE_KEYS = [
-  'version',
-  'currentScene',
-  'player',
-  'band',
-  'social',
-  'gameMap',
-  'currentGig',
-  'lastGigStats',
-  'activeEvent',
-  'activeStoryFlags',
-  'eventCooldowns',
-  'pendingEvents',
-  'venueBlacklist',
-  'pendingForeclosureNotices',
-  'pendingRiskEvent',
-  'activeQuests',
-  'questCooldowns',
-  'completedQuestIds',
-  'completedQuestScopes',
-  'reputationByRegion',
-  'settings',
-  'npcs',
-  'gigModifiers',
-  'setlist',
-  'minigame',
-  'completedMilestones',
-  'assets',
-  'liabilities',
-  'crowdfundCampaigns',
-  'rngSeed',
-  'rivalBand'
-] as const
+const isPlainObject = (value: unknown): boolean =>
+  typeof value === 'object' && value !== null && !Array.isArray(value)
+
+const isNullableObject = (value: unknown): boolean =>
+  value === null || (typeof value === 'object' && !Array.isArray(value))
+
+const isObjectOrArray = (value: unknown): boolean =>
+  typeof value === 'object' && value !== null
+
+const isNumberOrString = (value: unknown): boolean =>
+  isFiniteNumber(value) || typeof value === 'string'
+
+const isString = (value: unknown): boolean => typeof value === 'string'
+
+/**
+ * Single source of truth for the persisted save fields.
+ *
+ * @remarks
+ * Each entry maps a `GameState` key to the predicate that accepts its persisted
+ * value. The load whitelist, per-field load validation, and the save-snapshot
+ * picker are all derived from this map — adding a persisted field means adding
+ * one entry here (plus reducer-side handling in `handleLoadGame`).
+ */
+const PERSISTED_FIELDS = {
+  version: isNumberOrString,
+  currentScene: isString,
+  player: isPlainObject,
+  band: isPlainObject,
+  social: isPlainObject,
+  gameMap: isNullableObject,
+  currentGig: isNullableObject,
+  lastGigStats: isNullableObject,
+  activeEvent: isNullableObject,
+  activeStoryFlags: Array.isArray,
+  eventCooldowns: Array.isArray,
+  pendingEvents: Array.isArray,
+  venueBlacklist: Array.isArray,
+  pendingForeclosureNotices: Array.isArray,
+  pendingRiskEvent: isNullableObject,
+  activeQuests: Array.isArray,
+  questCooldowns: Array.isArray,
+  completedQuestIds: Array.isArray,
+  completedQuestScopes: Array.isArray,
+  reputationByRegion: isPlainObject,
+  settings: isPlainObject,
+  npcs: isPlainObject,
+  gigModifiers: isPlainObject,
+  setlist: Array.isArray,
+  minigame: isNullableObject,
+  completedMilestones: Array.isArray,
+  assets: Array.isArray,
+  liabilities: isObjectOrArray,
+  crowdfundCampaigns: Array.isArray,
+  rngSeed: isFiniteNumber,
+  rivalBand: isNullableObject
+} satisfies Partial<Record<keyof GameState, (value: unknown) => boolean>>
+
+const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<
+  keyof typeof PERSISTED_FIELDS
+>
 
 /**
  * Core dependencies required for initializing persistence features.
@@ -75,50 +102,6 @@ type UsePersistenceParams = {
   tRef: MutableRefObject<TFunction>
 }
 
-const EXPECTED_TYPES: Record<
-  (typeof LOADABLE_SAVE_KEYS)[number],
-  | 'string'
-  | 'number'
-  | 'boolean'
-  | 'array'
-  | 'object'
-  | 'object-or-array'
-  | 'nullable-object'
-  | 'number-or-string'
-> = {
-  version: 'number-or-string',
-  currentScene: 'string',
-  player: 'object',
-  band: 'object',
-  social: 'object',
-  gameMap: 'nullable-object',
-  currentGig: 'nullable-object',
-  lastGigStats: 'nullable-object',
-  activeEvent: 'nullable-object',
-  activeStoryFlags: 'array',
-  eventCooldowns: 'array',
-  pendingEvents: 'array',
-  venueBlacklist: 'array',
-  pendingForeclosureNotices: 'array',
-  pendingRiskEvent: 'nullable-object',
-  activeQuests: 'array',
-  questCooldowns: 'array',
-  completedQuestIds: 'array',
-  completedQuestScopes: 'array',
-  reputationByRegion: 'object',
-  settings: 'object',
-  npcs: 'object',
-  gigModifiers: 'object',
-  setlist: 'array',
-  minigame: 'nullable-object',
-  completedMilestones: 'array',
-  assets: 'array',
-  liabilities: 'object-or-array',
-  crowdfundCampaigns: 'array',
-  rngSeed: 'number',
-  rivalBand: 'nullable-object'
-}
-
 /**
  * Builds a reducer load payload from a parsed save by whitelisting persisted fields.
  *
@@ -132,35 +115,15 @@ export const createRawLoadPayload = (
 ): Record<string, unknown> => {
   const payload: Record<string, unknown> = { unlocks }
   for (const key of LOADABLE_SAVE_KEYS) {
-    if (Object.hasOwn(parsedObj, key)) {
-      const value = parsedObj[key]
-      const expectedType = EXPECTED_TYPES[key]
-      let isValid: boolean
-
-      if (expectedType === 'array') {
-        isValid = Array.isArray(value)
-      } else if (expectedType === 'object') {
-        isValid =
-          typeof value === 'object' && value !== null && !Array.isArray(value)
-      } else if (expectedType === 'nullable-object') {
-        isValid =
-          value === null || (typeof value === 'object' && !Array.isArray(value))
-      } else if (expectedType === 'object-or-array') {
-        isValid = typeof value === 'object' && value !== null
-      } else if (expectedType === 'number-or-string') {
-        isValid = isFiniteNumber(value) || typeof value === 'string'
-      } else {
-        isValid = typeof value === expectedType
-      }
-
-      if (isValid) {
-        payload[key] = value
-      } else {
-        logger.warn(
-          'Persistence',
-          `Skipping invalid type for loadable save key: ${key}`
-        )
-      }
+    if (!Object.hasOwn(parsedObj, key)) continue
+    const value = parsedObj[key]
+    if (PERSISTED_FIELDS[key](value)) {
+      payload[key] = value
+    } else {
+      logger.warn(
+        'Persistence',
+        `Skipping invalid type for loadable save key: ${key}`
+      )
     }
   }
   return payload
@@ -178,75 +141,16 @@ export const createRawLoadPayload = (
  * @returns An object containing only the serialized, persistable slice of the game state.
  */
 export const createPersistedState = (currentState: GameState) => {
-  const {
-    version,
-    currentScene,
-    player,
-    band,
-    social,
-    gameMap,
-    currentGig,
-    lastGigStats,
-    activeEvent,
-    activeStoryFlags,
-    eventCooldowns,
-    pendingEvents,
-    venueBlacklist,
-    pendingForeclosureNotices,
-    pendingRiskEvent,
-    activeQuests,
-    questCooldowns,
-    completedQuestIds,
-    completedQuestScopes,
-    reputationByRegion,
-    settings,
-    npcs,
-    gigModifiers,
-    setlist,
-    unlocks,
-    completedMilestones,
-    minigame,
-    assets,
-    liabilities,
-    crowdfundCampaigns,
-    rngSeed,
-    rivalBand
-  } = currentState
+  const persisted: Record<string, unknown> = {}
+  for (const key of LOADABLE_SAVE_KEYS) {
+    persisted[key] = currentState[key]
+  }
 
   return {
-    version,
+    ...persisted,
     timestamp: Date.now(),
-    currentScene,
-    player,
-    band,
-    social,
-    gameMap,
-    currentGig,
-    lastGigStats,
-    activeEvent,
-    activeStoryFlags,
-    eventCooldowns,
-    pendingEvents,
-    venueBlacklist,
-    pendingForeclosureNotices,
-    pendingRiskEvent,
-    activeQuests,
-    questCooldowns,
-    completedQuestIds,
-    completedQuestScopes,
-    reputationByRegion,
-    settings,
-    npcs,
-    gigModifiers,
-    unlocks,
-    completedMilestones,
-    minigame,
-    assets,
-    liabilities,
-    crowdfundCampaigns,
-    rngSeed,
-    rivalBand,
-    setlist: normalizeSetlistForSave(setlist)
+    unlocks: currentState.unlocks,
+    setlist: normalizeSetlistForSave(currentState.setlist)
   }
 }
 
@@ -406,14 +310,7 @@ export function usePersistence({
             [...persistentUnlocks, ...savedUnlocks].filter(u => u.length > 0)
           )
         )
-        // ⚡ BOLT OPTIMIZATION: Replaced .forEach() with a procedural loop to avoid callback allocation.
-        // Why: Eliminates closure overhead during game load flow.
-        // Impact: Slightly reduces memory overhead and GC pressure.
-        for (let i = 0; i < mergedUnlocks.length; i++) {
-          const unlockId = mergedUnlocks[i]
-          if (typeof unlockId === 'string' && unlockId.length > 0)
-            addUnlock(unlockId)
-        }
+        for (const unlockId of mergedUnlocks) addUnlock(unlockId)
 
         dispatch(
           createLoadGameAction(createRawLoadPayload(parsedObj, mergedUnlocks))

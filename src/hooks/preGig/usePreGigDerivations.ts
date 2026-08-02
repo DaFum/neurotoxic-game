@@ -5,10 +5,7 @@ import type { ActiveEffectEntry } from '../../types/components'
 import type { AssetModifiers } from '../../types/assets'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { ModifierOption } from '../usePreGigLogic'
-import {
-  MODIFIER_COSTS,
-  calculateGigModifierCost
-} from '../../utils/economyEngine'
+import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import { getGigModifiers } from '../../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'

@@ -170,12 +170,7 @@ export const processLiabilityTick = (
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
-  // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with a for...in loop to avoid allocating an array on every tick.
-  // Why: Eliminates an intermediate array allocation for the liabilities collection.
-  // Impact: Reduces GC pressure during the daily game tick.
-  for (const liabilityId in state.liabilities) {
-    if (!Object.hasOwn(state.liabilities, liabilityId)) continue
-    const liability = state.liabilities[liabilityId]
+  for (const liability of Object.values(state.liabilities)) {
     if (!liability) continue
     // Split the payment into interest and principal so the tracked balance
     // matches the amortization model that priced `dailyPayment`
@@ -224,27 +219,18 @@ export const processLiabilityTick = (
   }
   const finalLiabilities = nextLiabilities
 
-  // ⚡ BOLT OPTIMIZATION: Replaced .filter() and a separate loop with a single-pass procedural loop.
-  // Why: Avoids intermediate array allocations from .filter() and combines two iterations over state.assets into one.
-  // Impact: Reduces GC pressure and halves iteration time over assets during liability ticks.
-  const nextAssets: import('../types/assets').LongTermAsset[] = []
-  const foreclosedKinds: AssetKind[] = []
-  const foreclosedKindsSet = new Set<AssetKind>()
-  const stateAssets = state.assets || []
-
-  for (let i = 0, len = stateAssets.length; i < len; i++) {
-    const asset = stateAssets[i]
-    if (!asset) continue
-
-    if (foreclosedAssetIds.has(asset.id)) {
-      if (asset.kind !== undefined && !foreclosedKindsSet.has(asset.kind)) {
-        foreclosedKindsSet.add(asset.kind)
-        foreclosedKinds.push(asset.kind)
-      }
-    } else {
-      nextAssets.push(asset)
-    }
-  }
+  const stateAssets = (state.assets || []).filter(Boolean)
+  const nextAssets = stateAssets.filter(
+    asset => !foreclosedAssetIds.has(asset.id)
+  )
+  const foreclosedKinds: AssetKind[] = [
+    ...new Set(
+      stateAssets
+        .filter(asset => foreclosedAssetIds.has(asset.id))
+        .map(asset => asset.kind)
+        .filter((kind): kind is AssetKind => kind !== undefined)
+    )
+  ]
 
   return {
     state: {
@@ -276,18 +262,9 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const remaining: CrowdfundCampaign[] = []
   const newAssets: LongTermAsset[] = []
-  // ⚡ BOLT OPTIMIZATION: Avoid intermediate array allocation in Set initialization
-  // Why: Mapping state.assets into an array before passing to the Set constructor allocates an intermediate array, which causes unnecessary garbage collection overhead in a hot path.
-  // Impact: Baseline 18,894 ops/sec -> Optimized 27,817 ops/sec (1.47x faster for 1000 items)
-  const unavailableKinds = new Set<AssetKind>()
-  const stateAssets = state.assets
-  if (stateAssets) {
-    for (let i = 0; i < stateAssets.length; i++) {
-      const asset = stateAssets[i]
-      if (!asset) continue
-      unavailableKinds.add(asset.kind)
-    }
-  }
+  const unavailableKinds = new Set<AssetKind>(
+    (state.assets ?? []).filter(Boolean).map(asset => asset.kind)
+  )
 
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let fame = state.player.fame
@@ -340,7 +317,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
           position: { x: 0, y: 0 },
           installedModuleId: null
         })),
-        acquiredOnDay: day, // ⚡ BOLT OPTIMIZATION: Stamped directly during creation to avoid .map() reallocation
+        acquiredOnDay: day,
         acquisitionMode: 'crowdfund',
         baseRiskEventChance: cfgTier.baseRiskEventChance
       })
@@ -349,9 +326,6 @@ export const processCrowdfundTick = (state: GameState): GameState => {
       fame = Math.max(0, fame - campaign.fameStake)
     }
   }
-
-  // ⚡ BOLT OPTIMIZATION: Removed .map() loop over newAssets to stamp acquiredOnDay.
-  // Why: Avoids intermediate array allocation and object spreads, reducing GC pressure.
 
   return {
     ...state,
@@ -388,6 +362,18 @@ export interface RollAssetRiskEventsResult {
  * fallback would auto-fire every remaining asset's event since totalRiskChance
  * is always less than 1.0.
  */
+/**
+ * Clamps a deterministic RNG stream sample into `[0, 1)`.
+ *
+ * @param value - Raw stream value, which may be missing or non-finite.
+ * @param fallback - Value used when the sample is not a finite number.
+ * @returns The clamped sample, or `fallback`.
+ */
+const normalizeRngSample = (value: number | undefined, fallback: number) =>
+  Number.isFinite(value)
+    ? Math.min(Math.max(value!, 0), 1 - Number.EPSILON)
+    : fallback
+
 export const rollAssetRiskEvents = (
   state: GameState,
   dayRngStream: number[],
@@ -411,10 +397,7 @@ export const rollAssetRiskEvents = (
     const totalRiskChance =
       asset.baseRiskEventChance * diyRiskMult * riskChanceMult
 
-    const rawRoll = dayRngStream[i++]
-    const roll = Number.isFinite(rawRoll)
-      ? Math.min(Math.max(rawRoll!, 0), 1 - Number.EPSILON)
-      : 1
+    const roll = normalizeRngSample(dayRngStream[i++], 1)
     if (roll >= totalRiskChance) continue
 
     // Build the candidate event-type pool from installed modules.
@@ -437,10 +420,7 @@ export const rollAssetRiskEvents = (
     // cash-purchased assets with no liabilities.
     let selectedType: RiskEventType = 'fire'
     if (typesArray.length > 0) {
-      const rawTypeRoll = dayRngStream[i++]
-      const typeRoll = Number.isFinite(rawTypeRoll)
-        ? Math.min(Math.max(rawTypeRoll!, 0), 1 - Number.EPSILON)
-        : 0
+      const typeRoll = normalizeRngSample(dayRngStream[i++], 0)
       const index = pickIndex(typesArray, () => typeRoll)
       selectedType = typesArray[index]!
     }

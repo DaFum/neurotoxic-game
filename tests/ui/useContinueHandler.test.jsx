@@ -2,10 +2,10 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 
 // Mocks
-vi.mock('../../src/utils/postGigUtils', () => ({
+vi.mock('../../src/utils/postGig', () => ({
   calculateContinueStats: vi.fn()
 }))
-vi.mock('../../src/utils/economyEngine', () => ({
+vi.mock('../../src/utils/economy', () => ({
   shouldTriggerBankruptcy: vi.fn()
 }))
 vi.mock('../../src/utils/leaderboardUtils', () => ({
@@ -41,8 +41,8 @@ import {
   handleContinueSceneTransition
 } from '../../src/hooks/postGig/handlers/continueHandlerUtils'
 
-import { calculateContinueStats } from '../../src/utils/postGigUtils'
-import { shouldTriggerBankruptcy } from '../../src/utils/economyEngine'
+import { calculateContinueStats } from '../../src/utils/postGig'
+import { shouldTriggerBankruptcy } from '../../src/utils/economy'
 import { submitLeaderboardScores } from '../../src/utils/leaderboardUtils'
 import { logger } from '../../src/utils/logger'
 

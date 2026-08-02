@@ -26,33 +26,38 @@ export interface ClinicActionPayload {
 }
 
 /**
- * Tuning values for the dark-web leak action.
+ * Costs and gains shared by every once-per-day zealotry social action.
  */
-export interface DarkWebLeakConfig {
+export interface ZealotryActionConfig {
   COST: number
   FAME_GAIN: number
   ZEALOTRY_GAIN: number
   CONTROVERSY_GAIN: number
   HARMONY_COST: number
+}
+
+/**
+ * Tuning values for the dark-web leak action.
+ */
+export interface DarkWebLeakConfig extends ZealotryActionConfig {
   REQUIRED_CONTROVERSY: number
 }
 
 /**
  * Tuning values for the cult indoctrination action.
  */
-export interface CultIndoctrinationConfig {
-  COST: number
-  FAME_GAIN: number
-  ZEALOTRY_GAIN: number
-  CONTROVERSY_GAIN: number
-  HARMONY_COST: number
+export interface CultIndoctrinationConfig extends ZealotryActionConfig {
   REQUIRED_ZEALOTRY: number
 }
 
 /**
- * Reducer payload for resolving a cult indoctrination.
+ * Reducer payload shared by the zealotry social actions.
+ *
+ * @remarks
+ * `applyZealotryAction` consumes this shape for the pirate broadcast, dark-web
+ * leak, and cult indoctrination alike.
  */
-export interface CultIndoctrinationPayload {
+export interface ZealotryActionPayload {
   cost: number
   fameGain: number
   zealotryGain: number
@@ -61,29 +66,14 @@ export interface CultIndoctrinationPayload {
   successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
 }
 
-/**
- * Reducer payload for resolving a dark-web leak.
- */
-export interface DarkWebLeakPayload {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
+/** Reducer payload for resolving a cult indoctrination. */
+export type CultIndoctrinationPayload = ZealotryActionPayload
 
-/**
- * Reducer payload for resolving a pirate broadcast.
- */
-export interface PirateBroadcastPayload {
-  cost: number
-  fameGain: number
-  zealotryGain: number
-  controversyGain: number
-  harmonyCost: number
-  successToast?: Omit<ToastPayload, 'id'> & Partial<Pick<ToastPayload, 'id'>>
-}
+/** Reducer payload for resolving a dark-web leak. */
+export type DarkWebLeakPayload = ZealotryActionPayload
+
+/** Reducer payload for resolving a pirate broadcast. */
+export type PirateBroadcastPayload = ZealotryActionPayload
 
 /**
  * Reducer payload for blood-bank donation outcomes.

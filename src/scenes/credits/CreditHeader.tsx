@@ -1,10 +1,9 @@
-import React from 'react'
 import { useTranslation } from 'react-i18next'
 
 /**
  * Displays the credits title header.
  */
-export const CreditHeader = React.memo(() => {
+export const CreditHeader = () => {
   const { t } = useTranslation()
   return (
     <div className='mb-16'>
@@ -14,5 +13,4 @@ export const CreditHeader = React.memo(() => {
       <div className='w-48 h-px bg-gradient-to-r from-transparent via-toxic-green to-transparent mx-auto mt-4' />
     </div>
   )
-})
-CreditHeader.displayName = 'CreditHeader'
+}

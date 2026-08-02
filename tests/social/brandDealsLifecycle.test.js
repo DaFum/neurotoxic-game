@@ -1,6 +1,6 @@
 import { describe, it } from 'vitest'
 import assert from 'node:assert'
-import { generateBrandOffers } from '../../src/utils/socialEngine'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 import { calculatePostGigStateUpdates } from '../../src/utils/postGig/socialResolution'
 import { BRAND_DEALS_BY_ID } from '../../src/data/brandDeals'
 

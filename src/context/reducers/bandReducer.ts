@@ -1,4 +1,5 @@
 import { logger } from '../../utils/logger'
+import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { assertNever } from '../../utils/assertNever'
 import {
   clamp0to100,
@@ -9,7 +10,6 @@ import {
   clampRelationship,
   applyInventoryItemDelta,
   isForbiddenKey,
-  hasForbiddenKeys,
   finiteNumberOr,
   isFiniteNumber
 } from '../../utils/gameState'
@@ -93,7 +93,7 @@ export const handleUpdateBand = (
     !updates ||
     typeof updates !== 'object' ||
     Array.isArray(updates) ||
-    hasForbiddenKeys(updates as Record<string, unknown>)
+    hasForbiddenOwnKeys(updates as Record<string, unknown>)
   ) {
     return state
   }

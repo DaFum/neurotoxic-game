@@ -12,6 +12,7 @@ import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
 import { sanitizeGigModifierUpdates } from './initialState'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import type { RivalBandState } from '../types'
 import {
   clampPlayerMoney,
@@ -214,12 +215,6 @@ const SOCIAL_NUMERIC_FIELDS = new Set([
   'reputationCooldown'
 ])
 
-const ALLOWED_SETTINGS_KEYS = new Set([
-  'crtEnabled',
-  'tutorialSeen',
-  'logLevel'
-])
-
 const sanitizeSocialUpdates = (
   updates: Partial<SocialState> | null | undefined
 ): Partial<SocialState> => {
@@ -263,20 +258,10 @@ export const createUpdateSocialAction = (
  */
 export const createUpdateSettingsAction = (
   updates: Record<string, unknown>
-): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => {
-  const filtered: Record<string, unknown> = {}
-  if (updates && typeof updates === 'object') {
-    for (const key of ALLOWED_SETTINGS_KEYS) {
-      if (Object.hasOwn(updates, key)) {
-        filtered[key] = updates[key]
-      }
-    }
-  }
-  return {
-    type: ActionTypes.UPDATE_SETTINGS,
-    payload: filtered
-  }
-}
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_SETTINGS }> => ({
+  type: ActionTypes.UPDATE_SETTINGS,
+  payload: sanitizeSettingsPayload(updates)
+})
 
 /**
  * Replaces the persisted overworld map snapshot.

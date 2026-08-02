@@ -1,8 +1,46 @@
-import { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { CreditsView } from './credits/CreditsView'
+
+const CREDIT_KEYS = [
+  {
+    roleKey: 'ui:credits.role.code',
+    roleDefault: 'VOCAL CODE VOMIT',
+    nameKey: 'ui:credits.name.code',
+    nameDefault: 'Jules "Agent of Segfaults" Agent'
+  },
+  {
+    roleKey: 'ui:credits.role.audio',
+    roleDefault: 'AUDIO ENGINE ERADICATION',
+    nameKey: 'ui:credits.name.audio',
+    nameDefault: 'Tone.js // Blastbeat Buffer Overflow'
+  },
+  {
+    roleKey: 'ui:credits.role.rendering',
+    roleDefault: 'RENDERING RAZORSTORM',
+    nameKey: 'ui:credits.name.rendering',
+    nameDefault: 'Pixi.js // Retina Shredder Edition'
+  },
+  {
+    roleKey: 'ui:credits.role.animation',
+    roleDefault: 'SPASM ANIMATION RITUALS',
+    nameKey: 'ui:credits.name.animation',
+    nameDefault: 'Framer Motion // Framegrind Frenzy'
+  },
+  {
+    roleKey: 'ui:credits.role.assets',
+    roleDefault: 'TEXTURE FLESHMELT',
+    nameKey: 'ui:credits.name.assets',
+    nameDefault: 'Mutated Generated AI Assets from the Void'
+  },
+  {
+    roleKey: 'ui:credits.role.thanks',
+    roleDefault: 'SPECIAL THANKS IN CAPS OF GORE',
+    nameKey: 'ui:credits.name.thanks',
+    nameDefault: 'THE USERS // CLICK TILL SYSTEM DECAYS'
+  }
+] as const
 
 /**
  * Builds localized credits data and returns to the main menu on exit.
@@ -11,67 +49,15 @@ export const Credits = () => {
   const { t } = useTranslation(['ui'])
   const { changeScene } = useGameActions()
 
-  const handleReturn = useCallback(
-    () => changeScene(GAME_PHASES.MENU),
-    [changeScene]
-  )
-
-  const credits = useMemo(
-    () => [
-      {
-        role: t('ui:credits.role.code', { defaultValue: 'VOCAL CODE VOMIT' }),
-        name: t('ui:credits.name.code', {
-          defaultValue: 'Jules "Agent of Segfaults" Agent'
-        })
-      },
-      {
-        role: t('ui:credits.role.audio', {
-          defaultValue: 'AUDIO ENGINE ERADICATION'
-        }),
-        name: t('ui:credits.name.audio', {
-          defaultValue: 'Tone.js // Blastbeat Buffer Overflow'
-        })
-      },
-      {
-        role: t('ui:credits.role.rendering', {
-          defaultValue: 'RENDERING RAZORSTORM'
-        }),
-        name: t('ui:credits.name.rendering', {
-          defaultValue: 'Pixi.js // Retina Shredder Edition'
-        })
-      },
-      {
-        role: t('ui:credits.role.animation', {
-          defaultValue: 'SPASM ANIMATION RITUALS'
-        }),
-        name: t('ui:credits.name.animation', {
-          defaultValue: 'Framer Motion // Framegrind Frenzy'
-        })
-      },
-      {
-        role: t('ui:credits.role.assets', {
-          defaultValue: 'TEXTURE FLESHMELT'
-        }),
-        name: t('ui:credits.name.assets', {
-          defaultValue: 'Mutated Generated AI Assets from the Void'
-        })
-      },
-      {
-        role: t('ui:credits.role.thanks', {
-          defaultValue: 'SPECIAL THANKS IN CAPS OF GORE'
-        }),
-        name: t('ui:credits.name.thanks', {
-          defaultValue: 'THE USERS // CLICK TILL SYSTEM DECAYS'
-        })
-      }
-    ],
-    [t]
-  )
+  const credits = CREDIT_KEYS.map(entry => ({
+    role: t(entry.roleKey, { defaultValue: entry.roleDefault }),
+    name: t(entry.nameKey, { defaultValue: entry.nameDefault })
+  }))
 
   return (
     <CreditsView
       credits={credits}
-      onReturn={handleReturn}
+      onReturn={() => changeScene(GAME_PHASES.MENU)}
       returnText={t('ui:creditsScreen.return', { defaultValue: 'RETURN' })}
     />
   )

@@ -7,7 +7,7 @@ import {
   buildPerGigSocialReconciliation,
   getSpinStoryMoneyUpdate,
   getSpinStorySocialUpdateFactory
-} from '../../../utils/postGigUtils'
+} from '../../../utils/postGig'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useMinorHandlers}: state slices, the spin-specific one-shot guard, translator, and dispatchers. */

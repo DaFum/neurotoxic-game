@@ -13,6 +13,31 @@ export type SongStat = Pick<
 >
 
 /**
+ * Builds a leaderboard score entry for a song, resolving its leaderboard id.
+ *
+ * @param songId - Internal song id to resolve through `SONGS_BY_ID`.
+ * @param score - Raw score; coerced to a finite number.
+ * @param accuracy - Raw accuracy; coerced to a finite number.
+ * @returns The score entry, or `undefined` when the song has no leaderboard id.
+ */
+const toLeaderboardScore = (
+  songId: string | undefined,
+  score: unknown,
+  accuracy: unknown
+): SongStat | undefined => {
+  const leaderboardSongId =
+    typeof songId === 'string'
+      ? SONGS_BY_ID.get(songId)?.leaderboardId
+      : undefined
+  if (!leaderboardSongId) return undefined
+  return {
+    songId: leaderboardSongId,
+    score: finiteNumberOr(score, 0),
+    accuracy: finiteNumberOr(accuracy, 0)
+  }
+}
+
+/**
  * Submits per-song leaderboard scores for the last gig.
  *
  * @param params - Submission context containing player identity, last gig stats,
@@ -31,42 +56,31 @@ export const submitLeaderboardScores = async ({
 }) => {
   if (!player.playerId || !player.playerName) return
 
-  // ⚡ BOLT OPTIMIZATION: Collapsed .map() and separate filter loop into a single procedural pass
-  // Why: Avoids intermediate array allocations and closure allocations on hot path
-  // Impact: Reduces GC pressure and iteration time when preparing batch submissions
   const scoresToSubmit: SongStat[] = []
 
   const songStats = lastGigStats?.songStats
 
   if (songStats && songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    const statsLen = songStats.length
-    for (let i = 0; i < statsLen; i++) {
-      const stat = songStats[i]
-      if (!stat) continue
-      const leaderboardSongId = SONGS_BY_ID.get(stat.songId)?.leaderboardId
-      if (leaderboardSongId) {
-        scoresToSubmit.push({
-          songId: leaderboardSongId,
-          score: finiteNumberOr(stat.score, 0),
-          accuracy: finiteNumberOr(stat.accuracy, 0)
-        })
-      }
-    }
+    scoresToSubmit.push(
+      ...songStats
+        .map(stat =>
+          toLeaderboardScore(stat?.songId, stat?.score, stat?.accuracy)
+        )
+        .filter((entry): entry is SongStat => entry !== undefined)
+    )
   } else {
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
       typeof setlist?.[0] === 'string' ? setlist[0] : setlist?.[0]?.id
     const playedSongId = currentGig?.songId ?? setlistFirstId
     if (typeof playedSongId === 'string') {
-      const leaderboardSongId = SONGS_BY_ID.get(playedSongId)?.leaderboardId
-      if (leaderboardSongId) {
-        scoresToSubmit.push({
-          songId: leaderboardSongId,
-          score: finiteNumberOr(lastGigStats?.score, 0),
-          accuracy: finiteNumberOr(lastGigStats?.accuracy, 0)
-        })
-      }
+      const entry = toLeaderboardScore(
+        playedSongId,
+        lastGigStats?.score,
+        lastGigStats?.accuracy
+      )
+      if (entry) scoresToSubmit.push(entry)
     } else {
       logger.warn('PostGig', 'No valid songId found for legacy fallback')
       return
@@ -91,8 +105,6 @@ export const submitLeaderboardScores = async ({
       signal: controller.signal
     })
 
-    clearTimeout(timeoutId)
-
     if (res.status === 404) {
       logger.info(
         'PostGig',
@@ -105,7 +117,8 @@ export const submitLeaderboardScores = async ({
       throw new Error(`HTTP ${res.status}: ${err}`)
     }
   } catch (err) {
-    clearTimeout(timeoutId)
     logger.error('PostGig', `Batch score submit failed`, err)
+  } finally {
+    clearTimeout(timeoutId)
   }
 }

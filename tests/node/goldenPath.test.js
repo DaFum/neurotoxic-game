@@ -19,7 +19,7 @@ import { createInitialState } from '../../src/context/initialState'
 import {
   calculateGigFinancials,
   EXPENSE_CONSTANTS
-} from '../../src/utils/economyEngine'
+} from '../../src/utils/economy'
 import { buildGigStatsSnapshot } from '../../src/utils/gigStats'
 import { getEarlyGameObligationMultiplier } from '../../src/utils/balanceTuning'
 

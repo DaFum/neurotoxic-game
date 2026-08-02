@@ -23,9 +23,7 @@ const mockGameState = vi.hoisted(() => ({
 vi.mock('../../src/context/GameState', () => ({
   useGameSelector: selector => selector(mockGameState),
   useGameActions: () => ({
-    updateBand: mockUpdateBand
-  }),
-  useGameDispatch: () => ({
+    updateBand: mockUpdateBand,
     toggleNeuroDecimator: mockToggleNeuroDecimator
   })
 }))

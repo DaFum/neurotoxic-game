@@ -8,7 +8,7 @@ import type { AssetModifiers } from '../types/assets'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
-import { MODIFIER_COSTS } from '../utils/economyEngine'
+import { MODIFIER_COSTS } from '../utils/economy'
 
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'

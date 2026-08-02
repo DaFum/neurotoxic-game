@@ -4,9 +4,9 @@ import {
   generateDailyTrend,
   generatePostOptions,
   calculateSocialGrowth,
-  calculateViralityScore,
-  generateBrandOffers
+  calculateViralityScore
 } from '../../src/utils/socialEngine'
+import { generateBrandOffers } from '../../src/utils/brandDealLogic'
 import { checkTraitUnlocks } from '../../src/utils/unlockCheck'
 
 describe('Extended Social & Trait Systems', () => {

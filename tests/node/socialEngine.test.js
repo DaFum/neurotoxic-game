@@ -6,9 +6,9 @@ import {
   resolvePost,
   applyReputationDecay,
   calculateSocialGrowth,
-  checkViralEvent,
-  generateBrandName
+  checkViralEvent
 } from '../../src/utils/socialEngine'
+import { generateBrandName } from '../../src/utils/brandOfferFlavor/index'
 import {
   generateBrandOffers,
   negotiateDeal

@@ -503,16 +503,11 @@ describe('Quest System Registry Validation', () => {
   })
 
   it('every QuestEventType is accepted as canonical progress event', async () => {
-    const fs = await import('node:fs')
-    const questTypes = fs.readFileSync('src/types/quest.d.ts', 'utf8')
-    const eventTypeBlock =
-      questTypes.match(
-        /export type QuestEventType =([\s\S]*?)\r?\n\r?\n/
-      )?.[1] ?? ''
-    const eventTypes = Array.from(
-      eventTypeBlock.matchAll(/\|\s+'([^']+)'/g),
-      match => match[1]
-    )
+    // QuestEventType is derived from this tuple, so it is the single source
+    // of truth for the canonical event names.
+    const { CANONICAL_QUEST_EVENT_TYPES } =
+      await import('../../src/data/questEventTypes.ts')
+    const eventTypes = CANONICAL_QUEST_EVENT_TYPES
 
     assert.ok(eventTypes.length > 0, 'expected QuestEventType literals')
     for (const eventType of eventTypes) {

@@ -204,6 +204,32 @@ export type GameDispatchActions = BaseGameDispatchActions &
   QuestDispatchActions &
   RivalBandDispatchActions
 
+/**
+ * The plain `dispatch(creator(payload))` wrappers, which depend on `dispatch`
+ * alone and are therefore built in a single memo.
+ */
+type SimpleDispatchActions = Pick<
+  BaseGameDispatchActions,
+  | 'updatePlayer'
+  | 'updateBand'
+  | 'toggleNeuroDecimator'
+  | 'updateSocial'
+  | 'setGameMap'
+  | 'setCurrentGig'
+  | 'startGig'
+  | 'setSetlist'
+  | 'setLastGigStats'
+  | 'removeToast'
+  | 'setGigModifiers'
+  | 'consumeItem'
+  | 'unlockTrait'
+  | 'setPendingBandHQOpen'
+  | 'setPendingSupplyStopInventory'
+  | 'dismissForeclosureNotice'
+  | 'setPendingRiskEvent'
+  | 'updateSettings'
+>
+
 interface UseGameDispatchActionsProps {
   dispatch: Dispatch<GameAction>
   state: GameState
@@ -225,10 +251,8 @@ export function useGameDispatchActions({
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
-  /**
-   * Transitions the game to a new scene.
-   * @param scene - The target scene name (e.g., GAME_PHASES.OVERWORLD).
-   */
+  // `changeScene` and `addToast` stay separate: the persistence and event
+  // sub-hooks below take them as inputs, so they must exist before the bundle.
   const changeScene = useCallback(
     (scene: Parameters<typeof createChangeSceneAction>[0]) =>
       startTransition(() => dispatch(createChangeSceneAction(scene))),
@@ -239,10 +263,7 @@ export function useGameDispatchActions({
     (
       message: Parameters<typeof createAddToastAction>[0],
       type: Parameters<typeof createAddToastAction>[1] = 'info'
-    ) => {
-      const action = createAddToastAction(message, type)
-      dispatch(action)
-    },
+    ) => dispatch(createAddToastAction(message, type)),
     [dispatch]
   )
 
@@ -264,76 +285,73 @@ export function useGameDispatchActions({
     tRef
   })
 
-  const updatePlayer = useCallback(
-    (updates: UpdatePlayerPayload) =>
-      dispatch(createUpdatePlayerAction(updates)),
-    [dispatch]
-  )
+  const simpleActions: SimpleDispatchActions = useMemo(
+    () => ({
+      updatePlayer: (updates: UpdatePlayerPayload) =>
+        dispatch(createUpdatePlayerAction(updates)),
+      updateBand: (updates: UpdateBandPayload) =>
+        dispatch(createUpdateBandAction(updates)),
+      toggleNeuroDecimator: isActive =>
+        dispatch(createToggleNeuroDecimatorAction(isActive)),
+      updateSocial: (
+        updates:
+          Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
+      ) => dispatch(createUpdateSocialAction(updates)),
+      // setGameMap is an intentional test seam on the public dispatch surface.
+      // Production map creation lives in useMapGeneration, which dispatches
+      // createSetMapAction directly: that hook is instantiated before this one
+      // (its resetMapGenerationRetries is a prop of this hook), so routing it
+      // through this method would create a circular hook dependency.
+      setGameMap: mapData => dispatch(createSetMapAction(mapData)),
+      setCurrentGig: gig => dispatch(createSetGigAction(gig)),
+      startGig: gig =>
+        startTransition(() => dispatch(createStartGigAction(gig))),
+      setSetlist: list => dispatch(createSetSetlistAction(list)),
+      setLastGigStats: stats => dispatch(createSetLastGigStatsAction(stats)),
+      removeToast: id => dispatch(createRemoveToastAction(id)),
+      setGigModifiers: modifiers =>
+        dispatch(createSetGigModifiersAction(modifiers)),
+      consumeItem: itemId => dispatch(createConsumeItemAction(itemId)),
+      unlockTrait: (memberId, traitId) =>
+        dispatch(createUnlockTraitAction(memberId, traitId)),
+      setPendingBandHQOpen: isOpen =>
+        dispatch(createSetPendingBandHQOpenAction(isOpen)),
+      setPendingSupplyStopInventory: inventory =>
+        dispatch(createSetPendingSupplyStopInventoryAction(inventory)),
+      dismissForeclosureNotice: kind =>
+        dispatch(dismissForeclosureNoticeAction(kind)),
+      setPendingRiskEvent: event => {
+        const action = createSetPendingRiskEventAction(event)
+        if (action) dispatch(action)
+      },
+      updateSettings: (updates: Record<string, unknown>) => {
+        dispatch(createUpdateSettingsAction(updates))
 
-  const updateBand = useCallback(
-    (updates: UpdateBandPayload) => dispatch(createUpdateBandAction(updates)),
-    [dispatch]
-  )
+        if (updates.logLevel !== undefined) {
+          const numericLogLevel = Number(updates.logLevel)
+          if (isValidLogLevel(numericLogLevel)) {
+            logger.setLevel(numericLogLevel)
+          } else {
+            logger.warn(
+              'GameState',
+              'Rejected persisted invalid logLevel update',
+              updates.logLevel
+            )
+          }
+        }
 
-  const toggleNeuroDecimator = useCallback(
-    (isActive: Parameters<typeof createToggleNeuroDecimatorAction>[0]) =>
-      dispatch(createToggleNeuroDecimatorAction(isActive)),
-    [dispatch]
-  )
-
-  const updateSocial = useCallback(
-    (
-      updates:
-        Partial<SocialState> | ((prev: SocialState) => Partial<SocialState>)
-    ) => dispatch(createUpdateSocialAction(updates)),
-    [dispatch]
-  )
-
-  // setGameMap is an intentional test seam on the public dispatch surface.
-  // Production map creation lives in useMapGeneration, which dispatches
-  // createSetMapAction directly: that hook is instantiated before this one
-  // (its resetMapGenerationRetries is a prop of this hook), so routing it
-  // through this method would create a circular hook dependency.
-  const setGameMap = useCallback(
-    (mapData: Parameters<typeof createSetMapAction>[0]) =>
-      dispatch(createSetMapAction(mapData)),
-    [dispatch]
-  )
-
-  const setCurrentGig = useCallback(
-    (gig: Parameters<typeof createSetGigAction>[0]) =>
-      dispatch(createSetGigAction(gig)),
-    [dispatch]
-  )
-
-  const startGig = useCallback(
-    (gig: Parameters<typeof createStartGigAction>[0]) =>
-      startTransition(() => dispatch(createStartGigAction(gig))),
-    [dispatch]
-  )
-
-  const setSetlist = useCallback(
-    (list: Parameters<typeof createSetSetlistAction>[0]) =>
-      dispatch(createSetSetlistAction(list)),
-    [dispatch]
-  )
-
-  const setLastGigStats = useCallback(
-    (stats: Parameters<typeof createSetLastGigStatsAction>[0]) =>
-      dispatch(createSetLastGigStatsAction(stats)),
-    [dispatch]
-  )
-
-  const removeToast = useCallback(
-    (id: Parameters<typeof createRemoveToastAction>[0]) => {
-      dispatch(createRemoveToastAction(id))
-    },
-    [dispatch]
-  )
-
-  const setGigModifiers = useCallback(
-    (modifiers: Parameters<typeof createSetGigModifiersAction>[0]) =>
-      dispatch(createSetGigModifiersAction(modifiers)),
+        // Sanitize before writing to global storage so malformed or unknown
+        // keys (e.g. a non-numeric logLevel) never leak past the reducer's
+        // validation into persisted global settings. The shared sanitizer keeps
+        // storage, reducer, and load in sync.
+        safeStorageOperation('saveGlobalSettings', () => {
+          writeGlobalSettings({
+            ...readGlobalSettings(),
+            ...sanitizeSettingsPayload(updates)
+          })
+        })
+      }
+    }),
     [dispatch]
   )
 
@@ -346,12 +364,6 @@ export function useGameDispatchActions({
     )
     dispatch(createResetStateAction({ unlocks }))
   }, [dispatch, resetMapGenerationRetries])
-
-  const consumeItem = useCallback(
-    (itemId: Parameters<typeof createConsumeItemAction>[0]) =>
-      dispatch(createConsumeItemAction(itemId)),
-    [dispatch]
-  )
 
   const advanceDay = useCallback(() => {
     const currentState = stateRef.current
@@ -376,44 +388,7 @@ export function useGameDispatchActions({
     addToast(tRef.current('ui:day_advance', { day: nextDay }), 'info')
   }, [dispatch, addToast, stateRef, tRef])
 
-  const minigameActions = useMinigameDispatchActions(dispatch)
-  const facilityActions = useFacilityDispatchActions(dispatch)
-  const questActions = useQuestDispatchActions(dispatch)
-  const rivalBandActions = useRivalBandDispatchActions({ dispatch, stateRef })
-
-  const unlockTrait = useCallback(
-    (
-      memberId: Parameters<typeof createUnlockTraitAction>[0],
-      traitId: Parameters<typeof createUnlockTraitAction>[1]
-    ) => dispatch(createUnlockTraitAction(memberId, traitId)),
-    [dispatch]
-  )
-
-  const setPendingBandHQOpen = useCallback(
-    (isOpen: boolean) => dispatch(createSetPendingBandHQOpenAction(isOpen)),
-    [dispatch]
-  )
-
-  const setPendingSupplyStopInventory = useCallback(
-    (inventory: GameState['pendingSupplyStopInventory']) =>
-      dispatch(createSetPendingSupplyStopInventoryAction(inventory)),
-    [dispatch]
-  )
-
-  const dismissForeclosureNotice = useCallback(
-    (kind: Parameters<typeof dismissForeclosureNoticeAction>[0]) =>
-      dispatch(dismissForeclosureNoticeAction(kind)),
-    [dispatch]
-  )
-
-  const setPendingRiskEvent = useCallback(
-    (event: Parameters<typeof createSetPendingRiskEventAction>[0]) => {
-      const action = createSetPendingRiskEventAction(event)
-      if (action) dispatch(action)
-    },
-    [dispatch]
-  )
-
+  const { setPendingBandHQOpen } = simpleActions
   const endGig = useCallback(() => {
     const currentState = stateRef.current
     if (currentState.currentGig?.isPractice) {
@@ -435,37 +410,10 @@ export function useGameDispatchActions({
     }
   }, [addToast, changeScene, setPendingBandHQOpen, stateRef, tRef])
 
-  const updateSettings = useCallback(
-    (updates: Record<string, unknown>) => {
-      dispatch(createUpdateSettingsAction(updates))
-
-      if (updates.logLevel !== undefined) {
-        const numericLogLevel = Number(updates.logLevel)
-        if (isValidLogLevel(numericLogLevel)) {
-          logger.setLevel(numericLogLevel)
-        } else {
-          logger.warn(
-            'GameState',
-            'Rejected persisted invalid logLevel update',
-            updates.logLevel
-          )
-        }
-      }
-
-      // Sanitize before writing to global storage so malformed or unknown keys
-      // (e.g. a non-numeric logLevel) never leak past the reducer's validation
-      // into persisted global settings. Shared sanitizer keeps storage, reducer,
-      // and load in sync.
-      safeStorageOperation('saveGlobalSettings', () => {
-        writeGlobalSettings({
-          ...readGlobalSettings(),
-          ...sanitizeSettingsPayload(updates)
-        })
-      })
-    },
-    [dispatch]
-  )
-
+  const minigameActions = useMinigameDispatchActions(dispatch)
+  const facilityActions = useFacilityDispatchActions(dispatch)
+  const questActions = useQuestDispatchActions(dispatch)
+  const rivalBandActions = useRivalBandDispatchActions({ dispatch, stateRef })
   const assetActions = useAssetDispatchActions({
     dispatch,
     stateRef,
@@ -476,76 +424,42 @@ export function useGameDispatchActions({
   return useMemo(
     () => ({
       changeScene,
-      updatePlayer,
-      updateBand,
-      toggleNeuroDecimator,
-      updateSocial,
-      setGameMap,
-      setCurrentGig,
-      startGig,
-      setSetlist,
-      setLastGigStats,
+      addToast,
       setActiveEvent,
       triggerEvent,
       resolveEvent,
-      addToast,
-      removeToast,
-      setGigModifiers,
-      consumeItem,
       advanceDay,
       saveGame,
       saveGameAfterStateCommit,
       loadGame,
       deleteSave,
       resetState,
-      updateSettings,
+      endGig,
+      ...simpleActions,
       ...minigameActions,
       ...facilityActions,
       ...questActions,
       ...rivalBandActions,
-      unlockTrait,
-      endGig,
-      setPendingBandHQOpen,
-      setPendingSupplyStopInventory,
-      dismissForeclosureNotice,
-      setPendingRiskEvent,
       ...assetActions
     }),
     [
       changeScene,
-      updatePlayer,
-      updateBand,
-      toggleNeuroDecimator,
-      updateSocial,
-      setGameMap,
-      setCurrentGig,
-      startGig,
-      setSetlist,
-      setLastGigStats,
+      addToast,
       setActiveEvent,
       triggerEvent,
       resolveEvent,
-      addToast,
-      removeToast,
-      setGigModifiers,
-      consumeItem,
       advanceDay,
       saveGame,
       saveGameAfterStateCommit,
       loadGame,
       deleteSave,
       resetState,
-      updateSettings,
+      endGig,
+      simpleActions,
       minigameActions,
       facilityActions,
       questActions,
       rivalBandActions,
-      unlockTrait,
-      endGig,
-      setPendingBandHQOpen,
-      setPendingSupplyStopInventory,
-      dismissForeclosureNotice,
-      setPendingRiskEvent,
       assetActions
     ]
   )

@@ -7,7 +7,7 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import {
   SPIN_STORY_MONEY_COST,
   SPIN_STORY_CONTROVERSY_REDUCTION
-} from '../../utils/postGigUtils'
+} from '../../utils/postGig'
 import { SideEffectsSummary } from './SideEffectsSummary'
 import type { CompletePhaseProps } from '../../types/components'
 

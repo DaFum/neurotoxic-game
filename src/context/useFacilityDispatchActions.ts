@@ -1,4 +1,4 @@
-import { useCallback, useMemo, type Dispatch } from 'react'
+import { useMemo, type Dispatch } from 'react'
 import type { GameAction } from '../types'
 import {
   createUnblacklistVenueAction,
@@ -63,109 +63,28 @@ export interface FacilityDispatchActions {
 export function useFacilityDispatchActions(
   dispatch: Dispatch<GameAction>
 ): FacilityDispatchActions {
-  const unblacklistVenue = useCallback(
-    (payload: Parameters<typeof createUnblacklistVenueAction>[0]) =>
-      dispatch(createUnblacklistVenueAction(payload)),
-    [dispatch]
-  )
-
-  const craftItem = useCallback(
-    (payload: Parameters<typeof createCraftItemAction>[0]) =>
-      dispatch(createCraftItemAction(payload)),
-    [dispatch]
-  )
-
-  const useContraband = useCallback(
-    (
-      instanceId: Parameters<typeof createUseContrabandAction>[0],
-      contrabandId: Parameters<typeof createUseContrabandAction>[1],
-      memberId?: Parameters<typeof createUseContrabandAction>[2]
-    ) =>
-      dispatch(createUseContrabandAction(instanceId, contrabandId, memberId)),
-    [dispatch]
-  )
-
-  const clinicHeal = useCallback(
-    (payload: Parameters<typeof createClinicHealAction>[0]) =>
-      dispatch(createClinicHealAction(payload)),
-    [dispatch]
-  )
-
-  const graftNeuroOverclock = useCallback(
-    (memberId: string) => dispatch(createGraftNeuroOverclockAction(memberId)),
-    [dispatch]
-  )
-
-  const clinicEnhance = useCallback(
-    (payload: Parameters<typeof createClinicEnhanceAction>[0]) =>
-      dispatch(createClinicEnhanceAction(payload)),
-    [dispatch]
-  )
-
-  const pirateBroadcast = useCallback(
-    (payload: Parameters<typeof createPirateBroadcastAction>[0]) =>
-      dispatch(createPirateBroadcastAction(payload)),
-    [dispatch]
-  )
-
-  const darkWebLeak = useCallback(
-    (payload: Parameters<typeof createDarkWebLeakAction>[0]) =>
-      dispatch(createDarkWebLeakAction(payload)),
-    [dispatch]
-  )
-
-  const cultIndoctrination = useCallback(
-    (payload: Parameters<typeof createCultIndoctrinationAction>[0]) =>
-      dispatch(createCultIndoctrinationAction(payload)),
-    [dispatch]
-  )
-
-  const merchPress = useCallback(
-    (payload: Parameters<typeof createMerchPressAction>[0]) =>
-      dispatch(createMerchPressAction(payload)),
-    [dispatch]
-  )
-
-  const tradeVoidItem = useCallback(
-    (payload: Parameters<typeof createTradeVoidItemAction>[0]) =>
-      dispatch(createTradeVoidItemAction(payload)),
-    [dispatch]
-  )
-
-  const bloodBankDonate = useCallback(
-    (payload: Parameters<typeof createBloodBankDonateAction>[0]) =>
-      dispatch(createBloodBankDonateAction(payload)),
-    [dispatch]
-  )
-
   return useMemo(
     () => ({
-      unblacklistVenue,
-      craftItem,
-      useContraband,
-      clinicHeal,
-      graftNeuroOverclock,
-      clinicEnhance,
-      pirateBroadcast,
-      darkWebLeak,
-      cultIndoctrination,
-      merchPress,
-      tradeVoidItem,
-      bloodBankDonate
+      unblacklistVenue: payload =>
+        dispatch(createUnblacklistVenueAction(payload)),
+      craftItem: payload => dispatch(createCraftItemAction(payload)),
+      // Public action name, not a React hook.
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+      useContraband: (instanceId, contrabandId, memberId) =>
+        dispatch(createUseContrabandAction(instanceId, contrabandId, memberId)),
+      clinicHeal: payload => dispatch(createClinicHealAction(payload)),
+      graftNeuroOverclock: memberId =>
+        dispatch(createGraftNeuroOverclockAction(memberId)),
+      clinicEnhance: payload => dispatch(createClinicEnhanceAction(payload)),
+      pirateBroadcast: payload =>
+        dispatch(createPirateBroadcastAction(payload)),
+      darkWebLeak: payload => dispatch(createDarkWebLeakAction(payload)),
+      cultIndoctrination: payload =>
+        dispatch(createCultIndoctrinationAction(payload)),
+      merchPress: payload => dispatch(createMerchPressAction(payload)),
+      tradeVoidItem: payload => dispatch(createTradeVoidItemAction(payload)),
+      bloodBankDonate: payload => dispatch(createBloodBankDonateAction(payload))
     }),
-    [
-      unblacklistVenue,
-      craftItem,
-      useContraband,
-      clinicHeal,
-      graftNeuroOverclock,
-      clinicEnhance,
-      pirateBroadcast,
-      darkWebLeak,
-      cultIndoctrination,
-      merchPress,
-      tradeVoidItem,
-      bloodBankDonate
-    ]
+    [dispatch]
   )
 }

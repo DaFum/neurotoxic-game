@@ -1,7 +1,6 @@
 import type { GameState, QuestPenalty, QuestState } from '../types'
 import {
   clampBandHarmony,
-  clamp0to100,
   clampControversyLevel,
   clampLoyalty,
   finiteNumberOr,
@@ -14,6 +13,7 @@ import {
   getRegionReputationKey,
   queueEvent
 } from './questEffects'
+import { updateFirstMatchingAssetCondition } from './questHelpers'
 
 /**
  * State, story flags, and cooldowns produced by quest failure penalties.
@@ -146,54 +146,6 @@ export const getQuestPenalties = (quest: QuestState): QuestPenalty[] => {
   return normalizeLegacyPenalties(quest)
 }
 
-// ⚡ BOLT OPTIMIZATION: Replaced Array.map with explicit index-based for loop
-// Why: Avoids creating closures and re-allocating unmodified array items in a hot path
-// Impact: 11x faster for first-item matches (540k ops/sec -> 6M ops/sec), 3.6x faster for no matches
-const applyAssetDamage = (
-  state: GameState,
-  penalty: Extract<QuestPenalty, { type: 'asset.damage' }>
-): GameState => {
-  if (!state.assets || state.assets.length === 0) return state
-
-  let targetIndex = -1
-  const len = state.assets.length
-  const isIdPenalty = typeof penalty.assetId === 'string'
-  const isKindPenalty =
-    penalty.assetId == null && typeof penalty.assetKind === 'string'
-
-  if (!isIdPenalty && !isKindPenalty) return state
-
-  for (let i = 0; i < len; i++) {
-    const asset = state.assets[i]
-    if (!asset) continue
-
-    if (isIdPenalty && asset.id === penalty.assetId) {
-      targetIndex = i
-      break
-    } else if (isKindPenalty && asset.kind === penalty.assetKind) {
-      targetIndex = i
-      break
-    }
-  }
-
-  if (targetIndex === -1) return state
-
-  const asset = state.assets[targetIndex]
-  // In the extremely rare case the array element is completely missing/undefined,
-  // we cannot safely clone and update its condition, so we bail out.
-  if (!asset) return state
-
-  const assets = [...state.assets]
-  assets[targetIndex] = {
-    ...asset,
-    condition: clamp0to100(
-      finiteNumberOr(asset.condition, 0) - Math.abs(penalty.amount)
-    )
-  }
-
-  return { ...state, assets }
-}
-
 /**
  * Applies all failure penalties for a quest without dispatching side effects.
  */
@@ -230,7 +182,11 @@ export const applyQuestFailurePenalties = (
         break
       }
       case 'asset.damage':
-        nextState = applyAssetDamage(nextState, penalty)
+        nextState = updateFirstMatchingAssetCondition(
+          nextState,
+          penalty,
+          -Math.abs(penalty.amount)
+        )
         break
       case 'region.reputation':
         nextState = applyReputationDelta(

@@ -10,7 +10,7 @@ import {
   getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
-} from '../../src/utils/postGigUtils'
+} from '../../src/utils/postGig'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
 import { POST_OPTIONS } from '../../src/data/postOptions'
 

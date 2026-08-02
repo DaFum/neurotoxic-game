@@ -4,7 +4,7 @@ import {
   calculateGigFameReward,
   BALANCE_CONSTANTS,
   FAME_PROGRESS_CONSTANTS
-} from '../src/utils/gameStateUtils.js'
+} from '../src/utils/gameState/index.ts'
 
 /**
  * Mathematically isolates and logs the fame calculation, demonstrating the true

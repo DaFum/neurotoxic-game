@@ -125,7 +125,7 @@ test('regionalGigHistory roundtrip integration', () => {
   assert.deepEqual(loadedState.regionalGigHistory, finalHistory)
 })
 
-import { calculatePostGigStateUpdates } from '../../src/utils/postGigUtils'
+import { calculatePostGigStateUpdates } from '../../src/utils/postGig'
 import { getRegionKeyForLocation } from '../../src/utils/mapUtils'
 
 const buildPostGigParams = (social, player) => ({

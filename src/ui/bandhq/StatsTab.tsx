@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
+import { VanStatusBars } from './VanStatusBars'
 import { formatCurrency } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/gameState'
 
@@ -57,29 +58,13 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
           <h3 className='text-toxic-green text-lg font-bold mb-4 border-b border-ash-gray pb-2 font-mono'>
             {t('ui:stats.van_condition', { defaultValue: 'VAN STATUS' })}
           </h3>
-          {/* jscpd:ignore-start */}
-          <div className='space-y-2'>
-            <ProgressBar
-              label={t('ui:stats.fuel', { defaultValue: 'Fuel' })}
-              value={player.van?.fuel}
-              max={100}
-              color='bg-fuel-yellow'
-            />
-            <ProgressBar
-              label={t('ui:stats.condition', { defaultValue: 'Condition' })}
-              value={player.van?.condition}
-              max={100}
-              color='bg-condition-blue'
-              size='sm'
-            />
-            <div className='mt-2 text-xs text-ash-gray font-mono'>
-              {t('ui:stats.breakdown_chance', {
-                defaultValue: 'Breakdown Chance'
-              })}
-              : {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
-            </div>
+          <VanStatusBars van={player.van} t={t} />
+          <div className='mt-2 text-xs text-ash-gray font-mono'>
+            {t('ui:stats.breakdown_chance', {
+              defaultValue: 'Breakdown Chance'
+            })}
+            : {((player.van?.breakdownChance ?? 0) * 100).toFixed(1)}%
           </div>
-          {/* jscpd:ignore-end */}
         </div>
       </div>
 

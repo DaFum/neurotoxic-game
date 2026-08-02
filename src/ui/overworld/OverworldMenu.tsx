@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useRef, useEffect, useCallback } from 'react'
-import { EXPENSE_CONSTANTS } from '../../utils/economyEngine'
+import { EXPENSE_CONSTANTS } from '../../utils/economy'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 interface OverworldMenuProps {

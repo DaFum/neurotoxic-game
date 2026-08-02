@@ -1,9 +1,4 @@
-import {
-  useCallback,
-  useMemo,
-  type Dispatch,
-  type MutableRefObject
-} from 'react'
+import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
 import type { GameAction, GameState } from '../types'
 import type { ChassisTier } from '../types/assets'
@@ -56,113 +51,71 @@ export function useAssetDispatchActions({
   addToast,
   tRef
 }: UseAssetDispatchActionsProps): AssetDispatchActions {
-  const purchaseChassis = useCallback(
-    (input: Parameters<typeof purchaseChassisAction>[0]) => {
-      const action = purchaseChassisAction(input, stateRef.current)
-      if (action.type === ActionTypes.PURCHASE_CHASSIS_FAILED) {
+  return useMemo(() => {
+    /**
+     * Dispatches an asset action, first surfacing its localized failure reason
+     * as an error toast when the action is the matching `*_FAILED` variant.
+     */
+    const dispatchWithFailureToast = <
+      T extends GameAction & { payload: { reason: string } }
+    >(
+      action: GameAction,
+      failedType: T['type'],
+      toastKeyPrefix: string
+    ) => {
+      if (action.type === failedType) {
+        const reason = (action as T).payload.reason
         addToast(
-          tRef.current(
-            `assets:purchaseFailed.${action.payload.reason.toLowerCase()}`
-          ),
+          tRef.current(`${toastKeyPrefix}.${reason.toLowerCase()}`),
           'error'
         )
       }
       dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const upgradeChassisTier = useCallback(
-    (assetId: string, targetTier: ChassisTier) => {
-      const action = upgradeChassisTierAction(
-        assetId,
-        targetTier,
-        stateRef.current
-      )
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
-  const sellChassis = useCallback(
-    (assetId: string) => {
-      dispatch(sellChassisAction(assetId, stateRef.current))
-    },
-    [dispatch, stateRef]
-  )
-  const repairChassis = useCallback(
-    (assetId: string) => {
-      const action = repairChassisAction(assetId, stateRef.current)
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
-  const refinanceLiability = useCallback(
-    (liabilityId: string, loanProfileId: LoanProfileId) => {
-      const action = refinanceLiabilityAction(
-        liabilityId,
-        loanProfileId,
-        stateRef.current
-      )
-      if (action.type === ActionTypes.REFINANCE_LIABILITY_FAILED) {
-        addToast(
-          tRef.current(
-            `assets:refinanceFailed.${action.payload.reason.toLowerCase()}`
-          ),
-          'error'
-        )
-      }
-      dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const installModule = useCallback(
-    (input: Parameters<typeof installModuleAction>[0]) => {
-      const action = installModuleAction(input, stateRef.current)
-      if (action.type === ActionTypes.INSTALL_MODULE_FAILED) {
-        addToast(
-          tRef.current(
-            `assets:installFailed.${action.payload.reason.toLowerCase()}`
-          ),
-          'error'
-        )
-      }
-      dispatch(action)
-    },
-    [dispatch, stateRef, addToast, tRef]
-  )
-  const removeModule = useCallback(
-    (assetId: string, slotId: string) => {
-      dispatch(removeModuleAction(assetId, slotId))
-    },
-    [dispatch]
-  )
-  const startCrowdfund = useCallback(
-    (input: Parameters<typeof startCrowdfundAction>[0]) => {
-      const action = startCrowdfundAction(input, stateRef.current)
-      if (action) dispatch(action)
-    },
-    [dispatch, stateRef]
-  )
+    }
 
-  return useMemo(
-    () => ({
-      purchaseChassis,
-      upgradeChassisTier,
-      sellChassis,
-      repairChassis,
-      refinanceLiability,
-      installModule,
-      removeModule,
-      startCrowdfund
-    }),
-    [
-      purchaseChassis,
-      upgradeChassisTier,
-      sellChassis,
-      repairChassis,
-      refinanceLiability,
-      installModule,
-      removeModule,
-      startCrowdfund
-    ]
-  )
+    return {
+      purchaseChassis: (input: Parameters<typeof purchaseChassisAction>[0]) =>
+        dispatchWithFailureToast(
+          purchaseChassisAction(input, stateRef.current),
+          ActionTypes.PURCHASE_CHASSIS_FAILED,
+          'assets:purchaseFailed'
+        ),
+      upgradeChassisTier: (assetId: string, targetTier: ChassisTier) => {
+        const action = upgradeChassisTierAction(
+          assetId,
+          targetTier,
+          stateRef.current
+        )
+        if (action) dispatch(action)
+      },
+      sellChassis: (assetId: string) =>
+        dispatch(sellChassisAction(assetId, stateRef.current)),
+      repairChassis: (assetId: string) => {
+        const action = repairChassisAction(assetId, stateRef.current)
+        if (action) dispatch(action)
+      },
+      refinanceLiability: (liabilityId: string, loanProfileId: LoanProfileId) =>
+        dispatchWithFailureToast(
+          refinanceLiabilityAction(
+            liabilityId,
+            loanProfileId,
+            stateRef.current
+          ),
+          ActionTypes.REFINANCE_LIABILITY_FAILED,
+          'assets:refinanceFailed'
+        ),
+      installModule: (input: Parameters<typeof installModuleAction>[0]) =>
+        dispatchWithFailureToast(
+          installModuleAction(input, stateRef.current),
+          ActionTypes.INSTALL_MODULE_FAILED,
+          'assets:installFailed'
+        ),
+      removeModule: (assetId: string, slotId: string) =>
+        dispatch(removeModuleAction(assetId, slotId)),
+      startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => {
+        const action = startCrowdfundAction(input, stateRef.current)
+        if (action) dispatch(action)
+      }
+    }
+  }, [dispatch, stateRef, addToast, tRef])
 }

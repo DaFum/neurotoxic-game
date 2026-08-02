@@ -1,4 +1,3 @@
-import React from 'react'
 import { m } from 'motion/react'
 
 type CreditEntryProps = {
@@ -11,24 +10,19 @@ type CreditEntryProps = {
  * Displays one animated credits row with role/name text and delay styling.
  * @param props - Credit role, credited name, and animation delay.
  */
-export const CreditEntry = React.memo(
-  ({ role, name, delay }: CreditEntryProps) => {
-    return (
-      <m.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay }}
-        className='flex flex-col gap-2'
-      >
-        <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase'>
-          {role}
-        </span>
-        <span className='text-star-white text-2xl font-bold font-display tracking-wide'>
-          {name}
-        </span>
-        <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />
-      </m.div>
-    )
-  }
+export const CreditEntry = ({ role, name, delay }: CreditEntryProps) => (
+  <m.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    transition={{ delay }}
+    className='flex flex-col gap-2'
+  >
+    <span className='text-ash-gray text-xs font-mono tracking-[0.4em] uppercase'>
+      {role}
+    </span>
+    <span className='text-star-white text-2xl font-bold font-display tracking-wide'>
+      {name}
+    </span>
+    <div className='w-16 h-px bg-ash-gray/20 mx-auto mt-2' />
+  </m.div>
 )
-CreditEntry.displayName = 'CreditEntry'

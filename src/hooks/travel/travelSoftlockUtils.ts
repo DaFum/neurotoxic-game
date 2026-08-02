@@ -4,7 +4,6 @@ import {
   getActiveAssetModifiers
 } from '../../utils/assetSelectors'
 import { finiteNumberOr } from '../../utils/finiteNumber'
-import type { GameState } from '../../types'
 import type { TravelLogicParams } from './types'
 
 export const getSellableAssets = (
@@ -111,7 +110,7 @@ export const getPostSaleScenarios = (
           social,
           assets: retainedAssets,
           liabilities: retainedLiabilities
-        } as GameState),
+        }),
         assetModifiers: getActiveAssetModifiers(retainedAssets)
       })
     }

@@ -1,4 +1,4 @@
-import { calculateGigFinancials } from '../economyEngine'
+import { calculateGigFinancials } from '../economy'
 import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
 import { BALANCE_CONSTANTS } from '../gameState'
