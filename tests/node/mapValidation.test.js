@@ -115,6 +115,62 @@ describe('validateGeneratedMap', () => {
     )
   })
 
+  test('rejects a self-looping connection', () => {
+    const map = buildLinearMap()
+    map.connections.push({ from: 'node_1_0', to: 'node_1_0' })
+
+    const result = validateGeneratedMap(map)
+    assert.equal(result.success, false)
+    assert.ok(result.issues.some(issue => issue.code === 'connection.selfLoop'))
+  })
+
+  test('rejects malformed node coordinates, status, and venue', () => {
+    const map = buildLinearMap()
+    map.nodes.node_1_0.x = Number.NaN
+    map.nodes.node_2_0.status = 'haunted'
+    map.nodes.node_3_0.venue = { id: '', name: '' }
+
+    const codes = validateGeneratedMap(map).issues.map(issue => issue.code)
+    assert.ok(codes.includes('node.coords.invalid'))
+    assert.ok(codes.includes('node.status.invalid'))
+    assert.ok(codes.includes('node.venue.invalid'))
+  })
+
+  test('rejects a START node that is not on layer 0', () => {
+    const map = buildLinearMap()
+    map.nodes.node_0_0.layer = 1
+    map.nodes.node_1_0.layer = 2
+
+    const codes = validateGeneratedMap(map).issues.map(issue => issue.code)
+    assert.ok(codes.includes('map.start.layer'))
+  })
+
+  test('rejects a map with no nodes', () => {
+    const codes = validateGeneratedMap({
+      nodes: {},
+      connections: []
+    }).issues.map(issue => issue.code)
+
+    assert.ok(codes.includes('map.nodes.empty'))
+  })
+
+  test('rejects a prototype-polluting node key instead of swallowing the node', () => {
+    // `JSON.parse` yields `__proto__` as an own key. Assigning it would set the
+    // accumulator's prototype, dropping the node from every later check.
+    const map = buildLinearMap()
+    const hostileNodes = JSON.parse(
+      '{"__proto__":{"id":"__proto__","layer":1,"type":"GIG","x":1,"y":1,"status":"locked","venue":{"id":"v","name":"V"}}}'
+    )
+    Object.assign(hostileNodes, map.nodes)
+    const result = validateGeneratedMap({
+      nodes: hostileNodes,
+      connections: map.connections
+    })
+
+    assert.equal(result.success, false)
+    assert.ok(result.issues.some(issue => issue.code === 'node.key.forbidden'))
+  })
+
   test('rejects a straight line of gig nodes for lacking diversity', () => {
     const result = validateGeneratedMap(buildLinearMap())
 

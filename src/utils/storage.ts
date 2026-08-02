@@ -84,10 +84,26 @@ export const defaultStorageAdapter: IStorageAdapter = new LocalStorageAdapter(
 )
 
 /**
- * Session-scoped fallback store used once persistent storage refuses writes
+ * Session-scoped fallback stores used once persistent storage refuses writes
  * (private browsing, storage disabled by policy, quota exhausted).
+ *
+ * @remarks
+ * Keyed per adapter rather than shared: a single module-global buffer is
+ * consulted ahead of *every* adapter, so a save buffered against one backend
+ * would shadow a different adapter's own value and break the provider
+ * isolation `StorageContext` exists to give. Weakly held so an adapter that
+ * goes out of scope takes its buffer with it.
  */
-const memoryStore = new InMemoryAdapter()
+const fallbackStores = new WeakMap<IStorageAdapter, InMemoryAdapter>()
+
+const getFallbackStore = (adapter: IStorageAdapter): InMemoryAdapter => {
+  let store = fallbackStores.get(adapter)
+  if (!store) {
+    store = new InMemoryAdapter()
+    fallbackStores.set(adapter, store)
+  }
+  return store
+}
 
 let storageDegraded = false
 
@@ -102,9 +118,11 @@ export const isStorageDegraded = (): boolean => storageDegraded
 /**
  * Resets the degraded-storage flag and in-memory fallback. Test seam only.
  */
-export const resetStorageFallback = (): void => {
+export const resetStorageFallback = (
+  adapter: IStorageAdapter = defaultStorageAdapter
+): void => {
   storageDegraded = false
-  memoryStore.clear()
+  fallbackStores.get(adapter)?.clear()
 }
 
 /**
@@ -131,11 +149,11 @@ export function writeStorageItem(
   if (adapter.set(key, value)) {
     // Persistence recovered for this key, so the memory entry is no longer the
     // newest value and must stop shadowing the persisted one.
-    memoryStore.remove(key)
+    fallbackStores.get(adapter)?.remove(key)
     return true
   }
 
-  memoryStore.set(key, value)
+  getFallbackStore(adapter).set(key, value)
   storageDegraded = true
   return false
 }
@@ -158,7 +176,8 @@ export function readStorageItem(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): string | null {
-  if (memoryStore.has(key)) return memoryStore.get(key)
+  const fallback = fallbackStores.get(adapter)
+  if (fallback?.has(key)) return fallback.get(key)
 
   return adapter.get(key)
 }
@@ -173,7 +192,7 @@ export function removeStorageItem(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): void {
-  memoryStore.remove(key)
+  fallbackStores.get(adapter)?.remove(key)
   adapter.remove(key)
 }
 

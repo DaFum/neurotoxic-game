@@ -36,6 +36,16 @@ const readPath = (state, path) =>
  */
 const buildDayLoopFixture = node => [
   {
+    stepName: 'intro',
+    buildActions: () => [createChangeSceneAction(GAME_PHASES.INTRO)],
+    expectedStateDelta: { currentScene: GAME_PHASES.INTRO }
+  },
+  {
+    stepName: 'menu',
+    buildActions: () => [createChangeSceneAction(GAME_PHASES.MENU)],
+    expectedStateDelta: { currentScene: GAME_PHASES.MENU }
+  },
+  {
     stepName: 'enter overworld',
     buildActions: () => [createChangeSceneAction(GAME_PHASES.OVERWORLD)],
     expectedStateDelta: {
@@ -65,6 +75,11 @@ const buildDayLoopFixture = node => [
     expectedStateDelta: {
       'band.harmony': (before, after) => after >= before
     }
+  },
+  {
+    stepName: 'pre-gig',
+    buildActions: () => [createChangeSceneAction(GAME_PHASES.PRE_GIG)],
+    expectedStateDelta: { currentScene: GAME_PHASES.PRE_GIG }
   },
   {
     stepName: 'gig start',
@@ -130,6 +145,31 @@ test('Golden Path: pure day-loop driver runs a full cycle', async t => {
     GAME_PHASES.OVERWORLD,
     'the solvent path returns to OVERWORLD'
   )
+})
+
+test('Golden Path: an insolvent post-gig routes to GAMEOVER', () => {
+  const node = buildMapNode({ venue: { capacity: 1, price: 0, pay: 0 } })
+  let state = applySequence(createDeterministicState(), [
+    createChangeSceneAction(GAME_PHASES.OVERWORLD)
+  ])
+  state = applySequence(state, buildTravelStep(state, node).actions)
+  state = applySequence(state, buildArrivalStep(state))
+  state = applySequence(state, buildGigStartStep(node.venue))
+
+  // Strand the player with no cash while daily obligations still stand, so the
+  // bankruptcy branch is the one the post-gig step computes.
+  state = { ...state, player: { ...state.player, money: 0 } }
+  const postGig = buildPostGigStep(state, {
+    score: 0,
+    perfectHits: 0,
+    misses: 40
+  })
+
+  assert.equal(postGig.bankrupt, true, 'fixture must reach the bankrupt branch')
+
+  const finalState = applySequence(state, postGig.actions)
+  assert.equal(finalState.currentScene, GAME_PHASES.GAMEOVER)
+  assert.deepEqual(checkInvariants(finalState), [])
 })
 
 test('Golden Path: the driver is deterministic across runs', () => {

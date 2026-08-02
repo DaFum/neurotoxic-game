@@ -138,6 +138,7 @@ export function buildArrivalStep(state) {
  */
 export function buildGigStartStep(venue, setlist = [{ id: 'song_1' }]) {
   return [
+    createChangeSceneAction(GAME_PHASES.PRE_GIG),
     createStartGigAction(venue),
     createSetSetlistAction(setlist),
     createChangeSceneAction(GAME_PHASES.GIG)
@@ -171,7 +172,10 @@ export function buildPostGigStep(state, performance = {}) {
     playerFame: state.player.fame,
     modifiers: state.gigModifiers,
     bandInventory: state.band?.inventory,
-    zealotry: state.social?.zealotry
+    zealotry: state.social?.zealotry,
+    // `deriveFinancials` forwards the band's post-gig merch prices; without
+    // them the merch path silently falls back to default pricing.
+    context: { merchPrices: state.band?.merchPrices }
   })
 
   const continueStats = calculateContinueStats({
@@ -196,7 +200,7 @@ export function buildPostGigStep(state, performance = {}) {
     createUpdatePlayerAction({
       money: continueStats.newMoney,
       fame: continueStats.newFame,
-      fameLevel: continueStats.newFameLevel
+      fameLevel: continueStats.fameLevel
     }),
     createChangeSceneAction(
       bankrupt ? GAME_PHASES.GAMEOVER : GAME_PHASES.OVERWORLD

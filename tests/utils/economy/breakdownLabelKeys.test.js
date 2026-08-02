@@ -49,15 +49,18 @@ describe('BREAKDOWN_LABEL_KEYS', () => {
   })
 
   it('is the only source of labelKey values in economy and post-gig code', () => {
-    const allowed = new Set([
-      ...Object.keys(BREAKDOWN_LABEL_KEYS).map(
+    const allowed = new Set(
+      Object.keys(BREAKDOWN_LABEL_KEYS).map(
         name => `BREAKDOWN_LABEL_KEYS.${name}`
-      ),
-      'buildMerchSalesLabelKey(key)'
-    ])
+      )
+    )
+    // Any argument name is fine — what matters is that the key comes from the
+    // one registered helper rather than an inline template literal.
+    const MERCH_HELPER_CALL = /^buildMerchSalesLabelKey\([A-Za-z_$][\w$.]*\)$/
     const offenders = collectLabelKeyExpressions().filter(
       entry =>
         !allowed.has(entry.expression) &&
+        !MERCH_HELPER_CALL.test(entry.expression) &&
         // multi-line ternaries surface their head as a bare `modifiers.x`
         !entry.expression.endsWith('.guestlist')
     )

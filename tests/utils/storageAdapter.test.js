@@ -141,6 +141,30 @@ describe('defaultStorageAdapter', () => {
   })
 })
 
+describe('degraded-mode fallback isolation', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  it('keeps a refused write scoped to the adapter that produced it', async () => {
+    const { writeStorageItem, readStorageItem } =
+      await import('../../src/utils/storage')
+
+    // A NoopAdapter refuses every write, so the value lands in that adapter's
+    // degraded buffer.
+    const refusing = new NoopAdapter()
+    expect(writeStorageItem('save', 'A', refusing)).toBe(false)
+
+    // An independent adapter must serve its own value, not the buffered one.
+    const independent = new InMemoryAdapter()
+    independent.set('save', 'B')
+    expect(readStorageItem('save', independent)).toBe('B')
+
+    // …while the refusing adapter still serves what it buffered.
+    expect(readStorageItem('save', refusing)).toBe('A')
+  })
+})
+
 describe('direct browser-storage access audit', () => {
   /**
    * A module-scope `localStorage` call anywhere defeats the abstraction: the

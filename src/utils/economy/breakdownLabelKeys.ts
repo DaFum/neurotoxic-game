@@ -70,8 +70,12 @@ export const buildMerchSalesLabelKey = (itemKey: string): string =>
 export const isRegisteredBreakdownLabelKey = (labelKey: string): boolean => {
   const registered: readonly string[] = Object.values(BREAKDOWN_LABEL_KEYS)
   if (registered.includes(labelKey)) return true
-  return (
-    labelKey.startsWith(MERCH_SALES_LABEL_KEY_PREFIX) &&
-    labelKey.endsWith('.label')
+  if (!labelKey.startsWith(MERCH_SALES_LABEL_KEY_PREFIX)) return false
+  // The item id segment must be non-empty: `merchSales..label` names no item
+  // and cannot resolve to a real merch label.
+  const itemSegment = labelKey.slice(
+    MERCH_SALES_LABEL_KEY_PREFIX.length,
+    -'.label'.length
   )
+  return labelKey.endsWith('.label') && itemSegment.length > 0
 }

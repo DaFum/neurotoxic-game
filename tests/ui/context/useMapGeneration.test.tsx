@@ -241,7 +241,9 @@ describe('useMapGeneration', () => {
       throw new Error('Generation failed')
     })
     const fallbackModule = await import('../../../src/utils/fallbackMap')
-    vi.spyOn(fallbackModule, 'loadFallbackMap').mockReturnValue(null)
+    const spy = vi
+      .spyOn(fallbackModule, 'loadFallbackMap')
+      .mockReturnValue(null)
 
     renderHook(() =>
       useMapGeneration({
@@ -259,6 +261,7 @@ describe('useMapGeneration', () => {
       vi.advanceTimersByTime(250)
     })
 
+    expect(spy).toHaveBeenCalled()
     expect(mockDispatch).toHaveBeenCalledWith({
       type: 'SET_MAP',
       payload: null

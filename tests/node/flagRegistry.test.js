@@ -36,7 +36,8 @@ const collectLiteralFlagUsages = () => {
     /storyFlagNotSet\(\s*'([^']+)'/g,
     /activeStoryFlags\??\.includes\(\s*'([^']+)'/g,
     /activeStoryFlagsSet\.has\(\s*'([^']+)'/g,
-    /hasStateItem\([^,]*activeStoryFlags,\s*'([^']+)'/g
+    // `consequences.ts` aliases `state.activeStoryFlags` to a local `flags`.
+    /hasStateItem\([^,]*(?:activeStoryFlags|flags),\s*'([^']+)'/g
   ]
   const LIST_PATTERNS = [
     /(?:startFlags|completionFlags|failureFlags|clearFlagsOnComplete|clearFlagsOnFail|requiredStoryFlags)\s*:\s*\[([^\]]*)\]/g

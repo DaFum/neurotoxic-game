@@ -99,13 +99,13 @@ class PixiStageController<
   toxicFilterManager: ToxicFilterManager | null
 
   /**
-   * @param params - Controller dependencies.
-   */
-  /**
    * Gig-audio engine supplying the stage clock.
    */
   audioEngine: IAudioEngine
 
+  /**
+   * @param params - Controller dependencies.
+   */
   constructor(params: StageControllerOptions<TState>) {
     super(params)
     this.audioEngine = params.audioEngine ?? toneAudioEngine

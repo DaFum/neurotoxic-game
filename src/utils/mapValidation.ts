@@ -75,6 +75,16 @@ export const MAP_DIVERSITY_REQUIREMENTS = {
 
 const NODE_STATUSES = new Set(['unlocked', 'completed', 'locked'])
 
+/**
+ * Node record keys that must never reach the accumulator.
+ *
+ * @remarks
+ * `JSON.parse` produces `__proto__` as an own key, so a committed or loaded map
+ * file can carry one. Assigning it would set the accumulator's prototype rather
+ * than adding an entry, silently dropping the node from every later check.
+ */
+const FORBIDDEN_NODE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
+
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === 'object' && value !== null && !Array.isArray(value)
 
@@ -325,8 +335,20 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
     }
   }
 
-  const nodes: Record<string, ValidatedMapNode> = {}
+  const nodes: Record<string, ValidatedMapNode> = Object.create(null) as Record<
+    string,
+    ValidatedMapNode
+  >
   for (const key of Object.keys(raw.nodes)) {
+    if (FORBIDDEN_NODE_KEYS.has(key)) {
+      issues.push({
+        code: 'node.key.forbidden',
+        path: `nodes.${key}`,
+        message: `node key "${key}" is not allowed`
+      })
+      continue
+    }
+    if (!Object.hasOwn(raw.nodes, key)) continue
     const node = validateNode(raw.nodes[key], key, issues)
     if (node) nodes[key] = node
   }
