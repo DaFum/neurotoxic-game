@@ -86,7 +86,7 @@ const BAND_STATUS_PANEL_VARIANTS = {
 } as const satisfies Record<'hud' | 'compact', BandStatusPanelVariantConfig>
 
 interface BandStatusPanelProps {
-  band?: BandState
+  band?: Pick<BandState, 'harmony' | 'members'>
   t: TFunction
   variant?: 'hud' | 'compact'
 }
