@@ -1,10 +1,11 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback } from 'react'
 import type { BandMember } from '../types'
-import type { TFunction } from 'i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { getSafeUUID } from '../utils/crypto'
+import { finiteNumberOr } from '../utils/finiteNumber'
 import { useTranslation } from 'react-i18next'
 import type { PlayerState, BandState } from '../types'
+import type { ValidationResult } from '../types/validation'
 import {
   GAME_PHASES,
   CLINIC_CONFIG,
@@ -14,119 +15,6 @@ import {
   validateHealMember,
   validateEnhanceMember
 } from '../utils/clinicLogicUtils'
-
-type GameActions = ReturnType<typeof useGameActions>
-
-const useClinicHeal = (
-  playerMoney: number,
-  currentVisits: number,
-  membersMap: Map<string, BandMember>,
-  clinicHeal: GameActions['clinicHeal'],
-  addToast: GameActions['addToast'],
-  t: TFunction
-) => {
-  const healCostMoney = calculateClinicCost(
-    CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
-    currentVisits
-  )
-
-  const healMember = useCallback(
-    (memberId: string) => {
-      const member = membersMap.get(memberId)
-
-      const validation = validateHealMember(member, playerMoney, healCostMoney)
-
-      if (!validation.isValid) {
-        if (!validation.silent) {
-          addToast(
-            t(validation.errorKey as string, {
-              defaultValue: validation.defaultMessage
-            }),
-            'error'
-          )
-        }
-        return
-      }
-
-      const toastId = getSafeUUID()
-
-      clinicHeal({
-        memberId,
-        type: 'heal',
-        staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
-        moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
-        getSuccessToast: (appliedStamina: number, appliedMood: number) => ({
-          id: toastId,
-          message: t('ui:clinic.heal_success', {
-            defaultValue:
-              '+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.',
-            stamina: appliedStamina,
-            mood: appliedMood
-          }),
-          type: 'success'
-        })
-      })
-    },
-    [playerMoney, healCostMoney, membersMap, clinicHeal, addToast, t]
-  )
-
-  return { healCostMoney, healMember }
-}
-
-const useClinicEnhance = (
-  playerFame: number,
-  currentVisits: number,
-  membersMap: Map<string, BandMember>,
-  clinicEnhance: GameActions['clinicEnhance'],
-  addToast: GameActions['addToast'],
-  t: TFunction
-) => {
-  const enhanceCostFame = calculateClinicCost(
-    CLINIC_CONFIG.ENHANCE_BASE_COST_FAME,
-    currentVisits
-  )
-
-  const enhanceMember = useCallback(
-    (memberId: string, trait: string) => {
-      const member = membersMap.get(memberId)
-
-      const validation = validateEnhanceMember(
-        member,
-        trait,
-        playerFame,
-        enhanceCostFame
-      )
-
-      if (!validation.isValid) {
-        if (!validation.silent) {
-          addToast(
-            t(validation.errorKey as string, {
-              defaultValue: validation.defaultMessage
-            }),
-            'error'
-          )
-        }
-        return
-      }
-
-      clinicEnhance({
-        memberId,
-        type: 'enhance',
-        trait,
-        successToast: {
-          id: getSafeUUID(),
-          message: t('ui:clinic.enhance_success', {
-            defaultValue: 'Flesh upgraded.'
-          }),
-          type: 'success'
-        }
-      })
-    },
-    [playerFame, enhanceCostFame, membersMap, clinicEnhance, addToast, t]
-  )
-
-  return { enhanceCostFame, enhanceMember }
-}
 
 /**
  * Provides clinic screen state and actions for healing or enhancing band members.
@@ -153,37 +41,107 @@ export const useClinicLogic = (): {
     graftNeuroOverclock
   } = useGameActions()
 
-  const currentVisits = player?.clinicVisits ?? 0
-
-  const membersMap = useMemo(() => {
-    // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().forEach() with a single-pass loop to avoid intermediate array allocations.
-    const map = new Map<string, BandMember>()
-    const members = band?.members ?? []
-    for (let i = 0; i < members.length; i++) {
-      const m = members[i]
-      if (m && m.id) {
-        map.set(m.id, m)
-      }
-    }
-    return map
-  }, [band?.members])
-
-  const { healCostMoney, healMember } = useClinicHeal(
-    player?.money ?? 0,
-    currentVisits,
-    membersMap,
-    clinicHeal,
-    addToast,
-    t
+  // finiteNumberOr, not `?? 0`: a NaN money or fame would make the
+  // affordability comparison in the validators false, silently letting the
+  // action through. clinicVisits feeds the cost curve for the same reason.
+  const currentVisits = finiteNumberOr(player?.clinicVisits, 0)
+  const members = band?.members
+  const healCostMoney = calculateClinicCost(
+    CLINIC_CONFIG.HEAL_BASE_COST_MONEY,
+    currentVisits
+  )
+  const enhanceCostFame = calculateClinicCost(
+    CLINIC_CONFIG.ENHANCE_BASE_COST_FAME,
+    currentVisits
   )
 
-  const { enhanceCostFame, enhanceMember } = useClinicEnhance(
-    player?.fame ?? 0,
-    currentVisits,
-    membersMap,
-    clinicEnhance,
-    addToast,
-    t
+  const findMember = useCallback(
+    (memberId: string): BandMember | undefined =>
+      members?.find((m: BandMember) => m?.id === memberId),
+    [members]
+  )
+
+  /** Reports a failed validation as a toast and returns false, unless it is silent. */
+  const reportRejection = useCallback(
+    (validation: ValidationResult): boolean => {
+      if (validation.isValid) return true
+      if (!validation.silent) {
+        addToast(
+          t(validation.errorKey as string, {
+            defaultValue: validation.defaultMessage
+          }),
+          'error'
+        )
+      }
+      return false
+    },
+    [addToast, t]
+  )
+
+  const healMember = useCallback(
+    (memberId: string) => {
+      const member = findMember(memberId)
+      const validation = validateHealMember(
+        member,
+        finiteNumberOr(player?.money, 0),
+        healCostMoney
+      )
+      if (!reportRejection(validation)) return
+
+      const toastId = getSafeUUID()
+
+      clinicHeal({
+        memberId,
+        type: 'heal',
+        staminaGain: CLINIC_CONFIG.HEAL_STAMINA_GAIN,
+        moodGain: CLINIC_CONFIG.HEAL_MOOD_GAIN,
+        getSuccessToast: (appliedStamina: number, appliedMood: number) => ({
+          id: toastId,
+          message: t('ui:clinic.heal_success', {
+            defaultValue:
+              '+{{stamina}} Stamina, +{{mood}} Mood. The void embraces you.',
+            stamina: appliedStamina,
+            mood: appliedMood
+          }),
+          type: 'success'
+        })
+      })
+    },
+    [player?.money, healCostMoney, findMember, reportRejection, clinicHeal, t]
+  )
+
+  const enhanceMember = useCallback(
+    (memberId: string, trait: string) => {
+      const member = findMember(memberId)
+      const validation = validateEnhanceMember(
+        member,
+        trait,
+        finiteNumberOr(player?.fame, 0),
+        enhanceCostFame
+      )
+      if (!reportRejection(validation)) return
+
+      clinicEnhance({
+        memberId,
+        type: 'enhance',
+        trait,
+        successToast: {
+          id: getSafeUUID(),
+          message: t('ui:clinic.enhance_success', {
+            defaultValue: 'Flesh upgraded.'
+          }),
+          type: 'success'
+        }
+      })
+    },
+    [
+      player?.fame,
+      enhanceCostFame,
+      findMember,
+      reportRejection,
+      clinicEnhance,
+      t
+    ]
   )
 
   const leaveClinic = useCallback(() => {

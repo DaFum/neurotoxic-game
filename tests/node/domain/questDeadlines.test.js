@@ -1,5 +1,13 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+
+import { migrateLegacyQuestSchema } from '../../../src/domain/questLegacyMigration.ts'
+
+// Legacy failurePenalty records reach state only through
+// migrateLegacyQuestSchema. Route these fixtures through the same boundary
+// the real callers use; it is identity for canonical quests.
+const legacyQuests = quests =>
+  quests.map(q => (q ? migrateLegacyQuestSchema(q) : q))
 import { checkDeadlines } from '../../../src/domain/questDeadlines.ts'
 
 test('checkDeadlines', async t => {
@@ -12,7 +20,7 @@ test('checkDeadlines', async t => {
   await t.test('returns original state if no activeQuests are expired', () => {
     const state = {
       player: { day: 5 },
-      activeQuests: [{ id: 'q1', deadline: 10 }]
+      activeQuests: legacyQuests([{ id: 'q1', deadline: 10 }])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState, state)
@@ -21,7 +29,7 @@ test('checkDeadlines', async t => {
   await t.test('returns original state if activeQuest is falsy', () => {
     const state = {
       player: { day: 5 },
-      activeQuests: [undefined, { id: 'q1', deadline: 10 }]
+      activeQuests: legacyQuests([undefined, { id: 'q1', deadline: 10 }])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState, state)
@@ -29,7 +37,7 @@ test('checkDeadlines', async t => {
 
   await t.test('handles missing player day (defaults to 0)', () => {
     const state = {
-      activeQuests: [{ id: 'q1', deadline: -1 }]
+      activeQuests: legacyQuests([{ id: 'q1', deadline: -1 }])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.activeQuests.length, 0)
@@ -41,7 +49,7 @@ test('checkDeadlines', async t => {
       player: { day: 10 },
       social: { controversyLevel: 5 },
       band: { harmony: 50 },
-      activeQuests: [
+      activeQuests: legacyQuests([
         {
           id: 'q1',
           label: 'Failed',
@@ -55,7 +63,7 @@ test('checkDeadlines', async t => {
           id: 'q2',
           deadline: 12
         }
-      ],
+      ]),
       toasts: []
     }
     const nextState = checkDeadlines(state)
@@ -70,7 +78,7 @@ test('checkDeadlines', async t => {
   await t.test('uses quest id for failure toast without label', () => {
     const state = {
       player: { day: 10 },
-      activeQuests: [{ id: 'q1', deadline: 9 }]
+      activeQuests: legacyQuests([{ id: 'q1', deadline: 9 }])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.toasts[0].options.name, 'q1')
@@ -81,7 +89,7 @@ test('checkDeadlines', async t => {
       player: { day: 10 },
       social: { controversyLevel: 5 },
       band: { harmony: 50 },
-      activeQuests: [
+      activeQuests: legacyQuests([
         {
           id: 'q1',
           deadline: 9,
@@ -97,7 +105,7 @@ test('checkDeadlines', async t => {
             social: { controversyLevel: 'NaN' }
           }
         }
-      ]
+      ])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.activeQuests.length, 0)
@@ -113,7 +121,7 @@ test('checkDeadlines', async t => {
         player: { day: 10 },
         social: { controversyLevel: 5 },
         band: { harmony: 50 },
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             deadline: 9,
@@ -122,7 +130,7 @@ test('checkDeadlines', async t => {
               band: { harmony: 'NaN' } // invalid number should default to 0
             }
           }
-        ]
+        ])
       }
       const nextState = checkDeadlines(state)
       assert.equal(nextState.activeQuests.length, 0)
@@ -136,7 +144,7 @@ test('checkDeadlines', async t => {
       player: { day: 10 },
       social: {}, // Missing controversyLevel
       band: {}, // Missing harmony
-      activeQuests: [
+      activeQuests: legacyQuests([
         {
           id: 'q1',
           deadline: 9,
@@ -145,7 +153,7 @@ test('checkDeadlines', async t => {
             band: { harmony: -20 }
           }
         }
-      ]
+      ])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.activeQuests.length, 0)
@@ -156,7 +164,7 @@ test('checkDeadlines', async t => {
   await t.test('handles falsy deadline check in checkDeadlines', () => {
     const state = {
       player: { day: 10 },
-      activeQuests: [{ id: 'q1', deadline: undefined }]
+      activeQuests: legacyQuests([{ id: 'q1', deadline: undefined }])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState, state)
@@ -168,7 +176,7 @@ test('checkDeadlines', async t => {
       const state = {
         player: { day: 10 },
         activeStoryFlags: ['existing_flag', 'start_flag_1', 'start_flag_2'],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             deadline: 5,
@@ -177,7 +185,7 @@ test('checkDeadlines', async t => {
             failureFlags: ['fail_flag_1', ''],
             failurePenalties: [{ type: 'quest.cooldown', days: 3 }]
           }
-        ]
+        ])
       }
       const nextState = checkDeadlines(state)
 
@@ -202,13 +210,13 @@ test('checkDeadlines', async t => {
         player: { day: 10 },
         toasts: [{ id: 'existing_toast' }],
         questCooldowns: [{ questId: 'existing_cooldown' }],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             deadline: 5,
             failurePenalties: [{ type: 'quest.cooldown', days: 3 }]
           }
-        ]
+        ])
       }
       const nextState = checkDeadlines(state)
 
@@ -226,13 +234,13 @@ test('checkDeadlines', async t => {
       const state = {
         player: { day: 10 },
         activeStoryFlags: ['existing_flag'],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             deadline: 5,
             failureFlags: ['fail_flag_1']
           }
-        ]
+        ])
       }
       const nextState = checkDeadlines(state)
 
@@ -246,7 +254,7 @@ test('checkDeadlines', async t => {
     const state = {
       player: { day: 10 },
       activeStoryFlags: ['existing_flag'],
-      activeQuests: [
+      activeQuests: legacyQuests([
         {
           id: 'q1',
           deadline: 5,
@@ -254,7 +262,7 @@ test('checkDeadlines', async t => {
           startFlags: [undefined, {}],
           failureFlags: [null, 123, '']
         }
-      ]
+      ])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.activeQuests.length, 0)
@@ -264,11 +272,11 @@ test('checkDeadlines', async t => {
   await t.test('handles multiple expired quests', () => {
     const state = {
       player: { day: 10 },
-      activeQuests: [
+      activeQuests: legacyQuests([
         { id: 'q1', deadline: 5 },
         { id: 'q2', deadline: 15 },
         { id: 'q3', deadline: 8 }
-      ]
+      ])
     }
     const nextState = checkDeadlines(state)
     assert.equal(nextState.activeQuests.length, 1)

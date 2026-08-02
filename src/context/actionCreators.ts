@@ -838,26 +838,11 @@ export const createAddQuestAction = (
     safeQuest.id = ''
   }
 
-  if (safeQuest.moneyReward != null) {
-    safeQuest.moneyReward = clampNonNegative(
-      finiteNumberOr(safeQuest.moneyReward, 0)
-    )
-  }
-
-  if (safeQuest.rewardData) {
-    safeQuest.rewardData = { ...safeQuest.rewardData }
-    if (safeQuest.rewardData.fame != null) {
-      safeQuest.rewardData.fame = clampNonNegative(
-        finiteNumberOr(safeQuest.rewardData.fame, 0)
-      )
-    }
-    if (safeQuest.rewardData.harmony != null) {
-      safeQuest.rewardData.harmony = clampNonNegative(
-        finiteNumberOr(safeQuest.rewardData.harmony, 0)
-      )
-    }
-  }
-
+  // Legacy reward fields are no longer clamped here: addQuest runs
+  // migrateLegacyQuestSchema on every payload it admits, which converts them
+  // to rewards[] and applies the same clampNonNegative to money/fame/harmony.
+  // Doing it in the reducer funnel also covers the callers that reach addQuest
+  // without going through this creator.
   return {
     type: ActionTypes.ADD_QUEST,
     payload: safeQuest

@@ -357,12 +357,7 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
-    const unlocks: string[] = safeStorageOperation(
-      'loadUnlocks',
-      () => getUnlocks(),
-      [] as string[]
-    )
-    dispatch(createResetStateAction({ unlocks }))
+    dispatch(createResetStateAction({ unlocks: getUnlocks() }))
   }, [dispatch, resetMapGenerationRetries])
 
   const advanceDay = useCallback(() => {

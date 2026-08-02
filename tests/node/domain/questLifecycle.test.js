@@ -1,5 +1,14 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
+
+import { migrateLegacyQuestSchema } from '../../../src/domain/questLegacyMigration.ts'
+
+// Legacy reward/penalty shapes reach state only through migrateLegacyQuestSchema
+// (addQuest for new quests, sanitizeActiveQuests for restored ones). These
+// fixtures were written against the pre-migration schema, so run them through
+// the same boundary the real callers use. It is identity for canonical quests.
+const legacyQuests = quests =>
+  quests.map(q => (q ? migrateLegacyQuestSchema(q) : q))
 import {
   QuestLifecycle,
   canAcceptQuest
@@ -19,7 +28,7 @@ test('QuestLifecycle', async t => {
     })
 
     await t.test('returns state if quest not found', () => {
-      const state = { activeQuests: [{ id: 'q2' }] }
+      const state = { activeQuests: legacyQuests([{ id: 'q2' }]) }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.equal(nextState, state)
     })
@@ -27,7 +36,7 @@ test('QuestLifecycle', async t => {
     await t.test(
       'handles quest array containing matching id but is null somehow (simulated via mock findIndex)',
       () => {
-        const state = { activeQuests: [{ id: 'q1' }] }
+        const state = { activeQuests: legacyQuests([{ id: 'q1' }]) }
         state.activeQuests.findIndex = () => 0
         // We replace the item with null so the findIndex matches 0 but quest is falsy
 
@@ -41,7 +50,7 @@ test('QuestLifecycle', async t => {
       'removes quest from activeQuests and adds generic toast',
       () => {
         const state = {
-          activeQuests: [{ id: 'q1', label: 'Test Quest' }],
+          activeQuests: legacyQuests([{ id: 'q1', label: 'Test Quest' }]),
           toasts: []
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -55,7 +64,7 @@ test('QuestLifecycle', async t => {
       'uses quest id for generic completion toast without label',
       () => {
         const state = {
-          activeQuests: [{ id: 'q1' }],
+          activeQuests: legacyQuests([{ id: 'q1' }]),
           toasts: []
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -65,7 +74,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies money reward', () => {
       const state = {
-        activeQuests: [{ id: 'q1', label: 'Money Quest', moneyReward: 100 }],
+        activeQuests: legacyQuests([
+          { id: 'q1', label: 'Money Quest', moneyReward: 100 }
+        ]),
         player: { money: 50 },
         toasts: []
       }
@@ -80,7 +91,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles negative money applied via clamping', () => {
       const state = {
-        activeQuests: [{ id: 'q1', label: 'Money Quest', moneyReward: 100 }],
+        activeQuests: legacyQuests([
+          { id: 'q1', label: 'Money Quest', moneyReward: 100 }
+        ]),
         player: { money: -50 } // clamped
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -89,7 +102,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles missing player money and toasts', () => {
       const state = {
-        activeQuests: [{ id: 'q1', moneyReward: 100 }]
+        activeQuests: legacyQuests([{ id: 'q1', moneyReward: 100 }])
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.equal(nextState.player.money, 100)
@@ -98,7 +111,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles missing player object for money reward', () => {
       const state = {
-        activeQuests: [{ id: 'q1', moneyReward: 100 }],
+        activeQuests: legacyQuests([{ id: 'q1', moneyReward: 100 }]),
         player: undefined
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -107,7 +120,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('does not toast if money delta is 0', () => {
       const state = {
-        activeQuests: [{ id: 'q1', moneyReward: 0 }],
+        activeQuests: legacyQuests([{ id: 'q1', moneyReward: 0 }]),
         player: { money: 100 },
         toasts: []
       }
@@ -119,7 +132,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('does not add generic toast if there is a money toast', () => {
       const state = {
-        activeQuests: [{ id: 'q1', moneyReward: 100 }],
+        activeQuests: legacyQuests([{ id: 'q1', moneyReward: 100 }]),
         player: { money: 100 },
         toasts: []
       }
@@ -133,14 +146,14 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies item reward', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             label: 'Item Quest',
             rewardType: 'item',
             rewardData: { item: 'guitar' }
           }
-        ],
+        ]),
         band: { inventory: {} },
         toasts: []
       }
@@ -155,9 +168,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies item reward with missing band inventory', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'item', rewardData: { item: 'guitar' } }
-        ]
+        ])
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.equal(nextState.band.inventory['guitar'], true)
@@ -167,7 +180,9 @@ test('QuestLifecycle', async t => {
       'applies item reward with missing band and missing item key handles properly',
       () => {
         const state = {
-          activeQuests: [{ id: 'q1', rewardType: 'item', rewardData: {} }]
+          activeQuests: legacyQuests([
+            { id: 'q1', rewardType: 'item', rewardData: {} }
+          ])
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
         assert.equal(nextState.band, undefined)
@@ -177,14 +192,14 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies fame reward', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             label: 'Fame Quest',
             rewardType: 'fame',
             rewardData: { fame: 50 }
           }
-        ],
+        ]),
         player: { fame: 10, fameLevel: 0 },
         toasts: []
       }
@@ -202,9 +217,9 @@ test('QuestLifecycle', async t => {
       'applies fame reward with missing player object handling',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             { id: 'q1', rewardType: 'fame', rewardData: { fame: 50 } }
-          ],
+          ]),
           player: undefined
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -214,9 +229,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies fame reward with invalid fame string', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'fame', rewardData: { fame: 'NaN' } }
-        ],
+        ]),
         player: { fame: 10 }
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -225,9 +240,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('does not toast if fame delta is 0', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'fame', rewardData: { fame: 0 } }
-        ],
+        ]),
         player: { fame: 100 },
         toasts: []
       }
@@ -237,7 +252,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('ignores fame reward if rewardData is falsy', () => {
       const state = {
-        activeQuests: [{ id: 'q1', rewardType: 'fame', rewardData: null }],
+        activeQuests: legacyQuests([
+          { id: 'q1', rewardType: 'fame', rewardData: null }
+        ]),
         player: { fame: 10 }
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -246,14 +263,14 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies harmony reward', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             label: 'Harmony Quest',
             rewardType: 'harmony',
             rewardData: { harmony: 20 }
           }
-        ],
+        ]),
         band: { harmony: 50 },
         toasts: []
       }
@@ -268,9 +285,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies fans reward to the instagram following', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'fans', rewardData: { fans: 150 } }
-        ],
+        ]),
         social: { instagram: 1000 },
         toasts: []
       }
@@ -284,9 +301,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies loyalty reward (clamped)', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'loyalty', rewardData: { loyalty: 15 } }
-        ],
+        ]),
         social: { loyalty: 50 },
         toasts: []
       }
@@ -300,13 +317,13 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies controversy_reduction reward', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             rewardType: 'controversy_reduction',
             rewardData: { controversy: 20 }
           }
-        ],
+        ]),
         social: { controversyLevel: 30 },
         toasts: []
       }
@@ -320,7 +337,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies new rewards arrays', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_new_rewards',
             label: 'New Rewards',
@@ -332,7 +349,7 @@ test('QuestLifecycle', async t => {
               { type: 'item.add', itemId: 'zine_bundle' }
             ]
           }
-        ],
+        ]),
         player: { money: 10, fame: 0, fameLevel: 0 },
         social: { loyalty: 50 },
         band: { harmony: 40, inventory: {} },
@@ -353,7 +370,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('drops item.add rewards with hostile or empty ids', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_hostile_item',
             rewards: [
@@ -361,7 +378,7 @@ test('QuestLifecycle', async t => {
               { type: 'item.add', itemId: '' }
             ]
           }
-        ],
+        ]),
         player: {},
         band: { inventory: {} },
         toasts: []
@@ -386,7 +403,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('keeps follower rewards finite on overflow', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_follower_overflow',
             rewards: [
@@ -397,7 +414,7 @@ test('QuestLifecycle', async t => {
               }
             ]
           }
-        ],
+        ]),
         player: {},
         band: { inventory: {} },
         social: { instagram: Number.MAX_VALUE },
@@ -414,7 +431,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies backbone reward types through appliers', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_backbone_rewards',
             label: 'Backbone Rewards',
@@ -430,7 +447,7 @@ test('QuestLifecycle', async t => {
               { type: 'event.queue', eventId: 'quest_reward_followup' }
             ]
           }
-        ],
+        ]),
         player: { money: 0, fame: 0, fameLevel: 0 },
         social: { brandReputation: { ampcorp: 2 } },
         reputationByRegion: { berlin: 3 },
@@ -472,9 +489,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies harmony reward with missing band', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'harmony', rewardData: { harmony: 20 } }
-        ]
+        ])
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.equal(nextState.band.harmony, 21)
@@ -484,9 +501,9 @@ test('QuestLifecycle', async t => {
       'applies harmony reward with invalid string falling back to 0',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             { id: 'q1', rewardType: 'harmony', rewardData: { harmony: 'NaN' } }
-          ],
+          ]),
           band: { harmony: 10 }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -496,9 +513,9 @@ test('QuestLifecycle', async t => {
 
     await t.test('does not toast if harmony delta is 0', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'q1', rewardType: 'harmony', rewardData: { harmony: 0 } }
-        ],
+        ]),
         band: { harmony: 50 }
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -509,7 +526,7 @@ test('QuestLifecycle', async t => {
       'applies skill point reward with missing band does nothing',
       () => {
         const state = {
-          activeQuests: [{ id: 'q1', rewardType: 'skill_point' }]
+          activeQuests: legacyQuests([{ id: 'q1', rewardType: 'skill_point' }])
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
         assert.equal(nextState.band, undefined)
@@ -520,14 +537,14 @@ test('QuestLifecycle', async t => {
       'applies skill point reward with randomIdx and missing baseStats',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               label: 'Skill Quest',
               rewardType: 'skill_point',
               rewardData: {}
             }
-          ],
+          ]),
           band: { members: [{ name: 'A', skill: 5 }] },
           toasts: []
         }
@@ -548,9 +565,9 @@ test('QuestLifecycle', async t => {
       'applies skill point reward fallback 0 for missing memberIndex and randomIdx',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             { id: 'q1', rewardType: 'skill_point', rewardData: {} }
-          ],
+          ]),
           band: {
             members: [
               { name: 'A', skill: 5 },
@@ -566,13 +583,13 @@ test('QuestLifecycle', async t => {
 
     await t.test('skill point reward never pushes skill above 10', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             rewardType: 'skill_point',
             rewardData: { memberIndex: 0 }
           }
-        ],
+        ]),
         band: { members: [{ name: 'A', baseStats: { skill: 10 } }] }
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -583,13 +600,13 @@ test('QuestLifecycle', async t => {
       'applies skill point reward with invalid string memberIndex falling back to randomIdx / 0',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               rewardType: 'skill_point',
               rewardData: { memberIndex: 'NaN' }
             }
-          ],
+          ]),
           band: { members: [{ skill: 10 }] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -606,13 +623,13 @@ test('QuestLifecycle', async t => {
       'applies skill point reward with index clamped out of bounds (high)',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               rewardType: 'skill_point',
               rewardData: { memberIndex: 10 }
             }
-          ],
+          ]),
           band: { members: [{ skill: 1 }, { skill: 1 }] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -624,13 +641,13 @@ test('QuestLifecycle', async t => {
       'applies skill point reward with index clamped out of bounds (low)',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               rewardType: 'skill_point',
               rewardData: { memberIndex: -5 }
             }
-          ],
+          ]),
           band: { members: [{ skill: 1 }, { skill: 1 }] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -642,13 +659,13 @@ test('QuestLifecycle', async t => {
       'applies skill point reward and handles non-finite existing skill',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               rewardType: 'skill_point',
               rewardData: { memberIndex: 0 }
             }
-          ],
+          ]),
           band: { members: [{ name: 'A', skill: NaN }] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -660,13 +677,13 @@ test('QuestLifecycle', async t => {
       'does nothing for skill point reward if originalMembers is empty',
       () => {
         const state = {
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q1',
               rewardType: 'skill_point',
               rewardData: { memberIndex: 0 }
             }
-          ],
+          ]),
           band: { members: [] }
         }
         const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -676,14 +693,14 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies skill point reward properly', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             label: 'Skill Quest',
             rewardType: 'skill_point',
             rewardData: { memberIndex: 1 }
           }
-        ],
+        ]),
         band: {
           members: [
             { name: 'A', skill: 5 },
@@ -703,7 +720,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles rewardFlag', () => {
       const state = {
-        activeQuests: [{ id: 'q1', rewardFlag: 'flag_unlocked' }]
+        activeQuests: legacyQuests([{ id: 'q1', rewardFlag: 'flag_unlocked' }])
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
       assert.deepEqual(nextState.activeStoryFlags, ['flag_unlocked'])
@@ -711,7 +728,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles rewardFlag with missing activeStoryFlags', () => {
       const state = {
-        activeQuests: [{ id: 'q1', rewardFlag: 'flag1' }],
+        activeQuests: legacyQuests([{ id: 'q1', rewardFlag: 'flag1' }]),
         activeStoryFlags: undefined
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -720,12 +737,12 @@ test('QuestLifecycle', async t => {
 
     await t.test('applies completionFlags on completion', () => {
       const state = {
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q1',
             completionFlags: ['story_complete']
           }
-        ],
+        ]),
         activeStoryFlags: ['existing_flag']
       }
       const nextState = QuestLifecycle.completeQuest(state, { questId: 'q1' })
@@ -739,7 +756,7 @@ test('QuestLifecycle', async t => {
       'ignores malformed completionFlags on persisted quests',
       () => {
         const state = {
-          activeQuests: [{ id: 'q1', completionFlags: {} }],
+          activeQuests: legacyQuests([{ id: 'q1', completionFlags: {} }]),
           activeStoryFlags: ['existing_flag']
         }
 
@@ -751,7 +768,7 @@ test('QuestLifecycle', async t => {
 
     await t.test('handles hardcoded QUEST_PROVE_YOURSELF', () => {
       const state = {
-        activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
+        activeQuests: legacyQuests([{ id: QUEST_PROVE_YOURSELF }]),
         venueBlacklist: ['v1', 'v2', 'v3'],
         player: { stats: { proveYourselfMode: true } }
       }
@@ -766,7 +783,7 @@ test('QuestLifecycle', async t => {
       'handles hardcoded QUEST_PROVE_YOURSELF with undefined venueBlacklist fallback',
       () => {
         const state = {
-          activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
+          activeQuests: legacyQuests([{ id: QUEST_PROVE_YOURSELF }]),
           venueBlacklist: undefined,
           player: { stats: { proveYourselfMode: true } }
         }
@@ -781,7 +798,7 @@ test('QuestLifecycle', async t => {
       'handles hardcoded QUEST_PROVE_YOURSELF with no venueBlacklist property at all',
       () => {
         const state = {
-          activeQuests: [{ id: QUEST_PROVE_YOURSELF }],
+          activeQuests: legacyQuests([{ id: QUEST_PROVE_YOURSELF }]),
           player: { stats: { proveYourselfMode: true } }
         }
         const nextState = QuestLifecycle.completeQuest(state, {
@@ -795,7 +812,7 @@ test('QuestLifecycle', async t => {
   await t.test('QuestProgress.applyEvent', async t => {
     const baseState = quest => ({
       player: { day: 1 },
-      activeQuests: [quest],
+      activeQuests: legacyQuests([quest]),
       activeStoryFlags: [],
       completedQuestIds: [],
       questCooldowns: []
@@ -1441,7 +1458,9 @@ test('QuestLifecycle', async t => {
     await t.test('completing a cooldown quest opens a re-add window', () => {
       let state = {
         player: { day: 3 },
-        activeQuests: [{ id: 'quest_viral_dance', progress: 1, required: 1 }],
+        activeQuests: legacyQuests([
+          { id: 'quest_viral_dance', progress: 1, required: 1 }
+        ]),
         activeStoryFlags: [],
         completedQuestIds: [],
         questCooldowns: []
@@ -1460,7 +1479,7 @@ test('QuestLifecycle', async t => {
     await t.test('allows different quest kinds to use separate slots', () => {
       const state = {
         player: { day: 1 },
-        activeQuests: [{ id: 'quest_prove_yourself' }],
+        activeQuests: legacyQuests([{ id: 'quest_prove_yourself' }]),
         activeStoryFlags: [],
         completedQuestIds: [],
         questCooldowns: []
@@ -1476,11 +1495,11 @@ test('QuestLifecycle', async t => {
     await t.test('blocks quests when their kind slot is full', () => {
       const state = {
         player: { day: 1 },
-        activeQuests: [
+        activeQuests: legacyQuests([
           { id: 'quest_pick_of_destiny' },
           { id: 'quest_harmony_project' },
           { id: 'quest_studio_demo' }
-        ],
+        ]),
         activeStoryFlags: [],
         completedQuestIds: [],
         questCooldowns: []
@@ -1498,14 +1517,14 @@ test('QuestLifecycle', async t => {
       band: { harmony: 50 },
       activeStoryFlags: ['side_active'],
       questCooldowns: [],
-      activeQuests: [
+      activeQuests: legacyQuests([
         {
           id: 'q_fail',
           deadline: 5,
           clearFlagsOnFail: ['side_active'],
           failurePenalty: penalty
         }
-      ]
+      ])
     })
 
     await t.test('applies social.loyalty penalty', () => {
@@ -1530,13 +1549,13 @@ test('QuestLifecycle', async t => {
         band: { harmony: 50 },
         activeStoryFlags: [],
         questCooldowns: [],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_fail_flags',
             deadline: 5,
             failureFlags: ['story_failed']
           }
-        ]
+        ])
       })
       assert.ok(next.activeStoryFlags.includes('story_failed'))
     })
@@ -1548,7 +1567,7 @@ test('QuestLifecycle', async t => {
         band: { harmony: 50 },
         activeStoryFlags: [],
         questCooldowns: [],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'quest_viral_dance',
             deadline: 5,
@@ -1556,7 +1575,7 @@ test('QuestLifecycle', async t => {
               cooldowns: [{ id: 'quest_viral_dance_retry', days: 7 }]
             }
           }
-        ]
+        ])
       })
       const cd = next.questCooldowns.find(
         c => c.questId === 'quest_viral_dance'
@@ -1578,13 +1597,13 @@ test('QuestLifecycle', async t => {
           band: { harmony: 50 },
           activeStoryFlags: [],
           questCooldowns: [],
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'quest_ego_management',
               deadline: 5,
               failurePenalty: QUEST_REGISTRY.quest_ego_management.failurePenalty
             }
-          ]
+          ])
         }
         const next = QuestLifecycle.checkDeadlines(state)
         assert.equal(next.gameOver, undefined)
@@ -1602,7 +1621,7 @@ test('QuestLifecycle', async t => {
         band: { harmony: 50 },
         activeStoryFlags: [],
         questCooldowns: [],
-        activeQuests: [
+        activeQuests: legacyQuests([
           {
             id: 'q_new_penalties',
             deadline: 5,
@@ -1614,7 +1633,7 @@ test('QuestLifecycle', async t => {
               { type: 'quest.cooldown', days: 3 }
             ]
           }
-        ]
+        ])
       })
 
       assert.equal(next.social.loyalty, 40)
@@ -1645,7 +1664,7 @@ test('QuestLifecycle', async t => {
               slots: []
             }
           ],
-          activeQuests: [
+          activeQuests: legacyQuests([
             {
               id: 'q_backbone_penalties',
               deadline: 5,
@@ -1656,7 +1675,7 @@ test('QuestLifecycle', async t => {
                 { type: 'event.queue', eventId: 'quest_failure_followup' }
               ]
             }
-          ]
+          ])
         })
 
         assert.equal(next.assets[0].condition, 55)

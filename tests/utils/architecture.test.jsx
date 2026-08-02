@@ -184,7 +184,7 @@ test('Quest completion paths through quest reducer work correctly', () => {
       label: 'Test Completion Quest',
       required: 5,
       progress: 4,
-      moneyReward: 50
+      rewards: [{ type: 'money', amount: 50 }]
     }
   ]
 

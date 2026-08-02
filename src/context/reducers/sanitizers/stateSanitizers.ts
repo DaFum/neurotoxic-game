@@ -11,6 +11,7 @@ import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
+import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
   clampMemberMood,
   normalizeRegionalGigHistory
@@ -1861,7 +1862,10 @@ export const sanitizeActiveQuests = (
       if (isLooseRecord(failurePenalty))
         sanitized.failurePenalty = failurePenalty
     }
-    return [sanitized]
+    // Saves written before rewards/failurePenalties became tagged arrays still
+    // carry the flat fields copied above. Upgrade them here so nothing
+    // downstream has to read two schemas.
+    return [migrateLegacyQuestSchema(sanitized)]
   })
 }
 

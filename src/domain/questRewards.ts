@@ -39,55 +39,8 @@ interface QuestRewardResult {
   toasts: ToastPayload[]
 }
 
-const normalizeLegacyRewards = (quest: QuestState): QuestReward[] => {
-  const rewards: QuestReward[] = []
-  if (isFiniteNumber(quest.moneyReward) && quest.moneyReward !== 0) {
-    rewards.push({ type: 'money', amount: quest.moneyReward })
-  }
-
-  if (quest.rewardType === 'item' && quest.rewardData?.item) {
-    rewards.push({ type: 'item.add', itemId: String(quest.rewardData.item) })
-  } else if (quest.rewardType === 'fame' && quest.rewardData?.fame) {
-    rewards.push({
-      type: 'fame',
-      amount: finiteNumberOr(Number(quest.rewardData.fame), 0)
-    })
-  } else if (quest.rewardType === 'skill_point') {
-    const memberIndex = isFiniteNumber(quest.rewardData?.memberIndex)
-      ? quest.rewardData.memberIndex
-      : undefined
-    rewards.push({ type: 'skill_point', memberIndex })
-  } else if (quest.rewardType === 'harmony' && quest.rewardData?.harmony) {
-    rewards.push({
-      type: 'band.harmony',
-      amount: finiteNumberOr(Number(quest.rewardData.harmony), 0)
-    })
-  } else if (quest.rewardType === 'fans' && quest.rewardData?.fans) {
-    rewards.push({
-      type: 'social.followers',
-      platform: 'instagram',
-      amount: finiteNumberOr(Number(quest.rewardData.fans), 0)
-    })
-  } else if (quest.rewardType === 'loyalty' && quest.rewardData?.loyalty) {
-    rewards.push({
-      type: 'social.loyalty',
-      amount: finiteNumberOr(Number(quest.rewardData.loyalty), 0)
-    })
-  } else if (
-    quest.rewardType === 'controversy_reduction' &&
-    quest.rewardData?.controversy
-  ) {
-    rewards.push({
-      type: 'social.controversy',
-      amount: -Math.abs(finiteNumberOr(Number(quest.rewardData.controversy), 0))
-    })
-  }
-
-  return rewards
-}
-
 /**
- * Returns declarative quest rewards, falling back to legacy reward fields.
+ * Returns declarative quest rewards.
  */
 const isOptionalString = (value: unknown): boolean =>
   value === undefined || typeof value === 'string'
@@ -157,10 +110,11 @@ const isQuestReward = (value: unknown): value is QuestReward => {
 }
 
 export const getQuestRewards = (quest: QuestState): QuestReward[] => {
-  if (Array.isArray(quest.rewards) && quest.rewards.length > 0) {
-    return quest.rewards.filter(isQuestReward)
-  }
-  return normalizeLegacyRewards(quest)
+  // Single schema by construction: migrateLegacyQuestSchema converts the flat
+  // moneyReward/rewardType/rewardData form at the save-load and ADD_QUEST
+  // boundaries, so nothing reaches here still carrying it.
+  if (!Array.isArray(quest.rewards)) return []
+  return quest.rewards.filter(isQuestReward)
 }
 
 const applySkillPointReward = (

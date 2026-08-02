@@ -1040,7 +1040,7 @@ test('systemReducer - LOAD_GAME', async t => {
   })
 
   await t.test(
-    'preserves nested active quest failure penalties while sanitizing loaded quests',
+    'migrates nested active quest failure penalties while sanitizing loaded quests',
     () => {
       const initialState = createInitialState()
       const loadedState = JSON.parse(`{
@@ -1068,26 +1068,28 @@ test('systemReducer - LOAD_GAME', async t => {
 
       const nextState = handleLoadGame(initialState, loadedState)
 
+      // Load is a migration boundary: the legacy nested record is converted to
+      // tagged failurePenalties and the legacy field is dropped, so nothing
+      // downstream has to read two schemas. Unrecognized keys (`bad`) and
+      // non-finite values (`infinite`) carry no penalty and are not emitted.
       assert.deepEqual(nextState.activeQuests, [
         {
           id: 'QUEST_APOLOGY_TOUR',
           label: 'Apology Tour',
           deadline: 7,
-          failurePenalty: {
-            social: {
-              controversyLevel: 25,
-              bad: null
-            },
-            band: {
-              harmony: -20
-            }
-          }
+          failurePenalties: [
+            { type: 'social.controversy', amount: 25 },
+            { type: 'band.harmony', amount: -20 }
+          ]
         }
       ])
       assert.equal(
-        Object.hasOwn(nextState.activeQuests[0].failurePenalty, '__proto__'),
+        Object.hasOwn(nextState.activeQuests[0], 'failurePenalty'),
         false
       )
+      assert.equal(Object.hasOwn(nextState.activeQuests[0], '__proto__'), false)
+      // Inherited read, not own: real pollution surfaces here.
+      assert.equal({}.polluted, undefined)
     }
   )
 
@@ -1166,7 +1168,7 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
-  await t.test('preserves unknown legacy quest runtime fields on load', () => {
+  await t.test('migrates unknown legacy quest reward fields on load', () => {
     const initialState = createInitialState()
     const loadedState = {
       activeQuests: [
@@ -1182,15 +1184,18 @@ test('systemReducer - LOAD_GAME', async t => {
 
     const nextState = handleLoadGame(initialState, loadedState)
 
+    // Non-registry quests keep their runtime fields, but the legacy
+    // moneyReward is upgraded to a tagged reward at this boundary.
     assert.deepEqual(nextState.activeQuests, [
       {
         id: 'legacy_custom_quest',
         label: 'Legacy custom quest',
         progress: 2,
         required: 7,
-        moneyReward: 100
+        rewards: [{ type: 'money', amount: 100 }]
       }
     ])
+    assert.equal(Object.hasOwn(nextState.activeQuests[0], 'moneyReward'), false)
   })
 
   await t.test(
