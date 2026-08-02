@@ -14,7 +14,8 @@ import { normalizeTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
 import {
   clampMemberMood,
-  normalizeRegionalGigHistory
+  normalizeRegionalGigHistory,
+  normalizeSetlistForSave
 } from '../../../utils/gameState'
 import { EXPENSE_CONSTANTS } from '../../../utils/economy'
 import {
@@ -1197,21 +1198,26 @@ export const sanitizeMinigameState = (
  * Validates that each setlist item references a legitimate song identifier and filters out
  * unknown or corrupted entries.
  *
+ * Entries surviving the security pass are normalized to the canonical
+ * `{ id: string }` shape used by the save path, so a loaded setlist and a
+ * saved one no longer diverge. Entries without a valid string `id` are
+ * dropped, matching `normalizeSetlistForSave`.
+ *
  * @param rawSetlist - The untrusted setlist payload array
  * @returns A sanitized list of song identifiers
  */
 export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
   if (!Array.isArray(rawSetlist)) return []
-  const sanitized: GameState['setlist'] = []
+  const sanitized: unknown[] = []
   for (const entry of rawSetlist) {
     if (typeof entry === 'string') {
-      sanitized.push(entry as GameState['setlist'][number])
+      sanitized.push(entry)
       continue
     }
     const copied = copySafePrimitiveObject(entry)
-    if (copied) sanitized.push(copied as GameState['setlist'][number])
+    if (copied) sanitized.push(copied)
   }
-  return sanitized
+  return normalizeSetlistForSave(sanitized)
 }
 
 /**
