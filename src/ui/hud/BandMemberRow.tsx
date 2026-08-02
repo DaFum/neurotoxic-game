@@ -1,5 +1,5 @@
 import { memo } from 'react'
-import { ProgressBar } from '../shared/index'
+import { StatMiniBar } from '../shared/index'
 import { Tooltip } from '../shared/index'
 import type { BandMember } from '../../types/band'
 import { finiteNumberOr } from '../../utils/gameState'
@@ -52,54 +52,30 @@ export const BandMemberRow = memo(({ m, idx, t }: BandMemberRowProps) => {
         </span>
       </div>
       <div className='flex items-center gap-1.5 shrink-0'>
-        <Tooltip
-          content={t('ui:hud.mood', { defaultValue: 'Mood' })}
-          position='bottom'
-        >
-          <div className='flex items-center gap-1 pointer-events-auto'>
-            <div className='w-12'>
-              <ProgressBar
-                value={mood}
-                max={100}
-                color={isMoodLow ? 'bg-warning-yellow' : 'bg-mood-pink'}
-                size='mini'
-                aria-label={t('ui:hud.memberMood', {
-                  name: safeName,
-                  defaultValue: safeName + ' Mood'
-                })}
-              />
-            </div>
-            <span
-              className={`text-xxs w-7 text-right tabular-nums ${isMoodLow ? 'text-warning-yellow font-bold' : 'text-mood-pink'}`}
-            >
-              {mood}%
-            </span>
-          </div>
-        </Tooltip>
-        <Tooltip
-          content={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
-          position='bottom'
-        >
-          <div className='flex items-center gap-1 pointer-events-auto'>
-            <div className='w-12'>
-              <ProgressBar
-                value={stamina}
-                max={100}
-                color={isStaminaLow ? 'bg-blood-red' : 'bg-stamina-green'}
-                size='mini'
-                aria-label={t('ui:hud.memberStamina', {
-                  name: safeName,
-                  defaultValue: safeName + ' Stamina'
-                })}
-              />
-            </div>
-            <span
-              className={`text-xxs w-7 text-right tabular-nums ${isStaminaLow ? 'text-blood-red font-bold' : 'text-stamina-green'}`}
-            >
-              {stamina}%
-            </span>
-          </div>
-        </Tooltip>
+        <StatMiniBar
+          variant='inline'
+          value={mood}
+          threshold={50}
+          color='bg-mood-pink'
+          warnColor='bg-warning-yellow'
+          label={t('ui:hud.mood', { defaultValue: 'Mood' })}
+          ariaLabel={t('ui:hud.memberMood', {
+            name: safeName,
+            defaultValue: safeName + ' Mood'
+          })}
+        />
+        <StatMiniBar
+          variant='inline'
+          value={stamina}
+          threshold={35}
+          color='bg-stamina-green'
+          warnColor='bg-blood-red'
+          label={t('ui:hud.stamina', { defaultValue: 'Stamina' })}
+          ariaLabel={t('ui:hud.memberStamina', {
+            name: safeName,
+            defaultValue: safeName + ' Stamina'
+          })}
+        />
       </div>
     </div>
   )

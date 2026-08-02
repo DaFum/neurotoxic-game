@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Fuel, Wrench } from 'lucide-react'
-import { Tooltip, ProgressBar } from '../../shared/index'
+import { ProgressBar, StatMiniBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
@@ -21,52 +21,30 @@ export const VanStatusMiniBars = memo(
 
     return (
       <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
-        <Tooltip
-          content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
-          position='bottom'
-        >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+        <StatMiniBar
+          variant='stacked'
+          value={safeFuel}
+          threshold={20}
+          color='bg-warning-yellow'
+          icon={
             <Fuel size={12} className='text-warning-yellow shrink-0 mb-0.5' />
-            <div className='min-w-0 flex-1'>
-              <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                {Math.floor(safeFuel)}%
-              </div>
-              <ProgressBar
-                value={safeFuel}
-                max={100}
-                color='bg-warning-yellow'
-                warn={safeFuel < 20}
-                size='mini'
-                aria-label={t('ui:hud.fuelLevel', {
-                  defaultValue: 'Fuel Level'
-                })}
-              />
-            </div>
-          </div>
-        </Tooltip>
-        <Tooltip
-          content={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
-          position='bottom'
-        >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+          }
+          label={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+          ariaLabel={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+        />
+        <StatMiniBar
+          variant='stacked'
+          value={safeCondition}
+          threshold={25}
+          color='bg-condition-blue'
+          icon={
             <Wrench size={12} className='text-condition-blue shrink-0 mb-0.5' />
-            <div className='min-w-0 flex-1'>
-              <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                {Math.floor(safeCondition)}%
-              </div>
-              <ProgressBar
-                value={safeCondition}
-                max={100}
-                color='bg-condition-blue'
-                warn={safeCondition < 25}
-                size='mini'
-                aria-label={t('ui:hud.vanCondition', {
-                  defaultValue: 'Van Condition'
-                })}
-              />
-            </div>
-          </div>
-        </Tooltip>
+          }
+          label={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
+          ariaLabel={t('ui:hud.vanCondition', {
+            defaultValue: 'Van Condition'
+          })}
+        />
       </div>
     )
   }

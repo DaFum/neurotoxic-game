@@ -45,4 +45,5 @@ export {
 
 export { StatBox } from './StatBox'
 export { ProgressBar } from './ProgressBar'
+export { StatMiniBar } from './StatMiniBar'
 export { Panel } from './Panel'
