@@ -18,7 +18,8 @@ vi.mock('../../src/quests/producers/socialQuestEvents', () => ({
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(() => 0.5),
   getSafeRandom: vi.fn(() => 0.5),
-  getSafeUUID: vi.fn(() => 'test-uuid')
+  getSafeUUID: vi.fn(() => 'test-uuid'),
+  getSecureRandomUint32: vi.fn(() => 123456)
 }))
 
 import { useSocialPostHandler } from '../../src/hooks/postGig/handlers/useSocialPostHandler'

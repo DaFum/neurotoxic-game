@@ -65,7 +65,9 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   // reproduce at all.
   'src/utils/crypto.ts',
   // Economy scalars: GLOBAL_PAYOUT_NERF, MAX_GIG_NET, ticket sales, management
-  // cut, logistics.
+  // cut, logistics. The values themselves live in the central balance config,
+  // so both files are pinned — otherwise a lever change leaves the hash intact.
+  'src/config/balance.ts',
   'src/utils/economy/constants.ts',
   // Fame rewards: GIG_BASE_REWARD / GIG_SCORE_MULTIPLIER and the shared clamps.
   'src/utils/gameState/constants.ts',

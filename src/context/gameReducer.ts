@@ -279,7 +279,7 @@ export const gameReducer = (
     logger.warn(
       'gameReducer',
       `Unhandled action type: ${(action as { type?: unknown }).type}`,
-      action
+      (action as { type?: unknown }).type
     )
 
     // Runtime safety net for malformed actions that bypass the dispatch

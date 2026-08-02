@@ -11,7 +11,7 @@ import { translateLocation } from '../utils/locationI18n'
 import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
-import { calcCancellationRisk } from '../utils/gameState'
+import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -34,6 +34,7 @@ interface MapNodeTooltipProps {
   ticketPrice?: number
   t: TranslationCallback
   harmony?: number
+  tourSuccess?: number
   cityTraits?: CityTraitState
   isPendingConfirm?: boolean
 }
@@ -54,6 +55,7 @@ interface MapNodeProps {
   vanUrl: string
   ticketPrice?: number
   harmony?: number
+  tourSuccess?: number
   cityTraits?: CityTraitState
 }
 
@@ -88,12 +90,34 @@ const getNodeTypeLabel = (t: TranslationCallback, type: string): string => {
 }
 
 /**
+ * Resolves the cancellation risk exactly as the arrival engine rolls it.
+ * @param harmony - Current band harmony
+ * @param tourSuccess - Band tourSuccess contraband effect scaling the risk down
+ * @returns Cancellation probability in 0..1
+ */
+const getCancellationRisk = (harmony: number, tourSuccess?: number): number =>
+  calcCancellationRisk(
+    harmony,
+    BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD,
+    BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE,
+    tourSuccess
+  )
+
+/**
  * Displays a badge indicating the risk of gig cancellation based on band harmony.
- * @param props - Object containing the current harmony level and translation callback
+ * @param props - Object containing the current harmony level, tourSuccess effect, and translation callback
  */
 const CancellationBadge = memo(
-  ({ harmony, t }: { harmony: number; t: TranslationCallback }) => {
-    const risk = calcCancellationRisk(harmony)
+  ({
+    harmony,
+    tourSuccess,
+    t
+  }: {
+    harmony: number
+    tourSuccess?: number
+    t: TranslationCallback
+  }) => {
+    const risk = getCancellationRisk(harmony, tourSuccess)
     const pct = (risk * 100).toFixed(1)
     const freqDenom = Math.round(1 / risk)
     const badgeClass =
@@ -132,6 +156,7 @@ const MapNodeTooltip = memo(
     ticketPrice,
     t,
     harmony,
+    tourSuccess,
     cityTraits,
     isPendingConfirm
   }: MapNodeTooltipProps) => {
@@ -193,8 +218,12 @@ const MapNodeTooltip = memo(
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE') &&
           harmony !== undefined &&
-          calcCancellationRisk(harmony) > 0 && (
-            <CancellationBadge harmony={harmony} t={t} />
+          getCancellationRisk(harmony, tourSuccess) > 0 && (
+            <CancellationBadge
+              harmony={harmony}
+              tourSuccess={tourSuccess}
+              t={t}
+            />
           )}
         {node.type === 'REST_STOP' && (
           <div className='text-xs text-warning-yellow font-mono'>
@@ -246,6 +275,7 @@ export const MapNodeView = memo(
     vanUrl,
     ticketPrice,
     harmony,
+    tourSuccess,
     cityTraits
   }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
@@ -445,6 +475,7 @@ export const MapNodeView = memo(
           ticketPrice={ticketPrice}
           t={t}
           harmony={harmony}
+          tourSuccess={tourSuccess}
           cityTraits={cityTraits}
           isPendingConfirm={isPendingConfirm}
         />
@@ -473,6 +504,7 @@ export const MapNodeView = memo(
       prev.node.venue?.diff === next.node.venue?.diff &&
       prev.node.venue?.price === next.node.venue?.price &&
       prev.harmony === next.harmony &&
+      prev.tourSuccess === next.tourSuccess &&
       // cityTraits entries are stable references owned by gameMap.cityStates,
       // so reference equality covers all current and future trait fields.
       prev.cityTraits === next.cityTraits

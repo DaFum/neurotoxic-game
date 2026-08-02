@@ -2422,13 +2422,20 @@ export const runSingleSimulation = (
   // UUIDs are deterministic per run so candidate ordering cannot affect paired
   // gameplay through generated asset/campaign identifiers.
   uuidCounter = 0
+  // State creation draws entropy of its own (the persisted `runSeed`). Give it
+  // a separate deterministic stream so the gameplay stream below always starts
+  // at its own head — otherwise adding a field to the initial state silently
+  // shifts every simulated run.
+  simulationCryptoRandom = mulberry32(seed ^ 0x9e3779b9)
+  resetSecureRandomBatch()
+  let state = applyScenarioOverrides(createInitialState(), scenario)
+
   const rng = mulberry32(seed)
   simulationCryptoRandom = rng
   // secureRandom() buffers 1024 draws. Without dropping the buffer the run
   // would start by consuming values generated from the previous run's stream,
   // so identical (scenario, seed, tuning) inputs would not reproduce.
   resetSecureRandomBatch()
-  let state = applyScenarioOverrides(createInitialState(), scenario)
   const startingFame = state.player.fame
   // A real tour map for this run: layers 0..daysPerRun-1 plus the FINALE at
   // layer daysPerRun, so reaching the finale takes exactly as many hops as the

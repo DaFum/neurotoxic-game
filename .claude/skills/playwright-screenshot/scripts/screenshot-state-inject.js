@@ -208,7 +208,8 @@ export const BASE_STATE = {
   assets: [],
   liabilities: [],
   crowdfundCampaigns: [],
-  rngSeed: 12345
+  rngSeed: 12345,
+  runSeed: 12345
 }
 
 // ── Per-fixture overrides ──────────────────────────────────────────────────

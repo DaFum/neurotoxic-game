@@ -13,11 +13,22 @@ import {
 } from '../utils/gameState'
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
-import { safeStorageOperation } from '../utils/storage'
+import {
+  isStorageDegraded,
+  readStorageItem,
+  removeStorageItem,
+  safeStorageOperation,
+  writeStorageItem
+} from '../utils/storage'
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
+import { quarantineSave } from '../utils/saveQuarantine'
+import { systemClock } from '../utils/clock'
+import type { IClock } from '../utils/clock'
+import { useClock } from './ClockContext'
 import { GAME_PHASES } from './gameConstants'
+import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { createLoadGameAction } from './actionCreators'
 import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
@@ -80,6 +91,7 @@ const PERSISTED_FIELDS = {
   liabilities: isObjectOrArray,
   crowdfundCampaigns: Array.isArray,
   rngSeed: isFiniteNumber,
+  runSeed: isFiniteNumber,
   rivalBand: isNullableObject
 } satisfies Partial<Record<keyof GameState, (value: unknown) => boolean>>
 
@@ -130,6 +142,58 @@ export const createRawLoadPayload = (
 }
 
 /**
+ * Reads the version marker from a parsed save payload.
+ *
+ * @param parsedObj - Parsed save object.
+ * @returns Stored version, or `0` when the marker is missing or unusable.
+ */
+const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
+  if (!Object.hasOwn(parsedObj, 'version')) return 0
+  const parsedVersion = Number(parsedObj.version)
+  return Number.isFinite(parsedVersion) ? parsedVersion : 0
+}
+
+/**
+ * Folds a parsed save through the migration chain, quarantining the raw payload
+ * when a migration step fails.
+ *
+ * @param parsedObj - Parsed save object that passed shape validation.
+ * @param rawSave - Exact serialized payload, copied aside on failure.
+ * @returns Migrated payload stamped with the current version, or `null` when a
+ * migration step threw.
+ *
+ * @remarks
+ * The raw payload is quarantined *before* the caller falls back to the initial
+ * state, so the next autosave cannot overwrite the only copy of the player's run.
+ */
+export const migrateLoadedSave = (
+  parsedObj: Record<string, unknown>,
+  rawSave: string
+): Record<string, unknown> | null => {
+  const storedVersion = readSaveVersion(parsedObj)
+  if (storedVersion >= CURRENT_SAVE_VERSION) return parsedObj
+
+  try {
+    const migrated = runSaveMigrations(parsedObj, storedVersion)
+    if (!isLooseRecord(migrated)) {
+      throw new StateError(
+        `Migration from version ${storedVersion} produced a non-object payload`
+      )
+    }
+    return { ...migrated, version: CURRENT_SAVE_VERSION }
+  } catch (error) {
+    const reason = error instanceof Error ? error.message : String(error)
+    quarantineSave(rawSave, storedVersion, reason)
+    logger.error(
+      'Persistence',
+      `Save migration from version ${storedVersion} failed`,
+      reason
+    )
+    return null
+  }
+}
+
+/**
  * Serializes the current active game state into a format suitable for local storage persistence.
  *
  * @remarks
@@ -138,9 +202,13 @@ export const createRawLoadPayload = (
  * using dedicated save formatting logic.
  *
  * @param currentState - The full state tree to snapshot.
+ * @param clock - Clock supplying the save timestamp. Defaults to the real clock.
  * @returns An object containing only the serialized, persistable slice of the game state.
  */
-export const createPersistedState = (currentState: GameState) => {
+export const createPersistedState = (
+  currentState: GameState,
+  clock: IClock = systemClock
+) => {
   const persisted: Record<string, unknown> = {}
   for (const key of LOADABLE_SAVE_KEYS) {
     persisted[key] = currentState[key]
@@ -148,7 +216,7 @@ export const createPersistedState = (currentState: GameState) => {
 
   return {
     ...persisted,
-    timestamp: Date.now(),
+    timestamp: clock.now(),
     unlocks: currentState.unlocks,
     setlist: normalizeSetlistForSave(currentState.setlist)
   }
@@ -167,16 +235,34 @@ export function usePersistence({
   addToast,
   tRef
 }: UsePersistenceParams) {
+  const clock = useClock()
+
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
-      localStorage.removeItem(SAVE_KEY)
+      removeStorageItem(SAVE_KEY)
     })
     window.location.reload()
   }, [])
 
+  // Storage that refuses writes (private browsing, disabled by policy) degrades
+  // to an in-memory store for the session. The player is told once — repeating
+  // it on every autosave would be noise.
+  const storageNoticeShownRef = useRef(false)
+  const notifyStorageDegraded = useCallback(() => {
+    if (storageNoticeShownRef.current) return
+    storageNoticeShownRef.current = true
+    addToast(
+      tRef.current('ui:save.storageUnavailable', {
+        defaultValue:
+          'Storage is unavailable in this browser mode. Progress is kept for this session only and will not persist.'
+      }),
+      'error'
+    )
+  }, [addToast, tRef])
+
   const saveGame = useCallback(
     (showToast = true, stateSnapshot: GameState = stateRef.current) => {
-      const saveData = createPersistedState(stateSnapshot)
+      const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
         'saveGame',
@@ -204,8 +290,7 @@ export function usePersistence({
               `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
             )
           }
-          localStorage.setItem(SAVE_KEY, serialized)
-          return true
+          return writeStorageItem(SAVE_KEY, serialized)
         },
         false
       )
@@ -215,11 +300,14 @@ export function usePersistence({
           addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
         logger.info('System', 'Game Saved Successfully', null)
+      } else if (isStorageDegraded()) {
+        notifyStorageDegraded()
+        logger.warn('System', 'Game saved to in-memory fallback store')
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
     },
-    [addToast, stateRef, tRef]
+    [addToast, clock, notifyStorageDegraded, stateRef, tRef]
   )
 
   const previousSceneRef = useRef(currentScene)
@@ -252,9 +340,11 @@ export function usePersistence({
       'loadGame',
       () => {
         let parsed: unknown
+        let rawSave: string
         try {
-          const saved = localStorage.getItem(SAVE_KEY)
+          const saved = readStorageItem(SAVE_KEY)
           if (!saved) return false
+          rawSave = saved
           parsed = safeJsonParse(saved)
         } catch (_error) {
           handleError(
@@ -298,6 +388,21 @@ export function usePersistence({
         }
 
         const parsedObj = parsed as Record<string, unknown>
+
+        const migratedObj = migrateLoadedSave(parsedObj, rawSave)
+        if (!migratedObj) {
+          handleError(
+            new StateError(
+              tRef.current('ui:save.migrationFailed', {
+                defaultValue:
+                  'Save file could not be upgraded. A copy was kept for recovery; falling back to initial state.'
+              })
+            ),
+            { addToast }
+          )
+          return false
+        }
+
         const savedRaw = Array.isArray(parsedObj.unlocks)
           ? parsedObj.unlocks
           : []
@@ -313,7 +418,7 @@ export function usePersistence({
         for (const unlockId of mergedUnlocks) addUnlock(unlockId)
 
         dispatch(
-          createLoadGameAction(createRawLoadPayload(parsedObj, mergedUnlocks))
+          createLoadGameAction(createRawLoadPayload(migratedObj, mergedUnlocks))
         )
         return true
       },

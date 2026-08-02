@@ -71,6 +71,121 @@ function getStorage(): Storage | null {
 }
 
 /**
+ * Session-scoped fallback store used once persistent storage refuses writes
+ * (private browsing, storage disabled by policy, quota exhausted).
+ *
+ * @remarks
+ * Deliberately a plain module-level map rather than a class: the planned
+ * `StorageAdapter` abstraction absorbs this as its `InMemoryAdapter` without
+ * any call site needing to change.
+ */
+const memoryStore = new Map<string, string>()
+
+let storageDegraded = false
+
+/**
+ * Whether persistent storage refused a write this session, so progress lives in
+ * memory only.
+ *
+ * @returns `true` once a write has fallen back to the in-memory store.
+ */
+export const isStorageDegraded = (): boolean => storageDegraded
+
+/**
+ * Resets the degraded-storage flag and in-memory fallback. Test seam only.
+ */
+export const resetStorageFallback = (): void => {
+  storageDegraded = false
+  memoryStore.clear()
+}
+
+/**
+ * Writes a raw string through the storage guard.
+ *
+ * @param key - Storage key.
+ * @param value - Serialized value to store.
+ * @returns `true` when the value reached persistent storage, `false` when it
+ * was kept in the session-scoped memory store instead.
+ *
+ * @remarks
+ * `localStorage.setItem` raises `QuotaExceededError`/`SecurityError` in private
+ * browsing and when storage is disabled by policy. Every write goes through
+ * here so that is a degraded mode rather than a crash class.
+ */
+export function writeStorageItem(key: string, value: string): boolean {
+  try {
+    const storage = getStorage()
+    if (!storage) throw new Error('No storage available')
+    storage.setItem(key, value)
+    // Persistence recovered for this key, so the memory entry is no longer the
+    // newest value and must stop shadowing the persisted one.
+    memoryStore.delete(key)
+    return true
+  } catch (error) {
+    memoryStore.set(key, value)
+    handleError(
+      new StorageError(`Storage write failed for "${key}"`, {
+        originalError: error instanceof Error ? error.message : String(error)
+      }),
+      { silent: true }
+    )
+    storageDegraded = true
+    return false
+  }
+}
+
+/**
+ * Reads a raw string through the storage guard, preferring the in-memory store
+ * for keys whose write was refused this session.
+ *
+ * @param key - Storage key.
+ * @returns Stored string, or `null` when the key is unknown or unreadable.
+ *
+ * @remarks
+ * A memory entry only exists for a key whose persistent write failed, and
+ * `writeStorageItem` drops it as soon as persistence recovers. It is therefore
+ * always the newest value: reading persistent storage first would serve the
+ * stale pre-degradation save while the current one stayed unreachable.
+ */
+export function readStorageItem(key: string): string | null {
+  const buffered = memoryStore.get(key)
+  if (buffered !== undefined) return buffered
+
+  try {
+    const storage = getStorage()
+    const raw = storage ? storage.getItem(key) : null
+    if (raw !== null) return raw
+  } catch (error) {
+    handleError(
+      new StorageError(`Storage read failed for "${key}"`, {
+        originalError: error instanceof Error ? error.message : String(error)
+      }),
+      { silent: true }
+    )
+  }
+  return memoryStore.get(key) ?? null
+}
+
+/**
+ * Removes a key from persistent storage and the in-memory fallback.
+ *
+ * @param key - Storage key.
+ */
+export function removeStorageItem(key: string): void {
+  memoryStore.delete(key)
+  try {
+    getStorage()?.removeItem(key)
+  } catch (error) {
+    handleError(
+      new StorageError(`Storage removal failed for "${key}"`, {
+        originalError: error instanceof Error ? error.message : String(error)
+      }),
+      { silent: true }
+    )
+  }
+}
+
+/**
  * Safely get a typed item from localStorage.
  * Returns the parsed value or the fallback if the key doesn't exist, is unparseable, or is invalid.
  * @typeParam T - The expected type of the value
@@ -79,23 +194,10 @@ function getStorage(): Storage | null {
  * @returns Parsed value or fallback
  */
 export function getSafeStorageItem<T>(key: string, fallback: T): T {
-  let raw: string | null
-  try {
-    const storage = getStorage()
-    if (!storage) return fallback
-    raw = storage.getItem(key)
-  } catch (error) {
-    // Storage access itself failed (SecurityError in private mode, tampered
-    // getter, etc.). Log so "missing key" and "unreadable storage" remain
-    // distinguishable from telemetry.
-    handleError(
-      new StorageError(`Storage read failed for "${key}"`, {
-        originalError: error instanceof Error ? error.message : String(error)
-      }),
-      { silent: true }
-    )
-    return fallback
-  }
+  // Storage access itself can fail (SecurityError in private mode, tampered
+  // getter, etc.); readStorageItem logs that distinctly from a missing key and
+  // serves values written after storage degraded to the memory fallback.
+  const raw = readStorageItem(key)
 
   if (raw === null) return fallback
 
@@ -118,25 +220,28 @@ export function getSafeStorageItem<T>(key: string, fallback: T): T {
 
 /**
  * Safely set an item in localStorage, with JSON serialization.
- * Errors (quota exceeded, SecurityError, hostile getter tampering) are routed
- * through `handleError` with `silent: true` — no user toast, but a telemetry
- * entry so save loss has a diagnostic trail.
+ * Writes go through the storage guard: quota/security failures fall back to the
+ * session-scoped memory store and are routed through `handleError` with
+ * `silent: true` — no user toast here, but a telemetry entry so save loss has a
+ * diagnostic trail. Callers that need to tell the player use
+ * `isStorageDegraded()`.
  * @param key - localStorage key.
  * @param value - JSON-serializable value to store.
  */
 export function setSafeStorageItem(key: string, value: unknown): void {
+  let serialized: string
   try {
-    const storage = getStorage()
-    if (!storage) return
-    storage.setItem(key, JSON.stringify(value))
+    serialized = JSON.stringify(value)
   } catch (error) {
     handleError(
-      new StorageError(`Storage write failed for "${key}"`, {
+      new StorageError(`Storage value for "${key}" failed to serialize`, {
         originalError: error instanceof Error ? error.message : String(error)
       }),
       { silent: true }
     )
+    return
   }
+  writeStorageItem(key, serialized)
 }
 
 /**

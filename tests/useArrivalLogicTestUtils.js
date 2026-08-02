@@ -106,6 +106,16 @@ vi.mock('../src/utils/gameState', () => ({
     if (!Number.isFinite(val)) return 0
     return Math.floor(Math.max(0, val) / 100)
   },
+  calcCancellationRisk: (harmony, threshold, chance, tourSuccess = 0) => {
+    if (harmony <= 1) return 1
+    if (harmony < threshold) {
+      const safeTourSuccess = Number.isFinite(tourSuccess)
+        ? Math.max(0, Math.min(1, tourSuccess))
+        : 0
+      return chance * (1 - safeTourSuccess)
+    }
+    return 0
+  },
   BALANCE_CONSTANTS: {
     FAME_LOSS_BAD_GIG: 12,
     MAX_FAME_GAIN: 500,

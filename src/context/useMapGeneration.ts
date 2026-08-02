@@ -10,6 +10,7 @@ import type { TFunction } from 'i18next'
 import { getSafeUUID } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
 import { MapGenerator } from '../utils/mapGenerator'
+import { getDevSeedOverride } from '../utils/devSeedOverride'
 import { GAME_PHASES } from './gameConstants'
 import {
   createAddToastAction,
@@ -30,6 +31,7 @@ const mapRetryReducer = (count: number, action: MapRetryAction) => {
 
 type UseMapGenerationParams = {
   gameMap: GameMap | null
+  runSeed: number
   dispatch: Dispatch<GameAction>
   tRef: MutableRefObject<TFunction>
 }
@@ -37,11 +39,12 @@ type UseMapGenerationParams = {
 /**
  * Generates the overworld map when missing and retries transient generation failures.
  *
- * @param params - Current map, reducer dispatch, and translator ref for fallback toasts.
+ * @param params - Current map, persisted run seed, reducer dispatch, and translator ref for fallback toasts.
  * @returns Callback for resetting map-generation retry state.
  */
 export function useMapGeneration({
   gameMap,
+  runSeed,
   dispatch,
   tRef
 }: UseMapGenerationParams) {
@@ -72,7 +75,9 @@ export function useMapGeneration({
 
   useEffect(() => {
     if (!gameMap) {
-      const generator = new MapGenerator(Date.now())
+      // The run seed is stable for the whole run, so a retry — and a reload
+      // from the save — reproduces the same map and therefore the same failure.
+      const generator = new MapGenerator(getDevSeedOverride() ?? runSeed)
       try {
         const newMap = generator.generateMap()
         mapGenerationAttemptsRef.current = 0
@@ -117,6 +122,7 @@ export function useMapGeneration({
     dispatch,
     gameMap,
     mapRetryCount,
+    runSeed,
     scheduleMapRetry,
     tRef
   ])

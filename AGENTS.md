@@ -81,7 +81,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 
 - All state updates go through typed action creators. New actions update `actionTypes`, reducer handling, and `actionCreators` together. Creators sanitize raw payloads; reducers remain authoritative and reject hostile payloads or re-clamp computed state.
 - For persisted-number arithmetic, wrap the stored addend with `finiteNumberOr(value, fallback)` before any clamp. `??` and `typeof value === 'number'` do not reject `NaN`/`Infinity`.
-- Use `audioEngine.getGigTimeMs()` for gameplay timing, never direct Tone.js time reads.
+- Use `audioEngine.getGigTimeMs()` for gameplay timing, never direct Tone.js time reads. Non-gameplay time (timestamps, cooldowns, persistence metadata) goes through the injected `IClock` from `src/utils/clock.ts` (`useClock()` in components, an `IClock` parameter defaulting to `systemClock` in pure helpers).
 - User-facing text uses namespaced i18n keys. Update matching English and German locale JSON together. Currency baked into dispatched toast options must use `formatCurrency(value, i18n.language, signDisplay)`.
 - `src/utils/unlockManager.ts` owns unlock persistence; `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not mix these responsibilities.
 - `CHASSIS_CONFIG` and `MODULE_REGISTRY` are the chassis/module sources of truth. Asset reducers and tick functions stay pure; generate UUIDs in action creators.

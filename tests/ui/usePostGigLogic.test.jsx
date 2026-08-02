@@ -73,7 +73,8 @@ vi.mock('../../src/utils/socialEngine', () => ({
 }))
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(),
-  getSafeRandom: vi.fn(() => 0.5)
+  getSafeRandom: vi.fn(() => 0.5),
+  getSecureRandomUint32: vi.fn(() => 123456)
 }))
 vi.mock('../../src/data/songs', () => ({
   SONGS_DB: [

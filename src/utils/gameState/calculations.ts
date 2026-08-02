@@ -1,6 +1,7 @@
 import { clampNonNegative } from './clamps'
 import { FAME_PROGRESS_CONSTANTS, BALANCE_CONSTANTS } from './constants'
 import { finiteNumberOr } from '../finiteNumber'
+import { clampUnit } from '../numberUtils'
 
 /**
  * Derives fame level from raw fame.
@@ -75,14 +76,18 @@ export const calculateFameGain = (
  * @param harmony - Current band harmony (clamped to 1..100 by caller)
  * @param threshold - Low-harmony threshold (default: BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD)
  * @param chance - Cancellation probability when below threshold (default: BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE)
+ * @param tourSuccess - Band tourSuccess contraband effect (0..1) scaling the probabilistic chance down
  * @returns 0 = no risk, 0..1 = probabilistic, 1 = certain cancellation
  */
 export const calcCancellationRisk = (
   harmony: number,
   threshold = BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD,
-  chance = BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE
+  chance = BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE,
+  tourSuccess = 0
 ): number => {
   if (harmony <= 1) return 1
-  if (harmony < threshold) return chance
+  if (harmony < threshold) {
+    return chance * (1 - clampUnit(finiteNumberOr(tourSuccess, 0)))
+  }
   return 0
 }

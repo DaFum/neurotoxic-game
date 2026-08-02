@@ -640,6 +640,7 @@ describe('GameState Context - Save/Load', () => {
     expect(parsed).toHaveProperty('liabilities')
     expect(parsed).toHaveProperty('crowdfundCampaigns')
     expect(parsed).toHaveProperty('rngSeed')
+    expect(parsed).toHaveProperty('runSeed')
 
     localStorage.setItem('neurotoxic_v3_save', JSON.stringify(mockSaveData))
 
@@ -676,6 +677,7 @@ describe('GameState Context - Save/Load', () => {
             {gameState.crowdfundCampaigns.length}
           </div>
           <div data-testid='rng-seed'>{gameState.rngSeed}</div>
+          <div data-testid='run-seed'>{gameState.runSeed}</div>
           <button type='button' onClick={() => gameState.loadGame()}>
             Load
           </button>
@@ -735,6 +737,7 @@ describe('GameState Context - Save/Load', () => {
           }
         ],
         rngSeed: 123456,
+        runSeed: 654321,
         toasts: [{ id: 'injected-toast', type: 'info', message: 'Injected' }]
       })
     )
@@ -755,6 +758,7 @@ describe('GameState Context - Save/Load', () => {
     expect(screen.getByTestId('liability-count')).toHaveTextContent('1')
     expect(screen.getByTestId('crowdfund-count')).toHaveTextContent('1')
     expect(screen.getByTestId('rng-seed')).toHaveTextContent('123456')
+    expect(screen.getByTestId('run-seed')).toHaveTextContent('654321')
   })
 
   test('loadGame persists merged legacy unlocks back to unlock storage', async () => {

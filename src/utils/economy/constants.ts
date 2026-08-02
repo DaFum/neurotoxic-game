@@ -3,6 +3,8 @@ import type { MerchItemProfile } from '../../data/merch'
 import type { AssetModifiers } from '../../types/assets'
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import { finiteNumberOr } from '../gameState'
+import { BALANCE_CONFIG } from '../../config/balance'
+import type { BalanceConfig } from '../../config/balance'
 
 export { DEFAULT_MERCH_PRICES } from '../../data/merch'
 /**
@@ -19,25 +21,27 @@ export const MERCH_PROFILE_VALUES = Object.freeze(
 ) as ReadonlyArray<MerchItemProfile>
 
 /**
- * Per-modifier costs used both in the PreGig UI preview and the PostGig expense calculation.
- * Keep this as the single source of truth so both screens always agree.
+ * Per-modifier costs used both in the PreGig UI preview and the PostGig expense
+ * calculation. Values come from `src/config/balance.ts`, which is the single
+ * source of truth; this re-export keeps existing call sites working.
  */
-export const MODIFIER_COSTS = {
-  catering: 18,
-  promo: 26,
-  merch: 26,
-  soundcheck: 42,
-  guestlist: 50
-} as const satisfies Record<string, number>
+export const MODIFIER_COSTS = BALANCE_CONFIG.modifiers
 
 /**
  * Calculates the effective pre-gig modifier cost after asset modifiers.
+ *
+ * @param key - Modifier being priced.
+ * @param assetModifiers - Asset-derived multipliers.
+ * @param config - Balance config to price against. Defaults to the production
+ * config; passed as a parameter so tests and simulations can price a run
+ * against an alternative config without reaching into module scope.
  */
 export const calculateGigModifierCost = (
-  key: keyof typeof MODIFIER_COSTS,
-  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
+  key: keyof BalanceConfig['modifiers'],
+  assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS,
+  config: Readonly<BalanceConfig> = BALANCE_CONFIG
 ): number => {
-  const baseCost = MODIFIER_COSTS[key] ?? 0
+  const baseCost = config.modifiers[key] ?? 0
   if (key !== 'soundcheck') return baseCost
 
   const songCostMultiplier = Math.max(
@@ -50,19 +54,21 @@ export const calculateGigModifierCost = (
 /**
  * Bar-spend rate for high-loyalty gig audiences.
  */
-export const BAR_RATE_VIP = 0.3
+export const BAR_RATE_VIP = BALANCE_CONFIG.attendance.barRateVip
 /**
  * Default bar-spend rate for gig audiences.
  */
-export const BAR_RATE_NORMAL = 0.15
+export const BAR_RATE_NORMAL = BALANCE_CONFIG.attendance.barRateNormal
 /**
  * Average bar spend per audience member in euros.
  */
-export const AVG_SPEND_PER_PERSON_AT_BAR = 5
+export const AVG_SPEND_PER_PERSON_AT_BAR =
+  BALANCE_CONFIG.attendance.avgSpendPerPersonAtBar
 /**
  * Zealotry threshold where promo effects change behavior.
  */
-export const ZEALOTRY_PROMO_THRESHOLD = 80
+export const ZEALOTRY_PROMO_THRESHOLD =
+  BALANCE_CONFIG.attendance.zealotryPromoThreshold
 
 /**
  * Shared expense tuning for daily, travel, food, lodging, gear, and admin costs.
@@ -105,15 +111,15 @@ export const EXPENSE_CONSTANTS = {
  * Shared tuning constants for ticket-sales calculations.
  */
 export const TICKET_SALES_CONSTANTS = {
-  BASE_DRAW_RATIO: 0.37,
-  FAME_CAPACITY_SCALER: 10,
-  FAME_FILL_WEIGHT: 0.15
+  BASE_DRAW_RATIO: BALANCE_CONFIG.attendance.baseDrawRatio,
+  FAME_CAPACITY_SCALER: BALANCE_CONFIG.attendance.fameCapacityScaler,
+  FAME_FILL_WEIGHT: BALANCE_CONFIG.attendance.fameFillWeight
 }
 
 /**
  * Maximum fame-scaled management cut rate.
  */
-export const MANAGEMENT_CUT_RATE = 0.15
+export const MANAGEMENT_CUT_RATE = BALANCE_CONFIG.penalties.managementCutRate
 /**
  * Maximum allowed gig net before overage is surfaced as an expense.
  *
@@ -123,7 +129,7 @@ export const MANAGEMENT_CUT_RATE = 0.15
  * keeps that threshold intact. Any other value silently adds or removes
  * high-end damping on top of the payout change — derive it, do not guess it.
  */
-export const MAX_GIG_NET = 14550
+export const MAX_GIG_NET = BALANCE_CONFIG.caps.maxGigNet
 /**
  * Global multiplier applied to gig payout calculations.
  *
@@ -135,25 +141,30 @@ export const MAX_GIG_NET = 14550
  * the same way again, landing here. Re-derive both together; moving one alone
  * breaks the target.
  */
-export const GLOBAL_PAYOUT_NERF = 0.97
+export const GLOBAL_PAYOUT_NERF = BALANCE_CONFIG.penalties.globalPayoutNerf
 /**
  * Base logistics expense for gig travel.
  */
-export const TRAVEL_LOGISTICS_BASE = 18
+export const TRAVEL_LOGISTICS_BASE =
+  BALANCE_CONFIG.penalties.travelLogisticsBase
 /**
  * Additional logistics expense per 100 kilometers.
  */
-export const TRAVEL_LOGISTICS_PER_100KM = 3
+export const TRAVEL_LOGISTICS_PER_100KM =
+  BALANCE_CONFIG.penalties.travelLogisticsPer100Km
 /**
  * Additional logistics expense per fame level.
  */
-export const TRAVEL_LOGISTICS_PER_FAME_LEVEL = 1.5
+export const TRAVEL_LOGISTICS_PER_FAME_LEVEL =
+  BALANCE_CONFIG.penalties.travelLogisticsPerFameLevel
 /**
  * Maximum cash logistics expense contribution.
  */
-export const TRAVEL_LOGISTICS_CASH_CAP = 45
+export const TRAVEL_LOGISTICS_CASH_CAP =
+  BALANCE_CONFIG.caps.travelLogisticsCashCap
 
 /**
  * Venue split rates by difficulty.
  */
-export const VENUE_SPLIT_RATES: Record<number, number> = { 3: 0.3, 4: 0.5 }
+export const VENUE_SPLIT_RATES: Readonly<Record<number, number>> =
+  BALANCE_CONFIG.penalties.venueSplitRates

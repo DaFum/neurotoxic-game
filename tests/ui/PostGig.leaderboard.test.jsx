@@ -112,7 +112,8 @@ vi.mock('../../src/utils/imageGen', () => ({
 
 // Mock crypto
 vi.mock('../../src/utils/crypto', () => ({
-  secureRandom: () => 0.5
+  secureRandom: () => 0.5,
+  getSecureRandomUint32: () => 123456
 }))
 
 vi.mock('../../src/data/songs', () => {

@@ -1,4 +1,4 @@
-import { safeStorageOperation } from './storage'
+import { safeStorageOperation, writeStorageItem } from './storage'
 import { safeJsonParse } from './objectUtils'
 
 /**
@@ -130,13 +130,11 @@ export const addUnlock = (unlockId: string): boolean => {
   const markerSuccess =
     safeStorageOperation<boolean>(
       'saveUnlockMarker',
-      () => {
-        localStorage.setItem(
+      () =>
+        writeStorageItem(
           `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
           '1'
-        )
-        return true
-      },
+        ),
       false
     ) ?? false
 
@@ -150,10 +148,7 @@ export const addUnlock = (unlockId: string): boolean => {
   // overwrite each other when two tabs unlock different items concurrently.
   safeStorageOperation<boolean>(
     'saveUnlocks',
-    () => {
-      localStorage.setItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks))
-      return true
-    },
+    () => writeStorageItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks)),
     false
   )
   lastStorageSnapshot = null

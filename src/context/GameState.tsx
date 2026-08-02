@@ -207,6 +207,7 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   }, [state])
   const { resetMapGenerationRetries } = useMapGeneration({
     gameMap: state.gameMap,
+    runSeed: state.runSeed,
     dispatch,
     tRef
   })

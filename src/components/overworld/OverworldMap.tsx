@@ -27,7 +27,7 @@ interface OverworldMapProps {
   gameMap: GameMap | null
   player: PlayerState
   rivalBand: RivalBandState | null
-  band: Pick<BandState, 'harmony'>
+  band: Pick<BandState, 'harmony' | 'tourSuccess'>
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
@@ -169,6 +169,7 @@ export const OverworldMap = React.memo(
               harmony={
                 HARMONY_NODE_TYPES.has(node.type) ? band.harmony : undefined
               }
+              tourSuccess={band.tourSuccess}
               cityTraits={cityTraits}
             />
             {hasRival && visibility !== 'hidden' && (
@@ -200,6 +201,7 @@ export const OverworldMap = React.memo(
       rivalBand?.currentLocationId,
       rivalVanUrl,
       band.harmony,
+      band.tourSuccess,
       t
     ])
 

@@ -482,6 +482,9 @@ describe('gameReducer', () => {
         /Unhandled action type: UNKNOWN_ACTION/
       )
       assert.strictEqual(mockWarn.mock.calls.length, 1)
+      const warnArgs = mockWarn.mock.calls[0].arguments
+      assert.strictEqual(warnArgs[2], 'UNKNOWN_ACTION')
+      assert.notDeepStrictEqual(warnArgs[2], action)
       mockWarn.mock.restore()
     })
   })
