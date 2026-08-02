@@ -7,6 +7,7 @@ import {
   clampPlayerFame,
   calculateFameLevel,
   clampBandHarmony,
+  calcCancellationRisk,
   BALANCE_CONSTANTS,
   finiteNumberOr
 } from './gameState'
@@ -235,8 +236,12 @@ export const handleNodeArrival = (
       // Band tourSuccess effect (contraband): scales down the probabilistic
       // cancellation chance; the deterministic harmony <= 1 cancel stands.
       const tourSuccess = clampUnit(finiteNumberOr(band?.tourSuccess, 0))
-      const cancellationChance =
-        BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE * (1 - tourSuccess)
+      const cancellationChance = calcCancellationRisk(
+        harmony,
+        BALANCE_CONSTANTS.LOW_HARMONY_THRESHOLD,
+        BALANCE_CONSTANTS.LOW_HARMONY_CANCELLATION_CHANCE,
+        tourSuccess
+      )
       const luckCheck = rng() < cancellationChance
       const shouldCancel = harmony <= 1 || (isLowHarmony && luckCheck)
 
