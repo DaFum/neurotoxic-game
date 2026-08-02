@@ -315,14 +315,16 @@ export const calculateAppliedDelta = (
     // Inventory
     if (delta.band.inventory) {
       applied.band.inventory = {}
-      // Optimization: using Object.keys avoids prototype chain traversal and Object.hasOwn checks
-      const inventoryKeys = Object.keys(delta.band.inventory)
-      for (let i = 0; i < inventoryKeys.length; i++) {
-        const itemId = inventoryKeys[i]
-        if (!itemId) continue
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+      // Why: Avoids unnecessary array allocation during delta application on inventory.
+      // Impact: Reduces GC overhead during high-frequency game ticks/deltas.
+      const inventoryDelta = delta.band.inventory
+      for (const itemId in inventoryDelta) {
+        if (!Object.hasOwn(inventoryDelta, itemId)) continue
+        if (!itemId && itemId !== '') continue
         if (isForbiddenKey(itemId)) continue
 
-        const qty = delta.band.inventory[itemId]
+        const qty = inventoryDelta[itemId]
         const currentCount = finiteNumberOr(state.band?.inventory?.[itemId], 0)
 
         if (isFiniteNumber(qty)) {
@@ -565,13 +567,16 @@ export const applyEventDelta = (
     // Player Stats
     if (delta.player.stats) {
       nextPlayer.stats = { ...nextPlayer.stats }
-      const statKeys = Object.keys(delta.player.stats)
-      for (let i = 0; i < statKeys.length; i++) {
-        const key = statKeys[i]
-        if (!key) continue
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+      // Why: Avoids array allocation when iterating over player stat deltas.
+      // Impact: Eliminates a temporary array per stat change applied.
+      const statsDelta = delta.player.stats
+      for (const key in statsDelta) {
+        if (!Object.hasOwn(statsDelta, key)) continue
+        if (!key && key !== '') continue
         if (isForbiddenKey(key)) continue
 
-        const statDelta = delta.player.stats[key]
+        const statDelta = statsDelta[key]
         if (isFiniteNumber(statDelta)) {
           const currentStat =
             typeof nextPlayer.stats[key] === 'number'
@@ -766,10 +771,12 @@ export const applyEventDelta = (
 
           if (newRelationships) {
             let relationshipsActuallyChanged = false
-            const newRelKeys = Object.keys(newRelationships)
-            for (let k = 0; k < newRelKeys.length; k++) {
-              const key = newRelKeys[k]
-              if (!key) continue
+            // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+            // Why: Avoids allocating a temporary array for new relationship keys.
+            // Impact: Reduces transient GC overhead during character interaction logic.
+            for (const key in newRelationships) {
+              if (!Object.hasOwn(newRelationships, key)) continue
+              if (!key && key !== '') continue
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
                 break
@@ -822,12 +829,15 @@ export const applyEventDelta = (
 
     if (delta.band.inventory) {
       nextBand.inventory = { ...nextBand.inventory }
-      const bandInventoryKeys = Object.keys(delta.band.inventory)
-      for (let i = 0; i < bandInventoryKeys.length; i++) {
-        const item = bandInventoryKeys[i]
-        if (!item) continue
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+      // Why: Eliminates intermediate array allocations for band inventory iteration.
+      // Impact: Reduces memory pressure on game update loops.
+      const deltaInventory = delta.band.inventory
+      for (const item in deltaInventory) {
+        if (!Object.hasOwn(deltaInventory, item)) continue
+        if (!item && item !== '') continue
         if (isForbiddenKey(item)) continue
-        const val = delta.band.inventory[item]
+        const val = deltaInventory[item]
         if (typeof val !== 'number' && typeof val !== 'boolean') continue
         const currentInventoryValue = nextBand.inventory[item]
         const currentValue =
@@ -883,12 +893,15 @@ export const applyEventDelta = (
 
   if (delta.social) {
     const nextSocial = { ...nextState.social }
-    const socialKeys = Object.keys(delta.social)
-    for (let i = 0; i < socialKeys.length; i++) {
-      const key = socialKeys[i]
-      if (!key) continue
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
+    // Why: Prevents allocating an array representing social properties to be updated.
+    // Impact: Avoids GC load on frequent social metrics adjustments.
+    const socialDelta = delta.social
+    for (const key in socialDelta) {
+      if (!Object.hasOwn(socialDelta, key)) continue
+      if (!key && key !== '') continue
       if (isForbiddenKey(key)) continue
-      const value = delta.social[key]
+      const value = socialDelta[key]
 
       if (key === 'controversyLevel') {
         if (isFiniteNumber(value)) {
