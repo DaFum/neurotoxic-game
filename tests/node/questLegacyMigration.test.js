@@ -157,6 +157,75 @@ test('migrateLegacyQuestSchema - penalties', async t => {
   })
 })
 
+test('migrateLegacyQuestSchema - progress rules', async t => {
+  await t.test('folds the singular progressRule into progressRules', () => {
+    const rule = { event: 'gig.completed', amount: 'fixed', fixedAmount: 1 }
+    const migrated = migrateLegacyQuestSchema({ id: 'q', progressRule: rule })
+
+    assert.deepEqual(migrated.progressRules, [rule])
+    assert.equal(Object.hasOwn(migrated, 'progressRule'), false)
+  })
+
+  await t.test('synthesizes a rule from a bare progressSource', () => {
+    const migrated = migrateLegacyQuestSchema({
+      id: 'q',
+      progressSource: 'gig_completed'
+    })
+
+    assert.deepEqual(migrated.progressRules, [
+      {
+        event: 'gig_completed',
+        amount: 'fixed',
+        fixedAmount: 1,
+        thresholdField: undefined
+      }
+    ])
+  })
+
+  await t.test('carries the implicit amount mode per source', () => {
+    for (const source of ['followers_gained', 'fame_gained', 'money_earned']) {
+      assert.equal(
+        migrateLegacyQuestSchema({ id: 'q', progressSource: source })
+          .progressRules[0].amount,
+        'event.amount',
+        source
+      )
+    }
+
+    const harmony = migrateLegacyQuestSchema({
+      id: 'q',
+      progressSource: 'harmony_recovered'
+    }).progressRules[0]
+    assert.equal(harmony.amount, 'threshold')
+    assert.equal(harmony.thresholdField, 'band.harmony')
+  })
+
+  await t.test('keeps progressSource: it is also a display tag', () => {
+    // QuestsModal, questHintViewModel and continueHandlerUtils read
+    // progressSource independently of progress rules, so consuming it here
+    // must not remove it.
+    const migrated = migrateLegacyQuestSchema({
+      id: 'q',
+      progressSource: 'gig_completed'
+    })
+
+    assert.equal(migrated.progressSource, 'gig_completed')
+  })
+
+  await t.test('a declared progressRules array wins', () => {
+    const rules = [{ event: 'fame.gained', amount: 'event.amount' }]
+    const migrated = migrateLegacyQuestSchema({
+      id: 'q',
+      progressRules: rules,
+      progressSource: 'gig_completed',
+      progressRule: { event: 'gig.completed', amount: 'fixed' }
+    })
+
+    assert.deepEqual(migrated.progressRules, rules)
+    assert.equal(Object.hasOwn(migrated, 'progressRule'), false)
+  })
+})
+
 test('migrateLegacyQuestSchema - identity and hand-off', async t => {
   await t.test('returns a canonical quest unchanged by reference', () => {
     const quest = {

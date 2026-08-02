@@ -278,49 +278,16 @@ const withDefaultScope = (
   return rule
 }
 
-const legacyProgressAmount = (
-  source: QuestProgressSource
-): QuestProgressRule['amount'] => {
-  switch (source) {
-    case 'followers_gained':
-    case 'fame_gained':
-    case 'money_earned':
-      return 'event.amount'
-    case 'harmony_recovered':
-      return 'threshold'
-    default:
-      return 'fixed'
-  }
-}
-
 const normalizeProgressRules = (
   quest: QuestState,
   repeatPolicy: QuestRepeatPolicy | undefined
 ): QuestProgressRule[] => {
-  const declaredRules = Array.isArray(quest.progressRules)
-    ? quest.progressRules
-    : quest.progressRule
-      ? [quest.progressRule]
-      : []
-  if (declaredRules.length > 0) {
-    return declaredRules.map(rule => withDefaultScope(rule, repeatPolicy))
-  }
-
-  if (!quest.progressSource) return []
-  return [
-    withDefaultScope(
-      {
-        event: quest.progressSource,
-        amount: legacyProgressAmount(quest.progressSource),
-        fixedAmount: 1,
-        thresholdField:
-          quest.progressSource === 'harmony_recovered'
-            ? 'band.harmony'
-            : undefined
-      },
-      repeatPolicy
-    )
-  ]
+  // Single container: migrateLegacyQuestSchema folds the singular
+  // progressRule and a bare progressSource into progressRules at the
+  // addQuest and save-load boundaries, so this runs per event per quest
+  // without re-deciding which of three shapes the quest uses.
+  if (!Array.isArray(quest.progressRules)) return []
+  return quest.progressRules.map(rule => withDefaultScope(rule, repeatPolicy))
 }
 
 const matchesString = (

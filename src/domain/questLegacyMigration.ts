@@ -1,4 +1,10 @@
-import type { QuestPenalty, QuestReward, QuestState } from '../types'
+import type {
+  QuestPenalty,
+  QuestProgressRule,
+  QuestProgressSource,
+  QuestReward,
+  QuestState
+} from '../types'
 import {
   clampNonNegative,
   finiteNumberOr,
@@ -167,6 +173,50 @@ const penaltiesFromLegacyFields = (quest: QuestState): QuestPenalty[] => {
 }
 
 /**
+ * The amount mode the bare `progressSource` scheme carried implicitly, before
+ * rules declared it. Counting sources advance by the event's own amount,
+ * harmony compares against a threshold, everything else ticks by one.
+ */
+const legacyProgressAmount = (
+  source: QuestProgressSource
+): QuestProgressRule['amount'] => {
+  switch (source) {
+    case 'followers_gained':
+    case 'fame_gained':
+    case 'money_earned':
+      return 'event.amount'
+    case 'harmony_recovered':
+      return 'threshold'
+    default:
+      return 'fixed'
+  }
+}
+
+/**
+ * Builds a progress rule list from the two pre-array rule containers.
+ *
+ * @param quest - Quest carrying `progressRule` or a bare `progressSource`.
+ * @returns Synthesized rules, or undefined when neither container is present.
+ */
+const rulesFromLegacyFields = (
+  quest: QuestState
+): QuestProgressRule[] | undefined => {
+  if (quest.progressRule) return [quest.progressRule]
+  if (!quest.progressSource) return undefined
+  return [
+    {
+      event: quest.progressSource,
+      amount: legacyProgressAmount(quest.progressSource),
+      fixedAmount: 1,
+      thresholdField:
+        quest.progressSource === 'harmony_recovered'
+          ? 'band.harmony'
+          : undefined
+    }
+  ]
+}
+
+/**
  * Upgrades a quest from the legacy reward/penalty schema to the tagged arrays.
  *
  * @remarks
@@ -194,7 +244,25 @@ export const migrateLegacyQuestSchema = <T extends QuestState>(quest: T): T => {
     quest.rewardData != null
   const hasLegacyPenaltyField = quest.failurePenalty != null
 
-  if (!hasLegacyRewardFields && !hasLegacyPenaltyField) return quest
+  // progressRules is the canonical container; progressRule (singular) and a
+  // bare progressSource are the two older ones. progressSource is NOT removed
+  // when consumed: QuestsModal, questHintViewModel and continueHandlerUtils
+  // still read it as a display/semantic tag, independent of progress rules.
+  const needsProgressRules =
+    !Array.isArray(quest.progressRules) &&
+    (quest.progressRule != null || quest.progressSource != null)
+  // Stripped even when progressRules already won, so no legacy container
+  // survives migration and a later reader cannot pick the wrong one.
+  const hasLegacyRuleContainer = quest.progressRule != null
+
+  if (
+    !hasLegacyRewardFields &&
+    !hasLegacyPenaltyField &&
+    !needsProgressRules &&
+    !hasLegacyRuleContainer
+  ) {
+    return quest
+  }
 
   // Widened to QuestState so the legacy fields are known-optional and can be
   // deleted; narrowed back on return, which is sound because every property
@@ -218,6 +286,12 @@ export const migrateLegacyQuestSchema = <T extends QuestState>(quest: T): T => {
     }
     delete migrated.failurePenalty
   }
+
+  if (needsProgressRules) {
+    const rules = rulesFromLegacyFields(quest)
+    if (rules) migrated.progressRules = rules
+  }
+  delete migrated.progressRule
 
   return migrated as T
 }
