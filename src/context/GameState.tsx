@@ -91,11 +91,9 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
 
 /** Initializes game state with persistent unlocks and optional screenshot-test hydration. */
 const initGameState = (): GameState => {
-  const unlocks = safeStorageOperation(
-    'loadUnlocks',
-    () => getUnlocks(),
-    [] as string[]
-  )
+  // getUnlocks already runs inside safeStorageOperation and falls back to []
+  // on any storage failure, so wrapping it again here would add nothing.
+  const unlocks = getUnlocks()
   const freshState = createInitialState({ unlocks })
 
   // Check for test-injected state (screenshot testing).
