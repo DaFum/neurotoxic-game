@@ -114,7 +114,6 @@ export const BandStatusPanel = memo(
             <BandMemberRow
               key={m?.id ?? m?.name ?? `member-${idx}`}
               m={m}
-              idx={idx}
               t={t}
             />
           ))}

@@ -7,26 +7,22 @@ import { AlertCircle } from 'lucide-react'
 
 interface BandMemberRowProps {
   m: BandMember
-  idx?: number
   t: (key: string, options?: Record<string, unknown>) => string
 }
 
 // ⚡ BOLT OPTIMIZATION: Wrapped component in React.memo to prevent unnecessary re-renders in lists.
-export const BandMemberRow = memo(({ m, idx, t }: BandMemberRowProps) => {
+export const BandMemberRow = memo(({ m, t }: BandMemberRowProps) => {
   const safeName =
-    m?.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
-  const mood = finiteNumberOr(m?.mood, 0)
-  const stamina = finiteNumberOr(m?.stamina, 0)
+    m.name?.trim() || t('ui:hud.unnamedMember', { defaultValue: 'Member' })
+  const mood = finiteNumberOr(m.mood, 0)
+  const stamina = finiteNumberOr(m.stamina, 0)
 
   const isMoodLow = mood < 50
   const isStaminaLow = stamina < 35
   const isWarning = isMoodLow || isStaminaLow
 
   return (
-    <div
-      key={m?.id ?? m?.name ?? `member-${idx}`}
-      className='flex items-center justify-between w-full mb-1.5 last:mb-0 group'
-    >
+    <div className='flex items-center justify-between w-full mb-1.5 last:mb-0 group'>
       <div className='flex items-center gap-1.5 min-w-0'>
         {isWarning && (
           <Tooltip
