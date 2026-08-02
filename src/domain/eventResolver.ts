@@ -22,7 +22,7 @@ import type {
   GamePhase,
   GameState
 } from '../types'
-import { isQuestStateLike } from './questValidation'
+import { parseQuestPayload, toQuestState } from './questPayload'
 
 /**
  * Typed side effects returned by event resolution for callers to execute.
@@ -54,50 +54,31 @@ type EventResolution = {
   result: unknown
 }
 
+/**
+ * Narrows every raw quest payload on a resolution delta and turns the accepted
+ * ones into `ADD_QUEST` actions.
+ *
+ * @param quests - Untrusted `flags.addQuest` value from the event engine.
+ * @param currentDay - Day used to resolve relative quest deadlines.
+ * @returns Actions for the payloads that passed the boundary guard.
+ *
+ * @remarks
+ * This is the resolver boundary: `unknown` in, `QuestPayload` out. Rejected
+ * payloads are logged by reason code and dropped — never coerced into
+ * something plausible — and the reducer still applies its own checks.
+ */
 function buildQuestActions(quests: unknown, currentDay: number): GameAction[] {
   if (!Array.isArray(quests)) return []
   const actions: GameAction[] = []
-  for (const q of quests) {
-    // Extract the quest representation properly whether it's a string ID or an object
-    const rawQuestId =
-      typeof q === 'string'
-        ? q
-        : isLooseRecord(q) && typeof q.id === 'string'
-          ? q.id
-          : undefined
-    if (!rawQuestId) continue
-    const baseQuestObj =
-      typeof q === 'string' ? { id: q } : (q as Record<string, unknown>)
-    const questToAdd = { ...baseQuestObj }
-    if (questToAdd.deadlineOffset != null) {
-      const rawOffset = questToAdd.deadlineOffset
-      const deadlineOffset =
-        typeof rawOffset === 'number'
-          ? rawOffset
-          : typeof rawOffset === 'string' &&
-              (rawOffset as string).trim().length > 0
-            ? Number(rawOffset)
-            : Number.NaN
-      if (Number.isFinite(deadlineOffset)) {
-        questToAdd.deadline = currentDay + deadlineOffset
-      } else {
-        logger.warn('eventResolver', 'Skipping invalid quest deadlineOffset', {
-          questId: questToAdd.id,
-          deadlineOffset: rawOffset
-        })
-        continue
-      }
-      delete questToAdd.deadlineOffset
-    }
-    if (!isQuestStateLike(questToAdd)) {
-      logger.warn(
-        'eventResolver',
-        'Skipping malformed quest payload',
-        questToAdd
-      )
+  for (const raw of quests) {
+    const result = parseQuestPayload(raw, currentDay)
+    if (!result.ok) {
+      logger.warn('eventResolver', 'Rejected quest payload', {
+        reason: result.reason
+      })
       continue
     }
-    actions.push(createAddQuestAction(questToAdd))
+    actions.push(createAddQuestAction(toQuestState(result.payload)))
   }
   return actions
 }
