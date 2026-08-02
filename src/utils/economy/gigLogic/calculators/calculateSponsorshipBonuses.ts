@@ -1,4 +1,5 @@
 import type { GigStatsLike } from '../../types'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
  * Calculates performance-triggered sponsorship bonuses for clean and high-hype gigs.
  *
@@ -14,7 +15,7 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
     if (gigStats.misses === 0) {
       const bonus = 200
       bonuses.push({
-        labelKey: 'economy:gigIncome.techSponsor.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.TECH_SPONSOR,
         value: bonus,
         detailKey: 'economy:gigIncome.techSponsor.detail'
       })
@@ -23,7 +24,7 @@ export const calculateSponsorshipBonuses = (gigStats: GigStatsLike = {}) => {
     if ((gigStats.peakHype ?? 0) >= 100) {
       const bonus = 150
       bonuses.push({
-        labelKey: 'economy:gigIncome.beerSponsor.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.BEER_SPONSOR,
         value: bonus,
         detailKey: 'economy:gigIncome.beerSponsor.detail'
       })

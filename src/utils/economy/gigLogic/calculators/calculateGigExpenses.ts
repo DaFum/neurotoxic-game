@@ -1,6 +1,7 @@
 import type { GigModifiers } from '../../../../types'
 import type { FinancialBreakdownItem } from '../../../../types/economy'
 import { calculateGigModifierCost } from '../../constants'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 import { NEUTRAL_ASSET_MODIFIERS } from '../../../assetSelectors'
 import type { AssetModifiers } from '../../../../types/assets'
 /**
@@ -27,7 +28,7 @@ export const calculateGigExpenses = (
   if (modifiers.catering) {
     const cost = calculateGigModifierCost('catering', assetModifiers)
     expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.catering.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.CATERING,
       value: cost,
       detailKey: 'economy:gigExpenses.catering.detail'
     })
@@ -37,7 +38,7 @@ export const calculateGigExpenses = (
   if (modifiers.promo) {
     const cost = calculateGigModifierCost('promo', assetModifiers)
     expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.socialAds.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.SOCIAL_ADS,
       value: cost,
       detailKey: 'economy:gigExpenses.socialAds.detail'
     })
@@ -47,7 +48,7 @@ export const calculateGigExpenses = (
   if (modifiers.merch) {
     const cost = calculateGigModifierCost('merch', assetModifiers)
     expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.merchStand.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.MERCH_STAND,
       value: cost,
       detailKey: 'economy:gigExpenses.merchStand.detail'
     })
@@ -57,7 +58,7 @@ export const calculateGigExpenses = (
   if (modifiers.soundcheck) {
     const cost = calculateGigModifierCost('soundcheck', assetModifiers)
     expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.soundcheck.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.SOUNDCHECK,
       value: cost,
       detailKey: 'economy:gigExpenses.soundcheck.detail'
     })
@@ -67,7 +68,7 @@ export const calculateGigExpenses = (
   if (modifiers.guestlist) {
     const cost = calculateGigModifierCost('guestlist', assetModifiers)
     expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.guestList.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.GUEST_LIST,
       value: cost,
       detailKey: 'economy:gigExpenses.guestList.detail'
     })

@@ -9,6 +9,7 @@ import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
 import { getQuestDefinition } from '../../../data/questRegistry'
 import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
 import { normalizeVenueId } from '../../../utils/mapUtils'
+import { isMapNodeType } from '../../../utils/mapNodeTypes'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
@@ -75,21 +76,6 @@ const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(
 
 const isMinigameType = (value: unknown): value is MinigameType =>
   typeof value === 'string' && ALLOWED_MINIGAME_TYPES.has(value as MinigameType)
-
-const ALLOWED_MAP_NODE_TYPES = new Set<MapNodeType>([
-  'START',
-  'GIG',
-  'SPECIAL',
-  'REST_STOP',
-  'FESTIVAL',
-  'FINALE',
-  'CITY',
-  'REST',
-  'SUPPLY_STOP'
-])
-
-const isMapNodeType = (value: unknown): value is MapNodeType =>
-  typeof value === 'string' && ALLOWED_MAP_NODE_TYPES.has(value as MapNodeType)
 
 const inferLoadedMapNodeLayer = (
   nodeRecord: Record<string, unknown>,

@@ -1,4 +1,5 @@
 import { calculateGigFinancials } from '../economy'
+import { BREAKDOWN_LABEL_KEYS } from '../economy/breakdownLabelKeys'
 import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
 import { BALANCE_CONSTANTS } from '../gameState'
@@ -57,7 +58,7 @@ export const applyRepeatDemandAdjustment = (
       breakdown: [
         ...financials.expenses.breakdown,
         {
-          labelKey: 'economy:gigExpenses.demandSaturation.label',
+          labelKey: BREAKDOWN_LABEL_KEYS.DEMAND_SATURATION,
           detailKey: 'economy:gigExpenses.demandSaturation.detail',
           value: demandCost
         }

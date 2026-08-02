@@ -5,6 +5,7 @@ import {
 } from '../gameState'
 import type { GameState } from '../../types'
 import type { PostGigFinancials } from '../../types/economy'
+import { BREAKDOWN_LABEL_KEYS } from '../economy/breakdownLabelKeys'
 
 const assertFiniteIntegerAtLeastZero = (value: unknown, label: string) => {
   if (!Number.isInteger(value) || (value as number) < 0) {
@@ -82,7 +83,7 @@ export const applyPostGigPerformancePenalty = ({
       breakdown: [
         ...financials.expenses.breakdown,
         {
-          labelKey: 'economy:gigExpenses.performancePenalty.label',
+          labelKey: BREAKDOWN_LABEL_KEYS.PERFORMANCE_PENALTY,
           value: penalty,
           detailKey: 'economy:gigExpenses.performancePenalty.detail',
           detailParams: { misses: excessMisses }

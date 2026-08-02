@@ -9,7 +9,10 @@ import {
 import type { TFunction } from 'i18next'
 import { getSafeUUID } from '../utils/crypto'
 import { handleError, StateError } from '../utils/errorHandler'
+import { logger } from '../utils/logger'
 import { MapGenerator } from '../utils/mapGenerator'
+import { validateGeneratedMap } from '../utils/mapValidation'
+import { loadFallbackMap } from '../utils/fallbackMap'
 import { getDevSeedOverride } from '../utils/devSeedOverride'
 import { GAME_PHASES } from './gameConstants'
 import {
@@ -75,29 +78,83 @@ export function useMapGeneration({
 
   useEffect(() => {
     if (!gameMap) {
-      // The run seed is stable for the whole run, so a retry — and a reload
-      // from the save — reproduces the same map and therefore the same failure.
-      const generator = new MapGenerator(getDevSeedOverride() ?? runSeed)
+      // The run seed is stable for the whole run, so a plain retry reproduces
+      // the same map and therefore the same failure. Each attempt offsets the
+      // seed instead, so a seed-specific generation bug can be escaped while
+      // the first attempt of a run stays reproducible from the save.
+      const baseSeed = getDevSeedOverride() ?? runSeed
+      const attemptSeed = baseSeed + mapGenerationAttemptsRef.current
+      const generator = new MapGenerator(attemptSeed)
+      let failure: { originalError: string; signature?: string } | null = null
       try {
         const newMap = generator.generateMap()
-        mapGenerationAttemptsRef.current = 0
-        dispatch(createSetMapAction(newMap))
+        const validation = validateGeneratedMap(newMap)
+        if (validation.success) {
+          mapGenerationAttemptsRef.current = 0
+          dispatch(createSetMapAction(newMap))
+        } else {
+          failure = {
+            originalError: validation.issues
+              .map(issue => `${issue.path || 'map'}: ${issue.message}`)
+              .join('; '),
+            signature: validation.signature
+          }
+        }
       } catch (error) {
+        failure = {
+          originalError: error instanceof Error ? error.message : String(error)
+        }
+      }
+
+      if (failure) {
         mapGenerationAttemptsRef.current += 1
         handleError(
-          new StateError('Failed to generate map', {
-            originalError:
-              error instanceof Error ? error.message : String(error),
+          new StateError('Failed to generate a valid map', {
+            ...failure,
+            seed: attemptSeed,
             attempt: mapGenerationAttemptsRef.current
           }),
           { source: 'GameState.generateMap' }
         )
 
         if (mapGenerationAttemptsRef.current <= MAP_GENERATION_MAX_RETRIES) {
+          // Tier 1: retry with the next sub-seed offset.
           scheduleMapRetry()
         } else {
-          dispatch(createSetMapAction(null))
+          // Tier 2: the committed template map, so a transient generation bug
+          // costs the player a less varied map rather than the whole run.
+          const fallbackMap = loadFallbackMap()
           mapGenerationAttemptsRef.current = 0
+
+          if (fallbackMap) {
+            logger.warn(
+              'MapGeneration',
+              'Generation exhausted retries — loading the fallback template map',
+              { seed: baseSeed, signature: failure.signature }
+            )
+            dispatch(createSetMapAction(fallbackMap))
+            dispatch(
+              createAddToastAction({
+                id: getSafeUUID(),
+                message: tRef.current('ui:error.mapGenerationUsedFallback', {
+                  defaultValue:
+                    'Map generation failed. Loaded a backup tour map.'
+                }),
+                type: 'warning'
+              })
+            )
+            return clearMapRetryTimeout
+          }
+
+          // Tier 3: the template itself failed validation — nothing left but
+          // the menu.
+          handleError(
+            new StateError('Fallback map failed validation', {
+              seed: baseSeed
+            }),
+            { source: 'GameState.generateMap' }
+          )
+          dispatch(createSetMapAction(null))
           dispatch(
             createAddToastAction({
               id: getSafeUUID(),
