@@ -53,7 +53,7 @@ export const ProgressBar = memo(function ProgressBar({
     <div
       className={`w-full ${className}`}
       role='progressbar'
-      aria-valuenow={Math.floor(safeValue)}
+      aria-valuenow={Math.floor(Math.min(safeValue, safeMax))}
       aria-valuemin={0}
       aria-valuemax={safeMax}
       aria-label={label}

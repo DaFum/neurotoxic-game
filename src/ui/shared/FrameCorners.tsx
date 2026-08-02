@@ -8,6 +8,12 @@ import { UIFrameCorner } from './Icons'
 
 interface FrameCornersProps {
   className?: string
+  /**
+   * Replaces (not extends) `className` on the top-left corner, so an accent
+   * corner must repeat any shared sizing it needs. Merging the two would put
+   * conflicting colour/opacity utilities on one element, where the winner is
+   * decided by stylesheet order rather than by the caller.
+   */
   topLeftClassName?: string
 }
 

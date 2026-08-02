@@ -89,3 +89,18 @@ test('ProgressBar: displayed denominator matches aria-valuemax for a non-positiv
   expect(progressBar.getAttribute('aria-valuemax')).toBe('1')
   expect(getByText('0/1')).toBeTruthy()
 })
+
+test('ProgressBar: keeps aria-valuenow within the reported range when value exceeds max', () => {
+  const { getByRole } = render(
+    <ProgressBar
+      label='Overflow'
+      value={150}
+      max={100}
+      color='bg-toxic-green'
+    />
+  )
+
+  const progressBar = getByRole('progressbar')
+  expect(progressBar.getAttribute('aria-valuenow')).toBe('100')
+  expect(progressBar.getAttribute('aria-valuemax')).toBe('100')
+})

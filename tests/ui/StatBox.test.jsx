@@ -2,9 +2,19 @@ import { expect, test, afterEach, vi } from 'vitest'
 import { render, cleanup, screen } from '@testing-library/react'
 import { StatBox } from '../../src/ui/shared/index.tsx'
 
+// Mirrors UIFrameCorner's real SVG hierarchy (svg > path, rect, path) so the
+// structural mock matches the DOM the component renders.
 vi.mock('../../src/ui/shared/Icons', () => ({
   UIFrameCorner: ({ className }) => (
-    <div data-testid='ui-frame-corner' className={className} />
+    <svg
+      data-testid='ui-frame-corner'
+      className={className}
+      viewBox='0 0 48 48'
+    >
+      <path d='M2 46V2H46' />
+      <rect x='2' y='2' width='12' height='12' />
+      <path d='M18 2L28 12H46' />
+    </svg>
   )
 }))
 
