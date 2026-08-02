@@ -5,6 +5,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 import { QUEST_APOLOGY_TOUR, QUEST_EGO_MANAGEMENT } from '../questsConstants'
 import { QuestOfferEngine } from '../../domain/questOfferEngine'
 import { isOnCooldown } from '../../utils/gameState'
+import { FLAGS } from '../flags.registry'
 
 /** Raw consequence event definitions consumed by the event registry. */
 export const CONSEQUENCE_EVENTS = [
@@ -108,7 +109,7 @@ export const CONSEQUENCE_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'discounted_tickets_active' },
+            { type: 'flag', flag: FLAGS.DISCOUNTED_TICKETS_ACTIVE },
             { type: 'stat', stat: 'loyalty', value: 10 },
             { type: 'cooldown', eventId: 'consequences_ticket_sales_collapse' }
           ]
@@ -217,7 +218,7 @@ export const CONSEQUENCE_EVENTS = [
       // post-gig addQuest dispatch would silently refuse the quest.
       return (
         controversy >= 85 &&
-        !hasStateItem(flags, 'cancel_quest_active') &&
+        !hasStateItem(flags, FLAGS.CANCEL_QUEST_ACTIVE) &&
         QuestOfferEngine.canOfferQuest(state, QUEST_APOLOGY_TOUR)
       )
     },
@@ -227,7 +228,7 @@ export const CONSEQUENCE_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'cancel_quest_active' },
+            { type: 'flag', flag: FLAGS.CANCEL_QUEST_ACTIVE },
             { type: 'stat', stat: 'harmony', value: -5 }
           ]
         },
@@ -269,7 +270,7 @@ export const CONSEQUENCE_EVENTS = [
       return (
         egoFocus != null &&
         harmony < 25 &&
-        !hasStateItem(flags, 'breakup_quest_active')
+        !hasStateItem(flags, FLAGS.BREAKUP_QUEST_ACTIVE)
       )
     },
     options: [
@@ -278,7 +279,7 @@ export const CONSEQUENCE_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'breakup_quest_active' },
+            { type: 'flag', flag: FLAGS.BREAKUP_QUEST_ACTIVE },
             { type: 'stat', stat: 'harmony', value: 5 }
           ]
         },
@@ -293,7 +294,7 @@ export const CONSEQUENCE_EVENTS = [
             { type: 'stat', stat: 'harmony', value: -25 },
             { type: 'stat', stat: 'controversyLevel', value: 10 },
             { type: 'stat', stat: 'loyalty', value: -15 },
-            { type: 'flag', flag: 'ego_crisis_failed' },
+            { type: 'flag', flag: FLAGS.EGO_CRISIS_FAILED },
             { type: 'cooldown', eventId: 'ego_management_retry', value: 10 }
           ]
         },
@@ -311,7 +312,7 @@ export const CONSEQUENCE_EVENTS = [
     condition: (state: GameState) => {
       return (
         hasStateItem(state.pendingEvents, 'consequences_comeback_album') &&
-        !hasStateItem(state.activeStoryFlags, 'comeback_triggered')
+        !hasStateItem(state.activeStoryFlags, FLAGS.COMEBACK_TRIGGERED)
       )
     },
     options: [
@@ -320,7 +321,7 @@ export const CONSEQUENCE_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'comeback_triggered' },
+            { type: 'flag', flag: FLAGS.COMEBACK_TRIGGERED },
             { type: 'resource', resource: 'money', value: 300 },
             { type: 'stat', stat: 'fame', value: 100 },
             { type: 'stat', stat: 'loyalty', value: 20 },
@@ -334,7 +335,7 @@ export const CONSEQUENCE_EVENTS = [
         effect: {
           type: 'composite',
           effects: [
-            { type: 'flag', flag: 'comeback_triggered' },
+            { type: 'flag', flag: FLAGS.COMEBACK_TRIGGERED },
             { type: 'stat', stat: 'loyalty', value: 25 },
             { type: 'stat', stat: 'viral', value: 2 }
           ]

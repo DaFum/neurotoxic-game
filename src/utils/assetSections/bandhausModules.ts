@@ -1,5 +1,6 @@
 import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
+import { FLAGS } from '../../data/flags.registry'
 
 /**
  * Bandhaus module catalogue registered into `MODULE_REGISTRY` on import.
@@ -115,7 +116,7 @@ const MODULES: readonly AssetModule[] = [
     installCost: 200,
     removalRefundFraction: 0.0,
     boni: { famePassivePerDay: 0.5 },
-    unlock: { requiredStoryFlags: ['saved_local_venue'] },
+    unlock: { requiredStoryFlags: [FLAGS.SAVED_LOCAL_VENUE] },
     imagePromptKey: 'bh_wall_mural'
   },
   {

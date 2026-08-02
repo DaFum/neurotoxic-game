@@ -1,0 +1,863 @@
+{
+  "nodes": {
+    "node_0_0": {
+      "id": "node_0_0",
+      "layer": 0,
+      "venue": {
+        "id": "stendal_proberaum",
+        "name": "venues:stendal_proberaum.name",
+        "x": 50,
+        "y": 40,
+        "type": "HOME",
+        "capacity": 0
+      },
+      "status": "unlocked",
+      "type": "START",
+      "x": 51.38880286317599,
+      "y": 36.915815530789345
+    },
+    "node_1_0": {
+      "id": "node_1_0",
+      "layer": 1,
+      "venue": {
+        "id": "koeln_mtc",
+        "name": "venues:koeln_mtc.name",
+        "x": 15,
+        "y": 56,
+        "type": "VENUE",
+        "capacity": 150,
+        "pay": 150,
+        "diff": 2,
+        "price": 10
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 15.532493141289438,
+      "y": 60.83191872427984
+    },
+    "node_1_1": {
+      "id": "node_1_1",
+      "layer": 1,
+      "venue": {
+        "id": "stendal_stadtfest",
+        "name": "venues:stendal_stadtfest.name",
+        "x": 50,
+        "y": 39,
+        "type": "VENUE",
+        "capacity": 300,
+        "pay": 200,
+        "diff": 2,
+        "price": 0
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 55.962459709327184,
+      "y": 33.03230383985105
+    },
+    "node_1_2": {
+      "id": "node_1_2",
+      "layer": 1,
+      "venue": {
+        "id": "leipzig_distille",
+        "name": "venues:leipzig_distille.name",
+        "x": 55,
+        "y": 54,
+        "type": "VENUE",
+        "capacity": 90,
+        "pay": 80,
+        "diff": 2,
+        "price": 5
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 54.23684481617085,
+      "y": 53.04041911042251
+    },
+    "node_2_0": {
+      "id": "node_2_0",
+      "layer": 2,
+      "venue": {
+        "id": "kassel_goldgrube",
+        "name": "venues:kassel_goldgrube.name",
+        "x": 35,
+        "y": 50,
+        "type": "VENUE",
+        "capacity": 200,
+        "pay": 180,
+        "diff": 2,
+        "price": 10
+      },
+      "status": "locked",
+      "type": "SPECIAL",
+      "x": 35.765775034293554,
+      "y": 54.58680555555556
+    },
+    "node_2_1": {
+      "id": "node_2_1",
+      "layer": 2,
+      "venue": {
+        "id": "muenchen_feierwerk",
+        "name": "venues:muenchen_feierwerk.name",
+        "x": 50,
+        "y": 86,
+        "type": "VENUE",
+        "capacity": 400,
+        "pay": 550,
+        "diff": 3,
+        "price": 18
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 53.991683813443075,
+      "y": 84.76436042524006
+    },
+    "node_2_2": {
+      "id": "node_2_2",
+      "layer": 2,
+      "venue": {
+        "id": "rostock_mau",
+        "name": "venues:rostock_mau.name",
+        "x": 55,
+        "y": 15,
+        "type": "VENUE",
+        "capacity": 600,
+        "pay": 750,
+        "diff": 3,
+        "price": 18
+      },
+      "status": "locked",
+      "type": "SUPPLY_STOP",
+      "x": 54.42952674897119,
+      "y": 11.14150377229081,
+      "shopInventory": [
+        {
+          "id": "hq_merch_neuro_lunchbox_bundle",
+          "name": "items:hq_merch_neuro_lunchbox_bundle.name",
+          "category": "MERCH",
+          "cost": 200,
+          "currency": "money",
+          "img": "ITEM_MERCH_NEURO_LUNCHBOX",
+          "description": "items:hq_merch_neuro_lunchbox_bundle.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "neuro_lunchbox",
+            "value": 20
+          }
+        },
+        {
+          "id": "hq_merch_shirts_bundle",
+          "name": "items:hq_merch_shirts_bundle.name",
+          "category": "MERCH",
+          "cost": 150,
+          "currency": "money",
+          "img": "ITEM_MERCH_SHIRTS",
+          "description": "items:hq_merch_shirts_bundle.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "shirts",
+            "value": 25
+          }
+        },
+        {
+          "id": "hq_merch_neuro_cutting_board_bundle",
+          "name": "items:hq_merch_neuro_cutting_board_bundle.name",
+          "category": "MERCH",
+          "cost": 150,
+          "currency": "money",
+          "img": "ITEM_MERCH_NEURO_CUTTING_BOARD",
+          "description": "items:hq_merch_neuro_cutting_board_bundle.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "neuro_cutting_board",
+            "value": 20
+          }
+        }
+      ]
+    },
+    "node_3_0": {
+      "id": "node_3_0",
+      "layer": 3,
+      "venue": {
+        "id": "berlin_cassiopeia",
+        "name": "venues:berlin_cassiopeia.name",
+        "x": 61,
+        "y": 36,
+        "type": "VENUE",
+        "capacity": 300,
+        "pay": 400,
+        "diff": 3,
+        "price": 12
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 65.2397976680384,
+      "y": 32.4713220164609
+    },
+    "node_3_1": {
+      "id": "node_3_1",
+      "layer": 3,
+      "venue": {
+        "id": "leipzig_ut",
+        "name": "venues:leipzig_ut.name",
+        "x": 55,
+        "y": 56,
+        "type": "VENUE",
+        "capacity": 180,
+        "pay": 300,
+        "diff": 3,
+        "price": 12
+      },
+      "status": "locked",
+      "type": "SPECIAL",
+      "x": 57.37665878262823,
+      "y": 58.15330168838567
+    },
+    "node_3_2": {
+      "id": "node_3_2",
+      "layer": 3,
+      "venue": {
+        "id": "freiburg_jazzhaus",
+        "name": "venues:freiburg_jazzhaus.name",
+        "x": 20,
+        "y": 85,
+        "type": "VENUE",
+        "capacity": 300,
+        "pay": 400,
+        "diff": 3,
+        "price": 15
+      },
+      "status": "locked",
+      "type": "REST_STOP",
+      "x": 19.878858024691358,
+      "y": 80.37169924554183
+    },
+    "node_3_3": {
+      "id": "node_3_3",
+      "layer": 3,
+      "venue": {
+        "id": "hamburg_logo",
+        "name": "venues:hamburg_logo.name",
+        "x": 34,
+        "y": 21,
+        "type": "VENUE",
+        "capacity": 200,
+        "pay": 250,
+        "diff": 3,
+        "price": 12
+      },
+      "status": "locked",
+      "type": "SUPPLY_STOP",
+      "x": 38.55317686774033,
+      "y": 25.259053249700585,
+      "shopInventory": [
+        {
+          "id": "hq_gear_tour_beer_bulk",
+          "name": "items:hq_gear_tour_beer_bulk.name",
+          "category": "CONSUMABLE",
+          "cost": 20,
+          "currency": "money",
+          "img": "ITEM_BEER_CRATE",
+          "description": "items:hq_gear_tour_beer_bulk.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "beer_bulk",
+            "value": 30
+          }
+        },
+        {
+          "id": "hq_merch_neuro_bowl_bundle",
+          "name": "items:hq_merch_neuro_bowl_bundle.name",
+          "category": "MERCH",
+          "cost": 150,
+          "currency": "money",
+          "img": "ITEM_MERCH_NEURO_BOWL",
+          "description": "items:hq_merch_neuro_bowl_bundle.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "neuro_bowl",
+            "value": 30
+          }
+        },
+        {
+          "id": "hq_gear_cheap_mics",
+          "name": "items:hq_gear_cheap_mics.name",
+          "category": "GEAR",
+          "cost": 40,
+          "currency": "money",
+          "img": "ITEM_CHEAP_MICS",
+          "description": "items:hq_gear_cheap_mics.description",
+          "effect": {
+            "type": "inventory_add",
+            "item": "cheap_mics",
+            "value": 5
+          }
+        }
+      ]
+    },
+    "node_4_0": {
+      "id": "node_4_0",
+      "layer": 4,
+      "venue": {
+        "id": "dortmund_junkyard",
+        "name": "venues:dortmund_junkyard.name",
+        "x": 20,
+        "y": 46,
+        "type": "VENUE",
+        "capacity": 400,
+        "pay": 500,
+        "diff": 3,
+        "price": 15
+      },
+      "status": "locked",
+      "type": "SPECIAL",
+      "x": 20.785408093278463,
+      "y": 43.19388717421125
+    },
+    "node_4_1": {
+      "id": "node_4_1",
+      "layer": 4,
+      "venue": {
+        "id": "tangermuende_kaminstube",
+        "name": "venues:tangermuende_kaminstube.name",
+        "x": 52,
+        "y": 38,
+        "type": "VENUE",
+        "capacity": 100,
+        "pay": 150,
+        "diff": 3,
+        "price": 10
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 55.30594130011361,
+      "y": 41.460705679722075
+    },
+    "node_5_0": {
+      "id": "node_5_0",
+      "layer": 5,
+      "venue": {
+        "id": "erfurt_centrum",
+        "name": "venues:erfurt_centrum.name",
+        "x": 45,
+        "y": 55,
+        "type": "VENUE",
+        "capacity": 500,
+        "pay": 600,
+        "diff": 3,
+        "price": 15
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 48.271484636491074,
+      "y": 53.684218711766576
+    },
+    "node_5_1": {
+      "id": "node_5_1",
+      "layer": 5,
+      "venue": {
+        "id": "hannover_chez",
+        "name": "venues:hannover_chez.name",
+        "x": 35,
+        "y": 35,
+        "type": "VENUE",
+        "capacity": 220,
+        "pay": 300,
+        "diff": 3,
+        "price": 10
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 40.49388188211896,
+      "y": 32.73734750965794
+    },
+    "node_6_0": {
+      "id": "node_6_0",
+      "layer": 6,
+      "venue": {
+        "id": "dresden_beatpol",
+        "name": "venues:dresden_beatpol.name",
+        "x": 65,
+        "y": 58,
+        "type": "VENUE",
+        "capacity": 350,
+        "pay": 450,
+        "diff": 3,
+        "price": 15
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 65.4997427983539,
+      "y": 58.220979080932786
+    },
+    "node_6_1": {
+      "id": "node_6_1",
+      "layer": 6,
+      "venue": {
+        "id": "hamburg_knust",
+        "name": "venues:hamburg_knust.name",
+        "x": 35,
+        "y": 20,
+        "type": "VENUE",
+        "capacity": 400,
+        "pay": 550,
+        "diff": 3,
+        "price": 18
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 30.448584267528375,
+      "y": 16.88781593314524
+    },
+    "node_6_2": {
+      "id": "node_6_2",
+      "layer": 6,
+      "venue": {
+        "id": "magdeburg_moritzhof",
+        "name": "venues:magdeburg_moritzhof.name",
+        "x": 48,
+        "y": 45,
+        "type": "VENUE",
+        "capacity": 250,
+        "pay": 350,
+        "diff": 3,
+        "price": 12
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 52.960367704749515,
+      "y": 46.98323087284982
+    },
+    "node_7_0": {
+      "id": "node_7_0",
+      "layer": 7,
+      "venue": {
+        "id": "frankfurt_batschkapp",
+        "name": "venues:frankfurt_batschkapp.name",
+        "x": 30,
+        "y": 60,
+        "type": "FESTIVAL",
+        "capacity": 1500,
+        "pay": 2500,
+        "diff": 5,
+        "price": 25
+      },
+      "status": "locked",
+      "type": "FESTIVAL",
+      "x": 27.337962962962962,
+      "y": 62.506730109739365
+    },
+    "node_7_1": {
+      "id": "node_7_1",
+      "layer": 7,
+      "venue": {
+        "id": "tangermuende_burgfest",
+        "name": "venues:tangermuende_burgfest.name",
+        "x": 52,
+        "y": 37,
+        "type": "VENUE",
+        "capacity": 450,
+        "pay": 650,
+        "diff": 4,
+        "price": 15
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 46.41243528134426,
+      "y": 40.26779489983297
+    },
+    "node_7_2": {
+      "id": "node_7_2",
+      "layer": 7,
+      "venue": {
+        "id": "muenchen_backstage",
+        "name": "venues:muenchen_backstage.name",
+        "x": 50,
+        "y": 85,
+        "type": "FESTIVAL",
+        "capacity": 1000,
+        "pay": 2000,
+        "diff": 5,
+        "price": 25
+      },
+      "status": "locked",
+      "type": "FESTIVAL",
+      "x": 46.94821673525377,
+      "y": 82.47706618655693
+    },
+    "node_7_3": {
+      "id": "node_7_3",
+      "layer": 7,
+      "venue": {
+        "id": "dortmund_fzw",
+        "name": "venues:dortmund_fzw.name",
+        "x": 20,
+        "y": 45,
+        "type": "VENUE",
+        "capacity": 650,
+        "pay": 1000,
+        "diff": 4,
+        "price": 20
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 16.305812757201647,
+      "y": 47.477666323731135
+    },
+    "node_8_0": {
+      "id": "node_8_0",
+      "layer": 8,
+      "venue": {
+        "id": "nuernberg_hirsch",
+        "name": "venues:nuernberg_hirsch.name",
+        "x": 45,
+        "y": 70,
+        "type": "VENUE",
+        "capacity": 650,
+        "pay": 900,
+        "diff": 4,
+        "price": 18
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 41.887688614540465,
+      "y": 74.50501543209876
+    },
+    "node_8_1": {
+      "id": "node_8_1",
+      "layer": 8,
+      "venue": {
+        "id": "hannover_musikzentrum",
+        "name": "venues:hannover_musikzentrum.name",
+        "x": 35,
+        "y": 36,
+        "type": "FESTIVAL",
+        "capacity": 1500,
+        "pay": 2800,
+        "diff": 5,
+        "price": 28
+      },
+      "status": "locked",
+      "type": "FESTIVAL",
+      "x": 36.811245004026446,
+      "y": 37.47424371119254
+    },
+    "node_9_0": {
+      "id": "node_9_0",
+      "layer": 9,
+      "venue": {
+        "id": "berlin_so36",
+        "name": "venues:berlin_so36.name",
+        "x": 60,
+        "y": 35,
+        "type": "VENUE",
+        "capacity": 500,
+        "pay": 750,
+        "diff": 4,
+        "price": 18
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 60.73662551440329,
+      "y": 38.467121056241425
+    },
+    "node_9_1": {
+      "id": "node_9_1",
+      "layer": 9,
+      "venue": {
+        "id": "hamburg_markthalle",
+        "name": "venues:hamburg_markthalle.name",
+        "x": 34,
+        "y": 20,
+        "type": "FESTIVAL",
+        "capacity": 650,
+        "pay": 900,
+        "diff": 4,
+        "price": 20
+      },
+      "status": "locked",
+      "type": "GIG",
+      "x": 35.531932280369126,
+      "y": 20.075224438553352
+    },
+    "node_10_0": {
+      "id": "node_10_0",
+      "layer": 10,
+      "venue": {
+        "id": "leipzig_arena",
+        "name": "venues:leipzig_arena.name",
+        "x": 54,
+        "y": 55,
+        "type": "FESTIVAL",
+        "capacity": 6500,
+        "pay": 10000,
+        "diff": 5,
+        "price": 50
+      },
+      "status": "locked",
+      "type": "FINALE",
+      "x": 50.27464825305003,
+      "y": 59.35388490643486
+    }
+  },
+  "connections": [
+    {
+      "from": "node_0_0",
+      "to": "node_1_1"
+    },
+    {
+      "from": "node_0_0",
+      "to": "node_1_0"
+    },
+    {
+      "from": "node_0_0",
+      "to": "node_1_2"
+    },
+    {
+      "from": "node_1_0",
+      "to": "node_2_0"
+    },
+    {
+      "from": "node_1_1",
+      "to": "node_2_2"
+    },
+    {
+      "from": "node_1_1",
+      "to": "node_2_1"
+    },
+    {
+      "from": "node_1_2",
+      "to": "node_2_1"
+    },
+    {
+      "from": "node_1_2",
+      "to": "node_2_2"
+    },
+    {
+      "from": "node_2_0",
+      "to": "node_3_3"
+    },
+    {
+      "from": "node_2_1",
+      "to": "node_3_1"
+    },
+    {
+      "from": "node_2_1",
+      "to": "node_3_0"
+    },
+    {
+      "from": "node_2_2",
+      "to": "node_3_3"
+    },
+    {
+      "from": "node_2_0",
+      "to": "node_3_2"
+    },
+    {
+      "from": "node_3_0",
+      "to": "node_4_0"
+    },
+    {
+      "from": "node_3_0",
+      "to": "node_4_1"
+    },
+    {
+      "from": "node_3_1",
+      "to": "node_4_0"
+    },
+    {
+      "from": "node_3_1",
+      "to": "node_4_1"
+    },
+    {
+      "from": "node_3_2",
+      "to": "node_4_0"
+    },
+    {
+      "from": "node_3_3",
+      "to": "node_4_1"
+    },
+    {
+      "from": "node_3_3",
+      "to": "node_4_0"
+    },
+    {
+      "from": "node_4_0",
+      "to": "node_5_1"
+    },
+    {
+      "from": "node_4_0",
+      "to": "node_5_0"
+    },
+    {
+      "from": "node_4_1",
+      "to": "node_5_0"
+    },
+    {
+      "from": "node_4_1",
+      "to": "node_5_1"
+    },
+    {
+      "from": "node_5_0",
+      "to": "node_6_1"
+    },
+    {
+      "from": "node_5_0",
+      "to": "node_6_2"
+    },
+    {
+      "from": "node_5_1",
+      "to": "node_6_2"
+    },
+    {
+      "from": "node_5_1",
+      "to": "node_6_0"
+    },
+    {
+      "from": "node_6_0",
+      "to": "node_7_2"
+    },
+    {
+      "from": "node_6_1",
+      "to": "node_7_1"
+    },
+    {
+      "from": "node_6_1",
+      "to": "node_7_3"
+    },
+    {
+      "from": "node_6_2",
+      "to": "node_7_0"
+    },
+    {
+      "from": "node_7_0",
+      "to": "node_8_0"
+    },
+    {
+      "from": "node_7_1",
+      "to": "node_8_1"
+    },
+    {
+      "from": "node_7_1",
+      "to": "node_8_0"
+    },
+    {
+      "from": "node_7_2",
+      "to": "node_8_0"
+    },
+    {
+      "from": "node_7_3",
+      "to": "node_8_0"
+    },
+    {
+      "from": "node_7_3",
+      "to": "node_8_1"
+    },
+    {
+      "from": "node_8_0",
+      "to": "node_9_1"
+    },
+    {
+      "from": "node_8_0",
+      "to": "node_9_0"
+    },
+    {
+      "from": "node_8_1",
+      "to": "node_9_0"
+    },
+    {
+      "from": "node_9_0",
+      "to": "node_10_0"
+    },
+    {
+      "from": "node_9_1",
+      "to": "node_10_0"
+    }
+  ],
+  "cityStates": {
+    "stendal": {
+      "genreBias": "indie",
+      "attentionSpan": 23,
+      "barSpendingProfile": "merch-hungry"
+    },
+    "koeln": {
+      "genreBias": "hardcore",
+      "attentionSpan": 24,
+      "barSpendingProfile": "stingy"
+    },
+    "leipzig": {
+      "genreBias": "synth",
+      "attentionSpan": 30,
+      "barSpendingProfile": "drunkards"
+    },
+    "kassel": {
+      "genreBias": "indie",
+      "attentionSpan": 51,
+      "barSpendingProfile": "merch-hungry"
+    },
+    "muenchen": {
+      "genreBias": "goth",
+      "attentionSpan": 33,
+      "barSpendingProfile": "average"
+    },
+    "rostock": {
+      "genreBias": "indie",
+      "attentionSpan": 23,
+      "barSpendingProfile": "generous"
+    },
+    "berlin": {
+      "genreBias": "synth",
+      "attentionSpan": 42,
+      "barSpendingProfile": "stingy"
+    },
+    "freiburg": {
+      "genreBias": "noise",
+      "attentionSpan": 26,
+      "barSpendingProfile": "average"
+    },
+    "hamburg": {
+      "genreBias": "noise",
+      "attentionSpan": 21,
+      "barSpendingProfile": "drunkards"
+    },
+    "dortmund": {
+      "genreBias": "synth",
+      "attentionSpan": 29,
+      "barSpendingProfile": "merch-hungry"
+    },
+    "tangermuende": {
+      "genreBias": "metal",
+      "attentionSpan": 28,
+      "barSpendingProfile": "average"
+    },
+    "erfurt": {
+      "genreBias": "goth",
+      "attentionSpan": 28,
+      "barSpendingProfile": "average"
+    },
+    "hannover": {
+      "genreBias": "punk",
+      "attentionSpan": 35,
+      "barSpendingProfile": "stingy"
+    },
+    "dresden": {
+      "genreBias": "punk",
+      "attentionSpan": 53,
+      "barSpendingProfile": "merch-hungry"
+    },
+    "magdeburg": {
+      "genreBias": "hardcore",
+      "attentionSpan": 49,
+      "barSpendingProfile": "generous"
+    },
+    "frankfurt": {
+      "genreBias": "metal",
+      "attentionSpan": 43,
+      "barSpendingProfile": "generous"
+    },
+    "nuernberg": {
+      "genreBias": "synth",
+      "attentionSpan": 41,
+      "barSpendingProfile": "stingy"
+    }
+  }
+}

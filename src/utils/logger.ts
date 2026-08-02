@@ -1,5 +1,21 @@
 /// <reference types="vite/client" />
 import { getSafeUUID } from './crypto'
+import { LocalStorageAdapter } from './storageAdapter'
+
+/** Storage key holding the persisted minimum log level. */
+const LOG_LEVEL_KEY = 'neurotoxic_log_level'
+
+// The log level is a best-effort preference: reporting an unavailable store
+// through `handleError` would route logger noise back through the logger.
+//
+// Built lazily rather than at module scope. `storageAdapter` reaches the
+// logger through the error handler, so constructing here at import time would
+// hit the class before its own module finished evaluating.
+let levelStorage: LocalStorageAdapter | null = null
+const getLevelStorage = (): LocalStorageAdapter => {
+  levelStorage ??= new LocalStorageAdapter()
+  return levelStorage
+}
 
 /**
  * Numeric log levels used for filtering console output and retained history.
@@ -39,10 +55,35 @@ export class Logger {
    * Maximum number of log entries retained in memory.
    */
   maxLogs: number
+  #minLevel: number = LOG_LEVELS.DEBUG
+  #levelHydrated = false
+
   /**
    * Minimum numeric level mirrored to console and history.
+   *
+   * @remarks
+   * The persisted preference is read on first access rather than in the
+   * constructor: the storage adapter reaches this module through the error
+   * handler, so an eager read would run before that cycle settled.
    */
-  minLevel: number
+  get minLevel(): number {
+    if (!this.#levelHydrated) {
+      this.#levelHydrated = true
+      const raw = getLevelStorage().get(LOG_LEVEL_KEY)
+      if (raw !== null) {
+        const parsed = parseInt(raw, 10)
+        if (!isNaN(parsed) && isValidLogLevel(parsed)) {
+          this.#minLevel = parsed
+        }
+      }
+    }
+    return this.#minLevel
+  }
+
+  set minLevel(level: number) {
+    this.#levelHydrated = true
+    this.#minLevel = level
+  }
   /**
    * Subscribers notified when log history changes.
    */
@@ -50,33 +91,7 @@ export class Logger {
   constructor() {
     this.logs = []
     this.maxLogs = 1000
-    this.minLevel = LOG_LEVELS.DEBUG // Default; overridden below by the saved preference when present
     this.listeners = []
-
-    // Load preference if available
-    let savedLevel: number | null = null
-    try {
-      const storage =
-        typeof window !== 'undefined'
-          ? window.localStorage
-          : typeof globalThis !== 'undefined'
-            ? globalThis.localStorage
-            : null
-      if (storage) {
-        const raw = storage.getItem('neurotoxic_log_level')
-        if (raw !== null) {
-          const parsed = parseInt(raw, 10)
-          if (!isNaN(parsed)) {
-            savedLevel = parsed
-          }
-        }
-      }
-    } catch (_e) {
-      // Ignore errors (SecurityError, etc.)
-    }
-    if (savedLevel !== null && isValidLogLevel(savedLevel)) {
-      this.minLevel = savedLevel
-    }
   }
 
   /**
@@ -89,19 +104,7 @@ export class Logger {
       return
     }
     this.minLevel = level
-    try {
-      const storage =
-        typeof window !== 'undefined'
-          ? window.localStorage
-          : typeof globalThis !== 'undefined'
-            ? globalThis.localStorage
-            : null
-      if (storage) {
-        storage.setItem('neurotoxic_log_level', level.toString())
-      }
-    } catch (_e) {
-      // Ignore errors
-    }
+    getLevelStorage().set(LOG_LEVEL_KEY, level.toString())
   }
 
   /**

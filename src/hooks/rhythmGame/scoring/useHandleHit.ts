@@ -5,13 +5,12 @@ import {
 } from '../../../utils/gigStats'
 import {
   audioService,
-  getGigTimeMs,
   getToneAbsoluteTimeMs,
-  playNoteAtTime,
   enableCorruptionBurstAudio,
   setCorruptionEffect,
   getScheduledHitTimeMs
 } from '../../../utils/audio/audioEngine'
+import { useAudioEngine } from '../../../context/AudioEngineContext'
 import { checkHit } from '../../../utils/rhythmUtils'
 import {
   calculateDynamicHitWindow,
@@ -53,6 +52,7 @@ export const useHandleHit = ({
   activateToxicMode,
   handleMiss
 }: HandleHitParams) => {
+  const audioEngine = useAudioEngine()
   const {
     setScore,
     setCombo,
@@ -78,7 +78,7 @@ export const useHandleHit = ({
         return false
       }
       // Use Tone.js AudioContext clock for hit detection
-      const elapsed = getGigTimeMs()
+      const elapsed = audioEngine.getGigTimeMs()
       const toxicModeActive = state.isToxicMode
       const lane = state.lanes[laneIndex]
       if (!lane) {
@@ -114,7 +114,8 @@ export const useHandleHit = ({
               ? originalNote.velocity
               : 127
           // Using Tone's absolute time is necessary here for proper MIDI note scheduling.
-          // For all other gig logic, getGigTimeMs() handles relative timing.
+          // For all other gig logic, the engine's gig clock handles
+          // relative timing.
           const toneNowMs = getToneAbsoluteTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
             noteTimeMs: note.time,
@@ -122,7 +123,7 @@ export const useHandleHit = ({
             audioTimeMs: toneNowMs,
             maxLeadMs: 30
           })
-          playNoteAtTime(
+          audioEngine.scheduleNote(
             originalNote.p as number,
             lane.id,
             scheduledMs / 1000,
@@ -252,6 +253,7 @@ export const useHandleHit = ({
     },
     [
       activateToxicMode,
+      audioEngine,
       handleMiss,
       gameStateRef,
       setCombo,

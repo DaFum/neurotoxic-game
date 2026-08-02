@@ -3,6 +3,7 @@ import type { GigEconomyData, EconomyContext } from '../../types'
 import type { GigModifiers } from '../../../../types'
 import { TICKET_SALES_CONSTANTS } from '../../constants'
 import { calculateEffectiveTicketPrice } from './calculateEffectiveTicketPrice'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
  * Calculates ticket sales revenue and attendance.
  *
@@ -98,7 +99,7 @@ export const calculateTicketIncome = (
     revenue,
     ticketsSold,
     breakdownItem: {
-      labelKey: 'economy:gigIncome.ticketSales.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.TICKET_SALES,
       value: revenue,
       detailKey: 'economy:gigIncome.ticketSales.detail',
       detailParams: { sold: ticketsSold, capacity: baseCapacity }

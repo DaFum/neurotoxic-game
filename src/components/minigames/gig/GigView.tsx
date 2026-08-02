@@ -1,4 +1,4 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useCallback } from 'react'
 import type { RefObject, CSSProperties, MutableRefObject } from 'react'
 import type { TFunction } from 'i18next'
 import type { RhythmGameRefState } from '../../../types/rhythmGame'
@@ -8,6 +8,8 @@ import { BandMembersLayer } from './BandMembersLayer'
 import { PauseOverlay } from './PauseOverlay'
 import { GigHUD } from '../../GigHUD'
 import { createPixiStageController } from '../../PixiStageController'
+import { useAudioEngine } from '../../../context/AudioEngineContext'
+import type { StageControllerOptions } from '../../../types/components'
 
 const PixiStage = lazy(async () => {
   const { PixiStage: LoadedPixiStage } = await import('../../PixiStage')
@@ -61,6 +63,16 @@ export const GigView = ({
   isPaused,
   handleQuitGig
 }: GigViewProps) => {
+  const audioEngine = useAudioEngine()
+
+  // The stage clock is gig audio, so the controller gets the injected engine
+  // rather than importing the singleton itself.
+  const controllerFactory = useCallback(
+    (options: StageControllerOptions<RhythmGameRefState>) =>
+      createPixiStageController({ ...options, audioEngine }),
+    [audioEngine]
+  )
+
   return (
     <div
       ref={chaosContainerRef}
@@ -92,7 +104,7 @@ export const GigView = ({
         <PixiStage
           gameStateRef={gameStateRef}
           update={update}
-          controllerFactory={createPixiStageController}
+          controllerFactory={controllerFactory}
         />
       </Suspense>
 

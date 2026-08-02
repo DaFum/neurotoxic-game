@@ -83,7 +83,12 @@ mock.module('react', {
     useCallback: fn => fn,
     // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useRef: initialValue => ({ current: initialValue }),
-    useEffect: () => {}
+    useEffect: () => {},
+    // `useAudioEngine` reads its context; without a provider this yields the
+    // context default, which is the (mocked) real engine.
+    createContext: defaultValue => ({ _defaultValue: defaultValue }),
+    // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
+    use: context => context._defaultValue
   }
 })
 

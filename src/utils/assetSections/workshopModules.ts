@@ -1,5 +1,6 @@
 import type { AssetModule } from '../../types/assets'
 import { MODULE_REGISTRY, MODULE_PROMPTS } from '../assetRegistryStore'
+import { FLAGS } from '../../data/flags.registry'
 
 /**
  * Merch-workshop module catalogue registered into `MODULE_REGISTRY` on import.
@@ -129,7 +130,7 @@ const MODULES: readonly AssetModule[] = [
     installCost: 50,
     removalRefundFraction: 0.2,
     boni: { baseDailyRevenueDelta: 20 },
-    unlock: { requiredStoryFlags: ['tape_culture_revival'] },
+    unlock: { requiredStoryFlags: [FLAGS.TAPE_CULTURE_REVIVAL] },
     imagePromptKey: 'mw_cassette_dubber'
   },
   {

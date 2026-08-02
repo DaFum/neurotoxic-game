@@ -4,6 +4,7 @@ import {
   BAR_RATE_NORMAL,
   AVG_SPEND_PER_PERSON_AT_BAR
 } from '../../constants'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
  * Calculates bar-cut income from ticket attendance and guestlist/VIP modifiers.
  *
@@ -26,8 +27,8 @@ export const calculateBarCut = (
     revenue: barRevenue,
     incomeItem: {
       labelKey: modifiers.guestlist
-        ? 'economy:gigIncome.vipBarRevenue.label'
-        : 'economy:gigIncome.barCut.label',
+        ? BREAKDOWN_LABEL_KEYS.VIP_BAR_REVENUE
+        : BREAKDOWN_LABEL_KEYS.BAR_CUT,
       value: barRevenue,
       detailKey: modifiers.guestlist
         ? 'economy:gigIncome.vipBarRevenue.detail'

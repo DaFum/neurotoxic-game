@@ -1,6 +1,7 @@
 import { finiteNumberOr } from '../../../gameState'
 import type { GigEconomyData } from '../../types'
 import { VENUE_SPLIT_RATES } from '../../constants'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 /**
  * Calculates venue split / promoter cut.
  *
@@ -26,7 +27,7 @@ export const calculateVenueSplit = (
     return {
       amount: splitAmount,
       expenseItem: {
-        labelKey: 'economy:gigExpenses.venueSplit.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.VENUE_SPLIT,
         value: splitAmount,
         detailKey: 'economy:gigExpenses.venueSplit.detail',
         detailParams: { rate: splitRate * 100 }

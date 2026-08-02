@@ -1,5 +1,6 @@
 import type { GameState } from '../../types'
 import { hasStateItem } from '../../utils/gameState'
+import { FLAGS } from '../flags.registry'
 
 const storyFlagNotSet =
   (flag: string) =>
@@ -15,11 +16,11 @@ export const BAND_EVENTS = [
     description: 'events:asset_story_found_record_collection.desc',
     trigger: 'random',
     chance: 0.02,
-    condition: storyFlagNotSet('found_record_collection'),
+    condition: storyFlagNotSet(FLAGS.FOUND_RECORD_COLLECTION),
     options: [
       {
         label: 'events:asset_story_found_record_collection.opt1.label',
-        effect: { type: 'flag', flag: 'found_record_collection' },
+        effect: { type: 'flag', flag: FLAGS.FOUND_RECORD_COLLECTION },
         outcomeText: 'events:asset_story_found_record_collection.opt1.outcome'
       }
     ]
@@ -31,11 +32,11 @@ export const BAND_EVENTS = [
     description: 'events:asset_story_underground_show.desc',
     trigger: 'random',
     chance: 0.02,
-    condition: storyFlagNotSet('underground_show'),
+    condition: storyFlagNotSet(FLAGS.UNDERGROUND_SHOW),
     options: [
       {
         label: 'events:asset_story_underground_show.opt1.label',
-        effect: { type: 'flag', flag: 'underground_show' },
+        effect: { type: 'flag', flag: FLAGS.UNDERGROUND_SHOW },
         outcomeText: 'events:asset_story_underground_show.opt1.outcome'
       }
     ]
@@ -47,11 +48,11 @@ export const BAND_EVENTS = [
     description: 'events:asset_story_old_basement_secret.desc',
     trigger: 'random',
     chance: 0.02,
-    condition: storyFlagNotSet('old_basement_secret'),
+    condition: storyFlagNotSet(FLAGS.OLD_BASEMENT_SECRET),
     options: [
       {
         label: 'events:asset_story_old_basement_secret.opt1.label',
-        effect: { type: 'flag', flag: 'old_basement_secret' },
+        effect: { type: 'flag', flag: FLAGS.OLD_BASEMENT_SECRET },
         outcomeText: 'events:asset_story_old_basement_secret.opt1.outcome'
       }
     ]
@@ -63,11 +64,11 @@ export const BAND_EVENTS = [
     description: 'events:asset_story_saved_local_venue.desc',
     trigger: 'random',
     chance: 0.02,
-    condition: storyFlagNotSet('saved_local_venue'),
+    condition: storyFlagNotSet(FLAGS.SAVED_LOCAL_VENUE),
     options: [
       {
         label: 'events:asset_story_saved_local_venue.opt1.label',
-        effect: { type: 'flag', flag: 'saved_local_venue' },
+        effect: { type: 'flag', flag: FLAGS.SAVED_LOCAL_VENUE },
         outcomeText: 'events:asset_story_saved_local_venue.opt1.outcome'
       }
     ]
@@ -79,11 +80,11 @@ export const BAND_EVENTS = [
     description: 'events:asset_story_tape_culture_revival.desc',
     trigger: 'random',
     chance: 0.02,
-    condition: storyFlagNotSet('tape_culture_revival'),
+    condition: storyFlagNotSet(FLAGS.TAPE_CULTURE_REVIVAL),
     options: [
       {
         label: 'events:asset_story_tape_culture_revival.opt1.label',
-        effect: { type: 'flag', flag: 'tape_culture_revival' },
+        effect: { type: 'flag', flag: FLAGS.TAPE_CULTURE_REVIVAL },
         outcomeText: 'events:asset_story_tape_culture_revival.opt1.outcome'
       }
     ]

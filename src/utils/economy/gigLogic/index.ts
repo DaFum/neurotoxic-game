@@ -1,4 +1,5 @@
 import { logger } from '../../logger'
+import { BREAKDOWN_LABEL_KEYS } from '../breakdownLabelKeys'
 import { clamp0to100, finiteNumberOr } from '../../gameState'
 import { clampUnit } from '../../numberUtils'
 import type { GigFinancialParams } from '../types'
@@ -108,7 +109,7 @@ export const calculateGigFinancials = (
   const { passiveIncome } = calculateZealotryEffects(zealotry)
   if (passiveIncome > 0) {
     report.income.breakdown.push({
-      labelKey: 'economy:cultDonations',
+      labelKey: BREAKDOWN_LABEL_KEYS.CULT_DONATIONS,
       value: passiveIncome
     })
     report.income.total += passiveIncome
@@ -156,7 +157,7 @@ export const calculateGigFinancials = (
       const perGig = finiteNumberOr(activeDeal.offer?.perGig, 0)
       if (perGig > 0) {
         report.income.breakdown.push({
-          labelKey: 'economy:gigIncome.brandSponsor.label',
+          labelKey: BREAKDOWN_LABEL_KEYS.BRAND_SPONSOR,
           value: perGig,
           detailKey: 'economy:gigIncome.brandSponsor.detail'
         })
@@ -180,7 +181,7 @@ export const calculateGigFinancials = (
     )
     if (tipBonus > 0) {
       report.income.breakdown.push({
-        labelKey: 'economy:gigIncome.tipBonus.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.TIP_BONUS,
         value: tipBonus,
         detailKey: 'economy:gigIncome.tipBonus.detail'
       })
@@ -198,7 +199,7 @@ export const calculateGigFinancials = (
     const bandBonus = Math.floor(report.income.total * bandGigModifier)
     if (bandBonus > 0) {
       report.income.breakdown.push({
-        labelKey: 'economy:gigIncome.bandBonus.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.BAND_BONUS,
         value: bandBonus,
         detailKey: 'economy:gigIncome.bandBonus.detail'
       })
@@ -211,7 +212,7 @@ export const calculateGigFinancials = (
   const managementCut = Math.floor(report.income.total * effectiveCutRate)
   if (managementCut > 0 || report.income.total > 0) {
     report.expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.managementFee.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.MANAGEMENT_FEE,
       value: managementCut,
       detailKey: 'economy:gigExpenses.managementFee.detail',
       detailParams: { rate: Math.round(effectiveCutRate * 100) }
@@ -225,7 +226,7 @@ export const calculateGigFinancials = (
     const payoutDampener = grossNet - adjustedNet
     if (payoutDampener > 0) {
       report.expenses.breakdown.push({
-        labelKey: 'economy:gigExpenses.payoutDampener.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.PAYOUT_DAMPENER,
         value: payoutDampener,
         detailKey: 'economy:gigExpenses.payoutDampener.detail',
         detailParams: { rate: Math.round((1 - GLOBAL_PAYOUT_NERF) * 100) }
@@ -240,7 +241,7 @@ export const calculateGigFinancials = (
   if (report.net > MAX_GIG_NET) {
     const overageFee = report.net - MAX_GIG_NET
     report.expenses.breakdown.push({
-      labelKey: 'economy:gigExpenses.overageFee.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.OVERAGE_FEE,
       value: overageFee,
       detailKey: 'economy:gigExpenses.overageFee.detail'
     })

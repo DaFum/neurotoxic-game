@@ -41,6 +41,7 @@ import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
 } from '../../utils/mapUtils'
+import { FLAGS } from '../../data/flags.registry'
 
 /**
  * Stores the currently selected venue or clears it.
@@ -426,8 +427,8 @@ export const handleSetLastGigStats = (
 
   // Comeback album: queue if controversy recovered and apology tour complete
   if (
-    nextState.activeStoryFlags?.includes('apology_tour_complete') &&
-    !nextState.activeStoryFlags?.includes('comeback_triggered') &&
+    nextState.activeStoryFlags?.includes(FLAGS.APOLOGY_TOUR_COMPLETE) &&
+    !nextState.activeStoryFlags?.includes(FLAGS.COMEBACK_TRIGGERED) &&
     finiteNumberOr(nextState.social?.controversyLevel, 0) < 30 &&
     !nextState.pendingEvents?.includes('consequences_comeback_album')
   ) {

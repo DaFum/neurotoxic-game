@@ -1,5 +1,6 @@
 import type { QuestDefinition } from '../../types/quest'
 import { QUEST_BAND_PACT } from '../questsConstants'
+import { FLAGS } from '../flags.registry'
 
 export const quest_ego_management = {
   kind: 'story',
@@ -17,10 +18,10 @@ export const quest_ego_management = {
   ],
   required: 50,
   followupQuestId: QUEST_BAND_PACT,
-  clearFlagsOnComplete: ['breakup_quest_active'],
-  clearFlagsOnFail: ['breakup_quest_active'],
-  completionFlags: ['ego_crisis_resolved'],
-  failureFlags: ['ego_crisis_failed'],
+  clearFlagsOnComplete: [FLAGS.BREAKUP_QUEST_ACTIVE],
+  clearFlagsOnFail: [FLAGS.BREAKUP_QUEST_ACTIVE],
+  completionFlags: [FLAGS.EGO_CRISIS_RESOLVED],
+  failureFlags: [FLAGS.EGO_CRISIS_FAILED],
   failurePenalties: [
     { type: 'social.controversy', amount: 10 },
     { type: 'social.loyalty', amount: -15 },

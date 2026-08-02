@@ -7,9 +7,9 @@ import {
 } from '../../../utils/gigStats'
 import {
   audioService,
-  stopAudio,
   getPlayRequestId
 } from '../../../utils/audio/audioEngine'
+import { useAudioEngine } from '../../../context/AudioEngineContext'
 import { calculateMissImpact } from '../../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../../context/gameConstants'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
@@ -46,6 +46,7 @@ export const useHandleMiss = ({
   baseCrowdDecay,
   gameOverTimerRef
 }: HandleMissParams) => {
+  const audioEngine = useAudioEngine()
   const { t } = useTranslation('ui')
   const {
     setCombo,
@@ -126,7 +127,7 @@ export const useHandleMiss = ({
       setIsGameOver(true)
       gameStateRef.current.isGameOver = true
       // Stop audio immediately to prevent further hit processing after collapse
-      stopAudio()
+      audioEngine.stopAudio()
       const failReqId = getPlayRequestId()
       addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
 
@@ -160,6 +161,7 @@ export const useHandleMiss = ({
     },
     [
       addToast,
+      audioEngine,
       endGig,
       setLastGigStats,
       gameStateRef,

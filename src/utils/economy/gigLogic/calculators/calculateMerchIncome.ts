@@ -6,6 +6,10 @@ import type {
   MerchItemProfile
 } from '../../../../data/merch'
 import { MERCH_PROFILES } from '../../../../data/merch'
+import {
+  BREAKDOWN_LABEL_KEYS,
+  buildMerchSalesLabelKey
+} from '../../breakdownLabelKeys'
 import type {
   EconomyContext,
   GigStatsLike,
@@ -49,14 +53,14 @@ export const calculateMerchIncome = (
   if (performanceScore >= 95) {
     buyRate += 0.2
     breakdownItems.push({
-      labelKey: 'economy:gigIncome.sRankShow.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.S_RANK_SHOW,
       value: 0,
       detailKey: 'economy:gigIncome.sRankShow.detail'
     })
   } else if (performanceScore <= 30) {
     buyRate -= 0.15
     breakdownItems.push({
-      labelKey: 'economy:gigIncome.badShow.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.BAD_SHOW,
       value: 0,
       detailKey: 'economy:gigIncome.badShow.detail'
     })
@@ -73,7 +77,7 @@ export const calculateMerchIncome = (
     const loyaltyBuyBonus = Math.min(0.15, (loyalty / 100) * 0.2)
     buyRate = Math.min(0.45, buyRate + loyaltyBuyBonus)
     breakdownItems.push({
-      labelKey: 'economy:gigIncome.scandalSupport.label',
+      labelKey: BREAKDOWN_LABEL_KEYS.SCANDAL_SUPPORT,
       value: 0,
       detailKey: 'economy:gigIncome.scandalSupport.detail'
     })
@@ -206,7 +210,7 @@ export const calculateMerchIncome = (
       totalRevenue += itemRevenue
 
       breakdownItems.push({
-        labelKey: `economy:gigIncome.merchSales.${key}.label`,
+        labelKey: buildMerchSalesLabelKey(key),
         value: itemRevenue,
         detailKey: 'economy:gigIncome.merchSales.detail',
         detailParams: { buyers: sold }

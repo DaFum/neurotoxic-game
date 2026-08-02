@@ -16,9 +16,16 @@ import { getUnlocks } from '../utils/unlockManager'
 import { isLooseRecord } from '../utils/gameState'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
 import { safeStorageOperation, getSafeStorageItem } from '../utils/storage'
+import { defaultStorageAdapter } from '../utils/storage'
 
 // Import modular state management
 import { createInitialState } from './initialState'
+
+/**
+ * Marker key written by the screenshot-injection script to signal that the
+ * save in storage was placed by tooling and should hydrate on mount.
+ */
+const INJECT_MARKER_KEY = 'neurotoxic_inject_marker'
 import { gameReducer } from './gameReducer'
 import { createLoadGameAction } from './actionCreators'
 import type { GameState } from '../types'
@@ -102,7 +109,7 @@ const initGameState = (): GameState => {
   // saves are loaded explicitly via the MENU → "Load Game" button.
   const shouldHydrate = safeStorageOperation(
     'checkInjectMarker',
-    () => localStorage.getItem('neurotoxic_inject_marker') === 'true',
+    () => defaultStorageAdapter.get(INJECT_MARKER_KEY) === 'true',
     false
   )
 
@@ -166,13 +173,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // survive React StrictMode's double-invocation of lazy initialisers).
   useEffect(() => {
     safeStorageOperation('removeInjectMarker', () =>
-      localStorage.removeItem('neurotoxic_inject_marker')
+      defaultStorageAdapter.remove(INJECT_MARKER_KEY)
     )
 
     // Also clean up on page unload to prevent marker persistence if test crashes
     const handleUnload = () => {
       safeStorageOperation('removeInjectMarkerOnUnload', () =>
-        localStorage.removeItem('neurotoxic_inject_marker')
+        defaultStorageAdapter.remove(INJECT_MARKER_KEY)
       )
     }
     window.addEventListener('beforeunload', handleUnload)

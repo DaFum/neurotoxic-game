@@ -1,5 +1,5 @@
 import { logger } from './logger'
-import { handleError } from './errorHandler'
+import { handleError, StateError } from './errorHandler'
 import { GAME_PHASES } from '../context/gameConstants'
 import {
   clampMemberStamina,
@@ -176,6 +176,9 @@ export const handleNodeArrival = (
       }
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
+    // 'REST' is the legacy spelling kept alive by save sanitisation; it means
+    // the same stop, so it must not fall through to the unhandled branch.
+    case 'REST':
     case 'REST_STOP': {
       const members = band?.members ?? []
       const newMembers = [...members]
@@ -226,6 +229,9 @@ export const handleNodeArrival = (
       )
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }
+    // 'CITY' is the legacy venue-bearing node type still accepted by save
+    // sanitisation; it resolves a venue exactly like a GIG node does.
+    case 'CITY':
     case 'FESTIVAL':
     case 'FINALE':
     case 'GIG': {
@@ -296,10 +302,19 @@ export const handleNodeArrival = (
       }
     }
     default: {
+      const unhandledType = (node as ArrivalNode).type
       logger.warn(
         'ArrivalLogic',
         'Unhandled node type — routing to OVERWORLD',
-        { type: (node as ArrivalNode).type }
+        { type: unhandledType }
+      )
+      // Silent telemetry as well as the log: a node type the generator can
+      // emit but arrival cannot handle is a defect, not a normal branch.
+      handleError(
+        new StateError('Unhandled map node type on arrival', {
+          type: String(unhandledType)
+        }),
+        { silent: true, source: 'arrivalUtils.handleNodeArrival' }
       )
       return { scene: GAME_PHASES.OVERWORLD, gigStarted: false }
     }

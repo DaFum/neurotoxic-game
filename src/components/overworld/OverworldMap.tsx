@@ -19,6 +19,7 @@ import type {
 } from '../../types'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { NodeVisibility } from '../../types/map'
+import { FLAGS } from '../../data/flags.registry'
 
 const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
@@ -147,7 +148,7 @@ export const OverworldMap = React.memo(
           node.venue ?? { id: node.id, name: node.id, price: 0 },
           {
             discountedTickets: activeStoryFlagsSet.has(
-              'discounted_tickets_active'
+              FLAGS.DISCOUNTED_TICKETS_ACTIVE
             )
           }
         )

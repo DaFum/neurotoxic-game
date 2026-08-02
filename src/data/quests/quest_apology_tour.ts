@@ -1,5 +1,6 @@
 import type { QuestDefinition } from '../../types/quest'
 import { QUEST_SINCERE_REDEMPTION } from '../questsConstants'
+import { FLAGS } from '../flags.registry'
 
 export const quest_apology_tour = {
   kind: 'story',
@@ -13,10 +14,10 @@ export const quest_apology_tour = {
   ],
   required: 3,
   followupQuestId: QUEST_SINCERE_REDEMPTION,
-  clearFlagsOnComplete: ['cancel_quest_active'],
-  clearFlagsOnFail: ['cancel_quest_active'],
-  completionFlags: ['apology_tour_complete'],
-  failureFlags: ['apology_tour_failed'],
+  clearFlagsOnComplete: [FLAGS.CANCEL_QUEST_ACTIVE],
+  clearFlagsOnFail: [FLAGS.CANCEL_QUEST_ACTIVE],
+  completionFlags: [FLAGS.APOLOGY_TOUR_COMPLETE],
+  failureFlags: [FLAGS.APOLOGY_TOUR_FAILED],
   failurePenalties: [
     { type: 'social.controversy', amount: 25 },
     { type: 'band.harmony', amount: -20 },

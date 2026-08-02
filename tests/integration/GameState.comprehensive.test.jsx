@@ -796,7 +796,12 @@ describe('GameState Context - Save/Load', () => {
 
     act(() => screen.getByText('Load').click())
 
-    expect(addUnlock).toHaveBeenCalledWith('legacy_unlock')
+    // `addUnlock` now takes the storage adapter the load ran against, so
+    // unlock writes honour an injected provider instead of real localStorage.
+    expect(addUnlock).toHaveBeenCalledWith(
+      'legacy_unlock',
+      expect.objectContaining({ get: expect.any(Function) })
+    )
   })
 })
 

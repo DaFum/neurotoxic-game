@@ -1,5 +1,6 @@
 import type { QuestDefinition } from '../../types/quest'
 import { QUEST_BACK_FROM_PIT } from '../questsConstants'
+import { FLAGS } from '../flags.registry'
 
 export const quest_prove_yourself = {
   kind: 'story',
@@ -12,11 +13,11 @@ export const quest_prove_yourself = {
   ],
   required: 4,
   followupQuestId: QUEST_BACK_FROM_PIT,
-  startFlags: ['prove_yourself_active'],
-  clearFlagsOnComplete: ['prove_yourself_active'],
-  clearFlagsOnFail: ['prove_yourself_active'],
-  completionFlags: ['prove_yourself_complete'],
-  failureFlags: ['prove_yourself_failed'],
+  startFlags: [FLAGS.PROVE_YOURSELF_ACTIVE],
+  clearFlagsOnComplete: [FLAGS.PROVE_YOURSELF_ACTIVE],
+  clearFlagsOnFail: [FLAGS.PROVE_YOURSELF_ACTIVE],
+  completionFlags: [FLAGS.PROVE_YOURSELF_COMPLETE],
+  failureFlags: [FLAGS.PROVE_YOURSELF_FAILED],
   failurePenalties: [
     { type: 'social.controversy', amount: 10 },
     { type: 'band.harmony', amount: -20 },

@@ -5,7 +5,8 @@ import { CrowdManager } from './stage/CrowdManager'
 import { LaneManager } from './stage/LaneManager'
 import { EffectManager } from './stage/EffectManager'
 import { NoteManager } from './stage/NoteManager'
-import { getGigTimeMs } from '../utils/audio/audioEngine'
+import { toneAudioEngine } from '../utils/audio/audioEngineInterface'
+import type { IAudioEngine } from '../utils/audio/audioEngineInterface'
 import { withTimeout } from './stage/stageRenderUtils'
 import type { StageControllerOptions } from '../types/components'
 import type { RhythmGameRefState } from '../types/rhythmGame'
@@ -98,10 +99,16 @@ class PixiStageController<
   toxicFilterManager: ToxicFilterManager | null
 
   /**
+   * Gig-audio engine supplying the stage clock.
+   */
+  audioEngine: IAudioEngine
+
+  /**
    * @param params - Controller dependencies.
    */
   constructor(params: StageControllerOptions<TState>) {
     super(params)
+    this.audioEngine = params.audioEngine ?? toneAudioEngine
     this.stageContainer = null
 
     // Managers
@@ -236,7 +243,7 @@ class PixiStageController<
       return
     }
 
-    const elapsed = getGigTimeMs()
+    const elapsed = this.audioEngine.getGigTimeMs()
 
     if (state.isCorruptionBurstActive) {
       // Deterministic small shake

@@ -1,4 +1,10 @@
-import { safeStorageOperation, writeStorageItem } from './storage'
+import {
+  defaultStorageAdapter,
+  readStorageItemChecked,
+  safeStorageOperation,
+  writeStorageItem
+} from './storage'
+import type { IStorageAdapter } from './storageAdapter'
 import { safeJsonParse } from './objectUtils'
 
 /**
@@ -17,15 +23,10 @@ let unlocksCache: Set<string> | null = null
 let lastStorageSnapshot: string | null = null
 const UNLOCK_LOAD_FAILED = Symbol('UNLOCK_LOAD_FAILED')
 
-const readUnlockMarkers = (storage: Storage): string[] => {
-  if (typeof storage.key !== 'function' || !Number.isFinite(storage.length)) {
-    return []
-  }
-
+const readUnlockMarkers = (adapter: IStorageAdapter): string[] => {
   const markerUnlocks: string[] = []
-  for (let i = 0; i < storage.length; i++) {
-    const key = storage.key(i)
-    if (!key?.startsWith(UNLOCK_MARKER_PREFIX)) continue
+  for (const key of adapter.keys()) {
+    if (!key.startsWith(UNLOCK_MARKER_PREFIX)) continue
     try {
       markerUnlocks.push(
         decodeURIComponent(key.slice(UNLOCK_MARKER_PREFIX.length))
@@ -50,15 +51,21 @@ const clearCache = (): void => {
  * Loads and validates unlocks from local storage.
  * @returns Array of unlocked strings.
  */
-const loadUnlocks = (): string[] | typeof UNLOCK_LOAD_FAILED => {
+const loadUnlocks = (
+  adapter: IStorageAdapter = defaultStorageAdapter
+): string[] | typeof UNLOCK_LOAD_FAILED => {
   let currentSnapshot: string | null = null
 
   const maybe = safeStorageOperation<string[] | typeof UNLOCK_LOAD_FAILED>(
     'loadUnlocks',
     () => {
-      const storage = localStorage
-      const currentRaw = storage.getItem(UNLOCKS_KEY)
-      const markerUnlocks = readUnlockMarkers(storage)
+      // An unreadable store must not look like an empty one: addUnlock
+      // rewrites the whole unlock list, so a swallowed read error would erase
+      // the player's legacy unlocks.
+      const read = readStorageItemChecked(UNLOCKS_KEY, adapter)
+      if (!read.ok) throw new Error('Unlock storage is unreadable')
+      const currentRaw = read.value
+      const markerUnlocks = readUnlockMarkers(adapter)
       currentSnapshot = `${currentRaw ?? ''}\u0000${markerUnlocks.join('\u0000')}`
 
       if (currentSnapshot === lastStorageSnapshot && unlocksCache) {
@@ -103,8 +110,10 @@ const loadUnlocks = (): string[] | typeof UNLOCK_LOAD_FAILED => {
  * Loads and validates unlocks from local storage.
  * @returns Array of unlocked strings.
  */
-export const getUnlocks = (): string[] => {
-  const result = loadUnlocks()
+export const getUnlocks = (
+  adapter: IStorageAdapter = defaultStorageAdapter
+): string[] => {
+  const result = loadUnlocks(adapter)
   if (result !== UNLOCK_LOAD_FAILED) return result
   return unlocksCache ? Array.from(unlocksCache) : []
 }
@@ -114,11 +123,14 @@ export const getUnlocks = (): string[] => {
  * @param unlockId - The ID of the unlock to add.
  * @returns True if the unlock was added (wasn't already present).
  */
-export const addUnlock = (unlockId: string): boolean => {
+export const addUnlock = (
+  unlockId: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): boolean => {
   if (typeof unlockId !== 'string') return false
 
   // Refresh cache from storage. loadUnlocks recreates the Set only when storage changed.
-  const currentUnlocks = loadUnlocks()
+  const currentUnlocks = loadUnlocks(adapter)
   if (currentUnlocks === UNLOCK_LOAD_FAILED) return false
   const cache = unlocksCache
 
@@ -133,7 +145,8 @@ export const addUnlock = (unlockId: string): boolean => {
       () =>
         writeStorageItem(
           `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
-          '1'
+          '1',
+          adapter
         ),
       false
     ) ?? false
@@ -148,7 +161,8 @@ export const addUnlock = (unlockId: string): boolean => {
   // overwrite each other when two tabs unlock different items concurrently.
   safeStorageOperation<boolean>(
     'saveUnlocks',
-    () => writeStorageItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks)),
+    () =>
+      writeStorageItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks), adapter),
     false
   )
   lastStorageSnapshot = null

@@ -127,16 +127,27 @@ mock.module(
   }
 )
 
-const mockAudioEngine = {
-  getGigTimeMs: mock.fn(() => 1234)
-}
-
+// The controller takes its gig clock from `options.audioEngine`, so the stub
+// goes in through that seam. The hub is still mocked so importing the audio
+// stack does not start real asset loading in this suite.
 mock.module(
   new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
   {
-    namedExports: mockAudioEngine
+    namedExports: {
+      getGigTimeMs: () => 0,
+      startGigPlayback: async () => false,
+      stopGigPlayback: () => {},
+      playNoteAtTime: () => {}
+    }
   }
 )
+
+const mockAudioEngine = {
+  getGigTimeMs: mock.fn(() => 1234),
+  startGig: mock.fn(async () => true),
+  stopGig: mock.fn(),
+  scheduleNote: mock.fn()
+}
 
 describe('PixiStageController', () => {
   let controller
@@ -197,7 +208,8 @@ describe('PixiStageController', () => {
     controller = createPixiStageController({
       containerRef,
       gameStateRef,
-      updateRef
+      updateRef,
+      audioEngine: mockAudioEngine
     })
   })
 
@@ -464,7 +476,8 @@ describe('PixiStageController', () => {
     const newController = createPixiStageController({
       containerRef,
       gameStateRef,
-      updateRef
+      updateRef,
+      audioEngine: mockAudioEngine
     })
 
     // Start init but don't await it yet

@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../../../gameState'
+import { BREAKDOWN_LABEL_KEYS } from '../../breakdownLabelKeys'
 import type { GigEconomyData } from '../../types'
 /**
  * Calculates guarantee / base pay.
@@ -13,7 +14,7 @@ export const calculateGuarantee = (gigData: GigEconomyData = {}) => {
     return {
       amount: pay,
       incomeItem: {
-        labelKey: 'economy:gigIncome.guarantee.label',
+        labelKey: BREAKDOWN_LABEL_KEYS.GUARANTEE,
         value: pay,
         detailKey: 'economy:gigIncome.guarantee.detail'
       }
