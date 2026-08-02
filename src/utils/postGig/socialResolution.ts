@@ -23,7 +23,7 @@ const SOCIAL_PLATFORMS_VALUES = Object.values(SOCIAL_PLATFORMS)
 import type { GameState, UnknownRecord } from '../../types'
 import type { Platform } from '../../types/social'
 import type { BandMember } from '../../types/band'
-import type { BrandDeal } from '../../types/social'
+import type { ActiveBrandDeal, BrandDeal } from '../../types/social'
 import type { CalculatePostGigStateParams, ResolvedPostResult } from './types'
 
 const isSocialPlatformId = (value: unknown): value is Platform =>
@@ -101,7 +101,7 @@ const getDealIdentifier = (deal: UnknownRecord): string => {
     : 'unknown'
 }
 
-const normalizeRemainingGigs = (deal: UnknownRecord): number => {
+const normalizeRemainingGigs = (deal: ActiveBrandDeal): number => {
   const remainingGigs = deal.remainingGigs
   if (
     typeof remainingGigs !== 'number' ||
@@ -200,12 +200,11 @@ export const buildPerGigSocialReconciliation = ({
   // Automatically decrement all active deals every gig
   let activeDeals = social.activeDeals
   if (activeDeals && activeDeals.length > 0) {
-    const nextDeals: UnknownRecord[] = []
+    const nextDeals: ActiveBrandDeal[] = []
     for (let i = 0; i < activeDeals.length; i++) {
       const deal = activeDeals[i]
-      if (!deal || typeof deal !== 'object') continue
-      const dealRecord = deal as UnknownRecord
-      const nextRemainingGigs = normalizeRemainingGigs(dealRecord) - 1
+      if (!deal) continue
+      const nextRemainingGigs = normalizeRemainingGigs(deal) - 1
       if (nextRemainingGigs > 0) {
         nextDeals.push({ ...deal, remainingGigs: nextRemainingGigs })
       }

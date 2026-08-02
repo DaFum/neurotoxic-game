@@ -1,6 +1,7 @@
-import React, { useCallback, useLayoutEffect, useMemo, useRef } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
+import { getSongId } from '../../utils/audio/audioEngine'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared'
 import { SONGS_DB, SONGS_BY_ID } from '../../data/songs'
@@ -84,14 +85,6 @@ const SongRow = React.memo(
 
 SongRow.displayName = 'SongRow'
 
-const getSetlistSongId = (entry: unknown): unknown => {
-  if (typeof entry === 'string') return entry
-  if (entry && typeof entry === 'object' && Object.hasOwn(entry, 'id')) {
-    return (entry as { id?: unknown }).id
-  }
-  return undefined
-}
-
 /**
  * Current setlist and callbacks used to persist Band HQ setlist edits.
  */
@@ -111,28 +104,18 @@ export const SetlistTab = (props: SetlistTabProps) => {
   const { setCurrentGig, changeScene } = useGameActions()
   const currentScene = useGameSelector(state => state.currentScene)
 
-  const latestSetlistRef = useRef(setlist)
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.map() with explicit for loop for Set initialization
-  // Why: Avoids unnecessary intermediate array allocations inside a hot useMemo hook.
-  // Impact: Minor CPU/memory overhead reduction on component render.
   const selectedSongIds = useMemo(() => {
-    const ids = new Set<unknown>()
+    const ids = new Set<string>()
     const list = setlist || []
     for (let i = 0; i < list.length; i++) {
-      ids.add(getSetlistSongId(list[i]))
+      const id = getSongId(list[i])
+      if (id) ids.add(id)
     }
     return ids
   }, [setlist])
 
-  const latestSelectedIdsRef = useRef(selectedSongIds)
-
-  useLayoutEffect(() => {
-    latestSetlistRef.current = setlist
-    latestSelectedIdsRef.current = selectedSongIds
-  }, [setlist, selectedSongIds])
-
   const isSongSelected = useCallback(
-    (songId: unknown) => {
+    (songId: string) => {
       return selectedSongIds.has(songId)
     },
     [selectedSongIds]
@@ -144,8 +127,7 @@ export const SetlistTab = (props: SetlistTabProps) => {
       const songName = songObj ? songObj.name : songId
       const venueName = t('ui:bandhq.venue', { defaultValue: 'Band HQ' })
 
-      const currentList = latestSetlistRef.current
-      const isSelected = latestSelectedIdsRef.current.has(songId)
+      const isSelected = selectedSongIds.has(songId)
 
       if (isSelected) {
         addToast(
@@ -167,25 +149,14 @@ export const SetlistTab = (props: SetlistTabProps) => {
         )
       }
 
-      let nextSetlist
-      if (isSelected) {
-        nextSetlist = currentList.filter(
-          (s: unknown) => getSetlistSongId(s) !== songId
-        )
-      } else {
-        // Currently allow 1 active song for MVP flow
-        nextSetlist = [{ id: songId }]
-      }
-      latestSetlistRef.current = nextSetlist
-      const nextIds = new Set<unknown>()
-      for (let i = 0; i < nextSetlist.length; i++) {
-        nextIds.add(getSetlistSongId(nextSetlist[i]))
-      }
-      latestSelectedIdsRef.current = nextIds
+      const nextSetlist = isSelected
+        ? setlist.filter(s => getSongId(s) !== songId)
+        : // Currently allow 1 active song for MVP flow
+          [{ id: songId }]
 
       setSetlist(nextSetlist)
     },
-    [setSetlist, addToast, t]
+    [setSetlist, addToast, t, setlist, selectedSongIds]
   )
 
   return (

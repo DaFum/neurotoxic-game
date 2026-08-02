@@ -7,7 +7,7 @@ import {
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 
 import type { GameState } from '../../types'
-import type { BrandDeal } from '../../types/social'
+import type { ActiveBrandDeal, BrandDeal } from '../../types/social'
 import type { BrandAlignment } from '../../types'
 
 const OPPOSING_ALIGNMENT_MAP = {
@@ -102,7 +102,16 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       }
     }
 
-    updates.activeDeals = [{ ...deal, remainingGigs: deal.offer.duration }]
+    // A duration that is not a positive integer would either be dropped by the
+    // sanitizers or throw in normalizeRemainingGigs, so seed the countdown at 1.
+    const duration = deal.offer.duration
+    const updatedDeals: ActiveBrandDeal[] = [
+      {
+        ...deal,
+        remainingGigs: Number.isInteger(duration) && duration > 0 ? duration : 1
+      }
+    ]
+    updates.activeDeals = updatedDeals
 
     return updates
   }

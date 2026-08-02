@@ -9,6 +9,7 @@ import {
   handlePirateBroadcast
 } from '../../src/context/reducers/socialReducer'
 import { ALLOWED_TRENDS } from '../../src/data/socialTrends'
+import { BRAND_DEALS_BY_ID } from '../../src/data/brandDeals'
 import { formatCurrency } from '../../src/utils/numberUtils'
 
 describe('socialReducer', () => {
@@ -71,15 +72,15 @@ describe('socialReducer', () => {
     it('should filter invalid deals from activeDeals', () => {
       const payload = {
         activeDeals: [
-          { id: 'valid1', remainingGigs: 3 },
-          { id: 'invalid1' }, // missing remainingGigs
+          { id: 'energy_drink_cx', remainingGigs: 3 },
+          { id: 'gutter_brew' }, // missing remainingGigs
           'invalid2' // not an object
         ]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.activeDeals.length, 1)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid1')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
     })
 
     it('should return unchanged state if payload is not an object/function', () => {
@@ -96,14 +97,14 @@ describe('socialReducer', () => {
       const payload = {
         trend: ALLOWED_TRENDS[1],
         loyalty: 50,
-        activeDeals: [{ id: 'deal1', remainingGigs: 5 }]
+        activeDeals: [{ id: 'energy_drink_cx', remainingGigs: 5 }]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.trend, ALLOWED_TRENDS[1])
       assert.strictEqual(nextState.social.loyalty, 50)
       assert.strictEqual(nextState.social.activeDeals.length, 1)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'deal1')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
     })
 
     it('should not mutate original state', () => {
@@ -128,9 +129,9 @@ describe('socialReducer', () => {
     it('should validate activeDeals is array and filter invalid entries', () => {
       const payload = {
         activeDeals: [
-          { id: 'valid1', remainingGigs: 3 },
-          { id: 'valid2', remainingGigs: 1 },
-          { id: 'invalid', remainingGigs: 'not-a-number' }, // invalid
+          { id: 'energy_drink_cx', remainingGigs: 3 },
+          { id: 'gutter_brew', remainingGigs: 1 },
+          { id: 'corp_app', remainingGigs: 'not-a-number' }, // invalid
           { remainingGigs: 2 }, // missing id
           null // invalid
         ]
@@ -138,22 +139,22 @@ describe('socialReducer', () => {
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.activeDeals.length, 2)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid1')
-      assert.strictEqual(nextState.social.activeDeals[1].id, 'valid2')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
+      assert.strictEqual(nextState.social.activeDeals[1].id, 'gutter_brew')
     })
 
     it('should filter deals with non-finite remainingGigs (NaN/Infinity)', () => {
       const payload = {
         activeDeals: [
-          { id: 'valid1', remainingGigs: 3 },
-          { id: 'nan', remainingGigs: Number.NaN }, // invalid
-          { id: 'inf', remainingGigs: Number.POSITIVE_INFINITY } // invalid
+          { id: 'energy_drink_cx', remainingGigs: 3 },
+          { id: 'gutter_brew', remainingGigs: Number.NaN }, // invalid
+          { id: 'corp_app', remainingGigs: Number.POSITIVE_INFINITY } // invalid
         ]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.activeDeals.length, 1)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid1')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
     })
 
     it('should reject non-array activeDeals', () => {
@@ -161,6 +162,42 @@ describe('socialReducer', () => {
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.deepStrictEqual(nextState.social.activeDeals, [])
+    })
+
+    it('should drop deals whose id is not in the brand registry', () => {
+      const payload = {
+        activeDeals: [
+          { id: 'energy_drink_cx', remainingGigs: 3 },
+          { id: 'retired_in_a_patch', remainingGigs: 3 }
+        ]
+      }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      assert.strictEqual(nextState.social.activeDeals.length, 1)
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
+    })
+
+    it('should rehydrate accepted deals from the registry, keeping only remainingGigs', () => {
+      const payload = {
+        activeDeals: [
+          {
+            id: 'energy_drink_cx',
+            remainingGigs: 2,
+            // Forged fields must not survive: consumers read type/offer.
+            type: 'RECORD_DEAL',
+            offer: { upfront: 999999, duration: 99, perGig: 999999 },
+            injected: 'drop me'
+          }
+        ]
+      }
+      const nextState = handleUpdateSocial(baseState, payload)
+
+      const registryDeal = BRAND_DEALS_BY_ID.get('energy_drink_cx')
+      const stored = nextState.social.activeDeals[0]
+      assert.strictEqual(stored.remainingGigs, 2)
+      assert.strictEqual(stored.type, registryDeal.type)
+      assert.deepStrictEqual(stored.offer, registryDeal.offer)
+      assert.strictEqual(Object.hasOwn(stored, 'injected'), false)
     })
   })
 
@@ -489,26 +526,26 @@ describe('socialReducer', () => {
       const payload = {
         activeDeals: [
           { remainingGigs: 3 }, // Missing id
-          { id: 'valid', remainingGigs: 2 }
+          { id: 'energy_drink_cx', remainingGigs: 2 }
         ]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.activeDeals.length, 1)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'valid')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'energy_drink_cx')
     })
 
     it('should validate deal structure with non-number remainingGigs', () => {
       const payload = {
         activeDeals: [
-          { id: 'deal1', remainingGigs: 'three' }, // Invalid type
-          { id: 'deal2', remainingGigs: 5 }
+          { id: 'energy_drink_cx', remainingGigs: 'three' }, // Invalid type
+          { id: 'gutter_brew', remainingGigs: 5 }
         ]
       }
       const nextState = handleUpdateSocial(baseState, payload)
 
       assert.strictEqual(nextState.social.activeDeals.length, 1)
-      assert.strictEqual(nextState.social.activeDeals[0].id, 'deal2')
+      assert.strictEqual(nextState.social.activeDeals[0].id, 'gutter_brew')
     })
   })
 

@@ -1,3 +1,5 @@
+import type { PurchaseItem } from '../../types/components'
+
 export const instruments = [
   // Guitars & Strings
   {
@@ -148,4 +150,4 @@ export const instruments = [
     description: 'items:hq_inst_didgeridoo.description',
     effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 2 }
   }
-] as const
+] as const satisfies readonly PurchaseItem[]

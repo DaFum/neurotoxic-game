@@ -1,4 +1,4 @@
-import { memo } from 'react'
+import { memo, useMemo } from 'react'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { audioService } from '../utils/audio/audioEngine'
 import { useTranslation } from 'react-i18next'
@@ -34,12 +34,20 @@ export const HUD = memo(() => {
   const hasNeurotoxicPedal = useGameSelector(
     state => !!state.band?.inventory?.neurotoxicPedal
   )
-  const band = useGameSelector(state => state.band)
+  const bandHarmony = useGameSelector(state => state.band?.harmony ?? 0)
+  const bandMembers = useGameSelector(state => state.band?.members)
   // PRACTICE (Bandprobe) renders the same Gig view, so it hides the same panels.
   const isGigScene = useGameSelector(
     state =>
       state.currentScene === GAME_PHASES.GIG ||
       state.currentScene === GAME_PHASES.PRACTICE
+  )
+
+  // Only the fields BandStatusPanel reads, so band mutations elsewhere
+  // (inventory, decimator state) no longer re-render the panel.
+  const bandStatus = useMemo(
+    () => ({ harmony: bandHarmony, members: bandMembers ?? [] }),
+    [bandHarmony, bandMembers]
   )
 
   const { toggleNeuroDecimator } = useGameActions()
@@ -152,7 +160,9 @@ export const HUD = memo(() => {
             </div>
           </Tooltip>
         )}
-        {!isGigScene && <BandStatusPanel band={band} t={t} variant='compact' />}
+        {!isGigScene && (
+          <BandStatusPanel band={bandStatus} t={t} variant='compact' />
+        )}
       </div>
     </div>
   )

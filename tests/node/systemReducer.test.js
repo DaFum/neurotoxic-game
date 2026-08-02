@@ -281,7 +281,7 @@ test('systemReducer - LOAD_GAME', async t => {
         })
       })
       assert.equal(nextState.social.controversyLevel, 10)
-      assert.deepEqual(nextState.setlist, ['song1'])
+      assert.deepEqual(nextState.setlist, [{ id: 'song1' }])
       assert.deepEqual(nextState.activeStoryFlags, ['flag1'])
       assert.deepEqual(nextState.pendingEvents, ['event1'])
       assert.deepEqual(nextState.eventCooldowns, ['cooldown1'])
@@ -1010,7 +1010,9 @@ test('systemReducer - LOAD_GAME', async t => {
 
     const nextState = handleLoadGame(initialState, loadedState)
 
-    assert.deepEqual(nextState.setlist, ['song-a', { songId: 'song-b' }])
+    // Sanitized entries are normalized to the canonical save-path shape;
+    // `{ songId }` carries no valid string `id`, so it is dropped.
+    assert.deepEqual(nextState.setlist, [{ id: 'song-a' }])
     assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
@@ -1037,6 +1039,31 @@ test('systemReducer - LOAD_GAME', async t => {
     assert.deepEqual(nextState.venueBlacklist, ['venue-1'])
     assert.deepEqual(nextState.activeQuests, [{ id: 'q1', progress: 2 }])
     assert.deepEqual(nextState.unlocks, ['u1'])
+  })
+
+  await t.test('normalizes a legacy bare-string setlist on load', () => {
+    const nextState = handleLoadGame(createInitialState(), {
+      setlist: ['song-a']
+    })
+
+    assert.deepEqual(nextState.setlist, [{ id: 'song-a' }])
+  })
+
+  await t.test('normalizes a rich-object setlist on load', () => {
+    const nextState = handleLoadGame(createInitialState(), {
+      setlist: [{ id: 'song-b', name: 'Song B', bpm: 180 }]
+    })
+
+    // Only the canonical `id` survives; the save path stores nothing else.
+    assert.deepEqual(nextState.setlist, [{ id: 'song-b' }])
+  })
+
+  await t.test('drops loaded setlist entries without a valid string id', () => {
+    const nextState = handleLoadGame(createInitialState(), {
+      setlist: [{ songId: 'song-c' }, { id: 7 }, {}, null, 42, ['song-d']]
+    })
+
+    assert.deepEqual(nextState.setlist, [])
   })
 
   await t.test(

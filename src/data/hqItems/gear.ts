@@ -1,3 +1,5 @@
+import type { PurchaseItem } from '../../types/components'
+
 /**
  * Defines the comprehensive catalog of purchasable gear, merch, and consumables.
  *
@@ -252,4 +254,4 @@ export const gear = [
     description: 'items:hq_gear_voodoo_doll.description',
     effect: { type: 'stat_modifier', target: 'band', stat: 'luck', value: 5 }
   }
-] as const
+] as const satisfies readonly PurchaseItem[]

@@ -83,6 +83,46 @@ export const ShopItem = React.memo(
       onBuy(item)
     }, [isDisabled, isPurchased, isAnyProcessing, onBuy, item])
 
+    const displayName =
+      typeof item.name === 'string' ? t(item.name) : localizedUnknownItem
+
+    // First matching candidate wins: ownership outranks affordability.
+    const disabledReason = [
+      isPurchased &&
+        t('ui:shop.messages.alreadyOwned', {
+          itemName: displayName,
+          defaultValue: 'Already owned!'
+        }),
+      isDisabled &&
+        t('ui:shop.messages.notEnough', {
+          currency:
+            item.currency === 'fame'
+              ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
+              : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+          itemName: displayName,
+          defaultValue: 'Not enough currency.'
+        })
+    ].find(candidate => typeof candidate === 'string')
+
+    const label = isPurchased
+      ? t('ui:hq.owned', { defaultValue: 'OWNED' })
+      : t('ui:hq.buy', { defaultValue: 'BUY' })
+
+    const button = (
+      <GlitchButton
+        onClick={handlePurchase}
+        disabled={
+          isDisabled || isPurchased || (isAnyProcessing && !isProcessingThis)
+        }
+        variant={isPurchased ? 'owned' : 'primary'}
+        isLoading={isProcessingThis}
+        size='sm'
+        className='min-w-20 min-h-11'
+      >
+        {label}
+      </GlitchButton>
+    )
+
     return (
       <div
         className={`p-4 border-2 relative flex flex-col justify-between transition-colors
@@ -102,9 +142,7 @@ export const ShopItem = React.memo(
               variant='inline'
             />
             <h4 className='font-bold text-toxic-green leading-tight font-mono uppercase'>
-              {typeof item.name === 'string'
-                ? t(item.name)
-                : localizedUnknownItem}
+              {displayName}
             </h4>
           </div>
           <p className='text-xs text-ash-gray mb-2 font-mono'>
@@ -145,64 +183,10 @@ export const ShopItem = React.memo(
               formatPrice(priceValue)
             )}
           </span>
-          {isPurchased || isDisabled ? (
-            <Tooltip
-              content={
-                isPurchased
-                  ? t('ui:shop.messages.alreadyOwned', {
-                      itemName:
-                        typeof item.name === 'string'
-                          ? t(item.name)
-                          : t('ui:shop.messages.unknownItem', {
-                              defaultValue: 'Unknown Item'
-                            }),
-                      defaultValue: 'Already owned!'
-                    })
-                  : t('ui:shop.messages.notEnough', {
-                      currency:
-                        item.currency === 'fame'
-                          ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
-                          : t('ui:shop.messages.money', {
-                              defaultValue: 'Money'
-                            }),
-                      itemName:
-                        typeof item.name === 'string'
-                          ? t(item.name)
-                          : t('ui:shop.messages.unknownItem', {
-                              defaultValue: 'Unknown Item'
-                            }),
-                      defaultValue: 'Not enough currency.'
-                    })
-              }
-            >
-              <GlitchButton
-                onClick={handlePurchase}
-                disabled={
-                  isDisabled ||
-                  isPurchased ||
-                  (isAnyProcessing && !isProcessingThis)
-                }
-                variant={isPurchased ? 'owned' : 'primary'}
-                isLoading={isProcessingThis}
-                size='sm'
-                className='min-w-20 min-h-11'
-              >
-                {isPurchased
-                  ? t('ui:hq.owned', { defaultValue: 'OWNED' })
-                  : t('ui:hq.buy', { defaultValue: 'BUY' })}
-              </GlitchButton>
-            </Tooltip>
+          {disabledReason ? (
+            <Tooltip content={disabledReason}>{button}</Tooltip>
           ) : (
-            <GlitchButton
-              onClick={handlePurchase}
-              disabled={isAnyProcessing && !isProcessingThis}
-              variant='primary'
-              isLoading={isProcessingThis}
-              size='sm'
-              className='min-w-20 min-h-11'
-            >
-              {t('ui:hq.buy', { defaultValue: 'BUY' })}
-            </GlitchButton>
+            button
           )}
         </div>
       </div>

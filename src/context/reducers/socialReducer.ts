@@ -7,6 +7,7 @@ import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
   SocialState,
+  ActiveBrandDeal,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
@@ -46,6 +47,7 @@ import {
   createVenueUnblacklistedQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { VENUES_BY_ID } from '../../data/venues'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { isForbiddenKey } from '../../utils/objectUtils'
 
 /** Controversy at or above this voids active brand deals. */
@@ -252,26 +254,34 @@ export const handleUpdateSocial = (
       logger.warn('GameState', 'Invalid activeDeals update (must be array)')
       delete updates.activeDeals
     } else {
-      // Validate structure of items
-      const validDeals = updates.activeDeals.filter((d: unknown) => {
-        if (!d || typeof d !== 'object') return false
-        const deal = d as Record<string, unknown>
-        // Own-property checks before reading untrusted fields so inherited
-        // prototype-chain values can't pass validation (project convention).
-        if (
-          !Object.hasOwn(deal, 'id') ||
-          !Object.hasOwn(deal, 'remainingGigs')
-        ) {
-          return false
+      // Validate structure of items, then rehydrate from the registry the way
+      // sanitizeSocial does: consumers (hasActiveSponsorship, per-gig payouts,
+      // the sellout penalty) require `type` and `offer`, so an unknown id or a
+      // forged `{ id, remainingGigs }` stub must not reach state. Only
+      // `remainingGigs` is player progress and survives from the payload.
+      const validDeals: ActiveBrandDeal[] = updates.activeDeals.flatMap(
+        (d: unknown): ActiveBrandDeal[] => {
+          if (!d || typeof d !== 'object') return []
+          const deal = d as Record<string, unknown>
+          // Own-property checks before reading untrusted fields so inherited
+          // prototype-chain values can't pass validation (project convention).
+          if (
+            !Object.hasOwn(deal, 'id') ||
+            !Object.hasOwn(deal, 'remainingGigs')
+          ) {
+            return []
+          }
+          const { id, remainingGigs } = deal
+          if (typeof id !== 'string') return []
+          const safeRemainingGigs = finiteNumberOr(remainingGigs, 0)
+          if (!Number.isInteger(safeRemainingGigs) || safeRemainingGigs <= 0) {
+            return []
+          }
+          const registryDeal = BRAND_DEALS_BY_ID.get(id)
+          if (!registryDeal) return []
+          return [{ ...registryDeal, remainingGigs: safeRemainingGigs }]
         }
-        const { id, remainingGigs } = deal
-        return (
-          typeof id === 'string' &&
-          typeof remainingGigs === 'number' &&
-          Number.isInteger(remainingGigs) &&
-          remainingGigs > 0
-        )
-      })
+      )
       if (validDeals.length !== updates.activeDeals.length) {
         logger.warn(
           'GameState',
@@ -354,10 +364,7 @@ const breakDealsIfControversyCrossed = (
     const brokenDeals = activeDeals
     const nextBrandReputation = { ...(nextState.social.brandReputation || {}) }
     for (const deal of brokenDeals) {
-      const alignment =
-        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
-          ? deal.alignment
-          : undefined
+      const alignment = deal.alignment
       if (alignment && !isForbiddenKey(alignment)) {
         nextBrandReputation[alignment] = Math.max(
           0,
@@ -385,14 +392,8 @@ const breakDealsIfControversyCrossed = (
     }
 
     for (const deal of brokenDeals) {
-      const dealId =
-        deal && typeof deal === 'object' && typeof deal.id === 'string'
-          ? deal.id
-          : 'unknown'
-      const alignment =
-        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
-          ? deal.alignment
-          : undefined
+      const dealId = deal.id
+      const alignment = deal.alignment
       stateWithBrokenDeals = QuestEvents.emit(
         stateWithBrokenDeals,
         createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })
