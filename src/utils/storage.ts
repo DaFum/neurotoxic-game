@@ -58,11 +58,17 @@ export function safeStorageOperation<T>(
   return runSafeStorageOperation(operation, fn)
 }
 
+// Latched by the production reporter so `readStorageItemChecked` can tell an
+// absent key apart from an unreadable store. The adapter contract is
+// never-throw, which otherwise collapses both cases into `null`.
+let lastReadFailed = false
+
 const reportStorageFailure: StorageFailureReporter = (
   operation,
   key,
   error
 ) => {
+  if (operation === 'read') lastReadFailed = true
   handleError(
     new StorageError(`Storage ${operation} failed for "${key}"`, {
       originalError: error instanceof Error ? error.message : String(error)
@@ -105,23 +111,36 @@ const getFallbackStore = (adapter: IStorageAdapter): InMemoryAdapter => {
   return store
 }
 
-let storageDegraded = false
+/**
+ * Adapters whose writes have been refused this session.
+ *
+ * @remarks
+ * Tracked per adapter alongside the fallback buffers: a single module-global
+ * flag would let `resetStorageFallback(adapterB)` report adapter A as recovered
+ * while A still holds buffered, unpersisted data.
+ */
+const degradedAdapters = new WeakSet<IStorageAdapter>()
 
 /**
  * Whether persistent storage refused a write this session, so progress lives in
  * memory only.
  *
- * @returns `true` once a write has fallen back to the in-memory store.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns `true` once a write through that adapter has fallen back to memory.
  */
-export const isStorageDegraded = (): boolean => storageDegraded
+export const isStorageDegraded = (
+  adapter: IStorageAdapter = defaultStorageAdapter
+): boolean => degradedAdapters.has(adapter)
 
 /**
- * Resets the degraded-storage flag and in-memory fallback. Test seam only.
+ * Resets one adapter's degraded flag and in-memory fallback. Test seam only.
+ *
+ * @param adapter - Storage backend; defaults to the production singleton.
  */
 export const resetStorageFallback = (
   adapter: IStorageAdapter = defaultStorageAdapter
 ): void => {
-  storageDegraded = false
+  degradedAdapters.delete(adapter)
   fallbackStores.get(adapter)?.clear()
 }
 
@@ -154,7 +173,7 @@ export function writeStorageItem(
   }
 
   getFallbackStore(adapter).set(key, value)
-  storageDegraded = true
+  degradedAdapters.add(adapter)
   return false
 }
 
@@ -194,6 +213,29 @@ export function removeStorageItem(
 ): void {
   fallbackStores.get(adapter)?.remove(key)
   adapter.remove(key)
+}
+
+/**
+ * Reads a raw string, reporting whether the store was readable at all.
+ *
+ * @param key - Storage key.
+ * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns `ok: false` when the read itself failed (SecurityError, tampered
+ * getter); otherwise `ok: true` with the value, which may be `null` for a
+ * genuinely absent key.
+ *
+ * @remarks
+ * Callers that would *destroy* data on a miss — the unlock store rewrites its
+ * whole list — must not treat an unreadable store as an empty one. Adapters
+ * whose reads cannot fail (in-memory, no-op) always report `ok: true`.
+ */
+export function readStorageItemChecked(
+  key: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
+): { ok: boolean; value: string | null } {
+  lastReadFailed = false
+  const value = readStorageItem(key, adapter)
+  return { ok: !lastReadFailed, value }
 }
 
 /**

@@ -4,6 +4,9 @@
 // the hub with a partial export set still link.
 import * as audioEngineHub from './audioEngine'
 import type { GigEndInfo } from './state'
+import type { ActiveSong, MutableRef } from './rhythmGameTypes'
+import type { RhythmGameRefState } from '../../types/rhythmGame'
+import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
 
 /**
  * Parameters accepted by {@link IAudioEngine.startGig}.
@@ -55,6 +58,35 @@ export interface IAudioEngine {
     whenSeconds: number,
     velocity?: number
   ): void
+  /**
+   * Unlocks the audio context after a user gesture.
+   *
+   * @returns `true` once the context is running.
+   *
+   * @remarks
+   * Part of the interface precisely so a substituted engine never constructs an
+   * `AudioContext`: a seam that covered only the clock would still let the real
+   * Tone.js stack initialise underneath it.
+   */
+  ensureAudioContext(): Promise<boolean>
+  /**
+   * Plays a setlist from the given index, chaining songs as each ends.
+   *
+   * @param index - Index into the setlist to start from.
+   * @param setlist - Resolved songs for this gig.
+   * @param gameStateRef - Mutable rhythm state the sequencer reads and updates.
+   * @param addToast - Toast callback for song-transition messages.
+   * @param t - Translator used by those messages.
+   */
+  playSongSequence(
+    index: number,
+    setlist: ActiveSong[],
+    gameStateRef: MutableRef<RhythmGameRefState>,
+    addToast: ToastCallback,
+    t: TranslationCallback | undefined
+  ): Promise<void>
+  /** Stops all playback and invalidates in-flight play requests. */
+  stopAudio(): void
 }
 
 /**
@@ -71,7 +103,12 @@ export const toneAudioEngine: IAudioEngine = {
     whenSeconds: number,
     velocity = 127
   ): void =>
-    audioEngineHub.playNoteAtTime(midiPitch, lane, whenSeconds, velocity)
+    audioEngineHub.playNoteAtTime(midiPitch, lane, whenSeconds, velocity),
+  ensureAudioContext: (): Promise<boolean> =>
+    audioEngineHub.audioService.ensureAudioContext(),
+  playSongSequence: (index, setlist, gameStateRef, addToast, t) =>
+    audioEngineHub.playSongSequence(index, setlist, gameStateRef, addToast, t),
+  stopAudio: (): void => audioEngineHub.stopAudio()
 }
 
 /**
@@ -98,6 +135,19 @@ export class NullAudioEngine implements IAudioEngine {
 
   /** {@inheritDoc IAudioEngine} */
   scheduleNote(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  async ensureAudioContext(): Promise<boolean> {
+    // Reports "not unlocked" without ever touching the Web Audio API, so a gig
+    // wrapped in this engine cannot initialise Tone.js.
+    return false
+  }
+
+  /** {@inheritDoc IAudioEngine} */
+  async playSongSequence(): Promise<void> {}
+
+  /** {@inheritDoc IAudioEngine} */
+  stopAudio(): void {}
 }
 
 /**
@@ -112,5 +162,8 @@ export const createStubAudioEngine = (
   getGigTimeMs: getTimeMs,
   startGig: async (): Promise<boolean> => true,
   stopGig: (): void => {},
-  scheduleNote: (): void => {}
+  scheduleNote: (): void => {},
+  ensureAudioContext: async (): Promise<boolean> => true,
+  playSongSequence: async (): Promise<void> => {},
+  stopAudio: (): void => {}
 })

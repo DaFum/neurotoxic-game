@@ -79,6 +79,38 @@ describe('audio engine injection', () => {
     'src/components/PixiStageController.ts'
   ]
 
+  // Consumers of the playback lifecycle, not just the clock. A substituted
+  // engine only prevents `AudioContext` creation if these go through it too.
+  const PLAYBACK_CONSUMERS = [
+    'src/hooks/rhythmGame/useRhythmGameAudio.ts',
+    'src/hooks/rhythmGame/useRhythmGameLoop.ts',
+    'src/hooks/rhythmGame/scoring/useHandleMiss.ts',
+    'src/hooks/useRhythmGameLogic.ts'
+  ]
+
+  for (const file of PLAYBACK_CONSUMERS) {
+    test(`${file} drives playback through the injected engine`, () => {
+      const source = readFileSync(file, 'utf8')
+
+      for (const singleton of [
+        'stopAudio()',
+        'playSongSequence(',
+        'audioService.ensureAudioContext('
+      ]) {
+        const bare = new RegExp(
+          `(^|[^.\\w])${singleton.replace(/[().]/g, m => '\\' + m)}`,
+          'm'
+        )
+        assert.doesNotMatch(
+          source,
+          bare,
+          `${file} calls ${singleton} on the singleton instead of the engine`
+        )
+      }
+      assert.match(source, /useAudioEngine/)
+    })
+  }
+
   for (const file of CONSUMERS) {
     test(`${file} does not import the gig clock at module scope`, () => {
       const source = readFileSync(file, 'utf8')

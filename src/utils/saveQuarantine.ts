@@ -1,5 +1,6 @@
 import { logger } from './logger'
-import { writeStorageItem } from './storage'
+import { defaultStorageAdapter, writeStorageItem } from './storage'
+import type { IStorageAdapter } from './storageAdapter'
 
 /**
  * Key prefix for quarantined save payloads. One slot per source version, so a
@@ -23,6 +24,7 @@ export const getQuarantineKey = (version: number): string =>
  * @param raw - Exact serialized payload as read from storage.
  * @param version - Version marker the payload carried.
  * @param reason - Failure description recorded alongside the payload.
+ * @param adapter - Storage backend; defaults to the production singleton.
  * @returns `true` when the copy was written, `false` when storage refused it.
  *
  * @remarks
@@ -32,10 +34,15 @@ export const getQuarantineKey = (version: number): string =>
 export const quarantineSave = (
   raw: string,
   version: number,
-  reason: string
+  reason: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
 ): boolean => {
   const key = getQuarantineKey(version)
-  const stored = writeStorageItem(key, JSON.stringify({ version, reason, raw }))
+  const stored = writeStorageItem(
+    key,
+    JSON.stringify({ version, reason, raw }),
+    adapter
+  )
   if (stored) {
     logger.warn('Persistence', `Quarantined unmigrated save at ${key}`)
   } else {

@@ -147,21 +147,40 @@ describe('degraded-mode fallback isolation', () => {
   })
 
   it('keeps a refused write scoped to the adapter that produced it', async () => {
-    const { writeStorageItem, readStorageItem } =
-      await import('../../src/utils/storage')
+    const {
+      writeStorageItem,
+      readStorageItem,
+      isStorageDegraded,
+      resetStorageFallback
+    } = await import('../../src/utils/storage')
 
     // A NoopAdapter refuses every write, so the value lands in that adapter's
     // degraded buffer.
     const refusing = new NoopAdapter()
-    expect(writeStorageItem('save', 'A', refusing)).toBe(false)
-
-    // An independent adapter must serve its own value, not the buffered one.
     const independent = new InMemoryAdapter()
-    independent.set('save', 'B')
-    expect(readStorageItem('save', independent)).toBe('B')
+    try {
+      expect(writeStorageItem('save', 'A', refusing)).toBe(false)
 
-    // …while the refusing adapter still serves what it buffered.
-    expect(readStorageItem('save', refusing)).toBe('A')
+      // An independent adapter must serve its own value, not the buffered one.
+      independent.set('save', 'B')
+      expect(readStorageItem('save', independent)).toBe('B')
+
+      // …while the refusing adapter still serves what it buffered.
+      expect(readStorageItem('save', refusing)).toBe('A')
+
+      // Degraded status is per adapter too: resetting one must not report the
+      // other as recovered while it still holds unpersisted data.
+      expect(isStorageDegraded(refusing)).toBe(true)
+      expect(isStorageDegraded(independent)).toBe(false)
+
+      resetStorageFallback(independent)
+      expect(isStorageDegraded(refusing)).toBe(true)
+      expect(readStorageItem('save', refusing)).toBe('A')
+    } finally {
+      // Never let degraded state leak into later tests.
+      resetStorageFallback(refusing)
+      resetStorageFallback(independent)
+    }
   })
 })
 

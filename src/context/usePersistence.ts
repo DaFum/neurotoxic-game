@@ -14,12 +14,14 @@ import {
 import { safeJsonParse } from '../utils/objectUtils'
 import { handleError, StateError, StorageError } from '../utils/errorHandler'
 import {
+  defaultStorageAdapter,
   isStorageDegraded,
   readStorageItem,
   removeStorageItem,
   safeStorageOperation,
   writeStorageItem
 } from '../utils/storage'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
@@ -169,7 +171,8 @@ const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
  */
 export const migrateLoadedSave = (
   parsedObj: Record<string, unknown>,
-  rawSave: string
+  rawSave: string,
+  adapter: IStorageAdapter = defaultStorageAdapter
 ): Record<string, unknown> | null => {
   const storedVersion = readSaveVersion(parsedObj)
   if (storedVersion >= CURRENT_SAVE_VERSION) return parsedObj
@@ -184,7 +187,7 @@ export const migrateLoadedSave = (
     return { ...migrated, version: CURRENT_SAVE_VERSION }
   } catch (error) {
     const reason = error instanceof Error ? error.message : String(error)
-    quarantineSave(rawSave, storedVersion, reason)
+    quarantineSave(rawSave, storedVersion, reason, adapter)
     logger.error(
       'Persistence',
       `Save migration from version ${storedVersion} failed`,
@@ -302,7 +305,7 @@ export function usePersistence({
           addToast(tRef.current('ui:toast.gameSaved'), 'success')
         }
         logger.info('System', 'Game Saved Successfully', null)
-      } else if (isStorageDegraded()) {
+      } else if (isStorageDegraded(storage)) {
         notifyStorageDegraded()
         logger.warn('System', 'Game saved to in-memory fallback store')
       } else {
@@ -391,7 +394,7 @@ export function usePersistence({
 
         const parsedObj = parsed as Record<string, unknown>
 
-        const migratedObj = migrateLoadedSave(parsedObj, rawSave)
+        const migratedObj = migrateLoadedSave(parsedObj, rawSave, storage)
         if (!migratedObj) {
           handleError(
             new StateError(
@@ -411,13 +414,13 @@ export function usePersistence({
         const savedUnlocks = savedRaw.filter(
           (u): u is string => typeof u === 'string' && u.length > 0
         )
-        const persistentUnlocks = getUnlocks()
+        const persistentUnlocks = getUnlocks(storage)
         const mergedUnlocks = Array.from(
           new Set(
             [...persistentUnlocks, ...savedUnlocks].filter(u => u.length > 0)
           )
         )
-        for (const unlockId of mergedUnlocks) addUnlock(unlockId)
+        for (const unlockId of mergedUnlocks) addUnlock(unlockId, storage)
 
         dispatch(
           createLoadGameAction(createRawLoadPayload(migratedObj, mergedUnlocks))

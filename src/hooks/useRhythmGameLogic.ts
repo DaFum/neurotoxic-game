@@ -2,7 +2,7 @@ import { useMemo, useEffect, useCallback, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { MapNode } from '../types/map'
 import { useGameActions, useGameSelector } from '../context/GameState.tsx'
-import { stopAudio } from '../utils/audio/audioEngine'
+import { useAudioEngine } from '../context/AudioEngineContext'
 import { maybeFireGigProgressEvent } from '../utils/rhythmGameLoopUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 import { bandHasTrait } from '../utils/traitUtils'
@@ -40,6 +40,7 @@ export type RhythmGameLogicReturn = {
  * @returns Rhythm game API.
  */
 export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
+  const audioEngine = useAudioEngine()
   const { t } = useTranslation()
   const setlist = useGameSelector(state => state.setlist)
   const band = useGameSelector(state => state.band)
@@ -189,9 +190,9 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       if (currentState) {
         currentState.isGameOver = true
       }
-      stopAudio()
+      audioEngine.stopAudio()
     }
-  }, [gameStateRef])
+  }, [audioEngine, gameStateRef])
 
   const stats = state
 

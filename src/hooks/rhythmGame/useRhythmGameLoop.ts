@@ -4,7 +4,6 @@ import {
   getTransportState,
   pauseAudio,
   resumeAudio,
-  stopAudio,
   setCorruptionEffect
 } from '../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../context/AudioEngineContext'
@@ -79,9 +78,9 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     (stateRef: RhythmGameRefState) => {
-      finalizeGig(stateRef, setLastGigStats, endGig, stopAudio)
+      finalizeGig(stateRef, setLastGigStats, endGig, audioEngine.stopAudio)
     },
-    [endGig, setLastGigStats]
+    [audioEngine, endGig, setLastGigStats]
   )
 
   const update = useCallback(

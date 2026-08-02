@@ -2,12 +2,11 @@ import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
 import {
   audioService,
-  stopAudio,
   setupGigPhysics,
   resolveActiveSetlist,
-  playSongSequence,
   resetGigStateTracking
 } from '../../utils/audio/audioEngine'
+import { useAudioEngine } from '../../context/AudioEngineContext'
 import { handleError, toastTypeFromSeverity } from '../../utils/errorHandler'
 import { logger } from '../../utils/logger'
 import { clampBandHarmony } from '../../utils/gameState'
@@ -229,6 +228,7 @@ export const useRhythmGameAudio = ({
   contextState,
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
+  const audioEngine = useAudioEngine()
   const { setIsAudioReady, setIsGameOver } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState
@@ -337,7 +337,7 @@ export const useRhythmGameAudio = ({
         return
       }
 
-      const audioUnlocked = await audioService.ensureAudioContext()
+      const audioUnlocked = await audioEngine.ensureAudioContext()
 
       if (isAborted()) {
         return
@@ -381,7 +381,7 @@ export const useRhythmGameAudio = ({
       if (!isAborted()) {
         setAudioReady(true)
         hasInitializedRef.current = true
-        await playSongSequence(
+        await audioEngine.playSongSequence(
           0,
           activeSetlist,
           gameStateRef,
@@ -413,11 +413,11 @@ export const useRhythmGameAudio = ({
       if (abortControllerRef.current === controller) {
         isInitializingRef.current = false
         if (!hasInitializedRef.current || isAborted()) {
-          stopAudio()
+          audioEngine.stopAudio()
         }
       }
     }
-  }, [gameStateRef])
+  }, [audioEngine, gameStateRef])
 
   useEffect(() => {
     initializeGigState()
@@ -430,10 +430,10 @@ export const useRhythmGameAudio = ({
       if (abortControllerRef.current === controller) {
         hasInitializedRef.current = false
         isInitializingRef.current = false
-        stopAudio()
+        audioEngine.stopAudio()
       }
     }
-  }, [initializeGigState])
+  }, [audioEngine, initializeGigState])
 
   const retryAudioInitialization = useCallback(async () => {
     if (!isInitializingRef.current) {

@@ -16,6 +16,15 @@ export interface IStorageAdapter {
   remove(key: string): void
   /** Removes every key this adapter owns. */
   clear(): void
+  /**
+   * Lists every key this adapter currently holds.
+   *
+   * @remarks
+   * Needed by callers that discover keys by prefix rather than by name — the
+   * unlock markers are stored one key per unlock. Returns `[]` when the backing
+   * store cannot enumerate.
+   */
+  keys(): string[]
 }
 
 /**
@@ -104,6 +113,29 @@ export class LocalStorageAdapter implements IStorageAdapter {
       this.#report('clear', '*', error)
     }
   }
+
+  /** {@inheritDoc IStorageAdapter} */
+  keys(): string[] {
+    try {
+      const storage = resolveLocalStorage()
+      if (
+        !storage ||
+        typeof storage.key !== 'function' ||
+        !Number.isFinite(storage.length)
+      ) {
+        return []
+      }
+      const found: string[] = []
+      for (let i = 0; i < storage.length; i++) {
+        const key = storage.key(i)
+        if (typeof key === 'string') found.push(key)
+      }
+      return found
+    } catch (error) {
+      this.#report('read', '*', error)
+      return []
+    }
+  }
 }
 
 /**
@@ -135,6 +167,11 @@ export class InMemoryAdapter implements IStorageAdapter {
   /** {@inheritDoc IStorageAdapter} */
   clear(): void {
     this.#store.clear()
+  }
+
+  /** {@inheritDoc IStorageAdapter} */
+  keys(): string[] {
+    return [...this.#store.keys()]
   }
 
   /**
@@ -171,4 +208,9 @@ export class NoopAdapter implements IStorageAdapter {
 
   /** {@inheritDoc IStorageAdapter} */
   clear(): void {}
+
+  /** {@inheritDoc IStorageAdapter} */
+  keys(): string[] {
+    return []
+  }
 }

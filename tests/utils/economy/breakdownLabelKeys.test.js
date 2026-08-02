@@ -78,6 +78,10 @@ describe('BREAKDOWN_LABEL_KEYS', () => {
     expect(isRegisteredBreakdownLabelKey('economy:notARegisteredKey')).toBe(
       false
     )
+    // An empty item segment names no merch item and cannot resolve.
+    expect(
+      isRegisteredBreakdownLabelKey('economy:gigIncome.merchSales..label')
+    ).toBe(false)
   })
 
   it('builds merch keys under the single registered prefix', () => {
