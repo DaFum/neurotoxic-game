@@ -504,7 +504,8 @@ Diese Notiz sammelt konkrete Verbesserungspotenziale, die während einer fokussi
   - Fallstrick: Module‑Level `localStorage.setItem` verhindert Adapter‑Swap.
 
 - [ ] **Zentralen Environment Service** für `window`/`document` (SSR/Node‑Safety).
-- [ ] **Clock Service für deterministische Tests** (`IClock`) statt `Date.now()`/`new Date()` überall.
+- [x] **Clock Service für deterministische Tests** (`IClock`) statt `Date.now()`/`new Date()` überall.
+  - **Status:** (2026-08-02, Issue #2659) — `IClock` mit `now()` / `today()`, `systemClock` und `createFixedClock(fixedNow)` in [`src/utils/clock.ts`](../src/utils/clock.ts); Injektion über [`ClockProvider` / `useClock`](../src/context/ClockContext.tsx) mit `systemClock` als Default. Bereits migriert: Save-Timestamp (`createPersistedState`) und Banter-Zeitstempel (`createApplyEventDeltaAction`). Gig-Timing bleibt bei `audioEngine.getGigTimeMs()` und ist ausdrücklich nicht Teil davon. Abgedeckt durch `tests/node/clock.test.js` und `tests/context/clockContext.test.tsx`.
 - [ ] **Browser API Fallbacks dokumentieren & testen**: WebAudio, `localStorage`, `ResizeObserver`.
 - [ ] **Dependency Freshness Check (wöchentlich)**: `pnpm outdated --json` → Notification (nicht auto upgrade).
 - [x] **`postMessage` / `BroadcastChannel` origin Validation auditieren**.

@@ -24,6 +24,9 @@ import { validateSaveData } from '../utils/saveValidator'
 import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { logger } from '../utils/logger'
 import { quarantineSave } from '../utils/saveQuarantine'
+import { systemClock } from '../utils/clock'
+import type { IClock } from '../utils/clock'
+import { useClock } from './ClockContext'
 import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
 import { createLoadGameAction } from './actionCreators'
@@ -199,9 +202,13 @@ export const migrateLoadedSave = (
  * using dedicated save formatting logic.
  *
  * @param currentState - The full state tree to snapshot.
+ * @param clock - Clock supplying the save timestamp. Defaults to the real clock.
  * @returns An object containing only the serialized, persistable slice of the game state.
  */
-export const createPersistedState = (currentState: GameState) => {
+export const createPersistedState = (
+  currentState: GameState,
+  clock: IClock = systemClock
+) => {
   const persisted: Record<string, unknown> = {}
   for (const key of LOADABLE_SAVE_KEYS) {
     persisted[key] = currentState[key]
@@ -209,7 +216,7 @@ export const createPersistedState = (currentState: GameState) => {
 
   return {
     ...persisted,
-    timestamp: Date.now(),
+    timestamp: clock.now(),
     unlocks: currentState.unlocks,
     setlist: normalizeSetlistForSave(currentState.setlist)
   }
@@ -228,6 +235,8 @@ export function usePersistence({
   addToast,
   tRef
 }: UsePersistenceParams) {
+  const clock = useClock()
+
   const deleteSave = useCallback(() => {
     safeStorageOperation('deleteSave', () => {
       removeStorageItem(SAVE_KEY)
@@ -253,7 +262,7 @@ export function usePersistence({
 
   const saveGame = useCallback(
     (showToast = true, stateSnapshot: GameState = stateRef.current) => {
-      const saveData = createPersistedState(stateSnapshot)
+      const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
         'saveGame',
@@ -298,7 +307,7 @@ export function usePersistence({
         handleError(new StorageError('Failed to save game'), { addToast })
       }
     },
-    [addToast, notifyStorageDegraded, stateRef, tRef]
+    [addToast, clock, notifyStorageDegraded, stateRef, tRef]
   )
 
   const previousSceneRef = useRef(currentScene)

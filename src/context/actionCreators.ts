@@ -8,6 +8,8 @@ import { getAdvanceDayRngStreamLength } from '../utils/assetConfig'
 import { ActionTypes } from './actionTypes'
 import type { QuestProgressEvent } from '../utils/questProgress'
 import { getSafeUUID, secureRandom } from '../utils/crypto'
+import { systemClock } from '../utils/clock'
+import type { IClock } from '../utils/clock'
 import { isForbiddenKey, isLooseRecord } from '../utils/objectUtils'
 import { generateRivalBand, moveRivalBand } from '../utils/rivalEngine'
 import { sanitizeRiskEventDescriptor } from './reducers/assetSanitizers'
@@ -454,8 +456,14 @@ export const createResetStateAction = (
  * Stamps banter relationship changes that lack a finite timestamp with the
  * current time. Timestamps must be generated here (not in the reducer) so
  * `applyEventDelta` stays pure and deterministic.
+ *
+ * @param delta - Event delta whose banter entries may need a timestamp.
+ * @param clock - Clock supplying the stamp. Defaults to the real clock.
  */
-const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
+const stampBanterTimestamps = (
+  delta: EventDeltaPayload,
+  clock: IClock = systemClock
+): EventDeltaPayload => {
   const rawRC = delta.band?.relationshipChange as unknown
   if (!rawRC) return delta
   const needsStamp = (rc: unknown): rc is RelationshipChange =>
@@ -475,7 +483,7 @@ const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
   }
 
   if (!hasUnstamped) return delta
-  const now = Date.now()
+  const now = clock.now()
 
   let stamped: unknown
   if (Array.isArray(rawRC)) {
@@ -501,12 +509,14 @@ const stampBanterTimestamps = (delta: EventDeltaPayload): EventDeltaPayload => {
 /**
  * Creates an event delta application action
  * @param delta - State delta to apply
+ * @param clock - Clock supplying banter timestamps. Defaults to the real clock.
  */
 export const createApplyEventDeltaAction = (
-  delta: EventDeltaPayload
+  delta: EventDeltaPayload,
+  clock: IClock = systemClock
 ): Extract<GameAction, { type: typeof ActionTypes.APPLY_EVENT_DELTA }> => ({
   type: ActionTypes.APPLY_EVENT_DELTA,
-  payload: stampBanterTimestamps(delta)
+  payload: stampBanterTimestamps(delta, clock)
 })
 
 /**
