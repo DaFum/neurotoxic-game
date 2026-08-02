@@ -102,8 +102,14 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       }
     }
 
+    // A duration that is not a positive integer would either be dropped by the
+    // sanitizers or throw in normalizeRemainingGigs, so seed the countdown at 1.
+    const duration = deal.offer.duration
     const updatedDeals: ActiveBrandDeal[] = [
-      { ...deal, remainingGigs: finiteNumberOr(deal.offer.duration, 1) }
+      {
+        ...deal,
+        remainingGigs: Number.isInteger(duration) && duration > 0 ? duration : 1
+      }
     ]
     updates.activeDeals = updatedDeals
 
