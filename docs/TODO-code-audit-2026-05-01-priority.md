@@ -14,53 +14,54 @@ Prioritization of every open item in [TODO-code-audit-2026-05-01.md](TODO-code-a
 
 **Effort:** S = small, M = medium, L = large.
 
-Items already completed (§1 invariants suite, §2 pure resolver, §3 idempotency/routing/cancellation odds) are omitted here.
+Items already completed (§2 pure resolver, §3 idempotency and routing contract) are omitted here. The §1 invariants suite and the §3 cancellation odds are only partially done; their remaining work appears below as 1.3rest and 3.3rest.
 
 ## P0 — do first
 
-| #      | Item                                                       | Effort | Rationale                                                                                                                          |
-| ------ | ---------------------------------------------------------- | ------ | ---------------------------------------------------------------------------------------------------------------------------------- |
-| 1.1a   | Narrow `logger.warn` in `gameReducer` to `action.type`     | S      | The default branch still passes the full payload; money amounts and player names reach the console. One-line fix.                  |
-| 8.5.1  | `schemaVersion` + migration chain in the save              | L      | Without a version, every save-format change risks destroying player runs. The most expensive failure in this document.             |
-| 8.5.6  | Catch migration failures → `createInitialState()`          | S      | Mandatory companion to 8.5.1; a throwing migration must not block boot.                                                            |
-| 8.5.3  | Partial/corrupt save recovery tests                        | S      | `saveValidator` tests already cover `__proto__`; add missing keys and truncated JSON.                                              |
-| 5.1    | Stable `runSeed` instead of `Date.now()`                   | M      | Blocks reproducible bug reports, map fuzzing (8.6.4), seed sharing (7.13), and weekly seeds (7.9). Highest leverage in this group. |
-| 6.2    | Fuzz harness for hostile payloads                          | M      | `checkInvariants` now exists (§1) — the expensive half is built; only the generator in front of it is missing.                     |
-| 8.10.7 | StorageAdapter fallback for private browsing               | S      | `localStorage.setItem` throws a `DOMException` in private mode — today a hard crash class.                                         |
-| 8.10.6 | Audit `postMessage` / `BroadcastChannel` origin validation | S      | Pure audit; any unvalidated origin is an injection surface.                                                                        |
+| #       | Item                                                       | Effort | Rationale                                                                                                                                                                                           |
+| ------- | ---------------------------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1.1a    | Narrow `logger.warn` in `gameReducer` to `action.type`     | S      | The default branch still passes the full payload; money amounts and player names reach the console. One-line fix.                                                                                   |
+| 8.5.1   | Formalise the migration chain                              | M      | `version` is already persisted (`usePersistence.ts`) and `handleLoadGame` runs an inline `< 2` migration. The gap is the chain of pure, sequentially applicable migrations — not a missing version. |
+| 8.5.6   | Catch migration failures non-destructively                 | S      | Mandatory companion to 8.5.1. The raw save must be preserved under a quarantine key before falling back to `createInitialState()`, or the fix trades a boot crash for silent data loss.             |
+| 8.5.3   | Partial/corrupt save recovery tests                        | S      | `saveValidator` tests already cover `__proto__`; add missing keys and truncated JSON.                                                                                                               |
+| 3.3rest | Pass `tourSuccess` into `calcCancellationRisk`             | S      | The UI shows the base risk while the engine rolls `chance * (1 - tourSuccess)`. The badge overstates risk as soon as `tourSuccess > 0` — a wrong number in front of a purchase decision.            |
+| 8.10.7  | StorageAdapter fallback for private browsing               | S      | `localStorage.setItem` throws a `DOMException` in private mode — today a hard crash class.                                                                                                          |
+| 8.10.6  | Audit `postMessage` / `BroadcastChannel` origin validation | S      | Pure audit; any unvalidated origin is an injection surface.                                                                                                                                         |
 
 ## P1 — foundation
 
 Each of these unblocks several others. Table order is the recommended sequence.
 
-| #      | Item                                                      | Effort | Unblocks / prevents                                                    |
-| ------ | --------------------------------------------------------- | ------ | ---------------------------------------------------------------------- |
-| 4.1    | Balance config (`src/config/balance.ts`, `configVersion`) | L      | 2.3 daily caps, 4.3 smoothing, 7.2 setlist presets, 7.1 cost estimates |
-| 8.10.3 | Clock service (`IClock`)                                  | M      | deterministic tests everywhere; counterpart to 5.1                     |
-| 8.10.1 | `StorageAdapter` abstraction                              | M      | makes 8.5.x testable without a DOM; the clean form of 8.10.7           |
-| 8.4.1  | `IAudioEngine` + `NullAudioEngine`                        | M      | 8.4.2–8.4.6, audio-free CI runs                                        |
-| 6.1    | Pure golden-path driver (`applySequence`)                 | M      | fast regression base for every economy/travel change                   |
-| 8.7.1  | Flag registry (`FLAGS` as const)                          | M      | kills orphaned flag writes — a silent bug class with no coverage today |
-| 8.7.2  | Strictly type `QuestPayload`                              | M      | the quest domain is 14 modules wide and the largest untyped boundary   |
-| 5.2    | Fallback template map                                     | M      | prevents run loss on generation failure (today: back to menu)          |
-| 8.6.1  | Schema validation after generation                        | M      | prerequisite for 5.2 to be reachable at all                            |
-| 8.6.5  | Validate the fallback map too                             | S      | otherwise the fallback can silently become invalid                     |
-| 8.6.2  | Exhaustiveness test `MapNode` ↔ `handleNodeArrival`       | S      | a new node type without a handler is a silent fallback today           |
-| 4.4    | `BREAKDOWN_LABEL_KEYS`                                    | S      | reduces 8.8.4 to a one-liner; prevents unlabelled economy lines        |
-| 8.8.4  | i18n key test for all breakdown labels                    | S      | ship together with 4.4                                                 |
-| 8.8.3  | Currency formatting tests across locale switches          | S      | `formatCurrency` is mandated by `AGENTS.md` but untested               |
-| 8.8.6  | Boundary test for `NaN` / `Infinity` / `-0`               | S      | fits the existing `finiteNumberOr` convention                          |
-| 8.2.5  | Keep action payloads serializable (test)                  | S      | protects 8.5.x — non-serializable payloads break saves silently        |
-| 8.4.2  | Gig clock drift tolerance test                            | S      | gig timing is core gameplay and has no contract test today             |
-| 8.4.3  | `withAudioContext(fn)` guard                              | S      | autoplay-policy failures are a real, user-visible failure class        |
-| 8.5.2  | Round-trip serialization tests per slice                  | S      | cheap insurance for the migration work in 8.5.1                        |
-| 8.9.7  | Dead-code detection (`knip`/`ts-prune`) in CI             | S      | very cheap, high signal, usable immediately                            |
+| #      | Item                                                      | Effort | Unblocks / prevents                                                              |
+| ------ | --------------------------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| 5.1    | Stable `runSeed` instead of `Date.now()`                  | M      | 8.6.4 map fuzzing, 7.13 seed sharing, 7.9 weekly seeds, reproducible bug reports |
+| 6.2    | Fuzz harness for hostile payloads                         | M      | `checkInvariants` already exists — only the generator in front of it is missing  |
+| 4.1    | Balance config (`src/config/balance.ts`, `configVersion`) | L      | 2.3 daily caps, 4.3 smoothing, 7.2 setlist presets, 7.1 cost estimates           |
+| 8.10.3 | Clock service (`IClock`)                                  | M      | deterministic tests everywhere; counterpart to 5.1                               |
+| 8.10.1 | `StorageAdapter` abstraction                              | M      | makes 8.5.x testable without a DOM; the clean form of 8.10.7                     |
+| 8.4.1  | `IAudioEngine` + `NullAudioEngine`                        | M      | 8.4.2–8.4.6, audio-free CI runs                                                  |
+| 6.1    | Pure golden-path driver (`applySequence`)                 | M      | fast regression base for every economy/travel change                             |
+| 8.7.1  | Flag registry (`FLAGS` as const)                          | M      | kills orphaned flag writes — a silent bug class with no coverage today           |
+| 8.7.2  | Strictly type `QuestPayload`                              | M      | the quest domain is 14 modules wide and the largest untyped boundary             |
+| 5.2    | Fallback template map                                     | M      | prevents run loss on generation failure (today: back to menu)                    |
+| 8.6.1  | Schema validation after generation                        | M      | prerequisite for 5.2 to be reachable at all                                      |
+| 8.6.5  | Validate the fallback map too                             | S      | otherwise the fallback can silently become invalid                               |
+| 8.6.2  | Exhaustiveness test `MapNode` ↔ `handleNodeArrival`       | S      | a new node type without a handler is a silent fallback today                     |
+| 4.4    | `BREAKDOWN_LABEL_KEYS`                                    | S      | reduces 8.8.4 to a one-liner; prevents unlabelled economy lines                  |
+| 8.8.4  | i18n key test for all breakdown labels                    | S      | ship together with 4.4                                                           |
+| 8.8.3  | Currency formatting tests across locale switches          | S      | `formatCurrency` is mandated by `AGENTS.md` but untested                         |
+| 8.8.6  | Boundary test for `NaN` / `Infinity` / `-0`               | S      | fits the existing `finiteNumberOr` convention                                    |
+| 8.2.5  | Keep action payloads serializable (test)                  | S      | protects 8.5.x — non-serializable payloads break saves silently                  |
+| 8.4.2  | Gig clock drift tolerance test                            | S      | gig timing is core gameplay and has no contract test today                       |
+| 8.4.3  | `withAudioContext(fn)` guard                              | S      | autoplay-policy failures are a real, user-visible failure class                  |
+| 8.5.2  | Round-trip serialization tests per slice                  | S      | cheap insurance for the migration work in 8.5.1                                  |
+| 8.9.7  | Dead-code detection (`knip`/`ts-prune`) in CI             | S      | very cheap, high signal, usable immediately                                      |
 
 ## P2 — quality and observability
 
 Ongoing; no fixed order.
 
-**Reducer & actions:** 1.1b dev metric for unknown actions (identical to 8.2.4 — implement as one item) · 8.2.1 derive `ActionPayloadMap` · 8.2.2 snapshot tests per action creator
+**Reducer & actions:** 1.3rest extend the invariants suite across all action creators through `gameReducer` and add the scene-transition invariant · 1.1b dev metric for unknown actions (identical to 8.2.4 — implement as one item) · 8.2.1 derive `ActionPayloadMap` · 8.2.2 snapshot tests per action creator
 
 **Events:** 2.2 replay fixtures for event deltas · 2.3 category-based `dailyCaps` (after 4.1) · 8.7.3 multi-step chain integration test · 8.7.4 resolver re-entry guard
 
@@ -116,12 +117,12 @@ A separate scale, because player value rather than risk decides here. Items with
 
 ### Architecture caveat
 
-**7.8 run advisor mode** is described in the audit as a "middleware check before dispatch". That conflicts with the `AGENTS.md` rule that all state changes flow through typed action creators with the reducer as the authority. Redesign it as a pure selector over state rather than a dispatch interceptor before implementing.
+**7.8 run advisor mode** is described in the audit as a "middleware check before dispatch". That is not in itself a violation of the `AGENTS.md` rule: a check that reads an already-created typed `GameAction` and either forwards or cancels it changes no state and does not displace the reducer's authority. The rule would only be broken if the advisor rewrote actions or synthesised its own. Implement it as a pure rule evaluator `(state, proposedAction) => AdvisorVerdict`; where it is invoked — hook layer or dispatch wrapper — is a separate decision.
 
 ## Recommended sequence
 
-1. **All of P0** — starting with 1.1a (one-liner), then the persistence block 8.5.1/8.5.6/8.5.3, then 5.1.
-2. **P1 foundation** in table order; the S-effort items at the end of the table are cheap pickups.
+1. **All of P0** — starting with 1.1a and 3.3rest (both one-liner class), then the persistence block 8.5.1/8.5.6/8.5.3.
+2. **P1 foundation** in table order — 5.1 first, since the most depends on it; the S-effort items at the end of the table are cheap pickups.
 3. **F1 features** in parallel — they need almost no new infrastructure and make progress visible.
 4. **P2** ongoing, preferably in the same PR as the change the item relates to.
 5. **F2**, then **P3** and **F3/F4** as needed.
