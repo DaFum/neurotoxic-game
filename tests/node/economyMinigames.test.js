@@ -182,6 +182,7 @@ test('Minigame Economy Calculations', async t => {
       Number.MAX_VALUE
     )
     assert.strictEqual(resultExtreme.reward, 1080)
+    assert.strictEqual(resultExtreme.stress, 0)
   })
   await t.test('Kabelsalat Minigame Edge Cases', () => {
     // With Matze's Tech Wizard trait -> reward multiplied by 1.5

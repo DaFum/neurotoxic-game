@@ -262,7 +262,7 @@ export const toBoundedNonNegativeInteger = (
   value: unknown,
   max: number
 ): number => {
-  const n = Number(value)
-  if (!Number.isFinite(n) || n < 0) return 0
-  return Math.min(Math.floor(n), Math.floor(max))
+  if (typeof value !== 'number' || !Number.isFinite(value) || value < 0)
+    return 0
+  return Math.min(Math.floor(value), Math.floor(max))
 }
