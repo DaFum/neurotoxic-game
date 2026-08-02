@@ -6,6 +6,7 @@ import { createActiveQuestRuntime } from './questHelpers'
 import { canAcceptQuest } from './questAcceptance'
 import { completeQuest } from './questComplete'
 import { isQuestStateLike } from './questValidation'
+import { migrateLegacyQuestSchema } from './questLegacyMigration'
 import { logger } from '../utils/logger'
 
 /**
@@ -32,9 +33,14 @@ export const addQuest = (state: GameState, quest: unknown): GameState => {
   // Use the payload as the base, then let the registry definition replace
   // matching fields while preserving the requested quest ID.
   const definition = getQuestDefinition(quest.id)
+  // Migrate before merging so a legacy-shaped payload is already expressed as
+  // rewards/failurePenalties: this is the single funnel for newly added
+  // quests, so downstream reward and penalty code never sees the old schema.
+  // Restored quests are migrated in sanitizeActiveQuests instead.
+  const migrated = migrateLegacyQuestSchema(quest)
   const merged: QuestState = definition
-    ? { ...quest, ...(definition as Partial<QuestState>), id: quest.id }
-    : { ...quest }
+    ? { ...migrated, ...(definition as Partial<QuestState>), id: quest.id }
+    : { ...migrated }
 
   // Repeat-policy gating delegates to canAcceptQuest so event conditions can
   // mirror the same rules without duplicating logic.

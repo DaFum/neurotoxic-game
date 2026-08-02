@@ -222,7 +222,13 @@ test('questReducer - handleAdvanceQuest & Completion', async t => {
 test('questReducer - Rewards Logic', async t => {
   await t.test('grants money reward on complete', () => {
     const initialState = {
-      activeQuests: [{ id: 'q_money', moneyReward: 500, label: 'Cash Quest' }],
+      activeQuests: [
+        {
+          id: 'q_money',
+          rewards: [{ type: 'money', amount: 500 }],
+          label: 'Cash Quest'
+        }
+      ],
       player: { money: 100 }
     }
     const nextState = handleCompleteQuest(initialState, { questId: 'q_money' })
@@ -239,8 +245,7 @@ test('questReducer - Rewards Logic', async t => {
       activeQuests: [
         {
           id: 'q_fame',
-          rewardType: 'fame',
-          rewardData: { fame: 150 },
+          rewards: [{ type: 'fame', amount: 150 }],
           label: 'Fame Quest'
         }
       ],
@@ -259,8 +264,7 @@ test('questReducer - Rewards Logic', async t => {
       activeQuests: [
         {
           id: 'q_item',
-          rewardType: 'item',
-          rewardData: { item: 'lucky_pick' },
+          rewards: [{ type: 'item.add', itemId: 'lucky_pick' }],
           label: 'Item Quest'
         }
       ],
@@ -277,8 +281,7 @@ test('questReducer - Rewards Logic', async t => {
       activeQuests: [
         {
           id: 'q_skill',
-          rewardType: 'skill_point',
-          rewardData: { memberIndex: 0 },
+          rewards: [{ type: 'skill_point', memberIndex: 0 }],
           label: 'Skill Quest'
         }
       ],
@@ -307,8 +310,7 @@ test('questReducer - Rewards Logic', async t => {
       activeQuests: [
         {
           id: 'q_harmony',
-          rewardType: 'harmony',
-          rewardData: { harmony: 30 },
+          rewards: [{ type: 'band.harmony', amount: 30 }],
           label: 'Harmony Quest'
         }
       ],
@@ -338,10 +340,10 @@ test('questReducer - handleFailQuests', async t => {
           {
             id: 'q_expired',
             deadline: 9, // expired
-            failurePenalty: {
-              social: { controversyLevel: 20 },
-              band: { harmony: -10 }
-            },
+            failurePenalties: [
+              { type: 'social.controversy', amount: 20 },
+              { type: 'band.harmony', amount: -10 }
+            ],
             label: 'Failed Quest'
           },
           {
@@ -402,17 +404,12 @@ test('questRewards - payload safety', async t => {
     }
   )
 
-  await t.test('legacy moneyReward with NaN yields no money reward', () => {
-    const rewards = getQuestRewards({ id: 'q_money', moneyReward: Number.NaN })
-    assert.equal(
-      rewards.some(reward => reward.type === 'money'),
-      false
-    )
-  })
-
-  await t.test('legacy finite moneyReward still yields a money reward', () => {
+  await t.test('ignores legacy reward fields that were never migrated', () => {
+    // getQuestRewards is single-schema: migrateLegacyQuestSchema converts
+    // moneyReward at the addQuest and save-load boundaries, so a raw legacy
+    // field reaching the getter is an impossible state, not a supported one.
     const rewards = getQuestRewards({ id: 'q_money', moneyReward: 50 })
-    assert.deepEqual(rewards, [{ type: 'money', amount: 50 }])
+    assert.deepEqual(rewards, [])
   })
 
   await t.test('filters malformed declarative rewards and penalties', () => {

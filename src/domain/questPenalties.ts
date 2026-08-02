@@ -24,81 +24,8 @@ interface QuestPenaltyResult {
   cooldownsToAdd: GameState['questCooldowns']
 }
 
-const normalizeLegacyPenalties = (quest: QuestState): QuestPenalty[] => {
-  const penalty = isLooseRecord(quest.failurePenalty)
-    ? Object.assign(Object.create(null), quest.failurePenalty)
-    : undefined
-  if (!penalty) return []
-
-  const penalties: QuestPenalty[] = []
-  const socialPenalty =
-    Object.hasOwn(penalty, 'social') && isLooseRecord(penalty.social)
-      ? Object.assign(Object.create(null), penalty.social)
-      : undefined
-  if (
-    socialPenalty &&
-    Object.hasOwn(socialPenalty, 'controversyLevel') &&
-    socialPenalty.controversyLevel != null
-  ) {
-    const amount = Number(socialPenalty.controversyLevel)
-    penalties.push({
-      type: 'social.controversy',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
-  }
-  if (
-    socialPenalty &&
-    Object.hasOwn(socialPenalty, 'loyalty') &&
-    socialPenalty.loyalty != null
-  ) {
-    const amount = Number(socialPenalty.loyalty)
-    penalties.push({
-      type: 'social.loyalty',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
-  }
-
-  const bandPenalty =
-    Object.hasOwn(penalty, 'band') && isLooseRecord(penalty.band)
-      ? Object.assign(Object.create(null), penalty.band)
-      : undefined
-  if (
-    bandPenalty &&
-    Object.hasOwn(bandPenalty, 'harmony') &&
-    bandPenalty.harmony != null
-  ) {
-    const amount = Number(bandPenalty.harmony)
-    penalties.push({
-      type: 'band.harmony',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
-  }
-
-  if (Array.isArray(penalty.flags)) {
-    for (const flag of penalty.flags) {
-      if (typeof flag === 'string' && flag.length > 0) {
-        penalties.push({ type: 'flag.add', flag })
-      }
-    }
-  }
-
-  if (Array.isArray(penalty.cooldowns)) {
-    for (const cooldown of penalty.cooldowns) {
-      if (!isLooseRecord(cooldown)) continue
-      const days = finiteNumberOr(cooldown.days, Number.NaN)
-      if (Number.isFinite(days)) {
-        // Legacy `id` labels are dropped: cooldown matching is keyed by the
-        // quest id alone (canAcceptQuest compares cd.questId).
-        penalties.push({ type: 'quest.cooldown', days })
-      }
-    }
-  }
-
-  return penalties
-}
-
 /**
- * Returns declarative failure penalties, falling back to legacy penalty fields.
+ * Returns declarative failure penalties.
  */
 const isOptionalString = (value: unknown): boolean =>
   value === undefined || typeof value === 'string'
@@ -137,13 +64,11 @@ const isQuestPenalty = (value: unknown): value is QuestPenalty => {
 }
 
 export const getQuestPenalties = (quest: QuestState): QuestPenalty[] => {
-  if (
-    Array.isArray(quest.failurePenalties) &&
-    quest.failurePenalties.length > 0
-  ) {
-    return quest.failurePenalties.filter(isQuestPenalty)
-  }
-  return normalizeLegacyPenalties(quest)
+  // Single schema by construction: migrateLegacyQuestSchema converts the
+  // nested failurePenalty record at the save-load and ADD_QUEST boundaries,
+  // so nothing reaches here still carrying it.
+  if (!Array.isArray(quest.failurePenalties)) return []
+  return quest.failurePenalties.filter(isQuestPenalty)
 }
 
 /**
