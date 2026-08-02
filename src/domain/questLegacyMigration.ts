@@ -136,22 +136,20 @@ const penaltiesFromLegacyFields = (quest: QuestState): QuestPenalty[] => {
     Object.hasOwn(socialPenalty, 'controversyLevel') &&
     socialPenalty.controversyLevel != null
   ) {
-    const amount = Number(socialPenalty.controversyLevel)
-    penalties.push({
-      type: 'social.controversy',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
+    const amount = legacyAmount(socialPenalty.controversyLevel)
+    if (amount !== undefined) {
+      penalties.push({ type: 'social.controversy', amount })
+    }
   }
   if (
     socialPenalty &&
     Object.hasOwn(socialPenalty, 'loyalty') &&
     socialPenalty.loyalty != null
   ) {
-    const amount = Number(socialPenalty.loyalty)
-    penalties.push({
-      type: 'social.loyalty',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
+    const amount = legacyAmount(socialPenalty.loyalty)
+    if (amount !== undefined) {
+      penalties.push({ type: 'social.loyalty', amount })
+    }
   }
 
   const bandPenalty =
@@ -163,11 +161,10 @@ const penaltiesFromLegacyFields = (quest: QuestState): QuestPenalty[] => {
     Object.hasOwn(bandPenalty, 'harmony') &&
     bandPenalty.harmony != null
   ) {
-    const amount = Number(bandPenalty.harmony)
-    penalties.push({
-      type: 'band.harmony',
-      amount: Number.isFinite(amount) ? amount : 0
-    })
+    const amount = legacyAmount(bandPenalty.harmony)
+    if (amount !== undefined) {
+      penalties.push({ type: 'band.harmony', amount })
+    }
   }
 
   if (Array.isArray(penalty.flags)) {
