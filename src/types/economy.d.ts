@@ -20,6 +20,7 @@ export interface PostGigFinancials {
 
 import type { PlayerState, Venue, GigModifiers } from '.'
 import type { CityTraitState } from './game'
+import type { ActiveBrandDeal } from './social'
 
 /**
  * Minimal gig venue data required by economy calculations.
@@ -52,10 +53,7 @@ export type EconomyContext = {
   cityTraits?: CityTraitState
   social?: {
     zealotry?: number
-    activeDeals?: Array<{
-      type?: unknown
-      offer?: { perGig?: number }
-    }>
+    activeDeals?: Pick<ActiveBrandDeal, 'type' | 'offer'>[]
     [key: string]: unknown
   }
   [key: string]: unknown

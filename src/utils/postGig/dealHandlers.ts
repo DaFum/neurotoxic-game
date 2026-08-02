@@ -7,7 +7,7 @@ import {
 import { BRAND_ALIGNMENTS } from '../../context/initialState'
 
 import type { GameState } from '../../types'
-import type { BrandDeal } from '../../types/social'
+import type { ActiveBrandDeal, BrandDeal } from '../../types/social'
 import type { BrandAlignment } from '../../types'
 
 const OPPOSING_ALIGNMENT_MAP = {
@@ -102,7 +102,10 @@ export const getAcceptDealSocialUpdateFactory = (deal: BrandDeal) => {
       }
     }
 
-    updates.activeDeals = [{ ...deal, remainingGigs: deal.offer.duration }]
+    const updatedDeals: ActiveBrandDeal[] = [
+      { ...deal, remainingGigs: finiteNumberOr(deal.offer.duration, 1) }
+    ]
+    updates.activeDeals = updatedDeals
 
     return updates
   }

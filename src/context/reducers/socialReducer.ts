@@ -7,6 +7,7 @@ import { formatCurrency } from '../../utils/numberUtils'
 import type {
   GameState,
   SocialState,
+  ActiveBrandDeal,
   MerchPressPayload,
   PirateBroadcastPayload,
   DarkWebLeakPayload,
@@ -253,25 +254,27 @@ export const handleUpdateSocial = (
       delete updates.activeDeals
     } else {
       // Validate structure of items
-      const validDeals = updates.activeDeals.filter((d: unknown) => {
-        if (!d || typeof d !== 'object') return false
-        const deal = d as Record<string, unknown>
-        // Own-property checks before reading untrusted fields so inherited
-        // prototype-chain values can't pass validation (project convention).
-        if (
-          !Object.hasOwn(deal, 'id') ||
-          !Object.hasOwn(deal, 'remainingGigs')
-        ) {
-          return false
+      const validDeals: ActiveBrandDeal[] = updates.activeDeals.filter(
+        (d: unknown): d is ActiveBrandDeal => {
+          if (!d || typeof d !== 'object') return false
+          const deal = d as Record<string, unknown>
+          // Own-property checks before reading untrusted fields so inherited
+          // prototype-chain values can't pass validation (project convention).
+          if (
+            !Object.hasOwn(deal, 'id') ||
+            !Object.hasOwn(deal, 'remainingGigs')
+          ) {
+            return false
+          }
+          const { id, remainingGigs } = deal
+          return (
+            typeof id === 'string' &&
+            typeof remainingGigs === 'number' &&
+            Number.isInteger(remainingGigs) &&
+            remainingGigs > 0
+          )
         }
-        const { id, remainingGigs } = deal
-        return (
-          typeof id === 'string' &&
-          typeof remainingGigs === 'number' &&
-          Number.isInteger(remainingGigs) &&
-          remainingGigs > 0
-        )
-      })
+      )
       if (validDeals.length !== updates.activeDeals.length) {
         logger.warn(
           'GameState',
@@ -354,10 +357,7 @@ const breakDealsIfControversyCrossed = (
     const brokenDeals = activeDeals
     const nextBrandReputation = { ...(nextState.social.brandReputation || {}) }
     for (const deal of brokenDeals) {
-      const alignment =
-        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
-          ? deal.alignment
-          : undefined
+      const alignment = deal.alignment
       if (alignment && !isForbiddenKey(alignment)) {
         nextBrandReputation[alignment] = Math.max(
           0,
@@ -385,14 +385,8 @@ const breakDealsIfControversyCrossed = (
     }
 
     for (const deal of brokenDeals) {
-      const dealId =
-        deal && typeof deal === 'object' && typeof deal.id === 'string'
-          ? deal.id
-          : 'unknown'
-      const alignment =
-        deal && typeof deal === 'object' && typeof deal.alignment === 'string'
-          ? deal.alignment
-          : undefined
+      const dealId = deal.id
+      const alignment = deal.alignment
       stateWithBrokenDeals = QuestEvents.emit(
         stateWithBrokenDeals,
         createBrandDealFailedQuestEvent({ dealId, reason: 'controversy' })

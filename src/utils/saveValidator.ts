@@ -360,11 +360,14 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a number`
           )
-        if (!Number.isFinite(d.remainingGigs))
+        // NaN/Infinity are structurally wrong, not stale data, so they throw
+        // rather than being dropped like a non-positive count.
+        const remainingGigs = finiteNumberOr(d.remainingGigs, Number.NaN)
+        if (Number.isNaN(remainingGigs))
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a finite number`
           )
-        return Number.isInteger(d.remainingGigs) && d.remainingGigs > 0
+        return Number.isInteger(remainingGigs) && remainingGigs > 0
       })
       if (survivingDeals.length !== (val as unknown[]).length) {
         typedSocial[key] = survivingDeals

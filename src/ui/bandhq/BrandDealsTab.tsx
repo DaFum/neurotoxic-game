@@ -5,7 +5,7 @@ import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { formatCurrency } from '../../utils/numberUtils'
 import { resolveGenImageUrl } from '../../utils/imageGen'
 import { useNetworkStatus } from '../../hooks/useNetworkStatus'
-import type { SocialState } from '../../types'
+import type { ActiveBrandDeal, SocialState } from '../../types'
 
 interface BrandDealsTabProps {
   social: SocialState
@@ -22,7 +22,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
   // ⚡ BOLT OPTIMIZATION: Replaced activeDealIds Set and O(N) Array.find() inside render loop with a precomputed Map for O(1) lookups.
   const activeDealsMap = useMemo(() => {
     const deals = social?.activeDeals
-    const map = new Map<string, unknown>()
+    const map = new Map<string, ActiveBrandDeal>()
     if (Array.isArray(deals)) {
       for (let i = 0; i < deals.length; i++) {
         const deal = deals[i]
@@ -122,16 +122,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
                 </span>
                 <span className='text-star-white'>
                   {t('ui:brandDeals.durationValue', {
-                    count:
-                      isActive &&
-                      activeDeal !== null &&
-                      typeof activeDeal === 'object' &&
-                      Object.hasOwn(activeDeal, 'remainingGigs') &&
-                      typeof (activeDeal as { remainingGigs?: unknown })
-                        .remainingGigs === 'number'
-                        ? (activeDeal as { remainingGigs: number })
-                            .remainingGigs
-                        : deal.offer.duration,
+                    count: activeDeal?.remainingGigs ?? deal.offer.duration,
                     defaultValue: '{{count}} Gigs'
                   })}
                 </span>

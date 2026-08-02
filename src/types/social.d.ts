@@ -59,6 +59,13 @@ export interface BrandDeal {
 }
 
 /**
+ * A brand deal the band has signed, carrying the gig countdown that drives
+ * per-gig payouts and expiry. Sanitized once at each state boundary, so
+ * internal consumers can assume `remainingGigs` is present.
+ */
+export type ActiveBrandDeal = BrandDeal & { remainingGigs: number }
+
+/**
  * Localized UI keys emitted by brand-deal negotiation outcomes.
  */
 export type BrandDealNegotiationFeedbackKey =
@@ -156,7 +163,7 @@ export interface SocialEngineGameState {
     youtube?: number
     controversyLevel?: number
     zealotry?: number
-    activeDeals?: unknown[]
+    activeDeals?: ActiveBrandDeal[]
     brandReputation?: Record<string, number>
     scenePresence?: number
     [key: string]: unknown
@@ -220,7 +227,7 @@ export interface SocialState extends UnknownRecord {
   reputationCooldown: number
   egoFocus: string | null
   trend: string
-  activeDeals: UnknownRecord[]
+  activeDeals: ActiveBrandDeal[]
   brandReputation: Record<string, number>
   influencers: Record<string, UnknownRecord>
   scenePresence?: number

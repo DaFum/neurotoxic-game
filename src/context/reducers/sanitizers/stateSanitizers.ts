@@ -62,6 +62,7 @@ import type {
   GameEvent,
   EventOption,
   SocialState,
+  ActiveBrandDeal,
   ToastPayload,
   GameMap,
   GamePhase,
@@ -1337,34 +1338,36 @@ export const sanitizeSocial = (value: unknown): SocialState => {
   }
 
   if (Array.isArray(safeValue.activeDeals)) {
-    sanitized.activeDeals = safeValue.activeDeals.flatMap((deal: unknown) => {
-      const copied = copySafePrimitiveObject(deal)
-      if (
-        !copied ||
-        typeof copied.id !== 'string' ||
-        typeof copied.remainingGigs !== 'number' ||
-        !Number.isInteger(copied.remainingGigs) ||
-        copied.remainingGigs <= 0
-      ) {
-        return []
-      }
-      // Rehydrate the full deal from the static registry: runtime consumers
-      // (hasActiveSponsorship, per-gig payouts, sellout penalties) require
-      // `type` and `offer`, which the persisted blob must not be trusted to
-      // carry. Only `remainingGigs` is player progress and survives the load.
-      // Ids without a registry entry (deals removed in a patch, hostile
-      // saves) are dropped — a stub without type/offer matches no consumer.
-      const registryDeal = BRAND_DEALS_BY_ID.get(copied.id)
-      if (!registryDeal) {
-        return []
-      }
-      return [
-        {
-          ...registryDeal,
-          remainingGigs: copied.remainingGigs
+    sanitized.activeDeals = safeValue.activeDeals.flatMap(
+      (deal: unknown): ActiveBrandDeal[] => {
+        const copied = copySafePrimitiveObject(deal)
+        if (!copied || typeof copied.id !== 'string') {
+          return []
         }
-      ]
-    })
+        // `finiteNumberOr` rejects NaN/Infinity, which `typeof === 'number'`
+        // lets through; 0 then fails the positive-integer requirement below.
+        const remainingGigs = finiteNumberOr(copied.remainingGigs, 0)
+        if (!Number.isInteger(remainingGigs) || remainingGigs <= 0) {
+          return []
+        }
+        // Rehydrate the full deal from the static registry: runtime consumers
+        // (hasActiveSponsorship, per-gig payouts, sellout penalties) require
+        // `type` and `offer`, which the persisted blob must not be trusted to
+        // carry. Only `remainingGigs` is player progress and survives the load.
+        // Ids without a registry entry (deals removed in a patch, hostile
+        // saves) are dropped — a stub without type/offer matches no consumer.
+        const registryDeal = BRAND_DEALS_BY_ID.get(copied.id)
+        if (!registryDeal) {
+          return []
+        }
+        return [
+          {
+            ...registryDeal,
+            remainingGigs
+          }
+        ]
+      }
+    )
   }
 
   if (isLooseRecord(safeValue.brandReputation)) {
