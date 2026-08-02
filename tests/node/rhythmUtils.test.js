@@ -25,17 +25,19 @@ describe('rhythmUtils', () => {
 
       const notes = generateNotesForSong(song, options)
 
-      // Notes generated based on difficulty scaling and deterministic random.
-      // At 120bpm over 10s, 20 beats are checked. Difficulty <= 2 spawns 5 notes.
+      // At 120bpm over 10s, 20 beats are checked. Difficulty <= 2 spawns a
+      // guaranteed note on every 8th beat (0, 8, 16) plus a thinned note on the
+      // intermediate downbeat (4, 12) whenever random() > 0.2. With
+      // random() === 0.5 both thinned beats spawn, so 5 notes are generated.
       assert.strictEqual(notes.length, 5)
 
-      // First note should be at leadIn exactly because it's beat 0
-      assert.strictEqual(notes[0].time, 3000)
       assert.strictEqual(notes[0].songId, 'test-song')
 
-      // beatInterval = 60000 / 120 = 500ms
-      // i=4 is 4*500 = 2000ms after leadIn = 5000ms
-      assert.strictEqual(notes[1].time, 5000)
+      // beatInterval = 60000 / 120 = 500ms, leadIn = 3000ms
+      assert.deepStrictEqual(
+        notes.map(note => note.time),
+        [3000, 5000, 7000, 9000, 11000]
+      )
     })
 
     test('generates more dense notes for higher difficulty', () => {

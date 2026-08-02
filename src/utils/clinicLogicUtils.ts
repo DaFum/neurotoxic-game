@@ -19,6 +19,7 @@ export const validateHealMember = (
   if (playerMoney < healCostMoney) {
     return {
       isValid: false,
+      silent: false,
       errorKey: 'ui:clinic.not_enough_money',
       defaultMessage: 'Not enough money.'
     }
@@ -53,6 +54,7 @@ export const validateEnhanceMember = (
   if (playerFame < enhanceCostFame) {
     return {
       isValid: false,
+      silent: false,
       errorKey: 'ui:clinic.not_enough_fame',
       defaultMessage: 'Not enough fame. The void demands sacrifice.'
     }

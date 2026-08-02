@@ -193,6 +193,45 @@ test('migrateLegacyQuestSchema - penalties', async t => {
     ])
   })
 
+  await t.test('rejects non-numeric legacy amounts instead of coercing', () => {
+    // Regression: Number('25') used to become a real penalty amount.
+    const migrated = migrateLegacyQuestSchema({
+      id: 'q',
+      failurePenalty: {
+        social: { controversyLevel: '25', loyalty: '25' },
+        band: { harmony: '25' }
+      }
+    })
+
+    assert.equal(migrated.failurePenalties, undefined)
+  })
+
+  await t.test('does not throw on a null-prototype legacy amount', () => {
+    // Number(Object.create(null)) throws: it has no toString. isQuestStateLike
+    // only checks that failurePenalty is a record, so this payload is
+    // reachable and must not abort the dispatch.
+    const hostile = Object.create(null)
+
+    assert.doesNotThrow(() =>
+      migrateLegacyQuestSchema({
+        id: 'q',
+        failurePenalty: { social: { controversyLevel: hostile } }
+      })
+    )
+    assert.doesNotThrow(() =>
+      migrateLegacyQuestSchema({
+        id: 'q',
+        failurePenalty: { social: { loyalty: hostile } }
+      })
+    )
+    assert.doesNotThrow(() =>
+      migrateLegacyQuestSchema({
+        id: 'q',
+        failurePenalty: { band: { harmony: hostile } }
+      })
+    )
+  })
+
   await t.test('does not inherit a prototype-polluting legacy record', () => {
     const hostile = JSON.parse(
       '{"__proto__":{"polluted":true},"band":{"harmony":-5}}'

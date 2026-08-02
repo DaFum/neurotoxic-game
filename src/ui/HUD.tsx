@@ -152,13 +152,7 @@ export const HUD = memo(() => {
             </div>
           </Tooltip>
         )}
-        {!isGigScene && (
-          <BandStatusPanel
-            band={band}
-            t={t}
-            wrapperClassName='pointer-events-auto bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]'
-          />
-        )}
+        {!isGigScene && <BandStatusPanel band={band} t={t} variant='compact' />}
       </div>
     </div>
   )

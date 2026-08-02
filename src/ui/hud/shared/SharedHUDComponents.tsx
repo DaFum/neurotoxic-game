@@ -1,6 +1,6 @@
 import { memo } from 'react'
 import { Fuel, Wrench } from 'lucide-react'
-import { Tooltip, ProgressBar } from '../../shared/index'
+import { ProgressBar, StatMiniBar } from '../../shared/index'
 import { BandMemberRow } from '../BandMemberRow'
 import type { BandMember, BandState } from '../../../types/band'
 import type { TFunction } from 'i18next'
@@ -21,82 +21,88 @@ export const VanStatusMiniBars = memo(
 
     return (
       <div className='border-t border-toxic-green/20 pt-2 grid grid-cols-2 gap-x-4'>
-        <Tooltip
-          content={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
-          position='bottom'
-        >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+        <StatMiniBar
+          variant='stacked'
+          value={safeFuel}
+          threshold={20}
+          color='bg-warning-yellow'
+          icon={
             <Fuel size={12} className='text-warning-yellow shrink-0 mb-0.5' />
-            <div className='min-w-0 flex-1'>
-              <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                {Math.floor(safeFuel)}%
-              </div>
-              <ProgressBar
-                value={safeFuel}
-                max={100}
-                color='bg-warning-yellow'
-                warn={safeFuel < 20}
-                size='mini'
-                aria-label={t('ui:hud.fuelLevel', {
-                  defaultValue: 'Fuel Level'
-                })}
-              />
-            </div>
-          </div>
-        </Tooltip>
-        <Tooltip
-          content={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
-          position='bottom'
-        >
-          <div className='flex items-end gap-1.5 pointer-events-auto'>
+          }
+          label={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+          ariaLabel={t('ui:hud.fuelLevel', { defaultValue: 'Fuel Level' })}
+        />
+        <StatMiniBar
+          variant='stacked'
+          value={safeCondition}
+          threshold={25}
+          color='bg-condition-blue'
+          icon={
             <Wrench size={12} className='text-condition-blue shrink-0 mb-0.5' />
-            <div className='min-w-0 flex-1'>
-              <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-                {Math.floor(safeCondition)}%
-              </div>
-              <ProgressBar
-                value={safeCondition}
-                max={100}
-                color='bg-condition-blue'
-                warn={safeCondition < 25}
-                size='mini'
-                aria-label={t('ui:hud.vanCondition', {
-                  defaultValue: 'Van Condition'
-                })}
-              />
-            </div>
-          </div>
-        </Tooltip>
+          }
+          label={t('ui:hud.vanCondition', { defaultValue: 'Van Condition' })}
+          ariaLabel={t('ui:hud.vanCondition', {
+            defaultValue: 'Van Condition'
+          })}
+        />
       </div>
     )
   }
 )
 
+interface BandStatusPanelVariantConfig {
+  wrapperClassName: string
+  titleClassName: string
+  membersWrapperClassName: string
+  harmonyLabelClassName: string
+  harmonyValueClassName: string
+  barWrapperClassName: string
+  barSize: 'mini' | 'sm' | 'md'
+}
+
+const BAND_STATUS_PANEL_VARIANTS = {
+  hud: {
+    wrapperClassName:
+      'pointer-events-auto bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none max-sm:w-full',
+    titleClassName:
+      'text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90 max-sm:text-left',
+    membersWrapperClassName: 'w-56 space-y-0.5 max-sm:w-full',
+    harmonyLabelClassName: 'text-xs font-bold text-ash-gray/90 mb-0.5',
+    harmonyValueClassName: 'text-xs font-bold tabular-nums mb-0.5 leading-none',
+    barWrapperClassName: 'w-24',
+    barSize: 'sm' as const
+  },
+  compact: {
+    wrapperClassName:
+      'pointer-events-auto bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]',
+    titleClassName:
+      'text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray',
+    membersWrapperClassName: 'w-52',
+    harmonyLabelClassName: 'text-xs text-ash-gray mb-0.5',
+    harmonyValueClassName: 'text-xs tabular-nums mb-0.5 leading-none',
+    barWrapperClassName: 'w-20',
+    barSize: 'mini' as const
+  }
+} as const satisfies Record<'hud' | 'compact', BandStatusPanelVariantConfig>
+
 interface BandStatusPanelProps {
   band?: BandState
   t: TFunction
-  wrapperClassName?: string
-  membersWrapperClassName?: string
-  harmonyLabelClassName?: string
-  harmonyValueClassName?: string
-  barWrapperClassName?: string
-  barSize?: 'mini' | 'sm' | 'md'
-  titleClassName?: string
+  variant?: 'hud' | 'compact'
 }
 
 export const BandStatusPanel = memo(
-  ({
-    band,
-    t,
-    wrapperClassName = '',
-    membersWrapperClassName = 'w-52',
-    harmonyLabelClassName = 'text-xs text-ash-gray mb-0.5',
-    harmonyValueClassName = 'text-xs tabular-nums mb-0.5 leading-none',
-    barWrapperClassName = 'w-20',
-    barSize = 'mini',
-    titleClassName = 'text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'
-  }: BandStatusPanelProps) => {
+  ({ band, t, variant = 'compact' }: BandStatusPanelProps) => {
     const safeHarmony = finiteNumberOr(band?.harmony, 0)
+    const {
+      wrapperClassName,
+      titleClassName,
+      membersWrapperClassName,
+      harmonyLabelClassName,
+      harmonyValueClassName,
+      barWrapperClassName,
+      barSize
+    } = BAND_STATUS_PANEL_VARIANTS[variant]
 
     return (
       <div className={wrapperClassName}>

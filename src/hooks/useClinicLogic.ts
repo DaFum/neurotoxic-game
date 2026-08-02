@@ -67,7 +67,7 @@ export const useClinicLogic = (): {
       if (validation.isValid) return true
       if (!validation.silent) {
         addToast(
-          t(validation.errorKey as string, {
+          t(validation.errorKey, {
             defaultValue: validation.defaultMessage
           }),
           'error'
