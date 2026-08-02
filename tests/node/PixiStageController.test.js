@@ -128,7 +128,20 @@ mock.module(
 )
 
 // The controller takes its gig clock from `options.audioEngine`, so the stub
-// goes in through that seam rather than through a module mock.
+// goes in through that seam. The hub is still mocked so importing the audio
+// stack does not start real asset loading in this suite.
+mock.module(
+  new URL('../../src/utils/audio/audioEngine.ts', import.meta.url).href,
+  {
+    namedExports: {
+      getGigTimeMs: () => 0,
+      startGigPlayback: async () => false,
+      stopGigPlayback: () => {},
+      playNoteAtTime: () => {}
+    }
+  }
+)
+
 const mockAudioEngine = {
   getGigTimeMs: mock.fn(() => 1234),
   startGig: mock.fn(async () => true),
