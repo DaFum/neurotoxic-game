@@ -2,23 +2,28 @@
 
 This note collects concrete improvement opportunities found during a focused read of state flow, event handling, travel/arrival, and economy systems.
 
+> **Status verification:** re-checked against the codebase on 2026-08-02. The `**Status:**` lines in §1–§6 reflect that check; §7–§9 remain unannotated backlog.
+
 ## 1) State + Reducer Reliability
 
 - [ ] **Harden exhaustive action safety in `gameReducer`**: the default branch already calls `logger.warn` and `assertNever`; extend it with a structured telemetry counter (not just a log line) so unknown-action frequency is observable in monitoring, not only in the dev console.
   - _Best practice_: gate the metric increment behind `import.meta.env.DEV` (the convention used throughout this codebase; use `process.env.VITE_*` only where node/test parity is needed) and a `logLevel >= 'warn'` check; the counter itself should write to a dev-only ring buffer that the debug overlay can surface and reset between sessions.
   - _Pattern_: `default: { logger.warn(…); devMetrics.increment('unknownAction', action.type); return assertNever(action as never); }` — `devMetrics` is a `NullMetrics` no-op in production and a real counter in dev/test; the counter shape is `Record<string, number>`.
   - _Pitfall_: the current `gameReducer.ts` default branch passes the full `action` object to `logger.warn`, which leaks sensitive payload data (money amounts, player names) to the console; the call should be narrowed to log only `action.type` and the reducer name, never the payload.
+  - **Status:** PARTIAL — `gameReducer` logs and uses `assertNever` as a runtime trap, and the `logger.warn` call still passes the full `action` object as its third argument; no structured telemetry / dev metric exists. Evidence: [src/context/gameReducer.ts](src/context/gameReducer.ts#L272-L292)
 
 - [ ] **Replace `as ReducerMap` cast with `satisfies ReducerMap` on the handler map**: `gameReducer.ts` already uses a typed `ReducerMap` mapped type, but seals it with an `as` cast that suppresses assignment errors; switching to `satisfies` retains narrowing while surfacing any handler whose payload type has drifted.
   - _Best practice_: `satisfies` checks the object literal's shape without widening the inferred type, meaning handler bodies continue to receive the narrowest possible action type; `as` suppresses both the error and the narrowing benefit.
   - _Pattern_: keep each handler as a named function in its own file (`handlers/setMoney.ts`) and import them into the handler map; per-handler unit tests then require no reducer import.
   - _Pitfall_: the existing `as ReducerMap` cast means a handler added with the wrong payload type compiles silently; the cast must be removed or replaced before the typed map provides any compile-time safety.
+  - **Status:** INTENTIONAL / NOT CHANGED — the `assertNever(action as never)` pattern is documented in the codebase as a deliberate runtime trap; switching to `satisfies` is possible but a non-trivial change. Evidence: [src/context/reducers/AGENTS.md](src/context/reducers/AGENTS.md#L20) and [src/context/gameReducer.ts](src/context/gameReducer.ts#L272-L292)
 
 - [ ] **Add reducer-level invariants test suite**: validate post-action guarantees (money non-negative, harmony bounds, no invalid scene transitions).
   - _Best practice_: model invariants as a `checkInvariants(state: GameState): InvariantViolation[]` pure function and call it in two places: as an assertion in the invariants test suite, and optionally in the reducer's `default` branch in dev mode as a post-action audit.
   - _Pattern_: parameterise the test over all action types — for each action creator, generate a valid payload, apply it to `createInitialState()`, and run `checkInvariants`; one loop covers the whole surface rather than one test per action.
   - _Pitfall_: testing invariants only against happy-path payloads misses the edge cases that actually violate bounds; always include boundary inputs (`money: 0`, `harmony: 1`, `harmony: 100`) and adversarial inputs (`money: -1`, `harmony: 0`, `harmony: 101`) in the invariants suite.
   - _Pitfall_: re-clamping inside the reducer masks the real bug (the action creator sent an out-of-range value); invariant tests must fail loudly when an out-of-range value reaches the reducer, not silently pass because the reducer corrected it.
+  - **Status:** IMPLEMENTED (2026-08-02) — `tests/node/reducerInvariants.test.js` defines a `checkInvariants(state)` helper and asserts money (≥ 0, integer), fame, harmony (1–100), stamina/mood (0–100), and van fuel/condition against happy-path, boundary, and hostile inputs. Evidence: [tests/node/reducerInvariants.test.js](tests/node/reducerInvariants.test.js#L1-L60)
 
 ## 2) Event System Robustness
 
@@ -26,21 +31,25 @@ This note collects concrete improvement opportunities found during a focused rea
   - _Best practice_: model the resolver signature as `resolveEvent(event: GameEvent, state: GameState, rng: PRNG): EventResolution` where `EventResolution = { actions: GameAction[]; sideEffects: SideEffect[] }` — no dispatch, no React context, no imports from the hook layer; the function is a pure transformation testable in Node without a DOM.
   - _Pattern_: apply the returned `actions` via `actions.forEach(dispatch)` in the hook after the pure resolver returns; apply `sideEffects` via a side-effect runner that can be stubbed in tests — this separates "what should happen" (pure, tested exhaustively) from "how it is triggered" (effectful, tested with one integration smoke test).
   - _Pitfall_: a resolver that calls `dispatch` internally makes rollback impossible — if a second action in the resolution fails or is vetoed, the first action has already mutated state with no way to undo it; the batch-then-dispatch pattern is the only safe option.
+  - **Status:** IMPLEMENTED — a pure resolver exists: `resolveEvent` in [src/domain/eventResolver.ts](src/domain/eventResolver.ts#L153-L270) returns `actions` and `sideEffects` without dispatching; `useEventSystem` applies both. Evidence: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L132-L240)
 
 - [ ] **Create deterministic replay tests for event deltas**: snapshot before/after event choices (including `flags.addQuest` + unlocks) to prevent regressions.
   - _Best practice_: store snapshots as committed JSON fixtures (`tests/fixtures/events/<eventId>.<choiceIndex>.json`) with `{ before: GameState, choice: string, after: GameState }` shape; run the resolver against the `before` fixture and assert the output equals `after` using `toStrictEqual` — changes to event logic produce a visible diff in the fixture file.
   - _Pattern_: add a `pnpm run fixtures:update` script that regenerates all event fixtures from the current resolver logic; developers run it intentionally when changing event outcomes, creating a deliberate audit trail in the git diff.
   - _Pitfall_: snapshotting the entire `GameState` in fixtures makes tests brittle to unrelated state shape changes; snapshot only the diff (`{ changedKeys: { money: [before, after], flags: { added: [], removed: [] } } }`) so a rename elsewhere does not break every event test.
+  - **Status:** PARTIAL — extensive resolver unit tests exist (`tests/node/domain/eventResolver.test.js`), but committed JSON snapshot fixtures such as `tests/fixtures/events/` are absent. Evidence: [tests/node/domain/eventResolver.test.js](tests/node/domain/eventResolver.test.js#L1-L40)
 
 - [ ] **Add per-category daily caps**: current `eventsTriggeredToday >= 2` is global; consider category-based throttles to avoid starving rare event chains.
   - _Best practice_: store caps as `dailyCaps: Record<EventCategory, number>` in the balance config (see §4), not hardcoded in the event engine — this allows tuning without code changes and makes the cap policy visible and reviewable.
   - _Pattern_: initialise `eventsTriggeredByCategory: Partial<Record<EventCategory, number>>` in game state and reset it on day advance; the engine checks `(eventsTriggeredByCategory[category] ?? 0) >= dailyCaps[category]` before triggering.
   - _Pitfall_: adding a new event category without adding a corresponding cap entry causes `undefined >= 2` to evaluate to `false` (never blocked), allowing the new category to fire unlimited times; default the cap lookup to `dailyCaps.default ?? 1` rather than to `Infinity`.
+  - **Status:** NOT IMPLEMENTED — the engine still checks only the global `player.eventsTriggeredToday >= 2`; no category-based `dailyCaps`. Evidence: [src/context/useEventSystem.ts](src/context/useEventSystem.ts#L195-L236)
 
 - [ ] **Add structured event analytics hooks**: count trigger attempts, trigger success rate, and skipped reasons (scene lock, cap reached, no match).
   - _Best practice_: define an `IEventAnalytics` interface with `recordAttempt`, `recordTrigger`, `recordSkip(reason: SkipReason)` methods; inject a `NullEventAnalytics` (all no-ops) in production and a `RecordingEventAnalytics` in tests and dev — analytics calls never affect game logic.
   - _Pattern_: define `SkipReason` as a string-literal union (`'scene_lock' | 'daily_cap' | 'no_match' | 'cooldown'`) rather than a free string so the analytics consumer can exhaustively handle all reasons without a catch-all branch.
   - _Pitfall_: logging analytics inside the pure resolver couples it to a side-effectful dependency; analytics calls belong in the hook layer after the resolver returns, not inside the resolver itself.
+  - **Status:** NOT IMPLEMENTED — no structured `IEventAnalytics` / `devMetrics` interface or recording implementation exists.
 
 ## 3) Travel + Arrival Gameflow
 
@@ -48,21 +57,25 @@ This note collects concrete improvement opportunities found during a focused rea
   - _Best practice_: make the reset condition a named constant and test it explicitly — `ARRIVAL_REF_RESET_TRIGGER = 'nodeId'` documented in the hook’s JSDoc; a test verifies that navigating to a second node after a failed arrival attempt processes the new arrival correctly without requiring a full page reload.
   - _Pattern_: reset `isHandlingRef.current = false` in a `useEffect` cleanup keyed on `[nodeId]` so the ref resets automatically when the node changes — no manual reset call needed, no edge case where a stale `true` value blocks the next arrival.
   - _Pitfall_: using a boolean `useRef` for idempotency guards works for single-node arrivals but breaks if two rapid node changes arrive before the first `useEffect` runs (React batches renders); use the `nodeId` as the idempotency key rather than a boolean, and store it in the ref: `isHandlingRef.current === nodeId` means “already handling this node.”
+  - **Status:** IMPLEMENTED — `useArrivalLogic` keys `isHandlingRef` on the node id (with `undefined` as the idle sentinel, since `null` is a valid node id) and clears the guard in a `useEffect` cleanup keyed on `player.currentNodeId`; the error path resets the guard so the same node can be retried. Evidence: [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L65-L86)
 
 - [ ] **Unify arrival routing contract**: move final scene routing responsibility fully into `handleNodeArrival` so hooks don’t split “business routing” vs “fallback routing.”
   - _Best practice_: define `ArrivalResult = { scene: SceneId; actions: GameAction[] }` as the return type of `handleNodeArrival`; the hook applies `actions` and navigates to `scene` — no routing logic lives in the hook body.
   - _Pattern_: model each node type handler as a pure function `handleGigNode(node, state) => ArrivalResult`, `handleRestNode(node, state) => ArrivalResult`, etc., registered in a `nodeHandlers` map — adding a new node type is one new entry in the map, not a new `if`/`else` branch in the hook.
   - _Pitfall_: a “fallback” scene in the hook is a silent catch-all that hides unhandled node types; replace the fallback with an `assertNever`-equivalent log + metrics call and an explicit `OVERWORLD` return, so unhandled node types are visible in analytics rather than silently swallowed.
+  - **Status:** IMPLEMENTED (contract in place) — `handleNodeArrival` returns `ArrivalResult = { scene, gigStarted }`; the hook honours `gigStarted` and only calls `changeScene` when `!gigStarted`. Evidence: [src/utils/arrivalUtils.ts](src/utils/arrivalUtils.ts#L54-L60) and [src/hooks/useArrivalLogic.ts](src/hooks/useArrivalLogic.ts#L88-L160)
 
 - [ ] **Expose cancellation odds UX**: low-harmony gig cancellation currently feels opaque; surface pre-travel warning text and % risk in UI.
   - _Best practice_: extract the cancellation probability formula into a pure `calcCancellationRisk(harmony: number, modifiers: CancellationModifiers): number` function in `gameStateUtils.ts`; the UI calls the same function the engine uses — there is never a discrepancy between the displayed risk and the actual roll.
   - _Pattern_: display the risk as a colour-coded badge (`< 10%` green, `10–30%` amber, `> 30%` red) computed from the current harmony value via the shared function; update the badge reactively as harmony changes in the pre-travel summary without requiring a separate API call.
   - _Pitfall_: displaying a rounded percentage (“~25%”) while the engine uses a precise float creates player distrust when a “25% risk” gig cancels three times in a row; show the exact one-decimal value and explain the sample size (“1 in 4 chance per attempt”) to calibrate expectations.
+  - **Status:** IMPLEMENTED (2026-08-02) — `calcCancellationRisk(harmony, threshold, chance)` is a pure function in [src/utils/gameState/calculations.ts](src/utils/gameState/calculations.ts#L80-L90); the map UI calls the same function the engine uses and surfaces the risk on the node. Covered by `tests/node/calcCancellationRisk.test.js`. Evidence: [src/components/MapNodeView.tsx](src/components/MapNodeView.tsx#L96-L110)
 
 - [ ] **Add property tests for travel outcomes**: verify rest-stop recovery and cancellation branches always respect clamp functions and never overshoot bounds.
   - _Best practice_: use fast-check or a hand-rolled property harness to generate arbitrary `(harmony, stamina, modifier)` triples across the full valid range and assert that every output satisfies `harmony >= 1 && harmony <= 100 && money >= 0`; a single property test covers more ground than dozens of hand-picked example tests.
   - _Pattern_: define the property as a named invariant function (`travelOutcomeIsValid(outcome: TravelOutcome): boolean`) and call it both in property tests and as a dev-mode assertion inside the travel resolver — same invariant, two enforcement points.
   - _Pitfall_: property tests that only generate “reasonable” inputs (e.g., `harmony` between 10 and 90) miss the boundary cliffs where real bugs live; always include the exact boundary values (1, 100, 0) as explicit seed cases in the property harness so they are always exercised regardless of random sampling.
+  - **Status:** PARTIAL — dedicated travel/arrival example tests exist (`tests/utils/travelUtils.test.js`, `tests/golden-path/*`), but there is no property/fuzz harness for generative invariant testing. Evidence: [tests/utils/travelUtils.test.js](tests/utils/travelUtils.test.js#L1-L40) and [tests/golden-path/comprehensive-cycles.test.js](tests/golden-path/comprehensive-cycles.test.js#L1-L20)
 
 ## 4) Economy Balance + Explainability
 
@@ -70,21 +83,25 @@ This note collects concrete improvement opportunities found during a focused rea
   - _Best practice_: define `BalanceConfig` as a typed object with grouped sub-sections (`attendance`, `penalties`, `modifiers`, `caps`) and a `configVersion: number`; store it in `src/config/balance.ts` imported by the engine — swapping configs for an A/B test is a single import change, not a multi-file grep.
   - _Pattern_: validate the config at startup with a `parseBalanceConfig(raw: unknown): BalanceConfig` guard; if the config is invalid (e.g., a cap below its floor), throw a descriptive error at boot rather than silently producing nonsense economy results at runtime.
   - _Pitfall_: extracting constants to a config object but still importing them with `const { TICKET_BASE } = balanceConfig` at module scope defeats tree-shaking and couples tests to the live config values; always pass the config as a parameter to engine functions so tests can inject a known-good test config without side effects.
+  - **Status:** PARTIAL — `src/utils/balanceTuning.ts` already provides a typed `BalanceTuning` object, but engine constants (e.g. `MODIFIER_COSTS`) still live in `src/utils/economy/constants.ts`; there is no central `src/config/balance.ts` with a `configVersion` and a `parseBalanceConfig` guard. Evidence: [src/utils/economy/constants.ts](src/utils/economy/constants.ts#L25-L35) and [src/utils/balanceTuning.ts](src/utils/balanceTuning.ts#L1-L30)
 
 - [ ] **Add economy breakdown trace mode**: emit per-step contribution details (attendance, penalties, modifiers, caps) for debugging “why this net changed.”
   - _Best practice_: model the trace as an optional accumulator argument: `calculateGigEconomy(state, config, trace?: BreakdownTrace)` — when `trace` is provided the engine appends step entries; when absent, the path is zero-overhead with no branching cost in production.
   - _Pattern_: define `BreakdownTrace = { steps: Array<{ label: string; value: number; running: number }> }` so the debug overlay can render a waterfall chart directly from the trace without further transformation; `label` is an i18n key, not a raw string.
   - _Pitfall_: building the trace string inline (`` `attendance _ baseRate = ${attendance _ baseRate}` ``) conflates computation with presentation and makes the trace non-localisable; always store structured `{ label: string; inputs: Record<string, number>; output: number }` and format for display in the UI layer.
+  - **Status:** NOT IMPLEMENTED — there is no opt-in trace accumulator in the economy path (e.g. `calculateGigEconomy(state, config, trace)`).
 
 - [ ] **Add anti-swing smoothing experiment**: prototype soft floor/ceiling around early-game losses/wins to reduce runaway failure spirals.
   - _Best practice_: implement smoothing as an opt-in `applySwingSmoothing(delta: number, state: GameState, config: BalanceConfig): number` wrapper around the raw delta — the engine's core calculation is unchanged; the wrapper is toggled by a balance config flag, making it easy to A/B test without touching the engine.
   - _Pattern_: define the soft floor as a curve rather than a hard cap: `smoothedDelta = delta * (1 - exp(-|delta| / SWING_HALF_LIFE))` — this reduces extreme swings proportionally rather than cutting them off abruptly, which feels fairer to players and avoids the “why did I get exactly −50?” frustration of hard caps.
   - _Pitfall_: smoothing that affects both gains and losses equally penalises skilled play; consider asymmetric smoothing (dampen catastrophic losses, leave large gains intact) so the mechanic functions as a safety net without removing the reward ceiling.
+  - **Status:** NOT IMPLEMENTED — no `applySwingSmoothing` wrapper or balance-flag toggle exists in the economy pipeline.
 
 - [ ] **Add localization-ready labels for every breakdown line item**: ensures all gain/loss sources map to user-visible explanations.
   - _Best practice_: define a `BREAKDOWN_LABEL_KEYS` constant object (`{ TICKET_REVENUE: 'economy.breakdown.ticketRevenue', HARMONY_PENALTY: 'economy.breakdown.harmonyPenalty', … }`) and use only keys from this object in `EconomyBreakdown` line items — the i18n consistency checker can then lint `Object.values(BREAKDOWN_LABEL_KEYS)` against locale files in a single pass.
   - _Pattern_: add a `description` field alongside each `labelKey` in the breakdown DTO that provides a one-sentence mechanic explanation (also an i18n key); this powers both the live breakdown panel and the in-game glossary without duplicating strings.
   - _Pitfall_: adding a new economy formula step without adding a corresponding `BREAKDOWN_LABEL_KEYS` entry causes the step to appear in the debug trace but not in the player-facing breakdown — enforce the mapping with a test that asserts `Object.keys(traceSteps)` is a subset of `Object.values(BREAKDOWN_LABEL_KEYS)`.
+  - **Status:** PARTIAL — most breakdown line items already carry a `labelKey`, but there is no central `BREAKDOWN_LABEL_KEYS` constant and no lint/test enforcing the mapping. Evidence: [src/utils/economy/gigLogic/index.ts](src/utils/economy/gigLogic/index.ts#L111-L215)
 
 ## 5) Map Generation + Recovery UX
 
@@ -92,16 +109,19 @@ This note collects concrete improvement opportunities found during a focused rea
   - _Best practice_: generate the seed once at run creation (`runSeed = crypto.getRandomValues(new Uint32Array(1))[0]`), persist it in `GameState`, and pass it to `MapGenerator`; the seed is then part of every bug report automatically because it is in the save file.
   - _Pattern_: read a `?seed=<n>` URL query parameter in dev/staging builds and pass it to `MapGenerator` as an override — no code path change needed for production, QA can reproduce any reported seed by pasting the URL, and the override is never active in prod because the parameter is ignored.
   - _Pitfall_: using `Date.now()` as the seed means two sessions started within the same millisecond (e.g., in automated tests) produce the same map — use `crypto.getRandomValues` instead, which is available in all modern browsers and in Node ≥ 15.
+  - **Status:** NOT IMPLEMENTED — `useMapGeneration` still seeds with `new MapGenerator(Date.now())`; a persisted `runSeed` in `GameState` is still the recommendation. Evidence: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L75)
 
 - [ ] **Add incremental fallback for generation failures**: instead of returning to menu after retries, try a known-safe template map for graceful recovery.
   - _Best practice_: commit the template map as a static JSON file (`src/data/fallbackMap.json`) validated against `MapSchema` on every CI run — the fallback can never silently become invalid because the schema check runs automatically.
   - _Pattern_: implement a three-tier recovery: (1) retry generation up to `MAX_RETRIES` times with the same seed but a different sub-seed offset; (2) if all retries fail, load the template map and emit a telemetry event; (3) only return to menu if the template map also fails to validate — prevents the player from losing their run due to a transient generation bug.
   - _Pitfall_: a fallback map that contains only one route (e.g., straight line of gig nodes) is boring but technically valid; define minimum diversity requirements (at least `N` branch points, at least `M` non-gig nodes) in the schema so the fallback provides a real gameplay experience.
+  - **Status:** NOT IMPLEMENTED — no static template fallback exists; after `MAP_GENERATION_MAX_RETRIES` the hook dispatches a scene change back to `MENU`. Evidence: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L21-L110)
 
 - [ ] **Log map failure signatures**: include generation params and failed phase for easier root-cause analysis.
   - _Best practice_: structure the failure log as `{ seed, attempt, phase: GenerationPhase, nodeCount, edgeCount, errorMessage, stack }` and emit it via the same structured logger used elsewhere — a consistent shape makes log aggregation and filtering trivial.
   - _Pattern_: define `GenerationPhase` as a string-literal union (`'nodeLayout' | 'edgeConnection' | 'validation' | 'invariantCheck'`) so the phase field is always one of a known set; a free-string `phase` field produces unqueryable log entries.
   - _Pitfall_: logging the full generated node graph on failure can produce multi-megabyte log entries that overwhelm the log buffer and obscure other errors; log only the structural summary (counts, seed, phase) and offer a separate debug-mode flag that appends the full graph to a local file.
+  - **Status:** PARTIAL — map failures are logged, but there is no dedicated structured failure signature carrying `phase` / `nodeCount` / `edgeCount`. Evidence: [src/context/useMapGeneration.ts](src/context/useMapGeneration.ts#L75-L110) and [src/utils/errorHandler.ts](src/utils/errorHandler.ts#L1-L80)
 
 ## 6) Testing Gaps to Prioritize
 
@@ -109,16 +129,19 @@ This note collects concrete improvement opportunities found during a focused rea
   - _Best practice_: write the simulation as a pure state-machine driver: `applySequence(initialState, [travelAction, arrivalAction, gigStartAction, postgigAction])` returning the final state — no DOM, no hooks, no async; the full day loop runs in <5 ms.
   - _Pattern_: define the golden-path fixture as a table with columns `[stepName, actionCreator, expectedStateDelta]`; each row asserts only the fields it owns so a regression in economy does not break the travel assertion and vice versa.
   - _Pitfall_: writing the golden-path test as a Playwright e2e test makes it 50× slower and dependent on browser timing; reserve e2e for the UI smoke test; use the pure state-machine driver for the logic assertions that run in every PR gate.
+  - **Status:** PARTIAL — golden-path/integration tests exist under `tests/golden-path/`, but the compact pure-state `applySequence` driver is still missing. Evidence: [tests/golden-path/comprehensive-cycles.test.js](tests/golden-path/comprehensive-cycles.test.js#L1-L20)
 
 - [ ] **Fuzz tests for hostile payloads**: especially event delta flags and quest payload shape coercions.
   - _Best practice_: generate hostile payloads using a structural fuzzer rather than hand-written cases — for each schema field, generate `null`, `undefined`, the wrong type, an empty string, `Number.MAX_SAFE_INTEGER`, and prototype-polluting keys (`__proto__`, `constructor`, `toString`); run all combinations through the parser boundary and assert no exception escapes and no state corruption occurs.
   - _Pattern_: maintain a `HOSTILE_PAYLOAD_CASES` fixture file with at least 20 known-hostile shapes; run it as a parameterised test in both the `node:test` and Vitest suites so coverage applies to both environments.
   - _Pitfall_: fuzz tests that only assert "no exception thrown" pass even when the hostile input silently corrupts state; always follow the fuzz call with `checkInvariants(state)` to catch state corruption that does not throw.
+  - **Status:** NOT IMPLEMENTED — no structural fuzz harness or `HOSTILE_PAYLOAD_CASES` fixture exists; hostile-input coverage is limited to hand-written `__proto__` cases in individual suites (e.g. `saveValidator`, `eventResolver`, the reducer tests).
 
 - [ ] **Performance regression check**: benchmark expensive calculations in `economyEngine` and event processing under long campaigns.
   - _Best practice_: define a performance budget per function (`calcGigEconomy < 2 ms`, `resolveEvent < 1 ms`) in a committed `perf-budgets.json` file; the benchmark runner fails CI when any budget is exceeded on two consecutive runs (single-run outliers are noise).
   - _Pattern_: simulate a "long campaign" by running 100 consecutive day-loop cycles in the benchmark harness with realistic state growth (accumulated flags, history entries, faction scores); this catches O(n²) complexity bugs that only manifest after the player's 50th gig.
   - _Pitfall_: running performance benchmarks in the same Vitest process as unit tests produces noisy results due to JIT warm-up and garbage collection interactions; use a dedicated benchmark runner (`vitest bench` or a separate `node --prof` script) isolated from the test suite.
+  - **Status:** NOT IMPLEMENTED — no `perf-budgets.json` or CI budget enforcement exists; `tests/performance/` holds bench and optimisation tests, but nothing fails CI on a budget breach.
 
 ## 7) Feature Opportunities (Gameplay) — Comprehensive Backlog
 
@@ -193,6 +216,7 @@ This note collects concrete improvement opportunities found during a focused rea
 - [ ] **Adaptive crowd behavior**: crowd energy reacts to streaks, misses, and stage presence in near real time.
 - [ ] **Encore decision mechanic**: optional overtime performance with extra payout and extra fatigue/gear penalties.
 - [ ] **Heckler interaction windows**: player choices to ignore/counter hecklers, influencing hype and controversy.
+  - **Status:** PARTIAL — `HecklerOverlay.tsx` and `hecklerLogic.ts` already spawn heckler projectiles as a gig hazard; the player-facing decision/response window is still missing.
 - [ ] **Spotlight moments per band member**: short bonus windows tied to member traits and current mood/stamina.
 - [ ] **Difficulty assist toggles**: optional aid modifiers that trade leaderboard scoring for accessibility.
 
