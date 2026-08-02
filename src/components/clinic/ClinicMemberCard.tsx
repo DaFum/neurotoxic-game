@@ -24,6 +24,20 @@ const ActionButtonWrapper = ({
     buttonWithDisabled
   )
 }
+
+/**
+ * Picks the first reason that applies, so each action can list its blockers
+ * in priority order instead of nesting a ternary per blocker.
+ */
+const firstReason = (
+  ...candidates: Array<string | false | null>
+): string | null => {
+  for (const candidate of candidates) {
+    if (candidate) return candidate
+  }
+  return null
+}
+
 /**
  * Displays one band member's clinic treatment options and affordability state.
  * @param props - Band member, player resources, clinic costs, and heal/enhance callbacks.
@@ -73,18 +87,17 @@ export const ClinicMemberCard = ({
 
       <div className='flex flex-col gap-2 mt-auto'>
         <ActionButtonWrapper
-          disabledReason={
-            missingMemberReason ??
-            (player.money < healCostMoney
-              ? t('ui:clinic.notEnoughMoney', {
-                  defaultValue: 'Not enough money'
-                })
-              : isFullyHealed
-                ? t('ui:clinic.fullyHealed', {
-                    defaultValue: 'Member is already fully healed'
-                  })
-                : null)
-          }
+          disabledReason={firstReason(
+            missingMemberReason,
+            player.money < healCostMoney &&
+              t('ui:clinic.notEnoughMoney', {
+                defaultValue: 'Not enough money'
+              }),
+            isFullyHealed &&
+              t('ui:clinic.fullyHealed', {
+                defaultValue: 'Member is already fully healed'
+              })
+          )}
         >
           {disabled => (
             <GlitchButton
@@ -105,18 +118,17 @@ export const ClinicMemberCard = ({
         </ActionButtonWrapper>
 
         <ActionButtonWrapper
-          disabledReason={
-            missingMemberReason ??
-            (player.fame < enhanceCostFame
-              ? t('ui:clinic.notEnoughFame', {
-                  defaultValue: 'Not enough fame'
-                })
-              : hasTrait(member, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID)
-                ? t('ui:clinic.alreadyEnhanced', {
-                    defaultValue: 'Member already has this enhancement'
-                  })
-                : null)
-          }
+          disabledReason={firstReason(
+            missingMemberReason,
+            player.fame < enhanceCostFame &&
+              t('ui:clinic.notEnoughFame', {
+                defaultValue: 'Not enough fame'
+              }),
+            hasTrait(member, CLINIC_CONFIG.CYBER_LUNGS_TRAIT_ID) &&
+              t('ui:clinic.alreadyEnhanced', {
+                defaultValue: 'Member already has this enhancement'
+              })
+          )}
         >
           {disabled => (
             <GlitchButton
@@ -140,18 +152,17 @@ export const ClinicMemberCard = ({
 
         <div className='mt-3 border-t border-toxic-green/30 pt-3'>
           <ActionButtonWrapper
-            disabledReason={
-              missingMemberReason ??
-              (!canAffordGraft
-                ? t('ui:clinic.notEnoughMoney', {
-                    defaultValue: 'Not enough money'
-                  })
-                : hasGraft
-                  ? t('ui:clinic.alreadyGrafted', {
-                      defaultValue: 'Member already has this graft'
-                    })
-                  : null)
-            }
+            disabledReason={firstReason(
+              missingMemberReason,
+              !canAffordGraft &&
+                t('ui:clinic.notEnoughMoney', {
+                  defaultValue: 'Not enough money'
+                }),
+              hasGraft &&
+                t('ui:clinic.alreadyGrafted', {
+                  defaultValue: 'Member already has this graft'
+                })
+            )}
           >
             {disabled => (
               <GlitchButton
