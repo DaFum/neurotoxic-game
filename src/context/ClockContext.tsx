@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, use } from 'react'
 import type { ReactNode } from 'react'
 import { systemClock } from '../utils/clock'
 import type { IClock } from '../utils/clock'
@@ -24,4 +24,4 @@ export const ClockProvider = ({
  *
  * @returns The clock provided by the nearest `ClockProvider`, or `systemClock`.
  */
-export const useClock = (): IClock => useContext(ClockContext)
+export const useClock = (): IClock => use(ClockContext)

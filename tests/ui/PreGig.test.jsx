@@ -61,7 +61,8 @@ vi.mock('../../src/ui/GigModifierButton', () => ({
 vi.mock('../../src/utils/crypto', () => ({
   secureRandom: vi.fn(() => 0.5),
   getSafeRandom: vi.fn(() => 0.5),
-  getSafeUUID: vi.fn(() => 'mock-uuid')
+  getSafeUUID: vi.fn(() => 'mock-uuid'),
+  getSecureRandomUint32: vi.fn(() => 123456)
 }))
 vi.mock('../../src/utils/simulationUtils', () => ({
   getGigModifiers: vi.fn(() => ({ activeEffects: [] }))

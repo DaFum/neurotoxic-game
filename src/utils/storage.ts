@@ -117,6 +117,9 @@ export function writeStorageItem(key: string, value: string): boolean {
     const storage = getStorage()
     if (!storage) throw new Error('No storage available')
     storage.setItem(key, value)
+    // Persistence recovered for this key, so the memory entry is no longer the
+    // newest value and must stop shadowing the persisted one.
+    memoryStore.delete(key)
     return true
   } catch (error) {
     memoryStore.set(key, value)
@@ -132,13 +135,22 @@ export function writeStorageItem(key: string, value: string): boolean {
 }
 
 /**
- * Reads a raw string through the storage guard, falling back to the in-memory
- * store for keys that were written after storage degraded.
+ * Reads a raw string through the storage guard, preferring the in-memory store
+ * for keys whose write was refused this session.
  *
  * @param key - Storage key.
  * @returns Stored string, or `null` when the key is unknown or unreadable.
+ *
+ * @remarks
+ * A memory entry only exists for a key whose persistent write failed, and
+ * `writeStorageItem` drops it as soon as persistence recovers. It is therefore
+ * always the newest value: reading persistent storage first would serve the
+ * stale pre-degradation save while the current one stayed unreachable.
  */
 export function readStorageItem(key: string): string | null {
+  const buffered = memoryStore.get(key)
+  if (buffered !== undefined) return buffered
+
   try {
     const storage = getStorage()
     const raw = storage ? storage.getItem(key) : null

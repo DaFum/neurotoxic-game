@@ -303,6 +303,28 @@ describe('useMapGeneration', () => {
       expect(new Set(seeds)).toEqual(new Set([TEST_RUN_SEED]))
     })
 
+    it('ignores the ?seed= override in production builds', () => {
+      const seeds = captureSeeds()
+      window.history.replaceState({}, '', '/?seed=999')
+      vi.stubEnv('PROD', true)
+
+      try {
+        renderHook(() =>
+          useMapGeneration({
+            gameMap: null,
+            runSeed: TEST_RUN_SEED,
+            dispatch: mockDispatch,
+            tRef: mockTRef
+          })
+        )
+
+        expect(seeds).toEqual([TEST_RUN_SEED])
+      } finally {
+        vi.unstubAllEnvs()
+        window.history.replaceState({}, '', '/')
+      }
+    })
+
     it('honors a ?seed= override outside production builds', () => {
       const seeds = captureSeeds()
       window.history.replaceState({}, '', '/?seed=999')

@@ -17,6 +17,7 @@ import {
   createUpdatePlayerAction
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
+import { useClock } from './ClockContext'
 import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
 import type { GamePhase } from '../types'
@@ -168,6 +169,8 @@ export function useEventSystem({
   saveGame,
   tRef
 }: UseEventSystemParams) {
+  const clock = useClock()
+
   const setActiveEvent = useCallback(
     (event: Parameters<typeof createSetActiveEventAction>[0]) =>
       dispatch(createSetActiveEventAction(event)),
@@ -257,7 +260,7 @@ export function useEventSystem({
         return { ...choiceTextFallback(choice), result: null }
       }
       try {
-        const resolution = resolveEvent(choice, stateRef.current)
+        const resolution = resolveEvent(choice, stateRef.current, clock)
         // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid callback-invocation overhead on the event resolution hot path.
         // Why: Eliminates callback-invocation overhead during state materialization.
         // Impact: Speeds up event processing slightly by avoiding function calls per element.
@@ -291,7 +294,16 @@ export function useEventSystem({
         return { ...choiceTextFallback(choice), result: null }
       }
     },
-    [addToast, changeScene, dispatch, saveGame, setActiveEvent, stateRef, tRef]
+    [
+      addToast,
+      changeScene,
+      clock,
+      dispatch,
+      saveGame,
+      setActiveEvent,
+      stateRef,
+      tRef
+    ]
   )
 
   return { setActiveEvent, triggerEvent, resolveEvent: resolveEventCallback }

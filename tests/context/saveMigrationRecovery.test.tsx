@@ -19,6 +19,7 @@ const { runSaveMigrations } =
   await import('../../src/context/reducers/migrations')
 const { getQuarantineKey, quarantineSave } =
   await import('../../src/utils/saveQuarantine')
+const { resetStorageFallback } = await import('../../src/utils/storage')
 
 describe('migrateLoadedSave', () => {
   const rawSave = '{"version":1,"player":{"money":100}}'
@@ -26,10 +27,14 @@ describe('migrateLoadedSave', () => {
 
   beforeEach(() => {
     vi.mocked(runSaveMigrations).mockReset()
+    resetStorageFallback()
     localStorage.clear()
   })
 
   afterEach(() => {
+    // writeStorageItem sets a module-level degraded flag and memory entry that
+    // localStorage.clear() does not touch; leaking it poisons later suites.
+    resetStorageFallback()
     localStorage.clear()
   })
 
@@ -88,6 +93,12 @@ describe('migrateLoadedSave', () => {
 
 describe('quarantineSave', () => {
   beforeEach(() => {
+    resetStorageFallback()
+    localStorage.clear()
+  })
+
+  afterEach(() => {
+    resetStorageFallback()
     localStorage.clear()
   })
 

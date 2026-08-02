@@ -68,13 +68,23 @@ describe('storage write guard', () => {
     expect(readStorageItem('key')).toBeNull()
   })
 
-  it('prefers persistent storage over a stale memory entry', () => {
+  it('prefers the memory entry over the stale persisted value', () => {
+    localStorage.setItem('key', 'stale')
+    denyWrites()
+
+    writeStorageItem('key', 'newest')
+    expect(localStorage.getItem('key')).toBe('stale')
+    expect(readStorageItem('key')).toBe('newest')
+  })
+
+  it('stops shadowing once a persistent write succeeds again', () => {
     const setItem = denyWrites()
     writeStorageItem('key', 'memory')
     setItem.mockRestore()
 
-    localStorage.setItem('key', 'persisted')
+    writeStorageItem('key', 'persisted')
     expect(readStorageItem('key')).toBe('persisted')
+    expect(localStorage.getItem('key')).toBe('persisted')
   })
 
   it('reports degraded storage only after a failure', () => {

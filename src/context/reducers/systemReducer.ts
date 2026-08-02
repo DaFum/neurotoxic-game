@@ -169,7 +169,21 @@ export const handleLoadGame = (
 
   // Fold the raw payload through every migration step above its stored version
   // before any sanitizer runs, so each step sees the layout it was written for.
-  const migratedPayload = runSaveMigrations(rawState, explicitVersion)
+  //
+  // `usePersistence` already quarantines and bails out on a throwing migration,
+  // so this fold is a no-op on the normal load path. A direct LOAD_GAME dispatch
+  // bypasses that guard, and a reducer must not throw: fall back to the
+  // un-migrated payload and let the sanitizers below clamp whatever survives.
+  let migratedPayload: unknown = rawState
+  try {
+    migratedPayload = runSaveMigrations(rawState, explicitVersion)
+  } catch (error) {
+    logger.error(
+      'GameState',
+      `Save migration from version ${explicitVersion} failed; loading unmigrated payload`,
+      error instanceof Error ? error.message : String(error)
+    )
+  }
   const loadedState: Record<string, unknown> = (
     typeof migratedPayload === 'object' && migratedPayload !== null
       ? migratedPayload

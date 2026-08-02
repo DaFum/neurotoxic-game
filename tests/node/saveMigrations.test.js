@@ -18,9 +18,14 @@ describe('save migration chain', () => {
     assert.equal(targets.at(-1), CURRENT_SAVE_VERSION)
   })
 
-  it('leaves the chain gap-free', () => {
+  it('leaves the chain gap-free from the baseline version', () => {
+    // Version 1 is the first save format that ever shipped, so the chain must
+    // start at 2. Deriving the baseline from the step itself would make this
+    // assertion vacuous and let a first entry of `to: 5` pass.
+    const BASELINE_VERSION = 1
     SAVE_MIGRATIONS.forEach((step, index) => {
-      const previous = index === 0 ? step.to - 1 : SAVE_MIGRATIONS[index - 1].to
+      const previous =
+        index === 0 ? BASELINE_VERSION : SAVE_MIGRATIONS[index - 1].to
       assert.equal(step.to, previous + 1)
     })
   })

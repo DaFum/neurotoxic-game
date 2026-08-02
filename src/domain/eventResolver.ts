@@ -1,4 +1,6 @@
 import { resolveEventChoice } from '../utils/eventEngine'
+import { systemClock } from '../utils/clock'
+import type { IClock } from '../utils/clock'
 import {
   finiteNumberOr,
   isFiniteNumber,
@@ -149,10 +151,17 @@ function sanitizeUnlockId(raw: string): string {
 
 /**
  * Resolves an event choice into reducer actions and caller-owned side effects.
+ *
+ * @param choice - Raw choice payload selected by the player.
+ * @param state - Current game state.
+ * @param clock - Clock stamping banter timestamps. Defaults to the real clock;
+ * `useEventSystem` passes the injected one so `ClockProvider` actually governs
+ * these non-gameplay timestamps.
  */
 export function resolveEvent(
   choice: Record<string, unknown> | null,
-  state: GameState
+  state: GameState,
+  clock: IClock = systemClock
 ): EventResolution {
   if (!choice) {
     return {
@@ -214,7 +223,8 @@ export function resolveEvent(
   if (delta) {
     const normalizedDelta = { ...delta, flags }
     const deltaAction = createApplyEventDeltaAction(
-      normalizedDelta as EventDeltaPayload
+      normalizedDelta as EventDeltaPayload,
+      clock
     )
     actions.push(deltaAction)
 

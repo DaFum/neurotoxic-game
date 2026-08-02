@@ -18,6 +18,9 @@ export const HOSTILE_VALUES = [
   { label: 'wrong type (array)', value: ['nope'] },
   { label: 'empty string', value: '' },
   { label: 'MAX_SAFE_INTEGER', value: Number.MAX_SAFE_INTEGER },
+  // A plain finite negative: NaN/Infinity short-circuit on Number.isFinite, so
+  // they never reach a dedicated `value < 0` branch such as advanceQuest's.
+  { label: 'negative number', value: -42 },
   { label: 'NaN', value: Number.NaN },
   { label: 'Infinity', value: Number.POSITIVE_INFINITY },
   { label: '-Infinity', value: Number.NEGATIVE_INFINITY }

@@ -435,14 +435,22 @@ test('local symbols expose generics, async, heritage, and literal values', () =>
     'interface heritage should be recorded under `extends`'
   )
 
-  const modifierCosts = ks.MODIFIER_COSTS.find(
+  const ticketSalesConstants = ks.TICKET_SALES_CONSTANTS.find(
     entry => entry.path === 'src/utils/economy/constants.ts'
   )
   assert.deepEqual(
-    modifierCosts.literalKeys,
-    ['catering', 'guestlist', 'merch', 'promo', 'soundcheck'],
+    ticketSalesConstants.literalKeys,
+    ['BASE_DRAW_RATIO', 'FAME_CAPACITY_SCALER', 'FAME_FILL_WEIGHT'],
     'object literal const exports should expose stable top-level literal keys'
   )
+
+  // `MODIFIER_COSTS` re-exports `BALANCE_CONFIG.modifiers` rather than
+  // declaring a literal, so it carries a dependency edge instead of keys.
+  const modifierCosts = ks.MODIFIER_COSTS.find(
+    entry => entry.path === 'src/utils/economy/constants.ts'
+  )
+  assert.equal(modifierCosts.literalKeys, undefined)
+  assert.ok(modifierCosts.dependencies.includes('BALANCE_CONFIG'))
 })
 
 test('document exposes a self-documenting meta block', () => {

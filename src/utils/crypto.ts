@@ -100,12 +100,9 @@ export const getSecureRandomUint32 = (): number => {
     const buffer = new Uint32Array(1)
     ;(crypto as CryptoGetRandom).getRandomValues(buffer)
     return (buffer[0] ?? 0) >>> 0
-  } catch (error) {
-    handleError(error, {
-      silent: true,
-      severity: 'medium',
-      fallbackMessage: 'Crypto API unavailable, falling back to Math.random.'
-    })
+  } catch {
+    // getSafeRandom() owns the once-per-session fallback report; reporting here
+    // as well would double-count the same failure.
     return Math.floor(getSafeRandom() * 4294967296) >>> 0
   }
 }

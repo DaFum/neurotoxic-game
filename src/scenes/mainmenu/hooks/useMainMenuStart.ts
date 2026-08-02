@@ -1,6 +1,10 @@
 import { useCallback } from 'react'
 import type { MutableRefObject } from 'react'
-import { safeStorageOperation, writeStorageItem } from '../../../utils/storage'
+import {
+  readStorageItem,
+  safeStorageOperation,
+  writeStorageItem
+} from '../../../utils/storage'
 import { getSafeUUID } from '../../../utils/crypto'
 import { GAME_PHASES } from '../../../context/gameConstants'
 import { SAVE_KEY } from '../../../context/usePersistence'
@@ -43,10 +47,10 @@ export const useMainMenuStart = ({
 
     // Capture identity before reset
     const savedPlayerId = safeStorageOperation('getPlayerId', () =>
-      localStorage.getItem('neurotoxic_player_id')
+      readStorageItem('neurotoxic_player_id')
     )
     const savedPlayerName = safeStorageOperation('getPlayerName', () =>
-      localStorage.getItem('neurotoxic_player_name')
+      readStorageItem('neurotoxic_player_name')
     )
 
     // State transitions (batched automatically by React 18+)
@@ -69,10 +73,10 @@ export const useMainMenuStart = ({
   const startNewTourFlow = useCallback(() => {
     // Check for existing player identity
     const savedPlayerId = safeStorageOperation('getPlayerId', () =>
-      localStorage.getItem('neurotoxic_player_id')
+      readStorageItem('neurotoxic_player_id')
     )
     const savedPlayerName = safeStorageOperation('getPlayerName', () =>
-      localStorage.getItem('neurotoxic_player_name')
+      readStorageItem('neurotoxic_player_name')
     )
 
     if (!savedPlayerId || !savedPlayerName) {
@@ -89,7 +93,7 @@ export const useMainMenuStart = ({
 
   const handleStartTour = useCallback(() => {
     const savedGameExists = !!safeStorageOperation('checkSaveExists', () =>
-      localStorage.getItem(SAVE_KEY)
+      readStorageItem(SAVE_KEY)
     )
     if (savedGameExists) {
       setShowExistingSavePrompt(true)

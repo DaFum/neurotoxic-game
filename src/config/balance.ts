@@ -19,19 +19,19 @@
  */
 export interface AttendanceConfig {
   /** Fraction of venue capacity a no-fame band draws. */
-  baseDrawRatio: number
+  readonly baseDrawRatio: number
   /** Divisor turning fame into extra capacity draw. */
-  fameCapacityScaler: number
+  readonly fameCapacityScaler: number
   /** Weight of the fame term in venue fill. */
-  fameFillWeight: number
+  readonly fameFillWeight: number
   /** Bar-spend rate for high-loyalty audiences. */
-  barRateVip: number
+  readonly barRateVip: number
   /** Default bar-spend rate. */
-  barRateNormal: number
+  readonly barRateNormal: number
   /** Average bar spend per audience member, in euros. */
-  avgSpendPerPersonAtBar: number
+  readonly avgSpendPerPersonAtBar: number
   /** Zealotry level at which promo effects change behavior. */
-  zealotryPromoThreshold: number
+  readonly zealotryPromoThreshold: number
 }
 
 /**
@@ -39,28 +39,28 @@ export interface AttendanceConfig {
  */
 export interface PenaltiesConfig {
   /** Global multiplier applied to gig payouts. */
-  globalPayoutNerf: number
+  readonly globalPayoutNerf: number
   /** Maximum fame-scaled management cut. */
-  managementCutRate: number
+  readonly managementCutRate: number
   /** Venue revenue split by venue difficulty. */
-  venueSplitRates: Readonly<Record<number, number>>
+  readonly venueSplitRates: Readonly<Record<number, number>>
   /** Base logistics expense for gig travel. */
-  travelLogisticsBase: number
+  readonly travelLogisticsBase: number
   /** Additional logistics expense per 100 km. */
-  travelLogisticsPer100Km: number
+  readonly travelLogisticsPer100Km: number
   /** Additional logistics expense per fame level. */
-  travelLogisticsPerFameLevel: number
+  readonly travelLogisticsPerFameLevel: number
 }
 
 /**
  * Pre-gig modifier prices, shared by the PreGig preview and PostGig expenses.
  */
 export interface ModifiersConfig {
-  catering: number
-  promo: number
-  merch: number
-  soundcheck: number
-  guestlist: number
+  readonly catering: number
+  readonly promo: number
+  readonly merch: number
+  readonly soundcheck: number
+  readonly guestlist: number
 }
 
 /**
@@ -68,20 +68,20 @@ export interface ModifiersConfig {
  */
 export interface CapsConfig {
   /** Maximum gig net before overage is surfaced as an expense. */
-  maxGigNet: number
+  readonly maxGigNet: number
   /** Maximum cash logistics expense contribution. */
-  travelLogisticsCashCap: number
+  readonly travelLogisticsCashCap: number
 }
 
 /**
  * The full balance surface plus the version of its shape.
  */
 export interface BalanceConfig {
-  configVersion: number
-  attendance: AttendanceConfig
-  penalties: PenaltiesConfig
-  modifiers: ModifiersConfig
-  caps: CapsConfig
+  readonly configVersion: number
+  readonly attendance: AttendanceConfig
+  readonly penalties: PenaltiesConfig
+  readonly modifiers: ModifiersConfig
+  readonly caps: CapsConfig
 }
 
 /**
