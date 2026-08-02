@@ -119,17 +119,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
       </div>
 
       {/* Right Panel - Band Status */}
-      <BandStatusPanel
-        band={band}
-        t={t}
-        wrapperClassName='pointer-events-auto bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none max-sm:w-full'
-        titleClassName='text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90 max-sm:text-left'
-        membersWrapperClassName='w-56 space-y-0.5 max-sm:w-full'
-        harmonyLabelClassName='text-xs font-bold text-ash-gray/90 mb-0.5'
-        harmonyValueClassName='text-xs font-bold tabular-nums mb-0.5 leading-none'
-        barWrapperClassName='w-24'
-        barSize='sm'
-      />
+      <BandStatusPanel band={band} t={t} variant='hud' />
     </div>
   )
 })

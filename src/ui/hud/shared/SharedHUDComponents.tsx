@@ -72,31 +72,59 @@ export const VanStatusMiniBars = memo(
   }
 )
 
+interface BandStatusPanelVariantConfig {
+  wrapperClassName: string
+  titleClassName: string
+  membersWrapperClassName: string
+  harmonyLabelClassName: string
+  harmonyValueClassName: string
+  barWrapperClassName: string
+  barSize: 'mini' | 'sm' | 'md'
+}
+
+const BAND_STATUS_PANEL_VARIANTS = {
+  hud: {
+    wrapperClassName:
+      'pointer-events-auto bg-void-black/95 border-2 border-toxic-green p-3 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] backdrop-blur-sm transition-transform hover:translate-y-1 hover:translate-x-1 hover:shadow-none max-sm:w-full',
+    titleClassName:
+      'text-right border-b border-toxic-green/40 mb-3 pb-1.5 text-xs font-bold tracking-widest text-ash-gray/90 max-sm:text-left',
+    membersWrapperClassName: 'w-56 space-y-0.5 max-sm:w-full',
+    harmonyLabelClassName: 'text-xs font-bold text-ash-gray/90 mb-0.5',
+    harmonyValueClassName: 'text-xs font-bold tabular-nums mb-0.5 leading-none',
+    barWrapperClassName: 'w-24',
+    barSize: 'sm' as const
+  },
+  compact: {
+    wrapperClassName:
+      'pointer-events-auto bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]',
+    titleClassName:
+      'text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray',
+    membersWrapperClassName: 'w-52',
+    harmonyLabelClassName: 'text-xs text-ash-gray mb-0.5',
+    harmonyValueClassName: 'text-xs tabular-nums mb-0.5 leading-none',
+    barWrapperClassName: 'w-20',
+    barSize: 'mini' as const
+  }
+} as const satisfies Record<'hud' | 'compact', BandStatusPanelVariantConfig>
+
 interface BandStatusPanelProps {
   band?: BandState
   t: TFunction
-  wrapperClassName?: string
-  membersWrapperClassName?: string
-  harmonyLabelClassName?: string
-  harmonyValueClassName?: string
-  barWrapperClassName?: string
-  barSize?: 'mini' | 'sm' | 'md'
-  titleClassName?: string
+  variant?: 'hud' | 'compact'
 }
 
 export const BandStatusPanel = memo(
-  ({
-    band,
-    t,
-    wrapperClassName = '',
-    membersWrapperClassName = 'w-52',
-    harmonyLabelClassName = 'text-xs text-ash-gray mb-0.5',
-    harmonyValueClassName = 'text-xs tabular-nums mb-0.5 leading-none',
-    barWrapperClassName = 'w-20',
-    barSize = 'mini',
-    titleClassName = 'text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray'
-  }: BandStatusPanelProps) => {
+  ({ band, t, variant = 'compact' }: BandStatusPanelProps) => {
     const safeHarmony = finiteNumberOr(band?.harmony, 0)
+    const {
+      wrapperClassName,
+      titleClassName,
+      membersWrapperClassName,
+      harmonyLabelClassName,
+      harmonyValueClassName,
+      barWrapperClassName,
+      barSize
+    } = BAND_STATUS_PANEL_VARIANTS[variant]
 
     return (
       <div className={wrapperClassName}>
