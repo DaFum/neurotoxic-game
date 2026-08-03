@@ -17,11 +17,15 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  # `contents: read` to check out; `issues: write` for the sticky comment, which
-  # goes through `github.rest.issues.*` (a PR is an issue for that API), so no
-  # `pull-requests: write` is needed.
+  # `contents: read` to check out. The sticky comment goes through
+  # `github.rest.issues.*`, but the target is a pull request, and GitHub gates PR
+  # comments on `pull-requests: write` regardless of which API path is used —
+  # dropping it returns `403 Resource not accessible by integration` on
+  # `POST /issues/{number}/comments`. Both scopes are required; `issues: write`
+  # alone is not sufficient. Same pair as `lint-fix-preview.yml`.
   contents: read
   issues: write
+  pull-requests: write
 
 env:
   PNPM_VERSION: '11.18.0'

@@ -538,6 +538,23 @@ test('repeat demand adjustment normalizes a hostile net on every return path', (
       )
     }
   }
+
+  // Every hostile net above normalizes to 0, which makes demandCost 0 and takes
+  // an early return — so the adjusted-result path needs a positive finite net to
+  // be reached at all.
+  const adjusted = applyRepeatDemandAdjustment(buildFinancials(10), {
+    day: 21,
+    regionId: 'berlin',
+    regionalGigHistory: { berlin: [16, 17, 18, 19, 20] },
+    tuning
+  })
+  assert.equal(adjusted.net < 10, true, 'adjusted net must be reduced')
+  assert.equal(adjusted.net >= 0, true)
+  assert.equal(adjusted.expenses.total > 90, true)
+  assert.equal(
+    adjusted.expenses.breakdown.at(-1).labelKey,
+    'economy:gigExpenses.demandSaturation.label'
+  )
 })
 
 test('resolveBalanceTuning applies partial overrides without mutating defaults', () => {

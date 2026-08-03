@@ -90,7 +90,11 @@ export async function resumeAudio(): Promise<boolean> {
     }, 'resumeAudio')
     if (gateResult === null) return false
   } catch (err) {
+    // A transport that threw on start is not running, so reporting success here
+    // would let callers clear the paused state over silent audio — the same
+    // failure mode as a refused gate.
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
+    return false
   }
 
   try {
