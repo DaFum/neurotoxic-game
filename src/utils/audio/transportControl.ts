@@ -1,7 +1,9 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
-import { withAudioContext } from './context'
+// A namespace import rather than a named one: the binding resolves at call
+// time, so suites that mock `./context` with a partial export set still link.
+import * as audioContext from './context'
 import {
   pauseGigPlayback,
   resumeGigPlayback,
@@ -80,7 +82,7 @@ export async function resumeAudio(): Promise<boolean> {
   try {
     // Guarded: a resume triggered while the context is still suspended would
     // otherwise start a transport that produces no sound.
-    await withAudioContext(async () => {
+    await audioContext.withAudioContext(async () => {
       if (Tone.getTransport().state === 'paused') {
         await Tone.getTransport().start()
       }
