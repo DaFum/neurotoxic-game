@@ -9,7 +9,8 @@ export {
   getRawAudioContext,
   ensureAudioContext,
   getAudioContextTimeSec,
-  getToneStartTimeSec
+  getToneStartTimeSec,
+  withAudioContext
 } from './context'
 export { disposeAudio, safeDispose } from './dispose'
 

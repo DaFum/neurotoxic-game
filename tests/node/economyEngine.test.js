@@ -14,8 +14,12 @@ import {
   calculateGuarantee,
   calculateBarCut,
   calculateSponsorshipBonuses,
-  calculateGigExpenses
+  calculateGigExpenses,
+  calculateGuaranteedDailyCost,
+  shouldTriggerBankruptcy
 } from '../../src/utils/economy'
+import { NEUTRAL_ASSET_MODIFIERS } from '../../src/utils/assetSelectors'
+import { finiteNumberOr } from '../../src/utils/finiteNumber'
 
 const buildGigData = (overrides = {}) => ({
   capacity: 300,
@@ -1132,16 +1136,210 @@ test('calculateFuelCost handles edge cases for distance', async t => {
     assert.strictEqual(result.fuelCost, 0)
   })
 
-  await t.test('handles NaN distance gracefully', () => {
-    const result = calculateFuelCost(NaN)
-    assert.ok(Number.isNaN(result.fuelLiters))
-    assert.ok(Number.isNaN(result.fuelCost))
+  await t.test(
+    'rejects a non-finite distance instead of propagating it',
+    () => {
+      for (const dist of [NaN, Infinity, -Infinity]) {
+        const result = calculateFuelCost(dist)
+        assert.strictEqual(result.fuelLiters, 0, `fuelLiters for ${dist}`)
+        assert.strictEqual(result.fuelCost, 0, `fuelCost for ${dist}`)
+      }
+    }
+  )
+
+  await t.test('treats -0 distance as a zero-magnitude trip', () => {
+    const result = calculateFuelCost(-0)
+    // The calculator carries the sign of its input; `-0` is normalized at the
+    // documented boundaries (`finiteNumberOr` for state, `formatCurrency` for
+    // the UI), not per call site.
+    assert.strictEqual(Math.abs(result.fuelLiters), 0)
+    assert.strictEqual(finiteNumberOr(result.fuelCost, 0), 0)
   })
 
-  await t.test('handles Infinity distance gracefully', () => {
-    const result = calculateFuelCost(Infinity)
-    assert.strictEqual(result.fuelLiters, Infinity)
-    assert.strictEqual(result.fuelCost, Infinity)
+  await t.test(
+    'falls back to a neutral fuel multiplier when non-finite',
+    () => {
+      const baseline = calculateFuelCost(100, null, null, {
+        ...NEUTRAL_ASSET_MODIFIERS,
+        fuelMultiplier: 1
+      })
+      for (const fuelMultiplier of [NaN, Infinity, -Infinity, undefined]) {
+        const result = calculateFuelCost(100, null, null, {
+          ...NEUTRAL_ASSET_MODIFIERS,
+          fuelMultiplier
+        })
+        assert.ok(
+          Number.isFinite(result.fuelLiters),
+          `fuelLiters for ${fuelMultiplier}`
+        )
+        assert.ok(
+          Number.isFinite(result.fuelCost),
+          `fuelCost for ${fuelMultiplier}`
+        )
+        assert.strictEqual(result.fuelCost, baseline.fuelCost)
+      }
+    }
+  )
+})
+
+test('economy calculators keep hostile numeric input off their outputs', async t => {
+  const HOSTILE = [NaN, Infinity, -Infinity, -0]
+
+  await t.test('calculateTicketIncome clamps capacity and fame', () => {
+    for (const capacity of [0, -1, ...HOSTILE]) {
+      const result = calculateTicketIncome({ capacity, price: 15 }, 100)
+      assert.ok(
+        Number.isFinite(result.ticketsSold),
+        `ticketsSold for capacity ${capacity}`
+      )
+      assert.ok(result.ticketsSold >= 0)
+      assert.ok(Number.isFinite(result.revenue))
+      assert.ok(result.revenue >= 0)
+    }
+
+    for (const playerFame of HOSTILE) {
+      const result = calculateTicketIncome(
+        { capacity: 300, price: 15 },
+        playerFame
+      )
+      assert.ok(
+        Number.isFinite(result.ticketsSold),
+        `ticketsSold for fame ${playerFame}`
+      )
+      assert.ok(Number.isFinite(result.revenue))
+      assert.ok(result.revenue >= 0)
+    }
+  })
+
+  await t.test('calculateEffectiveTicketPrice rejects an extreme price', () => {
+    for (const price of HOSTILE) {
+      const value = calculateEffectiveTicketPrice({ price }, {})
+      assert.ok(Number.isFinite(value), `price ${price}`)
+      assert.ok(value >= 0)
+      assert.ok(!Object.is(value, -0))
+    }
+  })
+
+  await t.test('calculateGuarantee normalizes -0 pay to zero', () => {
+    const result = calculateGuarantee({ pay: -0 })
+    assert.strictEqual(result.amount, 0)
+    assert.ok(!Object.is(result.amount, -0))
+  })
+
+  await t.test('calculateBarCut keeps revenue finite and non-negative', () => {
+    for (const ticketsSold of [-1, ...HOSTILE]) {
+      const result = calculateBarCut(ticketsSold, { barCut: true })
+      assert.ok(Number.isFinite(result.revenue), `ticketsSold ${ticketsSold}`)
+      assert.ok(result.revenue >= 0)
+    }
+  })
+
+  await t.test('calculateVenueSplit keeps the cut finite', () => {
+    for (const ticketsRevenue of [-1, ...HOSTILE]) {
+      const result = calculateVenueSplit(ticketsRevenue, { diff: 5 })
+      assert.ok(
+        Number.isFinite(result.amount),
+        `ticketsRevenue ${ticketsRevenue}`
+      )
+      assert.ok(result.amount >= 0)
+    }
+  })
+
+  await t.test('calculateSponsorshipBonuses ignores a NaN miss count', () => {
+    // `misses === 0` is the bonus gate; NaN fails it, so a corrupted stat must
+    // never pay out the perfect-run sponsorship.
+    const result = calculateSponsorshipBonuses({ misses: NaN, peakHype: 50 })
+    assert.strictEqual(result.totalBonus, 0)
+    assert.deepEqual(result.incomeItems, [])
+  })
+
+  await t.test('calculateMerchIncome survives a zero default price', () => {
+    const result = calculateMerchIncome(
+      200,
+      70,
+      buildGigStats(),
+      {},
+      buildInventory(),
+      // A zero custom price is the divisor-guard case: without the guard the
+      // elasticity ratio is Infinity and revenue becomes NaN.
+      { merchPrices: { shirts: 0, hoodies: 0, patches: 0, cds: 0, vinyl: 0 } }
+    )
+    assert.ok(Number.isFinite(result.revenue))
+    assert.ok(result.revenue >= 0)
+    for (const [key, sold] of Object.entries(result.soldItems)) {
+      assert.ok(Number.isInteger(sold), `soldItems.${key}`)
+      assert.ok(sold >= 0)
+    }
+  })
+
+  await t.test(
+    'calculateGigFinancials stays finite on chained hostile input',
+    () => {
+      const report = calculateGigFinancials({
+        gigData: buildGigData({
+          capacity: NaN,
+          price: Infinity,
+          pay: NaN,
+          dist: -Infinity
+        }),
+        performanceScore: NaN,
+        modifiers: buildModifiers(),
+        bandInventory: buildInventory(),
+        playerState: { fame: NaN },
+        gigStats: {
+          misses: NaN,
+          perfectHits: Infinity,
+          maxCombo: NaN,
+          peakHype: Infinity
+        }
+      })
+      assert.ok(Number.isFinite(report.income.total), 'income.total')
+      assert.ok(Number.isFinite(report.expenses.total), 'expenses.total')
+      assert.ok(Number.isFinite(report.net), 'net')
+      for (const item of [
+        ...report.income.breakdown,
+        ...report.expenses.breakdown
+      ]) {
+        assert.ok(
+          Number.isFinite(item.value),
+          `breakdown value for ${item.labelKey}`
+        )
+      }
+    }
+  )
+
+  await t.test('calculateGuaranteedDailyCost stays finite', () => {
+    for (const fameLevel of HOSTILE) {
+      const cost = calculateGuaranteedDailyCost(
+        { fameLevel },
+        { members: [1, 2, 3] },
+        { youtube: fameLevel }
+      )
+      assert.ok(Number.isFinite(cost), `fameLevel ${fameLevel}`)
+    }
+  })
+
+  await t.test('calculateTravelExpenses stays finite and non-negative', () => {
+    for (const coord of HOSTILE) {
+      const result = calculateTravelExpenses({ x: coord, y: coord })
+      assert.ok(Number.isFinite(result.dist), `dist for ${coord}`)
+      assert.ok(Number.isFinite(result.fuelLiters))
+      assert.ok(Number.isFinite(result.totalCost))
+      assert.ok(result.dist >= 0)
+      assert.ok(result.fuelLiters >= 0)
+      assert.ok(result.totalCost >= 0)
+    }
+  })
+
+  await t.test('shouldTriggerBankruptcy throws on non-finite money', () => {
+    // `null` coerces to `0` through `Number()` and is therefore accepted.
+    for (const newMoney of [NaN, Infinity, -Infinity, 'broke', {}, undefined]) {
+      assert.throws(
+        () => shouldTriggerBankruptcy(newMoney, 0, 0),
+        TypeError,
+        `newMoney ${String(newMoney)}`
+      )
+    }
   })
 })
 

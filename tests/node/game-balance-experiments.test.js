@@ -480,6 +480,83 @@ test('canonical repeat demand adjustment is immutable, bounded, regional, and sa
   )
 })
 
+test('repeat demand adjustment normalizes a hostile net on every return path', () => {
+  const tuning = resolveBalanceTuning({
+    touring: {
+      repeatGigWindowDays: 5,
+      repeatDemandStartDay: 20,
+      repeatDemandPenaltyPerGig: 0.1,
+      maxRepeatDemandPenalty: 0.4
+    }
+  })
+  const buildFinancials = net => ({
+    income: { total: 100, breakdown: [] },
+    expenses: { total: 90, breakdown: [] },
+    net
+  })
+
+  // Each context exercises a different return path: the tuning/day early
+  // return, the `demandCost <= 0` early return, and the adjusted return.
+  const contexts = [
+    { label: 'before the start day', day: 20, regionalGigHistory: {} },
+    { label: 'no recent gigs', day: 21, regionalGigHistory: {} },
+    {
+      label: 'with recent gigs',
+      day: 21,
+      regionalGigHistory: { berlin: [16, 17, 18, 19, 20] }
+    }
+  ]
+
+  for (const net of [NaN, Infinity, -Infinity, -0]) {
+    for (const { label, day, regionalGigHistory } of contexts) {
+      const result = applyRepeatDemandAdjustment(buildFinancials(net), {
+        day,
+        regionId: 'berlin',
+        regionalGigHistory,
+        tuning
+      })
+
+      assert.equal(
+        Number.isFinite(result.net),
+        true,
+        `net stayed non-finite for ${net} ${label}`
+      )
+      assert.equal(
+        result.net >= 0,
+        true,
+        `net went negative for ${net} ${label}`
+      )
+      assert.equal(
+        Object.is(result.net, -0),
+        false,
+        `net stayed -0 for ${net} ${label}`
+      )
+      assert.equal(
+        Number.isFinite(result.expenses.total),
+        true,
+        `expenses.total went non-finite for ${net} ${label}`
+      )
+    }
+  }
+
+  // Every hostile net above normalizes to 0, which makes demandCost 0 and takes
+  // an early return — so the adjusted-result path needs a positive finite net to
+  // be reached at all.
+  const adjusted = applyRepeatDemandAdjustment(buildFinancials(10), {
+    day: 21,
+    regionId: 'berlin',
+    regionalGigHistory: { berlin: [16, 17, 18, 19, 20] },
+    tuning
+  })
+  assert.equal(adjusted.net < 10, true, 'adjusted net must be reduced')
+  assert.equal(adjusted.net >= 0, true)
+  assert.equal(adjusted.expenses.total > 90, true)
+  assert.equal(
+    adjusted.expenses.breakdown.at(-1).labelKey,
+    'economy:gigExpenses.demandSaturation.label'
+  )
+})
+
 test('resolveBalanceTuning applies partial overrides without mutating defaults', () => {
   const before = structuredClone(DEFAULT_BALANCE_TUNING)
   const resolved = resolveBalanceTuning({

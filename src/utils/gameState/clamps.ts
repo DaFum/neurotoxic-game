@@ -264,5 +264,9 @@ export const toBoundedNonNegativeInteger = (
 ): number => {
   if (typeof value !== 'number' || !Number.isFinite(value) || value < 0)
     return 0
-  return Math.min(Math.floor(value), Math.floor(max))
+  // `-0` passes `value < 0` and survives `Math.floor`/`Math.min` as `-0`, which
+  // renders with a leading minus and flips `signDisplay`. Normalize it here so
+  // the sanitizer's output is genuinely non-negative.
+  const bounded = Math.min(Math.floor(value), Math.floor(max))
+  return bounded === 0 ? 0 : bounded
 }

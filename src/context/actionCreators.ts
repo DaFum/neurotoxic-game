@@ -83,9 +83,17 @@ const sanitizeNonNegativePayload = <
       Number.isFinite(numeric) ? numeric : 0
     ) as T[typeof key]
   }
-  sanitized.successToast = payload.successToast
-    ? ({ ...payload.successToast, id: getSafeUUID() } as T['successToast'])
-    : undefined
+  // Omit the key rather than assigning `undefined`: an explicit `undefined`
+  // member is dropped by `JSON.stringify`, so the payload would not survive a
+  // serialization round-trip unchanged.
+  if (payload.successToast) {
+    sanitized.successToast = {
+      ...payload.successToast,
+      id: getSafeUUID()
+    } as T['successToast']
+  } else {
+    delete sanitized.successToast
+  }
   return sanitized
 }
 

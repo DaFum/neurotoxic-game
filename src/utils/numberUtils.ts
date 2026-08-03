@@ -63,6 +63,11 @@ export const formatSignedFinancialAmount = (
  * @param language - BCP 47 language tag used by `Intl.NumberFormat`.
  * @param signDisplay - Intl sign display policy. Defaults to `'auto'`.
  * @returns Locale-formatted euro currency string.
+ *
+ * @remarks
+ * `-0` is normalized to `+0` before formatting. `Intl.NumberFormat` renders it
+ * with a leading minus, so a zero expense coming through
+ * {@link formatSignedFinancialAmount} would otherwise read as `-€0`.
  */
 export const formatCurrency = (
   value: number,
@@ -75,5 +80,5 @@ export const formatCurrency = (
     signDisplay,
     maximumFractionDigits: 0
   })
-  return formatter.format(value)
+  return formatter.format(value === 0 ? 0 : value)
 }

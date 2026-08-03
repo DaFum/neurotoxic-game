@@ -576,9 +576,11 @@ describe('Action Creators', () => {
         controversyGain: 10,
         harmonyCost: 5
       }
+      // `successToast` is omitted rather than set to `undefined` so the payload
+      // survives a JSON round-trip unchanged.
       assert.deepStrictEqual(createPirateBroadcastAction(payload), {
         type: ActionTypes.PIRATE_BROADCAST,
-        payload: { ...payload, successToast: undefined }
+        payload: { ...payload }
       })
     })
 

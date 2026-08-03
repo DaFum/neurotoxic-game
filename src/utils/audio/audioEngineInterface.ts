@@ -35,7 +35,10 @@ export interface StartGigParams {
  * `AudioContext`.
  *
  * `getGigTimeMs()` remains the only source of gameplay timing — the injected
- * `IClock` covers timestamps and cooldowns, never gig timing.
+ * `IClock` covers timestamps and cooldowns, never gig timing. `getGigTimeMs()`
+ * must stay within `GIG_CLOCK_DRIFT_TOLERANCE_MS` (see `./constants.ts`) of the
+ * expected timeline; `tests/node/audioEngineGigClock.test.js` is the contract
+ * test.
  */
 export interface IAudioEngine {
   /** Elapsed gig time in ms, read from the raw audio context. */

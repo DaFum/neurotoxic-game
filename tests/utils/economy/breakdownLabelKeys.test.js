@@ -7,8 +7,26 @@ import {
   buildMerchSalesLabelKey,
   isRegisteredBreakdownLabelKey
 } from '../../../src/utils/economy/breakdownLabelKeys'
+import { MERCH_PROFILES } from '../../../src/data/merch'
 
 const SOURCE_ROOTS = ['src/utils/economy', 'src/utils/postGig']
+
+const LOCALES = ['en', 'de']
+const ECONOMY_NAMESPACE_PREFIX = 'economy:'
+
+const loadEconomyBundle = locale =>
+  JSON.parse(readFileSync(`public/locales/${locale}/economy.json`, 'utf8'))
+
+// Locale bundles are flat: the dotted path after the namespace is one literal
+// key. An empty string counts as missing — it renders as a blank line.
+const resolvesToNonEmptyString = (bundle, labelKey) => {
+  const flatKey = labelKey.slice(ECONOMY_NAMESPACE_PREFIX.length)
+  return (
+    Object.hasOwn(bundle, flatKey) &&
+    typeof bundle[flatKey] === 'string' &&
+    bundle[flatKey].length > 0
+  )
+}
 
 const listFiles = dir => {
   const entries = []
@@ -91,15 +109,31 @@ describe('BREAKDOWN_LABEL_KEYS', () => {
   })
 
   it('resolves every registry entry in both shipped locales', () => {
-    for (const locale of ['en', 'de']) {
-      const bundle = JSON.parse(
-        readFileSync(`public/locales/${locale}/economy.json`, 'utf8')
+    for (const key of Object.values(BREAKDOWN_LABEL_KEYS)) {
+      // A key aimed at another namespace would silently pass a lookup against
+      // economy.json, so the prefix is asserted before it is stripped.
+      expect(key.startsWith(ECONOMY_NAMESPACE_PREFIX), key).toBe(true)
+    }
+
+    for (const locale of LOCALES) {
+      const bundle = loadEconomyBundle(locale)
+      const missing = Object.values(BREAKDOWN_LABEL_KEYS).filter(
+        key => !resolvesToNonEmptyString(bundle, key)
       )
-      // Locale bundles are flat: the dotted path is one literal key.
-      const missing = Object.values(BREAKDOWN_LABEL_KEYS).filter(key => {
-        const flatKey = key.replace(/^economy:/, '')
-        return typeof bundle[flatKey] !== 'string'
-      })
+
+      expect(missing, `${locale}/economy.json`).toEqual([])
+    }
+  })
+
+  it('resolves every real merch item label in both shipped locales', () => {
+    const merchIds = Object.keys(MERCH_PROFILES)
+    expect(merchIds.length).toBeGreaterThan(0)
+
+    for (const locale of LOCALES) {
+      const bundle = loadEconomyBundle(locale)
+      const missing = merchIds
+        .map(itemKey => buildMerchSalesLabelKey(itemKey))
+        .filter(key => !resolvesToNonEmptyString(bundle, key))
 
       expect(missing, `${locale}/economy.json`).toEqual([])
     }

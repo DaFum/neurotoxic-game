@@ -1,6 +1,7 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
+import { withAudioContext } from './context'
 import {
   pauseGigPlayback,
   resumeGigPlayback,
@@ -77,11 +78,23 @@ export async function pauseAudio(): Promise<void> {
  */
 export async function resumeAudio(): Promise<boolean> {
   try {
-    if (Tone.getTransport().state === 'paused') {
-      await Tone.getTransport().start()
-    }
+    // Guarded: a resume triggered while the context is still suspended would
+    // otherwise start a transport that produces no sound. A refused gate is a
+    // resume failure — reporting success here would let callers clear the paused
+    // state and announce "resumed" while the transport stays silent.
+    const gateResult = await withAudioContext(async () => {
+      if (Tone.getTransport().state === 'paused') {
+        await Tone.getTransport().start()
+      }
+      return true
+    }, 'resumeAudio')
+    if (gateResult === null) return false
   } catch (err) {
+    // A transport that threw on start is not running, so reporting success here
+    // would let callers clear the paused state over silent audio — the same
+    // failure mode as a refused gate.
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
+    return false
   }
 
   try {

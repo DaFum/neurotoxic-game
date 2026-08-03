@@ -1,3 +1,4 @@
+import { finiteNumberOr } from '../../../gameState'
 import type { GigModifiers } from '../../../../types'
 import {
   BAR_RATE_VIP,
@@ -19,9 +20,12 @@ export const calculateBarCut = (
   modifiers = modifiers || {}
   const barRate = modifiers.guestlist ? BAR_RATE_VIP : BAR_RATE_NORMAL
   const barPercent = Math.round(barRate * 100)
+  // `Math.max(0, …)` alone lets NaN and Infinity through: NaN fails the
+  // comparison and Infinity wins it.
+  const safeTicketsSold = Math.max(0, finiteNumberOr(ticketsSold, 0))
   const barRevenue = Math.max(
     0,
-    Math.floor(ticketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
+    Math.floor(safeTicketsSold * AVG_SPEND_PER_PERSON_AT_BAR * barRate)
   )
   return {
     revenue: barRevenue,

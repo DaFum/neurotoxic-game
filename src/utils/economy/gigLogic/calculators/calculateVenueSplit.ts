@@ -23,7 +23,9 @@ export const calculateVenueSplit = (
         : 0
 
   if (splitRate > 0) {
-    const splitAmount = Math.floor(Math.max(0, ticketsRevenue) * splitRate)
+    // `Math.max(0, …)` alone lets NaN and Infinity through.
+    const safeRevenue = Math.max(0, finiteNumberOr(ticketsRevenue, 0))
+    const splitAmount = Math.floor(safeRevenue * splitRate)
     return {
       amount: splitAmount,
       expenseItem: {

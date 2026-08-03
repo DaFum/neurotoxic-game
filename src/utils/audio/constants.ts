@@ -49,3 +49,17 @@ export const CRASH_CONFIG = {
   resonance: 3000,
   octaves: 2.0
 }
+
+/**
+ * Maximum permitted drift between the gig clock and the expected timeline, in
+ * milliseconds.
+ *
+ * @remarks
+ * `getGigTimeMs()` is the mandated clock for all gameplay timing, so the rhythm
+ * game's hit windows are measured against it. This bounds how far the reported
+ * gig time may diverge from the timeline a caller computed itself — including
+ * across the re-anchor at a song boundary. It lives here rather than in
+ * `audioEngineInterface.ts` so a test can import the bound without pulling the
+ * Tone.js-backed engine hub in with it.
+ */
+export const GIG_CLOCK_DRIFT_TOLERANCE_MS = 10

@@ -2,7 +2,7 @@ import { calculateGigFinancials } from '../economy'
 import { BREAKDOWN_LABEL_KEYS } from '../economy/breakdownLabelKeys'
 import { generatePostOptions } from '../socialEngine'
 import { applyPostGigPerformancePenalty } from './performanceLogic'
-import { BALANCE_CONSTANTS } from '../gameState'
+import { BALANCE_CONSTANTS, finiteNumberOr } from '../gameState'
 import { getRegionKeyForLocation } from '../mapUtils'
 import {
   DEFAULT_BALANCE_TUNING,
@@ -26,13 +26,23 @@ export const applyRepeatDemandAdjustment = (
   financials: NonNullable<ReturnType<typeof calculateGigFinancials>>,
   context: RepeatDemandContext
 ) => {
+  // `Math.max(0, NaN)` is NaN, so an upstream non-finite net would otherwise
+  // turn the whole adjustment — and the expense line it writes — into NaN.
+  // Normalized before the early returns so no path hands a `NaN`/`Infinity`/`-0`
+  // net back to the caller; the identity check keeps the common case
+  // allocation-free.
+  const safeNet = finiteNumberOr(financials.net, 0)
+  const normalized = Object.is(financials.net, safeNet)
+    ? financials
+    : { ...financials, net: safeNet }
+
   const tuning = context.tuning ?? DEFAULT_BALANCE_TUNING
   if (
     tuning.touring.repeatDemandPenaltyPerGig <= 0 ||
     tuning.touring.maxRepeatDemandPenalty <= 0 ||
     context.day <= tuning.touring.repeatDemandStartDay
   ) {
-    return financials
+    return normalized
   }
   const recentGigCount = (
     context.regionalGigHistory?.[context.regionId] ?? []
@@ -48,10 +58,10 @@ export const applyRepeatDemandAdjustment = (
     tuning
   )
   const demandCost = Math.min(
-    Math.max(0, financials.net),
-    Math.round(Math.max(0, financials.net) * (1 - multiplier))
+    Math.max(0, safeNet),
+    Math.round(Math.max(0, safeNet) * (1 - multiplier))
   )
-  if (demandCost <= 0) return financials
+  if (demandCost <= 0) return normalized
   return {
     ...financials,
     expenses: {
@@ -65,7 +75,7 @@ export const applyRepeatDemandAdjustment = (
         }
       ]
     },
-    net: Math.max(0, financials.net - demandCost)
+    net: Math.max(0, safeNet - demandCost)
   }
 }
 

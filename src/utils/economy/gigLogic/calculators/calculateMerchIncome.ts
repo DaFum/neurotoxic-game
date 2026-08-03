@@ -117,6 +117,11 @@ export const calculateMerchIncome = (
     defaultPrice: number,
     elasticity: number
   ): number => {
+    // A zero or non-finite default price makes the elasticity ratio NaN or
+    // Infinity, which would propagate through `share` into revenue. No price
+    // signal is available in that case, so demand stays unmodified.
+    if (!Number.isFinite(price) || !Number.isFinite(defaultPrice)) return 1.0
+    if (defaultPrice === 0) return 1.0
     if (price > defaultPrice) {
       return Math.max(
         0.2,
