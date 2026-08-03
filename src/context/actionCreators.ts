@@ -694,7 +694,8 @@ export const createCompleteAmpCalibrationAction = (
   score: number,
   voidResonance: number = 0,
   purgesUsed: number = 0,
-  hijacksOverridden: number = 0
+  hijacksOverridden: number = 0,
+  feedbackLoopsDampened: number = 0
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.COMPLETE_AMP_CALIBRATION }
@@ -703,6 +704,7 @@ export const createCompleteAmpCalibrationAction = (
   const safeResonance = clampToNonNegativeInt(voidResonance)
   const safePurgesUsed = clampToNonNegativeInt(purgesUsed)
   const safeHijacksOverridden = clampToNonNegativeInt(hijacksOverridden)
+  const safeFeedbackLoopsDampened = clampToNonNegativeInt(feedbackLoopsDampened)
 
   return {
     type: ActionTypes.COMPLETE_AMP_CALIBRATION,
@@ -710,7 +712,8 @@ export const createCompleteAmpCalibrationAction = (
       score: safeScore,
       voidResonance: safeResonance,
       purgesUsed: safePurgesUsed,
-      hijacksOverridden: safeHijacksOverridden
+      hijacksOverridden: safeHijacksOverridden,
+      feedbackLoopsDampened: safeFeedbackLoopsDampened
     }
   }
 }

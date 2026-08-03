@@ -13,6 +13,7 @@ export interface AmpGameRefs {
   isOverdriveActiveRef: { current: boolean }
   isAnomalyActiveRef: { current: boolean }
   isHijackActiveRef: { current: boolean }
+  isFeedbackLoopActiveRef: { current: boolean }
   interferenceRef: { current: number }
   dialValueRef: { current: number }
   targetValueRef: { current: number }
@@ -33,6 +34,9 @@ export interface AmpGameSetters {
   setIsAnomalyActive: (value: boolean | ((prev: boolean) => boolean)) => void
   setTargetValue: (value: number | ((prev: number) => number)) => void
   setIsHijackActive: (value: boolean | ((prev: boolean) => boolean)) => void
+  setIsFeedbackLoopActive: (
+    value: boolean | ((prev: boolean) => boolean)
+  ) => void
   setScore: (value: number | ((prev: number) => number)) => void
   setVoidResonance: (value: number | ((prev: number) => number)) => void
 }

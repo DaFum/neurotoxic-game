@@ -85,7 +85,8 @@ export const calculateAmpCalibrationResult = (
   bandState: Pick<BandState, 'members'> | null | undefined,
   voidResonance: number = 0,
   purgesUsed: number = 0,
-  hijacksOverridden: number = 0
+  hijacksOverridden: number = 0,
+  feedbackLoopsDampened: number = 0
 ) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
@@ -128,6 +129,13 @@ export const calculateAmpCalibrationResult = (
   )
   reward += safeHijacksOverridden * 10
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
+
+  // Kranker Schrank Feedback Loop bonuses
+  const safeFeedbackLoopsDampened = toBoundedNonNegativeInteger(
+    feedbackLoopsDampened,
+    100
+  )
+  reward += safeFeedbackLoopsDampened * 20
 
   return { success, stress, reward }
 }
