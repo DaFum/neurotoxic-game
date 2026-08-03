@@ -172,7 +172,9 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
       if (typeof eff.value === 'number' && eff.value > 0) {
         const currentDay = finiteNumberOr(gameState?.player?.day, 0)
-        const expiryDay = currentDay + eff.value
+        // `isOnCooldown` only honors a whole-day expiry suffix, so a fractional
+        // persisted day must not leak into the entry it would then reject.
+        const expiryDay = Math.floor(currentDay + eff.value)
         delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
       } else {
         delta.flags.addCooldown = eff.eventId

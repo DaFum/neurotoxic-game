@@ -12,6 +12,7 @@ import {
   RELATIONSHIP_DEFAULT_SCORE
 } from './constants'
 import {
+  addClampedNonNegative,
   clampPlayerMoney,
   clampPlayerFame,
   clampBandHarmony,
@@ -64,7 +65,7 @@ export const applyInventoryItemDelta = (
 
   if (isFiniteNumber(deltaValue)) {
     const currentCount = finiteNumberOr(currentValue, 0)
-    return Math.max(0, currentCount + deltaValue)
+    return addClampedNonNegative(currentCount, deltaValue)
   }
 
   return currentValue
@@ -84,7 +85,7 @@ const calculateClampedStatDelta = (
   deltaValue: number
 ): number => {
   const baseValue = finiteNumberOr(currentValue, 0)
-  const nextValue = Math.max(0, baseValue + deltaValue)
+  const nextValue = addClampedNonNegative(baseValue, deltaValue)
   return nextValue - baseValue
 }
 
@@ -248,7 +249,7 @@ export const calculateAppliedDelta = (
         : 0
     if (scoreDelta !== 0) {
       const currentScore = Math.max(0, finiteNumberOr(state.player?.score, 0))
-      const nextScore = Math.max(0, currentScore + scoreDelta)
+      const nextScore = addClampedNonNegative(currentScore, scoreDelta)
       applied.score = nextScore - currentScore
     }
     if (delta.player.van) {
@@ -329,7 +330,7 @@ export const calculateAppliedDelta = (
 
         if (isFiniteNumber(qty)) {
           if (qty !== 0) {
-            const nextCount = Math.max(0, currentCount + qty)
+            const nextCount = addClampedNonNegative(currentCount, qty)
             const actualChange = nextCount - currentCount
             if (actualChange !== 0) {
               applied.band.inventory[itemId] = actualChange
@@ -407,7 +408,7 @@ export const calculateAppliedDelta = (
 
     if (isFiniteNumber(delta.band.luck)) {
       const currentLuck = finiteNumberOr(state.band?.luck, 0)
-      const nextLuck = Math.max(0, currentLuck + delta.band.luck)
+      const nextLuck = addClampedNonNegative(currentLuck, delta.band.luck)
       applied.band.luck = nextLuck - currentLuck
     }
 
@@ -561,7 +562,7 @@ export const applyEventDelta = (
       // Match calculateAppliedDelta: score is non-negative. A large negative
       // delta (e.g. -1000 from ego-breakup consequences) must not drive
       // player.score below 0.
-      nextPlayer.score = Math.max(0, boundedScore + scoreDelta)
+      nextPlayer.score = addClampedNonNegative(boundedScore, scoreDelta)
     }
 
     // Player Stats
@@ -886,7 +887,7 @@ export const applyEventDelta = (
     if (Number.isFinite(rawLuckDelta)) {
       const luckDelta = finiteNumberOr(rawLuckDelta, 0)
       const boundedLuck = Math.max(0, finiteNumberOr(nextBand.luck, 0))
-      nextBand.luck = Math.max(0, boundedLuck + luckDelta)
+      nextBand.luck = addClampedNonNegative(boundedLuck, luckDelta)
     }
     nextState.band = nextBand
   }
@@ -956,7 +957,7 @@ export const applyEventDelta = (
         }
       } else if (isFiniteNumber(value)) {
         const currentValue = finiteNumberOr(nextSocial[key], 0)
-        nextSocial[key] = Math.max(0, currentValue + value)
+        nextSocial[key] = addClampedNonNegative(currentValue, value)
       }
     }
     nextState.social = nextSocial
