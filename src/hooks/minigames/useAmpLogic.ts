@@ -30,6 +30,8 @@ function useAmpState() {
   // Kranker Schrank Signal Hijack
   const [isHijackActive, setIsHijackActive] = useState(false)
   const [hijacksOverridden, setHijacksOverridden] = useState(0)
+  const [isFeedbackLoopActive, setIsFeedbackLoopActive] = useState(false)
+  const [feedbackLoopsDampened, setFeedbackLoopsDampened] = useState(0)
 
   // Neurotoxic Signal Jamming
   const [interference, setInterference] = useState(0)
@@ -59,6 +61,10 @@ function useAmpState() {
     setIsHijackActive,
     hijacksOverridden,
     setHijacksOverridden,
+    isFeedbackLoopActive,
+    setIsFeedbackLoopActive,
+    feedbackLoopsDampened,
+    setFeedbackLoopsDampened,
     interference,
     setInterference
   }
@@ -218,6 +224,8 @@ export function useAmpLogic() {
     isAnomalyActive,
     isHijackActive,
     hijacksOverridden,
+    isFeedbackLoopActive,
+    feedbackLoopsDampened,
     interference
   } = ampState
   const {
@@ -233,6 +241,8 @@ export function useAmpLogic() {
     setIsAnomalyActive,
     setIsHijackActive,
     setHijacksOverridden,
+    setIsFeedbackLoopActive,
+    setFeedbackLoopsDampened,
     setInterference
   } = ampState
 
