@@ -5,18 +5,34 @@ import { getNextChassisTier } from '../../utils/assetConfig'
 import { AssetSlotActionList } from './AssetSlotActionList'
 import { Tooltip } from '../../ui/shared'
 
+/**
+ * Defines the configuration properties for the AssetSectionDeck component.
+ */
 interface AssetSectionDeckProps {
+  /** The long-term asset data model to display. */
   asset: LongTermAsset
+  /** The visual React node to render as the asset's hero image or graphic. */
   hero: ReactNode
+  /** The callback invoked when a specific asset slot is selected. */
   onSlotClick: (slotId: string) => void
+  /** The callback invoked when the repair action is triggered. */
   onRepair: () => void
+  /** The callback invoked when the upgrade action is triggered. */
   onUpgrade: () => void
+  /** The callback invoked when the sell action is triggered. */
   onSell: () => void
 }
 
 /**
- * Displays the shared asset-section hero/deck area.
- * @param props - Selected asset, hero renderer, slot-click handler, and chassis repair/upgrade/sell callbacks.
+ * Renders the shared hero and deck area for an asset section.
+ *
+ * @remarks
+ * This component visualizes the primary attributes of a long-term asset, including its condition,
+ * tier, and available actionable slots. It provides the interface for core asset lifecycle actions
+ * such as repair, upgrade, and sale.
+ *
+ * @param props - The component properties.
+ * @returns The rendered asset deck structure.
  */
 export const AssetSectionDeck = ({
   asset,
