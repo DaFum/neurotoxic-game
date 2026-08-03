@@ -94,8 +94,12 @@ export const updateFirstMatchingAssetCondition = (
   const assets = state.assets
   if (!assets?.length) return state
 
-  const byId = typeof match.assetId === 'string'
-  const byKind = match.assetId == null && typeof match.assetKind === 'string'
+  // Empty strings count as absent, matching `hasAssetTarget`: an effect that
+  // passed validation on its `assetKind` must not be silently skipped because
+  // it also carried an empty `assetId`.
+  const byId = typeof match.assetId === 'string' && match.assetId.length > 0
+  const byKind =
+    !byId && typeof match.assetKind === 'string' && match.assetKind.length > 0
   if (!byId && !byKind) return state
 
   const index = assets.findIndex(asset =>

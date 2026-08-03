@@ -1434,6 +1434,25 @@ test('QuestLifecycle', async t => {
       }
     })
 
+    await t.test('refuses a bare id that no registry definition backs', () => {
+      // A bare id carries no rules, so an unbacked one would occupy a quest
+      // slot forever: it can neither progress nor expire.
+      assert.deepEqual(
+        canAcceptQuest(
+          {
+            player: { day: 1 },
+            activeQuests: [],
+            activeStoryFlags: [],
+            completedQuestIds: [],
+            completedQuestScopes: [],
+            questCooldowns: []
+          },
+          'quest_typo_does_not_exist'
+        ),
+        { ok: false, reason: 'unknown' }
+      )
+    })
+
     await t.test(
       "perVenue quests scope to the gig node's canonical venue id",
       () => {

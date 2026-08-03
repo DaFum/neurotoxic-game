@@ -170,11 +170,15 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
     gameState: EngineGameState | null = null
   ) => {
     if (typeof eff.eventId === 'string' && eff.eventId.length > 0) {
-      if (typeof eff.value === 'number' && eff.value > 0) {
+      // `typeof value === 'number'` accepts NaN and Infinity, which would build
+      // an entry (`id:Infinity`) that every cooldown reader then rejects as
+      // malformed — a cooldown that never applies and never expires.
+      const cooldownDays = finiteNumberOr(eff.value, 0)
+      if (cooldownDays > 0) {
         const currentDay = finiteNumberOr(gameState?.player?.day, 0)
         // `isOnCooldown` only honors a whole-day expiry suffix, so a fractional
         // persisted day must not leak into the entry it would then reject.
-        const expiryDay = Math.floor(currentDay + eff.value)
+        const expiryDay = Math.floor(currentDay + cooldownDays)
         delta.flags.addCooldown = `${eff.eventId}:${expiryDay}`
       } else {
         delta.flags.addCooldown = eff.eventId

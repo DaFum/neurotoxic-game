@@ -247,29 +247,30 @@ export function listStorageKeys(
  * @param adapter - Storage backend; defaults to the production singleton.
  *
  * @remarks
- * The adapter cannot report a refused removal, so the persisted value is
- * re-read afterwards: a survivor means removal failed and the key is
- * tombstoned, keeping the deleted value hidden from readers instead of letting
- * a stale pre-degradation save resurface.
+ * The adapter cannot report a refused removal, so the key is tombstoned up
+ * front and the tombstone is lifted only once a *readable* store confirms the
+ * value is gone. `adapter.get` returns `null` both for an absent key and for an
+ * unreadable store, so treating a bare `null` as proof of deletion would drop
+ * the tombstone on exactly the failure it exists for, letting a stale
+ * pre-degradation save resurface once storage recovers.
  */
 export function removeStorageItem(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): void {
-  fallbackStores.get(adapter)?.remove(key)
-  adapter.remove(key)
-
-  if (adapter.get(key) === null) {
-    removedKeys.get(adapter)?.delete(key)
-    return
-  }
-
   let pendingRemovals = removedKeys.get(adapter)
   if (!pendingRemovals) {
     pendingRemovals = new Set<string>()
     removedKeys.set(adapter, pendingRemovals)
   }
   pendingRemovals.add(key)
+
+  fallbackStores.get(adapter)?.remove(key)
+  adapter.remove(key)
+
+  lastReadFailed = false
+  const survivor = adapter.get(key)
+  if (!lastReadFailed && survivor === null) pendingRemovals.delete(key)
 }
 
 /**

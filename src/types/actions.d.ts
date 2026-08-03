@@ -137,6 +137,19 @@ export interface EventDeltaPayload extends EventDelta {
 }
 
 /**
+ * Payload for removing one queued event id.
+ *
+ * @remarks
+ * Omitting `eventId` pops the queue head, which is what draining an
+ * unplayable head needs. Passing the id of the event that was actually played
+ * removes that entry wherever it sits, so a head the engine skipped over does
+ * not leave the played entry queued for a replay.
+ */
+export interface PopPendingEventPayload {
+  eventId?: string
+}
+
+/**
  * Payload for spawning a rival band.
  */
 export interface SpawnRivalBandPayload {

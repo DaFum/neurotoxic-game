@@ -528,14 +528,19 @@ export const createApplyEventDeltaAction = (
 })
 
 /**
- * Advances the pending-event queue by removing its head entry.
+ * Removes one entry from the pending-event queue.
+ *
+ * @param eventId - Id of the event that was played. Omit to drop the head,
+ * which is what draining an unplayable head needs. Selection may skip over an
+ * ineligible head, so the played event is not always the head — removing it by
+ * id keeps it from staying queued for a replay.
  */
-export const createPopPendingEventAction = (): Extract<
-  GameAction,
-  { type: typeof ActionTypes.POP_PENDING_EVENT }
-> => ({
-  type: ActionTypes.POP_PENDING_EVENT
-})
+export const createPopPendingEventAction = (
+  eventId?: string
+): Extract<GameAction, { type: typeof ActionTypes.POP_PENDING_EVENT }> =>
+  typeof eventId === 'string' && eventId.length > 0
+    ? { type: ActionTypes.POP_PENDING_EVENT, payload: { eventId } }
+    : { type: ActionTypes.POP_PENDING_EVENT }
 
 /**
  * Requests consumption of one inventory item by id.

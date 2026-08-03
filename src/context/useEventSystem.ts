@@ -198,9 +198,9 @@ export function useEventSystem({
         if ((currentState.player?.eventsTriggeredToday ?? 0) >= 2) return false
       }
 
-      // Drain orphaned queue heads: an id that exists in no event pool is
-      // never returned by selection and would block every later pending
-      // event (the queue only pops when the head is actually played).
+      // Drain orphaned queue heads: an id that exists in no event pool can
+      // never be selected, and while selection now scans past it, leaving it
+      // queued would keep it at index 0 for the rest of the run.
       const pendingHead = currentState.pendingEvents?.[0]
       if (
         typeof pendingHead === 'string' &&
@@ -214,10 +214,8 @@ export function useEventSystem({
           )
           dispatch(createPopPendingEventAction())
         }
-        // Stop here: selection against the stale snapshot could play a
-        // pending-gated event from position [1] without popping it (the
-        // pop-on-played check compares against the old head), replaying it
-        // on the next trigger. The caller retries once the queue is drained.
+        // Stop here rather than selecting against the stale snapshot: the
+        // caller retries once the queue is drained.
         return false
       }
 
@@ -241,11 +239,13 @@ export function useEventSystem({
         )
       }
 
+      // Selection may skip an ineligible head, so the played event is not
+      // necessarily the head — remove it by id wherever it sits.
       if (
         typeof processedEventId === 'string' &&
-        currentState.pendingEvents[0] === processedEventId
+        currentState.pendingEvents.includes(processedEventId)
       ) {
-        dispatch(createPopPendingEventAction())
+        dispatch(createPopPendingEventAction(processedEventId))
       }
       return true
     },

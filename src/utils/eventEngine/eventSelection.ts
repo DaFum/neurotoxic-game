@@ -147,21 +147,26 @@ const selectEvent = (
 
   // 1. Pending Events (Highest Priority)
   //
-  // Priority means skipping the chance roll, not the eligibility rules: the
-  // queue head still has to clear its cooldown and its condition, and its text
-  // is template-resolved like any other selected event. Returning it unchecked
-  // let a stale or duplicated queue entry replay a one-shot event whose
+  // Priority means skipping the chance roll, not the eligibility rules: a queued
+  // event still has to clear its cooldown and its condition, and its text is
+  // template-resolved like any other selected event. Returning the head
+  // unchecked let a stale or duplicated entry replay a one-shot event whose
   // condition (`consequences_comeback_album` guards on COMEBACK_TRIGGERED) says
-  // it is already done. The authored trigger point is deliberately NOT enforced
-  // here: the queue only pops when its head is played, so an entry waiting for
-  // its own trigger would hold up everything behind it.
-  if (pendingEvents.length > 0) {
-    const nextEventId = pendingEvents[0]
-    const pendingEvent =
-      typeof nextEventId === 'string'
-        ? getEventMapForPool(pool)[nextEventId]
-        : undefined
-    if (pendingEvent && nextEventId && !cooldownsSet.has(nextEventId)) {
+  // it is already done.
+  //
+  // The queue is scanned in order rather than head-only: an entry that is
+  // ineligible right now (or belongs to another pool) must not hold up the
+  // entries behind it. `POP_PENDING_EVENT` removes the played id wherever it
+  // sits, so skipping ahead cannot leave a played event queued.
+  //
+  // The authored trigger point is deliberately NOT enforced here — a queued
+  // event is a beat to surface at the next opportunity, not at one trigger.
+  const eventsById = pendingEvents.length > 0 ? getEventMapForPool(pool) : null
+  if (eventsById) {
+    for (const pendingId of pendingEvents) {
+      if (!pendingId || cooldownsSet.has(pendingId)) continue
+      const pendingEvent = eventsById[pendingId]
+      if (!pendingEvent) continue
       const processed = pendingEvent.condition
         ? processEvent(pendingEvent, optimizedState)
         : { event: pendingEvent, contextvars: {} }

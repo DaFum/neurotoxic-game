@@ -236,6 +236,21 @@ export const checkSoftlock = (
   const dailyObligations = finiteNumberOr(context.dailyObligations, 0)
   const assetModifiers = context.assetModifiers
 
+  // The travel gate (`checkTravelPrerequisites`) admits every START node
+  // regardless of visibility or connectivity, and the map surfaces it as
+  // reachable. Generated connections only point one layer forward, so the
+  // return trip to HQ is normally not an outgoing neighbor — scanning
+  // connections alone would call an affordable HQ return "stranded".
+  // Collected once: the reachability check below runs per escape scenario
+  // (blood bank, refuel, each asset-sale combination) and `nodes` is fixed.
+  const startNodes: GameNode[] = []
+  for (const nodeId in nodes) {
+    if (!Object.hasOwn(nodes, nodeId)) continue
+    if (nodeId === player.currentNodeId) continue
+    const node = nodes[nodeId]
+    if (node?.type === 'START') startNodes.push(node)
+  }
+
   const checkReachabilityWithMoneyAndFuel = (
     fuel: number,
     money: number,
@@ -288,17 +303,8 @@ export const checkSoftlock = (
       }
     }
 
-    // The travel gate (`checkTravelPrerequisites`) admits every START node
-    // regardless of visibility or connectivity, and the map surfaces it as
-    // reachable. Generated connections only point one layer forward, so the
-    // return trip to HQ is normally not an outgoing neighbor — scanning
-    // connections alone would call an affordable HQ return "stranded".
-    for (const nodeId in nodes) {
-      if (!Object.hasOwn(nodes, nodeId)) continue
-      if (nodeId === player.currentNodeId) continue
-      const n = nodes[nodeId]
-      if (n?.type !== 'START') continue
-      if (canReachNode(n)) return true
+    for (const startNode of startNodes) {
+      if (canReachNode(startNode)) return true
     }
 
     return false

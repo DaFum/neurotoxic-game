@@ -10,6 +10,7 @@ import {
   getQuestRewards
 } from '../../src/domain/questRewards'
 import { getQuestPenalties } from '../../src/domain/questPenalties'
+import { updateFirstMatchingAssetCondition } from '../../src/domain/questHelpers'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 import { canAcceptQuest } from '../../src/domain/questAcceptance'
@@ -462,6 +463,22 @@ test('questRewards - payload safety', async t => {
     assert.deepEqual(penalties, [
       { type: 'asset.damage', amount: 20, assetId: 'asset_1' }
     ])
+  })
+
+  await t.test('applies an asset effect that carries an empty assetId', () => {
+    // hasAssetTarget accepts this payload on its assetKind, so the selector
+    // must not treat the empty assetId as "select by id" and match nothing.
+    const state = {
+      assets: [{ id: 'asset_1', kind: 'tourbus_chassis', condition: 50 }]
+    }
+
+    const next = updateFirstMatchingAssetCondition(
+      state,
+      { assetId: '', assetKind: 'tourbus_chassis' },
+      20
+    )
+
+    assert.equal(next.assets[0].condition, 70)
   })
 
   await t.test('rejects cooldown penalties that expire immediately', () => {

@@ -5,6 +5,7 @@ import type { UpdateSocialPayload } from './social'
 import type { PurchaseItem } from './components'
 import type { AssetKind, RiskEventDescriptor } from './assets'
 import type { ActiveQuestState } from './quest'
+import type { PopPendingEventPayload } from './actions'
 
 /**
  * Relationship delta between two band members.
@@ -221,7 +222,7 @@ export type GameAction =
   | Action<ActionTypes['LOAD_GAME'], RawLoadedGame>
   | Action<ActionTypes['RESET_STATE'], ResetStatePayload>
   | Action<ActionTypes['APPLY_EVENT_DELTA'], EventDeltaPayload>
-  | Action<ActionTypes['POP_PENDING_EVENT']>
+  | Action<ActionTypes['POP_PENDING_EVENT'], PopPendingEventPayload>
   | Action<ActionTypes['CONSUME_ITEM'], string>
   | Action<
       ActionTypes['ADVANCE_DAY'],

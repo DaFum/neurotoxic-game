@@ -10,7 +10,12 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import { createStoryFlagAddedQuestEvent } from '../../quests/producers/storyQuestEvents'
 import { GAME_PHASES } from '../gameConstants'
-import type { EventDeltaPayload, GameEvent, GameState } from '../../types'
+import type {
+  EventDeltaPayload,
+  GameEvent,
+  GameState,
+  PopPendingEventPayload
+} from '../../types'
 
 /**
  * Sets or clears the active event.
@@ -85,13 +90,38 @@ export const handleApplyEventDelta = (
 }
 
 /**
- * Removes the first pending event id from the queue.
+ * Removes one pending event id from the queue.
  *
  * @param state - Current game state.
- * @returns State with the pending event queue advanced by one.
+ * @param payload - Optional id of the played event. Omit to drop the head.
+ * @returns State with that entry removed, or the original state when the id is
+ * not queued.
+ *
+ * @remarks
+ * Selection may skip an ineligible head and play a later entry, so the played
+ * event is not always at index 0. Only the first occurrence is removed: a
+ * duplicated id stays queued and is re-evaluated, which is what its own
+ * condition is there to decide.
  */
-export const handlePopPendingEvent = (state: GameState): GameState => {
-  return { ...state, pendingEvents: state.pendingEvents.slice(1) }
+export const handlePopPendingEvent = (
+  state: GameState,
+  payload?: PopPendingEventPayload
+): GameState => {
+  const eventId = payload?.eventId
+  if (typeof eventId !== 'string' || eventId.length === 0) {
+    return { ...state, pendingEvents: state.pendingEvents.slice(1) }
+  }
+
+  const index = state.pendingEvents.indexOf(eventId)
+  if (index === -1) return state
+
+  return {
+    ...state,
+    pendingEvents: [
+      ...state.pendingEvents.slice(0, index),
+      ...state.pendingEvents.slice(index + 1)
+    ]
+  }
 }
 
 /**

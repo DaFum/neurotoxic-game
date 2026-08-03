@@ -493,6 +493,26 @@ test('eventEngine.selectEvent still gates pending events on their rules', () => 
   assert.equal(selected.title, 'At Stendal')
 })
 
+test('eventEngine.selectEvent skips an ineligible queue head', () => {
+  const blocked = {
+    id: 'event_blocked',
+    trigger: 'pre_gig',
+    chance: 1.0,
+    condition: () => false
+  }
+  const queued = { id: 'event_queued', trigger: 'pre_gig', chance: 1.0 }
+
+  // The queue only pops when an entry is played, so an entry that can never
+  // become eligible must not hold up the ones behind it.
+  const selected = eventEngine.selectEvent(
+    [blocked, queued],
+    buildGameState({ pendingEvents: ['event_blocked', 'event_queued'] }),
+    'pre_gig'
+  )
+
+  assert.equal(selected.id, 'event_queued')
+})
+
 test('eventEngine.resolveChoice handles simple effects', () => {
   const option = {
     nextEventId: 'next_event',
