@@ -1,13 +1,13 @@
 # Dead-code triage — 2026-08-03
 
 Triage of the 78-finding knip baseline captured on 2026-08-02 (issue #2677).
-After this pass the report is down to **11 findings**, and `.ci/dead-code-budget.json`
+After this pass the report is down to **10 findings**, and `.ci/dead-code-budget.json`
 `max` is lowered to match.
 
 Everything left in the report is listed below with the reason it stays. There is
 no untriaged remainder.
 
-## Resolved (67)
+## Resolved (68)
 
 ### Broken script (1)
 
@@ -15,11 +15,13 @@ no untriaged remainder.
 that does not exist, and called `pickRandomSubset(arr, k)` without the required
 `random` argument — the script crashed on every run. Repointed at
 `src/utils/mapGenerator/mathUtils.ts` and given a deterministic LCG so the timings
-measure the subset picker rather than the RNG.
+measure the subset picker rather than the RNG. It had no registered entry point
+either, so `pnpm run bench:fastPaths` now runs it through `tsx` alongside the
+existing `bench:eventEngine`.
 
-### Config false positives (5)
+### Config false positives (6)
 
-Real usages knip's project globs cannot see. Added to `knip.json`:
+These are real usages that Knip's project globs cannot see. Fixed in `knip.json`:
 
 | Finding                                                         | Why it is used                                                                                                                                                                       |
 | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -27,6 +29,7 @@ Real usages knip's project globs cannot see. Added to `knip.json`:
 | `@iarna/toml`                                                   | Imported by `.claude/skills/skilltest/scripts/skilltest-lib.mjs` and its `.agents/` twin, outside `project`.                                                                         |
 | `@typescript-eslint/eslint-plugin`, `@typescript-eslint/parser` | Reached through the `typescript-eslint` meta-package in `eslint.config.js` (`tseslint.parser`, `tseslint.plugin`), never imported by name. Kept as pins.                             |
 | `markdownlint-cli2`                                             | Run as a binary by the `mega-lint-snapshot` skill's `MARKDOWN` target.                                                                                                               |
+| `benchmark`                                                     | Required by `tests/performance/filterCars.benchmark.cjs`. The `tests/**` entry glob omitted `cjs`, so Knip never parsed the file; the glob now includes it.                          |
 
 ### Dead barrel re-exports (20)
 
@@ -85,7 +88,7 @@ Notes:
 - `BreakdownLabelKey` (`src/utils/economy/breakdownLabelKeys.ts`) — derived type
   with no reference anywhere, including its own file.
 
-## Remaining (11) — intentional, keep
+## Remaining (10) — intentional, keep
 
 ### Deliberate exports (3)
 
@@ -104,18 +107,16 @@ Notes:
 `ORIGINAL_CONTROL_BALANCE_TUNING` explicitly as the control arm. Collapsing them
 would erase that distinction.
 
-### Unused dependencies (7)
+### Unused dependencies (6)
 
-`flatted`, `motion-dom`, `motion-utils` (`dependencies`); `benchmark`,
+`flatted`, `motion-dom`, `motion-utils` (`dependencies`);
 `eslint-plugin-react-refresh`, `rollup-plugin-visualizer`, `serialize-javascript`
 (`devDependencies`).
 
-No source, config, script, or skill references any of them —
-`eslint.config.js` does not register `react-refresh`, `vite.config.js` does not
-use `visualizer`, and `scripts/benchmark-fast-paths.cjs` uses `console.time`
-rather than the `benchmark` package. They look like transitive packages that were
-promoted to direct entries by accident.
+No source, config, script, or skill references any of them — `eslint.config.js`
+does not register `react-refresh` and `vite.config.js` does not use
+`visualizer`. They look like transitive packages that were promoted to direct
+entries by accident.
 
 Left in place deliberately: `AGENTS.md` requires dependency changes to be
-discussed first, and these are pinned. Removing all seven would take the report
-to 4. That is a follow-up decision, not part of this triage.
+discussed first, and these are pinned. Removing all six would take the report to 4. That is a follow-up decision, not part of this triage.

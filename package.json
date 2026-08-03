@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "bench:eventEngine": "node --import tsx tests/performance/eventEngine.bench.js",
+    "bench:fastPaths": "node --import tsx scripts/benchmark-fast-paths.cjs",
     "build": "vite build",
     "dev": "vite",
     "format": "prettier --write .",

@@ -5,7 +5,7 @@
     "api/**/*.js",
     "scripts/*.{mjs,cjs,js}",
     "e2e/**/*.{js,ts}",
-    "tests/**/*.{js,jsx,ts,tsx,mjs}",
+    "tests/**/*.{js,jsx,ts,tsx,mjs,cjs}",
     "*.config.{js,ts}",
     "vitest.config.node.js",
     "vitest.config.perf.js",

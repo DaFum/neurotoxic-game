@@ -1,6 +1,6 @@
 {
-  "max": 11,
+  "max": 10,
   "baselineDate": "2026-08-03",
   "scope": "knip findings across src/**, api/**, lib/**, scripts/** and package.json dependencies",
-  "note": "REPORT-ONLY. The 2026-08-02 baseline of 78 (issue #2677) was triaged down to 11 on 2026-08-03; docs/dead-code-triage.md carries the per-finding verdict. All 11 remaining are intentional: 3 deliberate exports, 1 deliberate duplicate export, and 7 unused pinned dependencies AGENTS.md requires be discussed before removal. Promotion to blocking is now a config change only: add `pnpm run deadcode:budget` as a required step in .github/workflows/test.yml."
+  "note": "REPORT-ONLY. The 2026-08-02 baseline of 78 (issue #2677) was triaged down to 10 on 2026-08-03; docs/dead-code-triage.md carries the per-finding verdict. All 10 remaining are intentional: 3 deliberate exports, 1 deliberate duplicate export, and 6 unused pinned dependencies AGENTS.md requires be discussed before removal. Promotion to blocking is now a config change only: add `pnpm run deadcode:budget` as a required step in .github/workflows/test.yml."
 }
