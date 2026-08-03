@@ -443,6 +443,56 @@ test('eventEngine.selectEvent prioritizes pending events', () => {
   assert.equal(selected.id, 'event_pending')
 })
 
+test('eventEngine.selectEvent still gates pending events on their rules', () => {
+  const guarded = {
+    id: 'event_guarded',
+    trigger: 'pre_gig',
+    chance: 1.0,
+    title: 'At {venue}',
+    condition: state => !state.activeStoryFlags?.has('already_done')
+  }
+  const pool = [guarded]
+
+  // Priority does not exempt the queue head from its own one-shot guard: a
+  // stale or duplicated queue entry must not replay a finished event.
+  assert.equal(
+    eventEngine.selectEvent(
+      pool,
+      buildGameState({
+        pendingEvents: ['event_guarded'],
+        activeStoryFlags: ['already_done']
+      }),
+      'pre_gig'
+    ),
+    null
+  )
+
+  // Nor from an active cooldown.
+  assert.equal(
+    eventEngine.selectEvent(
+      pool,
+      buildGameState({
+        pendingEvents: ['event_guarded'],
+        eventCooldowns: ['event_guarded:9']
+      }),
+      'pre_gig'
+    ),
+    null
+  )
+
+  // An eligible queue head is still returned, with its templates resolved.
+  const selected = eventEngine.selectEvent(
+    pool,
+    buildGameState({
+      pendingEvents: ['event_guarded'],
+      player: { day: 1, money: 100, fame: 50, time: 0, location: 'Stendal' }
+    }),
+    'pre_gig'
+  )
+  assert.equal(selected.id, 'event_guarded')
+  assert.equal(selected.title, 'At Stendal')
+})
+
 test('eventEngine.resolveChoice handles simple effects', () => {
   const option = {
     nextEventId: 'next_event',

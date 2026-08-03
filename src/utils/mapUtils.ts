@@ -253,40 +253,54 @@ export const checkSoftlock = (
         ? customContext.assetModifiers
         : assetModifiers
 
+    const canReachNode = (n: GameNode): boolean => {
+      const { fuelLiters, totalCost } = calculateTravelExpenses(
+        n,
+        currentNode,
+        {
+          ...playerStateForTravel,
+          money,
+          van: { ...playerStateForTravel.van, fuel }
+        },
+        bandStateForTravel,
+        activeAssetModifiers
+      )
+      // A neighbor the booking gate refuses (blacklist, regional ban,
+      // prove-yourself capacity cap) is not a real escape route.
+      const accessAllowed = context.isNodeAccessible?.(n) ?? true
+      return (
+        accessAllowed &&
+        fuel >= finiteNumberOr(fuelLiters, 0) &&
+        money >=
+          Math.max(
+            finiteNumberOr(totalCost, 0),
+            finiteNumberOr(totalCost, 0) + activeDailyObligations
+          )
+      )
+    }
+
     for (let i = 0; i < connections.length; i++) {
       const c = connections[i]
       if (!isMapConnection(c)) continue
       if (c.from === player.currentNodeId && typeof c.to === 'string') {
         const n = nodes[c.to]
-        if (n) {
-          const { fuelLiters, totalCost } = calculateTravelExpenses(
-            n,
-            currentNode,
-            {
-              ...playerStateForTravel,
-              money,
-              van: { ...playerStateForTravel.van, fuel }
-            },
-            bandStateForTravel,
-            activeAssetModifiers
-          )
-          // A neighbor the booking gate refuses (blacklist, regional ban,
-          // prove-yourself capacity cap) is not a real escape route.
-          const accessAllowed = context.isNodeAccessible?.(n) ?? true
-          if (
-            accessAllowed &&
-            fuel >= finiteNumberOr(fuelLiters, 0) &&
-            money >=
-              Math.max(
-                finiteNumberOr(totalCost, 0),
-                finiteNumberOr(totalCost, 0) + activeDailyObligations
-              )
-          ) {
-            return true
-          }
-        }
+        if (n && canReachNode(n)) return true
       }
     }
+
+    // The travel gate (`checkTravelPrerequisites`) admits every START node
+    // regardless of visibility or connectivity, and the map surfaces it as
+    // reachable. Generated connections only point one layer forward, so the
+    // return trip to HQ is normally not an outgoing neighbor — scanning
+    // connections alone would call an affordable HQ return "stranded".
+    for (const nodeId in nodes) {
+      if (!Object.hasOwn(nodes, nodeId)) continue
+      if (nodeId === player.currentNodeId) continue
+      const n = nodes[nodeId]
+      if (n?.type !== 'START') continue
+      if (canReachNode(n)) return true
+    }
+
     return false
   }
 
