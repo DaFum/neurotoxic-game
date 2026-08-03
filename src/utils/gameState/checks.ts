@@ -90,8 +90,10 @@ const EXPIRY_DAY_PATTERN = /^\d+$/
  * @remarks
  * The whole suffix must be a day number: `parseInt` accepts a valid numeric
  * prefix, so a corrupted or hostile `event_id:999999junk` would otherwise
- * suppress the event until day 999999. Shared by every cooldown reader so the
- * grammar cannot drift between them.
+ * suppress the event until day 999999. Digits alone are not enough either — a
+ * 400-digit suffix converts to `Infinity`, which every `currentDay < expiry`
+ * reader would treat as a permanent cooldown. Shared by every cooldown reader
+ * so the grammar cannot drift between them.
  */
 export const parseCooldownEntry = (
   entry: unknown
@@ -107,7 +109,9 @@ export const parseCooldownEntry = (
   if (!expiry) return { key, expiryDay: null }
 
   if (!EXPIRY_DAY_PATTERN.test(expiry)) return null
-  return { key, expiryDay: Number(expiry) }
+  const expiryDay = Number(expiry)
+  if (!Number.isFinite(expiryDay)) return null
+  return { key, expiryDay }
 }
 
 /**

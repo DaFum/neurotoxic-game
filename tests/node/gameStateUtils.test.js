@@ -64,6 +64,9 @@ test('isOnCooldown requires a whole-day expiry suffix', () => {
   assert.equal(onCooldown('event_id:999999:junk'), false)
   assert.equal(onCooldown('event_id: 40'), false)
   assert.equal(onCooldown('event_id:-40'), false)
+  // Digits alone are not enough: a 400-digit suffix converts to Infinity,
+  // which `currentDay < expiry` would read as a permanent cooldown.
+  assert.equal(onCooldown(`event_id:${'9'.repeat(400)}`), false)
   // No suffix at all still means a permanent (legacy) cooldown.
   assert.equal(onCooldown('event_id'), true)
 })
