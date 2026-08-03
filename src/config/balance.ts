@@ -17,7 +17,7 @@
  * Draw, bar-spend, and promo tuning that decides how many people show up and
  * what they spend.
  */
-export interface AttendanceConfig {
+interface AttendanceConfig {
   /** Fraction of venue capacity a no-fame band draws. */
   readonly baseDrawRatio: number
   /** Divisor turning fame into extra capacity draw. */
@@ -37,7 +37,7 @@ export interface AttendanceConfig {
 /**
  * Multipliers and rates that take money away from the gross payout.
  */
-export interface PenaltiesConfig {
+interface PenaltiesConfig {
   /** Global multiplier applied to gig payouts. */
   readonly globalPayoutNerf: number
   /** Maximum fame-scaled management cut. */
@@ -55,7 +55,7 @@ export interface PenaltiesConfig {
 /**
  * Pre-gig modifier prices, shared by the PreGig preview and PostGig expenses.
  */
-export interface ModifiersConfig {
+interface ModifiersConfig {
   readonly catering: number
   readonly promo: number
   readonly merch: number
@@ -66,7 +66,7 @@ export interface ModifiersConfig {
 /**
  * Hard ceilings applied after every other term.
  */
-export interface CapsConfig {
+interface CapsConfig {
   /** Maximum gig net before overage is surfaced as an expense. */
   readonly maxGigNet: number
   /** Maximum cash logistics expense contribution. */

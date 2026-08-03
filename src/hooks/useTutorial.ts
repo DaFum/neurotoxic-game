@@ -6,9 +6,9 @@ import type { GamePhase } from '../types'
 import { finiteNumberOr } from '../utils/gameState'
 
 /** Tutorial step ids in progression order. */
-export const TUTORIAL_STEPS = [0, 1, 2, 3]
+const TUTORIAL_STEPS = [0, 1, 2, 3]
 /** Total number of tutorial steps. */
-export const TOTAL_STEPS = TUTORIAL_STEPS.length
+const TOTAL_STEPS = TUTORIAL_STEPS.length
 
 interface TutorialConfig {
   validScenes: GamePhase[]

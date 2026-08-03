@@ -9,7 +9,7 @@ import type { MapNodeType } from '../types'
  * the exported types are what {@link validateGeneratedMap} narrows to, so
  * there is no separate schema to drift from the declared type.
  */
-export interface ValidatedMapNode {
+interface ValidatedMapNode {
   id: string
   layer: number
   type: MapNodeType
@@ -22,7 +22,7 @@ export interface ValidatedMapNode {
 /**
  * Connection between two nodes in a validated map.
  */
-export interface ValidatedMapConnection {
+interface ValidatedMapConnection {
   from: string
   to: string
 }
@@ -30,7 +30,7 @@ export interface ValidatedMapConnection {
 /**
  * Generated map that satisfies the structural and diversity contract.
  */
-export interface ValidatedMap {
+interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
 }

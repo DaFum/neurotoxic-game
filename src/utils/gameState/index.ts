@@ -7,11 +7,8 @@ export * from './delta'
 export * from './setlist'
 export { finiteNumberOr, isFiniteNumber } from '../finiteNumber'
 export {
-  FORBIDDEN_KEYS,
   isForbiddenKey,
   isLooseRecord,
-  isPlainRecord,
-  copySafePrimitiveEntries,
   copySafePrimitiveObject,
   sanitizeStringArray
 } from '../objectUtils'

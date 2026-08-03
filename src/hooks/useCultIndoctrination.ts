@@ -4,7 +4,7 @@ import type { ZealotryActionDescriptor } from '../utils/dailySocialActionUtils'
 import { useZealotryAction } from './useZealotryAction'
 
 /** Tuning values for the cult indoctrination social action. */
-export const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
+const CULT_INDOCTRINATION_CONFIG: CultIndoctrinationConfig = {
   COST: 1000,
   FAME_GAIN: 500,
   ZEALOTRY_GAIN: 40,

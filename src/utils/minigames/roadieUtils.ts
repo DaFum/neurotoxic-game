@@ -27,7 +27,7 @@ export type RoadieTrafficCar = {
 /**
  * Traffic spawn timer and movement configuration for one roadie row.
  */
-export type RoadieSpawner = {
+type RoadieSpawner = {
   row: number
   timer: number
   rate: number

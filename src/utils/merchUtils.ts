@@ -10,7 +10,7 @@ export type HQItemDef =
 /**
  * Base merch carrying capacity before asset modifiers.
  */
-export const BASE_MERCH_CAPACITY = 100
+const BASE_MERCH_CAPACITY = 100
 
 /**
  * Calculates merch carrying capacity from a capacity bonus.

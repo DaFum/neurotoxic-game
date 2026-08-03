@@ -7,7 +7,7 @@ import { isQuestStateLike } from './questValidation'
 /**
  * A quest referenced by registry id alone.
  */
-export interface QuestIdPayload {
+interface QuestIdPayload {
   kind: 'id'
   id: string
 }
@@ -15,7 +15,7 @@ export interface QuestIdPayload {
 /**
  * A quest supplied inline as a full payload.
  */
-export interface InlineQuestPayload {
+interface InlineQuestPayload {
   kind: 'inline'
   id: string
   quest: QuestState
@@ -40,7 +40,7 @@ export type QuestPayload = QuestIdPayload | InlineQuestPayload
  * rule that failed, never the hostile value, so a crafted payload cannot write
  * itself into logs.
  */
-export type QuestPayloadRejection =
+type QuestPayloadRejection =
   /** Neither a non-empty string nor an object. */
   | 'not-a-quest'
   /** Missing, empty, or prototype-polluting `id`. */

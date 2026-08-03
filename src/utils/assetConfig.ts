@@ -40,7 +40,7 @@ export interface ChassisTierConfig {
 /**
  * Tier configuration map for one acquisition flavor.
  */
-export type ChassisFlavorConfig = Record<ChassisTier, ChassisTierConfig>
+type ChassisFlavorConfig = Record<ChassisTier, ChassisTierConfig>
 
 /**
  * Flavor configuration map for one asset kind.
@@ -122,7 +122,7 @@ export const FORECLOSURE_FAME_PENALTY = 10
  * `rollAssetRiskEvents`. We budget two rolls per asset (trigger + type) plus
  * a constant buffer for future tick stages (crowdfund jitter, etc.).
  */
-export const RNG_ROLLS_PER_ASSET = 2
+const RNG_ROLLS_PER_ASSET = 2
 
 /**
  * Maximum rolls consumed before daily checks complete: `calculateDailyUpdates`

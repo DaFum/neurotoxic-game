@@ -10,7 +10,7 @@ import { formatCurrency, formatNumber } from '../utils/numberUtils'
  * @remarks
  * Resolved by the caller so every `t()` call stays statically extractable.
  */
-export interface ZealotryActionModalLabels {
+interface ZealotryActionModalLabels {
   title: string
   description: string
   costLabel: string

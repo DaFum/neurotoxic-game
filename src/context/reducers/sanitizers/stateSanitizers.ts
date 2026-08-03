@@ -231,9 +231,7 @@ const sanitizeStashItem = (
  * @param value - The raw untrusted payload for the band inventory
  * @returns A fully sanitized and valid inventory object
  */
-export const sanitizeBandInventory = (
-  value: unknown
-): BandState['inventory'] => {
+const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   const sanitized: BandState['inventory'] = { ...DEFAULT_BAND_STATE.inventory }
   if (!isLooseRecord(value)) return sanitized
 
@@ -1406,9 +1404,7 @@ export const sanitizeSocial = (value: unknown): SocialState => {
  * @param value - The raw untrusted active event option payload
  * @returns A sanitized event option or null if the payload is invalid
  */
-export const sanitizeActiveEventOption = (
-  value: unknown
-): EventOption | null => {
+const sanitizeActiveEventOption = (value: unknown): EventOption | null => {
   if (!isLooseRecord(value)) return null
 
   const option: EventOption = {}

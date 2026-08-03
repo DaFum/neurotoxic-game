@@ -100,7 +100,7 @@ const matchesOfferCondition = (
  * @param questId - Identifier of the quest whose offer is being evaluated.
  * @returns True when the offer condition passes and the quest can be accepted.
  */
-export const canOfferQuest = (state: GameState, questId: string): boolean => {
+const canOfferQuest = (state: GameState, questId: string): boolean => {
   const definition = getQuestDefinition(questId)
   if (
     definition?.offer &&

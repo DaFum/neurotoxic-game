@@ -21,7 +21,7 @@ const INVALID_THRESHOLD_PROGRESS = Number.NaN
 /**
  * Legacy quest progress event shapes accepted for save and caller compatibility.
  */
-export type LegacyQuestProgressEvent =
+type LegacyQuestProgressEvent =
   | {
       type: 'gig_completed'
       score: number

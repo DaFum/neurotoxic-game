@@ -22,7 +22,7 @@ export const MAX_DROP_CHANCE = 0.5
  * Per-rarity bust chance when stopped by police during travel.
  * Common items are harmless; epic items are high-risk.
  */
-export const BUST_CHANCE_BY_RARITY = {
+const BUST_CHANCE_BY_RARITY = {
   common: 0,
   uncommon: 0.05,
   rare: 0.15,

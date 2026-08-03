@@ -63,12 +63,7 @@ type RhythmStateAction =
       payload: { level: number; active: boolean }
     }
 
-export type {
-  RhythmGameRefState,
-  RhythmLiveStats,
-  RhythmModifiers,
-  RhythmNote
-} from '../../types/rhythmGame'
+export type { RhythmGameRefState } from '../../types/rhythmGame'
 
 /**
  * Setter surface for rhythm UI state used by audio, scoring, and loop hooks.

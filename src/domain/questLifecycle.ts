@@ -1,5 +1,4 @@
-export { QUEST_SLOT_LIMITS, canAcceptQuest } from './questAcceptance'
-export type { CanAcceptQuestResult } from './questAcceptance'
+export { canAcceptQuest } from './questAcceptance'
 
 import { addQuest } from './questAdd'
 import { completeQuest } from './questComplete'

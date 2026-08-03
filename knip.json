@@ -5,7 +5,7 @@
     "api/**/*.js",
     "scripts/*.{mjs,cjs,js}",
     "e2e/**/*.{js,ts}",
-    "tests/**/*.{js,jsx,ts,tsx,mjs}",
+    "tests/**/*.{js,jsx,ts,tsx,mjs,cjs}",
     "*.config.{js,ts}",
     "vitest.config.node.js",
     "vitest.config.perf.js",
@@ -19,7 +19,14 @@
     "scripts/**/*.{mjs,cjs,js}"
   ],
   "ignore": ["src/types/**", "**/*.d.ts"],
-  "ignoreDependencies": ["@tailwindcss/postcss"],
+  "ignoreDependencies": [
+    "@tailwindcss/postcss",
+    "@iarna/toml",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "markdownlint-cli2"
+  ],
+  "ignoreBinaries": ["rg"],
   "vite": {
     "config": ["vite.config.js"]
   },

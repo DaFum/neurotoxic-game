@@ -3,7 +3,7 @@ import { isFiniteNumber } from './finiteNumber'
 /**
  * Narrows unknown values to string-keyed records.
  */
-export type RecordGuard = (value: unknown) => value is Record<string, unknown>
+type RecordGuard = (value: unknown) => value is Record<string, unknown>
 
 /**
  * Object keys that must be dropped when traversing untrusted payloads.

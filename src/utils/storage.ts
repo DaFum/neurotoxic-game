@@ -16,7 +16,7 @@ import type { IStorageAdapter, StorageFailureReporter } from './storageAdapter'
 /**
  * localStorage key for settings shared outside the active save file.
  */
-export const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
+const GLOBAL_SETTINGS_KEY = 'neurotoxic_global_settings'
 
 /**
  * Runs a storage operation through the shared retry and fallback wrapper.

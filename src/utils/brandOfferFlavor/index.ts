@@ -1,2 +1,2 @@
-export { generateBrandName, generateCampaignCodename } from './brandNames'
-export { type BuildBrandOfferContext, buildBrandOffer } from './buildOffer'
+export { generateBrandName } from './brandNames'
+export { buildBrandOffer } from './buildOffer'

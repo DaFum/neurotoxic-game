@@ -144,7 +144,7 @@ const LEGACY_UPGRADES = [
   }
 ]
 
-export const HQ_DUPLICATE_LEGACY_IDS = {
+const HQ_DUPLICATE_LEGACY_IDS = {
   van_suspension: 'hq_van_suspension',
   van_sound_system: 'hq_van_sound_system',
   van_storage: 'hq_van_storage',
