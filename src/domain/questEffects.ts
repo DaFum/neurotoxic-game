@@ -19,7 +19,11 @@ export const getCurrentVenueId = (state: GameState): string | undefined => {
   if (typeof nodeId !== 'string' || nodeId.length === 0) return undefined
   const node = state.gameMap?.nodes?.[nodeId]
   if (node?.type !== 'GIG') return undefined
-  const venueId = node.venue?.id ?? node.venueId ?? nodeId
+  // A map-node id is not a venue id. `canAcceptQuest` stamps this value as a
+  // perVenue quest's `scopeKey`, while venue producers emit the canonical
+  // `venueId` — falling back to the node id binds the quest to a scope no
+  // event can ever match.
+  const venueId = node.venue?.id ?? node.venueId
   return isValidReputationKey(venueId) ? venueId : undefined
 }
 

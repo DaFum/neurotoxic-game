@@ -122,13 +122,15 @@ test('addQuest', async t => {
   await t.test(
     'sets merged.scopeKey if canAcceptQuest returns a scopeKey',
     () => {
-      // quest_venue_residency requires perVenue repeat policy which generates a scopeKey based on currentNodeId
+      // quest_venue_residency has the perVenue repeat policy, so its scopeKey
+      // comes from the current gig node's canonical venue id — never the node
+      // id, which venue quest events cannot match.
       const state = {
-        player: { day: 1, currentNodeId: 'venue_a' },
+        player: { day: 1, currentNodeId: 'node_1_0' },
         activeQuests: [],
         gameMap: {
           nodes: {
-            venue_a: { id: 'venue_a', type: 'GIG' }
+            node_1_0: { id: 'node_1_0', type: 'GIG', venueId: 'venue_a' }
           }
         }
       }

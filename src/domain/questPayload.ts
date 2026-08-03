@@ -3,6 +3,7 @@ import { isForbiddenKey, isLooseRecord } from '../utils/gameState'
 import { hasForbiddenKeysDeep } from '../utils/objectUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
 import { isQuestStateLike } from './questValidation'
+import { getQuestDefinition } from '../data/questRegistry'
 
 /**
  * A quest referenced by registry id alone.
@@ -51,6 +52,8 @@ type QuestPayloadRejection =
   | 'invalid-deadline-offset'
   /** Failed the structural quest guard. */
   | 'malformed-quest'
+  /** Bare id that no registry definition backs. */
+  | 'unknown-id'
 
 /**
  * Result of narrowing a raw quest payload.
@@ -96,6 +99,11 @@ export const parseQuestPayload = (
     if (raw.length === 0 || isForbiddenKey(raw)) {
       return { ok: false, reason: 'invalid-id' }
     }
+    // The id variant is by definition a registry reference: it carries no
+    // rules, requirement, or deadline of its own, so an unbacked id (a typo, a
+    // removed quest) would be added as an inert quest that can neither progress
+    // nor expire while it holds a quest slot.
+    if (!getQuestDefinition(raw)) return { ok: false, reason: 'unknown-id' }
     return { ok: true, payload: { kind: 'id', id: raw } }
   }
 

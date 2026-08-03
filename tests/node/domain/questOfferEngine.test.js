@@ -12,7 +12,8 @@ test('QuestOfferEngine', async t => {
     questCooldowns: [],
     gameMap: {
       nodes: {
-        venue_a: { id: 'venue_a', type: 'GIG' },
+        // perVenue scopes come from the node's canonical venue id.
+        venue_a: { id: 'venue_a', type: 'GIG', venueId: 'stendal_adler' },
         city_a: { id: 'city_a', type: 'CITY' }
       }
     },

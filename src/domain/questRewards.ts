@@ -22,6 +22,7 @@ import {
 import { applyTraitUnlocks } from '../utils/traitUtils'
 import {
   getQuestToastName,
+  hasAssetTarget,
   updateFirstMatchingAssetCondition
 } from './questHelpers'
 import {
@@ -81,7 +82,8 @@ const isQuestReward = (value: unknown): value is QuestReward => {
       return (
         isFiniteNumber(value.amount) &&
         isOptionalString(value.assetId) &&
-        isOptionalString(value.assetKind)
+        isOptionalString(value.assetKind) &&
+        hasAssetTarget(value)
       )
     case 'item.add':
       // The id becomes a computed inventory key, so it must clear the same

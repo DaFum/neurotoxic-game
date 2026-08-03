@@ -102,8 +102,11 @@ const matchesOfferCondition = (
  */
 const canOfferQuest = (state: GameState, questId: string): boolean => {
   const definition = getQuestDefinition(questId)
+  // Offers are registry-driven: an id no definition backs has no offer
+  // condition, no rules, and nothing to accept.
+  if (!definition) return false
   if (
-    definition?.offer &&
+    definition.offer &&
     !matchesOfferCondition(state, definition.offer.condition)
   ) {
     return false

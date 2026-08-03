@@ -3,6 +3,26 @@ import { getQuestDefinition } from '../data/questRegistry'
 import { clamp0to100, finiteNumberOr } from '../utils/gameState'
 
 /**
+ * Checks whether an asset-targeting quest effect names something to act on.
+ *
+ * @param value - Raw effect record being validated.
+ * @returns True when a non-empty `assetId` or `assetKind` is present.
+ *
+ * @remarks
+ * `updateFirstMatchingAssetCondition` returns state unchanged when neither
+ * target is supplied, so a targetless `asset.repair` / `asset.damage` effect
+ * would let the quest resolve while its declared effect silently did nothing.
+ * `assetId` takes precedence when both are given.
+ */
+export const hasAssetTarget = (value: Record<string, unknown>): boolean => {
+  const { assetId, assetKind } = value
+  return (
+    (typeof assetId === 'string' && assetId.length > 0) ||
+    (typeof assetKind === 'string' && assetKind.length > 0)
+  )
+}
+
+/**
  * Merges a quest instance with its registry definition when available.
  */
 export const getQuestWithDefinition = (

@@ -1434,26 +1434,38 @@ test('QuestLifecycle', async t => {
       }
     })
 
-    await t.test('perVenue quests can fall back to a gig current node', () => {
-      const state = {
-        player: { day: 1, currentNodeId: 'venue_a' },
-        activeQuests: [],
-        activeStoryFlags: [],
-        completedQuestIds: [],
-        completedQuestScopes: [],
-        questCooldowns: [],
-        gameMap: {
-          nodes: {
-            venue_a: { id: 'venue_a', type: 'GIG' }
-          }
-        }
-      }
+    await t.test(
+      "perVenue quests scope to the gig node's canonical venue id",
+      () => {
+        const buildState = node => ({
+          player: { day: 1, currentNodeId: 'node_1_0' },
+          activeQuests: [],
+          activeStoryFlags: [],
+          completedQuestIds: [],
+          completedQuestScopes: [],
+          questCooldowns: [],
+          gameMap: { nodes: { node_1_0: node } }
+        })
 
-      assert.deepEqual(canAcceptQuest(state, 'quest_venue_residency'), {
-        ok: true,
-        scopeKey: 'venue_a'
-      })
-    })
+        assert.deepEqual(
+          canAcceptQuest(
+            buildState({ id: 'node_1_0', type: 'GIG', venueId: 'venue_a' }),
+            'quest_venue_residency'
+          ),
+          { ok: true, scopeKey: 'venue_a' }
+        )
+
+        // The node id is not a venue id: scoping to it would bind the quest to
+        // a key no venue quest event can ever match.
+        assert.deepEqual(
+          canAcceptQuest(
+            buildState({ id: 'node_1_0', type: 'GIG' }),
+            'quest_venue_residency'
+          ),
+          { ok: false, reason: 'scope' }
+        )
+      }
+    )
 
     await t.test('completing a cooldown quest opens a re-add window', () => {
       let state = {

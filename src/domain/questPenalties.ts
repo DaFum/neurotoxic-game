@@ -13,7 +13,10 @@ import {
   getRegionReputationKey,
   queueEvent
 } from './questEffects'
-import { updateFirstMatchingAssetCondition } from './questHelpers'
+import {
+  hasAssetTarget,
+  updateFirstMatchingAssetCondition
+} from './questHelpers'
 
 /**
  * State, story flags, and cooldowns produced by quest failure penalties.
@@ -50,14 +53,18 @@ const isQuestPenalty = (value: unknown): value is QuestPenalty => {
       return (
         isFiniteNumber(value.amount) &&
         isOptionalString(value.assetId) &&
-        isOptionalString(value.assetKind)
+        isOptionalString(value.assetKind) &&
+        hasAssetTarget(value)
       )
     case 'flag.add':
       return typeof value.flag === 'string' && value.flag.length > 0
     case 'event.queue':
       return typeof value.eventId === 'string' && value.eventId.length > 0
     case 'quest.cooldown':
-      return isFiniteNumber(value.days)
+      // A zero or negative duration writes an entry whose `expiresOnDay` is
+      // not in the future, which the acceptance check reads as already
+      // expired — a declared retry delay that never delays anything.
+      return isFiniteNumber(value.days) && value.days > 0
     default:
       return false
   }
