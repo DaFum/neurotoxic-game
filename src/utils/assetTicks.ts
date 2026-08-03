@@ -170,7 +170,12 @@ export const processLiabilityTick = (
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
-  for (const liability of Object.values(state.liabilities)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop to avoid array allocation
+  // Why: Avoid allocating array for each asset tick in hot paths
+  // Impact: Reduced GC pressure during daily liability processing
+  for (const key in state.liabilities) {
+    if (!Object.hasOwn(state.liabilities, key)) continue
+    const liability = state.liabilities[key]
     if (!liability) continue
     // Split the payment into interest and principal so the tracked balance
     // matches the amortization model that priced `dailyPayment`
@@ -211,7 +216,11 @@ export const processLiabilityTick = (
     }
   }
 
-  for (const id of Object.keys(nextLiabilities)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop to avoid array allocation
+  // Why: Avoid allocating array during tick processing cleanup
+  // Impact: Reduced GC pressure during daily liability processing
+  for (const id in nextLiabilities) {
+    if (!Object.hasOwn(nextLiabilities, id)) continue
     const l = nextLiabilities[id]
     if (l && foreclosedAssetIds.has(l.assetId)) {
       delete nextLiabilities[id]
