@@ -1,5 +1,6 @@
 import {
   defaultStorageAdapter,
+  listStorageKeys,
   readStorageItemChecked,
   safeStorageOperation,
   writeStorageItem
@@ -18,14 +19,39 @@ import { safeJsonParse } from './objectUtils'
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
 const UNLOCK_MARKER_PREFIX = 'neurotoxic_unlock:'
 
-// In-memory cache for O(1) duplicate checks
-let unlocksCache: Set<string> | null = null
-let lastStorageSnapshot: string | null = null
+type UnlockCache = {
+  /** In-memory cache for O(1) duplicate checks. */
+  unlocks: Set<string> | null
+  lastStorageSnapshot: string | null
+}
+
+/**
+ * Cache state per storage backend.
+ *
+ * @remarks
+ * Keyed by adapter rather than module-global: one shared cache is consulted for
+ * every adapter, so a fallback read after adapter B's storage failed would serve
+ * adapter A's unlocks and break the provider isolation `StorageContext` exists
+ * to give.
+ */
+let unlockCaches = new WeakMap<IStorageAdapter, UnlockCache>()
+
+const getCache = (adapter: IStorageAdapter): UnlockCache => {
+  let cache = unlockCaches.get(adapter)
+  if (!cache) {
+    cache = { unlocks: null, lastStorageSnapshot: null }
+    unlockCaches.set(adapter, cache)
+  }
+  return cache
+}
+
 const UNLOCK_LOAD_FAILED = Symbol('UNLOCK_LOAD_FAILED')
 
 const readUnlockMarkers = (adapter: IStorageAdapter): string[] => {
   const markerUnlocks: string[] = []
-  for (const key of adapter.keys()) {
+  // Markers buffered after a refused write are only visible through the guard,
+  // never through the adapter's own enumeration.
+  for (const key of listStorageKeys(adapter)) {
     if (!key.startsWith(UNLOCK_MARKER_PREFIX)) continue
     try {
       markerUnlocks.push(
@@ -40,11 +66,10 @@ const readUnlockMarkers = (adapter: IStorageAdapter): string[] => {
 }
 
 /**
- * Clears the in-memory cache. Used primarily for testing.
+ * Clears every adapter's in-memory cache. Used primarily for testing.
  */
 const clearCache = (): void => {
-  unlocksCache = null
-  lastStorageSnapshot = null
+  unlockCaches = new WeakMap()
 }
 
 /**
@@ -54,6 +79,7 @@ const clearCache = (): void => {
 const loadUnlocks = (
   adapter: IStorageAdapter = defaultStorageAdapter
 ): string[] | typeof UNLOCK_LOAD_FAILED => {
+  const cache = getCache(adapter)
   let currentSnapshot: string | null = null
 
   const maybe = safeStorageOperation<string[] | typeof UNLOCK_LOAD_FAILED>(
@@ -68,8 +94,8 @@ const loadUnlocks = (
       const markerUnlocks = readUnlockMarkers(adapter)
       currentSnapshot = `${currentRaw ?? ''}\u0000${markerUnlocks.join('\u0000')}`
 
-      if (currentSnapshot === lastStorageSnapshot && unlocksCache) {
-        return Array.from(unlocksCache)
+      if (currentSnapshot === cache.lastStorageSnapshot && cache.unlocks) {
+        return Array.from(cache.unlocks)
       }
 
       let legacyUnlocks: string[] = []
@@ -95,14 +121,14 @@ const loadUnlocks = (
 
   if (
     currentSnapshot !== null &&
-    currentSnapshot === lastStorageSnapshot &&
-    unlocksCache
+    currentSnapshot === cache.lastStorageSnapshot &&
+    cache.unlocks
   ) {
     return maybe
   }
 
-  unlocksCache = new Set(maybe)
-  lastStorageSnapshot = currentSnapshot
+  cache.unlocks = new Set(maybe)
+  cache.lastStorageSnapshot = currentSnapshot
   return maybe
 }
 
@@ -115,7 +141,8 @@ export const getUnlocks = (
 ): string[] => {
   const result = loadUnlocks(adapter)
   if (result !== UNLOCK_LOAD_FAILED) return result
-  return unlocksCache ? Array.from(unlocksCache) : []
+  const cached = unlockCaches.get(adapter)?.unlocks
+  return cached ? Array.from(cached) : []
 }
 
 /**
@@ -132,26 +159,29 @@ export const addUnlock = (
   // Refresh cache from storage. loadUnlocks recreates the Set only when storage changed.
   const currentUnlocks = loadUnlocks(adapter)
   if (currentUnlocks === UNLOCK_LOAD_FAILED) return false
-  const cache = unlocksCache
+  const cache = unlockCaches.get(adapter)?.unlocks
 
   if (!cache) return false
 
   // Prevent duplicates in O(1) time
   if (cache.has(unlockId)) return false
 
-  const markerSuccess =
-    safeStorageOperation<boolean>(
-      'saveUnlockMarker',
-      () =>
-        writeStorageItem(
-          `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
-          '1',
-          adapter
-        ),
-      false
-    ) ?? false
+  // `writeStorageItem` returns false when the marker was kept in the session
+  // fallback rather than persisted — the unlock is still retained for this
+  // session, and `readUnlockMarkers` enumerates buffered keys, so it stays
+  // discoverable. Only a thrown write (the null sentinel) loses it outright.
+  const markerWrite = safeStorageOperation<boolean | null>(
+    'saveUnlockMarker',
+    () =>
+      writeStorageItem(
+        `${UNLOCK_MARKER_PREFIX}${encodeURIComponent(unlockId)}`,
+        '1',
+        adapter
+      ),
+    null
+  )
 
-  if (!markerSuccess) return false
+  if (markerWrite === null) return false
 
   cache.add(unlockId)
   currentUnlocks.push(unlockId)
@@ -165,7 +195,7 @@ export const addUnlock = (
       writeStorageItem(UNLOCKS_KEY, JSON.stringify(currentUnlocks), adapter),
     false
   )
-  lastStorageSnapshot = null
+  getCache(adapter).lastStorageSnapshot = null
 
   return true
 }

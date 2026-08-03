@@ -68,6 +68,38 @@ describe('storage write guard', () => {
     expect(readStorageItem('key')).toBeNull()
   })
 
+  it('keeps hiding the persisted value when removal is refused', () => {
+    localStorage.setItem('key', 'stale')
+    denyWrites()
+    writeStorageItem('key', 'newest')
+
+    // Private browsing can refuse removal too, and the adapter cannot report
+    // it — without a tombstone the older persisted save resurfaces.
+    vi.spyOn(window.localStorage, 'removeItem').mockImplementation(() => {
+      throw new DOMException('SecurityError')
+    })
+
+    removeStorageItem('key')
+    expect(localStorage.getItem('key')).toBe('stale')
+    expect(readStorageItem('key')).toBeNull()
+  })
+
+  it('stops shadowing a tombstoned key once it is written again', () => {
+    localStorage.setItem('key', 'stale')
+    const removeItem = vi
+      .spyOn(window.localStorage, 'removeItem')
+      .mockImplementation(() => {
+        throw new DOMException('SecurityError')
+      })
+
+    removeStorageItem('key')
+    expect(readStorageItem('key')).toBeNull()
+
+    removeItem.mockRestore()
+    writeStorageItem('key', 'fresh')
+    expect(readStorageItem('key')).toBe('fresh')
+  })
+
   it('prefers the memory entry over the stale persisted value', () => {
     localStorage.setItem('key', 'stale')
     denyWrites()

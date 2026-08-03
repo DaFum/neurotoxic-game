@@ -4,6 +4,8 @@ import {
   addUnlock,
   __testInternals
 } from '../../src/utils/unlockManager'
+import { resetStorageFallback } from '../../src/utils/storage'
+import { InMemoryAdapter } from '../../src/utils/storageAdapter'
 
 describe('unlockManager', () => {
   let mockStorage: Record<string, string>
@@ -11,6 +13,8 @@ describe('unlockManager', () => {
   beforeEach(() => {
     // Reset internal cache before each test
     __testInternals.clearCache()
+    // Values buffered by a refused write outlive the storage mock swap.
+    resetStorageFallback()
 
     // Setup local storage mock
     mockStorage = {}
@@ -138,7 +142,7 @@ describe('unlockManager', () => {
       expect(getUnlocks()).toEqual(['first_unlock'])
     })
 
-    it('rolls back cache mutation if persistence fails', () => {
+    it('retains the unlock for the session when persistence fails', () => {
       // Initialize cache
       getUnlocks()
 
@@ -148,11 +152,15 @@ describe('unlockManager', () => {
         throw new Error('QuotaExceededError')
       })
 
-      const success = addUnlock('failed_unlock')
-      expect(success).toBe(false)
+      // The write guard keeps the marker in its session fallback, so a
+      // one-time unlock event is not lost just because storage is degraded.
+      expect(addUnlock('degraded_unlock')).toBe(true)
+      expect(getUnlocks()).toEqual(['degraded_unlock'])
+      expect(mockStorage).toEqual({})
 
-      // Cache should have been rolled back
-      expect(getUnlocks()).toEqual([])
+      // Still rediscoverable from the buffered marker without the cache.
+      __testInternals.clearCache()
+      expect(getUnlocks()).toEqual(['degraded_unlock'])
     })
 
     it('recovers unlocks from per-unlock markers after a stale array overwrite', () => {
@@ -162,6 +170,22 @@ describe('unlockManager', () => {
       __testInternals.clearCache()
 
       expect(getUnlocks()).toEqual(['second_unlock', 'first_unlock'])
+    })
+  })
+
+  describe('adapter isolation', () => {
+    it('does not serve another adapter cache when a read fails', () => {
+      const other = new InMemoryAdapter()
+      expect(addUnlock('other_adapter_unlock', other)).toBe(true)
+
+      // Default-adapter reads now fail, so its own unlocks are unreadable.
+      vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
+        throw new Error('SecurityError')
+      })
+
+      // A shared module-global cache would leak the other adapter's unlocks.
+      expect(getUnlocks()).toEqual([])
+      expect(getUnlocks(other)).toEqual(['other_adapter_unlock'])
     })
   })
 
