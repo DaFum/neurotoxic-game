@@ -6,7 +6,7 @@ import type { IStorageAdapter } from './storageAdapter'
  * Key prefix for quarantined save payloads. One slot per source version, so a
  * repeatedly failing migration cannot grow storage without bound.
  */
-export const SAVE_QUARANTINE_KEY_PREFIX = 'neurotoxic:save:quarantine:'
+const SAVE_QUARANTINE_KEY_PREFIX = 'neurotoxic:save:quarantine:'
 
 /**
  * Builds the quarantine key for a given save version.

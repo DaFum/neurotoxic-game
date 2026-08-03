@@ -16,7 +16,7 @@ const getTags = (
 /**
  * Creates a `social.postResolved` quest event for a resolved post option.
  */
-export const createSocialPostResolvedQuestEvent = (
+const createSocialPostResolvedQuestEvent = (
   option: Pick<SocialPostOption, 'id' | 'platform' | 'category'>,
   result: Record<string, unknown>
 ): QuestEvent => ({

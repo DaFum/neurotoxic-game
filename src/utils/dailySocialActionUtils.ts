@@ -34,12 +34,12 @@ export type ZealotryActionDescriptor = {
   successMessageKey: string
 }
 
-export type DailySocialActionThreshold = {
+type DailySocialActionThreshold = {
   value: unknown
   required: unknown
 }
 
-export type DailySocialActionEligibilityInput = {
+type DailySocialActionEligibilityInput = {
   lastActionDay: unknown
   currentDay: unknown
   money: unknown
@@ -52,7 +52,7 @@ export type DailySocialActionEligibilityInput = {
 /**
  * Checks whether a once-per-day social action already ran today.
  */
-export const hasDailySocialActionRunToday = (
+const hasDailySocialActionRunToday = (
   lastActionDay: unknown,
   currentDay: unknown
 ): boolean => {
@@ -65,7 +65,7 @@ export const hasDailySocialActionRunToday = (
 /**
  * Shared eligibility check for once-per-day social actions that spend money and harmony.
  */
-export const validateDailySocialActionEligibility = ({
+const validateDailySocialActionEligibility = ({
   lastActionDay,
   currentDay,
   money,

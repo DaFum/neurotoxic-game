@@ -13,7 +13,6 @@ import { useRhythmGameLoop } from './rhythmGame/useRhythmGameLoop'
 import { useRhythmGameInput } from './rhythmGame/useRhythmGameInput'
 import type { RhythmGameRefState } from '../types/rhythmGame'
 import type { RhythmUiState } from './rhythmGame/useRhythmGameState'
-export type { RhythmUiState } from './rhythmGame/useRhythmGameState'
 /**
  * Public rhythm game stats shape exposed to the gig scene.
  */

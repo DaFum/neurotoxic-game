@@ -73,7 +73,7 @@ const isSensitiveContextKey = (key: string) => {
   return SENSITIVE_KEY_REGEXP ? SENSITIVE_KEY_REGEXP.test(key) : false
 }
 
-export const sanitizeContextValue = (
+const sanitizeContextValue = (
   value: unknown,
   visited: WeakSet<object>
 ): unknown =>

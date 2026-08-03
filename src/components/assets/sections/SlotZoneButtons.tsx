@@ -6,7 +6,7 @@ import type { AssetSlot, SlotType } from '../../../types/assets'
  * Per-slot presentation overrides returned by a section's {@link SlotZoneButtonsProps.slotOverride}.
  * Returning `null` from `slotOverride` skips the slot entirely (e.g. tier-gated slots).
  */
-export interface SlotOverride {
+interface SlotOverride {
   background?: string
   imageAspectRatio?: '16:9' | '1:1' | '4:3' | '3:4' | '21:9'
   imageSizeHint?: { width: number; height: number }

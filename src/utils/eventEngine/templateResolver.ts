@@ -94,4 +94,4 @@ export const buildTemplateContext = (
   return output
 }
 
-export { resolveTemplateString, TEMPLATE_REGEX }
+export { resolveTemplateString }

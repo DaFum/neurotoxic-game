@@ -266,4 +266,4 @@ const selectEvent = (
   return null
 }
 
-export { selectEvent, eventPoolMapCache }
+export { selectEvent }

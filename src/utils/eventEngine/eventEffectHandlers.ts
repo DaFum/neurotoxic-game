@@ -228,4 +228,4 @@ const processEffect = (
   }
 }
 
-export { EVENT_EFFECT_HANDLERS, processEffect }
+export { processEffect }

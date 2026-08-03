@@ -11,7 +11,7 @@ import type { ToastCallback, TranslationCallback } from '../../types/callbacks'
 /**
  * Parameters accepted by {@link IAudioEngine.startGig}.
  */
-export interface StartGigParams {
+interface StartGigParams {
   /** Audio asset filename for the gig track. */
   filename: string
   /** Offset into the buffer at which playback begins, in ms. */

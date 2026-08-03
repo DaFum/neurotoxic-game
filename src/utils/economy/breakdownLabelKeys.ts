@@ -37,12 +37,6 @@ export const BREAKDOWN_LABEL_KEYS = {
 } as const
 
 /**
- * Any label key emitted by a gig-economy breakdown line.
- */
-export type BreakdownLabelKey =
-  (typeof BREAKDOWN_LABEL_KEYS)[keyof typeof BREAKDOWN_LABEL_KEYS]
-
-/**
  * Prefix shared by every per-merch-item breakdown line.
  *
  * @remarks

@@ -1,6 +1,6 @@
 import type { MapNodeType, Venue, CityTraitState } from '../../types'
 
-export type MapConnection = { from: string; to: string }
+type MapConnection = { from: string; to: string }
 
 export type GeneratedMapNode = {
   id: string

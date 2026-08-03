@@ -19,7 +19,14 @@
     "scripts/**/*.{mjs,cjs,js}"
   ],
   "ignore": ["src/types/**", "**/*.d.ts"],
-  "ignoreDependencies": ["@tailwindcss/postcss"],
+  "ignoreDependencies": [
+    "@tailwindcss/postcss",
+    "@iarna/toml",
+    "@typescript-eslint/eslint-plugin",
+    "@typescript-eslint/parser",
+    "markdownlint-cli2"
+  ],
+  "ignoreBinaries": ["rg"],
   "vite": {
     "config": ["vite.config.js"]
   },
