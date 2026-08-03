@@ -94,7 +94,12 @@ mock.module(new URL('../../src/utils/audio/context.ts', import.meta.url).href, {
   namedExports: {
     ensureAudioContext: mockEnsureAudioContext,
     getAudioContextTimeSec: mock.fn(() => 0),
-    getRawAudioContext: mock.fn()
+    getRawAudioContext: mock.fn(),
+    // `transportControl` imports this by name, so the mock must provide it or
+    // the module fails to link. A pass-through keeps this suite focused on
+    // procedural playback rather than audio-context policy, which
+    // `audioContextGuard.test.js` covers.
+    withAudioContext: mock.fn(async fn => await fn())
   }
 })
 

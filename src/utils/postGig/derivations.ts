@@ -26,13 +26,23 @@ export const applyRepeatDemandAdjustment = (
   financials: NonNullable<ReturnType<typeof calculateGigFinancials>>,
   context: RepeatDemandContext
 ) => {
+  // `Math.max(0, NaN)` is NaN, so an upstream non-finite net would otherwise
+  // turn the whole adjustment — and the expense line it writes — into NaN.
+  // Normalized before the early returns so no path hands a `NaN`/`Infinity`/`-0`
+  // net back to the caller; the identity check keeps the common case
+  // allocation-free.
+  const safeNet = finiteNumberOr(financials.net, 0)
+  const normalized = Object.is(financials.net, safeNet)
+    ? financials
+    : { ...financials, net: safeNet }
+
   const tuning = context.tuning ?? DEFAULT_BALANCE_TUNING
   if (
     tuning.touring.repeatDemandPenaltyPerGig <= 0 ||
     tuning.touring.maxRepeatDemandPenalty <= 0 ||
     context.day <= tuning.touring.repeatDemandStartDay
   ) {
-    return financials
+    return normalized
   }
   const recentGigCount = (
     context.regionalGigHistory?.[context.regionId] ?? []
@@ -47,14 +57,11 @@ export const applyRepeatDemandAdjustment = (
     recentGigCount,
     tuning
   )
-  // `Math.max(0, NaN)` is NaN, so an upstream non-finite net would otherwise
-  // turn the whole adjustment — and the expense line it writes — into NaN.
-  const safeNet = finiteNumberOr(financials.net, 0)
   const demandCost = Math.min(
     Math.max(0, safeNet),
     Math.round(Math.max(0, safeNet) * (1 - multiplier))
   )
-  if (demandCost <= 0) return financials
+  if (demandCost <= 0) return normalized
   return {
     ...financials,
     expenses: {

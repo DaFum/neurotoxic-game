@@ -3,17 +3,28 @@
  *
  * Browser autoplay policies leave the context suspended until a user gesture, so
  * `start`/`stop` against a suspended context is a real failure mode: silent
- * playback or a throwing node. These cases pin the guard's three outcomes —
- * run, resume-then-run, and refuse-with-a-log.
+ * playback or a throwing node. These cases pin the guard's outcomes: run,
+ * resume-then-run (through the right resume per state), and refuse-with-a-log.
  */
 
 import assert from 'node:assert/strict'
 import { test, mock } from 'node:test'
 
-const rawContext = { state: 'running', resume: mock.fn(async () => {}) }
+// Each resume only clears the state it is actually able to clear on a real
+// browser: `Tone.context.resume()` handles `suspended`, while iOS Safari's
+// `interrupted` requires the native `AudioContext.resume()`. Keeping the fakes
+// asymmetric is what makes the `interrupted` case meaningful.
+const rawContext = {
+  state: 'running',
+  resume: mock.fn(async () => {
+    rawContext.state = 'running'
+    toneContext.state = 'running'
+  })
+}
 const toneContext = {
   state: 'running',
   resume: mock.fn(async () => {
+    if (rawContext.state === 'interrupted') return
     rawContext.state = 'running'
     toneContext.state = 'running'
   })
@@ -70,14 +81,19 @@ test('withAudioContext resumes a suspended context before running', async () => 
   assert.strictEqual(run.mock.calls.length, 1)
 })
 
-test('withAudioContext resumes the iOS interrupted state', async () => {
+test('withAudioContext resumes the iOS interrupted state natively', async () => {
   reset('interrupted')
   const run = mock.fn(() => 'played')
 
   const result = await withAudioContext(run, 'test')
 
   assert.strictEqual(result, 'played')
-  assert.strictEqual(toneContext.resume.mock.calls.length, 1)
+  assert.strictEqual(run.mock.calls.length, 1)
+  // `Tone.context.resume()` does not clear `interrupted` on iOS Safari, so the
+  // guard must go through the native context — the same split
+  // `ensureAudioContext()` makes.
+  assert.strictEqual(rawContext.resume.mock.calls.length, 1)
+  assert.strictEqual(toneContext.resume.mock.calls.length, 0)
 })
 
 test('withAudioContext refuses and logs when resume does not take', async () => {
@@ -145,4 +161,31 @@ test('withAudioContext reports a failed resume and still refuses', async () => {
     ),
     'the rejected resume must be logged'
   )
+})
+
+test('withAudioContext refuses when the context state read throws', async () => {
+  reset('running')
+  const run = mock.fn(() => 'played')
+  const descriptor = Object.getOwnPropertyDescriptor(rawContext, 'state')
+  Object.defineProperty(rawContext, 'state', {
+    configurable: true,
+    get() {
+      throw new Error('context detached')
+    }
+  })
+
+  try {
+    const result = await withAudioContext(run, 'readFailure')
+
+    assert.strictEqual(result, null)
+    assert.strictEqual(run.mock.calls.length, 0)
+    assert.ok(
+      warn.mock.calls.some(call =>
+        call.arguments[1].includes('audio context state read failed')
+      ),
+      'the failed state read must be logged'
+    )
+  } finally {
+    Object.defineProperty(rawContext, 'state', descriptor)
+  }
 })

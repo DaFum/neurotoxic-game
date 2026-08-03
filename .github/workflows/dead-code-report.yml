@@ -17,9 +17,11 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
+  # `contents: read` to check out; `issues: write` for the sticky comment, which
+  # goes through `github.rest.issues.*` (a PR is an issue for that API), so no
+  # `pull-requests: write` is needed.
   contents: read
   issues: write
-  pull-requests: write
 
 env:
   PNPM_VERSION: '11.18.0'
@@ -43,13 +45,25 @@ jobs:
 
       - name: Run knip
         run: |
-          # pnpm exec, not dlx: knip is pinned in devDependencies, so this uses
-          # the locked version. `|| true` because knip exits non-zero whenever it
-          # has findings, which is expected while the check is report-only.
-          pnpm run deadcode:check > knip-report.json || true
+          # `pnpm exec`, not `pnpm run`: the `pnpm run` wrapper writes an
+          # `[ELIFECYCLE]` line to stdout when the script exits non-zero, which
+          # corrupts the JSON. Not `dlx` either — knip is pinned in
+          # devDependencies, so this uses the locked version.
+          set +e
+          pnpm exec knip --reporter json > knip-report.json
+          knip_status=$?
+          set -e
+          # A non-zero exit is expected: knip exits non-zero whenever it has
+          # findings, and the check is report-only. A missing or unparseable
+          # report is a genuine failure though — treating a crashed knip as
+          # "zero findings" would post a false all-clear.
           if [[ ! -s knip-report.json ]]; then
-            echo '{"issues":[]}' > knip-report.json
-            echo "knip produced no report; treating as empty."
+            echo "::error::knip produced no JSON report (exit ${knip_status})."
+            exit 1
+          fi
+          if ! node -e 'JSON.parse(require("node:fs").readFileSync("knip-report.json","utf8"))'; then
+            echo "::error::knip report is not valid JSON (exit ${knip_status})."
+            exit 1
           fi
 
       - name: Build Markdown summary
@@ -73,11 +87,12 @@ jobs:
             const repo = context.repo.repo;
             const issue_number = context.issue.number;
 
-            const { data: comments } = await github.rest.issues.listComments({
-              owner,
-              repo,
-              issue_number,
-            });
+            // Paginated: past one page of comments an unpaginated read can miss
+            // the marker and post a duplicate report on every synchronize.
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 },
+            );
 
             const existing = comments.find(c => c.body && c.body.includes(marker));
 

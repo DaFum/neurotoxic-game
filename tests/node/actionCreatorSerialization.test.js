@@ -210,6 +210,38 @@ const CREATOR_ARGS = {
   assetForeclosed: () => ['asset_1']
 }
 
+/**
+ * Extra shapes that are not one-per-creator.
+ *
+ * `CREATOR_ARGS` covers each creator once with the omitted-`successToast` path.
+ * A populated toast takes the other branch of `sanitizeNonNegativePayload` — the
+ * one that stamps a fresh UUID into the payload — so it needs its own case.
+ */
+const EXTRA_VARIANTS = [
+  {
+    label: 'createBloodBankDonateAction with a populated successToast',
+    call: () =>
+      actionCreators.createBloodBankDonateAction({
+        moneyGain: 60,
+        harmonyCost: 2,
+        staminaCost: 10,
+        controversyGain: 1,
+        successToast: { message: 'done', type: 'success' }
+      })
+  },
+  {
+    label: 'createClinicHealAction with a populated successToast',
+    call: () =>
+      actionCreators.createClinicHealAction({
+        memberId: 'matze',
+        type: 'heal',
+        staminaGain: 50,
+        moodGain: 20,
+        successToast: { message: 'healed', type: 'success' }
+      })
+  }
+]
+
 const collectCreators = () =>
   [
     ...Object.entries(actionCreators),
@@ -241,6 +273,17 @@ describe('action creator payload serialization', () => {
       const args = CREATOR_ARGS[name]
       if (!args) return
       assertSerializable(name, creator(...args()))
+    })
+  }
+
+  for (const { label, call } of EXTRA_VARIANTS) {
+    it(`${label} produces a serializable action`, () => {
+      const action = call()
+      assertSerializable(label, action)
+      // The stamped id is what makes this path distinct from the omitted-toast
+      // one, so assert it actually landed as a plain string.
+      assert.strictEqual(typeof action.payload.successToast.id, 'string')
+      assert.ok(action.payload.successToast.id.length > 0)
     })
   }
 })

@@ -38,8 +38,10 @@ const readInput = () => {
 /**
  * Flattens the report into `{ category: [{ file, name }] }`.
  *
- * knip reports a `files` entry as the file path itself and every other category
- * as `{ name }` records under the file that owns them.
+ * Every category, `files` included, arrives as an array of `{ name }` records
+ * under the issue entry for the file that owns them — a wholly unused file shows
+ * up as its own entry with `files: [{ name: '<path>' }]`. There is no top-level
+ * `report.files` array in knip's JSON reporter.
  */
 export const collectFindings = report => {
   const findings = new Map(CATEGORIES.map(([key]) => [key, []]))
@@ -55,10 +57,6 @@ export const collectFindings = report => {
         })
       }
     }
-    // knip marks a wholly unused file with a truthy non-array `files` field in
-    // some reporters; normalize that shape too.
-    if (issue.files === true)
-      findings.get('files').push({ file: issue.file, name: issue.file })
   }
   return findings
 }

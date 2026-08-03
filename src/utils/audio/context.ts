@@ -81,7 +81,14 @@ export async function withAudioContext<T>(
 
   if (state !== 'running' && canResumeAudioContextState(state)) {
     try {
-      await Tone.context.resume()
+      // iOS Safari only leaves `interrupted` through the native
+      // `AudioContext.resume()`; `Tone.context.resume()` does not clear it.
+      // Same split as `ensureAudioContext()` below.
+      if (state === 'interrupted') {
+        await getRawAudioContext().resume()
+      } else {
+        await Tone.context.resume()
+      }
     } catch (error) {
       logger.warn('AudioEngine', `${label}: context resume failed`, error)
     }

@@ -1,9 +1,7 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
 import { audioState } from './state'
-// A namespace import rather than a named one: the binding resolves at call
-// time, so suites that mock `./context` with a partial export set still link.
-import * as audioContext from './context'
+import { withAudioContext } from './context'
 import {
   pauseGigPlayback,
   resumeGigPlayback,
@@ -81,12 +79,16 @@ export async function pauseAudio(): Promise<void> {
 export async function resumeAudio(): Promise<boolean> {
   try {
     // Guarded: a resume triggered while the context is still suspended would
-    // otherwise start a transport that produces no sound.
-    await audioContext.withAudioContext(async () => {
+    // otherwise start a transport that produces no sound. A refused gate is a
+    // resume failure — reporting success here would let callers clear the paused
+    // state and announce "resumed" while the transport stays silent.
+    const gateResult = await withAudioContext(async () => {
       if (Tone.getTransport().state === 'paused') {
         await Tone.getTransport().start()
       }
+      return true
     }, 'resumeAudio')
+    if (gateResult === null) return false
   } catch (err) {
     logger.warn('AudioEngine', 'Failed to resume audio transport', err)
   }
