@@ -135,3 +135,9 @@ After travel, the band can acquire an item with special effects to use.
   `socialReducer.ts`: Added `handleCultIndoctrination`, mapping it to the `applyZealotryAction` architecture.
   `social.d.ts`: Expanded `SocialState` with `lastCultIndoctrinationDay`.
   `CultIndoctrinationModal.tsx`: Brutalist UI component added to the `hustles` section in the Overworld, complete with daily locks.
+
+## 2026-08-04 - Feedback Loop Hazard (Amp Calibration)
+
+ **Feature:** Feedback Loop Hazard
+
+ **Description:** Autonomously expanded the amp calibration minigame with a new 'Feedback Loop' hazard conforming to Kranker Schrank lore. Massive heat generation forces immediate user dampening action to avoid losing overdrive. Extended component props, integrated Brutalist UI alerts, enforced reducer boundaries with a +20 economy bonus, and expanded unit tests.
