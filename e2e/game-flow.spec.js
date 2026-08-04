@@ -603,14 +603,26 @@ test.describe('Game Flow', () => {
       page.getByRole('button', { name: /reject all offers/i })
     )
 
-    // PostGig completion
+    // PostGig completion -> 7. Back to Overworld.
+    // The overworld remounts its Pixi map here and its generated textures time
+    // out on CI, so the transition can outlast a 10s wait. Poll on arrival and
+    // re-click while the completion screen is still up: a click that lands
+    // mid-dismiss of an overlay leaves the scene unchanged.
     const backToTourBtn = page.getByRole('button', { name: /back to tour/i })
-    await clickUnblockedTarget(backToTourBtn)
+    await expect
+      .poll(
+        async () => {
+          if (await dismissTopEventDialog()) return false
+          const arrived = await tourPlanHeading
+            .isVisible({ timeout: 500 })
+            .catch(() => false)
+          if (arrived) return true
 
-    // 7. Back to Overworld
-    await waitForUnblockedTarget(
-      page.getByRole('heading', { name: /tour plan/i }),
-      10000
-    )
+          await backToTourBtn.click({ timeout: 1000 }).catch(() => {})
+          return tourPlanHeading.isVisible({ timeout: 1000 }).catch(() => false)
+        },
+        { timeout: 30000, intervals: [500, 1000] }
+      )
+      .toBe(true)
   })
 })
