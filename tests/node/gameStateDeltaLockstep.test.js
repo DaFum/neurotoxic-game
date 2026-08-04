@@ -458,3 +458,31 @@ test('EventDelta clamps luck, loyalty, and zealotry identically in preview and a
   assert.equal(preview.social.zealotry, 2)
   assert.equal(applied.social.zealotry, 100)
 })
+
+test('EventDelta rejects sums that overflow to Infinity', () => {
+  // Two finite numbers still sum to Infinity, and `Math.max(0, Infinity)` is
+  // not a finite clamp: the next save would serialize the stat as `null`.
+  const state = buildState()
+  state.player.score = 1e308
+  state.band.luck = 1e308
+  state.band.inventory.sticker = 1e308
+  state.social.viral = 1e308
+  const delta = withDelta({
+    player: { score: 1e308 },
+    band: { luck: 1e308, inventory: { sticker: 1e308 } },
+    social: { viral: 1e308 }
+  })
+
+  const preview = calculateAppliedDelta(state, delta)
+  const applied = applyEventDelta(state, delta)
+
+  // The unrepresentable addend is dropped; the stored value is untouched.
+  assert.equal(preview.score, 0)
+  assert.equal(preview.band.luck, 0)
+  assert.equal(preview.social.viral, 0)
+  assert.equal(preview.band.inventory.sticker, undefined)
+  assert.equal(applied.player.score, 1e308)
+  assert.equal(applied.band.luck, 1e308)
+  assert.equal(applied.social.viral, 1e308)
+  assert.equal(applied.band.inventory.sticker, 1e308)
+})

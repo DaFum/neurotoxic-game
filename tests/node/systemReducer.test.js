@@ -16,6 +16,11 @@ import {
 import { createInitialState } from '../../src/context/initialState'
 import { GAME_PHASES } from '../../src/context/gameConstants'
 import { nextSeed } from '../../src/utils/seededRng'
+import { SONGS_DB } from '../../src/data/songs'
+
+// Loaded setlists are validated against the song catalog, so these tests must
+// use real ids rather than placeholders.
+const [CATALOG_SONG_A, CATALOG_SONG_B] = SONGS_DB.map(song => song.id)
 
 test('handleLoadGame clamps and bounds persisted regional reputation', () => {
   // JSON.parse keeps __proto__ as an own key, unlike an object literal.
@@ -250,7 +255,7 @@ test('systemReducer - LOAD_GAME', async t => {
         social: {
           controversyLevel: 10
         },
-        setlist: ['song1'],
+        setlist: [CATALOG_SONG_A],
         activeStoryFlags: ['flag1'],
         pendingEvents: ['event1'],
         eventCooldowns: ['cooldown1'],
@@ -281,7 +286,7 @@ test('systemReducer - LOAD_GAME', async t => {
         })
       })
       assert.equal(nextState.social.controversyLevel, 10)
-      assert.deepEqual(nextState.setlist, [{ id: 'song1' }])
+      assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
       assert.deepEqual(nextState.activeStoryFlags, ['flag1'])
       assert.deepEqual(nextState.pendingEvents, ['event1'])
       assert.deepEqual(nextState.eventCooldowns, ['cooldown1'])
@@ -959,7 +964,7 @@ test('systemReducer - LOAD_GAME', async t => {
   await t.test('sanitizes loaded top-level collections entry by entry', () => {
     const initialState = createInitialState()
     const loadedState = {
-      setlist: ['song-a', 7, { songId: 'song-b' }, null],
+      setlist: [CATALOG_SONG_A, 7, { songId: CATALOG_SONG_B }, null],
       activeStoryFlags: ['flag-a', 4],
       pendingEvents: ['event-a', {}],
       pendingForeclosureNotices: [
@@ -1012,7 +1017,7 @@ test('systemReducer - LOAD_GAME', async t => {
 
     // Sanitized entries are normalized to the canonical save-path shape;
     // `{ songId }` carries no valid string `id`, so it is dropped.
-    assert.deepEqual(nextState.setlist, [{ id: 'song-a' }])
+    assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
     assert.deepEqual(nextState.activeStoryFlags, ['flag-a'])
     assert.deepEqual(nextState.pendingEvents, ['event-a'])
     assert.deepEqual(nextState.pendingForeclosureNotices, ['tourbus_chassis'])
@@ -1043,19 +1048,19 @@ test('systemReducer - LOAD_GAME', async t => {
 
   await t.test('normalizes a legacy bare-string setlist on load', () => {
     const nextState = handleLoadGame(createInitialState(), {
-      setlist: ['song-a']
+      setlist: [CATALOG_SONG_A]
     })
 
-    assert.deepEqual(nextState.setlist, [{ id: 'song-a' }])
+    assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
   })
 
   await t.test('normalizes a rich-object setlist on load', () => {
     const nextState = handleLoadGame(createInitialState(), {
-      setlist: [{ id: 'song-b', name: 'Song B', bpm: 180 }]
+      setlist: [{ id: CATALOG_SONG_B, name: 'Song B', bpm: 180 }]
     })
 
     // Only the canonical `id` survives; the save path stores nothing else.
-    assert.deepEqual(nextState.setlist, [{ id: 'song-b' }])
+    assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_B }])
   })
 
   await t.test('drops loaded setlist entries without a valid string id', () => {
@@ -1064,6 +1069,16 @@ test('systemReducer - LOAD_GAME', async t => {
     })
 
     assert.deepEqual(nextState.setlist, [])
+  })
+
+  await t.test('drops loaded setlist entries with no catalog song', () => {
+    // An empty or forged id resolves to no song yet would still count toward
+    // `setlist.length`, which the Band HQ practice gate reads.
+    const nextState = handleLoadGame(createInitialState(), {
+      setlist: ['', { id: '' }, 'deleted_or_forged_song', CATALOG_SONG_A]
+    })
+
+    assert.deepEqual(nextState.setlist, [{ id: CATALOG_SONG_A }])
   })
 
   await t.test(

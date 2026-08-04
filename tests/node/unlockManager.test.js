@@ -28,10 +28,13 @@ global.localStorage = mockStorage
 test('UnlockManager Unit Tests', async t => {
   const { getUnlocks, addUnlock, __testInternals } =
     await import('../../src/utils/unlockManager')
+  const { resetStorageFallback } = await import('../../src/utils/storage')
   const clearCache = __testInternals.clearCache
 
   t.beforeEach(() => {
     mockStorage.clear()
+    // Markers buffered by a refused write outlive localStorage.clear().
+    resetStorageFallback()
     clearCache()
   })
 
@@ -134,19 +137,32 @@ test('UnlockManager Unit Tests', async t => {
     }
   )
 
-  await t.test('addUnlock returns false if storage fails', () => {
-    const originalSetItem = mockStorage.setItem
-    mockStorage.setItem = () => {
-      throw new Error('Storage Full')
-    }
+  await t.test(
+    'addUnlock retains the unlock when storage refuses writes',
+    () => {
+      const originalSetItem = mockStorage.setItem
+      mockStorage.setItem = () => {
+        throw new Error('Storage Full')
+      }
 
-    try {
-      const result = addUnlock('fail_item')
-      assert.equal(result, false)
-    } finally {
-      mockStorage.setItem = originalSetItem
+      try {
+        // The write guard keeps the marker in its session fallback, so the unlock
+        // is retained for this session even though nothing was persisted.
+        assert.equal(addUnlock('fail_item'), true)
+        assert.deepEqual(getUnlocks(), ['fail_item'])
+        assert.equal(
+          Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:fail_item'),
+          false
+        )
+
+        // Rediscoverable from the buffered marker after the cache is dropped.
+        clearCache()
+        assert.deepEqual(getUnlocks(), ['fail_item'])
+      } finally {
+        mockStorage.setItem = originalSetItem
+      }
     }
-  })
+  )
 
   await t.test(
     'addUnlock preserves legacy unlocks when the storage read fails',

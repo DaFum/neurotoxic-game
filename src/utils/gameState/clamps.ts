@@ -18,6 +18,25 @@ export const clampNonNegative = (value: number): number => {
 }
 
 /**
+ * Adds a delta to an unbounded non-negative stat, rejecting a non-finite sum.
+ *
+ * @param base - Current value; already recovered with `finiteNumberOr`.
+ * @param delta - Delta to add.
+ * @returns The clamped sum, or the unchanged base when the sum overflows.
+ *
+ * @remarks
+ * Two finite numbers still sum to `Infinity` (`1e308 + 1e308`), and
+ * `Math.max(0, Infinity)` is not a finite clamp — the next save serializes the
+ * result as `null`. Stats without an upper bound therefore need the *result*
+ * validated, not just the operands. An unrepresentable sum leaves the base
+ * untouched rather than resetting it, so a hostile addend cannot wipe progress.
+ */
+export const addClampedNonNegative = (base: number, delta: number): number => {
+  const next = Math.max(0, base + delta)
+  return Number.isFinite(next) ? next : clampNonNegative(base)
+}
+
+/**
  * Normalizes unknown numeric input to a non-negative integer.
  *
  * @param value - Unknown value to coerce.

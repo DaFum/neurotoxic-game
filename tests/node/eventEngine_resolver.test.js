@@ -50,3 +50,22 @@ test('resolveEventChoice handles missing choices safely', () => {
   assert.equal(result, null)
   assert.equal(delta, null)
 })
+
+test('resolveEventChoice rejects non-finite cooldown durations', () => {
+  const cooldownFor = value =>
+    resolveEventChoice(
+      {
+        label: 'Wait',
+        outcomeText: 'Later.',
+        effect: { type: 'cooldown', eventId: 'some_event', value }
+      },
+      buildState()
+    ).delta.flags.addCooldown
+
+  assert.equal(cooldownFor(3), 'some_event:4')
+  // `typeof value === 'number'` accepts these, and the resulting
+  // `some_event:Infinity` / `:NaN` entry is rejected by every cooldown reader —
+  // a cooldown that neither applies nor expires. Fall back to permanent.
+  assert.equal(cooldownFor(Number.POSITIVE_INFINITY), 'some_event')
+  assert.equal(cooldownFor(Number.NaN), 'some_event')
+})

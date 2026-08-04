@@ -10,6 +10,7 @@ import {
   getQuestRewards
 } from '../../src/domain/questRewards'
 import { getQuestPenalties } from '../../src/domain/questPenalties'
+import { updateFirstMatchingAssetCondition } from '../../src/domain/questHelpers'
 import { ActionTypes } from '../../src/context/actionTypes'
 import { gameReducer } from '../../src/context/gameReducer'
 import { canAcceptQuest } from '../../src/domain/questAcceptance'
@@ -144,21 +145,24 @@ test('questReducer - handleAddQuest', async t => {
       }),
       'legacy_current_gig'
     )
-    const legacyState = {
-      player: { currentNodeId: 'legacy_node' },
+    // A GIG node with no canonical venue id yields no scope at all: the node
+    // id is a different namespace, and venue quest events are keyed by venue
+    // id, so scoping to it would bind the quest to an unmatchable key.
+    const venuelessState = {
+      player: { currentNodeId: 'node_3_2' },
       activeQuests: [],
       gameMap: {
-        nodes: { legacy_node: { id: 'legacy_node', type: 'GIG' } }
+        nodes: { node_3_2: { id: 'node_3_2', type: 'GIG' } }
       }
     }
     assert.deepEqual(
-      canAcceptQuest(legacyState, {
-        id: 'legacy_venue_quest',
+      canAcceptQuest(venuelessState, {
+        id: 'venueless_venue_quest',
         repeatPolicy: 'perVenue'
       }),
-      { ok: true, scopeKey: 'legacy_node' }
+      { ok: false, reason: 'scope' }
     )
-    assert.equal(getCurrentVenueId(legacyState), 'legacy_node')
+    assert.equal(getCurrentVenueId(venuelessState), undefined)
   })
 })
 
@@ -432,6 +436,62 @@ test('questRewards - payload safety', async t => {
 
     assert.deepEqual(rewards, [{ type: 'money', amount: 25 }])
     assert.deepEqual(penalties, [{ type: 'band.harmony', amount: -5 }])
+  })
+
+  await t.test('rejects asset effects that name no asset to act on', () => {
+    // updateFirstMatchingAssetCondition returns state unchanged without a
+    // target, so a targetless effect would resolve the quest silently.
+    const rewards = getQuestRewards({
+      id: 'q_repair',
+      rewards: [
+        { type: 'asset.repair', amount: 20 },
+        { type: 'asset.repair', amount: 20, assetKind: '' },
+        { type: 'asset.repair', amount: 20, assetKind: 'tourbus_chassis' }
+      ]
+    })
+    const penalties = getQuestPenalties({
+      id: 'q_damage',
+      failurePenalties: [
+        { type: 'asset.damage', amount: 20 },
+        { type: 'asset.damage', amount: 20, assetId: 'asset_1' }
+      ]
+    })
+
+    assert.deepEqual(rewards, [
+      { type: 'asset.repair', amount: 20, assetKind: 'tourbus_chassis' }
+    ])
+    assert.deepEqual(penalties, [
+      { type: 'asset.damage', amount: 20, assetId: 'asset_1' }
+    ])
+  })
+
+  await t.test('applies an asset effect that carries an empty assetId', () => {
+    // hasAssetTarget accepts this payload on its assetKind, so the selector
+    // must not treat the empty assetId as "select by id" and match nothing.
+    const state = {
+      assets: [{ id: 'asset_1', kind: 'tourbus_chassis', condition: 50 }]
+    }
+
+    const next = updateFirstMatchingAssetCondition(
+      state,
+      { assetId: '', assetKind: 'tourbus_chassis' },
+      20
+    )
+
+    assert.equal(next.assets[0].condition, 70)
+  })
+
+  await t.test('rejects cooldown penalties that expire immediately', () => {
+    const penalties = getQuestPenalties({
+      id: 'q_cooldown',
+      failurePenalties: [
+        { type: 'quest.cooldown', days: 0 },
+        { type: 'quest.cooldown', days: -5 },
+        { type: 'quest.cooldown', days: 7 }
+      ]
+    })
+
+    assert.deepEqual(penalties, [{ type: 'quest.cooldown', days: 7 }])
   })
 
   await t.test('rejects follower rewards targeting non-platform fields', () => {

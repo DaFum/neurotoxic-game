@@ -7,6 +7,8 @@ import type {
 import { isForbiddenKey, isLooseRecord } from '../utils/gameState'
 import { hasForbiddenKeysDeep } from '../utils/objectUtils'
 import { isFiniteNumber } from '../utils/finiteNumber'
+import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
+import { QUEST_PROGRESS_SOURCES } from '../data/questProgressSources'
 
 const QUEST_KINDS = new Set<QuestKind>([
   'story',
@@ -49,8 +51,39 @@ const STRING_FIELDS = [
   'followupQuestId',
   'scopeKey'
 ] as const
-const isProgressRuleLike = (value: unknown): boolean =>
-  isLooseRecord(value) && typeof value.event === 'string'
+const KNOWN_RULE_EVENTS: ReadonlySet<string> = new Set([
+  ...CANONICAL_QUEST_EVENT_TYPES,
+  ...QUEST_PROGRESS_SOURCES
+])
+const PROGRESS_AMOUNT_MODES: ReadonlySet<string> = new Set([
+  'fixed',
+  'event.amount',
+  'event.score',
+  'threshold'
+])
+
+/**
+ * A rule only counts as valid when its event name is one a producer actually
+ * emits: an inline quest carrying `event: 'gig.completedd'` would otherwise be
+ * admitted, never match, and — without a deadline — hold its slot forever.
+ * Legacy `progressSource` names are accepted because `migrateLegacyQuestSchema`
+ * folds them into rules verbatim and the progress engine canonicalizes them.
+ */
+const isProgressRuleLike = (value: unknown): boolean => {
+  if (!isLooseRecord(value)) return false
+  if (typeof value.event !== 'string' || !KNOWN_RULE_EVENTS.has(value.event)) {
+    return false
+  }
+  if (
+    value.amount !== undefined &&
+    (typeof value.amount !== 'string' ||
+      !PROGRESS_AMOUNT_MODES.has(value.amount))
+  ) {
+    return false
+  }
+  if (value.match !== undefined && !isLooseRecord(value.match)) return false
+  return true
+}
 
 /**
  * Narrows a raw quest payload before it reaches lifecycle code.
@@ -113,6 +146,24 @@ export const isQuestStateLike = (value: unknown): value is QuestState => {
     if (value[field] !== undefined && typeof value[field] !== 'string') {
       return false
     }
+  }
+  // A bare progressSource is migrated into a rule verbatim, so an unsupported
+  // name would produce exactly the never-matching rule the rule guard rejects.
+  if (
+    value.progressSource !== undefined &&
+    !QUEST_PROGRESS_SOURCES.has(value.progressSource as string)
+  ) {
+    return false
+  }
+  // `completeQuest` only writes a cooldown entry for a positive `cooldownDays`.
+  // A 'cooldown' quest without one is not blocked by `completedQuestIds`
+  // either, so it would be immediately re-acceptable — a repeatable quest
+  // wearing a one-shot policy.
+  if (
+    value.repeatPolicy === 'cooldown' &&
+    !(isFiniteNumber(value.cooldownDays) && value.cooldownDays > 0)
+  ) {
+    return false
   }
 
   // Element shape matters here, not just the container: `QuestProgress` maps

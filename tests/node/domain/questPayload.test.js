@@ -97,6 +97,33 @@ describe('parseQuestPayload', () => {
         'a non-positive required count',
         { id: 'q1', required: 0 },
         'malformed-quest'
+      ],
+      [
+        // A bare id carries no rules of its own, so an unbacked one would be
+        // added as a quest that can neither progress nor expire.
+        'a bare id no registry definition backs',
+        'quest_typo_does_not_exist',
+        'unknown-id'
+      ],
+      [
+        'an inline quest whose progress rule names no real event',
+        { id: 'q1', progressRules: [{ event: 'gig.completedd' }] },
+        'malformed-quest'
+      ],
+      [
+        'a cooldown-policy quest without a positive cooldownDays',
+        { id: 'q1', repeatPolicy: 'cooldown' },
+        'malformed-quest'
+      ],
+      [
+        'a cooldown-policy quest with a zero cooldownDays',
+        { id: 'q1', repeatPolicy: 'cooldown', cooldownDays: 0 },
+        'malformed-quest'
+      ],
+      [
+        'an unsupported legacy progressSource',
+        { id: 'q1', progressSource: 'gigs_played' },
+        'malformed-quest'
       ]
     ]
 

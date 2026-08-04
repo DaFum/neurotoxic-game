@@ -3,6 +3,7 @@ import {
   deriveCityTraits
 } from '../../../utils/mapGenerator'
 import { CONTRABAND_BY_ID } from '../../../data/contraband'
+import { SONGS_BY_ID } from '../../../data/songs'
 import { DEFAULT_MERCH_PRICES } from '../../../utils/economy'
 import { BRAND_DEALS_BY_ID } from '../../../data/brandDeals'
 import { PRACTICE_RETURN_SCENES } from '../../gameConstants'
@@ -1202,7 +1203,12 @@ export const sanitizeSetlist = (rawSetlist: unknown): GameState['setlist'] => {
     const copied = copySafePrimitiveObject(entry)
     if (copied) sanitized.push(copied)
   }
-  return normalizeSetlistForSave(sanitized)
+  // A forged or since-deleted id resolves to no song yet still counts toward
+  // `setlist.length`, so catalog membership is enforced here rather than left
+  // to the consumers that look the id up.
+  return normalizeSetlistForSave(sanitized).filter(song =>
+    SONGS_BY_ID.has(song.id)
+  )
 }
 
 /**

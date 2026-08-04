@@ -122,6 +122,17 @@ const getFallbackStore = (adapter: IStorageAdapter): InMemoryAdapter => {
 const degradedAdapters = new WeakSet<IStorageAdapter>()
 
 /**
+ * Keys whose persistent removal was refused, per adapter.
+ *
+ * @remarks
+ * `IStorageAdapter.remove` cannot report failure, so a refused removal leaves
+ * the pre-degradation value in persistent storage. Without a tombstone the
+ * deleted save reappears on the next read or reload, so removal keeps shadowing
+ * the stale value until a later write or a successful removal supersedes it.
+ */
+const removedKeys = new WeakMap<IStorageAdapter, Set<string>>()
+
+/**
  * Whether persistent storage refused a write this session, so progress lives in
  * memory only.
  *
@@ -142,6 +153,7 @@ export const resetStorageFallback = (
 ): void => {
   degradedAdapters.delete(adapter)
   fallbackStores.get(adapter)?.clear()
+  removedKeys.delete(adapter)
 }
 
 /**
@@ -165,6 +177,9 @@ export function writeStorageItem(
   value: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): boolean {
+  // A fresh value supersedes any pending removal of this key.
+  removedKeys.get(adapter)?.delete(key)
+
   if (adapter.set(key, value)) {
     // Persistence recovered for this key, so the memory entry is no longer the
     // newest value and must stop shadowing the persisted one.
@@ -197,8 +212,32 @@ export function readStorageItem(
 ): string | null {
   const fallback = fallbackStores.get(adapter)
   if (fallback?.has(key)) return fallback.get(key)
+  if (removedKeys.get(adapter)?.has(key)) return null
 
   return adapter.get(key)
+}
+
+/**
+ * Lists every key visible through the guard, including keys buffered in memory
+ * after a refused write.
+ *
+ * @param adapter - Storage backend; defaults to the production singleton.
+ * @returns Sorted-order-independent list of keys, without pending removals.
+ *
+ * @remarks
+ * Callers that discover keys by prefix — the unlock markers are one key per
+ * unlock — must see the same keys `readStorageItem` would serve. Enumerating
+ * the adapter alone hides every value written after storage degraded, which
+ * makes a buffered entry unreachable for the rest of the session.
+ */
+export function listStorageKeys(
+  adapter: IStorageAdapter = defaultStorageAdapter
+): string[] {
+  const pendingRemovals = removedKeys.get(adapter)
+  const persisted = adapter.keys().filter(key => !pendingRemovals?.has(key))
+  const buffered = fallbackStores.get(adapter)?.keys() ?? []
+  if (buffered.length === 0) return persisted
+  return Array.from(new Set([...persisted, ...buffered]))
 }
 
 /**
@@ -206,13 +245,32 @@ export function readStorageItem(
  *
  * @param key - Storage key.
  * @param adapter - Storage backend; defaults to the production singleton.
+ *
+ * @remarks
+ * The adapter cannot report a refused removal, so the key is tombstoned up
+ * front and the tombstone is lifted only once a *readable* store confirms the
+ * value is gone. `adapter.get` returns `null` both for an absent key and for an
+ * unreadable store, so treating a bare `null` as proof of deletion would drop
+ * the tombstone on exactly the failure it exists for, letting a stale
+ * pre-degradation save resurface once storage recovers.
  */
 export function removeStorageItem(
   key: string,
   adapter: IStorageAdapter = defaultStorageAdapter
 ): void {
+  let pendingRemovals = removedKeys.get(adapter)
+  if (!pendingRemovals) {
+    pendingRemovals = new Set<string>()
+    removedKeys.set(adapter, pendingRemovals)
+  }
+  pendingRemovals.add(key)
+
   fallbackStores.get(adapter)?.remove(key)
   adapter.remove(key)
+
+  lastReadFailed = false
+  const survivor = adapter.get(key)
+  if (!lastReadFailed && survivor === null) pendingRemovals.delete(key)
 }
 
 /**

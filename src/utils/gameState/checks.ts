@@ -77,6 +77,43 @@ export const hasActiveSponsorship = (
   })
 }
 
+/** A cooldown entry's expiry suffix is a whole day number and nothing else. */
+const EXPIRY_DAY_PATTERN = /^\d+$/
+
+/**
+ * Parses a persisted `key` or `key:expiryDay` cooldown entry.
+ *
+ * @param entry - Untrusted cooldown entry from persisted state.
+ * @returns The cooldown key with its expiry day (`null` for a permanent legacy
+ * entry), or `null` when the entry does not match the grammar.
+ *
+ * @remarks
+ * The whole suffix must be a day number: `parseInt` accepts a valid numeric
+ * prefix, so a corrupted or hostile `event_id:999999junk` would otherwise
+ * suppress the event until day 999999. Digits alone are not enough either — a
+ * 400-digit suffix converts to `Infinity`, which every `currentDay < expiry`
+ * reader would treat as a permanent cooldown. Shared by every cooldown reader
+ * so the grammar cannot drift between them.
+ */
+export const parseCooldownEntry = (
+  entry: unknown
+): { key: string; expiryDay: number | null } | null => {
+  if (typeof entry !== 'string') return null
+
+  const separatorIndex = entry.indexOf(':')
+  const key = separatorIndex === -1 ? entry : entry.slice(0, separatorIndex)
+  if (!key) return null
+
+  const expiry = separatorIndex === -1 ? '' : entry.slice(separatorIndex + 1)
+  // No expiry means forever or legacy.
+  if (!expiry) return { key, expiryDay: null }
+
+  if (!EXPIRY_DAY_PATTERN.test(expiry)) return null
+  const expiryDay = Number(expiry)
+  if (!Number.isFinite(expiryDay)) return null
+  return { key, expiryDay }
+}
+
 /**
  * Checks whether an event id or scoped event key is still on cooldown.
  *
@@ -99,21 +136,16 @@ export const isOnCooldown = (
 
   // Arrays and Sets share the iterable interface, so no conversion is needed.
   for (const cd of gameState.eventCooldowns) {
-    const [key, expiryStr] = (typeof cd === 'string' ? cd : '').split(':')
-    if (!key) continue
+    const parsed = parseCooldownEntry(cd)
+    if (!parsed) continue
+    const { key, expiryDay } = parsed
 
     // Exact match
     const isMatch =
       (contextId && key === `${eventId}_${contextId}`) || key === eventId
     if (isMatch) {
-      if (expiryStr) {
-        const expiry = parseInt(expiryStr, 10)
-        if (!isNaN(expiry) && currentDay < expiry) {
-          return true
-        }
-      } else {
-        return true // No expiry means forever or legacy
-      }
+      if (expiryDay === null) return true
+      if (currentDay < expiryDay) return true
     }
   }
   return false

@@ -313,7 +313,7 @@ describe('GameState Context - Event System', () => {
     expect(screen.getByTestId('pending-events')).toHaveTextContent('0')
   })
 
-  test('triggerEvent does not pop pending queue when processed event is not head', async () => {
+  test('triggerEvent pops the played pending event even when it is not the head', async () => {
     const { eventEngine } = await import('../../src/utils/eventEngine')
     eventEngine.checkEvent.mockReturnValue({
       id: 'event_second',
@@ -369,8 +369,11 @@ describe('GameState Context - Event System', () => {
     act(() => {
       screen.getByText('Trigger Event').click()
     })
+    // Selection may skip an ineligible head, so the played event is removed by
+    // id wherever it sits — leaving it queued would replay it on the next
+    // trigger. The skipped head stays for its own later re-evaluation.
     expect(screen.getByTestId('pending-events')).toHaveTextContent(
-      '["event_bad_press","event_second"]'
+      '["event_bad_press"]'
     )
   })
 

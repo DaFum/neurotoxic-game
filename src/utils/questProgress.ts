@@ -13,6 +13,7 @@ import type {
 import { QuestLifecycle } from '../domain/questLifecycle'
 import { getQuestDefinition } from '../data/questRegistry'
 import { CANONICAL_QUEST_EVENT_TYPES } from '../data/questEventTypes'
+import { LEGACY_QUEST_EVENT_TYPES } from '../data/questProgressSources'
 import { isForbiddenKey, isLooseRecord } from './objectUtils'
 import { finiteNumberOr, isFiniteNumber } from './finiteNumber'
 
@@ -70,31 +71,6 @@ type LegacyQuestProgressEvent =
   | { type: 'travel_completed'; region: string }
 
 export type QuestProgressEvent = QuestEvent | LegacyQuestProgressEvent
-
-const LEGACY_EVENT_TYPES: Record<QuestProgressSource, QuestEventType> = {
-  gig_completed: 'gig.completed',
-  good_gig: 'gig.good',
-  small_venue_good_gig: 'gig.smallVenueGood',
-  social_post: 'social.postResolved',
-  followers_gained: 'social.followersGained',
-  fame_gained: 'fame.gained',
-  money_earned: 'economy.moneyEarned',
-  harmony_recovered: 'band.harmonyChanged',
-  item_collected: 'item.collected',
-  item_delivered: 'item.delivered',
-  item_crafted: 'item.crafted',
-  brand_deal_completed: 'brand.dealCompleted',
-  brand_deal_failed: 'brand.dealFailed',
-  brand_trust_changed: 'brand.trustChanged',
-  travel_completed: 'travel.completed',
-  minigame_perfected: 'minigame.perfect',
-  asset_risk_triggered: 'asset.riskTriggered',
-  asset_risk_resolved: 'asset.riskResolved',
-  venue_blacklisted: 'venue.blacklisted',
-  venue_unblacklisted: 'venue.unblacklisted',
-  region_reputation_changed: 'region.reputationChanged',
-  story_flag_added: 'story.flagAdded'
-}
 
 const CANONICAL_EVENT_TYPES = new Set<string>(CANONICAL_QUEST_EVENT_TYPES)
 const BRAND_DEAL_TYPES = new Set<string>([
@@ -157,7 +133,7 @@ const canonicalizeEventType = (
   if (CANONICAL_EVENT_TYPES.has(eventType)) {
     return eventType as QuestEventType
   }
-  return LEGACY_EVENT_TYPES[eventType as QuestProgressSource]
+  return LEGACY_QUEST_EVENT_TYPES[eventType as QuestProgressSource]
 }
 
 /**

@@ -68,6 +68,75 @@ describe('storage write guard', () => {
     expect(readStorageItem('key')).toBeNull()
   })
 
+  it('keeps hiding the persisted value when removal is refused', () => {
+    localStorage.setItem('key', 'stale')
+    const setItem = denyWrites()
+
+    // Private browsing can refuse removal too, and the adapter cannot report
+    // it — without a tombstone the older persisted save resurfaces.
+    const removeItem = vi
+      .spyOn(window.localStorage, 'removeItem')
+      .mockImplementation(() => {
+        throw new DOMException('SecurityError')
+      })
+
+    try {
+      writeStorageItem('key', 'newest')
+      removeStorageItem('key')
+      expect(localStorage.getItem('key')).toBe('stale')
+      expect(readStorageItem('key')).toBeNull()
+    } finally {
+      removeItem.mockRestore()
+      setItem.mockRestore()
+    }
+  })
+
+  it('keeps the tombstone when the verification read is unreadable', () => {
+    localStorage.setItem('key', 'stale')
+    const removeItem = vi
+      .spyOn(window.localStorage, 'removeItem')
+      .mockImplementation(() => {
+        throw new DOMException('SecurityError')
+      })
+    // `getItem` returning null means "absent" OR "unreadable"; treating the
+    // unreadable case as proof of deletion would drop the tombstone and let
+    // the stale value resurface once storage recovers.
+    const getItem = vi
+      .spyOn(window.localStorage, 'getItem')
+      .mockImplementation(() => {
+        throw new DOMException('SecurityError')
+      })
+
+    try {
+      removeStorageItem('key')
+    } finally {
+      getItem.mockRestore()
+      removeItem.mockRestore()
+    }
+
+    expect(localStorage.getItem('key')).toBe('stale')
+    expect(readStorageItem('key')).toBeNull()
+  })
+
+  it('stops shadowing a tombstoned key once it is written again', () => {
+    localStorage.setItem('key', 'stale')
+    const removeItem = vi
+      .spyOn(window.localStorage, 'removeItem')
+      .mockImplementation(() => {
+        throw new DOMException('SecurityError')
+      })
+
+    try {
+      removeStorageItem('key')
+      expect(readStorageItem('key')).toBeNull()
+    } finally {
+      removeItem.mockRestore()
+    }
+
+    writeStorageItem('key', 'fresh')
+    expect(readStorageItem('key')).toBe('fresh')
+  })
+
   it('prefers the memory entry over the stale persisted value', () => {
     localStorage.setItem('key', 'stale')
     denyWrites()

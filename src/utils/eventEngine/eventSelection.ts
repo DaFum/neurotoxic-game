@@ -1,6 +1,6 @@
 import { logger } from '../logger'
 import { secureRandom } from '../crypto'
-import { finiteNumberOr } from '../gameState'
+import { finiteNumberOr, parseCooldownEntry } from '../gameState'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { StateError } from '../errorHandler'
 import { shuffleInPlace } from '../shuffleUtils'
@@ -71,6 +71,32 @@ const getEventMapForPool = (pool: EngineEvent[]): EventPoolById => {
 }
 
 /**
+ * Resolves a selected event's dynamic title and description templates.
+ *
+ * @param eligible - Selected event with the context vars its condition produced.
+ * @param gameState - State snapshot supplying the venue template variable.
+ * @returns The event with resolved text and the context vars used.
+ */
+const resolveEventText = (
+  eligible: { event: EngineEvent; contextvars: Record<string, string> },
+  gameState: EngineGameState
+) => {
+  const { event, contextvars } = eligible
+  logger.debug('EventEngine', 'Event Selected', event.id)
+
+  // Dynamic text parsing
+  const variables: Record<string, string> = {
+    ...contextvars,
+    venue: String(gameState.player?.location || 'the venue')
+  }
+
+  const title = resolveTemplateString(event.title || '', variables)
+  const description = resolveTemplateString(event.description || '', variables)
+
+  return { ...event, title, description, context: variables }
+}
+
+/**
  * Selects one eligible event from a pool using trigger, cooldown, flags, and chance.
  *
  * @param pool - Candidate events to evaluate.
@@ -92,14 +118,10 @@ const selectEvent = (
   const currentDay = finiteNumberOr(gameState.player?.day, 0)
   const activeCooldowns: string[] = []
   for (const cd of eventCooldowns) {
-    const [key, expiryStr] = cd.split(':')
-    if (expiryStr) {
-      const expiry = parseInt(expiryStr, 10)
-      if (!isNaN(expiry) && currentDay < expiry) {
-        if (key) activeCooldowns.push(key)
-      }
-    } else {
-      if (key) activeCooldowns.push(key)
+    const parsed = parseCooldownEntry(cd)
+    if (!parsed) continue
+    if (parsed.expiryDay === null || currentDay < parsed.expiryDay) {
+      activeCooldowns.push(parsed.key)
     }
   }
 
@@ -124,14 +146,31 @@ const selectEvent = (
   }
 
   // 1. Pending Events (Highest Priority)
-  if (pendingEvents.length > 0) {
-    const nextEventId = pendingEvents[0]
-    const pendingEvent =
-      typeof nextEventId === 'string'
-        ? getEventMapForPool(pool)[nextEventId]
-        : undefined
-    if (pendingEvent) {
-      return pendingEvent
+  //
+  // Priority means skipping the chance roll, not the eligibility rules: a queued
+  // event still has to clear its cooldown and its condition, and its text is
+  // template-resolved like any other selected event. Returning the head
+  // unchecked let a stale or duplicated entry replay a one-shot event whose
+  // condition (`consequences_comeback_album` guards on COMEBACK_TRIGGERED) says
+  // it is already done.
+  //
+  // The queue is scanned in order rather than head-only: an entry that is
+  // ineligible right now (or belongs to another pool) must not hold up the
+  // entries behind it. `POP_PENDING_EVENT` removes the played id wherever it
+  // sits, so skipping ahead cannot leave a played event queued.
+  //
+  // The authored trigger point is deliberately NOT enforced here — a queued
+  // event is a beat to surface at the next opportunity, not at one trigger.
+  const eventsById = pendingEvents.length > 0 ? getEventMapForPool(pool) : null
+  if (eventsById) {
+    for (const pendingId of pendingEvents) {
+      if (!pendingId || cooldownsSet.has(pendingId)) continue
+      const pendingEvent = eventsById[pendingId]
+      if (!pendingEvent) continue
+      const processed = pendingEvent.condition
+        ? processEvent(pendingEvent, optimizedState)
+        : { event: pendingEvent, contextvars: {} }
+      if (processed) return resolveEventText(processed, gameState)
     }
   }
 
@@ -246,22 +285,7 @@ const selectEvent = (
     roll -= chance
     if (roll >= 0) continue
 
-    const { event, contextvars } = eligible
-    logger.debug('EventEngine', 'Event Selected', event.id)
-
-    // Dynamic text parsing
-    const variables: Record<string, string> = {
-      ...contextvars,
-      venue: String(gameState.player?.location || 'the venue')
-    }
-
-    let title = event.title || ''
-    let description = event.description || ''
-
-    title = resolveTemplateString(title, variables)
-    description = resolveTemplateString(description, variables)
-
-    return { ...event, title, description, context: variables }
+    return resolveEventText(eligible, gameState)
   }
   return null
 }

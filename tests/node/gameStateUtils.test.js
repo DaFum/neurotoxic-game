@@ -13,7 +13,9 @@ import {
   FAME_PROGRESS_CONSTANTS,
   calculateAppliedDelta,
   isForbiddenKey,
-  isStashEntry
+  isOnCooldown,
+  isStashEntry,
+  normalizeSetlistForSave
 } from '../../src/utils/gameState'
 import {
   clampVanBreakdownChance,
@@ -47,6 +49,36 @@ test('isStashEntry accepts only null or positive integer stack counts', () => {
   assert.equal(isStashEntry({ stacks: Number.POSITIVE_INFINITY }), false)
   assert.equal(isStashEntry({ stacks: -1 }), false)
   assert.equal(isStashEntry({ stacks: 1.5 }), false)
+})
+
+test('isOnCooldown requires a whole-day expiry suffix', () => {
+  const onCooldown = cooldown =>
+    isOnCooldown({ eventCooldowns: [cooldown], player: { day: 5 } }, 'event_id')
+
+  assert.equal(onCooldown('event_id:40'), true)
+  assert.equal(onCooldown('event_id:5'), false)
+  // A malformed persisted suffix must be rejected outright: `parseInt` accepts
+  // a numeric prefix, so these would suppress the event until day 999999.
+  assert.equal(onCooldown('event_id:999999junk'), false)
+  assert.equal(onCooldown('event_id:40.5'), false)
+  assert.equal(onCooldown('event_id:999999:junk'), false)
+  assert.equal(onCooldown('event_id: 40'), false)
+  assert.equal(onCooldown('event_id:-40'), false)
+  // Digits alone are not enough: a 400-digit suffix converts to Infinity,
+  // which `currentDay < expiry` would read as a permanent cooldown.
+  assert.equal(onCooldown(`event_id:${'9'.repeat(400)}`), false)
+  // No suffix at all still means a permanent (legacy) cooldown.
+  assert.equal(onCooldown('event_id'), true)
+})
+
+test('normalizeSetlistForSave drops entries without a non-empty id', () => {
+  assert.deepEqual(normalizeSetlistForSave(['song_1', { id: 'song_2' }]), [
+    { id: 'song_1' },
+    { id: 'song_2' }
+  ])
+  // An empty id resolves to no song but would still count toward
+  // `setlist.length`, which the Band HQ practice gate reads.
+  assert.deepEqual(normalizeSetlistForSave(['', { id: '' }]), [])
 })
 
 test('calculateFameLevel', () => {

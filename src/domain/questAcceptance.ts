@@ -70,6 +70,7 @@ export type CanAcceptQuestResult =
         | 'scope'
         | 'slot'
         | 'invalid'
+        | 'unknown'
     }
 
 /**
@@ -103,6 +104,12 @@ export const canAcceptQuest = (
   }
   const definition = getQuestDefinition(questId) as
     Partial<QuestState> | undefined
+  // A bare id is a registry reference and carries no rules of its own, so an
+  // unbacked one would be accepted as a quest that can neither progress nor
+  // expire. Object payloads keep working: an inline quest brings its own rules.
+  if (typeof questOrId === 'string' && !definition) {
+    return { ok: false, reason: 'unknown' }
+  }
   const merged: Partial<QuestState> =
     typeof questOrId === 'string'
       ? { id: questId, ...(definition ?? {}) }

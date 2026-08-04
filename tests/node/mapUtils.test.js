@@ -189,6 +189,37 @@ describe('mapUtils', () => {
       )
     })
 
+    test('counts an affordable START return as an escape route', () => {
+      // The travel gate admits every START node regardless of connectivity,
+      // and generated connections only point one layer forward.
+      const forwardOnlyMap = {
+        nodes: {
+          HQ: { id: 'HQ', type: 'START' },
+          A: { id: 'A', type: 'REST' },
+          B: { id: 'B', type: 'GIG' }
+        },
+        connections: [
+          { from: 'HQ', to: 'A' },
+          { from: 'A', to: 'B' }
+        ]
+      }
+      mockCalculateRefuelCost.mock.mockImplementation(() => 50)
+      mockCalculateTravelExpenses.mock.mockImplementation(node => ({
+        fuelLiters: node.type === 'START' ? 10 : 30,
+        totalCost: 0
+      }))
+      const player = { currentNodeId: 'A', van: { fuel: 20 }, money: 40 }
+
+      assert.equal(checkSoftlock(forwardOnlyMap, player), false)
+
+      // Unaffordable HQ return: still stranded.
+      mockCalculateTravelExpenses.mock.mockImplementation(() => ({
+        fuelLiters: 30,
+        totalCost: 0
+      }))
+      assert.equal(checkSoftlock(forwardOnlyMap, player), true)
+    })
+
     test('handles missing van object gracefully', () => {
       mockCalculateTravelExpenses.mock.mockImplementation(() => ({
         fuelLiters: 10

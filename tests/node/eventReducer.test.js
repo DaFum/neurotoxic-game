@@ -12,7 +12,7 @@ mock.module(new URL('../../src/utils/unlockCheck.ts', import.meta.url).href, {
 })
 
 // Using a dynamic import so the mock applies before the module is loaded
-const { handleSetActiveEvent, handleApplyEventDelta } =
+const { handleSetActiveEvent, handleApplyEventDelta, handlePopPendingEvent } =
   await import('../../src/context/reducers/eventReducer')
 
 describe('eventReducer', () => {
@@ -33,6 +33,41 @@ describe('eventReducer', () => {
       toasts: [],
       inventory: {},
       activeStoryFlags: []
+    })
+  })
+
+  describe('handlePopPendingEvent', () => {
+    it('drops the head when no id is supplied', () => {
+      const state = { ...baseState, pendingEvents: ['a', 'b'] }
+
+      assert.deepEqual(handlePopPendingEvent(state).pendingEvents, ['b'])
+      assert.deepEqual(handlePopPendingEvent(state, {}).pendingEvents, ['b'])
+    })
+
+    it('removes the played id from anywhere in the queue', () => {
+      // Selection may skip an ineligible head, so the played event is not
+      // necessarily at index 0 — leaving it queued would replay it.
+      const state = { ...baseState, pendingEvents: ['blocked', 'played'] }
+
+      assert.deepEqual(
+        handlePopPendingEvent(state, { eventId: 'played' }).pendingEvents,
+        ['blocked']
+      )
+    })
+
+    it('removes only the first occurrence of a duplicated id', () => {
+      const state = { ...baseState, pendingEvents: ['dup', 'other', 'dup'] }
+
+      assert.deepEqual(
+        handlePopPendingEvent(state, { eventId: 'dup' }).pendingEvents,
+        ['other', 'dup']
+      )
+    })
+
+    it('returns the same state for an id that is not queued', () => {
+      const state = { ...baseState, pendingEvents: ['a'] }
+
+      assert.equal(handlePopPendingEvent(state, { eventId: 'absent' }), state)
     })
   })
 
