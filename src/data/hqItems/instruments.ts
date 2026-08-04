@@ -5,7 +5,7 @@ import type { PurchaseItem } from '../../types/components'
  *
  * @remarks
  * Each instrument provides passive statistical modifiers that influence gameplay mechanics,
- * such as performance difficulty, crowd decay rates, or drum combo multipliers. These items
+ * such as performance difficulty, crowd decay rates, or drum-lane score multipliers. These items
  * range from high-end gear to broken or meme-tier equipment, impacting the band's overall
  * capabilities during gigs.
  */
