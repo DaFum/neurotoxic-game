@@ -69,7 +69,12 @@ export const processAssetTick = (state: GameState): GameState => {
   let moodDelta = 0
   let staminaDelta = 0
 
-  const nextAssets = state.assets.map((asset: LongTermAsset) => {
+  // ⚡ BOLT OPTIMIZATION: Replaced Array.map with a procedural loop to avoid closure allocation.
+  const nextAssets: LongTermAsset[] = []
+  for (let i = 0; i < state.assets.length; i++) {
+    const asset = state.assets[i]
+    if (!asset) continue
+
     const boni = getAssetAggregateBoni(asset)
     const condition = Math.max(
       0,
@@ -87,8 +92,9 @@ export const processAssetTick = (state: GameState): GameState => {
     fameDelta += finiteNumberOr(boni.famePassivePerDay, 0)
     moodDelta += finiteNumberOr(boni.bandMoodPerDay, 0)
     staminaDelta += finiteNumberOr(boni.staminaRegenBonusPerDay, 0)
-    return { ...asset, condition }
-  })
+
+    nextAssets.push({ ...asset, condition })
+  }
 
   const currentFame = finiteNumberOr(state.player.fame, 0)
   const nextFame = Math.max(0, currentFame + fameDelta)
@@ -116,32 +122,34 @@ export const processAssetTick = (state: GameState): GameState => {
           money: nextMoney
         }
 
-  const nextBand =
+  let nextBand = state.band
+  if (
     (moodDelta !== 0 || staminaDelta !== 0) &&
     state.band &&
     Array.isArray(state.band.members)
-      ? {
-          ...state.band,
-          members: state.band.members.map((member: BandMember) => ({
-            ...member,
-            ...(moodDelta !== 0
-              ? {
-                  mood: clampMemberMood(
-                    finiteNumberOr(member.mood, 0) + moodDelta
-                  )
-                }
-              : {}),
-            ...(staminaDelta !== 0
-              ? {
-                  stamina: clampMemberStamina(
-                    finiteNumberOr(member.stamina, 0) + staminaDelta,
-                    finiteNumberOr(member.staminaMax, 100)
-                  )
-                }
-              : {})
-          }))
-        }
-      : state.band
+  ) {
+    // ⚡ BOLT OPTIMIZATION: Replaced Array.map with a procedural loop to avoid closure allocation.
+    const nextMembers: BandMember[] = []
+    for (let i = 0; i < state.band.members.length; i++) {
+      const member = state.band.members[i]
+      if (!member) continue
+
+      const updatedMember = { ...member }
+      if (moodDelta !== 0) {
+        updatedMember.mood = clampMemberMood(
+          finiteNumberOr(member.mood, 0) + moodDelta
+        )
+      }
+      if (staminaDelta !== 0) {
+        updatedMember.stamina = clampMemberStamina(
+          finiteNumberOr(member.stamina, 0) + staminaDelta,
+          finiteNumberOr(member.staminaMax, 100)
+        )
+      }
+      nextMembers.push(updatedMember)
+    }
+    nextBand = { ...state.band, members: nextMembers }
+  }
 
   return {
     ...state,
@@ -211,26 +219,35 @@ export const processLiabilityTick = (
     }
   }
 
-  for (const id of Object.keys(nextLiabilities)) {
-    const l = nextLiabilities[id]
-    if (l && foreclosedAssetIds.has(l.assetId)) {
-      delete nextLiabilities[id]
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop to avoid array allocation.
+  for (const id in nextLiabilities) {
+    if (Object.hasOwn(nextLiabilities, id)) {
+      const l = nextLiabilities[id]
+      if (l && foreclosedAssetIds.has(l.assetId)) {
+        delete nextLiabilities[id]
+      }
     }
   }
   const finalLiabilities = nextLiabilities
 
-  const stateAssets = (state.assets || []).filter(Boolean)
-  const nextAssets = stateAssets.filter(
-    asset => !foreclosedAssetIds.has(asset.id)
-  )
-  const foreclosedKinds: AssetKind[] = [
-    ...new Set(
-      stateAssets
-        .filter(asset => foreclosedAssetIds.has(asset.id))
-        .map(asset => asset.kind)
-        .filter((kind): kind is AssetKind => kind !== undefined)
-    )
-  ]
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map().filter() with a single-pass loop to eliminate multiple intermediate array allocations.
+  const assets = state.assets || []
+  const nextAssets: LongTermAsset[] = []
+  const foreclosedKindsSet = new Set<AssetKind>()
+
+  for (let i = 0; i < assets.length; i++) {
+    const asset = assets[i]
+    if (!asset) continue
+
+    if (foreclosedAssetIds.has(asset.id)) {
+      if (asset.kind !== undefined) {
+        foreclosedKindsSet.add(asset.kind)
+      }
+    } else {
+      nextAssets.push(asset)
+    }
+  }
+  const foreclosedKinds: AssetKind[] = Array.from(foreclosedKindsSet)
 
   return {
     state: {

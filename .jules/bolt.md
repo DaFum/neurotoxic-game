@@ -194,3 +194,7 @@
 
 **Learning:** `Object.keys(obj)` allocates an array on every invocation. When applied to frequent operations like game state delta applications, sanitizers (e.g. loading game save files, handling high-frequency `APPLY_EVENT_DELTA` payloads), this causes unnecessary short-lived arrays that place heavy pressure on GC.
 **Action:** Replace `Object.keys(obj)` iterations with `for...in` loops combined with `Object.hasOwn()` checks on these hot paths to eliminate the array allocation overhead completely. Make sure to retain any empty-string rejection checks (e.g. `if (!key && key !== '') continue`) when refactoring these iterators to preserve the old `Object.keys` behavior of not skipping empty strings.
+
+## 2026-08-04 - Procedural Loops vs IIFEs for Array Replacements
+**Learning:** Replacing `.map()` with a procedural loop wrapped inside an Immediately Invoked Function Expression (IIFE) (e.g., `(function() { ... })()`) to avoid closure allocation is an anti-pattern. It degrades readability while still allocating a closure, completely defeating the purpose of the optimization.
+**Action:** Stick to standard procedural `for` loops initialized before assignment if replacing array iteration methods for GC optimization. If a localized assignment is required and a standard loop reduces readability significantly, leave the declarative method (like `.map()`) in place, as micro-optimizing it with an IIFE yields no real benefit.
