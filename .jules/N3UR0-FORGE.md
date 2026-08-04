@@ -140,4 +140,4 @@ After travel, the band can acquire an item with special effects to use.
 
  **Feature:** Feedback Loop Hazard
 
- **Description:** Autonomously expanded the amp calibration minigame with a new 'Feedback Loop' hazard conforming to Kranker Schrank lore. Massive heat generation forces immediate user dampening action to avoid losing overdrive. Extended component props, integrated Brutalist UI alerts, enforced reducer boundaries with a +20 economy bonus, and expanded unit tests.
+ **Description:** Autonomously expanded the amp calibration minigame with a new 'Feedback Loop' hazard conforming to Kranker Schrank lore. Massive heat generation forces immediate user dampening action to avoid losing overdrive. Extended component props, integrated Brutalist UI alerts, bounded the dampened-loop count at the reducer boundary, applied a clamped +20 economy bonus per dampened loop, and expanded unit tests.
