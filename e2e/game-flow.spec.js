@@ -256,60 +256,6 @@ test.describe('Game Flow', () => {
       await hqHeading.waitFor({ state: 'hidden' })
     }
 
-    // Seed 1 exposes a reachable GIG in layer 1. Match the semantic marker
-    // rather than venue names, because a venue can be assigned another node type.
-    const getTravelNode = () =>
-      page
-        .getByRole('button', { name: /travel to/i })
-        .filter({
-          has: page.getByRole('img', {
-            name: /map marker: (?:gig|festival)/i
-          })
-        })
-        .first()
-    const tryStartTravel = async () => {
-      const travelNode = getTravelNode()
-      const selected = await travelNode
-        .click({ timeout: 2000 })
-        .then(() => true)
-        .catch(() => false)
-      if (!selected) return false
-
-      const confirmVisible = await page
-        .getByText('CONFIRM?')
-        .filter({ visible: true })
-        .waitFor({ state: 'visible', timeout: 2000 })
-        .then(() => true)
-        .catch(() => false)
-      if (!confirmVisible) return false
-
-      return travelNode
-        .click({ timeout: 2000 })
-        .then(() => true)
-        .catch(() => false)
-    }
-    await getTravelNode().waitFor({ state: 'visible', timeout: 5000 })
-    await page.evaluate(() => globalThis.__restoreGoldenPathClock?.())
-
-    expect(await tryStartTravel()).toBe(true)
-
-    // 2. Tourbus Minigame -> Wait for completion
-    // Wait for scene to load
-    const tourbusHeading = page.getByRole('heading', {
-      name: /tourbus terror/i
-    })
-    const tourbusMoveLeftBtn = page.getByRole('button', { name: /move left/i })
-    await expect(tourbusHeading).toBeVisible({
-      timeout: 10000
-    })
-
-    // Tourbus completion can branch:
-    // - show a "Continue" button, or
-    // - return directly to overworld with an event modal.
-    const destReachedBtn = page.getByRole('button', {
-      name: /continue/i,
-      exact: true
-    })
     const dismissTopEventDialog = async () => {
       const eventDialog = page.getByRole('dialog').first()
       const hasDialog = await eventDialog
@@ -361,6 +307,86 @@ test.describe('Game Flow', () => {
         )
         .toBe(true)
     }
+    // Seed 1 exposes a reachable GIG in layer 1. Match the semantic marker
+    // rather than venue names, because a venue can be assigned another node type.
+    const getTravelNode = () =>
+      page
+        .getByRole('button', { name: /travel to/i })
+        .filter({
+          has: page.getByRole('img', {
+            name: /map marker: (?:gig|festival)/i
+          })
+        })
+        .first()
+    const tryStartTravel = async () => {
+      const travelNode = getTravelNode()
+      const selected = await travelNode
+        .click({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+      if (!selected) return false
+
+      const confirmVisible = await page
+        .getByText('CONFIRM?')
+        .filter({ visible: true })
+        .waitFor({ state: 'visible', timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+      if (!confirmVisible) return false
+
+      return travelNode
+        .click({ timeout: 2000 })
+        .then(() => true)
+        .catch(() => false)
+    }
+    // Poll instead of a short hard wait: the overworld lazy-loads its Pixi map
+    // and node icons (whose generated-image requests time out on CI), and a
+    // day-start event dialog can be sitting on top. A fixed 5s wait made this
+    // the only step in the flow without slack and flaked on contended runners.
+    await waitForUnblockedTarget(getTravelNode(), 20000)
+    await page.evaluate(() => globalThis.__restoreGoldenPathClock?.())
+
+    // Retry the whole select -> CONFIRM? -> confirm handshake until the scene
+    // actually changes. On a contended runner the node re-animates under the
+    // first click and the CONFIRM? label can lag it, so asserting the first
+    // attempt flaked. Leaving the overworld is the real success condition: a
+    // second click on an already-pending node confirms travel, which a strict
+    // per-attempt result would misreport as a failure.
+    await expect
+      .poll(
+        async () => {
+          if (await dismissTopEventDialog()) return false
+          const inOverworld = await tourPlanHeading
+            .isVisible({ timeout: 500 })
+            .catch(() => false)
+          if (!inOverworld) return true
+
+          await tryStartTravel()
+          return !(await tourPlanHeading
+            .isVisible({ timeout: 1000 })
+            .catch(() => false))
+        },
+        { timeout: 30000, intervals: [500, 1000] }
+      )
+      .toBe(true)
+
+    // 2. Tourbus Minigame -> Wait for completion
+    // Wait for scene to load
+    const tourbusHeading = page.getByRole('heading', {
+      name: /tourbus terror/i
+    })
+    const tourbusMoveLeftBtn = page.getByRole('button', { name: /move left/i })
+    await expect(tourbusHeading).toBeVisible({
+      timeout: 10000
+    })
+
+    // Tourbus completion can branch:
+    // - show a "Continue" button, or
+    // - return directly to overworld with an event modal.
+    const destReachedBtn = page.getByRole('button', {
+      name: /continue/i,
+      exact: true
+    })
     const isInTourbusScene = async () => {
       const byHeading = await tourbusHeading
         .isVisible({ timeout: 300 })
@@ -577,14 +603,26 @@ test.describe('Game Flow', () => {
       page.getByRole('button', { name: /reject all offers/i })
     )
 
-    // PostGig completion
+    // PostGig completion -> 7. Back to Overworld.
+    // The overworld remounts its Pixi map here and its generated textures time
+    // out on CI, so the transition can outlast a 10s wait. Poll on arrival and
+    // re-click while the completion screen is still up: a click that lands
+    // mid-dismiss of an overlay leaves the scene unchanged.
     const backToTourBtn = page.getByRole('button', { name: /back to tour/i })
-    await clickUnblockedTarget(backToTourBtn)
+    await expect
+      .poll(
+        async () => {
+          if (await dismissTopEventDialog()) return false
+          const arrived = await tourPlanHeading
+            .isVisible({ timeout: 500 })
+            .catch(() => false)
+          if (arrived) return true
 
-    // 7. Back to Overworld
-    await waitForUnblockedTarget(
-      page.getByRole('heading', { name: /tour plan/i }),
-      10000
-    )
+          await backToTourBtn.click({ timeout: 1000 }).catch(() => {})
+          return tourPlanHeading.isVisible({ timeout: 1000 }).catch(() => false)
+        },
+        { timeout: 30000, intervals: [500, 1000] }
+      )
+      .toBe(true)
   })
 })
