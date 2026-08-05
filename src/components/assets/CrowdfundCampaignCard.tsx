@@ -4,13 +4,24 @@ import { getCrowdfundImagePrompt } from '../../utils/imageGen'
 import { formatCurrency } from '../../utils/numberUtils'
 import type { CrowdfundCampaign } from '../../types/assets'
 
+/**
+ * Defines the configuration properties for the CrowdfundCampaignCard component.
+ */
 interface Props {
+  /** The campaign data model describing the active crowdfund objective. */
   campaign: CrowdfundCampaign
 }
 
 /**
- * Compact campaign card for the LiabilitiesPanel / hub overview.
- * Shows target, days remaining, fame stake, and a pitch image.
+ * Renders a compact overview of an active crowdfunding campaign.
+ *
+ * @remarks
+ * This card displays critical campaign metrics including the funding target, time remaining,
+ * and the player's staked fame. It is intended for embedding within high-level overviews
+ * such as the LiabilitiesPanel and Asset Hub summaries.
+ *
+ * @param props - The component properties.
+ * @returns A UI container visualizing the current campaign status.
  */
 export const CrowdfundCampaignCard = ({ campaign }: Props) => {
   const { t, i18n } = useTranslation(['assets'])
