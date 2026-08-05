@@ -211,6 +211,10 @@ function applyAmpFeedbackLoop(
 
     // Feedback loop instantly maxes out interference
     refs.interferenceRef.current = 100
+
+    // Disable overdrive when feedback loop starts
+    refs.isOverdriveActiveRef.current = false
+    setters.setIsOverdriveActive(false)
   }
 
   if (refs.isFeedbackLoopActiveRef.current) {

@@ -1823,5 +1823,10 @@
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
   "visual_interface": "VISUAL INTERFACE",
-  "minigames.amp.completion.feedbackDampened": "Feedback Loops Dampened: {{feedbackLoopsDampened}}"
+  "minigames.amp.completion.feedbackDampened": "Feedback Loops Dampened: {{feedbackLoopsDampened}}",
+  "minigames.amp.controls.dampenFeedback": "DAMPEN FEEDBACK",
+  "minigames.amp.controls.dampenFeedbackExclamation": "! DAMPEN FEEDBACK !",
+  "minigames.amp.hud.feedbackLoop": "FEEDBACK LOOP",
+  "minigames.amp.hud.criticalHeatImminent": "Critical Heat Imminent",
+  "minigames.amp.hud.loopsDampened": "LOOPS DAMPENED:"
 }

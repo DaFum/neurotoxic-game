@@ -67,9 +67,13 @@ export const AmpControls = memo(function AmpControls({
           type='button'
           onClick={dampenFeedback}
           className='w-full py-4 bg-warning-yellow text-void-black font-black text-2xl uppercase tracking-widest animate-pulse border-4 border-blood-red shadow-[0_0_20px_var(--color-warning-yellow)] hover:bg-blood-red hover:text-star-white hover:border-warning-yellow transition-all focus-visible:ring-2 focus-visible:ring-blood-red'
-          aria-label='DAMPEN FEEDBACK'
+          aria-label={t('ui:minigames.amp.controls.dampenFeedback', {
+            defaultValue: 'DAMPEN FEEDBACK'
+          })}
         >
-          ! DAMPEN FEEDBACK !
+          {t('ui:minigames.amp.controls.dampenFeedbackExclamation', {
+            defaultValue: '! DAMPEN FEEDBACK !'
+          })}
         </button>
       )}
 

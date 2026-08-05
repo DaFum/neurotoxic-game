@@ -1823,5 +1823,10 @@
   "unit.km": "km",
   "unlocked": "FREIGESCHALTET: {{unlock}}!",
   "visual_interface": "VISUELLE SCHNITTSTELLE",
-  "minigames.amp.completion.feedbackDampened": "Feedback-Loops gedämpft: {{feedbackLoopsDampened}}"
+  "minigames.amp.completion.feedbackDampened": "Feedback-Loops gedämpft: {{feedbackLoopsDampened}}",
+  "minigames.amp.controls.dampenFeedback": "FEEDBACK DÄMPFEN",
+  "minigames.amp.controls.dampenFeedbackExclamation": "! FEEDBACK DÄMPFEN !",
+  "minigames.amp.hud.feedbackLoop": "FEEDBACK-LOOP",
+  "minigames.amp.hud.criticalHeatImminent": "Kritische Überhitzung droht",
+  "minigames.amp.hud.loopsDampened": "GEDÄMPFTE LOOPS:"
 }

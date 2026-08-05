@@ -209,10 +209,14 @@ export const AmpHUD = memo(function AmpHUD({
         {isFeedbackLoopActive && (
           <div className='mt-2 w-48 border-2 border-warning-yellow p-2 bg-blood-red/80 motion-safe:animate-pulse'>
             <div className='text-center uppercase text-xs font-black text-warning-yellow mb-1'>
-              FEEDBACK LOOP
+              {t('ui:minigames.amp.hud.feedbackLoop', {
+                defaultValue: 'FEEDBACK LOOP'
+              })}
             </div>
             <div className='text-center text-[10px] text-star-white uppercase'>
-              Critical Heat Imminent
+              {t('ui:minigames.amp.hud.criticalHeatImminent', {
+                defaultValue: 'Critical Heat Imminent'
+              })}
             </div>
           </div>
         )}
@@ -220,7 +224,9 @@ export const AmpHUD = memo(function AmpHUD({
         {feedbackLoopsDampened > 0 && (
           <div className='mt-2 w-48 flex justify-between items-center'>
             <span className='uppercase text-xs text-ash-gray'>
-              LOOPS DAMPENED:
+              {t('ui:minigames.amp.hud.loopsDampened', {
+                defaultValue: 'LOOPS DAMPENED:'
+              })}
             </span>
             <span className='text-toxic-green text-xs font-bold'>
               {feedbackLoopsDampened}

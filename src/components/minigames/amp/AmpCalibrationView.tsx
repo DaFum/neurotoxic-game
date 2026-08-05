@@ -111,7 +111,7 @@ export const AmpCalibrationView = ({
         )}
       </div>
     ),
-    [t, score, voidResonance, hijacksOverridden]
+    [t, score, voidResonance, hijacksOverridden, feedbackLoopsDampened]
   )
 
   return (
