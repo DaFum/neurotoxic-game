@@ -390,7 +390,14 @@ export const sellChassis = (
 
     if (grossSale !== null) {
       let totalPrincipalRemaining = 0
-      for (const liability of Object.values(state.liabilities ?? {})) {
+      // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop.
+      // Why: Avoid allocating an intermediate array for GC.
+      // Impact: Reduces GC pressure by avoiding array allocation when checking liabilities during a sale.
+      const safeLiabilities = state.liabilities ?? {}
+      for (const liabilityId in safeLiabilities) {
+        if (!Object.hasOwn(safeLiabilities, liabilityId)) continue
+        const liability = safeLiabilities[liabilityId]
+        if (!liability) continue
         if (liability.assetId !== assetId) continue
         totalPrincipalRemaining += Math.max(
           0,

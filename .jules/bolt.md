@@ -198,3 +198,7 @@
 ## 2026-08-04 - Procedural Loops vs IIFEs for Array Replacements
 **Learning:** Replacing `.map()` with a procedural loop wrapped inside an Immediately Invoked Function Expression (IIFE) (e.g., `(function() { ... })()`) to avoid closure allocation is an anti-pattern. It degrades readability while still allocating a closure, completely defeating the purpose of the optimization.
 **Action:** Stick to standard procedural `for` loops initialized before assignment if replacing array iteration methods for GC optimization. If a localized assignment is required and a standard loop reduces readability significantly, leave the declarative method (like `.map()`) in place, as micro-optimizing it with an IIFE yields no real benefit.
+## 2024-11-20 - Reducing Object.values on Game Loop Ticks
+
+**Learning:** `Object.values(obj)` allocates an array on every invocation. If used inside high-frequency ticking operations (like the daily game tick `processLiabilityTick`) or heavy action reducers, this results in constant intermediate array allocations which causes cumulative Garbage Collection pressure.
+**Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value. Note this applies to `Object.values`, as `Object.keys` optimizations should be handled according to specific V8 guidelines.
