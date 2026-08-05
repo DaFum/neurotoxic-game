@@ -193,6 +193,44 @@ function applyAmpHijack(
 }
 
 /**
+ * Triggers a severe Feedback Loop hazard (Kranker Schrank lore).
+ * Generates massive heat and disables overdrive until dampened.
+ */
+function applyAmpFeedbackLoop(
+  deltaMS: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  // ~1.5% chance per 100ms to trigger a feedback loop if not already active
+  if (
+    !refs.isFeedbackLoopActiveRef.current &&
+    getSafeRandom() < clampUnit(0.015 * (deltaMS / 100))
+  ) {
+    refs.isFeedbackLoopActiveRef.current = true
+    setters.setIsFeedbackLoopActive(true)
+
+    // Feedback loop instantly maxes out interference
+    refs.interferenceRef.current = 100
+  }
+
+  if (refs.isFeedbackLoopActiveRef.current) {
+    // Generates massive heat constantly
+    const currentHeat = refs.heatRef.current
+    if (currentHeat < 100) {
+      const nextHeat = Math.min(100, currentHeat + 40 * (deltaMS / 1000))
+      refs.heatRef.current = nextHeat
+      setters.setHeat(nextHeat)
+      if (nextHeat >= 100 && !refs.isOverheatRef.current) {
+        refs.isOverheatRef.current = true
+        setters.setIsOverheat(true)
+        refs.isOverdriveActiveRef.current = false
+        setters.setIsOverdriveActive(false)
+      }
+    }
+  }
+}
+
+/**
  * Accumulates the time-weighted accuracy score with overdrive/overheat/hijack
  * modifiers.
  * @returns The dial-to-target difference, reused by the resonance phase.
@@ -278,6 +316,7 @@ export function updateAmpGameState(
   applyAmpVoidAnomaly(deltaMS, overdriveActive, isOverheat, refs, setters)
   applyAmpTargetDrift(deltaMS, isOverheat, refs, setters)
   applyAmpHijack(deltaMS, refs, setters)
+  applyAmpFeedbackLoop(deltaMS, refs, setters)
 
   // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
   refs.interferenceRef.current = Math.min(

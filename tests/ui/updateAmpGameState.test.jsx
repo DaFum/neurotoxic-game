@@ -18,6 +18,7 @@ function makeRefs(overrides = {}) {
     isOverdriveActiveRef: { current: false },
     isAnomalyActiveRef: { current: false },
     isHijackActiveRef: { current: false },
+    isFeedbackLoopActiveRef: { current: false },
     interferenceRef: { current: 0 },
     dialValueRef: { current: 500 },
     targetValueRef: { current: 500 },
@@ -38,6 +39,7 @@ function makeSetters() {
     setIsAnomalyActive: vi.fn(),
     setTargetValue: vi.fn(),
     setIsHijackActive: vi.fn(),
+    setIsFeedbackLoopActive: vi.fn(),
     setScore: vi.fn(),
     setVoidResonance: vi.fn()
   }

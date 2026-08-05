@@ -16,7 +16,9 @@ export const AmpControls = memo(function AmpControls({
   purgeInterference,
   interference,
   isHijackActive,
-  overrideHijack
+  overrideHijack,
+  isFeedbackLoopActive,
+  dampenFeedback
 }: AmpControlsProps) {
   const { t } = useTranslation(['ui'])
 
@@ -59,6 +61,18 @@ export const AmpControls = memo(function AmpControls({
 
   return (
     <div className='absolute bottom-16 left-1/2 -translate-x-1/2 z-(--z-hud) flex flex-col items-center gap-4 w-full max-w-md px-4 flex-1 min-h-0'>
+      {/* Hijack Override */}
+      {isFeedbackLoopActive && (
+        <button
+          type='button'
+          onClick={dampenFeedback}
+          className='w-full py-4 bg-warning-yellow text-void-black font-black text-2xl uppercase tracking-widest animate-pulse border-4 border-blood-red shadow-[0_0_20px_var(--color-warning-yellow)] hover:bg-blood-red hover:text-star-white hover:border-warning-yellow transition-all focus-visible:ring-2 focus-visible:ring-blood-red'
+          aria-label='DAMPEN FEEDBACK'
+        >
+          ! DAMPEN FEEDBACK !
+        </button>
+      )}
+
       {/* Hijack Override */}
       {isHijackActive && (
         <button
