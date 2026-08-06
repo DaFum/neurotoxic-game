@@ -150,15 +150,23 @@ const hasHighDifficultySong = (songs: Record<string, unknown>[]): boolean => {
   return false
 }
 
+const isBpmFast = (bpm: number) => bpm > 160
+const isBpmSlow = (bpm: number) => bpm < 120
+
 const hasSongBpm = (
   songs: Record<string, unknown>[],
   predicate: (bpm: number) => boolean
 ): boolean => {
   // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop
-  // Why: Avoids closure allocation overhead when scanning song BPMs
+  // Why: Avoids array-method dispatch overhead when scanning song BPMs
   for (let i = 0; i < songs.length; i++) {
     const song = songs[i]
-    if (song && typeof song.bpm === 'number' && predicate(song.bpm)) {
+    if (
+      song &&
+      typeof song.bpm === 'number' &&
+      Number.isFinite(song.bpm) &&
+      predicate(song.bpm)
+    ) {
       return true
     }
   }
@@ -185,7 +193,7 @@ const UNLOCK_RULES: readonly UnlockRule[] = [
     traitId: 'blast_machine',
     predicate: ({ performance }) =>
       !!performance &&
-      hasSongBpm(performance.songs, bpm => bpm > 160) &&
+      hasSongBpm(performance.songs, isBpmFast) &&
       performance.maxCombo > 50
   },
   {
@@ -194,7 +202,7 @@ const UNLOCK_RULES: readonly UnlockRule[] = [
     traitId: 'melodic_genius',
     predicate: ({ performance }) =>
       !!performance &&
-      hasSongBpm(performance.songs, bpm => bpm < 120) &&
+      hasSongBpm(performance.songs, isBpmSlow) &&
       performance.maxCombo > 30
   },
   {
