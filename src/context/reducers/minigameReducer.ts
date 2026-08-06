@@ -441,7 +441,6 @@ export const handleCompleteAmpCalibration = (
     voidResonance: number
     purgesUsed: number
     hijacksOverridden: number
-    feedbackLoopsDampened?: number
   }
 ): GameState => {
   if (
@@ -450,13 +449,7 @@ export const handleCompleteAmpCalibration = (
   ) {
     return state
   }
-  const {
-    score,
-    voidResonance,
-    purgesUsed,
-    hijacksOverridden,
-    feedbackLoopsDampened
-  } = payload
+  const { score, voidResonance, purgesUsed, hijacksOverridden } = payload
   const safeScore = clamp0to100(finiteNumberOr(score, 0))
   logger.info('GameState', 'Amp Calibration Minigame Complete', payload)
 
@@ -466,8 +459,7 @@ export const handleCompleteAmpCalibration = (
     state.band,
     clamp0to100(finiteNumberOr(voidResonance, 0)),
     toBoundedNonNegativeInteger(purgesUsed, 100),
-    toBoundedNonNegativeInteger(hijacksOverridden, 100),
-    toBoundedNonNegativeInteger(feedbackLoopsDampened ?? 0, 100)
+    toBoundedNonNegativeInteger(hijacksOverridden, 100)
   )
 
   let nextState = applyPostMinigameResult(

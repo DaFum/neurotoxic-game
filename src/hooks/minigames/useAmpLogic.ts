@@ -30,8 +30,6 @@ function useAmpState() {
   // Kranker Schrank Signal Hijack
   const [isHijackActive, setIsHijackActive] = useState(false)
   const [hijacksOverridden, setHijacksOverridden] = useState(0)
-  const [isFeedbackLoopActive, setIsFeedbackLoopActive] = useState(false)
-  const [feedbackLoopsDampened, setFeedbackLoopsDampened] = useState(0)
 
   // Neurotoxic Signal Jamming
   const [interference, setInterference] = useState(0)
@@ -61,10 +59,6 @@ function useAmpState() {
     setIsHijackActive,
     hijacksOverridden,
     setHijacksOverridden,
-    isFeedbackLoopActive,
-    setIsFeedbackLoopActive,
-    feedbackLoopsDampened,
-    setFeedbackLoopsDampened,
     interference,
     setInterference
   }
@@ -157,19 +151,11 @@ function useAmpHazards(
   isHijackActive: boolean,
   setIsHijackActive: (value: boolean | ((prev: boolean) => boolean)) => void,
   setHijacksOverridden: (value: number | ((prev: number) => number)) => void,
-  setIsFeedbackLoopActive: (
-    value: boolean | ((prev: boolean) => boolean)
-  ) => void,
-  setFeedbackLoopsDampened: (
-    value: number | ((prev: number) => number)
-  ) => void,
   isGameOver: boolean,
   setInterference: (value: number | ((prev: number) => number)) => void
 ) {
   const isHijackActiveRef = useRef(isHijackActive)
   const hijacksOverriddenRef = useRef(0)
-  const isFeedbackLoopActiveRef = useRef(false)
-  const feedbackLoopsDampenedRef = useRef(0)
   const interferenceRef = useRef(0)
   const purgesUsedRef = useRef(0)
 
@@ -185,15 +171,6 @@ function useAmpHazards(
       setHijacksOverridden(prev => prev + 1)
     }
   }, [setIsHijackActive, setHijacksOverridden])
-
-  const dampenFeedback = useCallback(() => {
-    if (isFeedbackLoopActiveRef.current) {
-      isFeedbackLoopActiveRef.current = false
-      setIsFeedbackLoopActive(false)
-      feedbackLoopsDampenedRef.current += 1
-      setFeedbackLoopsDampened(prev => prev + 1)
-    }
-  }, [setIsFeedbackLoopActive, setFeedbackLoopsDampened])
 
   const purgeInterference = useCallback(() => {
     setInterference(0)
@@ -215,10 +192,7 @@ function useAmpHazards(
     interferenceRef,
     purgesUsedRef,
     overrideHijack,
-    purgeInterference,
-    isFeedbackLoopActiveRef,
-    feedbackLoopsDampenedRef,
-    dampenFeedback
+    purgeInterference
   }
 }
 
@@ -244,8 +218,6 @@ export function useAmpLogic() {
     isAnomalyActive,
     isHijackActive,
     hijacksOverridden,
-    isFeedbackLoopActive,
-    feedbackLoopsDampened,
     interference
   } = ampState
   const {
@@ -261,8 +233,6 @@ export function useAmpLogic() {
     setIsAnomalyActive,
     setIsHijackActive,
     setHijacksOverridden,
-    setIsFeedbackLoopActive,
-    setFeedbackLoopsDampened,
     setInterference
   } = ampState
 
@@ -274,16 +244,11 @@ export function useAmpLogic() {
     interferenceRef,
     purgesUsedRef,
     overrideHijack,
-    purgeInterference,
-    isFeedbackLoopActiveRef,
-    feedbackLoopsDampenedRef,
-    dampenFeedback
+    purgeInterference
   } = useAmpHazards(
     isHijackActive,
     setIsHijackActive,
     setHijacksOverridden,
-    setIsFeedbackLoopActive,
-    setFeedbackLoopsDampened,
     isGameOver,
     setInterference
   )
@@ -336,8 +301,7 @@ export function useAmpLogic() {
       finalScore,
       voidResonanceRef.current,
       purgesUsedRef.current,
-      hijacksOverriddenRef.current,
-      feedbackLoopsDampenedRef.current
+      hijacksOverriddenRef.current
     )
   }, [
     completeAmpCalibration,
@@ -347,8 +311,7 @@ export function useAmpLogic() {
     accumulatedMsRef,
     voidResonanceRef,
     purgesUsedRef,
-    hijacksOverriddenRef,
-    feedbackLoopsDampenedRef
+    hijacksOverriddenRef
   ])
 
   const handleComplete = useCallback(() => {
@@ -370,7 +333,6 @@ export function useAmpLogic() {
           isOverdriveActiveRef,
           isAnomalyActiveRef,
           isHijackActiveRef,
-          isFeedbackLoopActiveRef,
           interferenceRef,
           dialValueRef,
           targetValueRef,
@@ -387,7 +349,6 @@ export function useAmpLogic() {
           setIsAnomalyActive,
           setTargetValue,
           setIsHijackActive,
-          setIsFeedbackLoopActive,
           setScore,
           setVoidResonance
         }
@@ -402,12 +363,10 @@ export function useAmpLogic() {
       setIsAnomalyActive,
       setTargetValue,
       setIsHijackActive,
-      setIsFeedbackLoopActive,
       setScore,
       setVoidResonance,
       timeLeftRef,
       isHijackActiveRef,
-      isFeedbackLoopActiveRef,
       interferenceRef,
       isCompleteRef,
       heatRef,
@@ -470,9 +429,6 @@ export function useAmpLogic() {
     purgeInterference,
     isHijackActive,
     hijacksOverridden,
-    overrideHijack,
-    isFeedbackLoopActive,
-    dampenFeedback,
-    feedbackLoopsDampened
+    overrideHijack
   }
 }

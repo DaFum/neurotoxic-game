@@ -83,7 +83,25 @@ export const RegionalStandingSection = ({
                     {translateLocation(t, venueId, venueId)}
                   </span>
                   {onMakeAmends && (
-                    <Tooltip content={!affordable ? t('ui:detailedStats.insufficientFunds', { defaultValue: 'Not enough funds' }) : null}>
+                    !affordable ? (
+                      <Tooltip content={t('ui:detailedStats.insufficientFunds', { defaultValue: 'Not enough funds' })}>
+                        <button
+                        type='button'
+                        disabled={!affordable}
+                        onClick={() => onMakeAmends(venueId)}
+                        aria-label={`${t('ui:detailedStats.makeAmends', {
+                          amount: formatCurrency(cost, i18n.language),
+                          defaultValue: 'Make Amends ({{amount}})'
+                        })} — ${translateLocation(t, venueId, venueId)}`}
+                        className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
+                      >
+                        {t('ui:detailedStats.makeAmends', {
+                          amount: formatCurrency(cost, i18n.language),
+                          defaultValue: 'Make Amends ({{amount}})'
+                        })}
+                      </button>
+                      </Tooltip>
+                    ) : (
                       <button
                         type='button'
                         disabled={!affordable}
@@ -99,7 +117,7 @@ export const RegionalStandingSection = ({
                           defaultValue: 'Make Amends ({{amount}})'
                         })}
                       </button>
-                    </Tooltip>
+                    )
                   )}
                 </div>
               )

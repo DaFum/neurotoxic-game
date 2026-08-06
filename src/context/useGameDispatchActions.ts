@@ -158,12 +158,7 @@ type BaseGameDispatchActions = {
     score: Parameters<typeof createCompleteAmpCalibrationAction>[0],
     voidResonance?: Parameters<typeof createCompleteAmpCalibrationAction>[1],
     purgesUsed?: Parameters<typeof createCompleteAmpCalibrationAction>[2],
-    hijacksOverridden?: Parameters<
-      typeof createCompleteAmpCalibrationAction
-    >[3],
-    feedbackLoopsDampened?: Parameters<
-      typeof createCompleteAmpCalibrationAction
-    >[4]
+    hijacksOverridden?: Parameters<typeof createCompleteAmpCalibrationAction>[3]
   ) => void
   unlockTrait: (
     memberId: Parameters<typeof createUnlockTraitAction>[0],

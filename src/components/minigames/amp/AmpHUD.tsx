@@ -157,9 +157,7 @@ export const AmpHUD = memo(function AmpHUD({
   isAnomalyActive = false,
   interference = 0,
   isHijackActive = false,
-  hijacksOverridden = 0,
-  isFeedbackLoopActive = false,
-  feedbackLoopsDampened = 0
+  hijacksOverridden = 0
 }: AmpHUDProps) {
   const { t } = useTranslation(['ui'])
 
@@ -205,34 +203,6 @@ export const AmpHUD = memo(function AmpHUD({
           hijacksOverridden={hijacksOverridden}
           t={t}
         />
-
-        {isFeedbackLoopActive && (
-          <div className='mt-2 w-48 border-2 border-warning-yellow p-2 bg-blood-red/80 motion-safe:animate-pulse'>
-            <div className='text-center uppercase text-xs font-black text-warning-yellow mb-1'>
-              {t('ui:minigames.amp.hud.feedbackLoop', {
-                defaultValue: 'FEEDBACK LOOP'
-              })}
-            </div>
-            <div className='text-center text-[10px] text-star-white uppercase'>
-              {t('ui:minigames.amp.hud.criticalHeatImminent', {
-                defaultValue: 'Critical Heat Imminent'
-              })}
-            </div>
-          </div>
-        )}
-
-        {feedbackLoopsDampened > 0 && (
-          <div className='mt-2 w-48 flex justify-between items-center'>
-            <span className='uppercase text-xs text-ash-gray'>
-              {t('ui:minigames.amp.hud.loopsDampened', {
-                defaultValue: 'LOOPS DAMPENED:'
-              })}
-            </span>
-            <span className='text-toxic-green text-xs font-bold'>
-              {feedbackLoopsDampened}
-            </span>
-          </div>
-        )}
 
         <InterferenceIndicator interference={interference} t={t} />
       </div>

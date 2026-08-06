@@ -170,44 +170,6 @@ test('Minigame Economy Calculations', async t => {
     assert.strictEqual(resultExtreme.reward, 960)
   })
 
-  await t.test('Amp Calibration Feedback Loop Bounds', () => {
-    // Number.MAX_VALUE feedback loops should cap at 100
-    // reward = 80 + 100 * 20 = 2080
-    const resultExtreme = calculateAmpCalibrationResult(
-      80,
-      { members: [] },
-      0,
-      0,
-      0,
-      Number.MAX_VALUE
-    )
-    assert.strictEqual(resultExtreme.reward, 2080)
-    assert.strictEqual(resultExtreme.stress, 0)
-
-    // Normal case: 3 feedback loops -> 60 bonus
-    const resultNormal = calculateAmpCalibrationResult(
-      80,
-      { members: [] },
-      0,
-      0,
-      0,
-      3
-    )
-    assert.strictEqual(resultNormal.reward, 140)
-
-    // Failed case: 0 score, 3 feedback loops -> 0 reward, stress penalty
-    const resultFail = calculateAmpCalibrationResult(
-      0,
-      { members: [] },
-      0,
-      0,
-      0,
-      3
-    )
-    assert.strictEqual(resultFail.reward, 0)
-    assert.strictEqual(resultFail.stress, 25)
-  })
-
   await t.test('Amp Calibration Caps Maximum Bounds for Hijacks', () => {
     // Number.MAX_VALUE hijacksOverridden should cap at 100
     // reward = 80 + 100 * 10 = 1080
@@ -272,7 +234,6 @@ test('Minigame calculators reject hostile numeric input', async t => {
       const result = calculateAmpCalibrationResult(
         value,
         bandState,
-        value,
         value,
         value,
         value

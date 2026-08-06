@@ -33,9 +33,6 @@ export interface AmpCalibrationViewProps {
   isHijackActive: boolean
   hijacksOverridden: number
   overrideHijack: () => void
-  isFeedbackLoopActive?: boolean
-  dampenFeedback?: () => void
-  feedbackLoopsDampened?: number
   controllerFactory: (
     params: StageControllerOptions<AmpStageOptions>
   ) => AmpStageController
@@ -69,9 +66,6 @@ export const AmpCalibrationView = ({
   isHijackActive,
   hijacksOverridden,
   overrideHijack,
-  isFeedbackLoopActive,
-  dampenFeedback,
-  feedbackLoopsDampened,
   controllerFactory,
   logic,
   onComplete
@@ -101,17 +95,9 @@ export const AmpCalibrationView = ({
             })}
           </div>
         )}
-        {(feedbackLoopsDampened ?? 0) > 0 && (
-          <div className='text-error-red font-bold animate-pulse'>
-            {t('ui:minigames.amp.completion.feedbackDampened', {
-              defaultValue: `Feedback Loops Dampened: ${feedbackLoopsDampened}`,
-              feedbackLoopsDampened
-            })}
-          </div>
-        )}
       </div>
     ),
-    [t, score, voidResonance, hijacksOverridden, feedbackLoopsDampened]
+    [t, score, voidResonance, hijacksOverridden]
   )
 
   return (
@@ -138,8 +124,6 @@ export const AmpCalibrationView = ({
         interference={interference}
         isHijackActive={isHijackActive}
         hijacksOverridden={hijacksOverridden}
-        isFeedbackLoopActive={isFeedbackLoopActive}
-        feedbackLoopsDampened={feedbackLoopsDampened}
       />
       <AmpControls
         dialValue={dialValue}
@@ -151,8 +135,6 @@ export const AmpCalibrationView = ({
         purgeInterference={purgeInterference}
         isHijackActive={isHijackActive}
         overrideHijack={overrideHijack}
-        isFeedbackLoopActive={isFeedbackLoopActive}
-        dampenFeedback={dampenFeedback}
       />
     </MinigameSceneFrame>
   )

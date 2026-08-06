@@ -4,9 +4,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // (anomaly spawn, target drift, hijack); individual tests lower it to fire them.
 let rngValue = 0.99
 vi.mock('../../src/utils/crypto', () => ({
-  getSafeRandom: vi.fn(() => rngValue)
+  getSafeRandom: () => rngValue
 }))
-import { getSafeRandom } from '../../src/utils/crypto'
 
 import { updateAmpGameState } from '../../src/hooks/minigames/ampLogicUtils'
 
@@ -19,7 +18,6 @@ function makeRefs(overrides = {}) {
     isOverdriveActiveRef: { current: false },
     isAnomalyActiveRef: { current: false },
     isHijackActiveRef: { current: false },
-    isFeedbackLoopActiveRef: { current: false },
     interferenceRef: { current: 0 },
     dialValueRef: { current: 500 },
     targetValueRef: { current: 500 },
@@ -40,7 +38,6 @@ function makeSetters() {
     setIsAnomalyActive: vi.fn(),
     setTargetValue: vi.fn(),
     setIsHijackActive: vi.fn(),
-    setIsFeedbackLoopActive: vi.fn(),
     setScore: vi.fn(),
     setVoidResonance: vi.fn()
   }
@@ -108,82 +105,6 @@ describe('updateAmpGameState', () => {
     expect(refs.heatRef.current).toBe(0)
     expect(refs.isOverheatRef.current).toBe(false)
     expect(setters.setIsOverheat).toHaveBeenCalledWith(false)
-  })
-
-  it('disables overdrive when a feedback loop triggers', () => {
-    const refs = makeRefs({
-      isOverdriveActiveRef: { current: true }
-    })
-    const setters = makeSetters()
-
-    // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
-    let calls = 0
-    vi.mocked(getSafeRandom).mockImplementation(() => {
-      calls++
-      if (calls === 1) return 0.0001 // FeedbackLoop
-      return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
-    })
-
-    updateAmpGameState(100, refs, setters)
-
-    expect(refs.isFeedbackLoopActiveRef.current).toBe(true)
-    expect(setters.setIsFeedbackLoopActive).toHaveBeenCalledWith(true)
-
-    // Should immediately disable overdrive
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
-
-    // Should max out interference
-    expect(refs.interferenceRef.current).toBe(100)
-
-    // Score: no overdrive bonus (disabled), no overheat, no hijack.
-    // Base score = 100. Feedback loop penalty = 0.1. So 10 * 100ms = 1000.
-    expect(refs.accumulatedScoreRef.current).toBe(1000)
-  })
-
-  it('forces overdrive off repeatedly if a player attempts to re-enable it during an active feedback loop', () => {
-    const refs = makeRefs({
-      isFeedbackLoopActiveRef: { current: true },
-      isOverdriveActiveRef: { current: true } // Simulating a player turning it on
-    })
-    const setters = makeSetters()
-
-    updateAmpGameState(100, refs, setters)
-
-    // Should immediately disable overdrive
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
-
-    // Overdrive multiplier should not be applied to score
-    expect(refs.accumulatedScoreRef.current).toBe(1000)
-  })
-
-  it('proves feedback-loop overheating disables overdrive and applies penalties', () => {
-    const refs = makeRefs({
-      isOverdriveActiveRef: { current: true },
-      heatRef: { current: 95 }
-    })
-    const setters = makeSetters()
-
-    // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
-    let calls = 0
-    vi.mocked(getSafeRandom).mockImplementation(() => {
-      calls++
-      if (calls === 1) return 0.0001 // FeedbackLoop
-      return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
-    })
-
-    updateAmpGameState(500, refs, setters)
-
-    expect(refs.isFeedbackLoopActiveRef.current).toBe(true)
-    expect(refs.isOverheatRef.current).toBe(true)
-    expect(setters.setIsOverheat).toHaveBeenCalledWith(true)
-    expect(refs.isOverdriveActiveRef.current).toBe(false)
-    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
-
-    // Base score = 100. Overheat penalty (0.5), Feedback penalty (0.1).
-    // 100 * 0.5 * 0.1 = 5 per ms. Over 500ms = 2500.
-    expect(refs.accumulatedScoreRef.current).toBe(2500)
   })
 
   it('activates a hijack when RNG is below the threshold', () => {
