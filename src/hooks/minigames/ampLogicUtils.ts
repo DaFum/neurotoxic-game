@@ -259,6 +259,10 @@ function accumulateAmpScore(
     currentScore *= 0.2 // Huge penalty during active hijack
   }
 
+  if (refs.isFeedbackLoopActiveRef.current) {
+    currentScore *= 0.1 // Catastrophic penalty during feedback loop
+  }
+
   refs.accumulatedScoreRef.current += currentScore * deltaMS
   refs.accumulatedMsRef.current += deltaMS
 

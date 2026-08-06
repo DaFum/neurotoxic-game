@@ -4,8 +4,9 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 // (anomaly spawn, target drift, hijack); individual tests lower it to fire them.
 let rngValue = 0.99
 vi.mock('../../src/utils/crypto', () => ({
-  getSafeRandom: () => rngValue
+  getSafeRandom: vi.fn(() => rngValue)
 }))
+import { getSafeRandom } from '../../src/utils/crypto'
 
 import { updateAmpGameState } from '../../src/hooks/minigames/ampLogicUtils'
 
@@ -115,8 +116,13 @@ describe('updateAmpGameState', () => {
     })
     const setters = makeSetters()
 
-    // Set RNG to guarantee activation
-    rngValue = 0.0001
+    // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
+    let calls = 0
+    vi.mocked(getSafeRandom).mockImplementation(() => {
+      calls++
+      if (calls === 1) return 0.0001 // FeedbackLoop
+      return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
+    })
 
     updateAmpGameState(100, refs, setters)
 
@@ -130,27 +136,37 @@ describe('updateAmpGameState', () => {
     // Should max out interference
     expect(refs.interferenceRef.current).toBe(100)
 
-    // Score should not include overdrive bonus, because overdrive was disabled by the feedback loop
-    // Perfect score is 100, 100 * 0.1 (feedback loop penalty) = 10, * 100ms = 1000
-    // But wait, there is also hijack active? No, hijack activates too because RNG is low!
-    // If hijack activates, 10 * 0.2 = 2 * 100 = 200
-    // We should mock rng just for this test so hijack doesn't activate, or assert with hijack?
-    // Let's assert based on both.
+    // Score: no overdrive bonus (disabled), no overheat, no hijack.
+    // Base score = 100. Feedback loop penalty = 0.1. So 10 * 100ms = 1000.
+    expect(refs.accumulatedScoreRef.current).toBe(1000)
   })
 
-  it('applies overheat penalty on score if feedback loop overheats during overdrive', () => {
+  it('proves feedback-loop overheating disables overdrive and applies penalties', () => {
     const refs = makeRefs({
       isOverdriveActiveRef: { current: true },
       heatRef: { current: 95 }
     })
     const setters = makeSetters()
 
-    // Set RNG to guarantee activation
-    rngValue = 0.0001
+    // Set RNG: high for Anomaly, TargetDrift, Hijack; low for FeedbackLoop
+    let calls = 0
+    vi.mocked(getSafeRandom).mockImplementation(() => {
+      calls++
+      if (calls === 1) return 0.0001 // FeedbackLoop
+      return 0.5 // Neutral for TargetDrift, too high for Anomaly/Hijack
+    })
 
     updateAmpGameState(500, refs, setters)
 
+    expect(refs.isFeedbackLoopActiveRef.current).toBe(true)
     expect(refs.isOverheatRef.current).toBe(true)
+    expect(setters.setIsOverheat).toHaveBeenCalledWith(true)
+    expect(refs.isOverdriveActiveRef.current).toBe(false)
+    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
+
+    // Base score = 100. Overheat penalty (0.5), Feedback penalty (0.1).
+    // 100 * 0.5 * 0.1 = 5 per ms. Over 500ms = 2500.
+    expect(refs.accumulatedScoreRef.current).toBe(2500)
   })
 
   it('activates a hijack when RNG is below the threshold', () => {
