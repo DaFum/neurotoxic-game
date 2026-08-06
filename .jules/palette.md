@@ -184,3 +184,7 @@
 
 **Learning:** Buttons triggering asynchronous state transitions (like loading the gig setlist with `isStarting=true`) often disable themselves and change their label, but lack an explicit ARIA indicator that they are actively processing. Screen readers might just read "Initializing, disabled" without context. Adding `aria-busy` along with a visual spinner ensures all users know the app is working and hasn't frozen.
 **Action:** When creating or auditing buttons that trigger loading states, add `aria-busy={isLoading}` to communicate the pending state to screen readers natively, and accompany it with a visual loading spinner (like `Loader2` from `lucide-react`) for sighted users.
+
+## 2026-08-06 - Tooltips on Disabled Elements in Band HQ
+**Learning:** When wrapping disabled buttons with a `Tooltip` component, disabled elements often swallow mouse and focus events in many browsers, preventing the tooltip from appearing. We found this pattern in Band HQ crafting and regional standing panels.
+**Action:** Always apply the `pointer-events-none` class to the disabled element when wrapping it in a Tooltip. This ensures hover/focus events successfully bubble up to the Tooltip wrapper.
