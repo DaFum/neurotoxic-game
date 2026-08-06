@@ -80,7 +80,7 @@ export const QUEST_PREMIUM_ENDORSEMENT = 'quest_premium_endorsement'
 export const QUEST_COMMUNITY_OUTREACH = 'quest_community_outreach'
 
 /**
- * Story quest id for recovering from a devastating financial pit.
+ * Story quest id confirming the band survived the gauntlet by playing three good gigs.
  */
 export const QUEST_BACK_FROM_PIT = 'quest_back_from_pit'
 
@@ -100,7 +100,7 @@ export const QUEST_BAND_PACT = 'quest_band_pact'
 export const QUEST_FLAWLESS_RUN = 'quest_flawless_run'
 
 /**
- * Side quest id for dealing with stolen equipment or funds.
+ * Side quest id for collecting contraband items.
  */
 export const QUEST_STICKY_FINGERS = 'quest_sticky_fingers'
 
@@ -110,7 +110,7 @@ export const QUEST_STICKY_FINGERS = 'quest_sticky_fingers'
 export const QUEST_SPECIAL_DELIVERY = 'quest_special_delivery'
 
 /**
- * Quest id for overcoming persona non grata status in a region.
+ * Quest id completing when the band is blacklisted by a venue.
  */
 export const QUEST_PERSONA_NON_GRATA = 'quest_persona_non_grata'
 
@@ -120,7 +120,7 @@ export const QUEST_PERSONA_NON_GRATA = 'quest_persona_non_grata'
 export const QUEST_MURPHYS_LAW = 'quest_murphys_law'
 
 /**
- * Quest id for managing a severe PR crisis.
+ * Quest id for resolving asset risks and equipment emergencies.
  */
 export const QUEST_CRISIS_MANAGER = 'quest_crisis_manager'
 
@@ -135,7 +135,7 @@ export const QUEST_CHAPTER_MARKER = 'quest_chapter_marker'
 export const QUEST_PAYDAY = 'quest_payday'
 
 /**
- * Quest id for making amends with a rival or former contact.
+ * Quest id for winning back a blacklisted venue.
  */
 export const QUEST_MAKE_AMENDS = 'quest_make_amends'
 
@@ -145,7 +145,7 @@ export const QUEST_MAKE_AMENDS = 'quest_make_amends'
 export const QUEST_BURNED_BRIDGES = 'quest_burned_bridges'
 
 /**
- * Repeatable quest id for performing regularly at a specific venue.
+ * Repeatable global quest id for earning regional reputation without a specific venue scope.
  */
 export const QUEST_VENUE_REGULAR = 'quest_venue_regular'
 
