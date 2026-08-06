@@ -85,7 +85,8 @@ export const calculateAmpCalibrationResult = (
   bandState: Pick<BandState, 'members'> | null | undefined,
   voidResonance: number = 0,
   purgesUsed: number = 0,
-  hijacksOverridden: number = 0
+  hijacksOverridden: number = 0,
+  feedbackLoopsDampened: number = 0
 ) => {
   let numScore = Number(score)
   if (!Number.isFinite(numScore)) {
@@ -115,6 +116,13 @@ export const calculateAmpCalibrationResult = (
 
     // Void Resonance converts to pure money at a 2x rate only on success
     reward += Math.floor(safeResonance * 2)
+
+    // Kranker Schrank Feedback Loop bonuses
+    const safeFeedbackLoopsDampened = toBoundedNonNegativeInteger(
+      feedbackLoopsDampened,
+      100
+    )
+    reward += safeFeedbackLoopsDampened * 20
   }
 
   // Stress penalty for relying on neurotoxic purges
