@@ -218,6 +218,12 @@ function applyAmpFeedbackLoop(
   }
 
   if (refs.isFeedbackLoopActiveRef.current) {
+    // Disables overdrive constantly while feedback loop is active
+    if (refs.isOverdriveActiveRef.current) {
+      refs.isOverdriveActiveRef.current = false
+      setters.setIsOverdriveActive(false)
+    }
+
     // Generates massive heat constantly
     const currentHeat = refs.heatRef.current
     if (currentHeat < 100) {

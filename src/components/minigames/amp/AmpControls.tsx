@@ -23,6 +23,7 @@ export const AmpControls = memo(function AmpControls({
   const { t } = useTranslation(['ui'])
 
   const handleToggleOverdrive = useCallback(() => {
+    if (isFeedbackLoopActive) return
     setIsOverdriveActive(prev => !prev)
   }, [setIsOverdriveActive])
 
@@ -180,6 +181,7 @@ export const AmpControls = memo(function AmpControls({
             defaultValue: 'Toggle Overdrive'
           })}
           aria-pressed={isOverdriveActive}
+          disabled={isFeedbackLoopActive}
         >
           {t('ui:minigames.amp.controls.overdrive', {
             defaultValue: 'OVERDRIVE'

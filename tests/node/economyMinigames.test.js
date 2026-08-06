@@ -194,6 +194,18 @@ test('Minigame Economy Calculations', async t => {
       3
     )
     assert.strictEqual(resultNormal.reward, 140)
+
+    // Failed case: 0 score, 3 feedback loops -> 0 reward, stress penalty
+    const resultFail = calculateAmpCalibrationResult(
+      0,
+      { members: [] },
+      0,
+      0,
+      0,
+      3
+    )
+    assert.strictEqual(resultFail.reward, 0)
+    assert.strictEqual(resultFail.stress, 25)
   })
 
   await t.test('Amp Calibration Caps Maximum Bounds for Hijacks', () => {

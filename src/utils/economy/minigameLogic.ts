@@ -116,6 +116,13 @@ export const calculateAmpCalibrationResult = (
 
     // Void Resonance converts to pure money at a 2x rate only on success
     reward += Math.floor(safeResonance * 2)
+
+    // Kranker Schrank Feedback Loop bonuses
+    const safeFeedbackLoopsDampened = toBoundedNonNegativeInteger(
+      feedbackLoopsDampened,
+      100
+    )
+    reward += safeFeedbackLoopsDampened * 20
   }
 
   // Stress penalty for relying on neurotoxic purges
@@ -129,13 +136,6 @@ export const calculateAmpCalibrationResult = (
   )
   reward += safeHijacksOverridden * 10
   stress = Math.max(0, stress - safeHijacksOverridden * 2)
-
-  // Kranker Schrank Feedback Loop bonuses
-  const safeFeedbackLoopsDampened = toBoundedNonNegativeInteger(
-    feedbackLoopsDampened,
-    100
-  )
-  reward += safeFeedbackLoopsDampened * 20
 
   return { success, stress, reward }
 }

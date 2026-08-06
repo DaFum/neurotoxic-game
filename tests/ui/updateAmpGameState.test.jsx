@@ -141,6 +141,23 @@ describe('updateAmpGameState', () => {
     expect(refs.accumulatedScoreRef.current).toBe(1000)
   })
 
+  it('forces overdrive off repeatedly if a player attempts to re-enable it during an active feedback loop', () => {
+    const refs = makeRefs({
+      isFeedbackLoopActiveRef: { current: true },
+      isOverdriveActiveRef: { current: true } // Simulating a player turning it on
+    })
+    const setters = makeSetters()
+
+    updateAmpGameState(100, refs, setters)
+
+    // Should immediately disable overdrive
+    expect(refs.isOverdriveActiveRef.current).toBe(false)
+    expect(setters.setIsOverdriveActive).toHaveBeenCalledWith(false)
+
+    // Overdrive multiplier should not be applied to score
+    expect(refs.accumulatedScoreRef.current).toBe(1000)
+  })
+
   it('proves feedback-loop overheating disables overdrive and applies penalties', () => {
     const refs = makeRefs({
       isOverdriveActiveRef: { current: true },
