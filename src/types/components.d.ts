@@ -158,6 +158,8 @@ export interface AmpStageOptions {
   interference?: number
   isHijackActive?: boolean
   hijacksOverridden?: number
+  isFeedbackLoopActive?: boolean
+  dampenFeedback?: () => void
 }
 
 /**
@@ -229,6 +231,8 @@ export interface AmpControlsProps {
   interference?: number
   isHijackActive?: boolean
   overrideHijack?: () => void
+  isFeedbackLoopActive?: boolean
+  dampenFeedback?: () => void
 }
 
 /**
@@ -244,6 +248,8 @@ export interface AmpHUDProps {
   interference?: number
   isHijackActive?: boolean
   hijacksOverridden?: number
+  isFeedbackLoopActive?: boolean
+  feedbackLoopsDampened?: number
 }
 
 /**

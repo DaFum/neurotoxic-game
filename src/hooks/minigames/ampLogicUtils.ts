@@ -13,6 +13,7 @@ export interface AmpGameRefs {
   isOverdriveActiveRef: { current: boolean }
   isAnomalyActiveRef: { current: boolean }
   isHijackActiveRef: { current: boolean }
+  isFeedbackLoopActiveRef: { current: boolean }
   interferenceRef: { current: number }
   dialValueRef: { current: number }
   targetValueRef: { current: number }
@@ -33,6 +34,9 @@ export interface AmpGameSetters {
   setIsAnomalyActive: (value: boolean | ((prev: boolean) => boolean)) => void
   setTargetValue: (value: number | ((prev: number) => number)) => void
   setIsHijackActive: (value: boolean | ((prev: boolean) => boolean)) => void
+  setIsFeedbackLoopActive: (
+    value: boolean | ((prev: boolean) => boolean)
+  ) => void
   setScore: (value: number | ((prev: number) => number)) => void
   setVoidResonance: (value: number | ((prev: number) => number)) => void
 }
@@ -189,6 +193,54 @@ function applyAmpHijack(
 }
 
 /**
+ * Triggers a severe Feedback Loop hazard (Kranker Schrank lore).
+ * Generates massive heat and disables overdrive until dampened.
+ */
+function applyAmpFeedbackLoop(
+  deltaMS: number,
+  refs: AmpGameRefs,
+  setters: AmpGameSetters
+): void {
+  // ~1.5% chance per 100ms to trigger a feedback loop if not already active
+  if (
+    !refs.isFeedbackLoopActiveRef.current &&
+    getSafeRandom() < clampUnit(0.015 * (deltaMS / 100))
+  ) {
+    refs.isFeedbackLoopActiveRef.current = true
+    setters.setIsFeedbackLoopActive(true)
+
+    // Feedback loop instantly maxes out interference
+    refs.interferenceRef.current = 100
+
+    // Disable overdrive when feedback loop starts
+    refs.isOverdriveActiveRef.current = false
+    setters.setIsOverdriveActive(false)
+  }
+
+  if (refs.isFeedbackLoopActiveRef.current) {
+    // Disables overdrive constantly while feedback loop is active
+    if (refs.isOverdriveActiveRef.current) {
+      refs.isOverdriveActiveRef.current = false
+      setters.setIsOverdriveActive(false)
+    }
+
+    // Generates massive heat constantly
+    const currentHeat = refs.heatRef.current
+    if (currentHeat < 100) {
+      const nextHeat = Math.min(100, currentHeat + 40 * (deltaMS / 1000))
+      refs.heatRef.current = nextHeat
+      setters.setHeat(nextHeat)
+      if (nextHeat >= 100 && !refs.isOverheatRef.current) {
+        refs.isOverheatRef.current = true
+        setters.setIsOverheat(true)
+        refs.isOverdriveActiveRef.current = false
+        setters.setIsOverdriveActive(false)
+      }
+    }
+  }
+}
+
+/**
  * Accumulates the time-weighted accuracy score with overdrive/overheat/hijack
  * modifiers.
  * @returns The dial-to-target difference, reused by the resonance phase.
@@ -211,6 +263,10 @@ function accumulateAmpScore(
 
   if (refs.isHijackActiveRef.current) {
     currentScore *= 0.2 // Huge penalty during active hijack
+  }
+
+  if (refs.isFeedbackLoopActiveRef.current) {
+    currentScore *= 0.1 // Catastrophic penalty during feedback loop
   }
 
   refs.accumulatedScoreRef.current += currentScore * deltaMS
@@ -270,6 +326,7 @@ export function updateAmpGameState(
 
   if (advanceAmpTime(deltaSec, refs, setters)) return
 
+  applyAmpFeedbackLoop(deltaMS, refs, setters)
   const { isOverheat, overdriveActive } = applyAmpHeat(deltaSec, refs, setters)
   applyAmpVoidAnomaly(deltaMS, overdriveActive, isOverheat, refs, setters)
   applyAmpTargetDrift(deltaMS, isOverheat, refs, setters)
@@ -283,8 +340,8 @@ export function updateAmpGameState(
 
   const diff = accumulateAmpScore(
     deltaMS,
-    overdriveActive,
-    isOverheat,
+    refs.isOverdriveActiveRef.current,
+    refs.isOverheatRef.current,
     refs,
     setters
   )

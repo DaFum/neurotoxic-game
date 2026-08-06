@@ -81,14 +81,16 @@ export function useMinigameDispatchActions(
         score,
         voidResonance = 0,
         purgesUsed = 0,
-        hijacksOverridden = 0
+        hijacksOverridden = 0,
+        feedbackLoopsDampened = 0
       ) =>
         dispatch(
           createCompleteAmpCalibrationAction(
             score,
             voidResonance,
             purgesUsed,
-            hijacksOverridden
+            hijacksOverridden,
+            feedbackLoopsDampened
           )
         )
     }),
