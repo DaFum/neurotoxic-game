@@ -316,11 +316,11 @@ export function updateAmpGameState(
 
   if (advanceAmpTime(deltaSec, refs, setters)) return
 
+  applyAmpFeedbackLoop(deltaMS, refs, setters)
   const { isOverheat, overdriveActive } = applyAmpHeat(deltaSec, refs, setters)
   applyAmpVoidAnomaly(deltaMS, overdriveActive, isOverheat, refs, setters)
   applyAmpTargetDrift(deltaMS, isOverheat, refs, setters)
   applyAmpHijack(deltaMS, refs, setters)
-  applyAmpFeedbackLoop(deltaMS, refs, setters)
 
   // Neurotoxic interference buildup (kept in ref to avoid frame-by-frame React renders)
   refs.interferenceRef.current = Math.min(
@@ -330,8 +330,8 @@ export function updateAmpGameState(
 
   const diff = accumulateAmpScore(
     deltaMS,
-    overdriveActive,
-    isOverheat,
+    refs.isOverdriveActiveRef.current,
+    refs.isOverheatRef.current,
     refs,
     setters
   )
