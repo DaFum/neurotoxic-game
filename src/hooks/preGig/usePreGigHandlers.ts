@@ -64,7 +64,7 @@ export interface UsePreGigHandlersProps {
 }
 
 /**
- * Return value of the usePreGigHandlers hook containing executable pre-gig actions.
+ * Return value of the usePreGigHandlers hook exposing state, derived values, and executable handlers.
  */
 export interface UsePreGigHandlersReturn {
   isStarting: boolean
@@ -85,7 +85,7 @@ export interface UsePreGigHandlersReturn {
  * checks, minigame selection weighting, and modifier toggling prior to initiating the gig.
  *
  * @param props - Configuration and state context required for pre-gig actions
- * @returns Executable callbacks mapping to player interactions
+ * @returns Exposing state, derived values, and executable handlers
  */
 export const usePreGigHandlers = ({
   band,
