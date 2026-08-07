@@ -19,7 +19,12 @@ export const InventoryEquipmentSection = ({
     })}
   >
     <div className='grid grid-cols-2 gap-x-8 gap-y-1'>
-      {Object.entries(band.inventory ?? {}).map(([key, val]) => {
+      {(() => {
+        const result = []
+        const inv = band.inventory ?? {}
+        for (const key in inv) {
+          if (!Object.hasOwn(inv, key)) continue
+          const val = inv[key]
         const isConsumable = USABLE_BOOLEAN_INVENTORY_ITEMS.has(key)
         const canConsume = val === true && isConsumable
         const itemName = t(`items:${key}.name`, {
@@ -33,7 +38,7 @@ export const InventoryEquipmentSection = ({
             : val === false
               ? t('ui:ui.locked', { defaultValue: 'LOCKED' })
               : String(val)
-        return (
+        const node = (
           <DetailRow
             key={key}
             label={itemName}
@@ -66,7 +71,10 @@ export const InventoryEquipmentSection = ({
             locked={!isUnlocked(val)}
           />
         )
-      })}
+        result.push(node)
+        }
+        return result
+      })()}
     </div>
   </Panel>
 )

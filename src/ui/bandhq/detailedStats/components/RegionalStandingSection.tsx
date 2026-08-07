@@ -32,7 +32,13 @@ export const RegionalStandingSection = ({
   }, [venueBlacklist])
 
   const regionalRows = useMemo(() => {
-    return Object.entries(reputationByRegion).map(([region, rep]) => (
+    return (() => {
+      const nodes = []
+      for (const region in reputationByRegion) {
+        if (!Object.hasOwn(reputationByRegion, region)) continue
+        const rep = reputationByRegion[region]
+        nodes.push(
+
       <DetailRow
         key={region}
         label={translateLocation(t, region, region)}
@@ -45,7 +51,10 @@ export const RegionalStandingSection = ({
             : null
         }
       />
-    ))
+      )
+      }
+      return nodes
+    })()
   }, [reputationByRegion, blacklistedCityKeys, t])
 
   return (

@@ -418,7 +418,9 @@ export const handleCraftItem = (
   const stash = state.band.stash || {}
 
   // Verify every input is available in the required quantity.
-  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+  for (const itemId in recipe.inputs) {
+    if (!Object.hasOwn(recipe.inputs, itemId)) continue
+    const qty = recipe.inputs[itemId] as number
     if (getStashCount(stash, itemId) < qty) {
       return {
         ...state,
@@ -439,7 +441,9 @@ export const handleCraftItem = (
   const newStash = Object.assign(Object.create(null), stash)
   const consumedBand = { ...state.band }
 
-  for (const [itemId, qty] of Object.entries(recipe.inputs)) {
+  for (const itemId in recipe.inputs) {
+    if (!Object.hasOwn(recipe.inputs, itemId)) continue
+    const qty = recipe.inputs[itemId] as number
     const entry = newStash[itemId] as Record<string, unknown>
     const current = getStashCount(newStash, itemId)
 
