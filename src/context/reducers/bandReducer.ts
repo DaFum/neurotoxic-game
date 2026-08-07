@@ -421,7 +421,11 @@ export const handleCraftItem = (
   for (const itemId in recipe.inputs) {
     if (!Object.hasOwn(recipe.inputs, itemId)) continue
     const qty = recipe.inputs[itemId] as number
-    if (getStashCount(stash, itemId) < qty) {
+    if (
+      typeof qty !== 'number' ||
+      Number.isNaN(qty) ||
+      getStashCount(stash, itemId) < qty
+    ) {
       return {
         ...state,
         toasts: [

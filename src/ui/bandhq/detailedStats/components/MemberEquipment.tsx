@@ -22,17 +22,19 @@ export const MemberEquipment = ({
       if (!Object.hasOwn(member.equipment, k)) continue
       const v = member.equipment[k]
       nodes.push(
-
-    <div key={k} className='text-xs text-star-white/80 flex justify-between'>
-      <span className='capitalize text-ash-gray'>
-        {t(`ui:equipment.slots.${k}`, { defaultValue: k })}:
-      </span>
-      <span>
-        {typeof v === 'string'
-          ? t(`items:${v}.name`, { defaultValue: v })
-          : String(v)}
-      </span>
-    </div>
+        <div
+          key={k}
+          className='text-xs text-star-white/80 flex justify-between'
+        >
+          <span className='capitalize text-ash-gray'>
+            {t(`ui:equipment.slots.${k}`, { defaultValue: k })}:
+          </span>
+          <span>
+            {typeof v === 'string'
+              ? t(`items:${v}.name`, { defaultValue: v })
+              : String(v)}
+          </span>
+        </div>
       )
     }
     return nodes

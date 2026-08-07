@@ -20,7 +20,12 @@ export const CraftingSection = ({
             for (const itemId in recipe.inputs) {
               if (!Object.hasOwn(recipe.inputs, itemId)) continue
               const qty = (recipe.inputs as Record<string, number>)[itemId]
-              if (qty !== undefined && getStashStacks(stash, itemId) < qty) return false
+              if (
+                typeof qty !== 'number' ||
+                Number.isNaN(qty) ||
+                getStashStacks(stash, itemId) < qty
+              )
+                return false
             }
             return true
           })()

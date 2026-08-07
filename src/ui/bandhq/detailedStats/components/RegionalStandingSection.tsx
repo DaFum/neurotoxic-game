@@ -38,20 +38,19 @@ export const RegionalStandingSection = ({
         if (!Object.hasOwn(reputationByRegion, region)) continue
         const rep = reputationByRegion[region]
         nodes.push(
-
-      <DetailRow
-        key={region}
-        label={translateLocation(t, region, region)}
-        value={rep}
-        subtext={
-          blacklistedCityKeys.has(region)
-            ? t('ui:detailedStats.blacklisted', {
-                defaultValue: 'BLACKLISTED VENUES'
-              })
-            : null
-        }
-      />
-      )
+          <DetailRow
+            key={region}
+            label={translateLocation(t, region, region)}
+            value={rep}
+            subtext={
+              blacklistedCityKeys.has(region)
+                ? t('ui:detailedStats.blacklisted', {
+                    defaultValue: 'BLACKLISTED VENUES'
+                  })
+                : null
+            }
+          />
+        )
       }
       return nodes
     })()

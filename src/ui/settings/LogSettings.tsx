@@ -48,11 +48,10 @@ export const LogSettings = memo(function LogSettings({
               if (!Object.hasOwn(LOG_LEVELS, key)) continue
               const value = LOG_LEVELS[key as keyof typeof LOG_LEVELS]
               nodes.push(
-
-            <option key={key} value={value}>
-              {key}
-            </option>
-            )
+                <option key={key} value={value}>
+                  {key}
+                </option>
+              )
             }
             return nodes
           })()}
