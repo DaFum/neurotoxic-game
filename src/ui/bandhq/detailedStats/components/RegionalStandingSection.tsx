@@ -4,7 +4,7 @@ import { isEmptyObject } from '../../../../utils/gameState'
 import { translateLocation } from '../../../../utils/locationI18n'
 import { DetailRow } from './DetailRow'
 import { getUnblacklistCost } from '../../../../context/reducers/socialReducer'
-import { Panel } from '../../../shared'
+import { Panel, Tooltip } from '../../../shared'
 import { getCityKeyFromVenueId } from '../../../../utils/mapGenerator'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../../../utils/numberUtils'
@@ -82,23 +82,26 @@ export const RegionalStandingSection = ({
                   <span className='text-xs text-toxic-green font-mono italic'>
                     {translateLocation(t, venueId, venueId)}
                   </span>
-                  {onMakeAmends && (
-                    <button
-                      type='button'
-                      disabled={!affordable}
-                      onClick={() => onMakeAmends(venueId)}
-                      aria-label={`${t('ui:detailedStats.makeAmends', {
-                        amount: formatCurrency(cost, i18n.language),
-                        defaultValue: 'Make Amends ({{amount}})'
-                      })} — ${translateLocation(t, venueId, venueId)}`}
-                      className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
-                    >
-                      {t('ui:detailedStats.makeAmends', {
-                        amount: formatCurrency(cost, i18n.language),
-                        defaultValue: 'Make Amends ({{amount}})'
-                      })}
-                    </button>
-                  )}
+                  {onMakeAmends && (() => {
+                    const btn = (
+                      <button
+                        type='button'
+                        disabled={!affordable}
+                        onClick={() => onMakeAmends(venueId)}
+                        aria-label={`${t('ui:detailedStats.makeAmends', {
+                          amount: formatCurrency(cost, i18n.language),
+                          defaultValue: 'Make Amends ({{amount}})'
+                        })} — ${translateLocation(t, venueId, venueId)}`}
+                        className='text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
+                      >
+                        {t('ui:detailedStats.makeAmends', {
+                          amount: formatCurrency(cost, i18n.language),
+                          defaultValue: 'Make Amends ({{amount}})'
+                        })}
+                      </button>
+                    )
+                    return !affordable ? <Tooltip content={t('ui:detailedStats.insufficientFunds', { defaultValue: 'Insufficient Funds' })}>{btn}</Tooltip> : btn
+                  })()}
                 </div>
               )
             })}
