@@ -176,7 +176,6 @@ const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
   // Impact: Reduces transient GC overhead on hot paths when validating incoming nested properties.
   for (const k in obj) {
     if (!Object.hasOwn(obj, k)) continue
-    if (!k && k !== '') continue
     if (isForbiddenKey(k)) continue
     out[k] = obj[k]
   }
@@ -186,8 +185,8 @@ const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
 const sanitizePosition = (raw: unknown): { x: number; y: number } => {
   if (!isLooseRecord(raw)) return { x: 0, y: 0 }
   return {
-    x: Object.hasOwn(raw, 'x') ? finiteNumberOr(raw.x, 0) : 0,
-    y: Object.hasOwn(raw, 'y') ? finiteNumberOr(raw.y, 0) : 0
+    x: finiteNumberOr(raw.x, 0),
+    y: finiteNumberOr(raw.y, 0)
   }
 }
 
@@ -402,14 +401,11 @@ export const sanitizeLiabilities = (
   // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
   // Why: Avoids intermediate array allocation from .map().
   // Impact: Reduces memory allocation and garbage collection overhead.
-  const assetIds = new Set<string>()
-  for (let i = 0; i < assets.length; i++) {
-    const asset = assets[i]
-    const assetId = asset?.id
-    if (typeof assetId === 'string') {
-      assetIds.add(assetId)
-    }
-  }
+  const assetIds = new Set<string>(
+    assets
+      .map(asset => asset?.id)
+      .filter((id): id is string => typeof id === 'string')
+  )
   const out: Record<string, Liability> = Object.create(null)
   const dropped = new Map<string, string>()
   for (const [index, item] of items.entries()) {
@@ -513,13 +509,11 @@ export const sanitizeCrowdfundCampaigns = (
   // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
   // Why: Avoids intermediate array allocation from .map().
   // Impact: Reduces memory allocation and garbage collection overhead.
-  const unavailableKinds = new Set<LongTermAsset['kind']>()
-  for (let i = 0; i < activeAssets.length; i++) {
-    const asset = activeAssets[i]
-    if (asset?.kind) {
-      unavailableKinds.add(asset.kind)
-    }
-  }
+  const unavailableKinds = new Set<LongTermAsset['kind']>(
+    activeAssets
+      .map(asset => asset?.kind)
+      .filter((kind): kind is LongTermAsset['kind'] => !!kind)
+  )
 
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   const dropped = new Map<string, string>()

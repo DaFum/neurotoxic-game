@@ -95,9 +95,7 @@ export const ModulePickerModal = memo(
         band,
         assets
       } as unknown as Parameters<typeof getModulePoolForAsset>[1]
-      return getModulePoolForAsset(asset, composite).filter(
-        entry => entry.module.slotType === slot.slotType
-      )
+      return getModulePoolForAsset(asset, composite, slot.slotType)
     }, [
       asset,
       slot,

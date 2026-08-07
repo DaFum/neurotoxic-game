@@ -39,7 +39,7 @@ import type {
   ToastCallback,
   TranslationCallback
 } from '../../../types/callbacks'
-import type { Effect, PurchaseItem } from '../../../types/components'
+import type { PurchaseItem } from '../../../types/components'
 import type { PlayerPatch, BandPatch } from '../../../types/purchase'
 
 type EffectMessage = {
@@ -56,16 +56,6 @@ type PurchaseEffectResult = {
   playerPatch?: PlayerPatch
   bandPatch?: BandPatch
   messages?: EffectMessage[]
-}
-
-type PurchaseValidation = {
-  isValid: boolean
-  errorType?: string
-  effect?: Effect
-  finalCost?: number
-  isConsumable?: boolean
-  payingWithFame?: boolean
-  startingCurrency?: number
 }
 
 type ToastFn = (
@@ -157,7 +147,7 @@ const getItemToastLabel = (item: PurchaseItem, t: TranslateFn) =>
   })
 
 const handlePurchaseValidationError = (
-  validation: PurchaseValidation,
+  validation: any,
   item: PurchaseItem,
   addToast: ToastFn,
   t: TranslateFn
@@ -359,11 +349,7 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(
-          item,
-          player,
-          band
-        ) as PurchaseValidation
+        const validation = validatePurchase(item, player, band)
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)
@@ -371,7 +357,7 @@ export const usePurchaseLogic = ({
         }
 
         const {
-          effect,
+          effect: resolvedEffect,
           finalCost,
           isConsumable,
           payingWithFame,
@@ -380,35 +366,23 @@ export const usePurchaseLogic = ({
 
         // Build initial patches
         const initialPlayerPatch = buildInitialPlayerPatch(
-          Boolean(payingWithFame),
-          (startingCurrency as number) ?? 0,
-          (finalCost as number) ?? 0
+          payingWithFame,
+          startingCurrency,
+          finalCost
         )
-
-        const resolvedEffect: Effect | undefined =
-          effect ?? getPrimaryEffect(item)
-        if (!resolvedEffect) {
-          handlePurchaseValidationError(
-            { isValid: false, errorType: 'missing_effect' },
-            item,
-            addToast,
-            t
-          )
-          return false
-        }
 
         const effectResult = processPurchaseEffect(
           resolvedEffect,
           item,
-          initialPlayerPatch,
+          initialPlayerPatch as any,
           player,
           band
         ) as PurchaseEffectResult
 
-        if (effectResult.errorType === 'unknown_effect') {
+        if ((effectResult as any).errorType === 'unknown_effect') {
           handleError(
-            new StateError(`Unknown effect type: ${effectResult.effectType}`, {
-              effectType: effectResult.effectType,
+            new StateError(`Unknown effect type: ${(effectResult as any).effectType}`, {
+              effectType: (effectResult as any).effectType,
               itemId: item.id,
               currency: item.currency
             }),
@@ -423,12 +397,12 @@ export const usePurchaseLogic = ({
         }
 
         let playerPatch: PlayerPatch = {
-          ...(effectResult.playerPatch ?? initialPlayerPatch)
+          ...((effectResult as any).playerPatch ?? (initialPlayerPatch as unknown))
         }
-        const bandPatch = effectResult.bandPatch || null
+        const bandPatch = (effectResult as any).bandPatch || null
 
-        if (effectResult.messages) {
-          processEffectMessages(effectResult.messages, addToast, t)
+        if ((effectResult as any).messages) {
+          processEffectMessages((effectResult as any).messages, addToast, t)
         }
 
         // Ensure fame-based upgrades are tracked in van.upgrades for ownership detection
@@ -452,7 +426,7 @@ export const usePurchaseLogic = ({
           : playerPatch
 
         // Apply updates
-        updatePlayer(finalPlayerPatch as UpdatePlayerPayload)
+        updatePlayer(finalPlayerPatch as unknown)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
@@ -461,7 +435,7 @@ export const usePurchaseLogic = ({
             player,
             band,
             social,
-            playerPatch: finalPlayerPatch,
+            playerPatch: finalPlayerPatch as any,
             bandPatch
           },
           { updateBand, addToast, t }

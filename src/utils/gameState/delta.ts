@@ -89,15 +89,6 @@ const calculateClampedStatDelta = (
   return nextValue - baseValue
 }
 
-const calculateClampedControversyDelta = (
-  currentValue: number | null | undefined,
-  deltaValue: number
-): number => {
-  const baseValue = finiteNumberOr(currentValue, 0)
-  const nextValue = clampControversyLevel(baseValue + deltaValue)
-  return nextValue - baseValue
-}
-
 const calculateBoundedSocialDelta = (
   currentValue: number | null | undefined,
   deltaValue: number,
@@ -277,9 +268,10 @@ export const calculateAppliedDelta = (
 
   if (delta.social) {
     if (isFiniteNumber(delta.social.controversyLevel)) {
-      applied.social.controversyLevel = calculateClampedControversyDelta(
+      applied.social.controversyLevel = calculateBoundedSocialDelta(
         state.social?.controversyLevel,
-        delta.social.controversyLevel
+        delta.social.controversyLevel,
+        clampControversyLevel
       )
     }
     if (isFiniteNumber(delta.social.viral)) {
@@ -322,7 +314,6 @@ export const calculateAppliedDelta = (
       const inventoryDelta = delta.band.inventory
       for (const itemId in inventoryDelta) {
         if (!Object.hasOwn(inventoryDelta, itemId)) continue
-        if (!itemId && itemId !== '') continue
         if (isForbiddenKey(itemId)) continue
 
         const qty = inventoryDelta[itemId]
@@ -440,20 +431,10 @@ export const calculateAppliedDelta = (
       const isNotSelfRelationship = (rc: RelationshipChange) =>
         rc.member1 !== rc.member2
       if (Array.isArray(delta.band.relationshipChange)) {
-        // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
-        // Why: Avoids intermediate array and closure allocations during high-frequency delta application.
-        // Impact: Reduces GC pressure per event tick.
-        const filtered: RelationshipChange[] = []
-        for (let i = 0; i < delta.band.relationshipChange.length; i++) {
-          const rc = delta.band.relationshipChange[i]
-          if (
-            isRelationshipChange(rc) &&
-            isNotSelfRelationship(rc as RelationshipChange)
-          ) {
-            filtered.push(rc)
-          }
-        }
-        applied.band.relationshipChange = filtered
+        applied.band.relationshipChange = delta.band.relationshipChange.filter(
+          (rc): rc is RelationshipChange =>
+            isRelationshipChange(rc) && isNotSelfRelationship(rc)
+        )
       } else {
         applied.band.relationshipChange =
           isRelationshipChange(delta.band.relationshipChange) &&
@@ -574,7 +555,6 @@ export const applyEventDelta = (
       const statsDelta = delta.player.stats
       for (const key in statsDelta) {
         if (!Object.hasOwn(statsDelta, key)) continue
-        if (!key && key !== '') continue
         if (isForbiddenKey(key)) continue
 
         const statDelta = statsDelta[key]
@@ -777,7 +757,6 @@ export const applyEventDelta = (
             // Impact: Reduces transient GC overhead during character interaction logic.
             for (const key in newRelationships) {
               if (!Object.hasOwn(newRelationships, key)) continue
-              if (!key && key !== '') continue
               if (newRelationships[key] !== member.relationships?.[key]) {
                 relationshipsActuallyChanged = true
                 break
@@ -836,7 +815,6 @@ export const applyEventDelta = (
       const deltaInventory = delta.band.inventory
       for (const item in deltaInventory) {
         if (!Object.hasOwn(deltaInventory, item)) continue
-        if (!item && item !== '') continue
         if (isForbiddenKey(item)) continue
         const val = deltaInventory[item]
         if (typeof val !== 'number' && typeof val !== 'boolean') continue
@@ -900,7 +878,6 @@ export const applyEventDelta = (
     const socialDelta = delta.social
     for (const key in socialDelta) {
       if (!Object.hasOwn(socialDelta, key)) continue
-      if (!key && key !== '') continue
       if (isForbiddenKey(key)) continue
       const value = socialDelta[key]
 

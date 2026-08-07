@@ -50,12 +50,7 @@ export const ShopItem = React.memo(
       adjustedCost !== undefined &&
       item.cost !== undefined &&
       adjustedCost < item.cost
-    const priceValue =
-      adjustedCost !== undefined
-        ? adjustedCost
-        : item.cost !== undefined
-          ? item.cost
-          : 0
+    const priceValue = adjustedCost ?? item.cost ?? 0
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
@@ -86,23 +81,21 @@ export const ShopItem = React.memo(
     const displayName =
       typeof item.name === 'string' ? t(item.name) : localizedUnknownItem
 
-    // First matching candidate wins: ownership outranks affordability.
-    const disabledReason = [
-      isPurchased &&
-        t('ui:shop.messages.alreadyOwned', {
+    const disabledReason = isPurchased
+      ? t('ui:shop.messages.alreadyOwned', {
           itemName: displayName,
           defaultValue: 'Already owned!'
-        }),
-      isDisabled &&
-        t('ui:shop.messages.notEnough', {
-          currency:
-            item.currency === 'fame'
-              ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
-              : t('ui:shop.messages.money', { defaultValue: 'Money' }),
-          itemName: displayName,
-          defaultValue: 'Not enough currency.'
         })
-    ].find(candidate => typeof candidate === 'string')
+      : isDisabled
+        ? t('ui:shop.messages.notEnough', {
+            currency:
+              item.currency === 'fame'
+                ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
+                : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+            itemName: displayName,
+            defaultValue: 'Not enough currency.'
+          })
+        : undefined
 
     const label = isPurchased
       ? t('ui:hq.owned', { defaultValue: 'OWNED' })

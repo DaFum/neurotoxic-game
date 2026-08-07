@@ -147,8 +147,9 @@ export async function loadAudioBuffer(
   }
 
   // Return existing promise if already loading
-  if (pendingAudioRequests.has(cacheKey)) {
-    return pendingAudioRequests.get(cacheKey) as Promise<AudioBuffer | null>
+  const pending = pendingAudioRequests.get(cacheKey)
+  if (pending) {
+    return pending
   }
 
   const promise = loadAudioBufferInternal(filename, cacheKey)

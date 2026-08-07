@@ -64,16 +64,10 @@ const hasRelationshipBelow = (
   threshold: number
 ): boolean => {
   if (!isLooseRecord(relationships)) return false
-  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().some() with procedural loop
-  // Why: Avoids array allocation and closure creation during trait unlock checks
-  for (const key in relationships as Record<string, unknown>) {
-    if (!Object.hasOwn(relationships as Record<string, unknown>, key)) continue
-    const score = (relationships as Record<string, unknown>)[key]
-    if (typeof score === 'number' && Number.isFinite(score) && score < threshold) {
-      return true
-    }
-  }
-  return false
+  return Object.values(relationships).some(
+    score =>
+      typeof score === 'number' && Number.isFinite(score) && score < threshold
+  )
 }
 
 /**
@@ -141,13 +135,7 @@ const buildPerformanceContext = (
 }
 
 const hasHighDifficultySong = (songs: Record<string, unknown>[]): boolean => {
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop
-  // Why: Avoids closure allocation overhead when checking song difficulty
-  for (let i = 0; i < songs.length; i++) {
-    const song = songs[i]
-    if (song && finiteNumberOr(song.difficulty, 0) > 3) return true
-  }
-  return false
+  return songs.some(song => song && finiteNumberOr(song.difficulty, 0) > 3)
 }
 
 const isBpmFast = (bpm: number) => bpm > 160
@@ -157,20 +145,13 @@ const hasSongBpm = (
   songs: Record<string, unknown>[],
   predicate: (bpm: number) => boolean
 ): boolean => {
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop
-  // Why: Avoids array-method dispatch overhead when scanning song BPMs
-  for (let i = 0; i < songs.length; i++) {
-    const song = songs[i]
-    if (
+  return songs.some(
+    song =>
       song &&
       typeof song.bpm === 'number' &&
       Number.isFinite(song.bpm) &&
       predicate(song.bpm)
-    ) {
-      return true
-    }
-  }
-  return false
+  )
 }
 
 const UNLOCK_RULES: readonly UnlockRule[] = [

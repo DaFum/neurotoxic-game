@@ -169,17 +169,10 @@ export const hasActiveAssetAcquisition = (
   kind: AssetKind
 ): boolean => {
   const assets = Array.isArray(state.assets) ? state.assets : []
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid array iteration overhead.
-  for (let i = 0; i < assets.length; i++) {
-    if (assets[i]?.kind === kind) return true
-  }
+  if (assets.some(a => a?.kind === kind)) return true
 
   const campaigns = Array.isArray(state.crowdfundCampaigns)
     ? state.crowdfundCampaigns
     : []
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural loop to avoid array iteration overhead.
-  for (let i = 0; i < campaigns.length; i++) {
-    if (campaigns[i]?.assetSpec?.kind === kind) return true
-  }
-  return false
+  return campaigns.some(c => c?.assetSpec?.kind === kind)
 }

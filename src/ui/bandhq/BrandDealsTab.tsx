@@ -65,8 +65,8 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
           t
         )
 
-        const isActive = activeDealsMap.has(deal.id)
         const activeDeal = activeDealsMap.get(deal.id) ?? null
+        const isActive = activeDeal !== null
 
         const dealName = displayDeal?.name ?? deal.name
         const dealDescription = displayDeal?.description ?? deal.description

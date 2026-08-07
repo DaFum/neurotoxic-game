@@ -112,22 +112,14 @@ export const handlePurchaseChassis = (
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent
   // rather than storing undefined in a string field.
-  // ⚡ BOLT OPTIMIZATION: Replaced Array.map with a procedural loop
-  // Why: Avoids intermediate array allocation and closure overhead.
-  // Impact: Reduces GC pressure.
-  const slots: AssetSlot[] = []
-  for (let i = 0; i < configTier.slots.length; i++) {
-    const slotType = configTier.slots[i]
-    if (slotType !== undefined) {
-      const slotId = slotIds[i] ?? `${id}_slot_${i}`
-      slots.push({
-        id: slotId,
-        slotType,
-        position: { x: 0, y: 0 },
-        installedModuleId: null
-      })
-    }
-  }
+  const slots = configTier.slots
+    .filter(slotType => slotType !== undefined)
+    .map((slotType, i) => ({
+      id: slotIds[i] ?? `${id}_slot_${i}`,
+      slotType: slotType as unknown as string,
+      position: { x: 0, y: 0 },
+      installedModuleId: null
+    })) as AssetSlot[]
 
   const asset: LongTermAsset = {
     id,
@@ -290,16 +282,12 @@ export const handleInstallModule = (
     }
   }
 
-  // ⚡ BOLT OPTIMIZATION: Replaced O(N) Array.find with a procedural loop
-  // to avoid closure overhead and reduce GC pressure on hot paths.
-  const { asset: assetForEvent } = findAssetById(state.assets, assetId)
-
-  if (assetForEvent) {
+  if (targetAsset) {
     nextState = QuestEvents.emit(
       nextState,
       createAssetModuleInstalledQuestEvent({
         assetId,
-        assetKind: assetForEvent.kind,
+        assetKind: targetAsset.kind,
         moduleId,
         slotType: moduleInfo.slotType
       })
@@ -692,19 +680,9 @@ export const handleDismissForeclosureNotice = (
 ): GameState => {
   return {
     ...state,
-    pendingForeclosureNotices: (() => {
-      // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
-      // Why: Eliminates intermediate array and closure allocations.
-      // Impact: Reduces GC pressure when dismissing foreclosure notices.
-      const source = state.pendingForeclosureNotices ?? []
-      const result: AssetKind[] = []
-      for (let i = 0; i < source.length; i++) {
-        if (source[i] !== payload.kind) {
-          if (source[i]) result.push(source[i] as AssetKind)
-        }
-      }
-      return result
-    })()
+    pendingForeclosureNotices: (state.pendingForeclosureNotices ?? []).filter(
+      (kind): kind is AssetKind => kind !== undefined && kind !== payload.kind
+    )
   }
 }
 
