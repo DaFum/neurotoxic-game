@@ -46,7 +46,7 @@ interface CrisisModalProps {
   title?: string
   description?: string
   actions?: Array<{
-    id?: string
+    id: string
     label: string
     meta?: string
     onClick?: () => void
@@ -371,16 +371,19 @@ export const CrisisModal = memo(
     const modalDescription = description ?? t('ui:crisis.desc')
     const modalActions = actions ?? [
       {
+        id: 'opt1',
         label: t('ui:crisis.opt1'),
         meta: t('ui:crisis.safe'),
         variant: 'safe' as const
       },
       {
+        id: 'opt2',
         label: t('ui:crisis.opt2'),
         meta: t('ui:crisis.risk'),
         variant: 'risk' as const
       },
       {
+        id: 'opt3',
         label: t('ui:crisis.opt3'),
         meta: t('ui:crisis.risky'),
         variant: 'danger' as const
@@ -446,9 +449,9 @@ export const CrisisModal = memo(
             </div>
 
             <div className='flex flex-col gap-3'>
-              {modalActions.map((action, i) => (
+              {modalActions.map((action) => (
                 <button
-                  key={action.id ?? `action-${i}`}
+                  key={action.id}
                   type='button'
                   onClick={action.onClick ?? onClose}
                   className={getActionClassName(action.variant)}
