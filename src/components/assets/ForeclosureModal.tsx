@@ -30,6 +30,7 @@ export const ForeclosureModal = ({ assetLabel, isOpen, onClose }: Props) => {
       className='assets-modal-sheet max-w-lg'
       actions={[
         {
+          id: 'close',
           label: t('ui:action_close', { defaultValue: 'Close' }),
           variant: 'danger',
           onClick: onClose
