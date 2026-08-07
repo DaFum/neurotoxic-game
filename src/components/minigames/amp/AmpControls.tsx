@@ -25,7 +25,7 @@ export const AmpControls = memo(function AmpControls({
   const handleToggleOverdrive = useCallback(() => {
     if (isFeedbackLoopActive) return
     setIsOverdriveActive(prev => !prev)
-  }, [setIsOverdriveActive])
+  }, [setIsOverdriveActive, isFeedbackLoopActive])
 
   const handleDialChange = useCallback(
     (e: ChangeEvent<HTMLInputElement>) => {
