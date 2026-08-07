@@ -184,6 +184,3 @@
 
 **Learning:** Buttons triggering asynchronous state transitions (like loading the gig setlist with `isStarting=true`) often disable themselves and change their label, but lack an explicit ARIA indicator that they are actively processing. Screen readers might just read "Initializing, disabled" without context. Adding `aria-busy` along with a visual spinner ensures all users know the app is working and hasn't frozen.
 **Action:** When creating or auditing buttons that trigger loading states, add `aria-busy={isLoading}` to communicate the pending state to screen readers natively, and accompany it with a visual loading spinner (like `Loader2` from `lucide-react`) for sighted users.
-## 2026-08-07 - Tooltips on Disabled Elements
-**Learning:** By default, buttons that are visually disabled may not communicate *why* they are disabled to the user. Conditionally wrapping disabled buttons in a `Tooltip` component explains the disabled state.
-**Action:** Instead of relying on passing falsy content (like `null`) to unmount it, conditionally wrap disabled buttons like `!isDisabled ? <Tooltip...>{btn}</Tooltip> : btn`.

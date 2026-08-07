@@ -32,22 +32,33 @@ export const CraftingSection = ({
                   {t(recipe.descKey, { defaultValue: '' })}
                 </div>
               </div>
-              {onCraft && (() => {
-                const btn = (
-                  <button
-                    type='button'
-                    disabled={!canCraft}
-                    onClick={() => onCraft(recipe.id)}
-                    aria-label={`${t('ui:crafting.craft', {
-                      defaultValue: 'Craft'
-                    })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
-                    className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
-                  >
-                    {t('ui:crafting.craft', { defaultValue: 'Craft' })}
-                  </button>
-                )
-                return !canCraft ? <Tooltip content={t('ui:crafting.insufficientMaterials', { defaultValue: 'Insufficient Materials' })}>{btn}</Tooltip> : btn
-              })()}
+              {onCraft &&
+                (() => {
+                  const btn = (
+                    <button
+                      type='button'
+                      disabled={!canCraft}
+                      onClick={() => onCraft(recipe.id)}
+                      aria-label={`${t('ui:crafting.craft', {
+                        defaultValue: 'Craft'
+                      })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
+                      className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
+                    >
+                      {t('ui:crafting.craft', { defaultValue: 'Craft' })}
+                    </button>
+                  )
+                  return !canCraft ? (
+                    <Tooltip
+                      content={t('ui:crafting.insufficientMaterials', {
+                        defaultValue: 'Insufficient Materials'
+                      })}
+                    >
+                      {btn}
+                    </Tooltip>
+                  ) : (
+                    btn
+                  )
+                })()}
             </div>
           )
         })}
