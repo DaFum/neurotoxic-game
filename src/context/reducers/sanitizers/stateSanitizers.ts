@@ -799,6 +799,7 @@ const parseNumericStats = (
   // Why: Avoids unnecessary array allocation during data sanitization.
   // Impact: Reduces GC overhead during high-frequency sanitization parses of nested state blocks.
   for (const key of Object.keys(obj)) {
+    if (!key && key !== '') continue
     if (isForbiddenKey(key)) continue
     if (ignoredKeys && ignoredKeys.has(key)) continue
 

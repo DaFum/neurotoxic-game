@@ -1,4 +1,4 @@
-import type { GameState } from '../../types'
+import type { BandMember, GameState } from '../../types'
 import { logger } from '../../utils/logger'
 import {
   clampVanCondition,
@@ -151,7 +151,7 @@ export const handleCompleteTravelMinigame = (
     0
   )
   if (travelStaminaRegen > 0 && nextMembers.length > 0) {
-    nextMembers = nextMembers.map((member: any) => ({
+    nextMembers = nextMembers.map((member: BandMember) => ({
       ...member,
       stamina: clampMemberStamina(
         finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,

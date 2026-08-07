@@ -19,7 +19,8 @@ import {
   isItemOwned,
   canAfford,
   validatePurchase,
-  processPurchaseEffect
+  processPurchaseEffect,
+  PurchaseValidationResult
 } from '../../../utils/purchaseLogicUtils'
 import {
   clampPlayerMoney,
@@ -147,7 +148,7 @@ const getItemToastLabel = (item: PurchaseItem, t: TranslateFn) =>
   })
 
 const handlePurchaseValidationError = (
-  validation: any,
+  validation: Extract<PurchaseValidationResult, { isValid: false }>,
   item: PurchaseItem,
   addToast: ToastFn,
   t: TranslateFn
@@ -374,15 +375,15 @@ export const usePurchaseLogic = ({
         const effectResult = processPurchaseEffect(
           resolvedEffect,
           item,
-          initialPlayerPatch as any,
+          initialPlayerPatch,
           player,
           band
         ) as PurchaseEffectResult
 
-        if ((effectResult as any).errorType === 'unknown_effect') {
+        if (effectResult.errorType === 'unknown_effect') {
           handleError(
-            new StateError(`Unknown effect type: ${(effectResult as any).effectType}`, {
-              effectType: (effectResult as any).effectType,
+            new StateError(`Unknown effect type: ${effectResult.effectType}`, {
+              effectType: effectResult.effectType,
               itemId: item.id,
               currency: item.currency
             }),
@@ -397,12 +398,12 @@ export const usePurchaseLogic = ({
         }
 
         let playerPatch: PlayerPatch = {
-          ...((effectResult as any).playerPatch ?? (initialPlayerPatch as unknown))
+          ...(effectResult.playerPatch ?? initialPlayerPatch)
         }
-        const bandPatch = (effectResult as any).bandPatch || null
+        const bandPatch = effectResult.bandPatch || null
 
-        if ((effectResult as any).messages) {
-          processEffectMessages((effectResult as any).messages, addToast, t)
+        if (effectResult.messages) {
+          processEffectMessages(effectResult.messages, addToast, t)
         }
 
         // Ensure fame-based upgrades are tracked in van.upgrades for ownership detection
@@ -435,7 +436,7 @@ export const usePurchaseLogic = ({
             player,
             band,
             social,
-            playerPatch: finalPlayerPatch as any,
+            playerPatch: finalPlayerPatch,
             bandPatch
           },
           { updateBand, addToast, t }

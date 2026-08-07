@@ -26,7 +26,14 @@ export const MemberTraits = ({
         if (
           rt &&
           typeof rt === 'object' &&
-          'id' in rt &&
+          Object.hasOwn(rt, 'id') &&
+          typeof (rt as Record<string, unknown>).id === 'string' &&
+          Object.hasOwn(rt, 'name') &&
+          typeof (rt as Record<string, unknown>).name === 'string' &&
+          Object.hasOwn(rt, 'desc') &&
+          typeof (rt as Record<string, unknown>).desc === 'string' &&
+          Object.hasOwn(rt, 'unlockHint') &&
+          typeof (rt as Record<string, unknown>).unlockHint === 'string' &&
           !baseIds.has((rt as CharacterTrait).id)
         ) {
           merged.push(rt as unknown as CharacterTrait)

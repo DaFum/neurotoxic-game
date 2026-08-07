@@ -436,7 +436,7 @@ const EFFECT_REVERTERS: Record<
     const effectVal = finiteEffectValue(value)
     return {
       ...band,
-      members: (band.members || []).map((m: any) => ({
+      members: (band.members || []).map((m: BandMember) => ({
         ...m,
         staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100) - effectVal)
       })) as BandMember[]
@@ -719,7 +719,7 @@ export const handleAdvanceDay = (
       currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
     )
     if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
-      nextBand.members = nextBand.members.map((member: any) => ({
+      nextBand.members = nextBand.members.map((member: BandMember) => ({
         ...member,
         mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
       })) as BandMember[]
@@ -768,7 +768,9 @@ export const handleAdvanceDay = (
     if (typeof cd === 'string') {
       const idx = cd.indexOf(':')
       if (idx >= 0) {
-        const expiry = parseInt(cd.slice(idx + 1), 10)
+        const expiryStr = cd.slice(idx + 1)
+        const expiry = Number(expiryStr)
+        if (!Number.isInteger(expiry)) return false
         return Number.isFinite(expiry) && expiry > currentDay
       }
     }

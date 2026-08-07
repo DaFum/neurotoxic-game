@@ -259,8 +259,10 @@ export const checkSoftlock = (
       assetModifiers?: AssetModifiers
     }
   ): boolean => {
-    const activeDailyObligations =
-      customContext?.dailyObligations ?? dailyObligations
+    const activeDailyObligations = finiteNumberOr(
+      customContext?.dailyObligations,
+      dailyObligations
+    )
     const activeAssetModifiers = customContext?.assetModifiers ?? assetModifiers
 
     const canReachNode = (n: GameNode): boolean => {
@@ -317,7 +319,10 @@ export const checkSoftlock = (
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
   const fameMultiplier = 1 + finiteNumberOr(player.fameLevel, 0) * 0.2
 
-  const evaluateScenario = (scenarioMoney: number, customCtx?: any) => {
+  const evaluateScenario = (
+    scenarioMoney: number,
+    customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
+  ) => {
     if (
       checkReachabilityWithMoneyAndFuel(currentFuel, scenarioMoney, customCtx)
     )

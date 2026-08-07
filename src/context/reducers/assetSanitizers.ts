@@ -185,8 +185,8 @@ const stripHostileKeys = <T extends Record<string, unknown>>(obj: T): T => {
 const sanitizePosition = (raw: unknown): { x: number; y: number } => {
   if (!isLooseRecord(raw)) return { x: 0, y: 0 }
   return {
-    x: finiteNumberOr(raw.x, 0),
-    y: finiteNumberOr(raw.y, 0)
+    x: Object.hasOwn(raw, 'x') ? finiteNumberOr(raw.x, 0) : 0,
+    y: Object.hasOwn(raw, 'y') ? finiteNumberOr(raw.y, 0) : 0
   }
 }
 

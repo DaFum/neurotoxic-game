@@ -366,7 +366,7 @@ export const applyStatModifier = (
   return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
 }
 
-type PurchaseValidationResult =
+export type PurchaseValidationResult =
   | { isValid: false; errorType: string }
   | {
       isValid: true
