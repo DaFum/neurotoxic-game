@@ -34,6 +34,9 @@ import {
 } from './preGigUtils'
 import type { Minigame } from './preGigUtils'
 
+/**
+ * Input properties for the usePreGigHandlers hook.
+ */
 export interface UsePreGigHandlersProps {
   band: GameState['band']
   player: PlayerState
@@ -60,6 +63,9 @@ export interface UsePreGigHandlersProps {
   startAmpCalibration: (gigId: string) => void
 }
 
+/**
+ * Return value of the usePreGigHandlers hook exposing state, derived values, and executable handlers.
+ */
 export interface UsePreGigHandlersReturn {
   isStarting: boolean
   handleUpdateMerchPrice: (merchKey: string, newPrice: number) => void
@@ -70,6 +76,17 @@ export interface UsePreGigHandlersReturn {
   handleStartShow: () => Promise<void>
 }
 
+/**
+ * Encapsulates the UI action handlers during the pre-gig setup phase.
+ *
+ * @remarks
+ * This hook is strictly bound to the Pre-Gig menu lifecycle and does not modify persistent
+ * core state directly outside of its provided dispatch callbacks. It orchestrates economy
+ * checks, minigame selection weighting, and modifier toggling prior to initiating the gig.
+ *
+ * @param props - Configuration and state context required for pre-gig actions
+ * @returns Exposing state, derived values, and executable handlers
+ */
 export const usePreGigHandlers = ({
   band,
   player,
