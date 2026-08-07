@@ -112,6 +112,7 @@ export const BandStatusPanel = memo(
         <div className={membersWrapperClassName}>
           {(band?.members ?? []).map((m: BandMember, idx: number) => (
             <BandMemberRow
+              // eslint-disable-next-line @eslint-react/no-array-index-key
               key={m?.id ?? m?.name ?? `member-${idx}`}
               m={m}
               t={t}

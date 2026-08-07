@@ -446,9 +446,9 @@ export const CrisisModal = memo(
             </div>
 
             <div className='flex flex-col gap-3'>
-              {modalActions.map((action, i) => (
+              {modalActions.map((action) => (
                 <button
-                  key={action.id ?? `action-${i}`}
+                  key={action.id ?? action.label}
                   type='button'
                   onClick={action.onClick ?? onClose}
                   className={getActionClassName(action.variant)}
