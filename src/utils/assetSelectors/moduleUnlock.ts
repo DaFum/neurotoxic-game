@@ -1,3 +1,4 @@
+import type { BandState } from '../../types'
 import type { AssetModule, LongTermAsset, SlotType } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
@@ -9,7 +10,7 @@ import { isFiniteNumber } from '../finiteNumber'
 export interface ModuleUnlockState {
   player: { fame: number; money: number }
   social: { scenePresence?: number }
-  band: { members: readonly { id?: string }[] }
+  band: Pick<BandState, 'members'>
   activeStoryFlags: readonly string[]
   assets: readonly LongTermAsset[]
 }
@@ -75,7 +76,7 @@ const memberHasSkill = (
   memberId?: string
 ): boolean => {
   const candidates = memberId
-    ? state.band.members.filter((m: { id?: string }) => m.id === memberId)
+    ? state.band.members.filter(m => m.id === memberId)
     : state.band.members
   for (const m of candidates) {
     if ((readMemberSkillValue(m, skill) ?? 0) >= tier) return true

@@ -366,8 +366,12 @@ export const applyStatModifier = (
   return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
 }
 
+/** Reasons `validatePurchase` can reject an item. */
+export type PurchaseErrorType =
+  'missing_effect' | 'already_owned' | 'insufficient_funds'
+
 export type PurchaseValidationResult =
-  | { isValid: false; errorType: string }
+  | { isValid: false; errorType: PurchaseErrorType }
   | {
       isValid: true
       finalCost: number

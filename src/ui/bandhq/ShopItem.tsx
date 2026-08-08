@@ -7,6 +7,7 @@ import {
   LABEL_CONTRACT_ADVANCE
 } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { GlitchButton } from '../GlitchButton'
 import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
 import { Tooltip } from '../shared'
@@ -50,7 +51,12 @@ export const ShopItem = React.memo(
       adjustedCost !== undefined &&
       item.cost !== undefined &&
       adjustedCost < item.cost
-    const priceValue = adjustedCost ?? item.cost ?? 0
+    // A non-finite adjusted cost must fall back to the item's own cost rather
+    // than render as 0 — `??` only rejects null/undefined, not NaN/Infinity.
+    const priceValue = finiteNumberOr(
+      adjustedCost,
+      finiteNumberOr(item.cost, 0)
+    )
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable

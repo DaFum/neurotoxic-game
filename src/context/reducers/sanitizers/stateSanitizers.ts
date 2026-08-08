@@ -796,6 +796,9 @@ const parseNumericStats = (
   if (!isLooseRecord(obj)) return {}
   const result: Record<string, number> = {}
   for (const key of Object.keys(obj)) {
+    // An empty key names nothing (no member id, no stat) and can only enter
+    // through a corrupt or hostile save, so it never reaches sanitized state.
+    if (key === '') continue
     if (isForbiddenKey(key)) continue
     if (ignoredKeys && ignoredKeys.has(key)) continue
 

@@ -52,6 +52,7 @@ import {
   clampMemberMood,
   isForbiddenKey,
   finiteNumberOr,
+  parseCooldownEntry,
   sanitizeStringArray,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
@@ -766,17 +767,12 @@ export const handleAdvanceDay = (
   // entries would silently evaporate on the next advanceDay.
   // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
   // Legacy format without ':' will be intentionally dropped every day.
+  // The entry grammar lives in `parseCooldownEntry`, shared with every
+  // cooldown reader, so expiry here cannot drift from what `isOnCooldown`
+  // enforces. A null expiryDay is a legacy untimed entry and still resets.
   const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
-    if (typeof cd === 'string') {
-      const idx = cd.indexOf(':')
-      if (idx >= 0) {
-        const expiryStr = cd.slice(idx + 1)
-        const expiry = Number(expiryStr)
-        if (!Number.isInteger(expiry)) return false
-        return Number.isFinite(expiry) && expiry > currentDay
-      }
-    }
-    return false
+    const parsed = parseCooldownEntry(cd)
+    return parsed?.expiryDay != null && parsed.expiryDay > currentDay
   })
 
   let nextState: GameState = {
