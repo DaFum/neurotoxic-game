@@ -271,19 +271,11 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
   }
 
   // Drop child-slots whose parent module is no longer installed on this asset.
-  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with a single-pass loop.
-  // Why: Eliminates intermediate array allocations and a second O(N) pass.
-  // Impact: Reduces garbage collection overhead during asset sanitization.
-  const finalOut: AssetSlot[] = []
-  for (const s of out) {
-    if (
+  return out.filter(
+    s =>
       s.addedByModuleId === undefined ||
       installedModuleIds.has(s.addedByModuleId)
-    ) {
-      finalOut.push(s)
-    }
-  }
-  return finalOut
+  )
 }
 
 /**
@@ -351,20 +343,9 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
     // (addedByModuleId is set). Slots violating both rules are dropped to
     // prevent impossible topologies from surviving a load.
     const chassisSlotTypes = new Set<string>(configTier.slots)
-    // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
-    // Why: Eliminates intermediate array and closure allocations.
-    // Impact: Reduces GC pressure during asset sanitization.
-    const preSanitizedSlots = sanitizeSlots(clean.slots)
-    const sanitizedSlots = []
-    for (let i = 0; i < preSanitizedSlots.length; i++) {
-      const s = preSanitizedSlots[i]
-      if (
-        s &&
-        (s.addedByModuleId !== undefined || chassisSlotTypes.has(s.slotType))
-      ) {
-        sanitizedSlots.push(s)
-      }
-    }
+    const sanitizedSlots = sanitizeSlots(clean.slots).filter(
+      s => s.addedByModuleId !== undefined || chassisSlotTypes.has(s.slotType)
+    )
 
     out.push({
       id: clean.id,
@@ -398,9 +379,6 @@ export const sanitizeLiabilities = (
 ): Record<string, Liability> => {
   if (typeof raw !== 'object' || raw === null) return {}
   const items = Array.isArray(raw) ? raw : Object.values(raw)
-  // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
-  // Why: Avoids intermediate array allocation from .map().
-  // Impact: Reduces memory allocation and garbage collection overhead.
   const assetIds = new Set<string>(
     assets
       .map(asset => asset?.id)
@@ -506,9 +484,6 @@ export const sanitizeCrowdfundCampaigns = (
   const out: CrowdfundCampaign[] = []
   const seenIds = new Set<string>()
 
-  // ⚡ BOLT OPTIMIZATION: Replaced map() inside Set constructor with explicit loop.
-  // Why: Avoids intermediate array allocation from .map().
-  // Impact: Reduces memory allocation and garbage collection overhead.
   const unavailableKinds = new Set<LongTermAsset['kind']>(
     activeAssets
       .map(asset => asset?.kind)

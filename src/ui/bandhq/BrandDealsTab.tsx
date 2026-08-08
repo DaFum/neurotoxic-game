@@ -37,7 +37,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
 
   // ⚡ BOLT OPTIMIZATION: Replaced activeDealIds Set and O(N) Array.find() inside render loop with a precomputed Map for O(1) lookups.
   const activeDealsMap = useMemo(() => {
-    const deals = social?.activeDeals
+    const deals = social.activeDeals
     const map = new Map<string, ActiveBrandDeal>()
     if (Array.isArray(deals)) {
       for (let i = 0; i < deals.length; i++) {
@@ -55,7 +55,7 @@ export const BrandDealsTab = ({ social }: BrandDealsTabProps) => {
       }
     }
     return map
-  }, [social?.activeDeals])
+  }, [social.activeDeals])
 
   return (
     <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'>

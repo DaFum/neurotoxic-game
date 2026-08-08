@@ -226,16 +226,7 @@ export const generatePostOptions = (
   }
 
   // 4. Return new array and objects without _weight
-  const finalResults: SocialPostOption[] = []
-  for (let i = 0; i < results.length; i++) {
-    const result = results[i]
-    if (result) {
-      const { _weight, ...rest } = result
-      finalResults.push(rest)
-    }
-  }
-
-  return finalResults
+  return results.map(({ _weight, ...rest }) => rest)
 }
 
 /**

@@ -1,7 +1,18 @@
-import type { GameState } from '../../types'
 import type { AssetModule, LongTermAsset, SlotType } from '../../types/assets'
 import { MODULE_REGISTRY } from '../assetModuleRegistry'
 import { isFiniteNumber } from '../finiteNumber'
+
+/**
+ * State slices consumed by module unlock evaluation. Narrower than `GameState`
+ * so UI callers can assemble the few fields they subscribe to without casting.
+ */
+export interface ModuleUnlockState {
+  player: { fame: number; money: number }
+  social: { scenePresence?: number }
+  band: { members: readonly { id?: string }[] }
+  activeStoryFlags: readonly string[]
+  assets: readonly LongTermAsset[]
+}
 
 const SKILL_ALIASES: Record<string, readonly string[]> = {
   tech: ['tech', 'technical']
@@ -58,7 +69,7 @@ const readMemberSkillValue = (
 }
 
 const memberHasSkill = (
-  state: GameState,
+  state: ModuleUnlockState,
   skill: string,
   tier: number,
   memberId?: string
@@ -72,7 +83,7 @@ const memberHasSkill = (
   return false
 }
 
-const allInstalledModuleIds = (state: GameState): Set<string> => {
+const allInstalledModuleIds = (state: ModuleUnlockState): Set<string> => {
   const set = new Set<string>()
   const assets = Array.isArray(state.assets) ? state.assets : []
   for (const a of assets) {
@@ -108,7 +119,7 @@ export interface LockReason {
 
 const checkCommonUnlockRequirements = (
   module: AssetModule,
-  state: GameState,
+  state: ModuleUnlockState,
   reasons: LockReason[],
   collectReasons: boolean
 ): boolean => {
@@ -144,8 +155,7 @@ const checkCommonUnlockRequirements = (
   }
 
   if (u.minScenePresence !== undefined) {
-    const scene =
-      (state.social as { scenePresence?: number }).scenePresence ?? 0
+    const scene = state.social.scenePresence ?? 0
     if (
       scene < u.minScenePresence &&
       shouldShortCircuit({ kind: 'scene', amount: u.minScenePresence })
@@ -217,7 +227,7 @@ const checkCommonUnlockRequirements = (
  */
 export const isModuleUnlocked = (
   module: AssetModule,
-  state: GameState
+  state: ModuleUnlockState
 ): boolean => {
   return checkCommonUnlockRequirements(module, state, [], false)
 }
@@ -232,7 +242,7 @@ export const isModuleUnlocked = (
  */
 export const getLockReasons = (
   module: AssetModule,
-  state: GameState,
+  state: ModuleUnlockState,
   asset?: LongTermAsset
 ): LockReason[] => {
   const reasons: LockReason[] = []
@@ -302,7 +312,7 @@ export interface ModulePoolEntry {
  */
 export const getModulePoolForAsset = (
   asset: LongTermAsset,
-  state: GameState,
+  state: ModuleUnlockState,
   slotTypeFilter?: SlotType
 ): ModulePoolEntry[] => {
   const out: ModulePoolEntry[] = []
