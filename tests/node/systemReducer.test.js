@@ -713,6 +713,27 @@ test('systemReducer - LOAD_GAME', async t => {
     }
   )
 
+  await t.test('drops empty relationship keys from loaded members', () => {
+    const initialState = createInitialState()
+    const loadedState = {
+      band: {
+        members: [
+          {
+            id: 'm1',
+            name: 'Matze',
+            relationships: { '': 50, Marius: 30 }
+          }
+        ]
+      }
+    }
+
+    const nextState = handleLoadGame(initialState, loadedState)
+    const member = nextState.band.members[0]
+
+    assert.equal(Object.hasOwn(member.relationships, ''), false)
+    assert.deepEqual(member.relationships, { Marius: 30 })
+  })
+
   await t.test(
     'merges partial loaded inventory with default band inventory',
     () => {

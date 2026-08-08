@@ -20,7 +20,6 @@ import type { RandomFn } from '../types/callbacks'
 
 interface WeightedPostOption extends SocialPostOption {
   _weight: number
-  _force?: boolean
 }
 
 interface ViralStats {
@@ -186,7 +185,6 @@ export const generatePostOptions = (
     if (sponsorIdx !== -1) {
       const sponsorOpt = eligibleOptions[sponsorIdx]
       if (sponsorOpt) {
-        sponsorOpt._force = true
         results.push(sponsorOpt)
         // Remove in-place to avoid full array re-allocation
         eligibleOptions.splice(sponsorIdx, 1)
@@ -227,17 +225,8 @@ export const generatePostOptions = (
     )
   }
 
-  // 4. Return new array and objects without _weight and _force
-  const finalResults: SocialPostOption[] = []
-  for (let i = 0; i < results.length; i++) {
-    const result = results[i]
-    if (result) {
-      const { _weight, _force, ...rest } = result
-      finalResults.push(rest)
-    }
-  }
-
-  return finalResults
+  // 4. Return new array and objects without _weight
+  return results.map(({ _weight, ...rest }) => rest)
 }
 
 /**

@@ -88,27 +88,37 @@ const EXPIRY_DAY_PATTERN = /^\d+$/
  * entry), or `null` when the entry does not match the grammar.
  *
  * @remarks
+ * Only the segment after the LAST colon can be an expiry day, because event
+ * ids may themselves contain colons (`namespace:event`) and the writer
+ * serializes timed entries as `${eventId}:${expiryDay}`. Splitting on the
+ * first colon would leave `namespace:event:42` with the unparseable suffix
+ * `event:42` and drop a live cooldown.
+ *
  * The whole suffix must be a day number: `parseInt` accepts a valid numeric
  * prefix, so a corrupted or hostile `event_id:999999junk` would otherwise
  * suppress the event until day 999999. Digits alone are not enough either — a
  * 400-digit suffix converts to `Infinity`, which every `currentDay < expiry`
- * reader would treat as a permanent cooldown. Shared by every cooldown reader
- * so the grammar cannot drift between them.
+ * reader would treat as a permanent cooldown. An entry whose last segment is
+ * not a day number is therefore a key in its own right with no expiry, which
+ * keeps untimed colon ids readable while still refusing to honour a corrupted
+ * suffix as an expiry. Shared by every cooldown reader so the grammar cannot
+ * drift between them.
  */
 export const parseCooldownEntry = (
   entry: unknown
 ): { key: string; expiryDay: number | null } | null => {
-  if (typeof entry !== 'string') return null
+  if (typeof entry !== 'string' || entry === '') return null
 
-  const separatorIndex = entry.indexOf(':')
-  const key = separatorIndex === -1 ? entry : entry.slice(0, separatorIndex)
+  const separatorIndex = entry.lastIndexOf(':')
+  const expiry = separatorIndex === -1 ? '' : entry.slice(separatorIndex + 1)
+
+  // No parseable expiry: the entry is a bare key (permanent or legacy), which
+  // is also how an id ending in a non-numeric `:suffix` stays addressable.
+  if (!EXPIRY_DAY_PATTERN.test(expiry)) return { key: entry, expiryDay: null }
+
+  const key = entry.slice(0, separatorIndex)
   if (!key) return null
 
-  const expiry = separatorIndex === -1 ? '' : entry.slice(separatorIndex + 1)
-  // No expiry means forever or legacy.
-  if (!expiry) return { key, expiryDay: null }
-
-  if (!EXPIRY_DAY_PATTERN.test(expiry)) return null
   const expiryDay = Number(expiry)
   if (!Number.isFinite(expiryDay)) return null
   return { key, expiryDay }

@@ -259,14 +259,11 @@ export const checkSoftlock = (
       assetModifiers?: AssetModifiers
     }
   ): boolean => {
-    const activeDailyObligations =
-      customContext && customContext.dailyObligations !== undefined
-        ? finiteNumberOr(customContext.dailyObligations, 0)
-        : dailyObligations
-    const activeAssetModifiers =
-      customContext && customContext.assetModifiers !== undefined
-        ? customContext.assetModifiers
-        : assetModifiers
+    const activeDailyObligations = finiteNumberOr(
+      customContext?.dailyObligations,
+      dailyObligations
+    )
+    const activeAssetModifiers = customContext?.assetModifiers ?? assetModifiers
 
     const canReachNode = (n: GameNode): boolean => {
       const { fuelLiters, totalCost } = calculateTravelExpenses(
@@ -310,8 +307,6 @@ export const checkSoftlock = (
     return false
   }
 
-  if (checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney)) return false
-
   // Escape hatch: an unplayed gig at the current node can still earn money.
   if (
     typeof currentNode?.type === 'string' &&
@@ -321,10 +316,31 @@ export const checkSoftlock = (
     return false
   }
 
-  // Escape hatch: a blood-bank donation is a cash source without traveling.
   const bandForDonation = bandStateForTravel as Partial<BandState> | null
   const fameMultiplier = 1 + finiteNumberOr(player.fameLevel, 0) * 0.2
 
+  const evaluateScenario = (
+    scenarioMoney: number,
+    customCtx?: Parameters<typeof checkReachabilityWithMoneyAndFuel>[2]
+  ) => {
+    if (
+      checkReachabilityWithMoneyAndFuel(currentFuel, scenarioMoney, customCtx)
+    )
+      return true
+    const refuelCost = calculateRefuelCost(currentFuel)
+    if (refuelCost > 0 && scenarioMoney >= refuelCost) {
+      return checkReachabilityWithMoneyAndFuel(
+        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+        scenarioMoney - refuelCost,
+        customCtx
+      )
+    }
+    return false
+  }
+
+  if (evaluateScenario(playerMoney)) return false
+
+  // Escape hatch: a blood-bank donation is a cash source without traveling.
   if (
     validateBloodBankDonation(bandForDonation, {
       harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
@@ -334,11 +350,7 @@ export const checkSoftlock = (
     const marrowMoney = Math.floor(
       GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * fameMultiplier
     )
-    if (
-      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + marrowMoney)
-    ) {
-      return false
-    }
+    if (evaluateScenario(playerMoney + marrowMoney)) return false
   } else if (
     validateBloodBankDonation(bandForDonation, {
       harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
@@ -348,46 +360,14 @@ export const checkSoftlock = (
     const bloodMoney = Math.floor(
       GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * fameMultiplier
     )
-    if (
-      checkReachabilityWithMoneyAndFuel(currentFuel, playerMoney + bloodMoney)
-    ) {
-      return false
-    }
-  }
-
-  // Escape hatch: an affordable refuel that makes a neighbor reachable.
-  const refuelCost = calculateRefuelCost(currentFuel)
-  if (refuelCost > 0 && playerMoney >= refuelCost) {
-    if (
-      checkReachabilityWithMoneyAndFuel(
-        EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
-        playerMoney - refuelCost
-      )
-    ) {
-      return false
-    }
+    if (evaluateScenario(playerMoney + bloodMoney)) return false
   }
 
   // Escape hatch: positive net asset proceeds across possible sale combinations.
   if (context.postSaleScenarios && context.postSaleScenarios.length > 0) {
     for (const scenario of context.postSaleScenarios) {
       const totalMoney = playerMoney + finiteNumberOr(scenario.assetProceeds, 0)
-      if (
-        checkReachabilityWithMoneyAndFuel(currentFuel, totalMoney, scenario)
-      ) {
-        return false
-      }
-      if (refuelCost > 0 && totalMoney >= refuelCost) {
-        if (
-          checkReachabilityWithMoneyAndFuel(
-            EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
-            totalMoney - refuelCost,
-            scenario
-          )
-        ) {
-          return false
-        }
-      }
+      if (evaluateScenario(totalMoney, scenario)) return false
     }
   }
 

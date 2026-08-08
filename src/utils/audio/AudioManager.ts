@@ -348,39 +348,54 @@ class AudioSystem {
     audioEngine.playSFX(key)
   }
 
-  /**
-   * Sets the music volume and persists it.
-   * @param vol - Volume level between 0 and 1.
-   */
-  setMusicVolume(vol: number): boolean {
+  private setVolumeHelper(
+    vol: number,
+    type: 'music' | 'sfx',
+    engineSetter: (v: number) => boolean,
+    storageKey: string
+  ): boolean {
     if (!Number.isFinite(vol)) {
-      logger.warn('AudioSystem', `Invalid music volume: ${String(vol)}`)
+      logger.warn('AudioSystem', `Invalid ${type} volume: ${String(vol)}`)
       return false
     }
     const next = clampUnit(vol)
     let operationSucceeded = true
     let appliedNow = false
     try {
-      appliedNow = audioEngine.setMusicVolume(next) !== false
-      this.musicVolume = next
+      appliedNow = engineSetter(next) !== false
+      if (type === 'music') {
+        this.musicVolume = next
+      } else {
+        this.sfxVolume = next
+      }
     } catch (e) {
       operationSucceeded = false
-      handleError(e, { fallbackMessage: 'Failed to set music volume' })
+      handleError(e, { fallbackMessage: `Failed to set ${type} volume` })
     }
     if (operationSucceeded) {
       if (!appliedNow) {
         logger.debug(
           'AudioSystem',
-          'Music volume stored for deferred apply (audio graph not ready).'
+          `${type} volume stored for deferred apply (audio graph not ready).`
         )
       }
-      setSafeStorageItem('neurotoxic_vol_music', next)
-    }
-    if (operationSucceeded) {
+      setSafeStorageItem(storageKey, next)
       this.emitChange()
     }
-
     return operationSucceeded
+  }
+
+  /**
+   * Sets the music volume and persists it.
+   * @param vol - Volume level between 0 and 1.
+   */
+  setMusicVolume(vol: number): boolean {
+    return this.setVolumeHelper(
+      vol,
+      'music',
+      audioEngine.setMusicVolume,
+      'neurotoxic_vol_music'
+    )
   }
 
   /**
@@ -388,34 +403,12 @@ class AudioSystem {
    * @param vol - Volume level between 0 and 1.
    */
   setSFXVolume(vol: number): boolean {
-    if (!Number.isFinite(vol)) {
-      logger.warn('AudioSystem', `Invalid SFX volume: ${String(vol)}`)
-      return false
-    }
-    const next = clampUnit(vol)
-    let operationSucceeded = true
-    let appliedNow = false
-    try {
-      appliedNow = audioEngine.setSFXVolume(next) !== false
-      this.sfxVolume = next
-    } catch (e) {
-      operationSucceeded = false
-      handleError(e, { fallbackMessage: 'Failed to set SFX volume' })
-    }
-    if (operationSucceeded) {
-      if (!appliedNow) {
-        logger.debug(
-          'AudioSystem',
-          'SFX volume stored for deferred apply (audio graph not ready).'
-        )
-      }
-      setSafeStorageItem('neurotoxic_vol_sfx', next)
-    }
-    if (operationSucceeded) {
-      this.emitChange()
-    }
-
-    return operationSucceeded
+    return this.setVolumeHelper(
+      vol,
+      'sfx',
+      audioEngine.setSFXVolume,
+      'neurotoxic_vol_sfx'
+    )
   }
 
   /**
@@ -452,10 +445,6 @@ class AudioSystem {
    */
   dispose(): void {
     this.stopMusic({ emit: false })
-    this.currentSongId = null
-    this.ambientStartToken++
-    this.ambientStartPromise = null
-    this.isStartingAmbient = false
     this.prefsLoaded = false
 
     // Explicitly call the engine's dispose function to clear contexts

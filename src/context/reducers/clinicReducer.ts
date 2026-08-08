@@ -251,23 +251,18 @@ export const handleBloodBankDonate = (
 
   let membersChanged = false
   const sourceMembers = state?.band?.members || []
-  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-  // Why: Avoids closure allocation and intermediate arrays in hot paths.
-  const normalizedMembers: BandMember[] = new Array(sourceMembers.length)
-  for (let i = 0; i < sourceMembers.length; i++) {
-    const sourceMember = sourceMembers[i]
-    if (!sourceMember) continue
+  const normalizedMembers = sourceMembers.map((sourceMember: unknown) => {
+    if (!sourceMember) return sourceMember as unknown as BandMember
     const member = sourceMember as BandMember
     const stamina = finiteNumberOr(member?.stamina, 0)
     const staminaMax = finiteNumberOr(member?.staminaMax, 100)
 
     if (stamina !== member?.stamina || staminaMax !== member?.staminaMax) {
       membersChanged = true
-      normalizedMembers[i] = { ...member, stamina, staminaMax }
-    } else {
-      normalizedMembers[i] = member
+      return { ...member, stamina, staminaMax }
     }
-  }
+    return member
+  })
 
   const normalizedState = membersChanged
     ? { ...state, band: { ...state?.band, members: normalizedMembers } }
@@ -299,26 +294,22 @@ export const handleBloodBankDonate = (
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-  // Why: Avoids closure allocation and intermediate arrays in hot paths.
-  const updatedMembers: BandMember[] = new Array(
-    normalizedState.band.members.length
-  )
-  for (let i = 0; i < normalizedState.band.members.length; i++) {
-    const sourceMember = normalizedState.band.members[i]
-    if (!sourceMember) continue
-    const member = sourceMember as BandMember
-    const prevStamina = finiteNumberOr(member?.stamina, 0)
-    const nextStamina = clampMemberStamina(
-      prevStamina - staminaCost,
-      finiteNumberOr(member?.staminaMax, 100)
-    )
-    totalStaminaLost += prevStamina - nextStamina
-    updatedMembers[i] = {
-      ...member,
-      stamina: nextStamina
+  const updatedMembers: BandMember[] = normalizedState.band.members.map(
+    (sourceMember: unknown) => {
+      if (!sourceMember) return sourceMember as unknown as BandMember
+      const member = sourceMember as BandMember
+      const prevStamina = finiteNumberOr(member?.stamina, 0)
+      const nextStamina = clampMemberStamina(
+        prevStamina - staminaCost,
+        finiteNumberOr(member?.staminaMax, 100)
+      )
+      totalStaminaLost += prevStamina - nextStamina
+      return {
+        ...member,
+        stamina: nextStamina
+      }
     }
-  }
+  )
 
   const nextState = {
     ...normalizedState,
@@ -409,6 +400,26 @@ export const handleGraftNeuroOverclock = (
     return state // Already grafted
   }
 
+  const members = [...state.band.members]
+  members[memberIndex] = {
+    ...member,
+    health: Math.max(1, finiteNumberOr(member.health, 100) - 20),
+    stress: Math.min(100, finiteNumberOr(member.stress, 0) + 30),
+    traits: {
+      ...(member.traits || {}),
+      neuro_overclock: getTraitById('neuro_overclock') || {
+        id: 'neuro_overclock',
+        name: 'traits:neuro_overclock.name',
+        description: 'traits:neuro_overclock.description',
+        effects: {
+          rhythmMultiplier: 1.5,
+          stressPerGig: 5,
+          healthPerGig: -10
+        }
+      }
+    }
+  }
+
   return {
     ...state,
     player: {
@@ -419,31 +430,7 @@ export const handleGraftNeuroOverclock = (
     },
     band: {
       ...state.band,
-      // ⚡ BOLT OPTIMIZATION: Replaced .map() with targeted array indexing.
-      // Why: Avoids recreating objects for unmodified items in the array.
-      members: (() => {
-        const newMembers = [...state.band.members]
-        const m = newMembers[memberIndex]
-        newMembers[memberIndex] = {
-          ...m,
-          health: Math.max(1, finiteNumberOr(m.health, 100) - 20),
-          stress: Math.min(100, finiteNumberOr(m.stress, 0) + 30),
-          traits: {
-            ...(m.traits || {}),
-            neuro_overclock: getTraitById('neuro_overclock') || {
-              id: 'neuro_overclock',
-              name: 'traits:neuro_overclock.name',
-              description: 'traits:neuro_overclock.description',
-              effects: {
-                rhythmMultiplier: 1.5,
-                stressPerGig: 5,
-                healthPerGig: -10
-              }
-            }
-          }
-        }
-        return newMembers
-      })()
+      members
     },
     toasts: [
       ...(state.toasts || []),

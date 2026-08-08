@@ -21,6 +21,7 @@ import {
   validatePurchase,
   processPurchaseEffect
 } from '../../../utils/purchaseLogicUtils'
+import type { PurchaseValidationResult } from '../../../utils/purchaseLogicUtils'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -39,7 +40,7 @@ import type {
   ToastCallback,
   TranslationCallback
 } from '../../../types/callbacks'
-import type { Effect, PurchaseItem } from '../../../types/components'
+import type { PurchaseItem } from '../../../types/components'
 import type { PlayerPatch, BandPatch } from '../../../types/purchase'
 
 type EffectMessage = {
@@ -56,16 +57,6 @@ type PurchaseEffectResult = {
   playerPatch?: PlayerPatch
   bandPatch?: BandPatch
   messages?: EffectMessage[]
-}
-
-type PurchaseValidation = {
-  isValid: boolean
-  errorType?: string
-  effect?: Effect
-  finalCost?: number
-  isConsumable?: boolean
-  payingWithFame?: boolean
-  startingCurrency?: number
 }
 
 type ToastFn = (
@@ -157,7 +148,7 @@ const getItemToastLabel = (item: PurchaseItem, t: TranslateFn) =>
   })
 
 const handlePurchaseValidationError = (
-  validation: PurchaseValidation,
+  validation: Extract<PurchaseValidationResult, { isValid: false }>,
   item: PurchaseItem,
   addToast: ToastFn,
   t: TranslateFn
@@ -359,11 +350,7 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(
-          item,
-          player,
-          band
-        ) as PurchaseValidation
+        const validation = validatePurchase(item, player, band)
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)
@@ -371,7 +358,7 @@ export const usePurchaseLogic = ({
         }
 
         const {
-          effect,
+          effect: resolvedEffect,
           finalCost,
           isConsumable,
           payingWithFame,
@@ -380,22 +367,10 @@ export const usePurchaseLogic = ({
 
         // Build initial patches
         const initialPlayerPatch = buildInitialPlayerPatch(
-          Boolean(payingWithFame),
-          (startingCurrency as number) ?? 0,
-          (finalCost as number) ?? 0
+          payingWithFame,
+          startingCurrency,
+          finalCost
         )
-
-        const resolvedEffect: Effect | undefined =
-          effect ?? getPrimaryEffect(item)
-        if (!resolvedEffect) {
-          handlePurchaseValidationError(
-            { isValid: false, errorType: 'missing_effect' },
-            item,
-            addToast,
-            t
-          )
-          return false
-        }
 
         const effectResult = processPurchaseEffect(
           resolvedEffect,

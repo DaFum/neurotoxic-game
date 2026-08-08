@@ -71,6 +71,20 @@ test('isOnCooldown requires a whole-day expiry suffix', () => {
   assert.equal(onCooldown('event_id'), true)
 })
 
+test('isOnCooldown honours event ids containing colons', () => {
+  const onCooldown = (cooldown, eventId) =>
+    isOnCooldown({ eventCooldowns: [cooldown], player: { day: 5 } }, eventId)
+
+  // The writer serializes `${eventId}:${expiryDay}`, so only the last segment
+  // is the expiry — a namespaced id keeps its colons.
+  assert.equal(onCooldown('namespace:event:40', 'namespace:event'), true)
+  assert.equal(onCooldown('namespace:event:5', 'namespace:event'), false)
+  // An untimed namespaced id stays a permanent (legacy) cooldown.
+  assert.equal(onCooldown('namespace:event', 'namespace:event'), true)
+  // The prefix alone is not the key.
+  assert.equal(onCooldown('namespace:event:40', 'namespace'), false)
+})
+
 test('normalizeSetlistForSave drops entries without a non-empty id', () => {
   assert.deepEqual(normalizeSetlistForSave(['song_1', { id: 'song_2' }]), [
     { id: 'song_1' },

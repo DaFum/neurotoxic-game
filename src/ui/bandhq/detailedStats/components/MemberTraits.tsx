@@ -12,35 +12,13 @@ export const MemberTraits = ({
   const def = member.name ? CHAR_MAP[member.name] : undefined
 
   const potentialTraits = useMemo(() => {
-    // Combine static defining traits with any dynamically grafted traits (e.g. clinic)
     const baseTraits = def?.traits || []
     const memberTraits = member?.traits ?? {}
 
-    // Check if there are any runtime traits to merge
-    let hasRuntime = false
-    for (const key in memberTraits) {
-      if (Object.hasOwn(memberTraits, key)) {
-        hasRuntime = true
-        break
-      }
-    }
+    if (Object.keys(memberTraits).length === 0) return baseTraits
 
-    // ⚡ BOLT OPTIMIZATION: Removed temporary array allocation and Set instantiation when not needed
-    // Why: baseTraits.map creates an intermediate array, and allocating a Set and copied array is unnecessary when there are no dynamic traits to merge.
-    // Impact: Completely bypasses array copying, Set allocations, and loops for members without dynamic traits.
-    if (!hasRuntime) {
-      return baseTraits
-    }
-
-    // Otherwise, perform the merge
     const merged: CharacterTrait[] = [...baseTraits]
-    const seen = new Set<string>()
-    for (let i = 0; i < baseTraits.length; i++) {
-      const bt = baseTraits[i]
-      if (bt) {
-        seen.add(bt.id)
-      }
-    }
+    const baseIds = new Set(baseTraits.map(t => t.id))
 
     for (const key in memberTraits) {
       if (Object.hasOwn(memberTraits, key)) {
@@ -55,13 +33,11 @@ export const MemberTraits = ({
           Object.hasOwn(rt, 'desc') &&
           typeof (rt as Record<string, unknown>).desc === 'string' &&
           Object.hasOwn(rt, 'unlockHint') &&
-          typeof (rt as Record<string, unknown>).unlockHint === 'string'
+          typeof (rt as Record<string, unknown>).unlockHint === 'string' &&
+          !baseIds.has((rt as CharacterTrait).id)
         ) {
-          const validRt = rt as unknown as CharacterTrait
-          if (!seen.has(validRt.id)) {
-            merged.push(validRt)
-            seen.add(validRt.id)
-          }
+          merged.push(rt as unknown as CharacterTrait)
+          baseIds.add((rt as CharacterTrait).id)
         }
       }
     }

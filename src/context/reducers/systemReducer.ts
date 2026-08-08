@@ -52,6 +52,7 @@ import {
   clampMemberMood,
   isForbiddenKey,
   finiteNumberOr,
+  parseCooldownEntry,
   sanitizeStringArray,
   BALANCE_CONSTANTS
 } from '../../utils/gameState'
@@ -93,28 +94,20 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
   items: readonly T[],
   getQuestId: (item: T) => string
 ): T[] => {
-  const len = items.length
-  const out: T[] = new Array<T>(len)
-  for (let i = 0; i < len; i++) {
-    const item = items[i]
-    // Sanitized arrays have no holes; the undefined check only satisfies
-    // noUncheckedIndexedAccess and narrows `item` to T for the rest.
-    if (item === undefined) continue
+  return items.map(item => {
+    if (item === undefined) return item
     const scopeKey = item.scopeKey
     if (
       typeof scopeKey !== 'string' ||
       getQuestDefinition(getQuestId(item))?.repeatPolicy !== 'perRegion'
     ) {
-      out[i] = item
-      continue
+      return item
     }
     const regionKey = getRegionKeyForLocation(scopeKey)
-    out[i] =
-      regionKey && regionKey !== scopeKey
-        ? { ...item, scopeKey: regionKey }
-        : item
-  }
-  return out
+    return regionKey && regionKey !== scopeKey
+      ? { ...item, scopeKey: regionKey }
+      : item
+  })
 }
 
 /**
@@ -443,21 +436,13 @@ const EFFECT_REVERTERS: Record<
     luck: Math.max(0, finiteNumberOr(band.luck, 0) - finiteEffectValue(value))
   }),
   stamina_max: (band: BandState, value: unknown) => {
-    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-    // Why: Avoids closure allocation and intermediate arrays.
-    const sourceMembers = band.members || []
-    const newMembers = new Array(sourceMembers.length)
     const effectVal = finiteEffectValue(value)
-    for (let i = 0; i < sourceMembers.length; i++) {
-      const m = sourceMembers[i]
-      newMembers[i] = {
-        ...m,
-        staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100) - effectVal)
-      }
-    }
     return {
       ...band,
-      members: newMembers as BandMember[]
+      members: (band.members || []).map((m: BandMember) => ({
+        ...m,
+        staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100) - effectVal)
+      })) as BandMember[]
     }
   },
   style: (band: BandState, value: unknown) => ({
@@ -737,18 +722,10 @@ export const handleAdvanceDay = (
       currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
     )
     if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
-      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
-      // Why: Avoids closure allocation and intermediate arrays.
-      const sourceMembers = nextBand.members
-      const newMembers = new Array(sourceMembers.length)
-      for (let i = 0; i < sourceMembers.length; i++) {
-        const member = sourceMembers[i]
-        newMembers[i] = {
-          ...member,
-          mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
-        }
-      }
-      nextBand.members = newMembers as BandMember[]
+      nextBand.members = nextBand.members.map((member: BandMember) => ({
+        ...member,
+        mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
+      })) as BandMember[]
     }
     nextBand.stress = clampBandStress(
       currentStress - BALANCE_CONSTANTS.STRESS_DAILY_DECAY
@@ -780,17 +757,9 @@ export const handleAdvanceDay = (
   // Expire quest cooldowns whose window has elapsed (mirrors the deadline check
   // pattern). Entries are kept while expiresOnDay is still in the future.
   const currentDay = finiteNumberOr(nextPlayer.day, 0)
-  // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
-  // Why: Eliminates intermediate array and closure allocations on hot path.
-  // Impact: Reduces GC pressure when advancing days.
-  const sourceQuestCooldowns = state.questCooldowns ?? []
-  const activeQuestCooldowns = []
-  for (let i = 0; i < sourceQuestCooldowns.length; i++) {
-    const cd = sourceQuestCooldowns[i]
-    if (cd && cd.expiresOnDay > currentDay) {
-      activeQuestCooldowns.push(cd)
-    }
-  }
+  const activeQuestCooldowns = (state.questCooldowns ?? []).filter(
+    cd => cd && cd.expiresOnDay > currentDay
+  )
 
   // Keep timed event cooldowns (`eventId:expiryDay`) alive until their expiry
   // day, while legacy untimed daily cooldowns (no `:`) reset every day as
@@ -798,23 +767,13 @@ export const handleAdvanceDay = (
   // entries would silently evaporate on the next advanceDay.
   // NOTE: All new event cooldowns must use the `eventId:expiryDay` format.
   // Legacy format without ':' will be intentionally dropped every day.
-  // ⚡ BOLT OPTIMIZATION: Replaced .filter() with procedural loop.
-  // Why: Eliminates intermediate array and closure allocations on hot path.
-  // Impact: Reduces GC pressure when advancing days.
-  const sourceEventCooldowns = state.eventCooldowns ?? []
-  const activeEventCooldowns = []
-  for (let i = 0; i < sourceEventCooldowns.length; i++) {
-    const cd = sourceEventCooldowns[i]
-    if (typeof cd === 'string') {
-      const idx = cd.indexOf(':')
-      if (idx >= 0) {
-        const expiry = parseInt(cd.slice(idx + 1), 10)
-        if (Number.isFinite(expiry) && expiry > currentDay) {
-          activeEventCooldowns.push(cd)
-        }
-      }
-    }
-  }
+  // The entry grammar lives in `parseCooldownEntry`, shared with every
+  // cooldown reader, so expiry here cannot drift from what `isOnCooldown`
+  // enforces. A null expiryDay is a legacy untimed entry and still resets.
+  const activeEventCooldowns = (state.eventCooldowns ?? []).filter(cd => {
+    const parsed = parseCooldownEntry(cd)
+    return parsed?.expiryDay != null && parsed.expiryDay > currentDay
+  })
 
   let nextState: GameState = {
     ...state,

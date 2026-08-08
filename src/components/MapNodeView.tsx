@@ -1,4 +1,4 @@
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useMemo, useState } from 'react'
 import type {
   KeyboardEvent as ReactKeyboardEvent,
   PointerEvent as ReactPointerEvent
@@ -118,6 +118,7 @@ const CancellationBadge = memo(
     t: TranslationCallback
   }) => {
     const risk = getCancellationRisk(harmony, tourSuccess)
+    if (risk <= 0) return null
     const pct = (risk * 100).toFixed(1)
     const freqDenom = Math.round(1 / risk)
     const badgeClass =
@@ -217,8 +218,7 @@ const MapNodeTooltip = memo(
         {(node.type === 'GIG' ||
           node.type === 'FESTIVAL' ||
           node.type === 'FINALE') &&
-          harmony !== undefined &&
-          getCancellationRisk(harmony, tourSuccess) > 0 && (
+          harmony !== undefined && (
             <CancellationBadge
               harmony={harmony}
               tourSuccess={tourSuccess}
@@ -281,66 +281,57 @@ export const MapNodeView = memo(
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
 
-    const handleClick = useCallback(
-      () => handleTravel(node),
-      [handleTravel, node]
-    )
+    const handleClick = () => handleTravel(node)
 
-    const handleKeyDown = useCallback(
-      (e: ReactKeyboardEvent<HTMLDivElement>) => {
-        if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault()
-          handleTravel(node)
-        }
-      },
-      [handleTravel, node]
-    )
+    const handleKeyDown = (e: ReactKeyboardEvent<HTMLDivElement>) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault()
+        handleTravel(node)
+      }
+    }
 
-    const handleMouseEnter = useCallback(() => {
+    const handleMouseEnter = () => {
       setHoveredNode(node)
       setIsHoveredLocal(true)
-    }, [setHoveredNode, node])
+    }
 
-    const handleMouseLeave = useCallback(() => {
+    const handleMouseLeave = () => {
       setHoveredNode(null)
       setIsHoveredLocal(false)
-    }, [setHoveredNode, setIsHoveredLocal])
+    }
 
-    const handlePointerDown = useCallback(() => {
+    const handlePointerDown = () => {
       if (isReachable) {
         setHoveredNode(node)
         setIsHoveredLocal(true)
       }
-    }, [isReachable, setHoveredNode, node])
+    }
 
-    const handlePointerCancel = useCallback(() => {
+    const handlePointerCancel = () => {
       setHoveredNode(null)
       setIsHoveredLocal(false)
-    }, [setHoveredNode, setIsHoveredLocal])
+    }
 
-    const handlePointerEnd = useCallback(
-      (e: ReactPointerEvent<HTMLDivElement>) => {
-        if (e.pointerType !== 'mouse') {
-          setHoveredNode(null)
-          setIsHoveredLocal(false)
-        }
-      },
-      [setHoveredNode, setIsHoveredLocal]
-    )
+    const handlePointerEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
+      if (e.pointerType !== 'mouse') {
+        setHoveredNode(null)
+        setIsHoveredLocal(false)
+      }
+    }
 
-    const handleFocus = useCallback(() => {
+    const handleFocus = () => {
       if (isReachable) {
         setHoveredNode(node)
         setIsHoveredLocal(true)
       }
-    }, [isReachable, setHoveredNode, node])
+    }
 
-    const handleBlur = useCallback(() => {
+    const handleBlur = () => {
       if (isReachable) {
         setHoveredNode(null)
       }
       setIsHoveredLocal(false)
-    }, [isReachable, setHoveredNode])
+    }
 
     const nodeLocationName = translateLocation(
       t,

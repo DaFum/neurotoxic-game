@@ -11,7 +11,8 @@ import {
   getModulePoolForAsset,
   getSlotConflicts,
   selectAssetSlotsMap,
-  type LockReason
+  type LockReason,
+  type ModuleUnlockState
 } from '../../utils/assetSelectors'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import type { AssetConfirmModalProps } from '../../types/ui'
@@ -76,7 +77,7 @@ export const ModulePickerModal = memo(
       s => (s.social as { scenePresence?: number }).scenePresence ?? 0
     )
     const activeStoryFlags = useGameSelector(s => s.activeStoryFlags)
-    const band = useGameSelector(s => s.band)
+    const members = useGameSelector(s => s.band.members)
     const assets = useGameSelector(s => s.assets)
     const { installModule, removeModule } = useGameActions()
     const slot = useMemo(
@@ -88,16 +89,14 @@ export const ModulePickerModal = memo(
     // state is rebuilt only when one of the relevant slices changes.
     const pool = useMemo(() => {
       if (!slot) return []
-      const composite = {
+      const composite: ModuleUnlockState = {
         player: { fame, money },
         social: { scenePresence },
         activeStoryFlags,
-        band,
+        band: { members },
         assets
-      } as unknown as Parameters<typeof getModulePoolForAsset>[1]
-      return getModulePoolForAsset(asset, composite).filter(
-        entry => entry.module.slotType === slot.slotType
-      )
+      }
+      return getModulePoolForAsset(asset, composite, slot.slotType)
     }, [
       asset,
       slot,
@@ -105,7 +104,7 @@ export const ModulePickerModal = memo(
       money,
       scenePresence,
       activeStoryFlags,
-      band,
+      members,
       assets
     ])
 

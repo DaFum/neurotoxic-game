@@ -136,7 +136,6 @@ export const getAdjustedCost = (
 ): number => {
   let cost = finiteNumberOr(item.cost, 0)
   // Gear Nerd Trait: 20% discount on equipment (Money only to avoid fractional fame)
-  cost = finiteNumberOr(cost, 0)
   if (
     item.category === 'GEAR' &&
     item.currency === 'money' &&
@@ -144,7 +143,7 @@ export const getAdjustedCost = (
   ) {
     cost = Math.floor(cost * 0.8)
   }
-  return finiteNumberOr(cost, 0)
+  return cost
 }
 
 /**
@@ -270,20 +269,21 @@ export const applyInventoryAdd = (
       `Invalid effect item for inventory_add: ${String(effect.item)}`
     )
   }
+
+  const parsedAddend = Number(effect.value ?? 0)
+  if (!Number.isFinite(parsedAddend)) {
+    throw new StateError(
+      `Invalid inventory_add value for "${effect.item}": ${String(effect.value)}`
+    )
+  }
+
+  const previousValue = (bandInventory ?? {})[effect.item]
+  const safePrevious = finiteNumberOr(previousValue, 0)
+
   return {
     inventory: {
       ...(bandInventory ?? {}),
-      [effect.item]: (() => {
-        const previousValue = (bandInventory ?? {})[effect.item]
-        const safePrevious = finiteNumberOr(previousValue, 0)
-        const parsedAddend = Number(effect.value ?? 0)
-        if (!Number.isFinite(parsedAddend)) {
-          throw new StateError(
-            `Invalid inventory_add value for "${effect.item}": ${String(effect.value)}`
-          )
-        }
-        return safePrevious + parsedAddend
-      })()
+      [effect.item]: safePrevious + parsedAddend
     }
   }
 }
@@ -366,18 +366,33 @@ export const applyStatModifier = (
   return { playerPatch: nextPlayerPatch, bandPatch: nextBandPatch }
 }
 
+/** Reasons `validatePurchase` can reject an item. */
+export type PurchaseErrorType =
+  'missing_effect' | 'already_owned' | 'insufficient_funds'
+
+export type PurchaseValidationResult =
+  | { isValid: false; errorType: PurchaseErrorType }
+  | {
+      isValid: true
+      finalCost: number
+      isConsumable: boolean
+      payingWithFame: boolean
+      startingCurrency: number
+      effect: Effect
+    }
+
 /**
  * Validates whether the item can be purchased.
  * @param item - Item to purchase
  * @param player - Player state
  * @param band - Band state
- * @returns `isValid: boolean, errorType?: string, finalCost?: number, isConsumable?: boolean, payingWithFame?: boolean, startingCurrency?: number, effect?: Object`
+ * @returns Discriminated union indicating validity and computed parameters.
  */
 export const validatePurchase = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState
-) => {
+): PurchaseValidationResult => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
     return { isValid: false, errorType: 'missing_effect' }

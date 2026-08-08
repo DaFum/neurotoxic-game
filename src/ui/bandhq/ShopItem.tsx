@@ -7,6 +7,7 @@ import {
   LABEL_CONTRACT_ADVANCE
 } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { GlitchButton } from '../GlitchButton'
 import { GeneratedImagePanel } from '../shared/GeneratedImagePanel'
 import { Tooltip } from '../shared'
@@ -46,16 +47,14 @@ export const ShopItem = React.memo(
         ? `${safe} ★`
         : formatCurrency(safe, i18n.language)
     }
-    const hasDiscount =
-      adjustedCost !== undefined &&
-      item.cost !== undefined &&
-      adjustedCost < item.cost
-    const priceValue =
-      adjustedCost !== undefined
-        ? adjustedCost
-        : item.cost !== undefined
-          ? item.cost
-          : 0
+    // Normalize both costs up front: `??` only rejects null/undefined, so a
+    // non-finite cost would otherwise reach the comparison (`-Infinity < cost`
+    // is true) and render as 0 through `formatPrice`. NaN fails every
+    // comparison, so a corrupt cost simply shows no discount.
+    const adjusted = finiteNumberOr(adjustedCost, Number.NaN)
+    const baseCost = finiteNumberOr(item.cost, Number.NaN)
+    const hasDiscount = adjusted < baseCost
+    const priceValue = finiteNumberOr(adjusted, finiteNumberOr(baseCost, 0))
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
@@ -86,23 +85,21 @@ export const ShopItem = React.memo(
     const displayName =
       typeof item.name === 'string' ? t(item.name) : localizedUnknownItem
 
-    // First matching candidate wins: ownership outranks affordability.
-    const disabledReason = [
-      isPurchased &&
-        t('ui:shop.messages.alreadyOwned', {
+    const disabledReason = isPurchased
+      ? t('ui:shop.messages.alreadyOwned', {
           itemName: displayName,
           defaultValue: 'Already owned!'
-        }),
-      isDisabled &&
-        t('ui:shop.messages.notEnough', {
-          currency:
-            item.currency === 'fame'
-              ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
-              : t('ui:shop.messages.money', { defaultValue: 'Money' }),
-          itemName: displayName,
-          defaultValue: 'Not enough currency.'
         })
-    ].find(candidate => typeof candidate === 'string')
+      : isDisabled
+        ? t('ui:shop.messages.notEnough', {
+            currency:
+              item.currency === 'fame'
+                ? t('ui:shop.messages.fame', { defaultValue: 'Fame' })
+                : t('ui:shop.messages.money', { defaultValue: 'Money' }),
+            itemName: displayName,
+            defaultValue: 'Not enough currency.'
+          })
+        : undefined
 
     const label = isPurchased
       ? t('ui:hq.owned', { defaultValue: 'OWNED' })
@@ -170,13 +167,13 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {hasDiscount && item.cost !== undefined ? (
+            {hasDiscount ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
-                  {formatPrice(item.cost)}
+                  {formatPrice(baseCost)}
                 </span>
                 <span className='text-toxic-green'>
-                  {formatPrice(adjustedCost as number)}
+                  {formatPrice(adjusted)}
                 </span>
               </>
             ) : (
