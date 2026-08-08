@@ -1,5 +1,5 @@
 import { getStashStacks } from '../helpers'
-import { Panel } from '../../../shared'
+import { Panel, Tooltip } from '../../../shared'
 import type { BasicTProps } from '../types'
 import { CRAFTING_RECIPES } from '../../../../data/craftingRecipes'
 
@@ -16,9 +16,19 @@ export const CraftingSection = ({
     <Panel title={t('ui:crafting.title', { defaultValue: 'Workshop' })}>
       <div className='space-y-2'>
         {recipes.map(recipe => {
-          const canCraft = Object.entries(recipe.inputs).every(
-            ([itemId, qty]) => getStashStacks(stash, itemId) >= qty
-          )
+          const canCraft = (() => {
+            for (const itemId in recipe.inputs) {
+              if (!Object.hasOwn(recipe.inputs, itemId)) continue
+              const qty = (recipe.inputs as Record<string, number>)[itemId]
+              if (
+                typeof qty !== 'number' ||
+                Number.isNaN(qty) ||
+                getStashStacks(stash, itemId) < qty
+              )
+                return false
+            }
+            return true
+          })()
           return (
             <div
               key={recipe.id}
@@ -32,19 +42,33 @@ export const CraftingSection = ({
                   {t(recipe.descKey, { defaultValue: '' })}
                 </div>
               </div>
-              {onCraft && (
-                <button
-                  type='button'
-                  disabled={!canCraft}
-                  onClick={() => onCraft(recipe.id)}
-                  aria-label={`${t('ui:crafting.craft', {
-                    defaultValue: 'Craft'
-                  })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
-                  className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
-                >
-                  {t('ui:crafting.craft', { defaultValue: 'Craft' })}
-                </button>
-              )}
+              {onCraft &&
+                (() => {
+                  const btn = (
+                    <button
+                      type='button'
+                      disabled={!canCraft}
+                      onClick={() => onCraft(recipe.id)}
+                      aria-label={`${t('ui:crafting.craft', {
+                        defaultValue: 'Craft'
+                      })} ${t(recipe.labelKey, { defaultValue: recipe.id })}`}
+                      className='shrink-0 text-xs px-2 py-0.5 border border-toxic-green/50 text-toxic-green uppercase tracking-wider disabled:opacity-40 disabled:cursor-not-allowed hover:bg-toxic-green/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-abyss-black'
+                    >
+                      {t('ui:crafting.craft', { defaultValue: 'Craft' })}
+                    </button>
+                  )
+                  return !canCraft ? (
+                    <Tooltip
+                      content={t('ui:crafting.insufficientMaterials', {
+                        defaultValue: 'Insufficient Materials'
+                      })}
+                    >
+                      {btn}
+                    </Tooltip>
+                  ) : (
+                    btn
+                  )
+                })()}
             </div>
           )
         })}

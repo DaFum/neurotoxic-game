@@ -42,11 +42,19 @@ export const LogSettings = memo(function LogSettings({
           onChange={handleLogLevelSelect}
           className='bg-void-black text-toxic-green border-2 border-toxic-green p-1 font-mono focus:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green transition-colors cursor-pointer'
         >
-          {Object.entries(LOG_LEVELS).map(([key, value]) => (
-            <option key={key} value={value}>
-              {key}
-            </option>
-          ))}
+          {(() => {
+            const nodes = []
+            for (const key in LOG_LEVELS) {
+              if (!Object.hasOwn(LOG_LEVELS, key)) continue
+              const value = LOG_LEVELS[key as keyof typeof LOG_LEVELS]
+              nodes.push(
+                <option key={key} value={value}>
+                  {key}
+                </option>
+              )
+            }
+            return nodes
+          })()}
         </select>
       </div>
     </div>

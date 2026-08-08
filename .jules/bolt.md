@@ -206,3 +206,6 @@
 ## 2026-08-06 - Optimizing trait unlock condition checks
 **Learning:** High-frequency trait unlock evaluations (like `Object.values().some` and `Array.some`) in `checkTraitUnlocks` have overhead. `Object.values()` allocates an intermediate array, and while `Array.some()` does not, the inline callbacks passed to it allocate closures. However, simply wrapping procedural loops in Immediately Invoked Function Expressions (IIFEs) inside array filter predicates or object iterators is a documented anti-pattern here that still allocates closures and hurts readability.
 **Action:** When replacing inline array methods like `.some` with procedural loops to avoid closure allocations, extract the logic into a named helper function rather than using an IIFE.
+## 2026-08-07 - Reduce Object.entries overhead in reducers
+**Learning:** The state reducers contained `Object.entries()` over large dictionaries inside hot loops, triggering unneeded tuple allocations that cause GC jitter during game ticks.
+**Action:** Replaced `Object.entries()` in hot reducers (`systemReducer`, `bandReducer`, etc) with direct `for...in` procedural loops alongside `Object.hasOwn()` without using IIFEs or declarative callbacks, reducing closure creation while keeping the syntax clean.
