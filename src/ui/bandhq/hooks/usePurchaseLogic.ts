@@ -19,9 +19,9 @@ import {
   isItemOwned,
   canAfford,
   validatePurchase,
-  processPurchaseEffect,
-  PurchaseValidationResult
+  processPurchaseEffect
 } from '../../../utils/purchaseLogicUtils'
+import type { PurchaseValidationResult } from '../../../utils/purchaseLogicUtils'
 import {
   clampPlayerMoney,
   clampPlayerFame,
@@ -76,7 +76,7 @@ type PlayerPatchTransform = (
     band: BandState
     social: SocialState
   }
-) => PlayerPatch
+) => UpdatePlayerPayload
 
 const asToastOptions = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
@@ -424,10 +424,10 @@ export const usePurchaseLogic = ({
 
         const finalPlayerPatch = transformPlayerPatch
           ? transformPlayerPatch(playerPatch, { item, player, band, social })
-          : playerPatch
+          : (playerPatch as UpdatePlayerPayload)
 
         // Apply updates
-        updatePlayer(finalPlayerPatch as unknown)
+        updatePlayer(finalPlayerPatch)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
@@ -436,7 +436,7 @@ export const usePurchaseLogic = ({
             player,
             band,
             social,
-            playerPatch: finalPlayerPatch,
+            playerPatch: finalPlayerPatch as PlayerPatch,
             bandPatch
           },
           { updateBand, addToast, t }
