@@ -11,6 +11,9 @@ import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { resolveBandMeetingCost } from './preGigUtils'
 
+/**
+ * Configuration properties for the pre-gig derivations hook.
+ */
 interface UsePreGigDerivationsProps {
   band: GameState['band']
   assets: GameState['assets']
@@ -19,6 +22,9 @@ interface UsePreGigDerivationsProps {
   typedT: TranslationCallback
 }
 
+/**
+ * The resulting derived state and computed values for the pre-gig setup.
+ */
 interface UsePreGigDerivationsReturn {
   assetModifiers: AssetModifiers
   GIG_MODIFIER_OPTIONS: ModifierOption[]
@@ -28,6 +34,16 @@ interface UsePreGigDerivationsReturn {
   calculatedBudget: number
 }
 
+/**
+ * Computes the derived state, modifier costs, and budget constraints required during the pre-gig preparation phase.
+ *
+ * @remarks
+ * This hook acts as a central aggregation layer, recalculating the total cost of all selected gig modifiers,
+ * factoring in asset-based discounts (e.g., training cost multipliers), and assembling the final set of options.
+ *
+ * @param props - The configuration parameters and current context required for calculations.
+ * @returns An object containing the computed budget, modified costs, and formatted options ready for the UI.
+ */
 export const usePreGigDerivations = ({
   band,
   assets,
