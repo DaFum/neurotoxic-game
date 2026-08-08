@@ -54,6 +54,28 @@ describe('playerReducer', () => {
       assert.strictEqual(newState.player.otherPlayerProp, 'testPlayer')
     })
 
+    it('should clamp negative money updates to 0', () => {
+      const initialState = {
+        player: { money: 100, fame: 50, day: 1 }
+      }
+
+      const payload = { money: -500 }
+      const newState = handleUpdatePlayer(initialState, payload)
+
+      assert.strictEqual(newState.player.money, 0)
+    })
+
+    it('should clamp negative fame updates to 0', () => {
+      const initialState = {
+        player: { money: 100, fame: 50, day: 1 }
+      }
+
+      const payload = { fame: -10 }
+      const newState = handleUpdatePlayer(initialState, payload)
+
+      assert.strictEqual(newState.player.fame, 0)
+    })
+
     describe('Rejection Branches for Malformed/Hostile Payloads', () => {
       const initialState = {
         player: { money: 100, fame: 50, day: 1 }
