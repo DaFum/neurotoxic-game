@@ -47,16 +47,14 @@ export const ShopItem = React.memo(
         ? `${safe} ★`
         : formatCurrency(safe, i18n.language)
     }
-    const hasDiscount =
-      adjustedCost !== undefined &&
-      item.cost !== undefined &&
-      adjustedCost < item.cost
-    // A non-finite adjusted cost must fall back to the item's own cost rather
-    // than render as 0 — `??` only rejects null/undefined, not NaN/Infinity.
-    const priceValue = finiteNumberOr(
-      adjustedCost,
-      finiteNumberOr(item.cost, 0)
-    )
+    // Normalize both costs up front: `??` only rejects null/undefined, so a
+    // non-finite cost would otherwise reach the comparison (`-Infinity < cost`
+    // is true) and render as 0 through `formatPrice`. NaN fails every
+    // comparison, so a corrupt cost simply shows no discount.
+    const adjusted = finiteNumberOr(adjustedCost, Number.NaN)
+    const baseCost = finiteNumberOr(item.cost, Number.NaN)
+    const hasDiscount = adjusted < baseCost
+    const priceValue = finiteNumberOr(adjusted, finiteNumberOr(baseCost, 0))
     const primaryEffect = getPrimaryEffect(item)
     const isConsumable = primaryEffect?.type === 'inventory_add'
     const isPurchased = isOwned && !isConsumable
@@ -169,13 +167,13 @@ export const ShopItem = React.memo(
                 : 'text-star-white'
             }`}
           >
-            {hasDiscount && item.cost !== undefined ? (
+            {hasDiscount ? (
               <>
                 <span className='line-through opacity-50 mr-2'>
-                  {formatPrice(item.cost)}
+                  {formatPrice(baseCost)}
                 </span>
                 <span className='text-toxic-green'>
-                  {formatPrice(adjustedCost as number)}
+                  {formatPrice(adjusted)}
                 </span>
               </>
             ) : (
