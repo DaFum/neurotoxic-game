@@ -154,6 +154,19 @@
       var(--section-accent, var(--color-toxic-green)) 45%,
       transparent
     );
+  outline: none;
+}
+
+.assets-hub-primary-button:focus-visible,
+.assets-choice-button[aria-pressed='true']:focus-visible {
+  box-shadow: var(--asset-panel-offset) var(--asset-panel-offset) 0
+    color-mix(
+      in srgb,
+      var(--section-accent, var(--color-toxic-green)) 45%,
+      transparent
+    ),
+    0 0 0 2px rgb(var(--color-void-black-rgb)),
+    0 0 0 4px var(--section-accent, var(--color-toxic-green));
 }
 
 .assets-hub-secondary-button {
@@ -226,6 +239,20 @@
         transparent
       ),
     0 0 0 1px rgb(var(--color-void-black-rgb) / 40%) inset;
+  outline: none;
+}
+
+.assets-bottom-tab[aria-selected='true']:focus-visible {
+  box-shadow:
+    0 0 1rem
+      color-mix(
+        in srgb,
+        var(--section-accent, var(--color-toxic-green)) 38%,
+        transparent
+      ),
+    0 0 0 1px rgb(var(--color-void-black-rgb) / 40%) inset,
+    0 0 0 2px rgb(var(--color-void-black-rgb)),
+    0 0 0 4px var(--section-accent, var(--color-toxic-green));
 }
 
 .assets-slot-row,
