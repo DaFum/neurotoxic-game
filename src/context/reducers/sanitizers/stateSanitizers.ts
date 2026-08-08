@@ -795,11 +795,7 @@ const parseNumericStats = (
 ): Record<string, number> => {
   if (!isLooseRecord(obj)) return {}
   const result: Record<string, number> = {}
-  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
-  // Why: Avoids unnecessary array allocation during data sanitization.
-  // Impact: Reduces GC overhead during high-frequency sanitization parses of nested state blocks.
   for (const key of Object.keys(obj)) {
-    if (!key && key !== '') continue
     if (isForbiddenKey(key)) continue
     if (ignoredKeys && ignoredKeys.has(key)) continue
 
@@ -961,9 +957,6 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
   ) {
     const raw = bandData.merchPrices as Record<string, unknown>
     const sanitized: Record<string, number> = {}
-    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
-    // Why: Avoids array allocation when mapping a static configuration object into sanitized state.
-    // Impact: Small reduction in memory allocations during state hydration/save loading.
     for (const k of Object.keys(DEFAULT_MERCH_PRICES)) {
       if (!Object.hasOwn(raw, k)) continue
       const v = raw[k]
@@ -1565,9 +1558,6 @@ export const sanitizeGigModifiers = (
 ): GameState['gigModifiers'] => {
   const sanitized = { ...DEFAULT_GIG_MODIFIERS }
   if (!isLooseRecord(value)) return sanitized
-  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop.
-  // Why: Avoids allocating a temporary array from DEFAULT_GIG_MODIFIERS's keys.
-  // Impact: Reduces garbage collection pressure in save-file parsing.
   for (const key of Object.keys(DEFAULT_GIG_MODIFIERS)) {
     if (
       Object.hasOwn(value, key) &&

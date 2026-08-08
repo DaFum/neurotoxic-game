@@ -76,7 +76,7 @@ type PlayerPatchTransform = (
     band: BandState
     social: SocialState
   }
-) => UpdatePlayerPayload
+) => PlayerPatch
 
 const asToastOptions = (value: unknown): Record<string, unknown> => {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {}
@@ -424,10 +424,10 @@ export const usePurchaseLogic = ({
 
         const finalPlayerPatch = transformPlayerPatch
           ? transformPlayerPatch(playerPatch, { item, player, band, social })
-          : (playerPatch as UpdatePlayerPayload)
+          : playerPatch
 
         // Apply updates
-        updatePlayer(finalPlayerPatch)
+        updatePlayer(finalPlayerPatch as UpdatePlayerPayload)
 
         // Check Purchase Unlocks
         processPurchaseUnlocks(
@@ -436,7 +436,7 @@ export const usePurchaseLogic = ({
             player,
             band,
             social,
-            playerPatch: finalPlayerPatch as PlayerPatch,
+            playerPatch: finalPlayerPatch,
             bandPatch
           },
           { updateBand, addToast, t }

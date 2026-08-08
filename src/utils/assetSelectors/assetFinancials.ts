@@ -58,6 +58,38 @@ const getInstalledModules = (asset: LongTermAsset): AssetModule[] => {
   return out
 }
 
+/** Boni summed across modules, identity 0. */
+const ADDITIVE_BONI_KEYS = [
+  'baseDailyRevenueDelta',
+  'upkeepDelta',
+  'staminaRegenBonusPerDay',
+  'travelStaminaRegen',
+  'merchCapacityBonus',
+  'songQualityBonus',
+  'avgMerchSalePriceBonus',
+  'famePassivePerDay',
+  'bandMoodPerDay',
+  'tipBonusGigs'
+] as const satisfies readonly (keyof AssetBoni)[]
+
+/** Boni multiplied across modules, identity 1.0. */
+const MULTIPLICATIVE_BONI_KEYS = [
+  'fuelMultiplier',
+  'merchCostMultiplier',
+  'songCostMultiplier',
+  'trainingCostMultiplier',
+  'baseRiskChanceMultiplier',
+  'diyRiskMultiplier'
+] as const satisfies readonly (keyof AssetBoni)[]
+
+/** Boolean flags OR-ed across modules, identity false. */
+const FLAG_BONI_KEYS = [
+  'infightingDamper',
+  'enablesReRecording',
+  'enablesLimitedEditions',
+  'reducesTheftRiskTravel'
+] as const satisfies readonly (keyof AssetBoni)[]
+
 /**
  * Aggregates the boni from all installed modules on an asset into a single
  * AssetBoni object. Multiplier fields are multiplied (identity 1.0), additive
@@ -75,58 +107,18 @@ export const getAssetAggregateBoni = (asset: LongTermAsset): AssetBoni => {
   const agg: AssetBoni = {}
   for (const m of getInstalledModules(asset)) {
     const b = m.boni
-    if (b.baseDailyRevenueDelta !== undefined)
-      agg.baseDailyRevenueDelta =
-        (agg.baseDailyRevenueDelta ?? 0) + b.baseDailyRevenueDelta
-    if (b.upkeepDelta !== undefined)
-      agg.upkeepDelta = (agg.upkeepDelta ?? 0) + b.upkeepDelta
-    if (b.fuelMultiplier !== undefined)
-      agg.fuelMultiplier = (agg.fuelMultiplier ?? 1.0) * b.fuelMultiplier
-    if (b.merchCostMultiplier !== undefined)
-      agg.merchCostMultiplier =
-        (agg.merchCostMultiplier ?? 1.0) * b.merchCostMultiplier
-    if (b.songCostMultiplier !== undefined)
-      agg.songCostMultiplier =
-        (agg.songCostMultiplier ?? 1.0) * b.songCostMultiplier
-    if (b.trainingCostMultiplier !== undefined)
-      agg.trainingCostMultiplier =
-        (agg.trainingCostMultiplier ?? 1.0) * b.trainingCostMultiplier
-    if (b.baseRiskChanceMultiplier !== undefined)
-      agg.baseRiskChanceMultiplier =
-        (agg.baseRiskChanceMultiplier ?? 1.0) * b.baseRiskChanceMultiplier
-    if (b.diyRiskMultiplier !== undefined)
-      agg.diyRiskMultiplier =
-        (agg.diyRiskMultiplier ?? 1.0) * b.diyRiskMultiplier
-    if (b.staminaRegenBonusPerDay !== undefined)
-      agg.staminaRegenBonusPerDay =
-        (agg.staminaRegenBonusPerDay ?? 0) + b.staminaRegenBonusPerDay
-    if (b.travelStaminaRegen !== undefined)
-      agg.travelStaminaRegen =
-        (agg.travelStaminaRegen ?? 0) + b.travelStaminaRegen
-    if (b.merchCapacityBonus !== undefined)
-      agg.merchCapacityBonus =
-        (agg.merchCapacityBonus ?? 0) + b.merchCapacityBonus
-    if (b.songQualityBonus !== undefined)
-      agg.songQualityBonus = (agg.songQualityBonus ?? 0) + b.songQualityBonus
-    if (b.avgMerchSalePriceBonus !== undefined)
-      agg.avgMerchSalePriceBonus =
-        (agg.avgMerchSalePriceBonus ?? 0) + b.avgMerchSalePriceBonus
-    if (b.famePassivePerDay !== undefined)
-      agg.famePassivePerDay = (agg.famePassivePerDay ?? 0) + b.famePassivePerDay
-    if (b.bandMoodPerDay !== undefined)
-      agg.bandMoodPerDay = (agg.bandMoodPerDay ?? 0) + b.bandMoodPerDay
-    if (b.tipBonusGigs !== undefined)
-      agg.tipBonusGigs = (agg.tipBonusGigs ?? 0) + b.tipBonusGigs
-    if (b.infightingDamper !== undefined)
-      agg.infightingDamper = agg.infightingDamper || b.infightingDamper
-    if (b.enablesReRecording !== undefined)
-      agg.enablesReRecording = agg.enablesReRecording || b.enablesReRecording
-    if (b.enablesLimitedEditions !== undefined)
-      agg.enablesLimitedEditions =
-        agg.enablesLimitedEditions || b.enablesLimitedEditions
-    if (b.reducesTheftRiskTravel !== undefined)
-      agg.reducesTheftRiskTravel =
-        agg.reducesTheftRiskTravel || b.reducesTheftRiskTravel
+    for (const key of ADDITIVE_BONI_KEYS) {
+      const value = b[key]
+      if (value !== undefined) agg[key] = (agg[key] ?? 0) + value
+    }
+    for (const key of MULTIPLICATIVE_BONI_KEYS) {
+      const value = b[key]
+      if (value !== undefined) agg[key] = (agg[key] ?? 1.0) * value
+    }
+    for (const key of FLAG_BONI_KEYS) {
+      const value = b[key]
+      if (value !== undefined) agg[key] = agg[key] || value
+    }
   }
   return agg
 }

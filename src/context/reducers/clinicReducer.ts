@@ -400,6 +400,26 @@ export const handleGraftNeuroOverclock = (
     return state // Already grafted
   }
 
+  const members = [...state.band.members]
+  members[memberIndex] = {
+    ...member,
+    health: Math.max(1, finiteNumberOr(member.health, 100) - 20),
+    stress: Math.min(100, finiteNumberOr(member.stress, 0) + 30),
+    traits: {
+      ...(member.traits || {}),
+      neuro_overclock: getTraitById('neuro_overclock') || {
+        id: 'neuro_overclock',
+        name: 'traits:neuro_overclock.name',
+        description: 'traits:neuro_overclock.description',
+        effects: {
+          rhythmMultiplier: 1.5,
+          stressPerGig: 5,
+          healthPerGig: -10
+        }
+      }
+    }
+  }
+
   return {
     ...state,
     player: {
@@ -410,34 +430,7 @@ export const handleGraftNeuroOverclock = (
     },
     band: {
       ...state.band,
-      members: [
-        ...state.band.members.slice(0, memberIndex),
-        {
-          ...state.band.members[memberIndex],
-          health: Math.max(
-            1,
-            finiteNumberOr(state.band.members[memberIndex]?.health, 100) - 20
-          ),
-          stress: Math.min(
-            100,
-            finiteNumberOr(state.band.members[memberIndex]?.stress, 0) + 30
-          ),
-          traits: {
-            ...(state.band.members[memberIndex]?.traits || {}),
-            neuro_overclock: getTraitById('neuro_overclock') || {
-              id: 'neuro_overclock',
-              name: 'traits:neuro_overclock.name',
-              description: 'traits:neuro_overclock.description',
-              effects: {
-                rhythmMultiplier: 1.5,
-                stressPerGig: 5,
-                healthPerGig: -10
-              }
-            }
-          }
-        },
-        ...state.band.members.slice(memberIndex + 1)
-      ]
+      members
     },
     toasts: [
       ...(state.toasts || []),

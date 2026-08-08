@@ -112,14 +112,12 @@ export const handlePurchaseChassis = (
   // Bounds-check slotIds: if the action creator under-allocated ids, we
   // generate a deterministic synthetic id so the asset stays consistent
   // rather than storing undefined in a string field.
-  const slots = configTier.slots
-    .filter(slotType => slotType !== undefined)
-    .map((slotType, i) => ({
-      id: slotIds[i] ?? `${id}_slot_${i}`,
-      slotType: slotType as unknown as string,
-      position: { x: 0, y: 0 },
-      installedModuleId: null
-    })) as AssetSlot[]
+  const slots = configTier.slots.map((slotType, i): AssetSlot => ({
+    id: slotIds[i] ?? `${id}_slot_${i}`,
+    slotType,
+    position: { x: 0, y: 0 },
+    installedModuleId: null
+  }))
 
   const asset: LongTermAsset = {
     id,
