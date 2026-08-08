@@ -184,3 +184,8 @@
 
 **Learning:** Buttons triggering asynchronous state transitions (like loading the gig setlist with `isStarting=true`) often disable themselves and change their label, but lack an explicit ARIA indicator that they are actively processing. Screen readers might just read "Initializing, disabled" without context. Adding `aria-busy` along with a visual spinner ensures all users know the app is working and hasn't frozen.
 **Action:** When creating or auditing buttons that trigger loading states, add `aria-busy={isLoading}` to communicate the pending state to screen readers natively, and accompany it with a visual loading spinner (like `Loader2` from `lucide-react`) for sighted users.
+
+## 2025-03-01 - Focus Rings on Dynamic Accent Colored Assets Buttons
+
+**Learning:** Interactive components in the assets hub (like "Acquire", "Repair", "Upgrade" buttons) were missing explicit focus rings, reducing keyboard accessibility for users. Additionally, because the assets hub uses dynamic `--section-accent` variables for styling, hardcoding focus ring colors (like `ring-toxic-green`) breaks visual consistency.
+**Action:** When adding focus rings to dynamically themed sections, always use Tailwind's arbitrary values with the CSS variable and a fallback: `focus-visible:ring-[var(--section-accent,var(--color-toxic-green))]` alongside `focus-visible:outline-none` and appropriate offsets to maintain both accessibility and theme consistency.
