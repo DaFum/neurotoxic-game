@@ -14,8 +14,12 @@ export const normalizeRegionalGigHistory = (
   const normalized: Record<string, number[]> = {}
 
   const record = history as Record<string, unknown>
-  for (const regionId of Object.keys(record).slice(0, 100)) {
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys().slice() array allocation with a manual limit counter in a for...in loop.
+  let limit = 0;
+  for (const regionId in record) {
+    if (limit >= 100) break;
     if (!Object.hasOwn(record, regionId)) continue
+    limit++;
     if (isForbiddenKey(regionId)) continue
 
     const days = record[regionId]

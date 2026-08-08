@@ -209,3 +209,8 @@
 ## 2026-08-07 - Reduce Object.entries overhead in reducers
 **Learning:** The state reducers contained `Object.entries()` over large dictionaries inside hot loops, triggering unneeded tuple allocations that cause GC jitter during game ticks.
 **Action:** Replaced `Object.entries()` in hot reducers (`systemReducer`, `bandReducer`, etc) with direct `for...in` procedural loops alongside `Object.hasOwn()` without using IIFEs or declarative callbacks, reducing closure creation while keeping the syntax clean.
+
+## 2026-08-08 - Object.keys performance nuances
+
+**Learning:** While replacing `Object.values(obj)` and `Object.entries(obj)` with `for...in` loops is generally a clear GC win by avoiding intermediate arrays, V8 heavily optimizes `Object.keys()`. Therefore, blindly replacing `Object.keys()` with `for...in` to "reduce GC pressure" is an anti-pattern. However, `Object.keys()` *should* be refactored when it allows for algorithmic complexity reductions, such as replacing `Object.keys(obj).length === 0` (which is O(N)) with an early-returning `for...in` loop (which is O(1)), or avoiding subsequent array allocations like `Object.keys(obj).slice(0, 100)`.
+**Action:** When acting as Bolt, target `Object.values` and `Object.entries` on hot paths for pure array-allocation GC reduction, but only refactor `Object.keys` if the change yields algorithmic optimization (e.g., avoiding full object traversal or `.slice()` bounds).

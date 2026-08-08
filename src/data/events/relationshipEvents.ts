@@ -27,7 +27,10 @@ const getFlatRelationships = (members: BandMember[]): RelPair[] => {
   for (let i = 0; i < len; i++) {
     const m1 = members[i]
     if (!m1 || !m1.relationships || typeof m1.name !== 'string') continue
-    for (const [m2Name, score] of Object.entries(m1.relationships)) {
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.entries() with for...in loop.
+    for (const m2Name in m1.relationships) {
+      if (!Object.hasOwn(m1.relationships, m2Name)) continue
+      const score = m1.relationships[m2Name]
       if (m2Name === m1.name) {
         if (!warnedSelfRelationshipNames.has(m1.name)) {
           logger.warn(

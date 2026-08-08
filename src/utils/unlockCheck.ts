@@ -64,10 +64,15 @@ const hasRelationshipBelow = (
   threshold: number
 ): boolean => {
   if (!isLooseRecord(relationships)) return false
-  return Object.values(relationships).some(
-    score =>
-      typeof score === 'number' && Number.isFinite(score) && score < threshold
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop.
+  for (const key in relationships) {
+    if (!Object.hasOwn(relationships, key)) continue
+    const score = relationships[key]
+    if (typeof score === 'number' && Number.isFinite(score) && score < threshold) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
