@@ -39,7 +39,7 @@ interface UsePreGigDerivationsReturn {
  *
  * @remarks
  * This hook acts as a central aggregation layer, recalculating the total cost of all selected gig modifiers,
- * factoring in asset-based discounts (e.g., training cost multipliers), and assembling the final set of options.
+ * factoring in asset-based adjustments (e.g., training cost multipliers), and assembling the final set of options.
  *
  * @param props - The configuration parameters and current context required for calculations.
  * @returns An object containing the computed budget, modified costs, and formatted options ready for the UI.
