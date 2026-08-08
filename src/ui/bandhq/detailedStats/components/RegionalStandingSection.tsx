@@ -32,20 +32,28 @@ export const RegionalStandingSection = ({
   }, [venueBlacklist])
 
   const regionalRows = useMemo(() => {
-    return Object.entries(reputationByRegion).map(([region, rep]) => (
-      <DetailRow
-        key={region}
-        label={translateLocation(t, region, region)}
-        value={rep}
-        subtext={
-          blacklistedCityKeys.has(region)
-            ? t('ui:detailedStats.blacklisted', {
-                defaultValue: 'BLACKLISTED VENUES'
-              })
-            : null
-        }
-      />
-    ))
+    return (() => {
+      const nodes = []
+      for (const region in reputationByRegion) {
+        if (!Object.hasOwn(reputationByRegion, region)) continue
+        const rep = reputationByRegion[region]
+        nodes.push(
+          <DetailRow
+            key={region}
+            label={translateLocation(t, region, region)}
+            value={rep}
+            subtext={
+              blacklistedCityKeys.has(region)
+                ? t('ui:detailedStats.blacklisted', {
+                    defaultValue: 'BLACKLISTED VENUES'
+                  })
+                : null
+            }
+          />
+        )
+      }
+      return nodes
+    })()
   }, [reputationByRegion, blacklistedCityKeys, t])
 
   return (

@@ -23,7 +23,9 @@ export const createKeyToLaneMap = (
     }
   } else {
     const lanesRecord = currentLanes as Record<string, { key?: string } | null>
-    for (const [index, lane] of Object.entries(lanesRecord)) {
+    for (const index in lanesRecord) {
+      if (!Object.hasOwn(lanesRecord, index)) continue
+      const lane = lanesRecord[index]
       if (lane && lane.key != null && Number.isInteger(Number(index))) {
         keyToLaneMap.set(lane.key, Number(index))
       }

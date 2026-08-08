@@ -39,7 +39,12 @@ type RawSong = SongAudioSources & {
  * controlled fixture data without needing to mock the JSON module.
  */
 export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
-  return Object.entries(rawSongs).map(([key, song]) => {
+  if (!rawSongs)
+    throw new TypeError('Cannot convert undefined or null to object')
+  const nodes: Song[] = []
+  for (const key in rawSongs) {
+    if (!Object.hasOwn(rawSongs, key)) continue
+    const song = rawSongs[key] as RawSong
     const durationMsValue = Number.isFinite(song.durationMs)
       ? Number(song.durationMs)
       : null
@@ -80,7 +85,7 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
       Math.max((durationMsValue ?? 0) / 1000, lastNoteTimeSeconds + 4)
     )
 
-    return {
+    const node: Song = {
       id: key,
       leaderboardId: key
         .toLowerCase()
@@ -128,7 +133,9 @@ export function transformSongsData(rawSongs: Record<string, RawSong>): Song[] {
             ? Math.max(0, durationMsValue)
             : null
     }
-  })
+    nodes.push(node)
+  }
+  return nodes
 }
 
 /**

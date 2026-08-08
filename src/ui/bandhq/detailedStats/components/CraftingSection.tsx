@@ -16,9 +16,19 @@ export const CraftingSection = ({
     <Panel title={t('ui:crafting.title', { defaultValue: 'Workshop' })}>
       <div className='space-y-2'>
         {recipes.map(recipe => {
-          const canCraft = Object.entries(recipe.inputs).every(
-            ([itemId, qty]) => getStashStacks(stash, itemId) >= qty
-          )
+          const canCraft = (() => {
+            for (const itemId in recipe.inputs) {
+              if (!Object.hasOwn(recipe.inputs, itemId)) continue
+              const qty = (recipe.inputs as Record<string, number>)[itemId]
+              if (
+                typeof qty !== 'number' ||
+                Number.isNaN(qty) ||
+                getStashStacks(stash, itemId) < qty
+              )
+                return false
+            }
+            return true
+          })()
           return (
             <div
               key={recipe.id}

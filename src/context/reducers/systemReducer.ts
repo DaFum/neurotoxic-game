@@ -287,7 +287,9 @@ export const handleLoadGame = (
     // negatives and earned reputation both survive.
     reputationByRegion: (() => {
       const migrated: GameState['reputationByRegion'] = {}
-      for (const [key, value] of Object.entries(safeState.reputationByRegion)) {
+      for (const key in safeState.reputationByRegion) {
+        if (!Object.hasOwn(safeState.reputationByRegion, key)) continue
+        const value = safeState.reputationByRegion[key] as number
         const regionKey = getRegionKeyForLocation(key) ?? key
         if (isForbiddenKey(regionKey)) continue
         const existing = migrated[regionKey]
