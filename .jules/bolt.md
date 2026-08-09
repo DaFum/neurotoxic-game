@@ -209,7 +209,3 @@
 ## 2026-08-07 - Reduce Object.entries overhead in reducers
 **Learning:** The state reducers contained `Object.entries()` over large dictionaries inside hot loops, triggering unneeded tuple allocations that cause GC jitter during game ticks.
 **Action:** Replaced `Object.entries()` in hot reducers (`systemReducer`, `bandReducer`, etc) with direct `for...in` procedural loops alongside `Object.hasOwn()` without using IIFEs or declarative callbacks, reducing closure creation while keeping the syntax clean.
-
-## 2026-08-09 - Procedural Loops for Trait Unlock Condition Checks
-**Learning:** Checking trait unlock rules in hot paths (like `GIG_COMPLETE` or `EVENT_RESOLVED`) heavily stresses the Garbage Collector when array methods like `Object.values().some()` and `Array.some()` are used, because they allocate temporary arrays and closure functions per evaluation.
-**Action:** Replace inline array methods with standard `for` and `for...in` procedural loops in trait unlock checks (`hasRelationshipBelow`, `hasHighDifficultySong`, `hasSongBpm`) to eliminate intermediate array and closure creation, improving performance during high-frequency rule evaluation.
