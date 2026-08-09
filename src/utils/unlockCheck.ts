@@ -59,15 +59,22 @@ type UnlockRule = {
   predicate: (context: UnlockRuleContext, member: BandMember) => boolean
 }
 
+// ⚡ BOLT OPTIMIZATION: Replaced Object.values().some() with procedural for...in loop
+// Why: Avoids allocating temporary arrays and closures during high-frequency trait checks.
+// Impact: Reduces GC overhead by eliminating intermediate array and closure creation.
 const hasRelationshipBelow = (
   relationships: unknown,
   threshold: number
 ): boolean => {
   if (!isLooseRecord(relationships)) return false
-  return Object.values(relationships).some(
-    score =>
-      typeof score === 'number' && Number.isFinite(score) && score < threshold
-  )
+  for (const key in relationships) {
+    if (!Object.hasOwn(relationships, key)) continue
+    const score = relationships[key]
+    if (typeof score === 'number' && Number.isFinite(score) && score < threshold) {
+      return true
+    }
+  }
+  return false
 }
 
 /**
@@ -134,24 +141,34 @@ const buildPerformanceContext = (
   }
 }
 
+// ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural for loop
+// Why: Avoids allocating a closure function per evaluation.
+// Impact: Reduces GC overhead in the hot trait check pipeline.
 const hasHighDifficultySong = (songs: Record<string, unknown>[]): boolean => {
-  return songs.some(song => song && finiteNumberOr(song.difficulty, 0) > 3)
+  for (let i = 0; i < songs.length; i++) {
+    const song = songs[i]
+    if (song && finiteNumberOr(song.difficulty, 0) > 3) return true
+  }
+  return false
 }
 
 const isBpmFast = (bpm: number) => bpm > 160
 const isBpmSlow = (bpm: number) => bpm < 120
 
+// ⚡ BOLT OPTIMIZATION: Replaced Array.some() with procedural for loop
+// Why: Avoids allocating a closure function per evaluation.
+// Impact: Reduces GC overhead in the hot trait check pipeline.
 const hasSongBpm = (
   songs: Record<string, unknown>[],
   predicate: (bpm: number) => boolean
 ): boolean => {
-  return songs.some(
-    song =>
-      song &&
-      typeof song.bpm === 'number' &&
-      Number.isFinite(song.bpm) &&
-      predicate(song.bpm)
-  )
+  for (let i = 0; i < songs.length; i++) {
+    const song = songs[i]
+    if (song && typeof song.bpm === 'number' && Number.isFinite(song.bpm) && predicate(song.bpm)) {
+      return true
+    }
+  }
+  return false
 }
 
 const UNLOCK_RULES: readonly UnlockRule[] = [
