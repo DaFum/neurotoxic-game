@@ -52,8 +52,6 @@ export type StashEntry = {
   stacks?: number | null
 }
 
-import type { MapNodeType } from '../utils/mapNodeTypes'
-
 /**
  * City-level modifiers that affect demand and local behavior.
  */
