@@ -194,7 +194,7 @@ const ChoiceGroup = <T extends string | number>({
             aria-pressed={isActive}
             onClick={() => onChange(opt)}
             disabled={isDisabled}
-            className='assets-choice-button min-h-11 border-2 px-2 py-2 disabled:opacity-30'
+            className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-choice-button min-h-11 border-2 px-2 py-2 disabled:opacity-30'
             style={{
               background: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'

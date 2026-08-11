@@ -45,7 +45,7 @@ export const AssetSlotButton = ({
         ariaLabel ?? getSlotButtonAriaLabel(t, slotType, installedModuleId)
       }
       onClick={() => onClick(id)}
-      className={className}
+      className={`${className} focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black`}
       style={{
         cursor: 'pointer',
         ...style

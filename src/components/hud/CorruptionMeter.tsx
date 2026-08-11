@@ -4,14 +4,25 @@ import { useTranslation } from 'react-i18next'
 import { BlockMeter } from '../../ui/shared'
 import { normalizePercentageToScale } from '../../utils/gameState'
 
+/**
+ * Configuration properties for the CorruptionMeter component.
+ */
 interface CorruptionMeterProps {
+  /** The current corruption level on a 0-100 percentage scale. */
   corruptionLevel: number
+  /** Indicates whether a corruption burst is currently active. */
   isCorruptionBurstActive: boolean
 }
 
 /**
- * Displays decibel corruption and burst status as a compact HUD meter.
- * @param props - Corruption level and burst-active state.
+ * Displays corruption percentage and burst status as a compact HUD meter.
+ *
+ * @remarks
+ * The meter visually escalates into a danger state as corruption approaches
+ * its limit, switching entirely to a burst warning when triggered.
+ *
+ * @param props - The properties for the corruption meter component.
+ * @returns The rendered block meter or the active burst warning.
  */
 export const CorruptionMeter = memo(function CorruptionMeter({
   corruptionLevel,

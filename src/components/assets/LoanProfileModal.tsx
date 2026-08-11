@@ -36,7 +36,7 @@ export const LoanProfileChoiceGrid = ({
             key={profile.id}
             type='button'
             onClick={() => onSelect(profile.id)}
-            className='flex gap-2 border-2 p-2 text-left'
+            className='flex gap-2 border-2 p-2 text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             style={{
               background: isActive
                 ? 'var(--section-accent, var(--color-toxic-green))'
