@@ -11,6 +11,7 @@ import { getQuestDefinition } from '../../../data/questRegistry'
 import { migrateLegacyHqUpgradeIds } from '../../../data/upgradeCatalog'
 import { normalizeVenueId } from '../../../utils/mapUtils'
 import { isMapNodeType } from '../../../utils/mapNodeTypes'
+import type { MapNodeType } from '../../../utils/mapNodeTypes'
 import { DEFAULT_MINIGAME_STATE } from '../../gameConstants'
 import { normalizeTraitMap } from '../../../utils/traitUtils'
 import { migrateLegacyQuestSchema } from '../../../domain/questLegacyMigration'
@@ -67,8 +68,7 @@ import type {
   ActiveBrandDeal,
   ToastPayload,
   GameMap,
-  GamePhase,
-  MapNodeType
+  GamePhase
 } from '../../../types'
 
 const ALLOWED_MINIGAME_TYPES = new Set<MinigameType>(

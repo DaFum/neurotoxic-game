@@ -52,19 +52,7 @@ export type StashEntry = {
   stacks?: number | null
 }
 
-/**
- * Supported overworld map node categories.
- */
-export type MapNodeType =
-  | 'START'
-  | 'GIG'
-  | 'SPECIAL'
-  | 'REST_STOP'
-  | 'FESTIVAL'
-  | 'FINALE'
-  | 'CITY'
-  | 'REST'
-  | 'SUPPLY_STOP'
+import type { MapNodeType } from '../utils/mapNodeTypes'
 
 /**
  * City-level modifiers that affect demand and local behavior.

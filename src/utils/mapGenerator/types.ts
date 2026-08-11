@@ -1,4 +1,5 @@
-import type { MapNodeType, Venue, CityTraitState } from '../../types'
+import type { Venue, CityTraitState } from '../../types'
+import type { MapNodeType } from '../mapNodeTypes'
 
 type MapConnection = { from: string; to: string }
 

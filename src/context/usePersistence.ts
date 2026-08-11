@@ -40,8 +40,6 @@ import type { OptionalToastCallback } from '../types/callbacks'
  * The string identifier used to store and retrieve the game's save payload in local storage.
  */
 export const SAVE_KEY = 'neurotoxic_v3_save'
-const isPlainObject = (value: unknown): boolean =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
 
 const isNullableObject = (value: unknown): boolean =>
   value === null || (typeof value === 'object' && !Array.isArray(value))
@@ -66,9 +64,9 @@ const isString = (value: unknown): boolean => typeof value === 'string'
 const PERSISTED_FIELDS = {
   version: isNumberOrString,
   currentScene: isString,
-  player: isPlainObject,
-  band: isPlainObject,
-  social: isPlainObject,
+  player: isLooseRecord,
+  band: isLooseRecord,
+  social: isLooseRecord,
   gameMap: isNullableObject,
   currentGig: isNullableObject,
   lastGigStats: isNullableObject,
@@ -83,10 +81,10 @@ const PERSISTED_FIELDS = {
   questCooldowns: Array.isArray,
   completedQuestIds: Array.isArray,
   completedQuestScopes: Array.isArray,
-  reputationByRegion: isPlainObject,
-  settings: isPlainObject,
-  npcs: isPlainObject,
-  gigModifiers: isPlainObject,
+  reputationByRegion: isLooseRecord,
+  settings: isLooseRecord,
+  npcs: isLooseRecord,
+  gigModifiers: isLooseRecord,
   setlist: Array.isArray,
   minigame: isNullableObject,
   completedMilestones: Array.isArray,

@@ -1,4 +1,4 @@
-import { MapNodeType } from '../../types'
+import type { MapNodeType } from '../../utils/mapNodeTypes'
 
 const ICON_URL_KEY_MAP: Record<string, string> = {
   FESTIVAL: 'pinFestivalUrl',
