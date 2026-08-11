@@ -181,7 +181,7 @@ export const ModulePickerModal = memo(
                     onClose()
                   }}
                   disabled={removalBlocked}
-                  className='assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
+                  className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                   style={{
                     background: removalBlocked
                       ? 'transparent'
@@ -288,7 +288,7 @@ export const ModulePickerModal = memo(
                           onClose()
                         }}
                         disabled={blocked}
-                        className='assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
+                        className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-primary-button mt-1 min-h-11 self-start border-2 px-2 py-2 disabled:opacity-30'
                         style={{
                           background: blocked
                             ? 'transparent'

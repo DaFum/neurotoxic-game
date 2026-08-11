@@ -46,7 +46,7 @@ export const AssetsScene = () => {
         <button
           type='button'
           onClick={() => changeScene(GAME_PHASES.OVERWORLD)}
-          className='assets-hub-control assets-hub-back-button min-h-11 shrink-0 border-2 px-3 py-2 text-xs uppercase'
+          className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-back-button min-h-11 shrink-0 border-2 px-3 py-2 text-xs uppercase'
           style={{
             borderColor: 'var(--section-accent)',
             color: 'var(--section-accent)'

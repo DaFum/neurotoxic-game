@@ -75,7 +75,7 @@ export const AssetSectionDeck = ({
                 type='button'
                 onClick={onRepair}
                 disabled={!needsRepair}
-                className='assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+                className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
                 style={{
                   borderColor:
                     'var(--section-accent, var(--color-toxic-green))',
@@ -91,7 +91,7 @@ export const AssetSectionDeck = ({
               type='button'
               onClick={onRepair}
               disabled={!needsRepair}
-              className='assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+              className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
               style={{
                 borderColor: 'var(--section-accent, var(--color-toxic-green))',
                 background: 'var(--section-accent, var(--color-toxic-green))',
@@ -107,7 +107,7 @@ export const AssetSectionDeck = ({
                 type='button'
                 onClick={onUpgrade}
                 disabled={!canUpgrade}
-                className='assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+                className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
                 style={{
                   borderColor:
                     'var(--section-accent, var(--color-toxic-green))',
@@ -123,7 +123,7 @@ export const AssetSectionDeck = ({
               type='button'
               onClick={onUpgrade}
               disabled={!canUpgrade}
-              className='assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
+              className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-primary-button min-h-11 border-2 px-2 py-2 text-xs uppercase disabled:opacity-40'
               style={{
                 borderColor: 'var(--section-accent, var(--color-toxic-green))',
                 background: 'var(--section-accent, var(--color-toxic-green))',
@@ -136,7 +136,7 @@ export const AssetSectionDeck = ({
           <button
             type='button'
             onClick={onSell}
-            className='assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase'
+            className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control assets-hub-secondary-button min-h-11 border-2 px-2 py-2 text-xs uppercase'
             style={{
               borderColor: 'var(--section-accent, var(--color-toxic-green))'
             }}
