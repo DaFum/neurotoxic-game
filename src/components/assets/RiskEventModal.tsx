@@ -39,7 +39,7 @@ export const RiskEventModal = ({ eventType, isOpen, onClose }: Props) => {
           <button
             type='button'
             onClick={onClose}
-            className='border-2 px-3 py-1'
+            className='border-2 px-3 py-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             style={{
               background: 'var(--section-accent, var(--color-toxic-green))',
               color: 'var(--color-void-black)'

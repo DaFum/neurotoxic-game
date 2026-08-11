@@ -87,7 +87,7 @@ export const AssetSlotActionList = ({
               type='button'
               aria-label={buttonLabel}
               onClick={() => onSlotClick(slot.id)}
-              className={`assets-hub-control ${
+              className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black assets-hub-control ${
                 moduleName === null
                   ? 'assets-hub-primary-button'
                   : 'assets-hub-secondary-button'
