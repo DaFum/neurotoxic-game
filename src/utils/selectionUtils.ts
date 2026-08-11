@@ -18,11 +18,7 @@ export const pickIndex = (
   items: readonly unknown[],
   rng: () => number
 ): number => {
-  const roll = getFiniteRandomRoll(rng)
-  return Math.max(
-    0,
-    Math.min(items.length - 1, Math.floor(roll * items.length))
-  )
+  return pickBoundedIndex(items.length, rng)
 }
 
 /**

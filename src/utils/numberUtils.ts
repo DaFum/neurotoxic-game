@@ -19,10 +19,12 @@ const getFormatter = (
   optionsObj: Intl.NumberFormatOptions
 ): Intl.NumberFormat => {
   const key = `${language}-${optionsString}`
-  if (!numberFormatters.has(key)) {
-    numberFormatters.set(key, new Intl.NumberFormat(language, optionsObj))
+  let formatter = numberFormatters.get(key)
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(language, optionsObj)
+    numberFormatters.set(key, formatter)
   }
-  return numberFormatters.get(key) as Intl.NumberFormat
+  return formatter
 }
 
 /**

@@ -12,6 +12,3 @@ export {
   copySafePrimitiveObject,
   sanitizeStringArray
 } from '../objectUtils'
-export { countKeys } from './checks'
-
-export * from './regionalGigHistory'

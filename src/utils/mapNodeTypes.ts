@@ -1,12 +1,5 @@
-import type { MapNodeType } from '../types'
-
 /**
  * Runtime list of every overworld map node type.
- *
- * @remarks
- * `MapNodeType` is erased at runtime, so arrival-exhaustiveness tests need a
- * value to iterate. The two assertions below make this list and the union fail
- * to compile the moment either side gains or loses a member.
  */
 export const MAP_NODE_TYPES = [
   'START',
@@ -20,13 +13,7 @@ export const MAP_NODE_TYPES = [
   'SUPPLY_STOP'
 ] as const
 
-// Every listed value is a MapNodeType…
-const _listedAreNodeTypes: readonly MapNodeType[] = MAP_NODE_TYPES
-// …and every MapNodeType is listed.
-const _nodeTypesAreListed: (typeof MAP_NODE_TYPES)[number] =
-  null as unknown as MapNodeType
-void _listedAreNodeTypes
-void _nodeTypesAreListed
+export type MapNodeType = (typeof MAP_NODE_TYPES)[number]
 
 const MAP_NODE_TYPE_SET: ReadonlySet<string> = new Set(MAP_NODE_TYPES)
 

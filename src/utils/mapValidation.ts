@@ -1,5 +1,7 @@
 import { MAP_NODE_TYPES, isMapNodeType } from './mapNodeTypes'
-import type { MapNodeType } from '../types'
+import type { MapNodeType } from './mapNodeTypes'
+import { isLooseRecord, isForbiddenKey } from './objectUtils'
+import { isFiniteNumber } from './finiteNumber'
 
 /**
  * Node shape a validated map is guaranteed to contain.
@@ -75,29 +77,13 @@ export const MAP_DIVERSITY_REQUIREMENTS = {
 
 const NODE_STATUSES = new Set(['unlocked', 'completed', 'locked'])
 
-/**
- * Node record keys that must never reach the accumulator.
- *
- * @remarks
- * `JSON.parse` produces `__proto__` as an own key, so a committed or loaded map
- * file can carry one. Assigning it would set the accumulator's prototype rather
- * than adding an entry, silently dropping the node from every later check.
- */
-const FORBIDDEN_NODE_KEYS = new Set(['__proto__', 'constructor', 'prototype'])
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === 'object' && value !== null && !Array.isArray(value)
-
-const isFiniteNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value)
-
 const validateNode = (
   raw: unknown,
   key: string,
   issues: MapValidationIssue[]
 ): ValidatedMapNode | null => {
   const path = `nodes.${key}`
-  if (!isRecord(raw)) {
+  if (!isLooseRecord(raw)) {
     issues.push({
       code: 'node.notObject',
       path,
@@ -143,7 +129,7 @@ const validateNode = (
     )
   }
   if (
-    !isRecord(raw.venue) ||
+    !isLooseRecord(raw.venue) ||
     typeof raw.venue.id !== 'string' ||
     raw.venue.id.length === 0 ||
     typeof raw.venue.name !== 'string' ||
@@ -175,7 +161,7 @@ const validateConnections = (
     const path = `connections[${i}]`
     const entry = raw[i]
     if (
-      !isRecord(entry) ||
+      !isLooseRecord(entry) ||
       typeof entry.from !== 'string' ||
       typeof entry.to !== 'string'
     ) {
@@ -310,7 +296,7 @@ export const buildMapFailureSignature = (
 export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
   const issues: MapValidationIssue[] = []
 
-  if (!isRecord(raw)) {
+  if (!isLooseRecord(raw)) {
     issues.push({
       code: 'map.notObject',
       path: '',
@@ -322,7 +308,7 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
       signature: buildMapFailureSignature(issues)
     }
   }
-  if (!isRecord(raw.nodes)) {
+  if (!isLooseRecord(raw.nodes)) {
     issues.push({
       code: 'map.nodes.notObject',
       path: 'nodes',
@@ -340,7 +326,7 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
     ValidatedMapNode
   >
   for (const key of Object.keys(raw.nodes)) {
-    if (FORBIDDEN_NODE_KEYS.has(key)) {
+    if (isForbiddenKey(key)) {
       issues.push({
         code: 'node.key.forbidden',
         path: `nodes.${key}`,

@@ -1,4 +1,5 @@
 import type { PurchaseItem } from './components'
+import type { MapNodeType } from '../utils/mapNodeTypes'
 
 /**
  * Visibility state for overworld map nodes.
