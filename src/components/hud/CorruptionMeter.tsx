@@ -8,14 +8,18 @@ import { normalizePercentageToScale } from '../../utils/gameState'
  * Configuration properties for the CorruptionMeter component.
  */
 interface CorruptionMeterProps {
-  /** The current decibel corruption percentage. */
+  /** The current corruption level on a 0-100 percentage scale. */
   corruptionLevel: number
-  /** Indicates whether the corruption burst state is actively armed. */
+  /** Indicates whether a corruption burst is currently active. */
   isCorruptionBurstActive: boolean
 }
 
 /**
- * Displays decibel corruption and burst status as a compact HUD meter.
+ * Displays corruption percentage and burst status as a compact HUD meter.
+ *
+ * @remarks
+ * The meter visually escalates into a danger state as corruption approaches
+ * its limit, switching entirely to a burst warning when triggered.
  *
  * @param props - The properties for the corruption meter component.
  * @returns The rendered block meter or the active burst warning.
