@@ -3,11 +3,22 @@ import type { LongTermAsset } from '../../types/assets'
 import { MODULE_REGISTRY } from '../../utils/assetModuleRegistry'
 import { getModuleDescription } from './moduleDescription'
 
+/**
+ * Defines the configuration properties for the AssetSlotActionList component.
+ */
 interface AssetSlotActionListProps {
+  /** The long-term asset whose slots are being managed. */
   asset: LongTermAsset
+  /** Callback invoked when a specific asset slot is selected. */
   onSlotClick: (slotId: string) => void
 }
 
+/**
+ * Derives a categorical state identifier based on a numeric asset condition value.
+ *
+ * @param condition - The numerical percentage representing the asset's current state of repair.
+ * @returns A literal union representing the derived state category.
+ */
 const getConditionState = (
   condition: number
 ): 'good' | 'warning' | 'broken' => {
@@ -18,7 +29,9 @@ const getConditionState = (
 
 /**
  * Displays install, remove, and slot-management actions for selected asset slots.
- * @param props - Asset state and slot-click handler for the slot action list.
+ *
+ * @param props - Component configuration containing the parent asset and interaction handlers.
+ * @returns The rendered list of slot action controls.
  */
 export const AssetSlotActionList = ({
   asset,
