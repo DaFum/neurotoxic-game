@@ -152,12 +152,13 @@ describe('Action Creators', () => {
           failed: true,
           songStats: [{ songId: 'test', score: 100, accuracy: 1 }],
           events: ['e1'],
-          __proto__: { evil: true }
+          ['__proto__']: { evil: true }
         }
         const action = createSetLastGigStatsAction(stats)
         const payload = action.payload
         assert.ok(payload.toastId)
         delete payload.toastId
+        assert.strictEqual(Object.hasOwn(payload, '__proto__'), false)
         return action
       },
       expected: {
@@ -700,7 +701,8 @@ describe('Action Creators', () => {
       const payloadInf = {}
       const payloadZero = {}
       const payloadNull = {}
-      const payloadForbidden = { '__proto__': { evil: true }, 'constructor': 1 }
+      const payloadForbidden = { 'constructor': 1 }
+      payloadForbidden['__proto__'] = { evil: true }
 
       allFields.forEach(f => {
         payloadNaN[f] = Number.NaN

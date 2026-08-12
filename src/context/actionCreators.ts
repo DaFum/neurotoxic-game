@@ -340,8 +340,15 @@ export const createSetLastGigStatsAction = (
     }
   }
 
-  const payloadWithToastId: Record<string, unknown> = {
-    ...stats,
+  const safeStats: Record<string, unknown> = {}
+  for (const k in stats) {
+    if (Object.hasOwn(stats, k) && !isForbiddenKey(k)) {
+      safeStats[k] = (stats as Record<string, unknown>)[k]
+    }
+  }
+
+  const payloadWithToastId: PostGigSummary = {
+    ...safeStats,
     toastId: getSafeUUID()
   }
 
@@ -353,7 +360,7 @@ export const createSetLastGigStatsAction = (
 
   return {
     type: ActionTypes.SET_LAST_GIG_STATS,
-    payload: payloadWithToastId as never
+    payload: payloadWithToastId
   }
 }
 
