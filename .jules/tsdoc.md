@@ -62,3 +62,4 @@
 | 2026-08-10 | src/components/assets/AssetSlotActionList.tsx | AssetSlotActionListProps, getConditionState, AssetSlotActionList |
 | 2026-08-09 | src/scenes/kabelsalat/kabelsalatConstants.ts | CABLE_MAP |
 | 2026-08-11 | src/components/hud/CorruptionMeter.tsx | CorruptionMeterProps, CorruptionMeter |
+| 2026-08-12 | src/data/hqItems/van.ts | van |
