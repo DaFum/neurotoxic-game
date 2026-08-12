@@ -528,40 +528,40 @@ test('calculateGigPhysics applies virtuoso trait hit window bonus', () => {
   )
 })
 
-test('calculateDailyUpdates applies wealth-scaled expense drain at 8% chance', () => {
+test('calculateDailyUpdates applies wealth-scaled expense drain at 12% chance', () => {
   // With social={viral:0} and no newsletter/youtube, the first rng() call in
   // calculateDailyUpdates is the drain trigger (newsletter short-circuits at 0).
-  // seq[0] = drain trigger (0.07 < 0.08 → fires)
-  // seq[1] = drainRate   (0.01 → 0.015 + 0.01*0.015 = 0.01515)
+  // seq[0] = drain trigger (0.07 < 0.12 → fires)
+  // seq[1] = drainRate   (0.01 → 0.015 + 0.01*(0.05-0.015) = 0.01535)
   const seq = [0.07, 0.01]
   let i = 0
   const mockRng = () => seq[i++] ?? 0.5
 
   const currentState = {
-    player: { day: 1, money: 5000, van: null },
+    player: { day: 1, money: 20000, van: null },
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
 
-  // Baseline: drain does not fire (rng always 0.99 ≥ 0.08)
+  // Baseline: drain does not fire (rng always 0.99 ≥ 0.12)
   const { player: baseline } = calculateDailyUpdates(currentState, () => 0.99)
   const { player } = calculateDailyUpdates(currentState, mockRng)
 
-  // After daily cost (70), money = 4930. taxableWealth = 4930-2000 = 2930.
-  // expense = round(2930 * 0.01515) = 44. Drained money = 4886 < baseline 4930.
+  // After daily cost (70), money = 19930. taxableWealth = 19930-15000 = 4930.
+  // expense = round(4930 * 0.01535) = 76. Drained money = 19854 < baseline 19930.
   assert.ok(
     player.money < baseline.money,
     'Money should be lower than no-drain baseline when drain triggers'
   )
 })
 
-test('calculateDailyUpdates skips wealth-scaled drain at exactly €2000', () => {
-  // At the boundary (money === 2000 after daily costs) the drain must NOT fire.
+test('calculateDailyUpdates skips wealth-scaled drain at exactly €15000', () => {
+  // At the boundary (money === 15000 after daily costs) the drain must NOT fire.
   // rng always returns 0.01 (would trigger drain if eligible).
   const triggerRng = () => 0.01
   const skipRng = () => 0.99
   const currentState = {
-    player: { day: 1, money: 2000, van: null },
+    player: { day: 1, money: 15000, van: null },
     band: { members: [], harmony: 50 },
     social: { viral: 0 }
   }
@@ -575,7 +575,7 @@ test('calculateDailyUpdates skips wealth-scaled drain at exactly €2000', () =>
   )
 })
 
-test('calculateDailyUpdates skips wealth-scaled drain when money < 2000', () => {
+test('calculateDailyUpdates skips wealth-scaled drain when money < 15000', () => {
   const triggerRng = () => 0.01
   const skipRng = () => 0.99
   const currentState = {

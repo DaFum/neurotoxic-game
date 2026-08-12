@@ -1,6 +1,6 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-08-12T07:31:20.768Z
+Erstellt am: 2026-08-12T08:26:27.782Z
 
 ## Reproduzierbarkeit
 
@@ -559,7 +559,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `998adea98c76f4ab71ad7015c2b12f3a0b3a97a7e049f48bdf9f5aceff5ffd04` | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` |
+| Source-Fingerprint | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
@@ -567,18 +567,18 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | 0.55% | €7.103 | 316.51 | -0.06 |
-| Bootstrap Struggle | 1.35% | €5.083 | 324.99 | -0.18 |
-| Aggressive Marketing | 0.95% | €10.971 | 311.91 | -0.1 |
-| Scandal Recovery | 1.05% | €5.825 | 301.88 | -0.12 |
-| Festival Push | -0.25% | €10.159 | 303.95 | -0.01 |
-| Chaos Tour | 0.9% | €8.416 | 295.73 | -0.07 |
-| Cult Hypergrowth | 0.75% | €11.512 | 320.77 | -0.06 |
-| No Social (Fame 0-50) | 0.4% | €4.377 | 284.31 | -0.08 |
-| High Controversy | 8.8% | €-38 | 307.23 | -0.65 |
-| Early Game Probe (Fame 0–50) | 1.75% | €4.993 | 302.63 | -0.13 |
-| Mid Game Probe (Fame 60–150) | -0.5% | €7.025 | 339.07 | -0.02 |
-| Late Game Probe (Fame 175+) | 0.1% | €10.069 | 299.98 | -0.04 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| No Social (Fame 0-50) | 0% | €0 | 0 | 0 |
+| High Controversy | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Kurzfazit
 
