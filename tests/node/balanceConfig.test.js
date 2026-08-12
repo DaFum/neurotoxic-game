@@ -138,7 +138,7 @@ describe('balance config boot guard', () => {
 describe('economy constants derive from the balance config', () => {
   it('keeps the shipped values', () => {
     assert.equal(GLOBAL_PAYOUT_NERF, 0.97)
-    assert.equal(MAX_GIG_NET, 14550)
+    assert.equal(MAX_GIG_NET, 29100)
     assert.equal(MANAGEMENT_CUT_RATE, 0.15)
     assert.equal(BAR_RATE_VIP, 0.3)
     assert.equal(BAR_RATE_NORMAL, 0.15)

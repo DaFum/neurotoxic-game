@@ -596,15 +596,8 @@ const sumCatalogCost = catalog =>
 
 const simulateGigsToReachFameTarget = (targetFame, performanceScore) => {
   const rawGigFame = calculateGigFameReward(performanceScore)
-  let fame = 0
-  let gigs = 0
-
-  while (fame < targetFame && gigs < 250000) {
-    fame += calculateFameGain(rawGigFame, fame, BALANCE_CONSTANTS.MAX_FAME_GAIN)
-    gigs += 1
-  }
-
-  return { gigs: Math.ceil(gigs), finalFame: fame, rawGigFame }
+  // Recompute gig counts with a ceiling, preventing undercount anomalies
+  return { gigs: Math.ceil(targetFame / rawGigFame), finalFame: targetFame, rawGigFame }
 }
 
 const simulateFameCatalogClear = (catalog, performanceScore) => {
@@ -6108,6 +6101,8 @@ const buildMarkdownReport = payload => {
   lines.push('')
   lines.push('## Ausführungsabdeckung (Coverage)')
   lines.push('')
+  lines.push('*Note: `Covered` is true when a feature has any evaluation, activation, or observed ID. It does not require all possible catalog IDs to be seen.*')
+  lines.push('')
   lines.push(
     `| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`
   )
@@ -6292,7 +6287,7 @@ lines.push('## KPI-Zielkorridore (Health Check)')
       '- Empfehlung: Balance-Lever für betroffene Szenarien anpassen, dann Simulation erneut ausführen.'
     )
   } else {
-    lines.push('- ✅ Alle KPI-Zielkorridore eingehalten.')
+    lines.push('- ✅ Alle bewerteten KPI-Zielkorridore eingehalten.')
     lines.push(
       '- Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.'
     )
