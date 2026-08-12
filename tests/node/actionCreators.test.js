@@ -131,6 +131,52 @@ describe('Action Creators', () => {
       }
     },
     {
+      name: 'createSetLastGigStatsAction handles null payload correctly',
+      call: () => createSetLastGigStatsAction(null),
+      expected: {
+        type: 'SET_LAST_GIG_STATS',
+        payload: null
+      }
+    },
+    {
+      name: 'createSetLastGigStatsAction normalizes STAT_FIELDS',
+      call: () => {
+        const stats = {
+          score: Number.NaN,
+          misses: Number.POSITIVE_INFINITY,
+          accuracy: null,
+          combo: undefined,
+          health: 100,
+          overload: -50,
+          maxCombo: 0,
+          failed: true,
+          songStats: [{ songId: 'test', score: 100, accuracy: 1 }],
+          events: ['e1'],
+          __proto__: { evil: true }
+        }
+        const action = createSetLastGigStatsAction(stats)
+        const payload = action.payload
+        assert.ok(payload.toastId)
+        delete payload.toastId
+        return action
+      },
+      expected: {
+        type: 'SET_LAST_GIG_STATS',
+        payload: {
+          score: 0,
+          misses: 0,
+          accuracy: 0,
+          combo: undefined,
+          health: 100,
+          overload: -50,
+          maxCombo: 0,
+          failed: true,
+          songStats: [{ songId: 'test', score: 100, accuracy: 1 }],
+          events: ['e1']
+        }
+      }
+    },
+    {
       name: 'createSetLastGigStatsAction',
       call: () => {
         const action = createSetLastGigStatsAction({ score: 1000, combo: 50 })
@@ -639,6 +685,59 @@ describe('Action Creators', () => {
         harmonyCost: 1
       })
       assert.strictEqual(merch.payload.loyaltyGain, 0)
+    })
+
+    it('normalizes SOCIAL_FIELDS correctly handling NaN, Infinity, zero, and null across all fields', () => {
+      const allFields = [
+        'instagram', 'tiktok', 'youtube', 'newsletter', 'viral',
+        'lastGigDay', 'lastGigDifficulty', 'lastPirateBroadcastDay',
+        'lastDarkWebLeakDay', 'lastCultIndoctrinationDay',
+        'controversyLevel', 'loyalty', 'zealotry', 'reputationCooldown',
+        'egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'
+      ]
+
+      const payloadNaN = {}
+      const payloadInf = {}
+      const payloadZero = {}
+      const payloadNull = {}
+      const payloadForbidden = { '__proto__': { evil: true }, 'constructor': 1 }
+
+      allFields.forEach(f => {
+        payloadNaN[f] = Number.NaN
+        payloadInf[f] = Number.POSITIVE_INFINITY
+        payloadZero[f] = 0
+        payloadNull[f] = null
+      })
+
+      const actionNaN = createUpdateSocialAction(payloadNaN)
+      const expectedNaN = {}
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedNaN[f] = Number.NaN })
+      assert.deepStrictEqual(actionNaN.payload, expectedNaN)
+
+      const actionInf = createUpdateSocialAction(payloadInf)
+      const expectedInf = {}
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedInf[f] = Number.POSITIVE_INFINITY })
+      assert.deepStrictEqual(actionInf.payload, expectedInf)
+
+      const actionZero = createUpdateSocialAction(payloadZero)
+      allFields.forEach(f => {
+        assert.strictEqual(actionZero.payload[f], 0)
+      })
+
+      const actionNull = createUpdateSocialAction(payloadNull)
+      const nullableFields = [
+        'lastGigDay', 'lastGigDifficulty', 'lastPirateBroadcastDay',
+        'lastDarkWebLeakDay', 'lastCultIndoctrinationDay'
+      ]
+      const expectedNull = {}
+      nullableFields.forEach(f => {
+        expectedNull[f] = null
+      })
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedNull[f] = null })
+      assert.deepStrictEqual(actionNull.payload, expectedNull)
+
+      const actionForbidden = createUpdateSocialAction(payloadForbidden)
+      assert.deepStrictEqual(actionForbidden.payload, {})
     })
 
     it('drops non-finite cult indoctrination cooldown updates while preserving null', () => {
