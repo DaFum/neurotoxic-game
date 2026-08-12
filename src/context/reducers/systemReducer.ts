@@ -67,6 +67,7 @@ import { createInitialState } from '../initialState'
 import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
+import { applySharedBandEffect } from '../../utils/contrabandEffects'
 import {
   sanitizeAssets,
   sanitizeAssetKinds,
@@ -110,19 +111,7 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
   })
 }
 
-/**
- * Loads persisted state through migration and sanitizer gates.
- *
- * @param state - Current in-memory state used as a fallback baseline.
- * @param payload - Raw save payload from storage.
- * @returns Migrated and sanitized game state.
- *
- * @remarks
- * Loading a save forces the scene back to `OVERWORLD` and upgrades the persisted
- * version marker to the current schema version after migrations run.
- */
 const migrateVenueBlacklist = (blacklist: string[]): string[] => {
-  if (!Array.isArray(blacklist)) return []
   const acc: string[] = []
   for (let i = 0; i < blacklist.length; i++) {
     const id = blacklist[i]
@@ -408,92 +397,6 @@ export const handleRemoveToast = (
   }
 }
 
-const finiteEffectValue = (value: unknown): number => finiteNumberOr(value, 0)
-
-const EFFECT_REVERTERS: Record<
-  string,
-  (band: BandState, value: unknown) => BandState
-> = {
-  harmony: (band: BandState, value: unknown) => ({
-    ...band,
-    harmony: clampBandHarmony(
-      finiteNumberOr(band.harmony, 1) - finiteEffectValue(value)
-    )
-  }),
-  guitar_difficulty: (band: BandState, value: unknown) => ({
-    ...band,
-    performance: {
-      ...band.performance,
-      // Exact additive inverse of the apply path (no floor); the rhythm game
-      // clamps the divisor to GUITAR_MIN_DIFFICULTY at read time.
-      guitarDifficulty:
-        finiteNumberOr(band.performance?.guitarDifficulty, 1) -
-        finiteEffectValue(value)
-    }
-  }),
-  luck: (band: BandState, value: unknown) => ({
-    ...band,
-    luck: Math.max(0, finiteNumberOr(band.luck, 0) - finiteEffectValue(value))
-  }),
-  stamina_max: (band: BandState, value: unknown) => {
-    const effectVal = finiteEffectValue(value)
-    return {
-      ...band,
-      members: (band.members || []).map((m: BandMember) => ({
-        ...m,
-        staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100) - effectVal)
-      })) as BandMember[]
-    }
-  },
-  style: (band: BandState, value: unknown) => ({
-    ...band,
-    style: Math.max(0, finiteNumberOr(band.style, 0) - finiteEffectValue(value))
-  }),
-  tour_success: (band: BandState, value: unknown) => ({
-    ...band,
-    tourSuccess: Math.max(
-      0,
-      finiteNumberOr(band.tourSuccess, 0) - finiteEffectValue(value)
-    )
-  }),
-  gig_modifier: (band: BandState, value: unknown) => ({
-    ...band,
-    gigModifier: Math.max(
-      0,
-      finiteNumberOr(band.gigModifier, 0) - finiteEffectValue(value)
-    )
-  }),
-  tempo: (band: BandState, value: unknown) => ({
-    ...band,
-    tempo: Math.max(0, finiteNumberOr(band.tempo, 0) - finiteEffectValue(value))
-  }),
-  practice_gain: (band: BandState, value: unknown) => ({
-    ...band,
-    practiceGain: Math.max(
-      0,
-      finiteNumberOr(band.practiceGain, 0) - finiteEffectValue(value)
-    )
-  }),
-  crit: (band: BandState, value: unknown) => ({
-    ...band,
-    crit: Math.max(0, finiteNumberOr(band.crit, 0) - finiteEffectValue(value))
-  }),
-  affinity: (band: BandState, value: unknown) => ({
-    ...band,
-    affinity: Math.max(
-      0,
-      finiteNumberOr(band.affinity, 0) - finiteEffectValue(value)
-    )
-  }),
-  crowd_control: (band: BandState, value: unknown) => ({
-    ...band,
-    crowdControl: Math.max(
-      0,
-      finiteNumberOr(band.crowdControl, 0) - finiteEffectValue(value)
-    )
-  })
-}
-
 /**
  * Processes contraband effect expiry and reversion as a pure function.
  * @param band - The current band state
@@ -526,15 +429,48 @@ const processContrabandExpiry = (band: BandState): BandState => {
     const e = expired[i]
     if (!e) continue
     const effectType = e.effectType as string
-    const reverter = EFFECT_REVERTERS[effectType]
-    if (reverter) {
-      nextBand = reverter(nextBand, e.value)
-    } else {
-      logger.warn(
-        'SystemReducer',
-        `No reverter defined for expired effect type: ${effectType}`,
-        { value: e.value, effect: e }
-      )
+
+    // Apply exact additive inverse (no floor) to revert the effect.
+    // The rhythm game clamps `guitar_difficulty` to `GUITAR_MIN_DIFFICULTY` at read time.
+    const applied = applySharedBandEffect(
+      nextBand,
+      effectType,
+      -finiteNumberOr(e.value, 0)
+    )
+
+    if (applied) {
+      // Re-clamp bounds for stats that cannot drop below zero
+      if (
+        effectType === 'luck' ||
+        effectType === 'style' ||
+        effectType === 'tour_success' ||
+        effectType === 'gig_modifier' ||
+        effectType === 'tempo' ||
+        effectType === 'practice_gain' ||
+        effectType === 'crit' ||
+        effectType === 'affinity' ||
+        effectType === 'crowd_control'
+      ) {
+        // We know from applySharedBandEffect which property maps to the effectType
+        // All of these map directly or to camelCase variants
+        const key = effectType.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
+        const val = finiteNumberOr((nextBand as any)[key], 0)
+        ;(nextBand as any)[key] = Math.max(0, val)
+      } else if (effectType === 'harmony') {
+        // Harmony has a dedicated 0-100 clamp
+        nextBand.harmony = clampBandHarmony(finiteNumberOr(nextBand.harmony, 1))
+      } else if (effectType === 'stress') {
+        // Stress has a dedicated 0-100 clamp
+        nextBand.stress = clampBandStress(finiteNumberOr(nextBand.stress, 0))
+      } else if (effectType === 'stamina_max') {
+        // Members' staminaMax clamp
+        if (nextBand.members) {
+          nextBand.members = nextBand.members.map((m: BandMember) => ({
+            ...m,
+            staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+          })) as BandMember[]
+        }
+      }
     }
 
     // Unmark applied status in stash so relics can be used again

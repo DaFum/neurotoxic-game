@@ -15,7 +15,8 @@ export const ADDITIVE_BAND_EFFECT_FIELDS = {
   gig_modifier: 'gigModifier',
   tempo: 'tempo',
   practice_gain: 'practiceGain',
-  harmony: 'harmony'
+  harmony: 'harmony',
+  stress: 'stress'
 } as const
 
 /**
@@ -62,13 +63,16 @@ export const applySharedBandEffect = (
 ): boolean => {
   if (typeof effectType !== 'string') return false
   if (allowedEffectTypes && !allowedEffectTypes.has(effectType)) return false
+
+  const safeValue = finiteNumberOr(value, 0)
+
   if (Object.hasOwn(ADDITIVE_BAND_EFFECT_FIELDS, effectType)) {
     const field =
       ADDITIVE_BAND_EFFECT_FIELDS[
         effectType as keyof typeof ADDITIVE_BAND_EFFECT_FIELDS
       ]
     const band = newBand as unknown as Record<string, number | undefined>
-    band[field] = finiteNumberOr(band[field], 0) + finiteNumberOr(value, 0)
+    band[field] = finiteNumberOr(band[field], 0) + safeValue
     return true
   }
   if (effectType === 'stamina_max') {
@@ -80,17 +84,11 @@ export const applySharedBandEffect = (
         updatedMembers[i] = {
           ...currentMember,
           staminaMax:
-            finiteNumberOr(currentMember.staminaMax, 100) +
-            finiteNumberOr(value, 0)
+            finiteNumberOr(currentMember.staminaMax, 100) + safeValue
         } as BandMember
       }
     }
     newBand.members = updatedMembers
-    return true
-  }
-  if (effectType === 'stress') {
-    const band = newBand as unknown as Record<string, number | undefined>
-    band.stress = finiteNumberOr(band.stress, 0) + finiteNumberOr(value, 0)
     return true
   }
   if (effectType === 'guitar_difficulty') {
@@ -100,8 +98,7 @@ export const applySharedBandEffect = (
     newBand.performance = {
       ...newBand.performance,
       guitarDifficulty:
-        finiteNumberOr(newBand.performance?.guitarDifficulty, 1) +
-        finiteNumberOr(value, 0)
+        finiteNumberOr(newBand.performance?.guitarDifficulty, 1) + safeValue
     }
     return true
   }
