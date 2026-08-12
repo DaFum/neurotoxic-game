@@ -121,8 +121,8 @@ const RAW_DEFAULT_BALANCE_CONFIG = {
   caps: {
     // Applied *after* `penalties.globalPayoutNerf`, so holding the same
     // gross-net clipping threshold means scaling it by the same factor:
-    // 15000 * 0.97. Derive it, do not guess it.
-    maxGigNet: 14550,
+    // 30000 * 0.97. Derive it, do not guess it.
+    maxGigNet: 29100,
     travelLogisticsCashCap: 45
   }
 }
