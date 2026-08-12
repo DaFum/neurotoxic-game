@@ -60,9 +60,18 @@ const matchesOfferCondition = (
   }
 
   if (condition.requiredAssetKind) {
-    const hasAsset = (state.assets ?? []).some(
-      asset => asset?.kind === condition.requiredAssetKind
-    )
+    // ⚡ BOLT OPTIMIZATION: Replaced .some() with a for loop.
+    // Why: Avoids callback overhead and intermediate closure allocations.
+    // Impact: Improves performance in hot paths and reduces GC pressure.
+    let hasAsset = false
+    const assets = state.assets ?? []
+    for (let i = 0; i < assets.length; i++) {
+      const asset = assets[i]
+      if (asset?.kind === condition.requiredAssetKind) {
+        hasAsset = true
+        break
+      }
+    }
     if (!hasAsset) return false
   }
 
