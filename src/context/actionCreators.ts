@@ -200,30 +200,23 @@ export const toggleNeuroDecimator = (
   payload: { isActive }
 })
 
-const SOCIAL_NULLABLE_FIELDS = new Set([
-  'lastGigDay',
-  'lastGigDifficulty',
-  'lastPirateBroadcastDay',
-  'lastDarkWebLeakDay',
-  'lastCultIndoctrinationDay'
-])
-
-const SOCIAL_NUMERIC_FIELDS = new Set([
-  'instagram',
-  'tiktok',
-  'youtube',
-  'newsletter',
-  'viral',
-  'lastGigDay',
-  'lastGigDifficulty',
-  'lastPirateBroadcastDay',
-  'lastDarkWebLeakDay',
-  'lastCultIndoctrinationDay',
-  'controversyLevel',
-  'loyalty',
-  'zealotry',
-  'reputationCooldown'
-])
+const SOCIAL_FIELDS: Record<string, { numeric?: boolean; nullable?: boolean }> =
+  {
+    instagram: { numeric: true },
+    tiktok: { numeric: true },
+    youtube: { numeric: true },
+    newsletter: { numeric: true },
+    viral: { numeric: true },
+    lastGigDay: { numeric: true, nullable: true },
+    lastGigDifficulty: { numeric: true, nullable: true },
+    lastPirateBroadcastDay: { numeric: true, nullable: true },
+    lastDarkWebLeakDay: { numeric: true, nullable: true },
+    lastCultIndoctrinationDay: { numeric: true, nullable: true },
+    controversyLevel: { numeric: true },
+    loyalty: { numeric: true },
+    zealotry: { numeric: true },
+    reputationCooldown: { numeric: true }
+  }
 
 const sanitizeSocialUpdates = (
   updates: Partial<SocialState> | null | undefined
@@ -233,9 +226,10 @@ const sanitizeSocialUpdates = (
   for (const key in updates) {
     if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
-    if (SOCIAL_NUMERIC_FIELDS.has(key)) {
+    const spec = SOCIAL_FIELDS[key]
+    if (spec?.numeric) {
       if (value === null) {
-        if (SOCIAL_NULLABLE_FIELDS.has(key)) out[key] = null
+        if (spec.nullable) out[key] = null
         continue
       }
       if (!isFiniteNumber(value)) continue
@@ -326,41 +320,40 @@ export const createSetSetlistAction = (
  * Creates a last gig stats action
  * @param stats - Gig statistics
  */
+const STAT_FIELDS = [
+  'score',
+  'misses',
+  'accuracy',
+  'combo',
+  'health',
+  'overload',
+  'maxCombo'
+] as const
+
 export const createSetLastGigStatsAction = (
   stats: PostGigSummary | null
 ): Extract<GameAction, { type: typeof ActionTypes.SET_LAST_GIG_STATS }> => {
-  const payloadWithToastId = stats
-    ? {
-        ...stats,
-        // Only re-normalize numeric fields that are actually present so we
-        // never introduce explicit `undefined` keys into the payload.
-        ...(stats.score !== undefined && {
-          score: finiteNumberOr(stats.score, 0)
-        }),
-        ...(stats.misses !== undefined && {
-          misses: finiteNumberOr(stats.misses, 0)
-        }),
-        ...(stats.accuracy !== undefined && {
-          accuracy: finiteNumberOr(stats.accuracy, 0)
-        }),
-        ...(stats.combo !== undefined && {
-          combo: finiteNumberOr(stats.combo, 0)
-        }),
-        ...(stats.health !== undefined && {
-          health: finiteNumberOr(stats.health, 0)
-        }),
-        ...(stats.overload !== undefined && {
-          overload: finiteNumberOr(stats.overload, 0)
-        }),
-        ...(stats.maxCombo !== undefined && {
-          maxCombo: finiteNumberOr(stats.maxCombo, 0)
-        }),
-        toastId: getSafeUUID()
-      }
-    : null
+  if (!stats) {
+    return {
+      type: ActionTypes.SET_LAST_GIG_STATS,
+      payload: null
+    }
+  }
+
+  const payloadWithToastId: Record<string, unknown> = {
+    ...stats,
+    toastId: getSafeUUID()
+  }
+
+  for (const field of STAT_FIELDS) {
+    if (stats[field] !== undefined) {
+      payloadWithToastId[field] = finiteNumberOr(stats[field], 0)
+    }
+  }
+
   return {
     type: ActionTypes.SET_LAST_GIG_STATS,
-    payload: payloadWithToastId
+    payload: payloadWithToastId as never
   }
 }
 
