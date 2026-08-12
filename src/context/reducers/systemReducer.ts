@@ -422,7 +422,7 @@ const processContrabandExpiry = (band: BandState): BandState => {
     }
   }
 
-  let nextBand = { ...band }
+  const nextBand = { ...band }
 
   // Revert expired effects
   for (let i = 0; i < expired.length; i++) {
@@ -454,8 +454,9 @@ const processContrabandExpiry = (band: BandState): BandState => {
         // We know from applySharedBandEffect which property maps to the effectType
         // All of these map directly or to camelCase variants
         const key = effectType.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-        const val = finiteNumberOr((nextBand as any)[key], 0)
-        ;(nextBand as any)[key] = Math.max(0, val)
+        const bandRecord = nextBand as unknown as Record<string, number | undefined>
+        const val = finiteNumberOr(bandRecord[key], 0)
+        bandRecord[key] = Math.max(0, val)
       } else if (effectType === 'harmony') {
         // Harmony has a dedicated 0-100 clamp
         nextBand.harmony = clampBandHarmony(finiteNumberOr(nextBand.harmony, 1))
