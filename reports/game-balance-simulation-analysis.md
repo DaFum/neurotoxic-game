@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-08-12T08:26:27.782Z
+Erstellt am: 2026-08-12T09:33:46.553Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f
-- Generator-Fingerprint: d31ae2354f41ce4df9b28a48ac001efb1302438d8df8ce6b1ba4f10a0578ac54
+- Source-Fingerprint: 90b4ad237ed2df7bb76e70fa974cf32941daf7c304a86d22dd453ae1745d401a
+- Generator-Fingerprint: 73d64bfa6dcc2ff2cccb113dee9309eeef3981c449f5576b1f496ccdd127e514
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -502,6 +502,8 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 
 ## Ausführungsabdeckung (Coverage)
 
+*Note: `Covered` is true when a feature has any evaluation, activation, or observed ID. It does not require all possible catalog IDs to be seen.*
+
 | Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |
 |---|---|---:|---:|---:|
 | brandDeals | ✅ | 209300 | 1049 | 39 |
@@ -559,7 +561,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` |
+| Source-Fingerprint | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` | `90b4ad237ed2df7bb76e70fa974cf32941daf7c304a86d22dd453ae1745d401a` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
@@ -597,5 +599,5 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 - Risikobänder: healthy 4 · low_risk 3.
 - ⚠️ 3 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
-- ✅ Alle KPI-Zielkorridore eingehalten.
+- ✅ Alle bewerteten KPI-Zielkorridore eingehalten.
 - Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.
