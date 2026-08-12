@@ -1,3 +1,4 @@
+import { sanitizeTraversableValue } from '../../../utils/objectUtils'
 import {
   getCityKeyFromVenueId,
   deriveCityTraits
@@ -125,32 +126,41 @@ const finiteOptionalNumber = (value: unknown): number | undefined =>
 const MAX_SAFE_JSON_COPY_DEPTH = 12
 
 const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
-  if (depth > MAX_SAFE_JSON_COPY_DEPTH) return undefined
-
-  if (
-    typeof value === 'string' ||
-    typeof value === 'boolean' ||
-    value === null ||
-    isFiniteNumber(value)
-  ) {
-    return value
-  }
-  if (Array.isArray(value)) {
-    return value.flatMap(item => {
-      const copied = copySafeJsonValue(item, depth + 1)
-      return copied === undefined ? [] : [copied]
+  if (depth > 0) {
+    return sanitizeTraversableValue(value, {
+      maxDepth: MAX_SAFE_JSON_COPY_DEPTH - depth,
+      dropUndefinedLeaves: true,
+      sentinel: undefined,
+      transformLeaf: (val: unknown) => {
+        if (
+          typeof val === 'string' ||
+          typeof val === 'boolean' ||
+          val === null ||
+          isFiniteNumber(val)
+        ) {
+          return val
+        }
+        return undefined
+      }
     })
   }
-  if (!isLooseRecord(value)) return undefined
 
-  const copied: Record<string, unknown> = {}
-  for (const key in value) {
-    if (!Object.hasOwn(value, key)) continue
-    if (isForbiddenKey(key)) continue
-    const entry = copySafeJsonValue(value[key], depth + 1)
-    if (entry !== undefined) copied[key] = entry
-  }
-  return !isEmptyObject(copied) ? copied : undefined
+  return sanitizeTraversableValue(value, {
+    maxDepth: MAX_SAFE_JSON_COPY_DEPTH,
+    dropUndefinedLeaves: true,
+    sentinel: undefined,
+    transformLeaf: (val: unknown) => {
+      if (
+        typeof val === 'string' ||
+        typeof val === 'boolean' ||
+        val === null ||
+        isFiniteNumber(val)
+      ) {
+        return val
+      }
+      return undefined
+    }
+  })
 }
 
 const copySafeEffectPayload = (
@@ -159,14 +169,24 @@ const copySafeEffectPayload = (
   | Record<string, string | number | boolean | null>
   | Array<Record<string, string | number | boolean | null>>
   | undefined => {
-  if (Array.isArray(value)) {
-    const effects = value.flatMap(effect => {
-      const copied = copySafePrimitiveObject(effect)
-      return copied ? [copied] : []
-    })
-    return effects.length > 0 ? effects : undefined
-  }
-  return copySafePrimitiveObject(value)
+  const result = sanitizeTraversableValue(value, {
+    maxDepth: 1,
+    dropUndefinedLeaves: true,
+    sentinel: undefined,
+    transformLeaf: (val: unknown) => {
+      if (
+        typeof val === 'string' ||
+        typeof val === 'boolean' ||
+        val === null ||
+        isFiniteNumber(val)
+      ) {
+        return val
+      }
+      return undefined
+    }
+  })
+  if (Array.isArray(result) && result.length === 0) return undefined
+  return result as never
 }
 
 /**
@@ -316,22 +336,22 @@ const copySafeFlatObject = (
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null
   }
-  const source = value as Record<string, unknown>
-  const copied: Record<string, string | number | boolean | null> = {}
-  for (const key in source) {
-    if (!Object.hasOwn(source, key)) continue
-    if (isForbiddenKey(key)) continue
-    const entry = source[key]
-    if (
-      typeof entry === 'string' ||
-      isFiniteNumber(entry) ||
-      typeof entry === 'boolean' ||
-      entry === null
-    ) {
-      copied[key] = entry
+  return sanitizeTraversableValue(value, {
+    maxDepth: 1,
+    dropUndefinedLeaves: true,
+    sentinel: null,
+    transformLeaf: (val: unknown) => {
+      if (
+        typeof val === 'string' ||
+        typeof val === 'boolean' ||
+        val === null ||
+        isFiniteNumber(val)
+      ) {
+        return val
+      }
+      return undefined
     }
-  }
-  return !isEmptyObject(copied) ? copied : null
+  }) as never
 }
 
 /**
@@ -339,6 +359,23 @@ const copySafeFlatObject = (
  * Validates required fields per effect type and ensures finite numeric values.
  * Returns safe-copied primitives for the effect if valid, null otherwise.
  */
+const VALIDATE_EFFECT_REQUIREMENTS: Record<
+  string,
+  (effect: Record<string, unknown>) => boolean
+> = {
+  inventory_add: effectObj => {
+    if (typeof effectObj.item !== 'string') return false
+    const value =
+      typeof effectObj.value === 'number' ? effectObj.value : undefined
+    return value !== undefined && Number.isFinite(value) && value >= 0
+  },
+  inventory_set: effectObj => typeof effectObj.item === 'string',
+  unlock_upgrade: effectObj => typeof effectObj.id === 'string',
+  unlock_hq: effectObj => typeof effectObj.id === 'string',
+  stat_modifier: effectObj => typeof effectObj.key === 'string',
+  passive: effectObj => typeof effectObj.key === 'string'
+}
+
 const validateLoadedEffect = (
   effect: unknown
 ): Record<string, unknown> | null => {
@@ -347,25 +384,8 @@ const validateLoadedEffect = (
   const effectObj = effect as Record<string, unknown>
   const typeStr = typeof effectObj.type === 'string' ? effectObj.type : ''
 
-  if (typeStr === 'inventory_add') {
-    // Must have string item and finite non-negative numeric value
-    if (typeof effectObj.item !== 'string') return null
-    const value =
-      typeof effectObj.value === 'number' ? effectObj.value : undefined
-    if (value === undefined || !Number.isFinite(value) || value < 0) return null
-  } else if (typeStr === 'inventory_set') {
-    // Must have string item
-    if (typeof effectObj.item !== 'string') return null
-  } else if (typeStr === 'unlock_upgrade' || typeStr === 'unlock_hq') {
-    // Must have string id
-    if (typeof effectObj.id !== 'string') return null
-  } else if (typeStr === 'stat_modifier' || typeStr === 'passive') {
-    // Must have string key
-    if (typeof effectObj.key !== 'string') return null
-  } else {
-    // Unknown effect type — reject to avoid corrupted state
-    return null
-  }
+  const validator = VALIDATE_EFFECT_REQUIREMENTS[typeStr]
+  if (!validator || !validator(effectObj)) return null
 
   // Copy safe primitives and return
   return copySafeFlatObject(effectObj)

@@ -326,7 +326,11 @@ export const upgradeChassisTier = (
 ): UpgradeChassisTierAction | null => {
   const asset = selectAssetsMap(state).get(assetId)
   if (!asset) {
-    if (import.meta.env.DEV) {
+    if (
+      typeof import.meta !== 'undefined' &&
+      import.meta.env &&
+      import.meta.env.DEV
+    ) {
       logger.error(
         'AssetActionCreators',
         `Attempted to create UPGRADE_CHASSIS_TIER action for non-existent asset ${assetId}.`

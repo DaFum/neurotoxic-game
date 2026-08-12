@@ -162,6 +162,9 @@ type TraversalOptions = {
     sanitize: (value: unknown) => unknown
   ) => unknown
   onCircular?: () => unknown
+  maxDepth?: number
+  dropUndefinedLeaves?: boolean
+  sentinel?: unknown
 }
 
 /**
@@ -223,8 +226,13 @@ export const isPlainOrNullPrototypeRecord = (
 export const sanitizeTraversableValue = (
   value: unknown,
   options: TraversalOptions = {},
-  visited: WeakSet<object> = new WeakSet()
+  visited: WeakSet<object> = new WeakSet(),
+  depth = 0
 ): unknown => {
+  if (options.maxDepth !== undefined && depth > options.maxDepth) {
+    return options.sentinel
+  }
+
   const onCircular = options.onCircular ?? (() => '[REDACTED]')
   const createObject =
     options.createObject ??
@@ -239,10 +247,43 @@ export const sanitizeTraversableValue = (
       const len = value.length
       let result = value
       let modified = false
+
+      if (options.dropUndefinedLeaves) {
+        let hasValidItems = false
+        const prunedArray: unknown[] = []
+        for (let i = 0; i < len; i++) {
+          if (Object.hasOwn(value, i)) {
+            const original = value[i]
+            const sanitized = sanitizeTraversableValue(
+              original,
+              options,
+              visited,
+              depth + 1
+            )
+            if (sanitized === undefined) {
+              modified = true
+            } else {
+              hasValidItems = true
+              prunedArray.push(sanitized)
+              if (sanitized !== original) {
+                modified = true
+              }
+            }
+          }
+        }
+        if (!hasValidItems && 'sentinel' in options) return options.sentinel
+        return modified ? prunedArray : value
+      }
+
       for (let i = 0; i < len; i++) {
         if (Object.hasOwn(value, i)) {
           const original = value[i]
-          const sanitized = sanitizeTraversableValue(original, options, visited)
+          const sanitized = sanitizeTraversableValue(
+            original,
+            options,
+            visited,
+            depth + 1
+          )
           if (sanitized !== original) {
             if (!modified) {
               modified = true
@@ -270,16 +311,30 @@ export const sanitizeTraversableValue = (
 
     try {
       const sanitized = createObject()
+      let isEmpty = true
       for (const key in value) {
         if (!Object.hasOwn(value, key)) continue
         if (shouldSkipKey(key)) continue
         const rawValue = value[key]
         const sanitize = (nextValue: unknown) =>
-          sanitizeTraversableValue(nextValue, options, visited)
-        sanitized[key] = options.transformRecordValue
+          sanitizeTraversableValue(nextValue, options, visited, depth + 1)
+
+        const nextVal = options.transformRecordValue
           ? options.transformRecordValue(key, rawValue, sanitize)
           : sanitize(rawValue)
+
+        if (options.dropUndefinedLeaves && nextVal === undefined) {
+          continue
+        }
+
+        sanitized[key] = nextVal
+        isEmpty = false
       }
+
+      if (options.dropUndefinedLeaves && isEmpty && 'sentinel' in options) {
+        return options.sentinel
+      }
+
       return sanitized
     } finally {
       visited.delete(value)
