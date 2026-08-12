@@ -200,23 +200,28 @@ export const toggleNeuroDecimator = (
   payload: { isActive }
 })
 
-const SOCIAL_FIELDS: Record<string, { numeric?: boolean; nullable?: boolean }> =
-  {
-    instagram: { numeric: true },
-    tiktok: { numeric: true },
-    youtube: { numeric: true },
-    newsletter: { numeric: true },
-    viral: { numeric: true },
-    lastGigDay: { numeric: true, nullable: true },
-    lastGigDifficulty: { numeric: true, nullable: true },
-    lastPirateBroadcastDay: { numeric: true, nullable: true },
-    lastDarkWebLeakDay: { numeric: true, nullable: true },
-    lastCultIndoctrinationDay: { numeric: true, nullable: true },
-    controversyLevel: { numeric: true },
-    loyalty: { numeric: true },
-    zealotry: { numeric: true },
-    reputationCooldown: { numeric: true }
-  }
+const SOCIAL_FIELDS = {
+  instagram: { numeric: true },
+  tiktok: { numeric: true },
+  youtube: { numeric: true },
+  newsletter: { numeric: true },
+  viral: { numeric: true },
+  lastGigDay: { numeric: true, nullable: true },
+  lastGigDifficulty: { numeric: true, nullable: true },
+  lastPirateBroadcastDay: { numeric: true, nullable: true },
+  lastDarkWebLeakDay: { numeric: true, nullable: true },
+  lastCultIndoctrinationDay: { numeric: true, nullable: true },
+  controversyLevel: { numeric: true },
+  loyalty: { numeric: true },
+  zealotry: { numeric: true },
+  reputationCooldown: { numeric: true },
+  egoFocus: {},
+  trend: {},
+  activeDeals: {},
+  brandReputation: {},
+  influencers: {},
+  scenePresence: {}
+} as const satisfies Record<keyof SocialState, { numeric?: boolean; nullable?: boolean }>
 
 const sanitizeSocialUpdates = (
   updates: Partial<SocialState> | null | undefined
@@ -226,13 +231,15 @@ const sanitizeSocialUpdates = (
   for (const key in updates) {
     if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
-    const spec = SOCIAL_FIELDS[key]
-    if (spec?.numeric) {
-      if (value === null) {
-        if (spec.nullable) out[key] = null
-        continue
+    if (Object.hasOwn(SOCIAL_FIELDS, key)) {
+      const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as { numeric?: boolean; nullable?: boolean }
+      if (spec?.numeric) {
+        if (value === null) {
+          if (spec.nullable) out[key] = null
+          continue
+        }
+        if (!isFiniteNumber(value)) continue
       }
-      if (!isFiniteNumber(value)) continue
     }
     out[key] = value
   }

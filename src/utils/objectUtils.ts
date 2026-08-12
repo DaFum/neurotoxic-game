@@ -269,6 +269,8 @@ export const sanitizeTraversableValue = (
                 modified = true
               }
             }
+          } else {
+            modified = true
           }
         }
         if (!hasValidItems && 'sentinel' in options) return options.sentinel
