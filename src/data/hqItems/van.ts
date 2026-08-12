@@ -1,3 +1,11 @@
+/**
+ * Defines the catalog of available van upgrades and their corresponding effects.
+ *
+ * @remarks
+ * This array serves as the canonical source for all purchasable van items in the headquarters.
+ * It includes performance upgrades, cosmetic improvements, and survival gear, each with specific
+ * costs and mechanical effects applied to the band, van, or player state.
+ */
 export const van = [
   {
     id: 'hq_van_suspension',
