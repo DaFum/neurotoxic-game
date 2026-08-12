@@ -200,23 +200,29 @@ export const toggleNeuroDecimator = (
   payload: { isActive }
 })
 
-const SOCIAL_FIELDS: Record<string, { numeric?: boolean; nullable?: boolean }> =
-  {
-    instagram: { numeric: true },
-    tiktok: { numeric: true },
-    youtube: { numeric: true },
-    newsletter: { numeric: true },
-    viral: { numeric: true },
-    lastGigDay: { numeric: true, nullable: true },
-    lastGigDifficulty: { numeric: true, nullable: true },
-    lastPirateBroadcastDay: { numeric: true, nullable: true },
-    lastDarkWebLeakDay: { numeric: true, nullable: true },
-    lastCultIndoctrinationDay: { numeric: true, nullable: true },
-    controversyLevel: { numeric: true },
-    loyalty: { numeric: true },
-    zealotry: { numeric: true },
-    reputationCooldown: { numeric: true }
-  }
+const SOCIAL_FIELDS = {
+  instagram: { numeric: true },
+  tiktok: { numeric: true },
+  youtube: { numeric: true },
+  newsletter: { numeric: true },
+  viral: { numeric: true },
+  lastGigDay: { numeric: true, nullable: true },
+  lastGigDifficulty: { numeric: true, nullable: true },
+  lastPirateBroadcastDay: { numeric: true, nullable: true },
+  lastDarkWebLeakDay: { numeric: true, nullable: true },
+  lastCultIndoctrinationDay: { numeric: true, nullable: true },
+  controversyLevel: { numeric: true },
+  loyalty: { numeric: true },
+  zealotry: { numeric: true },
+  reputationCooldown: { numeric: true },
+  egoFocus: {},
+  trend: {},
+  activeDeals: {},
+  brandReputation: {},
+  influencers: {},
+  scenePresence: {},
+  regionalGigHistory: {}
+} as const satisfies Record<keyof SocialState, { numeric?: boolean; nullable?: boolean }>
 
 const sanitizeSocialUpdates = (
   updates: Partial<SocialState> | null | undefined
@@ -226,7 +232,9 @@ const sanitizeSocialUpdates = (
   for (const key in updates) {
     if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
-    const spec = SOCIAL_FIELDS[key]
+    if (!Object.hasOwn(SOCIAL_FIELDS, key)) continue
+
+    const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as { numeric?: boolean; nullable?: boolean }
     if (spec?.numeric) {
       if (value === null) {
         if (spec.nullable) out[key] = null
@@ -340,20 +348,27 @@ export const createSetLastGigStatsAction = (
     }
   }
 
-  const payloadWithToastId: Record<string, unknown> = {
-    ...stats,
+  const safeStats: Record<string, unknown> = {}
+  for (const k in stats) {
+    if (Object.hasOwn(stats, k) && !isForbiddenKey(k)) {
+      safeStats[k] = (stats as Record<string, unknown>)[k]
+    }
+  }
+
+  const payloadWithToastId: PostGigSummary = {
+    ...safeStats,
     toastId: getSafeUUID()
   }
 
   for (const field of STAT_FIELDS) {
-    if (stats[field] !== undefined) {
+    if (Object.hasOwn(stats, field) && stats[field] !== undefined) {
       payloadWithToastId[field] = finiteNumberOr(stats[field], 0)
     }
   }
 
   return {
     type: ActionTypes.SET_LAST_GIG_STATS,
-    payload: payloadWithToastId as never
+    payload: payloadWithToastId
   }
 }
 

@@ -169,24 +169,21 @@ const copySafeEffectPayload = (
   | Record<string, string | number | boolean | null>
   | Array<Record<string, string | number | boolean | null>>
   | undefined => {
-  const result = sanitizeTraversableValue(value, {
-    maxDepth: 1,
-    dropUndefinedLeaves: true,
-    sentinel: undefined,
-    transformLeaf: (val: unknown) => {
-      if (
-        typeof val === 'string' ||
-        typeof val === 'boolean' ||
-        val === null ||
-        isFiniteNumber(val)
-      ) {
-        return val
+  if (!value || typeof value !== 'object') return undefined
+
+  if (Array.isArray(value)) {
+    const sanitizedArray: Array<Record<string, string | number | boolean | null>> = []
+    for (let i = 0; i < value.length; i++) {
+      const el = value[i]
+      if (el && typeof el === 'object' && !Array.isArray(el)) {
+        const sanitizedObj = copySafeFlatObject(el)
+        if (sanitizedObj) sanitizedArray.push(sanitizedObj)
       }
-      return undefined
     }
-  })
-  if (Array.isArray(result) && result.length === 0) return undefined
-  return result as never
+    return sanitizedArray.length > 0 ? sanitizedArray : undefined
+  }
+
+  return copySafeFlatObject(value) || undefined
 }
 
 /**
@@ -336,22 +333,26 @@ const copySafeFlatObject = (
   if (!value || typeof value !== 'object' || Array.isArray(value)) {
     return null
   }
-  return sanitizeTraversableValue(value, {
-    maxDepth: 1,
-    dropUndefinedLeaves: true,
-    sentinel: null,
-    transformLeaf: (val: unknown) => {
-      if (
-        typeof val === 'string' ||
-        typeof val === 'boolean' ||
-        val === null ||
-        isFiniteNumber(val)
-      ) {
-        return val
-      }
-      return undefined
+
+  const result: Record<string, string | number | boolean | null> = {}
+  let hasProperties = false
+
+  for (const key in value) {
+    if (!Object.hasOwn(value, key) || isForbiddenKey(key)) continue
+
+    const val = (value as Record<string, unknown>)[key]
+    if (
+      typeof val === 'string' ||
+      typeof val === 'boolean' ||
+      val === null ||
+      isFiniteNumber(val)
+    ) {
+      result[key] = val
+      hasProperties = true
     }
-  }) as never
+  }
+
+  return hasProperties ? result : null
 }
 
 /**

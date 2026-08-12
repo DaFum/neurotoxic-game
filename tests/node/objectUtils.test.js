@@ -117,3 +117,17 @@ test('sanitizeTraversableValue treats sibling aliases as shared values, not cycl
   assert.deepEqual(result.arrayB, ['shared'])
   assert.equal(result.self, '[REDACTED]')
 })
+
+
+test('sanitizeTraversableValue handles sparse arrays by dropping missing indices', () => {
+  // biome-ignore lint/suspicious/noSparseArray: Intentional sparse array for testing
+  // eslint-disable-next-line no-sparse-arrays
+  const sparseArray = [1, , 3] // index 1 is missing
+  const input = { sparse: sparseArray }
+
+  const result = sanitizeTraversableValue(input, {
+    dropUndefinedLeaves: true
+  })
+
+  assert.deepStrictEqual(result.sparse, [1, 3])
+})
