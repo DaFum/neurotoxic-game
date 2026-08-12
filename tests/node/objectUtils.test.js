@@ -120,7 +120,7 @@ test('sanitizeTraversableValue treats sibling aliases as shared values, not cycl
 
 
 test('sanitizeTraversableValue handles sparse arrays by dropping missing indices', () => {
-  // eslint-disable-next-line no-sparse-arrays
+  // biome-ignore lint/suspicious/noSparseArray: Intentional sparse array for testing
   const sparseArray = [1, , 3] // index 1 is missing
   const input = { sparse: sparseArray }
 

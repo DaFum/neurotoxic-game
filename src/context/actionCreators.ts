@@ -220,7 +220,8 @@ const SOCIAL_FIELDS = {
   activeDeals: {},
   brandReputation: {},
   influencers: {},
-  scenePresence: {}
+  scenePresence: {},
+  regionalGigHistory: {}
 } as const satisfies Record<keyof SocialState, { numeric?: boolean; nullable?: boolean }>
 
 const sanitizeSocialUpdates = (
@@ -231,15 +232,15 @@ const sanitizeSocialUpdates = (
   for (const key in updates) {
     if (!Object.hasOwn(updates, key) || isForbiddenKey(key)) continue
     const value = (updates as Record<string, unknown>)[key]
-    if (Object.hasOwn(SOCIAL_FIELDS, key)) {
-      const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as { numeric?: boolean; nullable?: boolean }
-      if (spec?.numeric) {
-        if (value === null) {
-          if (spec.nullable) out[key] = null
-          continue
-        }
-        if (!isFiniteNumber(value)) continue
+    if (!Object.hasOwn(SOCIAL_FIELDS, key)) continue
+
+    const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as { numeric?: boolean; nullable?: boolean }
+    if (spec?.numeric) {
+      if (value === null) {
+        if (spec.nullable) out[key] = null
+        continue
       }
+      if (!isFiniteNumber(value)) continue
     }
     out[key] = value
   }
@@ -360,7 +361,7 @@ export const createSetLastGigStatsAction = (
   }
 
   for (const field of STAT_FIELDS) {
-    if (stats[field] !== undefined) {
+    if (Object.hasOwn(stats, field) && stats[field] !== undefined) {
       payloadWithToastId[field] = finiteNumberOr(stats[field], 0)
     }
   }

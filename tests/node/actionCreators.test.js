@@ -131,6 +131,37 @@ describe('Action Creators', () => {
       }
     },
     {
+      name: 'createSetLastGigStatsAction excludes inherited statistic fields',
+      call: () => {
+        const stats = {
+          health: 100,
+          overload: -50,
+          failed: true,
+          songStats: [{ songId: 'test', score: 100, accuracy: 1 }],
+          events: ['e1']
+        }
+        // Give it an inherited stat field
+        Object.setPrototypeOf(stats, { score: 9999, accuracy: 2 })
+
+        const action = createSetLastGigStatsAction(stats)
+        const payload = action.payload
+        assert.ok(payload.toastId)
+        delete payload.toastId
+        assert.strictEqual(Object.hasOwn(payload, '__proto__'), false)
+        return action
+      },
+      expected: {
+        type: 'SET_LAST_GIG_STATS',
+        payload: {
+          health: 100,
+          overload: -50,
+          failed: true,
+          songStats: [{ songId: 'test', score: 100, accuracy: 1 }],
+          events: ['e1']
+        }
+      }
+    },
+    {
       name: 'createSetLastGigStatsAction handles null payload correctly',
       call: () => createSetLastGigStatsAction(null),
       expected: {
@@ -694,14 +725,16 @@ describe('Action Creators', () => {
         'lastGigDay', 'lastGigDifficulty', 'lastPirateBroadcastDay',
         'lastDarkWebLeakDay', 'lastCultIndoctrinationDay',
         'controversyLevel', 'loyalty', 'zealotry', 'reputationCooldown',
-        'egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'
+        'egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory'
       ]
 
       const payloadNaN = {}
       const payloadInf = {}
       const payloadZero = {}
       const payloadNull = {}
-      const payloadForbidden = { 'constructor': 1 }
+      const payloadForbidden = Object.create({ inheritedSocialKey: true })
+      payloadForbidden['constructor'] = 1
+      payloadForbidden['someUnknownKey'] = true
       payloadForbidden['__proto__'] = { evil: true }
 
       allFields.forEach(f => {
@@ -713,12 +746,12 @@ describe('Action Creators', () => {
 
       const actionNaN = createUpdateSocialAction(payloadNaN)
       const expectedNaN = {}
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedNaN[f] = Number.NaN })
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedNaN[f] = Number.NaN })
       assert.deepStrictEqual(actionNaN.payload, expectedNaN)
 
       const actionInf = createUpdateSocialAction(payloadInf)
       const expectedInf = {}
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedInf[f] = Number.POSITIVE_INFINITY })
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedInf[f] = Number.POSITIVE_INFINITY })
       assert.deepStrictEqual(actionInf.payload, expectedInf)
 
       const actionZero = createUpdateSocialAction(payloadZero)
@@ -735,7 +768,7 @@ describe('Action Creators', () => {
       nullableFields.forEach(f => {
         expectedNull[f] = null
       })
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence'].forEach(f => { expectedNull[f] = null })
+      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedNull[f] = null })
       assert.deepStrictEqual(actionNull.payload, expectedNull)
 
       const actionForbidden = createUpdateSocialAction(payloadForbidden)

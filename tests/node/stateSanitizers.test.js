@@ -16,6 +16,36 @@ describe('stateSanitizers', () => {
       assert.strictEqual(e2.effects, undefined)
     })
 
+    it('handles direct effects object correctly (retains nulls, rejects NaN/Infinity, strips forbidden keys)', () => {
+      const effectObj = {
+        validStr: 'string',
+        validNum: 42,
+        validNull: null,
+        invalidNaN: Number.NaN,
+        invalidInf: Number.POSITIVE_INFINITY,
+        constructor: 'bad',
+        prototype: 'bad'
+      }
+      Object.defineProperty(effectObj, '__proto__', {
+        value: { evil: true },
+        enumerable: true,
+        writable: true,
+        configurable: true
+      })
+
+      const e = sanitizeActiveEvent({ id: 'test', effects: effectObj })
+
+      assert.strictEqual(Object.hasOwn(e.effects, '__proto__'), false)
+      assert.strictEqual(Object.hasOwn(e.effects, 'constructor'), false)
+      assert.strictEqual(Object.hasOwn(e.effects, 'prototype'), false)
+      assert.strictEqual(Object.hasOwn(e.effects, 'invalidNaN'), false)
+      assert.strictEqual(Object.hasOwn(e.effects, 'invalidInf'), false)
+
+      assert.strictEqual(e.effects.validStr, 'string')
+      assert.strictEqual(e.effects.validNum, 42)
+      assert.strictEqual(e.effects.validNull, null)
+    })
+
     it('handles object entries in effect arrays', () => {
       const input = {
         id: 'test',
