@@ -634,7 +634,10 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       startCrowdfund({ ...base, daysRemaining: 0 }, makeState()),
       expected
     )
-    assert.deepEqual(startCrowdfund({ ...base, fameStake: -10 }, makeState()), expected)
+    assert.deepEqual(
+      startCrowdfund({ ...base, fameStake: -10 }, makeState()),
+      expected
+    )
     // Zero stake stays valid (the UI slider starts at 0).
     assert.notEqual(
       startCrowdfund({ ...base, fameStake: 0 }, makeState()),
