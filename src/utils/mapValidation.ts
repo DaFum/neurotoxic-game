@@ -19,6 +19,9 @@ interface ValidatedMapNode {
   y: number
   status: 'unlocked' | 'completed' | 'locked'
   venue: { id: string; name: string }
+  neighbors?: string[]
+  shopInventory?: import('../types/components').PurchaseItem[]
+  [key: string]: unknown
 }
 
 /**
@@ -32,9 +35,12 @@ interface ValidatedMapConnection {
 /**
  * Generated map that satisfies the structural and diversity contract.
  */
-interface ValidatedMap {
+export interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
+  edges?: Array<{ from: string; to: string }>
+  cityStates?: Record<string, import('../types/game').CityTraitState>
+  [key: string]: unknown
 }
 
 /**

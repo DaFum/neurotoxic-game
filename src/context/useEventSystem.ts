@@ -264,23 +264,20 @@ export function useEventSystem({
         // ⚡ BOLT OPTIMIZATION: Replaced .forEach() and .reduce() with procedural loops to avoid callback-invocation overhead on the event resolution hot path.
         // Why: Eliminates callback-invocation overhead during state materialization.
         // Impact: Speeds up event processing slightly by avoiding function calls per element.
+        let resolvedStateSnapshot = stateRef.current
         for (let i = 0; i < resolution.actions.length; i++) {
           const action = resolution.actions[i]
-          if (action) dispatch(action)
+          if (action) {
+            resolvedStateSnapshot = gameReducer(resolvedStateSnapshot, action)
+            dispatch(action)
+          }
         }
         runSideEffects(resolution.sideEffects, {
           addToast,
           changeScene,
           saveGame,
           tRef,
-          getResolvedState: () => {
-            let state = stateRef.current
-            for (let i = 0; i < resolution.actions.length; i++) {
-              const action = resolution.actions[i]
-              if (action) state = gameReducer(state, action)
-            }
-            return state
-          }
+          getResolvedState: () => resolvedStateSnapshot
         })
         return {
           outcomeText: resolution.outcomeText,

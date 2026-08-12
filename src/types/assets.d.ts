@@ -267,6 +267,31 @@ export type PurchaseFailureReason =
 /**
  * Failure codes for liability refinancing attempts.
  */
+export type UpgradeFailureReason =
+  | 'UNKNOWN_ASSET'
+  | 'MAX_TIER_REACHED'
+  | 'UNKNOWN_CONFIG'
+  | 'INSUFFICIENT_FUNDS'
+
+/**
+ * Failure codes for chassis repair attempts.
+ */
+export type RepairFailureReason =
+  | 'UNKNOWN_ASSET'
+  | 'NO_DAMAGE'
+  | 'INSUFFICIENT_FUNDS'
+
+/**
+ * Failure codes for starting crowdfund campaigns.
+ */
+export type StartCrowdfundFailureReason =
+  | 'INVALID_CONFIG'
+  | 'ACQUISITION_ALREADY_ACTIVE'
+  | 'DEGENERATE_CAMPAIGN'
+
+/**
+ * Failure codes for liability refinancing attempts.
+ */
 export type RefinanceFailureReason =
   | 'UNKNOWN_LIABILITY'
   | 'UNKNOWN_KIND_OR_TIER'

@@ -85,6 +85,10 @@ type UpgradeChassisTierAction = Extract2<
   GameAction,
   typeof ActionTypes.UPGRADE_CHASSIS_TIER
 >
+type UpgradeChassisTierFailedAction = Extract2<
+  GameAction,
+  typeof ActionTypes.UPGRADE_CHASSIS_TIER_FAILED
+>
 type SellChassisAction = Extract2<GameAction, typeof ActionTypes.SELL_CHASSIS>
 type SellChassisFailedAction = Extract2<
   GameAction,
@@ -93,6 +97,10 @@ type SellChassisFailedAction = Extract2<
 type RepairChassisAction = Extract2<
   GameAction,
   typeof ActionTypes.REPAIR_CHASSIS
+>
+type RepairChassisFailedAction = Extract2<
+  GameAction,
+  typeof ActionTypes.REPAIR_CHASSIS_FAILED
 >
 type RefinanceLiabilityAction = Extract2<
   GameAction,
@@ -105,6 +113,10 @@ type RefinanceLiabilityFailedAction = Extract2<
 type StartCrowdfundAction = Extract2<
   GameAction,
   typeof ActionTypes.START_CROWDFUND
+>
+type StartCrowdfundFailedAction = Extract2<
+  GameAction,
+  typeof ActionTypes.START_CROWDFUND_FAILED
 >
 type AssetForeclosedAction = Extract2<
   GameAction,
@@ -323,7 +335,14 @@ export const upgradeChassisTier = (
   assetId: string,
   targetTier: ChassisTier,
   state: GameState
-): UpgradeChassisTierAction | null => {
+): UpgradeChassisTierAction | UpgradeChassisTierFailedAction => {
+  const fail = (
+    reason: import('../types/assets').UpgradeFailureReason
+  ): UpgradeChassisTierFailedAction => ({
+    type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+    payload: { reason }
+  })
+
   const asset = selectAssetsMap(state).get(assetId)
   if (!asset) {
     if (
@@ -336,17 +355,17 @@ export const upgradeChassisTier = (
         `Attempted to create UPGRADE_CHASSIS_TIER action for non-existent asset ${assetId}.`
       )
     }
-    return null
+    return fail('UNKNOWN_ASSET')
   }
-  if (asset.chassisTier >= targetTier) return null
+  if (asset.chassisTier >= targetTier) return fail('MAX_TIER_REACHED')
   const targetCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[targetTier]
-  if (!targetCfg) return null
+  if (!targetCfg) return fail('UNKNOWN_CONFIG')
   const currentCfg =
     CHASSIS_CONFIG[asset.kind]?.[asset.chassisFlavor]?.[asset.chassisTier]
-  if (!currentCfg) return null
+  if (!currentCfg) return fail('UNKNOWN_CONFIG')
   const upgradeCost = calculateChassisUpgradeCost(currentCfg, targetCfg)
-  if (state.player.money < upgradeCost) return null
+  if (state.player.money < upgradeCost) return fail('INSUFFICIENT_FUNDS')
 
   // Count existing chassis-tier slots per slotType (skip dynamically-added
   // slots from modules — those don't belong to the chassis layout). Diff
@@ -434,12 +453,19 @@ export const sellChassis = (
 export const repairChassis = (
   assetId: string,
   state: GameState
-): RepairChassisAction | null => {
+): RepairChassisAction | RepairChassisFailedAction => {
+  const fail = (
+    reason: import('../types/assets').RepairFailureReason
+  ): RepairChassisFailedAction => ({
+    type: ActionTypes.REPAIR_CHASSIS_FAILED,
+    payload: { reason }
+  })
+
   const asset = selectAssetsMap(state).get(assetId)
-  if (!asset) return null
+  if (!asset) return fail('UNKNOWN_ASSET')
   const repairCost = calculateChassisRepairCost(asset.condition)
-  if (repairCost <= 0) return null
-  if (state.player.money < repairCost) return null
+  if (repairCost <= 0) return fail('NO_DAMAGE')
+  if (state.player.money < repairCost) return fail('INSUFFICIENT_FUNDS')
   return {
     type: ActionTypes.REPAIR_CHASSIS,
     payload: { assetId }
@@ -534,16 +560,23 @@ export interface StartCrowdfundInput {
 export const startCrowdfund = (
   raw: StartCrowdfundInput,
   state: Pick<GameState, 'assets' | 'crowdfundCampaigns'>
-): StartCrowdfundAction | null => {
+): StartCrowdfundAction | StartCrowdfundFailedAction => {
+  const fail = (
+    reason: import('../types/assets').StartCrowdfundFailureReason
+  ): StartCrowdfundFailedAction => ({
+    type: ActionTypes.START_CROWDFUND_FAILED,
+    payload: { reason }
+  })
+
   if (
     !VALID_ASSET_KINDS.has(raw.kind) ||
     !VALID_ASSET_FLAVORS.has(raw.flavor) ||
     !VALID_ASSET_TIERS.has(raw.tier)
   ) {
-    return null
+    return fail('INVALID_CONFIG')
   }
   if (!state || hasActiveAssetAcquisition(state, raw.kind)) {
-    return null
+    return fail('ACQUISITION_ALREADY_ACTIVE')
   }
   // Reject degenerate campaigns: a non-positive target or duration would
   // resolve immediately or invert payout math, and a negative fame stake
@@ -552,7 +585,7 @@ export const startCrowdfund = (
   const fameStake = finiteNumberOr(raw.fameStake, 0)
   const daysRemaining = finiteNumberOr(raw.daysRemaining, 0)
   if (targetAmount <= 0 || daysRemaining <= 0 || fameStake < 0) {
-    return null
+    return fail('DEGENERATE_CAMPAIGN')
   }
   // Pre-generate the materialized-asset ids here so processCrowdfundTick
   // stays pure (reducer-purity invariant). The number of slot ids matches

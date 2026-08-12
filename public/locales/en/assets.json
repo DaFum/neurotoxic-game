@@ -297,5 +297,15 @@
   "refinanceFailed.loan_profile_ineligible": "You don't meet the requirements for this loan profile.",
   "refinanceFailed.insufficient_funds": "Not enough money.",
   "refinanceFailed.loan_in_default": "Loan is already in default.",
-  "purchaseFailed.unknown_flavor": "Unknown asset style."
+  "purchaseFailed.unknown_flavor": "Unknown asset style.",
+  "upgradeFailed.unknown_asset": "Unknown asset.",
+  "upgradeFailed.max_tier_reached": "Asset is already at maximum tier.",
+  "upgradeFailed.unknown_config": "Asset configuration not available.",
+  "upgradeFailed.insufficient_funds": "Not enough money.",
+  "repairFailed.unknown_asset": "Unknown asset.",
+  "repairFailed.no_damage": "Asset is not damaged.",
+  "repairFailed.insufficient_funds": "Not enough money.",
+  "startCrowdfundFailed.invalid_config": "Asset configuration not available.",
+  "startCrowdfundFailed.acquisition_already_active": "This section already has an asset or active campaign.",
+  "startCrowdfundFailed.degenerate_campaign": "Campaign configuration is invalid."
 }

@@ -13,7 +13,7 @@ import type { GameMap } from '../types'
 export const loadFallbackMap = (): GameMap | null => {
   const result = validateFallbackMap()
   if (!result.success) return null
-  return fallbackMapData as unknown as GameMap
+  return result.data
 }
 
 /**
