@@ -209,3 +209,7 @@
 ## 2026-08-07 - Reduce Object.entries overhead in reducers
 **Learning:** The state reducers contained `Object.entries()` over large dictionaries inside hot loops, triggering unneeded tuple allocations that cause GC jitter during game ticks.
 **Action:** Replaced `Object.entries()` in hot reducers (`systemReducer`, `bandReducer`, etc) with direct `for...in` procedural loops alongside `Object.hasOwn()` without using IIFEs or declarative callbacks, reducing closure creation while keeping the syntax clean.
+
+## 2026-08-12 - Early returns vs full iteration in filter lengths
+**Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
+**Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
