@@ -150,6 +150,7 @@ const EventOutcomeView = ({
       type='button'
       disabled={isResolved}
       onClick={handleContinue}
+      aria-label={t('ui:continue', { defaultValue: 'CONTINUE' })}
       className='w-full p-3 border border-toxic-green bg-toxic-green/20 hover:bg-toxic-green hover:text-void-black text-toxic-green font-bold tracking-widest uppercase transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-toxic-green/20 disabled:hover:text-toxic-green'
     >
       [ {t('ui:continue', { defaultValue: 'CONTINUE' })} ]

@@ -189,3 +189,8 @@
 
 **Learning:** Interactive components in the assets hub (like "Acquire", "Repair", "Upgrade" buttons) were missing explicit focus rings, reducing keyboard accessibility for users. Additionally, because the assets hub uses dynamic `--section-accent` variables for styling, hardcoding focus ring colors (like `ring-toxic-green`) breaks visual consistency.
 **Action:** When adding focus rings to dynamically themed sections, always use Tailwind's arbitrary values with the CSS variable and a fallback: `focus-visible:ring-[var(--section-accent,var(--color-toxic-green))]` alongside `focus-visible:outline-none` and appropriate offsets to maintain both accessibility and theme consistency.
+
+## 2026-08-12 - Ensure structural buttons always carry ARIA labels
+
+**Learning:** In a highly stylized, brutalist design system where close/leave actions are frequently represented by minimalist text elements ("LEAVE [ESC]") or plain SVGs without context-carrying parents, accessible screen reader descriptions are critical to maintain structure. The `ActionButton` and `GlitchButton` components pass down `aria-*` traits well, but custom inline UI shells like modals often forget them.
+**Action:** When implementing custom structural shells, always provide explicit `aria-label` properties using localized translations (e.g., `t('ui:action_close')`, `t('ui:hq.leave')`) for Close/Continue/Leave controls.

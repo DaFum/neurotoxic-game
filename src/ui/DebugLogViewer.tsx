@@ -92,6 +92,9 @@ const DebugLogViewerContent = ({
                   console.info(logger.logs)
                 }
               }}
+              aria-label={t('ui:action_dump_logs', {
+                defaultValue: 'DUMP TO CONSOLE'
+              })}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               DUMP TO CONSOLE
@@ -109,6 +112,9 @@ const DebugLogViewerContent = ({
                     logger.error('DebugLogViewer', 'Failed to copy logs', e)
                   )
               }}
+              aria-label={t('ui:action_copy_logs', {
+                defaultValue: 'COPY LOGS'
+              })}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               COPY LOGS
@@ -118,6 +124,7 @@ const DebugLogViewerContent = ({
               onClick={() => {
                 logger.clear()
               }}
+              aria-label={t('ui:action_clear')}
               className='text-ash-gray hover:text-star-white hover:bg-void-black px-2 border-2 border-ash-gray uppercase shadow-[4px_4px_0px_var(--color-ash-gray)] transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ash-gray focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               {t('ui:action_clear')}
