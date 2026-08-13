@@ -2,6 +2,8 @@
   "action_cancel": "CANCEL",
   "action_clear": "CLEAR",
   "action_close": "CLOSE",
+  "action_copy_logs": "COPY LOGS",
+  "action_dump_logs": "DUMP LOGS",
   "aria.shortcutsHelp": "Toggle keyboard shortcuts help",
   "aria.shortcutsPanel": "Keyboard Shortcuts Panel",
   "aria.toggleMuteSystem": "Toggle mute system",

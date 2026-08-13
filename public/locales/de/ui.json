@@ -2,6 +2,8 @@
   "action_cancel": "ABBRECHEN",
   "action_clear": "LEEREN",
   "action_close": "SCHLIESSEN",
+  "action_copy_logs": "PROTOKOLLE KOPIEREN",
+  "action_dump_logs": "PROTOKOLLE EXPORTIEREN",
   "aria.shortcutsHelp": "Tastenkürzel-Hilfe umschalten",
   "aria.shortcutsPanel": "Tastenkürzel Panel",
   "aria.toggleMuteSystem": "Systemton umschalten",
