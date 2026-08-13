@@ -2179,7 +2179,7 @@ const maybeInvestInAssets = (state, rng, counters, observeLoss = () => {}) => {
         },
         state
       )
-      if (action) {
+      if (action && action.type !== 'START_CROWDFUND_FAILED') {
         Object.assign(state, handleStartCrowdfund(state, action.payload))
         counters.crowdfundsStarted += 1
       }
@@ -2192,7 +2192,7 @@ const maybeInvestInAssets = (state, rng, counters, observeLoss = () => {}) => {
     if (asset.condition < 60 && rng() < 0.6) {
       const moneyBefore = state.player.money
       const action = repairChassis(asset.id, state)
-      if (action) {
+      if (action && action.type !== 'REPAIR_CHASSIS_FAILED') {
         Object.assign(state, handleRepairChassis(state, action.payload))
         counters.repairSpend += Math.max(0, moneyBefore - state.player.money)
         observeLoss('maintenance_repairs', moneyBefore, state.player.money)
