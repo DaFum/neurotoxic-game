@@ -126,7 +126,11 @@ export const HUD = memo(() => {
                   : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
               }`}
             >
-              <Skull size={14} className='inline mr-2' />
+              <Skull
+                size={14}
+                className='inline mr-2'
+                aria-hidden='true'
+              />
               <span className='font-black uppercase tracking-wider text-xs'>
                 {neuroDecimatorActive
                   ? t('ui:hud.decimatorActive', {
@@ -151,7 +155,11 @@ export const HUD = memo(() => {
               tabIndex={0}
               className='bg-void-black text-toxic-green border-2 border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] px-3 py-1.5 flex items-center gap-2 animate-pulse mb-2 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-void-black focus-visible:ring-toxic-green'
             >
-              <Skull size={14} className='text-toxic-green' />
+              <Skull
+                size={14}
+                className='text-toxic-green'
+                aria-hidden='true'
+              />
               <span className='font-black uppercase tracking-wider text-xs'>
                 {t('ui:hud.neurotoxicActive', {
                   defaultValue: 'NEUROTOXIC ACTIVE'
