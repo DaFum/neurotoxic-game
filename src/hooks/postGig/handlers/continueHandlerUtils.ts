@@ -82,11 +82,11 @@ export function buildStoryFlagQuests(params: {
     if (activeStoryFlags.includes(flag)) {
       if (questId === QUEST_EGO_MANAGEMENT) {
         const def = getQuestDefinition(questId)
-        const seededProgress =
-          def?.progressSource === 'harmony_recovered'
-            ? (postPenaltyHarmony ??
-              clampBandHarmony(finiteNumberOr(bandHarmony, 80)))
-            : 0
+        let seededProgress = 0
+        if (def?.progressSource === 'harmony_recovered') {
+          const fallbackHarmony = clampBandHarmony(finiteNumberOr(bandHarmony, 80))
+          seededProgress = clampBandHarmony(finiteNumberOr(postPenaltyHarmony, fallbackHarmony))
+        }
         pushQuest(questId, seededProgress)
       } else {
         pushQuest(questId, 0)

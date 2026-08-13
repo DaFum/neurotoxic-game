@@ -333,7 +333,7 @@ export const usePreGigHandlers = ({
         startRoadieMinigame,
         startKabelsalatMinigame,
         startAmpCalibration
-      } as UsePreGigHandlersProps)
+      })
     } catch (err) {
       isStartingRef.current = false
       setIsStarting(false)
