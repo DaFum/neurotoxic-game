@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, memo } from 'react'
 import type { ContrabandStashItem, UnknownRecord } from '../types'
 import { Modal, Panel, AnimatedDivider, ActionButton } from './shared/index.tsx'
 import { GeneratedImagePanel } from './shared/GeneratedImagePanel.tsx'
@@ -160,80 +160,83 @@ const StashCardDetails = ({ item, t }: StashCardSubComponentProps) => {
 
 interface StashCardActionsProps extends StashCardSubComponentProps {
   selectedMember?: string | null
-  onUseItem: () => void
+  onUseItem: (instanceId: string, item: DisplayStashItem) => void
 }
 
-const StashCardActions = ({
-  item,
-  selectedMember,
-  onUseItem,
-  t
-}: StashCardActionsProps) => {
-  const requiresTarget =
-    item.effectType === 'stamina' || item.effectType === 'mood'
+const StashCardActions = memo(
+  ({ item, selectedMember, onUseItem, t }: StashCardActionsProps) => {
+    const requiresTarget =
+      item.effectType === 'stamina' || item.effectType === 'mood'
 
-  return (
-    <div className='mt-auto'>
-      {requiresTarget &&
-      !selectedMember &&
-      !item.applied &&
-      item.type === 'consumable' ? (
-        <p className='text-error-red text-xs mb-2 italic'>
-          {t('ui:contraband.requiresTarget', {
-            defaultValue: 'Requires target member.'
-          })}
-        </p>
-      ) : null}
+    const handleUse = useCallback(() => {
+      onUseItem(item.instanceId ?? item.id, item)
+    }, [item, onUseItem])
 
-      {item.applied ? (
-        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-          {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
-        </div>
-      ) : item.type === 'consumable' || !item.applyOnAdd ? (
-        <ActionButton
-          onClick={onUseItem}
-          disabled={requiresTarget && !selectedMember}
-          variant='primary'
-          className='w-full text-sm font-bold'
-        >
-          {item.type === 'consumable'
-            ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
-            : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
-        </ActionButton>
-      ) : (
-        <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
-          {t('ui:contraband.passiveActive', {
-            defaultValue: 'PASSIVE EFFECT ACTIVE'
-          })}
-        </div>
-      )}
-    </div>
-  )
-}
+    return (
+      <div className='mt-auto'>
+        {requiresTarget &&
+        !selectedMember &&
+        !item.applied &&
+        item.type === 'consumable' ? (
+          <p className='text-error-red text-xs mb-2 italic'>
+            {t('ui:contraband.requiresTarget', {
+              defaultValue: 'Requires target member.'
+            })}
+          </p>
+        ) : null}
+
+        {item.applied ? (
+          <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+            {t('ui:contraband.applied', { defaultValue: 'APPLIED' })}
+          </div>
+        ) : item.type === 'consumable' || !item.applyOnAdd ? (
+          <ActionButton
+            onClick={handleUse}
+            disabled={requiresTarget && !selectedMember}
+            variant='primary'
+            className='w-full text-sm font-bold'
+          >
+            {item.type === 'consumable'
+              ? t('ui:contraband.useItem', { defaultValue: 'USE ITEM' })
+              : t('ui:contraband.applyItem', { defaultValue: 'APPLY EFFECT' })}
+          </ActionButton>
+        ) : (
+          <div className='w-full text-center text-xs text-electric-blue border border-electric-blue-20 py-2 bg-electric-blue-10'>
+            {t('ui:contraband.passiveActive', {
+              defaultValue: 'PASSIVE EFFECT ACTIVE'
+            })}
+          </div>
+        )}
+      </div>
+    )
+  }
+)
 
 interface StashCardProps {
   item: DisplayStashItem
   selectedMember?: string | null
-  onUseItem: () => void
+  onUseItem: (instanceId: string, item: DisplayStashItem) => void
   t: ReturnType<typeof useTranslation>['t']
 }
 
-const StashCard = ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
-  return (
-    <div className='bg-void-black flex flex-col justify-between border border-toxic-green p-4'>
-      <div>
-        <StashCardHeader item={item} t={t} />
-        <StashCardDetails item={item} t={t} />
+const StashCard = memo(
+  ({ item, selectedMember, onUseItem, t }: StashCardProps) => {
+    return (
+      <div className='bg-void-black flex flex-col justify-between border border-toxic-green p-4'>
+        <div>
+          <StashCardHeader item={item} t={t} />
+          <StashCardDetails item={item} t={t} />
+        </div>
+        <StashCardActions
+          item={item}
+          selectedMember={selectedMember}
+          onUseItem={onUseItem}
+          t={t}
+        />
       </div>
-      <StashCardActions
-        item={item}
-        selectedMember={selectedMember}
-        onUseItem={onUseItem}
-        t={t}
-      />
-    </div>
-  )
-}
+    )
+  }
+)
 
 /**
  * Displays usable contraband stacks and item actions.
@@ -249,17 +252,6 @@ export const ContrabandStash = ({
 }: ContrabandStashProps) => {
   const { t } = useTranslation(['ui', 'items'])
 
-  const makeSelectMember = useCallback(
-    (id: string) => () => setSelectedMember?.(id),
-    [setSelectedMember]
-  )
-
-  const makeUseItem = useCallback(
-    (instanceId: string, item: DisplayStashItem) => () =>
-      handleUseItem?.(instanceId, item),
-    [handleUseItem]
-  )
-
   const renderedStashCards = useMemo(() => {
     if (!Array.isArray(stash)) return []
     const cards = []
@@ -271,14 +263,14 @@ export const ContrabandStash = ({
             key={item.instanceId ?? `migrated-${item.id}`}
             item={item}
             selectedMember={selectedMember}
-            onUseItem={makeUseItem(item.instanceId ?? item.id, item)}
+            onUseItem={handleUseItem!}
             t={t}
           />
         )
       }
     }
     return cards
-  }, [stash, selectedMember, makeUseItem, t])
+  }, [stash, selectedMember, handleUseItem, t])
 
   if (
     !Array.isArray(stash) ||
@@ -325,7 +317,7 @@ export const ContrabandStash = ({
                   key={m.id}
                   type='button'
                   aria-pressed={selectedMember === m.id}
-                  onClick={makeSelectMember(m.id)}
+                  onClick={() => setSelectedMember?.(m.id)}
                   className={`px-4 py-2 border font-mono text-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green ${
                     selectedMember === m.id
                       ? 'border-toxic-green bg-toxic-green-20 text-star-white'

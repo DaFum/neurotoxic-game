@@ -280,14 +280,29 @@ describe('PixiStageController', () => {
   })
 
   test('constructor initializes properties correctly', () => {
-    assert.equal(controller.colorMatrix, null)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix
+        : null,
+      null
+    )
     assert.equal(controller.stageContainer, null)
     assert.equal(controller.crowdManager, null)
     assert.equal(controller.laneManager, null)
     assert.equal(controller.effectManager, null)
     assert.equal(controller.noteManager, null)
-    assert.equal(controller.toxicFilters, null)
-    assert.equal(controller.isToxicActive, false)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.toxicFilters
+        : null,
+      null
+    )
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.isToxicActive
+        : false,
+      false
+    )
   })
 
   test('manualUpdate calls handleTicker with deltaMS', async () => {
@@ -372,7 +387,10 @@ describe('PixiStageController', () => {
       label: 'activates filters',
       initialMode: true,
       expectedActive: true,
-      expectedFilters: () => controller.toxicFilters
+      expectedFilters: () =>
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.toxicFilters
+          : null
     },
     {
       label: 'deactivates filters',
@@ -396,7 +414,12 @@ describe('PixiStageController', () => {
         controller.handleTicker(ticker)
       }
 
-      assert.equal(controller.isToxicActive, variant.expectedActive)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.isToxicActive
+          : false,
+        variant.expectedActive
+      )
       assert.equal(controller.stageContainer.filters, variant.expectedFilters())
     })
   })
@@ -409,19 +432,36 @@ describe('PixiStageController', () => {
     controller.handleTicker(ticker)
 
     // The hue method should be called (note: our mock doesn't track calls, but we can verify logic)
-    assert.equal(controller.isToxicActive, true)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.isToxicActive
+        : false,
+      true
+    )
   })
 
   test('dispose cleans up filters and container properly', async () => {
     await controller.init()
     const _stageContainer = controller.stageContainer
-    const _colorMatrix = controller.colorMatrix
+    const _colorMatrix = controller.toxicFilterManager
+      ? controller.toxicFilterManager.colorMatrix
+      : null
 
     controller.dispose()
 
     assert.equal(controller.stageContainer, null)
-    assert.equal(controller.colorMatrix, null)
-    assert.equal(controller.toxicFilters, null)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix
+        : null,
+      null
+    )
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.toxicFilters
+        : null,
+      null
+    )
   })
 
   test('dispose handles null stageContainer gracefully', async () => {
@@ -435,16 +475,27 @@ describe('PixiStageController', () => {
 
   test('dispose handles null colorMatrix gracefully', async () => {
     await controller.init()
-    controller.colorMatrix = null
+    if (controller.toxicFilterManager)
+      controller.toxicFilterManager.colorMatrix = null
 
     // Should not throw
     controller.dispose()
-    assert.equal(controller.colorMatrix, null)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix
+        : null,
+      null
+    )
   })
 
   test('setup initializes isToxicActive to false', async () => {
     await controller.init()
-    assert.equal(controller.isToxicActive, false)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.isToxicActive
+        : false,
+      false
+    )
   })
 
   test('setup loads assets in parallel', async () => {
@@ -511,7 +562,8 @@ describe('PixiStageController', () => {
 
   test('toxic mode does not apply filters if colorMatrix is null', async () => {
     await controller.init()
-    controller.colorMatrix = null
+    if (controller.toxicFilterManager)
+      controller.toxicFilterManager.colorMatrix = null
     gameStateRef.current.isToxicMode = true
 
     const ticker = { deltaMS: 16 }
@@ -519,12 +571,18 @@ describe('PixiStageController', () => {
     controller.handleTicker(ticker)
 
     // isToxicActive should still be set
-    assert.equal(controller.isToxicActive, true)
+    assert.equal(
+      controller.toxicFilterManager
+        ? controller.toxicFilterManager.isToxicActive
+        : false,
+      true
+    )
   })
 
   test('update handles missing toxicFilters gracefully', async () => {
     await controller.init()
-    controller.toxicFilters = null
+    if (controller.toxicFilterManager)
+      controller.toxicFilterManager.toxicFilters = null
 
     const ticker = { deltaMS: 16 }
     // Should not crash due to guard clause
@@ -566,67 +624,110 @@ describe('PixiStageController', () => {
 
       controller.handleTicker({ deltaMS: 16 })
 
-      assert.equal(controller.isToxicActive, true)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.isToxicActive
+          : false,
+        true
+      )
     })
 
     test('deactivates toxic filters when isToxicMode is false', async () => {
       await controller.init()
       gameStateRef.current.isToxicMode = true
       controller.handleTicker({ deltaMS: 16 })
-      assert.equal(controller.isToxicActive, true)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.isToxicActive
+          : false,
+        true
+      )
 
       gameStateRef.current.isToxicMode = false
       controller.handleTicker({ deltaMS: 16 })
 
-      assert.equal(controller.isToxicActive, false)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.isToxicActive
+          : false,
+        false
+      )
     })
 
     test('applies hue transformation in toxic mode', async () => {
       await controller.init()
       gameStateRef.current.isToxicMode = true
 
-      const hueMethod = controller.colorMatrix.hue
-      controller.colorMatrix.hue = mock.fn()
+      const hueMethod = controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix.hue
+        : null
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix.hue = mock.fn()
 
       controller.handleTicker({ deltaMS: 16 })
 
-      assert.ok(controller.colorMatrix.hue.mock.calls.length > 0)
-      const [hueValue, multiply] =
-        controller.colorMatrix.hue.mock.calls[0].arguments
+      assert.ok(
+        (controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix.hue
+          : null
+        ).mock.calls.length > 0
+      )
+      const [hueValue, multiply] = (
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix.hue
+          : null
+      ).mock.calls[0].arguments
       assert.equal(typeof hueValue, 'number')
       assert.equal(multiply, false)
 
-      controller.colorMatrix.hue = hueMethod
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix.hue = hueMethod
     })
 
     test('applies contrast transformation in toxic mode', async () => {
       await controller.init()
       gameStateRef.current.isToxicMode = true
 
-      const contrastMethod = controller.colorMatrix.contrast
-      controller.colorMatrix.contrast = mock.fn()
+      const contrastMethod = controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix.contrast
+        : null
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix.contrast = mock.fn()
 
       controller.handleTicker({ deltaMS: 16 })
 
-      assert.ok(controller.colorMatrix.contrast.mock.calls.length > 0)
-      const [contrastValue, multiply] =
-        controller.colorMatrix.contrast.mock.calls[0].arguments
+      assert.ok(
+        (controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix.contrast
+          : null
+        ).mock.calls.length > 0
+      )
+      const [contrastValue, multiply] = (
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix.contrast
+          : null
+      ).mock.calls[0].arguments
       assert.equal(contrastValue, 1.5)
       assert.equal(multiply, true)
 
-      controller.colorMatrix.contrast = contrastMethod
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix.contrast = contrastMethod
     })
 
     test('does not apply hue when colorMatrix is null', async () => {
       await controller.init()
-      const originalMatrix = controller.colorMatrix
-      controller.colorMatrix = null
+      const originalMatrix = controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix
+        : null
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix = null
       gameStateRef.current.isToxicMode = true
 
       controller.handleTicker({ deltaMS: 16 })
       // Should not throw
 
-      controller.colorMatrix = originalMatrix
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.colorMatrix = originalMatrix
     })
   })
 
@@ -669,7 +770,8 @@ describe('PixiStageController', () => {
 
     test('does not update when toxicFilters is null', async () => {
       await controller.init()
-      controller.toxicFilters = null
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.toxicFilters = null
 
       controller.handleTicker({ deltaMS: 16 })
 
@@ -690,21 +792,33 @@ describe('PixiStageController', () => {
 
     test('destroys colorMatrix filter', async () => {
       await controller.init()
-      const colorMatrix = controller.colorMatrix
+      const colorMatrix = controller.toxicFilterManager
+        ? controller.toxicFilterManager.colorMatrix
+        : null
       const destroySpy = mock.fn()
       colorMatrix.destroy = destroySpy
 
       controller.dispose()
 
       assert.equal(destroySpy.mock.calls.length, 1)
-      assert.equal(controller.colorMatrix, null)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix
+          : null,
+        null
+      )
     })
 
     test('clears filter arrays', async () => {
       await controller.init()
       controller.dispose()
 
-      assert.equal(controller.toxicFilters, null)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.toxicFilters
+          : null,
+        null
+      )
     })
 
     test('handles dispose when managers are null', async () => {
@@ -743,18 +857,43 @@ describe('PixiStageController', () => {
     })
 
     test('sets isToxicActive to false on setup', async () => {
-      controller.isToxicActive = true
+      if (controller.toxicFilterManager)
+        controller.toxicFilterManager.isToxicActive = true
       await controller.init()
 
-      assert.equal(controller.isToxicActive, false)
+      assert.equal(
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.isToxicActive
+          : false,
+        false
+      )
     })
 
     test('initializes toxicFilters with colorMatrix', async () => {
       await controller.init()
 
-      assert.ok(Array.isArray(controller.toxicFilters))
-      assert.equal(controller.toxicFilters.length, 2)
-      assert.equal(controller.toxicFilters[0], controller.colorMatrix)
+      assert.ok(
+        Array.isArray(
+          controller.toxicFilterManager
+            ? controller.toxicFilterManager.toxicFilters
+            : null
+        )
+      )
+      assert.equal(
+        (controller.toxicFilterManager
+          ? controller.toxicFilterManager.toxicFilters
+          : null
+        ).length,
+        2
+      )
+      assert.equal(
+        (controller.toxicFilterManager
+          ? controller.toxicFilterManager.toxicFilters
+          : null)[0],
+        controller.toxicFilterManager
+          ? controller.toxicFilterManager.colorMatrix
+          : null
+      )
     })
 
     test('does not initialize managers if disposed during setup', async () => {
