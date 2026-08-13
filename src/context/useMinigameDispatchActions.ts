@@ -37,12 +37,12 @@ export type MinigameDispatchActions = Pick<
 export function useMinigameDispatchActions(
   dispatch: Dispatch<GameAction>
 ): MinigameDispatchActions {
+  const dispatchInTransition = (action: GameAction) => startTransition(() => dispatch(action))
+
   return useMemo(
     () => ({
       startTravelMinigame: payload =>
-        startTransition(() =>
-          dispatch(createStartTravelMinigameAction(payload))
-        ),
+        dispatchInTransition(createStartTravelMinigameAction(payload)),
       completeTravelMinigame: (damageTaken, itemsCollected) =>
         dispatch(
           createCompleteTravelMinigameAction(
@@ -52,9 +52,7 @@ export function useMinigameDispatchActions(
           )
         ),
       startRoadieMinigame: payload =>
-        startTransition(() =>
-          dispatch(createStartRoadieMinigameAction(payload))
-        ),
+        dispatchInTransition(createStartRoadieMinigameAction(payload)),
       completeRoadieMinigame: (
         equipmentDamage,
         contrabandDelivered,
@@ -68,15 +66,11 @@ export function useMinigameDispatchActions(
           )
         ),
       startKabelsalatMinigame: payload =>
-        startTransition(() =>
-          dispatch(createStartKabelsalatMinigameAction(payload))
-        ),
+        dispatchInTransition(createStartKabelsalatMinigameAction(payload)),
       completeKabelsalatMinigame: payload =>
         dispatch(createCompleteKabelsalatMinigameAction(payload)),
       startAmpCalibration: payload =>
-        startTransition(() =>
-          dispatch(createStartAmpCalibrationAction(payload))
-        ),
+        dispatchInTransition(createStartAmpCalibrationAction(payload)),
       completeAmpCalibration: (
         score,
         voidResonance = 0,

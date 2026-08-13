@@ -84,7 +84,6 @@ export function useContinueHandler({
       if (financials.soldMerch) {
         const soldMerch = financials.soldMerch
         updateBand((prevBand: BandState) => ({
-          ...prevBand,
           inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
         }))
       }
