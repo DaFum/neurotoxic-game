@@ -502,7 +502,10 @@ describe('upgradeChassisTier', () => {
       1,
       makeState({ assets: [asset] })
     )
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+      payload: { reason: 'MAX_TIER_REACHED' }
+    })
   })
 
   it('returns null when upgrade funds are insufficient', () => {
@@ -528,7 +531,10 @@ describe('upgradeChassisTier', () => {
         assets: [makeAsset({ chassisTier: 1 })]
       })
     )
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+      payload: { reason: 'INSUFFICIENT_FUNDS' }
+    })
   })
 
   it('uses clamped upgrade cost for insufficient-funds validation', () => {
@@ -556,7 +562,10 @@ describe('upgradeChassisTier', () => {
       })
     )
 
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+      payload: { reason: 'INSUFFICIENT_FUNDS' }
+    })
   })
 })
 
@@ -573,7 +582,10 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       plannedSuccessProbability: 0.5
     })
 
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: 'START_CROWDFUND_FAILED',
+      payload: { reason: 'ACQUISITION_ALREADY_ACTIVE' }
+    })
   })
 
   it('startCrowdfund stamps a uuid id and copies fields', () => {
@@ -606,19 +618,26 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       plannedSuccessRoll: 0.42,
       plannedSuccessProbability: 0.5
     }
-    assert.equal(
+    const expected = {
+      type: 'START_CROWDFUND_FAILED',
+      payload: { reason: 'DEGENERATE_CAMPAIGN' }
+    }
+    assert.deepEqual(
       startCrowdfund({ ...base, targetAmount: 0 }, makeState()),
-      null
+      expected
     )
-    assert.equal(
+    assert.deepEqual(
       startCrowdfund({ ...base, targetAmount: -500 }, makeState()),
-      null
+      expected
     )
-    assert.equal(
+    assert.deepEqual(
       startCrowdfund({ ...base, daysRemaining: 0 }, makeState()),
-      null
+      expected
     )
-    assert.equal(startCrowdfund({ ...base, fameStake: -10 }, makeState()), null)
+    assert.deepEqual(
+      startCrowdfund({ ...base, fameStake: -10 }, makeState()),
+      expected
+    )
     // Zero stake stays valid (the UI slider starts at 0).
     assert.notEqual(
       startCrowdfund({ ...base, fameStake: 0 }, makeState()),
@@ -640,7 +659,10 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       },
       makeState({ assets: [makeAsset()] })
     )
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: 'START_CROWDFUND_FAILED',
+      payload: { reason: 'ACQUISITION_ALREADY_ACTIVE' }
+    })
   })
 
   it('startCrowdfund returns null when a campaign is already pending for the section', () => {
@@ -657,7 +679,10 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
       },
       makeState({ crowdfundCampaigns: [makeCampaign()] })
     )
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: 'START_CROWDFUND_FAILED',
+      payload: { reason: 'ACQUISITION_ALREADY_ACTIVE' }
+    })
   })
 
   it('repairChassis returns null when repair funds are insufficient', () => {
@@ -668,7 +693,10 @@ describe('startCrowdfund / sellChassis / repairChassis / removeModule', () => {
         assets: [makeAsset({ condition: 50 })]
       })
     )
-    assert.equal(action, null)
+    assert.deepEqual(action, {
+      type: 'REPAIR_CHASSIS_FAILED',
+      payload: { reason: 'INSUFFICIENT_FUNDS' }
+    })
   })
 
   it('sellChassis returns FAILED when liability exceeds sale value', () => {

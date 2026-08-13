@@ -297,5 +297,15 @@
   "refinanceFailed.loan_profile_ineligible": "Anforderungen für dieses Kreditprofil nicht erfüllt.",
   "refinanceFailed.insufficient_funds": "Nicht genug Geld.",
   "refinanceFailed.loan_in_default": "Kredit ist bereits ausgefallen.",
-  "purchaseFailed.unknown_flavor": "Unbekannter Asset-Stil."
+  "purchaseFailed.unknown_flavor": "Unbekannter Asset-Stil.",
+  "upgradeFailed.unknown_asset": "Unbekanntes Asset.",
+  "upgradeFailed.max_tier_reached": "Asset hat bereits das höchste Tier erreicht.",
+  "upgradeFailed.unknown_config": "Asset-Konfiguration nicht verfügbar.",
+  "upgradeFailed.insufficient_funds": "Nicht genug Geld.",
+  "repairFailed.unknown_asset": "Unbekanntes Asset.",
+  "repairFailed.no_damage": "Asset ist nicht beschädigt.",
+  "repairFailed.insufficient_funds": "Nicht genug Geld.",
+  "startCrowdfundFailed.invalid_config": "Asset-Konfiguration nicht verfügbar.",
+  "startCrowdfundFailed.acquisition_already_active": "Diese Sektion hat bereits ein Asset oder eine aktive Kampagne.",
+  "startCrowdfundFailed.degenerate_campaign": "Kampagnen-Konfiguration ist ungültig."
 }

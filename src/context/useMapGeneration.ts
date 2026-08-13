@@ -91,7 +91,7 @@ export function useMapGeneration({
         const validation = validateGeneratedMap(newMap)
         if (validation.success) {
           mapGenerationAttemptsRef.current = 0
-          dispatch(createSetMapAction(newMap))
+          dispatch(createSetMapAction(validation.data))
         } else {
           failure = {
             originalError: validation.issues

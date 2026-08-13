@@ -80,20 +80,20 @@ export function useAssetDispatchActions({
           ActionTypes.PURCHASE_CHASSIS_FAILED,
           'assets:purchaseFailed'
         ),
-      upgradeChassisTier: (assetId: string, targetTier: ChassisTier) => {
-        const action = upgradeChassisTierAction(
-          assetId,
-          targetTier,
-          stateRef.current
-        )
-        if (action) dispatch(action)
-      },
+      upgradeChassisTier: (assetId: string, targetTier: ChassisTier) =>
+        dispatchWithFailureToast(
+          upgradeChassisTierAction(assetId, targetTier, stateRef.current),
+          ActionTypes.UPGRADE_CHASSIS_TIER_FAILED,
+          'assets:upgradeFailed'
+        ),
       sellChassis: (assetId: string) =>
         dispatch(sellChassisAction(assetId, stateRef.current)),
-      repairChassis: (assetId: string) => {
-        const action = repairChassisAction(assetId, stateRef.current)
-        if (action) dispatch(action)
-      },
+      repairChassis: (assetId: string) =>
+        dispatchWithFailureToast(
+          repairChassisAction(assetId, stateRef.current),
+          ActionTypes.REPAIR_CHASSIS_FAILED,
+          'assets:repairFailed'
+        ),
       refinanceLiability: (liabilityId: string, loanProfileId: LoanProfileId) =>
         dispatchWithFailureToast(
           refinanceLiabilityAction(
@@ -112,10 +112,12 @@ export function useAssetDispatchActions({
         ),
       removeModule: (assetId: string, slotId: string) =>
         dispatch(removeModuleAction(assetId, slotId)),
-      startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => {
-        const action = startCrowdfundAction(input, stateRef.current)
-        if (action) dispatch(action)
-      }
+      startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) =>
+        dispatchWithFailureToast(
+          startCrowdfundAction(input, stateRef.current),
+          ActionTypes.START_CROWDFUND_FAILED,
+          'assets:startCrowdfundFailed'
+        )
     }
   }, [dispatch, stateRef, addToast, tRef])
 }

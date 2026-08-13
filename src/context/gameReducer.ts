@@ -186,15 +186,18 @@ const reducerMap: ReducerMap = {
   [ActionTypes.PURCHASE_CHASSIS]: handlePurchaseChassis,
   [ActionTypes.PURCHASE_CHASSIS_FAILED]: handleAssetFailedAction,
   [ActionTypes.UPGRADE_CHASSIS_TIER]: handleUpgradeChassisTier,
+  [ActionTypes.UPGRADE_CHASSIS_TIER_FAILED]: handleAssetFailedAction,
   [ActionTypes.SELL_CHASSIS]: handleSellChassis,
   [ActionTypes.SELL_CHASSIS_FAILED]: handleAssetFailedAction,
   [ActionTypes.REPAIR_CHASSIS]: handleRepairChassis,
+  [ActionTypes.REPAIR_CHASSIS_FAILED]: handleAssetFailedAction,
   [ActionTypes.REFINANCE_LIABILITY]: handleRefinanceLiability,
   [ActionTypes.REFINANCE_LIABILITY_FAILED]: handleAssetFailedAction,
   [ActionTypes.INSTALL_MODULE]: handleInstallModule,
   [ActionTypes.INSTALL_MODULE_FAILED]: handleAssetFailedAction,
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
+  [ActionTypes.START_CROWDFUND_FAILED]: handleAssetFailedAction,
   [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed
 }
 

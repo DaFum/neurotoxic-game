@@ -297,12 +297,20 @@ export type GameAction =
       ActionTypes['UPGRADE_CHASSIS_TIER'],
       import('./assets').UpgradeChassisTierPayload
     >
+  | Action<
+      ActionTypes['UPGRADE_CHASSIS_TIER_FAILED'],
+      { reason: import('./assets').UpgradeFailureReason }
+    >
   | Action<ActionTypes['SELL_CHASSIS'], { assetId: string }>
   | Action<
       ActionTypes['SELL_CHASSIS_FAILED'],
       { assetId: string; reason: 'LIABILITY_EXCEEDS_VALUE' }
     >
   | Action<ActionTypes['REPAIR_CHASSIS'], { assetId: string }>
+  | Action<
+      ActionTypes['REPAIR_CHASSIS_FAILED'],
+      { reason: import('./assets').RepairFailureReason }
+    >
   | Action<
       ActionTypes['REFINANCE_LIABILITY'],
       import('./assets').RefinanceLiabilityPayload
@@ -323,6 +331,10 @@ export type GameAction =
   | Action<
       ActionTypes['START_CROWDFUND'],
       { campaign: import('./assets').CrowdfundCampaign }
+    >
+  | Action<
+      ActionTypes['START_CROWDFUND_FAILED'],
+      { reason: import('./assets').StartCrowdfundFailureReason }
     >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
 
