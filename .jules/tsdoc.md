@@ -63,3 +63,4 @@
 | 2026-08-09 | src/scenes/kabelsalat/kabelsalatConstants.ts | CABLE_MAP |
 | 2026-08-11 | src/components/hud/CorruptionMeter.tsx | CorruptionMeterProps, CorruptionMeter |
 | 2026-08-12 | src/data/hqItems/van.ts | van |
+| 2026-08-13 | src/components/hud/GameOverOverlay.tsx | GameOverOverlayProps, GameOverOverlay |
