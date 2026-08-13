@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-08-12T09:33:46.553Z
+Erstellt am: 2026-08-13T07:31:45.829Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 90b4ad237ed2df7bb76e70fa974cf32941daf7c304a86d22dd453ae1745d401a
-- Generator-Fingerprint: 73d64bfa6dcc2ff2cccb113dee9309eeef3981c449f5576b1f496ccdd127e514
+- Source-Fingerprint: 508e61fb7c14b775447595ed431af590578c39b14b49558ead452783e11ab202
+- Generator-Fingerprint: 3f36592f52782201d70dafffc6535baea9601601c0ce2ba88be8985168012b62
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -561,7 +561,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `54d7b46e689e08a83595501ea90db6822431cb9d537f4b0fac97686c14acfa2f` | `90b4ad237ed2df7bb76e70fa974cf32941daf7c304a86d22dd453ae1745d401a` |
+| Source-Fingerprint | `90b4ad237ed2df7bb76e70fa974cf32941daf7c304a86d22dd453ae1745d401a` | `508e61fb7c14b775447595ed431af590578c39b14b49558ead452783e11ab202` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |

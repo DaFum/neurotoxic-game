@@ -2179,7 +2179,7 @@ const maybeInvestInAssets = (state, rng, counters, observeLoss = () => {}) => {
         },
         state
       )
-      if (action) {
+      if (action && action.type !== 'START_CROWDFUND_FAILED') {
         Object.assign(state, handleStartCrowdfund(state, action.payload))
         counters.crowdfundsStarted += 1
       }
