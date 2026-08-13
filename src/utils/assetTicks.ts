@@ -289,7 +289,7 @@ export const processCrowdfundTick = (state: GameState): GameState => {
   // Why: Avoids creating multiple intermediate arrays on the hot path during crowdfund ticks.
   // Impact: Reduces GC pressure by skipping array allocations.
   const unavailableKinds = new Set<AssetKind>()
-  const currentAssets = state.assets || []
+  const currentAssets = state.assets ?? []
   for (let i = 0; i < currentAssets.length; i++) {
     const asset = currentAssets[i]
     if (asset && asset.kind !== undefined) {
