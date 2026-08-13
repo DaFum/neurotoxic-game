@@ -44,6 +44,11 @@ export function buildSoldMerchInventory(
   return updatedInventory
 }
 
+const STORY_QUEST_MAPPING = [
+  { flag: FLAGS.CANCEL_QUEST_ACTIVE, questId: QUEST_APOLOGY_TOUR },
+  { flag: FLAGS.BREAKUP_QUEST_ACTIVE, questId: QUEST_EGO_MANAGEMENT }
+]
+
 /**
  * Builds the post-gig story-flag quest payloads (apology tour, ego management)
  * from the quest registry. Threshold-style harmony quests seed progress with
@@ -59,34 +64,33 @@ export function buildStoryFlagQuests(params: {
   const { activeStoryFlags, day, bandHarmony, postPenaltyHarmony } = params
   const quests: AddQuestInput[] = []
 
-  if (activeStoryFlags?.includes(FLAGS.CANCEL_QUEST_ACTIVE)) {
-    const def = getQuestDefinition(QUEST_APOLOGY_TOUR)
+  if (!activeStoryFlags) return quests
+
+  const pushQuest = (questId: string, progress: number) => {
+    const def = getQuestDefinition(questId)
     if (def) {
       quests.push({
         ...def,
-        id: QUEST_APOLOGY_TOUR,
+        id: questId,
         deadline: day + finiteNumberOr(def.deadlineOffset, 0),
-        progress: 0
+        progress
       })
     }
   }
 
-  if (activeStoryFlags?.includes(FLAGS.BREAKUP_QUEST_ACTIVE)) {
-    const def = getQuestDefinition(QUEST_EGO_MANAGEMENT)
-    if (def) {
-      // Threshold-style harmony quest: seed progress with current band harmony
-      // so any harmony recovery earlier this post-gig phase is not lost.
-      const seededProgress =
-        def.progressSource === 'harmony_recovered'
-          ? (postPenaltyHarmony ??
-            clampBandHarmony(finiteNumberOr(bandHarmony, 80)))
-          : 0
-      quests.push({
-        ...def,
-        id: QUEST_EGO_MANAGEMENT,
-        deadline: day + finiteNumberOr(def.deadlineOffset, 0),
-        progress: seededProgress
-      })
+  for (const { flag, questId } of STORY_QUEST_MAPPING) {
+    if (activeStoryFlags.includes(flag)) {
+      if (questId === QUEST_EGO_MANAGEMENT) {
+        const def = getQuestDefinition(questId)
+        const seededProgress =
+          def?.progressSource === 'harmony_recovered'
+            ? (postPenaltyHarmony ??
+              clampBandHarmony(finiteNumberOr(bandHarmony, 80)))
+            : 0
+        pushQuest(questId, seededProgress)
+      } else {
+        pushQuest(questId, 0)
+      }
     }
   }
 
@@ -136,9 +140,8 @@ export function applyNeurotoxicPenalty(
     const nextHarmony = clampBandHarmony(
       finiteNumberOr(band.harmony, 80) - NEUROTOXIC_PEDAL_HARMONY_PENALTY
     )
-    updateBand((prevBand: BandState) => {
+    updateBand((_prevBand: BandState) => {
       return {
-        ...prevBand,
         harmony: nextHarmony
       }
     })
@@ -166,7 +169,10 @@ export function handleContinueSceneTransition(params: {
       'error'
     )
     changeScene(GAME_PHASES.GAMEOVER)
-  } else if (isFinaleGig) {
+    return
+  }
+
+  if (isFinaleGig) {
     // The FINALE node has no outgoing connections by design — instead of
     // returning to a dead-end overworld, end the run on the victory screen.
     addToast(
@@ -175,12 +181,12 @@ export function handleContinueSceneTransition(params: {
       }),
       'success'
     )
-    queueMicrotask(() => {
-      changeScene(GAME_PHASES.GAMEOVER)
-    })
-  } else {
-    queueMicrotask(() => {
-      changeScene(GAME_PHASES.OVERWORLD)
-    })
   }
+
+  // Guard intentionally NOT reset here: the scene transition (queued via
+  // queueMicrotask) owns the lifecycle.
+  const targetPhase = isFinaleGig ? GAME_PHASES.GAMEOVER : GAME_PHASES.OVERWORLD
+  queueMicrotask(() => {
+    changeScene(targetPhase)
+  })
 }

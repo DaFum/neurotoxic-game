@@ -1,9 +1,38 @@
 import { finiteNumberOr } from '../../utils/gameState'
 
+import type { UsePreGigHandlersProps } from './usePreGigHandlers'
+
+/**
+ * Single source of truth for minigame definitions and selection configuration.
+ */
+export const MINIGAME_CONFIG = {
+  roadie: {
+    id: 'roadie',
+    weight: 1,
+    persistenceId: 'roadie',
+    launcher: (gigId: string, props: UsePreGigHandlersProps) =>
+      props.startRoadieMinigame(gigId)
+  },
+  kabelsalat: {
+    id: 'kabelsalat',
+    weight: 1,
+    persistenceId: 'kabelsalat',
+    launcher: (gigId: string, props: UsePreGigHandlersProps) =>
+      props.startKabelsalatMinigame(gigId)
+  },
+  amp: {
+    id: 'amp',
+    weight: 1,
+    persistenceId: 'amp',
+    launcher: (gigId: string, props: UsePreGigHandlersProps) =>
+      props.startAmpCalibration(gigId)
+  }
+} as const
+
 /**
  * Represents the available minigame types that can be played.
  */
-export type Minigame = 'roadie' | 'kabelsalat' | 'amp'
+export type Minigame = keyof typeof MINIGAME_CONFIG
 
 let lastMinigameFallback: Minigame | null = null
 
@@ -14,7 +43,7 @@ let lastMinigameFallback: Minigame | null = null
  * @returns A boolean indicating whether the value is a valid minigame identifier
  */
 export const isMinigame = (value: unknown): value is Minigame => {
-  return value === 'roadie' || value === 'kabelsalat' || value === 'amp'
+  return typeof value === 'string' && value in MINIGAME_CONFIG
 }
 
 /**

@@ -30,7 +30,8 @@ import { HQ_ITEMS_BY_MERCH_KEY } from '../../data/hqItems'
 import {
   getLastMinigameFallback,
   setLastMinigameFallback,
-  isMinigame
+  isMinigame,
+  MINIGAME_CONFIG
 } from './preGigUtils'
 import type { Minigame } from './preGigUtils'
 
@@ -113,7 +114,6 @@ export const usePreGigHandlers = ({
   const handleUpdateMerchPrice = useCallback(
     (merchKey: string, newPrice: number) => {
       updateBand((prevBand: BandState) => ({
-        ...prevBand,
         merchPrices: {
           ...(prevBand.merchPrices ?? {}),
           [merchKey]: newPrice
@@ -167,7 +167,6 @@ export const usePreGigHandlers = ({
             ? (currentInventory[merchKey] as number)
             : 0
         return {
-          ...prevBand,
           inventory: {
             ...currentInventory,
             [merchKey]: currentAmount + restockAmount
@@ -293,42 +292,48 @@ export const usePreGigHandlers = ({
         // Ignore SecurityError or other storage errors
       }
 
-      const weights: Record<Minigame, number> = {
-        roadie: 1,
-        kabelsalat: 1,
-        amp: 1
+      let totalWeight = 0
+      const derivedWeights: Partial<Record<Minigame, number>> = {}
+
+      for (const key in MINIGAME_CONFIG) {
+        if (Object.hasOwn(MINIGAME_CONFIG, key)) {
+          const id = key as Minigame
+          const conf = MINIGAME_CONFIG[id]
+          const weight = lastMinigame === id ? 0.2 : conf.weight
+          derivedWeights[id] = weight
+          totalWeight += weight
+        }
       }
 
-      if (lastMinigame && Object.hasOwn(weights, lastMinigame)) {
-        weights[lastMinigame] = 0.2
-      }
-
-      const totalWeight = weights.roadie + weights.kabelsalat + weights.amp
       const randomVal = getSafeRandom() * totalWeight
 
+      let cumulative = 0
       let chosenGame: Minigame = 'roadie'
-      if (randomVal < weights.roadie) {
-        chosenGame = 'roadie'
-      } else if (randomVal < weights.roadie + weights.kabelsalat) {
-        chosenGame = 'kabelsalat'
-      } else {
-        chosenGame = 'amp'
+      for (const key in derivedWeights) {
+        if (Object.hasOwn(derivedWeights, key)) {
+          const id = key as Minigame
+          cumulative += derivedWeights[id]!
+          if (randomVal < cumulative) {
+            chosenGame = id
+            break
+          }
+        }
       }
 
-      setLastMinigameFallback(chosenGame)
+      const chosenConfig = MINIGAME_CONFIG[chosenGame]
+
+      setLastMinigameFallback(chosenConfig.persistenceId as Minigame)
       try {
-        sessionStorage.setItem('neurotoxic_last_minigame', chosenGame)
+        sessionStorage.setItem('neurotoxic_last_minigame', chosenConfig.persistenceId)
       } catch (_storageErr) {
         // ignore storage errors
       }
 
-      if (chosenGame === 'roadie') {
-        startRoadieMinigame(gigId)
-      } else if (chosenGame === 'kabelsalat') {
-        startKabelsalatMinigame(gigId)
-      } else {
-        startAmpCalibration(gigId)
-      }
+      chosenConfig.launcher(gigId, {
+        startRoadieMinigame,
+        startKabelsalatMinigame,
+        startAmpCalibration
+      } as UsePreGigHandlersProps)
     } catch (err) {
       isStartingRef.current = false
       setIsStarting(false)

@@ -138,8 +138,6 @@ export const useArrivalLogic = ({
     // runs after advanceDay() and the side-effect dispatches have committed.
     if (!route.gigStartQueued) {
       changeScene(route.scene)
-    }
-    if (!route.gigStartQueued) {
       saveGame(false)
     }
   }, [

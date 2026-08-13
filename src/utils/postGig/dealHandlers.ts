@@ -54,10 +54,9 @@ export const getAcceptDealMoneyUpdate = ({
  * @returns Functional band updater for the accepted deal reward.
  */
 export const getAcceptDealBandUpdateFactory = (deal: BrandDeal) => {
-  return (prevBand: GameState['band']): GameState['band'] => {
+  return (prevBand: GameState['band']): Partial<GameState['band']> => {
     if (!deal.offer.item) return prevBand
     return {
-      ...prevBand,
       inventory: { ...prevBand.inventory, [deal.offer.item]: true }
     }
   }
