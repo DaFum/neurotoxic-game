@@ -449,11 +449,12 @@ export const CrisisModal = memo(
             </div>
 
             <div className='flex flex-col gap-3'>
-              {modalActions.map((action) => (
+              {modalActions.map(action => (
                 <button
                   key={action.id}
                   type='button'
                   onClick={action.onClick ?? onClose}
+                  aria-label={action.label}
                   className={getActionClassName(action.variant)}
                 >
                   <span>{action.label}</span>

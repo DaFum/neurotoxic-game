@@ -263,6 +263,7 @@ export const BloodBankModal = ({
             <button
               type='button'
               onClick={onClose}
+              aria-label={t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}
               className='w-full sm:w-auto px-4 py-3 sm:py-2 border-2 border-blood-red text-blood-red font-bold hover:bg-blood-red hover:text-void-black transition-colors uppercase font-mono focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
             >
               {t('ui:hq.leave', { defaultValue: 'LEAVE [ESC]' })}

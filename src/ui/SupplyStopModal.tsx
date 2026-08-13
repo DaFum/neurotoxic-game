@@ -87,6 +87,7 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
         <button
           type='button'
           onClick={onClose}
+          aria-label={t('ui:action_close', { defaultValue: 'CLOSE' })}
           className='absolute top-4 right-4 text-error-red hover:text-star-white hover:bg-error-red px-3 py-1 font-bold tracking-widest border border-error-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
         >
           {t('ui:action_close', { defaultValue: 'CLOSE' })}
