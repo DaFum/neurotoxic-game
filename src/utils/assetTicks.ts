@@ -284,9 +284,18 @@ export const processCrowdfundTick = (state: GameState): GameState => {
 
   const remaining: CrowdfundCampaign[] = []
   const newAssets: LongTermAsset[] = []
-  const unavailableKinds = new Set<AssetKind>(
-    (state.assets ?? []).filter(Boolean).map(asset => asset.kind)
-  )
+
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .filter().map() with a single-pass loop.
+  // Why: Avoids creating multiple intermediate arrays on the hot path during crowdfund ticks.
+  // Impact: Reduces GC pressure by skipping array allocations.
+  const unavailableKinds = new Set<AssetKind>()
+  const currentAssets = state.assets || []
+  for (let i = 0; i < currentAssets.length; i++) {
+    const asset = currentAssets[i]
+    if (asset && asset.kind !== undefined) {
+      unavailableKinds.add(asset.kind)
+    }
+  }
 
   const seenCampaignKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   let fame = state.player.fame
