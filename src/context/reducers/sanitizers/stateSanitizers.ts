@@ -125,27 +125,8 @@ const finiteOptionalNumber = (value: unknown): number | undefined =>
 
 const MAX_SAFE_JSON_COPY_DEPTH = 12
 
-const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
-  if (depth > 0) {
-    return sanitizeTraversableValue(value, {
-      maxDepth: MAX_SAFE_JSON_COPY_DEPTH - depth,
-      dropUndefinedLeaves: true,
-      sentinel: undefined,
-      transformLeaf: (val: unknown) => {
-        if (
-          typeof val === 'string' ||
-          typeof val === 'boolean' ||
-          val === null ||
-          isFiniteNumber(val)
-        ) {
-          return val
-        }
-        return undefined
-      }
-    })
-  }
-
-  return sanitizeTraversableValue(value, {
+const copySafeJsonValue = (value: unknown): unknown =>
+  sanitizeTraversableValue(value, {
     maxDepth: MAX_SAFE_JSON_COPY_DEPTH,
     dropUndefinedLeaves: true,
     sentinel: undefined,
@@ -161,7 +142,6 @@ const copySafeJsonValue = (value: unknown, depth = 0): unknown => {
       return undefined
     }
   })
-}
 
 const copySafeEffectPayload = (
   value: unknown
@@ -172,18 +152,17 @@ const copySafeEffectPayload = (
   if (!value || typeof value !== 'object') return undefined
 
   if (Array.isArray(value)) {
-    const sanitizedArray: Array<Record<string, string | number | boolean | null>> = []
+    const sanitizedArray: Array<
+      Record<string, string | number | boolean | null>
+    > = []
     for (let i = 0; i < value.length; i++) {
-      const el = value[i]
-      if (el && typeof el === 'object' && !Array.isArray(el)) {
-        const sanitizedObj = copySafeFlatObject(el)
-        if (sanitizedObj) sanitizedArray.push(sanitizedObj)
-      }
+      const sanitizedObj = copySafePrimitiveObject(value[i])
+      if (sanitizedObj) sanitizedArray.push(sanitizedObj)
     }
     return sanitizedArray.length > 0 ? sanitizedArray : undefined
   }
 
-  return copySafeFlatObject(value) || undefined
+  return copySafePrimitiveObject(value)
 }
 
 /**
@@ -277,84 +256,6 @@ const sanitizeBandInventory = (value: unknown): BandState['inventory'] => {
   return sanitized
 }
 
-const copySafeArray = (
-  value: unknown
-): Array<
-  | string
-  | number
-  | boolean
-  | null
-  | Record<string, string | number | boolean | null>
-> | null => {
-  if (!Array.isArray(value)) return null
-  const copied: Array<
-    | string
-    | number
-    | boolean
-    | null
-    | Record<string, string | number | boolean | null>
-  > = []
-  for (let i = 0; i < value.length; i++) {
-    const entry = value[i]
-    if (
-      typeof entry === 'string' ||
-      isFiniteNumber(entry) ||
-      typeof entry === 'boolean' ||
-      entry === null
-    ) {
-      copied.push(entry)
-    } else if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-      const entryRecord = entry as Record<string, unknown>
-      const copiedEntry: Record<string, string | number | boolean | null> = {}
-      for (const entryKey in entryRecord) {
-        if (!Object.hasOwn(entryRecord, entryKey)) continue
-        if (isForbiddenKey(entryKey)) continue
-        const entryValue = entryRecord[entryKey]
-        if (
-          typeof entryValue === 'string' ||
-          isFiniteNumber(entryValue) ||
-          typeof entryValue === 'boolean' ||
-          entryValue === null
-        ) {
-          copiedEntry[entryKey] = entryValue
-        }
-      }
-      if (!isEmptyObject(copiedEntry)) {
-        copied.push(copiedEntry)
-      }
-    }
-  }
-  return copied
-}
-
-const copySafeFlatObject = (
-  value: unknown
-): Record<string, string | number | boolean | null> | null => {
-  if (!value || typeof value !== 'object' || Array.isArray(value)) {
-    return null
-  }
-
-  const result: Record<string, string | number | boolean | null> = {}
-  let hasProperties = false
-
-  for (const key in value) {
-    if (!Object.hasOwn(value, key) || isForbiddenKey(key)) continue
-
-    const val = (value as Record<string, unknown>)[key]
-    if (
-      typeof val === 'string' ||
-      typeof val === 'boolean' ||
-      val === null ||
-      isFiniteNumber(val)
-    ) {
-      result[key] = val
-      hasProperties = true
-    }
-  }
-
-  return hasProperties ? result : null
-}
-
 /**
  * Validates a purchase effect object from a loaded save.
  * Validates required fields per effect type and ensures finite numeric values.
@@ -389,7 +290,135 @@ const validateLoadedEffect = (
   if (!validator || !validator(effectObj)) return null
 
   // Copy safe primitives and return
-  return copySafeFlatObject(effectObj)
+  return copySafePrimitiveObject(effectObj) ?? null
+}
+
+type ShopItemFieldKind =
+  | 'id'
+  | 'nonNegativeNumber'
+  | 'string'
+  | 'finiteNumber'
+  | 'boolean'
+  | 'effect'
+  | 'effects'
+
+const SHOP_ITEM_FIELD_SCHEMA: Readonly<Record<string, ShopItemFieldKind>> = {
+  id: 'id',
+  cost: 'nonNegativeNumber',
+  price: 'nonNegativeNumber',
+  name: 'string',
+  currency: 'string',
+  category: 'string',
+  description: 'string',
+  img: 'string',
+  imgPrompt: 'string',
+  rarity: 'string',
+  maxStacks: 'finiteNumber',
+  oneTime: 'boolean',
+  requiresReputation: 'boolean',
+  stackable: 'boolean',
+  effect: 'effect',
+  effects: 'effects'
+}
+
+const sanitizeShopInventoryItem = (
+  raw: unknown
+): import('../../../types/components').PurchaseItem | null => {
+  if (!isLooseRecord(raw)) return null
+  const itemRecord = raw as Record<string, unknown>
+  const sanitizedItem: import('../../../types/components').PurchaseItem = {}
+
+  for (const itemKey in itemRecord) {
+    if (!Object.hasOwn(itemRecord, itemKey)) continue
+    if (isForbiddenKey(itemKey)) continue
+    const kind = SHOP_ITEM_FIELD_SCHEMA[itemKey]
+    if (!kind) continue
+    const v = itemRecord[itemKey]
+
+    switch (kind) {
+      case 'id':
+        if (typeof v === 'string' || typeof v === 'number') {
+          sanitizedItem.id = v
+        }
+        break
+      case 'nonNegativeNumber':
+        if (isFiniteNumber(v)) {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(0, v)
+        }
+        break
+      case 'string':
+        if (typeof v === 'string') {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'finiteNumber':
+        if (isFiniteNumber(v)) {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'boolean':
+        if (typeof v === 'boolean') {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'effect': {
+        const validEffect = validateLoadedEffect(v)
+        if (validEffect) sanitizedItem.effect = validEffect as never
+        break
+      }
+      case 'effects': {
+        if (Array.isArray(v)) {
+          const flatEffects: Array<Record<string, unknown>> = []
+          for (let j = 0; j < v.length; j++) {
+            const validEffect = validateLoadedEffect(v[j])
+            if (validEffect) flatEffects.push(validEffect)
+          }
+          if (flatEffects.length > 0) {
+            sanitizedItem.effects = flatEffects as never
+          }
+        }
+        break
+      }
+    }
+  }
+
+  return !isEmptyObject(sanitizedItem as Record<string, unknown>)
+    ? sanitizedItem
+    : null
+}
+
+const copySafeMapNodeArray = (
+  value: unknown
+): Array<
+  | string
+  | number
+  | boolean
+  | null
+  | Record<string, string | number | boolean | null>
+> | null => {
+  if (!Array.isArray(value)) return null
+  const copied: Array<
+    | string
+    | number
+    | boolean
+    | null
+    | Record<string, string | number | boolean | null>
+  > = []
+  for (let i = 0; i < value.length; i++) {
+    const entry = value[i]
+    if (
+      typeof entry === 'string' ||
+      isFiniteNumber(entry) ||
+      typeof entry === 'boolean' ||
+      entry === null
+    ) {
+      copied.push(entry)
+    } else {
+      const entryObj = copySafePrimitiveObject(entry)
+      if (entryObj) copied.push(entryObj)
+    }
+  }
+  return copied
 }
 
 export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
@@ -456,71 +485,11 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
     }
     if (Array.isArray(nodeRecord.shopInventory)) {
       const items: import('../../../types/components').PurchaseItem[] = []
-      // Whitelist of PurchaseItem fields preserved on load. Anything else from
-      // untrusted save data is dropped rather than coerced into the item shape.
-      const STRING_KEYS = new Set([
-        'name',
-        'currency',
-        'category',
-        'description',
-        'img',
-        'imgPrompt',
-        'rarity'
-      ])
-      const NUMBER_KEYS = new Set(['maxStacks'])
-      const BOOLEAN_KEYS = new Set([
-        'oneTime',
-        'requiresReputation',
-        'stackable'
-      ])
       for (let i = 0; i < nodeRecord.shopInventory.length; i++) {
-        const raw = nodeRecord.shopInventory[i]
-        if (!raw || typeof raw !== 'object' || Array.isArray(raw)) continue
-        const itemRecord = raw as Record<string, unknown>
-        const sanitizedItem: import('../../../types/components').PurchaseItem =
-          {}
-        for (const itemKey in itemRecord) {
-          if (!Object.hasOwn(itemRecord, itemKey)) continue
-          if (isForbiddenKey(itemKey)) continue
-          const v = itemRecord[itemKey]
-          if (itemKey === 'id') {
-            if (typeof v === 'string' || typeof v === 'number') {
-              sanitizedItem.id = v
-            }
-          } else if (itemKey === 'cost' || itemKey === 'price') {
-            if (isFiniteNumber(v)) {
-              ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(
-                0,
-                v
-              )
-            }
-          } else if (STRING_KEYS.has(itemKey)) {
-            if (typeof v === 'string') {
-              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-            }
-          } else if (NUMBER_KEYS.has(itemKey)) {
-            if (isFiniteNumber(v)) {
-              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-            }
-          } else if (BOOLEAN_KEYS.has(itemKey)) {
-            if (typeof v === 'boolean') {
-              ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-            }
-          } else if (itemKey === 'effect') {
-            const validEffect = validateLoadedEffect(v)
-            if (validEffect) sanitizedItem.effect = validEffect as never
-          } else if (itemKey === 'effects' && Array.isArray(v)) {
-            const flatEffects: Array<Record<string, unknown>> = []
-            for (let j = 0; j < v.length; j++) {
-              const validEffect = validateLoadedEffect(v[j])
-              if (validEffect) flatEffects.push(validEffect)
-            }
-            if (flatEffects.length > 0) {
-              sanitizedItem.effects = flatEffects as never
-            }
-          }
-        }
-        if (!isEmptyObject(sanitizedItem as Record<string, unknown>)) {
+        const sanitizedItem = sanitizeShopInventoryItem(
+          nodeRecord.shopInventory[i]
+        )
+        if (sanitizedItem) {
           items.push(sanitizedItem)
         }
       }
@@ -552,12 +521,12 @@ export const normalizeLoadedGameMap = (gameMap: unknown): GameMap | null => {
         sanitizedNode[key] = value
         continue
       }
-      const copiedArray = copySafeArray(value)
+      const copiedArray = copySafeMapNodeArray(value)
       if (copiedArray) {
         sanitizedNode[key] = copiedArray
         continue
       }
-      const copiedObject = copySafeFlatObject(value)
+      const copiedObject = copySafePrimitiveObject(value)
       if (copiedObject) {
         sanitizedNode[key] = copiedObject
       }

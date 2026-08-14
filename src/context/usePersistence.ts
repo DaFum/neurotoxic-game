@@ -42,10 +42,10 @@ import type { OptionalToastCallback } from '../types/callbacks'
 export const SAVE_KEY = 'neurotoxic_v3_save'
 
 const isNullableObject = (value: unknown): boolean =>
-  value === null || (typeof value === 'object' && !Array.isArray(value))
+  value === null || isLooseRecord(value)
 
 const isObjectOrArray = (value: unknown): boolean =>
-  typeof value === 'object' && value !== null
+  isLooseRecord(value) || Array.isArray(value)
 
 const isNumberOrString = (value: unknown): boolean =>
   isFiniteNumber(value) || typeof value === 'string'

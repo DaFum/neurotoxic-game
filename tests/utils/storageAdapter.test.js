@@ -218,7 +218,8 @@ describe('direct browser-storage access audit', () => {
   it('has no unapproved direct localStorage or sessionStorage call sites', () => {
     const offenders = []
     for (const file of listSourceFiles('src')) {
-      if (ALLOWED.has(file)) continue
+      const normalizedPath = file.replace(/\\/g, '/')
+      if (ALLOWED.has(normalizedPath)) continue
       const source = readFileSync(file, 'utf8')
       for (const line of source.split('\n')) {
         const trimmed = line.trim()

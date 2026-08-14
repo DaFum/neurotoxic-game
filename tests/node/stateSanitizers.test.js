@@ -58,13 +58,14 @@ describe('stateSanitizers', () => {
       }
 
       const e = sanitizeActiveEvent(input)
-      assert.deepStrictEqual(e.effects, [
-        { valid: true, primitive: 123 }
-      ])
+      assert.deepStrictEqual(e.effects, [{ valid: true, primitive: 123 }])
     })
 
     it('returns undefined if array is empty after filtering', () => {
-      const e1 = sanitizeActiveEvent({ id: 'test', effects: ['primitive', { nested: {} }] })
+      const e1 = sanitizeActiveEvent({
+        id: 'test',
+        effects: ['primitive', { nested: {} }]
+      })
       assert.strictEqual(e1.effects, undefined)
 
       const e2 = sanitizeActiveEvent({ id: 'test', effects: [] })
@@ -77,7 +78,8 @@ describe('stateSanitizers', () => {
       const gameMap = {
         nodes: {
           n1: {
-            x: 0, y: 0,
+            x: 0,
+            y: 0,
             someExtraProperty: {
               validStr: 'string',
               validNum: 42,
@@ -104,7 +106,8 @@ describe('stateSanitizers', () => {
       const gameMap = {
         nodes: {
           n1: {
-            x: 0, y: 0,
+            x: 0,
+            y: 0,
             someExtraProperty: {
               invalidArr: [1, 2, 3],
               invalidObj: { nested: true }
@@ -122,7 +125,8 @@ describe('stateSanitizers', () => {
       const gameMap = {
         nodes: {
           n1: {
-            x: 0, y: 0,
+            x: 0,
+            y: 0,
             propA: 'string',
             propB: 123,
             propC: []
@@ -134,6 +138,138 @@ describe('stateSanitizers', () => {
       const result = normalizeLoadedGameMap(gameMap)
       assert.ok(result)
       // No assertion for propC since it's preserved as []
+    })
+  })
+
+  describe('shopInventory (via normalizeLoadedGameMap)', () => {
+    it('sanitizes allowed typed fields and effects', () => {
+      const gameMap = {
+        nodes: {
+          shop1: {
+            id: 'shop1',
+            x: 10,
+            y: 20,
+            type: 'SUPPLY_STOP',
+            shopInventory: [
+              {
+                id: 'item_1',
+                name: 'Energy Drink',
+                cost: 25,
+                currency: 'cash',
+                category: 'consumable',
+                description: 'Restores stamina',
+                img: 'drink.png',
+                imgPrompt: 'cyber drink',
+                rarity: 'common',
+                maxStacks: 5,
+                oneTime: false,
+                requiresReputation: true,
+                stackable: true,
+                effect: {
+                  type: 'inventory_add',
+                  item: 'energy_drink',
+                  value: 1
+                },
+                effects: [
+                  {
+                    type: 'stat_modifier',
+                    key: 'stamina',
+                    value: 10
+                  }
+                ],
+                untrustedExtra: 'evil',
+                constructor: 'bad'
+              },
+              // Invalid item with non-matching effect and invalid fields
+              {
+                id: 'invalid_item',
+                cost: -10, // will clamp to 0
+                price: 15,
+                invalidField: 123,
+                effect: {
+                  type: 'invalid_type',
+                  foo: 'bar'
+                }
+              },
+              // Completely invalid non-object entry
+              'not_an_item',
+              null
+            ]
+          }
+        },
+        connections: []
+      }
+
+      const result = normalizeLoadedGameMap(gameMap)
+      assert.ok(result?.nodes.shop1.shopInventory)
+      assert.strictEqual(result.nodes.shop1.shopInventory.length, 2)
+
+      const item1 = result.nodes.shop1.shopInventory[0]
+      assert.strictEqual(item1.id, 'item_1')
+      assert.strictEqual(item1.name, 'Energy Drink')
+      assert.strictEqual(item1.cost, 25)
+      assert.strictEqual(item1.currency, 'cash')
+      assert.strictEqual(item1.category, 'consumable')
+      assert.strictEqual(item1.description, 'Restores stamina')
+      assert.strictEqual(item1.img, 'drink.png')
+      assert.strictEqual(item1.imgPrompt, 'cyber drink')
+      assert.strictEqual(item1.rarity, 'common')
+      assert.strictEqual(item1.maxStacks, 5)
+      assert.strictEqual(item1.oneTime, false)
+      assert.strictEqual(item1.requiresReputation, true)
+      assert.strictEqual(item1.stackable, true)
+      assert.deepStrictEqual(item1.effect, {
+        type: 'inventory_add',
+        item: 'energy_drink',
+        value: 1
+      })
+      assert.deepStrictEqual(item1.effects, [
+        {
+          type: 'stat_modifier',
+          key: 'stamina',
+          value: 10
+        }
+      ])
+      assert.strictEqual(Object.hasOwn(item1, 'untrustedExtra'), false)
+      assert.strictEqual(Object.hasOwn(item1, 'constructor'), false)
+
+      const item2 = result.nodes.shop1.shopInventory[1]
+      assert.strictEqual(item2.id, 'invalid_item')
+      assert.strictEqual(item2.cost, 0)
+      assert.strictEqual(item2.price, 15)
+      assert.strictEqual(item2.effect, undefined)
+      assert.strictEqual(Object.hasOwn(item2, 'invalidField'), false)
+    })
+  })
+
+  describe('copySafeMapNodeArray (via normalizeLoadedGameMap)', () => {
+    it('safely copies arrays containing primitives and flat objects', () => {
+      const gameMap = {
+        nodes: {
+          n1: {
+            x: 0,
+            y: 0,
+            customArray: [
+              'text',
+              42,
+              true,
+              null,
+              { validKey: 'val', num: 1 },
+              { nestedOnly: { bad: true } }
+            ]
+          }
+        },
+        connections: []
+      }
+
+      const result = normalizeLoadedGameMap(gameMap)
+      assert.deepStrictEqual(result.nodes.n1.customArray, [
+        'text',
+        42,
+        true,
+        null,
+        { validKey: 'val', num: 1 }
+      ])
     })
   })
 })
