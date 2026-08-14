@@ -99,6 +99,10 @@ baseline instead of duplicating formulas.
 - `appendImageSize(url, w, h)` in `imageGen.ts` is query-safe (handles `?` vs `&` insertion). Use it instead of `url + '&width=...'`.
 - `loanProfiles.ts`: `computeAmortization` takes `annualInterestRate` (not daily); it divides by 365 internally.
 
-## Numeric Safety
+## Numeric & Traversal Safety
 
 - When doing arithmetic and calculations on persisted state properties, guard against non-finite values (`NaN`, `Infinity`) by wrapping inputs defensively with `finiteNumberOr(value, defaultValue)`. Choose a domain-appropriate default (e.g. `DEFAULT_PLAYER_STATE.money`) rather than assuming `0` universally.
+- Any recursive object utility or traverser (freezers, cloners, sanitizers, revivers) must track visited references using `WeakSet<object>` for cycle safety to prevent `RangeError: Maximum call stack size exceeded` on circular references.
+- Recursive object traversals must continue through already-frozen parent objects to ensure nested mutable children are processed.
+- State and payload sanitizers must use strict type guards (`isFiniteNumber(val)`) rather than `Number(val)` coercion, preventing improper acceptance of booleans, arrays, or numeric strings.
+

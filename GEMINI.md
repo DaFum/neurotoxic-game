@@ -14,13 +14,15 @@
   - `pnpm run test:all` (Full PR gate)
   - `pnpm run test:ui` (Vitest UI components)
   - `pnpm run test:node` (Node logic tests)
-- **Type Checking:** `pnpm run typecheck:core` and `pnpm run typecheck`.
+- **Quality Gates:** `pnpm run typecheck:core`, `pnpm run typecheck`, `pnpm run deadcode:check`.
 - **Formatting:** `pnpm run lint:fix` and `pnpm run format` (Prettier/ESLint).
 - **Dependencies:** Do NOT upgrade pinned dependencies without explicit discussion.
 
 ## Domain Invariants & Rules
 
 - **State Updates:** All updates must flow through action creators -> reducers. Reducers are the final authority and must re-clamp computed state using canonical helpers like `finiteNumberOr(value, fallback)` from `src/utils/gameStateUtils.ts`.
+- **Payload Sanitization:** State/asset sanitizers must use strict type guards (`isFiniteNumber(val)`) rather than `Number()` coercion, preventing improper acceptance of booleans, arrays, or strings.
+- **Recursive Traversals:** Must be cycle-safe (via `WeakSet`) and traverse nested properties under pre-frozen objects.
 - **Audio:** Use Tone.js exclusively via `audioEngine.ts`. No Howler.js or direct Tone.js reads for game timing (use `audioEngine.getGigTimeMs()`).
 - **Styling & Assets:** Do not hardcode colors. Use defined CSS variables (`var(--color-toxic-green)`) or Pixi token helpers (`getPixiColorFromToken('--toxic-green')`). The design theme is "Void Worship": Toxic Green on Void Black.
 - **Components:** No `.propTypes`. Use TypeScript interfaces or inline JSDoc/prop types.

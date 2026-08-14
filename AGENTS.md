@@ -76,11 +76,15 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.
 - After exported APIs, types, source references, or tests change, run `pnpm run symbols:update` then `pnpm run symbols:check`. Never hand-edit or commit ignored `symbols.json`.
+- Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
 
 ## Architecture Constraints
 
 - All state updates go through typed action creators. New actions update `actionTypes`, reducer handling, and `actionCreators` together. Creators sanitize raw payloads; reducers remain authoritative and reject hostile payloads or re-clamp computed state.
 - For persisted-number arithmetic, wrap the stored addend with `finiteNumberOr(value, fallback)` before any clamp. `??` and `typeof value === 'number'` do not reject `NaN`/`Infinity`.
+- State and payload sanitizers must enforce strict type narrowing using `isFiniteNumber(value)`; never use `Number(value)` coercion, which improperly accepts booleans, arrays, and numeric strings.
+- Recursive object utilities (freezers, traversers, sanitizers) must use `WeakSet<object>` for cycle safety and continue traversal through already-frozen parent objects.
+- When modifying imports/exports or barrel files, verify that `pnpm run deadcode:check` does not exceed `.ci/dead-code-budget.json`.
 - Use `audioEngine.getGigTimeMs()` for gameplay timing, never direct Tone.js time reads. Non-gameplay time (timestamps, cooldowns, persistence metadata) goes through the injected `IClock` from `src/utils/clock.ts` (`useClock()` in components, an `IClock` parameter defaulting to `systemClock` in pure helpers).
 - User-facing text uses namespaced i18n keys. Update matching English and German locale JSON together. Currency baked into dispatched toast options must use `formatCurrency(value, i18n.language, signDisplay)`.
 - `src/utils/unlockManager.ts` owns unlock persistence; `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not mix these responsibilities.
