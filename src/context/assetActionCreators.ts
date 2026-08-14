@@ -62,66 +62,45 @@ import type {
   SlotType
 } from '../types/assets'
 
-type Extract2<T, V> = Extract<T, { type: V }>
-
-type PurchaseChassisAction = Extract2<
+type ActionByType<T extends GameAction['type']> = Extract<
   GameAction,
-  typeof ActionTypes.PURCHASE_CHASSIS
+  { type: T }
 >
-type PurchaseChassisFailedAction = Extract2<
-  GameAction,
+
+type PurchaseChassisAction = ActionByType<typeof ActionTypes.PURCHASE_CHASSIS>
+type PurchaseChassisFailedAction = ActionByType<
   typeof ActionTypes.PURCHASE_CHASSIS_FAILED
 >
-type InstallModuleAction = Extract2<
-  GameAction,
-  typeof ActionTypes.INSTALL_MODULE
->
-type InstallModuleFailedAction = Extract2<
-  GameAction,
+type InstallModuleAction = ActionByType<typeof ActionTypes.INSTALL_MODULE>
+type InstallModuleFailedAction = ActionByType<
   typeof ActionTypes.INSTALL_MODULE_FAILED
 >
-type RemoveModuleAction = Extract2<GameAction, typeof ActionTypes.REMOVE_MODULE>
-type UpgradeChassisTierAction = Extract2<
-  GameAction,
+type RemoveModuleAction = ActionByType<typeof ActionTypes.REMOVE_MODULE>
+type UpgradeChassisTierAction = ActionByType<
   typeof ActionTypes.UPGRADE_CHASSIS_TIER
 >
-type UpgradeChassisTierFailedAction = Extract2<
-  GameAction,
+type UpgradeChassisTierFailedAction = ActionByType<
   typeof ActionTypes.UPGRADE_CHASSIS_TIER_FAILED
 >
-type SellChassisAction = Extract2<GameAction, typeof ActionTypes.SELL_CHASSIS>
-type SellChassisFailedAction = Extract2<
-  GameAction,
+type SellChassisAction = ActionByType<typeof ActionTypes.SELL_CHASSIS>
+type SellChassisFailedAction = ActionByType<
   typeof ActionTypes.SELL_CHASSIS_FAILED
 >
-type RepairChassisAction = Extract2<
-  GameAction,
-  typeof ActionTypes.REPAIR_CHASSIS
->
-type RepairChassisFailedAction = Extract2<
-  GameAction,
+type RepairChassisAction = ActionByType<typeof ActionTypes.REPAIR_CHASSIS>
+type RepairChassisFailedAction = ActionByType<
   typeof ActionTypes.REPAIR_CHASSIS_FAILED
 >
-type RefinanceLiabilityAction = Extract2<
-  GameAction,
+type RefinanceLiabilityAction = ActionByType<
   typeof ActionTypes.REFINANCE_LIABILITY
 >
-type RefinanceLiabilityFailedAction = Extract2<
-  GameAction,
+type RefinanceLiabilityFailedAction = ActionByType<
   typeof ActionTypes.REFINANCE_LIABILITY_FAILED
 >
-type StartCrowdfundAction = Extract2<
-  GameAction,
-  typeof ActionTypes.START_CROWDFUND
->
-type StartCrowdfundFailedAction = Extract2<
-  GameAction,
+type StartCrowdfundAction = ActionByType<typeof ActionTypes.START_CROWDFUND>
+type StartCrowdfundFailedAction = ActionByType<
   typeof ActionTypes.START_CROWDFUND_FAILED
 >
-type AssetForeclosedAction = Extract2<
-  GameAction,
-  typeof ActionTypes.ASSET_FORECLOSED
->
+type AssetForeclosedAction = ActionByType<typeof ActionTypes.ASSET_FORECLOSED>
 
 /**
  * Composes the pre-generated `NewSlotEntry` array for a module that uses

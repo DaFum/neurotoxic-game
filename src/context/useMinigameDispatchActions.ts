@@ -37,10 +37,11 @@ export type MinigameDispatchActions = Pick<
 export function useMinigameDispatchActions(
   dispatch: Dispatch<GameAction>
 ): MinigameDispatchActions {
-  const dispatchInTransition = (action: GameAction) => startTransition(() => dispatch(action))
+  return useMemo(() => {
+    const dispatchInTransition = (action: GameAction) =>
+      startTransition(() => dispatch(action))
 
-  return useMemo(
-    () => ({
+    return {
       startTravelMinigame: payload =>
         dispatchInTransition(createStartTravelMinigameAction(payload)),
       completeTravelMinigame: (damageTaken, itemsCollected) =>
@@ -87,7 +88,6 @@ export function useMinigameDispatchActions(
             feedbackLoopsDampened
           )
         )
-    }),
-    [dispatch]
-  )
+    }
+  }, [dispatch])
 }
