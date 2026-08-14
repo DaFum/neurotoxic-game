@@ -56,8 +56,7 @@ describe('Road Trip Events Suite', () => {
 
     assert.ok(transportIds.has('reststop_night_coffee'))
     assert.ok(transportIds.has('van_ac_heater_failure'))
-
-    assert.ok(specialIds.has('reststop_trunk_dealer'))
+    assert.ok(transportIds.has('reststop_trunk_dealer'))
   })
 
   it('event options resolve choices and apply deltas correctly without mutating base state', () => {
@@ -73,6 +72,13 @@ describe('Road Trip Events Suite', () => {
           successRes,
           `Expected resolution for ${id} opt ${i + 1} (success)`
         )
+        if (option.skillCheck) {
+          assert.equal(
+            successRes.result?.outcome,
+            'success',
+            `Expected success outcome for ${id} opt ${i + 1} with high roll`
+          )
+        }
         if (successRes.delta) {
           const nextState = applyEventDelta(state, successRes.delta)
           assert.ok(nextState, `applyEventDelta failed for ${id} opt ${i + 1}`)
@@ -81,6 +87,13 @@ describe('Road Trip Events Suite', () => {
         // Test with low roll (failure on skill checks)
         const failRes = resolveEventChoice(option, state, () => 0.01)
         assert.ok(failRes, `Expected resolution for ${id} opt ${i + 1} (fail)`)
+        if (option.skillCheck) {
+          assert.equal(
+            failRes.result?.outcome,
+            'failure',
+            `Expected failure outcome for ${id} opt ${i + 1} with low roll`
+          )
+        }
         if (failRes.delta) {
           const nextState = applyEventDelta(state, failRes.delta)
           assert.ok(
@@ -97,7 +110,7 @@ describe('Road Trip Events Suite', () => {
     const event = ALL_RAW_EVENTS.find(e => e.id === 'van_playlist_dispute')
     assert.ok(event)
 
-    // Option 1 with success roll (Lars charisma >= 7)
+    // Option 1 with success roll (Lars charisma 8 + crit 2 = 10 >= threshold 10)
     const opt1Success = resolveEventChoice(event.options[0], state, () => 0.99)
     assert.ok(opt1Success.delta)
     const nextStateOpt1 = applyEventDelta(state, opt1Success.delta)

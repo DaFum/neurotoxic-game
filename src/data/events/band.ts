@@ -991,7 +991,7 @@ export const BAND_EVENTS = [
         label: 'events:van_playlist_dispute.opt1.label',
         skillCheck: {
           stat: 'charisma',
-          threshold: 7,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -1064,7 +1064,7 @@ export const BAND_EVENTS = [
         label: 'events:traffic_jam_improv.opt1.label',
         skillCheck: {
           stat: 'improv',
-          threshold: 7,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -1099,7 +1099,7 @@ export const BAND_EVENTS = [
         label: 'events:traffic_jam_improv.opt2.label',
         skillCheck: {
           stat: 'charisma',
-          threshold: 6,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -1161,7 +1161,7 @@ export const BAND_EVENTS = [
         label: 'events:night_drive_heart_to_heart.opt2.label',
         skillCheck: {
           stat: 'charisma',
-          threshold: 7,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [

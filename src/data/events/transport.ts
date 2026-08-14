@@ -920,7 +920,7 @@ export const TRANSPORT_EVENTS = [
         label: 'events:van_ac_heater_failure.opt1.label',
         skillCheck: {
           stat: 'technical',
-          threshold: 8,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -961,6 +961,59 @@ export const TRANSPORT_EVENTS = [
           ]
         },
         outcomeText: 'events:van_ac_heater_failure.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'reststop_trunk_dealer',
+    category: 'transport',
+    tags: ['travel', 'merchant', 'gear', 'reststop'],
+    title: 'events:reststop_trunk_dealer.title',
+    description: 'events:reststop_trunk_dealer.desc',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'events:reststop_trunk_dealer.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -120 },
+            { type: 'item', item: 'c_diy_overdrive', value: 1 }
+          ]
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt1.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt2.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'resource', resource: 'money', value: -60 },
+              { type: 'item', item: 'c_diy_overdrive', value: 1 }
+            ],
+            description: 'events:reststop_trunk_dealer.opt2.successOutcome'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'mood',
+            value: -2,
+            description: 'events:reststop_trunk_dealer.opt2.failureOutcome'
+          }
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt2.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt3.label',
+        effect: {
+          type: 'stat',
+          stat: 'mood',
+          value: 3
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt3.outcome'
       }
     ]
   }
