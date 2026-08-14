@@ -4,9 +4,9 @@
 
 **Goal:** Implement 6 rich narrative road-trip & rest-stop travel events in `src/data/events/` with German/English translations and automated unit/integration tests.
 
-**Architecture:** Add declarative event definitions with skill checks and composite effect deltas to `band.ts`, `transport.ts`, and `special.ts`. Ensure 100% i18n key parity in `public/locales/de/events.json` and `public/locales/en/events.json`. Test with isolated event runner tests and full quality gates.
+**Architecture:** Add declarative event definitions with skill checks and composite effect deltas to `band.ts` and `transport.ts`. Ensure 100% i18n key parity in `public/locales/de/events.json` and `public/locales/en/events.json`. Test with isolated event runner tests and full quality gates.
 
-**Tech Stack:** TypeScript, React 19, Node:test / Vitest, i18next.
+**Tech Stack:** TypeScript, React 19, Vitest, i18next.
 
 ---
 
@@ -569,7 +569,7 @@ Expected: PASS with 0 key mismatches.
         label: 'events:van_ac_heater_failure.opt1.label',
         skillCheck: {
           stat: 'technical',
-          threshold: 8,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -617,18 +617,18 @@ Expected: PASS with 0 key mismatches.
 
 ---
 
-### Task 4: Implement Special Trunk Dealer Event in `src/data/events/special.ts`
+### Task 4: Implement Special Trunk Dealer Event in `src/data/events/transport.ts`
 
 **Files:**
-- Modify: `src/data/events/special.ts`
+- Modify: `src/data/events/transport.ts`
 
 - [ ] **Step 1: Add `reststop_trunk_dealer` event definition**
 
 ```typescript
   {
     id: 'reststop_trunk_dealer',
-    category: 'special',
-    tags: ['travel', 'merchant', 'gear'],
+    category: 'transport',
+    tags: ['travel', 'merchant', 'gear', 'reststop'],
     title: 'events:reststop_trunk_dealer.title',
     description: 'events:reststop_trunk_dealer.desc',
     trigger: 'travel',
@@ -649,7 +649,7 @@ Expected: PASS with 0 key mismatches.
         label: 'events:reststop_trunk_dealer.opt2.label',
         skillCheck: {
           stat: 'charisma',
-          threshold: 8,
+          threshold: 10,
           success: {
             type: 'composite',
             effects: [
@@ -659,8 +659,9 @@ Expected: PASS with 0 key mismatches.
             description: 'events:reststop_trunk_dealer.opt2.successOutcome'
           },
           failure: {
-            type: 'composite',
-            effects: [],
+            type: 'stat',
+            stat: 'mood',
+            value: -2,
             description: 'events:reststop_trunk_dealer.opt2.failureOutcome'
           }
         },
