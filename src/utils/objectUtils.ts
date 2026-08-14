@@ -360,3 +360,17 @@ export const safeJsonParse = <T = unknown>(text: string): T => {
     return value
   })
 }
+
+/**
+ * Recursively freezes an object and its nested objects.
+ *
+ * @param value - Value to deep freeze.
+ * @returns The frozen value typed as Readonly.
+ */
+export const deepFreeze = <T>(value: T): Readonly<T> => {
+  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
+    Object.freeze(value)
+    for (const nested of Object.values(value)) deepFreeze(nested)
+  }
+  return value
+}

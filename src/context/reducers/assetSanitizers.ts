@@ -278,6 +278,44 @@ const sanitizeSlots = (raw: unknown): AssetSlot[] => {
   )
 }
 
+const validateChassisKindFlavorTier = (
+  kind: unknown,
+  flavor: unknown,
+  tier: unknown,
+  label: string,
+  dropped: Map<string, string>,
+  prefix = ''
+): {
+  kind: AssetKind
+  flavor: AssetFlavor
+  chassisTier: ChassisTier
+} | null => {
+  if (!VALID_ASSET_KINDS.has(kind as string)) {
+    dropped.set(label, `invalid ${prefix}kind ${String(kind)}`)
+    return null
+  }
+  if (!VALID_ASSET_FLAVORS.has(flavor as string)) {
+    dropped.set(
+      label,
+      `invalid ${prefix}${prefix ? 'flavor' : 'flavor'} ${String(flavor)}`
+    )
+    return null
+  }
+  const numericTier = Number(tier)
+  if (!VALID_ASSET_TIERS.has(numericTier)) {
+    dropped.set(
+      label,
+      `invalid ${prefix}${prefix ? 'chassisTier' : 'tier'} ${String(tier)}`
+    )
+    return null
+  }
+  return {
+    kind: kind as AssetKind,
+    flavor: flavor as AssetFlavor,
+    chassisTier: numericTier as ChassisTier
+  }
+}
+
 /**
  * Sanitizes persisted long-term assets and drops invalid topology entries.
  *
@@ -300,19 +338,14 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       dropped.set(label, 'missing or duplicate id')
       continue
     }
-    if (!VALID_ASSET_KINDS.has(clean.kind as string)) {
-      dropped.set(label, `invalid kind ${String(clean.kind)}`)
-      continue
-    }
-    if (!VALID_ASSET_FLAVORS.has(clean.chassisFlavor as string)) {
-      dropped.set(label, `invalid flavor ${String(clean.chassisFlavor)}`)
-      continue
-    }
-    const tier = Number(clean.chassisTier)
-    if (!VALID_ASSET_TIERS.has(tier)) {
-      dropped.set(label, `invalid tier ${String(clean.chassisTier)}`)
-      continue
-    }
+    const spec = validateChassisKindFlavorTier(
+      clean.kind,
+      clean.chassisFlavor,
+      clean.chassisTier,
+      label,
+      dropped
+    )
+    if (!spec) continue
     if (!VALID_ASSET_ACQUISITION_MODES.has(clean.acquisitionMode as string)) {
       dropped.set(
         label,
@@ -321,9 +354,7 @@ export const sanitizeAssets = (raw: unknown): LongTermAsset[] => {
       continue
     }
 
-    const kind = clean.kind as LongTermAsset['kind']
-    const flavor = clean.chassisFlavor as AssetFlavor
-    const chassisTier = tier as ChassisTier
+    const { kind, flavor, chassisTier } = spec
     const configTier = CHASSIS_CONFIG[kind]?.[flavor]?.[chassisTier]
     if (!configTier) {
       // The chassis economics below are re-derived from CHASSIS_CONFIG, so an
@@ -507,23 +538,16 @@ export const sanitizeCrowdfundCampaigns = (
       dropped.set(label, 'missing assetSpec')
       continue
     }
-    const spec = stripHostileKeys(clean.assetSpec)
-    if (!VALID_ASSET_KINDS.has(spec.kind as string)) {
-      dropped.set(label, `invalid assetSpec.kind ${String(spec.kind)}`)
-      continue
-    }
-    if (!VALID_ASSET_FLAVORS.has(spec.flavor as string)) {
-      dropped.set(label, `invalid assetSpec.flavor ${String(spec.flavor)}`)
-      continue
-    }
-    const tier = Number(spec.chassisTier)
-    if (!VALID_ASSET_TIERS.has(tier)) {
-      dropped.set(
-        label,
-        `invalid assetSpec.chassisTier ${String(spec.chassisTier)}`
-      )
-      continue
-    }
+    const rawSpec = stripHostileKeys(clean.assetSpec)
+    const spec = validateChassisKindFlavorTier(
+      rawSpec.kind,
+      rawSpec.flavor,
+      rawSpec.chassisTier,
+      label,
+      dropped,
+      'assetSpec.'
+    )
+    if (!spec) continue
     const kind = spec.kind as CrowdfundCampaign['assetSpec']['kind']
     if (unavailableKinds.has(kind) || seenKinds.has(kind)) {
       dropped.set(label, `kind ${kind} already owned or campaigned`)
@@ -558,7 +582,7 @@ export const sanitizeCrowdfundCampaigns = (
       assetSpec: {
         kind,
         flavor: spec.flavor as AssetFlavor,
-        chassisTier: tier as ChassisTier
+        chassisTier: spec.chassisTier
       },
       targetAmount,
       fameStake,

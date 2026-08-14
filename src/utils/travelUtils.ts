@@ -132,13 +132,7 @@ export const getLocationName = (
 
 const BOOKING_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
-/**
- * Wraps checkVenueAccess to only enforce venue access restrictions on specific node types.
- *
- * @param params - Same parameters as checkVenueAccess.
- * @returns Access result. Always allowed for non-booking node types.
- */
-export const getNodeAccessStatus = (params: {
+export interface VenueAccessParams {
   node: MapNode & { type?: string; venue?: VenueLike | string }
   player: PlayerState
   reputationByRegion?: Record<string, number>
@@ -148,7 +142,17 @@ export const getNodeAccessStatus = (params: {
     location: string | undefined,
     venueId: string | null | undefined
   ) => string
-}): VenueAccessResult => {
+}
+
+/**
+ * Wraps checkVenueAccess to only enforce venue access restrictions on specific node types.
+ *
+ * @param params - Same parameters as checkVenueAccess.
+ * @returns Access result. Always allowed for non-booking node types.
+ */
+export const getNodeAccessStatus = (
+  params: VenueAccessParams
+): VenueAccessResult => {
   if (!params.node.type || !BOOKING_NODE_TYPES.has(params.node.type)) {
     return { allowed: true }
   }
@@ -162,17 +166,7 @@ export const checkVenueAccess = ({
   venueBlacklist = [],
   venuesMap,
   getLocationName
-}: {
-  node: MapNode & { type?: string; venue?: VenueLike | string }
-  player: PlayerState
-  reputationByRegion?: Record<string, number>
-  venueBlacklist?: string[]
-  venuesMap: VenueMap
-  getLocationName: (
-    location: string | undefined,
-    venueId: string | null | undefined
-  ) => string
-}): VenueAccessResult => {
+}: VenueAccessParams): VenueAccessResult => {
   // `sanitizeMapNodes` drops `node.venue` on load and keeps only `venueId`,
   // so a gate keyed on `node.venue` alone goes silent for every node in a
   // reloaded save. Accept either shape.

@@ -22,6 +22,20 @@ const POST_BADGES = {
   STORY: '📖'
 }
 
+const resolveRngPost = (
+  diceRoll: number,
+  threshold: number,
+  platform: string,
+  success: Record<string, unknown>,
+  fail: Record<string, unknown>,
+  isLessEqual = true
+) => {
+  const isSuccess = isLessEqual ? diceRoll <= threshold : diceRoll < threshold
+  return isSuccess
+    ? { type: 'RNG_SUCCESS', success: true, platform, ...success }
+    : { type: 'RNG_FAIL', success: false, platform, ...fail }
+}
+
 const getCost = (inf: unknown): number => {
   const infObj =
     typeof inf === 'object' && inf !== null
@@ -581,25 +595,20 @@ export const POST_OPTIONS = [
     category: 'Drama',
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true, // Post-gig, always available
-    resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
-      // 70% success / 30% disaster
-      if (diceRoll <= 0.7) {
-        return {
-          type: 'RNG_SUCCESS',
-          success: true,
-          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+    resolve: ({ diceRoll }: GameState & { diceRoll: number }) =>
+      resolveRngPost(
+        diceRoll,
+        0.7,
+        SOCIAL_PLATFORMS.TIKTOK.id,
+        {
           followers: 3000,
           moodChange: 10,
           allMembersMoodChange: true,
           message: i18n.t('ui:postOptions.drama_drunk_stream.successMessage', {
             defaultValue: 'Massive hit! The fans loved the chaotic energy.'
           })
-        }
-      } else {
-        return {
-          type: 'RNG_FAIL',
-          success: false,
-          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+        },
+        {
           followers: -2000,
           harmonyChange: -20,
           controversyChange: 30, // Big spike towards shadowban
@@ -608,8 +617,7 @@ export const POST_OPTIONS = [
             defaultValue: 'CANCELLATION EVENT. Someone said something awful.'
           })
         }
-      }
-    }
+      )
   },
   {
     id: 'drama_political_take',
@@ -1183,33 +1191,29 @@ export const POST_OPTIONS = [
     category: 'Drama', // Fits DRAMA trend
     badges: [POST_BADGES.VIRAL, POST_BADGES.RISK],
     condition: () => true,
-    resolve: ({ diceRoll }: GameState & { diceRoll: number }) => {
-      if (diceRoll < 0.6) {
-        return {
-          type: 'RNG_SUCCESS',
-          success: true,
-          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+    resolve: ({ diceRoll }: GameState & { diceRoll: number }) =>
+      resolveRngPost(
+        diceRoll,
+        0.6,
+        SOCIAL_PLATFORMS.TIKTOK.id,
+        {
           followers: 4000,
           controversyChange: 20,
           message: i18n.t('ui:postOptions.drama_leaked_dms.successMessage', {
             defaultValue:
               'It went viral instantly. The gossip channels are covering it.'
           })
-        }
-      } else {
-        return {
-          type: 'RNG_FAIL',
-          success: false,
-          platform: SOCIAL_PLATFORMS.TIKTOK.id,
+        },
+        {
           followers: -1000,
           controversyChange: 40,
           harmonyChange: -20,
           message: i18n.t('ui:postOptions.drama_leaked_dms.failMessage', {
             defaultValue: 'It backfired. You look petty and everyone hates it.'
           })
-        }
-      }
-    }
+        },
+        false
+      )
   },
   {
     id: 'lifestyle_tour_diary',
