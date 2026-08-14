@@ -1,3 +1,5 @@
+import { deepFreeze } from '../utils/objectUtils'
+
 /**
  * Central balance configuration.
  *
@@ -150,14 +152,6 @@ const RANGES = {
 } as const
 
 type RangedKey = keyof typeof RANGES
-
-const deepFreeze = <T>(value: T): Readonly<T> => {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-    Object.freeze(value)
-    for (const nested of Object.values(value)) deepFreeze(nested)
-  }
-  return value
-}
 
 const readSection = (
   raw: Record<string, unknown>,
