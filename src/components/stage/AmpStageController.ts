@@ -100,7 +100,10 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
 
       const readBool = (key: string) => {
         if (Object.hasOwn(state, key)) {
-          return Boolean((state as unknown as Record<string, unknown>)[key])
+          const val = (state as unknown as Record<string, unknown>)[key]
+          if (typeof val === 'boolean') {
+            return val
+          }
         }
         return undefined
       }

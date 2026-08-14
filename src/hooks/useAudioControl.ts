@@ -36,8 +36,6 @@ export function useAudioControl<TSelected = AudioSnapshot>(
 ): UseAudioControlResult<TSelected> {
   const manager = audioService as AudioManagerLike
   const fallbackSnapshotRef = useRef<AudioSnapshot | null>(null)
-  const selectorRef = useRef(selector)
-  selectorRef.current = selector
 
   const optionsPollMs = options.pollMs
 
@@ -70,12 +68,12 @@ export function useAudioControl<TSelected = AudioSnapshot>(
 
   const getSelectedSnapshot = useCallback(() => {
     const snapshot = getSnapshot()
-    if (typeof selectorRef.current === 'function') {
-      return selectorRef.current(snapshot)
+    if (typeof selector === 'function') {
+      return selector(snapshot)
     }
 
     return snapshot
-  }, [getSnapshot])
+  }, [getSnapshot, selector])
 
   const audioState = useSyncExternalStore(
     subscribe,

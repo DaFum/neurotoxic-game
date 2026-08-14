@@ -307,7 +307,7 @@ const isShallowEqual = (a: unknown, b: unknown): boolean => {
   if (keysA.length !== keysB.length) return false
   for (let i = 0; i < keysA.length; i++) {
     const key = keysA[i]
-    if (!key) continue
+    if (key === undefined) continue
     if (!Object.hasOwn(objB, key) || !Object.is(objA[key], objB[key])) {
       return false
     }
