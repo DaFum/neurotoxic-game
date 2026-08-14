@@ -152,3 +152,14 @@ test('deepFreeze traverses already frozen parent objects and freezes mutable chi
   assert.equal(Object.isFrozen(child), true)
   assert.equal(Object.isFrozen(child.nested), true)
 })
+
+test('deepFreeze handles cyclic object graphs without exceeding call stack', () => {
+  const cyclic = { a: 1, nested: { b: 2 } }
+  cyclic.self = cyclic
+  cyclic.nested.parent = cyclic
+
+  const result = deepFreeze(cyclic)
+  assert.equal(result, cyclic)
+  assert.equal(Object.isFrozen(result), true)
+  assert.equal(Object.isFrozen(result.nested), true)
+})

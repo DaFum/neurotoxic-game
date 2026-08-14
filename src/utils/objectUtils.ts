@@ -361,18 +361,24 @@ export const safeJsonParse = <T = unknown>(text: string): T => {
   })
 }
 
+const freezeRecursively = (value: unknown, visited: WeakSet<object>): void => {
+  if (!value || typeof value !== 'object' || visited.has(value)) return
+  visited.add(value)
+  if (!Object.isFrozen(value)) {
+    Object.freeze(value)
+  }
+  for (const nested of Object.values(value)) {
+    freezeRecursively(nested, visited)
+  }
+}
+
 /**
- * Recursively freezes an object and its nested objects.
+ * Recursively freezes an object and its nested objects with cycle detection.
  *
  * @param value - Value to deep freeze.
  * @returns The frozen value typed as Readonly.
  */
 export const deepFreeze = <T>(value: T): Readonly<T> => {
-  if (value && typeof value === 'object') {
-    if (!Object.isFrozen(value)) {
-      Object.freeze(value)
-    }
-    for (const nested of Object.values(value)) deepFreeze(nested)
-  }
+  freezeRecursively(value, new WeakSet())
   return value
 }
