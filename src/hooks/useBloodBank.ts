@@ -9,6 +9,23 @@ import { finiteNumberOr } from '../utils/finiteNumber'
  *
  * @returns Modal state, donation actions, eligibility flags, and scaled donation configs.
  */
+const DONATION_VARIANTS = {
+  blood: {
+    baseMoney: GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY,
+    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
+    staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
+    controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN,
+    successToastKey: 'ui:blood_bank.success_toast'
+  },
+  marrow: {
+    baseMoney: GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY,
+    harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
+    staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
+    controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN,
+    successToastKey: 'ui:blood_bank.marrow_success_toast'
+  }
+}
+
 export const useBloodBank = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)
@@ -23,23 +40,17 @@ export const useBloodBank = () => {
     // finiteNumberOr, not `?? 0`: a NaN fameLevel would otherwise poison
     // `multiplier` and dispatch a NaN moneyGain into bloodBankDonate.
     const multiplier = 1 + finiteNumberOr(player?.fameLevel, 0) * 0.2
+
+    const buildConfig = (variant: typeof DONATION_VARIANTS.blood) => ({
+      moneyGain: Math.floor(variant.baseMoney * multiplier),
+      harmonyCost: variant.harmonyCost,
+      staminaCost: variant.staminaCost,
+      controversyGain: variant.controversyGain
+    })
+
     return {
-      config: {
-        moneyGain: Math.floor(
-          GAME_CONSTANTS.BLOOD_BANK.BLOOD_BASE_MONEY * multiplier
-        ),
-        harmonyCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_HARMONY_COST,
-        staminaCost: GAME_CONSTANTS.BLOOD_BANK.BLOOD_STAMINA_COST,
-        controversyGain: GAME_CONSTANTS.BLOOD_BANK.BLOOD_CONTROVERSY_GAIN
-      },
-      marrowConfig: {
-        moneyGain: Math.floor(
-          GAME_CONSTANTS.BLOOD_BANK.MARROW_BASE_MONEY * multiplier
-        ),
-        harmonyCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_HARMONY_COST,
-        staminaCost: GAME_CONSTANTS.BLOOD_BANK.MARROW_STAMINA_COST,
-        controversyGain: GAME_CONSTANTS.BLOOD_BANK.MARROW_CONTROVERSY_GAIN
-      }
+      config: buildConfig(DONATION_VARIANTS.blood),
+      marrowConfig: buildConfig(DONATION_VARIANTS.marrow)
     }
   }, [player?.fameLevel])
 
@@ -50,13 +61,12 @@ export const useBloodBank = () => {
     (type: 'blood' | 'marrow' = 'blood') => {
       const isMarrow = type === 'marrow'
       const activeConfig = isMarrow ? marrowConfig : config
+      const variant = DONATION_VARIANTS[type]
 
       if (isMarrow ? !canDonateMarrow : !canDonate) return
 
       const successToast = {
-        messageKey: isMarrow
-          ? 'ui:blood_bank.marrow_success_toast'
-          : 'ui:blood_bank.success_toast',
+        messageKey: variant.successToastKey,
         type: 'success' as const
       }
 

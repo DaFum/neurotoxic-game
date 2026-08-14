@@ -18,8 +18,6 @@ export const RoadieRunScene = () => {
   const { changeScene } = useGameActions()
   const [showControls, setShowControls] = useState(false)
 
-  const controllerFactory = useMemo(() => createRoadieStageController, [])
-
   const logic = useMemo(
     () => ({
       gameStateRef,
@@ -57,7 +55,7 @@ export const RoadieRunScene = () => {
 
   return (
     <MinigameSceneFrame
-      controllerFactory={controllerFactory}
+      controllerFactory={createRoadieStageController}
       logic={logic}
       uiState={uiState}
       onComplete={handleComplete}

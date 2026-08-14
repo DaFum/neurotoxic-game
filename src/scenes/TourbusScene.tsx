@@ -17,9 +17,6 @@ export const TourbusScene = () => {
     useTourbusLogic()
   const { handleArrivalSequence } = useArrivalLogic()
 
-  // Controller factory for Tourbus
-  const controllerFactory = useMemo(() => createTourbusStageController, [])
-
   // Pass logic object expected by PixiStage
   const logic = useMemo(
     () => ({
@@ -33,7 +30,7 @@ export const TourbusScene = () => {
 
   return (
     <MinigameSceneFrame
-      controllerFactory={controllerFactory}
+      controllerFactory={createTourbusStageController}
       logic={logic}
       uiState={uiState}
       onComplete={handleArrivalSequence}

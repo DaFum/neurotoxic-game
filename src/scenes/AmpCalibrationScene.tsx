@@ -15,8 +15,6 @@ export const AmpCalibrationScene = () => {
 
   const { update, gameStateRef, ...ampLogicProps } = useAmpLogic()
 
-  const controllerFactory = useMemo(() => createAmpStageController, [])
-
   const logic = useMemo(
     () => ({
       update,
@@ -33,7 +31,7 @@ export const AmpCalibrationScene = () => {
     <AmpCalibrationView
       {...ampLogicProps}
       t={t}
-      controllerFactory={controllerFactory}
+      controllerFactory={createAmpStageController}
       logic={logic}
       onComplete={onComplete}
     />

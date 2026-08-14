@@ -64,6 +64,36 @@ export const createAudioHandlers = (
   }
 })
 
+const getDefaultSnapshot = (manager: AudioManagerLike): AudioSnapshot => ({
+  musicVol: manager.musicVolume ?? 1,
+  sfxVol: manager.sfxVolume ?? 1,
+  isMuted: manager.muted ?? false,
+  isPlaying: manager.isPlaying ?? false,
+  currentSongId: manager.currentSongId ?? null
+})
+
+const normalizeAudioSnapshot = (
+  value: unknown,
+  manager: AudioManagerLike
+): AudioSnapshot => {
+  const defaults = getDefaultSnapshot(manager)
+  if (!value || typeof value !== 'object' || Array.isArray(value)) {
+    return defaults
+  }
+  const raw = value as Record<string, unknown>
+  return {
+    musicVol: finiteNumberOr(raw.musicVol, defaults.musicVol),
+    sfxVol: finiteNumberOr(raw.sfxVol, defaults.sfxVol),
+    isMuted: typeof raw.isMuted === 'boolean' ? raw.isMuted : defaults.isMuted,
+    isPlaying:
+      typeof raw.isPlaying === 'boolean' ? raw.isPlaying : defaults.isPlaying,
+    currentSongId:
+      typeof raw.currentSongId === 'string' || raw.currentSongId === null
+        ? raw.currentSongId
+        : defaults.currentSongId
+  }
+}
+
 /**
  * Reads and normalizes the current audio snapshot from a manager.
  *
@@ -79,41 +109,13 @@ export const getAudioSnapshot = (
   manager: AudioManagerLike,
   fallbackSnapshotRef: { current: AudioSnapshot | null }
 ): AudioSnapshot => {
-  const getDefaultSnapshot = (): AudioSnapshot => ({
-    musicVol: manager.musicVolume ?? 1,
-    sfxVol: manager.sfxVolume ?? 1,
-    isMuted: manager.muted ?? false,
-    isPlaying: manager.isPlaying ?? false,
-    currentSongId: manager.currentSongId ?? null
-  })
-
-  const normalizeAudioSnapshot = (value: unknown): AudioSnapshot => {
-    const defaults = getDefaultSnapshot()
-    if (!value || typeof value !== 'object' || Array.isArray(value)) {
-      return defaults
-    }
-    const raw = value as Record<string, unknown>
-    return {
-      musicVol: finiteNumberOr(raw.musicVol, defaults.musicVol),
-      sfxVol: finiteNumberOr(raw.sfxVol, defaults.sfxVol),
-      isMuted:
-        typeof raw.isMuted === 'boolean' ? raw.isMuted : defaults.isMuted,
-      isPlaying:
-        typeof raw.isPlaying === 'boolean' ? raw.isPlaying : defaults.isPlaying,
-      currentSongId:
-        typeof raw.currentSongId === 'string' || raw.currentSongId === null
-          ? raw.currentSongId
-          : defaults.currentSongId
-    }
-  }
-
   const maybeManagedSnapshot =
     typeof manager.getStateSnapshot === 'function'
       ? manager.getStateSnapshot()
       : typeof manager.getState === 'function'
         ? manager.getState()
         : null
-  const nextSnapshot = normalizeAudioSnapshot(maybeManagedSnapshot)
+  const nextSnapshot = normalizeAudioSnapshot(maybeManagedSnapshot, manager)
 
   const previousSnapshot = fallbackSnapshotRef.current
   if (

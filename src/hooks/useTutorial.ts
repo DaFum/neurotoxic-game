@@ -5,11 +5,6 @@ import { GAME_PHASES } from '../context/gameConstants'
 import type { GamePhase } from '../types'
 import { finiteNumberOr } from '../utils/gameState'
 
-/** Tutorial step ids in progression order. */
-const TUTORIAL_STEPS = [0, 1, 2, 3]
-/** Total number of tutorial steps. */
-const TOTAL_STEPS = TUTORIAL_STEPS.length
-
 interface TutorialConfig {
   validScenes: GamePhase[]
   titleKey: string
@@ -57,6 +52,11 @@ const TUTORIAL_CONFIGS: TutorialConfig[] = [
     target: 'game-canvas'
   }
 ]
+
+/** Total number of tutorial steps. */
+const TOTAL_STEPS = TUTORIAL_CONFIGS.length
+/** Tutorial step ids in progression order. */
+const TUTORIAL_STEPS = Array.from({ length: TOTAL_STEPS }, (_, i) => i)
 
 /**
  * Derives tutorial overlay content and completion controls from game state.

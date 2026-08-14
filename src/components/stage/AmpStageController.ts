@@ -89,40 +89,42 @@ export class AmpStageController extends BaseStageController<AmpStageOptions> {
   syncState() {
     if (this.gameStateRef && this.gameStateRef.current) {
       const state = this.gameStateRef.current
-      if (Object.hasOwn(state, 'targetValue')) {
-        const sanitizedTarget = Number(state.targetValue)
-        if (Number.isFinite(sanitizedTarget)) {
-          this.targetFreq = clampAmpDial(sanitizedTarget)
+
+      const readNum = (key: string, clampFn: (val: number) => number) => {
+        if (Object.hasOwn(state, key)) {
+          const val = Number((state as unknown as Record<string, unknown>)[key])
+          if (Number.isFinite(val)) return clampFn(val)
         }
+        return undefined
       }
-      if (Object.hasOwn(state, 'dialValue')) {
-        const sanitizedCurrent = Number(state.dialValue)
-        if (Number.isFinite(sanitizedCurrent)) {
-          const boundedCurrentFreq = Math.max(
-            0,
-            Math.min(1000, sanitizedCurrent)
-          )
-          this.currentFreq = boundedCurrentFreq
+
+      const readBool = (key: string) => {
+        if (Object.hasOwn(state, key)) {
+          return Boolean((state as unknown as Record<string, unknown>)[key])
         }
+        return undefined
       }
-      if (Object.hasOwn(state, 'isOverdriveActive')) {
-        this.isOverdriveActive = Boolean(state.isOverdriveActive)
-      }
-      if (Object.hasOwn(state, 'isOverheat')) {
-        this.isOverheat = Boolean(state.isOverheat)
-      }
-      if (Object.hasOwn(state, 'isAnomalyActive')) {
-        this.isAnomalyActive = Boolean(state.isAnomalyActive)
-      }
-      if (Object.hasOwn(state, 'interference')) {
-        const sanitizedInterference = Number(state.interference)
-        if (Number.isFinite(sanitizedInterference)) {
-          this.interference = clamp0to100(sanitizedInterference)
-        }
-      }
-      if (Object.hasOwn(state, 'isHijackActive')) {
-        this.isHijackActive = Boolean(state.isHijackActive)
-      }
+
+      const target = readNum('targetValue', clampAmpDial)
+      if (target !== undefined) this.targetFreq = target
+
+      const current = readNum('dialValue', clampAmpDial)
+      if (current !== undefined) this.currentFreq = current
+
+      const overdrive = readBool('isOverdriveActive')
+      if (overdrive !== undefined) this.isOverdriveActive = overdrive
+
+      const overheat = readBool('isOverheat')
+      if (overheat !== undefined) this.isOverheat = overheat
+
+      const anomaly = readBool('isAnomalyActive')
+      if (anomaly !== undefined) this.isAnomalyActive = anomaly
+
+      const int = readNum('interference', clamp0to100)
+      if (int !== undefined) this.interference = int
+
+      const hijack = readBool('isHijackActive')
+      if (hijack !== undefined) this.isHijackActive = hijack
     }
   }
 
