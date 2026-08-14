@@ -65,6 +65,8 @@ describe('Road Trip Events Suite', () => {
       for (let i = 0; i < event.options.length; i++) {
         const option = event.options[i]
 
+        const snapshot = JSON.parse(JSON.stringify(state))
+
         // Test with high roll (success on skill checks)
         const successRes = resolveEventChoice(option, state, () => 0.99)
         assert.ok(
@@ -100,6 +102,10 @@ describe('Road Trip Events Suite', () => {
             `applyEventDelta failed for ${id} opt ${i + 1} (fail)`
           )
         }
+
+        // Deep stringify state to avoid prototype mismatch with snapshot
+        const stringifiedState = JSON.parse(JSON.stringify(state))
+        assert.deepEqual(stringifiedState, snapshot)
       }
     }
   })
@@ -128,16 +134,62 @@ describe('Road Trip Events Suite', () => {
     assert.ok(nextStateOpt3)
   })
 
-  it('reststop_trunk_dealer adds items to inventory upon purchase', () => {
-    const state = createInitialState()
+  it('reststop_trunk_dealer enforces affordability and adds items to inventory upon purchase', () => {
+    let state = createInitialState()
     const event = ALL_RAW_EVENTS.find(e => e.id === 'reststop_trunk_dealer')
     assert.ok(event)
 
-    // Option 1: Buy modded module
+    // Check opt1 (cost 120) boundary
+    state.player.money = 119
+    assert.equal(event.options[0].condition(state), false)
+    state.player.money = 120
+    assert.equal(event.options[0].condition(state), true)
+    state.player.money = 121
+    assert.equal(event.options[0].condition(state), true)
+
+    // Check opt2 (cost 60) boundary
+    state.player.money = 59
+    assert.equal(event.options[1].condition(state), false)
+    state.player.money = 60
+    assert.equal(event.options[1].condition(state), true)
+    state.player.money = 61
+    assert.equal(event.options[1].condition(state), true)
+
+    // Option 1: Buy modded module (Requires restoring money to pass condition and have right base state)
+    state.player.money = 120
+    const snapshotMoney = state.player.money
     const opt1 = resolveEventChoice(event.options[0], state)
     assert.ok(opt1.delta)
     const nextState = applyEventDelta(state, opt1.delta)
-    assert.equal(nextState.player.money, state.player.money - 120)
+    assert.equal(nextState.player.money, snapshotMoney - 120)
     assert.equal(nextState.band.inventory.c_diy_overdrive, 1)
+  })
+
+  it('reststop_night_coffee enforces affordability conditions', () => {
+    let state = createInitialState()
+    const event = ALL_RAW_EVENTS.find(e => e.id === 'reststop_night_coffee')
+    assert.ok(event)
+
+    // Check opt1 (cost 45) boundary
+    state.player.money = 44
+    assert.equal(event.options[0].condition(state), false)
+    state.player.money = 45
+    assert.equal(event.options[0].condition(state), true)
+    state.player.money = 46
+    assert.equal(event.options[0].condition(state), true)
+  })
+
+  it('van_ac_heater_failure enforces affordability conditions', () => {
+    let state = createInitialState()
+    const event = ALL_RAW_EVENTS.find(e => e.id === 'van_ac_heater_failure')
+    assert.ok(event)
+
+    // Check opt2 (cost 110) boundary
+    state.player.money = 109
+    assert.equal(event.options[1].condition(state), false)
+    state.player.money = 110
+    assert.equal(event.options[1].condition(state), true)
+    state.player.money = 111
+    assert.equal(event.options[1].condition(state), true)
   })
 })

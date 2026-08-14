@@ -114,7 +114,6 @@ The goal of this feature is to deepen band roleplay, character dynamics, and Ger
 2. `src/data/events/transport.ts`:
    - `reststop_night_coffee`
    - `van_ac_heater_failure`
-3. `src/data/events/special.ts`:
    - `reststop_trunk_dealer`
 
 ### 3.2 Localization Keys
