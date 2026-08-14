@@ -4,7 +4,11 @@ import { hashString } from '../../utils/stringUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
- * Runtime vehicle obstacle tracked by the Roadie traffic manager.
+ * Represents a runtime vehicle obstacle tracked by the Roadie traffic manager.
+ *
+ * @remarks
+ * This type defines the properties of a vehicle obstacle moving across the screen,
+ * including its identifier, positional data, movement speed, and a required texture hash.
  */
 export type RoadieCar = {
   id: string | number
@@ -20,7 +24,12 @@ type RoadieTrafficState = {
 }
 
 /**
- * Manages Roadie Traffic rendering resources and state.
+ * Manages Roadie traffic rendering resources and state.
+ *
+ * @remarks
+ * Handles the creation, rendering, pooling, and cleanup of vehicle sprites
+ * based on the current traffic state during gameplay. It tracks active vehicles
+ * by their identifiers and dynamically adjusts their positions and scales.
  */
 export class RoadieTrafficManager {
   container: Container
@@ -33,6 +42,13 @@ export class RoadieTrafficManager {
   carSprites: Map<string | number, Sprite | Graphics>
   currentIds: Set<string | number>
 
+  /**
+   * Initializes the RoadieTrafficManager with its container, textures, and color configuration.
+   *
+   * @param container - The PixiJS container where car sprites will be added
+   * @param textures - The collection of available car textures
+   * @param colors - The color configurations, including the blood red fallback color
+   */
   constructor(
     container: Container,
     textures: { cars: import('pixi.js').Texture[] },
@@ -45,6 +61,17 @@ export class RoadieTrafficManager {
     this.currentIds = new Set() // Reuse Set to avoid GC
   }
 
+  /**
+   * Retrieves an existing sprite for a car or creates a new one if it does not exist.
+   *
+   * @remarks
+   * When creating a new sprite, this method will attempt to assign a texture based on
+   * a consistent hash derived from the car's state. If no textures are available, it falls
+   * back to rendering a red rectangular graphic.
+   *
+   * @param car - The vehicle state data used to derive the sprite
+   * @returns The newly created or existing sprite or graphics instance
+   */
   _getOrCreateCarSprite(car: RoadieCar) {
     let sprite = this.carSprites.get(car.id)
     if (sprite) return sprite
@@ -77,6 +104,18 @@ export class RoadieTrafficManager {
     return sprite
   }
 
+  /**
+   * Updates and renders all active traffic vehicles based on the current state.
+   *
+   * @remarks
+   * This method synchronizes the visual sprites with the logical traffic state, creating
+   * new sprites as needed, updating their positions and scaling based on the grid cell dimensions,
+   * and flipping them horizontally depending on their movement direction.
+   *
+   * @param state - The current traffic state containing an array of active vehicles
+   * @param cellW - The calculated width of a single grid cell
+   * @param cellH - The calculated height of a single grid cell
+   */
   renderTraffic(state: RoadieTrafficState, cellW: number, cellH: number) {
     if (!Array.isArray(state.traffic)) {
       this.currentIds.clear()
@@ -129,6 +168,13 @@ export class RoadieTrafficManager {
     }
   }
 
+  /**
+   * Removes and destroys any vehicle sprites that are no longer present in the active state.
+   *
+   * @remarks
+   * Compares the set of currently tracked sprite IDs against the IDs encountered
+   * during the last render pass, safely destroying unneeded sprites to free memory.
+   */
   cleanupTraffic() {
     if (this.carSprites && this.carSprites.size > 0) {
       for (const id of this.carSprites.keys()) {
@@ -162,6 +208,12 @@ export class RoadieTrafficManager {
     }
   }
 
+  /**
+   * Performs a complete teardown of the traffic manager.
+   *
+   * @remarks
+   * Destroys all remaining car sprites and clears the tracked sprite map to release resources.
+   */
   dispose() {
     // Clean up car sprites explicitly
     if (this.carSprites) {
