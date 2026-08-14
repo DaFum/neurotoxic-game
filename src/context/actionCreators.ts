@@ -222,7 +222,10 @@ const SOCIAL_FIELDS = {
   influencers: {},
   scenePresence: {},
   regionalGigHistory: {}
-} as const satisfies Record<keyof SocialState, { numeric?: boolean; nullable?: boolean }>
+} as const satisfies Record<
+  keyof SocialState,
+  { numeric?: boolean; nullable?: boolean }
+>
 
 const sanitizeSocialUpdates = (
   updates: Partial<SocialState> | null | undefined
@@ -234,7 +237,10 @@ const sanitizeSocialUpdates = (
     const value = (updates as Record<string, unknown>)[key]
     if (!Object.hasOwn(SOCIAL_FIELDS, key)) continue
 
-    const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as { numeric?: boolean; nullable?: boolean }
+    const spec = SOCIAL_FIELDS[key as keyof typeof SOCIAL_FIELDS] as {
+      numeric?: boolean
+      nullable?: boolean
+    }
     if (spec?.numeric) {
       if (value === null) {
         if (spec.nullable) out[key] = null

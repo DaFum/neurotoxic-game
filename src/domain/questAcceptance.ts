@@ -163,7 +163,11 @@ export const canAcceptQuest = (
   const cooldowns = state.questCooldowns ?? []
   for (let i = 0; i < cooldowns.length; i++) {
     const cd = cooldowns[i]
-    if (cd && cd.questId === questId && finiteNumberOr(cd.expiresOnDay, 0) > currentDay) {
+    if (
+      cd &&
+      cd.questId === questId &&
+      finiteNumberOr(cd.expiresOnDay, 0) > currentDay
+    ) {
       onCooldown = true
       break
     }
