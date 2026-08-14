@@ -238,9 +238,11 @@ const validateDiversity = (
     outDegree.set(connection.from, (outDegree.get(connection.from) ?? 0) + 1)
   }
 
-  const branchPoints = [...outDegree.values()].filter(
-    degree => degree >= 2
-  ).length
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter(...).length with a for loop to avoid intermediate array allocation.
+  let branchPoints = 0
+  for (const degree of outDegree.values()) {
+    if (degree >= 2) branchPoints++
+  }
   if (branchPoints < MAP_DIVERSITY_REQUIREMENTS.minBranchPoints) {
     issues.push({
       code: 'diversity.branchPoints',
@@ -249,7 +251,12 @@ const validateDiversity = (
     })
   }
 
-  const nonGigNodes = nodeList.filter(node => node.type !== 'GIG').length
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter(...).length with a for loop to avoid intermediate array allocation.
+  let nonGigNodes = 0
+  for (let i = 0; i < nodeList.length; i++) {
+    const node = nodeList[i]
+    if (node && node.type !== 'GIG') nonGigNodes++
+  }
   if (nonGigNodes < MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes) {
     issues.push({
       code: 'diversity.nonGigNodes',
@@ -356,7 +363,16 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
 
   const connections = validateConnections(raw.connections, nodeIds, issues)
 
-  const startNodes = Object.values(nodes).filter(node => node.type === 'START')
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.values().filter() with a for...in loop to avoid intermediate array allocation.
+  const startNodes: ValidatedMapNode[] = []
+  for (const key in nodes) {
+    if (Object.hasOwn(nodes, key)) {
+      const node = nodes[key]
+      if (node && node.type === 'START') {
+        startNodes.push(node)
+      }
+    }
+  }
   if (startNodes.length !== 1) {
     issues.push({
       code: 'map.start.count',
@@ -373,7 +389,13 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
 
   if (connections && startNodes.length === 1 && startNodes[0]) {
     const reachable = collectReachable(startNodes[0].id, connections)
-    const orphans = Object.keys(nodes).filter(id => !reachable.has(id))
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys().filter() with a for...in loop to avoid intermediate array allocation.
+    const orphans: string[] = []
+    for (const id in nodes) {
+      if (Object.hasOwn(nodes, id) && !reachable.has(id)) {
+        orphans.push(id)
+      }
+    }
     if (orphans.length > 0) {
       issues.push({
         code: 'map.unreachableNodes',

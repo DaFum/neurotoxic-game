@@ -213,3 +213,7 @@
 ## 2026-08-12 - Early returns vs full iteration in filter lengths
 **Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
 **Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
+
+## 2024-05-18 - Avoid Object.values() and Object.keys() on Validation Hot Paths
+**Learning:** In MapValidation scripts (`src/utils/mapValidation.ts`), combining `Object.values().filter()` or `Object.keys().filter()` causes unnecessary intermediate array allocations per validation cycle. Even single array spreads like `[...map.values()].filter(...)` are similarly inefficient.
+**Action:** Replace `Object.values().filter(...)` with standard `for...in` loops checking `Object.hasOwn(obj, key)`. Replace spread filters with standard `for...of` loops, as this eliminates the arrays entirely while keeping the code simple and testable.
