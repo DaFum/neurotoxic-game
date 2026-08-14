@@ -293,23 +293,33 @@ const validateLoadedEffect = (
   return copySafePrimitiveObject(effectObj) ?? null
 }
 
-const SHOP_ITEM_STRING_KEYS: ReadonlySet<string> = new Set([
-  'name',
-  'currency',
-  'category',
-  'description',
-  'img',
-  'imgPrompt',
-  'rarity'
-])
+type ShopItemFieldKind =
+  | 'id'
+  | 'nonNegativeNumber'
+  | 'string'
+  | 'finiteNumber'
+  | 'boolean'
+  | 'effect'
+  | 'effects'
 
-const SHOP_ITEM_NUMBER_KEYS: ReadonlySet<string> = new Set(['maxStacks'])
-
-const SHOP_ITEM_BOOLEAN_KEYS: ReadonlySet<string> = new Set([
-  'oneTime',
-  'requiresReputation',
-  'stackable'
-])
+const SHOP_ITEM_FIELD_SCHEMA: Readonly<Record<string, ShopItemFieldKind>> = {
+  id: 'id',
+  cost: 'nonNegativeNumber',
+  price: 'nonNegativeNumber',
+  name: 'string',
+  currency: 'string',
+  category: 'string',
+  description: 'string',
+  img: 'string',
+  imgPrompt: 'string',
+  rarity: 'string',
+  maxStacks: 'finiteNumber',
+  oneTime: 'boolean',
+  requiresReputation: 'boolean',
+  stackable: 'boolean',
+  effect: 'effect',
+  effects: 'effects'
+}
 
 const sanitizeShopInventoryItem = (
   raw: unknown
@@ -321,38 +331,53 @@ const sanitizeShopInventoryItem = (
   for (const itemKey in itemRecord) {
     if (!Object.hasOwn(itemRecord, itemKey)) continue
     if (isForbiddenKey(itemKey)) continue
+    const kind = SHOP_ITEM_FIELD_SCHEMA[itemKey]
+    if (!kind) continue
     const v = itemRecord[itemKey]
-    if (itemKey === 'id') {
-      if (typeof v === 'string' || typeof v === 'number') {
-        sanitizedItem.id = v
+
+    switch (kind) {
+      case 'id':
+        if (typeof v === 'string' || typeof v === 'number') {
+          sanitizedItem.id = v
+        }
+        break
+      case 'nonNegativeNumber':
+        if (isFiniteNumber(v)) {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(0, v)
+        }
+        break
+      case 'string':
+        if (typeof v === 'string') {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'finiteNumber':
+        if (isFiniteNumber(v)) {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'boolean':
+        if (typeof v === 'boolean') {
+          ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
+        }
+        break
+      case 'effect': {
+        const validEffect = validateLoadedEffect(v)
+        if (validEffect) sanitizedItem.effect = validEffect as never
+        break
       }
-    } else if (itemKey === 'cost' || itemKey === 'price') {
-      if (isFiniteNumber(v)) {
-        ;(sanitizedItem as Record<string, unknown>)[itemKey] = Math.max(0, v)
-      }
-    } else if (SHOP_ITEM_STRING_KEYS.has(itemKey)) {
-      if (typeof v === 'string') {
-        ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-      }
-    } else if (SHOP_ITEM_NUMBER_KEYS.has(itemKey)) {
-      if (isFiniteNumber(v)) {
-        ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-      }
-    } else if (SHOP_ITEM_BOOLEAN_KEYS.has(itemKey)) {
-      if (typeof v === 'boolean') {
-        ;(sanitizedItem as Record<string, unknown>)[itemKey] = v
-      }
-    } else if (itemKey === 'effect') {
-      const validEffect = validateLoadedEffect(v)
-      if (validEffect) sanitizedItem.effect = validEffect as never
-    } else if (itemKey === 'effects' && Array.isArray(v)) {
-      const flatEffects: Array<Record<string, unknown>> = []
-      for (let j = 0; j < v.length; j++) {
-        const validEffect = validateLoadedEffect(v[j])
-        if (validEffect) flatEffects.push(validEffect)
-      }
-      if (flatEffects.length > 0) {
-        sanitizedItem.effects = flatEffects as never
+      case 'effects': {
+        if (Array.isArray(v)) {
+          const flatEffects: Array<Record<string, unknown>> = []
+          for (let j = 0; j < v.length; j++) {
+            const validEffect = validateLoadedEffect(v[j])
+            if (validEffect) flatEffects.push(validEffect)
+          }
+          if (flatEffects.length > 0) {
+            sanitizedItem.effects = flatEffects as never
+          }
+        }
+        break
       }
     }
   }
