@@ -48,7 +48,6 @@ describe('Road Trip Events Suite', () => {
   it('all road-trip events exist in their respective category pools in EVENTS_DB', () => {
     const bandIds = new Set(EVENTS_DB.band.map(e => e.id))
     const transportIds = new Set(EVENTS_DB.transport.map(e => e.id))
-    const specialIds = new Set(EVENTS_DB.special.map(e => e.id))
 
     assert.ok(bandIds.has('van_playlist_dispute'))
     assert.ok(bandIds.has('traffic_jam_improv'))
