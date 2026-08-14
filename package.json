@@ -70,7 +70,7 @@
     "lucide-react": "1.24.0",
     "motion": "12.43.0",
     "motion-dom": "12.42.2",
-    "motion-utils": "12.39.0",
+    "motion-utils": "13.0.0",
     "pixi.js": "8.19.0",
     "playwright": "1.62.0",
     "react": "19.2.8",
