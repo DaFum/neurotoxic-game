@@ -295,5 +295,58 @@ export const SPECIAL_EVENTS = [
         outcomeText: 'events:creepy_motel.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'reststop_trunk_dealer',
+    category: 'special',
+    tags: ['travel', 'merchant', 'gear'],
+    title: 'events:reststop_trunk_dealer.title',
+    description: 'events:reststop_trunk_dealer.desc',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'events:reststop_trunk_dealer.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -120 },
+            { type: 'item', item: 'c_diy_overdrive', value: 1 }
+          ]
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt1.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt2.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 8,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'resource', resource: 'money', value: -60 },
+              { type: 'item', item: 'c_diy_overdrive', value: 1 }
+            ],
+            description: 'events:reststop_trunk_dealer.opt2.successOutcome'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'mood',
+            value: -2,
+            description: 'events:reststop_trunk_dealer.opt2.failureOutcome'
+          }
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt2.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt3.label',
+        effect: {
+          type: 'stat',
+          stat: 'mood',
+          value: 3
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt3.outcome'
+      }
+    ]
   }
 ]

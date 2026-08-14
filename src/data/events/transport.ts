@@ -862,5 +862,106 @@ export const TRANSPORT_EVENTS = [
         outcomeText: 'events:tourbus_maintenance_check.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'reststop_night_coffee',
+    category: 'transport',
+    tags: ['travel', 'reststop', 'stamina'],
+    title: 'events:reststop_night_coffee.title',
+    description: 'events:reststop_night_coffee.desc',
+    trigger: 'travel',
+    chance: 0.08,
+    options: [
+      {
+        label: 'events:reststop_night_coffee.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -45 },
+            { type: 'stat', stat: 'stamina', value: 15 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt1.outcome'
+      },
+      {
+        label: 'events:reststop_night_coffee.opt2.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'stamina', value: 20 },
+            { type: 'resource', resource: 'fuel', value: -5 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt2.outcome'
+      },
+      {
+        label: 'events:reststop_night_coffee.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'harmony', value: 10 },
+            { type: 'stat', stat: 'mood', value: 5 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'van_ac_heater_failure',
+    category: 'transport',
+    tags: ['travel', 'van', 'breakdown'],
+    title: 'events:van_ac_heater_failure.title',
+    description: 'events:van_ac_heater_failure.desc',
+    trigger: 'travel',
+    chance: 0.07,
+    options: [
+      {
+        label: 'events:van_ac_heater_failure.opt1.label',
+        skillCheck: {
+          stat: 'technical',
+          threshold: 8,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: 15 },
+              { type: 'stat', stat: 'van_condition', value: 5 }
+            ],
+            description: 'events:van_ac_heater_failure.opt1.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'van_condition', value: -10 },
+              { type: 'stat', stat: 'harmony', value: -8 }
+            ],
+            description: 'events:van_ac_heater_failure.opt1.failureOutcome'
+          }
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt1.outcome'
+      },
+      {
+        label: 'events:van_ac_heater_failure.opt2.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -110 },
+            { type: 'stat', stat: 'van_condition', value: 15 }
+          ]
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt2.outcome'
+      },
+      {
+        label: 'events:van_ac_heater_failure.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'mood', value: -10 },
+            { type: 'stat', stat: 'stamina', value: -5 }
+          ]
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt3.outcome'
+      }
+    ]
   }
 ]
