@@ -319,12 +319,24 @@ export const EventModal = ({
     }
   }, [onOptionSelect, outcome])
 
+  const eventOptions = useMemo(
+    () =>
+      Array.isArray(event?.options)
+        ? (event!.options as EventModalOption[])
+        : [],
+    [event]
+  )
+  const eventContext = useMemo(
+    () =>
+      typeof event?.context === 'object' && event!.context !== null
+        ? (event!.context as Record<string, unknown>)
+        : undefined,
+    [event]
+  )
+
   // Keyboard shortcut: press 1-4 to select options
   useEffect(() => {
     if (!event || outcome) return
-    const eventOptions = Array.isArray(event.options)
-      ? (event.options as EventModalOption[])
-      : []
 
     const handleKey = (e: KeyboardEvent) => {
       const num = parseInt(e.key, 10)
@@ -338,7 +350,7 @@ export const EventModal = ({
 
     window.addEventListener('keydown', handleKey)
     return () => window.removeEventListener('keydown', handleKey)
-  }, [event, outcome, handleOptionSelect])
+  }, [event, outcome, handleOptionSelect, eventOptions])
 
   // Auto-focus container for screen readers
   useEffect(() => {
@@ -356,10 +368,6 @@ export const EventModal = ({
 
   const outcomeMessage = useMemo(() => {
     if (!outcome || !event) return ''
-    const eventContext =
-      typeof event.context === 'object' && event.context !== null
-        ? (event.context as Record<string, unknown>)
-        : undefined
     if (previewError)
       return t('ui:event_error', {
         defaultValue: 'An error occurred loading this event.',
@@ -374,16 +382,10 @@ export const EventModal = ({
     ].filter(Boolean)
 
     return texts.join(' ') || t('ui:event.resolved', eventContext)
-  }, [outcome, t, event, previewError])
+  }, [outcome, t, event, previewError, eventContext])
 
   if (!event) return null
-  const eventOptions = Array.isArray(event.options)
-    ? (event.options as EventModalOption[])
-    : []
-  const eventContext =
-    typeof event.context === 'object' && event.context !== null
-      ? (event.context as Record<string, unknown>)
-      : undefined
+
   const titleKey = event.title ?? event.titleKey ?? 'ui:event.untitled'
   const descriptionKey =
     event.description ?? event.descriptionKey ?? 'ui:event.noDescription'

@@ -19,55 +19,6 @@ import type { RhythmGameRefState } from '../types/rhythmGame'
 class PixiStageController<
   TState extends RhythmGameRefState = RhythmGameRefState
 > extends BaseStageController<TState> {
-  // Getters and Setters for backward compatibility with existing tests
-  /**
-   * Backwards-compatible alias for the active toxic filter color matrix.
-   */
-  get colorMatrix() {
-    return this.toxicFilterManager?.colorMatrix ?? null
-  }
-
-  /**
-   * Replaces the active toxic filter color matrix when filters are initialized.
-   */
-  set colorMatrix(value) {
-    if (this.toxicFilterManager) {
-      this.toxicFilterManager.colorMatrix = value
-    }
-  }
-
-  /**
-   * Backwards-compatible alias for the active toxic filter chain.
-   */
-  get toxicFilters() {
-    return this.toxicFilterManager?.toxicFilters ?? null
-  }
-
-  /**
-   * Replaces the active toxic filter chain when filters are initialized.
-   */
-  set toxicFilters(value) {
-    if (this.toxicFilterManager) {
-      this.toxicFilterManager.toxicFilters = value
-    }
-  }
-
-  /**
-   * Reports whether the toxic filter effect is currently active.
-   */
-  get isToxicActive() {
-    return this.toxicFilterManager?.isToxicActive ?? false
-  }
-
-  /**
-   * Toggles the active toxic filter state when filters are initialized.
-   */
-  set isToxicActive(value) {
-    if (this.toxicFilterManager) {
-      this.toxicFilterManager.isToxicActive = value
-    }
-  }
-
   /**
    * The root Pixi.js container housing all stage visuals.
    */
@@ -218,7 +169,16 @@ class PixiStageController<
    * @param deltaMS - Time delta.
    */
   update(deltaMS: number) {
-    if (!this._canUpdate()) {
+    if (
+      !this.app ||
+      this.isDisposed ||
+      !this.stageContainer ||
+      !this.laneManager ||
+      !this.crowdManager ||
+      !this.noteManager ||
+      !this.effectManager ||
+      !this.toxicFilterManager?.isReady()
+    ) {
       return
     }
 
@@ -227,59 +187,30 @@ class PixiStageController<
     if (!state || state.isGameOver) {
       return
     }
-    const stageContainer = this.stageContainer
-    if (!stageContainer) {
-      return
-    }
-    const toxic = this.toxicFilterManager
-    if (!toxic) {
-      return
-    }
-    const laneManager = this.laneManager
-    const crowdManager = this.crowdManager
-    const noteManager = this.noteManager
-    const effectManager = this.effectManager
-    if (!laneManager || !crowdManager || !noteManager || !effectManager) {
-      return
-    }
 
     const elapsed = this.audioEngine.getGigTimeMs()
 
     if (state.isCorruptionBurstActive) {
       // Deterministic small shake
-      stageContainer.x = state.rng() * 10 - 5
-      stageContainer.y = state.rng() * 10 - 5
+      this.stageContainer.x = state.rng() * 10 - 5
+      this.stageContainer.y = state.rng() * 10 - 5
     } else {
-      stageContainer.x = 0
-      stageContainer.y = 0
+      this.stageContainer.x = 0
+      this.stageContainer.y = 0
     }
 
-    toxic.update(state, elapsed, stageContainer)
+    this.toxicFilterManager.update(state, elapsed, this.stageContainer)
 
-    laneManager.update(state)
-    crowdManager.update(state.combo ?? 0, state.isToxicMode ?? false, elapsed)
-    const laneLayout = laneManager.layout
-    if (!laneLayout) return
-    noteManager.update(state, elapsed, laneLayout)
-    effectManager.update(deltaMS)
-  }
-
-  /**
-   * Checks if the controller is ready to update.
-   * @returns True if ready to update.
-   */
-  _canUpdate() {
-    return !!(
-      this.app &&
-      !this.isDisposed &&
-      this.stageContainer &&
-      this.laneManager &&
-      this.crowdManager &&
-      this.noteManager &&
-      this.effectManager &&
-      this.toxicFilterManager &&
-      this.toxicFilterManager.isReady()
+    this.laneManager.update(state)
+    this.crowdManager.update(
+      state.combo ?? 0,
+      state.isToxicMode ?? false,
+      elapsed
     )
+    const laneLayout = this.laneManager.layout
+    if (!laneLayout) return
+    this.noteManager.update(state, elapsed, laneLayout)
+    this.effectManager.update(deltaMS)
   }
 
   /**

@@ -1,4 +1,15 @@
-import { IconClose, IconChevronDown, IconChevronUp } from './shared/Icons'
+import {
+  IconClose,
+  IconChevronDown,
+  IconChevronUp,
+  IconStar,
+  IconClock,
+  IconTrophy,
+  IconCoin,
+  IconFire,
+  IconThumbUp,
+  IconCube
+} from './shared/Icons'
 import { m, AnimatePresence } from 'motion/react'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
@@ -11,105 +22,13 @@ import {
   getQuestScopeHint,
   type QuestDisplayState
 } from './questHintViewModel'
-import { useId, memo, useState, type MouseEvent, type ReactNode } from 'react'
+import { memo, useState, type MouseEvent } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
 import { getQuestRewards } from '../domain/questRewards'
 import type { Variants } from 'motion/react'
 import type { PlayerState, QuestReward } from '../types'
-
-type IconProps = {
-  className?: string
-  title?: string
-  fill?: string
-  stroke?: string
-}
-
-// Helper component for accessible SVGs
-const BaseIcon = memo(
-  ({
-    className = '',
-    viewBox = '0 0 24 24',
-    title,
-    fill = 'currentColor',
-    children,
-    ...props
-  }: {
-    className?: string
-    viewBox?: string
-    title?: string
-    fill?: string
-    children?: ReactNode
-    stroke?: string
-    [key: string]: unknown
-  }) => {
-    const titleId = useId()
-    const isDecorative = !title || title.trim() === ''
-    return (
-      <svg
-        aria-hidden={isDecorative ? 'true' : undefined}
-        focusable={isDecorative ? 'false' : undefined}
-        role={isDecorative ? 'presentation' : 'img'}
-        aria-labelledby={isDecorative ? undefined : titleId}
-        fill={fill}
-        xmlns='http://www.w3.org/2000/svg'
-        preserveAspectRatio='xMidYMid meet'
-        {...props}
-        className={className}
-        viewBox={viewBox}
-      >
-        {!isDecorative && <title id={titleId}>{title}</title>}
-        {children}
-      </svg>
-    )
-  }
-)
-
-const makeIcon = (
-  children: ReactNode,
-  extraBaseProps: Partial<{ fill: string; stroke: string }> = {}
-) =>
-  memo(({ className = '', title }: IconProps) => (
-    <BaseIcon className={className} title={title} {...extraBaseProps}>
-      {children}
-    </BaseIcon>
-  ))
-
-const IconStar = makeIcon(
-  <path d='M11.999 1.439l2.844 7.218 7.718.666-5.859 5.093 1.764 7.584-6.467-3.968-6.467 3.968 1.764-7.584-5.859-5.093 7.718-.666 2.844-7.218z' />
-)
-const IconClock = makeIcon(
-  <path
-    strokeLinecap='round'
-    strokeLinejoin='round'
-    strokeWidth='2'
-    d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
-  />,
-  { fill: 'none', stroke: 'currentColor' }
-)
-const IconTrophy = makeIcon(
-  <path d='M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z' />
-)
-const IconCoin = makeIcon(
-  <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.26.28 2.62 1.15 2.84 2.99h-1.96c-.15-.97-.9-1.62-2.31-1.62-1.45 0-2.13.79-2.13 1.48 0 .84.53 1.36 2.88 1.9 2.5.58 3.97 1.68 3.97 3.86 0 1.76-1.12 2.89-3.24 3.53z' />
-)
-const IconFire = makeIcon(
-  <path d='M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z' />
-)
-const IconThumbUp = makeIcon(
-  <path d='M14 9V5a3 3 0 00-3-3l-4 9v11h11.3c1.4 0 2.6-1 2.8-2.3l2-11c.1-.8-.5-1.7-1.4-1.7H14zM4 11H1v11h3V11z' />
-)
-const IconCube = makeIcon(
-  <path
-    d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'
-    stroke='currentColor'
-    fill='none'
-    strokeWidth='2'
-    strokeLinecap='round'
-    strokeLinejoin='round'
-  />
-)
 
 const getRewardText = (
   reward: QuestReward,
@@ -142,37 +61,20 @@ const getRewardText = (
   }
 }
 
-const getRewardIconType = (reward: QuestReward): string => {
-  switch (reward.type) {
-    case 'item.add':
-      return 'item'
-    case 'social.followers':
-      return 'fans'
-    case 'band.harmony':
-      return 'harmony'
-    case 'social.loyalty':
-      return 'loyalty'
-    case 'social.controversy':
-      return 'controversy_reduction'
-    default:
-      return reward.type
-  }
-}
-
 // Map a reward type to an icon
 const getRewardIcon = (type: string) => {
   switch (type) {
-    case 'item':
+    case 'item.add':
       return <IconCube className='w-4 h-4 text-toxic-green' />
     case 'fame':
-    case 'fans':
+    case 'social.followers':
       return <IconStar className='w-4 h-4 text-stamina-green' />
     case 'skill_point':
       return <IconFire className='w-4 h-4 text-error-red' />
-    case 'harmony':
-    case 'loyalty':
+    case 'band.harmony':
+    case 'social.loyalty':
       return <IconThumbUp className='w-4 h-4 text-toxic-green' />
-    case 'controversy_reduction':
+    case 'social.controversy':
       return <IconThumbUp className='w-4 h-4 text-stamina-green' />
     case 'money':
       return <IconCoin className='w-4 h-4 text-fuel-yellow' />
@@ -186,29 +88,21 @@ const getPenaltyTexts = (
   quest: QuestDisplayState,
   t: (key: string, options?: Record<string, unknown>) => string
 ): string[] => {
-  const texts: string[] = []
-  for (const penalty of getQuestPenalties(quest)) {
-    switch (penalty.type) {
-      case 'band.harmony':
-        if (penalty.amount !== 0) {
-          texts.push(t('ui:quests.penalty.harmony', { count: penalty.amount }))
-        }
-        break
-      case 'social.controversy':
-        if (penalty.amount !== 0) {
-          texts.push(
-            t('ui:quests.penalty.controversy', { count: penalty.amount })
-          )
-        }
-        break
-      case 'social.loyalty':
-        if (penalty.amount !== 0) {
-          texts.push(t('ui:quests.penalty.loyalty', { count: penalty.amount }))
-        }
-        break
-    }
-  }
-  return texts
+  return getQuestPenalties(quest)
+    .map(penalty => {
+      if (!('amount' in penalty) || penalty.amount === 0) return ''
+      switch (penalty.type) {
+        case 'band.harmony':
+          return t('ui:quests.penalty.harmony', { count: penalty.amount })
+        case 'social.controversy':
+          return t('ui:quests.penalty.controversy', { count: penalty.amount })
+        case 'social.loyalty':
+          return t('ui:quests.penalty.loyalty', { count: penalty.amount })
+        default:
+          return ''
+      }
+    })
+    .filter(Boolean)
 }
 
 // Display order: story first, then by ascending deadline (no deadline last),
@@ -376,7 +270,7 @@ const QuestItem = memo(
               key={`reward-${reward.type}-${rewardIndex}`} /* eslint-disable-line @eslint-react/no-array-index-key */
               className='inline-flex items-center gap-1 bg-toxic-green/10 text-toxic-green px-2 py-1 text-xs font-mono '
             >
-              {getRewardIcon(getRewardIconType(reward))}
+              {getRewardIcon(reward.type)}
               {getRewardText(reward, t, i18n.language)}
             </span>
           ))}
@@ -469,6 +363,23 @@ const QuestItem = memo(
   }
 )
 
+// Animation variants
+const overlayVariants = {
+  hidden: { opacity: 0 },
+  visible: { opacity: 1 }
+}
+
+const modalVariants: Variants = {
+  hidden: { opacity: 0, scale: 0.95, y: 20 },
+  visible: {
+    opacity: 1,
+    scale: 1,
+    y: 0,
+    transition: { type: 'spring', stiffness: 300, damping: 25 }
+  },
+  exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }
+}
+
 /**
  * Displays active quest progress, deadlines, rewards, and close controls.
  * @param props - Quest list, player context, and close handler for the quest modal.
@@ -488,87 +399,68 @@ export const QuestsModal = ({
     return definition ? { ...definition, ...quest } : quest
   })
 
-  // Animation variants
-  const overlayVariants = {
-    hidden: { opacity: 0 },
-    visible: { opacity: 1 }
-  }
-
-  const modalVariants: Variants = {
-    hidden: { opacity: 0, scale: 0.95, y: 20 },
-    visible: {
-      opacity: 1,
-      scale: 1,
-      y: 0,
-      transition: { type: 'spring', stiffness: 300, damping: 25 }
-    },
-    exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }
-  }
-
   return (
-    <AnimatePresence>
+    <m.div
+      className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 backdrop-blur-sm p-4'
+      variants={overlayVariants}
+      initial='hidden'
+      animate='visible'
+      exit='hidden'
+      onClick={onClose}
+    >
       <m.div
-        className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 backdrop-blur-sm p-4'
-        variants={overlayVariants}
-        initial='hidden'
-        animate='visible'
-        exit='hidden'
-        onClick={onClose}
+        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
+        variants={modalVariants}
+        onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
       >
-        <m.div
-          className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
-          variants={modalVariants}
-          onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
-            <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
-              {t('ui:quests.title')}
-            </h2>
-            <Tooltip content={t('ui:quests.closeButton')} position='bottom'>
-              <button
-                type='button'
-                onClick={onClose}
-                className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-                aria-label={t('ui:quests.closeButton')}
-              >
-                <IconClose />
-              </button>
-            </Tooltip>
-          </div>
+        {/* Header */}
+        <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
+          <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
+            {t('ui:quests.title')}
+          </h2>
+          <Tooltip content={t('ui:quests.closeButton')} position='bottom'>
+            <button
+              type='button'
+              onClick={onClose}
+              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+              aria-label={t('ui:quests.closeButton')}
+            >
+              <IconClose />
+            </button>
+          </Tooltip>
+        </div>
 
-          {/* Quests List */}
-          {displayQuests.length === 0 ? (
-            <div className='text-center py-12 flex flex-col items-center'>
-              <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
-              <p className='text-ash-gray font-mono italic mb-6'>
-                {t('ui:quests.empty')}
-              </p>
-            </div>
-          ) : (
-            <div className='space-y-6'>
-              {sortQuests(displayQuests).map(
-                (quest: QuestDisplayState, index: number) => (
-                  <QuestItem
-                    key={quest.id}
-                    quest={quest}
-                    index={index}
-                    player={player}
-                    variants={questItemVariants}
-                  />
-                )
-              )}
-            </div>
-          )}
-
-          {/* Footer */}
-          <div className='mt-8 flex justify-center'>
-            <GlitchButton variant='primary' onClick={onClose}>
-              {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
-            </GlitchButton>
+        {/* Quests List */}
+        {displayQuests.length === 0 ? (
+          <div className='text-center py-12 flex flex-col items-center'>
+            <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
+            <p className='text-ash-gray font-mono italic mb-6'>
+              {t('ui:quests.empty')}
+            </p>
           </div>
-        </m.div>
+        ) : (
+          <div className='space-y-6'>
+            {sortQuests(displayQuests).map(
+              (quest: QuestDisplayState, index: number) => (
+                <QuestItem
+                  key={quest.id}
+                  quest={quest}
+                  index={index}
+                  player={player}
+                  variants={questItemVariants}
+                />
+              )
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className='mt-8 flex justify-center'>
+          <GlitchButton variant='primary' onClick={onClose}>
+            {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
+          </GlitchButton>
+        </div>
       </m.div>
-    </AnimatePresence>
+    </m.div>
   )
 }

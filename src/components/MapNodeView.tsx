@@ -161,6 +161,8 @@ const MapNodeTooltip = memo(
     cityTraits,
     isPendingConfirm
   }: MapNodeTooltipProps) => {
+    const isGigLike =
+      node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
     return (
       <div
         className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
@@ -197,9 +199,7 @@ const MapNodeTooltip = memo(
           </div>
         )}
 
-        {(node.type === 'GIG' ||
-          node.type === 'FESTIVAL' ||
-          node.type === 'FINALE') && (
+        {isGigLike && (
           <div className='text-xs text-ash-gray font-mono'>
             {node.type === 'FESTIVAL' && (
               <div className='text-warning-yellow font-bold mb-1'>
@@ -215,16 +215,13 @@ const MapNodeTooltip = memo(
             {'\u2605'.repeat(node.venue?.diff ?? 0)}
           </div>
         )}
-        {(node.type === 'GIG' ||
-          node.type === 'FESTIVAL' ||
-          node.type === 'FINALE') &&
-          harmony !== undefined && (
-            <CancellationBadge
-              harmony={harmony}
-              tourSuccess={tourSuccess}
-              t={t}
-            />
-          )}
+        {isGigLike && harmony !== undefined && (
+          <CancellationBadge
+            harmony={harmony}
+            tourSuccess={tourSuccess}
+            t={t}
+          />
+        )}
         {node.type === 'REST_STOP' && (
           <div className='text-xs text-warning-yellow font-mono'>
             {t('ui:map.rest_stop_desc')}
@@ -290,39 +287,31 @@ export const MapNodeView = memo(
       }
     }
 
-    const handleMouseEnter = () => {
+    const handleHoverStart = () => {
       setHoveredNode(node)
       setIsHoveredLocal(true)
     }
 
-    const handleMouseLeave = () => {
+    const handleHoverEnd = () => {
       setHoveredNode(null)
       setIsHoveredLocal(false)
     }
 
     const handlePointerDown = () => {
       if (isReachable) {
-        setHoveredNode(node)
-        setIsHoveredLocal(true)
+        handleHoverStart()
       }
-    }
-
-    const handlePointerCancel = () => {
-      setHoveredNode(null)
-      setIsHoveredLocal(false)
     }
 
     const handlePointerEnd = (e: ReactPointerEvent<HTMLDivElement>) => {
       if (e.pointerType !== 'mouse') {
-        setHoveredNode(null)
-        setIsHoveredLocal(false)
+        handleHoverEnd()
       }
     }
 
     const handleFocus = () => {
       if (isReachable) {
-        setHoveredNode(node)
-        setIsHoveredLocal(true)
+        handleHoverStart()
       }
     }
 
@@ -373,10 +362,10 @@ export const MapNodeView = memo(
       `}
         style={positionStyle}
         onClick={handleClick}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
+        onMouseEnter={handleHoverStart}
+        onMouseLeave={handleHoverEnd}
         onPointerDown={handlePointerDown}
-        onPointerCancel={handlePointerCancel}
+        onPointerCancel={handleHoverEnd}
         onPointerUp={handlePointerEnd}
         onPointerLeave={handlePointerEnd}
         onFocus={handleFocus}

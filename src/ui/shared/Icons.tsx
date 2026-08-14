@@ -126,8 +126,15 @@ const BaseIcon = memo(function BaseIcon({
   viewBox = '0 0 24 24',
   title,
   children,
+  fill = 'none',
   ...props
-}: IconProps & { viewBox?: string; title?: string; children?: ReactNode }) {
+}: IconProps & {
+  viewBox?: string
+  title?: string
+  children?: ReactNode
+  fill?: string
+  stroke?: string
+}) {
   const titleId = useId()
   return (
     <svg
@@ -135,12 +142,12 @@ const BaseIcon = memo(function BaseIcon({
       focusable={title ? undefined : 'false'}
       role={title ? 'img' : 'presentation'}
       aria-labelledby={title ? titleId : undefined}
+      fill={fill}
+      xmlns='http://www.w3.org/2000/svg'
+      preserveAspectRatio='xMidYMid meet'
       {...props}
       className={className}
       viewBox={viewBox}
-      fill='none'
-      xmlns='http://www.w3.org/2000/svg'
-      preserveAspectRatio='xMidYMid meet'
     >
       {title && <title id={titleId}>{title}</title>}
       {children}
@@ -413,4 +420,93 @@ export const IconChevronUp = memo(function IconChevronUp({
   className = 'w-5 h-5'
 }: IconProps) {
   return <IconChevronBase className={className} d='m18 15-6-6-6 6' />
+})
+
+export const IconStar = memo(function IconStar({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon className={className} fill='currentColor' {...props}>
+      <path d='M11.999 1.439l2.844 7.218 7.718.666-5.859 5.093 1.764 7.584-6.467-3.968-6.467 3.968 1.764-7.584-5.859-5.093 7.718-.666 2.844-7.218z' />
+    </BaseIcon>
+  )
+})
+export const IconClock = memo(function IconClock({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon
+      className={className}
+      fill='none'
+      stroke='currentColor'
+      {...props}
+    >
+      <path
+        strokeLinecap='round'
+        strokeLinejoin='round'
+        strokeWidth='2'
+        d='M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'
+      />
+    </BaseIcon>
+  )
+})
+export const IconTrophy = memo(function IconTrophy({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon className={className} fill='currentColor' {...props}>
+      <path d='M21 4h-3V3a1 1 0 00-1-1H7a1 1 0 00-1 1v1H3a1 1 0 00-1 1v3c0 2.2 1.8 4 4 4h1v1.6c0 1.9 1.5 3.4 3.4 3.4H9v3a1 1 0 001 1h4a1 1 0 001-1v-3h-1.4c1.9 0 3.4-1.5 3.4-3.4V12h1c2.2 0 4-1.8 4-4V5a1 1 0 00-1-1zM6 10c-1.1 0-2-.9-2-2V6h2v4zm14-2c0 1.1-.9 2-2 2h-2V6h2v2z' />
+    </BaseIcon>
+  )
+})
+export const IconCoin = memo(function IconCoin({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon className={className} fill='currentColor' {...props}>
+      <path d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87 1.96 0 2.4-.98 2.4-1.59 0-.83-.44-1.61-2.67-2.14-2.48-.6-4.18-1.62-4.18-3.67 0-1.72 1.39-2.84 3.11-3.21V4h2.67v1.95c1.26.28 2.62 1.15 2.84 2.99h-1.96c-.15-.97-.9-1.62-2.31-1.62-1.45 0-2.13.79-2.13 1.48 0 .84.53 1.36 2.88 1.9 2.5.58 3.97 1.68 3.97 3.86 0 1.76-1.12 2.89-3.24 3.53z' />
+    </BaseIcon>
+  )
+})
+export const IconFire = memo(function IconFire({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon className={className} fill='currentColor' {...props}>
+      <path d='M12 2C8 6 4 9 4 14a8 8 0 0016 0c0-5-4-8-8-12zm1 14a3 3 0 11-6 0c0-2 2-4 3-5 1 1 3 3 3 5z' />
+    </BaseIcon>
+  )
+})
+export const IconThumbUp = memo(function IconThumbUp({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon className={className} fill='currentColor' {...props}>
+      <path d='M14 9V5a3 3 0 00-3-3l-4 9v11h11.3c1.4 0 2.6-1 2.8-2.3l2-11c.1-.8-.5-1.7-1.4-1.7H14zM4 11H1v11h3V11z' />
+    </BaseIcon>
+  )
+})
+export const IconCube = memo(function IconCube({
+  className = '',
+  ...props
+}: IconProps) {
+  return (
+    <BaseIcon
+      className={className}
+      fill='none'
+      stroke='currentColor'
+      strokeWidth='2'
+      strokeLinecap='round'
+      strokeLinejoin='round'
+      {...props}
+    >
+      <path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5' />
+    </BaseIcon>
+  )
 })

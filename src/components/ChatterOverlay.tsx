@@ -163,27 +163,27 @@ const resolveMessageTextColor = (
  * @param props - Component properties containing styling and display text
  * @returns The header container component
  */
-const ChatterMessageHeader = memo(
-  ({ sceneStyle, sceneLabel, speaker }: ChatterMessageHeaderProps) => (
-    <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
-      <div className='flex items-center gap-1.5'>
-        <span className='text-xs'>{sceneStyle.icon}</span>
-        <p
-          className={`text-xs uppercase tracking-widest font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
-        >
-          {sceneLabel}
-        </p>
-      </div>
+const ChatterMessageHeader = ({
+  sceneStyle,
+  sceneLabel,
+  speaker
+}: ChatterMessageHeaderProps) => (
+  <div className='pl-3 pr-2 py-1.5 border-b border-ash-gray/20 flex items-center justify-between gap-2'>
+    <div className='flex items-center gap-1.5'>
+      <span className='text-xs'>{sceneStyle.icon}</span>
       <p
-        className={`text-xs font-bold uppercase tracking-widest ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
+        className={`text-xs uppercase tracking-widest font-bold ${sceneStyle.labelColor} ${FONT_UI_CLASS}`}
       >
-        {speaker}
+        {sceneLabel}
       </p>
     </div>
-  )
+    <p
+      className={`text-xs font-bold uppercase tracking-widest ${sceneStyle.speakerColor} ${FONT_UI_CLASS}`}
+    >
+      {speaker}
+    </p>
+  </div>
 )
-
-ChatterMessageHeader.displayName = 'ChatterMessageHeader'
 
 /**
  * Renders the body content of a chatter message.
@@ -191,17 +191,16 @@ ChatterMessageHeader.displayName = 'ChatterMessageHeader'
  * @param props - Component properties containing the message text and its color class
  * @returns The body container component
  */
-const ChatterMessageBody = memo(
-  ({ text, textColorClass }: ChatterMessageBodyProps) => (
-    <div className='pl-3 pr-2 py-2.5'>
-      <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
-        {text}
-      </p>
-    </div>
-  )
+const ChatterMessageBody = ({
+  text,
+  textColorClass
+}: ChatterMessageBodyProps) => (
+  <div className='pl-3 pr-2 py-2.5'>
+    <p className={`text-xs leading-snug ${FONT_UI_CLASS} ${textColorClass}`}>
+      {text}
+    </p>
+  </div>
 )
-
-ChatterMessageBody.displayName = 'ChatterMessageBody'
 
 /**
  * Renders an animated progress bar indicating the remaining lifetime of a chatter message.
@@ -209,23 +208,21 @@ ChatterMessageBody.displayName = 'ChatterMessageBody'
  * @param props - Component properties specifying the color class for the bar
  * @returns The animated lifetime bar component
  */
-const ChatterMessageLifetimeBar = memo(
-  ({ barColorClass }: ChatterMessageLifetimeBarProps) => (
-    <div className='h-[2px] w-full bg-ash-gray/10'>
-      <m.div
-        className={`h-full ${barColorClass} opacity-40`}
-        initial={{ width: '100%' }}
-        animate={{ width: '0%' }}
-        transition={{
-          duration: MESSAGE_LIFETIME_MS / 1000,
-          ease: 'linear'
-        }}
-      />
-    </div>
-  )
+const ChatterMessageLifetimeBar = ({
+  barColorClass
+}: ChatterMessageLifetimeBarProps) => (
+  <div className='h-[2px] w-full bg-ash-gray/10'>
+    <m.div
+      className={`h-full ${barColorClass} opacity-40`}
+      initial={{ width: '100%' }}
+      animate={{ width: '0%' }}
+      transition={{
+        duration: MESSAGE_LIFETIME_MS / 1000,
+        ease: 'linear'
+      }}
+    />
+  </div>
 )
-
-ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
 
 /**
  * Renders an individual, animated social chatter message.
@@ -235,10 +232,7 @@ ChatterMessageLifetimeBar.displayName = 'ChatterMessageLifetimeBar'
  */
 const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
   const messageScene = msg.scene
-  const sceneStyle = useMemo(
-    () => SCENE_STYLES[messageScene] || DEFAULT_STYLE,
-    [messageScene]
-  )
+  const sceneStyle = SCENE_STYLES[messageScene] || DEFAULT_STYLE
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -247,20 +241,13 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
     return () => clearTimeout(timer)
   }, [msg.id, onRemove])
 
-  const sceneLabel = useMemo(
-    () =>
-      t(`ui:chatter_labels.${messageScene}`, {
-        defaultValue: t('ui:chatter_labels.default_fallback', {
-          defaultValue: 'Band Feed'
-        })
-      }),
-    [messageScene, t]
-  )
+  const sceneLabel = t(`ui:chatter_labels.${messageScene}`, {
+    defaultValue: t('ui:chatter_labels.default_fallback', {
+      defaultValue: 'Band Feed'
+    })
+  })
 
-  const textColorClass = useMemo(
-    () => resolveMessageTextColor(msg.type, messageScene),
-    [msg.type, messageScene]
-  )
+  const textColorClass = resolveMessageTextColor(msg.type, messageScene)
 
   return (
     <m.div
