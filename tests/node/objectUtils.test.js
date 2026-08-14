@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 
 import {
+  deepFreeze,
   hasForbiddenKeysDeep,
   isLooseRecord,
   isPlainRecord,
@@ -118,7 +119,6 @@ test('sanitizeTraversableValue treats sibling aliases as shared values, not cycl
   assert.equal(result.self, '[REDACTED]')
 })
 
-
 test('sanitizeTraversableValue handles sparse arrays by dropping missing indices', () => {
   // biome-ignore lint/suspicious/noSparseArray: Intentional sparse array for testing
   // eslint-disable-next-line no-sparse-arrays
@@ -130,4 +130,25 @@ test('sanitizeTraversableValue handles sparse arrays by dropping missing indices
   })
 
   assert.deepStrictEqual(result.sparse, [1, 3])
+})
+
+test('deepFreeze freezes an object and its nested children', () => {
+  const obj = { a: 1, nested: { b: 2, deep: { c: 3 } } }
+  const result = deepFreeze(obj)
+  assert.equal(result, obj)
+  assert.equal(Object.isFrozen(result), true)
+  assert.equal(Object.isFrozen(result.nested), true)
+  assert.equal(Object.isFrozen(result.nested.deep), true)
+})
+
+test('deepFreeze traverses already frozen parent objects and freezes mutable children', () => {
+  const child = { mutable: true, nested: { value: 42 } }
+  const parent = Object.freeze({ child })
+  assert.equal(Object.isFrozen(parent), true)
+  assert.equal(Object.isFrozen(child), false)
+
+  deepFreeze(parent)
+  assert.equal(Object.isFrozen(parent), true)
+  assert.equal(Object.isFrozen(child), true)
+  assert.equal(Object.isFrozen(child.nested), true)
 })

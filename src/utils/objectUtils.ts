@@ -368,8 +368,10 @@ export const safeJsonParse = <T = unknown>(text: string): T => {
  * @returns The frozen value typed as Readonly.
  */
 export const deepFreeze = <T>(value: T): Readonly<T> => {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-    Object.freeze(value)
+  if (value && typeof value === 'object') {
+    if (!Object.isFrozen(value)) {
+      Object.freeze(value)
+    }
     for (const nested of Object.values(value)) deepFreeze(nested)
   }
   return value

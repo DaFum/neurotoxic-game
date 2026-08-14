@@ -295,14 +295,10 @@ const validateChassisKindFlavorTier = (
     return null
   }
   if (!VALID_ASSET_FLAVORS.has(flavor as string)) {
-    dropped.set(
-      label,
-      `invalid ${prefix}${prefix ? 'flavor' : 'flavor'} ${String(flavor)}`
-    )
+    dropped.set(label, `invalid ${prefix}flavor ${String(flavor)}`)
     return null
   }
-  const numericTier = Number(tier)
-  if (!VALID_ASSET_TIERS.has(numericTier)) {
+  if (!isFiniteNumber(tier) || !VALID_ASSET_TIERS.has(tier)) {
     dropped.set(
       label,
       `invalid ${prefix}${prefix ? 'chassisTier' : 'tier'} ${String(tier)}`
@@ -312,7 +308,7 @@ const validateChassisKindFlavorTier = (
   return {
     kind: kind as AssetKind,
     flavor: flavor as AssetFlavor,
-    chassisTier: numericTier as ChassisTier
+    chassisTier: tier as ChassisTier
   }
 }
 

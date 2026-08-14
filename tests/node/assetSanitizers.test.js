@@ -51,8 +51,15 @@ describe('sanitizeAssets', () => {
   })
 
   it('drops items with invalid chassisTier', () => {
-    const out = sanitizeAssets([validAsset({ chassisTier: 99 })])
-    assert.equal(Object.keys(out).length, 0)
+    assert.equal(sanitizeAssets([validAsset({ chassisTier: 99 })]).length, 0)
+    assert.equal(sanitizeAssets([validAsset({ chassisTier: '1' })]).length, 0)
+    assert.equal(sanitizeAssets([validAsset({ chassisTier: true })]).length, 0)
+    assert.equal(sanitizeAssets([validAsset({ chassisTier: [1] })]).length, 0)
+    assert.equal(sanitizeAssets([validAsset({ chassisTier: NaN })]).length, 0)
+    assert.equal(
+      sanitizeAssets([validAsset({ chassisTier: Infinity })]).length,
+      0
+    )
   })
 
   it('drops items with unknown acquisitionMode', () => {
