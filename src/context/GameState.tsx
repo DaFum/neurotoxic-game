@@ -54,8 +54,10 @@ type HotGameStateContextStore = typeof globalThis & {
   __NEUROTOXIC_GAME_DISPATCH_CONTEXT__?: Context<GameDispatchActions | null>
 }
 
+const getHotContextStore = () => globalThis as HotGameStateContextStore
+
 const getStableGameStateContext = (): Context<GameStore | null> => {
-  const store = globalThis as HotGameStateContextStore
+  const store = getHotContextStore()
   if (!store.__NEUROTOXIC_GAME_STATE_CONTEXT__) {
     const GameStateContext = createContext<GameStore | null>(null)
     store.__NEUROTOXIC_GAME_STATE_CONTEXT__ = GameStateContext
@@ -65,7 +67,7 @@ const getStableGameStateContext = (): Context<GameStore | null> => {
 
 const getStableGameDispatchContext =
   (): Context<GameDispatchActions | null> => {
-    const store = globalThis as HotGameStateContextStore
+    const store = getHotContextStore()
     if (!store.__NEUROTOXIC_GAME_DISPATCH_CONTEXT__) {
       const GameDispatchContext = createContext<GameDispatchActions | null>(
         null
@@ -288,6 +290,31 @@ export const useGameActions = () => {
  * @param selector - Function to extract the desired state slice.
  * @returns The specific state slice extracted by the selector.
  */
+const isShallowEqual = (a: unknown, b: unknown): boolean => {
+  if (Object.is(a, b)) return true
+  if (
+    typeof a !== 'object' ||
+    a === null ||
+    typeof b !== 'object' ||
+    b === null
+  ) {
+    return false
+  }
+  const objA = a as Record<string, unknown>
+  const objB = b as Record<string, unknown>
+  const keysA = Object.keys(objA)
+  const keysB = Object.keys(objB)
+  if (keysA.length !== keysB.length) return false
+  for (let i = 0; i < keysA.length; i++) {
+    const key = keysA[i]
+    if (key === undefined) continue
+    if (!Object.hasOwn(objB, key) || !Object.is(objA[key], objB[key])) {
+      return false
+    }
+  }
+  return true
+}
+
 export function useGameSelector<T>(selector: (state: GameState) => T): T {
   const store = useRequiredContext(GameStateContext, 'useGameSelector')
   const instRef = useRef<{
@@ -315,31 +342,6 @@ export function useGameSelector<T>(selector: (state: GameState) => T): T {
     }
 
     const nextValue = selector(nextState)
-
-    const isShallowEqual = (a: unknown, b: unknown): boolean => {
-      if (Object.is(a, b)) return true
-      if (
-        typeof a !== 'object' ||
-        a === null ||
-        typeof b !== 'object' ||
-        b === null
-      ) {
-        return false
-      }
-      const objA = a as Record<string, unknown>
-      const objB = b as Record<string, unknown>
-      const keysA = Object.keys(objA)
-      const keysB = Object.keys(objB)
-      if (keysA.length !== keysB.length) return false
-      for (let i = 0; i < keysA.length; i++) {
-        const key = keysA[i]
-        if (!key) continue
-        if (!Object.hasOwn(objB, key) || !Object.is(objA[key], objB[key])) {
-          return false
-        }
-      }
-      return true
-    }
 
     if (inst.hasValue && isShallowEqual(inst.value, nextValue)) {
       inst.state = nextState

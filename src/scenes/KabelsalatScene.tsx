@@ -67,22 +67,6 @@ export const KabelsalatScene = () => {
 
         <Rules t={t} />
       </div>
-
-      <style>{`
-        @keyframes dash {
-          to { stroke-dashoffset: 0; }
-        }
-        @keyframes shake {
-          0%, 100% { transform: translate(0, 0); }
-          25% { transform: translate(-10px, 5px) rotate(-1.5deg); }
-          50% { transform: translate(10px, -5px) rotate(1.5deg); }
-          75% { transform: translate(-10px, -5px) rotate(0deg); }
-        }
-        @keyframes flash {
-          0%, 100% { opacity: 1; }
-          50% { opacity: 0.2; }
-        }
-      `}</style>
     </div>
   )
 }

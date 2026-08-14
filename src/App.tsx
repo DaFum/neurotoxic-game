@@ -34,6 +34,21 @@ const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
   GAME_PHASES.ASSETS
 ])
 
+const parseBooleanEnvFlag = (
+  viteFlag: string | undefined,
+  processFlag: string | undefined
+): boolean | undefined => {
+  if (typeof viteFlag === 'string') {
+    return viteFlag.toLowerCase() === 'true'
+  }
+
+  if (typeof processFlag === 'string') {
+    return processFlag.toLowerCase() === 'true'
+  }
+
+  return undefined
+}
+
 /**
  * Resolves whether Vercel telemetry should be enabled based on environment variables.
  *
@@ -44,17 +59,14 @@ const SCENES_WITHOUT_HUD: Set<GamePhase> = new Set([
  * @returns A boolean indicating whether telemetry is globally active.
  */
 const resolveVercelTelemetryEnabled = () => {
-  const viteFlag = import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY
-  if (typeof viteFlag === 'string') {
-    return viteFlag.toLowerCase() === 'true'
-  }
-
-  const processFlag =
+  const flag = parseBooleanEnvFlag(
+    import.meta.env?.VITE_ENABLE_VERCEL_TELEMETRY,
     typeof process !== 'undefined'
       ? process?.env?.VITE_ENABLE_VERCEL_TELEMETRY
       : undefined
-  if (typeof processFlag === 'string') {
-    return processFlag.toLowerCase() === 'true'
+  )
+  if (flag !== undefined) {
+    return flag
   }
 
   const nodeEnv =
