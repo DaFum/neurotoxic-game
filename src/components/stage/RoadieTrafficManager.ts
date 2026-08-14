@@ -8,7 +8,7 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
  *
  * @remarks
  * This type defines the properties of a vehicle obstacle moving across the screen,
- * including its identifier, positional data, movement speed, and an optional texture hash.
+ * including its identifier, positional data, movement speed, and a required texture hash.
  */
 export type RoadieCar = {
   id: string | number
