@@ -443,25 +443,13 @@ describe('PixiStageController', () => {
   test('dispose cleans up filters and container properly', async () => {
     await controller.init()
     const _stageContainer = controller.stageContainer
-    const _colorMatrix = controller.toxicFilterManager
-      ? controller.toxicFilterManager.colorMatrix
-      : null
+    const toxicFilterManager = controller.toxicFilterManager
 
     controller.dispose()
 
     assert.equal(controller.stageContainer, null)
-    assert.equal(
-      controller.toxicFilterManager
-        ? controller.toxicFilterManager.colorMatrix
-        : null,
-      null
-    )
-    assert.equal(
-      controller.toxicFilterManager
-        ? controller.toxicFilterManager.toxicFilters
-        : null,
-      null
-    )
+    assert.equal(toxicFilterManager.colorMatrix, null)
+    assert.equal(toxicFilterManager.toxicFilters, null)
   })
 
   test('dispose handles null stageContainer gracefully', async () => {
@@ -792,8 +780,9 @@ describe('PixiStageController', () => {
 
     test('destroys colorMatrix filter', async () => {
       await controller.init()
-      const colorMatrix = controller.toxicFilterManager
-        ? controller.toxicFilterManager.colorMatrix
+      const toxicFilterManager = controller.toxicFilterManager
+      const colorMatrix = toxicFilterManager
+        ? toxicFilterManager.colorMatrix
         : null
       const destroySpy = mock.fn()
       colorMatrix.destroy = destroySpy
@@ -801,24 +790,15 @@ describe('PixiStageController', () => {
       controller.dispose()
 
       assert.equal(destroySpy.mock.calls.length, 1)
-      assert.equal(
-        controller.toxicFilterManager
-          ? controller.toxicFilterManager.colorMatrix
-          : null,
-        null
-      )
+      assert.equal(toxicFilterManager.colorMatrix, null)
     })
 
     test('clears filter arrays', async () => {
       await controller.init()
+      const toxicFilterManager = controller.toxicFilterManager
       controller.dispose()
 
-      assert.equal(
-        controller.toxicFilterManager
-          ? controller.toxicFilterManager.toxicFilters
-          : null,
-        null
-      )
+      assert.equal(toxicFilterManager.toxicFilters, null)
     })
 
     test('handles dispose when managers are null', async () => {
