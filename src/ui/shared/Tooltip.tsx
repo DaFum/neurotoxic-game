@@ -44,13 +44,10 @@ export const Tooltip = ({
       : {}
 
   const classNameValue = getOwn<string>(childProps, 'className')
-  const ariaDisabled = getOwn<unknown>(childProps, 'aria-disabled')
   const styleValue = getOwn<unknown>(childProps, 'style')
 
   const isDisabled =
     Boolean(getOwn<unknown>(childProps, 'disabled')) ||
-    ariaDisabled === true ||
-    ariaDisabled === 'true' ||
     (typeof classNameValue === 'string' &&
       classNameValue.split(' ').includes('pointer-events-none')) ||
     (typeof styleValue === 'object' &&
