@@ -26,6 +26,7 @@ interface EventOptionButtonProps {
   optionLabel: string
   eventContext: Record<string, unknown> | undefined
   amount: string
+  gameState: EngineGameState
   onSelect: (option: EventModalOption) => void
   t: ReturnType<typeof useTranslation>['t']
 }
@@ -36,10 +37,13 @@ const EventOptionButton = ({
   optionLabel,
   eventContext,
   amount,
+  gameState,
   onSelect,
   t
 }: EventOptionButtonProps) => {
-  const isDisabled = option.disabled || false
+  const isDisabled =
+    option.disabled ||
+    (typeof option.condition === 'function' && !option.condition(gameState))
   const buttonClass = isDisabled
     ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed'
     : index === 0
@@ -211,6 +215,7 @@ const EventOptionsList = ({
             optionLabel={optionLabel}
             eventContext={eventContext}
             amount={amount}
+            gameState={gameState}
             onSelect={handleOptionSelect}
             t={t}
           />
@@ -342,8 +347,14 @@ export const EventModal = ({
       const num = parseInt(e.key, 10)
       if (num >= 1 && num <= eventOptions.length) {
         const option = eventOptions[num - 1]
-        if (option && !option.disabled) {
-          handleOptionSelect(option)
+        if (option) {
+          const isDisabled =
+            option.disabled ||
+            (typeof option.condition === 'function' &&
+              !option.condition(gameStateRef.current))
+          if (!isDisabled) {
+            handleOptionSelect(option)
+          }
         }
       }
     }
