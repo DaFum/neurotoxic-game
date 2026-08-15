@@ -89,11 +89,10 @@ describe('validateGeneratedMap', () => {
   test('rejects maps without exactly one START node on layer 0', () => {
     const noStart = buildLinearMap()
     noStart.nodes.node_0_0.type = 'GIG'
-    assert.ok(
-      validateGeneratedMap(noStart).issues.some(
-        issue => issue.code === 'map.start.count'
-      )
-    )
+    const res = validateGeneratedMap(noStart)
+    const issue = res.issues.find(i => i.code === 'map.start.count')
+    assert.ok(issue)
+    assert.equal(issue.message, 'map must have exactly one START node, found 0')
   })
 
   test('rejects nodes unreachable from START', () => {
@@ -108,11 +107,22 @@ describe('validateGeneratedMap', () => {
       venue: { id: 'venue_orphan', name: 'Orphan' }
     }
 
+    map.nodes.node_8_8 = {
+      id: 'node_8_8',
+      layer: 8,
+      type: 'GIG',
+      x: 10,
+      y: 10,
+      status: 'locked',
+      venue: { id: 'venue_orphan_2', name: 'Orphan 2' }
+    }
+
     const result = validateGeneratedMap(map)
     assert.equal(result.success, false)
-    assert.ok(
-      result.issues.some(issue => issue.code === 'map.unreachableNodes')
-    )
+    const issue = result.issues.find(issue => issue.code === 'map.unreachableNodes')
+    assert.ok(issue)
+    // There should be 2 orphans now, the message format is: `${orphans.length} node(s) unreachable from START, first: ${orphans[0]}`
+    assert.equal(issue.message, `2 node(s) unreachable from START, first: node_9_9`)
   })
 
   test('rejects a self-looping connection', () => {
@@ -172,13 +182,35 @@ describe('validateGeneratedMap', () => {
   })
 
   test('rejects a straight line of gig nodes for lacking diversity', () => {
-    const result = validateGeneratedMap(buildLinearMap())
+    const map = buildLinearMap()
+    // To trigger diversity.layers failure, map needs < minLayers
+    const mapFewLayers = buildLinearMap()
+    for (let i = 2; i < 6; i++) {
+        delete mapFewLayers.nodes[`node_${i}_0`]
+        mapFewLayers.connections.pop()
+    }
+
+    const resultFewLayers = validateGeneratedMap(mapFewLayers)
+    const codesFewLayers = resultFewLayers.issues.map(issue => issue.code)
+    assert.ok(codesFewLayers.includes('diversity.layers'))
+
+    const result = validateGeneratedMap(map)
 
     assert.equal(result.success, false)
     const codes = result.issues.map(issue => issue.code)
     assert.ok(codes.includes('diversity.branchPoints'))
     assert.ok(codes.includes('diversity.nonGigNodes'))
     assert.ok(codes.includes('diversity.distinctNodeTypes'))
+
+    // Assert exact branch-point, non-GIG, START, or unreachable-node counts via the messages
+    const branchPointIssue = result.issues.find(i => i.code === 'diversity.branchPoints')
+    assert.equal(branchPointIssue.message, `map has 0 branch points, needs ${MAP_DIVERSITY_REQUIREMENTS.minBranchPoints}`)
+
+    const nonGigNodeIssue = result.issues.find(i => i.code === 'diversity.nonGigNodes')
+    assert.equal(nonGigNodeIssue.message, `map has 1 non-GIG nodes, needs ${MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes}`)
+
+    const distinctTypesIssue = result.issues.find(i => i.code === 'diversity.distinctNodeTypes')
+    assert.equal(distinctTypesIssue.message, `map has 2 distinct node types, needs ${MAP_DIVERSITY_REQUIREMENTS.minDistinctNodeTypes}`)
   })
 
   test('diversity requirements are all positive', () => {
