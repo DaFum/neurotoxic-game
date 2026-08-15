@@ -29,6 +29,7 @@ export type EngineEvent = {
  * Selectable event option with effects, flags, or skill-check data.
  */
 export type EventChoice = {
+  condition?: (gameState: EngineGameState) => unknown
   effect?: EffectShape
   flags?: string[]
   nextEventId?: string
