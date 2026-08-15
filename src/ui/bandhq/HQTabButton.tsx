@@ -9,7 +9,7 @@ export interface HQTabDef {
   isLocked?: boolean
 }
 
-interface HQTabButtonProps {
+interface HQTabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   tab: HQTabDef
   isActive: boolean
   label: string
@@ -24,9 +24,11 @@ export const HQTabButton = ({
   tab,
   isActive,
   label,
-  onClick
+  onClick,
+  ...props
 }: HQTabButtonProps) => (
   <button
+    {...props}
     type='button'
     role='tab'
     aria-selected={isActive}
