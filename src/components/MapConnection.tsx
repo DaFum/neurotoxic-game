@@ -2,21 +2,39 @@ import { memo } from 'react'
 
 import type { NodeVisibility } from '../types/map'
 
+/**
+ * Defines the coordinate space for a map routing endpoint.
+ */
 interface MapConnectionEndpoint {
-  /** Horizontal position as a percentage of the map SVG viewport. */
+  /**
+   * Horizontal position as a percentage of the map SVG viewport.
+   */
   x: number
-  /** Vertical position as a percentage of the map SVG viewport. */
+  /**
+   * Vertical position as a percentage of the map SVG viewport.
+   */
   y: number
 }
 
+/**
+ * Configuration properties for drawing a map route segment.
+ */
 interface MapConnectionProps {
-  /** Start node position for the route segment. */
+  /**
+   * Start node position for the route segment.
+   */
   start: MapConnectionEndpoint
-  /** End node position for the route segment. */
+  /**
+   * End node position for the route segment.
+   */
   end: MapConnectionEndpoint
-  /** Visibility state of the start node. Hidden nodes suppress the segment. */
+  /**
+   * Visibility state of the start node. Hidden nodes suppress the segment.
+   */
   startVis: NodeVisibility
-  /** Visibility state of the end node. Hidden nodes suppress the segment. */
+  /**
+   * Visibility state of the end node. Hidden nodes suppress the segment.
+   */
   endVis: NodeVisibility
 }
 
@@ -27,6 +45,9 @@ interface MapConnectionProps {
  * Coordinates are percentage units in the parent SVG. If either endpoint is
  * hidden, no line is rendered; if either endpoint is dimmed, the line stays
  * visible at reduced opacity.
+ *
+ * @param props - Configuration properties for the map connection.
+ * @returns An SVG line element representing the connection, or null if hidden.
  */
 export const MapConnection = memo(
   ({ start, end, startVis, endVis }: MapConnectionProps) => {
