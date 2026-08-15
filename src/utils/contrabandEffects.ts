@@ -83,8 +83,7 @@ export const applySharedBandEffect = (
       if (currentMember) {
         updatedMembers[i] = {
           ...currentMember,
-          staminaMax:
-            finiteNumberOr(currentMember.staminaMax, 100) + safeValue
+          staminaMax: finiteNumberOr(currentMember.staminaMax, 100) + safeValue
         } as BandMember
       }
     }

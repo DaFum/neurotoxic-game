@@ -16,7 +16,7 @@
 - Save key is `SAVE_KEY = 'neurotoxic_v3_save'`; `PERSISTED_FIELDS` in `usePersistence.ts` is the single source of truth for persisted save fields. Both the load whitelist (`LOADABLE_SAVE_KEYS`) and the `createPersistedState` snapshot are derived from it. New persisted fields require this checklist:
   1. Add one `<key>: <predicate>` entry to `PERSISTED_FIELDS`.
   2. Sanitize/read it in the reducer's `LOAD_GAME` handler (`handleLoadGame` in `systemReducer.ts`).
-  Fields needing special save-time handling (`timestamp`, `unlocks`, `setlist`) are written explicitly in `createPersistedState`.
+     Fields needing special save-time handling (`timestamp`, `unlocks`, `setlist`) are written explicitly in `createPersistedState`.
 - Adding a **required** top-level `GameState` field (not just persisted) also needs a default in `initialState` (and a fresh reset in `createInitialState` for arrays/objects, to avoid shared-reference mutation) and an entry in the playwright screenshot `BASE_STATE` (`.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js`). `tests/node/playwright-screenshot-fixture-validation.test.js` asserts `BASE_STATE` mirrors every `initialState` field and fails CI otherwise.
 - `neurotoxic_inject_marker` localStorage flag is a screenshot/E2E-only hydration channel; the marker is removed in a `useEffect` after mount (not in `initGameState`) to survive StrictMode's double-invoked lazy initializer.
 - `normalizeLoadedGameMap` coerces stringy node `x`/`y` back to numbers for legacy saves. When adding persisted `GameMap` or map-node fields that old saves may contain, extend this normalizer rather than the reducer's load path.

@@ -324,7 +324,10 @@ export const usePreGigHandlers = ({
 
       setLastMinigameFallback(chosenConfig.persistenceId as Minigame)
       try {
-        sessionStorage.setItem('neurotoxic_last_minigame', chosenConfig.persistenceId)
+        sessionStorage.setItem(
+          'neurotoxic_last_minigame',
+          chosenConfig.persistenceId
+        )
       } catch (_storageErr) {
         // ignore storage errors
       }

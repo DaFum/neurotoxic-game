@@ -522,6 +522,16 @@ test('eventEngine.resolveChoice handles simple effects', () => {
   assert.equal(result.value, -50)
 })
 
+test('eventEngine.resolveChoice rejects option when condition fails', () => {
+  const option = {
+    condition: () => false,
+    effect: { type: 'resource', resource: 'money', value: -50 }
+  }
+  const result = eventEngine.resolveChoice(option, {})
+  assert.equal(result.outcome, 'rejected', 'Failed condition must yield rejected outcome')
+  assert.equal(result.value, undefined, 'Must prevent effects when condition is rejected')
+})
+
 test('eventEngine.resolveChoice handles skill checks (success)', () => {
   mockSecureRandom.mock.mockImplementationOnce(() => 0.9) // High roll
   const option = {

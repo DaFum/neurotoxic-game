@@ -453,8 +453,13 @@ const processContrabandExpiry = (band: BandState): BandState => {
       ) {
         // We know from applySharedBandEffect which property maps to the effectType
         // All of these map directly or to camelCase variants
-        const key = effectType.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase())
-        const bandRecord = nextBand as unknown as Record<string, number | undefined>
+        const key = effectType.replace(/_([a-z])/g, (_, letter) =>
+          letter.toUpperCase()
+        )
+        const bandRecord = nextBand as unknown as Record<
+          string,
+          number | undefined
+        >
         const val = finiteNumberOr(bandRecord[key], 0)
         bandRecord[key] = Math.max(0, val)
       } else if (effectType === 'harmony') {

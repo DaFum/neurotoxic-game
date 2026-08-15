@@ -1,5 +1,6 @@
 import type { GameState } from '../../types'
 import { computeStashBustRisk } from '../../utils/contrabandUtils'
+import { finiteNumberOr } from '../../utils/gameState'
 
 /** Raw transport event definitions consumed by the event registry. */
 export const TRANSPORT_EVENTS = [
@@ -860,6 +861,164 @@ export const TRANSPORT_EVENTS = [
           failure: { type: 'resource', resource: 'money', value: -180 }
         },
         outcomeText: 'events:tourbus_maintenance_check.opt2.outcome'
+      }
+    ]
+  },
+  {
+    id: 'reststop_night_coffee',
+    category: 'transport',
+    tags: ['travel', 'reststop', 'stamina'],
+    title: 'events:reststop_night_coffee.title',
+    description: 'events:reststop_night_coffee.desc',
+    trigger: 'travel',
+    chance: 0.08,
+    options: [
+      {
+        label: 'events:reststop_night_coffee.opt1.label',
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 45,
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -45 },
+            { type: 'stat', stat: 'stamina', value: 15 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt1.outcome'
+      },
+      {
+        label: 'events:reststop_night_coffee.opt2.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'stamina', value: 20 },
+            { type: 'resource', resource: 'fuel', value: -5 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt2.outcome'
+      },
+      {
+        label: 'events:reststop_night_coffee.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'harmony', value: 10 },
+            { type: 'stat', stat: 'mood', value: 5 }
+          ]
+        },
+        outcomeText: 'events:reststop_night_coffee.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'van_ac_heater_failure',
+    category: 'transport',
+    tags: ['travel', 'van', 'breakdown'],
+    title: 'events:van_ac_heater_failure.title',
+    description: 'events:van_ac_heater_failure.desc',
+    trigger: 'travel',
+    chance: 0.07,
+    options: [
+      {
+        label: 'events:van_ac_heater_failure.opt1.label',
+        skillCheck: {
+          stat: 'technical',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: 15 },
+              { type: 'stat', stat: 'van_condition', value: 5 }
+            ],
+            description: 'events:van_ac_heater_failure.opt1.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'van_condition', value: -10 },
+              { type: 'stat', stat: 'harmony', value: -8 }
+            ],
+            description: 'events:van_ac_heater_failure.opt1.failureOutcome'
+          }
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt1.outcome'
+      },
+      {
+        label: 'events:van_ac_heater_failure.opt2.label',
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 110,
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -110 },
+            { type: 'stat', stat: 'van_condition', value: 15 }
+          ]
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt2.outcome'
+      },
+      {
+        label: 'events:van_ac_heater_failure.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'mood', value: -10 },
+            { type: 'stat', stat: 'stamina', value: -5 }
+          ]
+        },
+        outcomeText: 'events:van_ac_heater_failure.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'reststop_trunk_dealer',
+    category: 'transport',
+    tags: ['travel', 'merchant', 'gear', 'reststop'],
+    title: 'events:reststop_trunk_dealer.title',
+    description: 'events:reststop_trunk_dealer.desc',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'events:reststop_trunk_dealer.opt1.label',
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 120,
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'resource', resource: 'money', value: -120 },
+            { type: 'item', item: 'c_diy_overdrive', value: 1 }
+          ]
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt1.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt2.label',
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 60,
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'resource', resource: 'money', value: -60 },
+              { type: 'item', item: 'c_diy_overdrive', value: 1 }
+            ],
+            description: 'events:reststop_trunk_dealer.opt2.successOutcome'
+          },
+          failure: {
+            type: 'stat',
+            stat: 'mood',
+            value: -2,
+            description: 'events:reststop_trunk_dealer.opt2.failureOutcome'
+          }
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt2.outcome'
+      },
+      {
+        label: 'events:reststop_trunk_dealer.opt3.label',
+        effect: {
+          type: 'stat',
+          stat: 'mood',
+          value: 3
+        },
+        outcomeText: 'events:reststop_trunk_dealer.opt3.outcome'
       }
     ]
   }

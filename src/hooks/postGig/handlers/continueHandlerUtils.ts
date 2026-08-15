@@ -84,8 +84,12 @@ export function buildStoryFlagQuests(params: {
         const def = getQuestDefinition(questId)
         let seededProgress = 0
         if (def?.progressSource === 'harmony_recovered') {
-          const fallbackHarmony = clampBandHarmony(finiteNumberOr(bandHarmony, 80))
-          seededProgress = clampBandHarmony(finiteNumberOr(postPenaltyHarmony, fallbackHarmony))
+          const fallbackHarmony = clampBandHarmony(
+            finiteNumberOr(bandHarmony, 80)
+          )
+          seededProgress = clampBandHarmony(
+            finiteNumberOr(postPenaltyHarmony, fallbackHarmony)
+          )
         }
         pushQuest(questId, seededProgress)
       } else {

@@ -977,5 +977,231 @@ export const BAND_EVENTS = [
         outcomeText: 'events:record_deal_material.opt2.outcome'
       }
     ]
+  },
+  {
+    id: 'van_playlist_dispute',
+    category: 'band',
+    tags: ['travel', 'personality', 'conflict'],
+    title: 'events:van_playlist_dispute.title',
+    description: 'events:van_playlist_dispute.desc',
+    trigger: 'travel',
+    chance: 0.09,
+    options: [
+      {
+        label: 'events:van_playlist_dispute.opt1.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'harmony', value: 8 },
+              {
+                type: 'relationship',
+                member1: 'Lars',
+                member2: 'Matze',
+                value: 10
+              },
+              {
+                type: 'relationship',
+                member1: 'Lars',
+                member2: 'Marius',
+                value: 10
+              }
+            ],
+            description: 'events:van_playlist_dispute.opt1.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: -5 },
+              { type: 'stat', stat: 'harmony', value: -4 }
+            ],
+            description: 'events:van_playlist_dispute.opt1.failureOutcome'
+          }
+        },
+        outcomeText: 'events:van_playlist_dispute.opt1.outcome'
+      },
+      {
+        label: 'events:van_playlist_dispute.opt2.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'mood', value: -2 },
+            { type: 'stat', stat: 'stamina', value: 5 }
+          ]
+        },
+        outcomeText: 'events:van_playlist_dispute.opt2.outcome'
+      },
+      {
+        label: 'events:van_playlist_dispute.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'mood', value: 5 },
+            {
+              type: 'relationship',
+              member1: 'Matze',
+              member2: 'Marius',
+              value: -10
+            }
+          ]
+        },
+        outcomeText: 'events:van_playlist_dispute.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'traffic_jam_improv',
+    category: 'band',
+    tags: ['travel', 'jam', 'creativity'],
+    title: 'events:traffic_jam_improv.title',
+    description: 'events:traffic_jam_improv.desc',
+    trigger: 'travel',
+    chance: 0.07,
+    options: [
+      {
+        label: 'events:traffic_jam_improv.opt1.label',
+        skillCheck: {
+          stat: 'improv',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'harmony', value: 12 },
+              {
+                type: 'relationship',
+                member1: 'Lars',
+                member2: 'Matze',
+                value: 10
+              },
+              {
+                type: 'relationship',
+                member1: 'Matze',
+                member2: 'Marius',
+                value: 10
+              }
+            ],
+            description: 'events:traffic_jam_improv.opt1.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'mood', value: -6 },
+              { type: 'stat', stat: 'harmony', value: -4 }
+            ],
+            description: 'events:traffic_jam_improv.opt1.failureOutcome'
+          }
+        },
+        outcomeText: 'events:traffic_jam_improv.opt1.outcome'
+      },
+      {
+        label: 'events:traffic_jam_improv.opt2.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'fame', value: 25 },
+              { type: 'stat', stat: 'viral', value: 5 }
+            ],
+            description: 'events:traffic_jam_improv.opt2.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              { type: 'stat', stat: 'fame', value: -10 },
+              { type: 'stat', stat: 'controversyLevel', value: 8 }
+            ],
+            description: 'events:traffic_jam_improv.opt2.failureOutcome'
+          }
+        },
+        outcomeText: 'events:traffic_jam_improv.opt2.outcome'
+      },
+      {
+        label: 'events:traffic_jam_improv.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'van_condition', value: 10 },
+            { type: 'stat', stat: 'stamina', value: -8 }
+          ]
+        },
+        outcomeText: 'events:traffic_jam_improv.opt3.outcome'
+      }
+    ]
+  },
+  {
+    id: 'night_drive_heart_to_heart',
+    category: 'band',
+    tags: ['travel', 'bonding', 'night'],
+    title: 'events:night_drive_heart_to_heart.title',
+    description: 'events:night_drive_heart_to_heart.desc',
+    trigger: 'travel',
+    chance: 0.06,
+    options: [
+      {
+        label: 'events:night_drive_heart_to_heart.opt1.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            {
+              type: 'relationship',
+              member1: 'Lars',
+              member2: 'Matze',
+              value: 15
+            },
+            { type: 'stat', stat: 'harmony', value: 10 }
+          ]
+        },
+        outcomeText: 'events:night_drive_heart_to_heart.opt1.outcome'
+      },
+      {
+        label: 'events:night_drive_heart_to_heart.opt2.label',
+        skillCheck: {
+          stat: 'charisma',
+          threshold: 10,
+          success: {
+            type: 'composite',
+            effects: [
+              {
+                type: 'relationship',
+                member1: 'Lars',
+                member2: 'Matze',
+                value: 20
+              },
+              { type: 'stat', stat: 'mood', value: 10 }
+            ],
+            description: 'events:night_drive_heart_to_heart.opt2.successOutcome'
+          },
+          failure: {
+            type: 'composite',
+            effects: [
+              {
+                type: 'relationship',
+                member1: 'Lars',
+                member2: 'Matze',
+                value: -20
+              },
+              { type: 'stat', stat: 'harmony', value: -10 }
+            ],
+            description: 'events:night_drive_heart_to_heart.opt2.failureOutcome'
+          }
+        },
+        outcomeText: 'events:night_drive_heart_to_heart.opt2.outcome'
+      },
+      {
+        label: 'events:night_drive_heart_to_heart.opt3.label',
+        effect: {
+          type: 'composite',
+          effects: [
+            { type: 'stat', stat: 'mood', value: 5 },
+            { type: 'stat', stat: 'harmony', value: 5 }
+          ]
+        },
+        outcomeText: 'events:night_drive_heart_to_heart.opt3.outcome'
+      }
+    ]
   }
 ]

@@ -721,11 +721,31 @@ describe('Action Creators', () => {
 
     it('normalizes SOCIAL_FIELDS correctly handling NaN, Infinity, zero, and null across all fields', () => {
       const allFields = [
-        'instagram', 'tiktok', 'youtube', 'newsletter', 'viral',
-        'lastGigDay', 'lastGigDifficulty', 'lastPirateBroadcastDay',
-        'lastDarkWebLeakDay', 'lastCultIndoctrinationDay',
-        'controversyLevel', 'loyalty', 'zealotry', 'reputationCooldown',
-        'egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory', 'regionalGigHistory'
+        'instagram',
+        'tiktok',
+        'youtube',
+        'newsletter',
+        'viral',
+        'lastGigDay',
+        'lastGigDifficulty',
+        'lastPirateBroadcastDay',
+        'lastDarkWebLeakDay',
+        'lastCultIndoctrinationDay',
+        'controversyLevel',
+        'loyalty',
+        'zealotry',
+        'reputationCooldown',
+        'egoFocus',
+        'trend',
+        'activeDeals',
+        'brandReputation',
+        'influencers',
+        'scenePresence',
+        'regionalGigHistory',
+        'regionalGigHistory',
+        'regionalGigHistory',
+        'regionalGigHistory',
+        'regionalGigHistory'
       ]
 
       const payloadNaN = {}
@@ -746,12 +766,32 @@ describe('Action Creators', () => {
 
       const actionNaN = createUpdateSocialAction(payloadNaN)
       const expectedNaN = {}
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedNaN[f] = Number.NaN })
+      ;[
+        'egoFocus',
+        'trend',
+        'activeDeals',
+        'brandReputation',
+        'influencers',
+        'scenePresence',
+        'regionalGigHistory'
+      ].forEach(f => {
+        expectedNaN[f] = Number.NaN
+      })
       assert.deepStrictEqual(actionNaN.payload, expectedNaN)
 
       const actionInf = createUpdateSocialAction(payloadInf)
       const expectedInf = {}
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedInf[f] = Number.POSITIVE_INFINITY })
+      ;[
+        'egoFocus',
+        'trend',
+        'activeDeals',
+        'brandReputation',
+        'influencers',
+        'scenePresence',
+        'regionalGigHistory'
+      ].forEach(f => {
+        expectedInf[f] = Number.POSITIVE_INFINITY
+      })
       assert.deepStrictEqual(actionInf.payload, expectedInf)
 
       const actionZero = createUpdateSocialAction(payloadZero)
@@ -761,14 +801,27 @@ describe('Action Creators', () => {
 
       const actionNull = createUpdateSocialAction(payloadNull)
       const nullableFields = [
-        'lastGigDay', 'lastGigDifficulty', 'lastPirateBroadcastDay',
-        'lastDarkWebLeakDay', 'lastCultIndoctrinationDay'
+        'lastGigDay',
+        'lastGigDifficulty',
+        'lastPirateBroadcastDay',
+        'lastDarkWebLeakDay',
+        'lastCultIndoctrinationDay'
       ]
       const expectedNull = {}
       nullableFields.forEach(f => {
         expectedNull[f] = null
       })
-      ;['egoFocus', 'trend', 'activeDeals', 'brandReputation', 'influencers', 'scenePresence', 'regionalGigHistory'].forEach(f => { expectedNull[f] = null })
+      ;[
+        'egoFocus',
+        'trend',
+        'activeDeals',
+        'brandReputation',
+        'influencers',
+        'scenePresence',
+        'regionalGigHistory'
+      ].forEach(f => {
+        expectedNull[f] = null
+      })
       assert.deepStrictEqual(actionNull.payload, expectedNull)
 
       const actionForbidden = createUpdateSocialAction(payloadForbidden)

@@ -208,6 +208,43 @@ test('EventModal keyboard selection blocks disabled options', async () => {
   expect(screen.queryByText(/CONTINUE/i)).not.toBeInTheDocument()
 })
 
+test('EventModal blocks options that have a failing condition', async () => {
+  const mockEvent = {
+    id: 'test_event_condition',
+    title: 'Test Event Condition',
+    description: 'This is a test event.',
+    options: [
+      { label: 'Option 1 (Affordable)', condition: () => true },
+      { label: 'Option 2 (Unaffordable)', condition: () => false }
+    ]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  const option1 = screen.getByText('Option 1 (Affordable)')
+  const option2 = screen.getByText('Option 2 (Unaffordable)')
+
+  // The button for the un-affordable option should be disabled
+  // Check the button element itself for the aria-disabled attribute
+  expect(option2.closest('button')).toHaveAttribute('aria-disabled', 'true')
+  expect(option1.closest('button')).toHaveAttribute('aria-disabled', 'false')
+
+  // Clicking should not work
+  fireEvent.click(option2)
+  expect(handleSelect).not.toHaveBeenCalled()
+
+  // Keyboard shortcut should not work
+  fireEvent.keyDown(window, { key: '2' })
+  expect(handleSelect).not.toHaveBeenCalled()
+
+  // Option 1 works fine via click
+  fireEvent.click(option1)
+  await waitFor(() => {
+    expect(screen.getByText(/Description/i)).toBeInTheDocument()
+  })
+})
+
 test('EventModal uses fallback text when both outcomeText and description are empty', async () => {
   const mockEvent = {
     id: 'test_event_empty',

@@ -32,7 +32,9 @@ export const PreGigStartButton = React.memo(
           className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         >
           {!isStarting && <RazorPlayIcon className='w-5 h-5 text-void-black' />}
-          {isStarting && <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />}
+          {isStarting && (
+            <Loader2 className='animate-spin w-5 h-5' aria-hidden='true' />
+          )}
           {isStarting ? t('ui:pregig.initializing') : t('ui:pregig.startShow')}
         </ActionButton>
       </m.div>

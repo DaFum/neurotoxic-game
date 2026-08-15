@@ -126,11 +126,7 @@ export const HUD = memo(() => {
                   : 'bg-void-black text-blood-red border-blood-red hover:bg-blood-red/20'
               }`}
             >
-              <Skull
-                size={14}
-                className='inline mr-2'
-                aria-hidden='true'
-              />
+              <Skull size={14} className='inline mr-2' aria-hidden='true' />
               <span className='font-black uppercase tracking-wider text-xs'>
                 {neuroDecimatorActive
                   ? t('ui:hud.decimatorActive', {

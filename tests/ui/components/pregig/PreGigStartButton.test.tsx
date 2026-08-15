@@ -18,8 +18,8 @@ vi.mock('../../../../src/ui/shared', () => ({
     onClick,
     disabled,
     className,
-  ...props
-}: {
+    ...props
+  }: {
     children?: ReactNode
     onClick?: () => void
     disabled?: boolean
@@ -39,7 +39,9 @@ vi.mock('../../../../src/ui/shared', () => ({
 }))
 
 vi.mock('lucide-react', () => ({
-  Loader2: (props: Record<string, unknown>) => <svg data-testid='loader2-icon' {...props} />
+  Loader2: (props: Record<string, unknown>) => (
+    <svg data-testid='loader2-icon' {...props} />
+  )
 }))
 
 vi.mock('../../../../src/ui/shared/Icons', () => ({
@@ -86,7 +88,10 @@ describe('PreGigStartButton', () => {
     expect(button).toHaveAttribute('aria-busy', 'true')
     expect(screen.queryByTestId('razor-play-icon')).not.toBeInTheDocument()
     expect(screen.getByTestId('loader2-icon')).toBeInTheDocument()
-    expect(screen.getByTestId('loader2-icon')).toHaveAttribute('aria-hidden', 'true')
+    expect(screen.getByTestId('loader2-icon')).toHaveAttribute(
+      'aria-hidden',
+      'true'
+    )
     expect(screen.getByText('ui:pregig.initializing')).toBeInTheDocument()
   })
 

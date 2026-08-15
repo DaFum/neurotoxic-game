@@ -112,6 +112,10 @@ export const resolveChoice = (
   gameState: EngineGameState,
   rng: () => number = secureRandom
 ) => {
+  if (choice.condition && !choice.condition(gameState)) {
+    return { outcome: 'rejected' }
+  }
+
   let result: EffectShape
   const appendStatIncrement = (res: EffectShape, stat: string, value: number) =>
     appendEffectToResult(res, { type: 'stat_increment', stat, value })
