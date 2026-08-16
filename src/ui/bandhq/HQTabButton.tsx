@@ -9,7 +9,7 @@ export interface HQTabDef {
   isLocked?: boolean
 }
 
-interface HQTabButtonProps {
+interface HQTabButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   tab: HQTabDef
   isActive: boolean
   label: string
@@ -24,16 +24,18 @@ export const HQTabButton = ({
   tab,
   isActive,
   label,
-  onClick
+  onClick,
+  ...props
 }: HQTabButtonProps) => (
   <button
+    {...props}
     type='button'
     role='tab'
     aria-selected={isActive}
     aria-controls={`panel-${tab.id}`}
     id={`tab-${tab.id}`}
     onClick={onClick}
-    disabled={tab.isLocked}
+    aria-disabled={tab.isLocked}
     className={`flex-1 w-full min-w-26 sm:min-w-32 py-2 sm:py-3 px-3 sm:px-4 text-center text-xs sm:text-sm font-bold tracking-widest uppercase transition-all duration-150 font-mono flex justify-center items-center gap-2 whitespace-normal wrap-break-word focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset
       ${tab.isLocked ? 'opacity-50 grayscale' : ''}
       ${
