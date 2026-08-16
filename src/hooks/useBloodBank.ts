@@ -5,9 +5,7 @@ import { validateBloodBankDonation } from '../utils/bloodBankUtils'
 import { finiteNumberOr } from '../utils/finiteNumber'
 
 /**
- * Coordinates blood-bank modal state, donation eligibility, and donation dispatch.
- *
- * @returns Modal state, donation actions, eligibility flags, and scaled donation configs.
+ * Internal configuration definitions mapping donation types to base costs and rewards.
  */
 const DONATION_VARIANTS = {
   blood: {
@@ -26,6 +24,11 @@ const DONATION_VARIANTS = {
   }
 }
 
+/**
+ * Coordinates blood-bank modal state, donation eligibility, and donation dispatch.
+ *
+ * @returns Modal state, donation actions, eligibility flags, and scaled donation configs
+ */
 export const useBloodBank = () => {
   const player = useGameSelector(state => state.player)
   const band = useGameSelector(state => state.band)

@@ -66,3 +66,4 @@
 | 2026-08-13 | src/components/hud/GameOverOverlay.tsx | GameOverOverlayProps, GameOverOverlay |
 | 2026-08-14 | src/components/stage/RoadieTrafficManager.ts | RoadieCar, RoadieTrafficManager, constructor, _getOrCreateCarSprite, renderTraffic, cleanupTraffic, dispose |
 | 2026-08-15 | src/components/MapConnection.tsx | MapConnectionEndpoint, MapConnectionProps, MapConnection |
+| 2026-08-16 | src/hooks/useBloodBank.ts | DONATION_VARIANTS, useBloodBank |
