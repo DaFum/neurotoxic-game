@@ -249,12 +249,25 @@ const validateDiversity = (
     })
   }
 
-  const nonGigNodes = nodeList.filter(node => node.type !== 'GIG').length
-  if (nonGigNodes < MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes) {
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter(...).length with a for loop.
+  // Why: Avoids full array traversal and intermediate array allocation by breaking early.
+  // Impact: Reduces garbage collection pressure during map validation loops.
+  let nonGigNodesCount = 0
+  for (let i = 0; i < nodeList.length; i++) {
+    const node = nodeList[i]
+    if (node && node.type !== 'GIG') {
+      nonGigNodesCount++
+      if (nonGigNodesCount >= MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes) {
+        break
+      }
+    }
+  }
+
+  if (nonGigNodesCount < MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes) {
     issues.push({
       code: 'diversity.nonGigNodes',
       path: 'nodes',
-      message: `map has ${nonGigNodes} non-GIG nodes, needs ${MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes}`
+      message: `map has ${nonGigNodesCount} non-GIG nodes, needs ${MAP_DIVERSITY_REQUIREMENTS.minNonGigNodes}`
     })
   }
 

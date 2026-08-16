@@ -76,11 +76,12 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     const map = new Map<string, string>()
     if (!gameMap?.nodes) return map
 
-    // ⚡ BOLT OPTIMIZATION: Replaced for...in over object with Object.values procedural iteration.
-    // Why: Avoids prototype chain lookup and string key creation overhead during map building.
-    const nodes = Object.values(gameMap.nodes)
-    for (let i = 0; i < nodes.length; i++) {
-      const node = nodes[i] as MapNode | undefined
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop.
+    // Why: Avoids creating a temporary intermediate array of all nodes in a frequently called React useMemo hook.
+    // Impact: Reduces garbage collection pressure in the rhythm game component mounting path.
+    for (const key in gameMap.nodes) {
+      if (!Object.hasOwn(gameMap.nodes, key)) continue
+      const node = gameMap.nodes[key] as MapNode | undefined
       if (!node) continue
       if (node.venueId && node.id) {
         map.set(node.venueId, node.id)
