@@ -213,9 +213,3 @@
 ## 2026-08-12 - Early returns vs full iteration in filter lengths
 **Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
 **Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
-## 2026-08-16 - Re-optimize venue mapping to avoid array allocation
-**Learning:** An older optimization used `Object.values()` to avoid `for...in` key iteration overhead. However, `Object.values()` allocates an intermediate array on every execution. In `useRhythmGameLogic.ts`, `gameMap.nodes` iteration is inside a `useMemo` that can fire during component mounting/updates. The array allocation places unnecessary pressure on garbage collection.
-**Action:** Reverted the `Object.values` iteration back to a `for...in` loop with an `Object.hasOwn()` check to eliminate the temporary array allocation entirely.
-## 2026-08-16 - Optimize map validation to avoid array allocation
-**Learning:** `mapValidation.ts` was using `.filter(node => node.type !== 'GIG').length` to check for minimum required diversity of non-gig nodes. This required a full $O(N)$ pass of the array and allocated an intermediate array for the filtered nodes.
-**Action:** Replaced `.filter(...).length` with an early-returning procedural `for` loop to eliminate array allocation and break early once the threshold is reached.
