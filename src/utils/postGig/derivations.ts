@@ -44,14 +44,24 @@ export const applyRepeatDemandAdjustment = (
   ) {
     return normalized
   }
-  const recentGigCount = (
-    context.regionalGigHistory?.[context.regionId] ?? []
-  ).filter(
-    gigDay =>
+
+  // ⚡ BOLT OPTIMIZATION: Replaced .filter(...).length with a for loop.
+  // Why: Avoids full array traversal and intermediate array allocation on the post-gig hot path.
+  // Impact: Reduces garbage collection pressure during gig resolution.
+  let recentGigCount = 0
+  const history = context.regionalGigHistory?.[context.regionId] ?? []
+  for (let i = 0; i < history.length; i++) {
+    const gigDay = history[i]
+    if (
+      gigDay !== undefined &&
       Number.isFinite(gigDay) &&
       gigDay < context.day &&
       context.day - gigDay <= tuning.touring.repeatGigWindowDays
-  ).length
+    ) {
+      recentGigCount++
+    }
+  }
+
   const multiplier = getRepeatDemandMultiplier(
     context.day,
     recentGigCount,
