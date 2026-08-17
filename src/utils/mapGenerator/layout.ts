@@ -5,17 +5,51 @@ import type { GeneratedMapNode } from './types'
  * @param nodeList - Mutable list of nodes needing layout coordinates.
  * @param random - A function returning a float between 0 and 1.
  */
+export function isOverlapping(
+  n1: { x: number; y: number },
+  n2: { x: number; y: number },
+  minDistanceSq: number = 36
+): boolean {
+  const dx = n1.x - n2.x
+  const dy = n1.y - n2.y
+  return dx * dx + dy * dy < minDistanceSq
+}
+
 export function assignInitialCoordinates(
   nodeList: GeneratedMapNode[],
   random: () => number
 ): void {
   // Assign initial coordinates with jitter and resolve overlaps
   // Increased jitter to +/- 5 to help initial separation
-  for (const node of nodeList) {
+  for (let i = 0; i < nodeList.length; i++) {
+    const node = nodeList[i]
+    if (!node) continue
     const baseX = node.x
     const baseY = node.y
-    node.x = baseX + (random() * 10 - 5)
-    node.y = baseY + (random() * 10 - 5)
+
+    let attempts = 0
+    let bestX = baseX
+    let bestY = baseY
+
+    while (attempts < 10) {
+      bestX = baseX + (random() * 10 - 5)
+      bestY = baseY + (random() * 10 - 5)
+
+      let hasOverlap = false
+      for (let j = 0; j < i; j++) {
+        const prevNode = nodeList[j]
+        if (prevNode && isOverlapping({ x: bestX, y: bestY }, prevNode, 36)) {
+          hasOverlap = true
+          break
+        }
+      }
+
+      if (!hasOverlap) break
+      attempts++
+    }
+
+    node.x = bestX
+    node.y = bestY
   }
 }
 
@@ -125,11 +159,10 @@ export function resolveOverlaps(
             if (k > j) {
               const n2 = nodeList[k]
               if (n2) {
-                let dx = n1.x - n2.x
-                let dy = n1.y - n2.y
-                const distSq = dx * dx + dy * dy
-
-                if (distSq < minDistanceSq) {
+                if (isOverlapping(n1, n2, minDistanceSq)) {
+                  let dx = n1.x - n2.x
+                  let dy = n1.y - n2.y
+                  const distSq = dx * dx + dy * dy
                   moved = true
                   let dist = Math.sqrt(distSq)
 

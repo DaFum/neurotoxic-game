@@ -12,7 +12,7 @@ test('MapGenerator should not have duplicate venues (if possible)', () => {
   let duplicates = 0
 
   nodes.forEach(node => {
-    if (node.venue && node.type !== 'HOME' && node.type !== 'FINALE') {
+    if (node.venue && node.type !== 'START' && node.type !== 'FINALE') {
       const name = node.venue.name
       if (venueCounts[name]) {
         // Only count the first time a venue is duplicated to count "unique duplicated venues"
@@ -27,11 +27,9 @@ test('MapGenerator should not have duplicate venues (if possible)', () => {
     }
   })
 
-  // We allow a small number of duplicates (e.g., <= 3) because the 'Easy' venue pool is very small (4 items).
-  // If the generator creates > 4 easy nodes (Layers 1-2), duplicates are mathematically inevitable without modifying data.
-  // The goal is to minimize them (previously we had ~7, now ~2).
-  assert.ok(
-    duplicates <= 3,
-    `Should have minimized duplicate venues (found ${duplicates})`
+  assert.strictEqual(
+    duplicates,
+    0,
+    `Should have zero duplicate venues (found ${duplicates})`
   )
 })

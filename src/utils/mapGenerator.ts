@@ -304,7 +304,8 @@ export class MapGenerator {
         : layerIndex < 7
           ? [
               { poolArray: mediumVenues, poolLength: available.medium },
-              { poolArray: hardVenues, poolLength: available.hard }
+              { poolArray: hardVenues, poolLength: available.hard },
+              { poolArray: easyVenues, poolLength: available.easy }
             ]
           : [
               { poolArray: hardVenues, poolLength: available.hard },
@@ -316,8 +317,7 @@ export class MapGenerator {
       if (pool.poolLength > 0) return pool
     }
 
-    // If all preferred pools are exhausted, return the primary to trigger
-    // the zero-resort fallback logic in the caller.
+    // If all preferred pools are exhausted, return the primary so the caller can throw
     return preferences[0]
   }
 
@@ -379,46 +379,7 @@ export class MapGenerator {
       else if (poolArray === mediumVenues) available.medium--
       else available.hard--
     } else {
-      // Absolute zero-resort fallback: allow duplicates from full pool to prevent crash,
-      // but exclude specialized venues.
-      const fallbackArray =
-        i < 3 ? easyVenues : i < 7 ? mediumVenues : hardVenues
-      let fallbackLength = 0
-      for (let k = 0; k < fallbackArray.length; k++) {
-        const v = fallbackArray[k]
-        if (!v) continue
-        if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
-          fallbackLength++
-        }
-      }
-      if (fallbackLength === 0) {
-        throw new StateError(`Empty fallback pool for difficulty ${i}`)
-      }
-
-      let targetIndex = pickBoundedIndex(fallbackLength, () => this.random())
-      for (let k = 0; k < fallbackArray.length; k++) {
-        const v = fallbackArray[k]
-        if (!v) continue
-        if (v.id !== 'leipzig_arena' && v.id !== 'stendal_proberaum') {
-          if (targetIndex === 0) {
-            venue = v
-            break
-          }
-          targetIndex--
-        }
-      }
-
-      if (!venue) {
-        throw new StateError(
-          `Failed to select venue from fallback pool at layer=${i} index=${j}`,
-          {
-            layer: i,
-            index: j,
-            targetIndex,
-            poolLength: fallbackArray.length
-          }
-        )
-      }
+      throw new StateError(`No venues available across any pools for layer=${i} index=${j}`)
     }
 
     return venue
