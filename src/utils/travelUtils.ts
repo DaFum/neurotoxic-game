@@ -159,6 +159,8 @@ export const getNodeAccessStatus = (
   return checkVenueAccess(params)
 }
 
+export const TRAVEL_ANIMATION_DURATION_MS = 1500
+
 export const checkVenueAccess = ({
   node,
   player,

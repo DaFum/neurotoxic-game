@@ -5,8 +5,9 @@ import { logger } from '../../../utils/logger'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 import type { TravelActionsParams } from '../types'
+import { TRAVEL_ANIMATION_DURATION_MS } from '../../../utils/travelUtils'
 
-const TRAVEL_ANIMATION_TIMEOUT_MS = 1510
+const TRAVEL_ANIMATION_TIMEOUT_MS = TRAVEL_ANIMATION_DURATION_MS + 10
 
 interface UseStartTravelSequenceParams extends Pick<
   TravelActionsParams,

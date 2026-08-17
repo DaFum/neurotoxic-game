@@ -2,9 +2,9 @@ import {
   calculateChassisGrossSaleValue,
   getTotalDailyObligations,
   getActiveAssetModifiers
-} from '../../utils/assetSelectors'
-import { finiteNumberOr } from '../../utils/finiteNumber'
-import type { TravelLogicParams } from './types'
+} from './assetSelectors'
+import { finiteNumberOr } from './finiteNumber'
+import type { TravelLogicParams } from '../hooks/travel/types'
 
 export const getSellableAssets = (
   assets: TravelLogicParams['assets'],
@@ -54,12 +54,12 @@ export const getPostSaleScenarios = (
 ): {
   assetProceeds: number
   dailyObligations: number
-  assetModifiers: import('../../types/assets').AssetModifiers
+  assetModifiers: import('../types/assets').AssetModifiers
 }[] => {
   const postSaleScenarios: {
     assetProceeds: number
     dailyObligations: number
-    assetModifiers: import('../../types/assets').AssetModifiers
+    assetModifiers: import('../types/assets').AssetModifiers
   }[] = []
 
   if (sellableAssets.length > 0 && assets) {
