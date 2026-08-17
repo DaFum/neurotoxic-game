@@ -5,6 +5,8 @@ import './ReloadPrompt.css'
 
 /**
  * Displays the service-worker update prompt and triggers a reload on confirmation.
+ *
+ * @returns The rendered service-worker toast prompt, or null if neither offline readiness nor a refresh is pending.
  */
 export default function ReloadPrompt() {
   const { t } = useTranslation()

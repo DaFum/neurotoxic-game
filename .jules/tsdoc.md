@@ -67,3 +67,4 @@
 | 2026-08-14 | src/components/stage/RoadieTrafficManager.ts | RoadieCar, RoadieTrafficManager, constructor, _getOrCreateCarSprite, renderTraffic, cleanupTraffic, dispose |
 | 2026-08-15 | src/components/MapConnection.tsx | MapConnectionEndpoint, MapConnectionProps, MapConnection |
 | 2026-08-16 | src/hooks/useBloodBank.ts | DONATION_VARIANTS, useBloodBank |
+| 2026-08-17 | src/components/ReloadPrompt.tsx | ReloadPrompt |
