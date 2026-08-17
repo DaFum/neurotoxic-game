@@ -189,27 +189,37 @@
 **Learning:** `Object.values(obj)` allocates an array on every invocation. If used inside high-frequency ticking operations (like the daily game tick `processLiabilityTick`), this results in constant intermediate array allocations which causes cumulative Garbage Collection pressure.
 **Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value.
 
-
 ## 2026-08-01 - Reducing Object.keys on Game State Updates
 
 **Learning:** `Object.keys(obj)` allocates an array on every invocation. When applied to frequent operations like game state delta applications, sanitizers (e.g. loading game save files, handling high-frequency `APPLY_EVENT_DELTA` payloads), this causes unnecessary short-lived arrays that place heavy pressure on GC.
 **Action:** Replace `Object.keys(obj)` iterations with `for...in` loops combined with `Object.hasOwn()` checks on these hot paths to eliminate the array allocation overhead completely. Make sure to retain any empty-string rejection checks (e.g. `if (!key && key !== '') continue`) when refactoring these iterators to preserve the old `Object.keys` behavior of not skipping empty strings.
 
 ## 2026-08-04 - Procedural Loops vs IIFEs for Array Replacements
+
 **Learning:** Replacing `.map()` with a procedural loop wrapped inside an Immediately Invoked Function Expression (IIFE) (e.g., `(function() { ... })()`) to avoid closure allocation is an anti-pattern. It degrades readability while still allocating a closure, completely defeating the purpose of the optimization.
 **Action:** Stick to standard procedural `for` loops initialized before assignment if replacing array iteration methods for GC optimization. If a localized assignment is required and a standard loop reduces readability significantly, leave the declarative method (like `.map()`) in place, as micro-optimizing it with an IIFE yields no real benefit.
+
 ## 2024-11-20 - Reducing Object.values on Game Loop Ticks
 
 **Learning:** `Object.values(obj)` allocates an array on every invocation. If used inside high-frequency ticking operations (like the daily game tick `processLiabilityTick`) or heavy action reducers, this results in constant intermediate array allocations which causes cumulative Garbage Collection pressure.
 **Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value. Note this applies to `Object.values`, as `Object.keys` optimizations should be handled according to specific V8 guidelines.
 
 ## 2026-08-06 - Optimizing trait unlock condition checks
+
 **Learning:** High-frequency trait unlock evaluations (like `Object.values().some` and `Array.some`) in `checkTraitUnlocks` have overhead. `Object.values()` allocates an intermediate array, and while `Array.some()` does not, the inline callbacks passed to it allocate closures. However, simply wrapping procedural loops in Immediately Invoked Function Expressions (IIFEs) inside array filter predicates or object iterators is a documented anti-pattern here that still allocates closures and hurts readability.
 **Action:** When replacing inline array methods like `.some` with procedural loops to avoid closure allocations, extract the logic into a named helper function rather than using an IIFE.
+
 ## 2026-08-07 - Reduce Object.entries overhead in reducers
+
 **Learning:** The state reducers contained `Object.entries()` over large dictionaries inside hot loops, triggering unneeded tuple allocations that cause GC jitter during game ticks.
 **Action:** Replaced `Object.entries()` in hot reducers (`systemReducer`, `bandReducer`, etc) with direct `for...in` procedural loops alongside `Object.hasOwn()` without using IIFEs or declarative callbacks, reducing closure creation while keeping the syntax clean.
 
 ## 2026-08-12 - Early returns vs full iteration in filter lengths
+
 **Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
 **Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
+
+## 2026-08-17 - Optimize remapPerRegionScopeKeys array allocation
+
+**Learning:** The `remapPerRegionScopeKeys` function in the system reducer hot path was allocating intermediate arrays and closures using `.map()`, causing unnecessary GC pressure.
+**Action:** Replaced `.map()` with a preallocated procedural `for` loop to eliminate intermediate allocations and closure creation in hot paths.
