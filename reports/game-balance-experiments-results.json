@@ -50,7 +50,9 @@
           "phase": "bootstrap",
           "description": "Leaves early-game daily obligations untouched.",
           "hypothesis": "The shipped economy may already sit inside its insolvency tolerance over a full tour, in which case no relief is warranted.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {}
           },
@@ -930,7 +932,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 90 percent through day 3.",
           "hypothesis": "Lower recurring costs over the opening hops should prevent early insolvency without changing Fame efficiency.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 3,
@@ -1812,7 +1816,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 80 percent through day 3.",
           "hypothesis": "Lower recurring costs over the opening hops should prevent early insolvency without changing Fame efficiency.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 3,
@@ -2694,7 +2700,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 70 percent through day 3.",
           "hypothesis": "Lower recurring costs over the opening hops should prevent early insolvency without changing Fame efficiency.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 3,
@@ -3576,7 +3584,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 80 percent through day 5.",
           "hypothesis": "Covering the first half of the tour should catch the runs that fail just after the opening.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 5,
@@ -4458,7 +4468,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 70 percent through day 5.",
           "hypothesis": "Covering the first half of the tour should catch the runs that fail just after the opening.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 5,
@@ -5340,7 +5352,9 @@
           "phase": "bootstrap",
           "description": "Reduces applicable early-game daily obligations to 60 percent through day 5.",
           "hypothesis": "Covering the first half of the tour should catch the runs that fail just after the opening.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "durationDays": 5,
@@ -6222,7 +6236,9 @@
           "phase": "bootstrap",
           "description": "Provides one emergency intervention of €250 through day 5 below €100.",
           "hypothesis": "A one-shot liquidity backstop should recover endangered runs without broadly enriching solvent runs.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "emergencyGrant": 250,
@@ -7105,7 +7121,9 @@
           "phase": "bootstrap",
           "description": "Provides one emergency intervention of €500 through day 5 below €100.",
           "hypothesis": "A one-shot liquidity backstop should recover endangered runs without broadly enriching solvent runs.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "emergencyGrant": 500,
@@ -7988,7 +8006,9 @@
           "phase": "bootstrap",
           "description": "Scales obligations to 60 percent through day 2 and 80 percent through day 5.",
           "hypothesis": "A tapered ramp should protect the opening hops while restoring full costs before the tour ends.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "obligationStages": [
@@ -8878,7 +8898,9 @@
           "phase": "bootstrap",
           "description": "Scales obligations to 75 percent through day 4.",
           "hypothesis": "A short moderate ramp should reduce opening failures with little surplus.",
-          "scenarios": ["bootstrap_struggle"],
+          "scenarios": [
+            "bootstrap_struggle"
+          ],
           "overrides": {
             "earlyGame": {
               "obligationStages": [
@@ -10330,7 +10352,10 @@
         "allAboveTarget": false,
         "mixedDirections": false,
         "isReleaseGate": false,
-        "targetRangePct": [20, 25],
+        "targetRangePct": [
+          20,
+          25
+        ],
         "shortfalls": [
           "baseline_touring money-per-day advantage 3.26% is below the 20-25% target (was 3.26%)",
           "low_resource_touring money-per-day advantage 4.07% is below the 20-25% target (was 4.07%)"
@@ -10367,13 +10392,21 @@
           "phase": "touring",
           "description": "Leaves repeat-gig demand untouched.",
           "hypothesis": "Gig-frequency advantage may be inherent to playing more gig nodes rather than a compounding exploit, in which case no dampener is warranted.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {}
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -11252,7 +11285,9 @@
           "phase": "touring",
           "description": "Applies 5 percent regional repeat-demand loss per gig over 3 days, capped at 15 percent.",
           "hypothesis": "Expiring regional saturation should target dense routing more than paced touring.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 3,
@@ -11261,8 +11296,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -12140,7 +12181,9 @@
           "phase": "touring",
           "description": "Applies 7.5 percent regional repeat-demand loss per gig over 3 days, capped at 25 percent.",
           "hypothesis": "Expiring regional saturation should target dense routing more than paced touring.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 3,
@@ -12149,8 +12192,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -13028,7 +13077,9 @@
           "phase": "touring",
           "description": "Applies 5 percent regional repeat-demand loss per gig over 5 days, capped at 20 percent.",
           "hypothesis": "Expiring regional saturation should target dense routing more than paced touring.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 5,
@@ -13037,8 +13088,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -13916,7 +13973,9 @@
           "phase": "touring",
           "description": "Applies 10 percent regional repeat-demand loss over 3 days after day 3, capped at 40 percent.",
           "hypothesis": "Deferring saturation past the opening hops should preserve early cash while flattening repeat routing later in the tour.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 3,
@@ -13926,8 +13985,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -14805,7 +14870,9 @@
           "phase": "touring",
           "description": "Applies 10 percent regional repeat-demand loss over 5 days after day 3, capped at 40 percent.",
           "hypothesis": "Deferring saturation past the opening hops should preserve early cash while flattening repeat routing later in the tour.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 5,
@@ -14815,8 +14882,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -15694,7 +15767,9 @@
           "phase": "touring",
           "description": "Applies 13.5 percent regional repeat-demand loss over 5 days after day 3, capped at 48 percent.",
           "hypothesis": "Deferring saturation past the opening hops should preserve early cash while flattening repeat routing later in the tour.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 5,
@@ -15704,8 +15779,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -16583,7 +16664,9 @@
           "phase": "touring",
           "description": "Applies 16 percent regional repeat-demand loss over five days after day 5, capped at 55 percent.",
           "hypothesis": "A later gate with a stronger bounded rate tests whether the back half of a tour can be dampened without early damage.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "repeatGigWindowDays": 5,
@@ -16593,8 +16676,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -17472,7 +17561,9 @@
           "phase": "touring",
           "description": "Applies 1 harmony loss on consecutive gig days.",
           "hypothesis": "Dense touring stress should create a visible pacing trade-off.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -17480,8 +17571,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -18359,7 +18456,9 @@
           "phase": "touring",
           "description": "Applies 2 harmony loss on consecutive gig days.",
           "hypothesis": "Dense touring stress should create a visible pacing trade-off.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -18367,8 +18466,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -19246,7 +19351,9 @@
           "phase": "touring",
           "description": "Applies one harmony loss and ten percent lower recovery after consecutive gigs.",
           "hypothesis": "Combining small stress and recovery pressure may discourage density without a large cash penalty.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -19255,8 +19362,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -20134,7 +20247,9 @@
           "phase": "touring",
           "description": "Multiplies dense-schedule wear by 1.05.",
           "hypothesis": "Canonical wear should convert dense schedules into delayed maintenance costs.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -20142,8 +20257,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -21021,7 +21142,9 @@
           "phase": "touring",
           "description": "Multiplies dense-schedule wear by 1.1.",
           "hypothesis": "Canonical wear should convert dense schedules into delayed maintenance costs.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -21029,8 +21152,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -21908,7 +22037,9 @@
           "phase": "touring",
           "description": "Multiplies dense-schedule wear by 1.15.",
           "hypothesis": "Canonical wear should convert dense schedules into delayed maintenance costs.",
-          "scenarios": ["baseline_touring"],
+          "scenarios": [
+            "baseline_touring"
+          ],
           "overrides": {
             "touring": {
               "denseScheduleThresholdDays": 1,
@@ -21916,8 +22047,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -22911,7 +23048,10 @@
     },
     "phase6E": {
       "id": "phase6E",
-      "targetScenarioIds": ["bootstrap_struggle", "chaos_tour"],
+      "targetScenarioIds": [
+        "bootstrap_struggle",
+        "chaos_tour"
+      ],
       "runsPerScenario": 2000,
       "candidates": [
         {
@@ -22919,13 +23059,22 @@
           "phase": "recovery",
           "description": "Leaves critical harmony without an additional recovery decision.",
           "hypothesis": "The control establishes whether paid recovery improves outcomes.",
-          "scenarios": ["bootstrap_struggle", "chaos_tour"],
+          "scenarios": [
+            "bootstrap_struggle",
+            "chaos_tour"
+          ],
           "overrides": {
             "recovery": {}
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -24727,7 +24876,10 @@
           "phase": "recovery",
           "description": "Offers harmony recovery below 40 for a tour day.",
           "hypothesis": "Critical harmony should become a costly pacing decision instead of an unavoidable decline.",
-          "scenarios": ["bootstrap_struggle", "chaos_tour"],
+          "scenarios": [
+            "bootstrap_struggle",
+            "chaos_tour"
+          ],
           "overrides": {
             "recovery": {
               "threshold": 40,
@@ -24737,8 +24889,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -26552,7 +26710,10 @@
           "phase": "recovery",
           "description": "Offers harmony recovery below 40 for a clinic-priced payment.",
           "hypothesis": "Critical harmony should become a costly pacing decision instead of an unavoidable decline.",
-          "scenarios": ["bootstrap_struggle", "chaos_tour"],
+          "scenarios": [
+            "bootstrap_struggle",
+            "chaos_tour"
+          ],
           "overrides": {
             "recovery": {
               "threshold": 40,
@@ -26562,8 +26723,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -28377,7 +28544,10 @@
           "phase": "recovery",
           "description": "Offers harmony recovery below 45 for a tour day.",
           "hypothesis": "Critical harmony should become a costly pacing decision instead of an unavoidable decline.",
-          "scenarios": ["bootstrap_struggle", "chaos_tour"],
+          "scenarios": [
+            "bootstrap_struggle",
+            "chaos_tour"
+          ],
           "overrides": {
             "recovery": {
               "threshold": 45,
@@ -28387,8 +28557,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -30202,7 +30378,10 @@
           "phase": "recovery",
           "description": "Offers harmony recovery below 45 for a clinic-priced payment.",
           "hypothesis": "Critical harmony should become a costly pacing decision instead of an unavoidable decline.",
-          "scenarios": ["bootstrap_struggle", "chaos_tour"],
+          "scenarios": [
+            "bootstrap_struggle",
+            "chaos_tour"
+          ],
           "overrides": {
             "recovery": {
               "threshold": 45,
@@ -30212,8 +30391,14 @@
             }
           },
           "acceptanceCriteria": {
-            "medianFinalMoneyDeltaPct": [-25, 0],
-            "p90FinalMoneyDeltaPct": [-30, 0],
+            "medianFinalMoneyDeltaPct": [
+              -25,
+              0
+            ],
+            "p90FinalMoneyDeltaPct": [
+              -30,
+              0
+            ],
             "earlyCheckpointMinimumDeltaPct": -5,
             "midCheckpointMinimumDeltaPct": -10,
             "candidateBankruptcyRateMaxPct": 10,
@@ -32030,7 +32215,10 @@
         "phase": "recovery",
         "description": "Offers harmony recovery below 40 for a clinic-priced payment.",
         "hypothesis": "Critical harmony should become a costly pacing decision instead of an unavoidable decline.",
-        "scenarios": ["bootstrap_struggle", "chaos_tour"],
+        "scenarios": [
+          "bootstrap_struggle",
+          "chaos_tour"
+        ],
         "overrides": {
           "recovery": {
             "threshold": 40,
@@ -32040,8 +32228,14 @@
           }
         },
         "acceptanceCriteria": {
-          "medianFinalMoneyDeltaPct": [-25, 0],
-          "p90FinalMoneyDeltaPct": [-30, 0],
+          "medianFinalMoneyDeltaPct": [
+            -25,
+            0
+          ],
+          "p90FinalMoneyDeltaPct": [
+            -30,
+            0
+          ],
           "earlyCheckpointMinimumDeltaPct": -5,
           "midCheckpointMinimumDeltaPct": -10,
           "candidateBankruptcyRateMaxPct": 10,
@@ -42729,47 +42923,72 @@
       {
         "scenarioId": "baseline_touring",
         "ratePct": 1.15,
-        "corridorPct": [1, 5],
+        "corridorPct": [
+          1,
+          5
+        ],
         "position": "inside"
       },
       {
         "scenarioId": "cult_hypergrowth",
         "ratePct": 2.5,
-        "corridorPct": [2, 10],
+        "corridorPct": [
+          2,
+          10
+        ],
         "position": "inside"
       },
       {
         "scenarioId": "aggressive_marketing",
         "ratePct": 2.6,
-        "corridorPct": [2, 8],
+        "corridorPct": [
+          2,
+          8
+        ],
         "position": "inside"
       },
       {
         "scenarioId": "chaos_tour",
         "ratePct": 3.55,
-        "corridorPct": [8, 20],
+        "corridorPct": [
+          8,
+          20
+        ],
         "position": "below"
       },
       {
         "scenarioId": "festival_push",
         "ratePct": 4.25,
-        "corridorPct": [5, 15],
+        "corridorPct": [
+          5,
+          15
+        ],
         "position": "below"
       },
       {
         "scenarioId": "scandal_recovery",
         "ratePct": 8.45,
-        "corridorPct": [8, 20],
+        "corridorPct": [
+          8,
+          20
+        ],
         "position": "inside"
       },
       {
         "scenarioId": "bootstrap_struggle",
         "ratePct": 8.05,
-        "corridorPct": [15, 30],
+        "corridorPct": [
+          15,
+          30
+        ],
         "position": "below"
       }
     ],
-    "belowCorridor": ["chaos_tour", "festival_push", "bootstrap_struggle"],
+    "belowCorridor": [
+      "chaos_tour",
+      "festival_push",
+      "bootstrap_struggle"
+    ],
     "aboveCorridor": []
   },
   "combinationSearch": {

@@ -97,11 +97,11 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
 ): T[] => {
   // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop to avoid closure allocation and intermediate arrays in hot paths.
   const len = items.length
-  const result = new Array(len)
+  const result = new Array<T>(len)
   for (let i = 0; i < len; i++) {
     const item = items[i]
     if (item === undefined) {
-      result[i] = item
+      result[i] = item as unknown as T
       continue
     }
     const scopeKey = item.scopeKey
@@ -109,16 +109,16 @@ const remapPerRegionScopeKeys = <T extends { scopeKey?: unknown }>(
       typeof scopeKey !== 'string' ||
       getQuestDefinition(getQuestId(item as T))?.repeatPolicy !== 'perRegion'
     ) {
-      result[i] = item
+      result[i] = item as T
       continue
     }
     const regionKey = getRegionKeyForLocation(scopeKey)
     result[i] =
       regionKey && regionKey !== scopeKey
-        ? { ...item, scopeKey: regionKey }
-        : item
+        ? ({ ...item, scopeKey: regionKey } as T)
+        : (item as T)
   }
-  return result as T[]
+  return result
 }
 
 const migrateVenueBlacklist = (blacklist: string[]): string[] => {

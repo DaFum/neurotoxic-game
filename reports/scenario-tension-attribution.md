@@ -6,27 +6,27 @@ Cohorts: 2000 runs each; calibration #scenario-tension-attribution-v1; holdout #
 
 ## Tension matrix
 
-| Scenario           | Cohort      | Bankruptcy | Before gig | After gig | Ever <€500 | P90 drawdown | Finale completed |
-| ------------------ | ----------- | ---------: | ---------: | --------: | ---------: | -----------: | ---------------: |
-| Bootstrap Struggle | Calibration |       7.6% |       0.7% |      6.9% |     17.45% |       70.87% |            91.6% |
-| Bootstrap Struggle | Holdout     |       8.8% |       0.5% |      8.3% |     19.15% |       74.59% |           90.15% |
-| Scandal Recovery   | Calibration |      7.35% |       0.4% |     6.95% |     17.65% |       67.34% |           91.25% |
-| Scandal Recovery   | Holdout     |      8.55% |       0.6% |     7.95% |      20.5% |       76.25% |            89.7% |
-| Festival Push      | Calibration |      3.95% |       0.4% |     3.55% |     11.35% |       60.38% |            95.9% |
-| Festival Push      | Holdout     |      2.65% |      0.45% |      2.2% |       9.4% |       57.44% |           97.25% |
-| Chaos Tour         | Calibration |      3.45% |       0.7% |     2.75% |     11.45% |       52.79% |              95% |
-| Chaos Tour         | Holdout     |      3.75% |       0.7% |     3.05% |     10.55% |        54.4% |           95.05% |
+| Scenario | Cohort | Bankruptcy | Before gig | After gig | Ever <€500 | P90 drawdown | Finale completed |
+| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Bootstrap Struggle | Calibration | 7.6% | 0.7% | 6.9% | 17.45% | 70.87% | 91.6% |
+| Bootstrap Struggle | Holdout | 8.8% | 0.5% | 8.3% | 19.15% | 74.59% | 90.15% |
+| Scandal Recovery | Calibration | 7.35% | 0.4% | 6.95% | 17.65% | 67.34% | 91.25% |
+| Scandal Recovery | Holdout | 8.55% | 0.6% | 7.95% | 20.5% | 76.25% | 89.7% |
+| Festival Push | Calibration | 3.95% | 0.4% | 3.55% | 11.35% | 60.38% | 95.9% |
+| Festival Push | Holdout | 2.65% | 0.45% | 2.2% | 9.4% | 57.44% | 97.25% |
+| Chaos Tour | Calibration | 3.45% | 0.7% | 2.75% | 11.45% | 52.79% | 95% |
+| Chaos Tour | Holdout | 3.75% | 0.7% | 3.05% | 10.55% | 54.4% | 95.05% |
 
 Cohort comparison: **unstable**. Corridor differences are diagnostic, not missing evidence.
 
 ## Top actual loss sources (Calibration)
 
-| Scenario           | Top 3                                                                    |
-| ------------------ | ------------------------------------------------------------------------ |
+| Scenario | Top 3 |
+| --- | --- |
 | Bootstrap Struggle | assets_upgrades: €3696342; daily_obligations: €3446589; travel: €1214969 |
-| Scandal Recovery   | assets_upgrades: €4212393; daily_obligations: €3546300; travel: €1228352 |
-| Festival Push      | assets_upgrades: €7446950; daily_obligations: €3948163; travel: €1374116 |
-| Chaos Tour         | assets_upgrades: €5635288; daily_obligations: €3697945; travel: €1326056 |
+| Scandal Recovery | assets_upgrades: €4212393; daily_obligations: €3546300; travel: €1228352 |
+| Festival Push | assets_upgrades: €7446950; daily_obligations: €3948163; travel: €1374116 |
+| Chaos Tour | assets_upgrades: €5635288; daily_obligations: €3697945; travel: €1326056 |
 
 Gross gig spending is published separately in JSON under `grossSpendAttribution` and never drives drawdown fields.
 
@@ -37,20 +37,20 @@ Diagnostic only: ×1.25; production change: no; bankruptcy: 3.8%; before first g
 ## Scandal controversy comparison
 
 | Start controversy | Bankruptcy | Final controversy | Finale completed |
-| ----------------: | ---------: | ----------------: | ---------------: |
-|                 0 |      5.85% |              4.93 |           93.75% |
-|                50 |       8.6% |             44.51 |            89.8% |
-|                65 |     14.15% |              50.8 |           80.95% |
-|                80 |      22.2% |                59 |           69.85% |
+| ---: | ---: | ---: | ---: |
+| 0 | 5.85% | 4.93 | 93.75% |
+| 50 | 8.6% | 44.51 | 89.8% |
+| 65 | 14.15% | 50.8 | 80.95% |
+| 80 | 22.2% | 59 | 69.85% |
 
 ## Progression diagnostics
 
-| Scenario           | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |
-| ------------------ | -----------------: | --------------: | ------------------: | -------------: | ------------------------------ |
-| Bootstrap Struggle |                  1 |          15.03% |                0.25 |       €4207.85 | 3.14/0.2/—                     |
-| Scandal Recovery   |                  1 |          15.04% |                0.27 |       €4457.95 | 3.16/0.21/—                    |
-| Festival Push      |                  1 |           15.5% |                 0.2 |       €5978.19 | 2.65/0.17/—                    |
-| Chaos Tour         |                  1 |          15.41% |                 0.2 |       €5322.46 | 2.96/0.19/—                    |
+| Scenario | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |
+| --- | ---: | ---: | ---: | ---: | --- |
+| Bootstrap Struggle | 1 | 15.03% | 0.25 | €4207.85 | 3.14/0.2/— |
+| Scandal Recovery | 1 | 15.04% | 0.27 | €4457.95 | 3.16/0.21/— |
+| Festival Push | 1 | 15.5% | 0.2 | €5978.19 | 2.65/0.17/— |
+| Chaos Tour | 1 | 15.41% | 0.2 | €5322.46 | 2.96/0.19/— |
 
 ## Phase decisions
 

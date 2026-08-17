@@ -226,23 +226,20 @@ export const buildChaosCandidateAcceptance = ({
 
 export const buildChaosCandidateComparison = scenario => {
   const namespace = `${ATTRIBUTION_COHORTS.calibration}#chaos-event-loss-1.25`
-  const pairs = Array.from(
-    { length: TENSION_RUNS_PER_SCENARIO },
-    (_, index) => {
-      const seed = createScenarioSeed(`${scenario.id}${namespace}`, index)
-      return {
-        control: runSingleSimulation(scenario, seed),
-        candidate: runSingleSimulation(
-          {
-            ...scenario,
-            negativeFinancialEventMultiplier:
-              CHAOS_EVENT_LOSS_CANDIDATE.negativeFinancialEventMultiplier
-          },
-          seed
-        )
-      }
+  const pairs = Array.from({ length: TENSION_RUNS_PER_SCENARIO }, (_, index) => {
+    const seed = createScenarioSeed(`${scenario.id}${namespace}`, index)
+    return {
+      control: runSingleSimulation(scenario, seed),
+      candidate: runSingleSimulation(
+        {
+          ...scenario,
+          negativeFinancialEventMultiplier:
+            CHAOS_EVENT_LOSS_CANDIDATE.negativeFinancialEventMultiplier
+        },
+        seed
+      )
     }
-  )
+  })
   const control = summarizeScenario(pairs.map(pair => pair.control))
   const candidate = summarizeScenario(pairs.map(pair => pair.candidate))
   const famePerGig = pairedFamePerGig(
@@ -330,14 +327,11 @@ export const buildTensionReport = async () => {
       holdoutReview,
       scenarios.map(scenario => scenario.id)
     )
-  const summariesFor = id =>
-    [cohorts.calibration, cohorts.holdout].map(
-      stream => stream.find(scenario => scenario.id === id)?.summary
-    )
-  const completeSamples = summaries =>
-    summaries.every(
-      summary => summary?.bankruptcy?.sampleSize === TENSION_RUNS_PER_SCENARIO
-    )
+  const summariesFor = id => [cohorts.calibration, cohorts.holdout]
+    .map(stream => stream.find(scenario => scenario.id === id)?.summary)
+  const completeSamples = summaries => summaries.every(
+    summary => summary?.bankruptcy?.sampleSize === TENSION_RUNS_PER_SCENARIO
+  )
   const chaosSummaries = summariesFor('chaos_tour')
   const chaos = scenarios.find(scenario => scenario.id === 'chaos_tour')
   const chaosCandidateComparison = chaos
@@ -352,8 +346,7 @@ export const buildTensionReport = async () => {
   )
   const progressionFieldsPresent = bootstrapFestivalSummaries.every(summary => {
     const paths = summary?.purchasePaths
-    return (
-      paths &&
+    return paths &&
       Number.isFinite(paths.firstPurchaseDayMedian) &&
       Number.isFinite(paths.avgLiquidityDeferrals) &&
       Number.isFinite(paths.catalogSharePurchasedPct) &&
@@ -361,20 +354,16 @@ export const buildTensionReport = async () => {
       Number.isFinite(summary.gigsToAffordHqUpgrade) &&
       Number.isFinite(summary.gigsToAffordVanUpgrade) &&
       Number.isFinite(paths.modulePaybackGigs)
-    )
   })
   const evidence = {
     tensionEvidence: {
       complete: tensionComplete,
-      status: tensionUnstable
-        ? 'unstable'
-        : tensionComplete
-          ? 'stable'
-          : 'insufficient_evidence'
+      status: tensionUnstable ? 'unstable' : tensionComplete ? 'stable' : 'insufficient_evidence'
     },
     lossAttributionEvidence: createEvidenceResult(
-      completeSamples(chaosSummaries) &&
-        chaosSummaries.every(hasCompleteAttributionEvidence),
+      completeSamples(chaosSummaries) && chaosSummaries.every(
+        hasCompleteAttributionEvidence
+      ),
       'Chaos actual-loss attribution is incomplete.'
     ),
     controversyEvidence: createEvidenceResult(
@@ -383,16 +372,18 @@ export const buildTensionReport = async () => {
     ),
     bootstrapFestivalEvidence: createEvidenceResult(
       completeSamples(bootstrapFestivalSummaries) &&
-        hasCompleteScenarioReviewEvidence(calibrationReview, holdoutReview, [
-          'bootstrap_struggle',
-          'festival_push'
-        ]),
+        hasCompleteScenarioReviewEvidence(
+          calibrationReview,
+          holdoutReview,
+          ['bootstrap_struggle', 'festival_push']
+        ),
       'Bootstrap and Festival cohorts are incomplete.',
       {
-        status: reviewsDifferForScenarioIds(calibrationReview, holdoutReview, [
-          'bootstrap_struggle',
-          'festival_push'
-        ])
+        status: reviewsDifferForScenarioIds(
+          calibrationReview,
+          holdoutReview,
+          ['bootstrap_struggle', 'festival_push']
+        )
           ? 'unstable'
           : 'stable'
       }
@@ -421,9 +412,7 @@ export const buildTensionReport = async () => {
 
 const buildMarkdown = report => {
   const scenarioRows = report.cohorts.calibration.flatMap(calibration => {
-    const holdout = report.cohorts.holdout.find(
-      item => item.id === calibration.id
-    )
+    const holdout = report.cohorts.holdout.find(item => item.id === calibration.id)
     return [
       `| ${calibration.name} | Calibration | ${calibration.summary.financialStress.bankruptcyRatePct}% | ${calibration.summary.financialStress.bankruptcyBeforeFirstGigPct}% | ${calibration.summary.financialStress.bankruptcyAfterFirstGigPct}% | ${calibration.summary.financialStress.everBelowTightPct}% | ${calibration.summary.financialStress.p90MaxDrawdownPct}% | ${calibration.summary.tourPaths.finaleCompletedPct}% |`,
       `| ${holdout.name} | Holdout | ${holdout.summary.financialStress.bankruptcyRatePct}% | ${holdout.summary.financialStress.bankruptcyBeforeFirstGigPct}% | ${holdout.summary.financialStress.bankruptcyAfterFirstGigPct}% | ${holdout.summary.financialStress.everBelowTightPct}% | ${holdout.summary.financialStress.p90MaxDrawdownPct}% | ${holdout.summary.tourPaths.finaleCompletedPct}% |`
@@ -437,9 +426,8 @@ const buildMarkdown = report => {
       .join('; ')
     return `| ${scenario.name} | ${top} |`
   })
-  const controversyRows = report.controversyComparison.map(
-    profile =>
-      `| ${profile.controversyLevel} | ${profile.summary.bankruptcy.ratePct}% | ${profile.summary.avgFinalControversy} | ${profile.summary.tourPaths.finaleCompletedPct}% |`
+  const controversyRows = report.controversyComparison.map(profile =>
+    `| ${profile.controversyLevel} | ${profile.summary.bankruptcy.ratePct}% | ${profile.summary.avgFinalControversy} | ${profile.summary.tourPaths.finaleCompletedPct}% |`
   )
   const progressionRows = report.cohorts.calibration.map(scenario => {
     const paths = scenario.summary.purchasePaths
@@ -447,55 +435,26 @@ const buildMarkdown = report => {
   })
   const chaos = report.chaosCandidateComparison
   return [
-    '# Phase 6A-7 Scenario Tension Diagnostics',
-    '',
+    '# Phase 6A-7 Scenario Tension Diagnostics', '',
     `Generated: ${report.generatedAt}`,
     `Source fingerprint: ${report.metadata.sourceFingerprint}; generator fingerprint: ${report.metadata.generatorFingerprint}; schema: ${report.metadata.artifactSchemaVersion}; dirty: ${report.metadata.workingTreeDirty}`,
-    `Cohorts: ${report.contract.runsPerScenario} runs each; calibration ${report.contract.cohorts.calibration}; holdout ${report.contract.cohorts.holdout}; candidate selection: ${report.contract.candidateSelection}.`,
-    '',
-    '## Tension matrix',
-    '',
+    `Cohorts: ${report.contract.runsPerScenario} runs each; calibration ${report.contract.cohorts.calibration}; holdout ${report.contract.cohorts.holdout}; candidate selection: ${report.contract.candidateSelection}.`, '',
+    '## Tension matrix', '',
     '| Scenario | Cohort | Bankruptcy | Before gig | After gig | Ever <€500 | P90 drawdown | Finale completed |',
-    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |',
-    ...scenarioRows,
-    '',
-    `Cohort comparison: **${report.evidence.tensionEvidence.status}**. Corridor differences are diagnostic, not missing evidence.`,
-    '',
-    '## Top actual loss sources (Calibration)',
-    '',
-    '| Scenario | Top 3 |',
-    '| --- | --- |',
-    ...lossRows,
-    '',
-    'Gross gig spending is published separately in JSON under `grossSpendAttribution` and never drives drawdown fields.',
-    '',
-    '## Chaos event-loss candidate',
-    '',
+    '| --- | --- | ---: | ---: | ---: | ---: | ---: | ---: |', ...scenarioRows, '',
+    `Cohort comparison: **${report.evidence.tensionEvidence.status}**. Corridor differences are diagnostic, not missing evidence.`, '',
+    '## Top actual loss sources (Calibration)', '', '| Scenario | Top 3 |', '| --- | --- |', ...lossRows, '',
+    'Gross gig spending is published separately in JSON under `grossSpendAttribution` and never drives drawdown fields.', '',
+    '## Chaos event-loss candidate', '',
     chaos
       ? `Diagnostic only: ×${chaos.candidate.negativeFinancialEventMultiplier}; production change: ${chaos.candidate.productionChange ? 'yes' : 'no'}; bankruptcy: ${chaos.result.financialStress.bankruptcyRatePct}%; before first gig: ${chaos.result.financialStress.bankruptcyBeforeFirstGigPct}%; finale completed: ${chaos.result.tourPaths.finaleCompletedPct}%; paired Fame per gig: ${chaos.pairedFamePerGig.deltaPct}%; material loss sources: ${chaos.materialLossSources.join(', ')}; acceptance: ${chaos.acceptance.passed ? 'passed' : 'failed'}.`
-      : 'Chaos candidate was not measured.',
-    '',
-    '## Scandal controversy comparison',
-    '',
-    '| Start controversy | Bankruptcy | Final controversy | Finale completed |',
-    '| ---: | ---: | ---: | ---: |',
-    ...controversyRows,
-    '',
-    '## Progression diagnostics',
-    '',
-    '| Scenario | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |',
-    '| --- | ---: | ---: | ---: | ---: | --- |',
-    ...progressionRows,
-    '',
-    '## Phase decisions',
-    '',
-    ...Object.entries(report.decisions).map(
-      ([phase, decision]) =>
-        `- **${phase}:** ${decision.status}; production change: ${decision.productionChange ? 'yes' : 'no'} — ${decision.rationale}`
-    ),
-    '',
-    '## Next experiments',
-    '',
+      : 'Chaos candidate was not measured.', '',
+    '## Scandal controversy comparison', '', '| Start controversy | Bankruptcy | Final controversy | Finale completed |', '| ---: | ---: | ---: | ---: |', ...controversyRows, '',
+    '## Progression diagnostics', '', '| Scenario | First purchase day | Catalogue share | Liquidity deferrals | Residual money | HQ/Van/Module payback evidence |', '| --- | ---: | ---: | ---: | ---: | --- |', ...progressionRows, '',
+    '## Phase decisions', '', ...Object.entries(report.decisions).map(
+      ([phase, decision]) => `- **${phase}:** ${decision.status}; production change: ${decision.productionChange ? 'yes' : 'no'} — ${decision.rationale}`
+    ), '',
+    '## Next experiments', '',
     '- Do not change Bootstrap costs; its tension profile is already material.',
     '- Treat Chaos/Festival corridor crossings as boundary uncertainty, not missing data.',
     '- Complete module payback evidence before any Phase 7 candidate.',
@@ -530,9 +489,7 @@ if (
     )
     const validation = await validateReportProvenance(report)
     if (!validation.valid) {
-      throw new Error(
-        `Invalid tension report provenance: ${validation.reason ?? validation.changedFiles?.join(', ')}`
-      )
+      throw new Error(`Invalid tension report provenance: ${validation.reason ?? validation.changedFiles?.join(', ')}`)
     }
   } else {
     await writeTensionArtifacts(await buildTensionReport(), reportDir)

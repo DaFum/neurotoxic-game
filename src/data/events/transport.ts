@@ -875,8 +875,7 @@ export const TRANSPORT_EVENTS = [
     options: [
       {
         label: 'events:reststop_night_coffee.opt1.label',
-        condition: (state: GameState) =>
-          finiteNumberOr(state.player?.money, 0) >= 45,
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 45,
         effect: {
           type: 'composite',
           effects: [
@@ -945,8 +944,7 @@ export const TRANSPORT_EVENTS = [
       },
       {
         label: 'events:van_ac_heater_failure.opt2.label',
-        condition: (state: GameState) =>
-          finiteNumberOr(state.player?.money, 0) >= 110,
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 110,
         effect: {
           type: 'composite',
           effects: [
@@ -980,8 +978,7 @@ export const TRANSPORT_EVENTS = [
     options: [
       {
         label: 'events:reststop_trunk_dealer.opt1.label',
-        condition: (state: GameState) =>
-          finiteNumberOr(state.player?.money, 0) >= 120,
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 120,
         effect: {
           type: 'composite',
           effects: [
@@ -993,8 +990,7 @@ export const TRANSPORT_EVENTS = [
       },
       {
         label: 'events:reststop_trunk_dealer.opt2.label',
-        condition: (state: GameState) =>
-          finiteNumberOr(state.player?.money, 0) >= 60,
+        condition: (state: GameState) => finiteNumberOr(state.player?.money, 0) >= 60,
         skillCheck: {
           stat: 'charisma',
           threshold: 10,

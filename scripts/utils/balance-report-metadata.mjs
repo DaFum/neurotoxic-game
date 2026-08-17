@@ -112,18 +112,16 @@ export const getSourceWorkingTreeDirty = root => {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore']
     })
-    return (
-      status
-        .split('\n')
-        .map(line => line.trim())
-        .filter(Boolean)
-        // Porcelain lines are `XY <path>`, and renames carry `old -> new`; the trailing
-        // path is the one that matters for "is this a report".
-        .some(line => {
-          const target = line.slice(2).trim().split(' -> ').pop() ?? ''
-          return !target.replace(/^"|"$/g, '').startsWith('reports/')
-        })
-    )
+    return status
+      .split('\n')
+      .map(line => line.trim())
+      .filter(Boolean)
+      // Porcelain lines are `XY <path>`, and renames carry `old -> new`; the trailing
+      // path is the one that matters for "is this a report".
+      .some(line => {
+        const target = line.slice(2).trim().split(' -> ').pop() ?? ''
+        return !target.replace(/^"|"$/g, '').startsWith('reports/')
+      })
   } catch {
     return null
   }
@@ -188,7 +186,8 @@ export const validateArtifactMetadata = async (
     return { valid: false, reason: 'source_fingerprint_mismatch' }
   }
   if (
-    metadata.generatorFingerprint !== (await getFilesHash(root, generatorPaths))
+    metadata.generatorFingerprint !==
+    (await getFilesHash(root, generatorPaths))
   ) {
     return { valid: false, reason: 'generator_fingerprint_mismatch' }
   }

@@ -2,49 +2,17 @@ import fs from 'node:fs/promises'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 
-import {
-  BALANCE_RECOMMENDATION_HOLD,
-  ORIGINAL_CONTROL_BALANCE_TUNING,
-  resolveBalanceTuning
-} from '../src/utils/balanceTuning.ts'
+import { BALANCE_RECOMMENDATION_HOLD, ORIGINAL_CONTROL_BALANCE_TUNING, resolveBalanceTuning } from '../src/utils/balanceTuning.ts'
 import { BALANCE_EXPERIMENTS } from './game-balance-experiment-config.mjs'
-import {
-  bankruptcyTransitions,
-  pairedMetricStatistics
-} from './utils/paired-statistics.mjs'
-import {
-  KPI_TARGETS,
-  RISK_TARGETS,
-  SCENARIOS,
-  SHIPPED_GIG_CADENCE_POLICY,
-  SIMULATION_CONSTANTS,
-  buildDescriptiveCohortComparison,
-  buildHoldoutSafetyValidation,
-  calculateAverageFameEarnedPerGig,
-  createScenarioSeed,
-  runSingleSimulation
-} from './game-balance-simulation.mjs'
+import { bankruptcyTransitions, pairedMetricStatistics } from './utils/paired-statistics.mjs'
+import { KPI_TARGETS, RISK_TARGETS, SCENARIOS, SHIPPED_GIG_CADENCE_POLICY, SIMULATION_CONSTANTS, buildDescriptiveCohortComparison, buildHoldoutSafetyValidation, calculateAverageFameEarnedPerGig, createScenarioSeed, runSingleSimulation } from './game-balance-simulation.mjs'
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const OUTPUT_JSON = path.join(
-  ROOT,
-  'reports/game-balance-experiments-results.json'
-)
-const OUTPUT_MARKDOWN = path.join(
-  ROOT,
-  'reports/game-balance-experiments-analysis.md'
-)
-const METRICS = [
-  'daysSurvived',
-  'finalMoney',
-  'finalFame',
-  'fameEarned',
-  'gigsPlayed',
-  'finalHarmony',
-  'maxDrawdownPct'
-]
+const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-experiments-results.json')
+const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-experiments-analysis.md')
+const METRICS = ['daysSurvived', 'finalMoney', 'finalFame', 'fameEarned', 'gigsPlayed', 'finalHarmony', 'maxDrawdownPct']
 const PAIRING_STRATEGY = 'same-scenario-same-run-index-same-seed'
 const GENERATOR_PATHS = Object.freeze([
   'scripts/game-balance-experiments.mjs',
@@ -68,8 +36,7 @@ export class NoViableCandidateError extends Error {
 }
 
 const round = value => Number(value.toFixed(2))
-const percentageDelta = (control, candidate) =>
-  control === 0 ? 0 : round(((candidate - control) / Math.abs(control)) * 100)
+const percentageDelta = (control, candidate) => control === 0 ? 0 : round((candidate - control) / Math.abs(control) * 100)
 const compact = run => ({
   bankrupt: run.bankrupt,
   daysSurvived: run.daysSurvived,
@@ -89,41 +56,23 @@ const compact = run => ({
   harmonyRecovery: run.harmonyRecovery
 })
 
-export const pairSimulationRuns = ({
-  scenario,
-  runsPerScenario,
-  controlTuning,
-  candidateTuning,
-  controlRuns,
-  runner = runSingleSimulation,
-  stream = 'calibration'
-}) => {
-  if (controlRuns && controlRuns.length !== runsPerScenario)
-    throw new RangeError('Control cohort size must match runsPerScenario')
+export const pairSimulationRuns = ({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner = runSingleSimulation, stream = 'calibration' }) => {
+  if (controlRuns && controlRuns.length !== runsPerScenario) throw new RangeError('Control cohort size must match runsPerScenario')
   const pairs = []
   for (let runIndex = 0; runIndex < runsPerScenario; runIndex++) {
     const seed = streamSeed(stream, scenario.id, runIndex)
-    const control =
-      controlRuns?.[runIndex] ?? compact(runner(scenario, seed, controlTuning))
+    const control = controlRuns?.[runIndex] ?? compact(runner(scenario, seed, controlTuning))
     const candidate = compact(runner(scenario, seed, candidateTuning))
     pairs.push({
-      scenarioId: scenario.id,
-      runIndex,
-      seed,
-      control,
-      candidate,
-      delta: Object.fromEntries(
-        METRICS.map(metric => [metric, candidate[metric] - control[metric]])
-      )
+      scenarioId: scenario.id, runIndex, seed, control, candidate,
+      delta: Object.fromEntries(METRICS.map(metric => [metric, candidate[metric] - control[metric]]))
     })
   }
   return pairs
 }
 
 export const assertEqualControlCohorts = candidatePairs => {
-  const expected = JSON.stringify(
-    candidatePairs[0]?.map(pair => pair.control) ?? []
-  )
+  const expected = JSON.stringify(candidatePairs[0]?.map(pair => pair.control) ?? [])
   for (const pairs of candidatePairs.slice(1)) {
     if (JSON.stringify(pairs.map(pair => pair.control)) !== expected) {
       throw new Error('Control cohorts differ across candidates')
@@ -133,46 +82,21 @@ export const assertEqualControlCohorts = candidatePairs => {
 
 export const summarizePairedRuns = (pairs, experimentId, scenarioId) => ({
   sampleSize: pairs.length,
-  bankruptcy: bankruptcyTransitions(
-    pairs.map(pair => pair.control.bankrupt),
-    pairs.map(pair => pair.candidate.bankrupt)
-  ),
-  continuous: Object.fromEntries(
-    METRICS.map(metric => [
-      metric,
-      pairedMetricStatistics(
-        pairs.map(pair => pair.control[metric]),
-        pairs.map(pair => pair.candidate[metric]),
-        {
-          bootstrapSeed: `${experimentId}:${scenarioId}:${metric}`,
-          resamples: 2000
-        }
-      )
-    ])
-  ),
+  bankruptcy: bankruptcyTransitions(pairs.map(pair => pair.control.bankrupt), pairs.map(pair => pair.candidate.bankrupt)),
+  continuous: Object.fromEntries(METRICS.map(metric => [metric, pairedMetricStatistics(
+    pairs.map(pair => pair.control[metric]), pairs.map(pair => pair.candidate[metric]),
+    { bootstrapSeed: `${experimentId}:${scenarioId}:${metric}`, resamples: 2000 }
+  )])),
   harmonyRecovery: {
     control: summarizeHarmonyRecovery(pairs.map(pair => pair.control)),
     candidate: summarizeHarmonyRecovery(pairs.map(pair => pair.candidate))
   }
 })
 
-const summarizeHarmonyRecovery = runs =>
-  Object.fromEntries(
-    [
-      'evaluations',
-      'activations',
-      'harmonyRestored',
-      'moneySpent',
-      'daysConsumed',
-      'gigOpportunitiesForgone'
-    ].map(key => [
-      key,
-      round(
-        runs.reduce((sum, run) => sum + (run.harmonyRecovery?.[key] ?? 0), 0) /
-          Math.max(1, runs.length)
-      )
-    ])
-  )
+const summarizeHarmonyRecovery = runs => Object.fromEntries(
+  ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
+    .map(key => [key, round(runs.reduce((sum, run) => sum + (run.harmonyRecovery?.[key] ?? 0), 0) / Math.max(1, runs.length))])
+)
 
 export const kpiStatusForRuns = runs => {
   const target = KPI_TARGETS[runs[0]?.scenarioId]
@@ -180,20 +104,10 @@ export const kpiStatusForRuns = runs => {
   const side = key => runs.map(pair => pair[key])
   const status = key => {
     const cohort = side(key)
-    const bankruptcyRate =
-      (cohort.filter(run => run.bankrupt).length / Math.max(1, cohort.length)) *
-      100
-    const money =
-      cohort.reduce((sum, run) => sum + run.finalMoney, 0) /
-      Math.max(1, cohort.length)
+    const bankruptcyRate = cohort.filter(run => run.bankrupt).length / Math.max(1, cohort.length) * 100
+    const money = cohort.reduce((sum, run) => sum + run.finalMoney, 0) / Math.max(1, cohort.length)
     const famePerGig = calculateAverageFameEarnedPerGig(cohort)
-    return bankruptcyRate <= target.bankruptcyMax &&
-      money >= target.moneyMin &&
-      money <= target.moneyMax &&
-      famePerGig >= target.fameProgressPerGigMin &&
-      famePerGig <= target.fameProgressPerGigMax
-      ? 'passed'
-      : 'failed'
+    return bankruptcyRate <= target.bankruptcyMax && money >= target.moneyMin && money <= target.moneyMax && famePerGig >= target.fameProgressPerGigMin && famePerGig <= target.fameProgressPerGigMax ? 'passed' : 'failed'
   }
   return { control: status('control'), candidate: status('candidate') }
 }
@@ -203,108 +117,51 @@ export const evaluateFinalCombinedValidation = results => {
   const scenarioIds = results.map(result => result.scenarioId)
   const configuredScenarioIds = SCENARIOS.map(scenario => scenario.id)
   const kpiScenarioIds = Object.keys(KPI_TARGETS)
-  const resultsByScenario = Object.fromEntries(
-    results.map(result => [result.scenarioId, result])
-  )
+  const resultsByScenario = Object.fromEntries(results.map(result => [result.scenarioId, result]))
   for (const result of results) {
     const checks = {
-      bankruptcy:
-        result.scenarioId === 'bootstrap_struggle'
-          ? result.bankruptcy.candidateRatePct <= 60
-          : result.bankruptcy.deltaRatePct <= 2,
-      kpi: !(
-        result.controlKpiStatus === 'passed' &&
-        result.candidateKpiStatus === 'failed'
-      ),
+      bankruptcy: result.scenarioId === 'bootstrap_struggle'
+        ? result.bankruptcy.candidateRatePct <= 60
+        : result.bankruptcy.deltaRatePct <= 2,
+      kpi: !(result.controlKpiStatus === 'passed' && result.candidateKpiStatus === 'failed'),
       famePerGig: famePerGigWithinLimit(result.famePerGig, 5),
       harmony: result.continuous.finalHarmony.pairedDelta.median >= -5,
       drawdown: result.continuous.maxDrawdownPct.pairedDelta.median <= 10
     }
-    const failures = Object.entries(checks)
-      .filter(([, passed]) => !passed)
-      .map(([check]) => check)
-    result.scenarioValidation = {
-      passed: failures.length === 0,
-      checks,
-      failures
-    }
+    const failures = Object.entries(checks).filter(([, passed]) => !passed).map(([check]) => check)
+    result.scenarioValidation = { passed: failures.length === 0, checks, failures }
   }
   const checks = {
-    requiredScenariosPresent: configuredScenarioIds.every(id =>
-      scenarioIds.includes(id)
-    ),
+    requiredScenariosPresent: configuredScenarioIds.every(id => scenarioIds.includes(id)),
     scenarioIdsUnique: new Set(scenarioIds).size === scenarioIds.length,
-    allKpiTargetScenariosPresent: kpiScenarioIds.every(id =>
-      scenarioIds.includes(id)
-    ),
-    allConfiguredScenariosPresent:
-      scenarioIds.length === configuredScenarioIds.length &&
-      configuredScenarioIds.every(id => scenarioIds.includes(id)),
-    bootstrapBankruptcy:
-      (resultsByScenario.bootstrap_struggle?.bankruptcy.candidateRatePct ??
-        Infinity) <= 60,
-    noPassedToFailed: results.every(
-      result =>
-        !(
-          result.controlKpiStatus === 'passed' &&
-          result.candidateKpiStatus === 'failed'
-        )
-    ),
-    otherScenarioBankruptcy: results.every(
-      result =>
-        result.scenarioId === 'bootstrap_struggle' ||
-        result.bankruptcy.deltaRatePct <= 2
-    ),
-    famePerGig: results.every(result =>
-      famePerGigWithinLimit(result.famePerGig, 5)
-    ),
-    harmony: results.every(
-      result => result.continuous.finalHarmony.pairedDelta.median >= -5
-    ),
-    drawdown: results.every(
-      result => result.continuous.maxDrawdownPct.pairedDelta.median <= 10
-    ),
+    allKpiTargetScenariosPresent: kpiScenarioIds.every(id => scenarioIds.includes(id)),
+    allConfiguredScenariosPresent: scenarioIds.length === configuredScenarioIds.length && configuredScenarioIds.every(id => scenarioIds.includes(id)),
+    bootstrapBankruptcy: (resultsByScenario.bootstrap_struggle?.bankruptcy.candidateRatePct ?? Infinity) <= 60,
+    noPassedToFailed: results.every(result => !(result.controlKpiStatus === 'passed' && result.candidateKpiStatus === 'failed')),
+    otherScenarioBankruptcy: results.every(result => result.scenarioId === 'bootstrap_struggle' || result.bankruptcy.deltaRatePct <= 2),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
+    harmony: results.every(result => result.continuous.finalHarmony.pairedDelta.median >= -5),
+    drawdown: results.every(result => result.continuous.maxDrawdownPct.pairedDelta.median <= 10),
     sampleSizesMatch: sampleSizes.size <= 1 && !sampleSizes.has(0),
-    transitionCountsMatch: results.every(
-      result =>
-        Object.values(result.bankruptcy.bankruptcyTransitions).reduce(
-          (sum, value) => sum + value,
-          0
-        ) === result.sampleSize
-    )
+    transitionCountsMatch: results.every(result => Object.values(result.bankruptcy.bankruptcyTransitions).reduce((sum, value) => sum + value, 0) === result.sampleSize)
   }
-  const failures = Object.entries(checks)
-    .filter(([, passed]) => !passed)
-    .map(([check]) => check)
+  const failures = Object.entries(checks).filter(([, passed]) => !passed).map(([check]) => check)
   return { passed: failures.length === 0, checks, resultsByScenario, failures }
 }
 
-export const rankCandidates = candidates =>
-  [...candidates].sort((left, right) => {
-    const passDifference =
-      Number(right.acceptanceCriteria.passed) -
-      Number(left.acceptanceCriteria.passed)
-    if (passDifference) return passDifference
-    const leftScore =
-      left.rankingComponents.targetFit -
-      left.rankingComponents.sideEffectPenalty -
-      left.rankingComponents.overcorrectionPenalty -
-      left.rankingComponents.complexityPenalty
-    const rightScore =
-      right.rankingComponents.targetFit -
-      right.rankingComponents.sideEffectPenalty -
-      right.rankingComponents.overcorrectionPenalty -
-      right.rankingComponents.complexityPenalty
-    return rightScore - leftScore || left.id.localeCompare(right.id)
-  })
+export const rankCandidates = candidates => [...candidates].sort((left, right) => {
+  const passDifference = Number(right.acceptanceCriteria.passed) - Number(left.acceptanceCriteria.passed)
+  if (passDifference) return passDifference
+  const leftScore = left.rankingComponents.targetFit - left.rankingComponents.sideEffectPenalty - left.rankingComponents.overcorrectionPenalty - left.rankingComponents.complexityPenalty
+  const rightScore = right.rankingComponents.targetFit - right.rankingComponents.sideEffectPenalty - right.rankingComponents.overcorrectionPenalty - right.rankingComponents.complexityPenalty
+  return rightScore - leftScore || left.id.localeCompare(right.id)
+})
 
 const median = values => {
   if (!values.length) return 0
   const sorted = [...values].sort((a, b) => a - b)
   const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2
-    ? sorted[middle]
-    : (sorted[middle - 1] + sorted[middle]) / 2
+  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
 }
 const percentile = (values, p) => {
   if (!values.length) return 0
@@ -314,8 +171,7 @@ const percentile = (values, p) => {
 
 const pairedCheckpointDelta = (pairs, key) => {
   const valid = pairs.filter(
-    pair =>
-      Number.isFinite(pair.control[key]) && Number.isFinite(pair.candidate[key])
+    pair => Number.isFinite(pair.control[key]) && Number.isFinite(pair.candidate[key])
   )
   if (valid.length === 0) return null
   return percentageDelta(
@@ -338,12 +194,8 @@ export const selectAcceptedCandidate = ranking =>
  * configuration rather than a hand-picked sequence.
  */
 export const holdoutGateScenarios = () =>
-  SCENARIOS.filter(scenario =>
-    Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax)
-  ).sort(
-    (left, right) =>
-      KPI_TARGETS[left.id].bankruptcyMax - KPI_TARGETS[right.id].bankruptcyMax
-  )
+  SCENARIOS.filter(scenario => Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax))
+    .sort((left, right) => KPI_TARGETS[left.id].bankruptcyMax - KPI_TARGETS[right.id].bankruptcyMax)
 
 /**
  * The three disjoint seed streams, and what each is allowed to decide.
@@ -408,25 +260,14 @@ export const measureHoldoutGate = ({
   let runsSpent = 0
   for (const scenario of scenarios) {
     const runs = Array.from({ length: runsPerScenario }, (_, runIndex) =>
-      compact(
-        runner(scenario, streamSeed(stream, scenario.id, runIndex), tuning)
-      )
-    )
+      compact(runner(scenario, streamSeed(stream, scenario.id, runIndex), tuning)))
     runsSpent += runs.length
     const count = runs.filter(run => run.bankrupt).length
     const ratePct = round((count / Math.max(1, runs.length)) * 100)
-    measured.push({
-      id: scenario.id,
-      holdoutBankruptcy: { count, sampleSize: runs.length, ratePct }
-    })
+    measured.push({ id: scenario.id, holdoutBankruptcy: { count, sampleSize: runs.length, ratePct } })
     if (abortOnBreach && ratePct > KPI_TARGETS[scenario.id].bankruptcyMax) break
   }
-  return {
-    validation: buildHoldoutSafetyValidation(measured),
-    measured,
-    runsSpent,
-    stream
-  }
+  return { validation: buildHoldoutSafetyValidation(measured), measured, runsSpent, stream }
 }
 
 /**
@@ -459,17 +300,12 @@ export const pairedFamePerGig = pairs => {
   const comparable = pairs.filter(
     pair => pair.control.gigsPlayed > 0 && pair.candidate.gigsPlayed > 0
   )
-  const minimumSampleSize = Math.max(
-    1,
-    Math.ceil(pairs.length * FAME_EVIDENCE_MIN_SHARE)
-  )
+  const minimumSampleSize = Math.max(1, Math.ceil(pairs.length * FAME_EVIDENCE_MIN_SHARE))
   const sufficientEvidence = comparable.length >= minimumSampleSize
   const average = side =>
     comparable.length
-      ? comparable.reduce(
-          (sum, pair) => sum + pair[side].fameEarned / pair[side].gigsPlayed,
-          0
-        ) / comparable.length
+      ? comparable.reduce((sum, pair) => sum + pair[side].fameEarned / pair[side].gigsPlayed, 0) /
+        comparable.length
       : 0
   const control = average('control')
   const candidate = average('candidate')
@@ -493,13 +329,10 @@ export const famePerGigWithinLimit = (famePerGig, maximumAbsDeltaPct) =>
 
 // Staged obligation relief is expressed as cumulative `throughDay` boundaries, so
 // each stage's weight is its own segment length, not `throughDay` itself.
-const stagedObligationRelief = stages =>
-  stages.reduce((sum, stage, index) => {
-    const previousThroughDay = index === 0 ? 0 : stages[index - 1].throughDay
-    return (
-      sum + (stage.throughDay - previousThroughDay) * (1 - stage.multiplier)
-    )
-  }, 0)
+const stagedObligationRelief = stages => stages.reduce((sum, stage, index) => {
+  const previousThroughDay = index === 0 ? 0 : stages[index - 1].throughDay
+  return sum + (stage.throughDay - previousThroughDay) * (1 - stage.multiplier)
+}, 0)
 
 export const combinationImpact = ({ bootstrap, touring }) => {
   const early = bootstrap.overrides.earlyGame ?? {}
@@ -526,96 +359,46 @@ export const combinationImpact = ({ bootstrap, touring }) => {
     (late.denseScheduleHarmonyPenalty ?? 0) +
     (1 - (late.denseScheduleRecoveryMultiplier ?? 1)) * 10 +
     ((late.denseScheduleMaintenanceMultiplier ?? 1) - 1) * 10
-  const saturation =
-    ((late.repeatGigWindowDays ?? 0) *
-      (late.repeatDemandPenaltyPerGig ?? 0) *
-      (late.maxRepeatDemandPenalty ?? 0)) /
-    Math.max(1, late.repeatDemandStartDay ?? 0)
-  const recoveryDecision =
-    (recovery.threshold ?? 0) / 100 +
-    (recovery.costType === 'day' ? 1 : 0) +
-    (recovery.moneyCost ?? 0) / 1000
+  const saturation = (late.repeatGigWindowDays ?? 0) * (late.repeatDemandPenaltyPerGig ?? 0) *
+    (late.maxRepeatDemandPenalty ?? 0) / Math.max(1, late.repeatDemandStartDay ?? 0)
+  const recoveryDecision = (recovery.threshold ?? 0) / 100 +
+    (recovery.costType === 'day' ? 1 : 0) + (recovery.moneyCost ?? 0) / 1000
   return relief + saturation + denseSchedule + recoveryDecision
 }
 
 export const evaluateCandidate = (definition, pairs, summary) => {
   const famePerGig = pairedFamePerGig(pairs)
   const famePerGigDeltaPct = famePerGig.deltaPct
-  const candidateSolventMoney = pairs
-    .filter(pair => !pair.candidate.bankrupt)
-    .map(pair => pair.candidate.finalMoney)
-  const medianFinalMoneyDeltaPct = percentageDelta(
-    summary.continuous.finalMoney.control.median,
-    summary.continuous.finalMoney.candidate.median
-  )
-  const p90FinalMoneyDeltaPct = percentageDelta(
-    summary.continuous.finalMoney.control.p90,
-    summary.continuous.finalMoney.candidate.p90
-  )
+  const candidateSolventMoney = pairs.filter(pair => !pair.candidate.bankrupt).map(pair => pair.candidate.finalMoney)
+  const medianFinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.median, summary.continuous.finalMoney.candidate.median)
+  const p90FinalMoneyDeltaPct = percentageDelta(summary.continuous.finalMoney.control.p90, summary.continuous.finalMoney.candidate.p90)
   // Checkpoints are horizon-relative (`progressionCheckpointDays`). A null here
   // means the waypoint lies outside the simulated horizon, which is a
   // misconfiguration rather than a candidate failure — surface it instead of
   // silently failing every candidate.
-  const earlyCheckpointDeltaPct = pairedCheckpointDelta(
-    pairs,
-    'moneyAtEarlyCheckpoint'
-  )
-  const midCheckpointDeltaPct = pairedCheckpointDelta(
-    pairs,
-    'moneyAtMidCheckpoint'
-  )
-  if (
-    definition.phase === 'touring' &&
-    (earlyCheckpointDeltaPct == null || midCheckpointDeltaPct == null)
-  ) {
-    throw new RangeError(
-      'Progression checkpoints fall outside the simulated horizon; check SIMULATION_CONSTANTS.progressionCheckpointDays against daysPerRun'
-    )
+  const earlyCheckpointDeltaPct = pairedCheckpointDelta(pairs, 'moneyAtEarlyCheckpoint')
+  const midCheckpointDeltaPct = pairedCheckpointDelta(pairs, 'moneyAtMidCheckpoint')
+  if (definition.phase === 'touring' && (earlyCheckpointDeltaPct == null || midCheckpointDeltaPct == null)) {
+    throw new RangeError('Progression checkpoints fall outside the simulated horizon; check SIMULATION_CONSTANTS.progressionCheckpointDays against daysPerRun')
   }
   const criteria = definition.acceptanceCriteria
-  const checks =
-    definition.phase === 'bootstrap'
-      ? {
-          bankruptcy:
-            summary.bankruptcy.candidateRatePct <=
-            criteria.bankruptcyRateMaxPct,
-          bankruptcyDelta:
-            summary.bankruptcy.deltaRatePct <=
-            criteria.bankruptcyMaximumDeltaPct,
-          solventMedianMoney:
-            median(candidateSolventMoney) <= criteria.solventMedianMoneyMax,
-          solventP90Money:
-            percentile(candidateSolventMoney, 0.9) <=
-            criteria.solventP90MoneyMax,
-          famePerGig: famePerGigWithinLimit(
-            famePerGig,
-            criteria.famePerGigMaximumAbsDeltaPct
-          )
-        }
-      : {
-          medianFinalMoney:
-            medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] &&
-            medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
-          p90FinalMoney:
-            p90FinalMoneyDeltaPct >= criteria.p90FinalMoneyDeltaPct[0] &&
-            p90FinalMoneyDeltaPct <= criteria.p90FinalMoneyDeltaPct[1],
-          earlyCheckpoint:
-            earlyCheckpointDeltaPct >= criteria.earlyCheckpointMinimumDeltaPct,
-          midCheckpoint:
-            midCheckpointDeltaPct >= criteria.midCheckpointMinimumDeltaPct,
-          bankruptcy:
-            summary.bankruptcy.candidateRatePct <=
-              criteria.candidateBankruptcyRateMaxPct &&
-            summary.bankruptcy.deltaRatePct <=
-              criteria.bankruptcyMaximumDeltaPct,
-          famePerGig: famePerGigWithinLimit(
-            famePerGig,
-            criteria.famePerGigMaximumAbsDeltaPct
-          ),
-          harmony:
-            summary.continuous.finalHarmony.pairedDelta.median >=
-            criteria.harmonyMinimumDelta
-        }
+  const checks = definition.phase === 'bootstrap'
+    ? {
+        bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.bankruptcyRateMaxPct,
+        bankruptcyDelta: summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
+        solventMedianMoney: median(candidateSolventMoney) <= criteria.solventMedianMoneyMax,
+        solventP90Money: percentile(candidateSolventMoney, 0.9) <= criteria.solventP90MoneyMax,
+        famePerGig: famePerGigWithinLimit(famePerGig, criteria.famePerGigMaximumAbsDeltaPct)
+      }
+    : {
+        medianFinalMoney: medianFinalMoneyDeltaPct >= criteria.medianFinalMoneyDeltaPct[0] && medianFinalMoneyDeltaPct <= criteria.medianFinalMoneyDeltaPct[1],
+        p90FinalMoney: p90FinalMoneyDeltaPct >= criteria.p90FinalMoneyDeltaPct[0] && p90FinalMoneyDeltaPct <= criteria.p90FinalMoneyDeltaPct[1],
+        earlyCheckpoint: earlyCheckpointDeltaPct >= criteria.earlyCheckpointMinimumDeltaPct,
+        midCheckpoint: midCheckpointDeltaPct >= criteria.midCheckpointMinimumDeltaPct,
+        bankruptcy: summary.bankruptcy.candidateRatePct <= criteria.candidateBankruptcyRateMaxPct && summary.bankruptcy.deltaRatePct <= criteria.bankruptcyMaximumDeltaPct,
+        famePerGig: famePerGigWithinLimit(famePerGig, criteria.famePerGigMaximumAbsDeltaPct),
+        harmony: summary.continuous.finalHarmony.pairedDelta.median >= criteria.harmonyMinimumDelta
+      }
   const passed = Object.values(checks).every(value => value === true)
   // Anchors derive from the live acceptance criteria. The bootstrap anchor used
   // to be a literal 50% insolvency, inherited from an economy where the control
@@ -626,142 +409,57 @@ export const evaluateCandidate = (definition, pairs, summary) => {
   // Each phase reads only its own criteria: the two criteria shapes are
   // disjoint, so computing both anchors eagerly throws on the missing one.
   const bootstrapAnchorPct = (criteria.bankruptcyRateMaxPct ?? 0) / 2
-  const targetFit =
-    definition.phase === 'bootstrap'
-      ? Math.max(
-          0,
-          100 -
-            Math.abs(bootstrapAnchorPct - summary.bankruptcy.candidateRatePct) *
-              3
-        )
-      : Math.max(
-          0,
-          100 -
-            Math.abs(
-              ((criteria.medianFinalMoneyDeltaPct?.[0] ?? 0) +
-                (criteria.medianFinalMoneyDeltaPct?.[1] ?? 0)) /
-                2 -
-                medianFinalMoneyDeltaPct
-            ) *
-              4
-        )
-  const overcorrectionPenalty =
-    definition.phase === 'bootstrap' &&
-    summary.bankruptcy.candidateRatePct < bootstrapAnchorPct / 2
-      ? 50
-      : 0
-  const sideEffectPenalty =
-    Math.abs(famePerGigDeltaPct ?? 0) +
-    Math.max(0, -summary.continuous.finalHarmony.pairedDelta.median)
-  const complexityPenalty =
-    definition.id.includes('staged') || definition.id.includes('recovery')
-      ? 2
-      : 1
+  const targetFit = definition.phase === 'bootstrap'
+    ? Math.max(0, 100 - Math.abs(bootstrapAnchorPct - summary.bankruptcy.candidateRatePct) * 3)
+    : Math.max(0, 100 - Math.abs(
+        ((criteria.medianFinalMoneyDeltaPct?.[0] ?? 0) + (criteria.medianFinalMoneyDeltaPct?.[1] ?? 0)) / 2 -
+          medianFinalMoneyDeltaPct
+      ) * 4)
+  const overcorrectionPenalty = definition.phase === 'bootstrap' && summary.bankruptcy.candidateRatePct < bootstrapAnchorPct / 2 ? 50 : 0
+  const sideEffectPenalty = Math.abs(famePerGigDeltaPct ?? 0) + Math.max(0, -summary.continuous.finalHarmony.pairedDelta.median)
+  const complexityPenalty = definition.id.includes('staged') || definition.id.includes('recovery') ? 2 : 1
   return {
     ...definition,
-    resultsByScenario: {
-      [pairs[0]?.scenarioId ?? definition.scenarios[0]]: summary
-    },
+    resultsByScenario: { [pairs[0]?.scenarioId ?? definition.scenarios[0]]: summary },
     aggregateResults: {
       ...summary,
-      solventMedianMoney: round(median(candidateSolventMoney)),
-      solventP90Money: round(percentile(candidateSolventMoney, 0.9)),
-      famePerGigDeltaPct,
-      famePerGig,
-      medianFinalMoneyDeltaPct,
-      p90FinalMoneyDeltaPct,
-      earlyCheckpointDeltaPct,
-      midCheckpointDeltaPct
+      solventMedianMoney: round(median(candidateSolventMoney)), solventP90Money: round(percentile(candidateSolventMoney, 0.9)),
+      famePerGigDeltaPct, famePerGig, medianFinalMoneyDeltaPct, p90FinalMoneyDeltaPct, earlyCheckpointDeltaPct, midCheckpointDeltaPct
     },
     acceptanceCriteria: { ...definition.acceptanceCriteria, passed, checks },
-    rankingComponents: {
-      targetFit: round(targetFit),
-      sideEffectPenalty: round(sideEffectPenalty),
-      overcorrectionPenalty,
-      complexityPenalty
-    },
+    rankingComponents: { targetFit: round(targetFit), sideEffectPenalty: round(sideEffectPenalty), overcorrectionPenalty, complexityPenalty },
     selectedForProduction: false,
-    rejectionReason: passed
-      ? null
-      : `Acceptance limits missed: ${Object.entries(checks)
-          .filter(([, value]) => !value)
-          .map(([key]) => key)
-          .join(', ')}.`
+    rejectionReason: passed ? null : `Acceptance limits missed: ${Object.entries(checks).filter(([, value]) => !value).map(([key]) => key).join(', ')}.`
   }
 }
 
-const buildGapAnalysis = (
-  baseScenario,
-  tuning,
-  runsPerScenario,
-  runner = runSingleSimulation
-) =>
-  [1, 2, 3, 4, 5].map(gigGapDays => {
-    const scenario = {
-      ...baseScenario,
-      id: `${baseScenario.id}_gap_${gigGapDays}`,
-      gigGapDays
-    }
-    const runs = Array.from({ length: runsPerScenario }, (_, runIndex) =>
-      runner(scenario, streamSeed('calibration', scenario.id, runIndex), tuning)
-    ).map(compact)
-    const average = key =>
-      runs.reduce((sum, run) => sum + run[key], 0) / Math.max(1, runs.length)
-    const days = Math.max(1, average('daysSurvived'))
-    return {
-      profile: baseScenario.id,
-      gigGapDays,
-      sampleSize: runs.length,
-      bankruptcyRatePct: round(
-        (runs.filter(run => run.bankrupt).length / runs.length) * 100
-      ),
-      finalMoneyMean: round(average('finalMoney')),
-      finalMoneyMedian: round(median(runs.map(run => run.finalMoney))),
-      finalMoneyP90: round(
-        percentile(
-          runs.map(run => run.finalMoney),
-          0.9
-        )
-      ),
-      moneyPerDay: round(average('finalMoney') / days),
-      gigNetPerDay: round(average('totalGigNet') / days),
-      fameEarnedPerDay: round(average('fameEarned') / days),
-      fameEarnedPerGig: round(calculateAverageFameEarnedPerGig(runs)),
-      gigsPlayed: round(average('gigsPlayed')),
-      finalHarmony: round(average('finalHarmony')),
-      clinicVisits: round(average('clinicVisits')),
-      repairs: round(average('repairs')),
-      refuels: round(average('refuels')),
-      maxDrawdownPct: round(average('maxDrawdownPct')),
-      daysSurvived: round(average('daysSurvived'))
-    }
-  })
+const buildGapAnalysis = (baseScenario, tuning, runsPerScenario, runner = runSingleSimulation) => [1, 2, 3, 4, 5].map(gigGapDays => {
+  const scenario = { ...baseScenario, id: `${baseScenario.id}_gap_${gigGapDays}`, gigGapDays }
+  const runs = Array.from({ length: runsPerScenario }, (_, runIndex) => runner(scenario, streamSeed('calibration', scenario.id, runIndex), tuning)).map(compact)
+  const average = key => runs.reduce((sum, run) => sum + run[key], 0) / Math.max(1, runs.length)
+  const days = Math.max(1, average('daysSurvived'))
+  return {
+    profile: baseScenario.id, gigGapDays, sampleSize: runs.length,
+    bankruptcyRatePct: round(runs.filter(run => run.bankrupt).length / runs.length * 100),
+    finalMoneyMean: round(average('finalMoney')), finalMoneyMedian: round(median(runs.map(run => run.finalMoney))), finalMoneyP90: round(percentile(runs.map(run => run.finalMoney), 0.9)),
+    moneyPerDay: round(average('finalMoney') / days), gigNetPerDay: round(average('totalGigNet') / days), fameEarnedPerDay: round(average('fameEarned') / days),
+    fameEarnedPerGig: round(calculateAverageFameEarnedPerGig(runs)), gigsPlayed: round(average('gigsPlayed')), finalHarmony: round(average('finalHarmony')),
+    clinicVisits: round(average('clinicVisits')), repairs: round(average('repairs')), refuels: round(average('refuels')), maxDrawdownPct: round(average('maxDrawdownPct')), daysSurvived: round(average('daysSurvived'))
+  }
+})
 
-const buildGapTradeoff = profiles =>
-  Object.fromEntries(
-    profiles.map(profile => {
-      const gap1 = profile.results.find(result => result.gigGapDays === 1)
-      const gap2 = profile.results.find(result => result.gigGapDays === 2)
-      return [
-        profile.profile,
-        {
-          moneyPerDayAdvantagePct: percentageDelta(
-            gap2.moneyPerDay,
-            gap1.moneyPerDay
-          ),
-          famePerDayAdvantagePct: percentageDelta(
-            gap2.fameEarnedPerDay,
-            gap1.fameEarnedPerDay
-          ),
-          harmonyDelta: round(gap1.finalHarmony - gap2.finalHarmony),
-          repairsDelta: round(gap1.repairs - gap2.repairs),
-          bankruptcyDeltaPct: round(
-            gap1.bankruptcyRatePct - gap2.bankruptcyRatePct
-          )
-        }
-      ]
-    })
-  )
+const buildGapTradeoff = profiles => Object.fromEntries(profiles.map(profile => {
+  const gap1 = profile.results.find(result => result.gigGapDays === 1)
+  const gap2 = profile.results.find(result => result.gigGapDays === 2)
+  return [profile.profile, {
+    moneyPerDayAdvantagePct: percentageDelta(gap2.moneyPerDay, gap1.moneyPerDay),
+    famePerDayAdvantagePct: percentageDelta(gap2.fameEarnedPerDay, gap1.fameEarnedPerDay),
+    harmonyDelta: round(gap1.finalHarmony - gap2.finalHarmony),
+    repairsDelta: round(gap1.repairs - gap2.repairs),
+    bankruptcyDeltaPct: round(gap1.bankruptcyRatePct - gap2.bankruptcyRatePct)
+  }]
+}))
+
 
 const GIG_GAP_TARGET_RANGE_PCT = [20, 25]
 
@@ -787,17 +485,9 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
       // Naming the direction matters: an advantage under the band and one over it
       // call for opposite responses, and "outside the target" alone reads as a
       // dominance problem either way.
-      shortfalls.push(
-        `${profile} money-per-day advantage ${after}% is ${belowTarget ? 'below' : 'above'} the ${minimum}-${maximum}% target (was ${before}%)`
-      )
+      shortfalls.push(`${profile} money-per-day advantage ${after}% is ${belowTarget ? 'below' : 'above'} the ${minimum}-${maximum}% target (was ${before}%)`)
     }
-    return {
-      before,
-      after,
-      reductionPct: round(before - after),
-      withinTarget,
-      belowTarget
-    }
+    return { before, after, reductionPct: round(before - after), withinTarget, belowTarget }
   }
 
   const profiles = {
@@ -805,17 +495,14 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     low_resource_touring: profileObjective('low_resource_touring')
   }
   const objectiveMet = shortfalls.length === 0
-  const missing = Object.values(profiles).filter(
-    profile => !profile.withinTarget
-  )
+  const missing = Object.values(profiles).filter(profile => !profile.withinTarget)
   const allBelowTarget =
     missing.length > 0 && missing.every(profile => profile.belowTarget)
   const allAboveTarget =
     missing.length > 0 && missing.every(profile => !profile.belowTarget)
   // Profiles can now miss the band in opposite directions, in which case no
   // single lever serves both and saying "dominance is unchanged" is wrong.
-  const mixedDirections =
-    missing.length > 0 && !allBelowTarget && !allAboveTarget
+  const mixedDirections = missing.length > 0 && !allBelowTarget && !allAboveTarget
   return {
     objectiveMet,
     allBelowTarget,
@@ -825,9 +512,7 @@ const evaluateGigGap = (controlTradeoff, finalTradeoff) => {
     targetRangePct: GIG_GAP_TARGET_RANGE_PCT,
     shortfalls,
     profiles,
-    improved: Object.values(profiles).every(
-      profile => profile.reductionPct > 0
-    ),
+    improved: Object.values(profiles).every(profile => profile.reductionPct > 0),
     checks: {
       baselineMoneyPerDayAdvantage: profiles.baseline_touring.after,
       lowResourceMoneyPerDayAdvantage: profiles.low_resource_touring.after,
@@ -876,19 +561,17 @@ const recoveryScenarioResult = (pairs, definition, scenarioId) => {
   const minimumActivationRuns = Math.max(1, Math.ceil(pairs.length * 0.05))
   const finaleRate = side =>
     round(
-      (pairs.filter(pair => pair[side].finaleCompleted).length /
-        Math.max(1, pairs.length)) *
-        100
+      pairs.filter(pair => pair[side].finaleCompleted).length /
+        Math.max(1, pairs.length) * 100
     )
   const famePerGig = pairedFamePerGig(pairs)
   const recovery = summary.harmonyRecovery.candidate
   const costType = definition.overrides.recovery?.costType ?? 'none'
-  const costsMeasured =
-    costType === 'money'
-      ? activationRuns === 0 || recovery.moneySpent > 0
-      : costType === 'day'
-        ? activationRuns === 0 || recovery.daysConsumed > 0
-        : true
+  const costsMeasured = costType === 'money'
+    ? activationRuns === 0 || recovery.moneySpent > 0
+    : costType === 'day'
+      ? activationRuns === 0 || recovery.daysConsumed > 0
+      : true
   return {
     ...summary,
     activationEvidence: { activationRuns, minimumActivationRuns },
@@ -923,9 +606,7 @@ export const evaluateRecoveryAcceptance = ({ resultsByScenario }) => {
       result => result.finaleCompletedDeltaPct >= 0
     ),
     bankruptcy: results.every(result => result.bankruptcyDeltaPct <= 1),
-    famePerGig: results.every(result =>
-      famePerGigWithinLimit(result.famePerGig, 5)
-    ),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
     costsMeasured: results.every(result => result.costsMeasured === true)
   }
   return { passed: Object.values(checks).every(Boolean), checks }
@@ -942,9 +623,7 @@ export const evaluateRecoveryGlobalSafety = ({ resultsByScenario }) => {
       result => result.finaleCompletedDeltaPct >= 0
     ),
     bankruptcy: results.every(result => result.bankruptcyDeltaPct <= 1),
-    famePerGig: results.every(result =>
-      famePerGigWithinLimit(result.famePerGig, 5)
-    ),
+    famePerGig: results.every(result => famePerGigWithinLimit(result.famePerGig, 5)),
     costsMeasured: results.every(result => result.costsMeasured === true)
   }
   return { passed: Object.values(checks).every(Boolean), checks }
@@ -1000,10 +679,7 @@ export const runHarmonyRecoveryPhase = ({
           runner,
           stream
         })
-        return [
-          scenario.id,
-          recoveryScenarioResult(pairs, definition, scenario.id)
-        ]
+        return [scenario.id, recoveryScenarioResult(pairs, definition, scenario.id)]
       })
     )
     const aggregateResults = {
@@ -1032,25 +708,22 @@ export const runHarmonyRecoveryPhase = ({
       stream,
       resultsByScenario,
       aggregateResults,
-      acceptance:
-        tuning.recovery.costType === 'none'
-          ? { passed: false, checks: { controlOnly: true } }
-          : evaluateRecoveryAcceptance({
-              resultsByScenario: Object.fromEntries(
-                Object.entries(resultsByScenario).filter(([scenarioId]) =>
-                  RECOVERY_TARGET_SCENARIO_IDS.includes(scenarioId)
-                )
+      acceptance: tuning.recovery.costType === 'none'
+        ? { passed: false, checks: { controlOnly: true } }
+        : evaluateRecoveryAcceptance({
+            resultsByScenario: Object.fromEntries(
+              Object.entries(resultsByScenario).filter(([scenarioId]) =>
+                RECOVERY_TARGET_SCENARIO_IDS.includes(scenarioId)
               )
-            })
+            )
+          })
     }
   }
 
   const calibration = definitions.map(definition =>
     measure(definition, 'calibration')
   )
-  const selection = definitions.map(definition =>
-    measure(definition, 'selection')
-  )
+  const selection = definitions.map(definition => measure(definition, 'selection'))
   const candidates = calibration.map(candidate => {
     const selectionCandidate = selection.find(item => item.id === candidate.id)
     return {
@@ -1113,9 +786,7 @@ export const runHarmonyRecoveryPhase = ({
 export const tryReadJson = async file => {
   try {
     const parsed = JSON.parse(await fs.readFile(file, 'utf8'))
-    return parsed !== null &&
-      typeof parsed === 'object' &&
-      !Array.isArray(parsed)
+    return parsed !== null && typeof parsed === 'object' && !Array.isArray(parsed)
       ? parsed
       : null
   } catch (error) {
@@ -1150,10 +821,7 @@ export const buildPreviousExperimentReportComparison = (previous, current) => {
   const previousScenarios = previous.holdoutBankruptcyByScenario ?? {}
   const currentScenarios = current.holdoutBankruptcyByScenario ?? {}
   const scenarioIds = [
-    ...new Set([
-      ...Object.keys(previousScenarios),
-      ...Object.keys(currentScenarios)
-    ])
+    ...new Set([...Object.keys(previousScenarios), ...Object.keys(currentScenarios)])
   ].sort()
   return {
     ...buildDescriptiveCohortComparison(previousIdentity, currentIdentity),
@@ -1191,14 +859,10 @@ const describeRanking = ranking => {
   // compares scores, so acceptance is part of what makes an order meaningful.
   // Keying on the score alone would describe a real pass/fail ordering as a
   // pure id tie-break.
-  const keys = ranking.map(
-    item =>
-      `${item.passed === false ? 0 : 1}:${(
-        item.targetFit -
-        item.sideEffectPenalty -
-        item.overcorrectionPenalty -
-        item.complexityPenalty
-      ).toFixed(4)}`
+  const keys = ranking.map(item =>
+    `${item.passed === false ? 0 : 1}:${(
+      item.targetFit - item.sideEffectPenalty - item.overcorrectionPenalty - item.complexityPenalty
+    ).toFixed(4)}`
   )
   const distinct = new Set(keys).size
   return distinct <= 1
@@ -1213,19 +877,14 @@ const NO_CHANGE_NOTE =
 
 export const renderExperimentMarkdown = report => {
   const gap = report.phases.phase3C.gigFrequencyValidation
-  const noChangeNote = report.combinationSearch.selectedAppliesNoChange
-    ? NO_CHANGE_NOTE
-    : ''
+  const noChangeNote = report.combinationSearch.selectedAppliesNoChange ? NO_CHANGE_NOTE : ''
   // Evaluated and skipped have to add up to the pairs available, and the gate
   // breakdown belongs to the evaluated side only — appending it to the skipped
   // count read as a breakdown of pairs that were never measured at all.
   const search = report.combinationSearch
   const holdoutRejected = search.pairsRejectedBySelectionGate ?? 0
   const calibrationRejected = search.pairsRejectedByCalibrationGate ?? 0
-  const selectedPairs = Math.max(
-    0,
-    search.pairsEvaluated - holdoutRejected - calibrationRejected
-  )
+  const selectedPairs = Math.max(0, search.pairsEvaluated - holdoutRejected - calibrationRejected)
   const pairAccounting =
     `Of ${search.pairsAvailable} available pairs, ${search.pairsEvaluated} were evaluated on the \`selection\` stream ` +
     `(${holdoutRejected} rejected by the hard caps, ${calibrationRejected} by the calibration gate, ` +
@@ -1238,10 +897,8 @@ export const renderExperimentMarkdown = report => {
   // and points the next phase at the wrong problem.
   const noCombinationNote = (() => {
     const reached = `Die Messimplementierung ist vollständig, und die Suche hat jede der ${search.pairsEvaluated} erreichten Kombinationen geprüft — keine besteht beide Gates.`
-    const capsNextStep =
-      'Die an den Caps gescheiterten Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'
-    const calibrationNextStep =
-      'Für die am Kalibrierungs-Gate gescheiterten Kombinationen sind die Caps nicht die bindende Grenze; dort braucht es eine Kandidatenfamilie, die die gepaarten Kalibrierungskriterien erfüllt.'
+    const capsNextStep = 'Die an den Caps gescheiterten Szenarien müssen neu balanciert werden, bevor eine Empfehlung möglich ist.'
+    const calibrationNextStep = 'Für die am Kalibrierungs-Gate gescheiterten Kombinationen sind die Caps nicht die bindende Grenze; dort braucht es eine Kandidatenfamilie, die die gepaarten Kalibrierungskriterien erfüllt.'
     if (search.pairsEvaluated === 0) {
       return '**Keine Produktionsempfehlung.** Es wurde keine Kombination erreicht, also ist kein Gate gemessen — das ist kein bestandenes Gate.'
     }
@@ -1254,50 +911,24 @@ export const renderExperimentMarkdown = report => {
     return `**Keine Produktionsempfehlung.** ${reached} ${holdoutRejected} davon fielen an den harten Caps auf dem \`selection\`-Strom, ${calibrationRejected} am gepaarten Kalibrierungs-Gate. ${capsNextStep} ${calibrationNextStep}`
   })()
   const selectionOutcomeNote =
-    report.combinationSearch.selectionOutcome ===
-    'no-combination-cleared-both-gates'
+    report.combinationSearch.selectionOutcome === 'no-combination-cleared-both-gates'
       ? ' **Keine Kombination hat beide Gates bestanden.** Die genannte Kombination ist nur die Basis, gegen die dieser Bericht geschrieben ist — sie wird nicht zur Auslieferung empfohlen.'
       : ''
-  const bootstrapRows = report.phases.phase3B.candidates
-    .map(
-      item =>
-        `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`
-    )
-    .join('\n')
-  const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis)
-    .flatMap(([tuning, profiles]) =>
-      profiles.flatMap(profile =>
-        profile.results.map(
-          item =>
-            `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`
-        )
-      )
-    )
-    .join('\n')
-  const touringRows = report.phases.phase3C.candidates
-    .map(
-      item =>
-        `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.earlyCheckpointDeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`
-    )
-    .join('\n')
-  const holdoutMeasurements = Object.entries(
-    report.holdoutBankruptcyByScenario ?? {}
-  )
+  const bootstrapRows = report.phases.phase3B.candidates.map(item => `| ${item.id} | ${item.aggregateResults.bankruptcy.controlRatePct}% | ${item.aggregateResults.bankruptcy.candidateRatePct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.daysSurvived.pairedDelta.median} | €${item.aggregateResults.solventMedianMoney} | ${item.aggregateResults.famePerGigDeltaPct}% | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
+  const gapRows = Object.entries(report.phases.phase3C.gigFrequencyAnalysis).flatMap(([tuning, profiles]) => profiles.flatMap(profile => profile.results.map(item => `| ${tuning} | ${profile.profile} | ${item.gigGapDays} | ${item.gigsPlayed} | ${item.moneyPerDay} | ${item.gigNetPerDay} | ${item.fameEarnedPerDay} | ${item.fameEarnedPerGig} | ${item.finalHarmony} | ${item.repairs} | ${item.refuels} | ${item.maxDrawdownPct}% | ${item.bankruptcyRatePct}% | ${item.daysSurvived} |`))).join('\n')
+  const touringRows = report.phases.phase3C.candidates.map(item => `| ${item.id} | ${item.aggregateResults.medianFinalMoneyDeltaPct}% | ${item.aggregateResults.p90FinalMoneyDeltaPct}% | ${item.aggregateResults.earlyCheckpointDeltaPct}% | ${item.aggregateResults.bankruptcy.deltaRatePct} pp | ${item.aggregateResults.continuous.finalHarmony.pairedDelta.median} | ${item.acceptanceCriteria.passed ? 'Pass' : 'Fail'} |`).join('\n')
+  const holdoutMeasurements = Object.entries(report.holdoutBankruptcyByScenario ?? {})
   const holdoutRows = holdoutMeasurements.length
     ? `| Szenario | Holdout-Insolvenz | harte Grenze | Status |
 |---|---:|---:|---|
 ${holdoutMeasurements
-  .map(
-    ([scenarioId, item]) =>
-      `| ${scenarioId} | ${item.ratePct}% (${item.count}/${item.sampleSize}) | ${item.maximumPct ?? '—'}% | ${
-        item.maximumPct == null
-          ? '—'
-          : item.ratePct <= item.maximumPct
-            ? 'bestanden'
-            : 'überschritten'
-      } |`
-  )
-  .join('\n')}`
+        .map(
+          ([scenarioId, item]) =>
+            `| ${scenarioId} | ${item.ratePct}% (${item.count}/${item.sampleSize}) | ${item.maximumPct ?? '—'}% | ${
+              item.maximumPct == null ? '—' : item.ratePct <= item.maximumPct ? 'bestanden' : 'überschritten'
+            } |`
+        )
+        .join('\n')}`
     : '_Keine Holdout-Messungen im Artefakt._'
   const corridor = report.designRiskCorridors
   const corridorNote = !corridor
@@ -1307,44 +938,35 @@ ${holdoutMeasurements
 | Szenario | Holdout-Insolvenz | Designkorridor | Lage |
 |---|---:|---:|---|
 ${corridor.scenarios
-  .map(
-    item =>
-      `| ${item.scenarioId} | ${item.ratePct}% | ${
-        item.corridorPct
-          ? `${item.corridorPct[0]}–${item.corridorPct[1]}%`
-          : '—'
-      } | ${
-        {
-          below: 'unter Korridor',
-          above: 'über Korridor',
-          inside: 'im Korridor',
-          'no-corridor': '—'
-        }[item.position]
-      } |`
-  )
-  .join('\n')}
+        .map(
+          item =>
+            `| ${item.scenarioId} | ${item.ratePct}% | ${
+              item.corridorPct ? `${item.corridorPct[0]}–${item.corridorPct[1]}%` : '—'
+            } | ${
+              { below: 'unter Korridor', above: 'über Korridor', inside: 'im Korridor', 'no-corridor': '—' }[
+                item.position
+              ]
+            } |`
+        )
+        .join('\n')}
 ${
   corridor.belowCorridor.length
     ? `\n**Sicherer als beabsichtigt:** ${corridor.belowCorridor
         .map(id => `\`${id}\``)
-        .join(
-          ', '
-        )}. Die harten Caps sind bestanden, aber diese Szenarien erzeugen nicht mehr das Risiko, für das sie existieren. Kein Gate prüft die Untergrenze — diese Entscheidung liegt beim Design.`
+        .join(', ')}. Die harten Caps sind bestanden, aber diese Szenarien erzeugen nicht mehr das Risiko, für das sie existieren. Kein Gate prüft die Untergrenze — diese Entscheidung liegt beim Design.`
     : ''
 }${
-        corridor.aboveCorridor.length
-          ? `\n**Riskanter als beabsichtigt:** ${corridor.aboveCorridor.map(id => `\`${id}\``).join(', ')}.`
-          : ''
-      }`
+  corridor.aboveCorridor.length
+    ? `\n**Riskanter als beabsichtigt:** ${corridor.aboveCorridor.map(id => `\`${id}\``).join(', ')}.`
+    : ''
+}`
   const previousComparison = report.previousReportComparison
   const matchingComparisonFields = previousComparison
     ? [
-        previousComparison.previous.runsPerScenario ===
-        previousComparison.current.runsPerScenario
+        previousComparison.previous.runsPerScenario === previousComparison.current.runsPerScenario
           ? 'Runs je Szenario'
           : null,
-        previousComparison.previous.seedNamespace ===
-        previousComparison.current.seedNamespace
+        previousComparison.previous.seedNamespace === previousComparison.current.seedNamespace
           ? 'Seed-Namensraum'
           : null
       ].filter(Boolean)
@@ -1371,35 +993,23 @@ ${previousComparison.scenarios
   .join('\n')}
 `
     : ''
-  const combinedRows = Object.values(
-    report.finalCombinedValidation.resultsByScenario
-  )
-    .map(
-      item =>
-        `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioValidation.passed ? 'Pass' : 'Fail'} |`
-    )
-    .join('\n')
+  const combinedRows = Object.values(report.finalCombinedValidation.resultsByScenario).map(item => `| ${item.scenarioId} | ${item.controlKpiStatus} | ${item.candidateKpiStatus} | ${item.bankruptcy.controlRatePct}% | ${item.bankruptcy.candidateRatePct}% | ${item.bankruptcy.deltaRatePct} pp | ${item.continuous.finalMoney.pairedDelta.median} | ${item.famePerGigDeltaPct}% | ${item.continuous.finalHarmony.pairedDelta.median} | ${item.continuous.maxDrawdownPct.pairedDelta.median} | ${item.scenarioValidation.passed ? 'Pass' : 'Fail'} |`).join('\n')
   const recoveryPhase = report.phases.phase6E ?? {
     candidates: [],
     outcome: 'not-measured',
     selectedCandidateId: null
   }
-  const recoveryRows = recoveryPhase.candidates
-    .flatMap(candidate =>
-      Object.entries(candidate.resultsByScenario).map(
-        ([scenarioId, result]) =>
-          `| ${candidate.id} | ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | €${result.harmonyRecovery.candidate.moneySpent} | ${result.harmonyRecovery.candidate.daysConsumed} | ${result.harmonyRecovery.candidate.gigOpportunitiesForgone} | ${candidate.acceptance.passed && candidate.selectionAcceptance.passed ? 'Pass' : 'Fail'} |`
-      )
+  const recoveryRows = recoveryPhase.candidates.flatMap(candidate =>
+    Object.entries(candidate.resultsByScenario).map(([scenarioId, result]) =>
+      `| ${candidate.id} | ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | €${result.harmonyRecovery.candidate.moneySpent} | ${result.harmonyRecovery.candidate.daysConsumed} | ${result.harmonyRecovery.candidate.gigOpportunitiesForgone} | ${candidate.acceptance.passed && candidate.selectionAcceptance.passed ? 'Pass' : 'Fail'} |`
     )
-    .join('\n')
+  ).join('\n')
   const recoveryGlobalRows = Object.entries(
     recoveryPhase.validation?.resultsByScenario ?? {}
-  )
-    .map(
-      ([scenarioId, result]) =>
-        `| ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | ${result.costsMeasured ? 'Pass' : 'Fail'} |`
-    )
-    .join('\n')
+  ).map(
+    ([scenarioId, result]) =>
+      `| ${scenarioId} | ${result.activationEvidence.activationRuns}/${result.sampleSize} | ${result.harmonyMedianDelta} | ${result.finaleCompletedDeltaPct} pp | ${result.bankruptcyDeltaPct} pp | ${result.famePerGig.deltaPct ?? '—'}% | ${result.costsMeasured ? 'Pass' : 'Fail'} |`
+  ).join('\n')
   const recoveryFinaleFailures = Object.entries(
     recoveryPhase.validation?.resultsByScenario ?? {}
   )
@@ -1455,12 +1065,7 @@ Target band: **${gap.targetRangePct[0]}–${gap.targetRangePct[1]}%** money-per-
 
 | Profile | Before | After | Reduction | Within target |
 |---|---:|---:|---:|---|
-${Object.entries(gap.profiles)
-  .map(
-    ([profile, item]) =>
-      `| ${profile} | ${item.before}% | ${item.after}% | ${item.reductionPct} pp | ${item.withinTarget ? 'Yes' : 'No'} |`
-  )
-  .join('\n')}
+${Object.entries(gap.profiles).map(([profile, item]) => `| ${profile} | ${item.before}% | ${item.after}% | ${item.reductionPct} pp | ${item.withinTarget ? 'Yes' : 'No'} |`).join('\n')}
 
 Objective status: **${report.phases.phase3C.objectiveStatus}**${gap.shortfalls.length ? `\n\n${gap.shortfalls.map(item => `- ${item}`).join('\n')}` : ''}
 
@@ -1525,13 +1130,10 @@ ${corridorNote}
 ${
   report.holdoutSafetyValidation?.passed
     ? ''
-    : report.combinationSearch.selectionOutcome ===
-        'selection-validated-final-validation-failed'
+    : report.combinationSearch.selectionOutcome === 'selection-validated-final-validation-failed'
       ? `**Keine Produktionsempfehlung.** Die gewählte Kombination hat das Suchstrom-Gate bestanden und bricht auf dem reservierten \`validation\`-Strom (${(
           report.combinationSearch.selectedFinalValidationFailures ?? []
-        ).join(
-          '; '
-        )}). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.`
+        ).join('; ')}). Auf diesem Strom wird nicht weitergesucht — das würde genau die Unabhängigkeit verbrauchen, für die er existiert. Der nächste Schritt ist eine neu vorab definierte Kandidatenfamilie.`
       : noCombinationNote
 }
 
@@ -1590,83 +1192,35 @@ Selection is based on paired deltas, distributions, deterministic bootstrap inte
  * what order — is worth testing without a 120k-run simulation behind it. The
  * counter wraps whatever is injected, so `runtime.totalRuns` stays truthful.
  */
-export const runExperimentSuite = async ({
-  runsPerScenario = SIMULATION_CONSTANTS.runsPerScenario,
-  writeReports = true,
-  simulate = runSingleSimulation,
-  previousReport
-} = {}) => {
+export const runExperimentSuite = async ({ runsPerScenario = SIMULATION_CONSTANTS.runsPerScenario, writeReports = true, simulate = runSingleSimulation, previousReport } = {}) => {
   logger.setLevel(LOG_LEVELS.ERROR)
   const started = Date.now()
   const previousReportSnapshot =
     previousReport === undefined && writeReports
       ? await tryReadJson(OUTPUT_JSON)
-      : (previousReport ?? null)
+      : previousReport ?? null
   let totalRuns = 0
   const runner = (...args) => {
     totalRuns++
     return simulate(...args)
   }
-  const bootstrapDefinitions = BALANCE_EXPERIMENTS.filter(
-    item => item.phase === 'bootstrap'
-  )
-  const touringDefinitions = BALANCE_EXPERIMENTS.filter(
-    item => item.phase === 'touring'
-  )
-  const bootstrapScenario = SCENARIOS.find(
-    item => item.id === 'bootstrap_struggle'
-  )
-  const baselineScenario = SCENARIOS.find(
-    item => item.id === 'baseline_touring'
-  )
+  const bootstrapDefinitions = BALANCE_EXPERIMENTS.filter(item => item.phase === 'bootstrap')
+  const touringDefinitions = BALANCE_EXPERIMENTS.filter(item => item.phase === 'touring')
+  const bootstrapScenario = SCENARIOS.find(item => item.id === 'bootstrap_struggle')
+  const baselineScenario = SCENARIOS.find(item => item.id === 'baseline_touring')
   const runCandidates = (definitions, scenario, controlTuning) => {
-    const controlRuns = Array.from({ length: runsPerScenario }, (_, runIndex) =>
-      compact(
-        runner(
-          scenario,
-          streamSeed('calibration', scenario.id, runIndex),
-          controlTuning
-        )
-      )
-    )
+    const controlRuns = Array.from({ length: runsPerScenario }, (_, runIndex) => compact(runner(scenario, streamSeed('calibration', scenario.id, runIndex), controlTuning)))
     const pairedCandidates = definitions.map(definition => {
-      const candidateTuning = resolveBalanceTuning(
-        {
-          earlyGame: {
-            ...controlTuning.earlyGame,
-            ...definition.overrides.earlyGame
-          },
-          touring: {
-            ...controlTuning.touring,
-            ...definition.overrides.touring
-          },
-          recovery: {
-            ...controlTuning.recovery,
-            ...definition.overrides.recovery
-          }
-        },
-        controlTuning
-      )
-      const pairs = pairSimulationRuns({
-        scenario,
-        runsPerScenario,
-        controlTuning,
-        candidateTuning,
-        controlRuns,
-        runner
-      })
+      const candidateTuning = resolveBalanceTuning({
+        earlyGame: { ...controlTuning.earlyGame, ...definition.overrides.earlyGame },
+        touring: { ...controlTuning.touring, ...definition.overrides.touring },
+        recovery: { ...controlTuning.recovery, ...definition.overrides.recovery }
+      }, controlTuning)
+      const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning, candidateTuning, controlRuns, runner })
       return { definition, pairs }
     })
-    assertEqualControlCohorts(
-      pairedCandidates.map(candidate => candidate.pairs)
-    )
-    return pairedCandidates.map(({ definition, pairs }) =>
-      evaluateCandidate(
-        definition,
-        pairs,
-        summarizePairedRuns(pairs, definition.id, scenario.id)
-      )
-    )
+    assertEqualControlCohorts(pairedCandidates.map(candidate => candidate.pairs))
+    return pairedCandidates.map(({ definition, pairs }) => evaluateCandidate(definition, pairs, summarizePairedRuns(pairs, definition.id, scenario.id)))
   }
   // Every combination pairs against the same control: same scenarios, same
   // seeds, same ORIGINAL_CONTROL tuning. Since a run is a pure function of
@@ -1675,77 +1229,28 @@ export const runExperimentSuite = async ({
   const controlCohortByScenario = new Map()
   const controlCohortFor = scenario => {
     if (!controlCohortByScenario.has(scenario.id)) {
-      controlCohortByScenario.set(
-        scenario.id,
-        Array.from({ length: runsPerScenario }, (_, runIndex) =>
-          compact(
-            runner(
-              scenario,
-              streamSeed('calibration', scenario.id, runIndex),
-              ORIGINAL_CONTROL_BALANCE_TUNING
-            )
-          )
-        )
-      )
+      controlCohortByScenario.set(scenario.id, Array.from({ length: runsPerScenario },
+        (_, runIndex) => compact(runner(scenario, streamSeed('calibration', scenario.id, runIndex), ORIGINAL_CONTROL_BALANCE_TUNING))))
     }
     return controlCohortByScenario.get(scenario.id)
   }
 
   const evaluateCombination = (bootstrap, touring) => {
-    const tuning = resolveBalanceTuning(
-      {
-        earlyGame: bootstrap.overrides.earlyGame,
-        touring: touring.overrides.touring,
-        recovery: touring.overrides.recovery
-      },
-      ORIGINAL_CONTROL_BALANCE_TUNING
-    )
+    const tuning = resolveBalanceTuning({ earlyGame: bootstrap.overrides.earlyGame, touring: touring.overrides.touring, recovery: touring.overrides.recovery }, ORIGINAL_CONTROL_BALANCE_TUNING)
     const results = SCENARIOS.map(scenario => {
-      const pairs = pairSimulationRuns({
-        scenario,
-        runsPerScenario,
-        controlTuning: ORIGINAL_CONTROL_BALANCE_TUNING,
-        candidateTuning: tuning,
-        controlRuns: controlCohortFor(scenario),
-        runner
-      })
-      const summary = summarizePairedRuns(
-        pairs,
-        `${bootstrap.id}+${touring.id}`,
-        scenario.id
-      )
+      const pairs = pairSimulationRuns({ scenario, runsPerScenario, controlTuning: ORIGINAL_CONTROL_BALANCE_TUNING, candidateTuning: tuning, controlRuns: controlCohortFor(scenario), runner })
+      const summary = summarizePairedRuns(pairs, `${bootstrap.id}+${touring.id}`, scenario.id)
       const statuses = kpiStatusForRuns(pairs)
       const famePerGig = pairedFamePerGig(pairs)
-      return {
-        scenarioId: scenario.id,
-        ...summary,
-        controlKpiStatus: statuses.control,
-        candidateKpiStatus: statuses.candidate,
-        famePerGigDeltaPct: famePerGig.deltaPct,
-        famePerGig
-      }
+      return { scenarioId: scenario.id, ...summary, controlKpiStatus: statuses.control, candidateKpiStatus: statuses.candidate, famePerGigDeltaPct: famePerGig.deltaPct, famePerGig }
     })
-    return {
-      bootstrap,
-      touring,
-      tuning,
-      validation: evaluateFinalCombinedValidation(results)
-    }
+    return { bootstrap, touring, tuning, validation: evaluateFinalCombinedValidation(results) }
   }
 
-  const bootstrapCandidates = runCandidates(
-    bootstrapDefinitions,
-    bootstrapScenario,
-    ORIGINAL_CONTROL_BALANCE_TUNING
-  )
+  const bootstrapCandidates = runCandidates(bootstrapDefinitions, bootstrapScenario, ORIGINAL_CONTROL_BALANCE_TUNING)
   const bootstrapRanking = rankCandidates(bootstrapCandidates)
-  const acceptedBootstrap = bootstrapRanking.filter(
-    item => item.acceptanceCriteria.passed
-  )
-  if (!acceptedBootstrap.length)
-    throw new NoViableCandidateError(
-      'No Phase 3B candidate satisfies acceptance criteria'
-    )
+  const acceptedBootstrap = bootstrapRanking.filter(item => item.acceptanceCriteria.passed)
+  if (!acceptedBootstrap.length) throw new NoViableCandidateError('No Phase 3B candidate satisfies acceptance criteria')
 
   // Selection takes the least-impact fully validated combination, and
   // `combinationImpact` reads only the candidate overrides — no simulation. So
@@ -1757,26 +1262,16 @@ export const runExperimentSuite = async ({
   const touringByBootstrap = new Map()
   const screenTouringFor = bootstrap => {
     if (!touringByBootstrap.has(bootstrap.id)) {
-      const intermediateTuning = resolveBalanceTuning(
-        bootstrap.overrides,
-        ORIGINAL_CONTROL_BALANCE_TUNING
-      )
-      touringByBootstrap.set(
-        bootstrap.id,
-        runCandidates(touringDefinitions, baselineScenario, intermediateTuning)
-      )
+      const intermediateTuning = resolveBalanceTuning(bootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
+      touringByBootstrap.set(bootstrap.id, runCandidates(touringDefinitions, baselineScenario, intermediateTuning))
     }
     return touringByBootstrap.get(bootstrap.id)
   }
   const orderedPairs = acceptedBootstrap
-    .flatMap(bootstrap =>
-      touringDefinitions.map(touring => ({ bootstrap, touring }))
-    )
-    .sort(
-      (left, right) =>
-        combinationImpact(left) - combinationImpact(right) ||
-        left.bootstrap.id.localeCompare(right.bootstrap.id) ||
-        left.touring.id.localeCompare(right.touring.id)
+    .flatMap(bootstrap => touringDefinitions.map(touring => ({ bootstrap, touring })))
+    .sort((left, right) =>
+      combinationImpact(left) - combinationImpact(right) ||
+      left.bootstrap.id.localeCompare(right.bootstrap.id) || left.touring.id.localeCompare(right.touring.id)
     )
 
   // Both blocking gates decide a combination, so both are evaluated per pair.
@@ -1789,18 +1284,12 @@ export const runExperimentSuite = async ({
   let calibrationRejections = 0
   let leastImpactPair = null
   for (const pair of orderedPairs) {
-    const touring = screenTouringFor(pair.bootstrap).find(
-      item => item.id === pair.touring.id
-    )
+    const touring = screenTouringFor(pair.bootstrap).find(item => item.id === pair.touring.id)
     if (!touring?.acceptanceCriteria.passed) continue
     pairsConsidered++
     leastImpactPair ??= { bootstrap: pair.bootstrap, touring }
     const tuning = resolveBalanceTuning(
-      {
-        earlyGame: pair.bootstrap.overrides.earlyGame,
-        touring: touring.overrides.touring,
-        recovery: touring.overrides.recovery
-      },
+      { earlyGame: pair.bootstrap.overrides.earlyGame, touring: touring.overrides.touring, recovery: touring.overrides.recovery },
       ORIGINAL_CONTROL_BALANCE_TUNING
     )
     const selectionGate = measureHoldoutGate({
@@ -1846,9 +1335,7 @@ export const runExperimentSuite = async ({
   let reported = selected
   if (!reported) {
     reported =
-      combinations.find(
-        item => item.calibrationEvaluated && item.validation?.passed
-      ) ?? null
+      combinations.find(item => item.calibrationEvaluated && item.validation?.passed) ?? null
     if (!reported && leastImpactPair) {
       const existing = combinations.find(
         item =>
@@ -1858,17 +1345,13 @@ export const runExperimentSuite = async ({
       const baseline = existing?.calibrationEvaluated
         ? existing
         : Object.assign(
-            evaluateCombination(
-              leastImpactPair.bootstrap,
-              leastImpactPair.touring
-            ),
+            evaluateCombination(leastImpactPair.bootstrap, leastImpactPair.touring),
             {
               calibrationEvaluated: true,
               // Both halves, or `selectionBankruptcyByScenario` and
               // `capVerdictDisagreements` render empty exactly in the case they
               // exist to explain.
-              selectionGateValidation:
-                existing?.selectionGateValidation ?? null,
+              selectionGateValidation: existing?.selectionGateValidation ?? null,
               selectionGateMeasured: existing?.selectionGateMeasured ?? null
             }
           )
@@ -1879,10 +1362,7 @@ export const runExperimentSuite = async ({
       if (baseline.validation.passed) reported = baseline
     }
   }
-  if (!reported)
-    throw new NoViableCandidateError(
-      'No combined Phase 3 candidate satisfies final validation'
-    )
+  if (!reported) throw new NoViableCandidateError('No combined Phase 3 candidate satisfies final validation')
   const combinationsSkipped = orderedPairs.length - pairsConsidered
   const selectedBootstrap = reported.bootstrap
   const selectedTouring = reported.touring
@@ -1890,16 +1370,14 @@ export const runExperimentSuite = async ({
   // so "nothing ships" is a legitimate and expected outcome — but the selection
   // sections then name a candidate id where a reader expects a lever. Flag it
   // so the reports say outright that production tuning does not move.
-  const selectedAppliesNoChange =
-    combinationImpact({
-      bootstrap: selectedBootstrap,
-      touring: selectedTouring
-    }) === 0
+  const selectedAppliesNoChange = combinationImpact({ bootstrap: selectedBootstrap, touring: selectedTouring }) === 0
   // "Selected for production" has to mean it cleared every gate, and the reserved
   // validation stream has not been measured yet at this point — so the flag is set
   // below, once it has. Until then only the reporting role is known.
   selectedBootstrap.reportedAsBaseline = true
   selectedTouring.reportedAsBaseline = true
+
+
 
   // Search stops at the first combination that clears both gates, so an unselected
   // candidate was either evaluated and rejected, or never reached. Say which.
@@ -1908,19 +1386,11 @@ export const runExperimentSuite = async ({
     if (!evaluated.length) {
       return 'Not evaluated: a lower-impact combination already cleared both gates.'
     }
-    if (
-      evaluated.some(
-        c => c.validation?.passed && c.selectionGateValidation?.passed
-      )
-    ) {
+    if (evaluated.some(c => c.validation?.passed && c.selectionGateValidation?.passed)) {
       return 'A lower-impact combination cleared both gates and ranked higher.'
     }
     const calibrationFailures = [
-      ...new Set(
-        evaluated
-          .filter(c => c.calibrationEvaluated)
-          .flatMap(c => c.validation.failures)
-      )
+      ...new Set(evaluated.filter(c => c.calibrationEvaluated).flatMap(c => c.validation.failures))
     ]
     // Naming the partner keeps each failure traceable to one evaluated pair. A bare
     // list of rates cannot be cross-referenced back to a combination, which is the
@@ -1937,18 +1407,12 @@ export const runExperimentSuite = async ({
         )
       )
     ]
-    return (
-      [
-        holdoutFailures.length
-          ? `Breached the holdout safety caps (${holdoutFailures.join('; ')}).`
-          : '',
-        calibrationFailures.length
-          ? `Did not pass final combined validation (${calibrationFailures.join(', ')}).`
-          : ''
-      ]
-        .filter(Boolean)
-        .join(' ') || 'Did not clear both blocking gates.'
-    )
+    return [
+      holdoutFailures.length ? `Breached the holdout safety caps (${holdoutFailures.join('; ')}).` : '',
+      calibrationFailures.length ? `Did not pass final combined validation (${calibrationFailures.join(', ')}).` : ''
+    ]
+      .filter(Boolean)
+      .join(' ') || 'Did not clear both blocking gates.'
   }
 
   for (const item of bootstrapCandidates) {
@@ -1962,9 +1426,7 @@ export const runExperimentSuite = async ({
   // screening results, which would misreport the touring table.
   const touringCandidates = touringByBootstrap.get(selectedBootstrap.id)
   if (!touringCandidates) {
-    throw new Error(
-      `No touring screening recorded for selected bootstrap ${selectedBootstrap.id}`
-    )
+    throw new Error(`No touring screening recorded for selected bootstrap ${selectedBootstrap.id}`)
   }
 
   for (const item of touringCandidates) {
@@ -1973,42 +1435,17 @@ export const runExperimentSuite = async ({
     }
   }
 
-  const intermediateTuning = resolveBalanceTuning(
-    selectedBootstrap.overrides,
-    ORIGINAL_CONTROL_BALANCE_TUNING
-  )
+
+  const intermediateTuning = resolveBalanceTuning(selectedBootstrap.overrides, ORIGINAL_CONTROL_BALANCE_TUNING)
   const finalTuning = reported.tuning
   const finalCombinedValidation = reported.validation
-  const lowResource = {
-    ...baselineScenario,
-    id: 'low_resource_touring',
-    initialOverrides: {
-      ...baselineScenario.initialOverrides,
-      player: { money: 250, fame: 0 }
-    }
-  }
-  const gapProfiles = tuning =>
-    [baselineScenario, lowResource].map(profile => ({
-      profile: profile.id,
-      runsPerScenario,
-      seedStrategy: `${SEED_STREAMS.calibration('scenario-id')}-plus-run-index`,
-      results: buildGapAnalysis(profile, tuning, runsPerScenario, runner)
-    }))
+  const lowResource = { ...baselineScenario, id: 'low_resource_touring', initialOverrides: { ...baselineScenario.initialOverrides, player: { money: 250, fame: 0 } } }
+  const gapProfiles = tuning => [baselineScenario, lowResource].map(profile => ({ profile: profile.id, runsPerScenario, seedStrategy: `${SEED_STREAMS.calibration('scenario-id')}-plus-run-index`, results: buildGapAnalysis(profile, tuning, runsPerScenario, runner) }))
   const controlGapProfiles = gapProfiles(intermediateTuning)
   const finalGapProfiles = gapProfiles(finalTuning)
-  const gapTradeoff = {
-    gap1VsGap2: {
-      control: buildGapTradeoff(controlGapProfiles),
-      finalTuning: buildGapTradeoff(finalGapProfiles)
-    }
-  }
-  const gigFrequencyValidation = evaluateGigGap(
-    gapTradeoff.gap1VsGap2.control,
-    gapTradeoff.gap1VsGap2.finalTuning
-  )
-  const objectiveStatus = gigFrequencyValidation.objectiveMet
-    ? 'met'
-    : 'partial'
+  const gapTradeoff = { gap1VsGap2: { control: buildGapTradeoff(controlGapProfiles), finalTuning: buildGapTradeoff(finalGapProfiles) } }
+  const gigFrequencyValidation = evaluateGigGap(gapTradeoff.gap1VsGap2.control, gapTradeoff.gap1VsGap2.finalTuning)
+  const objectiveStatus = gigFrequencyValidation.objectiveMet ? 'met' : 'partial'
   const objectiveNote = describeObjective(gigFrequencyValidation)
   // The hard safety layer for the tuning being reported. Every considered
   // combination was already screened against it inside the search, so this is that
@@ -2065,24 +1502,22 @@ export const runExperimentSuite = async ({
     layer: 'design-intent',
     source: 'holdout',
     note: 'The hard caps are ceilings. A lever can clear all of them and still remove the risk a scenario exists to create, so this list makes "safer than intended" visible.',
-    scenarios: Object.entries(holdoutBankruptcyByScenario).map(
-      ([scenarioId, measurement]) => {
-        const corridor = RISK_TARGETS[scenarioId]?.bankruptcyTargetPct ?? null
-        return {
-          scenarioId,
-          ratePct: measurement.ratePct,
-          corridorPct: corridor,
-          position:
-            corridor == null
-              ? 'no-corridor'
-              : measurement.ratePct < corridor[0]
-                ? 'below'
-                : measurement.ratePct > corridor[1]
-                  ? 'above'
-                  : 'inside'
-        }
+    scenarios: Object.entries(holdoutBankruptcyByScenario).map(([scenarioId, measurement]) => {
+      const corridor = RISK_TARGETS[scenarioId]?.bankruptcyTargetPct ?? null
+      return {
+        scenarioId,
+        ratePct: measurement.ratePct,
+        corridorPct: corridor,
+        position:
+          corridor == null
+            ? 'no-corridor'
+            : measurement.ratePct < corridor[0]
+              ? 'below'
+              : measurement.ratePct > corridor[1]
+                ? 'above'
+                : 'inside'
       }
-    )
+    })
   }
   designRiskCorridors.belowCorridor = designRiskCorridors.scenarios
     .filter(item => item.position === 'below')
@@ -2110,41 +1545,10 @@ export const runExperimentSuite = async ({
         .join('; ')
     },
     pairingStrategy: PAIRING_STRATEGY,
-    controlSnapshot: {
-      tuning: ORIGINAL_CONTROL_BALANCE_TUNING,
-      runsPerScenario
-    },
+    controlSnapshot: { tuning: ORIGINAL_CONTROL_BALANCE_TUNING, runsPerScenario },
     phases: {
-      phase3B: {
-        hypothesis:
-          'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.',
-        candidates: bootstrapCandidates,
-        ranking: bootstrapRanking.map(item => ({
-          id: item.id,
-          ...item.rankingComponents,
-          passed: item.acceptanceCriteria.passed
-        })),
-        selectedCandidateId: selectedBootstrap.id
-      },
-      phase3C: {
-        hypothesis:
-          'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.',
-        gigFrequencyAnalysis: {
-          control: controlGapProfiles,
-          finalTuning: finalGapProfiles
-        },
-        gapTradeoff,
-        gigFrequencyValidation,
-        candidates: touringCandidates,
-        ranking: rankCandidates(touringCandidates).map(item => ({
-          id: item.id,
-          ...item.rankingComponents,
-          passed: item.acceptanceCriteria.passed
-        })),
-        selectedCandidateId: selectedTouring.id,
-        objectiveStatus,
-        objectiveNote
-      },
+      phase3B: { hypothesis: 'Temporary early liquidity relief reduces bootstrap insolvency without accelerating Fame.', candidates: bootstrapCandidates, ranking: bootstrapRanking.map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedBootstrap.id },
+      phase3C: { hypothesis: 'Expiring regional demand saturation reduces Gap-1 gig-frequency dominance without penalising paced touring.', gigFrequencyAnalysis: { control: controlGapProfiles, finalTuning: finalGapProfiles }, gapTradeoff, gigFrequencyValidation, candidates: touringCandidates, ranking: rankCandidates(touringCandidates).map(item => ({ id: item.id, ...item.rankingComponents, passed: item.acceptanceCriteria.passed })), selectedCandidateId: selectedTouring.id, objectiveStatus, objectiveNote },
       phase6E: recoveryPhase
     },
     finalCombinedValidation,
@@ -2212,11 +1616,8 @@ export const runExperimentSuite = async ({
         : holdoutSafetyValidation.passed
           ? 'fully-validated'
           : 'selection-validated-final-validation-failed',
-      selectedFinalValidationFailures: (
-        holdoutSafetyValidation.failures ?? []
-      ).map(
-        failure =>
-          `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+      selectedFinalValidationFailures: (holdoutSafetyValidation.failures ?? []).map(
+        failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
       ),
       selectedAppliesNoChange,
       note: SELECTION_RATIONALE
@@ -2228,55 +1629,35 @@ export const runExperimentSuite = async ({
     // treated a non-shippable combination as approved. The three facts are now
     // separate, and `finalValidationPassed` is `null` for every combination the
     // reserved stream never judged, which is all but one by design.
-    combinationRanking: [...combinations]
-      .sort(
-        (left, right) =>
-          Number(
-            Boolean(
-              right.validation?.passed && right.selectionGateValidation?.passed
-            )
-          ) -
-            Number(
-              Boolean(
-                left.validation?.passed && left.selectionGateValidation?.passed
-              )
-            ) || combinationImpact(left) - combinationImpact(right)
-      )
-      .map(item => {
-        const isReported =
-          item.bootstrap.id === selectedBootstrap.id &&
-          item.touring.id === selectedTouring.id
-        const selectionPassed = item.selectionGateValidation?.passed ?? null
-        const calibrationPassed = item.calibrationEvaluated
-          ? item.validation.passed
-          : null
-        const finalValidationPassed = isReported
-          ? holdoutSafetyValidation.passed
-          : null
-        return {
-          bootstrap: item.bootstrap.id,
-          touring: item.touring.id,
-          impact: round(combinationImpact(item)),
-          // `null` on the calibration side means the pair was rejected by the
-          // selection gate before the paired comparison ran, which is different from
-          // having failed it.
-          calibrationPassed,
-          calibrationFailures: item.calibrationEvaluated
-            ? item.validation.failures
-            : null,
-          selectionPassed,
-          selectionFailures: (item.selectionGateValidation?.failures ?? []).map(
-            failure =>
-              `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
-          ),
-          finalValidationPassed,
-          // Shippable requires all three, and the reserved stream only judged one
-          // combination — so this is false everywhere it was never measured.
-          shippable: Boolean(
-            calibrationPassed && selectionPassed && finalValidationPassed
-          )
-        }
-      }),
+    combinationRanking: [...combinations].sort((left, right) =>
+      Number(Boolean(right.validation?.passed && right.selectionGateValidation?.passed)) -
+        Number(Boolean(left.validation?.passed && left.selectionGateValidation?.passed)) ||
+      combinationImpact(left) - combinationImpact(right)
+    ).map(item => {
+      const isReported =
+        item.bootstrap.id === selectedBootstrap.id && item.touring.id === selectedTouring.id
+      const selectionPassed = item.selectionGateValidation?.passed ?? null
+      const calibrationPassed = item.calibrationEvaluated ? item.validation.passed : null
+      const finalValidationPassed = isReported ? holdoutSafetyValidation.passed : null
+      return {
+        bootstrap: item.bootstrap.id,
+        touring: item.touring.id,
+        impact: round(combinationImpact(item)),
+        // `null` on the calibration side means the pair was rejected by the
+        // selection gate before the paired comparison ran, which is different from
+        // having failed it.
+        calibrationPassed,
+        calibrationFailures: item.calibrationEvaluated ? item.validation.failures : null,
+        selectionPassed,
+        selectionFailures: (item.selectionGateValidation?.failures ?? []).map(
+          failure => `${failure.scenarioId} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+        ),
+        finalValidationPassed,
+        // Shippable requires all three, and the reserved stream only judged one
+        // combination — so this is false everywhere it was never measured.
+        shippable: Boolean(calibrationPassed && selectionPassed && finalValidationPassed)
+      }
+    }),
     recommendation: {
       // Release readiness is decided by the safety gates alone, and there are now
       // two of them. `finalCombinedValidation` judges the candidate against the
@@ -2296,9 +1677,7 @@ export const runExperimentSuite = async ({
           ? selected
             ? 'no-production-recommendation-final-validation-failed'
             : 'no-production-recommendation-holdout-safety-failed'
-          : gigFrequencyValidation.objectiveMet
-            ? 'accepted-for-production'
-            : 'accepted-for-production-partial',
+          : gigFrequencyValidation.objectiveMet ? 'accepted-for-production' : 'accepted-for-production-partial',
       objectiveStatus,
       objectiveNote,
       bootstrap: selectedBootstrap.id,
@@ -2322,8 +1701,7 @@ export const runExperimentSuite = async ({
               },
               // A hold reviewed against a different pair does not cover this one.
               matchesRecommendation:
-                BALANCE_RECOMMENDATION_HOLD.bootstrap ===
-                  selectedBootstrap.id &&
+                BALANCE_RECOMMENDATION_HOLD.bootstrap === selectedBootstrap.id &&
                 BALANCE_RECOMMENDATION_HOLD.touring === selectedTouring.id,
               reason: BALANCE_RECOMMENDATION_HOLD.reason
             }
@@ -2335,11 +1713,7 @@ export const runExperimentSuite = async ({
               reason: null
             }
     },
-    runtime: {
-      durationMs: Date.now() - started,
-      candidates: BALANCE_EXPERIMENTS.length,
-      totalRuns
-    }
+    runtime: { durationMs: Date.now() - started, candidates: BALANCE_EXPERIMENTS.length, totalRuns }
   }
   report.previousReportComparison = buildPreviousExperimentReportComparison(
     previousReportSnapshot,
@@ -2353,10 +1727,7 @@ export const runExperimentSuite = async ({
   return report
 }
 
-if (
-  process.argv[1] &&
-  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
-) {
+if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
   // The suite throws when no candidate clears Phase 3B or no combination clears
   // final validation. That is a legitimate experiment outcome, not a crash, so
   // report it as a failed run instead of an unhandled rejection stack.
@@ -2368,34 +1739,21 @@ if (
     // fault and must keep its stack, otherwise a misconfigured horizon or a
     // simulation regression reads in CI as "the experiment found nothing".
     if (error instanceof NoViableCandidateError) {
-      console.error(
-        `[balance-experiments] no production candidate: ${error.message}`
-      )
+      console.error(`[balance-experiments] no production candidate: ${error.message}`)
       process.exit(1)
     }
     throw error
   }
-  console.log(
-    `[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`
-  )
-  console.log(
-    `[balance-experiments] recommendation: ${report.recommendation.status} (Phase 3C objective: ${report.recommendation.objectiveStatus})`
-  )
+  console.log(`[balance-experiments] ${report.runtime.candidates} candidates / ${report.runtime.totalRuns} runs / ${report.runtime.durationMs} ms`)
+  console.log(`[balance-experiments] recommendation: ${report.recommendation.status} (Phase 3C objective: ${report.recommendation.objectiveStatus})`)
   if (report.recommendation.objectiveStatus !== 'met') {
     console.warn(`[balance-experiments] ${report.recommendation.objectiveNote}`)
   }
   if (!report.holdoutSafetyValidation.passed) {
-    console.error(
-      `[balance-experiments] holdout safety gate FAILED: ${[(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), (report.holdoutSafetyValidation.missingScenarioIds ?? []).length ? `unmeasured: ${report.holdoutSafetyValidation.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' | ') || 'no scenario could be evaluated'}`
-    )
+    console.error(`[balance-experiments] holdout safety gate FAILED: ${[(report.holdoutSafetyValidation.failures ?? []).map(failure => `${failure.scenarioId} ${failure.metric} ${failure.holdoutValuePct}% > ${failure.maximumPct}%`).join('; '), (report.holdoutSafetyValidation.missingScenarioIds ?? []).length ? `unmeasured: ${report.holdoutSafetyValidation.missingScenarioIds.join(', ')}` : ''].filter(Boolean).join(' | ') || 'no scenario could be evaluated'}`)
   }
   // Both hard gates decide the exit code. A holdout breach of bankruptcyMax is a
   // release blocker, so it must not exit 0 just because the paired comparison
   // held on the calibration stream.
-  process.exit(
-    report.finalCombinedValidation.passed &&
-      report.holdoutSafetyValidation.passed
-      ? 0
-      : 1
-  )
+  process.exit(report.finalCombinedValidation.passed && report.holdoutSafetyValidation.passed ? 0 : 1)
 }

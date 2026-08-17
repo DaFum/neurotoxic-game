@@ -116,7 +116,9 @@ import {
 
 import { logger, LOG_LEVELS } from '../src/utils/logger.js'
 import { getRegionKeyForLocation } from '../src/utils/mapUtils.ts'
-import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
+import {
+  buildArtifactMetadata
+} from './utils/balance-report-metadata.mjs'
 import { DEFAULT_BALANCE_TUNING } from '../src/utils/balanceTuning.ts'
 import { resetSecureRandomBatch } from '../src/utils/crypto.ts'
 
@@ -595,11 +597,7 @@ const sumCatalogCost = catalog =>
 const simulateGigsToReachFameTarget = (targetFame, performanceScore) => {
   const rawGigFame = calculateGigFameReward(performanceScore)
   // Recompute gig counts with a ceiling, preventing undercount anomalies
-  return {
-    gigs: Math.ceil(targetFame / rawGigFame),
-    finalFame: targetFame,
-    rawGigFame
-  }
+  return { gigs: Math.ceil(targetFame / rawGigFame), finalFame: targetFame, rawGigFame }
 }
 
 const simulateFameCatalogClear = (catalog, performanceScore) => {
@@ -1279,14 +1277,7 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   return true
 }
 
-const applyTriggerEvent = (
-  state,
-  scenario,
-  rng,
-  counters,
-  categories,
-  triggerPoint
-) => {
+const applyTriggerEvent = (state, scenario, rng, counters, categories, triggerPoint) => {
   let category = null
   let event = null
   for (const candidate of categories) {
@@ -1308,11 +1299,7 @@ const applyTriggerEvent = (
       moneyBeforeEvent,
       scenario.negativeFinancialEventMultiplier
     )
-    recordObservedFameChange(
-      counters.fameAccounting,
-      oldFame,
-      state.player.fame
-    )
+    recordObservedFameChange(counters.fameAccounting, oldFame, state.player.fame)
   }
   if (category === 'financial') counters.cashSwings += 1
   else if (category === 'special') counters.specialEvents += 1
@@ -1378,8 +1365,8 @@ const maybeActivateBrandDeal = (state, rng, counters) => {
   ]
 
   counters.brandDealsActivated += 1
-  counters.executionCoverage.brandDeals.activations++
-  counters.executionCoverage.brandDeals.uniqueIdsSeen.add(candidate.id)
+    counters.executionCoverage.brandDeals.activations++
+    counters.executionCoverage.brandDeals.uniqueIdsSeen.add(candidate.id)
 }
 
 const maybeApplyPostPulse = (
@@ -1487,8 +1474,8 @@ const maybeApplyContrabandDrop = (state, rng, counters, runCtx) => {
 
   state.band = newBand
   counters.contrabandDrops += 1
-  counters.executionCoverage.contraband.activations++
-  counters.executionCoverage.contraband.uniqueIdsSeen.add(item.id)
+    counters.executionCoverage.contraband.activations++
+    counters.executionCoverage.contraband.uniqueIdsSeen.add(item.id)
 }
 
 // Daily expiry mirror of processContrabandExpiry (systemReducer.ts):
@@ -2539,23 +2526,14 @@ export const runSingleSimulation = (
         postGig: { evaluations: 0, activations: 0 }
       },
       quests: {
-        status: 'insufficient_evidence',
-        offers: 0,
-        activations: 0,
-        progress: 0,
-        completions: 0,
-        failures: 0,
-        rewards: 0,
+        status: 'insufficient_evidence', offers: 0, activations: 0,
+        progress: 0, completions: 0, failures: 0, rewards: 0,
         availableIds: Object.keys(QUEST_REGISTRY).length
       }
     },
     harmonyRecovery: {
-      evaluations: 0,
-      activations: 0,
-      harmonyRestored: 0,
-      moneySpent: 0,
-      daysConsumed: 0,
-      gigOpportunitiesForgone: 0
+      evaluations: 0, activations: 0, harmonyRestored: 0,
+      moneySpent: 0, daysConsumed: 0, gigOpportunitiesForgone: 0
     },
     catalogMoneySpent: 0,
     catalogFameSpent: 0,
@@ -2884,30 +2862,21 @@ export const runSingleSimulation = (
     if (recovery?.threshold > 0) {
       counters.harmonyRecovery.evaluations += 1
       if (state.band.harmony < recovery.threshold) {
-        const canPay =
-          recovery.costType !== 'money' ||
-          state.player.money >= recovery.moneyCost
+        const canPay = recovery.costType !== 'money' || state.player.money >= recovery.moneyCost
         if (canPay) {
           const beforeHarmony = state.band.harmony
           const beforeMoney = state.player.money
-          state.band.harmony = clampBandHarmony(
-            finiteNumberOr(state.band.harmony, 1) + recovery.harmonyGain
-          )
+          state.band.harmony = clampBandHarmony(finiteNumberOr(state.band.harmony, 1) + recovery.harmonyGain)
           counters.harmonyRecovery.activations += 1
-          counters.harmonyRecovery.harmonyRestored +=
-            state.band.harmony - beforeHarmony
+          counters.harmonyRecovery.harmonyRestored += state.band.harmony - beforeHarmony
           if (recovery.costType === 'money') {
-            state.player.money = clampPlayerMoney(
-              state.player.money - recovery.moneyCost
-            )
-            counters.harmonyRecovery.moneySpent +=
-              beforeMoney - state.player.money
+            state.player.money = clampPlayerMoney(state.player.money - recovery.moneyCost)
+            counters.harmonyRecovery.moneySpent += beforeMoney - state.player.money
             observeAttributedLoss('clinic', beforeMoney)
             observeEarlyRunwayMoney()
           } else if (recovery.costType === 'day') {
             counters.harmonyRecovery.daysConsumed += 1
-            if (wantsToPerform)
-              counters.harmonyRecovery.gigOpportunitiesForgone += 1
+            if (wantsToPerform) counters.harmonyRecovery.gigOpportunitiesForgone += 1
             recoveryDayConsumed = true
             willRest = true
           }
@@ -3086,12 +3055,7 @@ export const runSingleSimulation = (
     const moneyBeforeTravelEvents = state.player.money
     counters.executionCoverage.eventTriggers.travel.evaluations += 1
     const fameBeforeTravelEvents = state.player.fame
-    const travelEventsApplied = applyTravelEvents(
-      state,
-      scenario,
-      rng,
-      counters
-    )
+    const travelEventsApplied = applyTravelEvents(state, scenario, rng, counters)
     counters.eventsApplied = (counters.eventsApplied || 0) + travelEventsApplied
     counters.executionCoverage.eventTriggers.travel.activations +=
       travelEventsApplied
@@ -3202,16 +3166,7 @@ export const runSingleSimulation = (
     state.currentGig = venue
     counters.executionCoverage.eventTriggers.preGig.evaluations += 1
     const moneyBeforePreGigEvent = state.player.money
-    if (
-      applyTriggerEvent(
-        state,
-        scenario,
-        rng,
-        counters,
-        ['band', 'gig'],
-        'pre_gig'
-      )
-    ) {
+    if (applyTriggerEvent(state, scenario, rng, counters, ['band', 'gig'], 'pre_gig')) {
       counters.executionCoverage.eventTriggers.preGig.activations += 1
     }
     observeAttributedLoss('negative_events', moneyBeforePreGigEvent)
@@ -3396,16 +3351,7 @@ export const runSingleSimulation = (
     counters.gigsPlayed += 1
     counters.executionCoverage.eventTriggers.postGig.evaluations += 1
     const moneyBeforePostGigEvent = state.player.money
-    if (
-      applyTriggerEvent(
-        state,
-        scenario,
-        rng,
-        counters,
-        ['financial', 'special', 'band'],
-        'post_gig'
-      )
-    ) {
+    if (applyTriggerEvent(state, scenario, rng, counters, ['financial', 'special', 'band'], 'post_gig')) {
       counters.executionCoverage.eventTriggers.postGig.activations += 1
     }
     observeAttributedLoss('negative_events', moneyBeforePostGigEvent)
@@ -3605,19 +3551,12 @@ export const mergeExecutionCoverage = sources => {
     sponsorship: { attempts: 0, successes: 0 },
     restStops: { evaluations: 0, activations: 0 },
     eventTriggers: {
-      travel: { evaluations: 0, activations: 0 },
-      preGig: { evaluations: 0, activations: 0 },
-      gigMoments: { evaluations: 0, activations: 0 },
-      postGig: { evaluations: 0, activations: 0 }
+      travel: { evaluations: 0, activations: 0 }, preGig: { evaluations: 0, activations: 0 },
+      gigMoments: { evaluations: 0, activations: 0 }, postGig: { evaluations: 0, activations: 0 }
     },
     quests: {
-      status: 'insufficient_evidence',
-      offers: 0,
-      activations: 0,
-      progress: 0,
-      completions: 0,
-      failures: 0,
-      rewards: 0,
+      status: 'insufficient_evidence', offers: 0, activations: 0,
+      progress: 0, completions: 0, failures: 0, rewards: 0,
       availableIds: Object.keys(QUEST_REGISTRY).length
     }
   }
@@ -3644,10 +3583,8 @@ export const mergeExecutionCoverage = sources => {
 
   for (const trigger of Object.keys(coverage.eventTriggers)) {
     for (const source of sources) {
-      coverage.eventTriggers[trigger].evaluations +=
-        source?.eventTriggers?.[trigger]?.evaluations ?? 0
-      coverage.eventTriggers[trigger].activations +=
-        source?.eventTriggers?.[trigger]?.activations ?? 0
+      coverage.eventTriggers[trigger].evaluations += source?.eventTriggers?.[trigger]?.evaluations ?? 0
+      coverage.eventTriggers[trigger].activations += source?.eventTriggers?.[trigger]?.activations ?? 0
     }
   }
 
@@ -3660,20 +3597,16 @@ export const mergeExecutionCoverage = sources => {
       (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0
     metric.covered =
       successfulExecutions ||
-      (key !== 'restStops' &&
-        (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
+      (key !== 'restStops' && (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
       (metric.uniqueIdsSeen?.length ?? 0) > 0
   }
   return coverage
 }
 
-export const calculateAverageFameEarnedPerGig = runs =>
-  mean(
-    runs.map(run => {
-      const fameEarned = run.fameAccounting?.earned ?? run.fameEarned ?? 0
-      return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
-    })
-  )
+export const calculateAverageFameEarnedPerGig = runs => mean(runs.map(run => {
+  const fameEarned = run.fameAccounting?.earned ?? run.fameEarned ?? 0
+  return run.gigsPlayed > 0 ? fameEarned / run.gigsPlayed : 0
+}))
 
 const firstDayMatching = (log, predicate) => {
   const days = (log ?? [])
@@ -3767,14 +3700,12 @@ export const summarizeScenario = runs => {
   const aggregateCoverage = mergeExecutionCoverage(
     runs.map(run => run.executionCoverage)
   )
-  const eventTriggerCoverage = Object.values(
-    aggregateCoverage.eventTriggers
-  ).filter(metric => metric && typeof metric === 'object')
-  const coverageStatus =
-    eventTriggerCoverage.length > 0 &&
+  const eventTriggerCoverage = Object.values(aggregateCoverage.eventTriggers)
+    .filter(metric => metric && typeof metric === 'object')
+  const coverageStatus = eventTriggerCoverage.length > 0 &&
     eventTriggerCoverage.every(metric => metric.evaluations > 0)
-      ? 'covered'
-      : 'insufficient_evidence'
+    ? 'covered'
+    : 'insufficient_evidence'
 
   const popAll = calcStats(runs) || { sampleSize: 0 }
   const popSolvent = calcStats(solventRuns) || { sampleSize: 0 }
@@ -3813,21 +3744,8 @@ export const summarizeScenario = runs => {
     avgGigEvents,
     coverageStatus,
     harmonyRecovery: Object.fromEntries(
-      [
-        'evaluations',
-        'activations',
-        'harmonyRestored',
-        'moneySpent',
-        'daysConsumed',
-        'gigOpportunitiesForgone'
-      ].map(key => [
-        key,
-        Number(
-          mean(
-            runs.map(run => finiteNumberOr(run.harmonyRecovery?.[key], 0))
-          ).toFixed(2)
-        )
-      ])
+      ['evaluations', 'activations', 'harmonyRestored', 'moneySpent', 'daysConsumed', 'gigOpportunitiesForgone']
+        .map(key => [key, Number(mean(runs.map(run => finiteNumberOr(run.harmonyRecovery?.[key], 0))).toFixed(2))])
     ),
     avgPerformanceScore: popAll.performanceScore
       ? popAll.performanceScore.mean
@@ -3996,181 +3914,45 @@ export const summarizeScenario = runs => {
     },
 
     avgFameProgress: Math.round(mean(runs.map(r => r.fameAccounting.earned))),
-    avgFameProgressPerGig: Number(
-      calculateAverageFameEarnedPerGig(runs).toFixed(2)
-    ),
-    avgPeakToTroughDrop: Number(
-      mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)
-    ),
+    avgFameProgressPerGig: Number(calculateAverageFameEarnedPerGig(runs).toFixed(2)),
+    avgPeakToTroughDrop: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
     avgPeakMoney: Math.round(mean(runs.map(r => r.peakMoney))),
     avgLowestMoney: Math.round(mean(runs.map(r => r.lowestMoney))),
-    avgFinalControversy: Number(
-      mean(runs.map(r => r.finalControversy)).toFixed(2)
-    ),
-    ...Object.fromEntries(
-      [
-        ['ClinicVisits', 'clinicVisits'],
-        ['SponsorPayouts', 'sponsorPayouts'],
-        ['SponsorSignings', 'sponsorSignings'],
-        ['SponsorDrops', 'sponsorDrops'],
-        ['BrandDealsActivated', 'brandDealsActivated'],
-        ['Refuels', 'refuels'],
-        ['Repairs', 'repairs'],
-        ['HqUpgrades', 'hqUpgrades'],
-        ['VanUpgrades', 'vanUpgrades'],
-        ['CatalogUpgrades', 'catalogUpgrades'],
-        ['TravelMinigames', 'travelMinigames'],
-        ['RoadieMinigames', 'roadieMinigames'],
-        ['KabelsalatMinigames', 'kabelsalatMinigames'],
-        ['AmpCalibrations', 'ampCalibrations'],
-        ['RestStops', 'restStops'],
-        ['RestDays', 'restDays'],
-        ['RestStopArrivals', 'restStopArrivals'],
-        ['AssetsPurchased', 'assetsPurchased'],
-        ['LoansTaken', 'loansTaken'],
-        ['ModulesInstalled', 'modulesInstalled'],
-        ['CrowdfundsStarted', 'crowdfundsStarted'],
-        ['TraitUnlocks', 'traitUnlocks'],
-        ['FinalAssets', 'finalAssets'],
-        ['TrendShifts', 'trendShifts'],
-        ['SpecialEvents', 'specialEvents'],
-        ['CashSwings', 'cashSwings'],
-        ['BandEvents', 'bandEvents'],
-        ['EquipmentEvents', 'equipmentEvents'],
-        ['PostPulses', 'postPulses'],
-        ['ContrabandDrops', 'contrabandDrops']
-      ].map(([name, field]) => [
-        `avg${name}`,
-        Number(mean(runs.map(r => r[field] ?? 0)).toFixed(2))
-      ])
-    ),
+    avgFinalControversy: Number(mean(runs.map(r => r.finalControversy)).toFixed(2)),
+    ...Object.fromEntries([
+      ['ClinicVisits', 'clinicVisits'], ['SponsorPayouts', 'sponsorPayouts'],
+      ['SponsorSignings', 'sponsorSignings'], ['SponsorDrops', 'sponsorDrops'],
+      ['BrandDealsActivated', 'brandDealsActivated'], ['Refuels', 'refuels'],
+      ['Repairs', 'repairs'], ['HqUpgrades', 'hqUpgrades'], ['VanUpgrades', 'vanUpgrades'],
+      ['CatalogUpgrades', 'catalogUpgrades'], ['TravelMinigames', 'travelMinigames'],
+      ['RoadieMinigames', 'roadieMinigames'], ['KabelsalatMinigames', 'kabelsalatMinigames'],
+      ['AmpCalibrations', 'ampCalibrations'], ['RestStops', 'restStops'], ['RestDays', 'restDays'], ['RestStopArrivals', 'restStopArrivals'],
+      ['AssetsPurchased', 'assetsPurchased'], ['LoansTaken', 'loansTaken'],
+      ['ModulesInstalled', 'modulesInstalled'], ['CrowdfundsStarted', 'crowdfundsStarted'],
+      ['TraitUnlocks', 'traitUnlocks'], ['FinalAssets', 'finalAssets'],
+      ['TrendShifts', 'trendShifts'], ['SpecialEvents', 'specialEvents'],
+      ['CashSwings', 'cashSwings'], ['BandEvents', 'bandEvents'],
+      ['EquipmentEvents', 'equipmentEvents'], ['PostPulses', 'postPulses'],
+      ['ContrabandDrops', 'contrabandDrops']
+    ].map(([name, field]) => [`avg${name}`, Number(mean(runs.map(r => r[field] ?? 0)).toFixed(2))])),
     avgClinicSpend: Math.round(mean(runs.map(r => r.clinicSpend ?? 0))),
-    regionRepTouchedPct: Number(
-      mean(runs.map(r => (r.regionRepTouched ? 100 : 0))).toFixed(1)
-    ),
-    avgTravelCostPerGig: Math.round(
-      runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0) /
-        Math.max(
-          1,
-          runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-        )
-    ),
-    avgHitWindow: Math.round(
-      runs.reduce((sum, r) => sum + r.totalHitWindowSum, 0) /
-        Math.max(
-          1,
-          runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-        )
-    ),
-    avgMissesPerGig: Number(
-      (
-        runs.reduce((sum, r) => sum + r.totalMissesSum, 0) /
-        Math.max(
-          1,
-          runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-        )
-      ).toFixed(1)
-    ),
-    gigScorePctLow: Number(
-      (
-        (runs.reduce((sum, r) => sum + r.gigScoreLow, 0) /
-          Math.max(
-            1,
-            runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-          )) *
-        100
-      ).toFixed(1)
-    ),
-    gigScorePctMid: Number(
-      (
-        (runs.reduce((sum, r) => sum + r.gigScoreMid, 0) /
-          Math.max(
-            1,
-            runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-          )) *
-        100
-      ).toFixed(1)
-    ),
-    gigScorePctHigh: Number(
-      (
-        (runs.reduce((sum, r) => sum + r.gigScoreHigh, 0) /
-          Math.max(
-            1,
-            runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-          )) *
-        100
-      ).toFixed(1)
-    ),
-    gigNetToTravelRatio: Number(
-      (
-        runs.reduce((sum, r) => sum + r.totalGigNet, 0) /
-        Math.max(
-          1,
-          runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0)
-        )
-      ).toFixed(1)
-    ),
-    sinkToIncomeRatio: Number(
-      (
-        runs.reduce(
-          (sum, r) =>
-            sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend,
-          0
-        ) /
-        Math.max(
-          1,
-          runs.reduce((sum, r) => sum + r.totalGigNet, 0)
-        )
-      ).toFixed(2)
-    ),
-    gigCapHitPct: Number(
-      (
-        (runs.reduce((sum, r) => sum + r.gigCapHits, 0) /
-          Math.max(
-            1,
-            runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
-          )) *
-        100
-      ).toFixed(1)
-    ),
-    gigsToAffordHqUpgrade: Number(
-      (HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)
-    ),
-    gigsToAffordVanUpgrade:
-      _VAN_TUNING?.currency === 'money'
-        ? Number(
-            (VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(
-              2
-            )
-          )
-        : null,
-    avgMoneyAtEarlyCheckpoint: runs.some(r => r.moneyAtEarlyCheckpoint != null)
-      ? Math.round(
-          mean(
-            runs
-              .filter(r => r.moneyAtEarlyCheckpoint != null)
-              .map(r => r.moneyAtEarlyCheckpoint)
-          )
-        )
+    regionRepTouchedPct: Number((mean(runs.map(r => r.regionRepTouched ? 100 : 0))).toFixed(1)),
+    avgTravelCostPerGig: Math.round(runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))),
+    avgHitWindow: Math.round(runs.reduce((sum, r) => sum + r.totalHitWindowSum, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))),
+    avgMissesPerGig: Number((runs.reduce((sum, r) => sum + r.totalMissesSum, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0))).toFixed(1)),
+    gigScorePctLow: Number((runs.reduce((sum, r) => sum + r.gigScoreLow, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigScorePctMid: Number((runs.reduce((sum, r) => sum + r.gigScoreMid, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigScorePctHigh: Number((runs.reduce((sum, r) => sum + r.gigScoreHigh, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigNetToTravelRatio: Number((runs.reduce((sum, r) => sum + r.totalGigNet, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalTravelCostGigs, 0))).toFixed(1)),
+    sinkToIncomeRatio: Number((runs.reduce((sum, r) => sum + r.travelSpend + r.repairSpend + r.refuelSpend + r.clinicSpend, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.totalGigNet, 0))).toFixed(2)),
+    gigCapHitPct: Number((runs.reduce((sum, r) => sum + r.gigCapHits, 0) / Math.max(1, runs.reduce((sum, r) => sum + r.gigsPlayed, 0)) * 100).toFixed(1)),
+    gigsToAffordHqUpgrade: Number((HQ_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2)),
+    gigsToAffordVanUpgrade: _VAN_TUNING?.currency === 'money'
+      ? Number((VAN_UPGRADE_COST / Math.max(1, popAll.gigNet?.mean ?? 0)).toFixed(2))
       : null,
-    avgMoneyAtMidCheckpoint: runs.some(r => r.moneyAtMidCheckpoint != null)
-      ? Math.round(
-          mean(
-            runs
-              .filter(r => r.moneyAtMidCheckpoint != null)
-              .map(r => r.moneyAtMidCheckpoint)
-          )
-        )
-      : null,
-    avgMoneyAtLateCheckpoint: runs.some(r => r.moneyAtLateCheckpoint != null)
-      ? Math.round(
-          mean(
-            runs
-              .filter(r => r.moneyAtLateCheckpoint != null)
-              .map(r => r.moneyAtLateCheckpoint)
-          )
-        )
-      : null,
+    avgMoneyAtEarlyCheckpoint: runs.some(r => r.moneyAtEarlyCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtEarlyCheckpoint != null).map(r => r.moneyAtEarlyCheckpoint))) : null,
+    avgMoneyAtMidCheckpoint: runs.some(r => r.moneyAtMidCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtMidCheckpoint != null).map(r => r.moneyAtMidCheckpoint))) : null,
+    avgMoneyAtLateCheckpoint: runs.some(r => r.moneyAtLateCheckpoint != null) ? Math.round(mean(runs.filter(r => r.moneyAtLateCheckpoint != null).map(r => r.moneyAtLateCheckpoint))) : null,
     bankruptcy: {
       count: bankruptcyCount,
       sampleSize: n,
@@ -4461,78 +4243,47 @@ export const summarizeScenario = runs => {
 
     actualLossAttribution: Object.fromEntries(
       LOSS_ATTRIBUTION_SOURCES.map(source => {
-        const losses = runs.map(
-          run => run.actualLossAttribution?.totals?.[source] ?? 0
-        )
+        const losses = runs.map(run => run.actualLossAttribution?.totals?.[source] ?? 0)
         const firstCount = runs.filter(
-          run =>
-            run.actualLossAttribution?.firstMaterialDrawdownSource === source
+          run => run.actualLossAttribution?.firstMaterialDrawdownSource === source
         ).length
         const bankruptcyCountForSource = bankruptRuns.filter(
-          run =>
-            run.actualLossAttribution?.bankruptcyPrecededBySource === source
+          run => run.actualLossAttribution?.bankruptcyPrecededBySource === source
         ).length
-        return [
-          source,
-          {
-            total: Math.round(losses.reduce((sum, loss) => sum + loss, 0)),
-            median: Math.round(median(losses)),
-            p90: Math.round(quantile(losses, 0.9)),
-            firstMaterialDrawdownSharePct: Number(
-              ((firstCount / Math.max(1, runs.length)) * 100).toFixed(2)
-            ),
-            bankruptcyPredecessorSharePct: bankruptRuns.length
-              ? Number(
-                  (
-                    (bankruptcyCountForSource / bankruptRuns.length) *
-                    100
-                  ).toFixed(2)
-                )
-              : null
-          }
-        ]
+        return [source, {
+          total: Math.round(losses.reduce((sum, loss) => sum + loss, 0)),
+          median: Math.round(median(losses)),
+          p90: Math.round(quantile(losses, 0.9)),
+          firstMaterialDrawdownSharePct: Number(
+            ((firstCount / Math.max(1, runs.length)) * 100).toFixed(2)
+          ),
+          bankruptcyPredecessorSharePct: bankruptRuns.length
+            ? Number(((bankruptcyCountForSource / bankruptRuns.length) * 100).toFixed(2))
+            : null
+        }]
       })
     ),
     grossSpendAttribution: Object.fromEntries(
       GROSS_SPEND_SOURCES.map(source => {
         const values = runs.map(run => run.grossSpendAttribution?.[source] ?? 0)
-        return [
-          source,
-          {
-            total: Math.round(values.reduce((sum, value) => sum + value, 0)),
-            median: Math.round(median(values)),
-            p90: Math.round(quantile(values, 0.9))
-          }
-        ]
+        return [source, {
+          total: Math.round(values.reduce((sum, value) => sum + value, 0)),
+          median: Math.round(median(values)),
+          p90: Math.round(quantile(values, 0.9))
+        }]
       })
     ),
 
     volatility: {
       finalMoneyStdDev: popAll.finalMoney ? popAll.finalMoney.stdDev : 0,
-      finalMoneyCoefficientOfVariation:
-        popAll.finalMoney && popAll.finalMoney.mean !== 0
-          ? Number(
-              (
-                popAll.finalMoney.stdDev / Math.abs(popAll.finalMoney.mean)
-              ).toFixed(4)
-            )
-          : null,
-      performanceScoreStdDev: popAll.performanceScore
-        ? popAll.performanceScore.stdDev
-        : 0,
+      finalMoneyCoefficientOfVariation: (popAll.finalMoney && popAll.finalMoney.mean !== 0)
+        ? Number((popAll.finalMoney.stdDev / Math.abs(popAll.finalMoney.mean)).toFixed(4))
+        : null,
+      performanceScoreStdDev: popAll.performanceScore ? popAll.performanceScore.stdDev : 0,
       finalHarmonyStdDev: popAll.finalHarmony ? popAll.finalHarmony.stdDev : 0,
-      maxDrawdownMeanPct: Number(
-        mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)
-      ),
-      maxDrawdownP90Pct: Number(
-        quantile(
-          runs.map(r => r.maxPeakToTroughDrop),
-          0.9
-        ).toFixed(2)
-      ),
-      moneyRangeMedian: Math.round(
-        median(runs.map(r => r.peakMoney - r.lowestMoney))
-      )
+      maxDrawdownMeanPct: Number(mean(runs.map(r => r.maxPeakToTroughDrop)).toFixed(2)),
+      maxDrawdownP90Pct: Number(quantile(runs.map(r => r.maxPeakToTroughDrop), 0.9).toFixed(2)),
+      moneyRangeMedian: Math.round(median(runs.map(r => r.peakMoney - r.lowestMoney)))
     },
     fameAccounting: {
       startingFame: Number(mean(runs.map(r => r.startingFame)).toFixed(2)),
@@ -4652,20 +4403,12 @@ export const getEventsInsight = s => {
 }
 
 export const getMinigameInsight = s => {
-  const completed =
-    s.completed ??
-    s.avgTravelMinigames +
-      s.avgRoadieMinigames +
-      s.avgKabelsalatMinigames +
-      (s.avgAmpCalibrations ?? 0)
-  const opportunities =
-    s.opportunities ?? (s.avgTravelMinigames ?? 0) + (s.avgGigsPlayed ?? 0)
+  const completed = s.completed ?? s.avgTravelMinigames + s.avgRoadieMinigames + s.avgKabelsalatMinigames + (s.avgAmpCalibrations ?? 0)
+  const opportunities = s.opportunities ?? (s.avgTravelMinigames ?? 0) + (s.avgGigsPlayed ?? 0)
   if (opportunities <= 0) return '⚪ Keine erreichbaren Minigame-Gelegenheiten.'
   const coverage = completed / opportunities
-  if (coverage >= 0.8)
-    return '✅ Hohe Minigame-Abdeckung – erreichbare Interaktionen werden genutzt.'
-  if (coverage >= 0.5)
-    return '✅ Moderate Minigame-Abdeckung – entsprechend der Tourgelegenheiten.'
+  if (coverage >= 0.8) return '✅ Hohe Minigame-Abdeckung – erreichbare Interaktionen werden genutzt.'
+  if (coverage >= 0.5) return '✅ Moderate Minigame-Abdeckung – entsprechend der Tourgelegenheiten.'
   return '⚠️ Geringe Minigame-Abdeckung relativ zu erreichbaren Gelegenheiten.'
 }
 
@@ -4716,14 +4459,11 @@ export const renderExecutionCoverageRows = coverage => {
       continue
     }
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
-    const activations =
-      metric.activations ?? metric.completions ?? metric.successes ?? 0
+    const activations = metric.activations ?? metric.completions ?? metric.successes ?? 0
     const uniqueIds = metric.uniqueIdsSeen
       ? new Set(metric.uniqueIdsSeen).size
       : '-'
-    rows.push(
-      `| ${key} | ${metric.covered ? '✅' : '❌'} | ${evaluations} | ${activations} | ${uniqueIds} |`
-    )
+    rows.push(`| ${key} | ${metric.covered ? '✅' : '❌'} | ${evaluations} | ${activations} | ${uniqueIds} |`)
   }
   return rows.join('\n')
 }
@@ -5600,15 +5340,11 @@ const buildMarkdownReport = payload => {
     lines.push('')
     lines.push(`- Report-Version: ${payload.constants.reportVersion}`)
     lines.push(`- Source-Fingerprint: ${payload.metadata.sourceFingerprint}`)
-    lines.push(
-      `- Generator-Fingerprint: ${payload.metadata.generatorFingerprint}`
-    )
+    lines.push(`- Generator-Fingerprint: ${payload.metadata.generatorFingerprint}`)
     lines.push(`- Artefaktschema: ${payload.metadata.artifactSchemaVersion}`)
     lines.push(`- Seed-Namensraum: ${payload.metadata.seedNamespace}`)
     lines.push(`- Runs je Szenario: ${payload.metadata.runsPerScenario}`)
-    lines.push(
-      `- Working Tree Dirty: ${payload.metadata.workingTreeDirty ? 'Ja' : 'Nein'}`
-    )
+    lines.push(`- Working Tree Dirty: ${payload.metadata.workingTreeDirty ? 'Ja' : 'Nein'}`)
     lines.push('')
   }
 
@@ -6365,9 +6101,7 @@ const buildMarkdownReport = payload => {
   lines.push('')
   lines.push('## Ausführungsabdeckung (Coverage)')
   lines.push('')
-  lines.push(
-    '*Note: `Covered` is true when a feature has any evaluation, activation, or observed ID. It does not require all possible catalog IDs to be seen.*'
-  )
+  lines.push('*Note: `Covered` is true when a feature has any evaluation, activation, or observed ID. It does not require all possible catalog IDs to be seen.*')
   lines.push('')
   lines.push(
     `| Feature | Covered | Evaluations / Attempts | Activations / Completions | Unique IDs Seen |`
@@ -6375,7 +6109,7 @@ const buildMarkdownReport = payload => {
   lines.push(`|---|---|---:|---:|---:|`)
   lines.push(renderExecutionCoverageRows(payload.executionCoverage || {}))
   lines.push('')
-  lines.push('## KPI-Zielkorridore (Health Check)')
+lines.push('## KPI-Zielkorridore (Health Check)')
   lines.push('')
   lines.push(
     `Zieldefinition: Insolvenz, Endgeld und Fame-Fortschritt pro Gig je Szenario, kalibriert auf eine vollständige map-gebundene ${SIMULATION_CONSTANTS.daysPerRun}-Tage-Tour.`
