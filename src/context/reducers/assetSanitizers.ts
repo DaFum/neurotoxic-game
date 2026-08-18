@@ -406,11 +406,15 @@ export const sanitizeLiabilities = (
 ): Record<string, Liability> => {
   if (typeof raw !== 'object' || raw === null) return {}
   const items = Array.isArray(raw) ? raw : Object.values(raw)
-  const assetIds = new Set<string>(
-    assets
-      .map(asset => asset?.id)
-      .filter((id): id is string => typeof id === 'string')
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with procedural loop.
+  // Why: Avoids intermediate array allocations inside the Set constructor, reducing GC pressure.
+  const assetIds = new Set<string>()
+  for (let i = 0; i < assets.length; i++) {
+    const id = assets[i]?.id
+    if (typeof id === 'string') {
+      assetIds.add(id)
+    }
+  }
   const out: Record<string, Liability> = Object.create(null)
   const dropped = new Map<string, string>()
   for (const [index, item] of items.entries()) {
@@ -511,11 +515,15 @@ export const sanitizeCrowdfundCampaigns = (
   const out: CrowdfundCampaign[] = []
   const seenIds = new Set<string>()
 
-  const unavailableKinds = new Set<LongTermAsset['kind']>(
-    activeAssets
-      .map(asset => asset?.kind)
-      .filter((kind): kind is LongTermAsset['kind'] => !!kind)
-  )
+  // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with procedural loop.
+  // Why: Avoids intermediate array allocations inside the Set constructor, reducing GC pressure.
+  const unavailableKinds = new Set<LongTermAsset['kind']>()
+  for (let i = 0; i < activeAssets.length; i++) {
+    const kind = activeAssets[i]?.kind
+    if (kind) {
+      unavailableKinds.add(kind)
+    }
+  }
 
   const seenKinds = new Set<CrowdfundCampaign['assetSpec']['kind']>()
   const dropped = new Map<string, string>()
