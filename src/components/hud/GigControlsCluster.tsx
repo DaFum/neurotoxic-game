@@ -59,7 +59,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
         className ?? 'absolute top-4 left-4 z-(--z-hud) pointer-events-none'
       }
     >
-      <div className='flex gap-1.5'>
+      <div className='flex gap-1.5' id='gig-controls-menu'>
         <Tooltip
           content={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
         >
@@ -70,6 +70,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
               setShowHelp(false)
             }}
             aria-expanded={isOpen}
+            aria-controls='gig-controls-menu'
             aria-label={t('ui:gig.controlsAria', {
               defaultValue: 'Toggle game controls'
             })}
