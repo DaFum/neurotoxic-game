@@ -342,7 +342,27 @@ export class MapGenerator {
     const i = layerIndex
     const j = nodeIndex
 
-    const { poolArray, poolLength } = this._selectVenuePool(i, pools, available)
+    let { poolArray, poolLength } = this._selectVenuePool(i, pools, available)
+
+    if (poolLength === 0) {
+      // For very deep generated maps (e.g. simulation horizons of 40-75 days),
+      // the total unique non-home venue count (~44) is strictly smaller than
+      // the required number of intermediate nodes (117-222). To prevent a
+      // mathematically guaranteed pool exhaustion crash, we must clear the
+      // tracking set so touring can seamlessly reuse the venue configs on new
+      // node instances.
+      usedVenueIds.clear()
+      if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
+
+      // We must reset the available counts before selecting a pool again
+      available.easy = easyVenues.length
+      available.medium = mediumVenues.length
+      available.hard = hardVenues.length
+
+      const retrySelection = this._selectVenuePool(i, pools, available)
+      poolArray = retrySelection.poolArray
+      poolLength = retrySelection.poolLength
+    }
 
     let venue: Venue | null = null
 
