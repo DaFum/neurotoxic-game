@@ -122,7 +122,7 @@ export const advanceQuest = (
  *
  * @param state - The current game state.
  * @param payload - The payload containing the quest identifier and target progress.
- * @returns The next game state containing the modified quest, or the original state if unmodified.
+ * @returns The next game state containing the updated quest properties, or the original state if the quest is absent.
  */
 export const setQuestProgress = (
   state: GameState,
