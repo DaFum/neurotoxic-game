@@ -213,7 +213,3 @@
 ## 2026-08-12 - Early returns vs full iteration in filter lengths
 **Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
 **Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
-
-## 2024-08-18 - Chained array methods inside Set constructors
-**Learning:** Initializing a `Set` with chained declarative array methods (e.g., `new Set(array.map(...).filter(...))`) creates unnecessary intermediate array allocations, increasing garbage collection (GC) pressure. This is particularly problematic in reducers and sanitizers that run frequently during game ticks or state hydration.
-**Action:** Replace the chained array methods wrapped in the `Set` constructor with a procedural `for` loop that iterates over the array and directly calls `set.add()`.
