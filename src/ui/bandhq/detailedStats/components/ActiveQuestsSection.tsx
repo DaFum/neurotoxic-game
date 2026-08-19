@@ -2,6 +2,16 @@ import type { QuestState } from '../../../../types'
 import type { BasicTProps } from '../types'
 import { Panel, ProgressBar } from '../../../shared'
 
+/**
+ * Renders a panel displaying the player's currently active quests and their progress.
+ *
+ * @remarks
+ * This component iterates over the provided quest list, displaying a progress bar
+ * for each valid quest and an error state for quests with invalid requirements.
+ *
+ * @param props - Component props containing the active quests and translation function.
+ * @returns A rendered Panel component containing the active quests list or an empty state message.
+ */
 export const ActiveQuestsSection = ({
   activeQuests,
   t
