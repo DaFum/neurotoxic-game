@@ -271,7 +271,21 @@ const validateDiversity = (
     })
   }
 
-  const distinctTypes = new Set(nodeList.map(node => node.type)).size
+  // ⚡ BOLT OPTIMIZATION: Replaced new Set(...map(...)) with procedural loops.
+  // Why: Avoids unnecessary intermediate array allocations and closure allocations.
+  // Impact: Reduces garbage collection overhead on map validation loops.
+  const distinctTypesSet = new Set<string>()
+  const layersSet = new Set<number>()
+
+  for (let i = 0; i < nodeList.length; i++) {
+    const node = nodeList[i]
+    if (node) {
+      distinctTypesSet.add(node.type)
+      layersSet.add(node.layer)
+    }
+  }
+
+  const distinctTypes = distinctTypesSet.size
   if (distinctTypes < MAP_DIVERSITY_REQUIREMENTS.minDistinctNodeTypes) {
     issues.push({
       code: 'diversity.distinctNodeTypes',
@@ -280,7 +294,7 @@ const validateDiversity = (
     })
   }
 
-  const layers = new Set(nodeList.map(node => node.layer)).size
+  const layers = layersSet.size
   if (layers < MAP_DIVERSITY_REQUIREMENTS.minLayers) {
     issues.push({
       code: 'diversity.layers',
@@ -303,7 +317,19 @@ const validateDiversity = (
  */
 export const buildMapFailureSignature = (
   issues: readonly MapValidationIssue[]
-): string => [...new Set(issues.map(issue => issue.code))].sort().join('|')
+): string => {
+  // ⚡ BOLT OPTIMIZATION: Replaced [...new Set(issues.map(...))] with procedural loop.
+  // Why: Eliminates intermediate array allocations.
+  // Impact: Reduces GC pressure during validation issue aggregation.
+  const codes = new Set<string>()
+  for (let i = 0; i < issues.length; i++) {
+    const issue = issues[i]
+    if (issue) {
+      codes.add(issue.code)
+    }
+  }
+  return [...codes].sort().join('|')
+}
 
 /**
  * Validates a generated or committed map against the structural and diversity
