@@ -215,6 +215,24 @@ export class MapGenerator {
    * @param depth - The total depth of the map.
    * @param pools - The available and fallback venue pools.
    */
+  _countAvailableVenues(pool: Venue[], usedVenueIds: Set<string>): number {
+    let available = 0
+    for (let k = 0; k < pool.length; k++) {
+      const venue = pool[k]
+      if (!venue) continue
+      if (!usedVenueIds.has(venue.id)) {
+        available++
+      }
+    }
+    return available
+  }
+
+  /**
+   * Generates intermediate layers between the start and finale.
+   * @param map - The mutable map state.
+   * @param depth - Number of total layers.
+   * @param pools - The available and fallback venue pools.
+   */
   _generateIntermediateLayers(
     map: MapGeneratorState,
     depth: number,
@@ -223,18 +241,6 @@ export class MapGenerator {
   ): void {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
-    const countAvailableVenues = (pool: Venue[]) => {
-      let available = 0
-      for (let k = 0; k < pool.length; k++) {
-        const venue = pool[k]
-        if (!venue) continue
-        if (!usedVenueIds.has(venue.id)) {
-          available++
-        }
-      }
-      return available
-    }
-
     for (let i = 1; i < depth; i++) {
       const layerNodes = []
       // Determine node count for this layer (2-4 branching)
@@ -242,9 +248,9 @@ export class MapGenerator {
 
       // Compute available counts once per layer, then decrement as venues are reserved
       const available = {
-        easy: countAvailableVenues(easyVenues),
-        medium: countAvailableVenues(mediumVenues),
-        hard: countAvailableVenues(hardVenues)
+        easy: this._countAvailableVenues(easyVenues, usedVenueIds),
+        medium: this._countAvailableVenues(mediumVenues, usedVenueIds),
+        hard: this._countAvailableVenues(hardVenues, usedVenueIds)
       }
 
       for (let j = 0; j < nodeCount; j++) {
@@ -355,9 +361,9 @@ export class MapGenerator {
       if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
 
       // We must reset the available counts before selecting a pool again
-      available.easy = easyVenues.length
-      available.medium = mediumVenues.length
-      available.hard = hardVenues.length
+      available.easy = this._countAvailableVenues(easyVenues, usedVenueIds)
+      available.medium = this._countAvailableVenues(mediumVenues, usedVenueIds)
+      available.hard = this._countAvailableVenues(hardVenues, usedVenueIds)
 
       const retrySelection = this._selectVenuePool(i, pools, available)
       poolArray = retrySelection.poolArray

@@ -5,10 +5,13 @@ import type { GeneratedMapNode } from './types'
  * @param nodeList - Mutable list of nodes needing layout coordinates.
  * @param random - A function returning a float between 0 and 1.
  */
+const MIN_DISTANCE = 6
+const MIN_DISTANCE_SQ = MIN_DISTANCE * MIN_DISTANCE
+
 export function isOverlapping(
   n1: { x: number; y: number },
   n2: { x: number; y: number },
-  minDistanceSq: number = 36
+  minDistanceSq: number = MIN_DISTANCE_SQ
 ): boolean {
   const dx = n1.x - n2.x
   const dy = n1.y - n2.y
@@ -38,7 +41,7 @@ export function assignInitialCoordinates(
       let hasOverlap = false
       for (let j = 0; j < i; j++) {
         const prevNode = nodeList[j]
-        if (prevNode && isOverlapping({ x: bestX, y: bestY }, prevNode, 36)) {
+        if (prevNode && isOverlapping({ x: bestX, y: bestY }, prevNode, MIN_DISTANCE_SQ)) {
           hasOverlap = true
           break
         }

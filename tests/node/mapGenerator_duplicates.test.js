@@ -13,16 +13,16 @@ test('MapGenerator should not have duplicate venues (if possible)', () => {
 
   nodes.forEach(node => {
     if (node.venue && node.type !== 'START' && node.type !== 'FINALE') {
-      const name = node.venue.name
-      if (venueCounts[name]) {
+      const id = node.venue.id
+      if (venueCounts[id]) {
         // Only count the first time a venue is duplicated to count "unique duplicated venues"
-        if (venueCounts[name] === 1) {
+        if (venueCounts[id] === 1) {
           duplicates++
-          console.log(`Duplicate found: ${name} (Layer ${node.layer})`)
+          console.log(`Duplicate found: ${id} (Layer ${node.layer})`)
         }
-        venueCounts[name]++
+        venueCounts[id]++
       } else {
-        venueCounts[name] = 1
+        venueCounts[id] = 1
       }
     }
   })
@@ -32,4 +32,14 @@ test('MapGenerator should not have duplicate venues (if possible)', () => {
     0,
     `Should have zero duplicate venues (found ${duplicates})`
   )
+})
+
+test('MapGenerator should handle exhaustion depth without StateError', () => {
+  // A depth large enough to exhaust unique venue pools (44 venues, 2-4 branching means depth 35 gives 70-140 nodes)
+  const generator = new MapGenerator(999)
+  // Generating a depth of 35 should force exhaustion and reallocation
+  assert.doesNotThrow(() => {
+    const map = generator.generateMap(35)
+    assert.ok(map.nodes)
+  })
 })
