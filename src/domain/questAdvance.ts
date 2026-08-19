@@ -55,6 +55,18 @@ const resolveActiveQuest = (
   return { nextState, q, questIndex, rawRequired }
 }
 
+/**
+ * Advances a quest's progress by a relative amount and completes it if the required threshold is met.
+ *
+ * @remarks
+ * Progress advancement only occurs if the required amount is finite and positive, and the provided
+ * increment is valid. The quest is retrieved, updated, and reinserted into a fresh `activeQuests` array
+ * to maintain state immutability.
+ *
+ * @param state - The current game state.
+ * @param payload - The payload containing the quest identifier and progression details.
+ * @returns The next game state with updated quest progress, or the unmodified state if invalid.
+ */
 export const advanceQuest = (
   state: GameState,
   {
@@ -100,10 +112,17 @@ export const advanceQuest = (
 }
 
 /**
- * Sets a quest's progress to an absolute value (monotonic — never lowers it),
- * capped at `required`, and completes the quest when the cap is reached. Used
- * for threshold-style sources such as harmony recovery, where progress is the
- * current stat level rather than an accumulated count.
+ * Updates a quest's progress to an absolute threshold and completes it if the requirement is satisfied.
+ *
+ * @remarks
+ * This function enforces a monotonic progression model; it never lowers the existing progress.
+ * The progress is capped at the `required` amount if one exists. This is typically used for stat-based
+ * triggers (like harmony recovery) where the condition is reaching a specific state rather than
+ * accumulating occurrences.
+ *
+ * @param state - The current game state.
+ * @param payload - The payload containing the quest identifier and target progress.
+ * @returns The next game state containing the updated quest properties, or the original state if the quest is absent.
  */
 export const setQuestProgress = (
   state: GameState,
