@@ -2,7 +2,7 @@
 
 **Date:** 2026-08-14  
 **Topic:** Van Dynamics & Rest Stop Dilemmas (`van-dynamics-road-trip-events`)  
-**Status:** Approved by User  
+**Status:** Approved by User
 
 ---
 
