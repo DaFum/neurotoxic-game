@@ -226,7 +226,7 @@ export const isItemOwned = (
  */
 export const canAfford = (
   item: { currency?: string },
-  player: PlayerState,
+  player: Pick<PlayerState, 'money' | 'fame'>,
   adjustedCost: number
 ): boolean => {
   const payingWithFame = item.currency === 'fame'

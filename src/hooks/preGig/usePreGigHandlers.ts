@@ -181,7 +181,7 @@ export const usePreGigHandlers = ({
       )
     },
     [
-      player.money,
+      player,
       band?.inventory,
       assetModifiers.merchCapacityBonus,
       assetModifiers.merchCostMultiplier,
@@ -224,7 +224,7 @@ export const usePreGigHandlers = ({
     )
   }, [
     adjustedBandMeetingCost,
-    player.money,
+    player,
     addToast,
     typedT,
     updatePlayer,
@@ -250,7 +250,7 @@ export const usePreGigHandlers = ({
 
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
-        if (projectedTotal > player.money) {
+        if (!canAfford({ currency: 'money' }, player, projectedTotal)) {
           addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
           return
         }
@@ -262,7 +262,7 @@ export const usePreGigHandlers = ({
       gigModifiers,
       assetModifiers,
       calculatedBudget,
-      player.money,
+      player,
       addToast,
       setGigModifiers,
       typedT
