@@ -158,6 +158,13 @@ export const CHARACTERS = {
         desc: 'traits:cyberLungs.desc',
         effect: 'stamina_regen_bonus',
         unlockHint: 'traits:cyberLungs.unlockHint'
+      },
+      {
+        id: 'iron_liver',
+        name: 'traits:ironLiver.name',
+        desc: 'traits:ironLiver.desc',
+        effect: 'stamina_decay_reduction',
+        unlockHint: 'traits:ironLiver.unlockHint'
       }
     ],
     equipment: {}
