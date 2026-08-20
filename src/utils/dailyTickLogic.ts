@@ -288,7 +288,9 @@ const updatePassiveEffectsAndMembers = (
 
     // 2c. Base Stamina Drift
     let stamina = finiteNumberOr(m.stamina, 100)
-    stamina = Math.max(0, stamina - 5)
+    let decay = 5
+    if (hasTrait(m, 'iron_liver')) decay = Math.max(0, decay - 3)
+    stamina = Math.max(0, stamina - decay)
     if (nextBand.harmony > 60) stamina += 3
     if (finiteNumberOr(nextSocial.instagram, 0) >= 10000) stamina += 2
     if (hasTrait(m, 'cyber_lungs')) stamina += 3
