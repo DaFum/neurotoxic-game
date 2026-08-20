@@ -2,6 +2,7 @@ import React, { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUnifiedUpgradeCatalog } from '../../data/upgradeCatalog'
 import type { CatalogItem } from '../../types/components'
+import type { PurchaseDecision } from '../../utils/purchaseLogicUtils'
 import { usePurchaseLogic } from './hooks/usePurchaseLogic'
 import { useBandHQLogic } from './hooks/useBandHQLogic'
 import { useGameActions, useGameSelector } from '../../context/GameState.tsx'
@@ -98,7 +99,9 @@ export const BandHQContentArea = ({
       void handleBuyWithLock(item)
     },
     isItemDisabled: isItemDisabled as unknown as (item: CatalogItem) => boolean,
-    getPurchaseDecision: getPurchaseDecision as unknown as (item: CatalogItem) => any,
+    getPurchaseDecision: getPurchaseDecision as unknown as (
+      item: CatalogItem
+    ) => PurchaseDecision,
     processingItemId: processingItemId ?? undefined
   }
 

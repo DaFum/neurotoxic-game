@@ -42,7 +42,6 @@ describe('HealthBar', () => {
 
     // Low health warning styling
     rerender(<HealthBar health={15} isToxicMode={false} />)
-    const lowHealthValue = getByText('3 / 20')
     // test removed since HealthBar no longer evaluates thresholds itself, it just accepts isDanger
 
     // Zero health
