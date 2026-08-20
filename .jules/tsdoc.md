@@ -69,3 +69,4 @@
 | 2026-08-16 | src/hooks/useBloodBank.ts | DONATION_VARIANTS, useBloodBank |
 | 2026-08-17 | src/components/ReloadPrompt.tsx | ReloadPrompt |
 | 2026-08-19 | src/ui/bandhq/detailedStats/components/ActiveQuestsSection.tsx | ActiveQuestsSection |
+| 2026-08-20 | src/hooks/rhythmGame/scoring/useHandleHit.ts | HandleHitParams, useHandleHit |
