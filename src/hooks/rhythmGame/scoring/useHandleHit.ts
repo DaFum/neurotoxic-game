@@ -21,6 +21,19 @@ import { finiteNumberOr } from '../../../utils/finiteNumber'
 import type { RhythmGameRefState } from '../../../types/rhythmGame'
 import type { RhythmStateSetters } from '../useRhythmGameState'
 
+/**
+ * Configuration payload for initializing the hit detection and scoring handler.
+ *
+ * @remarks
+ * Encapsulates the mutable game state reference alongside the specific setter functions
+ * required to update score, combo, health, and corruption metrics during a successful hit.
+ *
+ * @param gameStateRef - A mutable reference object holding the current rhythm game state
+ * @param setters - A bounded collection of state updater functions
+ * @param performance - The active gig performance modifiers and difficulty multipliers
+ * @param activateToxicMode - A callback executed when overload reaches maximum capacity
+ * @param handleMiss - A fallback callback triggered if the hit check evaluates to false
+ */
 type HandleHitParams = {
   gameStateRef: { current: RhythmGameRefState }
   setters: Pick<
@@ -45,6 +58,22 @@ type HandleHitParams = {
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
 }
 
+/**
+ * Constructs and memoizes the core hit detection callback for the rhythm game loop.
+ *
+ * Evaluates whether a note resides within the dynamically calculated hit window for a given lane.
+ * On a successful hit, it consumes the note, schedules the associated audio event, calculates
+ * score and combo increments, and manages complex state transitions like corruption bursts and toxic mode.
+ *
+ * @remarks
+ * This hook intrinsically relies on the Tone.js AudioContext clock (`getGigTimeMs()`) for precise
+ * temporal evaluation, ensuring visual and auditory synchronization. It deliberately mutates
+ * `gameStateRef.current` directly before invoking React state setters to ensure synchronous availability
+ * of the updated state for the next animation frame.
+ *
+ * @param params - The dependency payload required to evaluate and apply hit logic
+ * @returns A stable callback function that accepts a lane index and returns a boolean indicating hit success
+ */
 export const useHandleHit = ({
   gameStateRef,
   setters,
