@@ -9,6 +9,7 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
+  clampLuck,
   calculateFameLevel,
   finiteNumberOr,
   isFiniteNumber
@@ -224,7 +225,7 @@ export const isItemOwned = (
  * @returns True if affordable
  */
 export const canAfford = (
-  item: PurchaseItem,
+  item: { currency?: string },
   player: PlayerState,
   adjustedCost: number
 ): boolean => {
@@ -411,7 +412,7 @@ export const validatePurchase = (
     return { isValid: false, errorType: 'already_owned' }
   }
 
-  if (currencyValue < finalCost) {
+  if (!canAfford(item, player, finalCost)) {
     return { isValid: false, errorType: 'insufficient_funds' }
   }
 
@@ -612,7 +613,7 @@ export const applyUnlockHQ = (
     case 'hq_room_void_altar':
     case 'hq_room_shrine': {
       nextBandPatch = {
-        luck: Math.max(0, (getNumericProp(band, 'luck', 0) ?? 0) + 10)
+        luck: clampLuck((getNumericProp(band, 'luck', 0) ?? 0) + 10)
       }
       const messageKey =
         item.id === 'hq_room_shrine'

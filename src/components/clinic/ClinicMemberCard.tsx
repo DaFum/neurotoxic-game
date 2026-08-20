@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { GraftModal } from './GraftModal'
 import { hasTrait } from '../../utils/traitUtils'
+import { canAfford } from '../../utils/purchaseLogicUtils'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -53,7 +54,7 @@ export const ClinicMemberCard = ({
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = player.money >= CLINIC_GRAFT_COST
+  const canAffordGraft = canAfford({ currency: 'money' }, player as any, CLINIC_GRAFT_COST)
   const hasGraft = hasTrait(member, 'neuro_overclock')
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =
