@@ -2,10 +2,8 @@ import React, { useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { CatalogItem } from '../../types/components'
 import { IMG_PROMPTS } from '../../utils/imageGen'
-import {
-  getPrimaryEffect,
-  LABEL_CONTRACT_ADVANCE
-} from '../../utils/purchaseLogicUtils'
+import { LABEL_CONTRACT_ADVANCE } from '../../utils/purchaseLogicUtils'
+import type { PurchaseDecision } from '../../utils/purchaseLogicUtils'
 import { formatCurrency } from '../../utils/numberUtils'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { GlitchButton } from '../GlitchButton'
@@ -17,9 +15,8 @@ import { Tooltip } from '../shared'
  */
 export interface ShopItemProps {
   item: CatalogItem
-  isOwned: boolean
+  decision: PurchaseDecision
   isDisabled: boolean
-  adjustedCost?: number
   onBuy: (item: CatalogItem) => void
   processingItemId?: string | number
 }
@@ -34,9 +31,8 @@ export interface ShopItemProps {
 export const ShopItem = React.memo(
   ({
     item,
-    isOwned,
+    decision,
     isDisabled,
-    adjustedCost,
     onBuy,
     processingItemId
   }: ShopItemProps) => {
@@ -51,13 +47,11 @@ export const ShopItem = React.memo(
     // non-finite cost would otherwise reach the comparison (`-Infinity < cost`
     // is true) and render as 0 through `formatPrice`. NaN fails every
     // comparison, so a corrupt cost simply shows no discount.
-    const adjusted = finiteNumberOr(adjustedCost, Number.NaN)
+    const adjusted = finiteNumberOr(decision?.cost, Number.NaN)
     const baseCost = finiteNumberOr(item.cost, Number.NaN)
     const hasDiscount = adjusted < baseCost
     const priceValue = finiteNumberOr(adjusted, finiteNumberOr(baseCost, 0))
-    const primaryEffect = getPrimaryEffect(item)
-    const isConsumable = primaryEffect?.type === 'inventory_add'
-    const isPurchased = isOwned && !isConsumable
+    const isPurchased = decision?.isOwned && !decision?.isConsumable
     const imagePromptKey = String(item.img ?? '')
     const localizedUnknownItem = t('ui:shop.messages.unknownItem', {
       defaultValue: 'Unknown Item'

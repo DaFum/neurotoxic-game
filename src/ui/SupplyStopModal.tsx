@@ -114,17 +114,15 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
               id: item.id,
               cost: item.cost ?? 0
             }
-            const adjustedCost = purchaseLogic.getAdjustedCost(item)
-            const owned = purchaseLogic.isItemOwned(item)
             const disabled = purchaseLogic.isItemDisabled(item)
+            const decision = purchaseLogic.getPurchaseDecision(item)
 
             return (
               <ShopItem
                 key={item.id}
                 item={catalogItem}
-                isOwned={owned}
+                decision={decision}
                 isDisabled={disabled}
-                adjustedCost={adjustedCost}
                 onBuy={handlePurchaseWithConsequences}
                 processingItemId={processingItemId ?? undefined}
               />

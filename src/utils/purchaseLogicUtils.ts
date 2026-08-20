@@ -382,6 +382,36 @@ export type PurchaseValidationResult =
       effect: Effect
     }
 
+export interface PurchaseDecision {
+  cost: number
+  canAfford: boolean
+  isOwned: boolean
+  isConsumable: boolean
+  canPurchase: boolean
+}
+
+/**
+ * Derives all upgrade-purchase state variables in a single calculation.
+ * @param item - Item to purchase
+ * @param player - Player state
+ * @param band - Band state
+ * @returns Decision variables (cost, affordability, ownership, etc)
+ */
+export const getPurchaseDecision = (
+  item: PurchaseItem,
+  player: PlayerState,
+  band: BandState
+): PurchaseDecision => {
+  const cost = getAdjustedCost(item, band)
+  const isOwned = isItemOwned(item, player, band)
+  const effect = getPrimaryEffect(item)
+  const isConsumable = effect?.type === 'inventory_add'
+  const playerCanAfford = canAfford(item, player, cost)
+  const canPurchase = playerCanAfford && (isConsumable || !isOwned)
+
+  return { cost, canAfford: playerCanAfford, isOwned, isConsumable, canPurchase }
+}
+
 /**
  * Validates whether the item can be purchased.
  * @param item - Item to purchase
@@ -399,29 +429,27 @@ export const validatePurchase = (
     return { isValid: false, errorType: 'missing_effect' }
   }
 
-  const payingWithFame = item.currency === 'fame'
-  const startingMoney = finiteNumberOr(player.money, 0)
-  const startingFame = finiteNumberOr(player.fame, 0)
-  const currencyValue = payingWithFame ? startingFame : startingMoney
-  const finalCost = getAdjustedCost(item, band)
+  const decision = getPurchaseDecision(item, player, band)
 
-  const isConsumable = effect.type === 'inventory_add'
-  const isOwned = isItemOwned(item, player, band)
-
-  if (isOwned && !isConsumable) {
+  if (decision.isOwned && !decision.isConsumable) {
     return { isValid: false, errorType: 'already_owned' }
   }
 
-  if (!canAfford(item, player, finalCost)) {
+  if (!decision.canAfford) {
     return { isValid: false, errorType: 'insufficient_funds' }
   }
 
+  const payingWithFame = item.currency === 'fame'
+  const startingCurrency = payingWithFame
+    ? finiteNumberOr(player.fame, 0)
+    : finiteNumberOr(player.money, 0)
+
   return {
     isValid: true,
-    finalCost,
-    isConsumable,
+    finalCost: decision.cost,
+    isConsumable: decision.isConsumable,
     payingWithFame,
-    startingCurrency: currencyValue,
+    startingCurrency,
     effect
   }
 }

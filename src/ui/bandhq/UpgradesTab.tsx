@@ -15,9 +15,8 @@ export const UpgradesTab = ({
   player,
   upgrades,
   handleBuy,
-  isItemOwned,
   isItemDisabled,
-  getAdjustedCost,
+  getPurchaseDecision,
   processingItemId
 }: UpgradesTabProps) => {
   return (
@@ -25,9 +24,8 @@ export const UpgradesTab = ({
       items={upgrades}
       balances={{ fame: player.fame, money: player.money }}
       handleBuyCallback={handleBuy}
-      isItemOwnedCallback={isItemOwned}
       isItemDisabledCallback={isItemDisabled}
-      getAdjustedCostCallback={getAdjustedCost}
+      getPurchaseDecisionCallback={getPurchaseDecision}
       processingItemId={processingItemId}
     />
   )

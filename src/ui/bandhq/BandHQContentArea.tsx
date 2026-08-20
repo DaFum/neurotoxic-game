@@ -71,7 +71,7 @@ export const BandHQContentArea = ({
     addToast
   }
 
-  const { handleBuy, isItemOwned, isItemDisabled, getAdjustedCost } =
+  const { handleBuy, isItemDisabled, getPurchaseDecision } =
     usePurchaseLogic(purchaseLogicParams)
 
   const {
@@ -97,11 +97,8 @@ export const BandHQContentArea = ({
     handleBuy: (item: CatalogItem) => {
       void handleBuyWithLock(item)
     },
-    isItemOwned: isItemOwned as unknown as (item: CatalogItem) => boolean,
     isItemDisabled: isItemDisabled as unknown as (item: CatalogItem) => boolean,
-    getAdjustedCost: getAdjustedCost as unknown as (
-      item: CatalogItem
-    ) => number | undefined,
+    getPurchaseDecision: getPurchaseDecision as unknown as (item: CatalogItem) => any,
     processingItemId: processingItemId ?? undefined
   }
 
