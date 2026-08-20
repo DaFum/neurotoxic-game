@@ -123,7 +123,7 @@ describe('audio engine injection', () => {
       // A bare call (not `engine.getGigTimeMs()`) means the singleton.
       assert.doesNotMatch(
         source,
-        /(^|[^.\w])getGigTimeMs\(\)/m,
+        /(^|[^.\w])getGigTimeMs\(\)(?!`)/m,
         'calls the audio singleton instead of the injected engine'
       )
       assert.match(
