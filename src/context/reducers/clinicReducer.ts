@@ -251,18 +251,28 @@ export const handleBloodBankDonate = (
 
   let membersChanged = false
   const sourceMembers = state?.band?.members || []
-  const normalizedMembers = sourceMembers.map((sourceMember: unknown) => {
-    if (!sourceMember) return sourceMember as unknown as BandMember
+
+  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+  // Why: Reduces array and closure allocations inside reducer fast paths.
+  const sourceLen = sourceMembers.length
+  const normalizedMembers = new Array<BandMember>(sourceLen)
+  for (let i = 0; i < sourceLen; i++) {
+    const sourceMember = sourceMembers[i]
+    if (!sourceMember) {
+      normalizedMembers[i] = sourceMember as unknown as BandMember
+      continue
+    }
     const member = sourceMember as BandMember
     const stamina = finiteNumberOr(member?.stamina, 0)
     const staminaMax = finiteNumberOr(member?.staminaMax, 100)
 
     if (stamina !== member?.stamina || staminaMax !== member?.staminaMax) {
       membersChanged = true
-      return { ...member, stamina, staminaMax }
+      normalizedMembers[i] = { ...member, stamina, staminaMax }
+    } else {
+      normalizedMembers[i] = member
     }
-    return member
-  })
+  }
 
   const normalizedState = membersChanged
     ? { ...state, band: { ...state?.band, members: normalizedMembers } }
@@ -294,22 +304,29 @@ export const handleBloodBankDonate = (
 
   // Apply stamina drain to all members and calculate actual loss
   let totalStaminaLost = 0
-  const updatedMembers: BandMember[] = normalizedState.band.members.map(
-    (sourceMember: unknown) => {
-      if (!sourceMember) return sourceMember as unknown as BandMember
-      const member = sourceMember as BandMember
-      const prevStamina = finiteNumberOr(member?.stamina, 0)
-      const nextStamina = clampMemberStamina(
-        prevStamina - staminaCost,
-        finiteNumberOr(member?.staminaMax, 100)
-      )
-      totalStaminaLost += prevStamina - nextStamina
-      return {
-        ...member,
-        stamina: nextStamina
-      }
+
+  // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+  // Why: Reduces array and closure allocations inside reducer fast paths.
+  const normLen = normalizedState.band.members.length
+  const updatedMembers = new Array<BandMember>(normLen)
+  for (let i = 0; i < normLen; i++) {
+    const sourceMember = normalizedState.band.members[i]
+    if (!sourceMember) {
+      updatedMembers[i] = sourceMember as unknown as BandMember
+      continue
     }
-  )
+    const member = sourceMember as BandMember
+    const prevStamina = finiteNumberOr(member?.stamina, 0)
+    const nextStamina = clampMemberStamina(
+      prevStamina - staminaCost,
+      finiteNumberOr(member?.staminaMax, 100)
+    )
+    totalStaminaLost += prevStamina - nextStamina
+    updatedMembers[i] = {
+      ...member,
+      stamina: nextStamina
+    }
+  }
 
   const nextState = {
     ...normalizedState,
