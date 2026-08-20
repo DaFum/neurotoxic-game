@@ -10,7 +10,11 @@ import {
   getPlayRequestId
 } from '../../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../../context/AudioEngineContext'
-import { calculateMissImpact } from '../../../utils/rhythmGameScoringUtils'
+import {
+  calculateMissImpact,
+  calculateActiveCrowdDecay,
+  checkIsGameOver
+} from '../../../utils/rhythmGameScoringUtils'
 import { RIVAL_GIG_CROWD_DECAY_PENALTY } from '../../../context/gameConstants'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
 import type {
@@ -75,14 +79,13 @@ export const useHandleMiss = ({
       const currentHealth = finiteNumberOr(gameStateRef.current.health, 100)
       const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 
-      let activeCrowdDecay = baseCrowdDecay
-      if (gameStateRef.current.modifiers?.crowdDecay !== undefined) {
-        activeCrowdDecay *= gameStateRef.current.modifiers.crowdDecay
-      }
 
-      const crowdDecay = gameStateRef.current.rivalPenaltyActive
-        ? activeCrowdDecay * RIVAL_GIG_CROWD_DECAY_PENALTY
-        : activeCrowdDecay
+      const crowdDecay = calculateActiveCrowdDecay(
+        baseCrowdDecay,
+        gameStateRef.current.modifiers?.crowdDecay,
+        gameStateRef.current.rivalPenaltyActive,
+        RIVAL_GIG_CROWD_DECAY_PENALTY
+      )
 
       // Calculate new overload and stats outside the setState callback
       const { nextOverload, nextHealth } = calculateMissImpact(
@@ -122,7 +125,8 @@ export const useHandleMiss = ({
       gameStateRef.current.health = nextHealth
       setHealth(nextHealth)
 
-      if (nextHealth > 0 || gameStateRef.current.isGameOver) return
+      const isGameOverTriggered = checkIsGameOver(nextHealth, gameStateRef.current.isGameOver)
+      if (!isGameOverTriggered) return
 
       setIsGameOver(true)
       gameStateRef.current.isGameOver = true

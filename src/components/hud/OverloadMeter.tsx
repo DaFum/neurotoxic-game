@@ -8,20 +8,21 @@ import { normalizePercentageToScale } from '../../utils/gameState'
  * Configuration properties for the overload meter.
  */
 interface OverloadMeterProps {
-  /** The current toxic overload percentage. */
   overload: number
+  isDanger?: boolean
 }
 
 /**
  * Displays toxic overload as a ten-block meter with danger styling above the warning threshold.
  *
  * @remarks
- * The meter visually indicates the danger level when the overload surpasses `80`.
+ * The meter visually indicates the danger level when the overload reaches `80`.
  *
  * @returns The overload meter component.
  */
 export const OverloadMeter = memo(function OverloadMeter({
-  overload
+  overload,
+  isDanger = false
 }: OverloadMeterProps) {
   const { t } = useTranslation()
   return (
@@ -30,7 +31,7 @@ export const OverloadMeter = memo(function OverloadMeter({
         label={t('ui:overload.toxic', 'TOXIC OVERLOAD')}
         value={normalizePercentageToScale(overload, 10)}
         max={10}
-        isDanger={overload > 80}
+        isDanger={isDanger}
         showValue={false}
       />
     </div>

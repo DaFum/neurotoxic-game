@@ -1,4 +1,5 @@
 import { memo } from 'react'
+import { deriveGigVisualStatus } from '../utils/gigVisualStatus'
 import { HecklerOverlay } from './HecklerOverlay'
 import { LaneInputArea } from './hud/LaneInputArea'
 import { HealthBar } from './hud/HealthBar'
@@ -12,7 +13,7 @@ import { OverloadWarning } from './hud/OverloadWarning'
 import { OverloadMeter } from './hud/OverloadMeter'
 import { CorruptionMeter } from './hud/CorruptionMeter'
 
-interface GigHUDStats {
+export interface GigHUDStats {
   /** The player's current accumulated score for the active gig. */
   score: number
   /** The current consecutive sequence of correctly hit notes. */
@@ -68,6 +69,8 @@ export const GigHUD = memo(function GigHUD({
     isCorruptionBurstActive = false
   } = stats
 
+  const visualStatus = deriveGigVisualStatus(stats)
+
   return (
     <div className='absolute inset-0 z-(--z-stage-overlay) pointer-events-none'>
       <ToxicModeFlash isToxicMode={isToxicMode} />
@@ -83,20 +86,31 @@ export const GigHUD = memo(function GigHUD({
 
       <LaneInputArea onLaneInput={onLaneInput} />
 
-      <OverloadWarning overload={overload} isToxicMode={isToxicMode} />
+      <OverloadWarning
+        isCritical={visualStatus.overloadCritical}
+        isToxicMode={isToxicMode}
+      />
 
       {/* Top-edge meter bar; the global HUD hides its band-status panel during gigs to free this space. */}
       <div className='absolute top-3 right-20 z-(--z-stage-overlay) flex items-start gap-3 pointer-events-none max-sm:top-18 max-sm:right-3 max-sm:flex-col max-sm:items-end max-sm:scale-75 max-sm:origin-top-right'>
-        <OverloadMeter overload={overload} />
+        <OverloadMeter
+          overload={overload}
+          isDanger={visualStatus.overloadDanger}
+        />
         <CorruptionMeter
           corruptionLevel={corruptionLevel}
           isCorruptionBurstActive={isCorruptionBurstActive}
+          isDanger={visualStatus.corruptionDanger}
         />
       </div>
 
       <StatsOverlay score={score} combo={combo} accuracy={accuracy} />
 
-      <HealthBar health={health} isToxicMode={isToxicMode} />
+      <HealthBar
+        health={health}
+        isToxicMode={isToxicMode}
+        isDanger={visualStatus.healthDanger}
+      />
 
       <ControlsHint />
 

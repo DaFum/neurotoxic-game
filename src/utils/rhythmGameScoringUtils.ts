@@ -26,7 +26,9 @@ const CONSTANTS = {
   EMPTY_HIT_HEALTH_DECAY: 1,
   NOTE_MISS_HEALTH_DECAY: 2,
   MIN_CROWD_DECAY: 0.1,
-  MAX_HEALTH: 100
+  MAX_HEALTH: 100,
+  MAX_OVERLOAD: 100,
+  MAX_CORRUPTION: 100
 }
 
 /**
@@ -188,4 +190,97 @@ export const calculateMissImpact = (
   )
 
   return { penalty, nextOverload, decayPerMiss, nextHealth }
+}
+
+/**
+ * Calculates the resulting corruption state after a hit.
+ */
+export const calculateHitCorruption = (
+  currentCorruption: number,
+  isCorruptionBurstActive: boolean
+): { nextCorruption: number; didBurstTrigger: boolean } => {
+  if (isCorruptionBurstActive) {
+     return { nextCorruption: currentCorruption, didBurstTrigger: false }
+  }
+
+  const nextCorruption = Math.min(CONSTANTS.MAX_CORRUPTION, currentCorruption + 5)
+  const didBurstTrigger = nextCorruption >= CONSTANTS.MAX_CORRUPTION
+
+  return {
+    nextCorruption: didBurstTrigger ? 0 : nextCorruption,
+    didBurstTrigger
+  }
+}
+
+/**
+ * Calculates the next overload state after a hit.
+ */
+export const calculateHitOverload = (
+  currentOverload: number,
+  isToxicModeActive: boolean
+): { nextOverload: number; didToxicModeTrigger: boolean } => {
+  if (isToxicModeActive) {
+    return { nextOverload: currentOverload, didToxicModeTrigger: false }
+  }
+
+  const gain = 4
+  const nextOverload = currentOverload + gain
+
+  if (nextOverload >= CONSTANTS.MAX_OVERLOAD) {
+    return { nextOverload: 0, didToxicModeTrigger: true }
+  }
+
+  return { nextOverload, didToxicModeTrigger: false }
+}
+
+/**
+ * Calculates the active crowd decay rate based on modifiers and rival penalty.
+ */
+export const calculateActiveCrowdDecay = (
+  baseCrowdDecay: number,
+  crowdDecayModifier: number | undefined,
+  rivalPenaltyActive: boolean,
+  rivalPenaltyMultiplier: number
+): number => {
+  let activeCrowdDecay = baseCrowdDecay
+  if (crowdDecayModifier !== undefined) {
+    activeCrowdDecay *= crowdDecayModifier
+  }
+  return rivalPenaltyActive
+    ? activeCrowdDecay * rivalPenaltyMultiplier
+    : activeCrowdDecay
+}
+
+/**
+ * Checks if the game is over due to health dropping to 0.
+ */
+export const checkIsGameOver = (
+  nextHealth: number,
+  currentIsGameOver: boolean
+): boolean => {
+  return nextHealth <= 0 && !currentIsGameOver
+}
+
+/**
+ * Evaluates whether a note hit falls within the perfect timing threshold.
+ */
+export const isPerfectHit = (
+  elapsed: number,
+  noteTime: number,
+  hitWindow: number
+): boolean => {
+  // Inclusive <= is intentional: the perfect threshold is a strict
+  // subset of checkHit's exclusive (< hitWindow) window, so a note at
+  // exactly 0.4 * hitWindow still counts as perfect.
+  return Math.abs(elapsed - noteTime) <= hitWindow * 0.4
+}
+
+/**
+ * Calculates the score multiplier applied by a critical hit roll.
+ */
+export const calculateCritMultiplier = (
+  critChance: number,
+  rngValue: number
+): number => {
+  return critChance > 0 && rngValue < critChance ? 2 : 1
 }

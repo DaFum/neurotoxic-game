@@ -15,7 +15,11 @@ import { checkHit } from '../../../utils/rhythmUtils'
 import {
   calculateDynamicHitWindow,
   calculatePoints,
-  calculateFinalScore
+  calculateFinalScore,
+  calculateHitCorruption,
+  calculateHitOverload,
+  isPerfectHit,
+  calculateCritMultiplier
 } from '../../../utils/rhythmGameScoringUtils'
 import { finiteNumberOr } from '../../../utils/finiteNumber'
 import type { RhythmGameRefState } from '../../../types/rhythmGame'
@@ -145,25 +149,25 @@ export const useHandleHit = ({
           Boolean(state.modifiers.guestlist)
         )
 
-        // Inclusive <= is intentional: the perfect threshold is a strict
-        // subset of checkHit's exclusive (< hitWindow) window, so a note at
-        // exactly 0.4 * hitWindow still counts as perfect.
-        const isPerfect = Math.abs(elapsed - note.time) <= hitWindow * 0.4
+        const isPerfect = isPerfectHit(elapsed, note.time, hitWindow)
 
         if (isPerfect) {
           gameStateRef.current.stats.perfectHits++
 
+
           if (!gameStateRef.current.isCorruptionBurstActive) {
             const currentCorruption = gameStateRef.current.corruptionLevel ?? 0
-            const nextCorruption = Math.min(100, currentCorruption + 5)
+            const { nextCorruption, didBurstTrigger } = calculateHitCorruption(
+              currentCorruption,
+              gameStateRef.current.isCorruptionBurstActive
+            )
+
             gameStateRef.current.corruptionLevel = nextCorruption
             gameStateRef.current.stats.corruptionLevel = nextCorruption
             setCorruptionLevel(nextCorruption)
 
-            if (nextCorruption >= 100) {
+            if (didBurstTrigger) {
               const burstEndTime = elapsed + 1000
-              gameStateRef.current.corruptionLevel = 0
-              gameStateRef.current.stats.corruptionLevel = 0
               gameStateRef.current.isCorruptionBurstActive = true
               gameStateRef.current.corruptionBurstEndTime = burstEndTime
               setIsCorruptionBurstActive(true)
@@ -195,10 +199,7 @@ export const useHandleHit = ({
           gameStateRef.current.isCorruptionBurstActive
         )
 
-        // Band crit effect (e.g. contraband): chance to double the hit score
-        if (critChance > 0 && state.rng() < critChance) {
-          finalScore *= 2
-        }
+        finalScore *= calculateCritMultiplier(critChance, state.rng())
 
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore
@@ -216,15 +217,15 @@ export const useHandleHit = ({
         setCombo(nextCombo)
         setHealth(nextHealth)
 
+
         const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
-        const gain = 4 // Increased gain to make Toxic Mode reachable
 
-        let nextOverload = currentOverload
-        if (!toxicModeActive) {
-          nextOverload = currentOverload + gain
-        }
+        const { nextOverload, didToxicModeTrigger } = calculateHitOverload(
+          currentOverload,
+          toxicModeActive
+        )
 
-        const peakCandidate = Math.min(nextOverload, 100)
+        const peakCandidate = Math.min(currentOverload + 4, 100)
 
         gameStateRef.current.stats = updateGigPerformanceStats(
           gameStateRef.current.stats,
@@ -235,13 +236,11 @@ export const useHandleHit = ({
         )
 
         if (!toxicModeActive) {
-          if (nextOverload >= 100) {
+          gameStateRef.current.overload = nextOverload
+          setOverload(nextOverload)
+
+          if (didToxicModeTrigger) {
             activateToxicMode()
-            gameStateRef.current.overload = 0
-            setOverload(0)
-          } else {
-            gameStateRef.current.overload = nextOverload
-            setOverload(nextOverload)
           }
         }
 
