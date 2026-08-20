@@ -289,3 +289,11 @@ export const toBoundedNonNegativeInteger = (
   const bounded = Math.min(Math.floor(value), Math.floor(max))
   return bounded === 0 ? 0 : bounded
 }
+
+/**
+ * Clamps band luck to the canonical 0-100 range.
+ *
+ * @param luck - Candidate luck value.
+ * @returns Luck clamped to the range 0..100.
+ */
+export const clampLuck = (luck: number): number => clamp0to100(luck)

@@ -17,6 +17,7 @@ import {
   clampBandHarmony,
   finiteNumberOr
 } from '../../utils/gameState'
+import { canAfford } from '../../utils/purchaseLogicUtils'
 import {
   getMerchCapacity,
   resolveMerchRestockCost,
@@ -151,7 +152,7 @@ export const usePreGigHandlers = ({
         restockAmount,
         bundleAmount
       })
-      if (player.money < cost) {
+      if (!canAfford({ currency: 'money' }, player, cost)) {
         addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
         return
       }
@@ -180,7 +181,7 @@ export const usePreGigHandlers = ({
       )
     },
     [
-      player.money,
+      player,
       band?.inventory,
       assetModifiers.merchCapacityBonus,
       assetModifiers.merchCostMultiplier,
@@ -193,7 +194,7 @@ export const usePreGigHandlers = ({
 
   const handleBandMeeting = useCallback(() => {
     const cost = adjustedBandMeetingCost
-    if (player.money < cost) {
+    if (!canAfford({ currency: 'money' }, player, cost)) {
       addToast(typedT('ui:pregig.toasts.noMoneySnacks'), 'error')
       return
     }
@@ -223,7 +224,7 @@ export const usePreGigHandlers = ({
     )
   }, [
     adjustedBandMeetingCost,
-    player.money,
+    player,
     addToast,
     typedT,
     updatePlayer,
@@ -249,7 +250,7 @@ export const usePreGigHandlers = ({
 
       if (!isActive) {
         const projectedTotal = calculatedBudget + cost
-        if (projectedTotal > player.money) {
+        if (!canAfford({ currency: 'money' }, player, projectedTotal)) {
           addToast(typedT('ui:pregig.toasts.noMoneyUpgrade'), 'error')
           return
         }
@@ -261,7 +262,7 @@ export const usePreGigHandlers = ({
       gigModifiers,
       assetModifiers,
       calculatedBudget,
-      player.money,
+      player,
       addToast,
       setGigModifiers,
       typedT

@@ -3,6 +3,7 @@ import { hasForbiddenOwnKeys } from '../../utils/objectUtils'
 import { assertNever } from '../../utils/assertNever'
 import {
   clamp0to100,
+  clampLuck,
   clampBandHarmony,
   clampBandStress,
   clampMemberMood,
@@ -119,7 +120,7 @@ export const handleUpdateBand = (
     }
   }
   sanitizeNumericKey('stress', clampBandStress)
-  sanitizeNumericKey('luck', clamp0to100)
+  sanitizeNumericKey('luck', clampLuck)
   sanitizeNumericKey('tempo', clamp0to100)
 
   if (Array.isArray(safeUpdates.members)) {

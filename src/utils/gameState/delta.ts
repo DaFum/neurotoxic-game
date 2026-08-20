@@ -25,7 +25,8 @@ import {
   clampZealotry,
   clampVanCondition,
   clampVanFuel,
-  wrapClockHour
+  wrapClockHour,
+  clampLuck
 } from './clamps'
 import { calculateFameLevel } from './calculations'
 
@@ -399,8 +400,13 @@ export const calculateAppliedDelta = (
 
     if (isFiniteNumber(delta.band.luck)) {
       const currentLuck = finiteNumberOr(state.band?.luck, 0)
-      const nextLuck = addClampedNonNegative(currentLuck, delta.band.luck)
-      applied.band.luck = nextLuck - currentLuck
+      const sum = currentLuck + delta.band.luck
+      if (Number.isFinite(sum)) {
+        const nextLuck = clampLuck(sum)
+        applied.band.luck = nextLuck - currentLuck
+      } else {
+        applied.band.luck = 0
+      }
     }
 
     if (isFiniteNumber(delta.band.skill)) {
@@ -865,7 +871,10 @@ export const applyEventDelta = (
     if (Number.isFinite(rawLuckDelta)) {
       const luckDelta = finiteNumberOr(rawLuckDelta, 0)
       const boundedLuck = Math.max(0, finiteNumberOr(nextBand.luck, 0))
-      nextBand.luck = addClampedNonNegative(boundedLuck, luckDelta)
+      const sum = boundedLuck + luckDelta
+      if (Number.isFinite(sum)) {
+        nextBand.luck = clampLuck(sum)
+      }
     }
     nextState.band = nextBand
   }
