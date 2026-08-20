@@ -10,7 +10,6 @@ import {
 import { disableCorruptionBurstAudio } from './corruptionEffects'
 import {
   stopTransportAndClear,
-  cleanupAmbientPlayback,
   cleanupTransportEvents
 } from './cleanupUtils'
 
@@ -34,8 +33,18 @@ export function stopAudioInternal(): void {
 export function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
+    try {
+      audioState.ambientSource.stop?.()
+    } catch (err) {
+      logger.debug('AudioEngine', 'Ambient source stop failed', err)
+    }
+    try {
+      audioState.ambientSource.disconnect?.()
+    } catch (err) {
+      logger.debug('AudioEngine', 'Ambient source disconnect failed', err)
+    }
+    audioState.ambientSource = null
   }
-  cleanupAmbientPlayback()
 }
 
 /**

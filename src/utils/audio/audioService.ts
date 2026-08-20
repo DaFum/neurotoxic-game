@@ -1,5 +1,4 @@
 import { audioManager } from './AudioManager'
-import type { AudioSfxType } from './AudioManager'
 
 type AudioServiceListener = () => void
 
@@ -33,14 +32,13 @@ export const audioService = {
   getState,
   hasNativeSubscribe: () => typeof audioManager.subscribe === 'function',
   subscribe,
-  setMusicVolume: (value: number) => audioManager.setMusicVolume(value),
-  setSfxVolume: (value: number) => audioManager.setSFXVolume(value),
-  toggleMute: () => audioManager.toggleMute(),
-  startAmbient: () => audioManager.startAmbient(),
-  stopMusic: () => audioManager.stopMusic(),
-  resumeMusic: () => audioManager.resumeMusic(),
-  ensureAudioContext: () => audioManager.ensureAudioContext(),
-  playSFX: (id: AudioSfxType) => audioManager.playSFX(id),
-  setNeuroDecimator: (isActive: boolean) =>
-    audioManager.setNeuroDecimator(isActive)
+  setMusicVolume: audioManager.setMusicVolume.bind(audioManager),
+  setSfxVolume: audioManager.setSFXVolume.bind(audioManager),
+  toggleMute: audioManager.toggleMute.bind(audioManager),
+  startAmbient: audioManager.startAmbient.bind(audioManager),
+  stopMusic: audioManager.stopMusic.bind(audioManager),
+  resumeMusic: audioManager.resumeMusic.bind(audioManager),
+  ensureAudioContext: audioManager.ensureAudioContext.bind(audioManager),
+  playSFX: audioManager.playSFX.bind(audioManager),
+  setNeuroDecimator: audioManager.setNeuroDecimator.bind(audioManager)
 }

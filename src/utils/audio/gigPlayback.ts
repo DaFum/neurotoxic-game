@@ -1,13 +1,12 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
-import { audioState, type GigEndInfo } from './state'
+import { audioState, registerAudioNode, resetGigState, type GigEndInfo } from './state'
 import {
   getRawAudioContext,
   getAudioContextTimeSec,
   ensureAudioContext
 } from './context'
 import { createAndConnectBufferSource } from './sharedBufferUtils'
-import { cleanupGigPlayback } from './cleanupUtils'
 import { loadAudioBuffer } from './assets'
 import { isFiniteNumber } from '../finiteNumber'
 
@@ -162,8 +161,18 @@ const stopGigPlaybackInternal = (): void => {
       'AudioEngine',
       `Stopping gig playback: "${audioState.gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
     )
+    try {
+      audioState.gigSource.stop?.()
+    } catch (err) {
+      logger.debug('AudioEngine', 'Gig source stop failed', err)
+    }
+    try {
+      audioState.gigSource.disconnect?.()
+    } catch (err) {
+      logger.debug('AudioEngine', 'Gig source disconnect failed', err)
+    }
   }
-  cleanupGigPlayback()
+  resetGigState()
 }
 
 /**
@@ -268,7 +277,7 @@ export async function startGigPlayback({
     audioState.gigSeekOffsetMs = nextSeekOffsetMs
   }
 
-  audioState.gigSource = source
+  audioState.gigSource = registerAudioNode('gigSource', source)
   if (safeDurationSeconds === 0) {
     logger.debug(
       'AudioEngine',
@@ -302,7 +311,17 @@ export async function startGigPlayback({
     } catch {
       /* ignore */
     }
-    cleanupGigPlayback()
+    try {
+      audioState.gigSource?.stop?.()
+    } catch {
+      /* ignore */
+    }
+    try {
+      audioState.gigSource?.disconnect?.()
+    } catch {
+      /* ignore */
+    }
+    resetGigState()
     return false
   }
   logger.info(
@@ -430,7 +449,7 @@ export function resumeGigPlayback(): boolean {
     audioState.gigSeekOffsetMs = nextSeekOffsetMs
   }
 
-  audioState.gigSource = source
+  audioState.gigSource = registerAudioNode('gigSource', source)
   if (safeDurationSeconds === 0) {
     audioState.gigStartCtxTime = null
     handleGigSourceEnded(source)

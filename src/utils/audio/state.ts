@@ -25,6 +25,13 @@ export type GigEndInfo = {
   offsetMs: number
 }
 
+export interface RegisteredAudioNode {
+  key: string
+  dispose?: () => void
+  stop?: () => void
+  disconnect?: () => void
+}
+
 /**
  * Mutable audio graph and playback state shared by low-level audio modules.
  */
@@ -88,7 +95,61 @@ export const audioState = {
   // Setup/Rebuild Locks
   setupLock: null as Nullable<Promise<void>>,
   setupError: null as Nullable<unknown>,
-  rebuildLock: null as Nullable<Promise<void>>
+  rebuildLock: null as Nullable<Promise<void>>,
+
+  // Node Registry
+  activeSources: [] as RegisteredAudioNode[]
+}
+
+/**
+ * Registers an audio node in the activeSources array for cleanup.
+ * @param key - The identifier key.
+ * @param ref - The audio node to register.
+ * @returns The original audio node.
+ */
+export function registerAudioNode<
+  T extends { dispose?: () => void; stop?: () => void; disconnect?: () => void }
+>(key: string, ref: T): T {
+  const existingIndex = audioState.activeSources.findIndex(s => s.key === key)
+  if (existingIndex !== -1) {
+    audioState.activeSources.splice(existingIndex, 1)
+  }
+
+  audioState.activeSources.push({
+    key,
+    dispose: () => {
+      try {
+        ref.stop?.()
+      } catch (_err) {
+        // ignore
+      }
+      try {
+        ref.disconnect?.()
+      } catch (_err) {
+        // ignore
+      }
+      try {
+        ref.dispose?.()
+      } catch (_err) {
+        // ignore
+      }
+    },
+    stop: () => {
+      try {
+        ref.stop?.()
+      } catch (_err) {
+        // ignore
+      }
+    },
+    disconnect: () => {
+      try {
+        ref.disconnect?.()
+      } catch (_err) {
+        // ignore
+      }
+    }
+  })
+  return ref
 }
 
 /**

@@ -1,9 +1,7 @@
 import { logger } from '../logger'
-import { audioState } from './state'
+import { audioState, resetGigState } from './state'
 import {
   stopTransportAndClear,
-  cleanupGigPlayback,
-  cleanupAmbientPlayback,
   cleanupTransportEvents
 } from './cleanupUtils'
 
@@ -51,90 +49,62 @@ export function disposeAudio() {
     logger.debug('AudioEngine', 'cleanupTransportEvents failed', error)
   }
 
-  try {
-    cleanupGigPlayback()
-  } catch (error) {
-    logger.debug('AudioEngine', 'cleanupGigPlayback failed', error)
-  }
-
-  try {
-    cleanupAmbientPlayback()
-  } catch (error) {
-    logger.debug('AudioEngine', 'cleanupAmbientPlayback failed', error)
-  }
 
   audioState.audioBufferCache.clear()
   audioState.currentCacheByteSize = 0
 
-  audioState.guitar = safeDispose(audioState.guitar)
-  audioState.bass = safeDispose(audioState.bass)
-
-  if (audioState.drumKit) {
-    safeDispose(audioState.drumKit.kick)
-    safeDispose(audioState.drumKit.snare)
-    safeDispose(audioState.drumKit.hihat)
-    safeDispose(audioState.drumKit.crash)
-    audioState.drumKit = null
-  }
-
-  audioState.sfxSynth = safeDispose(audioState.sfxSynth)
-  audioState.sfxGain = safeDispose(audioState.sfxGain)
-  audioState.musicGain = safeDispose(audioState.musicGain)
-  audioState.midiLead = safeDispose(audioState.midiLead)
-  audioState.midiBass = safeDispose(audioState.midiBass)
-
-  if (audioState.midiDrumKit) {
-    safeDispose(audioState.midiDrumKit.kick)
-    safeDispose(audioState.midiDrumKit.snare)
-    safeDispose(audioState.midiDrumKit.hihat)
-    safeDispose(audioState.midiDrumKit.crash)
-    audioState.midiDrumKit = null
-  }
-
-  audioState.midiReverbSend = safeDispose(audioState.midiReverbSend)
-  audioState.midiReverb = safeDispose(audioState.midiReverb)
-  audioState.midiDryBus = safeDispose(audioState.midiDryBus)
-
-  audioState.distortion = safeDispose(audioState.distortion)
-  if (audioState.guitarChorus && !audioState.guitarChorus.disposed) {
-    try {
-      audioState.guitarChorus.stop?.()
-    } catch (err) {
-      if (!(err instanceof Error) || err.name !== 'InvalidStateError') {
-        logger.debug(
-          'AudioEngine',
-          'guitarChorus.stop() failed (likely benign)',
-          err
-        )
+  for (const node of audioState.activeSources) {
+    // Special handling for nodes that might need to be stopped before disposal
+    // to prevent InvalidStateErrors (like guitarChorus)
+    if (node.key === 'guitarChorus') {
+      try {
+        node.stop?.()
+      } catch (err) {
+        if (!(err instanceof Error) || err.name !== 'InvalidStateError') {
+          logger.debug(
+            'AudioEngine',
+            'guitarChorus.stop() failed (likely benign)',
+            err
+          )
+        }
       }
     }
+    safeDispose(node)
   }
-  audioState.guitarChorus = safeDispose(audioState.guitarChorus)
-  audioState.guitarEq = safeDispose(audioState.guitarEq)
-  audioState.widener = safeDispose(audioState.widener)
+  audioState.activeSources = []
+  resetGigState()
 
-  audioState.bassEq = safeDispose(audioState.bassEq)
-  audioState.bassComp = safeDispose(audioState.bassComp)
+  // Clean up instrument structure references
+  audioState.guitar = null
+  audioState.bass = null
+  audioState.drumKit = null
+  audioState.sfxSynth = null
+  audioState.sfxGain = null
+  audioState.musicGain = null
+  audioState.midiLead = null
+  audioState.midiBass = null
+  audioState.midiDrumKit = null
+  audioState.midiReverbSend = null
+  audioState.midiReverb = null
+  audioState.midiDryBus = null
+  audioState.distortion = null
+  audioState.guitarChorus = null
+  audioState.guitarEq = null
+  audioState.widener = null
+  audioState.bassEq = null
+  audioState.bassComp = null
+  audioState.drumBus = null
+  audioState.reverbSend = null
+  audioState.reverb = null
+  audioState.masterCorruptionDistortion = null
+  audioState.masterCorruptionBypass = null
+  audioState.masterCorruptionWetGain = null
+  audioState.neuroDistortion = null
+  audioState.masterComp = null
+  audioState.masterLimiter = null
 
-  audioState.drumBus = safeDispose(audioState.drumBus)
-
-  audioState.reverbSend = safeDispose(audioState.reverbSend)
-  audioState.reverb = safeDispose(audioState.reverb)
-
-  audioState.masterCorruptionDistortion = safeDispose(
-    audioState.masterCorruptionDistortion
-  )
-  audioState.masterCorruptionBypass = safeDispose(
-    audioState.masterCorruptionBypass
-  )
-  audioState.masterCorruptionWetGain = safeDispose(
-    audioState.masterCorruptionWetGain
-  )
-
-  audioState.neuroDistortion = safeDispose(audioState.neuroDistortion)
-
-  audioState.masterComp = safeDispose(audioState.masterComp)
-  audioState.masterLimiter = safeDispose(audioState.masterLimiter)
+  audioState.ambientSource = null
+  audioState.gigSource = null
 
   audioState.isSetup = false
   audioState.isCorruptionAudioActive = false

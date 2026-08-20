@@ -1,5 +1,5 @@
 import { logger } from '../logger'
-import { audioState } from './state'
+import { audioState, registerAudioNode } from './state'
 import { stopAudio } from './transportControl'
 import { midiUrlMap, oggCandidates, loadAudioBuffer } from './assets'
 import { createAndConnectBufferSource } from './sharedBufferUtils'
@@ -147,7 +147,7 @@ export async function playRandomAmbientOgg(
   const source = createAndConnectBufferSource(buffer)
   if (!source) return false
 
-  audioState.ambientSource = source
+  audioState.ambientSource = registerAudioNode('ambientSource', source)
   const chainReqId = audioState.playRequestId
 
   source.onended = () => {

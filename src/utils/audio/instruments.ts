@@ -1,5 +1,5 @@
 import * as Tone from 'tone'
-import { audioState } from './state'
+import { audioState, registerAudioNode } from './state'
 import { HIHAT_CONFIG, CRASH_CONFIG } from './constants'
 import type { DrumKitSynth, LayeredSnare } from '../../types/audio'
 
@@ -19,16 +19,22 @@ type EnvelopeWithCurves = {
  * @returns Proxy object with triggerAttackRelease, volume, and dispose methods.
  */
 function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
-  const snareBus = new Tone.Volume(0).connect(bus)
-  const snareNoise = new Tone.NoiseSynth({
-    envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
-    noise: { type: 'white' }
-  }).connect(snareBus)
-  const snareBody = new Tone.MembraneSynth({
-    pitchDecay: 0.02,
-    octaves: 4,
-    envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
-  }).connect(snareBus)
+  const snareBus = registerAudioNode('snareBus', new Tone.Volume(0).connect(bus))
+  const snareNoise = registerAudioNode(
+    'snareNoise',
+    new Tone.NoiseSynth({
+      envelope: { attack: 0.001, decay: 0.15, sustain: 0 },
+      noise: { type: 'white' }
+    }).connect(snareBus)
+  )
+  const snareBody = registerAudioNode(
+    'snareBody',
+    new Tone.MembraneSynth({
+      pitchDecay: 0.02,
+      octaves: 4,
+      envelope: { attack: 0.001, decay: 0.15, sustain: 0, release: 0.1 }
+    }).connect(snareBus)
+  )
   snareBody.volume.value = -4
   return {
     triggerAttackRelease: (
@@ -54,22 +60,22 @@ function createLayeredSnare(bus: Tone.InputNode): LayeredSnare {
 export function setupMasterChain(): void {
   // Nodes
   // Limiter prevents clipping, Compressor glues the mix
-  const masterLimiter = new Tone.Limiter(-3).toDestination()
-  const masterComp = new Tone.Compressor(-18, 4)
-  const musicGain = new Tone.Gain(1)
+  const masterLimiter = registerAudioNode('masterLimiter', new Tone.Limiter(-3).toDestination())
+  const masterComp = registerAudioNode('masterComp', new Tone.Compressor(-18, 4))
+  const musicGain = registerAudioNode('musicGain', new Tone.Gain(1))
 
   // Corruption Burst Effects
-  const masterCorruptionDistortion = new Tone.Distortion(0.8)
-  const masterCorruptionBypass = new Tone.Gain(1)
-  const masterCorruptionWetGain = new Tone.Gain(0)
+  const masterCorruptionDistortion = registerAudioNode('masterCorruptionDistortion', new Tone.Distortion(0.8))
+  const masterCorruptionBypass = registerAudioNode('masterCorruptionBypass', new Tone.Gain(1))
+  const masterCorruptionWetGain = registerAudioNode('masterCorruptionWetGain', new Tone.Gain(0))
 
   // Neuro-Decimator Distortion
-  const neuroDistortion = new Tone.Chebyshev(50)
+  const neuroDistortion = registerAudioNode('neuroDistortion', new Tone.Chebyshev(50))
   neuroDistortion.wet.value = 0
 
   // Global reverb for natural space
-  const reverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 })
-  const reverbSend = new Tone.Gain(0.3)
+  const reverb = registerAudioNode('reverb', new Tone.Reverb({ decay: 1.8, wet: 0.15 }))
+  const reverbSend = registerAudioNode('reverbSend', new Tone.Gain(0.3))
 
   // Assign to shared state after construction
   audioState.masterLimiter = masterLimiter
@@ -115,19 +121,22 @@ export function setupGuitar(): void {
   } satisfies EnvelopeWithCurves
 
   // FM synthesis for richer harmonic content
-  audioState.guitar = new Tone.PolySynth(Tone.FMSynth, {
-    harmonicity: 2,
-    modulationIndex: 3,
-    oscillator: { type: 'sawtooth' },
-    modulation: { type: 'square' },
-    envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
-    modulationEnvelope: guitarModulationEnvelope
-  })
+  audioState.guitar = registerAudioNode(
+    'guitar',
+    new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 2,
+      modulationIndex: 3,
+      oscillator: { type: 'sawtooth' },
+      modulation: { type: 'square' },
+      envelope: { attack: 0.005, decay: 0.3, sustain: 0.15, release: 0.3 },
+      modulationEnvelope: guitarModulationEnvelope
+    })
+  )
 
-  audioState.distortion = new Tone.Distortion(0.4)
-  audioState.guitarChorus = new Tone.Chorus(4, 2.5, 0.3).start()
-  audioState.guitarEq = new Tone.EQ3(-1, -3, 3) // Gentle mid scoop
-  audioState.widener = new Tone.StereoWidener(0.5)
+  audioState.distortion = registerAudioNode('distortion', new Tone.Distortion(0.4))
+  audioState.guitarChorus = registerAudioNode('guitarChorus', new Tone.Chorus(4, 2.5, 0.3).start())
+  audioState.guitarEq = registerAudioNode('guitarEq', new Tone.EQ3(-1, -3, 3)) // Gentle mid scoop
+  audioState.widener = registerAudioNode('widener', new Tone.StereoWidener(0.5))
 
   const musicGain = audioState.musicGain
   const reverbSend = audioState.reverbSend
@@ -151,20 +160,23 @@ export function setupGuitar(): void {
  */
 export function setupBass(): void {
   // MonoSynth with fatsawtooth-based waveform for warmer, fuller tone
-  audioState.bass = new Tone.PolySynth(Tone.MonoSynth, {
-    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-    envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
-    filterEnvelope: {
-      attack: 0.005,
-      decay: 0.3,
-      sustain: 0.2,
-      baseFrequency: 100,
-      octaves: 2.5
-    }
-  })
+  audioState.bass = registerAudioNode(
+    'bass',
+    new Tone.PolySynth(Tone.MonoSynth, {
+      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+      envelope: { attack: 0.01, decay: 0.4, sustain: 0.3, release: 0.3 },
+      filterEnvelope: {
+        attack: 0.005,
+        decay: 0.3,
+        sustain: 0.2,
+        baseFrequency: 100,
+        octaves: 2.5
+      }
+    })
+  )
 
-  audioState.bassEq = new Tone.EQ3(3, -1, -4)
-  audioState.bassComp = new Tone.Compressor(-15, 5)
+  audioState.bassEq = registerAudioNode('bassEq', new Tone.EQ3(3, -1, -4))
+  audioState.bassComp = registerAudioNode('bassComp', new Tone.Compressor(-15, 5))
   const musicGain = audioState.musicGain
   if (!musicGain)
     throw new Error('setupMasterChain must be called before setupBass')
@@ -182,21 +194,25 @@ export function setupBass(): void {
  */
 function buildDrumKit(
   bus: Tone.InputNode,
-  kickOverrides: Partial<Tone.MembraneSynthOptions> = {}
+  kickOverrides: Partial<Tone.MembraneSynthOptions> = {},
+  prefix = 'drumKit.'
 ): DrumKitSynth {
   const safeKickOverrides =
     kickOverrides && typeof kickOverrides === 'object' ? kickOverrides : {}
   return {
-    kick: new Tone.MembraneSynth({
-      pitchDecay: 0.05,
-      octaves: 6,
-      oscillator: { type: 'sine' },
-      envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 },
-      ...safeKickOverrides
-    }).connect(bus),
-    snare: createLayeredSnare(bus),
-    hihat: new Tone.MetalSynth(HIHAT_CONFIG).connect(bus),
-    crash: new Tone.MetalSynth(CRASH_CONFIG).connect(bus)
+    kick: registerAudioNode(
+      `${prefix}kick`,
+      new Tone.MembraneSynth({
+        pitchDecay: 0.05,
+        octaves: 6,
+        oscillator: { type: 'sine' },
+        envelope: { attack: 0.001, decay: 0.4, sustain: 0, release: 0.4 },
+        ...safeKickOverrides
+      }).connect(bus)
+    ),
+    snare: registerAudioNode(`${prefix}snare`, createLayeredSnare(bus)),
+    hihat: registerAudioNode(`${prefix}hihat`, new Tone.MetalSynth(HIHAT_CONFIG).connect(bus)),
+    crash: registerAudioNode(`${prefix}crash`, new Tone.MetalSynth(CRASH_CONFIG).connect(bus))
   }
 }
 
@@ -211,7 +227,7 @@ export function setupDrums(): void {
     throw new Error('setupMasterChain must be called before setupDrums')
   }
 
-  audioState.drumBus = new Tone.Gain(1).connect(musicGain)
+  audioState.drumBus = registerAudioNode('drumBus', new Tone.Gain(1).connect(musicGain))
   audioState.drumBus.connect(reverbSend)
 
   audioState.drumKit = buildDrumKit(audioState.drumBus)
@@ -231,11 +247,14 @@ export function setupSFX(): void {
   if (!masterLimiter)
     throw new Error('setupMasterChain must be called before setupSFX')
 
-  audioState.sfxGain = new Tone.Gain(0.25).connect(masterLimiter)
-  audioState.sfxSynth = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'triangle' },
-    envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
-  }).connect(audioState.sfxGain)
+  audioState.sfxGain = registerAudioNode('sfxGain', new Tone.Gain(0.25).connect(masterLimiter))
+  audioState.sfxSynth = registerAudioNode(
+    'sfxSynth',
+    new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'triangle' },
+      envelope: { attack: 0.005, decay: 0.1, sustain: 0.05, release: 0.2 }
+    }).connect(audioState.sfxGain)
+  )
 }
 
 /**
@@ -248,35 +267,41 @@ export function setupMidiChain(): void {
   if (!musicGain)
     throw new Error('setupMasterChain must be called before setupMidiChain')
 
-  audioState.midiDryBus = new Tone.Gain(1).connect(musicGain)
+  audioState.midiDryBus = registerAudioNode('midiDryBus', new Tone.Gain(1).connect(musicGain))
 
   // Subtle reverb for spatial depth on ambient MIDI playback
-  audioState.midiReverb = new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
+  audioState.midiReverb = registerAudioNode('midiReverb', new Tone.Reverb({ decay: 1.8, wet: 0.15 }).connect(
     musicGain
-  )
-  audioState.midiReverbSend = new Tone.Gain(0.25).connect(audioState.midiReverb)
+  ))
+  audioState.midiReverbSend = registerAudioNode('midiReverbSend', new Tone.Gain(0.25).connect(audioState.midiReverb))
   audioState.midiDryBus.connect(audioState.midiReverbSend)
 
   // Lead/Guitar: FM synthesis for richer harmonic content
-  audioState.midiLead = new Tone.PolySynth(Tone.FMSynth, {
-    harmonicity: 2,
-    modulationIndex: 2.5,
-    oscillator: { type: 'sawtooth' },
-    modulation: { type: 'square' },
-    envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
-    modulationEnvelope: {
-      attack: 0.01,
-      decay: 0.2,
-      sustain: 0.1,
-      release: 0.3
-    }
-  }).connect(audioState.midiDryBus)
+  audioState.midiLead = registerAudioNode(
+    'midiLead',
+    new Tone.PolySynth(Tone.FMSynth, {
+      harmonicity: 2,
+      modulationIndex: 2.5,
+      oscillator: { type: 'sawtooth' },
+      modulation: { type: 'square' },
+      envelope: { attack: 0.005, decay: 0.3, sustain: 0.2, release: 0.4 },
+      modulationEnvelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.1,
+        release: 0.3
+      }
+    }).connect(audioState.midiDryBus)
+  )
 
   // Bass: Fatter oscillator for warmth and presence
-  audioState.midiBass = new Tone.PolySynth(Tone.Synth, {
-    oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
-    envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
-  }).connect(audioState.midiDryBus)
+  audioState.midiBass = registerAudioNode(
+    'midiBass',
+    new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'fatsawtooth', spread: 10, count: 3 },
+      envelope: { attack: 0.01, decay: 0.3, sustain: 0.25, release: 0.3 }
+    }).connect(audioState.midiDryBus)
+  )
   audioState.midiBass.volume.value = -3
 
   const midiKickEnvelope = {
@@ -289,9 +314,13 @@ export function setupMidiChain(): void {
     decayCurve: 'linear'
   } satisfies EnvelopeWithCurves
 
-  audioState.midiDrumKit = buildDrumKit(audioState.midiDryBus, {
-    envelope: midiKickEnvelope
-  })
+  audioState.midiDrumKit = buildDrumKit(
+    audioState.midiDryBus,
+    {
+      envelope: midiKickEnvelope
+    },
+    'midiDrumKit.'
+  )
 
   // MIDI drum levels
   audioState.midiDrumKit.kick.volume.value = 2
