@@ -154,7 +154,6 @@ export const useHandleHit = ({
         if (isPerfect) {
           gameStateRef.current.stats.perfectHits++
 
-
           if (!gameStateRef.current.isCorruptionBurstActive) {
             const currentCorruption = gameStateRef.current.corruptionLevel ?? 0
             const { nextCorruption, didBurstTrigger } = calculateHitCorruption(
@@ -199,7 +198,10 @@ export const useHandleHit = ({
           gameStateRef.current.isCorruptionBurstActive
         )
 
-        finalScore *= calculateCritMultiplier(critChance, state.rng())
+        finalScore *= calculateCritMultiplier(
+          critChance,
+          typeof state.rng === 'function' ? state.rng() : 0.5
+        )
 
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore
@@ -216,7 +218,6 @@ export const useHandleHit = ({
         setScore(nextScore)
         setCombo(nextCombo)
         setHealth(nextHealth)
-
 
         const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 

@@ -280,7 +280,10 @@ export const useRhythmGameAudio = ({
    */
   const initializeGigState = useCallback(async () => {
     // Prevent concurrent initialization
-    if (currentStatusRef.current === 'initializing' || currentStatusRef.current === 'ready') {
+    if (
+      currentStatusRef.current === 'initializing' ||
+      currentStatusRef.current === 'ready'
+    ) {
       return
     }
     const ctx = latestContextRef.current

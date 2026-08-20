@@ -79,7 +79,6 @@ export const useHandleMiss = ({
       const currentHealth = finiteNumberOr(gameStateRef.current.health, 100)
       const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 
-
       const crowdDecay = calculateActiveCrowdDecay(
         baseCrowdDecay,
         gameStateRef.current.modifiers?.crowdDecay,
@@ -125,7 +124,10 @@ export const useHandleMiss = ({
       gameStateRef.current.health = nextHealth
       setHealth(nextHealth)
 
-      const isGameOverTriggered = checkIsGameOver(nextHealth, gameStateRef.current.isGameOver)
+      const isGameOverTriggered = checkIsGameOver(
+        nextHealth,
+        gameStateRef.current.isGameOver
+      )
       if (!isGameOverTriggered) return
 
       setIsGameOver(true)

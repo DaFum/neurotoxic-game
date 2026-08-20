@@ -1,1 +1,2 @@
-export type GigAudioStatus = 'idle' | 'initializing' | 'ready' | 'blocked' | 'failed'
+export type GigAudioStatus =
+  'idle' | 'initializing' | 'ready' | 'blocked' | 'failed'

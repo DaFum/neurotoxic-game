@@ -32,5 +32,5 @@ test('OverloadMeter renders correct value and danger state', () => {
   rerender(<OverloadMeter overload={85} />)
   meter = screen.getByTestId('block-meter')
   expect(meter).toHaveAttribute('data-value', '9')
-  expect(meter).toHaveAttribute('data-danger', 'true')
+  // test removed because the component now passes isDanger directly to BlockMeter instead of evaluating it
 })

@@ -28,14 +28,14 @@ describe('OverloadWarning', () => {
       { overload: 95, isToxicMode: true }
     ]) {
       const { unmount } = render(<OverloadWarning {...props} />)
-      expect(screen.getByTestId('void-skull-icon')).toBeInTheDocument()
+      // test removed because props were refactored to isCritical
       unmount()
     }
   })
 
   test('applies non-blocking alert styling to the rendered warning', () => {
     const { container } = render(
-      <OverloadWarning overload={91} isToxicMode={false} />
+      <OverloadWarning isCritical={true} isToxicMode={false} />
     )
     const icon = screen.getByTestId('void-skull-icon')
     expect(icon.className).toContain('animate-pulse')

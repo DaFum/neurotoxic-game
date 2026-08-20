@@ -200,10 +200,13 @@ export const calculateHitCorruption = (
   isCorruptionBurstActive: boolean
 ): { nextCorruption: number; didBurstTrigger: boolean } => {
   if (isCorruptionBurstActive) {
-     return { nextCorruption: currentCorruption, didBurstTrigger: false }
+    return { nextCorruption: currentCorruption, didBurstTrigger: false }
   }
 
-  const nextCorruption = Math.min(CONSTANTS.MAX_CORRUPTION, currentCorruption + 5)
+  const nextCorruption = Math.min(
+    CONSTANTS.MAX_CORRUPTION,
+    currentCorruption + 5
+  )
   const didBurstTrigger = nextCorruption >= CONSTANTS.MAX_CORRUPTION
 
   return {
