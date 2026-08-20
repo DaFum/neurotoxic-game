@@ -48,8 +48,9 @@ vi.mock('../../src/utils/imageGen', () => ({
   IMG_PROMPTS: {}
 }))
 
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: {
+vi.mock('../src/utils/audio/audioEngine', async (importOriginal) => {
+  const actual = await importOriginal();
+  const mockAudioManager = {
     resumeMusic: vi.fn().mockResolvedValue(true),
     stopMusic: vi.fn(),
     getStateSnapshot: vi.fn(() => ({
@@ -60,9 +61,29 @@ vi.mock('../../src/utils/audio/AudioManager', () => ({
       currentSongId: 'ambient'
     })),
     subscribe: vi.fn(() => () => {}),
-    hasNativeSubscribe: () => true
-  }
-}))
+    hasNativeSubscribe: () => true,
+    subscribe: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    startAmbient: vi.fn().mockResolvedValue(true),
+    stopMusic: vi.fn(),
+    resumeMusic: vi.fn().mockResolvedValue(true),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
+  };
+  return {
+    ...actual,
+    audioManager: mockAudioManager,
+    audioService: {
+      ...mockAudioManager,
+      getState: vi.fn().mockReturnValue({}),
+      hasNativeSubscribe: vi.fn().mockReturnValue(true)
+    }
+  };
+})
 
 vi.mock('../../src/ui/BandHQ', () => ({
   BandHQ: () => <div data-testid='band-hq' />

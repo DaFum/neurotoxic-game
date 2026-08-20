@@ -5,9 +5,32 @@ import {
   PIRATE_RADIO_CONFIG
 } from '../../src/hooks/usePirateRadio'
 
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: { playSFX: vi.fn() }
-}))
+vi.mock('../src/utils/audio/audioEngine', async (importOriginal) => {
+  const actual = await importOriginal();
+  const mockAudioManager = {
+    playSFX: vi.fn(),
+    subscribe: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    startAmbient: vi.fn().mockResolvedValue(true),
+    stopMusic: vi.fn(),
+    resumeMusic: vi.fn().mockResolvedValue(true),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
+  };
+  return {
+    ...actual,
+    audioManager: mockAudioManager,
+    audioService: {
+      ...mockAudioManager,
+      getState: vi.fn().mockReturnValue({}),
+      hasNativeSubscribe: vi.fn().mockReturnValue(true)
+    }
+  };
+})
 
 vi.mock('../../src/utils/logger', () => ({
   logger: {

@@ -9,12 +9,33 @@ import { render, fireEvent, renderHook, act } from '@testing-library/react'
 // Mock motion/react
 vi.mock('motion/react', () => createMotionReactMock())
 // Mock audioManager
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: {
+vi.mock('../src/utils/audio/audioEngine', async (importOriginal) => {
+  const actual = await importOriginal();
+  const mockAudioManager = {
     ensureAudioContext: vi.fn(() => Promise.resolve(true)),
-    play: vi.fn()
-  }
-}))
+    play: vi.fn(),
+    subscribe: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    startAmbient: vi.fn().mockResolvedValue(true),
+    stopMusic: vi.fn(),
+    resumeMusic: vi.fn().mockResolvedValue(true),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
+  };
+  return {
+    ...actual,
+    audioManager: mockAudioManager,
+    audioService: {
+      ...mockAudioManager,
+      getState: vi.fn().mockReturnValue({}),
+      hasNativeSubscribe: vi.fn().mockReturnValue(true)
+    }
+  };
+})
 // Mock MerchStrategyBlock to avoid HQ_ITEMS/economyEngine dependency in these tests
 const mockOnUpdatePrice = vi.fn()
 const mockOnRestock = vi.fn()

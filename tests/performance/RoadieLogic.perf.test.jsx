@@ -14,12 +14,33 @@ vi.mock('../../src/context/GameState', () => ({
   useGameActions: () => mockGameState,
   useGameSelector: selector => selector(mockGameState)
 }))
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: {
+vi.mock('../src/utils/audio/audioEngine', async (importOriginal) => {
+  const actual = await importOriginal();
+  const mockAudioManager = {
     playSFX: vi.fn(),
-    init: vi.fn()
-  }
-}))
+    init: vi.fn(),
+    subscribe: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    startAmbient: vi.fn().mockResolvedValue(true),
+    stopMusic: vi.fn(),
+    resumeMusic: vi.fn().mockResolvedValue(true),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
+  };
+  return {
+    ...actual,
+    audioManager: mockAudioManager,
+    audioService: {
+      ...mockAudioManager,
+      getState: vi.fn().mockReturnValue({}),
+      hasNativeSubscribe: vi.fn().mockReturnValue(true)
+    }
+  };
+})
 describe('RoadieLogic Performance', () => {
   let useRoadieLogic
 

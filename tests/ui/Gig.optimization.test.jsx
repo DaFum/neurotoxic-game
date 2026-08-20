@@ -40,11 +40,32 @@ vi.mock('../../src/ui/GlitchButton', () => ({
     React.createElement('button', { type: 'button', onClick }, children)
 }))
 // Mock audioManager
-vi.mock('../../src/utils/audio/AudioManager', () => ({
-  audioManager: {
-    ensureAudioContext: vi.fn().mockResolvedValue(true)
-  }
-}))
+vi.mock('../src/utils/audio/audioEngine', async (importOriginal) => {
+  const actual = await importOriginal();
+  const mockAudioManager = {
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    subscribe: vi.fn(),
+    setMusicVolume: vi.fn(),
+    setSFXVolume: vi.fn(),
+    toggleMute: vi.fn(),
+    startAmbient: vi.fn().mockResolvedValue(true),
+    stopMusic: vi.fn(),
+    resumeMusic: vi.fn().mockResolvedValue(true),
+    ensureAudioContext: vi.fn().mockResolvedValue(true),
+    playSFX: vi.fn(),
+    setNeuroDecimator: vi.fn(),
+    getStateSnapshot: vi.fn().mockReturnValue({}),
+  };
+  return {
+    ...actual,
+    audioManager: mockAudioManager,
+    audioService: {
+      ...mockAudioManager,
+      getState: vi.fn().mockReturnValue({}),
+      hasNativeSubscribe: vi.fn().mockReturnValue(true)
+    }
+  };
+})
 // Mock audioEngine to prevent Tone.js initialization crash
 vi.mock('../../src/utils/audio/audioEngine', () => ({
   pauseAudio: vi.fn(),
