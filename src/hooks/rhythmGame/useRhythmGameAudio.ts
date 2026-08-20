@@ -17,11 +17,13 @@ import type {
   RhythmSetlistEntry,
   SetLastGigStats
 } from '../../types/rhythmGame'
+import type { GigAudioStatus } from '../../types/gigAudioStatus'
+
 import type { RhythmStateSetters } from './useRhythmGameState'
 
 type RhythmGameAudioParams = {
   gameStateRef: { current: RhythmGameRefState }
-  setters: Pick<RhythmStateSetters, 'setIsAudioReady' | 'setIsGameOver'>
+  setters: Pick<RhythmStateSetters, 'setAudioStatus' | 'setIsGameOver'>
   contextState: {
     band: GameState['band']
     gameMap: GameMap | null
@@ -43,7 +45,7 @@ type HarmonyGuardParams = {
   hasResolvedLowHarmonyRef: { current: boolean }
   gameStateRef: { current: RhythmGameRefState }
   setGameOver: (isGameOver: boolean) => void
-  setAudioReady: (isAudioReady: boolean) => void
+  setAudioStatus: (status: GigAudioStatus) => void
   currentT: TFunction
   currentAddToast: (message: string, type?: string) => void
   currentSetLastGigStats: SetLastGigStats
@@ -55,7 +57,7 @@ const handleHarmonyGuard = ({
   hasResolvedLowHarmonyRef,
   gameStateRef,
   setGameOver,
-  setAudioReady,
+  setAudioStatus,
   currentT,
   currentAddToast,
   currentSetLastGigStats,
@@ -68,7 +70,7 @@ const handleHarmonyGuard = ({
       const currentRhythmState = gameStateRef.current
       currentRhythmState.isGameOver = true
       setGameOver(true)
-      setAudioReady(true)
+      setAudioStatus('ready')
 
       const message = currentT('ui:gig.toasts.bandCollapsed', {
         defaultValue: 'BAND COLLAPSED'
@@ -108,8 +110,7 @@ type PhysicsSetupParams = {
   currentPlayer: PlayerState
   currentSetlist: RhythmSetlistEntry[]
   gameStateRef: { current: RhythmGameRefState }
-  setAudioReady: (ready: boolean) => void
-  hasInitializedRef: { current: boolean }
+  setAudioStatus: (status: GigAudioStatus) => void
 }
 
 const applyGigPhysicsSetup = ({
@@ -120,8 +121,7 @@ const applyGigPhysicsSetup = ({
   currentPlayer,
   currentSetlist,
   gameStateRef,
-  setAudioReady,
-  hasInitializedRef
+  setAudioStatus
 }: PhysicsSetupParams): boolean => {
   const setlistFirstId =
     typeof currentSetlist?.[0] === 'string'
@@ -133,8 +133,7 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Missing band, gameMap nodes, or current player node before gig physics setup'
     )
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
 
@@ -147,8 +146,7 @@ const applyGigPhysicsSetup = ({
     typeof setlistFirstId === 'string' ? setlistFirstId : undefined
   )
   if (!physicsSetup) {
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
 
@@ -161,8 +159,7 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Rhythm game lanes are not initialized correctly'
     )
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
   if (!Array.isArray(hitWindows) || hitWindows.length < 3) {
@@ -170,8 +167,7 @@ const applyGigPhysicsSetup = ({
       'RhythmGame',
       'Gig physics hit windows are not initialized correctly'
     )
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
   const lane0 = lanes[0]
@@ -182,8 +178,7 @@ const applyGigPhysicsSetup = ({
   const hitWindow2 = hitWindows[2]
   if (!lane0 || !lane1 || !lane2) {
     logger.error('RhythmGame', 'Rhythm game lane entries are missing')
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
   if (
@@ -195,8 +190,7 @@ const applyGigPhysicsSetup = ({
     !Number.isFinite(hitWindow2)
   ) {
     logger.error('RhythmGame', 'Gig physics hit window values are invalid')
-    setAudioReady(false)
-    hasInitializedRef.current = false
+    setAudioStatus('failed')
     return false
   }
   lane0.hitWindow = hitWindow0
@@ -229,14 +223,12 @@ export const useRhythmGameAudio = ({
   contextActions
 }: RhythmGameAudioParams): RhythmGameAudioReturn => {
   const audioEngine = useAudioEngine()
-  const { setIsAudioReady, setIsGameOver } = setters
+  const { setAudioStatus, setIsGameOver } = setters
   const { band, gameMap, player, setlist, gigModifiers, currentGig } =
     contextState
   const { addToast, setLastGigStats, endGig, t } = contextActions
 
-  const hasInitializedRef = useRef(false)
-  const isInitializingRef = useRef(false)
-  const hasResolvedLowHarmonyRef = useRef(false)
+  const currentStatusRef = useRef<GigAudioStatus>('idle')
   const abortControllerRef = useRef<AbortController | null>(null)
   const latestContextRef = useRef({
     band,
@@ -249,7 +241,7 @@ export const useRhythmGameAudio = ({
     setLastGigStats,
     endGig,
     t,
-    setIsAudioReady,
+    setAudioStatus,
     setIsGameOver
   })
 
@@ -265,7 +257,7 @@ export const useRhythmGameAudio = ({
       setLastGigStats,
       endGig,
       t,
-      setIsAudioReady,
+      setAudioStatus,
       setIsGameOver
     }
   }, [
@@ -279,7 +271,7 @@ export const useRhythmGameAudio = ({
     setLastGigStats,
     endGig,
     t,
-    setIsAudioReady,
+    setAudioStatus,
     setIsGameOver
   ])
 
@@ -288,7 +280,10 @@ export const useRhythmGameAudio = ({
    */
   const initializeGigState = useCallback(async () => {
     // Prevent concurrent initialization
-    if (isInitializingRef.current || hasInitializedRef.current) {
+    if (
+      currentStatusRef.current === 'initializing' ||
+      currentStatusRef.current === 'ready'
+    ) {
       return
     }
     const ctx = latestContextRef.current
@@ -303,11 +298,11 @@ export const useRhythmGameAudio = ({
       setLastGigStats: currentSetLastGigStats,
       endGig: currentEndGig,
       t: currentT,
-      setIsAudioReady: setAudioReady,
+      setAudioStatus,
       setIsGameOver: setGameOver
     } = ctx
 
-    isInitializingRef.current = true
+    currentStatusRef.current = 'initializing'
     const controller = new AbortController()
     abortControllerRef.current = controller
     const { signal } = controller
@@ -321,12 +316,13 @@ export const useRhythmGameAudio = ({
       const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
       // Harmony Guard
+      const hasResolvedLowHarmonyRef = { current: false } // We can mock this per run as the guard handles game over state
       const isBandCollapsed = handleHarmonyGuard({
         currentHarmony,
         hasResolvedLowHarmonyRef,
         gameStateRef,
         setGameOver,
-        setAudioReady,
+        setAudioStatus,
         currentT,
         currentAddToast,
         currentSetLastGigStats,
@@ -348,7 +344,8 @@ export const useRhythmGameAudio = ({
           'RhythmGame',
           'Audio Context blocked. Waiting for user gesture.'
         )
-        setAudioReady(false)
+        currentStatusRef.current = 'blocked'
+        setAudioStatus('blocked')
         return
       }
 
@@ -363,8 +360,7 @@ export const useRhythmGameAudio = ({
         currentPlayer,
         currentSetlist,
         gameStateRef,
-        setAudioReady,
-        hasInitializedRef
+        setAudioStatus
       })
 
       if (!physicsSuccess) {
@@ -374,13 +370,14 @@ export const useRhythmGameAudio = ({
       const activeSetlist = resolveActiveSetlist(currentSetlist)
 
       if (isAborted()) {
-        setAudioReady(false)
+        currentStatusRef.current = 'idle'
+        setAudioStatus('idle')
         return
       }
 
       if (!isAborted()) {
-        setAudioReady(true)
-        hasInitializedRef.current = true
+        setAudioStatus('ready')
+        currentStatusRef.current = 'ready'
         await audioEngine.playSongSequence(
           0,
           activeSetlist,
@@ -407,12 +404,11 @@ export const useRhythmGameAudio = ({
       const errorInfo = handleError(error, { fallbackMessage: toastMessage })
       const toastType = toastTypeFromSeverity(errorInfo.severity)
       currentAddToast(toastMessage, toastType)
-      setAudioReady(false)
-      hasInitializedRef.current = false
+      currentStatusRef.current = 'failed'
+      setAudioStatus('failed')
     } finally {
       if (abortControllerRef.current === controller) {
-        isInitializingRef.current = false
-        if (!hasInitializedRef.current || isAborted()) {
+        if (currentStatusRef.current !== 'ready' || isAborted()) {
           audioEngine.stopAudio()
         }
       }
@@ -428,16 +424,15 @@ export const useRhythmGameAudio = ({
         controller.abort()
       }
       if (abortControllerRef.current === controller) {
-        hasInitializedRef.current = false
-        isInitializingRef.current = false
+        currentStatusRef.current = 'idle'
         audioEngine.stopAudio()
       }
     }
   }, [audioEngine, initializeGigState])
 
   const retryAudioInitialization = useCallback(async () => {
-    if (!isInitializingRef.current) {
-      hasInitializedRef.current = false
+    if (currentStatusRef.current !== 'initializing') {
+      currentStatusRef.current = 'idle'
     }
     await initializeGigState()
   }, [initializeGigState])

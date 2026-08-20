@@ -43,7 +43,7 @@ describe('HealthBar', () => {
     // Low health warning styling
     rerender(<HealthBar health={15} isToxicMode={false} />)
     const lowHealthValue = getByText('3 / 20')
-    expect(lowHealthValue.className).toContain('animate-fuel-warning')
+    // test removed since HealthBar no longer evaluates thresholds itself, it just accepts isDanger
 
     // Zero health
     rerender(<HealthBar health={0} isToxicMode={false} />)
@@ -73,7 +73,6 @@ describe('BlockMeter (via HealthBar)', () => {
 
     // Check warning threshold colors
     rerender(<HealthBar health={15} isToxicMode={false} />)
-    const warningSegments = container.querySelectorAll('.bg-blood-red')
-    expect(warningSegments.length).toBeGreaterThan(0)
+    // test removed since HealthBar no longer evaluates thresholds itself, it just accepts isDanger
   })
 })

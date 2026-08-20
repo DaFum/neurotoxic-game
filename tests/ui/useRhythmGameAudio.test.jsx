@@ -91,7 +91,7 @@ describe('useRhythmGameAudio', () => {
   })
 
   it('handles non-finite harmony gracefully', () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
 
     renderHook(() =>
@@ -103,7 +103,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: { ...baseState, band: { harmony: NaN } },
         contextActions: {
           addToast: vi.fn(),
@@ -119,12 +119,12 @@ describe('useRhythmGameAudio', () => {
       'RhythmGame',
       'Band harmony too low to start gig.'
     )
-    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setAudioStatus).toHaveBeenCalledWith('ready')
     expect(setIsGameOver).toHaveBeenCalledWith(true)
   })
 
   it('finalizes the gig instead of showing the audio lock on low harmony', () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const setLastGigStats = vi.fn()
     const endGig = vi.fn()
@@ -139,7 +139,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: { ...baseState, band: { harmony: 0 } },
         contextActions: {
           addToast,
@@ -151,7 +151,7 @@ describe('useRhythmGameAudio', () => {
     )
 
     expect(mocks.stopMusic).toHaveBeenCalled()
-    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setAudioStatus).toHaveBeenCalledWith('ready')
     expect(setIsGameOver).toHaveBeenCalledWith(true)
     expect(addToast).toHaveBeenCalledWith(
       'ui:gig.toasts.bandCollapsed',
@@ -164,7 +164,7 @@ describe('useRhythmGameAudio', () => {
   })
 
   it('stops audio on unmount cleanup', () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
@@ -176,7 +176,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -193,7 +193,7 @@ describe('useRhythmGameAudio', () => {
 
   it('reports initialization failures with a translated fallback message', async () => {
     mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
@@ -207,7 +207,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -235,7 +235,7 @@ describe('useRhythmGameAudio', () => {
   it('reports initialization failures with error toast for high severity', async () => {
     mocks.handleError.mockReturnValueOnce({ severity: 'high' })
     mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
@@ -249,7 +249,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -273,7 +273,7 @@ describe('useRhythmGameAudio', () => {
   })
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const gameStateRef = {
       current: {
@@ -287,7 +287,7 @@ describe('useRhythmGameAudio', () => {
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
