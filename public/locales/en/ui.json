@@ -1649,6 +1649,7 @@
   "shop.messages.labelSigned": "Signed! {{advance}} Advance.",
   "shop.messages.money": "Money",
   "shop.messages.notEnough": "Not enough {{currency}} for {{itemName}}",
+  "shop.messages.reputationBlocked": "Your reputation is too low to purchase {{itemName}}.",
   "shop.messages.posterWall": "Looks cool. Fame +10",
   "shop.messages.purchaseFailed": "Purchase failed!",
   "shop.messages.purchaseSuccess": "{{itemName}} purchased!",

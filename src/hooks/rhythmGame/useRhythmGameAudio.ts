@@ -232,6 +232,7 @@ export const useRhythmGameAudio = ({
   const { addToast, setLastGigStats, endGig, t } = contextActions
 
   const currentStatusRef = useRef<GigAudioStatus>('idle')
+  const hasResolvedLowHarmonyRef = useRef(false)
   const abortControllerRef = useRef<AbortController | null>(null)
   const latestContextRef = useRef({
     band,
@@ -319,7 +320,6 @@ export const useRhythmGameAudio = ({
       const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
       // Harmony Guard
-      const hasResolvedLowHarmonyRef = { current: false } // We can mock this per run as the guard handles game over state
       const isBandCollapsed = handleHarmonyGuard({
         currentHarmony,
         hasResolvedLowHarmonyRef,
