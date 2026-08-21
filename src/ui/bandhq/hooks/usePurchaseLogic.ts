@@ -182,6 +182,14 @@ const handlePurchaseValidationError = (
       }),
       'error'
     )
+  } else if (validation.errorType === 'reputation_blocked') {
+    addToast(
+      t('ui:shop.messages.reputationBlocked', {
+        itemName: getItemToastLabel(item, t),
+        defaultValue: 'Your reputation is too low to purchase this item.'
+      }),
+      'error'
+    )
   }
 }
 
@@ -332,7 +340,7 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(item, player, band)
+        const validation = validatePurchase(item, player, band, social)
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)

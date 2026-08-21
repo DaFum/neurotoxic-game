@@ -369,7 +369,10 @@ export const applyStatModifier = (
 
 /** Reasons `validatePurchase` can reject an item. */
 export type PurchaseErrorType =
-  'missing_effect' | 'already_owned' | 'insufficient_funds'
+  | 'missing_effect'
+  | 'already_owned'
+  | 'insufficient_funds'
+  | 'reputation_blocked'
 
 export type PurchaseValidationResult =
   | { isValid: false; errorType: PurchaseErrorType }
@@ -415,19 +418,27 @@ export const getPurchaseDecision = (
  * @param item - Item to purchase
  * @param player - Player state
  * @param band - Band state
+ * @param social - Social state (optional)
  * @returns Discriminated union indicating validity and computed parameters.
  */
 export const validatePurchase = (
   item: PurchaseItem,
   player: PlayerState,
-  band: BandState
+  band: BandState,
+  social?: SocialState
 ): PurchaseValidationResult => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
     return { isValid: false, errorType: 'missing_effect' }
   }
 
-  const decision = getPurchaseDecision(item, player, band)
+  const decision = getPurchaseDecision(item, player, band, social)
+
+  const meetsReputation =
+    !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+  if (!meetsReputation) {
+    return { isValid: false, errorType: 'reputation_blocked' }
+  }
 
   if (decision.isOwned && !decision.isConsumable) {
     return { isValid: false, errorType: 'already_owned' }

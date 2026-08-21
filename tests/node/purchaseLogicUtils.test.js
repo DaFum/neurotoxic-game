@@ -11,10 +11,48 @@ import {
   applyStatModifier,
   applyUnlockUpgrade,
   applyUnlockHQ,
-  applyPassive
+  applyPassive,
+  validatePurchase
 } from '../../src/utils/purchaseLogicUtils'
 
 describe('purchaseLogicUtils', () => {
+  describe('validatePurchase', () => {
+    test('rejects items with requiresReputation: true when controversyLevel >= 50', () => {
+      const item = {
+        id: 'hq_room_label',
+        requiresReputation: true,
+        cost: 100,
+        currency: 'money',
+        effect: { type: 'stat_modifier' }
+      }
+      const player = { money: 1000 }
+      const band = {}
+      const social = { controversyLevel: 50 }
+
+      const result = validatePurchase(item, player, band, social)
+      assert.deepStrictEqual(result, {
+        isValid: false,
+        errorType: 'reputation_blocked'
+      })
+    })
+
+    test('accepts items with requiresReputation: true when controversyLevel < 50', () => {
+      const item = {
+        id: 'hq_room_label',
+        requiresReputation: true,
+        cost: 100,
+        currency: 'money',
+        effect: { type: 'stat_modifier' }
+      }
+      const player = { money: 1000 }
+      const band = {}
+      const social = { controversyLevel: 49 }
+
+      const result = validatePurchase(item, player, band, social)
+      assert.equal(result.isValid, true)
+    })
+  })
+
   describe('getPrimaryEffect', () => {
     test('returns first effect from effects array', () => {
       const item = { effects: [{ type: 'test' }] }

@@ -123,14 +123,14 @@ describe('useRhythmGameAudio', () => {
     expect(setIsGameOver).toHaveBeenCalledWith(true)
   })
 
-  it('finalizes the gig instead of showing the audio lock on low harmony', () => {
+  it('finalizes the gig instead of showing the audio lock on low harmony and acts idempotently', async () => {
     const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const setLastGigStats = vi.fn()
     const endGig = vi.fn()
     const addToast = vi.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: {
           current: {
@@ -157,10 +157,19 @@ describe('useRhythmGameAudio', () => {
       'ui:gig.toasts.bandCollapsed',
       'error'
     )
+    expect(addToast).toHaveBeenCalledTimes(1)
     expect(setLastGigStats).toHaveBeenCalledWith(
       expect.objectContaining({ score: 0 })
     )
-    expect(endGig).toHaveBeenCalled()
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
+
+    // retry shouldn't cause side effects to run again
+    await result.current.retryAudioInitialization()
+
+    expect(addToast).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
   })
 
   it('stops audio on unmount cleanup', () => {
