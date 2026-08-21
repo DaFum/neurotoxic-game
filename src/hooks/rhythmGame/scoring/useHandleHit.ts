@@ -198,10 +198,12 @@ export const useHandleHit = ({
           gameStateRef.current.isCorruptionBurstActive
         )
 
-        finalScore *= calculateCritMultiplier(
-          critChance,
-          typeof state.rng === 'function' ? state.rng() : 0.5
-        )
+        if (critChance > 0) {
+          finalScore *= calculateCritMultiplier(
+            critChance,
+            typeof state.rng === 'function' ? state.rng() : 0.5
+          )
+        }
 
         // Extract calculations outside state callbacks
         const nextScore = gameStateRef.current.score + finalScore

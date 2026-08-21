@@ -320,8 +320,8 @@ export const usePurchaseLogic = ({
    * Gets the combined purchase decision (cost, affordability, ownership)
    */
   const getPurchaseDecisionCallback = useCallback(
-    (item: PurchaseItem) => getPurchaseDecision(item, player, band),
-    [player, band]
+    (item: PurchaseItem) => getPurchaseDecision(item, player, band, social),
+    [player, band, social]
   )
 
   /**
@@ -462,12 +462,7 @@ export const usePurchaseLogic = ({
    */
   const isItemDisabled = useCallback(
     (item: PurchaseItem) => {
-      const effect = getPrimaryEffect(item)
-      if (!effect) return true
-      if (item.requiresReputation && (social?.controversyLevel ?? 0) >= 50)
-        return true
-
-      const decision = getPurchaseDecision(item, player, band)
+      const decision = getPurchaseDecision(item, player, band, social)
       return !decision.canPurchase
     },
     [player, band, social]

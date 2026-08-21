@@ -4,7 +4,6 @@ import { ShopItem } from '../../src/ui/bandhq/ShopItem'
 import * as purchaseLogicUtils from '../../src/utils/purchaseLogicUtils'
 
 vi.mock('../../src/utils/purchaseLogicUtils', () => ({
-  getPrimaryEffect: vi.fn(),
   LABEL_CONTRACT_ADVANCE: 500
 }))
 
@@ -46,7 +45,6 @@ const defaultProps = {
 describe('ShopItem', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    purchaseLogicUtils.getPrimaryEffect.mockReturnValue(undefined)
   })
 
   it('renders item details correctly', () => {
