@@ -151,13 +151,21 @@ export const handleCompleteTravelMinigame = (
     0
   )
   if (travelStaminaRegen > 0 && nextMembers.length > 0) {
-    nextMembers = nextMembers.map((member: BandMember) => ({
-      ...member,
-      stamina: clampMemberStamina(
-        finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,
-        finiteNumberOr(member?.staminaMax, 100)
-      )
-    })) as GameState['band']['members']
+    // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+    // Why: Avoids intermediate array allocations inside the loop, reducing GC pressure.
+    const len = nextMembers.length
+    const updatedMembers = new Array<BandMember>(len)
+    for (let i = 0; i < len; i++) {
+      const member = nextMembers[i] as BandMember
+      updatedMembers[i] = {
+        ...member,
+        stamina: clampMemberStamina(
+          finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,
+          finiteNumberOr(member?.staminaMax, 100)
+        )
+      }
+    }
+    nextMembers = updatedMembers as GameState['band']['members']
   }
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {
