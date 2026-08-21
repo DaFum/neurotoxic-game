@@ -12,3 +12,14 @@ export type PlayerPatch = Omit<Partial<PlayerState>, 'van'> & {
  * Partial band update shape accepted by purchase effects.
  */
 export type BandPatch = Partial<BandState> | null
+
+/**
+ * Resolved purchase state parameters for a given catalog item.
+ */
+export interface PurchaseDecision {
+  cost: number
+  canAfford: boolean
+  isOwned: boolean
+  isConsumable: boolean
+  canPurchase: boolean
+}

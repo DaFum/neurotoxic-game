@@ -364,6 +364,7 @@ export const useRhythmGameAudio = ({
       })
 
       if (!physicsSuccess) {
+        currentStatusRef.current = 'failed'
         return
       }
 

@@ -616,7 +616,7 @@ export interface VoidTraderItem extends PurchaseItem {
  */
 export type Balances = Record<string, number>
 
-import type { PurchaseDecision } from '../utils/purchaseLogicUtils'
+import type { PurchaseDecision } from './purchase'
 
 /**
  * Props shared by catalog consumers that render buy actions.

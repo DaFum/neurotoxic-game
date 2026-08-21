@@ -306,4 +306,52 @@ describe('useRhythmGameAudio', () => {
       expect(mocks.playSongSequence).toHaveBeenCalled()
     })
   })
+
+  it('updates currentStatusRef to failed if physics setup fails and allows retry', async () => {
+    // Mock setupGigPhysics to simulate a failure
+    mocks.setupGigPhysics.mockReturnValueOnce(null)
+    const setAudioStatus = vi.fn()
+    const setIsGameOver = vi.fn()
+
+    const { result } = renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: {
+          current: {
+            lanes: [{}, {}, {}],
+            hasSubmittedResults: false,
+            isGameOver: false
+          }
+        },
+        setters: { setAudioStatus, setIsGameOver },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    // Wait for the initialization error path to complete
+    await waitFor(() => {
+      expect(setAudioStatus).toHaveBeenCalledWith('failed')
+    })
+
+    // Now currentStatusRef.current should be 'failed'.
+    // Calling retryAudioInitialization should clear it and attempt to initialize again.
+
+    // Clear mocks so we can check if it tries again
+    mocks.setupGigPhysics.mockClear()
+    mocks.setupGigPhysics.mockReturnValueOnce({
+      mergedModifiers: {},
+      speed: 500,
+      hitWindows: [100, 100, 100]
+    })
+
+    await result.current.retryAudioInitialization()
+
+    // It should have called setupGigPhysics again
+    expect(mocks.setupGigPhysics).toHaveBeenCalled()
+  })
 })
