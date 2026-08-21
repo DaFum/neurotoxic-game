@@ -42,6 +42,7 @@ import {
   clampVanCondition,
   clampVanBreakdownChance,
   clamp0to100,
+  clampLuck,
   clampControversyLevel,
   clampLoyalty,
   clampZealotry,
@@ -828,7 +829,7 @@ export const sanitizeBand = (loadedBand: unknown): BandState => {
       bandData.inventorySlots,
       DEFAULT_BAND_STATE.inventorySlots
     ),
-    luck: finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck),
+    luck: clampLuck(finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck)),
     performance: {
       ...DEFAULT_BAND_STATE.performance,
       ...(isLooseRecord(bandData.performance)
