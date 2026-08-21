@@ -65,7 +65,7 @@ jobs:
         with:
           marker: '<!-- test-results-node-shard-${{ matrix.shard }}: do-not-edit -->'
           file: 'test-output-node-${{ matrix.shard }}.txt'
-          regex: '^not ok\b|^\s+✖|FAIL\b|AssertionError|Error:'
+          regex: '^not ok\b|^\s+✖|FAIL\b|AssertionError'
           max: ${{ env.MAX_FAILURE_LINES }}
           header: '## ❌ Node.js tests failed (shard ${{ matrix.shard }}/2)'
 
@@ -110,7 +110,7 @@ jobs:
         with:
           marker: '<!-- test-results-vitest-logic: do-not-edit -->'
           file: 'test-output-vitest-logic.txt'
-          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError'
           max: ${{ env.MAX_FAILURE_LINES }}
           header: '## ❌ Vitest Logic tests failed'
 
@@ -155,7 +155,7 @@ jobs:
         with:
           marker: '<!-- test-results-vitest-ui: do-not-edit -->'
           file: 'test-output-vitest-ui.txt'
-          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError|Error:'
+          regex: 'FAIL\\b|^\\s+[✕×✗]|AssertionError'
           max: ${{ env.MAX_FAILURE_LINES }}
           header: '## ❌ Vitest UI tests failed'
 
