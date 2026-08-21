@@ -80,6 +80,7 @@
   "clinic.alreadyEnhanced": "Member already has this enhancement",
   "clinic.alreadyGrafted": "Member already has this graft",
   "clinic.enhance_button": "GRAFT: CYBER LUNGS ({{fame}} Fame)",
+  "clinic.iron_liver_button": "GRAFT: IRON LIVER ({{fame}} Fame)",
   "clinic.enhance_success": "Flesh upgraded.",
   "clinic.execute_mutation": "EXECUTE MUTATION",
   "clinic.fame": "FAME:",
