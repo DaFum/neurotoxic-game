@@ -4,11 +4,11 @@ import {
   getActiveAssetModifiers
 } from './assetSelectors'
 import { finiteNumberOr } from './finiteNumber'
-import type { TravelLogicParams } from '../hooks/travel/types'
+import type { GameState, PlayerState, BandState, SocialState } from '../types'
 
 export const getSellableAssets = (
-  assets: TravelLogicParams['assets'],
-  liabilities: TravelLogicParams['liabilities'],
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
   playerDay: number
 ): { id: string; net: number }[] => {
   const sellableAssets: { id: string; net: number }[] = []
@@ -46,11 +46,11 @@ export const getSellableAssets = (
 
 export const getPostSaleScenarios = (
   sellableAssets: { id: string; net: number }[],
-  assets: TravelLogicParams['assets'],
-  liabilities: TravelLogicParams['liabilities'],
-  player: TravelLogicParams['player'],
-  band: TravelLogicParams['band'],
-  social: TravelLogicParams['social']
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
+  player: PlayerState,
+  band: BandState,
+  social: SocialState
 ): {
   assetProceeds: number
   dailyObligations: number

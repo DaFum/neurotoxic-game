@@ -19,16 +19,14 @@ describe('OverloadWarning', () => {
     }
   })
 
-  test('renders when overload exceeds the threshold or toxic mode is active', () => {
+  test('renders when overload is critical or toxic mode is active', () => {
     for (const props of [
-      { overload: 91, isToxicMode: false },
-      { overload: 100, isToxicMode: false },
-      { overload: 0, isToxicMode: true },
-      { overload: 90, isToxicMode: true },
-      { overload: 95, isToxicMode: true }
+      { isCritical: true, isToxicMode: false },
+      { isCritical: false, isToxicMode: true },
+      { isCritical: true, isToxicMode: true }
     ]) {
-      const { unmount } = render(<OverloadWarning {...props} />)
-      // test removed because props were refactored to isCritical
+      const { container, unmount } = render(<OverloadWarning {...props} />)
+      expect(container.firstChild).not.toBeNull()
       unmount()
     }
   })

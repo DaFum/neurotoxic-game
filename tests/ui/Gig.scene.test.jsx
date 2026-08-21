@@ -458,10 +458,10 @@ describe('Gig Scene Component', () => {
   })
 
   describe('Audio Lock Screen', () => {
-    test('shows audio lock screen when audio not ready', async () => {
+    test('shows audio lock screen when audio blocked', async () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
-          isAudioReady: false,
+          audioStatus: 'blocked',
           isToxicMode: false
         },
         actions: {
@@ -472,12 +472,30 @@ describe('Gig Scene Component', () => {
       })
 
       render(<Gig />)
+      expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
+    })
+
+    test('shows audio lock screen when audio failed', async () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: {
+          audioStatus: 'failed',
+          isToxicMode: false
+        },
+        actions: {
+          retryAudioInitialization: vi.fn()
+        },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+
+      render(<Gig />)
+      expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
     })
 
     test('initialize audio button calls ensureAudioContext', async () => {
       const mockRetry = vi.fn()
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: false },
+        stats: { audioStatus: 'blocked' },
         actions: { retryAudioInitialization: mockRetry },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -488,25 +506,27 @@ describe('Gig Scene Component', () => {
 
       render(<Gig />)
 
-      // const initButton = screen.getByText(/INITIALIZE AUDIO/i)
+      const initButton = screen.getByText(/INITIALIZE AUDIO/i)
       await act(async () => {
-        // fireEvent.click(initButton)
+        fireEvent.click(initButton)
       })
 
       await flushPromises()
-      // expect(audioService.ensureAudioContext).toHaveBeenCalled() // test removed as audio logic was refactored
-      // expect(mockRetry).toHaveBeenCalled() // test removed as audio logic was refactored
+      expect(audioService.ensureAudioContext).toHaveBeenCalled()
+      expect(mockRetry).toHaveBeenCalled()
     })
 
     test('does not render main gig UI when audio locked', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: false },
+        stats: { audioStatus: 'blocked' },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
       })
 
       render(<Gig />)
+      expect(screen.queryByTestId('gig-hud')).toBeNull()
+      expect(screen.queryByTestId('pixi-stage')).toBeNull()
     })
   })
 
