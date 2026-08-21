@@ -76,7 +76,7 @@
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "react-i18next": "17.0.11",
-    "redis": "5.12.1",
+    "redis": "6.2.1",
     "tone": "15.5.34"
   },
   "devDependencies": {
