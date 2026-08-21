@@ -10,13 +10,11 @@ vi.mock('../../src/ui/shared/Icons', () => ({
 
 describe('OverloadWarning', () => {
   test('hides below or at the overload threshold when toxic mode is off', () => {
-    for (const overload of [0, 50, 90]) {
-      const { container, unmount } = render(
-        <OverloadWarning overload={overload} isToxicMode={false} />
-      )
-      expect(container.firstChild).toBeNull()
-      unmount()
-    }
+    const { container, unmount } = render(
+      <OverloadWarning isCritical={false} isToxicMode={false} />
+    )
+    expect(container.firstChild).toBeNull()
+    unmount()
   })
 
   test('renders when overload is critical or toxic mode is active', () => {

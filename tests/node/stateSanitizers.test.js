@@ -286,13 +286,13 @@ describe('stateSanitizers', () => {
       assert.strictEqual(sanitized.luck, 0)
     })
 
-    it('clamps luck > 100 to 100', () => {
+    it('preserves luck > 100', () => {
       const loadedData = {
         ...DEFAULT_BAND_STATE,
         luck: 150
       }
       const sanitized = sanitizeBand(loadedData)
-      assert.strictEqual(sanitized.luck, 100)
+      assert.strictEqual(sanitized.luck, 150)
     })
 
     it('calculates expected event delta without load-apply lockstep issues for negative loaded luck', () => {

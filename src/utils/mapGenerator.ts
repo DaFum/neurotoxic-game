@@ -242,7 +242,7 @@ export class MapGenerator {
     const { easyVenues, mediumVenues, hardVenues, usedVenueIds } = pools
 
     for (let i = 1; i < depth; i++) {
-      const layerNodes = []
+      const layerNodes: GeneratedMapNode[] = []
       // Determine node count for this layer (2-4 branching)
       const nodeCount = pickBoundedIndex(3, () => this.random(), 2)
 
@@ -254,7 +254,7 @@ export class MapGenerator {
       }
 
       for (let j = 0; j < nodeCount; j++) {
-        const venue = this._pickIntermediateVenue(i, j, pools, available)
+        const venue = this._pickIntermediateVenue(i, j, layerNodes, pools, available)
         const nodeType = this._rollNodeType(venue)
 
         const node: GeneratedMapNode = {
@@ -341,6 +341,7 @@ export class MapGenerator {
   _pickIntermediateVenue(
     layerIndex: number,
     nodeIndex: number,
+    layerNodes: GeneratedMapNode[],
     pools: VenuePools & { usedVenueIds: Set<string> },
     available: { easy: number; medium: number; hard: number }
   ): Venue {
@@ -359,6 +360,9 @@ export class MapGenerator {
       // node instances.
       usedVenueIds.clear()
       if (cachedFinaleVenue) usedVenueIds.add(cachedFinaleVenue.id)
+      for (const node of layerNodes) {
+        if (node.venue?.id) usedVenueIds.add(node.venue.id)
+      }
 
       // We must reset the available counts before selecting a pool again
       available.easy = this._countAvailableVenues(easyVenues, usedVenueIds)

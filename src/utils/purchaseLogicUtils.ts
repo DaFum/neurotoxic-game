@@ -17,6 +17,7 @@ import {
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 import type { PlayerPatch, BandPatch } from '../types/purchase'
+import type { SocialState } from '../types'
 
 /**
  * Cash advance granted by signing the indie label contract (`hq_room_label`).
@@ -393,14 +394,18 @@ import type { PurchaseDecision } from '../types/purchase'
 export const getPurchaseDecision = (
   item: PurchaseItem,
   player: PlayerState,
-  band: BandState
+  band: BandState,
+  social?: SocialState
 ): PurchaseDecision => {
   const cost = getAdjustedCost(item, band)
   const isOwned = isItemOwned(item, player, band)
   const effect = getPrimaryEffect(item)
   const isConsumable = effect?.type === 'inventory_add'
   const playerCanAfford = canAfford(item, player, cost)
-  const canPurchase = playerCanAfford && (isConsumable || !isOwned)
+
+  const hasValidEffect = !!effect
+  const meetsReputation = !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+  const canPurchase = playerCanAfford && (isConsumable || !isOwned) && hasValidEffect && meetsReputation
 
   return { cost, canAfford: playerCanAfford, isOwned, isConsumable, canPurchase }
 }

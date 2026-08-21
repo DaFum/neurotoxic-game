@@ -28,20 +28,6 @@ vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
   }
 }))
 
-let isLocked = false;
-vi.mock('../../src/ui/bandhq/hooks/usePurchaseLock', () => ({
-  usePurchaseLock: () => ({
-    processingItemId: null,
-    runWithLock: vi.fn(async (id, cb) => {
-      if (isLocked) return;
-      isLocked = true;
-      await cb();
-      isLocked = false;
-    })
-  })
-}))
-
-
 // Structural ShopItem mock: forwards processingItemId to disable the button,
 // matching real phase behavior, and fires onBuy on click.
 vi.mock('../../src/ui/bandhq/ShopItem', () => ({
@@ -76,7 +62,6 @@ describe('SupplyStopModal purchase lock', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    isLocked = false;
     mockedTransformPlayerPatch = null;
     const state = { player: { fame: 100 }, band: {}, social: {} }
     vi.spyOn(GameState, 'useGameSelector').mockImplementation(sel => sel(state))

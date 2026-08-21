@@ -291,9 +291,13 @@ export const toBoundedNonNegativeInteger = (
 }
 
 /**
- * Clamps band luck to the canonical 0-100 range.
+ * Clamps band luck to be non-negative. Preserves values above 100 to allow
+ * equipment bonuses and accumulated effects to stack properly.
  *
  * @param luck - Candidate luck value.
- * @returns Luck clamped to the range 0..100.
+ * @returns Luck clamped to a minimum of 0.
  */
-export const clampLuck = (luck: number): number => clamp0to100(luck)
+export const clampLuck = (luck: number): number => {
+  const val = Number.isFinite(luck) ? luck : 0
+  return Math.max(0, Math.floor(val))
+}

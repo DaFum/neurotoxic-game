@@ -16,7 +16,7 @@ interface OverloadMeterProps {
  * Displays toxic overload as a ten-block meter with danger styling above the warning threshold.
  *
  * @remarks
- * The meter visually indicates the danger level when the overload reaches `80`.
+ * The meter visually indicates the danger level when the overload exceeds `80`.
  *
  * @returns The overload meter component.
  */

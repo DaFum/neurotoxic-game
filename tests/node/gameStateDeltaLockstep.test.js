@@ -451,8 +451,8 @@ test('EventDelta clamps luck, loyalty, and zealotry identically in preview and a
   const preview = calculateAppliedDelta(state, delta)
   const applied = applyEventDelta(state, delta)
 
-  assert.equal(preview.band.luck, 1)
-  assert.equal(applied.band.luck, 100)
+  assert.equal(preview.band.luck, 5) // Luck is no longer clamped to 100
+  assert.equal(applied.band.luck, 104) // Luck is no longer clamped to 100
   assert.equal(preview.social.loyalty, 1)
   assert.equal(applied.social.loyalty, 100)
   assert.equal(preview.social.zealotry, 2)

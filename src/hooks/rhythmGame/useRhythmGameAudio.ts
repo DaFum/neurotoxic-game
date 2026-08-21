@@ -43,6 +43,7 @@ type RhythmGameAudioParams = {
 type HarmonyGuardParams = {
   currentHarmony: number
   hasResolvedLowHarmonyRef: { current: boolean }
+  currentStatusRef: React.MutableRefObject<GigAudioStatus>
   gameStateRef: { current: RhythmGameRefState }
   setGameOver: (isGameOver: boolean) => void
   setAudioStatus: (status: GigAudioStatus) => void
@@ -55,6 +56,7 @@ type HarmonyGuardParams = {
 const handleHarmonyGuard = ({
   currentHarmony,
   hasResolvedLowHarmonyRef,
+  currentStatusRef,
   gameStateRef,
   setGameOver,
   setAudioStatus,
@@ -70,6 +72,7 @@ const handleHarmonyGuard = ({
       const currentRhythmState = gameStateRef.current
       currentRhythmState.isGameOver = true
       setGameOver(true)
+      currentStatusRef.current = 'ready'
       setAudioStatus('ready')
 
       const message = currentT('ui:gig.toasts.bandCollapsed', {
@@ -320,6 +323,7 @@ export const useRhythmGameAudio = ({
       const isBandCollapsed = handleHarmonyGuard({
         currentHarmony,
         hasResolvedLowHarmonyRef,
+        currentStatusRef,
         gameStateRef,
         setGameOver,
         setAudioStatus,
