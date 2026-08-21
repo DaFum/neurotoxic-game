@@ -230,9 +230,8 @@ export const canAfford = (
   adjustedCost: number
 ): boolean => {
   const payingWithFame = item.currency === 'fame'
-  const currencyValue = payingWithFame
-    ? (player.fame ?? 0)
-    : (player.money ?? 0)
+  const rawCurrency = payingWithFame ? player.fame : player.money
+  const currencyValue = finiteNumberOr(rawCurrency, 0)
   return currencyValue >= adjustedCost
 }
 
@@ -382,13 +381,7 @@ export type PurchaseValidationResult =
       effect: Effect
     }
 
-export interface PurchaseDecision {
-  cost: number
-  canAfford: boolean
-  isOwned: boolean
-  isConsumable: boolean
-  canPurchase: boolean
-}
+import type { PurchaseDecision } from '../types/purchase'
 
 /**
  * Derives all upgrade-purchase state variables in a single calculation.

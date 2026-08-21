@@ -169,6 +169,20 @@ describe('purchaseLogicUtils', () => {
       })
     })
 
+    test('rejects Infinity, NaN, and string values by treating them as 0', () => {
+      // Cost 10, invalid player values should evaluate as 0 currency and fail affordability
+      assert.equal(canAfford({ currency: 'money' }, { money: 'Infinity' }, 10), false)
+      assert.equal(canAfford({ currency: 'money' }, { money: Number.POSITIVE_INFINITY }, 10), false)
+      assert.equal(canAfford({ currency: 'money' }, { money: Number.NaN }, 10), false)
+      assert.equal(canAfford({ currency: 'fame' }, { fame: '100' }, 10), false)
+
+      // But if the cost is 0, having 0 currency (after rejecting invalid values) is sufficient
+      assert.equal(canAfford({ currency: 'money' }, { money: 'Infinity' }, 0), true)
+      assert.equal(canAfford({ currency: 'money' }, { money: Number.POSITIVE_INFINITY }, 0), true)
+      assert.equal(canAfford({ currency: 'money' }, { money: Number.NaN }, 0), true)
+      assert.equal(canAfford({ currency: 'fame' }, { fame: '100' }, 0), true)
+    })
+
     test('defaults to money if item.currency is missing or invalid', () => {
       const player = { money: 50, fame: 100 }
       assert.equal(canAfford({}, player, 40), true)
