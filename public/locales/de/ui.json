@@ -1649,6 +1649,7 @@
   "shop.messages.labelSigned": "Unterschrieben! {{advance}} Vorschuss.",
   "shop.messages.money": "Geld",
   "shop.messages.notEnough": "Nicht genug {{currency}} für {{itemName}}",
+  "shop.messages.reputationBlocked": "Dein Ruf ist zu niedrig, um {{itemName}} zu kaufen.",
   "shop.messages.posterWall": "Sieht cool aus. Ruhm +10",
   "shop.messages.purchaseFailed": "Kauf fehlgeschlagen!",
   "shop.messages.purchaseSuccess": "{{itemName}} gekauft!",
