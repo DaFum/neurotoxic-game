@@ -3,8 +3,11 @@ import assert from 'node:assert/strict'
 
 import {
   sanitizeActiveEvent,
-  normalizeLoadedGameMap
+  normalizeLoadedGameMap,
+  sanitizeBand
 } from '../../src/context/reducers/sanitizers/stateSanitizers'
+import { DEFAULT_BAND_STATE } from '../../src/context/initialState'
+import { calculateAppliedDelta } from '../../src/utils/gameState'
 
 describe('stateSanitizers', () => {
   describe('copySafeEffectPayload (via sanitizeActiveEvent)', () => {
@@ -270,6 +273,47 @@ describe('stateSanitizers', () => {
         null,
         { validKey: 'val', num: 1 }
       ])
+    })
+  })
+
+  describe('sanitizeBand', () => {
+    it('clamps negative luck to 0', () => {
+      const loadedData = {
+        ...DEFAULT_BAND_STATE,
+        luck: -10
+      }
+      const sanitized = sanitizeBand(loadedData)
+      assert.strictEqual(sanitized.luck, 0)
+    })
+
+    it('clamps luck > 100 to 100', () => {
+      const loadedData = {
+        ...DEFAULT_BAND_STATE,
+        luck: 150
+      }
+      const sanitized = sanitizeBand(loadedData)
+      assert.strictEqual(sanitized.luck, 100)
+    })
+
+    it('calculates expected event delta without load-apply lockstep issues for negative loaded luck', () => {
+      // Simulate loading state without sanitizeBand, which is the bug condition
+      const unSanitizedState = {
+        ...DEFAULT_BAND_STATE,
+        luck: -10
+      }
+
+      const delta = { luck: 5 }
+
+      // When the load-apply bug occurs, calculateAppliedDelta computes a preview of 0
+      // but applyEventDelta calculates an actual delta resulting in state value 5.
+      // This test ensures that when state is actually sanitized, calculateAppliedDelta
+      // computes the proper preview delta (+5) based on the clamped baseline (0).
+
+      const sanitizedState = sanitizeBand(unSanitizedState)
+      const preview = calculateAppliedDelta({ band: sanitizedState }, delta)
+
+      assert.strictEqual(preview.luck, 5) // Was previously computing 0, violating lockstep
+      assert.strictEqual(sanitizedState.luck, 0)
     })
   })
 })

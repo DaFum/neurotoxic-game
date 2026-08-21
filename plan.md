@@ -1,29 +1,12 @@
-1. **Fix `src/utils/gameState/clamps.ts`:**
-   - Use `replace_with_git_merge_diff` to add `export const clampLuck = (luck: number): number => clamp0to100(luck)`.
-
-2. **Fix `src/utils/gameState/delta.ts`:**
-   - Use `replace_with_git_merge_diff` to apply `clampLuck(currentLuck + luckDelta)` in `calculateAppliedDelta` and `applyEventDelta`, removing `addClampedNonNegative`. Ensure `clampLuck` is imported from `./clamps`.
-
-3. **Verify and fix `src/context/reducers/bandReducer.ts`:**
-   - Use `replace_with_git_merge_diff` to import `clampLuck` from `../../utils/gameState/clamps` and replace `sanitizeNumericKey('luck', clamp0to100)` with `sanitizeNumericKey('luck', clampLuck)`.
-
-4. **Fix `src/utils/purchaseLogicUtils.ts`:**
-   - Use `replace_with_git_merge_diff` to:
-     - Update `canAfford` signature to accept `item: { currency?: string }` so it's less restrictive.
-     - Make `validatePurchase` call `canAfford(item, player, finalCost)` instead of `currencyValue < finalCost`.
-     - Update the luck purchase effects (`hq_room_void_altar` and `hq_room_shrine`) to use `clampLuck((getNumericProp(...) ?? 0) + 10)`. Ensure `clampLuck` is imported from `./gameState/clamps`.
-
-5. **Fix `src/hooks/preGig/usePreGigHandlers.ts`:**
-   - Use `replace_with_git_merge_diff` to import `canAfford` from `../../utils/purchaseLogicUtils` and replace inline `player.money < cost` checks with `!canAfford({ currency: 'money' }, player, cost)`.
-
-6. **Fix `src/components/clinic/ClinicMemberCard.tsx`:**
-   - Use `replace_with_git_merge_diff` to import `canAfford` from `../../utils/purchaseLogicUtils` and replace `player.money >= CLINIC_GRAFT_COST` with `canAfford({ currency: 'money' }, player, CLINIC_GRAFT_COST)`.
-
-7. **Fix `tests/node/gameStateDeltaLockstep.test.js`:**
-   - Use `replace_with_git_merge_diff` to add a test block asserting bounded luck behavior between 0 and 100 for event deltas (which is actually partially covered, I need to ensure the test asserts upper bounds). The current test "clamps luck, loyalty, and zealotry identically in preview and apply" tests the lower bound (-1 to 0). I will add an upper bound check for luck.
-
-8. **Verify tests pass:**
-   - Use `run_in_bash_session` to run tests and typecheck.
-
-9. Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.
-10. Submit the change using the `submit` tool.
+1. **Fix Luck Clamp in Sanitize Band**
+   - Update `src/context/reducers/sanitizers/stateSanitizers.ts` to import `clampLuck`.
+   - Use `clampLuck(finiteNumberOr(bandData.luck, DEFAULT_BAND_STATE.luck))` when sanitizing the `band.luck` property to enforce the 0-100 limit on loaded saves.
+2. **Add Luck Regression Tests**
+   - In `tests/node/stateSanitizers.test.js`, add tests in a `describe('sanitizeBand')` block verifying that negative luck and luck > 100 are clamped properly.
+   - Specifically test calculating a positive event delta on a negative loaded luck to show the fix works for load-apply lockstep issues.
+3. **Fix GigVisualStatus Regression Tests**
+   - In `tests/ui/OverloadWarning.test.jsx`, update the tests for `hides below or at the overload threshold` to mock `deriveGigVisualStatus` returning specific values if needed, OR add a dedicated test for `deriveGigVisualStatus` in a new or existing node test.
+   - Create a `tests/node/gigVisualStatus.test.js` file.
+   - Direct test of `deriveGigVisualStatus(stats)` for values around the boundaries (80/81, 90/91 for overload, 80/81 for corruption).
+4. **Complete pre-commit steps to ensure proper testing, verification, review, and reflection are done.**
+5. **Submit changes**
