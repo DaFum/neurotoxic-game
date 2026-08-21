@@ -19,7 +19,7 @@ export const calculateChaosStyle = (
   if (overload > 50) {
     const saturation = 1 + (overload - 50) / 25
     let filter = `saturate(${saturation})`
-    if (overload >= 80) {
+    if (overload > 80) {
       filter += ` hue-rotate(${overload - 80}deg)`
     }
     style.filter = filter

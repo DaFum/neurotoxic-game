@@ -41,8 +41,9 @@ describe('HealthBar', () => {
     expect(midHealthValue.className).not.toContain('animate-fuel-warning')
 
     // Low health warning styling
-    rerender(<HealthBar health={15} isToxicMode={false} />)
-    // test removed since HealthBar no longer evaluates thresholds itself, it just accepts isDanger
+    rerender(<HealthBar health={15} isToxicMode={false} isDanger={true} />)
+    const lowHealthValue = getByText('3 / 20')
+    expect(lowHealthValue.className).toContain('animate-fuel-warning')
 
     // Zero health
     rerender(<HealthBar health={0} isToxicMode={false} />)

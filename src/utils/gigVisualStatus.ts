@@ -1,4 +1,4 @@
-import type { GigHUDStats } from '../components/GigHUD'
+import type { GigHUDStats } from '../types/rhythmGame'
 
 export type GigVisualStatus = {
   healthDanger: boolean
@@ -19,11 +19,11 @@ export const deriveGigVisualStatus = (stats: GigHUDStats): GigVisualStatus => {
 
   return {
     healthDanger: health < 20,
-    overloadDanger: overload >= 80,
-    overloadCritical: overload >= 90,
+    overloadDanger: overload > 80,
+    overloadCritical: overload > 90,
     comboTier: combo >= 50 ? 'high' : combo >= 20 ? 'low' : 'none',
     comboPulsing: combo >= 50,
-    corruptionDanger: corruptionLevel >= 80,
+    corruptionDanger: corruptionLevel > 80,
     lowAccuracy: accuracy < 70
   }
 }
