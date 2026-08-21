@@ -1,6 +1,7 @@
 import { memo } from 'react'
 
 import type { NodeVisibility } from '../types/map'
+import { nodeToPercentPosition } from '../utils/mapUtils'
 
 /**
  * Defines the coordinate space for a map routing endpoint.
@@ -53,12 +54,15 @@ export const MapConnection = memo(
   ({ start, end, startVis, endVis }: MapConnectionProps) => {
     if (startVis === 'hidden' || endVis === 'hidden') return null
 
+    const startPos = nodeToPercentPosition(start)
+    const endPos = nodeToPercentPosition(end)
+
     return (
       <line
-        x1={`${start.x}%`}
-        y1={`${start.y}%`}
-        x2={`${end.x}%`}
-        y2={`${end.y}%`}
+        x1={startPos.left}
+        y1={startPos.top}
+        x2={endPos.left}
+        y2={endPos.top}
         stroke='var(--color-toxic-green)'
         strokeWidth='1'
         opacity={startVis === 'dimmed' || endVis === 'dimmed' ? 0.2 : 0.5}

@@ -15,6 +15,7 @@ export const calculateChaosStyle = (
     style.filter = 'invert(0.1) contrast(1.5) saturate(2)'
     return style
   }
+
   if (overload > 50) {
     const saturation = 1 + (overload - 50) / 25
     let filter = `saturate(${saturation})`

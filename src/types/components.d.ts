@@ -616,6 +616,8 @@ export interface VoidTraderItem extends PurchaseItem {
  */
 export type Balances = Record<string, number>
 
+import type { PurchaseDecision } from './purchase'
+
 /**
  * Props shared by catalog consumers that render buy actions.
  */
@@ -623,9 +625,8 @@ export interface CatalogConsumerProps {
   items: CatalogItem[]
   processingItemId?: string | number
   handleBuy: (item: CatalogItem) => void
-  isItemOwned: (item: CatalogItem) => boolean
   isItemDisabled: (item: CatalogItem) => boolean
-  getAdjustedCost?: (item: CatalogItem) => number | undefined
+  getPurchaseDecision: (item: CatalogItem) => PurchaseDecision
 }
 
 /**
@@ -639,9 +640,8 @@ export interface CatalogTabProps {
    * Do not pass raw utility functions that require player/band arguments.
    */
   handleBuyCallback: (item: CatalogItem) => void
-  isItemOwnedCallback: (item: CatalogItem) => boolean
   isItemDisabledCallback: (item: CatalogItem) => boolean
-  getAdjustedCostCallback?: (item: CatalogItem) => number | undefined
+  getPurchaseDecisionCallback: (item: CatalogItem) => PurchaseDecision
   processingItemId?: string | number
 }
 

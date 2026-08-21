@@ -8,10 +8,9 @@ import { normalizePercentageToScale } from '../../utils/gameState'
  * Properties for the {@link HealthBar} component.
  */
 interface HealthBarProps {
-  /** The current health/crowd energy level, represented as a percentage. */
   health: number
-  /** Indicates whether the toxic mode visual modifiers should be applied. */
   isToxicMode?: boolean
+  isDanger?: boolean
 }
 
 /**
@@ -21,7 +20,8 @@ interface HealthBarProps {
  */
 export const HealthBar = memo(function HealthBar({
   health,
-  isToxicMode = false
+  isToxicMode = false,
+  isDanger = false
 }: HealthBarProps) {
   const { t } = useTranslation()
 
@@ -32,7 +32,7 @@ export const HealthBar = memo(function HealthBar({
           label={String(t('ui:gig.crowdEnergy', 'CROWD ENERGY'))}
           value={normalizePercentageToScale(health, 20)}
           max={20}
-          isDanger={health < 20}
+          isDanger={isDanger}
         />
         {isToxicMode && (
           <div className='mt-3 animate-neon-flicker font-bold tracking-widest text-center font-display text-sm border-t pt-2 border-t-[color-mix(in_srgb,var(--color-error-red)_30%,transparent)] text-error-red'>
