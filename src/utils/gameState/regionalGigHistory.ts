@@ -87,7 +87,7 @@ export const appendToRegionalGigHistory = (
 
   if (!Object.hasOwn(normalized, regionId)) {
     let regionCount = 0
-    let stalestRegion = ''
+    let stalestRegion: string | undefined = undefined
     let oldestDay = Infinity
 
     // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() and reduce() with for...in loop to avoid array and closure allocation.
@@ -101,7 +101,7 @@ export const appendToRegionalGigHistory = (
       }
     }
 
-    if (regionCount >= MAX_REGIONS && stalestRegion) {
+    if (regionCount >= MAX_REGIONS && stalestRegion !== undefined) {
       delete normalized[stalestRegion]
     }
   }
