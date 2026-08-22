@@ -48,9 +48,11 @@ export const calculateGigFinancials = (
   assetModifiers: AssetModifiers = NEUTRAL_ASSET_MODIFIERS
 ) => {
   const playerFame = finiteNumberOr(playerState?.fame, 0)
-  const totalSongQualityBonus =
+  const totalSongQualityBonus = Math.min(
+    1.0,
     Math.max(0, finiteNumberOr(assetModifiers.songQualityBonus, 0)) +
-    (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
+      (assetModifiers.flags?.enablesReRecording ? 0.2 : 0)
+  )
   const effectivePerformanceScore = clamp0to100(
     finiteNumberOr(performanceScore, 0) + totalSongQualityBonus * 100
   )

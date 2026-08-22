@@ -481,10 +481,16 @@ const processContrabandExpiry = (band: BandState): BandState => {
       } else if (effectType === 'stamina_max') {
         // Members' staminaMax clamp
         if (nextBand.members) {
-          nextBand.members = nextBand.members.map((m: BandMember) => ({
-            ...m,
-            staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
-          })) as BandMember[]
+          // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop to avoid closure allocation and intermediate arrays in hot paths.
+          const newMembers = new Array(nextBand.members.length)
+          for (let i = 0; i < nextBand.members.length; i++) {
+            const m = nextBand.members[i]
+            newMembers[i] = {
+              ...m,
+              staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+            }
+          }
+          nextBand.members = newMembers as BandMember[]
         }
       }
     }
