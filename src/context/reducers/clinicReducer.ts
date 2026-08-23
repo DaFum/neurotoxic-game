@@ -251,18 +251,28 @@ export const handleBloodBankDonate = (
 
   let membersChanged = false
   const sourceMembers = state?.band?.members || []
-  const normalizedMembers = sourceMembers.map((sourceMember: unknown) => {
-    if (!sourceMember) return sourceMember as unknown as BandMember
+  // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop.
+  // Why: Avoids intermediate closure allocation on clinic operations.
+  // Impact: Reduces GC overhead during high-frequency component usage.
+  const membersLen = sourceMembers.length
+  const normalizedMembers = new Array<BandMember>(membersLen)
+  for (let i = 0; i < membersLen; i++) {
+    const sourceMember = sourceMembers[i]
+    if (!sourceMember) {
+      normalizedMembers[i] = sourceMember as unknown as BandMember
+      continue
+    }
     const member = sourceMember as BandMember
     const stamina = finiteNumberOr(member?.stamina, 0)
     const staminaMax = finiteNumberOr(member?.staminaMax, 100)
 
     if (stamina !== member?.stamina || staminaMax !== member?.staminaMax) {
       membersChanged = true
-      return { ...member, stamina, staminaMax }
+      normalizedMembers[i] = { ...member, stamina, staminaMax }
+    } else {
+      normalizedMembers[i] = member
     }
-    return member
-  })
+  }
 
   const normalizedState = membersChanged
     ? { ...state, band: { ...state?.band, members: normalizedMembers } }

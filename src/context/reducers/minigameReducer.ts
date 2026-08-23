@@ -151,13 +151,22 @@ export const handleCompleteTravelMinigame = (
     0
   )
   if (travelStaminaRegen > 0 && nextMembers.length > 0) {
-    nextMembers = nextMembers.map((member: BandMember) => ({
-      ...member,
-      stamina: clampMemberStamina(
-        finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,
-        finiteNumberOr(member?.staminaMax, 100)
-      )
-    })) as GameState['band']['members']
+    // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop.
+    // Why: Prevents closures and arrays from allocating on travel minigame completions.
+    // Impact: Avoids GC overhead, which is important during scene transitions.
+    const membersLen = nextMembers.length
+    const updatedMembers = new Array<BandMember>(membersLen)
+    for (let i = 0; i < membersLen; i++) {
+      const member = nextMembers[i]
+      updatedMembers[i] = {
+        ...member,
+        stamina: clampMemberStamina(
+          finiteNumberOr(member?.stamina, 0) + travelStaminaRegen,
+          finiteNumberOr(member?.staminaMax, 100)
+        )
+      } as BandMember
+    }
+    nextMembers = updatedMembers
   }
 
   if (voidHazardHits && voidHazardHits > 0 && nextMembers.length > 0) {

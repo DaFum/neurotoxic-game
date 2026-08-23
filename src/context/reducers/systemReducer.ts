@@ -481,10 +481,19 @@ const processContrabandExpiry = (band: BandState): BandState => {
       } else if (effectType === 'stamina_max') {
         // Members' staminaMax clamp
         if (nextBand.members) {
-          nextBand.members = nextBand.members.map((m: BandMember) => ({
-            ...m,
-            staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
-          })) as BandMember[]
+          // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop.
+          // Why: Avoids intermediate array allocations and closures during hot paths.
+          // Impact: Reduces garbage collection pressure in daily system ticks.
+          const membersLen = nextBand.members.length
+          const updatedMembers = new Array<BandMember>(membersLen)
+          for (let i = 0; i < membersLen; i++) {
+            const m = nextBand.members[i]
+            updatedMembers[i] = {
+              ...m,
+              staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+            } as BandMember
+          }
+          nextBand.members = updatedMembers
         }
       }
     }
@@ -674,10 +683,19 @@ export const handleAdvanceDay = (
       currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
     )
     if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
-      nextBand.members = nextBand.members.map((member: BandMember) => ({
-        ...member,
-        mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
-      })) as BandMember[]
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with a procedural loop.
+      // Why: Eliminates intermediate array and closure allocations on the daily tick hot path.
+      // Impact: Reduces GC stutter on end-of-day calculations.
+      const membersLen = nextBand.members.length
+      const nextMembers = new Array<BandMember>(membersLen)
+      for (let i = 0; i < membersLen; i++) {
+        const member = nextBand.members[i]
+        nextMembers[i] = {
+          ...member,
+          mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
+        } as BandMember
+      }
+      nextBand.members = nextMembers
     }
     nextBand.stress = clampBandStress(
       currentStress - BALANCE_CONSTANTS.STRESS_DAILY_DECAY
