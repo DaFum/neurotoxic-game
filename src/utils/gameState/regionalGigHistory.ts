@@ -76,20 +76,20 @@ export const appendToRegionalGigHistory = (
 
   if (!Object.hasOwn(normalized, regionId)) {
     let regionCount = 0
-    let stalest = ''
+    let stalest: string | undefined = undefined
     let stalestDay = Infinity
 
     for (const id in normalized) {
       if (!Object.hasOwn(normalized, id)) continue
       regionCount++
       const candidateDay = mostRecentDay(normalized[id] as number[])
-      if (stalest === '' || candidateDay < stalestDay) {
+      if (stalest === undefined || candidateDay < stalestDay) {
         stalest = id
         stalestDay = candidateDay
       }
     }
 
-    if (regionCount >= MAX_REGIONS && stalest !== '') {
+    if (regionCount >= MAX_REGIONS && stalest !== undefined) {
       delete normalized[stalest]
     }
   }
