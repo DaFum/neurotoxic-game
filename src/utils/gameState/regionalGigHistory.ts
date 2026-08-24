@@ -14,9 +14,12 @@ export const normalizeRegionalGigHistory = (
   const normalized: Record<string, number[]> = {}
 
   const record = history as Record<string, unknown>
-  for (const regionId of Object.keys(record).slice(0, 100)) {
+  let count = 0
+  for (const regionId in record) {
+    if (count >= 100) break
     if (!Object.hasOwn(record, regionId)) continue
     if (isForbiddenKey(regionId)) continue
+    count++
 
     const days = record[regionId]
     if (!Array.isArray(days)) continue
@@ -72,14 +75,21 @@ export const appendToRegionalGigHistory = (
   const currentDays = Array.isArray(existing) ? existing : []
 
   if (!Object.hasOwn(normalized, regionId)) {
-    const regionIds = Object.keys(normalized)
-    if (regionIds.length >= MAX_REGIONS) {
-      const stalest = regionIds.reduce((oldest, candidate) =>
-        mostRecentDay(normalized[candidate] as number[]) <
-        mostRecentDay(normalized[oldest] as number[])
-          ? candidate
-          : oldest
-      )
+    let regionCount = 0
+    let stalest = ''
+    let stalestDay = Infinity
+
+    for (const id in normalized) {
+      if (!Object.hasOwn(normalized, id)) continue
+      regionCount++
+      const candidateDay = mostRecentDay(normalized[id] as number[])
+      if (stalest === '' || candidateDay < stalestDay) {
+        stalest = id
+        stalestDay = candidateDay
+      }
+    }
+
+    if (regionCount >= MAX_REGIONS && stalest !== '') {
       delete normalized[stalest]
     }
   }

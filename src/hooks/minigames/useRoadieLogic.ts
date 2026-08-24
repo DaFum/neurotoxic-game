@@ -204,8 +204,10 @@ export const useRoadieLogic = () => {
   if (!gameStateRef.current) {
     const stashItemId: string | null = (() => {
       if (!band?.stash || isEmptyObject(band.stash)) return null
-      const keys = Object.keys(band.stash)
-      return keys[0] ?? null
+      for (const key in band.stash) {
+        if (Object.hasOwn(band.stash, key)) return key
+      }
+      return null
     })()
     stashItemIdRef.current = stashItemId
     gameStateRef.current = getInitialGameState(stashItemId)

@@ -29,8 +29,12 @@ export const isStashEntry = (entry: unknown): entry is StashEntry => {
  * @param obj - The object to check
  * @returns True if empty, false otherwise
  */
-export const isEmptyObject = (obj: Record<string, unknown>): boolean =>
-  Object.keys(obj).length === 0
+export const isEmptyObject = (obj: Record<string, unknown>): boolean => {
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) return false
+  }
+  return true
+}
 
 /**
  * Checks if a collection (Set or Array) contains an item.
@@ -169,4 +173,11 @@ export const isOnCooldown = (
  */
 export const countKeys = (
   obj: Record<string, unknown> | null | undefined
-): number => (obj ? Object.keys(obj).length : 0)
+): number => {
+  if (!obj) return 0
+  let count = 0
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) count++
+  }
+  return count
+}
