@@ -2,8 +2,20 @@ import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 
+/**
+ * `accent` and `accentAlt` carry no status meaning. They exist so navigation
+ * surfaces can differentiate equal-weight actions visually without borrowing
+ * `danger` (red) or `warning` (yellow), which must stay readable as real
+ * danger and warning states.
+ */
 type GlitchButtonVariant =
-  'primary' | 'secondary' | 'danger' | 'owned' | 'warning'
+  | 'primary'
+  | 'secondary'
+  | 'danger'
+  | 'owned'
+  | 'warning'
+  | 'accent'
+  | 'accentAlt'
 type GlitchButtonSize = 'sm' | 'lg'
 
 type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
@@ -55,6 +67,18 @@ export const GlitchButton = ({
       case 'warning':
         return `border-2 border-warning-yellow text-warning-yellow
                 hover:bg-warning-yellow hover:text-void-black
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
+                active:scale-[0.98] active:shadow-none`
+      case 'accent':
+        return `border-2 border-electric-blue text-electric-blue
+                hover:bg-electric-blue hover:text-void-black
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
+                active:scale-[0.98] active:shadow-none`
+      case 'accentAlt':
+        return `border-2 border-void-purple text-void-purple
+                hover:bg-void-purple hover:text-void-black
                 hover:scale-[1.02]
                 hover:shadow-[4px_4px_0px_var(--color-toxic-green)]
                 active:scale-[0.98] active:shadow-none`
