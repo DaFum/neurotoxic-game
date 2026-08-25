@@ -1,5 +1,26 @@
 import type { QuestDefinition } from '../../../types/quest'
 
+/**
+ * Creates a standard corporate-aligned quest definition.
+ *
+ * @remarks
+ * This utility applies consistent base attributes for repeatable corporate quests,
+ * enforcing specific deadlines, cooldowns, rewards, and failure penalties to ensure
+ * uniform balancing across the game's corporate quest line.
+ *
+ * @param config - The initial quest configuration without the enforced default properties.
+ * @returns A complete quest definition with injected corporate standards.
+ *
+ * @example
+ * ```ts
+ * const selloutQuest = createCorporateQuest({
+ *   id: 'corporate_endorsement',
+ *   title: 'Drink Slurm',
+ *   description: 'Wear the logo and smile.',
+ *   objectives: []
+ * });
+ * ```
+ */
 export const createCorporateQuest = (
   config: Omit<
     QuestDefinition,
