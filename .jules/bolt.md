@@ -149,11 +149,6 @@
 **Learning:** Pulled in a runtime `React` import only to use `ReactNode` in a type context, causing CI pipeline failure due to the `isolatedModules` strict rule requiring type-only imports for types.
 **Action:** Always use type-only imports (`import type { Foo }` or `import { type Foo }`) when importing items solely used as types, specifically `ReactNode` from `react`, to comply with strict module parsing bounds in the project.
 
-## 2026-07-28 - countKeys procedural utility
-
-**Learning:** Checking the number of keys on an object using `Object.keys(obj).length` causes unnecessary array allocation in memory, particularly in hot-path reducers.
-**Action:** Use the `countKeys(obj)` or `isEmptyObject(obj)` utility from `src/utils/gameState/checks.ts` instead of `Object.keys(obj).length` to count keys using a procedural loop with zero allocation.
-
 ## 2026-07-09 - Avoid IIFEs when replacing Array methods
 
 **Learning:** When replacing array methods like `.map()` with procedural loops to avoid closure allocations, wrapping the loop in an Immediately Invoked Function Expression (IIFE) (e.g., `(() => { ... })()`) creates a new closure anyway, defeating the purpose of the optimization while also hurting readability.
@@ -190,10 +185,7 @@
 **Action:** Replace `Object.values(obj)` with `for...in` loops in hot path routines to avoid allocating temporary arrays altogether. Ensure to include the standard `if (!Object.hasOwn(obj, key))` bounds-checking and an existence check on the value.
 
 
-## 2026-08-01 - Reducing Object.keys on Game State Updates
 
-**Learning:** `Object.keys(obj)` allocates an array on every invocation. When applied to frequent operations like game state delta applications, sanitizers (e.g. loading game save files, handling high-frequency `APPLY_EVENT_DELTA` payloads), this causes unnecessary short-lived arrays that place heavy pressure on GC.
-**Action:** Replace `Object.keys(obj)` iterations with `for...in` loops combined with `Object.hasOwn()` checks on these hot paths to eliminate the array allocation overhead completely. Make sure to retain any empty-string rejection checks (e.g. `if (!key && key !== '') continue`) when refactoring these iterators to preserve the old `Object.keys` behavior of not skipping empty strings.
 
 ## 2026-08-04 - Procedural Loops vs IIFEs for Array Replacements
 **Learning:** Replacing `.map()` with a procedural loop wrapped inside an Immediately Invoked Function Expression (IIFE) (e.g., `(function() { ... })()`) to avoid closure allocation is an anti-pattern. It degrades readability while still allocating a closure, completely defeating the purpose of the optimization.
@@ -217,6 +209,6 @@
 ## 2026-08-20 - Avoiding declarative map loops on nested array properties
 **Learning:** In state reducers handling arrays (like members in band state), utilizing procedural `for` loops instead of array mapping methods like `.map()` significantly decreases garbage collection overhead on each reducer action, which is important for UI performance in large object updates.
 **Action:** Replaced `.map()` in `minigameReducer.ts`, `clinicReducer.ts`, and `systemReducer.ts` with procedural `for` loops when updating nested band member fields.
-## 2026-08-25 - Avoiding procedural loops for Object.keys count
-**Learning:** Replacing `Object.keys(obj).length` with a manual `for...in` procedural loop in hot paths to avoid array allocations actually degrades performance in modern engines (like V8) where `Object.keys` is heavily optimized in native C++, and fails code review as an anti-pattern.
-**Action:** Never refactor `Object.keys(obj).length` into a manual user-land `for...in` loop solely to count properties. Native engine methods are generally faster for counting.
+## 2026-08-25 - Object.keys count optimization guidance clarification
+**Learning:** Checking the number of keys on an object using `Object.keys(obj).length` creates an array, which could be seen as overhead. However, replacing it with a manual `for...in` loop in user-land JavaScript degrades performance in modern engines (like V8) where `Object.keys` is heavily optimized in native C++. Refactoring this solely for counting properties fails code review as an anti-pattern.
+**Action:** Never refactor `Object.keys(obj).length` into a manual user-land `for...in` loop solely to count properties. Native engine methods are generally faster. Instead, use the centralized `isEmptyObject(obj)` or `countKeys(obj)` helpers from `src/utils/gameState/checks.ts` when available.
