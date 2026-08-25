@@ -1,5 +1,5 @@
 import { m, AnimatePresence } from 'motion/react'
-import { useLayoutEffect, useRef } from 'react'
+import { useCallback, useRef } from 'react'
 import { useTutorial } from '../hooks/useTutorial'
 
 /**
@@ -43,21 +43,25 @@ export const TutorialManager = () => {
     t
   } = useTutorial()
   const hasContent = isVisible && content !== null
-  const panelRef = useRef<HTMLDivElement>(null)
+  const activePanelRef = useRef<HTMLDivElement | null>(null)
 
   // Publish the panel's height as `--tutorial-inset` so bottom-anchored scenes
   // can reserve room for it. Narrow viewports have no space to place the panel
   // clear of the scene's own controls, and the app body is `overflow: hidden`,
   // so without this the panel sits on top of buttons that can then never be
   // tapped. Consumed by `MainMenu` under `max-sm`.
-  useLayoutEffect(() => {
-    const panel = panelRef.current
+  //
+  // A ref callback rather than an effect: the panel is keyed by `step`, so it
+  // remounts on every step while `hasContent` stays true. An effect keyed on
+  // `hasContent` would keep measuring the first step's now-detached element and
+  // publish its height for the rest of the tutorial.
+  const measurePanel = useCallback((panel: HTMLDivElement | null) => {
     const root = document.documentElement
-    const clear = () => root.style.removeProperty('--tutorial-inset')
     if (!panel) {
-      clear()
+      root.style.removeProperty('--tutorial-inset')
       return
     }
+    activePanelRef.current = panel
     const sync = () =>
       root.style.setProperty('--tutorial-inset', `${panel.offsetHeight + 24}px`)
     sync()
@@ -65,9 +69,14 @@ export const TutorialManager = () => {
     observer.observe(panel)
     return () => {
       observer.disconnect()
-      clear()
+      // A step change mounts the next panel before this one finishes its exit
+      // animation, so only the panel still in charge may clear the inset.
+      if (activePanelRef.current === panel) {
+        activePanelRef.current = null
+        root.style.removeProperty('--tutorial-inset')
+      }
     }
-  }, [hasContent])
+  }, [])
 
   return (
     <AnimatePresence>
@@ -83,7 +92,7 @@ export const TutorialManager = () => {
           className='fixed inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-full sm:max-w-md z-(--z-tutorial)'
         >
           <div
-            ref={panelRef}
+            ref={measurePanel}
             className='bg-void-black border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'
           >
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>

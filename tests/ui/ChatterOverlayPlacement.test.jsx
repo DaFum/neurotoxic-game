@@ -42,7 +42,9 @@ const stubRects = ({ overlay, obstacle }) => {
 
 afterEach(() => {
   Element.prototype.getBoundingClientRect = realGetRect
-  document.querySelectorAll('[data-chatter-avoid]').forEach(el => el.remove())
+  document.querySelectorAll('[data-chatter-avoid]').forEach(el => {
+    el.remove()
+  })
 })
 
 test('chatter box moves off a `data-chatter-avoid` element it would cover', async () => {

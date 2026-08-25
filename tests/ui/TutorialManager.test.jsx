@@ -45,6 +45,7 @@ beforeEach(() => {
 afterEach(() => {
   cleanup()
   vi.clearAllMocks()
+  document.documentElement.style.removeProperty('--tutorial-inset')
 })
 
 describe('TutorialManager', () => {
@@ -253,6 +254,65 @@ describe('TutorialManager', () => {
 
     expect(container.querySelector('[role="dialog"]')).toBeNull()
     expect(container.querySelector('[aria-modal="true"]')).toBeNull()
+  })
+
+  test('--tutorial-inset follows the panel across steps of differing height', async () => {
+    // The panel is keyed by `step`, so it remounts between steps while the
+    // tutorial stays visible. Measuring must rebind to the newly mounted
+    // element instead of holding on to the first step's detached node.
+    const heights = new WeakMap()
+    let nextHeight = 100
+    const original = Object.getOwnPropertyDescriptor(
+      HTMLElement.prototype,
+      'offsetHeight'
+    )
+    Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+      configurable: true,
+      get() {
+        if (!heights.has(this)) heights.set(this, (nextHeight += 60))
+        return heights.get(this)
+      }
+    })
+
+    try {
+      // OVERWORLD keeps steps 0 and 1 both visible, so the overlay stays
+      // mounted across the step change.
+      mockGameStateValue.currentScene = GAME_PHASES.OVERWORLD
+      mockGameStateValue.player = { tutorialStep: 0 }
+
+      const { rerender } = render(<TutorialManager />)
+      const firstInset =
+        document.documentElement.style.getPropertyValue('--tutorial-inset')
+      expect(firstInset).not.toBe('')
+
+      mockGameStateValue.player = { tutorialStep: 1 }
+      rerender(<TutorialManager />)
+
+      const secondInset =
+        document.documentElement.style.getPropertyValue('--tutorial-inset')
+      expect(secondInset).not.toBe('')
+      expect(secondInset).not.toBe(firstInset)
+    } finally {
+      if (original) {
+        Object.defineProperty(HTMLElement.prototype, 'offsetHeight', original)
+      } else {
+        delete HTMLElement.prototype.offsetHeight
+      }
+    }
+  })
+
+  test('--tutorial-inset is cleared once the tutorial stops rendering', async () => {
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
+    mockGameStateValue.player = { tutorialStep: 0 }
+
+    const { rerender } = render(<TutorialManager />)
+
+    mockGameStateValue.settings = { tutorialSeen: true }
+    rerender(<TutorialManager />)
+
+    expect(
+      document.documentElement.style.getPropertyValue('--tutorial-inset')
+    ).toBe('')
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {
