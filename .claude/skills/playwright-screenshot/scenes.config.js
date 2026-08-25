@@ -8,8 +8,8 @@
  * - Wait strategies (what DOM element confirms scene is loaded)
  * - State fixtures (pre-built save states for testing)
  *
- * This single source of truth prevents duplication across screenshot-game-flow.js,
- * screenshot-all-scenes.js, and screenshot-state-inject.js.
+ * Single source of truth for the scene descriptors shared by
+ * screenshot-all-scenes.js and screenshot-state-inject.js.
  */
 
 export const SCENES = {

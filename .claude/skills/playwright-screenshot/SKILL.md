@@ -9,28 +9,37 @@ Takes precise screenshots of the Neurotoxic game using Playwright. Covers all sc
 
 ## Coverage and known gaps
 
-Verified by running every script against a live dev server (2026-08-25).
+Verified by running every fixture against a live dev server: **14 of 14 pass.**
 
-**Captured reliably** — the 9 fixtures in `screenshot-state-inject.js`:
 `menu`, `overworld`, `pregig`, `postgig`, `gameover`, `gig`, `clinic`,
-`band-hq`, `event-modal`. `screenshot-mobile.js` covers the same 9 at a phone
-viewport. Every capture asserts `window.gameState.currentScene` matches the
-fixture and that no unexpected dialog covers the scene, so a wrong screenshot
-fails the run instead of being written under the right filename.
+`band-hq`, `band-hq-settings`, `event-modal`, `travel-minigame`,
+`pre-gig-minigame-roadie`, `pre-gig-minigame-kabelsalat`,
+`pre-gig-minigame-amp`. `screenshot-mobile.js` runs the same set at a phone
+viewport.
 
-**Not captured — gaps to be aware of:**
+Every capture is checked before the file is written:
+
+- the scene matches `window.gameState.currentScene` (not copy, so i18n and
+  reworded headings cannot break it)
+- the active minigame type matches, because three pre-gig fixtures share
+  `PRE_GIG_MINIGAME` and the scene alone cannot tell them apart
+- something is actually opaque on screen. Playwright counts `opacity: 0` as
+  visible, so a Framer Motion fade used to yield solid-black screenshots that
+  passed every other check. Global `role="status"` overlays (chatter, toasts)
+  are excluded from this measurement — they render on every scene and would
+  mask a blank one.
+
+A failed check throws instead of writing the file, so a wrong or blank capture
+can never land under a correct filename.
+
+**Still not covered:**
 
 | Area | Status |
 | --- | --- |
-| Minigames (Tourbus, Roadie Run, Kabelsalat, Amp Calibration) | Described in `scenes.config.js` but **not implemented** in `screenshot-state-inject.js`; the golden-path route through them still fails |
-| `PRACTICE`, `ASSETS` (Bandhaus hub) | No fixture and no scene entry |
-| Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash) | No fixtures; only the generic `event-modal` exists |
-| Settings panel | No fixture |
-| POSTGIG report figures | Injection reaches the scene but the report renders its "TALLYING RECEIPTS…" shell — the numbers come from the live `END_GIG` flow |
-
-`screenshot-all-scenes.js` walks the real golden path and still stops at the
-travel/gig leg. It now exits non-zero and names what it skipped rather than
-reporting success on a partial run.
+| `PRACTICE`, `ASSETS` (Bandhaus hub) | No fixture |
+| Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash) | No fixtures; only the generic `event-modal` |
+| POSTGIG report figures | The scene renders its "TALLYING RECEIPTS…" shell; the numbers come from the live `END_GIG` flow, which injection bypasses |
+| Golden-path travel/gig leg | `screenshot-all-scenes.js` still fails there and exits non-zero naming the gap |
 
 ## Agent Execution Workflow
 
@@ -105,23 +114,27 @@ If no browsers are cached, and CDN is unreachable, the environment is air-gapped
 
 ### Step 3 — Run and capture
 
-**Complete game flow (tested & proven to work):**
-
-```bash
-node .claude/skills/playwright-screenshot/scripts/screenshot-game-flow.js
-```
-
-Output: `screenshots/scenes/01-intro.png` … `10-postgig.png`
-✅ Handles band identity modal, uses cached browser, avoids networkidle timeouts
-
-**All scenes (full golden-path flow + state-injected scenes):**
+**All scenes (golden-path walk + state-injected scenes):**
 
 ```bash
 node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
 ```
 
-Output: `screenshots/scenes/01-intro.png` … `16-gameover.png` (includes GAMEOVER and CLINIC via state injection)
-⚠️ May timeout on `networkidle` — use `screenshot-game-flow.js` for reliable captures
+Captures INTRO, MENU, CREDITS, BAND HQ, OVERWORLD, then GAMEOVER and CLINIC by
+injection. The travel/gig leg of the golden path still fails; the script exits
+non-zero and names what it skipped, so a partial run is visible rather than
+silently green. For those scenes use the fixtures below — they are the reliable
+path.
+
+**Every fixture at once (recommended):**
+
+```bash
+for f in menu overworld pregig postgig gameover gig clinic band-hq \
+         band-hq-settings event-modal travel-minigame \
+         pre-gig-minigame-roadie pre-gig-minigame-kabelsalat pre-gig-minigame-amp; do
+  node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f"
+done
+```
 
 **Single scene via state injection:**
 
@@ -260,8 +273,8 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 > not `venueId`/`venueName` — or `sanitizeVenue` nulls it and the scene bounces to OVERWORLD).
 > **POSTGIG** reaches the right scene but shows only the report _shell_
 > ("TALLYING RECEIPTS…"); the final figures are computed by the live END_GIG flow
-> that injection bypasses — capture POSTGIG via the live golden-path
-> `screenshot-game-flow.js` when you need the fully-rendered report.
+> that injection bypasses. A fully-populated report needs a real gig played
+> through, which no script currently automates.
 
 ---
 
@@ -420,7 +433,7 @@ Commit only `screenshots/baselines/` or `e2e/__snapshots__/`.
 
 ```bash
 # ✅ RECOMMENDED: Capture complete game flow (tested & reliable)
-node .claude/skills/playwright-screenshot/scripts/screenshot-game-flow.js
+node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
 
 # Capture all scenes (full golden-path + state injection)
 node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
@@ -433,166 +446,6 @@ node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js before/ af
 ```
 
 All scripts respect `BASE_URL` env var (default: `http://localhost:5173`) and `OUT_DIR`.
-
-## Working Script Explanation: screenshot-game-flow.js
-
-This is the **tested, proven-to-work** script for capturing Neurotoxic game screenshots. Here's how it works:
-
-### Key Features
-
-**1. Browser Launch with Fallback**
-
-```js
-const browser = await chromium.launch({
-  executablePath: CHROMIUM_PATH, // Uses cached browser path
-  headless: true,
-  args: [
-    '--no-sandbox', // Sandbox not needed in containers
-    '--disable-setuid-sandbox', // Skip setuid restrictions
-    '--disable-gpu', // GPU not available in headless
-    '--disable-dev-shm-usage', // Use disk temp instead of /dev/shm
-    '--mute-audio', // Don't play audio during capture
-    '--disable-webgl' // Use Canvas2D (more stable for PixiJS)
-  ]
-})
-```
-
-**2. Timeout Control**
-
-```js
-async function snap(page, name, delay = 500) {
-  await page.waitForTimeout(delay) // Wait for animations
-  await page.screenshot({ path: file, timeout: 60000 }) // 60s timeout
-}
-```
-
-- Custom delay per scene allows animations to complete
-- 60s timeout prevents "font loading" timeout races
-- Avoids `waitForLoadState('networkidle')` which can hang
-
-**3. Identity Modal Handling**
-
-```js
-try {
-  const input = page.locator('input[type="text"]')
-  if (await input.isVisible({ timeout: 2000 }).catch(() => false)) {
-    await input.fill('Test Band')
-    const confirmBtn = page.getByRole('button', { name: /confirm/i })
-    await confirmBtn.click()
-    await page.waitForTimeout(1000)
-  }
-} catch (_e) {
-  // Continue if modal not present
-}
-```
-
-- Detects if band identity input is required
-- Automatically enters "Test Band" as default
-- Gracefully skips if modal not present
-
-**4. Graceful Scene Navigation**
-
-```js
-try {
-  const btn = page.getByRole('button', { name: /start tour/i })
-  await btn.click({ timeout: 5000 })
-  await snap(page, '05-overworld', 1200)
-} catch (_e) {
-  console.log('    (skipped)')
-}
-```
-
-- Each scene is wrapped in try-catch
-- If button not found, continues to next scene
-- No hard failures, partial captures are still valuable
-
-**5. Canvas Detection for PixiJS Scenes**
-
-```js
-const startBtn = page.getByRole('button', { name: /start show/i })
-const visible = await startBtn.isVisible({ timeout: 2000 }).catch(() => false)
-if (visible) {
-  await startBtn.click()
-  await page.locator('canvas').waitFor({ timeout: 15000 })
-  await snap(page, '09-gig-canvas', 2000) // 2s delay for notes to render
-}
-```
-
-- Waits for PixiJS canvas to be visible (not just ready)
-- Extra delay (2s) allows notes/graphics to render
-- Prevents blank/black canvas screenshots
-
-### Real-World Test Results
-
-**Environment**: CDN unreachable, cached browser available
-**Browser**: Chromium v1194 (from ~/.cache/ms-playwright/)
-**Status**: ✅ SUCCESS
-
-Output:
-
-```
-🌐 Attempting to launch Chromium (standard)...
-⚠ Standard launch failed (CDN unreachable), trying fallbacks...
-  Trying cached browser: /root/.cache/ms-playwright/chromium-1194/chrome-linux/chrome
-✓ Chromium launched (from cache)
-```
-
-**Captured Scenes**:
-
-- ✅ 01-intro.png (233 KB)
-- ✅ 02-menu.png (210 KB)
-- ✅ 03-credits.png
-- ✅ 04-band-hq-modal.png
-- ✅ 05-overworld.png
-- ✅ 10-postgig.png
-
-### Why This Script Works
-
-1. **No networkidle**: Avoids the 30s timeout that hangs on v1194
-2. **Cached browser**: Uses browser-launcher fallback when CDN unavailable
-3. **Flexible timeouts**: Each scene gets appropriate wait time
-4. **Graceful degradation**: Skips scenes that can't be reached, captures what's possible
-5. **Modal handling**: Automatically enters band identity when needed
-6. **PixiJS aware**: Special handling for canvas-based scenes with extra render time
-
-### Usage
-
-```bash
-# Capture all scenes to screenshots/scenes/
-node .claude/skills/playwright-screenshot/scripts/screenshot-game-flow.js
-
-# Capture to custom directory
-OUT_DIR=my-screenshots node .claude/skills/playwright-screenshot/scripts/screenshot-game-flow.js
-
-# Capture from different base URL
-BASE_URL=http://localhost:3000 node .claude/skills/playwright-screenshot/scripts/screenshot-game-flow.js
-```
-
-### Expected Output
-
-```
-🎬 Launching Chromium from cache...
-
-📸 Capturing complete game flow...
-
-→ INTRO
-  ✓ 01-intro.png
-→ MENU
-  ✓ 02-menu.png
-→ Setting band identity...
-→ CREDITS
-  ✓ 03-credits.png
-→ BAND HQ modal
-  ✓ 04-band-hq-modal.png
-→ OVERWORLD
-  ✓ 05-overworld.png
-→ POSTGIG
-  ✓ 10-postgig.png
-
-✅ Scene capture complete!
-
-📁 Screenshots saved to: /home/user/neurotoxic-game/screenshots/scenes
-```
 
 ## Troubleshooting
 

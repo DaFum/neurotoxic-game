@@ -359,9 +359,9 @@ const FIXTURES = {
         .waitFor({ state: 'visible', timeout: 15000 })
       // NOTE: injected POSTGIG shows the report *shell* ("TALLYING RECEIPTS…" +
       // "BACK TO OVERWORLD"); the populated figures are computed by the live
-      // END_GIG flow, which state-injection + changeScene bypasses. For a fully
-      // rendered gig report, capture POSTGIG via the live golden-path flow
-      // (screenshot-game-flow.js) instead. Short settle for the scene shell:
+      // END_GIG flow, which state-injection + changeScene bypasses. A populated
+      // report needs a gig played through for real; no script automates that
+      // today. Short settle for the scene shell:
       await page.waitForTimeout(600)
     }
   },
@@ -380,6 +380,100 @@ const FIXTURES = {
       page
         .getByRole('heading', { name: /sold out|tour has ended|game over/i })
         .or(page.getByText(/final statistics|load last save/i).first())
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  // ── Minigames ────────────────────────────────────────────────────────────
+  // `scenes.config.js` described these long before they were runnable; the
+  // capture logic lived in screenshot-comprehensive-full.js with its own copy
+  // of the save state, so it drifted from the schema and was never covered by
+  // the BASE_STATE validation test. Now they go through the same engine as
+  // every other fixture and get the same scene verification.
+  'travel-minigame': {
+    description: 'Tourbus Terror travel minigame (canvas)',
+    state: {
+      currentScene: 'TRAVEL_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'TOURBUS',
+        targetDestination: 'node_0_1',
+        gigId: null,
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  'pre-gig-minigame-roadie': {
+    description: 'Roadie Run pre-gig minigame (canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'ROADIE',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  'pre-gig-minigame-kabelsalat': {
+    description: 'Kabelsalat pre-gig minigame (DOM board, no canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'KABELSALAT',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    // Kabelsalat renders a DOM board, not a canvas, so the shared canvas wait
+    // does not apply. `minigames.kabelsalat.title` is HARDWARE_RIGGING in both
+    // locales, so the text anchor is safe here.
+    waitFor: async page => {
+      await page
+        .getByRole('heading', { name: /hardware_rigging/i })
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+    }
+  },
+
+  'pre-gig-minigame-amp': {
+    description: 'Amp Calibration pre-gig minigame (canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'AMP_CALIBRATION',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
         .first()
         .waitFor({ state: 'visible', timeout: 15000 })
   },
@@ -481,6 +575,31 @@ const FIXTURES = {
         .getByRole('button', { name: /leave|esc/i })
         .first()
         .waitFor({ state: 'visible', timeout: 2000 })
+    }
+  },
+
+  'band-hq-settings': {
+    description: 'Band HQ with the Settings tab open',
+    state: { currentScene: 'MENU' },
+    waitFor: async page =>
+      page
+        .getByRole('heading', { name: /neurotoxic/i })
+        .waitFor({ state: 'visible', timeout: 10000 }),
+    // The only coverage screenshot-comprehensive.js had that this engine
+    // lacked. Kept when that script was removed.
+    capture: async page => {
+      await page.getByRole('button', { name: /band hq/i }).click()
+      await page
+        .getByRole('heading', { name: /band hq/i })
+        .waitFor({ state: 'visible', timeout: 5000 })
+      await page
+        .getByRole('tab', { name: /settings|einstellungen/i })
+        .first()
+        .click()
+      await page
+        .getByRole('tab', { name: /settings|einstellungen/i })
+        .first()
+        .waitFor({ state: 'visible', timeout: 5000 })
     }
   },
 
@@ -672,8 +791,61 @@ function fixtureScene(fixture) {
   return fixture.state?.currentScene ?? 'OVERWORLD'
 }
 
+/**
+ * Wait until the scene has actually faded in.
+ *
+ * Playwright treats `opacity: 0` as visible, so a `waitFor({ state: 'visible' })`
+ * on a Framer Motion panel resolves while the element is still transparent —
+ * which produced screenshots that passed every check and were solid black.
+ * Poll the largest visible text block until its effective opacity (the product
+ * of its own and its ancestors') is high enough to photograph.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout] - Milliseconds to wait for the fade to finish.
+ *   Measured worst case is Kabelsalat at ~15s: it blocks on generated imagery
+ *   that has to time out first when the image host is unreachable.
+ * @returns {Promise<number>} The effective opacity reached.
+ */
+async function waitForOpaqueRender(page, timeout = 20000) {
+  const measure = () =>
+    page.evaluate(() => {
+      let best = 0
+      // Skip the chatter box and toasts: they are global `role="status"`
+      // overlays that render opaque on every scene, so counting them would
+      // report a blank scene as photographable.
+      const overlays = [...document.querySelectorAll('[role="status"]')]
+      for (const el of document.querySelectorAll('h1,h2,h3,h4,p,span,button')) {
+        const text = (el.textContent ?? '').trim()
+        if (!text || el.children.length > 0) continue
+        if (overlays.some(overlay => overlay.contains(el))) continue
+        const rect = el.getBoundingClientRect()
+        if (rect.width < 8 || rect.height < 8) continue
+        let opacity = 1
+        for (let node = el; node; node = node.parentElement) {
+          const value = Number.parseFloat(getComputedStyle(node).opacity)
+          if (Number.isFinite(value)) opacity *= value
+        }
+        const area = rect.width * rect.height
+        if (opacity > best && area > 200) best = opacity
+      }
+      return best
+    })
+
+  const deadline = Date.now() + timeout
+  let opacity = await measure()
+  while (opacity < 0.9 && Date.now() < deadline) {
+    await page.waitForTimeout(200)
+    opacity = await measure()
+  }
+  return opacity
+}
+
 /** Fixtures whose whole point is a dialog on top of the scene. */
-const FIXTURES_EXPECTING_DIALOG = new Set(['band-hq', 'event-modal'])
+const FIXTURES_EXPECTING_DIALOG = new Set([
+  'band-hq',
+  'band-hq-settings',
+  'event-modal'
+])
 
 /**
  * Fail loudly when the page is not actually showing the fixture's scene.
@@ -699,6 +871,30 @@ async function assertCaptureIntegrity(page, fixtureName) {
     throw new Error(
       `Fixture "${fixtureName}" expected scene ${expected} but the app is on ` +
         `${actual ?? 'an unknown scene'}. Refusing to write a mislabelled screenshot.`
+    )
+  }
+
+  // Three pre-gig minigames share PRE_GIG_MINIGAME, so the scene alone cannot
+  // tell them apart — a mixed-up type would pass the check above unnoticed.
+  const expectedMinigame = FIXTURES[fixtureName].state?.minigame?.type ?? null
+  if (expectedMinigame !== null) {
+    const actualMinigame = await page.evaluate(
+      () => window.gameState?.minigame?.type ?? null
+    )
+    if (actualMinigame !== expectedMinigame) {
+      throw new Error(
+        `Fixture "${fixtureName}" expected minigame ${expectedMinigame} but ` +
+          `${actualMinigame ?? 'none'} is active.`
+      )
+    }
+  }
+
+  const opacity = await waitForOpaqueRender(page)
+  if (opacity < 0.5) {
+    throw new Error(
+      `Fixture "${fixtureName}" rendered ${expected} but nothing is opaque ` +
+        `enough to photograph (best effective opacity ${opacity.toFixed(2)}). ` +
+        `The screenshot would be blank.`
     )
   }
 
