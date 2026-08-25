@@ -72,7 +72,10 @@ export const GigHUD = memo(function GigHUD({
       />
 
       {/* Top-edge meter bar; the global HUD hides its band-status panel during gigs to free this space. */}
-      <div className='absolute top-3 right-20 z-(--z-stage-overlay) flex items-start gap-3 pointer-events-none max-sm:top-18 max-sm:right-3 max-sm:flex-col max-sm:items-end max-sm:scale-75 max-sm:origin-top-right'>
+      <div
+        data-chatter-avoid=''
+        className='absolute top-3 right-20 z-(--z-stage-overlay) flex items-start gap-3 pointer-events-none max-sm:top-18 max-sm:right-3 max-sm:flex-col max-sm:items-end max-sm:scale-75 max-sm:origin-top-right'
+      >
         <OverloadMeter
           overload={overload}
           isDanger={visualStatus.overloadDanger}

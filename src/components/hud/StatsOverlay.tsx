@@ -28,7 +28,10 @@ export const StatsOverlay = memo(function StatsOverlay({
   accuracy
 }: StatsOverlayProps) {
   return (
-    <div className='absolute top-20 left-4 max-sm:top-16 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left max-sm:flex max-sm:flex-col max-sm:items-start z-(--z-stage-overlay) text-star-white font-mono pointer-events-none p-4 group bg-void-black/40 backdrop-blur-sm border-l-2 border-toxic-green'>
+    <div
+      data-chatter-avoid=''
+      className='absolute top-20 left-4 max-sm:top-16 max-sm:left-2 max-sm:scale-75 max-sm:origin-top-left max-sm:flex max-sm:flex-col max-sm:items-start z-(--z-stage-overlay) text-star-white font-mono pointer-events-none p-4 group bg-void-black/40 backdrop-blur-sm border-l-2 border-toxic-green'
+    >
       <FrameCorners
         className='w-4 h-4 text-ash-gray opacity-50'
         topLeftClassName='w-4 h-4 text-toxic-green opacity-80'
