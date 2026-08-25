@@ -95,6 +95,7 @@ const CREATOR_ARGS = {
     { score: 1000, accuracy: 92, misses: 3, failed: false }
   ],
   createSetActiveEventAction: () => [{ id: 'evt_1', type: 'flavor' }],
+  createSetScreenshotModeAction: () => [true],
   createAddToastAction: () => ['hello', 'info'],
   createRemoveToastAction: () => ['toast_1'],
   createSetGigModifiersAction: () => [{ merch: true }],

@@ -327,9 +327,10 @@ GAMEOVER (`src/scenes/GameOver.tsx`) is triggered when `player.money` reaches 0 
 ```js
 await injectSave(page, 'gameover')
 await page.reload({ waitUntil: 'networkidle' })
-await page
-  .getByRole('heading', { name: /game over/i })
-  .waitFor({ timeout: 10000 })
+// Required: handleLoadGame forces OVERWORLD on hydration, so without this the
+// screenshot is the map filed under gameover.png.
+await navigateToFixtureScene(page, 'gameover')
+await waitForFixtureScene(page, 'gameover')
 await page.waitForTimeout(400)
 await page.screenshot({ path: 'gameover.png' })
 ```

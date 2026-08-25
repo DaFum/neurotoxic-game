@@ -7,21 +7,6 @@ description: Take Playwright screenshots of any Neurotoxic game scene (INTRO, ME
 
 Takes precise screenshots of the Neurotoxic game using Playwright. Covers all scenes, element crops, PixiJS canvas, overlay states, and CI-ready visual regression baselines.
 
-## ✨ Recent Improvements (2026-03-21)
-
-### v1.1.0 — Production Ready (5/5 Rating)
-
-- ✅ **Cross-platform browser discovery** (`browser-launcher.js`): Replaces shell `find` with Node.js APIs for Windows/Linux/Mac compatibility
-- ✅ **BASE_STATE validation test**: Automatic detection of state schema drift (prevents silent fixture failures)
-- ✅ **Centralized scene config** (`scenes.config.js`): 14 scenes and 13 fixture descriptors
-- ✅ **CI integration guide** (`ci-integration-guide.md`): Complete GitHub Actions workflows with parallel captures and visual regression
-- ✅ **Robust browser launcher**: 3-tier fallback (CDN → cached → env var) with helpful error messages
-- ✅ **Extended screenshot timeouts** (60s): Handles font loading delays
-- ✅ **Network-aware error handling**: Selective error discrimination (TimeoutError vs. fatal failures)
-- ✅ **Environment variable support**: `BROWSER_PATH`, `BASE_URL`, `OUT_DIR` fully documented
-
----
-
 ## Coverage and known gaps
 
 Verified by running every script against a live dev server (2026-08-25).
@@ -257,7 +242,7 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 | **PRE_GIG_MINIGAME** | PREGIG → Start Show                                   | `canvas` visible + 600 ms                        |
 | **GIG**              | pre-gig minigame → Shift+P                            | `canvas` visible + 1500 ms                       |
 | **POSTGIG**          | GIG → Shift+P (or inject `postgig`)                   | heading `/gig report/i` visible                  |
-| **GAMEOVER**         | inject `gameover` save state (only reliable path)     | heading `/game over/i` visible                   |
+| **GAMEOVER**         | inject `gameover` save state, then `navigateToFixtureScene` | `currentScene === 'GAMEOVER'` (copy is "SOLD OUT") |
 | **SETTINGS**         | MENU → Band HQ → SETTINGS tab                         | any settings control visible                     |
 | **CREDITS**          | MENU → "Credits"                                      | heading `/credits/i` visible                     |
 | **CLINIC**           | inject `clinic` save state (only reliable path)       | `networkidle` + 500 ms                           |
@@ -406,7 +391,7 @@ page.getByRole('heading', { name: /neurotoxic/i }) // MENU
 page.getByRole('heading', { name: /tour plan/i }) // OVERWORLD
 page.getByRole('heading', { name: /preparation/i }) // PREGIG
 page.getByRole('heading', { name: /gig report/i }) // POSTGIG
-page.getByRole('heading', { name: /game over/i }) // GAMEOVER
+page.getByRole('heading', { name: /sold out|tour complete/i }) // GAMEOVER
 page.locator('.hud-bar') // top resource bar
 page.getByRole('dialog') // EventModal, BandHQ
 page.getByRole('status') // Toast notifications
