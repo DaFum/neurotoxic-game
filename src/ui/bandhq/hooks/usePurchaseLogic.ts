@@ -13,7 +13,6 @@ import { translateContextKeys } from '../../../utils/translationUtils'
 import {
   GEAR_LOOKUP,
   getGearCount,
-  getPrimaryEffect,
   getPurchaseDecision,
   buildVanWithUpgrade,
   validatePurchase,

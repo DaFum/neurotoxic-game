@@ -1,7 +1,6 @@
 import { render, fireEvent } from '@testing-library/react'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { ShopItem } from '../../src/ui/bandhq/ShopItem'
-import * as purchaseLogicUtils from '../../src/utils/purchaseLogicUtils'
 
 vi.mock('../../src/utils/purchaseLogicUtils', () => ({
   LABEL_CONTRACT_ADVANCE: 500
@@ -57,7 +56,9 @@ describe('ShopItem', () => {
   it('renders fame currency correctly', () => {
     const fameItem = { ...mockItem, currency: 'fame', cost: 50 }
     const fameDecision = { ...mockDecision, cost: 50 }
-    const { getByText } = render(<ShopItem {...defaultProps} item={fameItem} decision={fameDecision} />)
+    const { getByText } = render(
+      <ShopItem {...defaultProps} item={fameItem} decision={fameDecision} />
+    )
     expect(getByText('50 ★')).toBeInTheDocument()
   })
 
@@ -89,14 +90,26 @@ describe('ShopItem', () => {
   })
 
   it('shows OWNED when isOwned is true and item is not consumable', () => {
-    const ownedDecision = { ...mockDecision, isOwned: true, isConsumable: false }
-    const { getByText } = render(<ShopItem {...defaultProps} decision={ownedDecision} />)
+    const ownedDecision = {
+      ...mockDecision,
+      isOwned: true,
+      isConsumable: false
+    }
+    const { getByText } = render(
+      <ShopItem {...defaultProps} decision={ownedDecision} />
+    )
     expect(getByText('OWNED')).toBeInTheDocument()
   })
 
   it('shows BUY when isOwned is true but item is consumable', () => {
-    const consumableDecision = { ...mockDecision, isOwned: true, isConsumable: true }
-    const { getByText } = render(<ShopItem {...defaultProps} decision={consumableDecision} />)
+    const consumableDecision = {
+      ...mockDecision,
+      isOwned: true,
+      isConsumable: true
+    }
+    const { getByText } = render(
+      <ShopItem {...defaultProps} decision={consumableDecision} />
+    )
     expect(getByText('BUY')).toBeInTheDocument()
   })
 
