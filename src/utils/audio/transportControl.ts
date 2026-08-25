@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
-import { audioState } from './state'
+import { audioState, releaseAudioResource } from './state'
 import { withAudioContext } from './context'
 import {
   pauseGigPlayback,
@@ -8,11 +8,7 @@ import {
   stopGigPlayback
 } from './gigPlayback'
 import { disableCorruptionBurstAudio } from './corruptionEffects'
-import {
-  stopTransportAndClear,
-  cleanupAmbientPlayback,
-  cleanupTransportEvents
-} from './cleanupUtils'
+import { stopTransportAndClear, cleanupTransportEvents } from './cleanupUtils'
 
 /**
  * Tears down the Tone transport, scheduled events, and corruption burst audio.
@@ -35,7 +31,7 @@ export function stopAmbientPlayback(): void {
   if (audioState.ambientSource) {
     logger.debug('AudioEngine', 'Stopping ambient OGG playback.')
   }
-  cleanupAmbientPlayback()
+  releaseAudioResource('ambientSource')
 }
 
 /**

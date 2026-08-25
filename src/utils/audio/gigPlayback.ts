@@ -1,13 +1,12 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
-import { audioState, type GigEndInfo } from './state'
+import { audioState, releaseAudioResource, type GigEndInfo } from './state'
 import {
   getRawAudioContext,
   getAudioContextTimeSec,
   ensureAudioContext
 } from './context'
 import { createAndConnectBufferSource } from './sharedBufferUtils'
-import { cleanupGigPlayback } from './cleanupUtils'
 import { loadAudioBuffer } from './assets'
 import { isFiniteNumber } from '../finiteNumber'
 
@@ -77,16 +76,6 @@ const handleGigSourceEnded = (source: AudioBufferSourceNode): void => {
   if (onEnded) {
     onEnded(endInfo)
   }
-}
-
-const createGigBufferSource = ({
-  buffer,
-  onEnded
-}: {
-  buffer: AudioBuffer
-  onEnded?: ((_source: AudioBufferSourceNode) => void) | null
-}): AudioBufferSourceNode | null => {
-  return createAndConnectBufferSource(buffer, onEnded)
 }
 
 /**
@@ -163,7 +152,7 @@ const stopGigPlaybackInternal = (): void => {
       `Stopping gig playback: "${audioState.gigFilename}" at ${getGigTimeMs().toFixed(0)}ms`
     )
   }
-  cleanupGigPlayback()
+  releaseAudioResource('gigSource')
 }
 
 /**
@@ -226,10 +215,7 @@ export async function startGigPlayback({
   if (!buffer || reqId !== audioState.playRequestId) return false
 
   const rawContext = getRawAudioContext()
-  const source = createGigBufferSource({
-    buffer,
-    onEnded: handleGigSourceEnded
-  })
+  const source = createAndConnectBufferSource(buffer, handleGigSourceEnded)
   if (!source) return false
 
   audioState.gigBuffer = buffer
@@ -302,7 +288,7 @@ export async function startGigPlayback({
     } catch {
       /* ignore */
     }
-    cleanupGigPlayback()
+    releaseAudioResource('gigSource')
     return false
   }
   logger.info(
@@ -393,10 +379,10 @@ export function resumeGigPlayback(): boolean {
     audioState.gigIsPaused = false
     return true
   }
-  const source = createGigBufferSource({
-    buffer: audioState.gigBuffer,
-    onEnded: handleGigSourceEnded
-  })
+  const source = createAndConnectBufferSource(
+    audioState.gigBuffer,
+    handleGigSourceEnded
+  )
   if (!source) return false
 
   const startAt = getRawAudioContext().currentTime

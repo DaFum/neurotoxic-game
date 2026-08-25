@@ -10,8 +10,6 @@ mock.module('tone', { namedExports: mockTone })
 // Mock cleanupUtils
 const mockCleanup = {
   stopTransportAndClear: mock.fn(),
-  cleanupGigPlayback: mock.fn(),
-  cleanupAmbientPlayback: mock.fn(),
   cleanupTransportEvents: mock.fn()
 }
 mock.module(

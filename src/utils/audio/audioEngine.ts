@@ -12,7 +12,8 @@ export {
   getToneStartTimeSec,
   withAudioContext
 } from './context'
-export { disposeAudio, safeDispose } from './dispose'
+export { disposeAudio } from './dispose'
+export { safeDispose } from './state'
 
 export { hasAudioAsset, loadAudioBuffer } from './assets'
 

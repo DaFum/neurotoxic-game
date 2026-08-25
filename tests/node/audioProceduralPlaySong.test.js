@@ -43,7 +43,11 @@ const mockAudioState = {
   part: null
 }
 mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
-  namedExports: { audioState: mockAudioState, resetGigState: mock.fn() }
+  namedExports: {
+    audioState: mockAudioState,
+    resetGigState: mock.fn(),
+    releaseAudioResource: mock.fn()
+  }
 })
 
 // Mock Tone.js
@@ -111,10 +115,7 @@ mock.module(
     namedExports: {
       stopTransportAndClear: mockStopTransportAndClear,
       clearTransportEvent: mock.fn(),
-      cleanupTransportEvents: mock.fn(),
-      stopAndDisconnectSource: mock.fn(),
-      cleanupGigPlayback: mock.fn(),
-      cleanupAmbientPlayback: mock.fn()
+      cleanupTransportEvents: mock.fn()
     }
   }
 )

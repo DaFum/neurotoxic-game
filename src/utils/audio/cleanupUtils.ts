@@ -1,6 +1,6 @@
 import * as Tone from 'tone'
 import { logger } from '../logger'
-import { audioState, resetGigState } from './state'
+import { audioState } from './state'
 
 /**
  * Clears transport event by ID.
@@ -13,33 +13,6 @@ export function clearTransportEvent(id: number | null, name: string): void {
     Tone.getTransport().clear(id)
   } catch (err) {
     logger.warn('AudioEngine', `Failed to clear transport ${name} event`, err)
-  }
-}
-
-/**
- * Stops and disconnects an audio source safely.
- * @param source - The source node.
- * @param name - Name for logging.
- */
-export function stopAndDisconnectSource(
-  source: AudioNode | null,
-  name: string
-): void {
-  if (!source) return
-  const stoppableSource = source as AudioNode & { stop?: () => void }
-  if (typeof stoppableSource.stop === 'function') {
-    try {
-      stoppableSource.stop()
-    } catch (err) {
-      logger.debug('AudioEngine', `${name} source stop failed`, err)
-    }
-  }
-  if (typeof source.disconnect === 'function') {
-    try {
-      source.disconnect()
-    } catch (err) {
-      logger.debug('AudioEngine', `${name} source disconnect failed`, err)
-    }
   }
 }
 
@@ -62,22 +35,6 @@ export function stopTransportAndClear() {
     audioState.midiParts = []
   }
   Tone.getTransport().cancel()
-}
-
-/**
- * Cleans up gig playback resources and resets gig state.
- */
-export function cleanupGigPlayback() {
-  stopAndDisconnectSource(audioState.gigSource, 'Gig')
-  resetGigState()
-}
-
-/**
- * Cleans up ambient playback resources.
- */
-export function cleanupAmbientPlayback() {
-  stopAndDisconnectSource(audioState.ambientSource, 'Ambient')
-  audioState.ambientSource = null
 }
 
 /**

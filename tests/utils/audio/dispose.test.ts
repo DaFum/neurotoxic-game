@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { safeDispose } from '../../../src/utils/audio/dispose'
+import { safeDispose } from '../../../src/utils/audio/state'
 import { logger } from '../../../src/utils/logger'
 
 vi.mock('../../../src/utils/logger', () => ({
