@@ -109,10 +109,7 @@ mock.module(
     namedExports: {
       stopTransportAndClear: mockStopTransportAndClear,
       clearTransportEvent: mock.fn(),
-      cleanupTransportEvents: mock.fn(),
-      stopAndDisconnectSource: mock.fn(),
-      cleanupGigPlayback: mock.fn(),
-      cleanupAmbientPlayback: mock.fn()
+      cleanupTransportEvents: mock.fn()
     }
   }
 )

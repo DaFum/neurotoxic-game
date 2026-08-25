@@ -29,7 +29,8 @@ Roles:
 
 ## Disposal
 
-- Every node assigned to `audioState` in `instruments.ts` must have a matching `safeDispose` call in `disposeAudio` (`dispose.ts`). The master chain owns `masterLimiter`, `masterComp`, `musicGain`, `neuroDistortion`, `reverb`, `reverbSend`, and the `masterCorruption*` trio; when adding a new master-chain node, extend `disposeAudio` in the same change to avoid leaking it across teardowns.
+- Every node assigned to `audioState` in `instruments.ts` must have an entry in `AUDIO_RESOURCE_KINDS` (`state.ts`). `disposeAudio` (`dispose.ts`) iterates `audioResourceRegistry` instead of naming nodes, so registering the slot is the only step needed to have it torn down; an unregistered node leaks across teardowns. The master chain owns `masterLimiter`, `masterComp`, `musicGain`, `neuroDistortion`, `reverb`, `reverbSend`, and the `masterCorruption*` trio.
+- Single-slot teardown goes through `releaseAudioResource(key)`, not per-source helpers. Releasing `'gigSource'` also runs `resetGigState()`, so use it only where the whole gig clock should go; pause and resume-retry deliberately keep the buffer and seek offset and manage the source themselves.
 
 ## Decoding
 

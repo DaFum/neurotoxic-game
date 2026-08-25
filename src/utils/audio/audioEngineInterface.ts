@@ -108,7 +108,7 @@ export const toneAudioEngine: IAudioEngine = {
   ): void =>
     audioEngineHub.playNoteAtTime(midiPitch, lane, whenSeconds, velocity),
   ensureAudioContext: (): Promise<boolean> =>
-    audioEngineHub.audioService.ensureAudioContext(),
+    audioEngineHub.audioManager.ensureAudioContext(),
   playSongSequence: (index, setlist, gameStateRef, addToast, t) =>
     audioEngineHub.playSongSequence(index, setlist, gameStateRef, addToast, t),
   stopAudio: (): void => audioEngineHub.stopAudio()

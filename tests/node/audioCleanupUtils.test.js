@@ -17,43 +17,22 @@ mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }
 })
 
-// Mock audioState and resetGigState
+// Mock audioState
 const mockAudioState = {
   loop: null,
   part: null,
   midiParts: [],
-  gigSource: null,
-  ambientSource: null,
   transportEndEventId: null,
   transportStopEventId: null
 }
-const mockResetGigState = mock.fn()
 
 mock.module(new URL('../../src/utils/audio/state.ts', import.meta.url).href, {
-  namedExports: {
-    audioState: mockAudioState,
-    resetGigState: mockResetGigState
-  }
+  namedExports: { audioState: mockAudioState }
 })
 
 // Import SUT
-const {
-  clearTransportEvent,
-  stopAndDisconnectSource,
-  stopTransportAndClear,
-  cleanupGigPlayback,
-  cleanupAmbientPlayback,
-  cleanupTransportEvents
-} = await import('../../src/utils/audio/cleanupUtils')
-
-const createMockSource = ({ stopThrows, disconnectThrows } = {}) => ({
-  stop: mock.fn(() => {
-    if (stopThrows) throw stopThrows
-  }),
-  disconnect: mock.fn(() => {
-    if (disconnectThrows) throw disconnectThrows
-  })
-})
+const { clearTransportEvent, stopTransportAndClear, cleanupTransportEvents } =
+  await import('../../src/utils/audio/cleanupUtils')
 
 test('clearTransportEvent', async t => {
   t.beforeEach(() => {
@@ -127,85 +106,6 @@ test('clearTransportEvent', async t => {
   })
 })
 
-test('stopAndDisconnectSource', async t => {
-  t.beforeEach(() => {
-    mockLogger.debug.mock.resetCalls()
-  })
-
-  for (const invalidSource of [null, undefined, {}]) {
-    await t.test(
-      `handles non-callable source: ${String(invalidSource)}`,
-      () => {
-        stopAndDisconnectSource(invalidSource, 'testSource')
-        assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
-      }
-    )
-  }
-
-  await t.test('calls stop and disconnect on source', () => {
-    const mockSource = createMockSource()
-    stopAndDisconnectSource(mockSource, 'testSource')
-    assert.strictEqual(mockSource.stop.mock.calls.length, 1)
-    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 0)
-  })
-
-  await t.test('handles stop error and logs debug', () => {
-    const error = new Error('Stop failed')
-    const mockSource = createMockSource({ stopThrows: error })
-    stopAndDisconnectSource(mockSource, 'testSource')
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[0].arguments[1],
-      'testSource source stop failed'
-    )
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], error)
-    // Should still try to disconnect
-    assert.strictEqual(mockSource.disconnect.mock.calls.length, 1)
-  })
-
-  await t.test('handles disconnect error and logs debug', () => {
-    const error = new Error('Disconnect failed')
-    const mockSource = createMockSource({ disconnectThrows: error })
-    stopAndDisconnectSource(mockSource, 'testSource')
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 1)
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[0].arguments[1],
-      'testSource source disconnect failed'
-    )
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], error)
-  })
-
-  await t.test('handles both stop and disconnect errors', () => {
-    const stopError = new Error('Stop failed')
-    const disconnectError = new Error('Disconnect failed')
-    const mockSource = createMockSource({
-      stopThrows: stopError,
-      disconnectThrows: disconnectError
-    })
-    stopAndDisconnectSource(mockSource, 'testSource')
-
-    assert.strictEqual(mockLogger.debug.mock.calls.length, 2)
-
-    // Check first error (stop)
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[0].arguments[1],
-      'testSource source stop failed'
-    )
-    assert.strictEqual(mockLogger.debug.mock.calls[0].arguments[2], stopError)
-
-    // Check second error (disconnect)
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[1].arguments[1],
-      'testSource source disconnect failed'
-    )
-    assert.strictEqual(
-      mockLogger.debug.mock.calls[1].arguments[2],
-      disconnectError
-    )
-  })
-})
-
 test('stopTransportAndClear', async t => {
   t.beforeEach(() => {
     mockTone.getTransport().stop.mock.resetCalls()
@@ -265,69 +165,6 @@ test('stopTransportAndClear', async t => {
     // Should verify it didn't crash
     assert.strictEqual(mockTone.getTransport().stop.mock.calls.length, 1)
   })
-})
-
-test('cleanupGigPlayback', async t => {
-  t.beforeEach(() => {
-    mockResetGigState.mock.resetCalls()
-    mockAudioState.gigSource = null
-  })
-
-  const gigPlaybackCases = [
-    {
-      label: 'cleans up gigSource if present',
-      source: createMockSource(),
-      expectsSourceCleanup: true
-    },
-    {
-      label: 'calls resetGigState even if gigSource is null',
-      source: null,
-      expectsSourceCleanup: false
-    }
-  ]
-
-  for (const { label, source, expectsSourceCleanup } of gigPlaybackCases) {
-    await t.test(label, () => {
-      mockAudioState.gigSource = source
-      cleanupGigPlayback()
-      if (expectsSourceCleanup && source) {
-        assert.strictEqual(source.stop.mock.calls.length, 1)
-        assert.strictEqual(source.disconnect.mock.calls.length, 1)
-      }
-      assert.strictEqual(mockResetGigState.mock.calls.length, 1)
-    })
-  }
-})
-
-test('cleanupAmbientPlayback', async t => {
-  t.beforeEach(() => {
-    mockAudioState.ambientSource = null
-  })
-
-  const ambientCases = [
-    {
-      label: 'cleans up ambientSource if present',
-      source: createMockSource(),
-      expectsCleanup: true
-    },
-    {
-      label: 'does nothing if ambientSource is null',
-      source: null,
-      expectsCleanup: false
-    }
-  ]
-
-  for (const { label, source, expectsCleanup } of ambientCases) {
-    await t.test(label, () => {
-      mockAudioState.ambientSource = source
-      cleanupAmbientPlayback()
-      if (expectsCleanup && source) {
-        assert.strictEqual(source.stop.mock.calls.length, 1)
-        assert.strictEqual(source.disconnect.mock.calls.length, 1)
-      }
-      assert.strictEqual(mockAudioState.ambientSource, null)
-    })
-  }
 })
 
 test('cleanupTransportEvents', async t => {
