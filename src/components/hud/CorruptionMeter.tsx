@@ -8,10 +8,9 @@ import { normalizePercentageToScale } from '../../utils/gameState'
  * Configuration properties for the CorruptionMeter component.
  */
 interface CorruptionMeterProps {
-  /** The current corruption level on a 0-100 percentage scale. */
   corruptionLevel: number
-  /** Indicates whether a corruption burst is currently active. */
   isCorruptionBurstActive: boolean
+  isDanger?: boolean
 }
 
 /**
@@ -26,7 +25,8 @@ interface CorruptionMeterProps {
  */
 export const CorruptionMeter = memo(function CorruptionMeter({
   corruptionLevel,
-  isCorruptionBurstActive
+  isCorruptionBurstActive,
+  isDanger = false
 }: CorruptionMeterProps) {
   const { t } = useTranslation('ui')
   return (
@@ -40,7 +40,7 @@ export const CorruptionMeter = memo(function CorruptionMeter({
           label={t('ui:hud.decibel_corruption')}
           value={normalizePercentageToScale(corruptionLevel, 10)}
           max={10}
-          isDanger={corruptionLevel > 80}
+          isDanger={isDanger}
           showValue={false}
         />
       )}

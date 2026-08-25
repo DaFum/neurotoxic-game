@@ -1510,7 +1510,7 @@ export const summarizeCatalogAffordability = state => {
   let affordable = 0
   let unaffordable = 0
   for (const item of UPGRADE_CATALOG) {
-    const validation = validatePurchase(item, state.player, state.band)
+    const validation = validatePurchase(item, state.player, state.band, state.social)
     if (validation.isValid) affordable += 1
     else if (validation.errorType === 'insufficient_funds') unaffordable += 1
   }
@@ -1520,7 +1520,7 @@ export const summarizeCatalogAffordability = state => {
 export const applyCatalogPurchase = (state, candidate, counters) => {
   if (!candidate) return false
 
-  const validation = validatePurchase(candidate, state.player, state.band)
+  const validation = validatePurchase(candidate, state.player, state.band, state.social)
   if (!validation.isValid) {
     // A purchase the player wanted and could not pay for is a progression
     // signal, not a no-op. `already_owned` and `missing_effect` are not.
@@ -1686,7 +1686,7 @@ const purchaseReserve = state =>
  * own prudence and can block something genuinely affordable.
  */
 const evaluatePurchaseIntent = (item, state, reserve) => {
-  const validation = validatePurchase(item, state.player, state.band)
+  const validation = validatePurchase(item, state.player, state.band, state.social)
   if (!validation.isValid) return { verdict: validation.errorType, validation }
   if (validation.payingWithFame) return { verdict: 'buy', validation }
   const remaining = (state.player.money ?? 0) - validation.finalCost

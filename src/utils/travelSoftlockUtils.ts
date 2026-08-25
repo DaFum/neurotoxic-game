@@ -2,13 +2,13 @@ import {
   calculateChassisGrossSaleValue,
   getTotalDailyObligations,
   getActiveAssetModifiers
-} from '../../utils/assetSelectors'
-import { finiteNumberOr } from '../../utils/finiteNumber'
-import type { TravelLogicParams } from './types'
+} from './assetSelectors'
+import { finiteNumberOr } from './finiteNumber'
+import type { GameState, PlayerState, BandState, SocialState } from '../types'
 
 export const getSellableAssets = (
-  assets: TravelLogicParams['assets'],
-  liabilities: TravelLogicParams['liabilities'],
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
   playerDay: number
 ): { id: string; net: number }[] => {
   const sellableAssets: { id: string; net: number }[] = []
@@ -46,20 +46,20 @@ export const getSellableAssets = (
 
 export const getPostSaleScenarios = (
   sellableAssets: { id: string; net: number }[],
-  assets: TravelLogicParams['assets'],
-  liabilities: TravelLogicParams['liabilities'],
-  player: TravelLogicParams['player'],
-  band: TravelLogicParams['band'],
-  social: TravelLogicParams['social']
+  assets: GameState['assets'],
+  liabilities: GameState['liabilities'],
+  player: PlayerState,
+  band: BandState,
+  social: SocialState
 ): {
   assetProceeds: number
   dailyObligations: number
-  assetModifiers: import('../../types/assets').AssetModifiers
+  assetModifiers: import('../types/assets').AssetModifiers
 }[] => {
   const postSaleScenarios: {
     assetProceeds: number
     dailyObligations: number
-    assetModifiers: import('../../types/assets').AssetModifiers
+    assetModifiers: import('../types/assets').AssetModifiers
   }[] = []
 
   if (sellableAssets.length > 0 && assets) {

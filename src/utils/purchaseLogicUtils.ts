@@ -9,6 +9,7 @@ import {
   clampMemberStamina,
   clampMemberMood,
   clampPlayerFame,
+  clampLuck,
   calculateFameLevel,
   finiteNumberOr,
   isFiniteNumber
@@ -16,6 +17,7 @@ import {
 import type { PlayerState, BandState, BandMember } from '../types'
 import type { Effect, PurchaseItem, UnlockMessage } from '../types/components'
 import type { PlayerPatch, BandPatch } from '../types/purchase'
+import type { SocialState } from '../types'
 
 /**
  * Cash advance granted by signing the indie label contract (`hq_room_label`).
@@ -224,14 +226,13 @@ export const isItemOwned = (
  * @returns True if affordable
  */
 export const canAfford = (
-  item: PurchaseItem,
-  player: PlayerState,
+  item: { currency?: string },
+  player: Pick<PlayerState, 'money' | 'fame'>,
   adjustedCost: number
 ): boolean => {
   const payingWithFame = item.currency === 'fame'
-  const currencyValue = payingWithFame
-    ? (player.fame ?? 0)
-    : (player.money ?? 0)
+  const rawCurrency = payingWithFame ? player.fame : player.money
+  const currencyValue = finiteNumberOr(rawCurrency, 0)
   return currencyValue >= adjustedCost
 }
 
@@ -368,7 +369,10 @@ export const applyStatModifier = (
 
 /** Reasons `validatePurchase` can reject an item. */
 export type PurchaseErrorType =
-  'missing_effect' | 'already_owned' | 'insufficient_funds'
+  | 'missing_effect'
+  | 'already_owned'
+  | 'insufficient_funds'
+  | 'reputation_blocked'
 
 export type PurchaseValidationResult =
   | { isValid: false; errorType: PurchaseErrorType }
@@ -381,46 +385,80 @@ export type PurchaseValidationResult =
       effect: Effect
     }
 
+import type { PurchaseDecision } from '../types/purchase'
+
+/**
+ * Derives all upgrade-purchase state variables in a single calculation.
+ * @param item - Item to purchase
+ * @param player - Player state
+ * @param band - Band state
+ * @returns Decision variables (cost, affordability, ownership, etc)
+ */
+export const getPurchaseDecision = (
+  item: PurchaseItem,
+  player: PlayerState,
+  band: BandState,
+  social: SocialState
+): PurchaseDecision => {
+  const cost = getAdjustedCost(item, band)
+  const isOwned = isItemOwned(item, player, band)
+  const effect = getPrimaryEffect(item)
+  const isConsumable = effect?.type === 'inventory_add'
+  const playerCanAfford = canAfford(item, player, cost)
+
+  const hasValidEffect = !!effect
+  const meetsReputation = !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+  const canPurchase = playerCanAfford && (isConsumable || !isOwned) && hasValidEffect && meetsReputation
+
+  return { cost, canAfford: playerCanAfford, isOwned, isConsumable, canPurchase }
+}
+
 /**
  * Validates whether the item can be purchased.
  * @param item - Item to purchase
  * @param player - Player state
  * @param band - Band state
+ * @param social - Social state (optional)
  * @returns Discriminated union indicating validity and computed parameters.
  */
 export const validatePurchase = (
   item: PurchaseItem,
   player: PlayerState,
-  band: BandState
+  band: BandState,
+  social: SocialState
 ): PurchaseValidationResult => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
     return { isValid: false, errorType: 'missing_effect' }
   }
 
-  const payingWithFame = item.currency === 'fame'
-  const startingMoney = finiteNumberOr(player.money, 0)
-  const startingFame = finiteNumberOr(player.fame, 0)
-  const currencyValue = payingWithFame ? startingFame : startingMoney
-  const finalCost = getAdjustedCost(item, band)
+  const decision = getPurchaseDecision(item, player, band, social)
 
-  const isConsumable = effect.type === 'inventory_add'
-  const isOwned = isItemOwned(item, player, band)
+  const meetsReputation =
+    !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+  if (!meetsReputation) {
+    return { isValid: false, errorType: 'reputation_blocked' }
+  }
 
-  if (isOwned && !isConsumable) {
+  if (decision.isOwned && !decision.isConsumable) {
     return { isValid: false, errorType: 'already_owned' }
   }
 
-  if (currencyValue < finalCost) {
+  if (!decision.canAfford) {
     return { isValid: false, errorType: 'insufficient_funds' }
   }
 
+  const payingWithFame = item.currency === 'fame'
+  const startingCurrency = payingWithFame
+    ? finiteNumberOr(player.fame, 0)
+    : finiteNumberOr(player.money, 0)
+
   return {
     isValid: true,
-    finalCost,
-    isConsumable,
+    finalCost: decision.cost,
+    isConsumable: decision.isConsumable,
     payingWithFame,
-    startingCurrency: currencyValue,
+    startingCurrency,
     effect
   }
 }
@@ -612,7 +650,7 @@ export const applyUnlockHQ = (
     case 'hq_room_void_altar':
     case 'hq_room_shrine': {
       nextBandPatch = {
-        luck: Math.max(0, (getNumericProp(band, 'luck', 0) ?? 0) + 10)
+        luck: clampLuck((getNumericProp(band, 'luck', 0) ?? 0) + 10)
       }
       const messageKey =
         item.id === 'hq_room_shrine'

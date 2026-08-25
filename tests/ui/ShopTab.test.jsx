@@ -43,20 +43,19 @@ vi.mock('../../src/data/hqItems', () => ({
 vi.mock('../../src/ui/bandhq/ShopItem', () => ({
   ShopItem: ({
     item,
-    isOwned,
+    decision,
     isDisabled,
-    adjustedCost,
     onBuy,
     processingItemId
   }) => (
     <div data-testid={`shop-item-${item.id}`}>
       <span>{item.name}</span>
-      <span data-testid={`is-owned-${item.id}`}>{isOwned ? 'Yes' : 'No'}</span>
+      <span data-testid={`is-owned-${item.id}`}>{decision.isOwned ? 'Yes' : 'No'}</span>
       <span data-testid={`is-disabled-${item.id}`}>
         {isDisabled ? 'Yes' : 'No'}
       </span>
-      {adjustedCost !== undefined && adjustedCost !== null && (
-        <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>
+      {decision.cost !== undefined && decision.cost !== null && (
+        <span data-testid={`adjusted-cost-${item.id}`}>{decision.cost}</span>
       )}
       <button type='button' onClick={() => onBuy(item)}>
         Buy
@@ -71,13 +70,19 @@ vi.mock('../../src/ui/bandhq/ShopItem', () => ({
 describe('ShopTab', () => {
   const player = { money: 1000 }
   let handleBuy
-  let isItemOwned
+  let getPurchaseDecision
   let isItemDisabled
 
   beforeEach(() => {
     vi.clearAllMocks()
     handleBuy = vi.fn()
-    isItemOwned = vi.fn(item => item.id === 'gear1')
+    getPurchaseDecision = vi.fn(item => ({
+      cost: item.cost * 0.5,
+      isOwned: item.id === 'gear1',
+      isConsumable: false,
+      canPurchase: item.id !== 'gear1',
+      canAfford: true
+    }))
     isItemDisabled = vi.fn(item => item.id === 'inst1')
   })
 
@@ -86,7 +91,7 @@ describe('ShopTab', () => {
       <ShopTab
         player={player}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
       />
     )
@@ -99,7 +104,7 @@ describe('ShopTab', () => {
       <ShopTab
         player={player}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
       />
     )
@@ -115,9 +120,8 @@ describe('ShopTab', () => {
       <ShopTab
         player={player}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
-        getAdjustedCost={item => item.cost * 0.5}
         processingItemId='gear1'
       />
     )
@@ -139,7 +143,7 @@ describe('ShopTab', () => {
       <ShopTab
         player={player}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
       />
     )

@@ -1189,6 +1189,37 @@ test('catalogue affordability separates reachable items from unaffordable ones',
   assert.ok(rich.affordable >= broke.affordable)
 })
 
+test('simulation refuses requiresReputation items when controversyLevel is 50', () => {
+  const state = createInitialState()
+
+  // Set up a player who is infinitely rich but has controversy 50.
+  const badReputationState = {
+    ...state,
+    player: { ...state.player, money: 10_000_000, fame: 10_000_000 },
+    social: { ...state.social, controversyLevel: 50 }
+  }
+
+  const reputationItem = getUnifiedUpgradeCatalog().find(
+    item => item.requiresReputation
+  )
+  assert.ok(reputationItem, 'Test requires an item that is reputation-locked')
+
+  const purchaseAttempt = applyCatalogPurchase(badReputationState, reputationItem, {})
+
+  assert.equal(purchaseAttempt, false, 'Reputation-locked item should be blocked')
+
+  const counts = summarizeCatalogAffordability(badReputationState)
+
+  // A clean state with 0 controversy would have higher affordability than the scandal state
+  const cleanState = {
+    ...badReputationState,
+    social: { ...state.social, controversyLevel: 0 }
+  }
+  const cleanCounts = summarizeCatalogAffordability(cleanState)
+
+  assert.ok(counts.affordable < cleanCounts.affordable, 'Scandal state should have fewer affordable items')
+})
+
 test('purchase log records timing, cost and the balance on both sides of a buy', () => {
   const run = runSingleSimulation(
     SCENARIOS[0],

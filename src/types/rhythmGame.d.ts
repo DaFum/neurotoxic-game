@@ -14,6 +14,27 @@ export type RhythmLane = {
   renderX?: number
 }
 
+export interface GigHUDStats {
+  /** The player's current accumulated score for the active gig. */
+  score: number
+  /** The current consecutive sequence of correctly hit notes. */
+  combo: number
+  /** The remaining crowd energy or health pool of the player. */
+  health: number
+  /** The current toxic overload accumulation percentage. */
+  overload: number
+  /** Indicates whether the gig has entered a terminal failure state. */
+  isGameOver: boolean
+  /** The hit accuracy percentage across all resolved notes in the current gig. */
+  accuracy?: number
+  /** Indicates whether the environmental toxic modifier is currently active. */
+  isToxicMode?: boolean
+  /** The decibel corruption level accumulated during gameplay. */
+  corruptionLevel?: number
+  /** Indicates whether a corruption burst sequence is actively executing. */
+  isCorruptionBurstActive?: boolean
+}
+
 /**
  * Live rhythm-game scoring and health counters.
  */

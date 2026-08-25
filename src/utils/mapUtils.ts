@@ -152,6 +152,21 @@ export const getRegionKeyForLocation = (location: unknown): string | null => {
 export const REGION_BLACKLIST_THRESHOLD = -30
 
 /**
+ * Converts a node's numeric map coordinates into absolute CSS percentage values.
+ *
+ * @param node - An object containing x and y map coordinates (0-100).
+ * @param transform - Optional CSS transform string to append to the style object.
+ * @returns A style object containing left and top percentages, plus the transform if provided.
+ */
+export const nodeToPercentPosition = (
+  node: { x: number; y: number },
+  transform?: string
+): { left: string; top: string; transform?: string } => {
+  const position = { left: `${node.x}%`, top: `${node.y}%` }
+  return transform ? { ...position, transform } : position
+}
+
+/**
  * Checks if the player is softlocked (stranded): no connected node is
  * affordable in both fuel and cash, and no in-place escape exists.
  *

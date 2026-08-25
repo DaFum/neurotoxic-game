@@ -91,7 +91,7 @@ describe('useRhythmGameAudio', () => {
   })
 
   it('handles non-finite harmony gracefully', () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
 
     renderHook(() =>
@@ -103,7 +103,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: { ...baseState, band: { harmony: NaN } },
         contextActions: {
           addToast: vi.fn(),
@@ -119,18 +119,18 @@ describe('useRhythmGameAudio', () => {
       'RhythmGame',
       'Band harmony too low to start gig.'
     )
-    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setAudioStatus).toHaveBeenCalledWith('ready')
     expect(setIsGameOver).toHaveBeenCalledWith(true)
   })
 
-  it('finalizes the gig instead of showing the audio lock on low harmony', () => {
-    const setIsAudioReady = vi.fn()
+  it('finalizes the gig instead of showing the audio lock on low harmony and acts idempotently', async () => {
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const setLastGigStats = vi.fn()
     const endGig = vi.fn()
     const addToast = vi.fn()
 
-    renderHook(() =>
+    const { result } = renderHook(() =>
       useRhythmGameAudio({
         gameStateRef: {
           current: {
@@ -139,7 +139,7 @@ describe('useRhythmGameAudio', () => {
             isGameOver: false
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: { ...baseState, band: { harmony: 0 } },
         contextActions: {
           addToast,
@@ -151,20 +151,29 @@ describe('useRhythmGameAudio', () => {
     )
 
     expect(mocks.stopMusic).toHaveBeenCalled()
-    expect(setIsAudioReady).toHaveBeenCalledWith(true)
+    expect(setAudioStatus).toHaveBeenCalledWith('ready')
     expect(setIsGameOver).toHaveBeenCalledWith(true)
     expect(addToast).toHaveBeenCalledWith(
       'ui:gig.toasts.bandCollapsed',
       'error'
     )
+    expect(addToast).toHaveBeenCalledTimes(1)
     expect(setLastGigStats).toHaveBeenCalledWith(
       expect.objectContaining({ score: 0 })
     )
-    expect(endGig).toHaveBeenCalled()
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
+
+    // retry shouldn't cause side effects to run again
+    await result.current.retryAudioInitialization()
+
+    expect(addToast).toHaveBeenCalledTimes(1)
+    expect(setLastGigStats).toHaveBeenCalledTimes(1)
+    expect(endGig).toHaveBeenCalledTimes(1)
   })
 
   it('stops audio on unmount cleanup', () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const { unmount } = renderHook(() =>
       useRhythmGameAudio({
@@ -176,7 +185,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -193,7 +202,7 @@ describe('useRhythmGameAudio', () => {
 
   it('reports initialization failures with a translated fallback message', async () => {
     mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
@@ -207,7 +216,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -235,7 +244,7 @@ describe('useRhythmGameAudio', () => {
   it('reports initialization failures with error toast for high severity', async () => {
     mocks.handleError.mockReturnValueOnce({ severity: 'high' })
     mocks.playSongSequence.mockRejectedValueOnce(new Error('boom'))
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const addToast = vi.fn()
 
@@ -249,7 +258,7 @@ describe('useRhythmGameAudio', () => {
             notesVersion: 0
           }
         },
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast,
@@ -273,7 +282,7 @@ describe('useRhythmGameAudio', () => {
   })
 
   it('starts gig audio after requesting a fresh gig state reset', async () => {
-    const setIsAudioReady = vi.fn()
+    const setAudioStatus = vi.fn()
     const setIsGameOver = vi.fn()
     const gameStateRef = {
       current: {
@@ -287,7 +296,7 @@ describe('useRhythmGameAudio', () => {
     renderHook(() =>
       useRhythmGameAudio({
         gameStateRef,
-        setters: { setIsAudioReady, setIsGameOver },
+        setters: { setAudioStatus, setIsGameOver },
         contextState: baseState,
         contextActions: {
           addToast: vi.fn(),
@@ -305,5 +314,53 @@ describe('useRhythmGameAudio', () => {
     await waitFor(() => {
       expect(mocks.playSongSequence).toHaveBeenCalled()
     })
+  })
+
+  it('updates currentStatusRef to failed if physics setup fails and allows retry', async () => {
+    // Mock setupGigPhysics to simulate a failure
+    mocks.setupGigPhysics.mockReturnValueOnce(null)
+    const setAudioStatus = vi.fn()
+    const setIsGameOver = vi.fn()
+
+    const { result } = renderHook(() =>
+      useRhythmGameAudio({
+        gameStateRef: {
+          current: {
+            lanes: [{}, {}, {}],
+            hasSubmittedResults: false,
+            isGameOver: false
+          }
+        },
+        setters: { setAudioStatus, setIsGameOver },
+        contextState: baseState,
+        contextActions: {
+          addToast: vi.fn(),
+          t: vi.fn(key => key),
+          setLastGigStats: vi.fn(),
+          endGig: vi.fn()
+        }
+      })
+    )
+
+    // Wait for the initialization error path to complete
+    await waitFor(() => {
+      expect(setAudioStatus).toHaveBeenCalledWith('failed')
+    })
+
+    // Now currentStatusRef.current should be 'failed'.
+    // Calling retryAudioInitialization should clear it and attempt to initialize again.
+
+    // Clear mocks so we can check if it tries again
+    mocks.setupGigPhysics.mockClear()
+    mocks.setupGigPhysics.mockReturnValueOnce({
+      mergedModifiers: {},
+      speed: 500,
+      hitWindows: [100, 100, 100]
+    })
+
+    await result.current.retryAudioInitialization()
+
+    // It should have called setupGigPhysics again
+    expect(mocks.setupGigPhysics).toHaveBeenCalled()
   })
 })
