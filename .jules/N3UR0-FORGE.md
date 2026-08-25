@@ -141,3 +141,15 @@ After travel, the band can acquire an item with special effects to use.
  **Feature:** Feedback Loop Hazard
 
  **Description:** Autonomously expanded the amp calibration minigame with a new 'Feedback Loop' hazard conforming to Kranker Schrank lore. Massive heat generation forces immediate user dampening action to avoid losing overdrive. Extended component props, integrated Brutalist UI alerts, bounded the dampened-loop count at the reducer boundary, applied a clamped +20 economy bonus per dampened loop, and expanded unit tests.
+
+## 2026-08-20 - IRON LIVER GRAFT
+
+**Feature:** Iron Liver Graft (Void Clinic)
+
+**Description:**
+- Lore Integration:
+  An experimental filter grafted directly into the bloodstream, designed to process the toxic byproducts of the Kranker Schrank lifestyle. It reduces the body's natural decay but permanently taints the member's blood.
+- State Impact:
+  characters.ts: Added `iron_liver` to the CLINIC traits registry.
+  gameConstants.ts: Exposed `IRON_LIVER_TRAIT_ID` in CLINIC_CONFIG.
+  ClinicMemberCard.tsx: Added brutalist UI for the new fame-based mutation.

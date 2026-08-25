@@ -77,7 +77,7 @@ export const Gig = () => {
   })
 
   // Render blocking overlay if audio is locked
-  if (stats.isAudioReady === false) {
+  if (stats.audioStatus === 'blocked' || stats.audioStatus === 'failed') {
     return (
       <AudioLockedOverlay
         onInitializeAudio={() => {

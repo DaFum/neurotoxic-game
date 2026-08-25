@@ -71,3 +71,4 @@
 | 2026-08-19 | src/ui/bandhq/detailedStats/components/ActiveQuestsSection.tsx | ActiveQuestsSection |
 | 2026-08-20 | src/hooks/rhythmGame/scoring/useHandleHit.ts | HandleHitParams, useHandleHit |
 | 2026-08-21 | src/data/quests/utils/createCorporateQuest.ts | createCorporateQuest |
+| 2026-08-21 | src/components/assets/AssetsStatusStrip.tsx | StatusCell, AssetsStatusStrip |

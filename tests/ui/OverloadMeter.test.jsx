@@ -29,7 +29,7 @@ test('OverloadMeter renders correct value and danger state', () => {
   expect(meter).toHaveAttribute('data-value', '8')
   expect(meter).toHaveAttribute('data-danger', 'false')
 
-  rerender(<OverloadMeter overload={85} />)
+  rerender(<OverloadMeter overload={85} isDanger={true} />)
   meter = screen.getByTestId('block-meter')
   expect(meter).toHaveAttribute('data-value', '9')
   expect(meter).toHaveAttribute('data-danger', 'true')

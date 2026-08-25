@@ -1,17 +1,31 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { describe, expect, it, vi, beforeEach } from 'vitest'
 import { SupplyStopModal } from '../../src/ui/SupplyStopModal'
 import * as GameState from '../../src/context/GameState'
 
+// We need to simulate the transformPlayerPatch that gets called during handleBuy.
+let mockedTransformPlayerPatch = null;
+
 // Mocked purchase logic: handleBuy reports a successful purchase synchronously.
-const mockHandleBuy = vi.fn(() => true)
 vi.mock('../../src/ui/bandhq/hooks/usePurchaseLogic', () => ({
-  usePurchaseLogic: () => ({
-    handleBuy: mockHandleBuy,
-    getAdjustedCost: () => 100,
-    isItemOwned: () => false,
-    isItemDisabled: () => false
-  })
+  usePurchaseLogic: (params) => {
+    mockedTransformPlayerPatch = params.transformPlayerPatch;
+    return {
+      handleBuy: () => {
+        // execute transformPlayerPatch when handleBuy is called to simulate the logic
+        if(mockedTransformPlayerPatch) mockedTransformPlayerPatch({ fame: 100 });
+        return true;
+      },
+      getPurchaseDecision: () => ({
+        cost: 100,
+        canAfford: true,
+        isOwned: false,
+        isConsumable: false,
+        canPurchase: true
+      }),
+      isItemDisabled: () => false
+    };
+  }
 }))
 
 // Structural ShopItem mock: forwards processingItemId to disable the button,
@@ -33,7 +47,12 @@ vi.mock('../../src/ui/bandhq/ShopItem', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({
-    t: (key, options) => options?.defaultValue ?? key
+    t: (key, options) => {
+      if (key === 'ui:shop.black_market_purchase') {
+        return `Purchased from Black Market! Lost ${options.amount} Fame.`
+      }
+      return options?.defaultValue ?? key
+    }
   }),
   initReactI18next: { type: '3rdParty', init: () => {} }
 }))
@@ -43,6 +62,7 @@ describe('SupplyStopModal purchase lock', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    mockedTransformPlayerPatch = null;
     const state = { player: { fame: 100 }, band: {}, social: {} }
     vi.spyOn(GameState, 'useGameSelector').mockImplementation(sel => sel(state))
     vi.spyOn(GameState, 'useGameActions').mockReturnValue({
@@ -53,20 +73,25 @@ describe('SupplyStopModal purchase lock', () => {
   })
 
   it('double-clicking the same item triggers exactly one purchase + one consequence toast', async () => {
-    const inventory = [{ id: 'c_item', name: 'Item', cost: 100 }]
-    render(<SupplyStopModal inventory={inventory} onClose={() => {}} />)
+    const inventory = [
+      { id: 'item_a', name: 'Item A', cost: 100, currency: 'money' }
+    ]
 
-    const btn = screen.getByTestId('buy-c_item')
-    await act(async () => {
-      fireEvent.click(btn)
-      // Second synchronous click before the lock state re-renders.
-      fireEvent.click(btn)
+    render(<SupplyStopModal inventory={inventory} onClose={vi.fn()} />)
+    const btn = screen.getByTestId('buy-item_a')
+
+    // Simulate rapid double-click before the lock re-renders disabled state
+    fireEvent.click(btn)
+    fireEvent.click(btn)
+
+    // Wait for the async lock resolution
+    await waitFor(() => {
+      // The black-market penalty (and its toast) is applied exactly once
+      expect(mockAddToast).toHaveBeenCalledTimes(1)
+      expect(mockAddToast).toHaveBeenCalledWith(
+        'Purchased from Black Market! Lost 5 Fame.',
+        'warning'
+      )
     })
-
-    expect(mockHandleBuy).toHaveBeenCalledTimes(1)
-    const warningToasts = mockAddToast.mock.calls.filter(
-      c => c[1] === 'warning'
-    )
-    expect(warningToasts).toHaveLength(1)
   })
 })

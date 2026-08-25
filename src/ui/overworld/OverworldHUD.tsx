@@ -52,6 +52,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
             <DollarSign
               size={16}
               className={money < 40 ? 'text-blood-red' : 'text-warning-yellow'}
+              aria-hidden='true'
             />
             <span
               className={`text-base font-bold tabular-nums ${money < 40 ? 'text-blood-red' : ''}`}
@@ -80,7 +81,11 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
             </div>
           </div>
           <div className='flex items-center gap-2 mb-3 text-star-white/90'>
-            <MapIcon size={14} className='text-toxic-green/70' />
+            <MapIcon
+              size={14}
+              className='text-toxic-green/70'
+              aria-hidden='true'
+            />
             <span>
               {t('ui:hud.day', { defaultValue: 'Day' })} {day} — {locationName}
             </span>
@@ -110,7 +115,7 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
                   : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)] hover:shadow-none'
               }`}
             >
-              <HelpCircle size={22} />
+              <HelpCircle size={22} aria-hidden='true' />
             </button>
           </Tooltip>
         </div>
