@@ -9,11 +9,14 @@ type PixiStageComponentType = <TState = RhythmGameRefState>(
 
 /**
  * Mounts a Pixi.js stage controller into a React-owned container.
+ *
+ * @remarks
  * [STATE SAFETY BOUNDARY]: The Pixi.js renderer is initialized once per unmount cycle.
  * `gameStateRef` ensures access to mutating game state without triggering React re-renders.
  * [CLEANUP BOUNDARY]: The internal app instance destroys textures and tickers recursively upon unmount via `dispose()`.
+ *
  * @param props - Pixi stage refs, per-frame update callback, and controller factory.
- * @returns Pixi canvas wrapper.
+ * @returns The React div element acting as the Pixi canvas wrapper
  */
 const PixiStageComponent = <TState = RhythmGameRefState,>(
   props: PixiStageProps<TState>
@@ -70,7 +73,10 @@ const PixiStageComponent = <TState = RhythmGameRefState,>(
 }
 /**
  * Memoized Pixi canvas host that preserves the stage lifecycle across parent renders.
+ *
+ * @typeParam TState - The expected state structure for the rhythm game
  * @param props - Pixi stage refs, per-frame update callback, and controller factory.
+ * @returns The React div element acting as the Pixi canvas wrapper
  */
 export const PixiStage = memo(
   PixiStageComponent
