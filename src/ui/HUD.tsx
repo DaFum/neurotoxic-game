@@ -66,6 +66,7 @@ export const HUD = memo(() => {
                 className={
                   playerMoney < 40 ? 'text-blood-red' : 'text-warning-yellow'
                 }
+                aria-hidden='true'
               />
               <span
                 className={`text-sm font-bold tabular-nums ${playerMoney < 40 ? 'text-blood-red' : ''}`}
@@ -74,7 +75,7 @@ export const HUD = memo(() => {
               </span>
             </div>
             <div className='flex items-center gap-2 mb-2'>
-              <MapIcon size={14} />
+              <MapIcon size={14} aria-hidden='true' />
               <span className='text-star-white/80'>
                 {t('ui:hud.day', { defaultValue: 'Day' })} {playerDay} —{' '}
                 {locationName}

@@ -9,6 +9,7 @@ import { useNetworkStatus } from '../../hooks/useNetworkStatus'
 import { FallbackImage } from '../../ui/shared/FallbackImage'
 import { useOverworldUrls } from './hooks'
 import { getNodeIconUrl } from './utils'
+import { nodeToPercentPosition } from '../../utils/mapUtils'
 
 import type {
   MapNode as GameMapNode,
@@ -55,11 +56,7 @@ const RivalMarker = ({
 }) => (
   <div
     className='absolute z-(--z-stage-overlay) pointer-events-none transition-all duration-300'
-    style={{
-      left: `${node.x}%`,
-      top: `${node.y}%`,
-      transform: 'translate(-50%, -100%)'
-    }}
+    style={nodeToPercentPosition(node, 'translate(-50%, -100%)')}
   >
     <FallbackImage
       src={rivalVanUrl}
@@ -210,12 +207,16 @@ export const OverworldMap = React.memo(
     const hoverLine = useMemo(() => {
       if (!hoveredNode || !isConnected(hoveredNode.id) || !currentNode)
         return null
+
+      const start = nodeToPercentPosition(currentNode)
+      const end = nodeToPercentPosition(hoveredNode)
+
       return (
         <line
-          x1={`${currentNode.x}%`}
-          y1={`${currentNode.y}%`}
-          x2={`${hoveredNode.x}%`}
-          y2={`${hoveredNode.y}%`}
+          x1={start.left}
+          y1={start.top}
+          x2={end.left}
+          y2={end.top}
           stroke='var(--color-toxic-green)'
           strokeWidth='2'
           strokeDasharray='5,5'

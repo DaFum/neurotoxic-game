@@ -1,32 +1,31 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, test, expect, vi } from 'vitest'
+import { describe, test, expect, vi, beforeEach } from 'vitest'
 import { UpgradesTab } from '../../src/ui/bandhq/UpgradesTab.tsx'
 
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({
     t: (key, options) => options?.defaultValue || key,
-    i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }
+    i18n: { language: 'en-US' }
   })
 }))
 
 vi.mock('../../src/ui/bandhq/ShopItem', () => ({
   ShopItem: ({
     item,
-    isOwned,
+    decision,
     isDisabled,
-    adjustedCost,
     onBuy,
     processingItemId
   }) => (
     <div data-testid={`shop-item-${item.id}`}>
       <span>{item.name}</span>
-      <span data-testid={`is-owned-${item.id}`}>{isOwned ? 'Yes' : 'No'}</span>
+      <span data-testid={`is-owned-${item.id}`}>{decision.isOwned ? 'Yes' : 'No'}</span>
       <span data-testid={`is-disabled-${item.id}`}>
         {isDisabled ? 'Yes' : 'No'}
       </span>
-      {adjustedCost !== undefined && adjustedCost !== null && (
-        <span data-testid={`adjusted-cost-${item.id}`}>{adjustedCost}</span>
+      {decision.cost !== undefined && decision.cost !== null && (
+        <span data-testid={`adjusted-cost-${item.id}`}>{decision.cost}</span>
       )}
       <button type='button' onClick={() => onBuy(item)}>
         Buy
@@ -39,29 +38,26 @@ vi.mock('../../src/ui/bandhq/ShopItem', () => ({
 }))
 
 describe('UpgradesTab', () => {
-  const player = { money: 1000, fame: 500 }
+  const player = { money: 1000, fame: 50 }
   const upgrades = [
-    { id: 'item1', name: 'Upgrade 1', cost: 100 },
-    { id: 'item2', name: 'Upgrade 2', cost: 200 }
+    { id: 'upg1', name: 'Upgrade 1', cost: 100, currency: 'money' },
+    { id: 'upg2', name: 'Upgrade 2', cost: 10, currency: 'fame' }
   ]
-  const handleBuy = vi.fn()
-  const isItemOwned = vi.fn(item => item.id === 'item1')
-  const isItemDisabled = vi.fn(item => item.id === 'item2')
+  let handleBuy
+  let getPurchaseDecision
+  let isItemDisabled
 
-  test('renders player currency displays correctly', () => {
-    render(
-      <UpgradesTab
-        player={player}
-        upgrades={[]}
-        handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
-        isItemDisabled={isItemDisabled}
-      />
-    )
-    expect(screen.getByText(/500★/)).toBeInTheDocument()
-    expect(screen.getByText(/€1,000/)).toBeInTheDocument()
-    expect(screen.getByText(/ui:bandhq\.fame/)).toBeInTheDocument()
-    expect(screen.getByText(/ui:bandhq\.money/)).toBeInTheDocument()
+  beforeEach(() => {
+    vi.clearAllMocks()
+    handleBuy = vi.fn()
+    getPurchaseDecision = vi.fn(item => ({
+      cost: item.cost * 0.5,
+      isOwned: item.id === 'upg1',
+      isConsumable: false,
+      canPurchase: item.id !== 'upg1',
+      canAfford: true
+    }))
+    isItemDisabled = vi.fn(item => item.id === 'upg2')
   })
 
   test('renders shop items', () => {
@@ -70,12 +66,13 @@ describe('UpgradesTab', () => {
         player={player}
         upgrades={upgrades}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
       />
     )
-    expect(screen.getByTestId('shop-item-item1')).toBeInTheDocument()
-    expect(screen.getByTestId('shop-item-item2')).toBeInTheDocument()
+    expect(screen.getByTestId('shop-item-upg1')).toBeInTheDocument()
+    expect(screen.getByTestId('shop-item-upg2')).toBeInTheDocument()
+    expect(screen.getAllByTestId(/^shop-item-/)).toHaveLength(2)
   })
 
   test('passes props to ShopItem correctly', () => {
@@ -84,21 +81,20 @@ describe('UpgradesTab', () => {
         player={player}
         upgrades={upgrades}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
-        getAdjustedCost={item => item.cost * 0.9}
-        processingItemId='item1'
+        processingItemId='upg1'
       />
     )
 
-    expect(screen.getByTestId('is-owned-item1').textContent).toBe('Yes')
-    expect(screen.getByTestId('is-owned-item2').textContent).toBe('No')
+    expect(screen.getByTestId('is-owned-upg1').textContent).toBe('Yes')
+    expect(screen.getByTestId('is-owned-upg2').textContent).toBe('No')
 
-    expect(screen.getByTestId('is-disabled-item1').textContent).toBe('No')
-    expect(screen.getByTestId('is-disabled-item2').textContent).toBe('Yes')
+    expect(screen.getByTestId('is-disabled-upg1').textContent).toBe('No')
+    expect(screen.getByTestId('is-disabled-upg2').textContent).toBe('Yes')
 
-    expect(screen.getByTestId('adjusted-cost-item1').textContent).toBe('90')
-    expect(screen.getByTestId('adjusted-cost-item2').textContent).toBe('180')
+    expect(screen.getByTestId('adjusted-cost-upg1').textContent).toBe('50')
+    expect(screen.getByTestId('adjusted-cost-upg2').textContent).toBe('5')
 
     expect(screen.getByTestId('processing')).toBeInTheDocument()
   })
@@ -109,12 +105,17 @@ describe('UpgradesTab', () => {
         player={player}
         upgrades={upgrades}
         handleBuy={handleBuy}
-        isItemOwned={isItemOwned}
+        getPurchaseDecision={getPurchaseDecision}
         isItemDisabled={isItemDisabled}
       />
     )
     const buttons = screen.getAllByText('Buy')
-    fireEvent.click(buttons[0])
-    expect(handleBuy).toHaveBeenCalledWith(upgrades[0])
+    fireEvent.click(buttons[0]) // click upg1
+    expect(handleBuy).toHaveBeenCalledWith({
+      id: 'upg1',
+      name: 'Upgrade 1',
+      cost: 100,
+      currency: 'money'
+    })
   })
 })

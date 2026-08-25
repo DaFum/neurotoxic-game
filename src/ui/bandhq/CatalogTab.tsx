@@ -26,9 +26,8 @@ export const CatalogTab = ({
   items,
   balances,
   handleBuyCallback,
-  isItemOwnedCallback,
   isItemDisabledCallback,
-  getAdjustedCostCallback,
+  getPurchaseDecisionCallback,
   processingItemId
 }: CatalogTabProps) => {
   const { t, i18n } = useTranslation()
@@ -85,13 +84,8 @@ export const CatalogTab = ({
           <ShopItem
             key={item.id}
             item={item}
-            isOwned={isItemOwnedCallback(item)}
             isDisabled={isItemDisabledCallback(item)}
-            adjustedCost={
-              getAdjustedCostCallback
-                ? getAdjustedCostCallback(item)
-                : undefined
-            }
+            decision={getPurchaseDecisionCallback(item)}
             onBuy={handleBuyCallback}
             processingItemId={processingItemId}
           />

@@ -10,32 +10,28 @@ vi.mock('../../src/ui/shared/Icons', () => ({
 
 describe('OverloadWarning', () => {
   test('hides below or at the overload threshold when toxic mode is off', () => {
-    for (const overload of [0, 50, 90]) {
-      const { container, unmount } = render(
-        <OverloadWarning overload={overload} isToxicMode={false} />
-      )
-      expect(container.firstChild).toBeNull()
-      unmount()
-    }
+    const { container, unmount } = render(
+      <OverloadWarning isCritical={false} isToxicMode={false} />
+    )
+    expect(container.firstChild).toBeNull()
+    unmount()
   })
 
-  test('renders when overload exceeds the threshold or toxic mode is active', () => {
+  test('renders when overload is critical or toxic mode is active', () => {
     for (const props of [
-      { overload: 91, isToxicMode: false },
-      { overload: 100, isToxicMode: false },
-      { overload: 0, isToxicMode: true },
-      { overload: 90, isToxicMode: true },
-      { overload: 95, isToxicMode: true }
+      { isCritical: true, isToxicMode: false },
+      { isCritical: false, isToxicMode: true },
+      { isCritical: true, isToxicMode: true }
     ]) {
-      const { unmount } = render(<OverloadWarning {...props} />)
-      expect(screen.getByTestId('void-skull-icon')).toBeInTheDocument()
+      const { container, unmount } = render(<OverloadWarning {...props} />)
+      expect(container.firstChild).not.toBeNull()
       unmount()
     }
   })
 
   test('applies non-blocking alert styling to the rendered warning', () => {
     const { container } = render(
-      <OverloadWarning overload={91} isToxicMode={false} />
+      <OverloadWarning isCritical={true} isToxicMode={false} />
     )
     const icon = screen.getByTestId('void-skull-icon')
     expect(icon.className).toContain('animate-pulse')

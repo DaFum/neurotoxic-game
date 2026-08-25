@@ -14,22 +14,36 @@ export const normalizeRegionalGigHistory = (
   const normalized: Record<string, number[]> = {}
 
   const record = history as Record<string, unknown>
-  for (const regionId of Object.keys(record).slice(0, 100)) {
+  let processedCount = 0
+
+  // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() with for...in loop to avoid array allocation.
+  // Replaced days.filter() with a procedural loop to avoid closure allocation.
+  for (const regionId in record) {
     if (!Object.hasOwn(record, regionId)) continue
+
+    // Maintain the 100 limit previously handled by .slice(0, 100)
+    if (processedCount >= 100) break
+    processedCount++
+
     if (isForbiddenKey(regionId)) continue
 
     const days = record[regionId]
     if (!Array.isArray(days)) continue
 
-    const validDays = days.filter(
-      (day): day is number =>
+    const validDays = new Set<number>()
+    for (let i = 0; i < days.length; i++) {
+      const day = days[i]
+      if (
         typeof day === 'number' &&
         Number.isFinite(day) &&
         Number.isInteger(day) &&
         day >= 1
-    )
+      ) {
+        validDays.add(day)
+      }
+    }
 
-    normalized[regionId] = [...new Set(validDays)]
+    normalized[regionId] = Array.from(validDays)
       .sort((left, right) => left - right)
       .slice(-256)
   }
@@ -72,15 +86,23 @@ export const appendToRegionalGigHistory = (
   const currentDays = Array.isArray(existing) ? existing : []
 
   if (!Object.hasOwn(normalized, regionId)) {
-    const regionIds = Object.keys(normalized)
-    if (regionIds.length >= MAX_REGIONS) {
-      const stalest = regionIds.reduce((oldest, candidate) =>
-        mostRecentDay(normalized[candidate] as number[]) <
-        mostRecentDay(normalized[oldest] as number[])
-          ? candidate
-          : oldest
-      )
-      delete normalized[stalest]
+    let regionCount = 0
+    let stalestRegion: string | undefined = undefined
+    let oldestDay = Infinity
+
+    // ⚡ BOLT OPTIMIZATION: Replaced Object.keys() and reduce() with for...in loop to avoid array and closure allocation.
+    for (const id in normalized) {
+      if (!Object.hasOwn(normalized, id)) continue
+      regionCount++
+      const recentDay = mostRecentDay(normalized[id] as number[])
+      if (recentDay < oldestDay) {
+        oldestDay = recentDay
+        stalestRegion = id
+      }
+    }
+
+    if (regionCount >= MAX_REGIONS && stalestRegion !== undefined) {
+      delete normalized[stalestRegion]
     }
   }
 

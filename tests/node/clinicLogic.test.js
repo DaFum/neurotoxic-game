@@ -280,4 +280,35 @@ test('clinicReducer', async t => {
     assert.equal(band.members[0].stamina, 48)
     assert.equal(band.members[1].stamina, 45)
   })
+
+  await t.test('iron_liver trait reduces daily stamina decay', () => {
+    const currentState = {
+      player: {
+        day: 1,
+        money: 1000,
+        hqUpgrades: [],
+        van: { condition: 100 }
+      },
+      band: {
+        members: [
+          {
+            name: 'Matze',
+            mood: 50,
+            stamina: 50,
+            traits: { iron_liver: { id: 'iron_liver' } }
+          },
+          { name: 'Marius', mood: 50, stamina: 50, traits: {} }
+        ],
+        harmony: 50
+      },
+      social: { instagram: 100 }
+    }
+
+    const { band } = calculateDailyUpdates(currentState)
+
+    // Member with iron_liver: 50 - (5 (decay) - 3 (iron_liver)) = 48
+    // Member without:         50 - 5 (decay) = 45
+    assert.equal(band.members[0].stamina, 48)
+    assert.equal(band.members[1].stamina, 45)
+  })
 })

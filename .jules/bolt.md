@@ -213,3 +213,7 @@
 ## 2026-08-12 - Early returns vs full iteration in filter lengths
 **Learning:** To optimize hot paths, avoid using \`.filter(...).length\` as it requires full $O(N)$ iteration and intermediate array allocation. Instead, use a standard \`for\` loop with a counter and an early return (e.g., \`if (count >= limit) return\`) to improve performance. Replacing \`.some()\` loops with \`for\` loops can also reduce closure allocation and callback overhead.
 **Action:** Use early-returning \`for\` loops in hot paths to bypass unnecessary full-array traversals and memory allocations.
+
+## 2026-08-20 - Avoiding declarative map loops on nested array properties
+**Learning:** In state reducers handling arrays (like members in band state), utilizing procedural `for` loops instead of array mapping methods like `.map()` significantly decreases garbage collection overhead on each reducer action, which is important for UI performance in large object updates.
+**Action:** Replaced `.map()` in `minigameReducer.ts`, `clinicReducer.ts`, and `systemReducer.ts` with procedural `for` loops when updating nested band member fields.

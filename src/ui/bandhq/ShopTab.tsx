@@ -18,9 +18,8 @@ const ITEMS: CatalogItem[] = [...HQ_ITEMS.gear, ...HQ_ITEMS.instruments]
 export const ShopTab = ({
   player,
   handleBuy,
-  isItemOwned,
   isItemDisabled,
-  getAdjustedCost,
+  getPurchaseDecision,
   processingItemId
 }: ShopTabProps) => {
   return (
@@ -28,9 +27,8 @@ export const ShopTab = ({
       items={ITEMS}
       balances={{ funds: player.money }}
       handleBuyCallback={handleBuy}
-      isItemOwnedCallback={isItemOwned}
       isItemDisabledCallback={isItemDisabled}
-      getAdjustedCostCallback={getAdjustedCost}
+      getPurchaseDecisionCallback={getPurchaseDecision}
       processingItemId={processingItemId}
     />
   )

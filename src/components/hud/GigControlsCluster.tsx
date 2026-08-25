@@ -76,7 +76,11 @@ export const GigControlsCluster = memo(function GigControlsCluster({
             })}
             className={`${BUTTON_BASE} border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green`}
           >
-            {isOpen ? <X size={20} /> : <Menu size={20} />}
+            {isOpen ? (
+              <X size={20} aria-hidden='true' />
+            ) : (
+              <Menu size={20} aria-hidden='true' />
+            )}
           </button>
         </Tooltip>
 
@@ -103,9 +107,9 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                 }`}
               >
                 {audioState.isMuted ? (
-                  <VolumeX size={20} />
+                  <VolumeX size={20} aria-hidden='true' />
                 ) : (
-                  <Volume2 size={20} />
+                  <Volume2 size={20} aria-hidden='true' />
                 )}
               </button>
             </Tooltip>
@@ -128,7 +132,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                     : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
                 }`}
               >
-                <HelpCircle size={20} />
+                <HelpCircle size={20} aria-hidden='true' />
               </button>
             </Tooltip>
             {onTogglePause && (
@@ -150,7 +154,7 @@ export const GigControlsCluster = memo(function GigControlsCluster({
                       : 'border-toxic-green text-toxic-green hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green'
                   }`}
                 >
-                  <Pause size={20} />
+                  <Pause size={20} aria-hidden='true' />
                 </button>
               </Tooltip>
             )}

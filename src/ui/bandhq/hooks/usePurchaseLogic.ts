@@ -14,10 +14,8 @@ import {
   GEAR_LOOKUP,
   getGearCount,
   getPrimaryEffect,
-  getAdjustedCost,
+  getPurchaseDecision,
   buildVanWithUpgrade,
-  isItemOwned,
-  canAfford,
   validatePurchase,
   processPurchaseEffect
 } from '../../../utils/purchaseLogicUtils'
@@ -184,6 +182,14 @@ const handlePurchaseValidationError = (
       }),
       'error'
     )
+  } else if (validation.errorType === 'reputation_blocked') {
+    addToast(
+      t('ui:shop.messages.reputationBlocked', {
+        itemName: getItemToastLabel(item, t),
+        defaultValue: 'Your reputation is too low to purchase this item.'
+      }),
+      'error'
+    )
   }
 }
 
@@ -317,29 +323,13 @@ export const usePurchaseLogic = ({
   transformPlayerPatch?: PlayerPatchTransform
 }) => {
   const { t } = useTranslation(['ui', 'items'])
-  /**
-   * Calculates the adjusted cost of an item based on active traits.
-   */
-  const getAdjustedCostCallback = useCallback(
-    (item: PurchaseItem) => getAdjustedCost(item, band),
-    [band]
-  )
 
   /**
-   * Checks if an item is already owned
+   * Gets the combined purchase decision (cost, affordability, ownership)
    */
-  const isItemOwnedCallback = useCallback(
-    (item: PurchaseItem) => isItemOwned(item, player, band),
-    [player, band]
-  )
-
-  /**
-   * Checks if player can afford an item
-   */
-  const canAffordCallback = useCallback(
-    (item: PurchaseItem) =>
-      canAfford(item, player, getAdjustedCost(item, band)),
-    [player, band]
+  const getPurchaseDecisionCallback = useCallback(
+    (item: PurchaseItem) => getPurchaseDecision(item, player, band, social),
+    [player, band, social]
   )
 
   /**
@@ -350,7 +340,7 @@ export const usePurchaseLogic = ({
   const handleBuy = useCallback(
     (item: PurchaseItem) => {
       try {
-        const validation = validatePurchase(item, player, band)
+        const validation = validatePurchase(item, player, band, social)
 
         if (!validation.isValid) {
           handlePurchaseValidationError(validation, item, addToast, t)
@@ -480,25 +470,15 @@ export const usePurchaseLogic = ({
    */
   const isItemDisabled = useCallback(
     (item: PurchaseItem) => {
-      const effect = getPrimaryEffect(item)
-      if (!effect) return true
-      if (item.requiresReputation && (social?.controversyLevel ?? 0) >= 50)
-        return true
-      const isConsumable = effect?.type === 'inventory_add'
-      const isOwned = isItemOwned(item, player, band)
-      return (
-        (isOwned && !isConsumable) ||
-        !canAfford(item, player, getAdjustedCost(item, band))
-      )
+      const decision = getPurchaseDecision(item, player, band, social)
+      return !decision.canPurchase
     },
     [player, band, social]
   )
 
   return {
     handleBuy,
-    isItemOwned: isItemOwnedCallback,
-    canAfford: canAffordCallback,
     isItemDisabled,
-    getAdjustedCost: getAdjustedCostCallback
+    getPurchaseDecision: getPurchaseDecisionCallback
   }
 }

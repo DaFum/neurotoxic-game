@@ -6,6 +6,15 @@ import {
 } from '../../utils/assetSelectors'
 import { formatCurrency } from '../../utils/numberUtils'
 
+/**
+ * Renders an individual metric cell for the asset status strip.
+ *
+ * @param label - The localized heading for the metric.
+ * @param value - The formatted numeric or text value to display.
+ * @param tone - The semantic color category indicating the health of the metric.
+ * @param featured - Whether this cell should receive distinct visual emphasis.
+ * @returns The rendered metric cell component.
+ */
 const StatusCell = ({
   label,
   value,
@@ -47,6 +56,8 @@ const StatusCell = ({
 
 /**
  * Renders liquidity, obligations, debt, and crowdfund status for assets.
+ *
+ * @returns The rendered overarching status strip component.
  */
 export const AssetsStatusStrip = () => {
   const { t, i18n } = useTranslation(['assets'])

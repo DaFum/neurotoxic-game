@@ -481,10 +481,18 @@ const processContrabandExpiry = (band: BandState): BandState => {
       } else if (effectType === 'stamina_max') {
         // Members' staminaMax clamp
         if (nextBand.members) {
-          nextBand.members = nextBand.members.map((m: BandMember) => ({
-            ...m,
-            staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
-          })) as BandMember[]
+          // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+          // Why: Avoids intermediate array allocation inside the hot state update path.
+          const len = nextBand.members.length
+          const updatedMembers = new Array<BandMember>(len)
+          for (let mIdx = 0; mIdx < len; mIdx++) {
+            const m = nextBand.members[mIdx] as BandMember
+            updatedMembers[mIdx] = {
+              ...m,
+              staminaMax: Math.max(0, finiteNumberOr(m?.staminaMax, 100))
+            }
+          }
+          nextBand.members = updatedMembers
         }
       }
     }
@@ -674,10 +682,18 @@ export const handleAdvanceDay = (
       currentStress / BALANCE_CONSTANTS.STRESS_MOOD_PENALTY_DIVISOR
     )
     if (moodPenalty > 0 && Array.isArray(nextBand.members)) {
-      nextBand.members = nextBand.members.map((member: BandMember) => ({
-        ...member,
-        mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
-      })) as BandMember[]
+      // ⚡ BOLT OPTIMIZATION: Replaced .map() with procedural loop.
+      // Why: Eliminates intermediate array allocations in high-frequency day advance ticks.
+      const len = nextBand.members.length
+      const updatedMembers = new Array<BandMember>(len)
+      for (let i = 0; i < len; i++) {
+        const member = nextBand.members[i] as BandMember
+        updatedMembers[i] = {
+          ...member,
+          mood: clampMemberMood(finiteNumberOr(member?.mood, 0) - moodPenalty)
+        }
+      }
+      nextBand.members = updatedMembers
     }
     nextBand.stress = clampBandStress(
       currentStress - BALANCE_CONSTANTS.STRESS_DAILY_DECAY

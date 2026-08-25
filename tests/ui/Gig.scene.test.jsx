@@ -458,10 +458,10 @@ describe('Gig Scene Component', () => {
   })
 
   describe('Audio Lock Screen', () => {
-    test('shows audio lock screen when audio not ready', async () => {
+    test('shows audio lock screen when audio blocked', async () => {
       useRhythmGameLogic.mockReturnValue({
         stats: {
-          isAudioReady: false,
+          audioStatus: 'blocked',
           isToxicMode: false
         },
         actions: {
@@ -472,18 +472,30 @@ describe('Gig Scene Component', () => {
       })
 
       render(<Gig />)
-
       expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
-      expect(
-        screen.getByText(/Audio Interface requires manual override./i)
-      ).toBeInTheDocument()
-      expect(screen.getByText(/INITIALIZE AUDIO/i)).toBeInTheDocument()
+    })
+
+    test('shows audio lock screen when audio failed', async () => {
+      useRhythmGameLogic.mockReturnValue({
+        stats: {
+          audioStatus: 'failed',
+          isToxicMode: false
+        },
+        actions: {
+          retryAudioInitialization: vi.fn()
+        },
+        gameStateRef: { current: {} },
+        update: vi.fn()
+      })
+
+      render(<Gig />)
+      expect(screen.getByText(/SYSTEM LOCKED/i)).toBeInTheDocument()
     })
 
     test('initialize audio button calls ensureAudioContext', async () => {
       const mockRetry = vi.fn()
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: false },
+        stats: { audioStatus: 'blocked' },
         actions: { retryAudioInitialization: mockRetry },
         gameStateRef: { current: {} },
         update: vi.fn()
@@ -506,16 +518,15 @@ describe('Gig Scene Component', () => {
 
     test('does not render main gig UI when audio locked', async () => {
       useRhythmGameLogic.mockReturnValue({
-        stats: { isAudioReady: false },
+        stats: { audioStatus: 'blocked' },
         actions: { retryAudioInitialization: vi.fn() },
         gameStateRef: { current: {} },
         update: vi.fn()
       })
 
       render(<Gig />)
-
-      expect(screen.queryByTestId('pixi-stage')).not.toBeInTheDocument()
-      expect(screen.queryByTestId('gig-hud')).not.toBeInTheDocument()
+      expect(screen.queryByTestId('gig-hud')).toBeNull()
+      expect(screen.queryByTestId('pixi-stage')).toBeNull()
     })
   })
 

@@ -50,9 +50,11 @@ export const ToggleRadio = memo(() => {
         aria-pressed={isPlaying}
       >
         {isPlaying ? (
-          <span className='text-xl font-bold font-mono'>■</span>
+          <span className='text-xl font-bold font-mono' aria-hidden='true'>
+            ■
+          </span>
         ) : (
-          <RazorPlayIcon className='w-5 h-5 text-current' />
+          <RazorPlayIcon className='w-5 h-5 text-current' aria-hidden='true' />
         )}
       </button>
     </Tooltip>

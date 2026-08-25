@@ -7,6 +7,7 @@ import { useState } from 'react'
 import { CLINIC_CONFIG, CLINIC_GRAFT_COST } from '../../context/gameConstants'
 import { GraftModal } from './GraftModal'
 import { hasTrait } from '../../utils/traitUtils'
+import { canAfford } from '../../utils/purchaseLogicUtils'
 import type {
   ClinicMemberCardProps,
   ActionButtonWrapperProps
@@ -53,7 +54,7 @@ export const ClinicMemberCard = ({
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = player.money >= CLINIC_GRAFT_COST
+  const canAffordGraft = canAfford({ currency: 'money' }, player, CLINIC_GRAFT_COST)
   const hasGraft = hasTrait(member, 'neuro_overclock')
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =
@@ -144,6 +145,39 @@ export const ClinicMemberCard = ({
             >
               {t('ui:clinic.enhance_button', {
                 defaultValue: 'GRAFT: CYBER LUNGS ({{fame}} Fame)',
+                fame: enhanceCostFame
+              })}
+            </GlitchButton>
+          )}
+        </ActionButtonWrapper>
+
+        <ActionButtonWrapper
+          disabledReason={firstReason(
+            missingMemberReason,
+            player.fame < enhanceCostFame &&
+              t('ui:clinic.notEnoughFame', {
+                defaultValue: 'Not enough fame'
+              }),
+            hasTrait(member, CLINIC_CONFIG.IRON_LIVER_TRAIT_ID) &&
+              t('ui:clinic.alreadyEnhanced', {
+                defaultValue: 'Member already has this enhancement'
+              })
+          )}
+        >
+          {disabled => (
+            <GlitchButton
+              onClick={() => {
+                if (memberId) {
+                  enhanceMember(memberId, CLINIC_CONFIG.IRON_LIVER_TRAIT_ID)
+                }
+              }}
+              variant='warning'
+              size='sm'
+              disabled={disabled}
+              className='w-full text-xs py-1'
+            >
+              {t('ui:clinic.iron_liver_button', {
+                defaultValue: 'GRAFT: IRON LIVER ({{fame}} Fame)',
                 fame: enhanceCostFame
               })}
             </GlitchButton>

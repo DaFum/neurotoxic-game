@@ -440,23 +440,32 @@ test('EventDelta lockstep on the fully-populated combined delta', () => {
 
 test('EventDelta clamps luck, loyalty, and zealotry identically in preview and apply', () => {
   const state = buildState()
-  state.band.luck = 0
+  state.band.luck = 99
   state.social.loyalty = 99
   state.social.zealotry = 98
   const delta = withDelta({
-    band: { luck: -1 },
+    band: { luck: 5 },
     social: { loyalty: 5, zealotry: 5 }
   })
 
   const preview = calculateAppliedDelta(state, delta)
   const applied = applyEventDelta(state, delta)
 
-  assert.equal(preview.band.luck, 0)
-  assert.equal(applied.band.luck, 0)
+  assert.equal(preview.band.luck, 5) // Luck is no longer clamped to 100
+  assert.equal(applied.band.luck, 104) // Luck is no longer clamped to 100
   assert.equal(preview.social.loyalty, 1)
   assert.equal(applied.social.loyalty, 100)
   assert.equal(preview.social.zealotry, 2)
   assert.equal(applied.social.zealotry, 100)
+
+  const state2 = buildState()
+  state2.band.luck = 0
+  const delta2 = withDelta({ band: { luck: -1 } })
+  const preview2 = calculateAppliedDelta(state2, delta2)
+  const applied2 = applyEventDelta(state2, delta2)
+
+  assert.equal(preview2.band.luck, 0)
+  assert.equal(applied2.band.luck, 0)
 })
 
 test('EventDelta rejects sums that overflow to Infinity', () => {
