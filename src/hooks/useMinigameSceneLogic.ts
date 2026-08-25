@@ -4,12 +4,34 @@ import { MINIGAME_TYPES } from '../context/gameConstants'
 import { logger } from '../utils/logger'
 import type { MinigameLogicBase } from '../types/components'
 
+/**
+ * Configuration properties for the core minigame scene logic hook.
+ *
+ * @typeParam TState - The internal state structure of the specific minigame logic.
+ */
 interface UseMinigameSceneLogicProps<TState> {
+  /** The core game logic instance handling the minigame state */
   logic: MinigameLogicBase<TState>
+  /** The current UI state from the React component, determining completion and focus */
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
+  /** Callback triggered when the minigame is successfully finished or skipped */
   onComplete: () => void
 }
 
+/**
+ * Orchestrates keyboard shortcuts, focus management, and skip behaviors for active minigames.
+ *
+ * @remarks
+ * This hook acts as the central bridge between a minigame's pure logic layer and the React UI.
+ * It manages keyboard shortcuts (like escape to close, or dev-mode auto-completion) and provides
+ * a unified way to skip or forfeit pre-gig minigames.
+ *
+ * Travel minigames (Tourbus) are specifically excluded from skip functionality because their
+ * arrival flow requires resolving intermediate state before changing scenes.
+ *
+ * @param props - Configuration containing the minigame logic and UI state bindings
+ * @returns Ref objects for managing focus and callbacks/flags for skip functionality
+ */
 export const useMinigameSceneLogic = <TState>({
   logic,
   uiState,
