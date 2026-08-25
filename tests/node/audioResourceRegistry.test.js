@@ -39,14 +39,49 @@ const createKit = () => ({
   crash: createNode()
 })
 
-test('audioResourceRegistry covers every disposable audioState slot', () => {
-  const keys = [...audioResourceRegistry.keys()]
+// Asserted in registry order, not sorted: the order IS the teardown contract.
+// Sources lead so buffer playback stops before the buses feeding it are
+// disposed, and the master chain trails so it outlives everything routed into
+// it. `masterCorruption` is absent on purpose — it is declared on `audioState`
+// and read by `corruptionEffects.ts`, but never assigned anywhere, so there is
+// nothing to release.
+const EXPECTED_REGISTRY_KEYS = [
+  'gigSource',
+  'ambientSource',
+  'guitar',
+  'bass',
+  'drumKit',
+  'sfxSynth',
+  'sfxGain',
+  'musicGain',
+  'midiLead',
+  'midiBass',
+  'midiDrumKit',
+  'midiReverbSend',
+  'midiReverb',
+  'midiDryBus',
+  'distortion',
+  'guitarChorus',
+  'guitarEq',
+  'widener',
+  'bassEq',
+  'bassComp',
+  'drumBus',
+  'reverbSend',
+  'reverb',
+  'masterCorruptionDistortion',
+  'masterCorruptionBypass',
+  'masterCorruptionWetGain',
+  'neuroDistortion',
+  'masterComp',
+  'masterLimiter'
+]
 
-  // Sources are released before the buses they feed.
-  assert.deepStrictEqual(keys.slice(0, 2), ['gigSource', 'ambientSource'])
-  for (const key of ['drumKit', 'midiDrumKit', 'guitar', 'masterLimiter']) {
-    assert.ok(keys.includes(key), `${key} should be registered`)
-  }
+test('audioResourceRegistry covers every disposable audioState slot', () => {
+  assert.deepStrictEqual(
+    [...audioResourceRegistry.keys()],
+    EXPECTED_REGISTRY_KEYS
+  )
 
   for (const [key, entry] of audioResourceRegistry) {
     assert.strictEqual(entry.key, key)
