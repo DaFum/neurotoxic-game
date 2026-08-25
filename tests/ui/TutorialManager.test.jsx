@@ -235,9 +235,24 @@ describe('TutorialManager', () => {
 
     const { container } = render(<TutorialManager />)
 
-    const dialog = container.querySelector('[role="dialog"]')
-    expect(dialog).toBeTruthy()
-    expect(dialog?.getAttribute('aria-label')).toBe('Tutorial')
+    const region = container.querySelector('[role="region"]')
+    expect(region).toBeTruthy()
+    expect(region?.getAttribute('aria-label')).toBe('Tutorial')
+    expect(region?.getAttribute('aria-live')).toBe('polite')
+  })
+
+  test('is not a modal dialog, so the scene behind it stays available', async () => {
+    // The steps annotate live UI and the last one runs during GIG/PRACTICE
+    // while telling the player to hit notes, so this overlay must never trap
+    // focus or hide the rest of the scene from assistive tech.
+    mockGameStateValue.player.tutorialStep = 0
+    mockGameStateValue.currentScene = GAME_PHASES.MENU
+    mockGameStateValue.settings.tutorialSeen = false
+
+    const { container } = render(<TutorialManager />)
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull()
+    expect(container.querySelector('[aria-modal="true"]')).toBeNull()
   })
 
   test('handles missing player.tutorialStep gracefully', async () => {
