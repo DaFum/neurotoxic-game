@@ -2,6 +2,7 @@ import React from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameSelector, useGameActions } from '../context/GameState'
 import { ShopItem } from './bandhq/ShopItem'
+import { Modal } from './shared/Modal'
 import { usePurchaseLogic } from './bandhq/hooks/usePurchaseLogic'
 import { usePurchaseLock } from './bandhq/hooks/usePurchaseLock'
 import { calculateFameLevel, finiteNumberOr } from '../utils/gameState'
@@ -82,23 +83,15 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
   }
 
   return (
-    <div className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/90 backdrop-blur-sm p-4'>
-      <div className='relative w-full max-w-4xl max-h-[calc(100svh-4rem)] overflow-y-auto border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)]'>
-        <button
-          type='button'
-          onClick={onClose}
-          aria-label={t('ui:action_close', { defaultValue: 'CLOSE' })}
-          className='absolute top-4 right-4 text-error-red hover:text-star-white hover:bg-error-red px-3 py-1 font-bold tracking-widest border border-error-red transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-        >
-          {t('ui:action_close', { defaultValue: 'CLOSE' })}
-        </button>
-
-        <h2 className='text-2xl font-black tracking-widest text-toxic-green mb-6 uppercase'>
-          {t('ui:map.supply_stop_title', {
-            defaultValue: 'BLACK MARKET SUPPLY STOP'
-          })}
-        </h2>
-
+    <Modal
+      isOpen
+      onClose={onClose}
+      title={t('ui:map.supply_stop_title', {
+        defaultValue: 'BLACK MARKET SUPPLY STOP'
+      })}
+      className='max-w-4xl'
+    >
+      <div className='overflow-y-auto overflow-x-hidden'>
         <p className='text-ash-gray font-mono mb-8 text-sm'>
           {t('ui:map.supply_stop_warning', {
             defaultValue:
@@ -130,6 +123,6 @@ export const SupplyStopModal: React.FC<SupplyStopModalProps> = ({
           })}
         </div>
       </div>
-    </div>
+    </Modal>
   )
 }

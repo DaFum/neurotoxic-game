@@ -1,5 +1,4 @@
 import {
-  IconClose,
   IconChevronDown,
   IconChevronUp,
   IconStar,
@@ -11,8 +10,9 @@ import {
   IconCube
 } from './shared/Icons'
 import { m, AnimatePresence } from 'motion/react'
-import { ProgressBar, Tooltip } from './shared/index.tsx'
+import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
+import { Modal } from './shared/Modal'
 import { useTranslation } from 'react-i18next'
 import {
   deadlineCount,
@@ -22,7 +22,7 @@ import {
   getQuestScopeHint,
   type QuestDisplayState
 } from './questHintViewModel'
-import { memo, useState, type MouseEvent } from 'react'
+import { memo, useState } from 'react'
 import { formatCurrency } from '../utils/numberUtils'
 import { getQuestDefinition } from '../data/questRegistry'
 import { getQuestPenalties } from '../domain/questPenalties'
@@ -363,23 +363,6 @@ const QuestItem = memo(
   }
 )
 
-// Animation variants
-const overlayVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1 }
-}
-
-const modalVariants: Variants = {
-  hidden: { opacity: 0, scale: 0.95, y: 20 },
-  visible: {
-    opacity: 1,
-    scale: 1,
-    y: 0,
-    transition: { type: 'spring', stiffness: 300, damping: 25 }
-  },
-  exit: { opacity: 0, scale: 0.95, y: -20, transition: { duration: 0.2 } }
-}
-
 /**
  * Displays active quest progress, deadlines, rewards, and close controls.
  * @param props - Quest list, player context, and close handler for the quest modal.
@@ -400,67 +383,49 @@ export const QuestsModal = ({
   })
 
   return (
-    <m.div
-      className='fixed inset-0 z-(--z-modal) flex items-center justify-center bg-void-black/80 backdrop-blur-sm p-4'
-      variants={overlayVariants}
-      initial='hidden'
-      animate='visible'
-      exit='hidden'
-      onClick={onClose}
+    <Modal
+      isOpen
+      onClose={onClose}
+      ariaLabel={t('ui:quests.title')}
+      className='max-w-4xl'
     >
-      <m.div
-        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto'
-        variants={modalVariants}
-        onClick={(e: MouseEvent<HTMLDivElement>) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
-          <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
-            {t('ui:quests.title')}
-          </h2>
-          <Tooltip content={t('ui:quests.closeButton')} position='bottom'>
-            <button
-              type='button'
-              onClick={onClose}
-              className='text-ash-gray hover:text-error-red transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error-red focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-              aria-label={t('ui:quests.closeButton')}
-            >
-              <IconClose />
-            </button>
-          </Tooltip>
-        </div>
+      {/* Header */}
+      <div className='flex justify-between items-center mb-6 border-b border-toxic-green pb-2'>
+        <h2 className='text-3xl font-display text-toxic-green tracking-wider drop-shadow-[0_0_8px_var(--color-toxic-green)]'>
+          {t('ui:quests.title')}
+        </h2>
+      </div>
 
-        {/* Quests List */}
-        {displayQuests.length === 0 ? (
-          <div className='text-center py-12 flex flex-col items-center'>
-            <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
-            <p className='text-ash-gray font-mono italic mb-6'>
-              {t('ui:quests.empty')}
-            </p>
-          </div>
-        ) : (
-          <div className='space-y-6'>
-            {sortQuests(displayQuests).map(
-              (quest: QuestDisplayState, index: number) => (
-                <QuestItem
-                  key={quest.id}
-                  quest={quest}
-                  index={index}
-                  player={player}
-                  variants={questItemVariants}
-                />
-              )
-            )}
-          </div>
-        )}
-
-        {/* Footer */}
-        <div className='mt-8 flex justify-center'>
-          <GlitchButton variant='primary' onClick={onClose}>
-            {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
-          </GlitchButton>
+      {/* Quests List */}
+      {displayQuests.length === 0 ? (
+        <div className='text-center py-12 flex flex-col items-center'>
+          <IconTrophy className='w-16 h-16 mx-auto text-ash-gray/20 mb-4' />
+          <p className='text-ash-gray font-mono italic mb-6'>
+            {t('ui:quests.empty')}
+          </p>
         </div>
-      </m.div>
-    </m.div>
+      ) : (
+        <div className='space-y-6'>
+          {sortQuests(displayQuests).map(
+            (quest: QuestDisplayState, index: number) => (
+              <QuestItem
+                key={quest.id}
+                quest={quest}
+                index={index}
+                player={player}
+                variants={questItemVariants}
+              />
+            )
+          )}
+        </div>
+      )}
+
+      {/* Footer */}
+      <div className='mt-8 flex justify-center'>
+        <GlitchButton variant='primary' onClick={onClose}>
+          {t('ui:quests.closeLabel', { defaultValue: '[CLOSE]' })}
+        </GlitchButton>
+      </div>
+    </Modal>
   )
 }
