@@ -151,6 +151,39 @@ export const ClinicMemberCard = ({
           )}
         </ActionButtonWrapper>
 
+        <ActionButtonWrapper
+          disabledReason={firstReason(
+            missingMemberReason,
+            player.fame < enhanceCostFame &&
+              t('ui:clinic.notEnoughFame', {
+                defaultValue: 'Not enough fame'
+              }),
+            hasTrait(member, CLINIC_CONFIG.IRON_LIVER_TRAIT_ID) &&
+              t('ui:clinic.alreadyEnhanced', {
+                defaultValue: 'Member already has this enhancement'
+              })
+          )}
+        >
+          {disabled => (
+            <GlitchButton
+              onClick={() => {
+                if (memberId) {
+                  enhanceMember(memberId, CLINIC_CONFIG.IRON_LIVER_TRAIT_ID)
+                }
+              }}
+              variant='warning'
+              size='sm'
+              disabled={disabled}
+              className='w-full text-xs py-1'
+            >
+              {t('ui:clinic.iron_liver_button', {
+                defaultValue: 'GRAFT: IRON LIVER ({{fame}} Fame)',
+                fame: enhanceCostFame
+              })}
+            </GlitchButton>
+          )}
+        </ActionButtonWrapper>
+
         <div className='mt-3 border-t border-toxic-green/30 pt-3'>
           <ActionButtonWrapper
             disabledReason={firstReason(

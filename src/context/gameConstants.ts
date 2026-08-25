@@ -135,7 +135,8 @@ export const CLINIC_CONFIG = Object.freeze({
   ENHANCE_BASE_COST_FAME: 500,
   HEAL_STAMINA_GAIN: 30,
   HEAL_MOOD_GAIN: 10,
-  CYBER_LUNGS_TRAIT_ID: 'cyber_lungs'
+  CYBER_LUNGS_TRAIT_ID: 'cyber_lungs',
+  IRON_LIVER_TRAIT_ID: 'iron_liver'
 })
 
 /**
