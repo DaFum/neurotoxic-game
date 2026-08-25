@@ -592,14 +592,18 @@ const FIXTURES = {
       await page
         .getByRole('heading', { name: /band hq/i })
         .waitFor({ state: 'visible', timeout: 5000 })
-      await page
+      const settingsTab = page
         .getByRole('tab', { name: /settings|einstellungen/i })
         .first()
-        .click()
-      await page
-        .getByRole('tab', { name: /settings|einstellungen/i })
-        .first()
-        .waitFor({ state: 'visible', timeout: 5000 })
+      await settingsTab.click()
+      // Waiting for the tab to be *visible* proved nothing: it was already
+      // visible before the click, so the wait resolved even if the click did
+      // not switch panels. `aria-selected` is set from the active tab id and
+      // is locale-independent, unlike the panel's headings.
+      await settingsTab.and(page.locator('[aria-selected="true"]')).waitFor({
+        state: 'visible',
+        timeout: 5000
+      })
     }
   },
 

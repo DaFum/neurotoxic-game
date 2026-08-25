@@ -107,9 +107,11 @@ They need the dev server running.
 - name: Wait for dev server
   run: pnpm exec wait-on http://localhost:5173 --timeout 30000
 
-- name: Capture all scenes
+- name: Capture every fixture
   run: |
-    node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+    for f in $(node -e "import('./.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js').then(m=>console.log(m.getFixtureNames().join(' ')))"); do
+      node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f" || exit 1
+    done
   env:
     BASE_URL: http://localhost:5173
     OUT_DIR: screenshots/ci-run
@@ -123,6 +125,25 @@ They need the dev server running.
 ```
 
 > Install `wait-on` if not present: `pnpm add -D wait-on`
+
+The fixture loop is the gating step: it captures every scene the skill supports
+and exits non-zero only on a real regression. Deriving the list from
+`getFixtureNames()` rather than hardcoding it means new fixtures are picked up
+automatically.
+
+`screenshot-all-scenes.js` is **not** suitable as a gating step. It walks the
+live golden path, whose travel/gig leg does not complete, so it deliberately
+exits non-zero and names what it skipped. Run it as a diagnostic only:
+
+```yaml
+- name: Golden-path walk (diagnostic, may fail)
+  continue-on-error: true
+  run: node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+  env:
+    BASE_URL: http://localhost:5173
+    OUT_DIR: screenshots/golden-path
+    HEADLESS: true
+```
 
 ---
 
@@ -151,8 +172,8 @@ On an air-gapped or CDN-blocked runner, point the scripts at a browser that is
 already on disk and skip the download attempt entirely:
 
 ```yaml
-- name: Capture scenes (no download)
-  run: node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+- name: Capture a scene (no download)
+  run: node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js menu
   env:
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
     BROWSER_PATH: /opt/pw-browsers/chromium-1194/chrome-linux/chrome

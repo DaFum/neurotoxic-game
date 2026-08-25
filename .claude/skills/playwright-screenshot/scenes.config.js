@@ -8,8 +8,15 @@
  * - Wait strategies (what DOM element confirms scene is loaded)
  * - State fixtures (pre-built save states for testing)
  *
- * Single source of truth for the scene descriptors shared by
- * screenshot-all-scenes.js and screenshot-state-inject.js.
+ * Descriptive only. Nothing imports this file — the runnable fixture registry
+ * lives in `scripts/screenshot-state-inject.js`, which owns the save-state
+ * overrides, wait strategies and capture hooks, and exports `getFixtureNames()`
+ * for consumers.
+ *
+ * A parallel FIXTURES map used to live here too. It drifted twice: it described
+ * the four minigames years before they were runnable, and later missed
+ * `band-hq-settings` entirely. Do not reintroduce it — add fixtures to the
+ * registry instead.
  */
 
 export const SCENES = {
@@ -144,94 +151,6 @@ export const SCENES = {
 }
 
 /**
- * Fixture definitions for state injection
- * Maps fixture name to BASE_STATE overrides
- */
-export const FIXTURES = {
-  menu: {
-    description: 'Main menu (fresh start)',
-    currentScene: 'MENU',
-    gamePhase: 'MENU'
-  },
-  overworld: {
-    description: 'Overworld map with moderate resources',
-    currentScene: 'OVERWORLD',
-    gamePhase: 'OVERWORLD',
-    playerOverride: { money: 480, fame: 350 }
-  },
-  pregig: {
-    description: 'PreGig preparation screen',
-    currentScene: 'PREGIG',
-    gamePhase: 'PRE_GIG'
-  },
-  'travel-minigame': {
-    description: 'Travel minigame (Tourbus Terror)',
-    currentScene: 'TRAVEL_MINIGAME',
-    gamePhase: 'TRAVEL_MINIGAME',
-    minigameType: 'TOURBUS',
-    minigameData: { active: true, type: 'TOURBUS' }
-  },
-  'pre-gig-minigame-roadie': {
-    description: 'Pre-gig Roadie Run minigame',
-    currentScene: 'PRE_GIG_MINIGAME',
-    gamePhase: 'PRE_GIG_MINIGAME',
-    minigameType: 'ROADIE',
-    minigameData: { active: true, type: 'ROADIE' }
-  },
-  'pre-gig-minigame-kabelsalat': {
-    description: 'Pre-gig Kabelsalat minigame',
-    currentScene: 'PRE_GIG_MINIGAME',
-    gamePhase: 'PRE_GIG_MINIGAME',
-    minigameType: 'KABELSALAT',
-    minigameData: { active: true, type: 'KABELSALAT' }
-  },
-  'pre-gig-minigame-amp': {
-    description: 'Pre-gig Amp Calibration minigame',
-    currentScene: 'PRE_GIG_MINIGAME',
-    gamePhase: 'PRE_GIG_MINIGAME',
-    minigameType: 'AMP_CALIBRATION',
-    minigameData: { active: true, type: 'AMP_CALIBRATION' }
-  },
-  gig: {
-    description: 'GIG scene with PixiJS canvas',
-    currentScene: 'GIG',
-    gamePhase: 'GIG',
-    songId: 'kranker-schrank' // IMPORTANT: Must match actual song key
-  },
-  postgig: {
-    description: 'Post-gig report screen',
-    currentScene: 'POSTGIG',
-    gamePhase: 'POST_GIG'
-  },
-  gameover: {
-    description: 'Game over screen (bankrupt)',
-    currentScene: 'GAMEOVER',
-    gamePhase: 'GAMEOVER',
-    playerOverride: { money: 0, fame: 0, day: 14 },
-    bandOverride: { harmony: 1 }
-  },
-  clinic: {
-    description: 'Clinic scene',
-    currentScene: 'CLINIC',
-    gamePhase: 'CLINIC',
-    playerOverride: { money: 800, fame: 500 }
-  },
-  'band-hq': {
-    description: 'Main menu with Band HQ modal open',
-    currentScene: 'MENU',
-    gamePhase: 'MENU',
-    isOverlay: true
-  },
-  'event-modal': {
-    description: 'Overworld with an active event modal open',
-    currentScene: 'OVERWORLD',
-    gamePhase: 'OVERWORLD',
-    isOverlay: true,
-    eventData: { id: 'test-event', type: 'standard' }
-  }
-}
-
-/**
  * Helper to get scene by name
  * @param {string} sceneName
  * @returns {Object} Scene metadata
@@ -246,23 +165,6 @@ export function getScene(sceneName) {
  */
 export function getScenesInOrder() {
   return Object.values(SCENES).sort((a, b) => a.order - b.order)
-}
-
-/**
- * Helper to get fixture by name
- * @param {string} fixtureName
- * @returns {Object} Fixture metadata
- */
-export function getFixture(fixtureName) {
-  return FIXTURES[fixtureName]
-}
-
-/**
- * Helper to get all fixtures
- * @returns {Array} List of available fixture names
- */
-export function getFixtureNames() {
-  return Object.keys(FIXTURES)
 }
 
 /**
@@ -283,15 +185,6 @@ export function validateSceneConfig() {
   for (const [name, scene] of Object.entries(SCENES)) {
     if (!scene.waitSignal) {
       errors.push(`Scene ${name} missing waitSignal`)
-    }
-  }
-
-  // Check fixture references valid scenes
-  for (const [name, fixture] of Object.entries(FIXTURES)) {
-    if (fixture.currentScene && !SCENES[fixture.currentScene]) {
-      errors.push(
-        `Fixture '${name}' references unknown scene: ${fixture.currentScene}`
-      )
     }
   }
 
