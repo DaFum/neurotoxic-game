@@ -73,4 +73,3 @@
 | 2026-08-23 | src/components/PixiStage.tsx | PixiStageComponent, PixiStage |
 | 2026-08-21 | src/data/quests/utils/createCorporateQuest.ts | createCorporateQuest |
 | 2026-08-21 | src/components/assets/AssetsStatusStrip.tsx | StatusCell, AssetsStatusStrip |
-| 2026-08-25 | src/hooks/useMinigameSceneLogic.ts | UseMinigameSceneLogicProps, useMinigameSceneLogic |

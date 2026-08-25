@@ -14,7 +14,7 @@ interface UseMinigameSceneLogicProps<TState> {
   logic: MinigameLogicBase<TState>
   /** The current UI state from the React component, determining completion and focus */
   uiState?: { isGameOver?: boolean; [key: string]: unknown }
-  /** Callback triggered when the minigame is successfully finished or skipped */
+  /** Callback triggered on escape (exit), skipped, or dev auto-completion. This is not triggered on normal minigame finish. */
   onComplete: () => void
 }
 
