@@ -199,6 +199,7 @@ export type GameAction =
   | Action<ActionTypes['SET_SETLIST'], RhythmSetlistEntry[]>
   | Action<ActionTypes['SET_LAST_GIG_STATS'], PostGigSummary | null>
   | Action<ActionTypes['SET_ACTIVE_EVENT'], GameEvent | null>
+  | Action<ActionTypes['SET_SCREENSHOT_MODE'], boolean>
   | Action<ActionTypes['ADD_TOAST'], ToastPayload>
   | Action<ActionTypes['REMOVE_TOAST'], string>
   | Action<

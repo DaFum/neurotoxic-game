@@ -145,14 +145,16 @@ await page.screenshot({ path: 'overworld.png' })
 ```js
 import {
   injectSave,
-  waitForFixtureScene
+  navigateToFixtureScene,
+  prepareFixtureCapture
 } from './.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
 
 await page.goto('/', { waitUntil: 'commit' })
 await injectSave(page, 'overworld')
 await page.reload({ waitUntil: 'domcontentloaded' })
 await page.waitForLoadState('networkidle')
-await waitForFixtureScene(page, 'overworld')
+// runs the fixture's capture hook and verifies what rendered
+await prepareFixtureCapture(page, 'overworld')
 await page.screenshot({ path: 'overworld.png' })
 ```
 
@@ -220,7 +222,7 @@ await page.screenshot({ path: 'pregig.png' })
 ```js
 await injectSave(page, 'pregig')
 await page.reload({ waitUntil: 'networkidle' })
-await waitForFixtureScene(page, 'pregig')
+await prepareFixtureCapture(page, 'pregig')
 await page.screenshot({ path: 'pregig.png' })
 ```
 
@@ -327,9 +329,10 @@ GAMEOVER (`src/scenes/GameOver.tsx`) is triggered when `player.money` reaches 0 
 ```js
 await injectSave(page, 'gameover')
 await page.reload({ waitUntil: 'networkidle' })
-await page
-  .getByRole('heading', { name: /game over/i })
-  .waitFor({ timeout: 10000 })
+// Required: handleLoadGame forces OVERWORLD on hydration, so without this the
+// screenshot is the map filed under gameover.png.
+await navigateToFixtureScene(page, 'gameover')
+await prepareFixtureCapture(page, 'gameover')
 await page.waitForTimeout(400)
 await page.screenshot({ path: 'gameover.png' })
 ```

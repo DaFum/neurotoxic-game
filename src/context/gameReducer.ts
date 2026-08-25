@@ -44,7 +44,8 @@ import {
   handleSetActiveEvent,
   handleApplyEventDelta,
   handlePopPendingEvent,
-  handleAddCooldown
+  handleAddCooldown,
+  handleSetScreenshotMode
 } from './reducers/eventReducer'
 import {
   handleStartTravelMinigame,
@@ -140,6 +141,7 @@ const reducerMap: ReducerMap = {
   [ActionTypes.SET_SETLIST]: handleSetSetlist,
   [ActionTypes.SET_LAST_GIG_STATS]: handleSetLastGigStats,
   [ActionTypes.SET_ACTIVE_EVENT]: handleSetActiveEvent,
+  [ActionTypes.SET_SCREENSHOT_MODE]: handleSetScreenshotMode,
   [ActionTypes.ADD_TOAST]: handleAddToast,
   [ActionTypes.REMOVE_TOAST]: handleRemoveToast,
   [ActionTypes.SET_GIG_MODIFIERS]: handleSetGigModifiers,

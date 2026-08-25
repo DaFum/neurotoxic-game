@@ -390,6 +390,27 @@ export const createSetActiveEventAction = (
 })
 
 /**
+ * Creates an action toggling screenshot mode.
+ *
+ * @remarks
+ * Screenshot mode suppresses the automatic event rolls that PreGig and PostGig
+ * perform on entry, so tooling can capture those scenes without a random event
+ * modal covering them. It is deliberately not read back from a save:
+ * `handleLoadGame` does not whitelist the flag, so a persisted value is
+ * ignored and a save can never strand a player with events disabled. It does
+ * carry through a load in memory, which is harmless — nothing but tooling
+ * turns it on.
+ *
+ * @param enabled - Whether screenshot mode should be active
+ */
+export const createSetScreenshotModeAction = (
+  enabled: boolean
+): Extract<GameAction, { type: typeof ActionTypes.SET_SCREENSHOT_MODE }> => ({
+  type: ActionTypes.SET_SCREENSHOT_MODE,
+  payload: enabled
+})
+
+/**
  * Creates a toast addition action
  * @param messageOrPayload - Toast message string or structured payload
  * @param type - Toast type (info, success, error, warning)

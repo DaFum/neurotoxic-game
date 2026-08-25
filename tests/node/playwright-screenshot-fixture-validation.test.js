@@ -14,7 +14,13 @@ import { ok, strictEqual } from 'node:assert'
 import { createInitialState } from '../../src/context/initialState'
 
 // Import BASE_STATE directly — ensures fixture shape stays in sync with game state
-import { BASE_STATE } from '../../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject'
+import {
+  BASE_STATE,
+  FIXTURES,
+  deepMerge
+} from '../../.claude/skills/playwright-screenshot/scripts/screenshot-state-inject'
+import { handleLoadGame } from '../../src/context/reducers/systemReducer'
+import { ALLOWED_SCENE_VALUES } from '../../src/context/gameConstants'
 
 describe('Playwright Screenshot Fixtures', () => {
   test('BASE_STATE contains all required top-level fields from initialState', () => {
@@ -253,5 +259,89 @@ describe('Playwright Screenshot Fixtures', () => {
       1,
       `Expected exactly 1 'harmony' key in band object, found ${harmonyCount}`
     )
+  })
+})
+
+/**
+ * The capture scripts inject a fixture as a save, and the game loads it through
+ * `handleLoadGame` and its sanitizers. Anything the sanitizers do not whitelist
+ * is dropped without a word, so a fixture can look right in source and arrive
+ * gutted — which is exactly what happened to `postgig`: its `lastGigStats` was
+ * written in report vocabulary (`earnings`, `crowdScore`, …), none of which
+ * `sanitizeLastGigStats` keeps, so it sanitised to `null` and the scene
+ * rendered a loading shell while the capture reported success.
+ *
+ * These tests run each fixture through the real load path and assert the fields
+ * that fixture's scene actually needs, so the failure surfaces at authoring
+ * time instead of in a screenshot.
+ */
+describe('Fixture states survive handleLoadGame', () => {
+  /**
+   * @param {string} name - Fixture key.
+   * @returns {import('../../src/types').GameState} State after a real load.
+   */
+  const load = name =>
+    handleLoadGame(
+      BASE_STATE,
+      deepMerge(BASE_STATE, FIXTURES[name].state ?? {})
+    )
+
+  test('every fixture targets a scene the reducer allows', () => {
+    for (const name of Object.keys(FIXTURES)) {
+      const scene = FIXTURES[name].state?.currentScene ?? 'OVERWORLD'
+      ok(
+        ALLOWED_SCENE_VALUES.includes(scene),
+        `Fixture '${name}' targets unknown scene '${scene}'`
+      )
+    }
+  })
+
+  test('postgig keeps lastGigStats, without which the report cannot render', () => {
+    const loaded = load('postgig')
+    ok(
+      loaded.lastGigStats !== null && loaded.lastGigStats !== undefined,
+      'postgig lastGigStats sanitised away — POSTGIG will render its ' +
+        '"TALLYING RECEIPTS…" shell instead of the report'
+    )
+    ok(
+      Number.isFinite(loaded.lastGigStats.score),
+      'postgig lastGigStats.score missing after load; only the sanitizer ' +
+        'whitelist (score/misses/accuracy/combo/maxCombo/health/overload) survives'
+    )
+  })
+
+  test('gig-bearing fixtures keep currentGig through sanitizeVenue', () => {
+    for (const name of ['pregig', 'gig', 'postgig']) {
+      const loaded = load(name)
+      ok(
+        loaded.currentGig !== null && loaded.currentGig !== undefined,
+        `Fixture '${name}' lost currentGig — sanitizeVenue nulls venues that ` +
+          'do not use the real Venue shape, and the scene bounces to OVERWORLD'
+      )
+      strictEqual(
+        typeof loaded.currentGig.id,
+        'string',
+        `Fixture '${name}' currentGig.id must survive as a string`
+      )
+    }
+  })
+
+  test('minigame fixtures keep their type, which distinguishes them', () => {
+    const minigameFixtures = Object.keys(FIXTURES).filter(
+      name => FIXTURES[name].state?.minigame?.type
+    )
+    ok(
+      minigameFixtures.length > 0,
+      'expected at least one minigame fixture to guard'
+    )
+    for (const name of minigameFixtures) {
+      const expected = FIXTURES[name].state.minigame.type
+      strictEqual(
+        load(name).minigame?.type,
+        expected,
+        `Fixture '${name}' lost minigame.type '${expected}' on load; three ` +
+          'fixtures share PRE_GIG_MINIGAME and this is what tells them apart'
+      )
+    }
   })
 })

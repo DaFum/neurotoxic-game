@@ -217,12 +217,14 @@ page.getByRole('button', { name: /back to tour/i })
 ## GAMEOVER scene
 
 ```js
-// Scene heading
-page.getByRole('heading', { name: /game over/i })
+// Scene heading — the copy is `ui:gameOver.soldOut` / `ui:gameOver.tourComplete`,
+// never the words "game over". Prefer asserting the scene instead of the text:
+// await page.evaluate(() => window.gameState.currentScene) === 'GAMEOVER'
+page.getByRole('heading', { name: /sold out|tour complete/i })
 
-// Restart / menu buttons
-page.getByRole('button', { name: /new game/i })
-page.getByRole('button', { name: /main menu/i })
+// Restart / menu buttons (`ui:gameOver.loadLastSave` / `returnToMenu`)
+page.getByRole('button', { name: /load last save/i })
+page.getByRole('button', { name: /return to menu/i })
 ```
 
 ---

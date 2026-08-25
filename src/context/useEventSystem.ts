@@ -14,6 +14,7 @@ import { gameReducer } from './gameReducer'
 import {
   createPopPendingEventAction,
   createSetActiveEventAction,
+  createSetScreenshotModeAction,
   createUpdatePlayerAction
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
@@ -177,6 +178,11 @@ export function useEventSystem({
     [dispatch]
   )
 
+  const setScreenshotMode = useCallback(
+    (enabled: boolean) => dispatch(createSetScreenshotModeAction(enabled)),
+    [dispatch]
+  )
+
   // Queue instance that already received a drain pop. Callers chain
   // triggerEvent fallbacks synchronously against the same stale stateRef
   // snapshot; without this guard each chained call would pop again and
@@ -303,5 +309,10 @@ export function useEventSystem({
     ]
   )
 
-  return { setActiveEvent, triggerEvent, resolveEvent: resolveEventCallback }
+  return {
+    setActiveEvent,
+    setScreenshotMode,
+    triggerEvent,
+    resolveEvent: resolveEventCallback
+  }
 }

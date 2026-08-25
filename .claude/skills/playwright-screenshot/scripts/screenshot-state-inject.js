@@ -217,7 +217,11 @@ export const BASE_STATE = {
 //   state:   deep-merged into BASE_STATE (only overridden keys needed)
 //   waitFor: Playwright locator expression evaluated after page load
 //   capture: optional extra steps before screenshot (async function receiving page)
-const FIXTURES = {
+// Exported so `playwright-screenshot-fixture-validation.test.js` can push each
+// fixture through the real `handleLoadGame` + sanitizers. Without that, a
+// fixture field the sanitizers do not whitelist is dropped silently and the
+// capture succeeds showing the wrong thing.
+export const FIXTURES = {
   menu: {
     description: 'Main menu (fresh start)',
     state: { currentScene: 'MENU' },
@@ -263,9 +267,7 @@ const FIXTURES = {
         songId: null
       },
       activeEvent: null,
-      pendingEvents: [],
-      // Flag to prevent event triggering in screenshot fixtures
-      isScreenshotMode: true
+      pendingEvents: []
     },
     waitFor: async page => {
       try {
@@ -278,39 +280,6 @@ const FIXTURES = {
           .getByRole('button', { name: /start show/i })
           .waitFor({ state: 'visible', timeout: 2000 })
       }
-    },
-    capture: async page => {
-      // Entering PreGig can roll a chain of random event modals over the prep
-      // screen (resolving one may surface a consequence/next event). Clear up to
-      // a few of them — numbered options or a CONTINUE button — then wait for the
-      // PreGig heading underneath. Resolution keeps us in the PREGIG scene.
-      for (let i = 0; i < 5; i++) {
-        const dialog = page.getByRole('dialog').first()
-        // isVisible() is an immediate check and ignores a timeout option, so a
-        // still-animating dialog would be missed — wait for it explicitly.
-        const dialogShown = await dialog
-          .waitFor({ state: 'visible', timeout: 800 })
-          .then(() => true)
-          .catch(() => false)
-        if (!dialogShown) break
-        const numbered = dialog
-          .locator('button')
-          .filter({ hasText: /\[\d\]/ })
-          .first()
-        const cont = dialog.getByRole('button', { name: /continue/i }).first()
-        if (await numbered.isVisible().catch(() => false)) {
-          await numbered.click().catch(() => {})
-        } else if (await cont.isVisible().catch(() => false)) {
-          await cont.click().catch(() => {})
-        } else {
-          break
-        }
-        await page.waitForTimeout(400)
-      }
-      await page
-        .getByRole('heading', { name: /preparation/i })
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .catch(() => {})
     }
   },
 
@@ -328,17 +297,17 @@ const FIXTURES = {
         difficulty: 2,
         songId: '01 Kranker Schrank'
       },
+      // Only the keys `sanitizeLastGigStats` whitelists survive a load. The
+      // previous shape (venueName/earnings/crowdScore/…) matched none of them,
+      // so the whole object sanitised to null, `deriveFinancials` bailed on
+      // `!lastGigStats`, and POSTGIG rendered its "TALLYING RECEIPTS…" shell.
       lastGigStats: {
-        venueName: 'Goldgrube',
-        earnings: 95,
-        crowdScore: 0.72,
-        harmonyChange: 3,
-        fameEarned: 120,
-        perfectHits: 14,
-        missedHits: 2,
-        songTitle: 'Kranker Schrank',
-        bonuses: [],
-        penalties: []
+        score: 8400,
+        accuracy: 87,
+        misses: 12,
+        combo: 12,
+        maxCombo: 64,
+        health: 78
       },
       activeEvent: null,
       pendingEvents: []
@@ -357,11 +326,6 @@ const FIXTURES = {
         )
         .first()
         .waitFor({ state: 'visible', timeout: 15000 })
-      // NOTE: injected POSTGIG shows the report *shell* ("TALLYING RECEIPTS…" +
-      // "BACK TO OVERWORLD"); the populated figures are computed by the live
-      // END_GIG flow, which state-injection + changeScene bypasses. For a fully
-      // rendered gig report, capture POSTGIG via the live golden-path flow
-      // (screenshot-game-flow.js) instead. Short settle for the scene shell:
       await page.waitForTimeout(600)
     }
   },
@@ -380,6 +344,100 @@ const FIXTURES = {
       page
         .getByRole('heading', { name: /sold out|tour has ended|game over/i })
         .or(page.getByText(/final statistics|load last save/i).first())
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  // ── Minigames ────────────────────────────────────────────────────────────
+  // `scenes.config.js` described these long before they were runnable; the
+  // capture logic lived in screenshot-comprehensive-full.js with its own copy
+  // of the save state, so it drifted from the schema and was never covered by
+  // the BASE_STATE validation test. Now they go through the same engine as
+  // every other fixture and get the same scene verification.
+  'travel-minigame': {
+    description: 'Tourbus Terror travel minigame (canvas)',
+    state: {
+      currentScene: 'TRAVEL_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'TOURBUS',
+        targetDestination: 'node_0_1',
+        gigId: null,
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  'pre-gig-minigame-roadie': {
+    description: 'Roadie Run pre-gig minigame (canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'ROADIE',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+  },
+
+  'pre-gig-minigame-kabelsalat': {
+    description: 'Kabelsalat pre-gig minigame (DOM board, no canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'KABELSALAT',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    // Kabelsalat renders a DOM board, not a canvas, so the shared canvas wait
+    // does not apply. `minigames.kabelsalat.title` is HARDWARE_RIGGING in both
+    // locales, so the text anchor is safe here.
+    waitFor: async page => {
+      await page
+        .getByRole('heading', { name: /hardware_rigging/i })
+        .first()
+        .waitFor({ state: 'visible', timeout: 15000 })
+    }
+  },
+
+  'pre-gig-minigame-amp': {
+    description: 'Amp Calibration pre-gig minigame (canvas)',
+    state: {
+      currentScene: 'PRE_GIG_MINIGAME',
+      minigame: {
+        active: true,
+        type: 'AMP_CALIBRATION',
+        targetDestination: null,
+        gigId: 'goldgrube',
+        equipmentRemaining: 3,
+        accumulatedDamage: 0,
+        score: 0
+      }
+    },
+    waitFor: async page =>
+      page
+        .locator('canvas')
         .first()
         .waitFor({ state: 'visible', timeout: 15000 })
   },
@@ -484,6 +542,35 @@ const FIXTURES = {
     }
   },
 
+  'band-hq-settings': {
+    description: 'Band HQ with the Settings tab open',
+    state: { currentScene: 'MENU' },
+    waitFor: async page =>
+      page
+        .getByRole('heading', { name: /neurotoxic/i })
+        .waitFor({ state: 'visible', timeout: 10000 }),
+    // The only coverage screenshot-comprehensive.js had that this engine
+    // lacked. Kept when that script was removed.
+    capture: async page => {
+      await page.getByRole('button', { name: /band hq/i }).click()
+      await page
+        .getByRole('heading', { name: /band hq/i })
+        .waitFor({ state: 'visible', timeout: 5000 })
+      const settingsTab = page
+        .getByRole('tab', { name: /settings|einstellungen/i })
+        .first()
+      await settingsTab.click()
+      // Waiting for the tab to be *visible* proved nothing: it was already
+      // visible before the click, so the wait resolved even if the click did
+      // not switch panels. `aria-selected` is set from the active tab id and
+      // is locale-independent, unlike the panel's headings.
+      await settingsTab.and(page.locator('[aria-selected="true"]')).waitFor({
+        state: 'visible',
+        timeout: 5000
+      })
+    }
+  },
+
   'event-modal': {
     description: 'Overworld with an active event modal open',
     state: {
@@ -521,7 +608,9 @@ const FIXTURES = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function deepMerge(base, override) {
+// Exported for the fixture validation test, so it exercises this merge rather
+// than a re-declared copy of it.
+export function deepMerge(base, override) {
   const result = { ...base }
   for (const key of Object.keys(override ?? {})) {
     if (
@@ -609,15 +698,10 @@ async function injectAndCapture(fixtureName, outFile) {
     // intended scene before waiting for its UI.
     await navigateToFixtureScene(page, fixtureName)
 
-    // Wait for the scene to be ready
-    await fixture.waitFor(page)
-    // Let Framer Motion transitions settle (no condition to wait for — purely visual)
-    await page.waitForTimeout(400)
-
-    // Run any extra capture steps
-    if (fixture.capture) {
-      await fixture.capture(page)
-    }
+    // Shared with every other runner: waitFor, the capture hook, and the
+    // integrity checks. Keeping a second copy here is how the mobile runner
+    // drifted out of sync in the first place.
+    await prepareFixtureCapture(page, fixtureName)
 
     const dest = outFile ?? `${OUT_DIR}/${fixtureName}.png`
     // Extended timeout (120s) for font loading and network-constrained environments
@@ -670,6 +754,196 @@ function fixtureScene(fixture) {
   return fixture.state?.currentScene ?? 'OVERWORLD'
 }
 
+/** Effective opacity a scene must reach before it is worth photographing. */
+const OPAQUE_ENOUGH = 0.9
+
+/**
+ * Compute how opaque the most-visible on-screen content is, 0..1.
+ *
+ * Playwright treats `opacity: 0` as visible, so `waitFor({ state: 'visible' })`
+ * on a Framer Motion panel resolves while it is still transparent — which
+ * produced screenshots that passed every check and were solid black.
+ *
+ * Only what the camera would actually record counts:
+ * - rects are clipped to the viewport, since a screenshot records the viewport
+ *   and off-screen text says nothing about what was captured
+ * - `visibility: hidden` anywhere up the chain disqualifies an element, which
+ *   opacity alone does not catch
+ * - global `role="status"` overlays (chatter, toasts) are excluded: they render
+ *   on every scene, so counting them would call a blank scene photographable
+ *
+ * Canvas scenes are measured by their canvas, not by text: the minigames and
+ * GIG draw into a canvas and only incidentally have HUD text near it, so a
+ * text-only probe would call a perfectly rendered canvas blank.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<number>} Best effective opacity found.
+ */
+const measureOpacity = page =>
+  page.evaluate(() => {
+    const effectiveOpacity = el => {
+      let opacity = 1
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node)
+        if (style.visibility === 'hidden' || style.display === 'none') return 0
+        const value = Number.parseFloat(style.opacity)
+        if (Number.isFinite(value)) opacity *= value
+      }
+      return opacity
+    }
+
+    // Area of the element that actually falls inside the captured viewport.
+    const visibleArea = rect => {
+      const width = Math.min(rect.right, innerWidth) - Math.max(rect.left, 0)
+      const height = Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0)
+      return width > 0 && height > 0 ? width * height : 0
+    }
+
+    let best = 0
+
+    for (const canvas of document.querySelectorAll('canvas')) {
+      if (visibleArea(canvas.getBoundingClientRect()) > 10000) {
+        best = Math.max(best, effectiveOpacity(canvas))
+      }
+    }
+
+    const overlays = [...document.querySelectorAll('[role="status"]')]
+    for (const el of document.querySelectorAll('h1,h2,h3,h4,p,span,button')) {
+      const text = (el.textContent ?? '').trim()
+      if (!text || el.children.length > 0) continue
+      if (overlays.some(overlay => overlay.contains(el))) continue
+      if (visibleArea(el.getBoundingClientRect()) < 200) continue
+      best = Math.max(best, effectiveOpacity(el))
+    }
+
+    return best
+  })
+
+/**
+ * Poll until the scene is opaque enough to photograph.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {number} [timeout] - Milliseconds to wait for the fade to finish.
+ * @returns {Promise<number>} The effective opacity reached.
+ */
+async function waitForOpaqueRender(page, timeout = 20000) {
+  const deadline = Date.now() + timeout
+  let opacity = await measureOpacity(page)
+  while (opacity < OPAQUE_ENOUGH && Date.now() < deadline) {
+    await page.waitForTimeout(200)
+    opacity = await measureOpacity(page)
+  }
+  return opacity
+}
+
+/** Fixtures whose whole point is a dialog on top of the scene. */
+const FIXTURES_EXPECTING_DIALOG = new Set([
+  'band-hq',
+  'band-hq-settings',
+  'event-modal'
+])
+
+/**
+ * Fail loudly when the page is not actually showing the fixture's scene.
+ *
+ * A fixture's `waitFor` anchors on text, which passes even when the scene is
+ * covered: Playwright counts an element laid out behind a full-screen overlay
+ * as visible. POSTGIG in particular rolls a random event on entry, so the
+ * capture silently returned an event modal filed under `postgig.png`. Scene
+ * identity is read from `window.gameState.currentScene` instead of copy, so it
+ * survives i18n and reworded headings.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fixtureName
+ * @throws {Error} When the wrong scene rendered, or an unexpected dialog covers it.
+ */
+async function assertCaptureIntegrity(page, fixtureName) {
+  const expected = fixtureScene(FIXTURES[fixtureName])
+  const actual = await page.evaluate(
+    () => window.gameState?.currentScene ?? null
+  )
+
+  if (actual !== expected) {
+    throw new Error(
+      `Fixture "${fixtureName}" expected scene ${expected} but the app is on ` +
+        `${actual ?? 'an unknown scene'}. Refusing to write a mislabelled screenshot.`
+    )
+  }
+
+  // Three pre-gig minigames share PRE_GIG_MINIGAME, so the scene alone cannot
+  // tell them apart — a mixed-up type would pass the check above unnoticed.
+  const expectedMinigame = FIXTURES[fixtureName].state?.minigame?.type ?? null
+  if (expectedMinigame !== null) {
+    const actualMinigame = await page.evaluate(
+      () => window.gameState?.minigame?.type ?? null
+    )
+    if (actualMinigame !== expectedMinigame) {
+      throw new Error(
+        `Fixture "${fixtureName}" expected minigame ${expectedMinigame} but ` +
+          `${actualMinigame ?? 'none'} is active.`
+      )
+    }
+  }
+
+  const opacity = await waitForOpaqueRender(page)
+  if (opacity < OPAQUE_ENOUGH) {
+    throw new Error(
+      `Fixture "${fixtureName}" rendered ${expected} but nothing is opaque ` +
+        `enough to photograph (best effective opacity ${opacity.toFixed(2)}). ` +
+        `The screenshot would be blank.`
+    )
+  }
+
+  // Geometry alone would repeat the bug the opacity probe exists to fix: a
+  // dialog mid-exit is still mounted at `opacity: 0` and would be reported as
+  // covering the scene, while a dialog fixture would accept a fully
+  // transparent one. Apply the same effective-opacity rule to both directions.
+  const dialog = await page.evaluate(() => {
+    for (const el of document.querySelectorAll('[role="dialog"]')) {
+      const rect = el.getBoundingClientRect()
+      if (rect.width <= 0 || rect.height <= 0) continue
+      let opacity = 1
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node)
+        if (style.visibility === 'hidden' || style.display === 'none') {
+          opacity = 0
+          break
+        }
+        const value = Number.parseFloat(style.opacity)
+        if (Number.isFinite(value)) opacity *= value
+      }
+      if (opacity > 0.5) return (el.textContent ?? '').trim().slice(0, 80)
+    }
+    return null
+  })
+
+  // Fixtures that exist to show a dialog must actually have one. Several
+  // `waitFor` handlers fall back to the underlying scene when the dialog is
+  // slow (`event-modal` falls back to the OVERWORLD heading), and since that
+  // is also its target scene, both checks above pass — so skipping this one
+  // let a plain Overworld image be written as event-modal.png, which is the
+  // exact failure this function exists to stop.
+  if (FIXTURES_EXPECTING_DIALOG.has(fixtureName)) {
+    if (dialog === null) {
+      throw new Error(
+        `Fixture "${fixtureName}" is supposed to show a dialog, but none is ` +
+          `visible — its waitFor most likely fell back to the bare scene. ` +
+          `Refusing to write a screenshot without the overlay.`
+      )
+    }
+    return
+  }
+
+  if (dialog !== null) {
+    throw new Error(
+      `Fixture "${fixtureName}" rendered ${expected}, but a dialog covers it: ` +
+        `"${dialog}". The scene is obscured, so the screenshot would not show ` +
+        `${expected}. Neutralise the dialog in the fixture state or add the ` +
+        `fixture to FIXTURES_EXPECTING_DIALOG if the overlay is intended.`
+    )
+  }
+}
+
 /**
  * Navigate to a fixture's intended scene after injection.
  *
@@ -697,6 +971,14 @@ export async function navigateToFixtureScene(page, fixtureName) {
     undefined,
     { timeout: 10000 }
   )
+  // PreGig and PostGig roll a random event when their scene mounts, which used
+  // to drop an unrelated modal over the captured scene. `isScreenshotMode` is
+  // runtime-only (handleLoadGame resets it), so it has to be set here rather
+  // than injected with the save.
+  await page.evaluate(() => {
+    window.gameState.setScreenshotMode?.(true)
+  })
+
   await page.evaluate(scene => {
     window.gameState.changeScene(scene)
   }, target)
@@ -704,6 +986,13 @@ export async function navigateToFixtureScene(page, fixtureName) {
 
 /**
  * Wait for the scene matching the given fixture to be visible.
+ *
+ * @remarks
+ * Waiting only. It runs neither the fixture's `capture` hook nor the integrity
+ * checks, so a `waitFor` that falls back to the underlying scene will pass
+ * here. Prefer {@link prepareFixtureCapture} for anything that then takes a
+ * screenshot; reach for this only when you need the wait on its own.
+ *
  * @param {import('@playwright/test').Page} page
  * @param {string} fixtureName
  */
@@ -711,6 +1000,37 @@ export async function waitForFixtureScene(page, fixtureName) {
   const fixture = FIXTURES[fixtureName]
   if (!fixture) throw new Error(`Unknown fixture "${fixtureName}"`)
   await fixture.waitFor(page)
+}
+
+/**
+ * Every fixture name, in declaration order.
+ *
+ * @remarks
+ * Consumers must derive their fixture list from this instead of keeping their
+ * own copy — `screenshot-mobile.js` used to hold a hardcoded nine, so newly
+ * added fixtures were silently missing from its default run.
+ *
+ * @returns {string[]} The fixture keys this module knows about.
+ */
+export const getFixtureNames = () => Object.keys(FIXTURES)
+
+/**
+ * Run a fixture's post-navigation steps and verify what rendered.
+ *
+ * Wraps `waitFor`, the optional `capture` hook, and the integrity checks so
+ * every consumer gets identical behaviour. Skipping the `capture` hook is how
+ * a viewport-specific runner ends up photographing the menu for a fixture
+ * whose whole point is the panel that hook opens.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fixtureName
+ */
+export async function prepareFixtureCapture(page, fixtureName) {
+  const fixture = FIXTURES[fixtureName]
+  if (!fixture) throw new Error(`Unknown fixture "${fixtureName}"`)
+  await fixture.waitFor(page)
+  if (fixture.capture) await fixture.capture(page)
+  await assertCaptureIntegrity(page, fixtureName)
 }
 
 // ── CLI entry point ────────────────────────────────────────────────────────
