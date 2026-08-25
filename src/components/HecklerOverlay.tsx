@@ -1,25 +1,39 @@
 import { useEffect, useReducer, memo } from 'react'
 import type { Projectile as HecklerProjectile } from '../utils/hecklerLogic'
 
+/**
+ * Represents a localized, stripped-down projectile used explicitly for rendering properties.
+ */
 type Projectile = Pick<
   HecklerProjectile,
   'id' | 'x' | 'y' | 'rotation' | 'type'
 >
 
+/**
+ * A mutable reference container used to bypass normal React state updates for high-frequency game loop data.
+ */
 interface HecklerStateRef {
   current: {
     projectiles?: unknown[]
   } | null
 }
 
+/**
+ * Component properties defining the dependencies for the heckler overlay renderer.
+ */
 interface HecklerOverlayProps {
+  /** A mutable reference containing the live projectile data to be rendered. */
   gameStateRef: HecklerStateRef
 }
 
 /**
  * Overlay component that renders projectiles (heckler items).
+ *
+ * @remarks
  * Uses requestAnimationFrame to map state directly, rendering declaratively.
+ *
  * @param props - Display data and refs for the heckler overlay component.
+ * @returns A React component node displaying the active projectiles.
  */
 export const HecklerOverlay = memo(function HecklerOverlay({
   gameStateRef
