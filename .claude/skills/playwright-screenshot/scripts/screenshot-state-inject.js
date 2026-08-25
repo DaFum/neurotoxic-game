@@ -728,17 +728,10 @@ async function injectAndCapture(fixtureName, outFile) {
     // intended scene before waiting for its UI.
     await navigateToFixtureScene(page, fixtureName)
 
-    // Wait for the scene to be ready
-    await fixture.waitFor(page)
-    // Let Framer Motion transitions settle (no condition to wait for — purely visual)
-    await page.waitForTimeout(400)
-
-    // Run any extra capture steps
-    if (fixture.capture) {
-      await fixture.capture(page)
-    }
-
-    await assertCaptureIntegrity(page, fixtureName)
+    // Shared with every other runner: waitFor, the capture hook, and the
+    // integrity checks. Keeping a second copy here is how the mobile runner
+    // drifted out of sync in the first place.
+    await prepareFixtureCapture(page, fixtureName)
 
     const dest = outFile ?? `${OUT_DIR}/${fixtureName}.png`
     // Extended timeout (120s) for font loading and network-constrained environments
@@ -898,8 +891,6 @@ async function assertCaptureIntegrity(page, fixtureName) {
     )
   }
 
-  if (FIXTURES_EXPECTING_DIALOG.has(fixtureName)) return
-
   const dialog = await page.evaluate(() => {
     for (const el of document.querySelectorAll('[role="dialog"]')) {
       const rect = el.getBoundingClientRect()
@@ -909,6 +900,23 @@ async function assertCaptureIntegrity(page, fixtureName) {
     }
     return null
   })
+
+  // Fixtures that exist to show a dialog must actually have one. Several
+  // `waitFor` handlers fall back to the underlying scene when the dialog is
+  // slow (`event-modal` falls back to the OVERWORLD heading), and since that
+  // is also its target scene, both checks above pass — so skipping this one
+  // let a plain Overworld image be written as event-modal.png, which is the
+  // exact failure this function exists to stop.
+  if (FIXTURES_EXPECTING_DIALOG.has(fixtureName)) {
+    if (dialog === null) {
+      throw new Error(
+        `Fixture "${fixtureName}" is supposed to show a dialog, but none is ` +
+          `visible — its waitFor most likely fell back to the bare scene. ` +
+          `Refusing to write a screenshot without the overlay.`
+      )
+    }
+    return
+  }
 
   if (dialog !== null) {
     throw new Error(
@@ -962,6 +970,13 @@ export async function navigateToFixtureScene(page, fixtureName) {
 
 /**
  * Wait for the scene matching the given fixture to be visible.
+ *
+ * @remarks
+ * Waiting only. It runs neither the fixture's `capture` hook nor the integrity
+ * checks, so a `waitFor` that falls back to the underlying scene will pass
+ * here. Prefer {@link prepareFixtureCapture} for anything that then takes a
+ * screenshot; reach for this only when you need the wait on its own.
+ *
  * @param {import('@playwright/test').Page} page
  * @param {string} fixtureName
  */
@@ -969,6 +984,37 @@ export async function waitForFixtureScene(page, fixtureName) {
   const fixture = FIXTURES[fixtureName]
   if (!fixture) throw new Error(`Unknown fixture "${fixtureName}"`)
   await fixture.waitFor(page)
+}
+
+/**
+ * Every fixture name, in declaration order.
+ *
+ * @remarks
+ * Consumers must derive their fixture list from this instead of keeping their
+ * own copy — `screenshot-mobile.js` used to hold a hardcoded nine, so newly
+ * added fixtures were silently missing from its default run.
+ *
+ * @returns {string[]} The fixture keys this module knows about.
+ */
+export const getFixtureNames = () => Object.keys(FIXTURES)
+
+/**
+ * Run a fixture's post-navigation steps and verify what rendered.
+ *
+ * Wraps `waitFor`, the optional `capture` hook, and the integrity checks so
+ * every consumer gets identical behaviour. Skipping the `capture` hook is how
+ * a viewport-specific runner ends up photographing the menu for a fixture
+ * whose whole point is the panel that hook opens.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fixtureName
+ */
+export async function prepareFixtureCapture(page, fixtureName) {
+  const fixture = FIXTURES[fixtureName]
+  if (!fixture) throw new Error(`Unknown fixture "${fixtureName}"`)
+  await fixture.waitFor(page)
+  if (fixture.capture) await fixture.capture(page)
+  await assertCaptureIntegrity(page, fixtureName)
 }
 
 // ── CLI entry point ────────────────────────────────────────────────────────

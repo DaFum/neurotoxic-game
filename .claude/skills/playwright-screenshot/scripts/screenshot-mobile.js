@@ -17,24 +17,13 @@ import { launchBrowserWithFallback } from './browser-launcher.js'
 import {
   injectSave,
   navigateToFixtureScene,
-  waitForFixtureScene
+  getFixtureNames,
+  prepareFixtureCapture
 } from './screenshot-state-inject.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/mobile')
 const HEADLESS = process.env.HEADLESS !== 'false'
-
-const ALL_FIXTURES = [
-  'menu',
-  'overworld',
-  'pregig',
-  'gig',
-  'postgig',
-  'gameover',
-  'clinic',
-  'band-hq',
-  'event-modal'
-]
 
 const MOBILE = {
   viewport: { width: 390, height: 844 },
@@ -59,15 +48,11 @@ async function captureFixture(browser, fixtureName) {
       if (err.name !== 'TimeoutError') throw err
     }
     await navigateToFixtureScene(page, fixtureName)
-    await waitForFixtureScene(page, fixtureName)
-    // band-hq opens its modal via a capture step in the inject script; the
-    // waitFor only reaches the menu. Reproduce the modal open here.
-    if (fixtureName === 'band-hq') {
-      await page.getByRole('button', { name: /band hq/i }).click()
-      await page
-        .getByRole('heading', { name: /band hq/i })
-        .waitFor({ state: 'visible', timeout: 5000 })
-    }
+    // Shared with the desktop runner: waitFor, the fixture's own capture hook,
+    // and the scene/minigame/opacity checks. Reimplementing any of it here is
+    // how band-hq used to be hand-rolled and band-hq-settings would have
+    // photographed the bare menu.
+    await prepareFixtureCapture(page, fixtureName)
     await page.waitForTimeout(500)
     const dest = `${OUT_DIR}/${fixtureName}.png`
     await page.screenshot({ path: dest, timeout: 120000 })
@@ -87,7 +72,7 @@ async function captureFixture(browser, fixtureName) {
 
 async function main() {
   const requested = process.argv.slice(2)
-  const fixtures = requested.length ? requested : ALL_FIXTURES
+  const fixtures = requested.length ? requested : getFixtureNames()
   await mkdir(OUT_DIR, { recursive: true })
   const browser = await launchBrowserWithFallback({ headless: HEADLESS })
   const failed = []

@@ -25,7 +25,7 @@ import { launchBrowserWithFallback } from './browser-launcher.js'
 import {
   injectSave,
   navigateToFixtureScene,
-  waitForFixtureScene
+  prepareFixtureCapture
 } from './screenshot-state-inject.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
@@ -310,7 +310,7 @@ async function main() {
       // handleLoadGame forces OVERWORLD on hydration, so the scene has to be
       // switched explicitly — without this the shot is the map, not GAMEOVER.
       await navigateToFixtureScene(page, 'gameover')
-      await waitForFixtureScene(page, 'gameover')
+      await prepareFixtureCapture(page, 'gameover')
       await waitSettle(page, 400)
       await snap(page, '15-gameover')
     } catch (err) {
@@ -328,7 +328,7 @@ async function main() {
       // Same as GAMEOVER: without this the capture silently showed OVERWORLD
       // filed under 16-clinic.png.
       await navigateToFixtureScene(page, 'clinic')
-      await waitForFixtureScene(page, 'clinic')
+      await prepareFixtureCapture(page, 'clinic')
       await waitSettle(page, 500)
       await snap(page, '16-clinic')
     } catch (err) {
