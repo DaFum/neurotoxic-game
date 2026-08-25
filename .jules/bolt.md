@@ -217,3 +217,6 @@
 ## 2026-08-20 - Avoiding declarative map loops on nested array properties
 **Learning:** In state reducers handling arrays (like members in band state), utilizing procedural `for` loops instead of array mapping methods like `.map()` significantly decreases garbage collection overhead on each reducer action, which is important for UI performance in large object updates.
 **Action:** Replaced `.map()` in `minigameReducer.ts`, `clinicReducer.ts`, and `systemReducer.ts` with procedural `for` loops when updating nested band member fields.
+## 2026-08-25 - Avoiding procedural loops for Object.keys count
+**Learning:** Replacing `Object.keys(obj).length` with a manual `for...in` procedural loop in hot paths to avoid array allocations actually degrades performance in modern engines (like V8) where `Object.keys` is heavily optimized in native C++, and fails code review as an anti-pattern.
+**Action:** Never refactor `Object.keys(obj).length` into a manual user-land `for...in` loop solely to count properties. Native engine methods are generally faster for counting.
