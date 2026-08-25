@@ -2,7 +2,8 @@ import { Loader2 } from 'lucide-react'
 import type { ComponentPropsWithoutRef, ReactNode } from 'react'
 import { useFormStatus } from 'react-dom'
 
-type GlitchButtonVariant = 'primary' | 'danger' | 'owned' | 'warning'
+type GlitchButtonVariant =
+  'primary' | 'secondary' | 'danger' | 'owned' | 'warning'
 type GlitchButtonSize = 'sm' | 'lg'
 
 type GlitchButtonProps = Omit<ComponentPropsWithoutRef<'button'>, 'size'> & {
@@ -39,6 +40,12 @@ export const GlitchButton = ({
       return 'border-2 border-ash-gray text-ash-gray cursor-not-allowed opacity-60'
 
     switch (variant) {
+      case 'secondary':
+        return `border-2 border-steel-gray text-toxic-green
+                hover:border-toxic-green hover:bg-toxic-green hover:text-void-black
+                hover:scale-[1.02]
+                hover:shadow-[4px_4px_0px_var(--color-blood-red)]
+                active:scale-[0.98] active:shadow-none`
       case 'danger':
         return `border-2 border-blood-red text-star-white
                 hover:bg-blood-red hover:text-void-black

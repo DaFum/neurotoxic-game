@@ -25,14 +25,29 @@ export const MainMenuSecondaryButtons = ({
       delay={1.2}
     >
       <div className='flex w-full flex-wrap justify-center gap-3 sm:gap-4'>
-        <GlitchButton onClick={() => setShowSocials(true)} className='flex-1'>
+        <GlitchButton
+          onClick={() => setShowSocials(true)}
+          variant='secondary'
+          size='sm'
+          className='flex-1'
+        >
           {t('ui:socials')}
         </GlitchButton>
-        <GlitchButton onClick={handleCredits} className='flex-1'>
+        <GlitchButton
+          onClick={handleCredits}
+          variant='secondary'
+          size='sm'
+          className='flex-1'
+        >
           {t('ui:credits')}
         </GlitchButton>
       </div>
-      <GlitchButton onClick={() => setShowFeatures(true)} className='w-full'>
+      <GlitchButton
+        onClick={() => setShowFeatures(true)}
+        variant='secondary'
+        size='sm'
+        className='w-full'
+      >
         {t('ui:features.button')}
       </GlitchButton>
     </MainMenuMotionContainer>
