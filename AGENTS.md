@@ -75,7 +75,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - Type gates: `pnpm run typecheck:core`; reducer gate: `pnpm run typecheck`.
 - Single `node:test` file: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/<file>.test.js`.
 - Single/multiple Vitest files: `pnpm exec vitest run tests/<file>.test.jsx [tests/<other>.test.jsx ...]`. Do not use `test:ui:file` with multiple paths; it leaks unrelated suites.
-- After exported APIs, types, source references, or tests change, run `pnpm run symbols:update` then `pnpm run symbols:check`. Never hand-edit or commit ignored `symbols.json`.
+- To check or review the codebase, you can also use the `symbols.json` file. Run `pnpm run symbols:update` and then `pnpm run symbols:check`. Never manually edit or commit ignored `symbols.json` files.
 - Dead code gate: `pnpm run deadcode:check`; budget check: `pnpm run deadcode:budget`.
 
 ## Architecture Constraints
