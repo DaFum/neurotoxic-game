@@ -398,7 +398,7 @@ export const getPurchaseDecision = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState,
-  social?: SocialState
+  social: SocialState
 ): PurchaseDecision => {
   const cost = getAdjustedCost(item, band)
   const isOwned = isItemOwned(item, player, band)
@@ -425,7 +425,7 @@ export const validatePurchase = (
   item: PurchaseItem,
   player: PlayerState,
   band: BandState,
-  social?: SocialState
+  social: SocialState
 ): PurchaseValidationResult => {
   const effect = getPrimaryEffect(item)
   if (!effect) {
