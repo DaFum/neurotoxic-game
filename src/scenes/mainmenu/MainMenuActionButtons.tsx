@@ -44,7 +44,7 @@ export const MainMenuActionButtons = ({
       <GlitchButton
         onClick={handleLoad}
         isLoading={isLoadingGame}
-        variant='secondary'
+        variant='accent'
         className='relative z-20 w-full'
       >
         {t('ui:load_game')}
@@ -52,7 +52,7 @@ export const MainMenuActionButtons = ({
 
       <GlitchButton
         onClick={openHQ}
-        variant='secondary'
+        variant='accentAlt'
         className='relative z-20 w-full'
       >
         {t('ui:band_hq')}

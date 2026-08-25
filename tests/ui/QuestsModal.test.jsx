@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QuestsModal } from '../../src/ui/QuestsModal.tsx'
 import {
@@ -9,6 +9,22 @@ import {
 } from '../../src/ui/questHintViewModel.ts'
 
 describe('QuestsModal', () => {
+  it('is an accessible dialog that Escape closes', async () => {
+    // Regression guard: these overlays used to be hand-rolled `fixed inset-0`
+    // divs with no dialog role, no focus trap and no Escape handling. They must
+    // keep going through `src/ui/shared/Modal.tsx`.
+    const onClose = vi.fn()
+    render(
+      <QuestsModal onClose={onClose} player={{ day: 7 }} activeQuests={[]} />
+    )
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
   it('renders translated accepted quests and progress', () => {
     render(
       <QuestsModal

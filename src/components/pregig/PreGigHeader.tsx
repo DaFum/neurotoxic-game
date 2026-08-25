@@ -23,6 +23,7 @@ export const PreGigHeader = React.memo(
         initial={{ opacity: 0, y: -10 }}
         animate={{ opacity: 1, y: 0 }}
         className='text-center mb-4 sm:mb-6 w-full max-w-4xl'
+        data-chatter-avoid=''
       >
         <h2 className='text-3xl sm:text-4xl text-toxic-green font-display mb-2'>
           {t('ui:pregig.title')}

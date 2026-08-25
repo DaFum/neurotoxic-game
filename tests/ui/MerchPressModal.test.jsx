@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MerchPressModal } from '../../src/ui/MerchPressModal'
 
 const { mockState } = vi.hoisted(() => ({
@@ -23,6 +23,28 @@ vi.mock('react-i18next', () => ({
 }))
 
 describe('MerchPressModal', () => {
+  it('is an accessible dialog that Escape closes', async () => {
+    // Regression guard: these overlays used to be hand-rolled `fixed inset-0`
+    // divs with no dialog role, no focus trap and no Escape handling. They must
+    // keep going through `src/ui/shared/Modal.tsx`.
+    mockState.current = defaultState
+    const onClose = vi.fn()
+    render(
+      <MerchPressModal
+        onClose={onClose}
+        onPress={vi.fn()}
+        canPress={true}
+        config={mockConfig}
+      />
+    )
+
+    const dialog = await screen.findByRole('dialog')
+    expect(dialog).toHaveAttribute('aria-modal', 'true')
+
+    fireEvent.keyDown(window, { key: 'Escape' })
+    await waitFor(() => expect(onClose).toHaveBeenCalled())
+  })
+
   beforeEach(() => {
     mockState.current = {}
   })

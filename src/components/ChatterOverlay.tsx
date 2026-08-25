@@ -298,8 +298,14 @@ const rectsIntersect = (a: Rect, b: Rect): boolean =>
 // Interactive / high-value elements the chatter box must never sit on top of.
 // (Static flavour text isn't included — the box would otherwise never find a
 // clear spot, since something is always behind it.)
+//
+// `data-chatter-avoid` is the opt-in for the non-interactive exceptions: scene
+// titles, the venue name and the gig HUD readouts. Without it the box treated
+// them as flavour text and parked on the wordmark, the PreGig venue name and
+// the gig meters. Mark only headline/at-a-glance elements — marking body copy
+// brings back the "never finds a clear spot" problem the exclusion prevents.
 const OBSTACLE_SELECTOR =
-  'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"]'
+  'button,[role="button"],a[href],[role="dialog"],[role="tab"],[role="tablist"],[data-chatter-avoid]'
 
 const collectObstacleRects = (self: HTMLElement): Rect[] => {
   const rects: Rect[] = []

@@ -22,6 +22,7 @@ export const MainMenuHeader = () => {
             : { duration: 0.8, ease: 'easeOut' }
         }
         data-text='NEUROTOXIC'
+        data-chatter-avoid=''
         className='title-ghost text-5xl sm:text-6xl md:text-9xl text-center text-transparent bg-clip-text bg-gradient-to-b from-toxic-green to-toxic-green-dark font-display animate-neon-flicker mb-2 break-words drop-shadow-lg'
         style={{
           WebkitTextStroke: '2px var(--color-toxic-green)',

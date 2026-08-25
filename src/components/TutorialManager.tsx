@@ -1,4 +1,5 @@
 import { m, AnimatePresence } from 'motion/react'
+import { useCallback, useRef } from 'react'
 import { useTutorial } from '../hooks/useTutorial'
 
 /**
@@ -21,7 +22,14 @@ const getStepColorClass = (stepId: number, currentStep: number): string => {
  * Subscribes to the tutorial context to display contextual onboarding
  * information. The overlay is positioned globally to appear above other UI elements.
  *
- * @returns The animated tutorial dialog, or null if the tutorial is hidden or empty
+ * Deliberately **not** a modal dialog. The steps annotate live UI —
+ * `map-container`, `hud-stats`, `game-canvas` — and the final step runs during
+ * `GIG`/`PRACTICE` while instructing the player to hit notes, so trapping focus
+ * here would block the minigame it is explaining. It is announced as a live
+ * region instead; do not restore `role='dialog'`/`aria-modal`, which previously
+ * hid the rest of the scene from assistive tech while leaving it Tab-reachable.
+ *
+ * @returns The animated tutorial region, or null if the tutorial is hidden or empty
  */
 export const TutorialManager = () => {
   const {
@@ -35,6 +43,40 @@ export const TutorialManager = () => {
     t
   } = useTutorial()
   const hasContent = isVisible && content !== null
+  const activePanelRef = useRef<HTMLDivElement | null>(null)
+
+  // Publish the panel's height as `--tutorial-inset` so bottom-anchored scenes
+  // can reserve room for it. Narrow viewports have no space to place the panel
+  // clear of the scene's own controls, and the app body is `overflow: hidden`,
+  // so without this the panel sits on top of buttons that can then never be
+  // tapped. Consumed by `MainMenu` under `max-sm`.
+  //
+  // A ref callback rather than an effect: the panel is keyed by `step`, so it
+  // remounts on every step while `hasContent` stays true. An effect keyed on
+  // `hasContent` would keep measuring the first step's now-detached element and
+  // publish its height for the rest of the tutorial.
+  const measurePanel = useCallback((panel: HTMLDivElement | null) => {
+    const root = document.documentElement
+    if (!panel) {
+      root.style.removeProperty('--tutorial-inset')
+      return
+    }
+    activePanelRef.current = panel
+    const sync = () =>
+      root.style.setProperty('--tutorial-inset', `${panel.offsetHeight + 24}px`)
+    sync()
+    const observer = new ResizeObserver(sync)
+    observer.observe(panel)
+    return () => {
+      observer.disconnect()
+      // A step change mounts the next panel before this one finishes its exit
+      // animation, so only the panel still in charge may clear the inset.
+      if (activePanelRef.current === panel) {
+        activePanelRef.current = null
+        root.style.removeProperty('--tutorial-inset')
+      }
+    }
+  }, [])
 
   return (
     <AnimatePresence>
@@ -44,12 +86,15 @@ export const TutorialManager = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0 }}
-          role='dialog'
+          role='region'
           aria-label={t('ui:tutorial.ariaLabel', { defaultValue: 'Tutorial' })}
-          aria-modal='true'
-          className='fixed bottom-20 left-1/2 transform -translate-x-1/2 z-(--z-tutorial) w-full max-w-md'
+          aria-live='polite'
+          className='fixed inset-x-3 bottom-3 sm:inset-x-auto sm:right-6 sm:bottom-6 sm:w-full sm:max-w-md z-(--z-tutorial)'
         >
-          <div className='bg-void-black/95 border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'>
+          <div
+            ref={measurePanel}
+            className='bg-void-black border-2 border-toxic-green p-6 shadow-[0_0_20px_var(--color-toxic-green)] relative'
+          >
             <div className='absolute -top-3 left-4 bg-void-black px-2 text-toxic-green font-bold text-xs border border-toxic-green'>
               {t('ui:tutorial.header', {
                 current: step + 1,

@@ -136,4 +136,27 @@ describe('GlitchButton', () => {
     expect(button.className).toContain('border-warning-yellow')
     expect(button.className).toContain('text-warning-yellow')
   })
+
+  it('applies accent variant styles without borrowing status colours', () => {
+    // `accent`/`accentAlt` differentiate equal-weight navigation. They must not
+    // fall back to red or yellow, which stay reserved for danger and warning.
+    const cases = [
+      ['accent', 'electric-blue'],
+      ['accentAlt', 'void-purple']
+    ]
+
+    for (const [variant, token] of cases) {
+      const { container, unmount } = render(
+        <GlitchButton onClick={() => {}} variant={variant}>
+          Accent
+        </GlitchButton>
+      )
+      const button = container.querySelector('button')
+      expect(button.className).toContain(`border-${token}`)
+      expect(button.className).toContain(`text-${token}`)
+      expect(button.className).not.toContain('blood-red')
+      expect(button.className).not.toContain('warning-yellow')
+      unmount()
+    }
+  })
 })

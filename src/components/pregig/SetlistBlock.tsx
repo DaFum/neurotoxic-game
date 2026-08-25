@@ -158,7 +158,7 @@ export const SetlistBlock = ({
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
-      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm flex flex-col max-h-[48svh] sm:max-h-[52svh] lg:max-h-none'
+      className='border-2 border-ash-gray/40 p-4 bg-void-black/70 backdrop-blur-sm flex flex-col min-h-0 max-h-[48svh] sm:max-h-[52svh] lg:max-h-none'
     >
       <h3 className='text-sm text-toxic-green mb-3 tracking-widest font-mono border-b border-toxic-green/30 pb-2 flex justify-between'>
         <span>{t('ui:pregig.setlist')}</span>
@@ -170,7 +170,7 @@ export const SetlistBlock = ({
           })}
         </span>
       </h3>
-      <div className='flex-1 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
+      <div className='flex-1 min-h-0 overflow-y-auto pr-0 sm:pr-2 space-y-2'>
         {songsDb.map(song => {
           const isSelected = selectedSongIds.has(song.id)
           const isLocked = !!(

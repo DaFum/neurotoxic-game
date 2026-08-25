@@ -1,9 +1,7 @@
-import { IconClose } from './shared/Icons'
-
-import { m } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { ProgressBar, Tooltip } from './shared/index.tsx'
+import { Modal } from './shared/Modal'
 import { useGameSelector } from '../context/GameState'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { PlayerState, BandState } from '../types'
@@ -52,78 +50,68 @@ export const MerchPressModal = ({
       : null
 
   return (
-    <m.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className='fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 bg-void-black/90 backdrop-blur-sm'
+    <Modal
+      isOpen
+      onClose={onClose}
+      ariaLabel={t('ui:merch_press.title', { defaultValue: 'MERCH PRESS' })}
+      className='max-w-4xl'
+      contentClassName='relative flex-1 min-h-0 max-h-[calc(100svh-3rem)] sm:max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
     >
-      <m.div
-        initial={{ scale: 0.95, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.95, y: 20 }}
-        className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] max-h-[calc(100svh-4rem)] overflow-y-auto overflow-x-hidden custom-scrollbar'
-      >
-        {/* Background Image with Overlay */}
-        <div
-          className='absolute inset-0 z-0 opacity-20 pointer-events-none'
-          style={{
-            backgroundImage: `url('${resolveGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            mixBlendMode: 'screen'
-          }}
-        />
-        <div className='absolute inset-0 bg-linear-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
+      {/* Background Image with Overlay */}
+      <div
+        className='absolute inset-0 z-0 opacity-20 pointer-events-none'
+        style={{
+          backgroundImage: `url('${resolveGenImageUrl(IMG_PROMPTS.MERCH_PRESS_BG)}')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          mixBlendMode: 'screen'
+        }}
+      />
+      <div className='absolute inset-0 bg-linear-to-t from-void-black via-void-black/80 to-transparent z-0 pointer-events-none' />
 
-        <div className='relative z-10 p-6'>
-          <MerchPressHeader onClose={onClose} />
+      <div className='relative z-10 p-6'>
+        <MerchPressHeader />
 
-          {/* Content */}
-          <div className='space-y-6'>
-            <p className='text-ash-gray text-sm leading-relaxed border-l-2 border-toxic-green-50 pl-4 py-1'>
-              {t('ui:merch_press.description', {
-                defaultValue:
-                  'Print bootleg shirts and press illegal vinyls in the basement. High risk, high reward.'
-              })}
-            </p>
+        {/* Content */}
+        <div className='space-y-6'>
+          <p className='text-ash-gray text-sm leading-relaxed border-l-2 border-toxic-green-50 pl-4 py-1'>
+            {t('ui:merch_press.description', {
+              defaultValue:
+                'Print bootleg shirts and press illegal vinyls in the basement. High risk, high reward.'
+            })}
+          </p>
 
-            <MerchPressCostsAndGains config={config} />
+          <MerchPressCostsAndGains config={config} />
 
-            <MerchPressRiskWarning config={config} />
+          <MerchPressRiskWarning config={config} />
 
-            <MerchPressCurrentStats
-              config={config}
-              player={player}
-              band={band}
-              isAffordable={isAffordable}
-              hasEnoughHarmony={hasEnoughHarmony}
-            />
-          </div>
-
-          <MerchPressActions
-            onClose={onClose}
-            onPress={onPress}
-            canPress={canPress}
-            disabledReason={disabledReason}
+          <MerchPressCurrentStats
+            config={config}
+            player={player}
+            band={band}
+            isAffordable={isAffordable}
+            hasEnoughHarmony={hasEnoughHarmony}
           />
-
-          {/* Corner Decorations */}
-          <div className='absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-toxic-green pointer-events-none' />
-          <div className='absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-toxic-green pointer-events-none' />
-          <div className='absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-toxic-green pointer-events-none' />
-          <div className='absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-toxic-green pointer-events-none' />
         </div>
-      </m.div>
-    </m.div>
+
+        <MerchPressActions
+          onClose={onClose}
+          onPress={onPress}
+          canPress={canPress}
+          disabledReason={disabledReason}
+        />
+
+        {/* Corner Decorations */}
+        <div className='absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-toxic-green pointer-events-none' />
+        <div className='absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-toxic-green pointer-events-none' />
+        <div className='absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-toxic-green pointer-events-none' />
+        <div className='absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-toxic-green pointer-events-none' />
+      </div>
+    </Modal>
   )
 }
 
-type MerchPressHeaderProps = {
-  onClose: () => void
-}
-
-function MerchPressHeader({ onClose }: MerchPressHeaderProps) {
+function MerchPressHeader() {
   const { t } = useTranslation(['ui'])
   const titleText = t('ui:merch_press.title', {
     defaultValue: 'UNDERGROUND MERCH PRESS'
@@ -143,16 +131,6 @@ function MerchPressHeader({ onClose }: MerchPressHeaderProps) {
           })}
         </p>
       </div>
-      <Tooltip content={t('ui:menu.close')}>
-        <button
-          type='button'
-          onClick={onClose}
-          className='text-toxic-green hover:text-star-white transition-colors p-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-          aria-label={t('ui:menu.close')}
-        >
-          <IconClose />
-        </button>
-      </Tooltip>
     </div>
   )
 }

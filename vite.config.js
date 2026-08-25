@@ -42,8 +42,9 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: false,
         skipWaiting: false,
-        globPatterns: ['**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,json}'],
-        globIgnores: ['**/*.{woff,woff2,ttf,otf,eot}'],
+        globPatterns: [
+          '**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,json,woff2}'
+        ],
         maximumFileSizeToCacheInBytes: 25 * 1024 * 1024,
         runtimeCaching: [
           {
