@@ -145,6 +145,7 @@ await page.screenshot({ path: 'overworld.png' })
 ```js
 import {
   injectSave,
+  navigateToFixtureScene,
   prepareFixtureCapture
 } from './.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js'
 

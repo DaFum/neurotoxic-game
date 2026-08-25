@@ -110,8 +110,9 @@ They need the dev server running.
 - name: Capture every fixture
   run: |
     for f in $(node -e "import('./.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js').then(m=>console.log(m.getFixtureNames().join(' ')))"); do
-      node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f" || exit 1
+      node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f" || fail=1
     done
+    exit ${fail:-0}
   env:
     BASE_URL: http://localhost:5173
     OUT_DIR: screenshots/ci-run

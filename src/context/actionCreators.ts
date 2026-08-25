@@ -395,8 +395,11 @@ export const createSetActiveEventAction = (
  * @remarks
  * Screenshot mode suppresses the automatic event rolls that PreGig and PostGig
  * perform on entry, so tooling can capture those scenes without a random event
- * modal covering them. It is deliberately not persisted — `handleLoadGame`
- * resets it — so a save can never strand a player with events disabled.
+ * modal covering them. It is deliberately not read back from a save:
+ * `handleLoadGame` does not whitelist the flag, so a persisted value is
+ * ignored and a save can never strand a player with events disabled. It does
+ * carry through a load in memory, which is harmless — nothing but tooling
+ * turns it on.
  *
  * @param enabled - Whether screenshot mode should be active
  */

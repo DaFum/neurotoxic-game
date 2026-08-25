@@ -217,7 +217,11 @@ export const BASE_STATE = {
 //   state:   deep-merged into BASE_STATE (only overridden keys needed)
 //   waitFor: Playwright locator expression evaluated after page load
 //   capture: optional extra steps before screenshot (async function receiving page)
-const FIXTURES = {
+// Exported so `playwright-screenshot-fixture-validation.test.js` can push each
+// fixture through the real `handleLoadGame` + sanitizers. Without that, a
+// fixture field the sanitizers do not whitelist is dropped silently and the
+// capture succeeds showing the wrong thing.
+export const FIXTURES = {
   menu: {
     description: 'Main menu (fresh start)',
     state: { currentScene: 'MENU' },
@@ -263,9 +267,7 @@ const FIXTURES = {
         songId: null
       },
       activeEvent: null,
-      pendingEvents: [],
-      // Flag to prevent event triggering in screenshot fixtures
-      isScreenshotMode: true
+      pendingEvents: []
     },
     waitFor: async page => {
       try {
@@ -278,39 +280,6 @@ const FIXTURES = {
           .getByRole('button', { name: /start show/i })
           .waitFor({ state: 'visible', timeout: 2000 })
       }
-    },
-    capture: async page => {
-      // Entering PreGig can roll a chain of random event modals over the prep
-      // screen (resolving one may surface a consequence/next event). Clear up to
-      // a few of them — numbered options or a CONTINUE button — then wait for the
-      // PreGig heading underneath. Resolution keeps us in the PREGIG scene.
-      for (let i = 0; i < 5; i++) {
-        const dialog = page.getByRole('dialog').first()
-        // isVisible() is an immediate check and ignores a timeout option, so a
-        // still-animating dialog would be missed — wait for it explicitly.
-        const dialogShown = await dialog
-          .waitFor({ state: 'visible', timeout: 800 })
-          .then(() => true)
-          .catch(() => false)
-        if (!dialogShown) break
-        const numbered = dialog
-          .locator('button')
-          .filter({ hasText: /\[\d\]/ })
-          .first()
-        const cont = dialog.getByRole('button', { name: /continue/i }).first()
-        if (await numbered.isVisible().catch(() => false)) {
-          await numbered.click().catch(() => {})
-        } else if (await cont.isVisible().catch(() => false)) {
-          await cont.click().catch(() => {})
-        } else {
-          break
-        }
-        await page.waitForTimeout(400)
-      }
-      await page
-        .getByRole('heading', { name: /preparation/i })
-        .waitFor({ state: 'visible', timeout: 5000 })
-        .catch(() => {})
     }
   },
 
@@ -328,17 +297,17 @@ const FIXTURES = {
         difficulty: 2,
         songId: '01 Kranker Schrank'
       },
+      // Only the keys `sanitizeLastGigStats` whitelists survive a load. The
+      // previous shape (venueName/earnings/crowdScore/…) matched none of them,
+      // so the whole object sanitised to null, `deriveFinancials` bailed on
+      // `!lastGigStats`, and POSTGIG rendered its "TALLYING RECEIPTS…" shell.
       lastGigStats: {
-        venueName: 'Goldgrube',
-        earnings: 95,
-        crowdScore: 0.72,
-        harmonyChange: 3,
-        fameEarned: 120,
-        perfectHits: 14,
-        missedHits: 2,
-        songTitle: 'Kranker Schrank',
-        bonuses: [],
-        penalties: []
+        score: 8400,
+        accuracy: 87,
+        misses: 12,
+        combo: 12,
+        maxCombo: 64,
+        health: 78
       },
       activeEvent: null,
       pendingEvents: []
@@ -357,11 +326,6 @@ const FIXTURES = {
         )
         .first()
         .waitFor({ state: 'visible', timeout: 15000 })
-      // NOTE: injected POSTGIG shows the report *shell* ("TALLYING RECEIPTS…" +
-      // "BACK TO OVERWORLD"); the populated figures are computed by the live
-      // END_GIG flow, which state-injection + changeScene bypasses. A populated
-      // report needs a gig played through for real; no script automates that
-      // today. Short settle for the scene shell:
       await page.waitForTimeout(600)
     }
   },
@@ -644,7 +608,9 @@ const FIXTURES = {
 
 // ── Helpers ────────────────────────────────────────────────────────────────
 
-function deepMerge(base, override) {
+// Exported for the fixture validation test, so it exercises this merge rather
+// than a re-declared copy of it.
+export function deepMerge(base, override) {
   const result = { ...base }
   for (const key of Object.keys(override ?? {})) {
     if (
@@ -788,51 +754,84 @@ function fixtureScene(fixture) {
   return fixture.state?.currentScene ?? 'OVERWORLD'
 }
 
+/** Effective opacity a scene must reach before it is worth photographing. */
+const OPAQUE_ENOUGH = 0.9
+
 /**
- * Wait until the scene has actually faded in.
+ * Compute how opaque the most-visible on-screen content is, 0..1.
  *
- * Playwright treats `opacity: 0` as visible, so a `waitFor({ state: 'visible' })`
- * on a Framer Motion panel resolves while the element is still transparent —
- * which produced screenshots that passed every check and were solid black.
- * Poll the largest visible text block until its effective opacity (the product
- * of its own and its ancestors') is high enough to photograph.
+ * Playwright treats `opacity: 0` as visible, so `waitFor({ state: 'visible' })`
+ * on a Framer Motion panel resolves while it is still transparent — which
+ * produced screenshots that passed every check and were solid black.
+ *
+ * Only what the camera would actually record counts:
+ * - rects are clipped to the viewport, since a screenshot records the viewport
+ *   and off-screen text says nothing about what was captured
+ * - `visibility: hidden` anywhere up the chain disqualifies an element, which
+ *   opacity alone does not catch
+ * - global `role="status"` overlays (chatter, toasts) are excluded: they render
+ *   on every scene, so counting them would call a blank scene photographable
+ *
+ * Canvas scenes are measured by their canvas, not by text: the minigames and
+ * GIG draw into a canvas and only incidentally have HUD text near it, so a
+ * text-only probe would call a perfectly rendered canvas blank.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @returns {Promise<number>} Best effective opacity found.
+ */
+const measureOpacity = page =>
+  page.evaluate(() => {
+    const effectiveOpacity = el => {
+      let opacity = 1
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node)
+        if (style.visibility === 'hidden' || style.display === 'none') return 0
+        const value = Number.parseFloat(style.opacity)
+        if (Number.isFinite(value)) opacity *= value
+      }
+      return opacity
+    }
+
+    // Area of the element that actually falls inside the captured viewport.
+    const visibleArea = rect => {
+      const width = Math.min(rect.right, innerWidth) - Math.max(rect.left, 0)
+      const height = Math.min(rect.bottom, innerHeight) - Math.max(rect.top, 0)
+      return width > 0 && height > 0 ? width * height : 0
+    }
+
+    let best = 0
+
+    for (const canvas of document.querySelectorAll('canvas')) {
+      if (visibleArea(canvas.getBoundingClientRect()) > 10000) {
+        best = Math.max(best, effectiveOpacity(canvas))
+      }
+    }
+
+    const overlays = [...document.querySelectorAll('[role="status"]')]
+    for (const el of document.querySelectorAll('h1,h2,h3,h4,p,span,button')) {
+      const text = (el.textContent ?? '').trim()
+      if (!text || el.children.length > 0) continue
+      if (overlays.some(overlay => overlay.contains(el))) continue
+      if (visibleArea(el.getBoundingClientRect()) < 200) continue
+      best = Math.max(best, effectiveOpacity(el))
+    }
+
+    return best
+  })
+
+/**
+ * Poll until the scene is opaque enough to photograph.
  *
  * @param {import('@playwright/test').Page} page
  * @param {number} [timeout] - Milliseconds to wait for the fade to finish.
- *   Measured worst case is Kabelsalat at ~15s: it blocks on generated imagery
- *   that has to time out first when the image host is unreachable.
  * @returns {Promise<number>} The effective opacity reached.
  */
 async function waitForOpaqueRender(page, timeout = 20000) {
-  const measure = () =>
-    page.evaluate(() => {
-      let best = 0
-      // Skip the chatter box and toasts: they are global `role="status"`
-      // overlays that render opaque on every scene, so counting them would
-      // report a blank scene as photographable.
-      const overlays = [...document.querySelectorAll('[role="status"]')]
-      for (const el of document.querySelectorAll('h1,h2,h3,h4,p,span,button')) {
-        const text = (el.textContent ?? '').trim()
-        if (!text || el.children.length > 0) continue
-        if (overlays.some(overlay => overlay.contains(el))) continue
-        const rect = el.getBoundingClientRect()
-        if (rect.width < 8 || rect.height < 8) continue
-        let opacity = 1
-        for (let node = el; node; node = node.parentElement) {
-          const value = Number.parseFloat(getComputedStyle(node).opacity)
-          if (Number.isFinite(value)) opacity *= value
-        }
-        const area = rect.width * rect.height
-        if (opacity > best && area > 200) best = opacity
-      }
-      return best
-    })
-
   const deadline = Date.now() + timeout
-  let opacity = await measure()
-  while (opacity < 0.9 && Date.now() < deadline) {
+  let opacity = await measureOpacity(page)
+  while (opacity < OPAQUE_ENOUGH && Date.now() < deadline) {
     await page.waitForTimeout(200)
-    opacity = await measure()
+    opacity = await measureOpacity(page)
   }
   return opacity
 }
@@ -887,7 +886,7 @@ async function assertCaptureIntegrity(page, fixtureName) {
   }
 
   const opacity = await waitForOpaqueRender(page)
-  if (opacity < 0.5) {
+  if (opacity < OPAQUE_ENOUGH) {
     throw new Error(
       `Fixture "${fixtureName}" rendered ${expected} but nothing is opaque ` +
         `enough to photograph (best effective opacity ${opacity.toFixed(2)}). ` +
@@ -895,12 +894,25 @@ async function assertCaptureIntegrity(page, fixtureName) {
     )
   }
 
+  // Geometry alone would repeat the bug the opacity probe exists to fix: a
+  // dialog mid-exit is still mounted at `opacity: 0` and would be reported as
+  // covering the scene, while a dialog fixture would accept a fully
+  // transparent one. Apply the same effective-opacity rule to both directions.
   const dialog = await page.evaluate(() => {
     for (const el of document.querySelectorAll('[role="dialog"]')) {
       const rect = el.getBoundingClientRect()
-      if (rect.width > 0 && rect.height > 0) {
-        return (el.textContent ?? '').trim().slice(0, 80)
+      if (rect.width <= 0 || rect.height <= 0) continue
+      let opacity = 1
+      for (let node = el; node; node = node.parentElement) {
+        const style = getComputedStyle(node)
+        if (style.visibility === 'hidden' || style.display === 'none') {
+          opacity = 0
+          break
+        }
+        const value = Number.parseFloat(style.opacity)
+        if (Number.isFinite(value)) opacity *= value
       }
+      if (opacity > 0.5) return (el.textContent ?? '').trim().slice(0, 80)
     }
     return null
   })

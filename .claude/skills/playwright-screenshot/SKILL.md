@@ -38,7 +38,7 @@ can never land under a correct filename.
 | --- | --- |
 | `PRACTICE`, `ASSETS` (Bandhaus hub) | No fixture |
 | Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash) | No fixtures; only the generic `event-modal` |
-| POSTGIG report figures | The scene renders its "TALLYING RECEIPTS…" shell; the numbers come from the live `END_GIG` flow, which injection bypasses |
+| Band HQ tabs other than Settings (Stats, Details, Shop, Upgrades, Setlist, Leaderboard, Brand Deals, Glossary, Void Trader) | No fixtures; `band-hq-settings` is the template if they are wanted |
 | Golden-path travel/gig leg | `screenshot-all-scenes.js` still fails there and exits non-zero naming the gap |
 
 ## Agent Execution Workflow
@@ -49,7 +49,7 @@ When triggered, follow this decision tree — don't just provide code samples, a
 
 | Request                          | Approach                                                    |
 | -------------------------------- | ----------------------------------------------------------- |
-| All scenes / full tour           | Run `screenshot-all-scenes.js` script                       |
+| All scenes / full tour           | Loop the fixtures (see "Running the Scripts")               |
 | One specific scene               | Use state injection (`screenshot-state-inject.js`)          |
 | Current page / overlay / element | Write inline Playwright snippet as a temp spec              |
 | Before/after a code change       | Run injection script twice; diff with `diff-screenshots.js` |
@@ -268,13 +268,20 @@ See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 > forces `currentScene` to OVERWORLD on hydration, so `screenshot-state-inject.js`
 > injects the save, reloads, then calls `window.gameState.changeScene(<target>)`
 > (DEV-only API) to switch to the fixture's scene — see `navigateToFixtureScene`.
-> Cleanly injectable: **MENU, OVERWORLD, PREGIG, GIG, GAMEOVER, CLINIC, BAND HQ, event-modal**
-> (each fixture's `currentGig` must use the real `Venue` shape — `id`/`name`/`capacity`,
-> not `venueId`/`venueName` — or `sanitizeVenue` nulls it and the scene bounces to OVERWORLD).
-> **POSTGIG** reaches the right scene but shows only the report _shell_
-> ("TALLYING RECEIPTS…"); the final figures are computed by the live END_GIG flow
-> that injection bypasses. A fully-populated report needs a real gig played
-> through, which no script currently automates.
+> Every fixture state passes through the save sanitizers on load, and anything
+> they do not recognise is dropped silently. Two that have already bitten:
+> `sanitizeVenue` nulls a `currentGig` that does not use the real `Venue` shape
+> (`id`/`name`/`capacity`, not `venueId`/`venueName`), bouncing the scene back to
+> OVERWORLD; and `sanitizeLastGigStats` keeps only
+> `score`/`misses`/`accuracy`/`combo`/`maxCombo`/`health`/`overload` (plus
+> `failed === true`), so a `lastGigStats` written in report vocabulary
+> (`earnings`, `crowdScore`, …) sanitises to `null` and POSTGIG renders its
+> "TALLYING RECEIPTS…" shell instead of the report.
+>
+> `tests/node/playwright-screenshot-fixture-validation.test.js` now runs every
+> fixture through `handleLoadGame` and asserts the fields each one depends on
+> survive, so this class of mistake fails at authoring time rather than
+> producing a screenshot of a loading state.
 
 ---
 
@@ -351,18 +358,25 @@ test('document full game flow', async ({ page }) => {
 })
 ```
 
-See `scripts/screenshot-all-scenes.js` for the ready-made full-flow capture.
+See `scripts/screenshot-all-scenes.js` for the ready-made golden-path walk — a
+diagnostic, not a complete capture; the fixture loop above is the reliable path.
 
 ### Pattern F — Before / After Diff
 
 ```bash
-# Take before screenshots
-OUT_DIR=screenshots/before node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+# Take before screenshots. Use the fixture loop, not the golden-path walk:
+# how far that walk gets varies per run, so the two sides of the diff would
+# not contain the same scenes.
+OUT_DIR=screenshots/before for f in $(node -e "import('./.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js').then(m=>console.log(m.getFixtureNames().join(' ')))"); do
+  node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f"
+done
 
 # Make your code changes...
 
 # Take after screenshots
-OUT_DIR=screenshots/after node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+OUT_DIR=screenshots/after for f in $(node -e "import('./.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js').then(m=>console.log(m.getFixtureNames().join(' ')))"); do
+  node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f"
+done
 
 # Diff
 node .claude/skills/playwright-screenshot/scripts/diff-screenshots.js screenshots/before/ screenshots/after/
@@ -432,10 +446,14 @@ Commit only `screenshots/baselines/` or `e2e/__snapshots__/`.
 ## Running the Scripts
 
 ```bash
-# ✅ RECOMMENDED: Capture complete game flow (tested & reliable)
-node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
+# ✅ Every scene the skill supports. Verified capture path, exits non-zero
+# only on a real regression. Derives its list, so new fixtures are included.
+for f in $(node -e "import('./.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js').then(m=>console.log(m.getFixtureNames().join(' ')))"); do
+  node .claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js "$f"
+done
 
-# Capture all scenes (full golden-path + state injection)
+# Golden-path walk. Diagnostic only: its travel/gig leg does not complete, so
+# it deliberately exits non-zero and names what it skipped.
 node .claude/skills/playwright-screenshot/scripts/screenshot-all-scenes.js
 
 # Inject a save state and capture a specific scene
