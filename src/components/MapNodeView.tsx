@@ -422,7 +422,7 @@ export const MapNodeView = memo(
         </m.div>
 
         <div
-          className={`text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black/90 pointer-events-none ${labelMobileHiddenClass}`}
+          className={`text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black pointer-events-none ${labelMobileHiddenClass}`}
         >
           {getNodeTypeLabel(t, node.type)}
         </div>
@@ -442,7 +442,7 @@ export const MapNodeView = memo(
           className={`mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
           <span
-            className={`text-xs font-bold tracking-widest uppercase text-center transition-colors px-1.5 py-0.5 bg-void-black/90 border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
+            className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
           >
             {nodeLocationName}
           </span>

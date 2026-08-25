@@ -1,3 +1,4 @@
+import { CalendarDays, Users } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import type { BandState, PlayerState, SocialState } from '../../types'
 import { StatBox, ProgressBar } from '../shared'
@@ -39,7 +40,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
             <StatBox
               label={t('ui:ui.day', { defaultValue: 'Day' })}
               value={player.day}
-              icon='📅'
+              icon={<CalendarDays className='w-6 h-6' />}
             />
             <StatBox
               label={t('ui:stats.followers', { defaultValue: 'Followers' })}
@@ -49,7 +50,7 @@ export const StatsTab = ({ player, band, social }: StatsTabProps) => {
                 (social.youtube ?? 0) +
                 (social.newsletter ?? 0)
               }
-              icon='👥'
+              icon={<Users className='w-6 h-6' />}
             />
           </div>
         </div>
