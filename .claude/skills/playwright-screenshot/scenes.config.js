@@ -114,7 +114,12 @@ export const SCENES = {
   GAMEOVER: {
     name: 'GAMEOVER',
     description: 'Game Over screen (state injection only)',
-    waitSignal: { type: 'heading', text: /game over|bankrupt/i },
+    // The headline is `ui:gameOver.soldOut` / `tourComplete`, never the words
+    // "game over" — the previous /game over|bankrupt/i pattern never matched.
+    waitSignal: {
+      type: 'heading',
+      text: /sold out|tour complete|ausverkauft|tour vollendet/i
+    },
     fallback: { type: 'flex', text: /bankruptcy|stats|day/i },
     order: 12,
     gamePhase: 'GAMEOVER',

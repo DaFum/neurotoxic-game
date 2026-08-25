@@ -36,6 +36,7 @@ interface UsePostGigDerivationsProps {
   activeQuests: GameState['activeQuests']
   cityStates: Record<string, CityTraitState> | undefined
   triggerEvent: (type: string, id: string) => boolean
+  isScreenshotMode: boolean
 }
 
 /**
@@ -57,7 +58,8 @@ export const usePostGigDerivations = ({
   activeStoryFlags,
   activeQuests,
   cityStates,
-  triggerEvent
+  triggerEvent,
+  isScreenshotMode
 }: UsePostGigDerivationsProps) => {
   const perfScore = useMemo(
     () => calculatePerformanceScore(lastGigStats?.score ?? 0),
@@ -67,14 +69,17 @@ export const usePostGigDerivations = ({
   useEffect(() => {
     if (!currentGig) return
 
-    if (!activeEvent) {
+    // `isScreenshotMode` suppresses the roll the same way `usePreGigLogic`
+    // does. Without it POSTGIG could never be captured cleanly: entering the
+    // scene always drew a random event modal over the report.
+    if (!activeEvent && !isScreenshotMode) {
       if (!triggerEvent('financial', 'post_gig')) {
         if (!triggerEvent('special', 'post_gig')) {
           triggerEvent('band', 'post_gig')
         }
       }
     }
-  }, [currentGig, activeEvent, triggerEvent])
+  }, [currentGig, activeEvent, triggerEvent, isScreenshotMode])
 
   const gigContext = useMemo(() => {
     return deriveGigContext(currentGig, social, player)

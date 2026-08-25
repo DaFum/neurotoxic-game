@@ -102,6 +102,7 @@ type BaseGameDispatchActions = {
   setActiveEvent: (
     event: Parameters<typeof createSetActiveEventAction>[0]
   ) => void
+  setScreenshotMode: (enabled: boolean) => void
   triggerEvent: (category: string, triggerPoint?: string | null) => boolean
   resolveEvent: (choice: Record<string, unknown> | null) => {
     outcomeText: string
@@ -281,14 +282,15 @@ export function useGameDispatchActions({
       tRef
     })
 
-  const { setActiveEvent, triggerEvent, resolveEvent } = useEventSystem({
-    stateRef,
-    dispatch,
-    addToast,
-    changeScene,
-    saveGame,
-    tRef
-  })
+  const { setActiveEvent, setScreenshotMode, triggerEvent, resolveEvent } =
+    useEventSystem({
+      stateRef,
+      dispatch,
+      addToast,
+      changeScene,
+      saveGame,
+      tRef
+    })
 
   const simpleActions: SimpleDispatchActions = useMemo(
     () => ({
@@ -426,6 +428,7 @@ export function useGameDispatchActions({
       changeScene,
       addToast,
       setActiveEvent,
+      setScreenshotMode,
       triggerEvent,
       resolveEvent,
       advanceDay,
@@ -446,6 +449,7 @@ export function useGameDispatchActions({
       changeScene,
       addToast,
       setActiveEvent,
+      setScreenshotMode,
       triggerEvent,
       resolveEvent,
       advanceDay,

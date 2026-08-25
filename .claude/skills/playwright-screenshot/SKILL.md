@@ -13,7 +13,7 @@ Takes precise screenshots of the Neurotoxic game using Playwright. Covers all sc
 
 - ✅ **Cross-platform browser discovery** (`browser-launcher.js`): Replaces shell `find` with Node.js APIs for Windows/Linux/Mac compatibility
 - ✅ **BASE_STATE validation test**: Automatic detection of state schema drift (prevents silent fixture failures)
-- ✅ **Centralized scene config** (`scenes.config.js`): Single source of truth for all 16 scenes and 9 fixtures
+- ✅ **Centralized scene config** (`scenes.config.js`): 14 scenes and 13 fixture descriptors
 - ✅ **CI integration guide** (`ci-integration-guide.md`): Complete GitHub Actions workflows with parallel captures and visual regression
 - ✅ **Robust browser launcher**: 3-tier fallback (CDN → cached → env var) with helpful error messages
 - ✅ **Extended screenshot timeouts** (60s): Handles font loading delays
@@ -21,6 +21,31 @@ Takes precise screenshots of the Neurotoxic game using Playwright. Covers all sc
 - ✅ **Environment variable support**: `BROWSER_PATH`, `BASE_URL`, `OUT_DIR` fully documented
 
 ---
+
+## Coverage and known gaps
+
+Verified by running every script against a live dev server (2026-08-25).
+
+**Captured reliably** — the 9 fixtures in `screenshot-state-inject.js`:
+`menu`, `overworld`, `pregig`, `postgig`, `gameover`, `gig`, `clinic`,
+`band-hq`, `event-modal`. `screenshot-mobile.js` covers the same 9 at a phone
+viewport. Every capture asserts `window.gameState.currentScene` matches the
+fixture and that no unexpected dialog covers the scene, so a wrong screenshot
+fails the run instead of being written under the right filename.
+
+**Not captured — gaps to be aware of:**
+
+| Area | Status |
+| --- | --- |
+| Minigames (Tourbus, Roadie Run, Kabelsalat, Amp Calibration) | Described in `scenes.config.js` but **not implemented** in `screenshot-state-inject.js`; the golden-path route through them still fails |
+| `PRACTICE`, `ASSETS` (Bandhaus hub) | No fixture and no scene entry |
+| Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash) | No fixtures; only the generic `event-modal` exists |
+| Settings panel | No fixture |
+| POSTGIG report figures | Injection reaches the scene but the report renders its "TALLYING RECEIPTS…" shell — the numbers come from the live `END_GIG` flow |
+
+`screenshot-all-scenes.js` walks the real golden path and still stops at the
+travel/gig leg. It now exits non-zero and names what it skipped rather than
+reporting success on a partial run.
 
 ## Agent Execution Workflow
 

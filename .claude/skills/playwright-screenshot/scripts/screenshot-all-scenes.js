@@ -22,12 +22,19 @@
 import { mkdir } from 'node:fs/promises'
 import { resolve } from 'node:path'
 import { launchBrowserWithFallback } from './browser-launcher.js'
-import { injectSave } from './screenshot-state-inject.js'
+import {
+  injectSave,
+  navigateToFixtureScene,
+  waitForFixtureScene
+} from './screenshot-state-inject.js'
 
 const BASE_URL = process.env.BASE_URL ?? 'http://localhost:5173'
 const OUT_DIR = resolve(process.env.OUT_DIR ?? 'screenshots/scenes')
 const HEADLESS = process.env.HEADLESS !== 'false'
 const SLOWMO = Number(process.env.SLOWMO ?? 0)
+
+/** Scenes that were requested but could not be captured. */
+const failures = []
 
 async function snap(page, name) {
   const file = `${OUT_DIR}/${name}.png`
@@ -113,6 +120,19 @@ async function main() {
     console.log('→ OVERWORLD')
     await page.getByRole('button', { name: /start tour/i }).click()
 
+    // "START TOUR" opens an IDENTITY REQUIRED prompt before the map loads.
+    // Every golden-path scene sits behind it, so skipping this step is what
+    // made the run stop at the menu with "Overworld did not load".
+    try {
+      const nameInput = page.locator('input[type="text"]').first()
+      await nameInput.waitFor({ state: 'visible', timeout: 5000 })
+      await nameInput.fill('FIXTURE')
+      await page.getByRole('button', { name: /confirm/i }).click()
+      await nameInput.waitFor({ state: 'hidden', timeout: 5000 })
+    } catch {
+      // Prompt only appears when no band identity is stored yet.
+    }
+
     let overworldVisible = false
     try {
       await page.getByRole('heading', { name: /tour plan/i }).waitFor({
@@ -123,6 +143,10 @@ async function main() {
     } catch (_) {
       console.warn(
         '  ⚠ Overworld did not load (possible audio crash) — skipping downstream scenes'
+      )
+      failures.push(
+        '05-overworld (and every golden-path scene after it: node-select, ' +
+          'travel, pregig, gig, postgig)'
       )
     }
 
@@ -268,9 +292,11 @@ async function main() {
           console.warn(
             '  ⚠ GIG/POSTGIG capture failed — gig may still be running'
           )
+          failures.push('gig/postgig')
         }
       } catch (err) {
         console.warn('  ⚠ Travel/Gig flow failed:', err.message)
+        failures.push('travel/gig flow')
       }
     }
 
@@ -281,13 +307,15 @@ async function main() {
       await injectSave(page, 'gameover')
       await page.reload({ waitUntil: 'domcontentloaded' })
       await page.waitForLoadState('networkidle')
-      await page
-        .getByRole('heading', { name: /game over/i })
-        .waitFor({ state: 'visible', timeout: 10000 })
+      // handleLoadGame forces OVERWORLD on hydration, so the scene has to be
+      // switched explicitly — without this the shot is the map, not GAMEOVER.
+      await navigateToFixtureScene(page, 'gameover')
+      await waitForFixtureScene(page, 'gameover')
       await waitSettle(page, 400)
       await snap(page, '15-gameover')
     } catch (err) {
       console.warn('  ⚠ GAMEOVER capture failed:', err.message)
+      failures.push('15-gameover')
     }
 
     // ── 16. CLINIC (state injection — accessible from specific overworld nodes) ─
@@ -297,10 +325,15 @@ async function main() {
       await injectSave(page, 'clinic')
       await page.reload({ waitUntil: 'domcontentloaded' })
       await page.waitForLoadState('networkidle')
+      // Same as GAMEOVER: without this the capture silently showed OVERWORLD
+      // filed under 16-clinic.png.
+      await navigateToFixtureScene(page, 'clinic')
+      await waitForFixtureScene(page, 'clinic')
       await waitSettle(page, 500)
       await snap(page, '16-clinic')
     } catch (err) {
       console.warn('  ⚠ CLINIC capture failed:', err.message)
+      failures.push('16-clinic')
     }
 
     // ── Summary ──────────────────────────────────────────────────────────────
@@ -311,6 +344,14 @@ async function main() {
     console.log(`\nDone. ${captured.length} screenshot(s) saved to ${OUT_DIR}/`)
     if (captured.length > 0) {
       captured.forEach(f => console.log(`  ${OUT_DIR}/${f}`))
+    }
+    // A partial run used to exit 0, so CI reported success while most scenes
+    // were missing. Surface what was skipped and fail.
+    if (failures.length > 0) {
+      console.error(
+        `\n✗ ${failures.length} scene(s) not captured: ${failures.join(', ')}`
+      )
+      process.exitCode = 1
     }
   } finally {
     await browser.close()

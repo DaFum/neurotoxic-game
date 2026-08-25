@@ -16,6 +16,7 @@ describe('ActionTypes', () => {
       'SET_SETLIST',
       'SET_LAST_GIG_STATS',
       'SET_ACTIVE_EVENT',
+      'SET_SCREENSHOT_MODE',
       'ADD_TOAST',
       'REMOVE_TOAST',
       'SET_GIG_MODIFIERS',

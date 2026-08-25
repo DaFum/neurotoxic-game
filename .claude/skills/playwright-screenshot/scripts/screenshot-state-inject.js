@@ -619,6 +619,8 @@ async function injectAndCapture(fixtureName, outFile) {
       await fixture.capture(page)
     }
 
+    await assertCaptureIntegrity(page, fixtureName)
+
     const dest = outFile ?? `${OUT_DIR}/${fixtureName}.png`
     // Extended timeout (120s) for font loading and network-constrained environments
     await page.screenshot({ path: dest, timeout: 120000 })
@@ -670,6 +672,58 @@ function fixtureScene(fixture) {
   return fixture.state?.currentScene ?? 'OVERWORLD'
 }
 
+/** Fixtures whose whole point is a dialog on top of the scene. */
+const FIXTURES_EXPECTING_DIALOG = new Set(['band-hq', 'event-modal'])
+
+/**
+ * Fail loudly when the page is not actually showing the fixture's scene.
+ *
+ * A fixture's `waitFor` anchors on text, which passes even when the scene is
+ * covered: Playwright counts an element laid out behind a full-screen overlay
+ * as visible. POSTGIG in particular rolls a random event on entry, so the
+ * capture silently returned an event modal filed under `postgig.png`. Scene
+ * identity is read from `window.gameState.currentScene` instead of copy, so it
+ * survives i18n and reworded headings.
+ *
+ * @param {import('@playwright/test').Page} page
+ * @param {string} fixtureName
+ * @throws {Error} When the wrong scene rendered, or an unexpected dialog covers it.
+ */
+async function assertCaptureIntegrity(page, fixtureName) {
+  const expected = fixtureScene(FIXTURES[fixtureName])
+  const actual = await page.evaluate(
+    () => window.gameState?.currentScene ?? null
+  )
+
+  if (actual !== expected) {
+    throw new Error(
+      `Fixture "${fixtureName}" expected scene ${expected} but the app is on ` +
+        `${actual ?? 'an unknown scene'}. Refusing to write a mislabelled screenshot.`
+    )
+  }
+
+  if (FIXTURES_EXPECTING_DIALOG.has(fixtureName)) return
+
+  const dialog = await page.evaluate(() => {
+    for (const el of document.querySelectorAll('[role="dialog"]')) {
+      const rect = el.getBoundingClientRect()
+      if (rect.width > 0 && rect.height > 0) {
+        return (el.textContent ?? '').trim().slice(0, 80)
+      }
+    }
+    return null
+  })
+
+  if (dialog !== null) {
+    throw new Error(
+      `Fixture "${fixtureName}" rendered ${expected}, but a dialog covers it: ` +
+        `"${dialog}". The scene is obscured, so the screenshot would not show ` +
+        `${expected}. Neutralise the dialog in the fixture state or add the ` +
+        `fixture to FIXTURES_EXPECTING_DIALOG if the overlay is intended.`
+    )
+  }
+}
+
 /**
  * Navigate to a fixture's intended scene after injection.
  *
@@ -697,6 +751,14 @@ export async function navigateToFixtureScene(page, fixtureName) {
     undefined,
     { timeout: 10000 }
   )
+  // PreGig and PostGig roll a random event when their scene mounts, which used
+  // to drop an unrelated modal over the captured scene. `isScreenshotMode` is
+  // runtime-only (handleLoadGame resets it), so it has to be set here rather
+  // than injected with the save.
+  await page.evaluate(() => {
+    window.gameState.setScreenshotMode?.(true)
+  })
+
   await page.evaluate(scene => {
     window.gameState.changeScene(scene)
   }, target)

@@ -35,6 +35,23 @@ export const handleSetActiveEvent = (
 }
 
 /**
+ * Toggles screenshot mode.
+ *
+ * @remarks
+ * Reducers stay authoritative over their own payloads, so a non-boolean is
+ * coerced rather than trusted: the flag only ever gates event rolls, and a
+ * truthy object must not leave the game in a half-disabled state.
+ *
+ * @param state - Current game state.
+ * @param payload - Desired screenshot-mode flag.
+ * @returns State with screenshot mode applied.
+ */
+export const handleSetScreenshotMode = (
+  state: GameState,
+  payload: boolean
+): GameState => ({ ...state, isScreenshotMode: payload === true })
+
+/**
  * Applies an event delta and emits trait/story quest side effects.
  *
  * @param state - Current game state.

@@ -19,6 +19,7 @@ export const usePostGigLogic = () => {
   const player = useGameSelector(state => state.player)
   const gigModifiers = useGameSelector(state => state.gigModifiers)
   const activeEvent = useGameSelector(state => state.activeEvent)
+  const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
   const social = useGameSelector(state => state.social)
@@ -83,7 +84,8 @@ export const usePostGigLogic = () => {
       activeStoryFlags,
       activeQuests,
       cityStates,
-      triggerEvent
+      triggerEvent,
+      isScreenshotMode
     })
 
   // 3. Handlers

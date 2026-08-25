@@ -12,8 +12,12 @@ mock.module(new URL('../../src/utils/unlockCheck.ts', import.meta.url).href, {
 })
 
 // Using a dynamic import so the mock applies before the module is loaded
-const { handleSetActiveEvent, handleApplyEventDelta, handlePopPendingEvent } =
-  await import('../../src/context/reducers/eventReducer')
+const {
+  handleSetActiveEvent,
+  handleSetScreenshotMode,
+  handleApplyEventDelta,
+  handlePopPendingEvent
+} = await import('../../src/context/reducers/eventReducer')
 
 describe('eventReducer', () => {
   /** @type {import('../../src/types').GameState} */
@@ -68,6 +72,39 @@ describe('eventReducer', () => {
       const state = { ...baseState, pendingEvents: ['a'] }
 
       assert.equal(handlePopPendingEvent(state, { eventId: 'absent' }), state)
+    })
+  })
+
+  describe('handleSetScreenshotMode', () => {
+    it('enables and disables screenshot mode', () => {
+      assert.equal(
+        handleSetScreenshotMode(baseState, true).isScreenshotMode,
+        true
+      )
+      assert.equal(
+        handleSetScreenshotMode({ ...baseState, isScreenshotMode: true }, false)
+          .isScreenshotMode,
+        false
+      )
+    })
+
+    it('coerces a hostile payload to a boolean', () => {
+      // The reducer stays authoritative: the flag gates PreGig/PostGig event
+      // rolls, so a truthy non-boolean must not leave it half-enabled.
+      for (const hostile of ['yes', 1, {}, [], null, undefined]) {
+        const next = handleSetScreenshotMode(baseState, hostile)
+        assert.equal(
+          next.isScreenshotMode,
+          false,
+          `payload ${JSON.stringify(hostile)} should not enable screenshot mode`
+        )
+      }
+    })
+
+    it('does not mutate the input state', () => {
+      const next = handleSetScreenshotMode(baseState, true)
+      assert.notEqual(next, baseState)
+      assert.equal(baseState.isScreenshotMode, undefined)
     })
   })
 
