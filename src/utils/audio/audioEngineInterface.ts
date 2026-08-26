@@ -3,6 +3,7 @@
 // a namespace binding resolves each function at call time, so suites that mock
 // the hub with a partial export set still link.
 import * as audioEngineHub from './audioEngine'
+import type { AudioSfxType } from './AudioManager'
 import type { GigEndInfo } from './state'
 import type { ActiveSong, MutableRef } from './rhythmGameTypes'
 import type { RhythmGameRefState } from '../../types/rhythmGame'
@@ -90,6 +91,56 @@ export interface IAudioEngine {
   ): Promise<void>
   /** Stops all playback and invalidates in-flight play requests. */
   stopAudio(): void
+  /** Current transport state. */
+  getTransportState(): 'started' | 'stopped' | 'paused'
+  /** Pauses the transport and gig playback. */
+  pauseAudio(): Promise<void>
+  /** Resumes the transport. Resolves `false` when playback could not resume. */
+  resumeAudio(): Promise<boolean>
+  /**
+   * Toggles the master corruption effect.
+   *
+   * @param active - `true` to ramp the effect in, `false` to ramp it out.
+   */
+  setCorruptionEffect(active: boolean): void
+  /** Arms the corruption-burst audio chain. */
+  enableCorruptionBurstAudio(): void
+  /**
+   * Releases the corruption-burst audio chain.
+   *
+   * @remarks
+   * Must live on the interface alongside its `enable` counterpart: a burst
+   * armed through a substituted engine has to be released through the same
+   * one, or the expiry reaches the real Tone hub from an isolated tree.
+   */
+  disableCorruptionBurstAudio(): void
+  /**
+   * Absolute audio-context time in ms.
+   *
+   * @remarks
+   * Exists solely to schedule MIDI notes against the audio clock, which needs
+   * an absolute reference. Gameplay timing stays on `getGigTimeMs()`.
+   */
+  getToneAbsoluteTimeMs(): number
+  /**
+   * Plays a one-shot sound effect.
+   *
+   * @param id - Effect to play.
+   */
+  playSFX(id: AudioSfxType): void
+  /** Stops ambient/menu music, e.g. before gig playback starts. */
+  stopMusic(): void
+  /**
+   * Id of the current play request.
+   *
+   * @returns A counter the engine bumps whenever a new audio session starts.
+   *
+   * @remarks
+   * Callers compare it across an await or timer to detect that a different gig
+   * session started meanwhile. It reads mutable engine state, so a substituted
+   * engine has to own it too.
+   */
+  getPlayRequestId(): number
 }
 
 /**
@@ -111,7 +162,21 @@ export const toneAudioEngine: IAudioEngine = {
     audioEngineHub.audioManager.ensureAudioContext(),
   playSongSequence: (index, setlist, gameStateRef, addToast, t) =>
     audioEngineHub.playSongSequence(index, setlist, gameStateRef, addToast, t),
-  stopAudio: (): void => audioEngineHub.stopAudio()
+  stopAudio: (): void => audioEngineHub.stopAudio(),
+  getTransportState: (): 'started' | 'stopped' | 'paused' =>
+    audioEngineHub.getTransportState(),
+  pauseAudio: (): Promise<void> => audioEngineHub.pauseAudio(),
+  resumeAudio: (): Promise<boolean> => audioEngineHub.resumeAudio(),
+  setCorruptionEffect: (active: boolean): void =>
+    audioEngineHub.setCorruptionEffect(active),
+  enableCorruptionBurstAudio: (): void =>
+    audioEngineHub.enableCorruptionBurstAudio(),
+  disableCorruptionBurstAudio: (): void =>
+    audioEngineHub.disableCorruptionBurstAudio(),
+  getToneAbsoluteTimeMs: (): number => audioEngineHub.getToneAbsoluteTimeMs(),
+  playSFX: (id: AudioSfxType): void => audioEngineHub.audioService.playSFX(id),
+  stopMusic: (): void => audioEngineHub.audioService.stopMusic(),
+  getPlayRequestId: (): number => audioEngineHub.getPlayRequestId()
 }
 
 /**
@@ -151,6 +216,44 @@ export class NullAudioEngine implements IAudioEngine {
 
   /** {@inheritDoc IAudioEngine} */
   stopAudio(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  getTransportState(): 'started' | 'stopped' | 'paused' {
+    return 'stopped'
+  }
+
+  /** {@inheritDoc IAudioEngine} */
+  async pauseAudio(): Promise<void> {}
+
+  /** {@inheritDoc IAudioEngine} */
+  async resumeAudio(): Promise<boolean> {
+    return false
+  }
+
+  /** {@inheritDoc IAudioEngine} */
+  setCorruptionEffect(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  enableCorruptionBurstAudio(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  disableCorruptionBurstAudio(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  getToneAbsoluteTimeMs(): number {
+    return 0
+  }
+
+  /** {@inheritDoc IAudioEngine} */
+  playSFX(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  stopMusic(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
+  getPlayRequestId(): number {
+    return 0
+  }
 }
 
 /**
@@ -161,12 +264,35 @@ export class NullAudioEngine implements IAudioEngine {
  */
 export const createStubAudioEngine = (
   getTimeMs: () => number
-): IAudioEngine => ({
-  getGigTimeMs: getTimeMs,
-  startGig: async (): Promise<boolean> => true,
-  stopGig: (): void => {},
-  scheduleNote: (): void => {},
-  ensureAudioContext: async (): Promise<boolean> => true,
-  playSongSequence: async (): Promise<void> => {},
-  stopAudio: (): void => {}
-})
+): IAudioEngine => {
+  // Mirrors the real engine's generation counter rather than freezing at 0:
+  // `useHandleMiss` compares this id across its 4s game-over timeout to detect
+  // that another session started meanwhile, and a constant id makes that guard
+  // impossible to exercise against this stub.
+  let playRequestId = 0
+
+  return {
+    getGigTimeMs: getTimeMs,
+    startGig: async (): Promise<boolean> => {
+      playRequestId++
+      return true
+    },
+    stopGig: (): void => {},
+    scheduleNote: (): void => {},
+    ensureAudioContext: async (): Promise<boolean> => true,
+    playSongSequence: async (): Promise<void> => {},
+    stopAudio: (): void => {
+      playRequestId++
+    },
+    getTransportState: (): 'started' | 'stopped' | 'paused' => 'started',
+    pauseAudio: async (): Promise<void> => {},
+    resumeAudio: async (): Promise<boolean> => true,
+    setCorruptionEffect: (): void => {},
+    enableCorruptionBurstAudio: (): void => {},
+    disableCorruptionBurstAudio: (): void => {},
+    getToneAbsoluteTimeMs: getTimeMs,
+    playSFX: (): void => {},
+    stopMusic: (): void => {},
+    getPlayRequestId: (): number => playRequestId
+  }
+}

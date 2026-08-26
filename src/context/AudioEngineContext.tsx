@@ -6,17 +6,23 @@ import type { IAudioEngine } from '../utils/audio/audioEngineInterface'
 const AudioEngineContext = createContext<IAudioEngine>(toneAudioEngine)
 
 /**
- * Provides a gig-audio engine to the tree below. Tests and CI wrap with a
- * `NullAudioEngine` or a stub whose gig clock they drive; the app relies on the
- * `toneAudioEngine` default, so production needs no wiring.
+ * Provides a gig-audio engine to the tree below. Tests and CI pass a
+ * `NullAudioEngine` or a stub whose gig clock they drive.
  *
- * @param props - Engine to provide and the subtree receiving it.
+ * @param props - Engine to provide (defaults to `toneAudioEngine`) and the
+ * subtree receiving it.
+ *
+ * @remarks
+ * `engine` is optional so the composition root can mount the seam without
+ * importing `toneAudioEngine` itself: `src/utils/audio/AGENTS.md` requires
+ * outside imports to go through the `audioEngine.ts` hub, and this module is
+ * the one place that legitimately resolves the real engine.
  */
 export const AudioEngineProvider = ({
-  engine,
+  engine = toneAudioEngine,
   children
 }: {
-  engine: IAudioEngine
+  engine?: IAudioEngine
   children: ReactNode
 }) => <AudioEngineContext value={engine}>{children}</AudioEngineContext>
 

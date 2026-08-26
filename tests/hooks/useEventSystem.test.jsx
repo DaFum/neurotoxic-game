@@ -83,3 +83,58 @@ describe('useEventSystem.triggerEvent pending-queue drain', () => {
     })
   })
 })
+
+describe('useEventSystem unlock persistence honors the injected adapter', () => {
+  const UNLOCK_ID = 'test_injected_unlock'
+  const MARKER_KEY = `neurotoxic_unlock:${UNLOCK_ID}`
+
+  const buildUnlockState = () => ({
+    currentScene: 'OVERWORLD',
+    player: { eventsTriggeredToday: 0, day: 1 },
+    pendingEvents: [],
+    eventCooldowns: [],
+    activeStoryFlags: [],
+    band: { members: [], harmony: 50 },
+    social: {},
+    assets: [],
+    unlocks: [],
+    activeEvent: { id: 'test_event', choices: [] }
+  })
+
+  beforeEach(() => {
+    localStorage.clear()
+  })
+
+  it('writes an event-earned unlock to the provided adapter, not the default', async () => {
+    const { StorageProvider } = await import('../../src/context/StorageContext')
+    const { InMemoryAdapter } = await import('../../src/utils/storageAdapter')
+    const adapter = new InMemoryAdapter()
+
+    const params = {
+      stateRef: { current: buildUnlockState() },
+      dispatch: vi.fn(),
+      addToast: vi.fn(),
+      changeScene: vi.fn(),
+      saveGame: vi.fn(),
+      tRef: { current: key => key }
+    }
+
+    const { result } = renderHook(() => useEventSystem(params), {
+      wrapper: ({ children }) => (
+        <StorageProvider adapter={adapter}>{children}</StorageProvider>
+      )
+    })
+
+    // `_precomputedResult` is resolveEvent's documented bypass of the event
+    // engine, so this drives the unlock side effect without a data fixture.
+    result.current.resolveEvent({
+      _precomputedResult: { delta: { flags: { unlock: UNLOCK_ID } } }
+    })
+
+    // The unlock must land in the injected backend...
+    expect(adapter.keys()).toContain(MARKER_KEY)
+    // ...and must not leak into the module-default backend, or a save written
+    // through adapter B would reference unlocks stored in adapter A.
+    expect(localStorage.getItem(MARKER_KEY)).toBeNull()
+  })
+})

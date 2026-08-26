@@ -32,6 +32,7 @@ import { useClock } from './ClockContext'
 import { useStorage } from './StorageContext'
 import { GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './reducers/migrations'
+import { parseSaveVersion } from '../utils/saveVersion'
 import { createLoadGameAction } from './actionCreators'
 import type { GameAction, GameState } from '../types'
 import type { OptionalToastCallback } from '../types/callbacks'
@@ -150,8 +151,7 @@ export const createRawLoadPayload = (
  */
 const readSaveVersion = (parsedObj: Record<string, unknown>): number => {
   if (!Object.hasOwn(parsedObj, 'version')) return 0
-  const parsedVersion = Number(parsedObj.version)
-  return Number.isFinite(parsedVersion) ? parsedVersion : 0
+  return parseSaveVersion(parsedObj.version) ?? 0
 }
 
 /**

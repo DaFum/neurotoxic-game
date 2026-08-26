@@ -7,7 +7,8 @@ import { CHARACTERS } from '../data/characters'
 import { LOG_LEVELS } from '../utils/logger'
 import { isLooseRecord } from '../utils/gameState'
 import { getSecureRandomUint32 } from '../utils/crypto'
-import { readGlobalSettings } from '../utils/storage'
+import { readGlobalSettings, defaultStorageAdapter } from '../utils/storage'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION } from './reducers/migrations'
@@ -220,9 +221,9 @@ export const sanitizeGigModifierUpdates = (
 /**
  * Default settings configuration
  */
-const getSavedSettings = () => {
+const getSavedSettings = (adapter: IStorageAdapter) => {
   try {
-    return readGlobalSettings()
+    return readGlobalSettings(adapter)
   } catch (_e) {
     return {}
   }
@@ -291,7 +292,17 @@ const initialState: GameState = {
  * @returns A new initial state object
  */
 export const createInitialState = (
-  persistedData: { settings?: Partial<GameSettings>; unlocks?: string[] } = {}
+  persistedData: {
+    settings?: Partial<GameSettings>
+    unlocks?: string[]
+    /**
+     * Adapter the global-settings read goes through. Defaults to
+     * `defaultStorageAdapter` so the pure `RESET_STATE` reducer path -- which
+     * has no access to the storage context -- keeps working unchanged; the
+     * provider passes the injected adapter on first mount.
+     */
+    storage?: IStorageAdapter
+  } = {}
 ): GameState => ({
   ...initialState,
   player: structuredClone(DEFAULT_PLAYER_STATE),
@@ -322,7 +333,9 @@ export const createInitialState = (
   },
   settings: {
     ...DEFAULT_SETTINGS,
-    ...sanitizeSettingsPayload(getSavedSettings()),
+    ...sanitizeSettingsPayload(
+      getSavedSettings(persistedData.storage ?? defaultStorageAdapter)
+    ),
     ...sanitizeSettingsPayload(persistedData.settings ?? {})
   },
   gigModifiers: { ...DEFAULT_GIG_MODIFIERS },

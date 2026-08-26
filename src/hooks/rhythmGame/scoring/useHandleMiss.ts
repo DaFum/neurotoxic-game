@@ -5,10 +5,6 @@ import {
   buildGigStatsSnapshot,
   calculateAccuracy
 } from '../../../utils/gigStats'
-import {
-  audioService,
-  getPlayRequestId
-} from '../../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../../context/AudioEngineContext'
 import {
   calculateMissImpact,
@@ -118,7 +114,7 @@ export const useHandleMiss = ({
 
       // Only play miss SFX if it's a real miss
       if (!isEmptyHit) {
-        audioService.playSFX('miss')
+        audioEngine.playSFX('miss')
       }
 
       gameStateRef.current.health = nextHealth
@@ -134,7 +130,7 @@ export const useHandleMiss = ({
       gameStateRef.current.isGameOver = true
       // Stop audio immediately to prevent further hit processing after collapse
       audioEngine.stopAudio()
-      const failReqId = getPlayRequestId()
+      const failReqId = audioEngine.getPlayRequestId()
       addToast(t('ui:gig.toasts.bandCollapsed', 'BAND COLLAPSED'), 'error')
 
       // Schedule exit from Gig if failed (prevents softlock)
@@ -143,7 +139,7 @@ export const useHandleMiss = ({
       gameOverTimerRef.current = setTimeout(() => {
         gameOverTimerRef.current = null
         // Bail if another audio session started in the 4s window (e.g. external endGig call)
-        if (getPlayRequestId() !== failReqId) return
+        if (audioEngine.getPlayRequestId() !== failReqId) return
         if (!Array.isArray(gameStateRef.current.songStats)) {
           gameStateRef.current.songStats = []
         }

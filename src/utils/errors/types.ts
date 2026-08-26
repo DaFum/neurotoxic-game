@@ -1,4 +1,6 @@
 import { isPlainRecord, sanitizeTraversableValue } from '../objectUtils'
+import { systemClock } from '../clock'
+import type { IClock } from '../clock'
 
 /**
  * Severity labels used by centralized error handling and logging.
@@ -138,12 +140,20 @@ export class GameError extends Error {
       category = ErrorCategory.UNKNOWN as ErrorCategoryType,
       severity = ErrorSeverity.MEDIUM as ErrorSeverityType,
       context = {},
-      recoverable = true
+      recoverable = true,
+      clock = systemClock
     }: {
       category?: ErrorCategoryType
       severity?: ErrorSeverityType
       context?: Record<string, unknown>
       recoverable?: boolean
+      /**
+       * Clock stamping {@link GameError.timestamp}. Defaults to `systemClock`;
+       * `StateError`, `StorageError`, and `AudioError` always take that
+       * default, so substitute at the `handleError` boundary instead of
+       * through those subclasses.
+       */
+      clock?: IClock
     } = {}
   ) {
     super(message)
@@ -155,7 +165,7 @@ export class GameError extends Error {
       unknown
     >
     this.recoverable = recoverable
-    this.timestamp = Date.now()
+    this.timestamp = clock.now()
   }
 
   toLogObject() {

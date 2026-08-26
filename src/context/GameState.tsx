@@ -11,12 +11,18 @@ import {
   useSyncExternalStore
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { logger, isValidLogLevel } from '../utils/logger'
+import { logger } from '../utils/logger'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { getUnlocks } from '../utils/unlockManager'
 import { isLooseRecord } from '../utils/gameState'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
-import { safeStorageOperation, getSafeStorageItem } from '../utils/storage'
-import { defaultStorageAdapter } from '../utils/storage'
+import {
+  safeStorageOperation,
+  getSafeStorageItem,
+  removeStorageItem
+} from '../utils/storage'
+import { useStorage } from './StorageContext'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 
 // Import modular state management
 import { createInitialState } from './initialState'
@@ -98,12 +104,24 @@ function useRequiredContext<T>(context: Context<T | null>, name: string): T {
   return value
 }
 
-/** Initializes game state with persistent unlocks and optional screenshot-test hydration. */
-const initGameState = (): GameState => {
+/**
+ * Initializes game state with persistent unlocks and optional screenshot-test
+ * hydration.
+ *
+ * @param storage - Adapter every read here goes through.
+ *
+ * @remarks
+ * Takes the adapter as `useReducer`'s `initialArg` rather than reaching for the
+ * module default: initialization runs before the provider body can hand
+ * anything down, and reading the default here would leave a `StorageProvider`
+ * governing only the post-mount persistence path while unlocks and the
+ * screenshot save came from a different backend.
+ */
+const initGameState = (storage: IStorageAdapter): GameState => {
   // getUnlocks already runs inside safeStorageOperation and falls back to []
   // on any storage failure, so wrapping it again here would add nothing.
-  const unlocks = getUnlocks()
-  const freshState = createInitialState({ unlocks })
+  const unlocks = getUnlocks(storage)
+  const freshState = createInitialState({ unlocks, storage })
 
   // Check for test-injected state (screenshot testing).
   // A special marker key signals the state was placed by the screenshot
@@ -111,7 +129,7 @@ const initGameState = (): GameState => {
   // saves are loaded explicitly via the MENU → "Load Game" button.
   const shouldHydrate = safeStorageOperation(
     'checkInjectMarker',
-    () => defaultStorageAdapter.get(INJECT_MARKER_KEY) === 'true',
+    () => storage.get(INJECT_MARKER_KEY) === 'true',
     false
   )
 
@@ -121,7 +139,7 @@ const initGameState = (): GameState => {
     // the second (authoritative) call to miss the marker and return INTRO.
     // The marker is cleaned up in a useEffect after mount instead.
 
-    const parsed = getSafeStorageItem<unknown>(SAVE_KEY, null)
+    const parsed = getSafeStorageItem<unknown>(SAVE_KEY, null, storage)
     const savedGame = isLooseRecord(parsed) ? parsed : null
 
     if (savedGame && Object.hasOwn(savedGame, 'version')) {
@@ -153,7 +171,8 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
     tRef.current = t
   }, [t])
 
-  const [state, rawDispatch] = useReducer(gameReducer, undefined, initGameState)
+  const storage = useStorage()
+  const [state, rawDispatch] = useReducer(gameReducer, storage, initGameState)
 
   // Dev-only dispatch logging middleware: records each action type before it
   // reduces. Gated by the logger level (`debug` is suppressed at INFO and
@@ -175,18 +194,18 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // survive React StrictMode's double-invocation of lazy initialisers).
   useEffect(() => {
     safeStorageOperation('removeInjectMarker', () =>
-      defaultStorageAdapter.remove(INJECT_MARKER_KEY)
+      removeStorageItem(INJECT_MARKER_KEY, storage)
     )
 
     // Also clean up on page unload to prevent marker persistence if test crashes
     const handleUnload = () => {
       safeStorageOperation('removeInjectMarkerOnUnload', () =>
-        defaultStorageAdapter.remove(INJECT_MARKER_KEY)
+        removeStorageItem(INJECT_MARKER_KEY, storage)
       )
     }
     window.addEventListener('beforeunload', handleUnload)
     return () => window.removeEventListener('beforeunload', handleUnload)
-  }, [])
+  }, [storage])
 
   // Leaderboard Sync Hook
   useLeaderboardSync(state)
@@ -224,9 +243,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Sync Logger with settings on load/change
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
-      const numericLogLevel = Number(state.settings.logLevel)
-      if (isValidLogLevel(numericLogLevel)) {
-        logger.setLevel(numericLogLevel)
+      // Same canonical sanitizer the reducer and the global-settings write use,
+      // so the live logger level can never diverge from the validated state.
+      const { logLevel } = sanitizeSettingsPayload({
+        logLevel: state.settings.logLevel
+      })
+      if (logLevel !== undefined) {
+        logger.setLevel(logLevel)
       } else {
         logger.warn(
           'GameState',

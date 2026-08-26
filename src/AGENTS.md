@@ -10,6 +10,7 @@
 - Keep user-facing copy in namespaced i18n keys and update EN/DE locale files together.
 - Pass React refs as standard `ref` props (for example, `ref?: Ref<HTMLButtonElement>`) in React 19 components; do not add `forwardRef`.
 - Use CSS variables for colors and Pixi token helpers for rendered colors.
+- Tailwind v4: prefer the custom-property shorthand `z-(--z-stage-controls)`. The explicit arbitrary-value form `z-[var(--z-stage-controls)]` is equivalent and also valid. Do not use the v3 variable shorthand `z-[--z-stage-controls]`; v4 replaced it with the parenthesis form.
 
 ## TypeScript
 

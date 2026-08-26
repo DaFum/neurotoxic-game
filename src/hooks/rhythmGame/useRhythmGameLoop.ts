@@ -1,11 +1,5 @@
 import { useCallback, useRef, useEffect } from 'react'
 import { createHecklerSession } from '../../utils/hecklerLogic'
-import {
-  getTransportState,
-  pauseAudio,
-  resumeAudio,
-  setCorruptionEffect
-} from '../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import {
   processRhythmGameTick,
@@ -78,14 +72,16 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     (stateRef: RhythmGameRefState) => {
-      finalizeGig(stateRef, setLastGigStats, endGig, audioEngine.stopAudio)
+      finalizeGig(stateRef, setLastGigStats, endGig, () =>
+        audioEngine.stopAudio()
+      )
     },
     [audioEngine, endGig, setLastGigStats]
   )
 
   const update = useCallback(
     (deltaMS: number) => {
-      const transportState = getTransportState()
+      const transportState = audioEngine.getTransportState()
       const isTransportRunning = transportState === 'started'
 
       processRhythmGameTick({
@@ -101,11 +97,16 @@ export const useRhythmGameLoop = ({
         setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
-        getGigTimeMs: audioEngine.getGigTimeMs,
-        pauseAudio,
-        resumeAudio,
+        // Called through closures rather than passed as detached references:
+        // `IAudioEngine` implementations may be classes (`NullAudioEngine` is
+        // one), and a detached method would lose its receiver.
+        getGigTimeMs: () => audioEngine.getGigTimeMs(),
+        pauseAudio: () => audioEngine.pauseAudio(),
+        resumeAudio: () => audioEngine.resumeAudio(),
         setCorruptionState,
-        setCorruptionEffect
+        setCorruptionEffect: active => audioEngine.setCorruptionEffect(active),
+        disableCorruptionBurstAudio: () =>
+          audioEngine.disableCorruptionBurstAudio()
       })
     },
     [

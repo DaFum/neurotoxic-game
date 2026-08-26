@@ -1,4 +1,6 @@
 import { logger } from '../logger'
+import { systemClock } from '../clock'
+import type { IClock } from '../clock'
 import { isPlainRecord } from '../objectUtils'
 import {
   GameError,
@@ -48,27 +50,72 @@ const normalizeHandleErrorOptions = (
   }
 }
 
-const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
+/**
+ * Reads a clock's current time, tolerating a broken clock.
+ *
+ * @param clock - Clock to read.
+ * @returns A finite epoch-ms value, from `systemClock` when the supplied clock
+ * throws or yields a non-finite value.
+ *
+ * @remarks
+ * Every `now()` call in this module goes through here. This runs inside the
+ * global error handler, so a caller's clock must never be able to turn a
+ * handled error into a thrown one, and a `NaN` timestamp would otherwise
+ * serialize into telemetry as `null`.
+ */
+const nowOrSystem = (clock: IClock): number => {
+  try {
+    const value = clock.now()
+    if (Number.isFinite(value)) return value
+  } catch {
+    // Fall through to the system clock below.
+  }
+  return systemClock.now()
+}
+
+// `Number.isFinite` rather than `||`: a legitimate epoch-0 timestamp is falsy,
+// so the old fallback silently replaced it with a fresh wall-clock read --
+// which defeats exactly the substitution this clock parameter exists for.
+const resolveTimestamp = (errorInfo: ErrorInfoObject, clock: IClock): number =>
+  Number.isFinite(errorInfo.timestamp)
+    ? errorInfo.timestamp
+    : nowOrSystem(clock)
+
+const sanitizeErrorInfo = (errorInfo: ErrorInfoObject, clock: IClock) => ({
   message: errorInfo.message || 'Critical error',
   code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  timestamp: resolveTimestamp(errorInfo, clock)
 })
 
-const sanitizeTelemetryErrorInfo = (errorInfo: ErrorInfoObject) => ({
+const sanitizeTelemetryErrorInfo = (
+  errorInfo: ErrorInfoObject,
+  clock: IClock
+) => ({
   message: 'Error captured',
   code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  timestamp: resolveTimestamp(errorInfo, clock)
 })
 
 const buildErrorInfo = (
   error: unknown,
   normalizedOptions: NormalizedErrorOptions,
-  fallbackMessage: string
+  fallbackMessage: string,
+  clock: IClock,
+  injectedClock: IClock | null
 ): ErrorInfoObject => {
   let errorInfo: ErrorInfoObject
 
   if (error instanceof GameError) {
     errorInfo = error.toLogObject() as ErrorInfoObject
+    // A `GameError` stamps itself on construction, which happens before
+    // `handleError` can hand it a clock. Without this the `clock` option would
+    // be silently inert for the most common call shape --
+    // `handleError(new StateError(...), { clock })` -- so an explicitly
+    // injected clock governs the handled record. Absent one, the error's own
+    // creation time is preserved exactly as before.
+    if (injectedClock) {
+      errorInfo.timestamp = nowOrSystem(injectedClock)
+    }
   } else {
     const errObj = error instanceof Error ? error : null
     errorInfo = {
@@ -80,7 +127,7 @@ const buildErrorInfo = (
       severity: ErrorSeverity.MEDIUM,
       context: {},
       recoverable: true,
-      timestamp: Date.now(),
+      timestamp: nowOrSystem(clock),
       stack: errObj?.stack
     }
   }
@@ -104,7 +151,7 @@ const buildErrorInfo = (
   return errorInfo
 }
 
-const logErrorLocally = (errorInfo: ErrorInfoObject) => {
+const logErrorLocally = (errorInfo: ErrorInfoObject, clock: IClock) => {
   errorLog.push(errorInfo)
   if (errorLog.length > MAX_ERROR_LOG_SIZE) {
     errorLog.shift()
@@ -114,7 +161,7 @@ const logErrorLocally = (errorInfo: ErrorInfoObject) => {
     case ErrorSeverity.CRITICAL:
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       if (typeof window !== 'undefined') {
-        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo)
+        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo, clock)
         window.dispatchEvent(
           new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo })
         )
@@ -132,13 +179,13 @@ const logErrorLocally = (errorInfo: ErrorInfoObject) => {
   }
 }
 
-const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
+const reportErrorRemote = (errorInfo: ErrorInfoObject, clock: IClock) => {
   if (typeof window !== 'undefined' && window.navigator?.onLine) {
     try {
       fetch('/api/analytics/error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo))
+        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo, clock))
       }).catch(reason => {
         // Non-recursive debug log only: this runs inside the error handler, so
         // escalating (warn/error) could re-enter reportErrorRemote. Debug is a
@@ -154,7 +201,7 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
     try {
       const payload = JSON.stringify({
         event: 'error',
-        error: sanitizeTelemetryErrorInfo(errorInfo)
+        error: sanitizeTelemetryErrorInfo(errorInfo, clock)
       })
       navigator.sendBeacon('/api/analytics/error', payload)
     } catch (_e) {
@@ -182,6 +229,38 @@ const showErrorToast = (
   }
 }
 
+/**
+ * Narrows an untrusted `clock` option to an `IClock`.
+ *
+ * @param value - Raw `options.clock` as handed to {@link handleError}.
+ * @returns The injected clock, or `null` when the option is absent or not a
+ * usable clock.
+ *
+ * @remarks
+ * Returns `null` rather than defaulting here so callers can tell an explicitly
+ * injected clock from the fallback: only an explicit one may override the
+ * timestamp a {@link GameError} already carries.
+ *
+ * `handleError` accepts `unknown` options, so this cannot assume a shape. It
+ * also must never throw: it runs inside the error handler, and rejecting a
+ * malformed clock by falling back is strictly better than losing the error.
+ */
+const readClockOption = (value: unknown): IClock | null => {
+  if (typeof value !== 'object' || value === null) return null
+  try {
+    const candidate = value as IClock
+    // `typeof`, not `Object.hasOwn`: a class-based `IClock` carries `now` on
+    // its prototype, and an own-property check would reject it. Reading the
+    // members can itself throw on a hostile getter, hence the guard.
+    return typeof candidate.now === 'function' &&
+      typeof candidate.today === 'function'
+      ? candidate
+      : null
+  } catch {
+    return null
+  }
+}
+
 export const handleError = (
   error: unknown,
   options: unknown = {}
@@ -198,11 +277,20 @@ export const handleError = (
       ? safeOptions.fallbackMessage
       : 'An error occurred'
 
-  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
-  const errorInfo = buildErrorInfo(error, normalizedOptions, fallbackMessage)
+  const injectedClock = readClockOption(safeOptions.clock)
+  const clock = injectedClock ?? systemClock
 
-  logErrorLocally(errorInfo)
-  reportErrorRemote(errorInfo)
+  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
+  const errorInfo = buildErrorInfo(
+    error,
+    normalizedOptions,
+    fallbackMessage,
+    clock,
+    injectedClock
+  )
+
+  logErrorLocally(errorInfo, clock)
+  reportErrorRemote(errorInfo, clock)
   showErrorToast(errorInfo, silent, addToast)
 
   return errorInfo

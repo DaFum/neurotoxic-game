@@ -3,13 +3,10 @@ import {
   updateGigPerformanceStats,
   calculateAccuracy
 } from '../../../utils/gigStats'
-import {
-  audioService,
-  getToneAbsoluteTimeMs,
-  enableCorruptionBurstAudio,
-  setCorruptionEffect,
-  getScheduledHitTimeMs
-} from '../../../utils/audio/audioEngine'
+// `getScheduledHitTimeMs` is a pure calculation over explicit arguments, not a
+// runtime audio capability, so it stays a direct import; every operation that
+// actually touches the audio stack goes through the injected engine.
+import { getScheduledHitTimeMs } from '../../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../../context/AudioEngineContext'
 import { checkHit } from '../../../utils/rhythmUtils'
 import {
@@ -149,7 +146,7 @@ export const useHandleHit = ({
           // Using Tone's absolute time is necessary here for proper MIDI note scheduling.
           // For all other gig logic, the engine's gig clock handles
           // relative timing.
-          const toneNowMs = getToneAbsoluteTimeMs()
+          const toneNowMs = audioEngine.getToneAbsoluteTimeMs()
           const scheduledMs = getScheduledHitTimeMs({
             noteTimeMs: note.time,
             gigTimeMs: elapsed,
@@ -163,7 +160,7 @@ export const useHandleHit = ({
             velocity
           )
         } else {
-          audioService.playSFX('hit') // Fallback
+          audioEngine.playSFX('hit') // Fallback
         }
 
         // Prefer the value written into modifiers by audio init (physics-aware), fall back to
@@ -201,8 +198,8 @@ export const useHandleHit = ({
               setIsCorruptionBurstActive(true)
               setCorruptionBurstEndTime(burstEndTime)
               setCorruptionState(0, true)
-              enableCorruptionBurstAudio()
-              setCorruptionEffect(true)
+              audioEngine.enableCorruptionBurstAudio()
+              audioEngine.setCorruptionEffect(true)
             }
           }
         } else {

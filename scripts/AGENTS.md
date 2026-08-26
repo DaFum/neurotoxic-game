@@ -7,6 +7,10 @@
 - `gigGapDays` controls frequency; `SHIPPED_GIG_CADENCE_POLICY` controls eligible days and belongs in the harness. Main reports use 2,000 runs and `SIMULATION_CONSTANTS.seedNamespace`; changing the namespace creates unpaired cohorts.
 - Diagnose insolvency before and after the first gig separately through `run.earlyRunway`. Sample `observeEarlyRunwayMoney()` after every money-moving call; sampling only after a group can hide an intermediate trough.
 
+## Script Format
+
+- The package is `"type": "module"`, so an ad-hoc script that uses `require()` must be named `.cjs` (see `scripts/benchmark-fast-paths.cjs`).
+
 ## Experiment Integrity
 
 - Keep `calibration`, `selection`, and `validation` seed streams disjoint. Search candidates on `selection`; measure `validation` exactly once on the already-selected combination. A validation breach yields `no-production-recommendation-final-validation-failed`; never search for a replacement on that stream.

@@ -2,6 +2,7 @@
 
 ## Actions & Toasts
 
+- Action creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write the action object shape, or the union stops narrowing in the reducer.
 - `useGameActions()` exposes named action methods, not raw reducer dispatch. New context-level actions must be added to `GameDispatchActions`, implemented in `GameStateProvider`, included in `dispatchValue`, and covered by tests.
 - Toast `options` values must be primitive-only: `string | number | boolean | null`. Sanitizers drop non-primitive and forbidden-key entries; do not preserve them by stringifying.
 - `UPDATE_SOCIAL` accepts both `Partial<SocialState>` and a functional updater `(prev) => Partial<SocialState>`. `socialReducer` evaluates the function against current state at reducer time; do not pre-compute against `stateRef` in the caller.

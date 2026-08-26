@@ -1,5 +1,4 @@
 import { useCallback, useRef } from 'react'
-import { getTransportState } from '../../utils/audio/audioEngine'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import type { RhythmGameRefState } from './useRhythmGameState'
 
@@ -48,7 +47,7 @@ export const useRhythmGameInput = ({
   const registerInput = useCallback(
     (laneIndex: number, isDown: boolean) => {
       const state = gameStateRef.current
-      const transportState = getTransportState()
+      const transportState = audioEngine.getTransportState()
 
       if (!canProcessInput(state, activeEvent, transportState)) {
         return

@@ -1,7 +1,6 @@
 import { trySpawnProjectile, processProjectiles } from './hecklerLogic'
 import { buildGigStatsSnapshot } from './gigStats'
 import { logger } from './logger'
-import { disableCorruptionBurstAudio } from './audio/audioEngine'
 import { finiteNumberOr } from './finiteNumber'
 import type { RhythmGameRefState, SetLastGigStats } from '../types/rhythmGame'
 import type { HecklerSession } from './hecklerLogic'
@@ -34,6 +33,7 @@ interface RhythmTickArgs {
   resumeAudio: AsyncBooleanCallback
   setCorruptionState: (level: number, active: boolean) => void
   setCorruptionEffect: (active: boolean) => void
+  disableCorruptionBurstAudio: () => void
 }
 
 /**
@@ -147,6 +147,7 @@ const processCorruptionBurst = (
   setIsCorruptionBurstActive: ToggleBooleanCallback,
   setCorruptionState: (level: number, active: boolean) => void,
   setCorruptionEffect: (active: boolean) => void,
+  disableCorruptionBurstAudio: () => void,
   clockReset: boolean
 ): void => {
   if (
@@ -295,7 +296,8 @@ export const processRhythmGameTick = ({
   pauseAudio,
   resumeAudio,
   setCorruptionState,
-  setCorruptionEffect
+  setCorruptionEffect,
+  disableCorruptionBurstAudio
 }: RhythmTickArgs): void => {
   if (activeEvent || stateRef.isGameOver || stateRef.songTransitioning) {
     handleOverlayPause(stateRef, isTransportRunning, pauseAudio)
@@ -348,6 +350,7 @@ export const processRhythmGameTick = ({
     setIsCorruptionBurstActive,
     setCorruptionState,
     setCorruptionEffect,
+    disableCorruptionBurstAudio,
     clockReset
   )
 

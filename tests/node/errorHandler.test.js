@@ -15,6 +15,7 @@ import {
   runSafeStorageOperation,
   initGlobalErrorHandling
 } from '../../src/utils/errorHandler'
+import { createFixedClock } from '../../src/utils/clock'
 
 describe('Custom Error Classes', () => {
   describe('GameError', () => {
@@ -730,4 +731,125 @@ it('should return undefined when undefined is explicitly passed as fallback', ()
     undefined
   )
   assert.strictEqual(result, undefined)
+})
+
+describe('error timestamps go through the injected clock', () => {
+  const FIXED_NOW = 1_700_000_000_000
+  const fixedClock = createFixedClock(FIXED_NOW)
+
+  it('stamps a GameError from the injected clock', () => {
+    const error = new GameError('Deterministic', { clock: fixedClock })
+    assert.strictEqual(error.timestamp, FIXED_NOW)
+  })
+
+  it('defaults GameError to the system clock', () => {
+    const before = Date.now()
+    const error = new GameError('Wall clock')
+    assert.ok(error.timestamp >= before)
+  })
+
+  it('stamps a generic handled error from the injected clock', () => {
+    const info = handleError(new Error('boom'), {
+      silent: true,
+      clock: fixedClock
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
+  it('preserves an epoch-0 timestamp instead of restamping it', () => {
+    // The sanitizers used to fall back with `errorInfo.timestamp || Date.now()`,
+    // so a legitimate epoch-0 stamp was silently replaced by a live wall-clock
+    // read -- which would defeat a fixed clock in exactly the tests this seam
+    // exists for.
+    const epochClock = createFixedClock(0)
+    const info = handleError(new Error('epoch'), {
+      silent: true,
+      clock: epochClock
+    })
+    assert.strictEqual(info.timestamp, 0)
+  })
+
+  it('applies the injected clock to a preconstructed GameError subclass', () => {
+    // The subclass stamps itself at construction, before handleError can hand
+    // it a clock. Without the override the clock option was silently inert for
+    // this -- the most common -- call shape.
+    const info = handleError(new StateError('deterministic'), {
+      silent: true,
+      clock: fixedClock
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
+  it('preserves a GameError own timestamp when no clock is injected', () => {
+    const error = new GameError('created earlier')
+    const info = handleError(error, { silent: true })
+    assert.strictEqual(info.timestamp, error.timestamp)
+  })
+
+  it('survives a clock whose now() throws', () => {
+    // handleError is the global error boundary: a caller's clock must never be
+    // able to turn a handled error into a thrown one.
+    const hostile = {
+      now: () => {
+        throw new Error('now boom')
+      },
+      today: () => new Date(0)
+    }
+    const info = handleError(new Error('x'), { silent: true, clock: hostile })
+    assert.ok(Number.isFinite(info.timestamp))
+  })
+
+  it('survives a clock whose now member throws on access', () => {
+    const hostile = {
+      get now() {
+        throw new Error('getter boom')
+      },
+      today: () => new Date(0)
+    }
+    const info = handleError(new Error('x'), { silent: true, clock: hostile })
+    assert.ok(Number.isFinite(info.timestamp))
+  })
+
+  it('rejects a non-finite now() instead of stamping NaN', () => {
+    // A NaN timestamp serializes into telemetry as `null`.
+    for (const bogus of [NaN, Infinity, undefined, '123']) {
+      const info = handleError(new Error('x'), {
+        silent: true,
+        clock: { now: () => bogus, today: () => new Date(0) }
+      })
+      assert.ok(
+        Number.isFinite(info.timestamp),
+        `expected a finite timestamp for now() = ${String(bogus)}`
+      )
+    }
+  })
+
+  it('accepts a prototype-based clock implementation', () => {
+    // An own-property check would reject this; `now` lives on the prototype.
+    class ClassClock {
+      now() {
+        return FIXED_NOW
+      }
+      today() {
+        return new Date(FIXED_NOW)
+      }
+    }
+    const info = handleError(new Error('x'), {
+      silent: true,
+      clock: new ClassClock()
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
+  it('falls back to the system clock for a malformed clock option', () => {
+    // handleError takes untrusted options and must never throw from inside the
+    // error path.
+    for (const bogus of [null, 42, 'clock', {}, { now: 5 }]) {
+      const info = handleError(new Error('bogus'), {
+        silent: true,
+        clock: bogus
+      })
+      assert.ok(Number.isFinite(info.timestamp))
+    }
+  })
 })
