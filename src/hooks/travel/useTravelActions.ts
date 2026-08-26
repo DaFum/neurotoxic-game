@@ -9,7 +9,7 @@ import { useHandleTravel } from './actions/useHandleTravel'
  * Builds the travel action handlers shared by {@link useTravelLogic}.
  *
  * @remarks
- * Returns two behaviors:
+ * Returns three behaviors:
  *
  * - `handleTravel(node)` — validates access, connectivity, and affordability,
  *   then arms a 5s click-to-confirm window; a second call for the same node
@@ -19,6 +19,7 @@ import { useHandleTravel } from './actions/useHandleTravel'
  *   to `onStartTravelMinigame`. Arrival settlement belongs to the tourbus
  *   completion reducer (`handleCompleteTravelMinigame`) and the continuation in
  *   `useArrivalLogic`, not to this hook.
+ * - `clearPendingTravel()` — drops the armed confirmation window and its timer.
  *
  * All returned callbacks are referentially stable: the hook destructures the
  * stable callbacks out of `params` and reads live state from `refs`, so it does
@@ -30,7 +31,7 @@ export const useTravelActions = ({
   refs,
   setters,
   params
-}: Omit<TravelActionsParams, 'state'>) => {
+}: Pick<TravelActionsParams, 'refs' | 'setters' | 'params'>) => {
   const getLocationName = useGetLocationName()
   const clearPendingTravel = useClearPendingTravel({ refs, setters })
   const handleNodeArrivalCallback = useHandleNodeArrivalCallback({

@@ -200,9 +200,16 @@ test('Golden Path: multiple day loops keep resource bounds', () => {
   ])
 
   for (let day = 0; day < 5; day++) {
+    // Spread the destinations out. `calculateDistance` reads `node.x/y` — a
+    // `venue.dist` override is inert — and once `withMapNode` has seeded the
+    // previous stop, the origin resolves for real. Co-located nodes would make
+    // every trip after the first a ~20km hop and drain the fuel pressure this
+    // test exists to apply.
     const node = buildMapNode({
       id: `node_${day + 1}_0`,
-      venue: { id: `venue_${day}`, name: `Venue ${day}`, dist: 10 + day * 5 }
+      x: 20 + day * 15,
+      y: 15 + day * 12,
+      venue: { id: `venue_${day}`, name: `Venue ${day}` }
     })
 
     state = withMapNode(state, node)

@@ -99,13 +99,11 @@ export function withMapNode(state, node) {
  *
  * @param {object} state - Current game state.
  * @param {object} node - Destination map node.
- * @param {number} [damageTaken] - Minigame damage to report. Defaults to a
- * clean run so the fixture's travel row stays about money/fuel/location.
  * @returns {{actions: Array<object>, blocked: null | {errorKey?: string}}}
  * Ordered actions, or `blocked` when resources are insufficient — the hook
  * refuses to start the trip in that case, so the driver emits no actions.
  */
-export function buildTravelStep(state, node, damageTaken = 0) {
+export function buildTravelStep(state, node) {
   const { player, band, social, assets, liabilities } = state
   const assetModifiers = getActiveAssetModifiers(assets)
   const currentStartNode = state.gameMap?.nodes?.[player.currentNodeId]
@@ -130,7 +128,8 @@ export function buildTravelStep(state, node, damageTaken = 0) {
   // so the start action is part of the step, not fixture setup.
   const actions = [
     createStartTravelMinigameAction(node.id),
-    createCompleteTravelMinigameAction(damageTaken, [])
+    // A clean run: this step is about money/fuel/location, not damage.
+    createCompleteTravelMinigameAction(0, [])
   ]
   // `advanceDay` must be built from the state the earlier actions produce, so
   // its RNG stream is sized against the same asset list the reducer will see.
