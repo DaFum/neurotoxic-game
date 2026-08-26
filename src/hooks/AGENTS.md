@@ -14,11 +14,11 @@
 
 - Travel confirmation/resource checks must include `getTotalDailyObligations(state)` (guaranteed daily cost plus asset upkeep/revenue and liability payments) for routes that call `advanceDay()` on completion or arrival. Do not call `calculateGuaranteedDailyCost` alone for these checks.
 - `useArrivalLogic` lives ONLY in `TourbusScene`, which unmounts when `START_GIG` changes the scene to `PRE_GIG`. Gig arrivals must queue `saveGameAfterStateCommit()` so provider-level persistence captures the committed `START_GIG` state; do not move that save into a second arrival-hook effect pass.
-- The legacy animation-failsafe arrival callback must not pass the real `startGig` action into `handleNodeArrival`; gig startup belongs to the deferred `useArrivalLogic` route.
+- `useHandleNodeArrivalCallback` (re-entering the node the band already stands on) must not pass the real `startGig` action into `handleNodeArrival`; gig startup belongs to the deferred `useArrivalLogic` route.
 - `useArrivalLogic` keys `isHandlingRef` on the arriving `nodeId` with sentinel `undefined`. `player.currentNodeId` can be `null`, so `null` is a real guarded value and cannot mean "idle".
 - Do not reset `isHandlingRef` in the arrival success path; the `useEffect` cleanup keyed on `player.currentNodeId` owns that lifecycle. Error paths may reset it so the same node can be retried.
 - Band harmony is clamped to minimum `1` (never `0`). `arrivalUtils` uses `harmony <= 1` as the deterministic gig-cancellation check with probabilistic cancellation above that. A `harmony <= 0` branch is unreachable — do not reintroduce one.
-- Both travel arrival paths must call `processTravelEvents` with the same gig-node policy (the default, which skips GIG/FESTIVAL/FINALE so gig events fire in PreGig): the production path is `useArrivalLogic.handleArrivalSequence`; the legacy animation-failsafe `useTravelActions.onTravelComplete` (unreachable while `onStartTravelMinigame` is wired in `Overworld.tsx`) must stay aligned. Do not pass `{ includeGigNodes: true }` in the fallback.
+- `useArrivalLogic.handleArrivalSequence` is the only arrival path and the only caller of `processTravelEvents`. Keep its default gig-node policy (skip GIG/FESTIVAL/FINALE so gig events fire in PreGig): do not pass `{ includeGigNodes: true }`. Travel itself has one owner too — `useTravelLogic` gates affordability and hands off to the tourbus minigame, `handleCompleteTravelMinigame` settles costs/fuel/location, and this hook runs the day tick, events, rival, and routing. Do not reintroduce a second settlement path.
 
 ## Venue IDs
 

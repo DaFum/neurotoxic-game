@@ -20,8 +20,9 @@ import type {
  * would defeat that. State slices (`player`, `band`, `assets`, …) may change
  * each render and are mirrored into refs internally.
  *
- * Optional members gate features: omit `onStartTravelMinigame` to use the
- * timed-animation travel path; omit `onShowHQ`/`onShowSupplyStop` to disable
+ * `onStartTravelMinigame` is required: the tourbus minigame is the only
+ * supported travel mode, and its completion reducer owns arrival settlement.
+ * Optional members gate features: omit `onShowHQ`/`onShowSupplyStop` to disable
  * those arrival overlays; omit `applyQuestEvent` to skip quest progression.
  */
 export type TravelLogicParams = {
@@ -45,7 +46,7 @@ export type TravelLogicParams = {
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]
   ) => void
-  onStartTravelMinigame?: (nodeId: string) => void
+  onStartTravelMinigame: (nodeId: string) => void
   moveRivalBand?: () => void
   checkRivalEncounter?: () => void
   applyQuestEvent?: (
@@ -60,18 +61,14 @@ export type TravelLogicParams = {
  * `playerRef`/`bandRef`/`assetsRef`/etc. mirror the latest {@link TravelLogicParams}
  * state so callbacks can read current values without listing those slices as
  * dependencies. The timeout refs hold the single in-flight timer for each
- * concern: `pendingTimeoutRef` (confirmation window), `failsafeTimeoutRef`
- * (travel-animation forced completion), and `timeoutRef` (softlock game-over
- * countdown). The bundle object keeps a stable identity across renders.
+ * concern: `pendingTimeoutRef` (confirmation window) and `timeoutRef`
+ * (softlock game-over countdown). The bundle object keeps a stable identity
+ * across renders.
  */
 export interface TravelRefsBundle {
   isTravelingRef: React.MutableRefObject<boolean>
-  travelCompletedRef: React.MutableRefObject<boolean>
   pendingTravelNodeRef: React.MutableRefObject<MapNode | null>
   pendingTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>
-  failsafeTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
   > | null>
   timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
@@ -91,13 +88,11 @@ export interface TravelRefsBundle {
 
 export interface TravelStateBundle {
   isTraveling: boolean
-  travelTarget: MapNode | null
   pendingTravelNode: MapNode | null
 }
 
 export interface TravelSettersBundle {
   setIsTraveling: React.Dispatch<React.SetStateAction<boolean>>
-  setTravelTarget: React.Dispatch<React.SetStateAction<MapNode | null>>
   setPendingTravelNode: React.Dispatch<React.SetStateAction<MapNode | null>>
 }
 

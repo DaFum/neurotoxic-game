@@ -11,9 +11,9 @@ import type {
  * Owns the travel hook's React state, refs, and setters.
  *
  * @remarks
- * Initializes the `isTraveling`/`travelTarget`/`pendingTravelNode` state, the
- * timeout/completion refs, and the param-mirror refs (kept in sync each render
- * and via an effect). The returned `refs` and `setters` bundles are wrapped in
+ * Initializes the `isTraveling`/`pendingTravelNode` state, the timeout refs,
+ * and the param-mirror refs (kept in sync each render and via an effect).
+ * The returned `refs` and `setters` bundles are wrapped in
  * `useRef` so they hold a stable object identity, letting consumer hooks list
  * them in dependency arrays without re-creating their callbacks every render.
  *
@@ -23,14 +23,11 @@ import type {
  */
 export const useTravelState = (params: TravelLogicParams) => {
   const [isTraveling, setIsTraveling] = useState(false)
-  const [travelTarget, setTravelTarget] = useState<MapNode | null>(null)
   const [pendingTravelNode, setPendingTravelNode] = useState<MapNode | null>(
     null
   )
 
-  const travelCompletedRef = useRef(false)
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  const failsafeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const pendingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const playerRef = useRef(params.player)
@@ -79,10 +76,8 @@ export const useTravelState = (params: TravelLogicParams) => {
   // objects, useState setters), so capturing the bundle once is safe.
   const refs = useRef<TravelRefsBundle>({
     isTravelingRef,
-    travelCompletedRef,
     pendingTravelNodeRef,
     pendingTimeoutRef,
-    failsafeTimeoutRef,
     timeoutRef,
     playerRef,
     bandRef,
@@ -98,7 +93,6 @@ export const useTravelState = (params: TravelLogicParams) => {
 
   const setters = useRef<TravelSettersBundle>({
     setIsTraveling,
-    setTravelTarget,
     setPendingTravelNode
   }).current
 
@@ -106,7 +100,6 @@ export const useTravelState = (params: TravelLogicParams) => {
     refs,
     state: {
       isTraveling,
-      travelTarget,
       pendingTravelNode
     } as TravelStateBundle,
     setters

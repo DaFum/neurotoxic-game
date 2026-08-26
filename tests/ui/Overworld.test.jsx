@@ -8,15 +8,12 @@ import { GameStateProvider } from '../../src/context/GameState'
 vi.mock('../../src/hooks/useTravelLogic', () => ({
   useTravelLogic: () => ({
     isTraveling: false,
-    travelTarget: null,
     pendingTravelNode: null,
     isConnected: () => true,
     getNodeVisibility: () => 1,
     handleTravel: vi.fn(),
     handleRefuel: vi.fn(),
-    handleRepair: vi.fn(),
-    onTravelComplete: vi.fn(),
-    travelCompletedRef: { current: false }
+    handleRepair: vi.fn()
   })
 }))
 

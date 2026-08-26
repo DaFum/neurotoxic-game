@@ -3,7 +3,6 @@ import type {
   GameEvent,
   EventOption,
   GameState,
-  MapNode,
   PlayerState,
   BandMember
 } from './game'
@@ -310,19 +309,6 @@ export interface TourbusControlsProps {
 export interface TourbusHUDProps {
   distance: number
   damage: number
-}
-
-/**
- * Travel endpoints, guard ref, and completion callback for the animated overworld van.
- */
-export interface TravelingVanProps {
-  t: TranslationCallback
-  isTraveling: boolean
-  currentNode: MapNode | null
-  travelTarget: MapNode | null
-  vanUrl: string
-  travelCompletedRef: { current: unknown }
-  onTravelComplete: (node?: MapNode) => void
 }
 
 /**

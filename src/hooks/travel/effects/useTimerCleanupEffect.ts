@@ -8,14 +8,10 @@ export const useTimerCleanupEffect = (refs: TravelRefsBundle) => {
         clearTimeout(refs.timeoutRef.current)
         refs.timeoutRef.current = null
       }
-      if (refs.failsafeTimeoutRef.current) {
-        clearTimeout(refs.failsafeTimeoutRef.current)
-        refs.failsafeTimeoutRef.current = null
-      }
       if (refs.pendingTimeoutRef.current) {
         clearTimeout(refs.pendingTimeoutRef.current)
         refs.pendingTimeoutRef.current = null
       }
     }
-  }, [refs.timeoutRef, refs.failsafeTimeoutRef, refs.pendingTimeoutRef])
+  }, [refs.timeoutRef, refs.pendingTimeoutRef])
 }

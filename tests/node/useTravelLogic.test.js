@@ -1,12 +1,4 @@
-import {
-  test,
-  describe,
-  before,
-  after,
-  beforeEach,
-  afterEach,
-  mock
-} from 'node:test'
+import { test, describe, before, after, beforeEach, afterEach } from 'node:test'
 import assert from 'node:assert/strict'
 import { renderHook, act, cleanup } from '@testing-library/react'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
@@ -108,11 +100,11 @@ describe('useTravelLogic', () => {
     const { result } = renderHook(() => useTravelLogic(props))
 
     assert.equal(result.current.isTraveling, false)
-    assert.equal(result.current.travelTarget, null)
+    assert.equal(result.current.pendingTravelNode, null)
   })
 
   test('handleTravel initiates travel when valid', async () => {
-    const { result, targetNode } = setupTravelScenario(useTravelLogic)
+    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
 
     // First click: sets pending state
     act(() => {
@@ -127,7 +119,11 @@ describe('useTravelLogic', () => {
     })
 
     assert.equal(result.current.isTraveling, true)
-    assert.deepEqual(result.current.travelTarget, targetNode)
+    // Confirming a trip hands off to the tourbus minigame; arrival settlement
+    // belongs to its completion reducer, not to this hook.
+    assert.deepEqual(props.onStartTravelMinigame.mock.calls[0].arguments, [
+      targetNode.id
+    ])
     assert.equal(mockAudioManager.playSFX.mock.calls.length, 1)
     assert.equal(mockAudioManager.playSFX.mock.calls[0].arguments[0], 'travel')
   })
@@ -184,33 +180,6 @@ describe('useTravelLogic', () => {
     const toastMessage = props.addToast.mock.calls[0].arguments[0]
     assert.match(toastMessage, /Daily Upkeep: €42/)
     assert.match(toastMessage, /Total Cash Impact: €92/)
-  })
-
-  test('onTravelComplete passes social state into total daily obligations', () => {
-    mockGetTotalDailyObligations.mock.mockImplementation(state =>
-      state.social.youtube >= 10000 ? 42 : 155
-    )
-    const social = { youtube: 20000 }
-    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
-      player: {
-        money: 1000,
-        fameLevel: 3,
-        currentNodeId: 'node_start',
-        van: { fuel: 50, condition: 80 },
-        totalTravels: 0
-      },
-      band: { members: [{}, {}, {}], harmony: 50 },
-      social
-    })
-
-    act(() => {
-      result.current.onTravelComplete(targetNode)
-    })
-
-    assert.equal(
-      mockGetTotalDailyObligations.mock.calls[0].arguments[0].social,
-      social
-    )
   })
 
   test('resetTravelLogicMockState restores total daily obligations default implementation', () => {
@@ -341,110 +310,6 @@ describe('useTravelLogic', () => {
 
     assert.equal(result.current.isTraveling, false)
     assert.equal(props.onShowHQ.mock.calls.length, 1)
-  })
-
-  test('onTravelComplete updates state and finalizes travel', () => {
-    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
-
-    // Start travel (requires 2 clicks)
-    act(() => {
-      result.current.handleTravel(targetNode)
-    })
-    act(() => {
-      result.current.handleTravel(targetNode)
-    })
-
-    // Complete travel
-    act(() => {
-      result.current.onTravelComplete()
-    })
-
-    assert.equal(result.current.isTraveling, false)
-    assert.equal(result.current.travelTarget, null)
-
-    // Check player updates
-    assert.equal(props.updatePlayer.mock.calls.length, 1)
-    const updateArg = props.updatePlayer.mock.calls[0].arguments[0]
-    assert.equal(updateArg.currentNodeId, targetNode.id)
-    assert.equal(updateArg.money, 950) // 1000 - 50
-    assert.equal(updateArg.van.fuel, 40) // 50 - 10
-    assert.equal(updateArg.totalTravels, 1)
-
-    assert.equal(props.advanceDay.mock.calls.length, 1)
-    assert.equal(props.saveGame.mock.calls.length, 1)
-  })
-
-  test('onTravelComplete skips travel events on a gig node (matches useArrivalLogic policy)', () => {
-    const { result, props, targetNode } = setupTravelScenario(useTravelLogic)
-    assert.equal(targetNode.type, 'GIG')
-
-    act(() => {
-      result.current.onTravelComplete(targetNode)
-    })
-
-    // Production arrival (useArrivalLogic) defers gig-node events to PreGig, so
-    // the legacy fallback must use the same default policy and not fire a
-    // travel event on a gig destination.
-    const firedTravelEvent = props.triggerEvent.mock.calls.some(
-      call =>
-        call.arguments[0] === 'transport' && call.arguments[1] === 'travel'
-    )
-    assert.equal(firedTravelEvent, false)
-  })
-
-  test('onTravelComplete does not emit quest event', () => {
-    // This test is deliberately removed or modified to assert no emit:
-    // The quest event emission has been moved to the reducer per the plan.
-    const applyQuestEvent = mock.fn()
-    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
-      applyQuestEvent
-    })
-
-    act(() => {
-      result.current.onTravelComplete(targetNode)
-    })
-
-    assert.equal(applyQuestEvent.mock.calls.length, 0)
-  })
-
-  test('onTravelComplete applies travel band patch before advancing the day', () => {
-    const dispatchOrder = []
-    const updateBand = mock.fn(() => dispatchOrder.push('updateBand'))
-    const advanceDay = mock.fn(() => dispatchOrder.push('advanceDay'))
-    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
-      band: { members: [], harmony: 50, harmonyRegenTravel: true },
-      updateBand,
-      advanceDay
-    })
-
-    act(() => {
-      result.current.handleTravel(targetNode)
-    })
-    act(() => {
-      result.current.handleTravel(targetNode)
-    })
-
-    act(() => {
-      result.current.onTravelComplete()
-    })
-
-    assert.deepEqual(dispatchOrder.slice(0, 2), ['updateBand', 'advanceDay'])
-  })
-
-  test('onTravelComplete moves and checks rival through named dispatch actions', () => {
-    const moveRivalBand = mock.fn()
-    const checkRivalEncounter = mock.fn()
-    const { result, targetNode } = setupTravelScenario(useTravelLogic, {
-      moveRivalBand,
-      checkRivalEncounter
-    })
-
-    act(() => {
-      result.current.onTravelComplete(targetNode)
-    })
-
-    assert.equal(moveRivalBand.mock.calls.length, 1)
-    assert.equal(checkRivalEncounter.mock.calls.length, 1)
   })
 
   test('handleRefuel fills tank and deducts money', () => {

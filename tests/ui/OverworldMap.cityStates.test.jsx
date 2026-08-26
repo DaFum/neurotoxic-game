@@ -14,10 +14,6 @@ vi.mock('../../src/components/MapConnection', () => ({
   MapConnection: () => <g />
 }))
 
-vi.mock('../../src/components/overworld/TravelingVan', () => ({
-  TravelingVan: () => null
-}))
-
 let mockImageGenerationAvailable = false
 
 vi.mock('../../src/utils/imageGen', () => ({
@@ -101,9 +97,6 @@ const baseProps = {
   setHoveredNode: vi.fn(),
   hoveredNode: null,
   currentNode: null,
-  travelTarget: null,
-  travelCompletedRef: { current: false },
-  onTravelComplete: vi.fn(),
   activeStoryFlags: []
 }
 

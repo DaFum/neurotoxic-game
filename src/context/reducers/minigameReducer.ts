@@ -326,9 +326,8 @@ export const handleCompleteTravelMinigame = (
     )
   }
 
-  // The tourbus minigame is the production travel path, so travel-progress
-  // quests must be fed here; the legacy onTravelComplete hook path emits the
-  // same event but never runs while onStartTravelMinigame is wired.
+  // The tourbus minigame is the only travel path, so travel-progress quests
+  // are fed here.
   newState = QuestEvents.emit(
     newState,
     createTravelCompletedQuestEvent({

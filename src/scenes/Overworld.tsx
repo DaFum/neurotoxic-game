@@ -64,16 +64,13 @@ export const Overworld = () => {
 
   const {
     isTraveling,
-    travelTarget,
     pendingTravelNode,
     isConnected,
     getNodeVisibility,
     handleTravel,
     handleRefuel,
     handleRepair,
-    handleRestInVan,
-    onTravelComplete,
-    travelCompletedRef
+    handleRestInVan
   } = useTravelLogic({
     player,
     band,
@@ -176,9 +173,6 @@ export const Overworld = () => {
         setHoveredNode={setHoveredNode}
         hoveredNode={hoveredNode}
         currentNode={currentNode ?? null}
-        travelTarget={travelTarget}
-        travelCompletedRef={travelCompletedRef}
-        onTravelComplete={onTravelComplete}
         activeStoryFlags={activeStoryFlags}
       />
 

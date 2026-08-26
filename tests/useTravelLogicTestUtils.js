@@ -279,6 +279,9 @@ export const createTravelLogicProps = (overrides = {}) => ({
   addToast: mock.fn(),
   changeScene: mock.fn(),
   onShowHQ: mock.fn(),
+  // Required: the tourbus minigame is the only travel mode, so every scenario
+  // must supply the handoff the hook delegates to.
+  onStartTravelMinigame: mock.fn(),
   ...overrides
 })
 

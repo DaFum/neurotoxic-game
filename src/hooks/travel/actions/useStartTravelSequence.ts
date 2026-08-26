@@ -5,24 +5,19 @@ import { logger } from '../../../utils/logger'
 import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 import type { TravelActionsParams } from '../types'
-import { TRAVEL_ANIMATION_DURATION_MS } from '../../../utils/travelUtils'
-
-const TRAVEL_ANIMATION_TIMEOUT_MS = TRAVEL_ANIMATION_DURATION_MS + 10
 
 interface UseStartTravelSequenceParams extends Pick<
   TravelActionsParams,
   'refs' | 'setters' | 'params'
 > {
   clearPendingTravel: () => void
-  onTravelComplete: (node?: MapNode | null) => void
 }
 
 export const useStartTravelSequence = ({
   refs,
   setters,
   params,
-  clearPendingTravel,
-  onTravelComplete
+  clearPendingTravel
 }: UseStartTravelSequenceParams) => {
   const { onStartTravelMinigame, addToast } = params
 
@@ -33,9 +28,7 @@ export const useStartTravelSequence = ({
       if (!refs.gameMapRef.current) return
 
       try {
-        refs.travelCompletedRef.current = false
         setters.setIsTraveling(true)
-        setters.setTravelTarget(node)
 
         audioService
           .ensureAudioContext()
@@ -54,20 +47,7 @@ export const useStartTravelSequence = ({
             logger.warn('TravelLogic', 'ensureAudioContext failed', error)
           })
 
-        if (onStartTravelMinigame) {
-          onStartTravelMinigame(node.id)
-          return
-        }
-
-        refs.failsafeTimeoutRef.current = setTimeout(() => {
-          if (!refs.travelCompletedRef.current) {
-            logger.warn(
-              'TravelLogic',
-              'Travel animation failsafe triggered. Forcing completion.'
-            )
-            onTravelComplete(node)
-          }
-        }, TRAVEL_ANIMATION_TIMEOUT_MS)
+        onStartTravelMinigame(node.id)
       } catch (error) {
         handleError(error, {
           addToast,
@@ -77,16 +57,8 @@ export const useStartTravelSequence = ({
           context: { node }
         })
         setters.setIsTraveling(false)
-        setters.setTravelTarget(null)
       }
     },
-    [
-      clearPendingTravel,
-      setters,
-      refs,
-      onStartTravelMinigame,
-      addToast,
-      onTravelComplete
-    ]
+    [clearPendingTravel, setters, refs, onStartTravelMinigame, addToast]
   )
 }
