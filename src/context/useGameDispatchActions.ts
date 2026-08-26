@@ -362,14 +362,17 @@ export function useGameDispatchActions({
         // validation into persisted global settings. The shared sanitizer keeps
         // storage, reducer, and load in sync.
         safeStorageOperation('saveGlobalSettings', () => {
-          writeGlobalSettings({
-            ...readGlobalSettings(),
-            ...sanitizedUpdates
-          })
+          writeGlobalSettings(
+            {
+              ...readGlobalSettings(storage),
+              ...sanitizedUpdates
+            },
+            storage
+          )
         })
       }
     }),
-    [dispatch]
+    [dispatch, storage]
   )
 
   const resetState = useCallback(() => {

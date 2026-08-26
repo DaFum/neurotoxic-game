@@ -99,7 +99,8 @@ export const useRhythmGameLoop = ({
         pauseAudio: audioEngine.pauseAudio,
         resumeAudio: audioEngine.resumeAudio,
         setCorruptionState,
-        setCorruptionEffect: audioEngine.setCorruptionEffect
+        setCorruptionEffect: audioEngine.setCorruptionEffect,
+        disableCorruptionBurstAudio: audioEngine.disableCorruptionBurstAudio
       })
     },
     [

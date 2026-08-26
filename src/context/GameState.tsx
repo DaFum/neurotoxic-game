@@ -121,7 +121,7 @@ const initGameState = (storage: IStorageAdapter): GameState => {
   // getUnlocks already runs inside safeStorageOperation and falls back to []
   // on any storage failure, so wrapping it again here would add nothing.
   const unlocks = getUnlocks(storage)
-  const freshState = createInitialState({ unlocks })
+  const freshState = createInitialState({ unlocks, storage })
 
   // Check for test-injected state (screenshot testing).
   // A special marker key signals the state was placed by the screenshot

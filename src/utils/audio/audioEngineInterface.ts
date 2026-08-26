@@ -106,6 +106,15 @@ export interface IAudioEngine {
   /** Arms the corruption-burst audio chain. */
   enableCorruptionBurstAudio(): void
   /**
+   * Releases the corruption-burst audio chain.
+   *
+   * @remarks
+   * Must live on the interface alongside its `enable` counterpart: a burst
+   * armed through a substituted engine has to be released through the same
+   * one, or the expiry reaches the real Tone hub from an isolated tree.
+   */
+  disableCorruptionBurstAudio(): void
+  /**
    * Absolute audio-context time in ms.
    *
    * @remarks
@@ -162,6 +171,8 @@ export const toneAudioEngine: IAudioEngine = {
     audioEngineHub.setCorruptionEffect(active),
   enableCorruptionBurstAudio: (): void =>
     audioEngineHub.enableCorruptionBurstAudio(),
+  disableCorruptionBurstAudio: (): void =>
+    audioEngineHub.disableCorruptionBurstAudio(),
   getToneAbsoluteTimeMs: (): number => audioEngineHub.getToneAbsoluteTimeMs(),
   playSFX: (id: AudioSfxType): void => audioEngineHub.audioService.playSFX(id),
   stopMusic: (): void => audioEngineHub.audioService.stopMusic(),
@@ -226,6 +237,9 @@ export class NullAudioEngine implements IAudioEngine {
   enableCorruptionBurstAudio(): void {}
 
   /** {@inheritDoc IAudioEngine} */
+  disableCorruptionBurstAudio(): void {}
+
+  /** {@inheritDoc IAudioEngine} */
   getToneAbsoluteTimeMs(): number {
     return 0
   }
@@ -250,21 +264,35 @@ export class NullAudioEngine implements IAudioEngine {
  */
 export const createStubAudioEngine = (
   getTimeMs: () => number
-): IAudioEngine => ({
-  getGigTimeMs: getTimeMs,
-  startGig: async (): Promise<boolean> => true,
-  stopGig: (): void => {},
-  scheduleNote: (): void => {},
-  ensureAudioContext: async (): Promise<boolean> => true,
-  playSongSequence: async (): Promise<void> => {},
-  stopAudio: (): void => {},
-  getTransportState: (): 'started' | 'stopped' | 'paused' => 'started',
-  pauseAudio: async (): Promise<void> => {},
-  resumeAudio: async (): Promise<boolean> => true,
-  setCorruptionEffect: (): void => {},
-  enableCorruptionBurstAudio: (): void => {},
-  getToneAbsoluteTimeMs: getTimeMs,
-  playSFX: (): void => {},
-  stopMusic: (): void => {},
-  getPlayRequestId: (): number => 0
-})
+): IAudioEngine => {
+  // Mirrors the real engine's generation counter rather than freezing at 0:
+  // `useHandleMiss` compares this id across its 4s game-over timeout to detect
+  // that another session started meanwhile, and a constant id makes that guard
+  // impossible to exercise against this stub.
+  let playRequestId = 0
+
+  return {
+    getGigTimeMs: getTimeMs,
+    startGig: async (): Promise<boolean> => {
+      playRequestId++
+      return true
+    },
+    stopGig: (): void => {},
+    scheduleNote: (): void => {},
+    ensureAudioContext: async (): Promise<boolean> => true,
+    playSongSequence: async (): Promise<void> => {},
+    stopAudio: (): void => {
+      playRequestId++
+    },
+    getTransportState: (): 'started' | 'stopped' | 'paused' => 'started',
+    pauseAudio: async (): Promise<void> => {},
+    resumeAudio: async (): Promise<boolean> => true,
+    setCorruptionEffect: (): void => {},
+    enableCorruptionBurstAudio: (): void => {},
+    disableCorruptionBurstAudio: (): void => {},
+    getToneAbsoluteTimeMs: getTimeMs,
+    playSFX: (): void => {},
+    stopMusic: (): void => {},
+    getPlayRequestId: (): number => playRequestId
+  }
+}

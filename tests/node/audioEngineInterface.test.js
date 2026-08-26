@@ -20,6 +20,7 @@ const ENGINE_METHODS = [
   'resumeAudio',
   'setCorruptionEffect',
   'enableCorruptionBurstAudio',
+  'disableCorruptionBurstAudio',
   'getToneAbsoluteTimeMs',
   'playSFX',
   'stopMusic',
@@ -81,6 +82,39 @@ describe('IAudioEngine implementations', () => {
   })
 })
 
+describe('createStubAudioEngine play-request id', () => {
+  test('advances on session start and on invalidation', () => {
+    const engine = createStubAudioEngine(() => 0)
+    const initial = engine.getPlayRequestId()
+
+    engine.startGig({ filename: 'x.ogg' })
+    const afterStart = engine.getPlayRequestId()
+    assert.notEqual(afterStart, initial)
+
+    engine.stopAudio()
+    assert.notEqual(engine.getPlayRequestId(), afterStart)
+  })
+
+  test('is stable while no session boundary is crossed', () => {
+    const engine = createStubAudioEngine(() => 0)
+    const id = engine.getPlayRequestId()
+
+    engine.scheduleNote(60, 'guitar', 0, 127)
+    engine.playSFX('hit')
+
+    assert.equal(engine.getPlayRequestId(), id)
+  })
+
+  test('each stub keeps its own counter', () => {
+    const a = createStubAudioEngine(() => 0)
+    const b = createStubAudioEngine(() => 0)
+
+    a.startGig({ filename: 'x.ogg' })
+
+    assert.notEqual(a.getPlayRequestId(), b.getPlayRequestId())
+  })
+})
+
 describe('audio engine injection', () => {
   /**
    * Importing the audio singleton at module scope in a gig consumer prevents
@@ -122,6 +156,7 @@ describe('audio engine injection', () => {
         'resumeAudio(',
         'setCorruptionEffect(',
         'enableCorruptionBurstAudio(',
+        'disableCorruptionBurstAudio(',
         'getToneAbsoluteTimeMs(',
         'getPlayRequestId('
       ]) {
@@ -153,6 +188,24 @@ describe('audio engine injection', () => {
     )
     assert.match(source, /<AudioEngineProvider>/)
   })
+
+  // Pure gig helpers take their audio operations as callbacks, so they never
+  // use `useAudioEngine` and the consumer loop above cannot cover them. A hub
+  // import here bypasses the injected engine just as effectively: this is
+  // exactly how the corruption-burst release escaped the seam.
+  const CALLBACK_ONLY_HELPERS = ['src/utils/rhythmGameLoopUtils.ts']
+
+  for (const file of CALLBACK_ONLY_HELPERS) {
+    test(`${file} imports nothing from the audio hub`, () => {
+      const source = readFileSync(file, 'utf8')
+
+      assert.doesNotMatch(
+        source,
+        /from '\.\/audio\/audioEngine'/,
+        `${file} imports the audio hub instead of taking a callback`
+      )
+    })
+  }
 
   for (const file of CONSUMERS) {
     test(`${file} does not import the gig clock at module scope`, () => {

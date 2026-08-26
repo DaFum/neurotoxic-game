@@ -4,6 +4,18 @@
 
 All imports from outside this directory must go through `audioEngine.ts`. Direct imports from sub-modules (`./AudioManager`, `./audioService`, `./playback`, etc.) are only permitted inside `src/utils/audio/`.
 
+Deliberate exception (dependency-injection seam): `./audioEngineInterface` may
+be imported directly from outside this directory. It is the substitutable
+`IAudioEngine` surface (`toneAudioEngine`, `NullAudioEngine`,
+`createStubAudioEngine`), and re-exporting it from `audioEngine.ts` would make
+the barrel depend on a module that namespace-imports the barrel back. Current
+consumers are `src/context/AudioEngineContext.tsx` (the React seam) and
+`src/components/PixiStageController.ts` (takes the engine as a constructor
+argument). Do not widen this to other sub-modules, and do not import
+`toneAudioEngine` anywhere else: the composition root mounts
+`<AudioEngineProvider>` without an `engine` prop and lets the context resolve
+the real engine.
+
 Deliberate exception: pure, stateless helpers consumed by modules that are themselves dependencies of this directory's playback stack may be imported directly from their sub-module. `src/utils/chartDensity.ts` imports `buildMidiTrackEvents` from `./audio/midiUtils` and `src/utils/rhythmUtils.ts` imports `resolveSongPlaybackWindow` from `./audio/songUtils` — routing these through the `audioEngine.ts` barrel would create an import cycle (`rhythmUtils` is imported by `midiPlayback.ts`, `playbackStrategies.ts`, and `songSequencer.ts`, which the barrel re-exports) and would pull the stateful audio stack into pure utility modules and their `node:test` runs. Do not "fix" these two imports to use the barrel; do not extend this exception to stateful sub-modules.
 
 Roles:

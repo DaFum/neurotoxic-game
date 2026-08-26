@@ -12,6 +12,7 @@ import { InMemoryAdapter } from '../../src/utils/storageAdapter'
 import { resetStorageFallback } from '../../src/utils/storage'
 
 const UNLOCKS_KEY = 'neurotoxic_unlocks'
+const SETTINGS_KEY = 'neurotoxic_global_settings'
 
 describe('GameStateProvider initialization honors the injected adapter', () => {
   beforeEach(() => {
@@ -69,6 +70,49 @@ describe('GameStateProvider initialization honors the injected adapter', () => {
 
     expect(result.current.unlocks).toContain('injected_unlock')
     expect(result.current.unlocks).not.toContain('default_unlock')
+  })
+
+  it('reads initial settings from the provided adapter, not the default', () => {
+    // Settings reached storage through `createInitialState -> getSavedSettings`
+    // with no adapter, so a provider could govern saves and unlocks while the
+    // settings still came out of browser localStorage.
+    const adapter = new InMemoryAdapter()
+    adapter.set(SETTINGS_KEY, JSON.stringify({ crtEnabled: false }))
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify({ crtEnabled: true }))
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <StorageProvider adapter={adapter}>
+        <GameStateProvider>{children}</GameStateProvider>
+      </StorageProvider>
+    )
+
+    const { result } = renderHook(
+      () => useGameSelector(state => state.settings.crtEnabled),
+      { wrapper }
+    )
+
+    expect(result.current).toBe(false)
+  })
+
+  it('writes updated settings to the provided adapter, not the default', () => {
+    const adapter = new InMemoryAdapter()
+
+    const wrapper = ({ children }: { children: ReactNode }) => (
+      <StorageProvider adapter={adapter}>
+        <GameStateProvider>{children}</GameStateProvider>
+      </StorageProvider>
+    )
+
+    const { result } = renderHook(() => useGameActions(), { wrapper })
+
+    act(() => {
+      result.current.updateSettings({ crtEnabled: false })
+    })
+
+    expect(JSON.parse(adapter.get(SETTINGS_KEY) ?? '{}')).toMatchObject({
+      crtEnabled: false
+    })
+    expect(localStorage.getItem(SETTINGS_KEY)).toBeNull()
   })
 
   it('still uses the default adapter when no provider is mounted', () => {
