@@ -105,7 +105,8 @@ function getInitialGameState(stashItemId: string | null): RoadieLogicState {
     itemsDelivered: [],
     contrabandCount: 0,
     traffic: [],
-    lastMoveTime: 0,
+    elapsedMS: 0,
+    lastMoveTime: Number.NEGATIVE_INFINITY,
     equipmentDamage: 0,
     isGameOver: false,
     spawners: TRAFFIC_ROWS.map((row, i) => ({
@@ -245,7 +246,10 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      const now = Date.now()
+      // Gameplay time, not wall clock: `elapsedMS` only ever advances by the
+      // ticker's clamped deltas, so an OS/NTP clock jump can neither bypass the
+      // cooldown nor wedge input behind a timestamp from the future.
+      const now = game.elapsedMS
       const weight = game.carrying ? game.carrying.weight : 1
       const cooldown = ROADIE_MOVE_COOLDOWN_BASE * weight
 
@@ -282,6 +286,10 @@ export const useRoadieLogic = () => {
     (deltaMS: number) => {
       const game = gameStateRef.current
       if (game.isGameOver) return
+
+      // A paused-tab resume can report a negative delta; clamp so the movement
+      // cooldown clock stays monotonic.
+      game.elapsedMS += Math.max(0, deltaMS)
 
       // Passive Neurotoxic Damage Logic
       if (game.carrying && game.carrying.type === 'CONTRABAND') {

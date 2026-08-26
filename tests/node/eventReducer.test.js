@@ -19,6 +19,28 @@ const {
   handlePopPendingEvent
 } = await import('../../src/context/reducers/eventReducer')
 
+const { migrateLegacyQuestSchema } =
+  await import('../../src/domain/questLegacyMigration.ts')
+
+/**
+ * Builds a state whose only active quest is the given economy quest, so a
+ * single `handleApplyEventDelta` call can be scored end to end.
+ */
+const stateWithQuest = (quest, player) => ({
+  band: { harmony: 50, members: [] },
+  player: { day: 1, money: 1000, fame: 100, ...player },
+  toasts: [],
+  inventory: {},
+  activeStoryFlags: [],
+  activeQuests: [migrateLegacyQuestSchema(quest)],
+  completedQuestIds: [],
+  questCooldowns: [],
+  quests: {}
+})
+
+const questProgress = (state, questId) =>
+  state.activeQuests.find(q => q.id === questId)?.progress ?? 0
+
 describe('eventReducer', () => {
   /** @type {import('../../src/types').GameState} */
   let baseState
@@ -176,6 +198,120 @@ describe('eventReducer', () => {
 
       assert.strictEqual(increased.gigEventScoreDelta, 150)
       assert.strictEqual(decreased.gigEventScoreDelta, -150)
+    })
+
+    it('advances quest_payday from a positive event-delta money gain', () => {
+      // Regression: money used to reach the player only through
+      // `applyEventDelta`, while `economy.moneyEarned` was emitted at selected
+      // post-gig call sites — so event income never scored the quest.
+      const state = stateWithQuest({
+        id: 'quest_payday',
+        progress: 0,
+        required: 1000
+      })
+
+      const next = handleApplyEventDelta(state, { player: { money: 250 } })
+
+      assert.strictEqual(next.player.money, 1250)
+      assert.strictEqual(questProgress(next, 'quest_payday'), 250)
+    })
+
+    it('does not advance quest_payday on a money loss', () => {
+      const state = stateWithQuest({
+        id: 'quest_payday',
+        progress: 0,
+        required: 1000
+      })
+
+      const next = handleApplyEventDelta(state, { player: { money: -250 } })
+
+      assert.strictEqual(next.player.money, 750)
+      assert.strictEqual(questProgress(next, 'quest_payday'), 0)
+    })
+
+    it('reports the post-clamp money gain, not the requested one', () => {
+      // `clampPlayerMoney` floors, so a sub-unit gain is clamped away entirely.
+      // Crediting the requested amount would let fractional events farm the quest.
+      const state = stateWithQuest({
+        id: 'quest_payday',
+        progress: 0,
+        required: 1000
+      })
+
+      const next = handleApplyEventDelta(state, { player: { money: 0.4 } })
+
+      assert.strictEqual(next.player.money, 1000)
+      assert.strictEqual(questProgress(next, 'quest_payday'), 0)
+    })
+
+    it('advances quest_local_legend from event fame in the stamped region', () => {
+      const state = stateWithQuest(
+        {
+          id: 'quest_local_legend',
+          scopeKey: 'magdeburg',
+          progress: 0,
+          required: 500,
+          repeatPolicy: 'perRegion'
+        },
+        { location: 'venues:magdeburg_kellerclub.name' }
+      )
+
+      const next = handleApplyEventDelta(state, { player: { fame: 120 } })
+
+      assert.strictEqual(next.player.fame, 220)
+      assert.strictEqual(questProgress(next, 'quest_local_legend'), 120)
+    })
+
+    it('does not advance quest_local_legend from fame earned elsewhere', () => {
+      const state = stateWithQuest(
+        {
+          id: 'quest_local_legend',
+          scopeKey: 'magdeburg',
+          progress: 0,
+          required: 500,
+          repeatPolicy: 'perRegion'
+        },
+        { location: 'venues:berlin_suff.name' }
+      )
+
+      const next = handleApplyEventDelta(state, { player: { fame: 120 } })
+
+      assert.strictEqual(next.player.fame, 220)
+      assert.strictEqual(questProgress(next, 'quest_local_legend'), 0)
+    })
+
+    it('credits fame to the region the event resolved in, not the destination', () => {
+      // A delta that both awards fame and relocates the player must not credit
+      // the town it is moving the band to.
+      const state = stateWithQuest(
+        {
+          id: 'quest_local_legend',
+          scopeKey: 'magdeburg',
+          progress: 0,
+          required: 500,
+          repeatPolicy: 'perRegion'
+        },
+        { location: 'venues:magdeburg_kellerclub.name' }
+      )
+
+      const next = handleApplyEventDelta(state, {
+        player: { fame: 120, location: 'venues:berlin_suff.name' }
+      })
+
+      assert.strictEqual(next.player.location, 'venues:berlin_suff.name')
+      assert.strictEqual(questProgress(next, 'quest_local_legend'), 120)
+    })
+
+    it('does not advance economy quests when nothing was gained', () => {
+      const state = stateWithQuest({
+        id: 'quest_payday',
+        progress: 0,
+        required: 1000
+      })
+
+      const next = handleApplyEventDelta(state, { band: { harmony: 5 } })
+
+      assert.strictEqual(questProgress(next, 'quest_payday'), 0)
     })
 
     it('keeps the cumulative in-gig score finite when addition overflows', () => {
