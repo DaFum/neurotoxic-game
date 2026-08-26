@@ -41,7 +41,7 @@ mock.mock('../../src/utils/audio/AudioManager', () => ({
 
 const { useRoadieLogic } =
   await import('../../src/hooks/minigames/useRoadieLogic')
-const { ROADIE_GRID_WIDTH, ROADIE_GRID_HEIGHT } =
+const { ROADIE_GRID_WIDTH, ROADIE_GRID_HEIGHT, ROADIE_MOVE_COOLDOWN_BASE } =
   await import('../../src/hooks/minigames/minigameConstants')
 
 describe('useRoadieLogic', () => {
@@ -64,6 +64,14 @@ describe('useRoadieLogic', () => {
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current
 
+    // The move cooldown runs on accumulated ticker time, not the host clock, so
+    // clearing it means advancing gameplay time. Timers advance alongside for
+    // the hook's own scene-transition timeout.
+    const advanceGameplay = ms => {
+      mock.advanceTimersByTime(ms)
+      game.elapsedMS += ms
+    }
+
     // 1. Initialization
     expect(game.playerPos).toEqual({ x: 6, y: 0 })
     expect(game.equipmentDamage).toBe(0)
@@ -71,27 +79,27 @@ describe('useRoadieLogic', () => {
     expect(game.carrying).toBeTruthy()
     expect(result.current.uiState.itemsRemaining).toBe(2)
 
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // 2. Movement and bounds
     act(() => {
       result.current.actions.move(1, 0)
     })
     expect(game.playerPos).toEqual({ x: 7, y: 0 })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     act(() => {
       result.current.actions.move(-1, 0)
     })
     expect(game.playerPos).toEqual({ x: 6, y: 0 })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     game.playerPos.x = 0
     act(() => {
       result.current.actions.move(-1, 0)
     })
     expect(game.playerPos).toEqual({ x: 0, y: 0 })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // Right Boundary
     game.playerPos.x = ROADIE_GRID_WIDTH - 1
@@ -99,7 +107,7 @@ describe('useRoadieLogic', () => {
       result.current.actions.move(1, 0)
     })
     expect(game.playerPos).toEqual({ x: ROADIE_GRID_WIDTH - 1, y: 0 })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // Up Boundary
     game.playerPos.y = 0
@@ -107,7 +115,7 @@ describe('useRoadieLogic', () => {
       result.current.actions.move(0, -1)
     })
     expect(game.playerPos).toEqual({ x: ROADIE_GRID_WIDTH - 1, y: 0 })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // Down Boundary
     game.playerPos.y = ROADIE_GRID_HEIGHT - 1
@@ -118,14 +126,14 @@ describe('useRoadieLogic', () => {
       x: ROADIE_GRID_WIDTH - 1,
       y: ROADIE_GRID_HEIGHT - 1
     })
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // 3. Deliver item at venue
     game.carrying = { id: 'amp', type: 'AMP', weight: 2 }
     game.itemsDelivered = []
     mockPlaySFX.mockClear()
     game.playerPos = { x: 6, y: ROADIE_GRID_HEIGHT - 2 }
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
     const beforeDeliverCount = mockPlaySFX.mock.calls.length
     act(() => {
       result.current.actions.move(0, 1)
@@ -136,7 +144,7 @@ describe('useRoadieLogic', () => {
 
     expect(mockPlaySFX.mock.calls[beforeDeliverCount][0]).toBe('deliver')
 
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // 4. Pick up item at start
     game.carrying = null
@@ -151,7 +159,7 @@ describe('useRoadieLogic', () => {
 
     expect(mockPlaySFX.mock.calls.length).toBe(beforePickupCount + 1)
     expect(mockPlaySFX.mock.calls[beforePickupCount][0]).toBe('pickup')
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
 
     // 5. Spawn traffic
     game.traffic = []
@@ -178,7 +186,7 @@ describe('useRoadieLogic', () => {
     game.itemsToDeliver = []
     game.carrying = { id: 'last-item', weight: 1 }
     game.playerPos = { x: 6, y: ROADIE_GRID_HEIGHT - 2 }
-    mock.advanceTimersByTime(1000)
+    advanceGameplay(1000)
     act(() => {
       result.current.actions.move(0, 1)
     })
@@ -187,6 +195,74 @@ describe('useRoadieLogic', () => {
     expect(mockCompleteRoadieMinigame.mock.calls[0][0]).toBe(10) // equipmentDamage
 
     expect(mockChangeScene.mock.calls.length).toBe(0) // Routing is deferred to useArrivalLogic
+
+    unmount()
+  })
+
+  test('move cooldown ignores wall-clock jumps in both directions', () => {
+    const { result, unmount } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    // Carry a weight-1 item so the cooldown is exactly ROADIE_MOVE_COOLDOWN_BASE
+    // and the pickup row can't swap in a heavier one mid-test.
+    game.carrying = { id: 'guitar', type: 'GUITAR', weight: 1 }
+
+    act(() => {
+      result.current.actions.move(1, 0)
+    })
+    expect(game.playerPos.x).toBe(7)
+
+    // Jumping the host clock forward must not buy a free move: only ticker
+    // deltas advance the cooldown.
+    mock.setSystemTime(new Date(Date.now() + 60 * 60 * 1000))
+    act(() => {
+      result.current.actions.move(1, 0)
+    })
+    expect(game.playerPos.x).toBe(7)
+
+    // ...and jumping it backwards must not wedge input either.
+    mock.setSystemTime(new Date(Date.now() - 2 * 60 * 60 * 1000))
+    act(() => {
+      result.current.update(ROADIE_MOVE_COOLDOWN_BASE)
+      result.current.actions.move(1, 0)
+    })
+    expect(game.playerPos.x).toBe(8)
+
+    unmount()
+  })
+
+  test('a negative ticker delta cannot rewind the simulation', () => {
+    // A paused-tab resume can report a negative delta. Left unclamped it would
+    // rewind gameplay time (letting a queued move slip through early), heal
+    // contraband damage, push spawn timers backwards and reverse traffic.
+    const { result, unmount } = renderHook(() => useRoadieLogic())
+    const game = result.current.gameStateRef.current
+    game.carrying = { id: 'stash', type: 'CONTRABAND', weight: 1 }
+
+    // Spawn rates run 1400-2800ms, so one short tick leaves the road empty.
+    // The roadie stays on row 0, which carries no traffic, so nothing crashes.
+    act(() => {
+      result.current.update(1000)
+      result.current.update(1000)
+      result.current.update(1000)
+    })
+
+    const before = {
+      elapsedMS: game.elapsedMS,
+      equipmentDamage: game.equipmentDamage,
+      timers: game.spawners.map(s => s.timer),
+      carX: game.traffic.map(car => car.x)
+    }
+    expect(before.equipmentDamage).toBeGreaterThan(0)
+    expect(before.carX.length).toBeGreaterThan(0)
+
+    act(() => {
+      result.current.update(-5000)
+    })
+
+    expect(game.elapsedMS).toBe(before.elapsedMS)
+    expect(game.equipmentDamage).toBe(before.equipmentDamage)
+    expect(game.spawners.map(s => s.timer)).toEqual(before.timers)
+    expect(game.traffic.map(car => car.x)).toEqual(before.carX)
 
     unmount()
   })

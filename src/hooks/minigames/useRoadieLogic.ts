@@ -105,7 +105,8 @@ function getInitialGameState(stashItemId: string | null): RoadieLogicState {
     itemsDelivered: [],
     contrabandCount: 0,
     traffic: [],
-    lastMoveTime: 0,
+    elapsedMS: 0,
+    lastMoveTime: Number.NEGATIVE_INFINITY,
     equipmentDamage: 0,
     isGameOver: false,
     spawners: TRAFFIC_ROWS.map((row, i) => ({
@@ -245,7 +246,10 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      const now = Date.now()
+      // Gameplay time, not wall clock: `elapsedMS` only ever advances by the
+      // ticker's clamped deltas, so an OS/NTP clock jump can neither bypass the
+      // cooldown nor wedge input behind a timestamp from the future.
+      const now = game.elapsedMS
       const weight = game.carrying ? game.carrying.weight : 1
       const cooldown = ROADIE_MOVE_COOLDOWN_BASE * weight
 
@@ -283,9 +287,17 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
+      // A paused-tab resume can report a negative delta. Normalize once and
+      // drive the whole simulation from it: an unclamped delta would rewind the
+      // cooldown clock, heal contraband damage, push spawn timers backwards and
+      // send traffic back the way it came.
+      const delta = Math.max(0, deltaMS)
+
+      game.elapsedMS += delta
+
       // Passive Neurotoxic Damage Logic
       if (game.carrying && game.carrying.type === 'CONTRABAND') {
-        game.equipmentDamage += deltaMS * 0.005
+        game.equipmentDamage += delta * 0.005
         game.equipmentDamage = Math.min(100, game.equipmentDamage)
 
         if (game.equipmentDamage >= 100) {
@@ -300,8 +312,8 @@ export const useRoadieLogic = () => {
         }
       }
 
-      spawnTraffic(game, deltaMS)
-      const crashed = processTraffic(game, deltaMS, (damage: number) =>
+      spawnTraffic(game, delta)
+      const crashed = processTraffic(game, delta, (damage: number) =>
         finishRoadie(damage, game.contrabandCount ?? 0)
       )
 

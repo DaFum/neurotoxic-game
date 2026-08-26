@@ -9,6 +9,11 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { QuestEvents } from '../../utils/questProgress'
 import { createStoryFlagAddedQuestEvent } from '../../quests/producers/storyQuestEvents'
+import {
+  createFameGainedQuestEvent,
+  createMoneyEarnedQuestEvent
+} from '../../quests/producers/economyQuestEvents'
+import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { GAME_PHASES } from '../gameConstants'
 import type {
   EventDeltaPayload,
@@ -52,7 +57,16 @@ export const handleSetScreenshotMode = (
 ): GameState => ({ ...state, isScreenshotMode: payload === true })
 
 /**
- * Applies an event delta and emits trait/story quest side effects.
+ * Applies an event delta and emits trait/story/economy quest side effects.
+ *
+ * @remarks
+ * Money and fame quest events are emitted here rather than at the call sites
+ * that build the delta, so every event-driven gain feeds `economy.moneyEarned`
+ * / `fame.gained`. The amounts are the *effective* gains measured against the
+ * committed state, so an increase the clamps absorb — a sub-unit amount lost to
+ * the integer floor, or a rise back toward the non-negative floor — reports
+ * nothing. Fame is stamped with the region the player was in when the event
+ * resolved, not the destination of a relocating delta.
  *
  * @param state - Current game state.
  * @param payload - Event delta to apply.
@@ -88,6 +102,35 @@ export const handleApplyEventDelta = (
     ...nextState,
     band: traitResult.band,
     toasts: traitResult.toasts
+  }
+
+  // Measure against `nextState`, before quest rewards can move the same
+  // counters, so completing a fame-rewarding quest cannot re-feed itself.
+  const moneyGain =
+    finiteNumberOr(nextState.player?.money, 0) -
+    finiteNumberOr(state.player?.money, 0)
+  if (moneyGain > 0) {
+    resultState = QuestEvents.emit(
+      resultState,
+      createMoneyEarnedQuestEvent({
+        amount: moneyGain,
+        reason: 'event_delta'
+      })
+    )
+  }
+
+  const fameGain =
+    finiteNumberOr(nextState.player?.fame, 0) -
+    finiteNumberOr(state.player?.fame, 0)
+  if (fameGain > 0) {
+    resultState = QuestEvents.emit(
+      resultState,
+      createFameGainedQuestEvent({
+        amount: fameGain,
+        region: getRegionKeyForLocation(state.player?.location) ?? 'Unknown',
+        reason: 'event_delta'
+      })
+    )
   }
 
   const priorFlags = new Set(

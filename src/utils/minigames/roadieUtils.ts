@@ -43,6 +43,9 @@ export type RoadieLogicState = RoadieRenderState & {
   itemsDelivered: RoadieCarryingItem[]
   contrabandCount: number
   traffic: RoadieTrafficCar[]
+  /** Monotonic gameplay time accumulated from ticker deltas, in milliseconds. */
+  elapsedMS: number
+  /** `elapsedMS` at the last accepted move; `-Infinity` before the first one. */
   lastMoveTime: number
   isGameOver: boolean
   spawners: RoadieSpawner[]
