@@ -19,7 +19,9 @@ import {
 } from './actionCreators'
 import { resolveEvent, type SideEffect } from '../domain/eventResolver'
 import { useClock } from './ClockContext'
+import { useStorage } from './StorageContext'
 import type { GameAction, GameState } from '../types'
+import type { IStorageAdapter } from '../utils/storageAdapter'
 import type { OptionalToastCallback } from '../types/callbacks'
 import type { GamePhase } from '../types'
 
@@ -40,6 +42,13 @@ type SideEffectContext = {
   changeScene: ChangeScene
   saveGame: SaveGame
   tRef: MutableRefObject<TFunction>
+  /**
+   * Storage adapter that event-earned unlocks are written through. Must be the
+   * same adapter `usePersistence` saves and loads with: letting this fall back
+   * to the module default would write unlocks to one backend while the save
+   * that references them lives in another.
+   */
+  storage: IStorageAdapter
   /**
    * Materializes the post-resolution state snapshot for `saveGame` effects by
    * replaying the resolution's actions through the reducer (the dispatch above
@@ -71,14 +80,15 @@ function choiceTextFallback(choice: Record<string, unknown> | null): {
 }
 
 function runSideEffects(effects: SideEffect[], ctx: SideEffectContext): void {
-  const { addToast, changeScene, saveGame, tRef, getResolvedState } = ctx
+  const { addToast, changeScene, saveGame, tRef, storage, getResolvedState } =
+    ctx
   const t = tRef.current
   const newlyAddedUnlocks = new Set<string>()
 
   for (const effect of effects) {
     switch (effect.type) {
       case 'persistUnlock': {
-        if (addUnlock(effect.id)) {
+        if (addUnlock(effect.id, storage)) {
           newlyAddedUnlocks.add(effect.id)
         }
         break
@@ -171,6 +181,7 @@ export function useEventSystem({
   tRef
 }: UseEventSystemParams) {
   const clock = useClock()
+  const storage = useStorage()
 
   const setActiveEvent = useCallback(
     (event: Parameters<typeof createSetActiveEventAction>[0]) =>
@@ -283,6 +294,7 @@ export function useEventSystem({
           changeScene,
           saveGame,
           tRef,
+          storage,
           getResolvedState: () => resolvedStateSnapshot
         })
         return {
@@ -305,6 +317,7 @@ export function useEventSystem({
       saveGame,
       setActiveEvent,
       stateRef,
+      storage,
       tRef
     ]
   )
