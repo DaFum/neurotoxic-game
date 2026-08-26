@@ -11,7 +11,8 @@ import {
   useSyncExternalStore
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { logger, isValidLogLevel } from '../utils/logger'
+import { logger } from '../utils/logger'
+import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { getUnlocks } from '../utils/unlockManager'
 import { isLooseRecord } from '../utils/gameState'
 import { useLeaderboardSync } from '../hooks/useLeaderboardSync'
@@ -224,9 +225,13 @@ export const GameStateProvider = ({ children }: { children?: ReactNode }) => {
   // Sync Logger with settings on load/change
   useEffect(() => {
     if (state.settings?.logLevel !== undefined) {
-      const numericLogLevel = Number(state.settings.logLevel)
-      if (isValidLogLevel(numericLogLevel)) {
-        logger.setLevel(numericLogLevel)
+      // Same canonical sanitizer the reducer and the global-settings write use,
+      // so the live logger level can never diverge from the validated state.
+      const { logLevel } = sanitizeSettingsPayload({
+        logLevel: state.settings.logLevel
+      })
+      if (logLevel !== undefined) {
+        logger.setLevel(logLevel)
       } else {
         logger.warn(
           'GameState',

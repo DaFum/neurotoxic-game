@@ -15,7 +15,7 @@ import type {
   GamePhase
 } from '../types'
 import { GAME_PHASES, PRACTICE_RETURN_SCENES } from './gameConstants'
-import { logger, isValidLogLevel } from '../utils/logger'
+import { logger } from '../utils/logger'
 import {
   readGlobalSettings,
   safeStorageOperation,
@@ -334,10 +334,17 @@ export function useGameDispatchActions({
       updateSettings: (updates: Record<string, unknown>) => {
         dispatch(createUpdateSettingsAction(updates))
 
+        // Resolve the effective settings once through the canonical sanitizer
+        // and feed the same result to both the logger side effect and the
+        // storage write. A separate `Number(...)` reading here would let the
+        // runtime logger accept values (numeric strings, booleans) that the
+        // reducer and persisted settings drop, leaving the three out of sync.
+        const sanitizedUpdates = sanitizeSettingsPayload(updates)
+
         if (updates.logLevel !== undefined) {
-          const numericLogLevel = Number(updates.logLevel)
-          if (isValidLogLevel(numericLogLevel)) {
-            logger.setLevel(numericLogLevel)
+          const { logLevel } = sanitizedUpdates
+          if (logLevel !== undefined) {
+            logger.setLevel(logLevel)
           } else {
             logger.warn(
               'GameState',
@@ -354,7 +361,7 @@ export function useGameDispatchActions({
         safeStorageOperation('saveGlobalSettings', () => {
           writeGlobalSettings({
             ...readGlobalSettings(),
-            ...sanitizeSettingsPayload(updates)
+            ...sanitizedUpdates
           })
         })
       }
