@@ -23,6 +23,7 @@ import {
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
 import { getUnlocks } from '../utils/unlockManager'
+import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
@@ -257,6 +258,8 @@ export function useGameDispatchActions({
   tRef,
   resetMapGenerationRetries
 }: UseGameDispatchActionsProps): GameDispatchActions {
+  const storage = useStorage()
+
   // `changeScene` and `addToast` stay separate: the persistence and event
   // sub-hooks below take them as inputs, so they must exist before the bundle.
   const changeScene = useCallback(
@@ -371,8 +374,11 @@ export function useGameDispatchActions({
 
   const resetState = useCallback(() => {
     resetMapGenerationRetries()
-    dispatch(createResetStateAction({ unlocks: getUnlocks() }))
-  }, [dispatch, resetMapGenerationRetries])
+    // Same adapter initialization, save/load, and event unlocks use: reading
+    // the module default here would let a reset overwrite the injected
+    // backend's unlocks with whatever sits in browser storage.
+    dispatch(createResetStateAction({ unlocks: getUnlocks(storage) }))
+  }, [dispatch, resetMapGenerationRetries, storage])
 
   const advanceDay = useCallback(() => {
     const currentState = stateRef.current

@@ -16,7 +16,6 @@ import {
 import { ErrorBoundary } from './ui/CrashHandler'
 import { NetworkStatusProvider } from './hooks/useNetworkStatus'
 import { AudioEngineProvider } from './context/AudioEngineContext'
-import { toneAudioEngine } from './utils/audio/audioEngineInterface'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
@@ -185,7 +184,7 @@ export default function App() {
       <LazyMotion features={domAnimation} strict>
         <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
         <NetworkStatusProvider>
-          <AudioEngineProvider engine={toneAudioEngine}>
+          <AudioEngineProvider>
             <GameStateProvider>
               <GameContent />
             </GameStateProvider>

@@ -769,6 +769,23 @@ describe('error timestamps go through the injected clock', () => {
     assert.strictEqual(info.timestamp, 0)
   })
 
+  it('applies the injected clock to a preconstructed GameError subclass', () => {
+    // The subclass stamps itself at construction, before handleError can hand
+    // it a clock. Without the override the clock option was silently inert for
+    // this -- the most common -- call shape.
+    const info = handleError(new StateError('deterministic'), {
+      silent: true,
+      clock: fixedClock
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
+  it('preserves a GameError own timestamp when no clock is injected', () => {
+    const error = new GameError('created earlier')
+    const info = handleError(error, { silent: true })
+    assert.strictEqual(info.timestamp, error.timestamp)
+  })
+
   it('falls back to the system clock for a malformed clock option', () => {
     // handleError takes untrusted options and must never throw from inside the
     // error path.

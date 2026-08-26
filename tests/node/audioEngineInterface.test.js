@@ -139,6 +139,21 @@ describe('audio engine injection', () => {
     })
   }
 
+  test('the composition root mounts the seam without an audio submodule import', () => {
+    // `src/utils/audio/AGENTS.md`: imports from outside that directory must go
+    // through the `audioEngine.ts` hub. `AudioEngineProvider` defaults its
+    // `engine` prop precisely so `App` can mount the seam without reaching for
+    // `toneAudioEngine` itself.
+    const source = readFileSync('src/App.tsx', 'utf8')
+
+    assert.doesNotMatch(
+      source,
+      /from '\.\/utils\/audio\//,
+      'App.tsx imports an audio submodule instead of relying on the provider default'
+    )
+    assert.match(source, /<AudioEngineProvider>/)
+  })
+
   for (const file of CONSUMERS) {
     test(`${file} does not import the gig clock at module scope`, () => {
       const source = readFileSync(file, 'utf8')

@@ -33,6 +33,18 @@ describe('parseSaveVersion', () => {
     }
   })
 
+  it('rejects digit strings that overflow or exceed safe integers', () => {
+    // `/^\d+$/` admits any digit run; `Number` turns a long one into Infinity.
+    // Accepting it stamped a non-finite version into state, which serializes
+    // back as `null` and bricks the save on the next load.
+    assert.equal(parseSaveVersion('9'.repeat(400)), null)
+    assert.equal(parseSaveVersion('9'.repeat(20)), null)
+    // 2^53 is the first integer that no longer round-trips.
+    assert.equal(parseSaveVersion('9007199254740992'), null)
+    // Just below the boundary still works.
+    assert.equal(parseSaveVersion('9007199254740991'), 9007199254740991)
+  })
+
   it('rejects non-integer, negative, and non-finite numbers', () => {
     for (const bad of [2.5, -1, NaN, Infinity, -Infinity]) {
       assert.equal(parseSaveVersion(bad), null, `expected ${bad} rejected`)

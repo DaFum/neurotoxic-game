@@ -75,12 +75,22 @@ const buildErrorInfo = (
   error: unknown,
   normalizedOptions: NormalizedErrorOptions,
   fallbackMessage: string,
-  clock: IClock
+  clock: IClock,
+  injectedClock: IClock | null
 ): ErrorInfoObject => {
   let errorInfo: ErrorInfoObject
 
   if (error instanceof GameError) {
     errorInfo = error.toLogObject() as ErrorInfoObject
+    // A `GameError` stamps itself on construction, which happens before
+    // `handleError` can hand it a clock. Without this the `clock` option would
+    // be silently inert for the most common call shape --
+    // `handleError(new StateError(...), { clock })` -- so an explicitly
+    // injected clock governs the handled record. Absent one, the error's own
+    // creation time is preserved exactly as before.
+    if (injectedClock) {
+      errorInfo.timestamp = injectedClock.now()
+    }
   } else {
     const errObj = error instanceof Error ? error : null
     errorInfo = {
@@ -198,15 +208,19 @@ const showErrorToast = (
  * Narrows an untrusted `clock` option to an `IClock`.
  *
  * @param value - Raw `options.clock` as handed to {@link handleError}.
- * @returns The injected clock, or `systemClock` when the option is absent or
- * not a usable clock.
+ * @returns The injected clock, or `null` when the option is absent or not a
+ * usable clock.
  *
  * @remarks
+ * Returns `null` rather than defaulting here so callers can tell an explicitly
+ * injected clock from the fallback: only an explicit one may override the
+ * timestamp a {@link GameError} already carries.
+ *
  * `handleError` accepts `unknown` options, so this cannot assume a shape. It
  * also must never throw: it runs inside the error handler, and rejecting a
  * malformed clock by falling back is strictly better than losing the error.
  */
-const readClockOption = (value: unknown): IClock => {
+const readClockOption = (value: unknown): IClock | null => {
   if (
     typeof value === 'object' &&
     value !== null &&
@@ -215,7 +229,7 @@ const readClockOption = (value: unknown): IClock => {
   ) {
     return value as IClock
   }
-  return systemClock
+  return null
 }
 
 export const handleError = (
@@ -234,14 +248,16 @@ export const handleError = (
       ? safeOptions.fallbackMessage
       : 'An error occurred'
 
-  const clock = readClockOption(safeOptions.clock)
+  const injectedClock = readClockOption(safeOptions.clock)
+  const clock = injectedClock ?? systemClock
 
   const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
   const errorInfo = buildErrorInfo(
     error,
     normalizedOptions,
     fallbackMessage,
-    clock
+    clock,
+    injectedClock
   )
 
   logErrorLocally(errorInfo, clock)

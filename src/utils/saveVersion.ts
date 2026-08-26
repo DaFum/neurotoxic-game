@@ -19,15 +19,23 @@
  * Digit-only strings are accepted as a deliberate legacy-compatibility step:
  * `PERSISTED_FIELDS.version` has always persisted number-or-string, and
  * rejecting `'2'` would silently re-run every migration from `0` on a save that
- * carries one. Nothing else is coerced — `true`, `[2]`, `' 2'`, `2.5`, and `-1`
- * are rejected rather than folded into a number.
+ * carries one. Such a string is accepted only when it denotes a safe
+ * non-negative integer. Nothing else is coerced — `true`, `[2]`, `' 2'`, `2.5`,
+ * `-1`, and digit runs that overflow are rejected rather than folded into a
+ * number.
  */
 export const parseSaveVersion = (value: unknown): number | null => {
   if (typeof value === 'number') {
     return Number.isInteger(value) && value >= 0 ? value : null
   }
   if (typeof value === 'string' && /^\d+$/.test(value)) {
-    return Number(value)
+    // The regex admits arbitrarily long digit runs, and `Number` turns those
+    // into `Infinity`. Left unchecked it would pass validation, get stamped
+    // into state, and serialize back as `null` -- bricking the save on the next
+    // load. `isSafeInteger` also rejects values past 2^53 that stay finite but
+    // no longer round-trip through JSON.
+    const parsed = Number(value)
+    return Number.isSafeInteger(parsed) && parsed >= 0 ? parsed : null
   }
   return null
 }
