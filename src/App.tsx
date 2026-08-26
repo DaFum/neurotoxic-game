@@ -15,6 +15,8 @@ import {
 } from './context/GameState'
 import { ErrorBoundary } from './ui/CrashHandler'
 import { NetworkStatusProvider } from './hooks/useNetworkStatus'
+import { AudioEngineProvider } from './context/AudioEngineContext'
+import { toneAudioEngine } from './utils/audio/audioEngineInterface'
 import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
@@ -173,7 +175,7 @@ function GameContent() {
  *
  * @remarks
  * Wraps the main game content tree in required context providers such as the ErrorBoundary,
- * NetworkStatusProvider, and GameStateProvider. Also injects global non-interactive elements like the noise overlay.
+ * NetworkStatusProvider, AudioEngineProvider, and GameStateProvider. Also injects global non-interactive elements like the noise overlay.
  *
  * @returns The fully wrapped and initialized game application.
  */
@@ -183,9 +185,11 @@ export default function App() {
       <LazyMotion features={domAnimation} strict>
         <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
         <NetworkStatusProvider>
-          <GameStateProvider>
-            <GameContent />
-          </GameStateProvider>
+          <AudioEngineProvider engine={toneAudioEngine}>
+            <GameStateProvider>
+              <GameContent />
+            </GameStateProvider>
+          </AudioEngineProvider>
         </NetworkStatusProvider>
       </LazyMotion>
     </ErrorBoundary>

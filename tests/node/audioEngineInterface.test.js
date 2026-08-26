@@ -7,7 +7,24 @@ import {
   toneAudioEngine
 } from '../../src/utils/audio/audioEngineInterface'
 
-const ENGINE_METHODS = ['getGigTimeMs', 'startGig', 'stopGig', 'scheduleNote']
+const ENGINE_METHODS = [
+  'getGigTimeMs',
+  'startGig',
+  'stopGig',
+  'scheduleNote',
+  'ensureAudioContext',
+  'playSongSequence',
+  'stopAudio',
+  'getTransportState',
+  'pauseAudio',
+  'resumeAudio',
+  'setCorruptionEffect',
+  'enableCorruptionBurstAudio',
+  'getToneAbsoluteTimeMs',
+  'playSFX',
+  'stopMusic',
+  'getPlayRequestId'
+]
 
 describe('IAudioEngine implementations', () => {
   test('the real engine implements the whole surface', () => {
@@ -76,6 +93,8 @@ describe('audio engine injection', () => {
     'src/hooks/rhythmGame/useRhythmGameScoring.ts',
     'src/hooks/rhythmGame/useRhythmGameLoop.ts',
     'src/hooks/rhythmGame/scoring/useHandleHit.ts',
+    'src/hooks/rhythmGame/scoring/useHandleMiss.ts',
+    'src/hooks/rhythmGame/useRhythmGameAudio.ts',
     'src/components/PixiStageController.ts'
   ]
 
@@ -95,7 +114,16 @@ describe('audio engine injection', () => {
       for (const singleton of [
         'stopAudio()',
         'playSongSequence(',
-        'audioService.ensureAudioContext('
+        'audioService.ensureAudioContext(',
+        'audioService.playSFX(',
+        'audioService.stopMusic(',
+        'getTransportState()',
+        'pauseAudio(',
+        'resumeAudio(',
+        'setCorruptionEffect(',
+        'enableCorruptionBurstAudio(',
+        'getToneAbsoluteTimeMs(',
+        'getPlayRequestId('
       ]) {
         const bare = new RegExp(
           `(^|[^.\\w])${singleton.replace(/[().]/g, m => '\\' + m)}`,

@@ -1,7 +1,6 @@
 import { useCallback, useRef, useEffect } from 'react'
 import type { TFunction } from 'i18next'
 import {
-  audioService,
   setupGigPhysics,
   resolveActiveSetlist,
   resetGigStateTracking
@@ -315,7 +314,7 @@ export const useRhythmGameAudio = ({
 
     try {
       // Mute ambient radio to prevent audio overlap
-      audioService.stopMusic()
+      audioEngine.stopMusic()
 
       const currentHarmony = clampBandHarmony(currentBand?.harmony)
 
