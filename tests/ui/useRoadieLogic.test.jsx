@@ -230,23 +230,39 @@ describe('useRoadieLogic', () => {
     unmount()
   })
 
-  test('a negative ticker delta cannot rewind the cooldown clock', () => {
-    // A paused-tab resume can report a negative delta; rewinding gameplay time
-    // would let a queued move slip through early.
+  test('a negative ticker delta cannot rewind the simulation', () => {
+    // A paused-tab resume can report a negative delta. Left unclamped it would
+    // rewind gameplay time (letting a queued move slip through early), heal
+    // contraband damage, push spawn timers backwards and reverse traffic.
     const { result, unmount } = renderHook(() => useRoadieLogic())
     const game = result.current.gameStateRef.current
-    game.carrying = null
+    game.carrying = { id: 'stash', type: 'CONTRABAND', weight: 1 }
 
+    // Spawn rates run 1400-2800ms, so one short tick leaves the road empty.
+    // The roadie stays on row 0, which carries no traffic, so nothing crashes.
     act(() => {
       result.current.update(1000)
+      result.current.update(1000)
+      result.current.update(1000)
     })
-    const elapsedBefore = game.elapsedMS
+
+    const before = {
+      elapsedMS: game.elapsedMS,
+      equipmentDamage: game.equipmentDamage,
+      timers: game.spawners.map(s => s.timer),
+      carX: game.traffic.map(car => car.x)
+    }
+    expect(before.equipmentDamage).toBeGreaterThan(0)
+    expect(before.carX.length).toBeGreaterThan(0)
 
     act(() => {
       result.current.update(-5000)
     })
 
-    expect(game.elapsedMS).toBe(elapsedBefore)
+    expect(game.elapsedMS).toBe(before.elapsedMS)
+    expect(game.equipmentDamage).toBe(before.equipmentDamage)
+    expect(game.spawners.map(s => s.timer)).toEqual(before.timers)
+    expect(game.traffic.map(car => car.x)).toEqual(before.carX)
 
     unmount()
   })

@@ -287,13 +287,17 @@ export const useRoadieLogic = () => {
       const game = gameStateRef.current
       if (game.isGameOver) return
 
-      // A paused-tab resume can report a negative delta; clamp so the movement
-      // cooldown clock stays monotonic.
-      game.elapsedMS += Math.max(0, deltaMS)
+      // A paused-tab resume can report a negative delta. Normalize once and
+      // drive the whole simulation from it: an unclamped delta would rewind the
+      // cooldown clock, heal contraband damage, push spawn timers backwards and
+      // send traffic back the way it came.
+      const delta = Math.max(0, deltaMS)
+
+      game.elapsedMS += delta
 
       // Passive Neurotoxic Damage Logic
       if (game.carrying && game.carrying.type === 'CONTRABAND') {
-        game.equipmentDamage += deltaMS * 0.005
+        game.equipmentDamage += delta * 0.005
         game.equipmentDamage = Math.min(100, game.equipmentDamage)
 
         if (game.equipmentDamage >= 100) {
@@ -308,8 +312,8 @@ export const useRoadieLogic = () => {
         }
       }
 
-      spawnTraffic(game, deltaMS)
-      const crashed = processTraffic(game, deltaMS, (damage: number) =>
+      spawnTraffic(game, delta)
+      const crashed = processTraffic(game, delta, (damage: number) =>
         finishRoadie(damage, game.contrabandCount ?? 0)
       )
 
