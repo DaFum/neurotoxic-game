@@ -1,4 +1,6 @@
 import { logger } from '../logger'
+import { systemClock } from '../clock'
+import type { IClock } from '../clock'
 import { isPlainRecord } from '../objectUtils'
 import {
   GameError,
@@ -48,22 +50,32 @@ const normalizeHandleErrorOptions = (
   }
 }
 
-const sanitizeErrorInfo = (errorInfo: ErrorInfoObject) => ({
+// `Number.isFinite` rather than `||`: a legitimate epoch-0 timestamp is falsy,
+// so the old fallback silently replaced it with a fresh wall-clock read --
+// which defeats exactly the substitution this clock parameter exists for.
+const resolveTimestamp = (errorInfo: ErrorInfoObject, clock: IClock): number =>
+  Number.isFinite(errorInfo.timestamp) ? errorInfo.timestamp : clock.now()
+
+const sanitizeErrorInfo = (errorInfo: ErrorInfoObject, clock: IClock) => ({
   message: errorInfo.message || 'Critical error',
   code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  timestamp: resolveTimestamp(errorInfo, clock)
 })
 
-const sanitizeTelemetryErrorInfo = (errorInfo: ErrorInfoObject) => ({
+const sanitizeTelemetryErrorInfo = (
+  errorInfo: ErrorInfoObject,
+  clock: IClock
+) => ({
   message: 'Error captured',
   code: errorInfo.category || ErrorCategory.UNKNOWN,
-  timestamp: errorInfo.timestamp || Date.now()
+  timestamp: resolveTimestamp(errorInfo, clock)
 })
 
 const buildErrorInfo = (
   error: unknown,
   normalizedOptions: NormalizedErrorOptions,
-  fallbackMessage: string
+  fallbackMessage: string,
+  clock: IClock
 ): ErrorInfoObject => {
   let errorInfo: ErrorInfoObject
 
@@ -80,7 +92,7 @@ const buildErrorInfo = (
       severity: ErrorSeverity.MEDIUM,
       context: {},
       recoverable: true,
-      timestamp: Date.now(),
+      timestamp: clock.now(),
       stack: errObj?.stack
     }
   }
@@ -104,7 +116,7 @@ const buildErrorInfo = (
   return errorInfo
 }
 
-const logErrorLocally = (errorInfo: ErrorInfoObject) => {
+const logErrorLocally = (errorInfo: ErrorInfoObject, clock: IClock) => {
   errorLog.push(errorInfo)
   if (errorLog.length > MAX_ERROR_LOG_SIZE) {
     errorLog.shift()
@@ -114,7 +126,7 @@ const logErrorLocally = (errorInfo: ErrorInfoObject) => {
     case ErrorSeverity.CRITICAL:
       logger.error('ErrorHandler', errorInfo.message, errorInfo)
       if (typeof window !== 'undefined') {
-        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo)
+        const sanitizedErrorInfo = sanitizeErrorInfo(errorInfo, clock)
         window.dispatchEvent(
           new CustomEvent('app:error:critical', { detail: sanitizedErrorInfo })
         )
@@ -132,13 +144,13 @@ const logErrorLocally = (errorInfo: ErrorInfoObject) => {
   }
 }
 
-const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
+const reportErrorRemote = (errorInfo: ErrorInfoObject, clock: IClock) => {
   if (typeof window !== 'undefined' && window.navigator?.onLine) {
     try {
       fetch('/api/analytics/error', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo))
+        body: JSON.stringify(sanitizeTelemetryErrorInfo(errorInfo, clock))
       }).catch(reason => {
         // Non-recursive debug log only: this runs inside the error handler, so
         // escalating (warn/error) could re-enter reportErrorRemote. Debug is a
@@ -154,7 +166,7 @@ const reportErrorRemote = (errorInfo: ErrorInfoObject) => {
     try {
       const payload = JSON.stringify({
         event: 'error',
-        error: sanitizeTelemetryErrorInfo(errorInfo)
+        error: sanitizeTelemetryErrorInfo(errorInfo, clock)
       })
       navigator.sendBeacon('/api/analytics/error', payload)
     } catch (_e) {
@@ -182,6 +194,30 @@ const showErrorToast = (
   }
 }
 
+/**
+ * Narrows an untrusted `clock` option to an `IClock`.
+ *
+ * @param value - Raw `options.clock` as handed to {@link handleError}.
+ * @returns The injected clock, or `systemClock` when the option is absent or
+ * not a usable clock.
+ *
+ * @remarks
+ * `handleError` accepts `unknown` options, so this cannot assume a shape. It
+ * also must never throw: it runs inside the error handler, and rejecting a
+ * malformed clock by falling back is strictly better than losing the error.
+ */
+const readClockOption = (value: unknown): IClock => {
+  if (
+    typeof value === 'object' &&
+    value !== null &&
+    typeof (value as IClock).now === 'function' &&
+    typeof (value as IClock).today === 'function'
+  ) {
+    return value as IClock
+  }
+  return systemClock
+}
+
 export const handleError = (
   error: unknown,
   options: unknown = {}
@@ -198,11 +234,18 @@ export const handleError = (
       ? safeOptions.fallbackMessage
       : 'An error occurred'
 
-  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
-  const errorInfo = buildErrorInfo(error, normalizedOptions, fallbackMessage)
+  const clock = readClockOption(safeOptions.clock)
 
-  logErrorLocally(errorInfo)
-  reportErrorRemote(errorInfo)
+  const normalizedOptions = normalizeHandleErrorOptions(safeOptions)
+  const errorInfo = buildErrorInfo(
+    error,
+    normalizedOptions,
+    fallbackMessage,
+    clock
+  )
+
+  logErrorLocally(errorInfo, clock)
+  reportErrorRemote(errorInfo, clock)
   showErrorToast(errorInfo, silent, addToast)
 
   return errorInfo

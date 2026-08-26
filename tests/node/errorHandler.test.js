@@ -15,6 +15,7 @@ import {
   runSafeStorageOperation,
   initGlobalErrorHandling
 } from '../../src/utils/errorHandler'
+import { createFixedClock } from '../../src/utils/clock'
 
 describe('Custom Error Classes', () => {
   describe('GameError', () => {
@@ -730,4 +731,53 @@ it('should return undefined when undefined is explicitly passed as fallback', ()
     undefined
   )
   assert.strictEqual(result, undefined)
+})
+
+describe('error timestamps go through the injected clock', () => {
+  const FIXED_NOW = 1_700_000_000_000
+  const fixedClock = createFixedClock(FIXED_NOW)
+
+  it('stamps a GameError from the injected clock', () => {
+    const error = new GameError('Deterministic', { clock: fixedClock })
+    assert.strictEqual(error.timestamp, FIXED_NOW)
+  })
+
+  it('defaults GameError to the system clock', () => {
+    const before = Date.now()
+    const error = new GameError('Wall clock')
+    assert.ok(error.timestamp >= before)
+  })
+
+  it('stamps a generic handled error from the injected clock', () => {
+    const info = handleError(new Error('boom'), {
+      silent: true,
+      clock: fixedClock
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
+  it('preserves an epoch-0 timestamp instead of restamping it', () => {
+    // The sanitizers used to fall back with `errorInfo.timestamp || Date.now()`,
+    // so a legitimate epoch-0 stamp was silently replaced by a live wall-clock
+    // read -- which would defeat a fixed clock in exactly the tests this seam
+    // exists for.
+    const epochClock = createFixedClock(0)
+    const info = handleError(new Error('epoch'), {
+      silent: true,
+      clock: epochClock
+    })
+    assert.strictEqual(info.timestamp, 0)
+  })
+
+  it('falls back to the system clock for a malformed clock option', () => {
+    // handleError takes untrusted options and must never throw from inside the
+    // error path.
+    for (const bogus of [null, 42, 'clock', {}, { now: 5 }]) {
+      const info = handleError(new Error('bogus'), {
+        silent: true,
+        clock: bogus
+      })
+      assert.ok(Number.isFinite(info.timestamp))
+    }
+  })
 })
