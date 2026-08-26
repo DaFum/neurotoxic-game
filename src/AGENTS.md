@@ -10,6 +10,7 @@
 - Keep user-facing copy in namespaced i18n keys and update EN/DE locale files together.
 - Pass React refs as standard `ref` props (for example, `ref?: Ref<HTMLButtonElement>`) in React 19 components; do not add `forwardRef`.
 - Use CSS variables for colors and Pixi token helpers for rendered colors.
+- Tailwind v4: non-color design tokens use the bare-parenthesis form (`z-(--z-stage-controls)`) or `style={{ zIndex: 'var(--z-crt)' }}`. The v3 arbitrary-value form (`z-[var(--z-crt)]`) does not resolve these tokens.
 
 ## TypeScript
 

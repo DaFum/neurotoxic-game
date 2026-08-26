@@ -4,6 +4,7 @@
 
 - Data IDs are contracts. Keep IDs stable and update dependent lookup maps/tests when adding or renaming entries.
 - Event condition arrows require explicit `(state: GameState) =>` annotations.
+- Never give a band member an entry for themselves in their own `relationships` map; self-relationships corrupt trait and infighting logic. `relationshipEvents.ts` throws on this rather than degrading silently.
 
 ## Quests
 

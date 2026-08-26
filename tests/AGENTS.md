@@ -19,8 +19,15 @@
 
 - Audio mocks must target the central export module: `vi.mock('.../utils/audio/audioEngine', …)` (or equivalent `mock.module` for `node:test`) and must include **both** `audioManager` and `audioService` in `namedExports`. Mocking `AudioManager.ts` or `audioService.ts` directly no longer intercepts callers, which all import from `audioEngine`. Hoisted fixtures should share one listener set so `audioService` and `audioManager` stay observably linked.
 
+## Storage in Vitest suites
+
+- Seed a localStorage fixture with a direct `localStorage.setItem(...)`. Spy on it (`vi.spyOn(window.localStorage, 'setItem')`, restored in `finally`) only to assert that a write happened or to simulate a failing write. `tests/context/usePersistence.test.tsx` uses both, one per purpose.
+- Do not mock `setItem` while seeding: the seeded value never lands, so a negative assertion such as `expect(...).not.toContain('default_unlock')` can no longer fail.
+- Suites that write through the storage helpers must call `resetStorageFallback()` alongside `localStorage.clear()`; the module-level degraded-storage flag and its memory entry survive `clear()` and poison later suites.
+
 ## Mock gotchas: i18n
 
+- Local `react-i18next` mocks must export `initReactI18next: { type: '3rdParty', init: () => {} }`; omitting it breaks any subject whose import chain reaches `src/i18n.ts`.
 - Local `react-i18next` mocks for UI tests must return the `i18n` shape when the subject renders localized numbers or currency, e.g. `i18n: { language: 'en', changeLanguage: vi.fn(), options: {} }`.
 
 ## Mock gotchas: node:test modules
