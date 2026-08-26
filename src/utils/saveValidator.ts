@@ -6,6 +6,7 @@
 
 import { ALLOWED_TRENDS, ALLOWED_TRENDS_SET } from '../data/socialTrends'
 import { StateError } from './errorHandler'
+import { parseSaveVersion } from './saveVersion'
 import {
   clampBandHarmony,
   clampPlayerMoney,
@@ -58,7 +59,7 @@ export const validateSaveData = (data: unknown): boolean => {
     }
   }
 
-  if (data.version !== undefined && !/^\d+$/.test(String(data.version))) {
+  if (data.version !== undefined && parseSaveVersion(data.version) === null) {
     throw new StateError('Save version must be an integer')
   }
 

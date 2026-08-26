@@ -26,6 +26,7 @@ import {
   rollAssetRiskEvents
 } from '../../utils/assetTicks'
 import { CURRENT_SAVE_VERSION, runSaveMigrations } from './migrations'
+import { parseSaveVersion } from '../../utils/saveVersion'
 import { createRngStream, nextSeed } from '../../utils/seededRng'
 import { getAdvanceDayRngStreamLength } from '../../utils/assetConfig'
 import { QuestEvents } from '../../utils/questProgress'
@@ -156,8 +157,7 @@ export const handleLoadGame = (
   const rawVersion = Object.hasOwn(rawState, 'version')
     ? rawState.version
     : state.version
-  const parsedVersion = Number(rawVersion)
-  const explicitVersion = Number.isFinite(parsedVersion) ? parsedVersion : 0
+  const explicitVersion = parseSaveVersion(rawVersion) ?? 0
 
   // Fold the raw payload through every migration step above its stored version
   // before any sanitizer runs, so each step sees the layout it was written for.
