@@ -14,7 +14,18 @@ import { readFileSync } from 'node:fs'
 
 const GENERATED = '.github/copilot-instructions.md'
 const SOURCE = 'AGENTS.md'
-const HEADER_LINES = 4
+
+// The exact block `scripts/sync-agent-instructions.mjs` writes. Pinning it
+// whole rather than matching fragments means a reworded or reordered header
+// fails here instead of silently drifting from the generator.
+const EXPECTED_HEADER = [
+  '<!-- GENERATED FROM /AGENTS.md — DO NOT EDIT DIRECTLY.',
+  '     Edit /AGENTS.md, then run: pnpm run sync:agents',
+  '     tests/node/agentInstructionsSync.test.js fails if these drift. -->',
+  ''
+].join('\n')
+
+const HEADER_LINES = EXPECTED_HEADER.split('\n').length
 
 describe('generated agent instruction files', () => {
   it('keeps the Copilot file byte-identical to AGENTS.md below its header', () => {
@@ -29,10 +40,13 @@ describe('generated agent instruction files', () => {
     )
   })
 
-  it('keeps the do-not-edit header on the generated file', () => {
+  it('opens with the exact generated-file header', () => {
     const generated = readFileSync(GENERATED, 'utf8')
 
-    assert.match(generated, /^<!-- GENERATED FROM \/AGENTS\.md/)
-    assert.match(generated, /pnpm run sync:agents/)
+    assert.equal(
+      generated.slice(0, EXPECTED_HEADER.length),
+      EXPECTED_HEADER,
+      `${GENERATED} header does not match the generator. Run: pnpm run sync:agents`
+    )
   })
 })

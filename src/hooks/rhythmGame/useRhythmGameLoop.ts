@@ -72,7 +72,9 @@ export const useRhythmGameLoop = ({
 
   const finalizeGigCallback = useCallback(
     (stateRef: RhythmGameRefState) => {
-      finalizeGig(stateRef, setLastGigStats, endGig, audioEngine.stopAudio)
+      finalizeGig(stateRef, setLastGigStats, endGig, () =>
+        audioEngine.stopAudio()
+      )
     },
     [audioEngine, endGig, setLastGigStats]
   )
@@ -95,12 +97,16 @@ export const useRhythmGameLoop = ({
         setIsCorruptionBurstActive,
         handleMiss,
         finalizeGigCallback,
-        getGigTimeMs: audioEngine.getGigTimeMs,
-        pauseAudio: audioEngine.pauseAudio,
-        resumeAudio: audioEngine.resumeAudio,
+        // Called through closures rather than passed as detached references:
+        // `IAudioEngine` implementations may be classes (`NullAudioEngine` is
+        // one), and a detached method would lose its receiver.
+        getGigTimeMs: () => audioEngine.getGigTimeMs(),
+        pauseAudio: () => audioEngine.pauseAudio(),
+        resumeAudio: () => audioEngine.resumeAudio(),
         setCorruptionState,
-        setCorruptionEffect: audioEngine.setCorruptionEffect,
-        disableCorruptionBurstAudio: audioEngine.disableCorruptionBurstAudio
+        setCorruptionEffect: active => audioEngine.setCorruptionEffect(active),
+        disableCorruptionBurstAudio: () =>
+          audioEngine.disableCorruptionBurstAudio()
       })
     },
     [
