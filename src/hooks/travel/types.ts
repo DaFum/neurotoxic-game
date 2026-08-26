@@ -23,7 +23,11 @@ import type {
  * `onStartTravelMinigame` is required: the tourbus minigame is the only
  * supported travel mode, and its completion reducer owns arrival settlement.
  * Optional members gate features: omit `onShowHQ`/`onShowSupplyStop` to disable
- * those arrival overlays; omit `applyQuestEvent` to skip quest progression.
+ * those arrival overlays.
+ *
+ * Rival reaction and quest progression are deliberately absent. `useArrivalLogic`
+ * moves the rival and checks encounters after a trip, and the tourbus completion
+ * reducer emits the travel quest event — neither is this hook's business.
  */
 export type TravelLogicParams = {
   player: PlayerState
@@ -47,11 +51,6 @@ export type TravelLogicParams = {
     inventory: import('../../types/components').PurchaseItem[]
   ) => void
   onStartTravelMinigame: (nodeId: string) => void
-  moveRivalBand?: () => void
-  checkRivalEncounter?: () => void
-  applyQuestEvent?: (
-    event: import('../../utils/questProgress').QuestProgressEvent
-  ) => void
 }
 
 /**
@@ -82,8 +81,6 @@ export interface TravelRefsBundle {
     Record<string, number> | undefined
   >
   venueBlacklistRef: React.MutableRefObject<string[]>
-  moveRivalBandRef: React.MutableRefObject<(() => void) | undefined>
-  checkRivalEncounterRef: React.MutableRefObject<(() => void) | undefined>
 }
 
 export interface TravelStateBundle {

@@ -39,8 +39,6 @@ export const useTravelState = (params: TravelLogicParams) => {
   const reputationByRegionRef = useRef(params.reputationByRegion)
   const venueBlacklistRef = useRef(params.venueBlacklist ?? [])
   const isTravelingRef = useRef(isTraveling)
-  const moveRivalBandRef = useRef(params.moveRivalBand)
-  const checkRivalEncounterRef = useRef(params.checkRivalEncounter)
   const pendingTravelNodeRef = useRef(pendingTravelNode)
 
   isTravelingRef.current = isTraveling
@@ -55,8 +53,6 @@ export const useTravelState = (params: TravelLogicParams) => {
     gameMapRef.current = params.gameMap
     reputationByRegionRef.current = params.reputationByRegion
     venueBlacklistRef.current = params.venueBlacklist ?? []
-    moveRivalBandRef.current = params.moveRivalBand
-    checkRivalEncounterRef.current = params.checkRivalEncounter
   }, [
     params.player,
     params.band,
@@ -65,9 +61,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     params.social,
     params.gameMap,
     params.reputationByRegion,
-    params.venueBlacklist,
-    params.moveRivalBand,
-    params.checkRivalEncounter
+    params.venueBlacklist
   ])
 
   // Bundle objects must keep a stable identity across renders so consumer
@@ -86,9 +80,7 @@ export const useTravelState = (params: TravelLogicParams) => {
     socialRef,
     gameMapRef,
     reputationByRegionRef,
-    venueBlacklistRef,
-    moveRivalBandRef,
-    checkRivalEncounterRef
+    venueBlacklistRef
   }).current
 
   const setters = useRef<TravelSettersBundle>({

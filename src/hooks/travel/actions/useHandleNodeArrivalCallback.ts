@@ -11,6 +11,7 @@ export const useHandleNodeArrivalCallback = ({
     updateBand,
     updatePlayer,
     triggerEvent,
+    startGig,
     addToast,
     onShowHQ,
     onShowSupplyStop,
@@ -26,21 +27,22 @@ export const useHandleNodeArrivalCallback = ({
         updateBand,
         updatePlayer,
         triggerEvent,
-        // Gig startup belongs to useArrivalLogic's post-commit route. This
-        // legacy fallback must never synchronously change scenes here.
-        startGig: () => {},
+        startGig,
         addToast,
         onShowHQ,
         onShowSupplyStop,
         eventAlreadyActive: travelEventActive
       })
-      // This callback serves re-entering the node the band already stands on
-      // (`useHandleTravel`), not arrival after a trip — arriving somewhere new
-      // goes through `useArrivalLogic`. It therefore carries no GAMEOVER guard:
-      // a synchronous one is impossible here because `advanceDay()` dispatches
-      // are batched, so the committed scene is only observable post-render, and
-      // re-entering a node never advances the day. Anything that does advance
-      // the day must use the effect-based guard in `useArrivalLogic` instead.
+      // Starting the gig here is synchronous on purpose. `useArrivalLogic`
+      // defers its own gig start because arrival has just dispatched
+      // `advanceDay()`, so routing must wait for the committed state (bankruptcy
+      // could route to GAMEOVER instead, and saveGame must see the final state).
+      // Re-entering the node the band already stands on dispatches neither a
+      // travel commit nor a day tick, so there is nothing to wait for — and
+      // `handleStartGig` reads only `reputationByRegion`.
+      //
+      // When the gig started, START_GIG already moved the scene to PRE_GIG;
+      // routing to `result.scene` (OVERWORLD) would bounce straight back out.
       if (!result.gigStarted) {
         changeScene(result.scene)
       }
@@ -50,6 +52,7 @@ export const useHandleNodeArrivalCallback = ({
       updateBand,
       updatePlayer,
       triggerEvent,
+      startGig,
       addToast,
       onShowHQ,
       onShowSupplyStop,

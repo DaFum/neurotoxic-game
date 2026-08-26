@@ -312,6 +312,84 @@ describe('useTravelLogic', () => {
     assert.equal(props.onShowHQ.mock.calls.length, 1)
   })
 
+  test('clicking the current unplayed gig node starts the gig', () => {
+    // Regression: this path used to hand `handleNodeArrival` a no-op `startGig`.
+    // The arrival util still reported `gigStarted: true`, which also suppressed
+    // the fallback `changeScene`, so the click did nothing at all. Reachable
+    // whenever the band stands on a gig node it has not played — most obviously
+    // after a low-harmony cancellation, where the player retries by clicking.
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      }
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 1)
+    assert.equal(
+      props.startGig.mock.calls[0].arguments[0].id,
+      currentNode.venue.id
+    )
+    // START_GIG owns the scene move; routing to OVERWORLD here would bounce
+    // straight back out of the gig.
+    assert.equal(props.changeScene.mock.calls.length, 0)
+  })
+
+  test('clicking the gig node just played does not restart it', () => {
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        lastGigNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      }
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(props.addToast.mock.calls.length, 1)
+  })
+
+  test('a cancelled show starts no gig and routes back to the overworld', () => {
+    // harmony <= 1 cancels deterministically, so this needs no RNG control.
+    const props = createTravelLogicProps({
+      player: {
+        money: 1000,
+        currentNodeId: 'node_target',
+        van: { fuel: 50, condition: 80 },
+        totalTravels: 0
+      },
+      band: { members: [], harmony: 1 }
+    })
+    const currentNode = props.gameMap.nodes.node_target
+
+    const { result } = renderHook(() => useTravelLogic(props))
+
+    act(() => {
+      result.current.handleTravel(currentNode)
+    })
+
+    assert.equal(props.startGig.mock.calls.length, 0)
+    assert.equal(props.changeScene.mock.calls.length, 1)
+    assert.equal(props.changeScene.mock.calls[0].arguments[0], 'OVERWORLD')
+  })
+
   test('handleRefuel fills tank and deducts money', () => {
     // Defaults: money 1000, van.fuel 50. Price is 2 per unit.
     const { result, props } = setupTravelScenario(useTravelLogic)
