@@ -20,9 +20,14 @@ import type {
  * would defeat that. State slices (`player`, `band`, `assets`, …) may change
  * each render and are mirrored into refs internally.
  *
- * Optional members gate features: omit `onStartTravelMinigame` to use the
- * timed-animation travel path; omit `onShowHQ`/`onShowSupplyStop` to disable
- * those arrival overlays; omit `applyQuestEvent` to skip quest progression.
+ * `onStartTravelMinigame` is required: the tourbus minigame is the only
+ * supported travel mode, and its completion reducer owns arrival settlement.
+ * Optional members gate features: omit `onShowHQ`/`onShowSupplyStop` to disable
+ * those arrival overlays.
+ *
+ * Rival reaction and quest progression are deliberately absent. `useArrivalLogic`
+ * moves the rival and checks encounters after a trip, and the tourbus completion
+ * reducer emits the travel quest event — neither is this hook's business.
  */
 export type TravelLogicParams = {
   player: PlayerState
@@ -45,12 +50,7 @@ export type TravelLogicParams = {
   onShowSupplyStop?: (
     inventory: import('../../types/components').PurchaseItem[]
   ) => void
-  onStartTravelMinigame?: (nodeId: string) => void
-  moveRivalBand?: () => void
-  checkRivalEncounter?: () => void
-  applyQuestEvent?: (
-    event: import('../../utils/questProgress').QuestProgressEvent
-  ) => void
+  onStartTravelMinigame: (nodeId: string) => void
 }
 
 /**
@@ -60,18 +60,14 @@ export type TravelLogicParams = {
  * `playerRef`/`bandRef`/`assetsRef`/etc. mirror the latest {@link TravelLogicParams}
  * state so callbacks can read current values without listing those slices as
  * dependencies. The timeout refs hold the single in-flight timer for each
- * concern: `pendingTimeoutRef` (confirmation window), `failsafeTimeoutRef`
- * (travel-animation forced completion), and `timeoutRef` (softlock game-over
- * countdown). The bundle object keeps a stable identity across renders.
+ * concern: `pendingTimeoutRef` (confirmation window) and `timeoutRef`
+ * (softlock game-over countdown). The bundle object keeps a stable identity
+ * across renders.
  */
 export interface TravelRefsBundle {
   isTravelingRef: React.MutableRefObject<boolean>
-  travelCompletedRef: React.MutableRefObject<boolean>
   pendingTravelNodeRef: React.MutableRefObject<MapNode | null>
   pendingTimeoutRef: React.MutableRefObject<ReturnType<
-    typeof setTimeout
-  > | null>
-  failsafeTimeoutRef: React.MutableRefObject<ReturnType<
     typeof setTimeout
   > | null>
   timeoutRef: React.MutableRefObject<ReturnType<typeof setTimeout> | null>
@@ -85,19 +81,15 @@ export interface TravelRefsBundle {
     Record<string, number> | undefined
   >
   venueBlacklistRef: React.MutableRefObject<string[]>
-  moveRivalBandRef: React.MutableRefObject<(() => void) | undefined>
-  checkRivalEncounterRef: React.MutableRefObject<(() => void) | undefined>
 }
 
 export interface TravelStateBundle {
   isTraveling: boolean
-  travelTarget: MapNode | null
   pendingTravelNode: MapNode | null
 }
 
 export interface TravelSettersBundle {
   setIsTraveling: React.Dispatch<React.SetStateAction<boolean>>
-  setTravelTarget: React.Dispatch<React.SetStateAction<MapNode | null>>
   setPendingTravelNode: React.Dispatch<React.SetStateAction<MapNode | null>>
 }
 

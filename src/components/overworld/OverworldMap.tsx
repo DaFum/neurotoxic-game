@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react'
 import { MapConnection } from '../MapConnection'
 import { MapNodeView } from '../MapNodeView'
-import { TravelingVan } from './TravelingVan'
 import { calculateEffectiveTicketPrice } from '../../utils/economy'
 import { getCityKeyFromVenueId } from '../../utils/mapGenerator'
 import { normalizeVenueId } from '../../utils/mapUtils'
@@ -39,9 +38,6 @@ interface OverworldMapProps {
   setHoveredNode: React.Dispatch<React.SetStateAction<GameMapNode | null>>
   hoveredNode: GameMapNode | null
   currentNode: GameMapNode | null
-  travelTarget: GameMapNode | null
-  travelCompletedRef: React.MutableRefObject<boolean>
-  onTravelComplete: (node?: GameMapNode) => void
   activeStoryFlags: string[]
 }
 
@@ -84,9 +80,6 @@ export const OverworldMap = React.memo(
     setHoveredNode,
     hoveredNode,
     currentNode,
-    travelTarget,
-    travelCompletedRef,
-    onTravelComplete,
     activeStoryFlags,
     rivalBand,
     band
@@ -241,16 +234,6 @@ export const OverworldMap = React.memo(
         </svg>
 
         {renderedNodes}
-
-        <TravelingVan
-          t={t}
-          isTraveling={isTraveling}
-          currentNode={currentNode}
-          travelTarget={travelTarget}
-          vanUrl={vanUrl}
-          travelCompletedRef={travelCompletedRef}
-          onTravelComplete={onTravelComplete}
-        />
       </div>
     )
   }

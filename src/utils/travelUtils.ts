@@ -1,15 +1,7 @@
 import { normalizeVenueId, REGION_BLACKLIST_THRESHOLD } from './mapUtils'
 import { getCityKeyFromVenueId } from './mapGenerator'
-import {
-  clampPlayerMoney,
-  clampBandHarmony,
-  clampMemberStamina,
-  clampVanFuel,
-  finiteNumberOr,
-  isEmptyObject
-} from './gameState'
+import { clampPlayerMoney, clampVanFuel, finiteNumberOr } from './gameState'
 import type { BandState, MapNode, PlayerState, Venue } from '../types'
-import type { AssetModifiers } from '../types/assets'
 import type { TranslationCallback } from '../types/callbacks'
 
 interface VenueLike extends Partial<Venue> {
@@ -24,20 +16,6 @@ interface VenueAccessResult {
   errorKey?: string
   defaultMessage?: string
   errorContext?: Record<string, unknown>
-}
-
-interface TravelArrivalUpdateInput {
-  player: PlayerState
-  band: BandState
-  node: MapNode & { venue?: unknown }
-  fuelLiters: number
-  totalCost: number
-  assetModifiers?: Pick<AssetModifiers, 'travelStaminaRegen'>
-}
-
-interface TravelArrivalUpdates {
-  nextPlayer: Partial<PlayerState>
-  nextBand: Partial<BandState> | null
 }
 
 type ResolvedTravelVenue = Venue & { capacity: number }
@@ -158,8 +136,6 @@ export const getNodeAccessStatus = (
   }
   return checkVenueAccess(params)
 }
-
-export const TRAVEL_ANIMATION_DURATION_MS = 1500
 
 export const checkVenueAccess = ({
   node,
@@ -308,80 +284,6 @@ export const checkTravelResources = (
   }
 
   return { allowed: true }
-}
-
-/**
- * Builds player and band patches applied after successful travel arrival.
- *
- * @param input - Travel arrival inputs containing player, band, destination,
- * fuel cost, money cost, and active asset modifiers.
- * @returns Player patch and optional band patch for arrival side effects.
- */
-export const getTravelArrivalUpdates = ({
-  player,
-  band,
-  node,
-  fuelLiters,
-  totalCost,
-  assetModifiers
-}: TravelArrivalUpdateInput): TravelArrivalUpdates => {
-  // Canonical location format is the `venues:<id>.name` display key, matching
-  // the production arrival path in minigameReducer's handleCompleteTravelMinigame.
-  const canonicalVenueId =
-    normalizeVenueId(node.venue) ??
-    (typeof node.venueId === 'string' ? normalizeVenueId(node.venueId) : null)
-  const nextPlayer = {
-    money: clampPlayerMoney(finiteNumberOr(player.money, 0) - totalCost),
-    van: {
-      ...player.van,
-      fuel: clampVanFuel(finiteNumberOr(player.van?.fuel, 0) - fuelLiters)
-    },
-    location: canonicalVenueId ? `venues:${canonicalVenueId}.name` : 'Unknown',
-    currentNodeId: node.id,
-    totalTravels: (player.totalTravels ?? 0) + 1
-  }
-
-  const bandPatch: Partial<BandState> = {}
-  if (band?.harmonyRegenTravel) {
-    bandPatch.harmony = clampBandHarmony(finiteNumberOr(band.harmony, 0) + 5)
-  }
-  const travelStaminaRegen = finiteNumberOr(
-    assetModifiers?.travelStaminaRegen,
-    0
-  )
-  if (travelStaminaRegen > 0 && Array.isArray(band?.members)) {
-    const updatedMembers: NonNullable<typeof bandPatch.members> = []
-
-    for (let i = 0; i < band.members.length; i++) {
-      const member = band.members[i]
-      if (!member) {
-        continue
-      }
-
-      const currentStamina = finiteNumberOr(member?.stamina, 0)
-      const maxStamina = finiteNumberOr(member?.staminaMax, 100)
-
-      if (currentStamina !== maxStamina) {
-        updatedMembers.push({
-          ...member,
-          stamina: clampMemberStamina(
-            currentStamina + travelStaminaRegen,
-            maxStamina
-          )
-        })
-      } else {
-        updatedMembers.push(member)
-      }
-    }
-
-    if (updatedMembers.length > 0) {
-      bandPatch.members = updatedMembers
-    }
-  }
-
-  const nextBand = !isEmptyObject(bandPatch) ? bandPatch : null
-
-  return { nextPlayer, nextBand }
 }
 
 import { calculateTravelExpenses } from './economy'

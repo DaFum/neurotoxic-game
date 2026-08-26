@@ -11,6 +11,7 @@ export const useHandleNodeArrivalCallback = ({
     updateBand,
     updatePlayer,
     triggerEvent,
+    startGig,
     addToast,
     onShowHQ,
     onShowSupplyStop,
@@ -26,22 +27,28 @@ export const useHandleNodeArrivalCallback = ({
         updateBand,
         updatePlayer,
         triggerEvent,
-        // Gig startup belongs to useArrivalLogic's post-commit route. This
-        // legacy fallback must never synchronously change scenes here.
-        startGig: () => {},
+        startGig,
         addToast,
         onShowHQ,
         onShowSupplyStop,
         eventAlreadyActive: travelEventActive
       })
-      // NOTE (Task 9 / legacy path): In production, `onStartTravelMinigame` is always
-      // provided (Overworld.tsx line 95), so this callback is only reached via the
-      // animation-failsafe `onTravelComplete` path which is unreachable in normal play.
-      // A synchronous GAMEOVER guard is architecturally impossible here because
-      // `advanceDay()` dispatches are batched — committed scene is only observable
-      // post-render. The production arrival path uses `useArrivalLogic` which applies
-      // the effect-based GAMEOVER guard (Task 8 + 9). If this legacy path is ever
-      // reinstated as a production path, migrate it to the same effect-based pattern.
+      // Starting the gig here is synchronous on purpose. `useArrivalLogic`
+      // defers its own gig start because arrival has just dispatched
+      // `advanceDay()`, so routing must wait for the committed state (bankruptcy
+      // could route to GAMEOVER instead, and saveGame must see the final state).
+      // Re-entering the node the band already stands on dispatches neither a
+      // travel commit nor a day tick, so there is nothing to wait for — and
+      // `handleStartGig` reads only `reputationByRegion`.
+      //
+      // When the gig started, START_GIG already moved the scene to PRE_GIG;
+      // routing to `result.scene` (OVERWORLD) would bounce straight back out.
+      //
+      // Unlike `useArrivalLogic`, this path queues no save: OVERWORLD → PRE_GIG
+      // is not an autosave transition, so a re-entry gig start persists only at
+      // the GIG → POST_GIG autosave. Harmless — a reload puts the band back on
+      // the node with the click still available — but keep it in mind if this
+      // path ever gains state worth losing.
       if (!result.gigStarted) {
         changeScene(result.scene)
       }
@@ -51,6 +58,7 @@ export const useHandleNodeArrivalCallback = ({
       updateBand,
       updatePlayer,
       triggerEvent,
+      startGig,
       addToast,
       onShowHQ,
       onShowSupplyStop,

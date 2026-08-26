@@ -13,17 +13,18 @@ import { GAME_PHASES } from '../../src/context/gameConstants'
 import {
   advanceDay,
   createChangeSceneAction,
+  createCompleteTravelMinigameAction,
   createSetLastGigStatsAction,
   createSetSetlistAction,
   createStartGigAction,
+  createStartTravelMinigameAction,
   createUpdateBandAction,
   createUpdatePlayerAction
 } from '../../src/context/actionCreators'
 import { getActiveAssetModifiers } from '../../src/utils/assetSelectors'
 import {
   calculateTravelCostsAndImpact,
-  checkTravelResources,
-  getTravelArrivalUpdates
+  checkTravelResources
 } from '../../src/utils/travelUtils'
 import { processHarmonyRegen } from '../../src/utils/arrivalUtils'
 import { calculateGigFinancials } from '../../src/utils/economy'
@@ -69,20 +70,45 @@ export function buildMapNode(overrides = {}) {
 }
 
 /**
- * Builds the travel + arrival actions, mirroring `useOnTravelComplete`.
+ * Registers a destination node in the map the reducer reads.
+ *
+ * Production only ever travels to a node the generated map already holds, and
+ * `handleCompleteTravelMinigame` resolves its target through
+ * `state.gameMap.nodes`. The driver's fixture map starts empty, so a travel
+ * step has to seed its destination first or the reducer refuses the trip.
+ *
+ * @param {object} state - Current game state.
+ * @param {object} node - Destination map node to register.
+ * @returns {object} State whose `gameMap.nodes` contains the node.
+ */
+export function withMapNode(state, node) {
+  return {
+    ...state,
+    gameMap: {
+      ...(state.gameMap ?? {}),
+      nodes: { ...(state.gameMap?.nodes ?? {}), [node.id]: node }
+    }
+  }
+}
+
+/**
+ * Builds the travel + arrival actions, mirroring the production travel path:
+ * the affordability gate in `useHandleTravel`, the tourbus minigame that
+ * settles arrival in `handleCompleteTravelMinigame`, and the day tick that
+ * `useArrivalLogic.handleArrivalSequence` runs once the player continues.
  *
  * @param {object} state - Current game state.
  * @param {object} node - Destination map node.
  * @returns {{actions: Array<object>, blocked: null | {errorKey?: string}}}
  * Ordered actions, or `blocked` when resources are insufficient — the hook
- * bails out in that case, so the driver emits no actions either.
+ * refuses to start the trip in that case, so the driver emits no actions.
  */
 export function buildTravelStep(state, node) {
   const { player, band, social, assets, liabilities } = state
   const assetModifiers = getActiveAssetModifiers(assets)
   const currentStartNode = state.gameMap?.nodes?.[player.currentNodeId]
 
-  const { fuelLiters, totalCost, cashRequired } = calculateTravelCostsAndImpact(
+  const { fuelLiters, cashRequired } = calculateTravelCostsAndImpact(
     node,
     currentStartNode,
     player,
@@ -98,17 +124,13 @@ export function buildTravelStep(state, node) {
     return { actions: [], blocked: { errorKey: resourceCheck.errorKey } }
   }
 
-  const updates = getTravelArrivalUpdates({
-    player,
-    band,
-    node,
-    fuelLiters,
-    totalCost,
-    assetModifiers
-  })
-
-  const actions = [createUpdatePlayerAction(updates.nextPlayer)]
-  if (updates.nextBand) actions.push(createUpdateBandAction(updates.nextBand))
+  // The completion reducer refuses to settle unless a tourbus run is active,
+  // so the start action is part of the step, not fixture setup.
+  const actions = [
+    createStartTravelMinigameAction(node.id),
+    // A clean run: this step is about money/fuel/location, not damage.
+    createCompleteTravelMinigameAction(0, [])
+  ]
   // `advanceDay` must be built from the state the earlier actions produce, so
   // its RNG stream is sized against the same asset list the reducer will see.
   actions.push(advanceDay(applySequence(state, actions)))

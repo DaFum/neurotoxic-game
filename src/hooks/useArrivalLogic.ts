@@ -175,8 +175,7 @@ export const useArrivalLogic = ({
       // there). If that guard is ever removed, this call must add its own check.
       const travelEventActive = processTravelEvents(currentNode, triggerEvent)
 
-      // 3b. Rival band reacts to the trip (movement + possible encounter),
-      // mirroring the legacy onTravelComplete path.
+      // 3b. Rival band reacts to the trip (movement + possible encounter).
       moveRivalBand()
       checkRivalEncounter()
 
