@@ -12,6 +12,13 @@ import { RepairConfirmModal } from './RepairConfirmModal'
 import { SellConfirmModal } from './SellConfirmModal'
 import { UpgradeConfirmModal } from './UpgradeConfirmModal'
 
+/**
+ * Maps primary asset categories to their abbreviated short-string identifiers.
+ *
+ * @remarks
+ * These labels match the keys used in the translation namespace to fetch section descriptions
+ * dynamically (e.g., `assets:section.tourbus.description`).
+ */
 const SECTION_LABELS = {
   tourbus_chassis: 'tourbus',
   studio_chassis: 'studio',
@@ -22,8 +29,13 @@ const SECTION_LABELS = {
   'tourbus' | 'studio' | 'bandhaus' | 'workshop'
 >
 
+/**
+ * Defines the configuration properties for the AssetSectionPanel component.
+ */
 interface AssetSectionPanelProps {
+  /** The top-level category of assets to display in this panel. */
   kind: AssetKind
+  /** A render prop function that constructs the visual hero element for a specific asset. */
   renderHero: (
     asset: LongTermAsset,
     onSlotClick: (slotId: string) => void
@@ -31,8 +43,15 @@ interface AssetSectionPanelProps {
 }
 
 /**
- * Provides the shared shell for one long-term asset section.
- * @param props - Asset kind and hero renderer for the shared asset-section shell.
+ * Provides the shared structural shell for rendering a specific long-term asset section.
+ *
+ * @remarks
+ * This component acts as the parent container for a given asset category. It manages
+ * the core acquisition logic when no assets exist, renders child decks for active assets,
+ * and hosts the financial liability overview (loans and crowdfunds) specific to this category.
+ *
+ * @param props - The component properties.
+ * @returns The rendered composite panel containing asset actions, decks, and financial trackers.
  */
 export const AssetSectionPanel = ({
   kind,
