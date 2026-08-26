@@ -88,6 +88,7 @@ describe('gig hooks reach no audio hub function under a substituted engine', () 
   })
 
   it('drives a miss through to band collapse without touching the hub', () => {
+    const gameOverTimerRef = { current: null }
     const gameStateRef = {
       current: {
         // Health low enough that a single miss triggers the game-over branch,
@@ -123,16 +124,26 @@ describe('gig hooks reach no audio hub function under a substituted engine', () 
             endGig: vi.fn()
           },
           baseCrowdDecay: 1,
-          gameOverTimerRef: { current: null }
+          gameOverTimerRef
         }),
       { wrapper }
     )
 
-    act(() => {
-      result.current(1, false)
-    })
+    try {
+      act(() => {
+        result.current(1, false)
+      })
 
-    expect(gameStateRef.current.isGameOver).toBe(true)
-    expect(reached).toEqual([])
+      expect(gameStateRef.current.isGameOver).toBe(true)
+      expect(reached).toEqual([])
+    } finally {
+      // The collapse path schedules a real 4s timeout. Nulling the ref would
+      // not cancel it -- the callback would still fire into this test's mocks
+      // long after it finished -- so cancel the handle itself.
+      if (gameOverTimerRef.current) {
+        clearTimeout(gameOverTimerRef.current)
+        gameOverTimerRef.current = null
+      }
+    }
   })
 })

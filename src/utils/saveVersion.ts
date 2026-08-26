@@ -26,7 +26,10 @@
  */
 export const parseSaveVersion = (value: unknown): number | null => {
   if (typeof value === 'number') {
-    return Number.isInteger(value) && value >= 0 ? value : null
+    // `isSafeInteger`, not `isInteger`: `2 ** 53` is an integer but no longer
+    // round-trips, and the string branch below already rejects it -- the two
+    // branches must not disagree on the same value.
+    return Number.isSafeInteger(value) && value >= 0 ? value : null
   }
   if (typeof value === 'string' && /^\d+$/.test(value)) {
     // The regex admits arbitrarily long digit runs, and `Number` turns those

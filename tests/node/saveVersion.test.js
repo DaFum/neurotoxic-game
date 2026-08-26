@@ -45,6 +45,16 @@ describe('parseSaveVersion', () => {
     assert.equal(parseSaveVersion('9007199254740991'), 9007199254740991)
   })
 
+  it('rejects numbers past the safe-integer range', () => {
+    // Must match the string branch: `Number.isInteger` accepted this, so the
+    // two branches disagreed on the very same value.
+    assert.equal(parseSaveVersion(Number.MAX_SAFE_INTEGER + 1), null)
+    assert.equal(
+      parseSaveVersion(Number.MAX_SAFE_INTEGER),
+      Number.MAX_SAFE_INTEGER
+    )
+  })
+
   it('rejects non-integer, negative, and non-finite numbers', () => {
     for (const bad of [2.5, -1, NaN, Infinity, -Infinity]) {
       assert.equal(parseSaveVersion(bad), null, `expected ${bad} rejected`)

@@ -786,6 +786,61 @@ describe('error timestamps go through the injected clock', () => {
     assert.strictEqual(info.timestamp, error.timestamp)
   })
 
+  it('survives a clock whose now() throws', () => {
+    // handleError is the global error boundary: a caller's clock must never be
+    // able to turn a handled error into a thrown one.
+    const hostile = {
+      now: () => {
+        throw new Error('now boom')
+      },
+      today: () => new Date(0)
+    }
+    const info = handleError(new Error('x'), { silent: true, clock: hostile })
+    assert.ok(Number.isFinite(info.timestamp))
+  })
+
+  it('survives a clock whose now member throws on access', () => {
+    const hostile = {
+      get now() {
+        throw new Error('getter boom')
+      },
+      today: () => new Date(0)
+    }
+    const info = handleError(new Error('x'), { silent: true, clock: hostile })
+    assert.ok(Number.isFinite(info.timestamp))
+  })
+
+  it('rejects a non-finite now() instead of stamping NaN', () => {
+    // A NaN timestamp serializes into telemetry as `null`.
+    for (const bogus of [NaN, Infinity, undefined, '123']) {
+      const info = handleError(new Error('x'), {
+        silent: true,
+        clock: { now: () => bogus, today: () => new Date(0) }
+      })
+      assert.ok(
+        Number.isFinite(info.timestamp),
+        `expected a finite timestamp for now() = ${String(bogus)}`
+      )
+    }
+  })
+
+  it('accepts a prototype-based clock implementation', () => {
+    // An own-property check would reject this; `now` lives on the prototype.
+    class ClassClock {
+      now() {
+        return FIXED_NOW
+      }
+      today() {
+        return new Date(FIXED_NOW)
+      }
+    }
+    const info = handleError(new Error('x'), {
+      silent: true,
+      clock: new ClassClock()
+    })
+    assert.strictEqual(info.timestamp, FIXED_NOW)
+  })
+
   it('falls back to the system clock for a malformed clock option', () => {
     // handleError takes untrusted options and must never throw from inside the
     // error path.

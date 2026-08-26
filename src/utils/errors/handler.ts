@@ -50,11 +50,36 @@ const normalizeHandleErrorOptions = (
   }
 }
 
+/**
+ * Reads a clock's current time, tolerating a broken clock.
+ *
+ * @param clock - Clock to read.
+ * @returns A finite epoch-ms value, from `systemClock` when the supplied clock
+ * throws or yields a non-finite value.
+ *
+ * @remarks
+ * Every `now()` call in this module goes through here. This runs inside the
+ * global error handler, so a caller's clock must never be able to turn a
+ * handled error into a thrown one, and a `NaN` timestamp would otherwise
+ * serialize into telemetry as `null`.
+ */
+const nowOrSystem = (clock: IClock): number => {
+  try {
+    const value = clock.now()
+    if (Number.isFinite(value)) return value
+  } catch {
+    // Fall through to the system clock below.
+  }
+  return systemClock.now()
+}
+
 // `Number.isFinite` rather than `||`: a legitimate epoch-0 timestamp is falsy,
 // so the old fallback silently replaced it with a fresh wall-clock read --
 // which defeats exactly the substitution this clock parameter exists for.
 const resolveTimestamp = (errorInfo: ErrorInfoObject, clock: IClock): number =>
-  Number.isFinite(errorInfo.timestamp) ? errorInfo.timestamp : clock.now()
+  Number.isFinite(errorInfo.timestamp)
+    ? errorInfo.timestamp
+    : nowOrSystem(clock)
 
 const sanitizeErrorInfo = (errorInfo: ErrorInfoObject, clock: IClock) => ({
   message: errorInfo.message || 'Critical error',
@@ -89,7 +114,7 @@ const buildErrorInfo = (
     // injected clock governs the handled record. Absent one, the error's own
     // creation time is preserved exactly as before.
     if (injectedClock) {
-      errorInfo.timestamp = injectedClock.now()
+      errorInfo.timestamp = nowOrSystem(injectedClock)
     }
   } else {
     const errObj = error instanceof Error ? error : null
@@ -102,7 +127,7 @@ const buildErrorInfo = (
       severity: ErrorSeverity.MEDIUM,
       context: {},
       recoverable: true,
-      timestamp: clock.now(),
+      timestamp: nowOrSystem(clock),
       stack: errObj?.stack
     }
   }
@@ -221,15 +246,19 @@ const showErrorToast = (
  * malformed clock by falling back is strictly better than losing the error.
  */
 const readClockOption = (value: unknown): IClock | null => {
-  if (
-    typeof value === 'object' &&
-    value !== null &&
-    typeof (value as IClock).now === 'function' &&
-    typeof (value as IClock).today === 'function'
-  ) {
-    return value as IClock
+  if (typeof value !== 'object' || value === null) return null
+  try {
+    const candidate = value as IClock
+    // `typeof`, not `Object.hasOwn`: a class-based `IClock` carries `now` on
+    // its prototype, and an own-property check would reject it. Reading the
+    // members can itself throw on a hostile getter, hence the guard.
+    return typeof candidate.now === 'function' &&
+      typeof candidate.today === 'function'
+      ? candidate
+      : null
+  } catch {
+    return null
   }
-  return null
 }
 
 export const handleError = (
