@@ -52,7 +52,10 @@ export const StatMiniBar = memo(function StatMiniBar({
   if (variant === 'stacked') {
     return (
       <Tooltip content={label} position='bottom'>
-        <div className='flex items-end gap-1.5 pointer-events-auto'>
+        <div
+          className='flex items-end gap-1.5 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-1 focus-visible:ring-offset-void-black'
+          tabIndex={0}
+        >
           {icon}
           <div className='min-w-0 flex-1'>
             <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
@@ -77,7 +80,10 @@ export const StatMiniBar = memo(function StatMiniBar({
 
   return (
     <Tooltip content={label} position='bottom'>
-      <div className='flex items-center gap-1 pointer-events-auto'>
+      <div
+        className='flex items-center gap-1 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-1 focus-visible:ring-offset-void-black'
+        tabIndex={0}
+      >
         {icon}
         <div className='w-12'>
           <ProgressBar
