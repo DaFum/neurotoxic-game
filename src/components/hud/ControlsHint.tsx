@@ -8,18 +8,40 @@ const LANES = [
 ] as const
 
 /**
+ * Properties for the {@link ControlsHint} component.
+ */
+interface ControlsHintProps {
+  /**
+   * Whether toxic mode is active. The crowd-energy strip grows a warning row
+   * while it is, which claims the space this hint occupies.
+   */
+  isToxicMode?: boolean
+}
+
+/**
  * Displays desktop keyboard hints for the rhythm-game lane controls.
  *
  * @remarks
  * The hint row is hidden below the `md` breakpoint because touch controls are
- * presented elsewhere.
+ * presented elsewhere, and while toxic mode is active because the crowd-energy
+ * strip's warning row occupies the same band.
  */
-export const ControlsHint = memo(function ControlsHint() {
+export const ControlsHint = memo(function ControlsHint({
+  isToxicMode = false
+}: ControlsHintProps) {
   const { t } = useTranslation(['ui'])
+
+  // Below the hit line there are only ~38px, which the hint row and the
+  // crowd-energy strip fill exactly. Toxic mode adds a warning row to that
+  // strip, so yield rather than let the strip paint over this one: the key
+  // mapping is static reference, the alarm is not.
+  if (isToxicMode) return null
 
   return (
     <div
-      className='absolute bottom-2 sm:bottom-3 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
+      /* bottom-5 stacks this row between the hit targets and the crowd-energy
+         strip now pinned to the bottom edge. */
+      className='absolute bottom-5 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >

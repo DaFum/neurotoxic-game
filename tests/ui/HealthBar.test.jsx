@@ -18,8 +18,12 @@ describe('HealthBar', () => {
     const wrapper = container.firstChild
     expect(wrapper.className).toContain('z-(--z-stage-overlay)')
     expect(wrapper.className).toContain('absolute')
-    expect(wrapper.className).toContain('sm:bottom-20')
-    expect(wrapper.className).toContain('bottom-14')
+    // Pinned to the bottom edge, below the hit bars, so the strip never covers
+    // the note-approach column. buildRhythmLayout keeps the hit line 60px above
+    // the bottom edge, so this holds at any viewport height.
+    expect(wrapper.className).toContain('bottom-0')
+    expect(wrapper.className).not.toContain('bottom-14')
+    expect(wrapper.className).not.toContain('sm:bottom-20')
     expect(wrapper.className).toContain('w-full px-4')
     expect(wrapper.className).toContain('max-w-[28rem]')
     expect(wrapper.className).toContain('pointer-events-none')

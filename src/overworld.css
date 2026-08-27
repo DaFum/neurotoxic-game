@@ -1,3 +1,20 @@
+/* Overworld label type scale.
+   Both steps are rem so a browser/OS font-size preference still moves them,
+   and 0.6875rem (11px at the default root size) is the floor: the map, HUD and
+   event log previously dropped to 7-9px, which is below reading size on the
+   surface players spend the most time on. Use --ow-label-md wherever a label
+   carries a number the player has to read. */
+:root {
+  --ow-label-sm: 0.6875rem;
+  --ow-label-md: 0.75rem;
+
+  /* Horizontal space reserved for the side HUD panels (status panel on the
+     left, band status on the right) plus a gutter. The scene title is centred
+     in what is left between them. */
+  --ow-title-inset-left: 300px;
+  --ow-title-inset-right: 288px;
+}
+
 /* Glitch */
 @keyframes glitch-clip {
   0%,
@@ -99,7 +116,7 @@
   gap: 6px;
   margin-bottom: 8px;
   color: rgb(var(--color-star-white-rgb) / 80%);
-  font-size: 11px;
+  font-size: var(--ow-label-md);
 }
 .van-stats {
   border-top: 1px solid rgb(var(--color-toxic-green-rgb) / 20%);
@@ -125,14 +142,14 @@
 .career-label {
   display: block;
   color: var(--color-ash-gray);
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   letter-spacing: 1px;
   text-transform: uppercase;
 }
 .career-value {
   display: block;
   color: var(--color-toxic-green);
-  font-size: 11px;
+  font-size: var(--ow-label-md);
   font-weight: bold;
   font-variant-numeric: tabular-nums;
   overflow: hidden;
@@ -143,13 +160,13 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 10px;
+  font-size: var(--ow-label-md);
 }
 .van-icon {
   width: 16px;
   text-align: center;
   flex-shrink: 0;
-  font-size: 11px;
+  font-size: var(--ow-label-md);
 }
 .mini-track {
   flex: 1;
@@ -163,7 +180,7 @@
   transition: width 0.5s;
 }
 .mini-num {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
   width: 26px;
   text-align: right;
@@ -210,7 +227,7 @@
   box-shadow: 0 0 12px rgb(var(--color-toxic-green-rgb) / 20%);
 }
 .sc-title {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   color: var(--color-toxic-green);
   letter-spacing: 3px;
   text-transform: uppercase;
@@ -225,14 +242,14 @@
   align-items: center;
 }
 .sc-key {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   background: rgb(var(--color-ash-gray-rgb) / 20%);
   border: 1px solid rgb(var(--color-ash-gray-rgb) / 40%);
   padding: 1px 6px;
   color: var(--color-star-white);
 }
 .sc-desc {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
 }
 .hud-right {
@@ -245,7 +262,7 @@
   min-width: 232px;
 }
 .band-hdr {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   letter-spacing: 3px;
   color: var(--color-ash-gray);
   text-transform: uppercase;
@@ -261,7 +278,7 @@
   margin-bottom: 5px;
 }
 .mbr-name {
-  font-size: 10px;
+  font-size: var(--ow-label-md);
   color: rgb(var(--color-star-white-rgb) / 80%);
 }
 .mbr-bars {
@@ -286,7 +303,7 @@
   transition: width 0.5s;
 }
 .bar-pct {
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   width: 24px;
   text-align: right;
   font-variant-numeric: tabular-nums;
@@ -300,7 +317,7 @@
   justify-content: space-between;
 }
 .harmony-label {
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
   letter-spacing: 1px;
   text-transform: uppercase;
@@ -323,16 +340,56 @@
 /* OW Header */
 .ow-title {
   position: absolute;
-  top: 80px;
+
+  /* Sits in the row the radio widget leaves free, above the status box. */
+  top: 92px;
   left: 50%;
   transform: translateX(-50%);
+  padding-inline: 0.75rem;
+
+  /* Above the map with an opaque backdrop: the map panel's top border runs
+     across this row and used to strike straight through the glyphs. */
+  z-index: var(--z-stage);
+  background: var(--color-void-black);
   font-family: var(--font-display);
   font-size: 36px;
+  line-height: 1;
   color: var(--color-toxic-green);
   text-shadow: 0 0 10px var(--color-toxic-green);
-  z-index: var(--z-stage-bg);
   pointer-events: none;
   white-space: nowrap;
+}
+
+/* Centre the title in the space the two side HUD panels leave free rather than
+   in the viewport, so a long city name ellipsises inside that band instead of
+   sliding underneath a panel.
+
+   Only from 900px up: the band is the viewport minus both insets (588px) and
+   the title needs ~300px of it, so below that there is no band to centre in and
+   the viewport centring above stays the better of two cramped options. The
+   stacked layout at 640px takes over from there. */
+@media (min-width: 900px) {
+  .ow-title {
+    left: var(--ow-title-inset-left);
+    right: var(--ow-title-inset-right);
+    width: fit-content;
+
+    /* Not `100%`: on an absolutely positioned box a percentage max-width
+       resolves against the containing block, not the inset-constrained band,
+       so it would not clamp the title to the band at all. */
+    max-width: calc(
+      100vw - var(--ow-title-inset-left) - var(--ow-title-inset-right)
+    );
+    margin-inline: auto;
+    transform: none;
+
+    /* Only meaningful alongside the band max-width above, and only safe here:
+       in the stacked layout the title is a flex item in an overflowing column,
+       where any non-visible overflow drops its automatic minimum size and
+       collapses it to zero height. */
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 .ow-status {
   position: absolute;
@@ -356,7 +413,7 @@
 }
 .ow-status-sub {
   color: var(--color-star-white);
-  font-size: 11px;
+  font-size: var(--ow-label-md);
   margin-top: 2px;
   opacity: 0.8;
 }
@@ -398,12 +455,12 @@
 .el-title {
   color: var(--color-toxic-green);
   font-weight: bold;
-  font-size: 10px;
+  font-size: var(--ow-label-md);
   letter-spacing: 2px;
   text-transform: uppercase;
 }
 .el-count {
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
   letter-spacing: 1px;
 }
@@ -431,7 +488,7 @@
 .el-entry {
   display: flex;
   gap: 6px;
-  font-size: 9px;
+  font-size: var(--ow-label-sm);
   line-height: 1.5;
   font-family: var(--font-ui);
 }
@@ -512,7 +569,7 @@
   gap: 8px;
 }
 .menu-panel-title-sub {
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
   letter-spacing: 3px;
   font-family: var(--font-ui);
@@ -566,13 +623,13 @@
   gap: 8px;
 }
 .menu-cat-count {
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   color: var(--color-ash-gray);
   font-family: var(--font-ui);
   letter-spacing: 1px;
 }
 .menu-cat-arrow {
-  font-size: 11px;
+  font-size: var(--ow-label-md);
   opacity: 0.6;
 }
 /* Sub menu */
@@ -591,7 +648,7 @@
   cursor: pointer;
   color: var(--color-ash-gray);
   font-family: var(--font-ui);
-  font-size: 10px;
+  font-size: var(--ow-label-md);
   letter-spacing: 2px;
   text-transform: uppercase;
   transition: all 0.15s;
@@ -603,7 +660,7 @@
 }
 .menu-sub-title {
   padding: 8px 14px 6px;
-  font-size: 7px;
+  font-size: var(--ow-label-sm);
   letter-spacing: 3px;
   color: var(--color-ash-gray);
   text-transform: uppercase;
@@ -678,14 +735,14 @@
   letter-spacing: 1px;
 }
 .menu-sub-desc {
-  font-size: 8px;
+  font-size: var(--ow-label-sm);
   opacity: 0.55;
   font-family: var(--font-ui);
   letter-spacing: 0.5px;
   margin-top: 1px;
 }
 .menu-sub-arrow {
-  font-size: 10px;
+  font-size: var(--ow-label-md);
   opacity: 0.5;
 }
 
@@ -894,6 +951,8 @@
     order: 0;
     width: 100%;
     max-width: 100%;
+    margin-inline: 0;
+    padding-inline: 0;
     padding-right: 96px;
     font-size: 24px;
     line-height: 1.05;
@@ -910,11 +969,11 @@
   }
 
   .ow-status-main {
-    font-size: 11px;
+    font-size: var(--ow-label-md);
   }
 
   .ow-status-sub {
-    font-size: 10px;
+    font-size: var(--ow-label-md);
   }
 
   .map-wrap {

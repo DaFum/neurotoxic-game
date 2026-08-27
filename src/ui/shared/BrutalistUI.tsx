@@ -23,6 +23,12 @@ interface BlockMeterProps {
   isDanger?: boolean
   /** Hides the numeric `value / max` readout when the blocks alone suffice. */
   showValue?: boolean
+  /**
+   * `stacked` (default) puts the label row above the blocks. `inline` keeps
+   * label, blocks and readout on one row for meters that have to fit a slim
+   * strip, such as the gig crowd-energy bar pinned below the lanes.
+   */
+  layout?: 'stacked' | 'inline'
 }
 
 interface UplinkButtonProps {
@@ -308,31 +314,45 @@ export const BlockMeter = memo(
     value,
     max = 10,
     isDanger = false,
-    showValue = true
+    showValue = true,
+    layout = 'stacked'
   }: BlockMeterProps) => {
     const blocks = Array.from({ length: max }, (_, i) => i)
+    const isInline = layout === 'inline'
     return (
       <div
-        className='w-full max-w-sm flex flex-col gap-2'
+        className={
+          isInline
+            ? 'w-full max-w-sm flex items-center gap-2'
+            : 'w-full max-w-sm flex flex-col gap-2'
+        }
         role='meter'
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={0}
         aria-valuemax={max}
       >
-        <div className='flex justify-between items-end'>
-          <span className='text-xs tracking-widest uppercase opacity-80'>
+        <div
+          className={isInline ? 'contents' : 'flex justify-between items-end'}
+        >
+          <span
+            className={
+              isInline
+                ? 'text-xs tracking-widest uppercase opacity-80 shrink-0'
+                : 'text-xs tracking-widest uppercase opacity-80'
+            }
+          >
             {label}
           </span>
           {showValue && (
             <span
-              className={`text-sm font-bold ${isDanger ? 'text-blood-red animate-fuel-warning' : 'text-toxic-green'}`}
+              className={`font-bold ${isInline ? 'order-last shrink-0 text-xs tabular-nums' : 'text-sm'} ${isDanger ? 'text-blood-red animate-fuel-warning' : 'text-toxic-green'}`}
             >
               {value} / {max}
             </span>
           )}
         </div>
-        <div className='flex gap-1 h-6'>
+        <div className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}>
           {blocks.map(block => {
             const isFilled = block < value
             let blockClass =

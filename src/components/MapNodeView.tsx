@@ -163,9 +163,23 @@ const MapNodeTooltip = memo(
   }: MapNodeTooltipProps) => {
     const isGigLike =
       node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
+
+    // `.map-wrap` clips its overflow, so a tooltip hanging below a node low on
+    // the map is cut off; generated maps place nodes as far down as 86% of the
+    // map height. Flip it above the hexagon past the point where the space
+    // above exceeds the space below, which is where the two offsets balance:
+    // below starts 100px under the node centre, above ends 48px over it, so the
+    // crossover is (mapHeight - 148) / 2 — 44.8% of a 500px desktop map and
+    // 45.2% of a 540px mobile one. 45 therefore picks the roomier side on both,
+    // leaving at least ~176px against a tallest observed tooltip of 74px.
+    const flipAbove = node.y > 45
     return (
       <div
-        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full left-1/2 -translate-x-1/2 mt-2 bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
+        /* Below the node, mt-[3.75rem] clears the tallest label stack (type
+           label plus a three-line location name), which reaches 60px past the
+           bottom of this box. Above the node there is no label stack, so a
+           small gap is enough. */
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} ${flipAbove ? 'bottom-full mb-2' : 'top-full mt-[3.75rem]'} absolute left-1/2 -translate-x-1/2 bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
@@ -421,12 +435,6 @@ export const MapNodeView = memo(
           </div>
         </m.div>
 
-        <div
-          className={`text-xxs font-bold uppercase tracking-wide text-ash-gray mt-1 px-1 bg-void-black pointer-events-none ${labelMobileHiddenClass}`}
-        >
-          {getNodeTypeLabel(t, node.type)}
-        </div>
-
         {/* Pending confirmation label */}
         {isPendingConfirm && (
           <div className='absolute top-0 left-1/2 -translate-x-1/2 text-warning-yellow text-xs font-bold whitespace-nowrap pointer-events-none animate-pulse bg-void-black/80 px-1.5 py-0.5 border border-warning-yellow z-(--z-stage)'>
@@ -434,13 +442,21 @@ export const MapNodeView = memo(
           </div>
         )}
 
-        {/* Node Label (Always visible, matching BrutalistUI style). Opaque chip
-            so overlapping labels in dense map clusters occlude cleanly instead
-            of blending; the hovered/current node raises its z-index (above) so
-            its label reads on top. */}
+        {/* Type and location labels hang below the hexagon, taken out of flow so
+            they cannot push it off the node's map coordinate. While they were
+            in flow this fixed-height box (h-20) had 104-128px of content and
+            `justify-center` split the overflow, so a two- or three-line name
+            dragged its own hexagon 24-40px above where the map placed it and
+            the label stack reached into neighbouring nodes.
+            Opaque chip so overlapping labels in dense map clusters occlude
+            cleanly instead of blending; the hovered/current node raises its
+            z-index (above) so its label reads on top. */}
         <div
-          className={`mt-2 flex flex-col items-center z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
+          className={`absolute top-1/2 left-1/2 -translate-x-1/2 mt-7 flex flex-col items-center gap-1 z-(--z-stage-bg) pointer-events-none ${labelMobileHiddenClass}`}
         >
+          <span className='text-xxs font-bold uppercase tracking-wide text-ash-gray px-1 bg-void-black'>
+            {getNodeTypeLabel(t, node.type)}
+          </span>
           <span
             className={`text-xs font-bold tracking-tight uppercase text-center transition-colors px-1.5 py-0.5 max-w-28 bg-void-black border ${isHoveredLocal || isPendingConfirm ? 'text-star-white border-toxic-green' : 'text-toxic-green border-toxic-green/20'}`}
           >

@@ -77,7 +77,11 @@ const BAND_STATUS_PANEL_VARIANTS = {
       'pointer-events-auto bg-void-black border-2 border-toxic-green p-2.5 text-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green)]',
     titleClassName:
       'text-right border-b border-toxic-green/30 mb-2 pb-1 text-xs tracking-widest text-ash-gray',
-    membersWrapperClassName: 'w-52',
+    // Matches the `hud` variant: both variants render the same BandMemberRow,
+    // and the two inline stat bars claim a fixed 166px of it. At w-52 the name
+    // column was left with ~42px and truncated "Marius" to "Mari…" on pre-gig
+    // and post-gig while the overworld panel showed it in full.
+    membersWrapperClassName: 'w-56',
     harmonyLabelClassName: 'text-xs text-ash-gray mb-0.5',
     harmonyValueClassName: 'text-xs tabular-nums mb-0.5 leading-none',
     barWrapperClassName: 'w-20',
