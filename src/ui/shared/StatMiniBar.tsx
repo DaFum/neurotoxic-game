@@ -52,20 +52,30 @@ export const StatMiniBar = memo(function StatMiniBar({
   if (variant === 'stacked') {
     return (
       <Tooltip content={label} position='bottom'>
-        <div className='flex items-end gap-1.5 pointer-events-auto'>
-          {icon}
-          <div className='min-w-0 flex-1'>
-            <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
-              {readout}
+        <div
+          className='flex items-end gap-1.5 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-1 focus-visible:ring-offset-void-black'
+          tabIndex={0}
+          role='progressbar'
+          aria-valuenow={Math.floor(Math.min(Math.max(0, value), max))}
+          aria-valuemin={0}
+          aria-valuemax={max}
+          aria-label={resolvedAriaLabel}
+        >
+          <div aria-hidden='true' className='flex items-end gap-1.5 min-w-0 flex-1'>
+            {icon}
+            <div className='min-w-0 flex-1'>
+              <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>
+                {readout}
+              </div>
+              <ProgressBar
+                value={value}
+                max={max}
+                color={color}
+                warn={isLow}
+                size='mini'
+                aria-hidden='true'
+              />
             </div>
-            <ProgressBar
-              value={value}
-              max={max}
-              color={color}
-              warn={isLow}
-              size='mini'
-              aria-label={resolvedAriaLabel}
-            />
           </div>
         </div>
       </Tooltip>
@@ -77,22 +87,32 @@ export const StatMiniBar = memo(function StatMiniBar({
 
   return (
     <Tooltip content={label} position='bottom'>
-      <div className='flex items-center gap-1 pointer-events-auto'>
-        {icon}
-        <div className='w-12'>
-          <ProgressBar
-            value={value}
-            max={max}
-            color={activeColor}
-            size='mini'
-            aria-label={resolvedAriaLabel}
-          />
+      <div
+        className='flex items-center gap-1 pointer-events-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-1 focus-visible:ring-offset-void-black'
+        tabIndex={0}
+        role='progressbar'
+        aria-valuenow={Math.floor(Math.min(Math.max(0, value), max))}
+        aria-valuemin={0}
+        aria-valuemax={max}
+        aria-label={resolvedAriaLabel}
+      >
+        <div aria-hidden='true' className='flex items-center gap-1 w-full'>
+          {icon}
+          <div className='w-12'>
+            <ProgressBar
+              value={value}
+              max={max}
+              color={activeColor}
+              size='mini'
+              aria-hidden='true'
+            />
+          </div>
+          <span
+            className={`text-xxs w-7 text-right tabular-nums ${textColor}${isLow ? ' font-bold' : ''}`}
+          >
+            {readout}
+          </span>
         </div>
-        <span
-          className={`text-xxs w-7 text-right tabular-nums ${textColor}${isLow ? ' font-bold' : ''}`}
-        >
-          {readout}
-        </span>
       </div>
     </Tooltip>
   )
