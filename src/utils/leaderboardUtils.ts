@@ -62,13 +62,19 @@ export const submitLeaderboardScores = async ({
 
   if (songStats && songStats.length > 0) {
     // Use the detailed per-song stats generated during the gig
-    scoresToSubmit.push(
-      ...songStats
-        .map(stat =>
-          toLeaderboardScore(stat?.songId, stat?.score, stat?.accuracy)
-        )
-        .filter((entry): entry is SongStat => entry !== undefined)
-    )
+    // ⚡ BOLT OPTIMIZATION: Replaced chained .map().filter() with a single procedural loop.
+    // Why: Eliminates intermediate array allocations and reduces garbage collection pressure.
+    for (let i = 0; i < songStats.length; i++) {
+      const stat = songStats[i]
+      const entry = toLeaderboardScore(
+        stat?.songId,
+        stat?.score,
+        stat?.accuracy
+      )
+      if (entry !== undefined) {
+        scoresToSubmit.push(entry)
+      }
+    }
   } else {
     // Fallback for legacy saves or early aborted gigs without per-song stats
     const setlistFirstId =
