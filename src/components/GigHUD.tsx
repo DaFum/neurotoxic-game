@@ -95,7 +95,7 @@ export const GigHUD = memo(function GigHUD({
         isDanger={visualStatus.healthDanger}
       />
 
-      <ControlsHint />
+      <ControlsHint isToxicMode={isToxicMode} />
 
       <GameOverOverlay isGameOver={isGameOver} />
     </div>

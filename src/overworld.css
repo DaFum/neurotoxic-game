@@ -343,16 +343,8 @@
 
   /* Sits in the row the radio widget leaves free, above the status box. */
   top: 92px;
-
-  /* Centred in the space the two side HUD panels leave free rather than in the
-     viewport, so a long city name ellipsises inside that band instead of
-     sliding underneath the panels. */
-  left: var(--ow-title-inset-left);
-  right: var(--ow-title-inset-right);
-  width: fit-content;
-  max-width: 100%;
-  margin-inline: auto;
-  transform: none;
+  left: 50%;
+  transform: translateX(-50%);
   padding-inline: 0.75rem;
 
   /* Above the map with an opaque backdrop: the map panel's top border runs
@@ -368,6 +360,31 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+
+/* Centre the title in the space the two side HUD panels leave free rather than
+   in the viewport, so a long city name ellipsises inside that band instead of
+   sliding underneath a panel.
+
+   Only from 900px up: the band is the viewport minus both insets (588px) and
+   the title needs ~300px of it, so below that there is no band to centre in and
+   the viewport centring above stays the better of two cramped options. The
+   stacked layout at 640px takes over from there. */
+@media (min-width: 900px) {
+  .ow-title {
+    left: var(--ow-title-inset-left);
+    right: var(--ow-title-inset-right);
+    width: fit-content;
+
+    /* Not `100%`: on an absolutely positioned box a percentage max-width
+       resolves against the containing block, not the inset-constrained band,
+       so it would not clamp the title to the band at all. */
+    max-width: calc(
+      100vw - var(--ow-title-inset-left) - var(--ow-title-inset-right)
+    );
+    margin-inline: auto;
+    transform: none;
+  }
 }
 .ow-status {
   position: absolute;

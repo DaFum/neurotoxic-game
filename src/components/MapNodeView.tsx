@@ -163,12 +163,19 @@ const MapNodeTooltip = memo(
   }: MapNodeTooltipProps) => {
     const isGigLike =
       node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
+
+    // `.map-wrap` clips its overflow, so a tooltip hanging below a node low on
+    // the map is cut off — a gig tooltip is ~150px tall and generated maps place
+    // nodes as far down as 85% of the map height. Flip it above the hexagon
+    // there. Above 55% the flipped tooltip still clears the map's top edge.
+    const flipAbove = node.y > 55
     return (
       <div
-        /* mt-[3.75rem] clears the tallest label stack below the hexagon (type
+        /* Below the node, mt-[3.75rem] clears the tallest label stack (type
            label plus a three-line location name), which reaches 60px past the
-           bottom of the node box this tooltip is anchored to. */
-        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} absolute top-full left-1/2 -translate-x-1/2 mt-[3.75rem] bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
+           bottom of this box. Above the node there is no label stack, so a
+           small gap is enough. */
+        className={`${isPendingConfirm ? 'block' : 'hidden group-hover:block group-focus:block'} ${flipAbove ? 'bottom-full mb-2' : 'top-full mt-[3.75rem]'} absolute left-1/2 -translate-x-1/2 bg-void-black/90 border border-toxic-green p-2 z-50 w-max max-w-[min(18rem,calc(100vw-2rem))] whitespace-normal break-words text-left pointer-events-none`}
       >
         <div className='font-bold text-toxic-green'>{nodeLocationName}</div>
 
