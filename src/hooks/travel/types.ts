@@ -83,16 +83,29 @@ export interface TravelRefsBundle {
   venueBlacklistRef: React.MutableRefObject<string[]>
 }
 
+/**
+ * React state holding current travel execution and confirmation dialog status.
+ */
 export interface TravelStateBundle {
   isTraveling: boolean
   pendingTravelNode: MapNode | null
 }
 
+/**
+ * State dispatch functions for travel execution and confirmation dialog status.
+ */
 export interface TravelSettersBundle {
   setIsTraveling: React.Dispatch<React.SetStateAction<boolean>>
   setPendingTravelNode: React.Dispatch<React.SetStateAction<MapNode | null>>
 }
 
+/**
+ * Encapsulated bundle of context needed by travel action hooks to execute trips.
+ *
+ * @remarks
+ * Groups the mutable state, setters, parameters, and refs to avoid massive parameter lists
+ * in sub-hook extractions.
+ */
 export interface TravelActionsParams {
   refs: TravelRefsBundle
   state: TravelStateBundle
