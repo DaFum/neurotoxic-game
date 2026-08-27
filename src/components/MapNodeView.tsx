@@ -165,10 +165,14 @@ const MapNodeTooltip = memo(
       node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
 
     // `.map-wrap` clips its overflow, so a tooltip hanging below a node low on
-    // the map is cut off — a gig tooltip is ~150px tall and generated maps place
-    // nodes as far down as 85% of the map height. Flip it above the hexagon
-    // there. Above 55% the flipped tooltip still clears the map's top edge.
-    const flipAbove = node.y > 55
+    // the map is cut off; generated maps place nodes as far down as 86% of the
+    // map height. Flip it above the hexagon past the point where the space
+    // above exceeds the space below, which is where the two offsets balance:
+    // below starts 100px under the node centre, above ends 48px over it, so the
+    // crossover is (mapHeight - 148) / 2 — 44.8% of a 500px desktop map and
+    // 45.2% of a 540px mobile one. 45 therefore picks the roomier side on both,
+    // leaving at least ~176px against a tallest observed tooltip of 74px.
+    const flipAbove = node.y > 45
     return (
       <div
         /* Below the node, mt-[3.75rem] clears the tallest label stack (type

@@ -357,9 +357,7 @@
   color: var(--color-toxic-green);
   text-shadow: 0 0 10px var(--color-toxic-green);
   pointer-events: none;
-  overflow: hidden;
   white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 /* Centre the title in the space the two side HUD panels leave free rather than
@@ -384,6 +382,13 @@
     );
     margin-inline: auto;
     transform: none;
+
+    /* Only meaningful alongside the band max-width above, and only safe here:
+       in the stacked layout the title is a flex item in an overflowing column,
+       where any non-visible overflow drops its automatic minimum size and
+       collapses it to zero height. */
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 .ow-status {
