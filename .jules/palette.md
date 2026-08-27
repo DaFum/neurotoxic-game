@@ -198,8 +198,3 @@
 ## 2026-08-15 - Keyboard Accessibility for Disabled Controls in Tooltips
 **Learning:** Native `disabled` attributes remove interactive elements (like tabs or buttons) from the tab order, completely hiding them from keyboard and screen reader users. When a tooltip explains *why* an element is locked or disabled, this information is lost if the element itself is skipped. Furthermore, attempting to restore hover/focus events on natively disabled elements by wrapping them in a focusable `span` inside a `Tooltip` component can break structural DOM semantics (e.g., breaking the parent-child relationship in `role="tablist"` -> `role="tab"`).
 **Action:** Use `aria-disabled="true"` instead of the native `disabled` attribute for interactive elements that need to remain discoverable to explain their locked state via a tooltip. Ensure the tooltip wrapper component allows `aria-disabled` elements to manage their own focus events rather than intercepting them with a structural `span`.
-
-## 2026-08-27 - Tooltip Focus on Static Elements
-
-**Learning:** Static structural elements (like `div` wrappers) nested inside `Tooltip` components drop out of the keyboard tab sequence unless they are explicitly made focusable, making tooltip text inaccessible to keyboard users navigating HUD elements.
-**Action:** When wrapping static visual readouts (like `StatMiniBar`) in a `Tooltip`, always add `tabIndex={0}` and explicit `focus-visible` utility classes to the tooltip trigger element to ensure keyboard accessibility without breaking the layout.
