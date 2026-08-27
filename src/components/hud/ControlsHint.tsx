@@ -19,7 +19,9 @@ export const ControlsHint = memo(function ControlsHint() {
 
   return (
     <div
-      className='absolute bottom-2 sm:bottom-3 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
+      /* bottom-5 stacks this row between the hit targets and the crowd-energy
+         strip now pinned to the bottom edge. */
+      className='absolute bottom-5 w-full justify-center gap-3 sm:gap-8 z-(--z-stage-bg) pointer-events-none hidden md:flex'
       role='group'
       aria-label={t('ui:gig.controlsHint', { defaultValue: 'Game Controls' })}
     >

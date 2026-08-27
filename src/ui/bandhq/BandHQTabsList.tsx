@@ -49,7 +49,13 @@ export const BandHQTabsList = ({
       aria-label={t('ui:hq.sectionsLabel', {
         defaultValue: 'Band HQ Sections'
       })}
-      className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden'
+      /* From `sm` up the strip wraps onto a second row so every tab is
+         visible: the ten tabs need 1280px of min-width inside an 888px panel,
+         and because the scrollbar is hidden the overflowing tabs (Settings,
+         Glossary, Void Trader) had no affordance hinting they existed. Mobile
+         keeps the swipeable scroll container, where there is no room for rows
+         and touch-pan is the discoverable convention. */
+      className='flex shrink-0 border-b-4 border-toxic-green overflow-x-auto touch-pan-x scrollbar-hidden sm:flex-wrap sm:overflow-x-visible'
     >
       {tabs.map(tab => {
         const isActive = currentTab === tab.id
