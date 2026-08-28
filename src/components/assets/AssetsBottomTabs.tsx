@@ -2,14 +2,26 @@ import { useTranslation } from 'react-i18next'
 import type { AssetKind } from '../../types/assets'
 import { ASSET_SECTION_TABS } from './sectionTabs'
 
+/**
+ * Defines the configuration properties for the AssetsBottomTabs component.
+ */
 interface AssetsBottomTabsProps {
+  /** The currently active asset category section. */
   active: AssetKind
+  /** The callback invoked when a tab is selected to change the active section. */
   onSelect: (kind: AssetKind) => void
 }
 
 /**
- * Displays the sticky mobile asset-section tab bar.
+ * Renders the sticky navigation tab bar for mobile viewports to switch between asset sections.
+ *
+ * @remarks
+ * This component maps over the central `ASSET_SECTION_TABS` definition to dynamically render
+ * the available categories. It manages ARIA roles for accessibility and applies dynamic
+ * theming based on the active state.
+ *
  * @param props - Active asset section and tab selection callback.
+ * @returns The rendered tab navigation block.
  */
 export const AssetsBottomTabs = ({
   active,
