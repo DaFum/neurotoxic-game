@@ -17,6 +17,8 @@ const SVG_TOKEN_NAMES = [
 
 type SvgTokenName = (typeof SVG_TOKEN_NAMES)[number]
 
+const SVG_TOKEN_SET = new Set<string>(SVG_TOKEN_NAMES)
+
 const SVG_TOKEN_FALLBACKS = {
   '--color-void-black': BRAND_COLOR_HEX['void-black'],
   '--color-star-white': BRAND_COLOR_HEX['star-white'],
@@ -49,6 +51,10 @@ const isSafeSvgColorValue = (value: string): boolean => {
 const svgTokenCache = new Map<SvgTokenName, string>()
 
 const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
+  if (!SVG_TOKEN_SET.has(tokenName)) {
+    return SVG_TOKEN_FALLBACKS[tokenName] ?? ''
+  }
+
   const cached = svgTokenCache.get(tokenName)
   if (cached !== undefined) {
     return cached
@@ -76,11 +82,16 @@ const resolveSvgTokenValue = (tokenName: SvgTokenName): string => {
 }
 
 const createSvgTokenStyle = (): string => {
-  const tokenDefinitions = SVG_TOKEN_NAMES.map(
-    tokenName => `${tokenName}:${resolveSvgTokenValue(tokenName)}`
-  ).join(';')
+  const len = SVG_TOKEN_NAMES.length
+  const tokenDefinitions = new Array<string>(len)
+  for (let i = 0; i < len; i++) {
+    const tokenName = SVG_TOKEN_NAMES[i]
+    if (tokenName) {
+      tokenDefinitions[i] = `${tokenName}:${resolveSvgTokenValue(tokenName)}`
+    }
+  }
 
-  return `<defs><style>:root{${tokenDefinitions}}</style></defs>`
+  return `<defs><style>:root{${tokenDefinitions.join(';')}}</style></defs>`
 }
 
 const escapeSvgText = (value: string): string =>
