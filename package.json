@@ -100,7 +100,7 @@
     "@vitest/coverage-v8": "4.1.10",
     "autoprefixer": "10.5.4",
     "benchmark": "2.1.4",
-    "eslint": "10.8.1",
+    "eslint": "10.9.1",
     "eslint-config-prettier": "10.1.8",
     "eslint-plugin-react-refresh": "0.5.3",
     "eslint-plugin-tsdoc": "^0.5.2",
