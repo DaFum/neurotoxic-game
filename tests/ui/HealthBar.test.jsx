@@ -66,6 +66,17 @@ describe('BlockMeter (via HealthBar)', () => {
       <HealthBar health={100} isToxicMode={false} />
     )
 
+    // Check meter role and ARIA attributes
+    const meter = container.querySelector('[role="meter"]')
+    expect(meter).toBeInTheDocument()
+    expect(meter.getAttribute('aria-valuenow')).toBe('20')
+    expect(meter.getAttribute('aria-valuemin')).toBe('0')
+    expect(meter.getAttribute('aria-valuemax')).toBe('20')
+
+    // Check aria-hidden on visual blocks container
+    const visualBlocksContainer = container.querySelector('[aria-hidden="true"]')
+    expect(visualBlocksContainer).toBeInTheDocument()
+
     // Check total segments
     const segments = container.querySelectorAll('.flex-1')
     expect(segments.length).toBe(20)

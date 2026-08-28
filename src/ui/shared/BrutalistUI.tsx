@@ -352,7 +352,10 @@ export const BlockMeter = memo(
             </span>
           )}
         </div>
-        <div className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}>
+        <div
+          className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}
+          aria-hidden='true'
+        >
           {blocks.map(block => {
             const isFilled = block < value
             let blockClass =
