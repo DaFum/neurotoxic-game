@@ -107,7 +107,7 @@
     "globals": "17.11.0",
     "husky": "9.1.7",
     "i18next-parser": "9.4.0",
-    "jscpd": "5.0.14",
+    "jscpd": "5.0.16",
     "jsdom": "30.0.1",
     "knip": "6.31.0",
     "lint-staged": "17.3.0",
