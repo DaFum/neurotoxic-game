@@ -66,6 +66,17 @@ describe('BlockMeter (via HealthBar)', () => {
       <HealthBar health={100} isToxicMode={false} />
     )
 
+    // Check progressbar role and ARIA attributes
+    const progressbar = container.querySelector('[role="progressbar"]')
+    expect(progressbar).toBeInTheDocument()
+    expect(progressbar.getAttribute('aria-valuenow')).toBe('20')
+    expect(progressbar.getAttribute('aria-valuemin')).toBe('0')
+    expect(progressbar.getAttribute('aria-valuemax')).toBe('20')
+
+    // Check aria-hidden on visual blocks container
+    const visualBlocksContainer = container.querySelector('[aria-hidden="true"]')
+    expect(visualBlocksContainer).toBeInTheDocument()
+
     // Check total segments
     const segments = container.querySelectorAll('.flex-1')
     expect(segments.length).toBe(20)

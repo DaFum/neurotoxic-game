@@ -326,7 +326,7 @@ export const BlockMeter = memo(
             ? 'w-full max-w-sm flex items-center gap-2'
             : 'w-full max-w-sm flex flex-col gap-2'
         }
-        role='meter'
+        role='progressbar'
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={0}
@@ -352,7 +352,10 @@ export const BlockMeter = memo(
             </span>
           )}
         </div>
-        <div className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}>
+        <div
+          className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}
+          aria-hidden='true'
+        >
           {blocks.map(block => {
             const isFilled = block < value
             let blockClass =
