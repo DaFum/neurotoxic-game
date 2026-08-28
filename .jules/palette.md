@@ -198,7 +198,3 @@
 ## 2026-08-15 - Keyboard Accessibility for Disabled Controls in Tooltips
 **Learning:** Native `disabled` attributes remove interactive elements (like tabs or buttons) from the tab order, completely hiding them from keyboard and screen reader users. When a tooltip explains *why* an element is locked or disabled, this information is lost if the element itself is skipped. Furthermore, attempting to restore hover/focus events on natively disabled elements by wrapping them in a focusable `span` inside a `Tooltip` component can break structural DOM semantics (e.g., breaking the parent-child relationship in `role="tablist"` -> `role="tab"`).
 **Action:** Use `aria-disabled="true"` instead of the native `disabled` attribute for interactive elements that need to remain discoverable to explain their locked state via a tooltip. Ensure the tooltip wrapper component allows `aria-disabled` elements to manage their own focus events rather than intercepting them with a structural `span`.
-
-## 2026-08-20 - BlockMeter Progressbar ARIA Pattern
-**Learning:** Custom segmented visual meters (like `BlockMeter`) that render multiple decorative `<div>` blocks can clutter screen reader tree output or cause confusing announcements if the outer element lacks `role="progressbar"` or if the inner visual blocks are not hidden from accessibility trees.
-**Action:** Set `role="progressbar"` with `aria-valuenow`, `aria-valuemin`, and `aria-valuemax` on the outer meter container, and apply `aria-hidden="true"` to the inner flex container holding the individual visual block segments.

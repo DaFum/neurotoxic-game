@@ -66,12 +66,12 @@ describe('BlockMeter (via HealthBar)', () => {
       <HealthBar health={100} isToxicMode={false} />
     )
 
-    // Check progressbar role and ARIA attributes
-    const progressbar = container.querySelector('[role="progressbar"]')
-    expect(progressbar).toBeInTheDocument()
-    expect(progressbar.getAttribute('aria-valuenow')).toBe('20')
-    expect(progressbar.getAttribute('aria-valuemin')).toBe('0')
-    expect(progressbar.getAttribute('aria-valuemax')).toBe('20')
+    // Check meter role and ARIA attributes
+    const meter = container.querySelector('[role="meter"]')
+    expect(meter).toBeInTheDocument()
+    expect(meter.getAttribute('aria-valuenow')).toBe('20')
+    expect(meter.getAttribute('aria-valuemin')).toBe('0')
+    expect(meter.getAttribute('aria-valuemax')).toBe('20')
 
     // Check aria-hidden on visual blocks container
     const visualBlocksContainer = container.querySelector('[aria-hidden="true"]')

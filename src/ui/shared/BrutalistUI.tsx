@@ -326,7 +326,7 @@ export const BlockMeter = memo(
             ? 'w-full max-w-sm flex items-center gap-2'
             : 'w-full max-w-sm flex flex-col gap-2'
         }
-        role='progressbar'
+        role='meter'
         aria-label={label}
         aria-valuenow={value}
         aria-valuemin={0}
