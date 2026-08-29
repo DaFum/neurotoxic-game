@@ -52,7 +52,7 @@ const handleOverlayResume = (
         if (res && typeof res === 'object' && typeof res.catch === 'function') {
           res
             .then(success => {
-              if (!success) {
+              if (success === false) {
                 stateRef.transportPausedByOverlay = true
               }
             })
@@ -64,7 +64,7 @@ const handleOverlayResume = (
               )
               stateRef.transportPausedByOverlay = true
             })
-        } else if (!res) {
+        } else if (res === false) {
           stateRef.transportPausedByOverlay = true
         }
       } catch (err) {
@@ -102,7 +102,7 @@ const handleOverlayPause = (
           )
           stateRef.transportPausedByOverlay = false
         })
-      } else if (!(res as unknown as boolean)) {
+      } else if ((res as unknown as boolean) === false) {
         stateRef.transportPausedByOverlay = false
       }
     } catch (err) {
