@@ -169,40 +169,17 @@ export const UplinkButton = memo(
 export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
-  if (title) {
-    return (
-      <svg
-        className={className}
-        viewBox='0 0 24 24'
-        fill='none'
-        xmlns='http://www.w3.org/2000/svg'
-        role='img'
-        aria-labelledby={titleId}
-      >
-        <title id={titleId}>{title}</title>
-        <path
-          d='M12 2L22 20H2L12 2Z'
-          stroke='currentColor'
-          strokeWidth='2'
-          strokeLinecap='square'
-          strokeLinejoin='miter'
-        />
-        <rect x='11' y='10' width='2' height='6' fill='currentColor' />
-        <rect x='11' y='17' width='2' height='2' fill='currentColor' />
-      </svg>
-    )
-  }
-
   return (
     <svg
       className={className}
       viewBox='0 0 24 24'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      aria-hidden='true'
-      focusable='false'
-      role='presentation'
+      {...(title
+        ? { role: 'img', 'aria-labelledby': titleId }
+        : { 'aria-hidden': 'true', focusable: 'false', role: 'presentation' })}
     >
+      {title && <title id={titleId}>{title}</title>}
       <path
         d='M12 2L22 20H2L12 2Z'
         stroke='currentColor'
@@ -224,43 +201,17 @@ export const AlertIcon = memo(({ className, title }: SvgIconProps) => {
 export const HexNode = memo(({ className, title }: SvgIconProps) => {
   const titleId = useId()
 
-  if (title) {
-    return (
-      <svg
-        className={className}
-        viewBox='0 0 100 100'
-        fill='none'
-        xmlns='http://www.w3.org/2000/svg'
-        role='img'
-        aria-labelledby={titleId}
-      >
-        <title id={titleId}>{title}</title>
-        <path
-          d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
-          stroke='currentColor'
-          strokeWidth='4'
-          strokeLinejoin='miter'
-        />
-        <circle cx='50' cy='50' r='10' fill='currentColor' />
-        <path
-          d='M50 25V40M50 60V75M25 50H40M60 50H75'
-          stroke='currentColor'
-          strokeWidth='2'
-        />
-      </svg>
-    )
-  }
-
   return (
     <svg
       className={className}
       viewBox='0 0 100 100'
       fill='none'
       xmlns='http://www.w3.org/2000/svg'
-      aria-hidden='true'
-      focusable='false'
-      role='presentation'
+      {...(title
+        ? { role: 'img', 'aria-labelledby': titleId }
+        : { 'aria-hidden': 'true', focusable: 'false', role: 'presentation' })}
     >
+      {title && <title id={titleId}>{title}</title>}
       <path
         d='M50 5L95 25V75L50 95L5 75V25L50 5Z'
         stroke='currentColor'
@@ -317,7 +268,6 @@ export const BlockMeter = memo(
     showValue = true,
     layout = 'stacked'
   }: BlockMeterProps) => {
-    const blocks = Array.from({ length: max }, (_, i) => i)
     const isInline = layout === 'inline'
     return (
       <div
@@ -336,11 +286,7 @@ export const BlockMeter = memo(
           className={isInline ? 'contents' : 'flex justify-between items-end'}
         >
           <span
-            className={
-              isInline
-                ? 'text-xs tracking-widest uppercase opacity-80 shrink-0'
-                : 'text-xs tracking-widest uppercase opacity-80'
-            }
+            className={`text-xs tracking-widest uppercase opacity-80 ${isInline ? 'shrink-0' : ''}`}
           >
             {label}
           </span>
@@ -356,15 +302,13 @@ export const BlockMeter = memo(
           className={`flex gap-1 ${isInline ? 'h-2 grow' : 'h-6'}`}
           aria-hidden='true'
         >
-          {blocks.map(block => {
+          {Array.from({ length: max }, (_, block) => {
             const isFilled = block < value
-            let blockClass =
-              'flex-1 border border-toxic-green/30 transition-all duration-300'
-            if (isFilled) {
-              blockClass = isDanger
+            const blockClass = !isFilled
+              ? 'flex-1 border border-toxic-green/30 transition-all duration-300'
+              : isDanger
                 ? 'flex-1 bg-blood-red border-blood-red shadow-[4px_4px_0px_var(--color-blood-red)]'
                 : 'flex-1 bg-toxic-green border-toxic-green shadow-[4px_4px_0px_var(--color-toxic-green-50)]'
-            }
             return <div key={block} className={blockClass}></div>
           })}
         </div>
@@ -416,13 +360,15 @@ export const CrisisModal = memo(
     const getActionClassName = (
       variant: 'safe' | 'risk' | 'danger' = 'safe'
     ): string => {
+      const baseClass =
+        'w-full p-3 border font-bold tracking-widest uppercase transition-colors text-left flex justify-between focus-visible:outline-none focus-visible:ring-2'
       if (variant === 'risk') {
-        return 'w-full p-3 border border-warning-yellow/50 text-warning-yellow/80 hover:border-warning-yellow hover:text-void-black hover:bg-warning-yellow focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+        return `${baseClass} border-warning-yellow/50 text-warning-yellow/80 hover:border-warning-yellow hover:text-void-black hover:bg-warning-yellow focus-visible:ring-warning-yellow`
       }
       if (variant === 'danger') {
-        return 'w-full p-3 border border-blood-red/50 text-blood-red/80 hover:border-blood-red hover:text-void-black hover:bg-blood-red focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blood-red font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+        return `${baseClass} border-blood-red/50 text-blood-red/80 hover:border-blood-red hover:text-void-black hover:bg-blood-red focus-visible:ring-blood-red`
       }
-      return 'w-full p-3 border border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green font-bold tracking-widest uppercase transition-colors text-left flex justify-between'
+      return `${baseClass} border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black focus-visible:ring-toxic-green`
     }
 
     return (
