@@ -21,7 +21,7 @@ export const ToggleRadio = memo(() => {
         isPlaying?: unknown
       }
       return (
-        audioState.currentSongId === 'ambient' && audioState.isPlaying === true
+        audioState.currentSongId === 'ambient' && Boolean(audioState.isPlaying)
       )
     }, []),
     { pollEvenWithSubscribe: true, pollMs: 1000 }

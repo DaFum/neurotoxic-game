@@ -35,7 +35,7 @@ interface ValidatedMapConnection {
 /**
  * Generated map that satisfies the structural and diversity contract.
  */
-export interface ValidatedMap {
+interface ValidatedMap {
   nodes: Record<string, ValidatedMapNode>
   connections: ValidatedMapConnection[]
   edges?: Array<{ from: string; to: string }>

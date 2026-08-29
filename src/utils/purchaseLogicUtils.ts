@@ -368,7 +368,7 @@ export const applyStatModifier = (
 }
 
 /** Reasons `validatePurchase` can reject an item. */
-export type PurchaseErrorType =
+type PurchaseErrorType =
   | 'missing_effect'
   | 'already_owned'
   | 'insufficient_funds'

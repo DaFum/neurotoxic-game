@@ -8,7 +8,7 @@ import type { GeneratedMapNode } from './types'
 const MIN_DISTANCE = 6
 const MIN_DISTANCE_SQ = MIN_DISTANCE * MIN_DISTANCE
 
-export function isOverlapping(
+function isOverlapping(
   n1: { x: number; y: number },
   n2: { x: number; y: number },
   minDistanceSq: number = MIN_DISTANCE_SQ

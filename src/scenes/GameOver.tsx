@@ -42,7 +42,7 @@ export const GameOver = () => {
   return (
     <div className='flex flex-col items-center justify-center h-full w-full bg-void-black z-(--z-overlay) text-center p-8 relative overflow-hidden'>
       <GameOverBackground />
-      <GameOverHeader victory={player?.stats?.tourCompleted === true} />
+      <GameOverHeader victory={Boolean(player?.stats?.tourCompleted)} />
       <GameOverStats player={player} />
       <GameOverButtons
         onRetry={handleRetry}
