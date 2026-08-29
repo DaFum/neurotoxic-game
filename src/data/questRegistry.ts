@@ -72,6 +72,9 @@ export const QUEST_REGISTRY = {
   quest_alchemist
 } as const satisfies Record<string, QuestDefinition>
 
+/**
+ * The string literal union of all known static quest identifiers.
+ */
 export type QuestRegistryId = keyof typeof QUEST_REGISTRY
 
 /**
