@@ -74,6 +74,11 @@ export const QUEST_REGISTRY = {
 
 /**
  * The string literal union of all known static quest identifiers.
+ *
+ * @remarks
+ * Data IDs are contracts. These IDs must be kept stable, and renaming an entry requires
+ * coordinated updates to dependent lookup maps and tests. Consumers should not treat members
+ * of this union as freely renameable identifiers.
  */
 export type QuestRegistryId = keyof typeof QUEST_REGISTRY
 
