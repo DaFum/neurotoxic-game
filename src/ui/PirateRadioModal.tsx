@@ -188,7 +188,7 @@ export const PirateRadioModal = memo(
               disabled={false}
               className='flex-1'
             >
-              [ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]
+              {`[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
             </GlitchButton>
           )}
         </div>
