@@ -125,13 +125,16 @@ const buildPerformanceContext = (
   const maxCombo = finiteNumberOr(gigStats.maxCombo, 0)
 
   const songStats = Array.isArray(gigStats.songStats) ? gigStats.songStats : []
-  const songs = songStats.flatMap(songStat => {
-    if (!isLooseRecord(songStat) || typeof songStat.songId !== 'string') {
-      return []
+  const songs: Record<string, unknown>[] = []
+  for (let i = 0; i < songStats.length; i++) {
+    const songStat = songStats[i]
+    if (songStat && isLooseRecord(songStat) && typeof songStat.songId === 'string') {
+      const song = SONGS_BY_ID.get(songStat.songId)
+      if (song) {
+        songs.push(song as unknown as Record<string, unknown>)
+      }
     }
-    const song = SONGS_BY_ID.get(songStat.songId)
-    return song ? [song as unknown as Record<string, unknown>] : []
-  })
+  }
   const directSong = resolvePerformanceSong(gigStats.song)
   if (directSong) songs.push(directSong)
 

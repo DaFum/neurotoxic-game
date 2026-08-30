@@ -36,12 +36,18 @@ export const translateContextKeys = (
   }
 
   if (Array.isArray(context)) {
-    return context.map(item => {
+    const len = context.length
+    const result = new Array(len)
+    for (let i = 0; i < len; i++) {
+      if (!Object.hasOwn(context, i)) continue
+      const item = context[i]
       if (typeof item === 'string') {
-        return isTranslatableKey(item) ? t(item) : item
+        result[i] = isTranslatableKey(item) ? t(item) : item
+      } else {
+        result[i] = translateContextKeys(item, t)
       }
-      return translateContextKeys(item, t)
-    })
+    }
+    return result
   }
 
   const translatedContext: Record<string, unknown> = {}

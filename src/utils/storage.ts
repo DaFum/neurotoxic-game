@@ -234,7 +234,14 @@ export function listStorageKeys(
   adapter: IStorageAdapter = defaultStorageAdapter
 ): string[] {
   const pendingRemovals = removedKeys.get(adapter)
-  const persisted = adapter.keys().filter(key => !pendingRemovals?.has(key))
+  const allKeys = adapter.keys()
+  const persisted: string[] = []
+  for (let i = 0; i < allKeys.length; i++) {
+    const key = allKeys[i]
+    if (key !== undefined && !pendingRemovals?.has(key)) {
+      persisted.push(key)
+    }
+  }
   const buffered = fallbackStores.get(adapter)?.keys() ?? []
   if (buffered.length === 0) return persisted
   return Array.from(new Set([...persisted, ...buffered]))

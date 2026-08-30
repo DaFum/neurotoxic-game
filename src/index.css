@@ -332,23 +332,6 @@ button {
   letter-spacing: 2px;
 }
 
-/* Scene Transitions */
-.scene-enter {
-  animation: scene-fade-in 0.4s ease-out;
-}
-
-@keyframes scene-fade-in {
-  0% {
-    opacity: 0;
-    transform: scale(0.98);
-  }
-
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
 /* Credits scroll */
 .animate-credits-scroll {
   animation: credits-scroll 20s linear forwards;
@@ -393,33 +376,6 @@ button {
     -2px 0 0 var(--color-neon-cyan);
 }
 
-/* ── Pulse Glow (Standard-Fokus & Interaktion) ── */
-@keyframes pulse-glow {
-  0%,
-  100% {
-    box-shadow: 0 0 8px var(--color-toxic-green-20);
-    border-color: var(--color-toxic-green-50);
-  }
-
-  50% {
-    /* Multi-Layer Glow für extreme Tiefe */
-    box-shadow:
-      0 0 20px var(--color-toxic-green-glow),
-      0 0 40px var(--color-toxic-green),
-      0 0 60px var(--color-toxic-green-10);
-    border-color: var(--color-toxic-green-bright);
-  }
-}
-
-.animate-pulse-glow {
-  animation: pulse-glow 2s ease-in-out infinite;
-}
-
-/* Typewriter flicker for subtitles */
-
-/* Score count-up flash */
-
-/* Stat bar fill */
 
 /* Dramatic zoom for Game Over */
 @keyframes doom-zoom {
@@ -477,7 +433,6 @@ button {
   animation: neon-flicker 3s infinite;
 }
 
-/* Van bounce for HUD */
 
 /* Fuel gauge low warning */
 @keyframes fuel-warning {
@@ -505,71 +460,6 @@ button:focus-visible {
   outline: 2px solid var(--color-toxic-green);
   outline-offset: 2px;
   box-shadow: 0 0 12px var(--color-toxic-green-20);
-}
-
-/* ── UX: Custom range slider (VolumeSlider) ── */
-input[type='range'].vol-slider {
-  appearance: none;
-  width: 100%;
-  height: 6px;
-  background: var(--color-ash-gray);
-  border-radius: 0;
-  outline: none;
-}
-
-input[type='range'].vol-slider:focus-visible {
-  outline: 2px solid var(--color-toxic-green);
-  outline-offset: 4px;
-}
-
-input[type='range'].vol-slider::-webkit-slider-thumb {
-  appearance: none;
-  width: 20px;
-  height: 20px;
-  background: var(--color-toxic-green);
-  border: 2px solid var(--color-void-black);
-  cursor: pointer;
-  box-shadow: 0 0 8px var(--color-toxic-green-20);
-}
-
-input[type='range'].vol-slider::-moz-range-thumb {
-  width: 20px;
-  height: 20px;
-  background: var(--color-toxic-green);
-  border: 2px solid var(--color-void-black);
-  border-radius: 0;
-  cursor: pointer;
-  box-shadow: 0 0 8px var(--color-toxic-green-20);
-}
-
-input[type='range'].vol-slider::-webkit-slider-thumb:hover {
-  background: var(--color-star-white);
-  box-shadow: 0 0 12px var(--color-toxic-green);
-}
-
-input[type='range'].vol-slider::-moz-range-thumb:hover {
-  background: var(--color-star-white);
-  box-shadow: 0 0 12px var(--color-toxic-green);
-}
-
-/* ── UX: Confirm pulse for travel nodes ── */
-@keyframes confirm-pulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 8px var(--color-warning-yellow),
-      0 0 16px var(--color-warning-yellow-30);
-  }
-
-  50% {
-    box-shadow:
-      0 0 16px var(--color-warning-yellow),
-      0 0 32px var(--color-warning-yellow-50);
-  }
-}
-
-.animate-confirm-pulse {
-  animation: confirm-pulse 0.8s ease-in-out infinite;
 }
 
 /* ── Toxic Mode Flash (Ultimativer Neon-Overdrive) ── */
@@ -612,21 +502,6 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   }
   100% {
     transform: translateY(200%);
-  }
-}
-
-.typewriter-effect {
-  overflow: hidden;
-  white-space: nowrap;
-  animation: typing 1s steps(30, end);
-}
-
-@keyframes typing {
-  0% {
-    width: 0;
-  }
-  100% {
-    width: 100%;
   }
 }
 
@@ -803,73 +678,6 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
   animation: chromatic-flicker 4.2s infinite steps(1, end);
 }
 
-/* ── Animated film grain (cheap GPU-friendly) ── */
-@keyframes grain-shift {
-  0% {
-    transform: translate(0, 0);
-  }
-  10% {
-    transform: translate(-4%, -2%);
-  }
-  20% {
-    transform: translate(3%, -6%);
-  }
-  30% {
-    transform: translate(-5%, 4%);
-  }
-  40% {
-    transform: translate(2%, 5%);
-  }
-  50% {
-    transform: translate(-6%, 1%);
-  }
-  60% {
-    transform: translate(5%, -3%);
-  }
-  70% {
-    transform: translate(-2%, 6%);
-  }
-  80% {
-    transform: translate(4%, -4%);
-  }
-  90% {
-    transform: translate(-3%, 2%);
-  }
-  100% {
-    transform: translate(0, 0);
-  }
-}
-
-.animate-grain {
-  animation: grain-shift 1.6s steps(10, end) infinite;
-}
-
-/* ── Brutalist corner brackets (decorative frame) ── */
-.corner-frame {
-  position: relative;
-}
-.corner-frame::before,
-.corner-frame::after {
-  content: '';
-  position: absolute;
-  width: 18px;
-  height: 18px;
-  border: 2px solid var(--color-toxic-green);
-  pointer-events: none;
-}
-.corner-frame::before {
-  top: -2px;
-  left: -2px;
-  border-right: 0;
-  border-bottom: 0;
-}
-.corner-frame::after {
-  bottom: -2px;
-  right: -2px;
-  border-left: 0;
-  border-top: 0;
-}
-
 /* ── Slow horizontal scan bar (atmosphere) ── */
 @keyframes scan-bar {
   0% {
@@ -911,22 +719,18 @@ input[type='range'].vol-slider::-moz-range-thumb:hover {
 @media (prefers-reduced-motion: reduce) {
   .crt-overlay,
   .crt-overlay::after,
-  .scene-enter,
   .animate-credits-scroll,
   .animate-fuel-warning,
-  .animate-pulse-glow,
   .animate-pulse,
   .animate-spin,
   .animate-bounce,
   .animate-ping,
   .animate-doom-zoom,
   .animate-neon-flicker,
-  .animate-confirm-pulse,
   .toxic-border-flash,
   .glitch-text::before,
   .glitch-text::after,
   .animate-chromatic-flicker,
-  .animate-grain,
   .animate-scan-bar {
     animation: none !important;
   }
