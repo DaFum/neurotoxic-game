@@ -376,11 +376,6 @@ button {
     -2px 0 0 var(--color-neon-cyan);
 }
 
-/* Typewriter flicker for subtitles */
-
-/* Score count-up flash */
-
-/* Stat bar fill */
 
 /* Dramatic zoom for Game Over */
 @keyframes doom-zoom {
@@ -438,7 +433,6 @@ button {
   animation: neon-flicker 3s infinite;
 }
 
-/* Van bounce for HUD */
 
 /* Fuel gauge low warning */
 @keyframes fuel-warning {
