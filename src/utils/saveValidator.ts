@@ -351,6 +351,7 @@ const validateSocial = (social: unknown): void => {
       const rawDeals = val as unknown[]
       const survivingDeals: unknown[] = []
       for (let i = 0, len = rawDeals.length; i < len; i++) {
+        if (!Object.hasOwn(rawDeals, i)) continue
         const deal = rawDeals[i]
         if (!isLooseRecord(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
@@ -405,6 +406,7 @@ const validateSocial = (social: unknown): void => {
             `social.regionalGigHistory.${regionId} has too many days`
           )
         for (let d = 0, dLen = days.length; d < dLen; d++) {
+          if (!Object.hasOwn(days, d)) continue
           const day = days[d]
           if (
             typeof day !== 'number' ||
