@@ -120,7 +120,11 @@ export const OverworldHUD = memo(({ player, band }: OverworldHUDProps) => {
           </Tooltip>
         </div>
 
-        <KeyboardShortcutsPanel showHelp={showHelp} className='w-64 mt-2' />
+        <KeyboardShortcutsPanel
+          showHelp={showHelp}
+          onClose={() => setShowHelp(false)}
+          className='w-64 mt-2'
+        />
       </div>
 
       {/* Right Panel - Band Status */}

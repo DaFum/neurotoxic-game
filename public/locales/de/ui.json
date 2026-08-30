@@ -1659,6 +1659,7 @@
   "shop.messages.unknownEffect": "Kauf fehlgeschlagen: Unbekannter Effekttyp.",
   "shop.messages.unknownItem": "Unbekannter Gegenstand",
   "shop.messages.voidAltar": "Der Abgrund starrt zurück. Glück +10.",
+  "shortcuts.closeAria": "Tastenkürzel schließen",
   "shortcuts.closeOverlays": "Overlays schließen",
   "shortcuts.closePanel": "Hilfe schließen",
   "shortcuts.hitNotes": "Noten treffen (Gig)",

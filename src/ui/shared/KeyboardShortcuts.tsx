@@ -70,6 +70,8 @@ export function useKeyboardShortcuts({
 interface KeyboardShortcutsPanelProps {
   /** Boolean indicating whether the panel should be visible. */
   showHelp: boolean
+  /** Optional callback function to close the panel when the close button is clicked. */
+  onClose?: () => void
   /** Optional CSS class name for custom styling. */
   className?: string
 }
@@ -83,6 +85,7 @@ interface KeyboardShortcutsPanelProps {
  */
 export function KeyboardShortcutsPanel({
   showHelp,
+  onClose,
   className = ''
 }: KeyboardShortcutsPanelProps) {
   const { t } = useTranslation(['ui'])
@@ -102,7 +105,20 @@ export function KeyboardShortcutsPanel({
         <span className='font-bold uppercase tracking-wider text-xs'>
           {t('ui:shortcuts.title', { defaultValue: 'KEYBOARD SHORTCUTS' })}
         </span>
-        <X size={14} className='opacity-50' aria-hidden='true' />
+        {onClose ? (
+          <button
+            type='button'
+            onClick={onClose}
+            aria-label={t('ui:shortcuts.closeAria', {
+              defaultValue: 'Close keyboard shortcuts'
+            })}
+            className='opacity-70 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-warning-yellow rounded p-0.5 cursor-pointer'
+          >
+            <X size={14} aria-hidden='true' />
+          </button>
+        ) : (
+          <X size={14} className='opacity-50' aria-hidden='true' />
+        )}
       </div>
       <div className='flex flex-col gap-1.5'>
         {SHORTCUTS.map(({ key, label }) => (

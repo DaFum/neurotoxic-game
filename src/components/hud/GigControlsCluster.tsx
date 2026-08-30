@@ -162,7 +162,11 @@ export const GigControlsCluster = memo(function GigControlsCluster({
         )}
       </div>
 
-      <KeyboardShortcutsPanel showHelp={showHelp} className='w-52 mt-2' />
+      <KeyboardShortcutsPanel
+        showHelp={showHelp}
+        onClose={() => setShowHelp(false)}
+        className='w-52 mt-2'
+      />
     </div>
   )
 })

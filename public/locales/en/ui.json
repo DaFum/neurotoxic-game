@@ -1659,6 +1659,7 @@
   "shop.messages.unknownEffect": "Purchase failed: Unknown effect type.",
   "shop.messages.unknownItem": "Unknown Item",
   "shop.messages.voidAltar": "The abyss stares back. Luck +10.",
+  "shortcuts.closeAria": "Close keyboard shortcuts",
   "shortcuts.closeOverlays": "Close overlays",
   "shortcuts.closePanel": "Close Help",
   "shortcuts.hitNotes": "Hit notes (Gig)",
