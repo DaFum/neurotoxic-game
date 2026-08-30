@@ -608,7 +608,9 @@ test.describe('Game Flow', () => {
     // out on CI, so the transition can outlast a 10s wait. Poll on arrival and
     // re-click while the completion screen is still up: a click that lands
     // mid-dismiss of an overlay leaves the scene unchanged.
-    const backToTourBtn = page.getByRole('button', { name: /back to tour/i })
+    const backToTourBtn = page.getByRole('button', {
+      name: /back to (?:tour|overworld)/i
+    })
     await expect
       .poll(
         async () => {
