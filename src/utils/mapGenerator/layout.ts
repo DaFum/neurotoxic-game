@@ -8,7 +8,7 @@ import type { GeneratedMapNode } from './types'
 const MIN_DISTANCE = 6
 const MIN_DISTANCE_SQ = MIN_DISTANCE * MIN_DISTANCE
 
-export function isOverlapping(
+function isOverlapping(
   n1: { x: number; y: number },
   n2: { x: number; y: number },
   minDistanceSq: number = MIN_DISTANCE_SQ
@@ -41,7 +41,10 @@ export function assignInitialCoordinates(
       let hasOverlap = false
       for (let j = 0; j < i; j++) {
         const prevNode = nodeList[j]
-        if (prevNode && isOverlapping({ x: bestX, y: bestY }, prevNode, MIN_DISTANCE_SQ)) {
+        if (
+          prevNode &&
+          isOverlapping({ x: bestX, y: bestY }, prevNode, MIN_DISTANCE_SQ)
+        ) {
           hasOverlap = true
           break
         }
