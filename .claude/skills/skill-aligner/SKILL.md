@@ -68,8 +68,8 @@ grep -o 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/SKILL.md | sort -u | \
 
 **What it looks like:**
 
-- Sync line says: `React 19.2.4 / Vite 8.0.1`
-- Actual: `React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4`
+- Sync line says: `React 19.2.8 / Vite 8.2.2`
+- Actual: `React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3`
 
 **How to detect:**
 
@@ -350,9 +350,9 @@ For bulk version/extension updates across an entire skill:
 # Bulk version replace across all files in a skill
 find .claude/skills/<skill-name> -type f \( -name "*.md" -o -name "*.sh" -o -name "*.mjs" \) \
   -exec sed -i \
-    -e 's/React 19\.2\.4/React 19.2.6/g' \
-    -e 's/Vite 8\.0\.1\b/Vite 8.0.10/g' \
-    -e 's/Tailwind 4\.2\.2/Tailwind 4.2.4/g' \
+    -e 's/React 19\.2\.4/React 19.2.8/g' \
+    -e 's/Vite 8\.0\.1\b/Vite 8.2.2/g' \
+    -e 's/Tailwind 4\.2\.2/Tailwind 4.3.3/g' \
   {} \;
 
 # Bulk npm → pnpm in shell scripts
@@ -389,7 +389,7 @@ grep -roh 'pnpm run [a-z:_-]*' .claude/skills/<skill-name>/ | sort -u | \
 Every `SKILL.md` should end with a sync line. Update it after fixing:
 
 ```
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._
 ```
 
 For reference files with their own sync lines, update those too.
@@ -399,7 +399,7 @@ For reference files with their own sync lines, update those too.
 Use Conventional Commits. Describe what drifted and why:
 
 ```
-fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
+fix: sync <skill-name> to React 19.2.8 / Vite 8.2.2 baseline
 
 - references/improvement-patterns.md: .js → .ts for src/ paths
 - scripts/quality-gate.sh: npm run → pnpm run
@@ -424,7 +424,7 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 
 ### Scenario 2: Library-Wide Audit
 
-**Problem**: Upgraded from React 19.2.4 to React 19.2.6. 30 skills need sync-line updates.
+**Problem**: Upgraded from React 19.2.8 to React 19.2.8. 30 skills need sync-line updates.
 
 **Steps**:
 
@@ -435,7 +435,7 @@ fix: sync <skill-name> to React 19.2.6 / Vite 8.0.10 baseline
 2. Bulk-replace across all of them:
    ```bash
    find .claude/skills -type f \( -name "*.md" -o -name "*.sh" \) \
-     -exec sed -i 's/React 19\.2\.4/React 19.2.6/g' {} \;
+     -exec sed -i 's/React 19\.2\.4/React 19.2.8/g' {} \;
    ```
 3. Scan for any remaining old references:
    ```bash
@@ -523,4 +523,4 @@ Escalation message format:
 
 > "`<skill-name>/references/<file>.md` gives wrong guidance for `<topic>` since `<change>`. This needs `skill-creator` review — I can fix the surface drift but not validate the domain correctness."
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._

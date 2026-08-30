@@ -1,6 +1,6 @@
 # Repo Test Topology Reference
 
-Use this reference when choosing test scope, explaining what a package script covers, or changing worker-related behavior. It reflects the current repository scripts as of 2026-06-03; re-check `package.json` and the runner scripts if they have changed.
+Use this reference when choosing test scope, explaining what a package script covers, or changing worker-related behavior. It reflects the current repository scripts as of 2026-05-20; re-check `package.json` and the runner scripts if they have changed.
 
 ## Command Map
 
