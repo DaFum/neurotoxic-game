@@ -16,8 +16,6 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'fullscreen',
-        // Landscape orientation is essential for the multi-lane rhythm stage minigames and horizontal overworld maps (WCAG 2.2 AA 1.3.4 exception).
-        orientation: 'landscape',
         start_url: './',
         scope: './',
         icons: [
@@ -107,16 +105,6 @@ export default defineConfig({
               test: /node_modules[\\/]tone[\\/]/,
               priority: 20
             },
-            {
-              name: 'scene-gig',
-              test: /src[\\/](scenes[\\/]Gig\.jsx|components[\\/]stage[\\/])/,
-              priority: 15
-            },
-            {
-              name: 'scene-overworld',
-              test: /src[\\/]scenes[\\/]Overworld\.jsx/,
-              priority: 15
-            }
           ]
         }
       }
