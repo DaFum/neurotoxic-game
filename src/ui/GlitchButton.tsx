@@ -106,7 +106,7 @@ export const GlitchButton = ({
         relative ${sizeClasses[size]} min-w-11 min-h-11 bg-void-black
         font-display font-bold uppercase tracking-widest
         touch-manipulation text-center leading-tight max-w-full whitespace-normal wrap-break-word
-        transition-all duration-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
+        transition-all duration-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black
         group
         ${getVariantClasses()}
         ${className}

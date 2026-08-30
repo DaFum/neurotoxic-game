@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { AnimatePresence, m, LazyMotion, domAnimation } from 'motion/react'
+import { AnimatePresence, m, LazyMotion, domAnimation, MotionConfig } from 'motion/react'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'
@@ -181,16 +181,18 @@ function GameContent() {
 export default function App() {
   return (
     <ErrorBoundary>
-      <LazyMotion features={domAnimation} strict>
-        <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
-        <NetworkStatusProvider>
-          <AudioEngineProvider>
-            <GameStateProvider>
-              <GameContent />
-            </GameStateProvider>
-          </AudioEngineProvider>
-        </NetworkStatusProvider>
-      </LazyMotion>
+      <MotionConfig reducedMotion='user'>
+        <LazyMotion features={domAnimation} strict>
+          <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
+          <NetworkStatusProvider>
+            <AudioEngineProvider>
+              <GameStateProvider>
+                <GameContent />
+              </GameStateProvider>
+            </AudioEngineProvider>
+          </NetworkStatusProvider>
+        </LazyMotion>
+      </MotionConfig>
     </ErrorBoundary>
   )
 }

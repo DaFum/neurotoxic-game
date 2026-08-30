@@ -16,7 +16,6 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'fullscreen',
-        orientation: 'landscape',
         start_url: './',
         scope: './',
         icons: [
@@ -71,34 +70,6 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'online-only-font-css',
-              expiration: {
-                maxEntries: 5,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'online-only-font-files',
-              expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
           }
         ],
         navigateFallback: 'index.html'
@@ -134,16 +105,6 @@ export default defineConfig({
               test: /node_modules[\\/]tone[\\/]/,
               priority: 20
             },
-            {
-              name: 'scene-gig',
-              test: /src[\\/](scenes[\\/]Gig\.jsx|components[\\/]stage[\\/])/,
-              priority: 15
-            },
-            {
-              name: 'scene-overworld',
-              test: /src[\\/]scenes[\\/]Overworld\.jsx/,
-              priority: 15
-            }
           ]
         }
       }

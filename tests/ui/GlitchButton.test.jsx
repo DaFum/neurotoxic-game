@@ -137,6 +137,17 @@ describe('GlitchButton', () => {
     expect(button.className).toContain('text-warning-yellow')
   })
 
+  it('applies high-contrast focus ring styles', () => {
+    const { container } = render(
+      <GlitchButton onClick={() => {}}>Focus Test</GlitchButton>
+    )
+    const button = container.querySelector('button')
+    expect(button.className).toContain('focus-visible:ring-2')
+    expect(button.className).toContain('focus-visible:ring-toxic-green')
+    expect(button.className).toContain('focus-visible:ring-offset-2')
+    expect(button.className).toContain('focus-visible:ring-offset-void-black')
+  })
+
   it('applies accent variant styles without borrowing status colours', () => {
     // `accent`/`accentAlt` differentiate equal-weight navigation. They must not
     // fall back to red or yellow, which stay reserved for danger and warning.
