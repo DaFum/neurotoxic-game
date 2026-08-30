@@ -1,4 +1,4 @@
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { formatSignedFinancialAmount } from '../../utils/numberUtils'
 import { getFinancialColors } from '../../utils/financialColors'

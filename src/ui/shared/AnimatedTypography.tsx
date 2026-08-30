@@ -1,4 +1,4 @@
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import type { HTMLMotionProps, Transition } from 'motion/react'
 import type { ReactNode } from 'react'
 
@@ -15,12 +15,15 @@ export const AnimatedDivider = ({
   transition?: Transition
   className?: string
 }) => (
-  <m.div
-    initial={{ width: 0 }}
-    animate={{ width }}
-    transition={transition}
-    className={`h-0.5 ${className}`}
-  />
+  <div style={{ width }}>
+    <m.div
+      initial={{ scaleX: 0 }}
+      animate={{ scaleX: 1 }}
+      transition={transition}
+      style={{ transformOrigin: 'center' }}
+      className={`h-0.5 ${className}`}
+    />
+  </div>
 )
 type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
 

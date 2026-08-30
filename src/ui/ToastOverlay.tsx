@@ -1,5 +1,6 @@
 import { useGameActions, useGameSelector } from '../context/GameState'
-import { m, AnimatePresence } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'
@@ -74,6 +75,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
 
   return (
     <m.div
+      layout='position'
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -12, scale: 0.98 }}
@@ -148,7 +150,7 @@ export const ToastOverlay = () => {
       data-modal-keep-announcing=''
       aria-atomic='false'
     >
-      <AnimatePresence>
+      <AnimatePresence mode='popLayout'>
         {toasts.map(toast => {
           const style = TOAST_STYLE_MAP[toast.type] ?? TOAST_STYLE_MAP.info
           return (

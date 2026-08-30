@@ -1,4 +1,5 @@
-import { m, useReducedMotion } from 'motion/react'
+import { useReducedMotion } from 'motion/react'
+import * as m from 'motion/react-m'
 import { ReactNode } from 'react'
 
 /**

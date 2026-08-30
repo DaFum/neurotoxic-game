@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import type { PlayerState } from '../../types'
 
 /**

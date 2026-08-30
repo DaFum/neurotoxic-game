@@ -1,6 +1,6 @@
 import React from 'react'
 import { useTranslation } from 'react-i18next'
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 import { VoidSkullIcon } from '../../ui/shared/Icons'
 
