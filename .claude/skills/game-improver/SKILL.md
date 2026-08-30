@@ -109,7 +109,7 @@ See **references/verification-checklist.md** for detailed criteria.
 
 ## Core Constraints
 
-**Stack**: React 19.2.6, Vite 8.0.10, Tailwind 4.2.4, Framer Motion 12.38.0, Tone.js 15.5.11. Node 22.13+.
+**Stack**: React 19.2.8, Vite 8.2.2, Tailwind 4.3.3, Framer Motion 12.38.0, Tone.js 15.5.11. Node 22.13+.
 **State Limits**: `player.money >= 0`, `band.harmony ∈ [1, 100]`, `van.fuel ∈ [0, 100]`. Clamp via `gameStateUtils.js`.
 **Audio**: Use `audioEngine.getGigTimeMs()` as single clock. Don't access Tone.js directly. Handle suspended AudioContext.
 **Pixi**: Destroy on unmount. No memory leaks. Pre-compute, don't allocate per-frame.
@@ -124,7 +124,7 @@ See **references/verification-checklist.md** for detailed criteria.
 
 **Workflow**:
 
-1. Find travel logic: `src/hooks/useOverworldLogic.ts` (or `economyEngine.ts`)
+1. Find travel logic: `src/hooks/useOverworldLogic.ts` (or `economy/index.ts`)
 2. Check reducer: Does `UPDATE_PLAYER` subtract fuel? Check `gameReducer.ts`
 3. Find test: `tests/travel.test.js` — what's the failing assertion?
 4. Fix: Add fuel deduction to travel action payload
@@ -138,7 +138,7 @@ See **references/verification-checklist.md** for detailed criteria.
 **Workflow**:
 
 1. Data: Edit `src/data/hqItems.ts` — add item with `effect: 'harmony_regen'`
-2. Economy: Check `economyEngine.ts` — does it handle `harmony_regen` effect?
+2. Economy: Check `economy/index.ts` — does it handle `harmony_regen` effect?
 3. Hook: `useGameLoop.ts` — apply effect each day via `ADVANCE_DAY`
 4. Tests: Add to `tests/economyEngine.test.js` — verify cost, effect, clamping
 5. Localization: Add keys to `public/locales/en.json` and `public/locales/de.json`
@@ -157,4 +157,4 @@ See **references/verification-checklist.md** for detailed criteria.
 
 See **references/improvement-patterns.md** for more complete examples.
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._

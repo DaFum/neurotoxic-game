@@ -11,7 +11,7 @@ Tune the game's economy, difficulty, and progression curves.
 
 1.  **Identify the Lever**
     Determine which system needs adjustment:
-    - **Economy**: `src/utils/economyEngine.ts` (Payouts, Costs).
+    - **Economy**: `src/utils/economy/index.ts` (Payouts, Costs).
     - **Events**: `src/data/events/` (Mood/Stamina impact).
     - **Progression**: `src/data/venues.ts` (Unlocks, Capacity).
     - **Difficulty**: `src/data/songs.ts` (BPM, Note Density).
@@ -43,7 +43,7 @@ Tune the game's economy, difficulty, and progression curves.
 **Analysis**:
 
 1.  Check `src/data/venues.ts`: First gig payout is $50.
-2.  Check `src/utils/economyEngine.ts`: Travel cost is $10/node. Distance is 6 nodes.
+2.  Check `src/utils/economy/index.ts`: Travel cost is $10/node. Distance is 6 nodes.
 3.  **Result**: Travel ($60) > Payout ($50).
 
 **Proposal**:
@@ -55,4 +55,4 @@ Tune the game's economy, difficulty, and progression curves.
 **Output**:
 "Adjusted `src/data/venues.ts`: 'The Dive Bar' payout increased from 50 to 80 to cover travel costs."
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._

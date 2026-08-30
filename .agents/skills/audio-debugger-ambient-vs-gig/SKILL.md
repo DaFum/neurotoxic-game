@@ -30,7 +30,7 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 3.  **Trace the Execution**
     - **Ambient**: Check `src/utils/audio/AudioManager.ts`. Look for `startAmbient()` call. Check if it falls back to MIDI.
     - **Gig hook**: Check `src/hooks/rhythmGame/useRhythmGameAudio.ts` for initialization, retry, and cleanup.
-    - **Gig playback**: Check `src/utils/audio/rhythmGameAudioUtils.ts`. Verify `startGigPlayback` receives the resolved song and playback window.
+    - **Gig playback**: Check `src/utils/audio/gigPlayback.ts` (re-exported via `src/utils/audio/audioEngine.ts`). Verify `startGigPlayback` receives the resolved song and playback window.
 
 4.  **Inspect Data Integrity**
     - Open `src/assets/rhythm_songs.json`.
@@ -71,4 +71,4 @@ Troubleshoot and resolve audio playback issues in the game, focusing on the dist
 **Output**:
 "The MIDI file for 'Neon Highway' is missing from `src/assets/`, causing the synth to have no notes to play. Please add the file."
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._

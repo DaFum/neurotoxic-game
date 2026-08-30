@@ -57,4 +57,4 @@ Enhance the application with developer-facing diagnostic tools.
 **Output**:
 "Added coordinate logging to the player loop. Enable 'Player' category in DebugLogViewer to see it."
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._

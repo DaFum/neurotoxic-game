@@ -57,4 +57,4 @@ Analyze and optimize application performance, focusing on bundle size and runtim
 **Output**:
 "Lazy-loaded Pixi and Tone. Main bundle size reduced by 80%. Initial load is now under 1s."
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.10 / Tailwind 4.2.4 baseline as of 2026-05-20._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._
