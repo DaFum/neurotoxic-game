@@ -244,7 +244,7 @@ const selectEvent = (
     if (
       event.category === 'band' &&
       event.trigger === 'random' &&
-      (gameState.band?.harmony ?? 100) < HARMONY_DEATH_SPIRAL_THRESHOLD
+      finiteNumberOr(gameState.band?.harmony, 100) < HARMONY_DEATH_SPIRAL_THRESHOLD
     ) {
       chance *= HARMONY_DEATH_SPIRAL_DAMPEN_FACTOR
     }

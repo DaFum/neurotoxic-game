@@ -267,7 +267,7 @@ export const checkTravelResources = (
   fuelLiters: number,
   player: PlayerState
 ): VenueAccessResult => {
-  if (clampPlayerMoney(player.money ?? 0) < totalCashRequired) {
+  if (clampPlayerMoney(finiteNumberOr(player.money, 0)) < totalCashRequired) {
     return {
       allowed: false,
       errorKey: 'ui:travel.errors.notEnoughMoneyForTravel',

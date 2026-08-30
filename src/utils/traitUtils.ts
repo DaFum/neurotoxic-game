@@ -275,10 +275,17 @@ export const applyTraitUnlocks = (
 
   // Create shallow copy of band and members for immutable update
   type MemberWithTraits = BandMember & { traits: Record<string, TraitDef> }
-  const nextMembers: MemberWithTraits[] = members.map(m => ({
-    ...m,
-    traits: normalizeTraitMap(m.traits)
-  }))
+  const len = members.length
+  const nextMembers: MemberWithTraits[] = []
+  for (let i = 0; i < len; i++) {
+    const m = members[i]
+    if (m) {
+      nextMembers.push({
+        ...m,
+        traits: normalizeTraitMap(m.traits)
+      })
+    }
+  }
   const nextBand: BandState & { members: MemberWithTraits[] } = {
     ...(currentState.band ?? ({} as BandState)),
     members: nextMembers

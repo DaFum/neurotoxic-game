@@ -104,7 +104,14 @@ export const hasForbiddenKeysDeep = (value: unknown): boolean =>
  */
 export const sanitizeStringArray = (value: unknown): string[] => {
   if (!Array.isArray(value)) return []
-  return value.filter((entry): entry is string => typeof entry === 'string')
+  const result: string[] = []
+  for (let i = 0, len = value.length; i < len; i++) {
+    const entry = value[i]
+    if (typeof entry === 'string') {
+      result.push(entry)
+    }
+  }
+  return result
 }
 
 /**
@@ -367,8 +374,11 @@ const freezeRecursively = (value: unknown, visited: WeakSet<object>): void => {
   if (!Object.isFrozen(value)) {
     Object.freeze(value)
   }
-  for (const nested of Object.values(value)) {
-    freezeRecursively(nested, visited)
+  const obj = value as Record<string, unknown>
+  for (const key in obj) {
+    if (Object.hasOwn(obj, key)) {
+      freezeRecursively(obj[key], visited)
+    }
   }
 }
 

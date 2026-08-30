@@ -139,7 +139,10 @@ export const generatePostOptions = (
         let weight = 1.0
 
         // Example: If very low money, boost crowdfund weight
-        if (opt.id === 'comm_crowdfund' && (gameState.player.money ?? 0) < 100)
+        if (
+          opt.id === 'comm_crowdfund' &&
+          finiteNumberOr(gameState.player.money, 0) < 100
+        )
           weight += 50
 
         // Trend Matching Bonus

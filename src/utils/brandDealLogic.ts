@@ -235,15 +235,23 @@ export const generateBrandOffers = (
   if (top2) picked.push(top2)
   if (top3) picked.push(top3)
 
-  return picked.map(entry =>
-    buildBrandOffer(entry.deal, {
-      tier: entry.tier,
-      isStretched: entry.tier > 0,
-      gameState,
-      rng,
-      totalFollowers
-    })
-  )
+  const pickedLen = picked.length
+  const offers: BrandOffer[] = []
+  for (let i = 0; i < pickedLen; i++) {
+    const entry = picked[i]
+    if (entry) {
+      offers.push(
+        buildBrandOffer(entry.deal, {
+          tier: entry.tier,
+          isStretched: entry.tier > 0,
+          gameState,
+          rng,
+          totalFollowers
+        })
+      )
+    }
+  }
+  return offers
 }
 
 /**
@@ -279,7 +287,7 @@ export const negotiateDeal = (
 
   // Modifiers
   const hasManager = bandHasTrait(band, 'social_manager')
-  const isFamous = (gameState.player?.fame ?? 0) > 1000
+  const isFamous = finiteNumberOr(gameState.player?.fame, 0) > 1000
 
   // Roll once
   const roll = rng()

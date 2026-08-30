@@ -1,3 +1,4 @@
+import { finiteNumberOr } from './finiteNumber'
 import type { GigHUDStats } from '../types/rhythmGame'
 
 export type GigVisualStatus = {
@@ -11,11 +12,11 @@ export type GigVisualStatus = {
 }
 
 export const deriveGigVisualStatus = (stats: GigHUDStats): GigVisualStatus => {
-  const health = stats.health ?? 100
-  const overload = stats.overload ?? 0
-  const combo = stats.combo ?? 0
-  const corruptionLevel = stats.corruptionLevel ?? 0
-  const accuracy = stats.accuracy ?? 100
+  const health = finiteNumberOr(stats.health, 100)
+  const overload = finiteNumberOr(stats.overload, 0)
+  const combo = finiteNumberOr(stats.combo, 0)
+  const corruptionLevel = finiteNumberOr(stats.corruptionLevel, 0)
+  const accuracy = finiteNumberOr(stats.accuracy, 100)
 
   return {
     healthDanger: health < 20,
