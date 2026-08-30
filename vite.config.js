@@ -16,6 +16,7 @@ export default defineConfig({
         theme_color: '#000000',
         background_color: '#000000',
         display: 'fullscreen',
+        // Landscape orientation is essential for the multi-lane rhythm stage minigames and horizontal overworld maps (WCAG 2.2 AA 1.3.4 exception).
         orientation: 'landscape',
         start_url: './',
         scope: './',
@@ -71,34 +72,6 @@ export default defineConfig({
                 statuses: [0, 200]
               }
             }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*$/i,
-            handler: 'StaleWhileRevalidate',
-            options: {
-              cacheName: 'online-only-font-css',
-              expiration: {
-                maxEntries: 5,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*$/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'online-only-font-files',
-              expiration: {
-                maxEntries: 30,
-                maxAgeSeconds: 365 * 24 * 60 * 60 // 1 Year
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
           }
         ],
         navigateFallback: 'index.html'
@@ -136,12 +109,12 @@ export default defineConfig({
             },
             {
               name: 'scene-gig',
-              test: /src[\\/](scenes[\\/]Gig\.jsx|components[\\/]stage[\\/])/,
+              test: /src[\\/](scenes[\\/]Gig\.tsx|components[\\/]stage[\\/])/,
               priority: 15
             },
             {
               name: 'scene-overworld',
-              test: /src[\\/]scenes[\\/]Overworld\.jsx/,
+              test: /src[\\/]scenes[\\/]Overworld\.tsx/,
               priority: 15
             }
           ]
