@@ -12,7 +12,10 @@ import type {
   TravelStateBundle,
   TravelLogicParams
 } from '../types'
-import { getSellableAssets, getPostSaleScenarios } from '../../../utils/travelSoftlockUtils'
+import {
+  getSellableAssets,
+  getPostSaleScenarios
+} from '../../../utils/travelSoftlockUtils'
 import { getNodeAccessStatus } from '../../../utils/travelUtils'
 import { VENUES_BY_ID } from '../../../data/venues'
 

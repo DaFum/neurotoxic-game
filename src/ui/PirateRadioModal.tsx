@@ -2,6 +2,7 @@ import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { GlitchButton } from './GlitchButton'
 import { Modal } from './shared/Modal'
+import { Tooltip } from './shared/Tooltip'
 import { useGameSelector } from '../context/GameState'
 import { formatCurrency } from '../utils/numberUtils'
 import type { PirateBroadcastPayload } from '../types'
@@ -145,16 +146,46 @@ export const PirateRadioModal = memo(
           <GlitchButton variant='primary' onClick={onClose} className='flex-1'>
             [ {t('ui:button.cancel', { defaultValue: 'CANCEL' })} ]
           </GlitchButton>
-          <GlitchButton
-            variant='primary'
-            onClick={onBroadcast}
-            disabled={!canBroadcast}
-            className='flex-1'
-          >
-            {hasBroadcastedToday
-              ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]`
-              : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
-          </GlitchButton>
+          {!canBroadcast ? (
+            <Tooltip
+              content={
+                hasBroadcastedToday
+                  ? t('ui:pirate_radio.cooldown', {
+                      defaultValue: 'ON COOLDOWN'
+                    })
+                  : (player?.money ?? 0) < config.COST
+                    ? t('ui:pirate_radio.not_enough_money', {
+                        defaultValue: 'Not enough money'
+                      })
+                    : (band?.harmony ?? 0) < config.HARMONY_COST
+                      ? t('ui:pirate_radio.not_enough_harmony', {
+                          defaultValue: 'Not enough band harmony'
+                        })
+                      : null
+              }
+              className='flex-1'
+            >
+              <GlitchButton
+                variant='primary'
+                onClick={onBroadcast}
+                disabled={true}
+                className='w-full'
+              >
+                {hasBroadcastedToday
+                  ? `[ ${t('ui:pirate_radio.cooldown', { defaultValue: 'ON COOLDOWN' })} ]`
+                  : `[ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]`}
+              </GlitchButton>
+            </Tooltip>
+          ) : (
+            <GlitchButton
+              variant='primary'
+              onClick={onBroadcast}
+              disabled={false}
+              className='flex-1'
+            >
+              [ {t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]
+            </GlitchButton>
+          )}
         </div>
       </Modal>
     )

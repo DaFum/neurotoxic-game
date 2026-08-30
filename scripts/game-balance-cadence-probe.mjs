@@ -50,8 +50,14 @@ import {
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
-const OUTPUT_JSON = path.join(ROOT, 'reports/game-balance-cadence-probe-results.json')
-const OUTPUT_MARKDOWN = path.join(ROOT, 'reports/game-balance-cadence-probe-analysis.md')
+const OUTPUT_JSON = path.join(
+  ROOT,
+  'reports/game-balance-cadence-probe-results.json'
+)
+const OUTPUT_MARKDOWN = path.join(
+  ROOT,
+  'reports/game-balance-cadence-probe-analysis.md'
+)
 const DIAGNOSTIC_CONTROL_POLICY = 'gap-aligned'
 const GENERATOR_PATHS = Object.freeze([
   'scripts/game-balance-cadence-probe.mjs',
@@ -81,18 +87,28 @@ export const PRODUCTION_CADENCE_VALIDATION = Object.freeze({
 // decision still wants its own confirmation run.
 const STREAMS = Object.freeze([
   { id: 'calibration', seedFor: (id, index) => createScenarioSeed(id, index) },
-  { id: 'selection', seedFor: (id, index) => createScenarioSeed(`${id}#selection`, index) },
-  { id: 'holdout', seedFor: (id, index) => createScenarioSeed(`${id}#holdout`, index) }
+  {
+    id: 'selection',
+    seedFor: (id, index) => createScenarioSeed(`${id}#selection`, index)
+  },
+  {
+    id: 'holdout',
+    seedFor: (id, index) => createScenarioSeed(`${id}#holdout`, index)
+  }
 ])
 
 const round = value => Number(value.toFixed(2))
 const mean = values =>
-  values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : null
+  values.length
+    ? values.reduce((sum, value) => sum + value, 0) / values.length
+    : null
 const median = values => {
   if (!values.length) return null
   const sorted = [...values].sort((a, b) => a - b)
   const middle = Math.floor(sorted.length / 2)
-  return sorted.length % 2 ? sorted[middle] : (sorted[middle - 1] + sorted[middle]) / 2
+  return sorted.length % 2
+    ? sorted[middle]
+    : (sorted[middle - 1] + sorted[middle]) / 2
 }
 const percentile = (values, p) => {
   if (!values.length) return null
@@ -102,7 +118,9 @@ const percentile = (values, p) => {
 const rate = (count, total) => round((count / Math.max(1, total)) * 100)
 const roundOrNull = value => (value == null ? null : round(value))
 const pctDelta = (from, to) =>
-  from == null || to == null || from === 0 ? null : round(((to - from) / Math.abs(from)) * 100)
+  from == null || to == null || from === 0
+    ? null
+    : round(((to - from) / Math.abs(from)) * 100)
 // `pctDelta` is null when a side is missing or the baseline is exactly 0. Folding
 // that into the max as 0 would report "not comparable" as "no side effect", which
 // is the opposite of a caveat.
@@ -116,7 +134,9 @@ const maxAbsDelta = (items, key) => {
 
 /** Scenarios with a hard insolvency cap — the same set the holdout gate covers. */
 export const cappedScenarios = () =>
-  SCENARIOS.filter(scenario => Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax))
+  SCENARIOS.filter(scenario =>
+    Number.isFinite(KPI_TARGETS[scenario.id]?.bankruptcyMax)
+  )
 
 /**
  * One cohort: a (policy, scenario, stream) cell. Reports the opening of the run
@@ -125,9 +145,13 @@ export const cappedScenarios = () =>
  */
 export const summarizeCohort = runs => {
   const insolvent = runs.filter(run => run.bankrupt)
-  const beforeFirstGig = insolvent.filter(run => run.earlyRunway.bankruptBeforeFirstGig)
+  const beforeFirstGig = insolvent.filter(
+    run => run.earlyRunway.bankruptBeforeFirstGig
+  )
   const played = runs.filter(run => run.earlyRunway.firstGigDay != null)
-  const solventMoney = runs.filter(run => !run.bankrupt).map(run => run.finalMoney)
+  const solventMoney = runs
+    .filter(run => !run.bankrupt)
+    .map(run => run.finalMoney)
   const firstGigDays = played.map(run => run.earlyRunway.firstGigDay)
   return {
     sampleSize: runs.length,
@@ -137,26 +161,49 @@ export const summarizeCohort = runs => {
     // problem; one carried by the remainder is an economy problem.
     bankruptBeforeFirstGigCount: beforeFirstGig.length,
     bankruptBeforeFirstGigRatePct: rate(beforeFirstGig.length, runs.length),
-    bankruptBeforeFirstGigShareOfInsolvenciesPct: rate(beforeFirstGig.length, insolvent.length),
+    bankruptBeforeFirstGigShareOfInsolvenciesPct: rate(
+      beforeFirstGig.length,
+      insolvent.length
+    ),
     neverPlayedCount: runs.length - played.length,
     firstGigDayMedian: median(firstGigDays),
     firstGigDayEarliest: firstGigDays.length ? Math.min(...firstGigDays) : null,
     firstGigDayMean: roundOrNull(mean(firstGigDays)),
     insolventDayMedian: median(insolvent.map(run => run.daysSurvived)),
-    insolventDayEarliest: insolvent.length ? Math.min(...insolvent.map(run => run.daysSurvived)) : null,
-    insolventGigsPlayedMean: roundOrNull(mean(insolvent.map(run => run.gigsPlayed))),
-    moneyBeforeFirstGigMedian: median(played.map(run => run.earlyRunway.moneyBeforeFirstGig)),
-    moneyBeforeFirstGigP10: percentile(played.map(run => run.earlyRunway.moneyBeforeFirstGig), 0.1),
-    lowestMoneyBeforeFirstGigMedian: median(runs.map(run => run.earlyRunway.lowestMoneyBeforeFirstGig)),
-    daysBeforeFirstGigMean: roundOrNull(mean(runs.map(run => run.earlyRunway.daysBeforeFirstGig))),
-    obligationsBeforeFirstGigMean: roundOrNull(mean(runs.map(run => run.earlyRunway.obligationsBeforeFirstGig))),
-    spendBeforeFirstGigMean: roundOrNull(mean(runs.map(run => run.earlyRunway.spendBeforeFirstGig))),
+    insolventDayEarliest: insolvent.length
+      ? Math.min(...insolvent.map(run => run.daysSurvived))
+      : null,
+    insolventGigsPlayedMean: roundOrNull(
+      mean(insolvent.map(run => run.gigsPlayed))
+    ),
+    moneyBeforeFirstGigMedian: median(
+      played.map(run => run.earlyRunway.moneyBeforeFirstGig)
+    ),
+    moneyBeforeFirstGigP10: percentile(
+      played.map(run => run.earlyRunway.moneyBeforeFirstGig),
+      0.1
+    ),
+    lowestMoneyBeforeFirstGigMedian: median(
+      runs.map(run => run.earlyRunway.lowestMoneyBeforeFirstGig)
+    ),
+    daysBeforeFirstGigMean: roundOrNull(
+      mean(runs.map(run => run.earlyRunway.daysBeforeFirstGig))
+    ),
+    obligationsBeforeFirstGigMean: roundOrNull(
+      mean(runs.map(run => run.earlyRunway.obligationsBeforeFirstGig))
+    ),
+    spendBeforeFirstGigMean: roundOrNull(
+      mean(runs.map(run => run.earlyRunway.spendBeforeFirstGig))
+    ),
     blockedTravelBeforeFirstGigRunsPct: rate(
-      runs.filter(run => run.earlyRunway.blockedTravelDaysBeforeFirstGig > 0).length,
+      runs.filter(run => run.earlyRunway.blockedTravelDaysBeforeFirstGig > 0)
+        .length,
       runs.length
     ),
     firstBlockedTravelDayMedian: median(
-      runs.filter(run => run.earlyRunway.firstBlockedTravel).map(run => run.earlyRunway.firstBlockedTravel.day)
+      runs
+        .filter(run => run.earlyRunway.firstBlockedTravel)
+        .map(run => run.earlyRunway.firstBlockedTravel.day)
     ),
     firstBlockedTravelReasons: runs.reduce((tally, run) => {
       const reason = run.earlyRunway.firstBlockedTravel?.reason
@@ -174,17 +221,29 @@ export const summarizeCohort = runs => {
     // reports, which use the same helper; the played-runs figure below is the one
     // a Fame side-effect claim may rest on.
     famePerGig: round(calculateAverageFameEarnedPerGig(runs)),
-    famePerGigPlayedRuns: played.length ? round(calculateAverageFameEarnedPerGig(played)) : null,
-    finaleReachedPct: rate(runs.filter(run => run.finaleReached).length, runs.length),
-    finaleCompletedPct: rate(runs.filter(run => run.finaleCompleted).length, runs.length)
+    famePerGigPlayedRuns: played.length
+      ? round(calculateAverageFameEarnedPerGig(played))
+      : null,
+    finaleReachedPct: rate(
+      runs.filter(run => run.finaleReached).length,
+      runs.length
+    ),
+    finaleCompletedPct: rate(
+      runs.filter(run => run.finaleCompleted).length,
+      runs.length
+    )
   }
 }
 
 export const pairedSolventFinalMoney = pairs => {
-  const comparable = pairs.filter(pair => !pair.control.bankrupt && !pair.candidate.bankrupt)
+  const comparable = pairs.filter(
+    pair => !pair.control.bankrupt && !pair.candidate.bankrupt
+  )
   const minimumSampleSize = Math.max(
     1,
-    Math.ceil(pairs.length * PRODUCTION_CADENCE_VALIDATION.minimumComparableShare)
+    Math.ceil(
+      pairs.length * PRODUCTION_CADENCE_VALIDATION.minimumComparableShare
+    )
   )
   const sufficientEvidence = comparable.length >= minimumSampleSize
   const control = median(comparable.map(pair => pair.control.finalMoney))
@@ -216,7 +275,8 @@ export const runProductionCadenceValidation = ({
   const missingScenarioIds = expectedScenarios.filter(
     id => !evaluatedScenarios.includes(id)
   )
-  const [controlPolicy, candidatePolicy] = PRODUCTION_CADENCE_VALIDATION.policies
+  const [controlPolicy, candidatePolicy] =
+    PRODUCTION_CADENCE_VALIDATION.policies
   const pairingByPolicy = {}
   const cohorts = Object.fromEntries(
     PRODUCTION_CADENCE_VALIDATION.policies.map(policy => [
@@ -265,22 +325,29 @@ export const runProductionCadenceValidation = ({
     scenarios.map(scenario => {
       const baseline = control[scenario.id]
       const proposed = candidate[scenario.id]
-      const pairs = pairingByPolicy[controlPolicy][scenario.id].map((controlRun, index) => ({
-        control: controlRun,
-        candidate: pairingByPolicy[candidatePolicy][scenario.id][index]
-      }))
+      const pairs = pairingByPolicy[controlPolicy][scenario.id].map(
+        (controlRun, index) => ({
+          control: controlRun,
+          candidate: pairingByPolicy[candidatePolicy][scenario.id][index]
+        })
+      )
       const fame = pairedFamePerGig(pairs)
       const money = pairedSolventFinalMoney(pairs)
       const comparison = {
-        bankruptcyRateDeltaPct: round(proposed.bankruptcyRatePct - baseline.bankruptcyRatePct),
+        bankruptcyRateDeltaPct: round(
+          proposed.bankruptcyRatePct - baseline.bankruptcyRatePct
+        ),
         pairedFamePerGig: fame,
         pairedSolventFinalMoney: money,
-        finaleReachedDeltaPct: round(proposed.finaleReachedPct - baseline.finaleReachedPct),
+        finaleReachedDeltaPct: round(
+          proposed.finaleReachedPct - baseline.finaleReachedPct
+        ),
         finaleCompletedDeltaPct: round(
           proposed.finaleCompletedPct - baseline.finaleCompletedPct
         ),
         bankruptBeforeFirstGigRateDeltaPct: round(
-          proposed.bankruptBeforeFirstGigRatePct - baseline.bankruptBeforeFirstGigRatePct
+          proposed.bankruptBeforeFirstGigRatePct -
+            baseline.bankruptBeforeFirstGigRatePct
         ),
         blockedTravelBeforeFirstGigRunsPctDelta: round(
           proposed.blockedTravelBeforeFirstGigRunsPct -
@@ -321,8 +388,14 @@ export const runProductionCadenceValidation = ({
       const corridor = RISK_TARGETS[scenario.id]?.bankruptcyTargetPct
       if (!corridor) return []
       const value = candidate[scenario.id].bankruptcyRatePct
-      const classification = value < corridor[0] ? 'below' : value > corridor[1] ? 'above' : 'inside'
-      return [[scenario.id, { valuePct: value, corridorPct: corridor, classification }]]
+      const classification =
+        value < corridor[0] ? 'below' : value > corridor[1] ? 'above' : 'inside'
+      return [
+        [
+          scenario.id,
+          { valuePct: value, corridorPct: corridor, classification }
+        ]
+      ]
     })
   )
 
@@ -345,7 +418,8 @@ export const runProductionCadenceValidation = ({
         PRODUCTION_CADENCE_VALIDATION.famePerGigPlayedRunsDeltaMaxPct,
       solventFinalMoneyDeltaMaxPct:
         PRODUCTION_CADENCE_VALIDATION.solventFinalMoneyDeltaMaxPct,
-      minimumComparableShare: PRODUCTION_CADENCE_VALIDATION.minimumComparableShare,
+      minimumComparableShare:
+        PRODUCTION_CADENCE_VALIDATION.minimumComparableShare,
       finaleCompletedMayDecline: false,
       preFirstGigStrandedRateMayIncrease: false
     },
@@ -377,11 +451,13 @@ export const runCadenceProbe = ({
       )
       return {
         scenarioId: baseScenario.id,
-        gigGapDays: baseScenario.gigGapDays ?? SIMULATION_CONSTANTS.baseGigGapDays,
+        gigGapDays:
+          baseScenario.gigGapDays ?? SIMULATION_CONSTANTS.baseGigGapDays,
         // A gap of 1 plays every day under every phase, so the variants are
         // identical by construction rather than by measurement. Say so, or a
         // reader takes seven unchanged rows for seven confirmations.
-        phaseSensitive: (baseScenario.gigGapDays ?? SIMULATION_CONSTANTS.baseGigGapDays) > 1,
+        phaseSensitive:
+          (baseScenario.gigGapDays ?? SIMULATION_CONSTANTS.baseGigGapDays) > 1,
         streams
       }
     })
@@ -417,7 +493,8 @@ export const runCadenceProbe = ({
     )
   }
   const cohortOf = (entry, scenarioId, stream) =>
-    entry?.scenarios.find(scenario => scenario.scenarioId === scenarioId)?.streams?.[stream]
+    entry?.scenarios.find(scenario => scenario.scenarioId === scenarioId)
+      ?.streams?.[stream]
 
   // Corridors and caps come from the live configuration: RISK_TARGETS holds the
   // soft design bands, KPI_TARGETS the hard caps. A hardcoded figure here would
@@ -426,7 +503,8 @@ export const runCadenceProbe = ({
     const perScenario = entry.scenarios.map(scenario => {
       const holdout = scenario.streams.holdout
       const base = cohortOf(shipped, scenario.scenarioId, 'holdout')
-      const corridor = RISK_TARGETS[scenario.scenarioId]?.bankruptcyTargetPct ?? null
+      const corridor =
+        RISK_TARGETS[scenario.scenarioId]?.bankruptcyTargetPct ?? null
       const cap = KPI_TARGETS[scenario.scenarioId]?.bankruptcyMax ?? null
       return {
         scenarioId: scenario.scenarioId,
@@ -440,8 +518,12 @@ export const runCadenceProbe = ({
         withinDesignCorridor:
           corridor == null
             ? null
-            : holdout.bankruptcyRatePct >= corridor[0] && holdout.bankruptcyRatePct <= corridor[1],
-        solventMoneyDeltaPct: pctDelta(base?.solventFinalMoneyMedian, holdout.solventFinalMoneyMedian),
+            : holdout.bankruptcyRatePct >= corridor[0] &&
+              holdout.bankruptcyRatePct <= corridor[1],
+        solventMoneyDeltaPct: pctDelta(
+          base?.solventFinalMoneyMedian,
+          holdout.solventFinalMoneyMedian
+        ),
         famePerGigDeltaPct: pctDelta(base?.famePerGig, holdout.famePerGig),
         famePerGigPlayedRunsDeltaPct: pctDelta(
           base?.famePerGigPlayedRuns,
@@ -461,8 +543,14 @@ export const runCadenceProbe = ({
       // Named separately from the gate because these are diagnostics on the
       // shipped-vs-variant comparison, not release conditions.
       sideEffects: {
-        maxAbsSolventMoneyDeltaPct: maxAbsDelta(perScenario, 'solventMoneyDeltaPct'),
-        maxAbsFamePerGigDeltaPct: maxAbsDelta(perScenario, 'famePerGigDeltaPct'),
+        maxAbsSolventMoneyDeltaPct: maxAbsDelta(
+          perScenario,
+          'solventMoneyDeltaPct'
+        ),
+        maxAbsFamePerGigDeltaPct: maxAbsDelta(
+          perScenario,
+          'famePerGigDeltaPct'
+        ),
         // The honest Fame comparison: same denominator on both sides. A large
         // gap between this and the figure above is the never-played composition
         // shifting, not Fame per gig moving.
@@ -482,7 +570,8 @@ export const runCadenceProbe = ({
   const shippedVariant = variants.find(variant => variant.isShipped)
   const cultCap = KPI_TARGETS[cultId]?.bankruptcyMax ?? null
   const cultRateFor = variant =>
-    variant.scenarios.find(item => item.scenarioId === cultId)?.holdoutBankruptcyRatePct ?? null
+    variant.scenarios.find(item => item.scenarioId === cultId)
+      ?.holdoutBankruptcyRatePct ?? null
   const shippedCultRate = shippedVariant ? cultRateFor(shippedVariant) : null
   // There is nothing to explain unless the shipped policy actually breaches the
   // cap this probe is about. With a small `--runs`, sampling can put every policy
@@ -514,14 +603,20 @@ export const runCadenceProbe = ({
       cultId,
       stream
     )?.bankruptcyRatePct ?? null
-  const shippedSelectionRate = cultRateOnStream(DIAGNOSTIC_CONTROL_POLICY, 'selection')
+  const shippedSelectionRate = cultRateOnStream(
+    DIAGNOSTIC_CONTROL_POLICY,
+    'selection'
+  )
   const independentConfirmation = {
     stream: 'selection',
     shippedCultRatePct: shippedSelectionRate,
     variantCultRatePct: Object.fromEntries(
       policies
         .filter(entry => entry.policy !== DIAGNOSTIC_CONTROL_POLICY)
-        .map(entry => [entry.policy, cultRateOnStream(entry.policy, 'selection')])
+        .map(entry => [
+          entry.policy,
+          cultRateOnStream(entry.policy, 'selection')
+        ])
     ),
     // Direction, not magnitude: the streams are different cohorts, so the rates are
     // not expected to match — only the sign of the effect has to.
@@ -539,7 +634,8 @@ export const runCadenceProbe = ({
     // into a passing one on the same seeds — and does a second, independent cohort
     // agree? Reporting a positive conclusion without that agreement would ignore
     // the requirement this probe imposes on itself.
-    phaseExplainsBreach: clearing.length > 0 && independentConfirmation.agreesWithHoldout,
+    phaseExplainsBreach:
+      clearing.length > 0 && independentConfirmation.agreesWithHoldout,
     independentConfirmation,
     shippedPolicyBreachesCultCap: shippedBreaches,
     shippedCultHoldoutRatePct: shippedCultRate,
@@ -548,13 +644,15 @@ export const runCadenceProbe = ({
     cultBeforeFirstGigShareByPolicy: Object.fromEntries(
       policies.map(entry => [
         entry.policy,
-        cohortOf(entry, cultId, 'holdout')?.bankruptBeforeFirstGigShareOfInsolvenciesPct ?? null
+        cohortOf(entry, cultId, 'holdout')
+          ?.bankruptBeforeFirstGigShareOfInsolvenciesPct ?? null
       ])
     ),
     cultHoldoutRateByPolicy: Object.fromEntries(
       variants.map(variant => [
         variant.policy,
-        variant.scenarios.find(item => item.scenarioId === cultId)?.holdoutBankruptcyRatePct ?? null
+        variant.scenarios.find(item => item.scenarioId === cultId)
+          ?.holdoutBankruptcyRatePct ?? null
       ])
     ),
     verdict: !shippedBreaches
@@ -569,13 +667,20 @@ export const runCadenceProbe = ({
               ? 'nicht gemessen'
               : `${independentConfirmation.shippedCultRatePct}%`
           } gegen ${Object.entries(independentConfirmation.variantCultRatePct)
-            .map(([policy, rate]) => `\`${policy}\` ${rate == null ? '—' : `${rate}%`}`)
-            .join(' · ')}). Ein Effekt, der nur auf einer Kohorte auftritt, ist ein Stichprobeneffekt und keine Aussage über die Phase.`
+            .map(
+              ([policy, rate]) =>
+                `\`${policy}\` ${rate == null ? '—' : `${rate}%`}`
+            )
+            .join(
+              ' · '
+            )}). Ein Effekt, der nur auf einer Kohorte auftritt, ist ein Stichprobeneffekt und keine Aussage über die Phase.`
         : clearing.length
-        ? `Allein die Kadenz-Phase bringt das Holdout-Gate von \`${cultId}\` von FAIL (${shippedCultRate}% gegen ${cultCap}%) auf PASS (${clearing
-            .map(variant => `${variant.policy} ${cultRateFor(variant)}%`)
-            .join(', ')}). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.`
-        : `Der Bruch ist reproduziert (\`gap-aligned\` ${shippedCultRate}% gegen ${cultCap}%), aber keine Kadenz-Phase behebt ihn. Das Eröffnungsrisiko überlebt jede Phase, ist also ein echtes Early-Runway-Problem im Spiel und kein Artefakt der Simulationspolitik — ein Eingriff ist gerechtfertigt.`
+          ? `Allein die Kadenz-Phase bringt das Holdout-Gate von \`${cultId}\` von FAIL (${shippedCultRate}% gegen ${cultCap}%) auf PASS (${clearing
+              .map(variant => `${variant.policy} ${cultRateFor(variant)}%`)
+              .join(
+                ', '
+              )}). Der Bruch ist mindestens teilweise ein Artefakt der Simulationspolitik. Die Phase ist danach zu entscheiden, was das Spiel vorgibt — erst danach ist messbar, ob überhaupt noch ein Early-Runway-Eingriff nötig ist.`
+          : `Der Bruch ist reproduziert (\`gap-aligned\` ${shippedCultRate}% gegen ${cultCap}%), aber keine Kadenz-Phase behebt ihn. Das Eröffnungsrisiko überlebt jede Phase, ist also ein echtes Early-Runway-Problem im Spiel und kein Artefakt der Simulationspolitik — ein Eingriff ist gerechtfertigt.`
   }
 
   return {
@@ -595,7 +700,8 @@ export const runCadenceProbe = ({
   }
 }
 
-const fmtEur = value => (value == null ? '—' : `€${Math.round(value).toLocaleString('de-DE')}`)
+const fmtEur = value =>
+  value == null ? '—' : `€${Math.round(value).toLocaleString('de-DE')}`
 const fmtPct = value => (value == null ? '—' : `${value}%`)
 const gate = passed => (passed ? 'PASS' : 'FAIL')
 
@@ -634,7 +740,10 @@ ${report.variants
       )}** | ${
         variant.holdoutSafetyValidation.failures.length
           ? variant.holdoutSafetyValidation.failures
-              .map(failure => `\`${failure.scenarioId}\` ${failure.holdoutValuePct}% > ${failure.maximumPct}%`)
+              .map(
+                failure =>
+                  `\`${failure.scenarioId}\` ${failure.holdoutValuePct}% > ${failure.maximumPct}%`
+              )
               .join('; ')
           : '—'
       } | ${fmtPct(variant.sideEffects.maxAbsSolventMoneyDeltaPct)} | ${fmtPct(variant.sideEffects.maxAbsFamePerGigDeltaPct)} | ${fmtPct(variant.sideEffects.maxAbsFamePerGigPlayedRunsDeltaPct)} |`
@@ -649,20 +758,51 @@ ${report.variants
 | --- | ${report.policies.map(() => '---').join(' | ')} |
 ${[
   ['Insolvenzrate', cohort => fmtPct(cohort.bankruptcyRatePct)],
-  ['davon vor dem ersten Gig', cohort => `${cohort.bankruptBeforeFirstGigCount} (${cohort.bankruptBeforeFirstGigShareOfInsolvenciesPct}%)`],
-  ['Insolvenz vor erstem Gig (Rate)', cohort => fmtPct(cohort.bankruptBeforeFirstGigRatePct)],
+  [
+    'davon vor dem ersten Gig',
+    cohort =>
+      `${cohort.bankruptBeforeFirstGigCount} (${cohort.bankruptBeforeFirstGigShareOfInsolvenciesPct}%)`
+  ],
+  [
+    'Insolvenz vor erstem Gig (Rate)',
+    cohort => fmtPct(cohort.bankruptBeforeFirstGigRatePct)
+  ],
   ['Tag des ersten Gigs (Median)', cohort => cohort.firstGigDayMedian ?? '—'],
   ['frühester erster Gig', cohort => cohort.firstGigDayEarliest ?? '—'],
   ['Runs ohne jeden Gig', cohort => cohort.neverPlayedCount],
-  ['Ø Tage ohne Einnahme vor erstem Gig', cohort => cohort.daysBeforeFirstGigMean ?? '—'],
-  ['Geld direkt vor erstem Gig (Median)', cohort => fmtEur(cohort.moneyBeforeFirstGigMedian)],
-  ['Geld direkt vor erstem Gig (P10)', cohort => fmtEur(cohort.moneyBeforeFirstGigP10)],
-  ['Ø Verpflichtungen vor erstem Gig', cohort => fmtEur(cohort.obligationsBeforeFirstGigMean)],
-  ['Ø Ausgaben vor erstem Gig', cohort => fmtEur(cohort.spendBeforeFirstGigMean)],
-  ['Runs mit blockierter Reise vor erstem Gig', cohort => fmtPct(cohort.blockedTravelBeforeFirstGigRunsPct)],
-  ['erste blockierte Reise (Median-Tag)', cohort => cohort.firstBlockedTravelDayMedian ?? '—'],
+  [
+    'Ø Tage ohne Einnahme vor erstem Gig',
+    cohort => cohort.daysBeforeFirstGigMean ?? '—'
+  ],
+  [
+    'Geld direkt vor erstem Gig (Median)',
+    cohort => fmtEur(cohort.moneyBeforeFirstGigMedian)
+  ],
+  [
+    'Geld direkt vor erstem Gig (P10)',
+    cohort => fmtEur(cohort.moneyBeforeFirstGigP10)
+  ],
+  [
+    'Ø Verpflichtungen vor erstem Gig',
+    cohort => fmtEur(cohort.obligationsBeforeFirstGigMean)
+  ],
+  [
+    'Ø Ausgaben vor erstem Gig',
+    cohort => fmtEur(cohort.spendBeforeFirstGigMean)
+  ],
+  [
+    'Runs mit blockierter Reise vor erstem Gig',
+    cohort => fmtPct(cohort.blockedTravelBeforeFirstGigRunsPct)
+  ],
+  [
+    'erste blockierte Reise (Median-Tag)',
+    cohort => cohort.firstBlockedTravelDayMedian ?? '—'
+  ],
   ['Ø Gigs', cohort => cohort.gigsPlayedMean ?? '—'],
-  ['solventes Endgeld (Median)', cohort => fmtEur(cohort.solventFinalMoneyMedian)],
+  [
+    'solventes Endgeld (Median)',
+    cohort => fmtEur(cohort.solventFinalMoneyMedian)
+  ],
   ['Fame/Gig (alle Runs)', cohort => cohort.famePerGig],
   ['Fame/Gig (nur Runs mit Gig)', cohort => cohort.famePerGigPlayedRuns ?? '—']
 ]
@@ -670,7 +810,9 @@ ${[
     ([label, read]) =>
       `| ${label} | ${report.policies
         .map(policy => {
-          const cohort = rows(policy)?.scenarios.find(item => item.scenarioId === cult)?.streams.holdout
+          const cohort = rows(policy)?.scenarios.find(
+            item => item.scenarioId === cult
+          )?.streams.holdout
           return cohort ? read(cohort) : '—'
         })
         .join(' | ')} |`
@@ -684,13 +826,17 @@ ${[
 ${(report.variants[0]?.scenarios ?? [])
   .map(scenario => {
     const cells = report.variants.map(variant => {
-      const item = variant.scenarios.find(entry => entry.scenarioId === scenario.scenarioId)
+      const item = variant.scenarios.find(
+        entry => entry.scenarioId === scenario.scenarioId
+      )
       return `${fmtPct(item?.holdoutBankruptcyRatePct)}${item?.withinHardCap === false ? ' ❌' : ''}`
     })
     return `| \`${scenario.scenarioId}\` | ${scenario.gigGapDays}${
       scenario.phaseSensitive ? '' : ' (phasenneutral)'
     } | ${cells.join(' | ')} | ${fmtPct(scenario.hardCapPct)} | ${
-      scenario.designCorridorPct ? `${scenario.designCorridorPct[0]}–${scenario.designCorridorPct[1]}%` : '—'
+      scenario.designCorridorPct
+        ? `${scenario.designCorridorPct[0]}–${scenario.designCorridorPct[1]}%`
+        : '—'
     } |`
   })
   .join('\n')}
@@ -700,25 +846,28 @@ ${(report.variants[0]?.scenarios ?? [])
 ${report.conclusion.verdict}
 
 ${report.variants
-    .map(variant => {
-      const below = variant.scenarios.filter(
-        item =>
-          item.withinDesignCorridor === false &&
-          item.designCorridorPct &&
-          item.holdoutBankruptcyRatePct < item.designCorridorPct[0]
-      )
-      const above = variant.scenarios.filter(
-        item =>
-          item.withinDesignCorridor === false &&
-          item.designCorridorPct &&
-          item.holdoutBankruptcyRatePct > item.designCorridorPct[1]
-      )
-      // Which side of the corridor a scenario misses on decides the response, and
-      // "outside the corridor" alone reads as too risky in both directions.
-      return `- \`${variant.policy}\`: ${above.length ? `über dem Designkorridor: ${above.map(item => `\`${item.scenarioId}\``).join(', ')}` : 'kein Szenario über dem Designkorridor'}; ${
-        below.length ? `unter dem Designkorridor: ${below.map(item => `\`${item.scenarioId}\``).join(', ')}` : 'kein Szenario unter dem Designkorridor'}`
-    })
-    .join('\n')}
+  .map(variant => {
+    const below = variant.scenarios.filter(
+      item =>
+        item.withinDesignCorridor === false &&
+        item.designCorridorPct &&
+        item.holdoutBankruptcyRatePct < item.designCorridorPct[0]
+    )
+    const above = variant.scenarios.filter(
+      item =>
+        item.withinDesignCorridor === false &&
+        item.designCorridorPct &&
+        item.holdoutBankruptcyRatePct > item.designCorridorPct[1]
+    )
+    // Which side of the corridor a scenario misses on decides the response, and
+    // "outside the corridor" alone reads as too risky in both directions.
+    return `- \`${variant.policy}\`: ${above.length ? `über dem Designkorridor: ${above.map(item => `\`${item.scenarioId}\``).join(', ')}` : 'kein Szenario über dem Designkorridor'}; ${
+      below.length
+        ? `unter dem Designkorridor: ${below.map(item => `\`${item.scenarioId}\``).join(', ')}`
+        : 'kein Szenario unter dem Designkorridor'
+    }`
+  })
+  .join('\n')}
 
 Die Designkorridore (\`RISK_TARGETS\`) sind an der ausgelieferten Phase kalibriert. Verschiebt die Phase das Risiko um eine Größenordnung, sagt eine Korridorverletzung zuerst etwas über die Phase und erst danach über das Szenariodesign — die Korridore sollten deshalb nicht an eine Variante angepasst werden, deren Phase noch nicht entschieden ist.
 
@@ -734,7 +883,9 @@ Bestätigung auf dem unabhängigen \`selection\`-Strom: ${
           report.conclusion.independentConfirmation.variantCultRatePct
         )
           .map(([policy, rate]) => `\`${policy}\` ${fmtPct(rate)}`)
-          .join(' · ')}. Der Effekt ist damit nicht an die Kohorte gebunden, auf der er gefunden wurde.`
+          .join(
+            ' · '
+          )}. Der Effekt ist damit nicht an die Kohorte gebunden, auf der er gefunden wurde.`
       : '**nein** — der Effekt zeigt sich nicht in derselben Richtung auf dem zweiten Strom, ist also möglicherweise ein Stichprobeneffekt.'
   }
 
@@ -778,7 +929,10 @@ ${scenarioRows}
 Die Korridore aus \`RISK_TARGETS\` bleiben Designhypothesen. Sie werden vollständig aus der Live-Konfiguration abgeleitet und blockieren diese Freigabe nicht.
 
 ${Object.entries(report.designWarnings)
-  .map(([id, warning]) => `- \`${id}\`: ${fmtPct(warning.valuePct)} gegenüber ${warning.corridorPct[0]}–${warning.corridorPct[1]}% — **${warning.classification}**`)
+  .map(
+    ([id, warning]) =>
+      `- \`${id}\`: ${fmtPct(warning.valuePct)} gegenüber ${warning.corridorPct[0]}–${warning.corridorPct[1]}% — **${warning.classification}**`
+  )
   .join('\n')}
 
 ## Entscheidung
@@ -820,12 +974,17 @@ export const parseArgs = argv => {
   return options
 }
 
-if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href) {
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(path.resolve(process.argv[1])).href
+) {
   logger.setLevel(LOG_LEVELS.ERROR)
   const options = parseArgs(process.argv.slice(2))
   const started = Date.now()
   const report = {
-    ...runProductionCadenceValidation({ runsPerScenario: options.runsPerScenario }),
+    ...runProductionCadenceValidation({
+      runsPerScenario: options.runsPerScenario
+    }),
     generatedAt: new Date().toISOString(),
     metadata: await buildArtifactMetadata({
       root: ROOT,
@@ -840,7 +999,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(path.resolve(process.ar
     await fs.writeFile(OUTPUT_JSON, `${JSON.stringify(report, null, 2)}\n`)
     await fs.writeFile(OUTPUT_MARKDOWN, renderProductionCadenceMarkdown(report))
   }
-  console.log(`[cadence-probe] ${report.runtime.durationMs} ms · ${report.status}`)
+  console.log(
+    `[cadence-probe] ${report.runtime.durationMs} ms · ${report.status}`
+  )
   console.log(
     `[cadence-probe] failed gates: ${report.failedGates.length ? report.failedGates.join(', ') : 'none'}`
   )
