@@ -402,9 +402,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1302,6 +1300,8 @@
   "pirate_radio.description": "Hack local frequencies and broadcast your rawest tracks. The signal will reach the desperate and the disillusioned, boosting your fame and feeding the cult.",
   "pirate_radio.fame_gain": "FAME GAIN",
   "pirate_radio.harmony_cost": "HARMONY DRAIN",
+  "pirate_radio.not_enough_harmony": "Not enough band harmony",
+  "pirate_radio.not_enough_money": "Not enough money",
   "pirate_radio.required_offering": "[ REQUIRED OFFERING ]",
   "pirate_radio.success": "Broadcast complete. The signal lives. Fame +{{deltaFame}}, Zealotry +{{deltaZealotry}}, Controversy +{{deltaControversy}}, Harmony {{deltaHarmony}}, Cost {{cost}}.",
   "pirate_radio.title": "PIRATE RADIO BROADCAST",
@@ -1832,5 +1832,9 @@
   "ui.time": "Time",
   "unit.km": "km",
   "unlocked": "UNLOCKED: {{unlock}}!",
-  "visual_interface": "VISUAL INTERFACE"
+  "visual_interface": "VISUAL INTERFACE",
+  "zealotry.not_enough_controversy": "Not enough controversy",
+  "zealotry.not_enough_harmony": "Not enough band harmony",
+  "zealotry.not_enough_money": "Not enough money",
+  "zealotry.not_enough_zealotry": "Not enough zealotry"
 }

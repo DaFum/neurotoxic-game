@@ -34,6 +34,8 @@ export interface ZealotryActionConfig {
   ZEALOTRY_GAIN: number
   CONTROVERSY_GAIN: number
   HARMONY_COST: number
+  REQUIRED_CONTROVERSY?: number
+  REQUIRED_ZEALOTRY?: number
 }
 
 /**
