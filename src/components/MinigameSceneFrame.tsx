@@ -15,7 +15,15 @@ import { useMinigameSceneLogic } from '../hooks/useMinigameSceneLogic'
  * restored when the overlay unmounts.
  *
  * @typeParam TState - Ref state consumed by the Pixi stage controller.
- * @param props - Stage controller factory, minigame logic, UI state, completion callback, completion copy, stats renderer, and child UI.
+ * @param controllerFactory - Stage controller factory
+ * @param logic - minigame logic
+ * @param uiState - UI state
+ * @param onComplete - completion callback
+ * @param completionTitle - completion copy
+ * @param renderCompletionStats - stats renderer
+ * @param completionButtonText - completion copy
+ * @param children - child UI
+ * @returns A JSX element containing the Pixi stage and completion overlay.
  */
 export const MinigameSceneFrame = <TState,>({
   controllerFactory,
