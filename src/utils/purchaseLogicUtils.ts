@@ -368,7 +368,7 @@ export const applyStatModifier = (
 }
 
 /** Reasons `validatePurchase` can reject an item. */
-export type PurchaseErrorType =
+type PurchaseErrorType =
   | 'missing_effect'
   | 'already_owned'
   | 'insufficient_funds'
@@ -407,10 +407,21 @@ export const getPurchaseDecision = (
   const playerCanAfford = canAfford(item, player, cost)
 
   const hasValidEffect = !!effect
-  const meetsReputation = !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
-  const canPurchase = playerCanAfford && (isConsumable || !isOwned) && hasValidEffect && meetsReputation
+  const meetsReputation =
+    !item.requiresReputation || (social?.controversyLevel ?? 0) < 50
+  const canPurchase =
+    playerCanAfford &&
+    (isConsumable || !isOwned) &&
+    hasValidEffect &&
+    meetsReputation
 
-  return { cost, canAfford: playerCanAfford, isOwned, isConsumable, canPurchase }
+  return {
+    cost,
+    canAfford: playerCanAfford,
+    isOwned,
+    isConsumable,
+    canPurchase
+  }
 }
 
 /**
