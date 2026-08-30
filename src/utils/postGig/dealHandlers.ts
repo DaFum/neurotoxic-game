@@ -33,11 +33,11 @@ export const getAcceptDealMoneyUpdate = ({
   player: GameState['player']
 }) => {
   let appliedMoneyDelta = 0
-  let nextMoney = player.money ?? 0
+  let nextMoney = finiteNumberOr(player.money, 0)
 
   if (deal.offer.upfront) {
     const applied = applyClampedMoneyDelta(
-      player.money ?? 0,
+      finiteNumberOr(player.money, 0),
       deal.offer.upfront
     )
     nextMoney = applied.nextMoney

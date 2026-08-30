@@ -115,7 +115,10 @@ export class Logger {
   subscribe(callback: (event: LogEvent) => void): () => void {
     this.listeners.push(callback)
     return () => {
-      this.listeners = this.listeners.filter(l => l !== callback)
+      const index = this.listeners.indexOf(callback)
+      if (index !== -1) {
+        this.listeners.splice(index, 1)
+      }
     }
   }
 
