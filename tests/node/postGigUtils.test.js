@@ -7,6 +7,7 @@ import {
   calculatePerformanceScore,
   calculatePostGigStateUpdates,
   buildPerGigSocialReconciliation,
+  getAcceptDealMoneyUpdate,
   getAcceptDealSocialUpdateFactory,
   getSpinStorySocialUpdateFactory,
   SPIN_STORY_CONTROVERSY_REDUCTION
@@ -392,6 +393,37 @@ test('getSpinStorySocialUpdateFactory decreases controversyLevel correctly', () 
   const prevSocial3 = buildSocial({ controversyLevel: undefined })
   const result3 = updateFactory(prevSocial3)
   assert.equal(result3.controversyLevel, 0)
+})
+
+test('getAcceptDealMoneyUpdate handles corrupted money values safely', () => {
+  const upfrontDeal = { offer: { upfront: 500, duration: 3 } }
+  const noUpfrontDeal = { offer: { duration: 3 } }
+
+  for (const corruptedMoney of [Number.NaN, Infinity, -Infinity]) {
+    // Upfront deal with corrupted initial money should fall back to 0 + upfront = 500
+    const upfrontUpdate = getAcceptDealMoneyUpdate({
+      deal: upfrontDeal,
+      player: { money: corruptedMoney, day: 1 }
+    })
+    assert.equal(upfrontUpdate.nextMoney, 500, `Corrupted money ${corruptedMoney} with upfront deal should yield 500`)
+    assert.equal(upfrontUpdate.appliedMoneyDelta, 500)
+
+    // Deal without upfront money should fall back to 0
+    const noUpfrontUpdate = getAcceptDealMoneyUpdate({
+      deal: noUpfrontDeal,
+      player: { money: corruptedMoney, day: 1 }
+    })
+    assert.equal(noUpfrontUpdate.nextMoney, 0, `Corrupted money ${corruptedMoney} with no upfront deal should yield 0`)
+    assert.equal(noUpfrontUpdate.appliedMoneyDelta, 0)
+  }
+
+  // Normal valid money case
+  const validUpdate = getAcceptDealMoneyUpdate({
+    deal: upfrontDeal,
+    player: { money: 200, day: 1 }
+  })
+  assert.equal(validUpdate.nextMoney, 700)
+  assert.equal(validUpdate.appliedMoneyDelta, 500)
 })
 
 test('getAcceptDealSocialUpdateFactory updates activeDeals with remaining gigs based on duration', () => {
