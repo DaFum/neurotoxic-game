@@ -54,14 +54,7 @@ const criteria = phase =>
         harmonyMinimumDelta: -5
       }
 
-const candidate = (
-  id,
-  phase,
-  description,
-  hypothesis,
-  scenarios,
-  overrides
-) => ({
+const candidate = (id, phase, description, hypothesis, scenarios, overrides) => ({
   id,
   phase,
   description,
@@ -90,34 +83,17 @@ export const BALANCE_EXPERIMENTS = [
     ['baseline_touring'],
     { touring: {} }
   ),
-  candidate(
-    'harmony-recovery-none',
-    'recovery',
-    'Leaves critical harmony without an additional recovery decision.',
-    'The control establishes whether paid recovery improves outcomes.',
-    ['bootstrap_struggle', 'chaos_tour'],
-    { recovery: {} }
-  ),
-  ...[40, 45].flatMap(threshold =>
-    ['day', 'money'].map(costType =>
-      candidate(
-        `harmony-recovery-${threshold}-${costType}`,
-        'recovery',
-        `Offers harmony recovery below ${threshold} for a ${costType === 'day' ? 'tour day' : 'clinic-priced payment'}.`,
-        'Critical harmony should become a costly pacing decision instead of an unavoidable decline.',
-        ['bootstrap_struggle', 'chaos_tour'],
-        {
-          recovery: {
-            threshold,
-            costType,
-            moneyCost:
-              costType === 'money' ? CLINIC_CONFIG.HEAL_BASE_COST_MONEY : 0,
-            harmonyGain: 20
-          }
-        }
-      )
+  candidate('harmony-recovery-none', 'recovery', 'Leaves critical harmony without an additional recovery decision.', 'The control establishes whether paid recovery improves outcomes.', ['bootstrap_struggle', 'chaos_tour'], { recovery: {} }),
+  ...[40, 45].flatMap(threshold => ['day', 'money'].map(costType =>
+    candidate(
+      `harmony-recovery-${threshold}-${costType}`,
+      'recovery',
+      `Offers harmony recovery below ${threshold} for a ${costType === 'day' ? 'tour day' : 'clinic-priced payment'}.`,
+      'Critical harmony should become a costly pacing decision instead of an unavoidable decline.',
+      ['bootstrap_struggle', 'chaos_tour'],
+      { recovery: { threshold, costType, moneyCost: costType === 'money' ? CLINIC_CONFIG.HEAL_BASE_COST_MONEY : 0, harmonyGain: 20 } }
     )
-  ),
+  )),
 
   ...[0.9, 0.8, 0.7].map(value =>
     candidate(
@@ -293,7 +269,4 @@ const canonicalize = value =>
       : value
 
 export const hashExperimentConfig = config =>
-  crypto
-    .createHash('sha256')
-    .update(JSON.stringify(canonicalize(config)))
-    .digest('hex')
+  crypto.createHash('sha256').update(JSON.stringify(canonicalize(config))).digest('hex')

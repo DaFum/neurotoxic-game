@@ -28,14 +28,12 @@
 ### Task 1: Add German and English Localization Keys
 
 **Files:**
-
 - Modify: `public/locales/de/events.json`
 - Modify: `public/locales/en/events.json`
 
 - [ ] **Step 1: Add German localization keys to `public/locales/de/events.json`**
 
 Keys to add:
-
 ```json
   "van_playlist_dispute": {
     "title": "Playlist-Diktatur auf der A7",
@@ -150,7 +148,6 @@ Keys to add:
 - [ ] **Step 2: Add English localization keys to `public/locales/en/events.json`**
 
 Keys to add matching 1:1 structure:
-
 ```json
   "van_playlist_dispute": {
     "title": "Playlist Dictatorship on the A7",
@@ -272,7 +269,6 @@ Expected: PASS with 0 key mismatches.
 ### Task 2: Implement Band Road-Trip Events in `src/data/events/band.ts`
 
 **Files:**
-
 - Modify: `src/data/events/band.ts`
 
 - [ ] **Step 1: Add `van_playlist_dispute`, `traffic_jam_improv`, and `night_drive_heart_to_heart` definitions**
@@ -511,7 +507,6 @@ Expected: PASS with 0 key mismatches.
 ### Task 3: Implement Transport & Rest-Stop Events in `src/data/events/transport.ts`
 
 **Files:**
-
 - Modify: `src/data/events/transport.ts`
 
 - [ ] **Step 1: Add `reststop_night_coffee` and `van_ac_heater_failure` definitions**
@@ -625,7 +620,6 @@ Expected: PASS with 0 key mismatches.
 ### Task 4: Implement Special Trunk Dealer Event in `src/data/events/transport.ts`
 
 **Files:**
-
 - Modify: `src/data/events/transport.ts`
 
 - [ ] **Step 1: Add `reststop_trunk_dealer` event definition**
@@ -691,7 +685,6 @@ Expected: PASS with 0 key mismatches.
 ### Task 5: Automated Unit Tests for Road-Trip Events
 
 **Files:**
-
 - Create: `tests/data/events/roadTripEvents.test.js`
 
 - [ ] **Step 1: Write test suite verifying all 6 events**
@@ -719,42 +712,26 @@ test('Road Trip Events Suite', async t => {
     for (const id of TARGET_EVENT_IDS) {
       const event = EVENTS_DB[id]
       assert.ok(event, `Expected event ${id} to be registered in EVENTS_DB`)
-      assert.equal(
-        event.trigger,
-        'travel',
-        `Expected event ${id} to have trigger 'travel'`
-      )
-      assert.ok(
-        Array.isArray(event.options) && event.options.length === 3,
-        `Expected event ${id} to have 3 options`
-      )
+      assert.equal(event.trigger, 'travel', `Expected event ${id} to have trigger 'travel'`)
+      assert.ok(Array.isArray(event.options) && event.options.length === 3, `Expected event ${id} to have 3 options`)
     }
   })
 
-  await t.test(
-    'event options resolve and apply deltas cleanly without error',
-    () => {
-      const state = createInitialState()
-      for (const id of TARGET_EVENT_IDS) {
-        const event = EVENTS_DB[id]
-        for (let i = 0; i < event.options.length; i++) {
-          const option = event.options[i]
-          const resolution = resolveEventChoice(option, state, () => 0.99)
-          assert.ok(
-            resolution,
-            `Resolution should exist for ${id} opt ${i + 1}`
-          )
-          if (resolution.delta) {
-            const nextState = applyEventDelta(state, resolution.delta)
-            assert.ok(
-              nextState,
-              `applyEventDelta should succeed for ${id} opt ${i + 1}`
-            )
-          }
+  await t.test('event options resolve and apply deltas cleanly without error', () => {
+    const state = createInitialState()
+    for (const id of TARGET_EVENT_IDS) {
+      const event = EVENTS_DB[id]
+      for (let i = 0; i < event.options.length; i++) {
+        const option = event.options[i]
+        const resolution = resolveEventChoice(option, state, () => 0.99)
+        assert.ok(resolution, `Resolution should exist for ${id} opt ${i + 1}`)
+        if (resolution.delta) {
+          const nextState = applyEventDelta(state, resolution.delta)
+          assert.ok(nextState, `applyEventDelta should succeed for ${id} opt ${i + 1}`)
         }
       }
     }
-  )
+  })
 })
 ```
 
@@ -768,16 +745,16 @@ Expected: PASS with all subtests passing.
 ### Task 6: Full Verification & Quality Gates
 
 - [ ] **Step 1: Run locale smoke test**
-      Command: `node --test tests/locale/smoke.test.js`
-      Expected: PASS
+  Command: `node --test tests/locale/smoke.test.js`
+  Expected: PASS
 
 - [ ] **Step 2: Run core type check**
-      Command: `pnpm run typecheck:core`
-      Expected: PASS (0 errors)
+  Command: `pnpm run typecheck:core`
+  Expected: PASS (0 errors)
 
 - [ ] **Step 3: Run fast test suite**
-      Command: `pnpm run test`
-      Expected: PASS (all 3,750+ tests passing)
+  Command: `pnpm run test`
+  Expected: PASS (all 3,750+ tests passing)
 
 - [ ] **Step 4: Commit changes**
-      Command: `git add . && git commit -m "feat(events): add van dynamics and road trip events suite"`
+  Command: `git add . && git commit -m "feat(events): add van dynamics and road trip events suite"`

@@ -254,13 +254,7 @@ export class MapGenerator {
       }
 
       for (let j = 0; j < nodeCount; j++) {
-        const venue = this._pickIntermediateVenue(
-          i,
-          j,
-          layerNodes,
-          pools,
-          available
-        )
+        const venue = this._pickIntermediateVenue(i, j, layerNodes, pools, available)
         const nodeType = this._rollNodeType(venue)
 
         const node: GeneratedMapNode = {
@@ -415,9 +409,7 @@ export class MapGenerator {
       else if (poolArray === mediumVenues) available.medium--
       else available.hard--
     } else {
-      throw new StateError(
-        `No venues available across any pools for layer=${i} index=${j}`
-      )
+      throw new StateError(`No venues available across any pools for layer=${i} index=${j}`)
     }
 
     return venue

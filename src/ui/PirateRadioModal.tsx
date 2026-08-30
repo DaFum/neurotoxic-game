@@ -4,6 +4,7 @@ import { GlitchButton } from './GlitchButton'
 import { Modal } from './shared/Modal'
 import { Tooltip } from './shared/Tooltip'
 import { useGameSelector } from '../context/GameState'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import { formatCurrency } from '../utils/numberUtils'
 import type { PirateBroadcastPayload } from '../types'
 
@@ -153,15 +154,19 @@ export const PirateRadioModal = memo(
                   ? t('ui:pirate_radio.cooldown', {
                       defaultValue: 'ON COOLDOWN'
                     })
-                  : (player?.money ?? 0) < config.COST
+                  : !isFiniteNumber(player?.money) ||
+                      (player?.money as number) < config.COST
                     ? t('ui:pirate_radio.not_enough_money', {
                         defaultValue: 'Not enough money'
                       })
-                    : (band?.harmony ?? 0) < config.HARMONY_COST
+                    : !isFiniteNumber(band?.harmony) ||
+                        (band?.harmony as number) < config.HARMONY_COST
                       ? t('ui:pirate_radio.not_enough_harmony', {
                           defaultValue: 'Not enough band harmony'
                         })
-                      : null
+                      : t('ui:shop.messages.purchaseFailed', {
+                          defaultValue: 'Purchase failed!'
+                        })
               }
               className='flex-1'
             >
@@ -183,7 +188,7 @@ export const PirateRadioModal = memo(
               disabled={false}
               className='flex-1'
             >
-              [ {t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]
+              [ ${t('ui:button.transmit', { defaultValue: 'TRANSMIT' })} ]
             </GlitchButton>
           )}
         </div>

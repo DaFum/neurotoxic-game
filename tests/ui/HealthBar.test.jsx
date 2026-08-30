@@ -74,9 +74,7 @@ describe('BlockMeter (via HealthBar)', () => {
     expect(meter.getAttribute('aria-valuemax')).toBe('20')
 
     // Check aria-hidden on visual blocks container
-    const visualBlocksContainer = container.querySelector(
-      '[aria-hidden="true"]'
-    )
+    const visualBlocksContainer = container.querySelector('[aria-hidden="true"]')
     expect(visualBlocksContainer).toBeInTheDocument()
 
     // Check total segments

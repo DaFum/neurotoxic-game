@@ -34,12 +34,12 @@ can never land under a correct filename.
 
 **Still not covered:**
 
-| Area                                                                                                                        | Status                                                                         |
-| --------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `PRACTICE`, `ASSETS` (Bandhaus hub)                                                                                         | No fixture                                                                     |
-| Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash)             | No fixtures; only the generic `event-modal`                                    |
-| Band HQ tabs other than Settings (Stats, Details, Shop, Upgrades, Setlist, Leaderboard, Brand Deals, Glossary, Void Trader) | No fixtures; `band-hq-settings` is the template if they are wanted             |
-| Golden-path travel/gig leg                                                                                                  | `screenshot-all-scenes.js` still fails there and exits non-zero naming the gap |
+| Area | Status |
+| --- | --- |
+| `PRACTICE`, `ASSETS` (Bandhaus hub) | No fixture |
+| Overworld modals (Quests, Merch Press, Pirate Radio, Supply Stop, Blood Bank, Dark Web, Cult, Contraband Stash) | No fixtures; only the generic `event-modal` |
+| Band HQ tabs other than Settings (Stats, Details, Shop, Upgrades, Setlist, Leaderboard, Brand Deals, Glossary, Void Trader) | No fixtures; `band-hq-settings` is the template if they are wanted |
+| Golden-path travel/gig leg | `screenshot-all-scenes.js` still fails there and exits non-zero naming the gap |
 
 ## Agent Execution Workflow
 
@@ -245,22 +245,22 @@ Snapshots are stored in `e2e/__snapshots__/` automatically.
 
 See `references/scene-navigation.md` for complete step-by-step flows. Summary:
 
-| Scene                | How to Reach                                                | Key Wait Signal                                    |
-| -------------------- | ----------------------------------------------------------- | -------------------------------------------------- |
-| **INTRO**            | `page.goto('/')`                                            | `getByRole('button', { name: /skip/i })` visible   |
-| **MENU**             | `skipToMenu(page)` helper (`e2e/helpers.js`)                | heading `/neurotoxic/i` visible                    |
-| **OVERWORLD**        | MENU → "Start Tour" (or inject `overworld`)                 | `getByRole('heading', { name: /tour plan/i })`     |
-| **TRAVEL_MINIGAME**  | OVERWORLD → click node → confirm                            | text `TOURBUS TERROR` visible                      |
-| **PREGIG**           | complete travel → dismiss events (or inject `pregig`)       | heading `/preparation/i` visible                   |
-| **PRE_GIG_MINIGAME** | PREGIG → Start Show                                         | `canvas` visible + 600 ms                          |
-| **GIG**              | pre-gig minigame → Shift+P                                  | `canvas` visible + 1500 ms                         |
-| **POSTGIG**          | GIG → Shift+P (or inject `postgig`)                         | heading `/gig report/i` visible                    |
+| Scene                | How to Reach                                          | Key Wait Signal                                  |
+| -------------------- | ----------------------------------------------------- | ------------------------------------------------ |
+| **INTRO**            | `page.goto('/')`                                      | `getByRole('button', { name: /skip/i })` visible |
+| **MENU**             | `skipToMenu(page)` helper (`e2e/helpers.js`)          | heading `/neurotoxic/i` visible                  |
+| **OVERWORLD**        | MENU → "Start Tour" (or inject `overworld`)           | `getByRole('heading', { name: /tour plan/i })`   |
+| **TRAVEL_MINIGAME**  | OVERWORLD → click node → confirm                      | text `TOURBUS TERROR` visible                    |
+| **PREGIG**           | complete travel → dismiss events (or inject `pregig`) | heading `/preparation/i` visible                 |
+| **PRE_GIG_MINIGAME** | PREGIG → Start Show                                   | `canvas` visible + 600 ms                        |
+| **GIG**              | pre-gig minigame → Shift+P                            | `canvas` visible + 1500 ms                       |
+| **POSTGIG**          | GIG → Shift+P (or inject `postgig`)                   | heading `/gig report/i` visible                  |
 | **GAMEOVER**         | inject `gameover` save state, then `navigateToFixtureScene` | `currentScene === 'GAMEOVER'` (copy is "SOLD OUT") |
-| **SETTINGS**         | MENU → Band HQ → SETTINGS tab                               | any settings control visible                       |
-| **CREDITS**          | MENU → "Credits"                                            | heading `/credits/i` visible                       |
-| **CLINIC**           | inject `clinic` save state (only reliable path)             | `networkidle` + 500 ms                             |
-| **BAND HQ modal**    | inject `band-hq` (opens modal automatically)                | heading `/band hq/i` visible                       |
-| **Event modal**      | inject `event-modal`                                        | `getByRole('dialog')` visible                      |
+| **SETTINGS**         | MENU → Band HQ → SETTINGS tab                         | any settings control visible                     |
+| **CREDITS**          | MENU → "Credits"                                      | heading `/credits/i` visible                     |
+| **CLINIC**           | inject `clinic` save state (only reliable path)       | `networkidle` + 500 ms                           |
+| **BAND HQ modal**    | inject `band-hq` (opens modal automatically)          | heading `/band hq/i` visible                     |
+| **Event modal**      | inject `event-modal`                                  | `getByRole('dialog')` visible                    |
 
 **Fastest paths for hard-to-reach scenes:** use state injection — no need to play through. GAMEOVER and CLINIC cannot be reliably reached without injection.
 

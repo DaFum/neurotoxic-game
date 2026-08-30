@@ -5,7 +5,11 @@
     "runsPerScenario": 2000,
     "seedNamespace": "#first-income-full-reports-v1",
     "daysPerRun": 10,
-    "progressionCheckpointDays": [3, 5, 7],
+    "progressionCheckpointDays": [
+      3,
+      5,
+      7
+    ],
     "homeVenueId": "stendal_proberaum",
     "baseGigGapDays": 1,
     "randomModifierChance": 0.22,
@@ -33,7 +37,11 @@
       "eventIntensity": 0.35,
       "maintenanceDiscipline": 0.7,
       "minigameSkill": 0.62,
-      "traitPack": ["bandleader", "gear_nerd", "party_animal"],
+      "traitPack": [
+        "bandleader",
+        "gear_nerd",
+        "party_animal"
+      ],
       "modifierBias": {
         "promo": 0.35,
         "merch": 0.3,
@@ -65,7 +73,9 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.45,
       "minigameSkill": 0.42,
-      "traitPack": ["road_warrior"],
+      "traitPack": [
+        "road_warrior"
+      ],
       "modifierBias": {
         "promo": 0.15,
         "merch": 0.25,
@@ -97,7 +107,10 @@
       "eventIntensity": 0.62,
       "maintenanceDiscipline": 0.63,
       "minigameSkill": 0.58,
-      "traitPack": ["social_manager", "tech_wizard"],
+      "traitPack": [
+        "social_manager",
+        "tech_wizard"
+      ],
       "modifierBias": {
         "promo": 0.78,
         "merch": 0.65,
@@ -129,7 +142,10 @@
       "eventIntensity": 0.75,
       "maintenanceDiscipline": 0.6,
       "minigameSkill": 0.5,
-      "traitPack": ["bandleader", "melodic_genius"],
+      "traitPack": [
+        "bandleader",
+        "melodic_genius"
+      ],
       "modifierBias": {
         "promo": 0.2,
         "merch": 0.35,
@@ -161,7 +177,11 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.75,
       "minigameSkill": 0.66,
-      "traitPack": ["tech_wizard", "blast_machine", "social_manager"],
+      "traitPack": [
+        "tech_wizard",
+        "blast_machine",
+        "social_manager"
+      ],
       "modifierBias": {
         "promo": 0.56,
         "merch": 0.5,
@@ -193,7 +213,9 @@
       "eventIntensity": 0.95,
       "maintenanceDiscipline": 0.35,
       "minigameSkill": 0.35,
-      "traitPack": ["party_animal"],
+      "traitPack": [
+        "party_animal"
+      ],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.5,
@@ -225,7 +247,11 @@
       "eventIntensity": 0.55,
       "maintenanceDiscipline": 0.58,
       "minigameSkill": 0.64,
-      "traitPack": ["social_manager", "tech_wizard", "gear_nerd"],
+      "traitPack": [
+        "social_manager",
+        "tech_wizard",
+        "gear_nerd"
+      ],
       "modifierBias": {
         "promo": 0.88,
         "merch": 0.72,
@@ -345,7 +371,9 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.65,
       "minigameSkill": 0.55,
-      "traitPack": ["bandleader"],
+      "traitPack": [
+        "bandleader"
+      ],
       "modifierBias": {
         "promo": 0.28,
         "merch": 0.25,
@@ -377,7 +405,10 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.72,
       "minigameSkill": 0.65,
-      "traitPack": ["bandleader", "gear_nerd"],
+      "traitPack": [
+        "bandleader",
+        "gear_nerd"
+      ],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.45,
@@ -424,7 +455,10 @@
           "police_control",
           "police_contraband"
         ],
-        "triggers": ["travel", "random"]
+        "triggers": [
+          "travel",
+          "random"
+        ]
       },
       "band": {
         "count": 59,
@@ -435,7 +469,11 @@
           "asset_story_saved_local_venue",
           "asset_story_tape_culture_revival"
         ],
-        "triggers": ["random", "post_gig", "travel"]
+        "triggers": [
+          "random",
+          "post_gig",
+          "travel"
+        ]
       },
       "gig": {
         "count": 22,
@@ -446,7 +484,11 @@
           "crowd_surf_disaster",
           "gig_intro_dead_air"
         ],
-        "triggers": ["gig_mid", "gig_intro", "random"]
+        "triggers": [
+          "gig_mid",
+          "gig_intro",
+          "random"
+        ]
       },
       "financial": {
         "count": 31,
@@ -457,7 +499,10 @@
           "tax_audit",
           "broken_merch_box"
         ],
-        "triggers": ["random", "post_gig"]
+        "triggers": [
+          "random",
+          "post_gig"
+        ]
       },
       "special": {
         "count": 26,
@@ -468,12 +513,23 @@
           "legendary_patch_trader",
           "midnight_radio"
         ],
-        "triggers": ["special_location", "random", "travel", "post_gig"]
+        "triggers": [
+          "special_location",
+          "random",
+          "travel",
+          "post_gig"
+        ]
       }
     },
     "brandDeals": 54,
     "postOptions": 36,
-    "trends": ["NEUTRAL", "DRAMA", "TECH", "MUSIC", "WHOLESOME"],
+    "trends": [
+      "NEUTRAL",
+      "DRAMA",
+      "TECH",
+      "MUSIC",
+      "WHOLESOME"
+    ],
     "socialPlatforms": [
       {
         "id": "instagram",
@@ -1104,7 +1160,10 @@
           "observedPct": 1.95,
           "count": 39,
           "sampleSize": 2000,
-          "targetRangePct": [1, 5],
+          "targetRangePct": [
+            1,
+            5
+          ],
           "safetyMaximumPct": 10,
           "status": "within_target",
           "confidence95": {
@@ -1130,7 +1189,10 @@
           "observedPct": 9.2,
           "count": 184,
           "sampleSize": 2000,
-          "targetRangePct": [15, 30],
+          "targetRangePct": [
+            15,
+            30
+          ],
           "safetyMaximumPct": 60,
           "status": "below_target",
           "confidence95": {
@@ -1156,7 +1218,10 @@
           "observedPct": 2.95,
           "count": 59,
           "sampleSize": 2000,
-          "targetRangePct": [2, 8],
+          "targetRangePct": [
+            2,
+            8
+          ],
           "safetyMaximumPct": 15,
           "status": "within_target",
           "confidence95": {
@@ -1182,7 +1247,10 @@
           "observedPct": 9.65,
           "count": 193,
           "sampleSize": 2000,
-          "targetRangePct": [8, 20],
+          "targetRangePct": [
+            8,
+            20
+          ],
           "safetyMaximumPct": 50,
           "status": "within_target",
           "confidence95": {
@@ -1208,7 +1276,10 @@
           "observedPct": 3.8,
           "count": 76,
           "sampleSize": 2000,
-          "targetRangePct": [5, 15],
+          "targetRangePct": [
+            5,
+            15
+          ],
           "safetyMaximumPct": 35,
           "status": "below_target",
           "confidence95": {
@@ -1234,7 +1305,10 @@
           "observedPct": 4.6,
           "count": 92,
           "sampleSize": 2000,
-          "targetRangePct": [8, 20],
+          "targetRangePct": [
+            8,
+            20
+          ],
           "safetyMaximumPct": 25,
           "status": "below_target",
           "confidence95": {
@@ -1260,7 +1334,10 @@
           "observedPct": 2.95,
           "count": 59,
           "sampleSize": 2000,
-          "targetRangePct": [2, 10],
+          "targetRangePct": [
+            2,
+            10
+          ],
           "safetyMaximumPct": 12,
           "status": "within_target",
           "confidence95": {
@@ -1387,7 +1464,13 @@
     "socialTrends": {
       "evaluations": 230857,
       "activations": 27919,
-      "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+      "uniqueIdsSeen": [
+        "DRAMA",
+        "MUSIC",
+        "NEUTRAL",
+        "TECH",
+        "WHOLESOME"
+      ],
       "availableIds": 5,
       "covered": true
     },
@@ -2643,7 +2726,13 @@
           "socialTrends": {
             "evaluations": 19737,
             "activations": 2454,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -3723,7 +3812,13 @@
           "socialTrends": {
             "evaluations": 18937,
             "activations": 2266,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -4809,7 +4904,13 @@
           "socialTrends": {
             "evaluations": 19646,
             "activations": 2403,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -5888,7 +5989,13 @@
           "socialTrends": {
             "evaluations": 18885,
             "activations": 2302,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -6935,7 +7042,13 @@
           "socialTrends": {
             "evaluations": 19551,
             "activations": 2355,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -7969,7 +8082,13 @@
           "socialTrends": {
             "evaluations": 19443,
             "activations": 2307,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -8991,7 +9110,13 @@
           "socialTrends": {
             "evaluations": 19611,
             "activations": 2367,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -10023,7 +10148,13 @@
           "socialTrends": {
             "evaluations": 19389,
             "activations": 2342,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -11035,7 +11166,13 @@
           "socialTrends": {
             "evaluations": 16401,
             "activations": 1914,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -12066,7 +12203,13 @@
           "socialTrends": {
             "evaluations": 19276,
             "activations": 2387,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -13129,7 +13272,13 @@
           "socialTrends": {
             "evaluations": 19991,
             "activations": 2462,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -14164,7 +14313,13 @@
           "socialTrends": {
             "evaluations": 19990,
             "activations": 2360,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },

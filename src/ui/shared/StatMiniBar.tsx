@@ -61,10 +61,7 @@ export const StatMiniBar = memo(function StatMiniBar({
           aria-valuemax={max}
           aria-label={resolvedAriaLabel}
         >
-          <div
-            aria-hidden='true'
-            className='flex items-end gap-1.5 min-w-0 flex-1'
-          >
+          <div aria-hidden='true' className='flex items-end gap-1.5 min-w-0 flex-1'>
             {icon}
             <div className='min-w-0 flex-1'>
               <div className='text-xs text-ash-gray font-mono tabular-nums mb-0.5 leading-none'>

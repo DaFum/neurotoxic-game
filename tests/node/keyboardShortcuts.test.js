@@ -9,13 +9,7 @@ const __dirname = path.dirname(__filename)
 const REPO_ROOT = path.join(__dirname, '..', '..')
 
 test('KeyboardShortcutsPanel supports optional onClose prop and renders close button when provided', async () => {
-  const filePath = path.join(
-    REPO_ROOT,
-    'src',
-    'ui',
-    'shared',
-    'KeyboardShortcuts.tsx'
-  )
+  const filePath = path.join(REPO_ROOT, 'src', 'ui', 'shared', 'KeyboardShortcuts.tsx')
   const content = await fs.readFile(filePath, 'utf8')
 
   // Verify onClose prop in interface

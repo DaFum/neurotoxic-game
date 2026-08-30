@@ -54,11 +54,7 @@ export const ClinicMemberCard = ({
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = canAfford(
-    { currency: 'money' },
-    player,
-    CLINIC_GRAFT_COST
-  )
+  const canAffordGraft = canAfford({ currency: 'money' }, player, CLINIC_GRAFT_COST)
   const hasGraft = hasTrait(member, 'neuro_overclock')
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =

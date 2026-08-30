@@ -1204,17 +1204,9 @@ test('simulation refuses requiresReputation items when controversyLevel is 50', 
   )
   assert.ok(reputationItem, 'Test requires an item that is reputation-locked')
 
-  const purchaseAttempt = applyCatalogPurchase(
-    badReputationState,
-    reputationItem,
-    {}
-  )
+  const purchaseAttempt = applyCatalogPurchase(badReputationState, reputationItem, {})
 
-  assert.equal(
-    purchaseAttempt,
-    false,
-    'Reputation-locked item should be blocked'
-  )
+  assert.equal(purchaseAttempt, false, 'Reputation-locked item should be blocked')
 
   const counts = summarizeCatalogAffordability(badReputationState)
 
@@ -1225,10 +1217,7 @@ test('simulation refuses requiresReputation items when controversyLevel is 50', 
   }
   const cleanCounts = summarizeCatalogAffordability(cleanState)
 
-  assert.ok(
-    counts.affordable < cleanCounts.affordable,
-    'Scandal state should have fewer affordable items'
-  )
+  assert.ok(counts.affordable < cleanCounts.affordable, 'Scandal state should have fewer affordable items')
 })
 
 test('purchase log records timing, cost and the balance on both sides of a buy', () => {

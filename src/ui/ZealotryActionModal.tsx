@@ -2,6 +2,7 @@ import { Modal } from './shared/Modal'
 import { GlitchButton } from './GlitchButton'
 import { Tooltip } from './shared/Tooltip'
 import { useGameSelector } from '../context/GameState'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import { useTranslation } from 'react-i18next'
 import type { ZealotryActionConfig } from '../types'
 import { formatCurrency, formatNumber } from '../utils/numberUtils'
@@ -55,14 +56,21 @@ export const ZealotryActionModal = ({
   const band = useGameSelector(state => state.band)
   const social = useGameSelector(state => state.social)
 
-  const isAffordable = (player?.money ?? 0) >= config.COST
-  const hasEnoughHarmony = (band?.harmony ?? 0) >= config.HARMONY_COST
+  const isMoneyValid = isFiniteNumber(player?.money)
+  const isHarmonyValid = isFiniteNumber(band?.harmony)
+  const isControversyValid = isFiniteNumber(social?.controversyLevel)
+  const isZealotryValid = isFiniteNumber(social?.zealotry)
+
+  const isAffordable = isMoneyValid && (player?.money as number) >= config.COST
+  const hasEnoughHarmony =
+    isHarmonyValid && (band?.harmony as number) >= config.HARMONY_COST
   const meetsControversy =
     config.REQUIRED_CONTROVERSY == null ||
-    (social?.controversyLevel ?? 0) >= config.REQUIRED_CONTROVERSY
+    (isControversyValid &&
+      (social?.controversyLevel as number) >= config.REQUIRED_CONTROVERSY)
   const meetsZealotry =
     config.REQUIRED_ZEALOTRY == null ||
-    (social?.zealotry ?? 0) >= config.REQUIRED_ZEALOTRY
+    (isZealotryValid && (social?.zealotry as number) >= config.REQUIRED_ZEALOTRY)
 
   const isDisabled = !canRun || hasRunToday
   const disabledReason = hasRunToday
@@ -83,7 +91,9 @@ export const ZealotryActionModal = ({
             ? t('ui:zealotry.not_enough_zealotry', {
                 defaultValue: 'Not enough zealotry'
               })
-            : null
+            : t('ui:shop.messages.purchaseFailed', {
+                defaultValue: 'Purchase failed!'
+              })
 
   const executeButton = (
     <GlitchButton variant='danger' onClick={onConfirm} disabled={isDisabled}>

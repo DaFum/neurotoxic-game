@@ -405,11 +405,7 @@ test('getAcceptDealMoneyUpdate handles corrupted money values safely', () => {
       deal: upfrontDeal,
       player: { money: corruptedMoney, day: 1 }
     })
-    assert.equal(
-      upfrontUpdate.nextMoney,
-      500,
-      `Corrupted money ${corruptedMoney} with upfront deal should yield 500`
-    )
+    assert.equal(upfrontUpdate.nextMoney, 500, `Corrupted money ${corruptedMoney} with upfront deal should yield 500`)
     assert.equal(upfrontUpdate.appliedMoneyDelta, 500)
 
     // Deal without upfront money should fall back to 0
@@ -417,11 +413,7 @@ test('getAcceptDealMoneyUpdate handles corrupted money values safely', () => {
       deal: noUpfrontDeal,
       player: { money: corruptedMoney, day: 1 }
     })
-    assert.equal(
-      noUpfrontUpdate.nextMoney,
-      0,
-      `Corrupted money ${corruptedMoney} with no upfront deal should yield 0`
-    )
+    assert.equal(noUpfrontUpdate.nextMoney, 0, `Corrupted money ${corruptedMoney} with no upfront deal should yield 0`)
     assert.equal(noUpfrontUpdate.appliedMoneyDelta, 0)
   }
 
