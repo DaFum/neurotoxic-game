@@ -45,13 +45,16 @@ def check_locales(base_dir="public/locales"):
         en_keys = set()
         de_keys = set()
 
+        has_error = False
+
         if os.path.exists(en_path):
             with open(en_path, "r", encoding="utf-8") as f:
                 try:
                     en_data = json.load(f)
                     en_keys = extract_keys(en_data)
                 except Exception as e:
-                    print(f"Error reading {en_path}: {e}")
+                    print(f"Error parsing JSON in {en_path}: {e}")
+                    has_error = True
 
         if os.path.exists(de_path):
             with open(de_path, "r", encoding="utf-8") as f:
@@ -59,7 +62,12 @@ def check_locales(base_dir="public/locales"):
                     de_data = json.load(f)
                     de_keys = extract_keys(de_data)
                 except Exception as e:
-                    print(f"Error reading {de_path}: {e}")
+                    print(f"Error parsing JSON in {de_path}: {e}")
+                    has_error = True
+
+        if has_error:
+            print(f"Critical error: JSON parsing failed in namespace {ns}.")
+            sys.exit(1)
 
         missing_in_de = en_keys - de_keys
         missing_in_en = de_keys - en_keys

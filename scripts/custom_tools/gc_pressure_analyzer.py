@@ -11,7 +11,6 @@ import sys
 
 def check_gc_pressure(src_dir="src/utils"):
     results = []
-    # Pattern matching array allocations or Object.values/entries inside functions
     map_filter_pattern = re.compile(r'\.(?:map|filter|reduce|flatMap)\s*\(')
     obj_values_pattern = re.compile(r'Object\.(?:values|entries)\s*\(')
 
@@ -22,8 +21,14 @@ def check_gc_pressure(src_dir="src/utils"):
                 with open(filepath, "r", encoding="utf-8", errors="ignore") as file:
                     lines = file.readlines()
                     for idx, line in enumerate(lines, start=1):
-                        if map_filter_pattern.search(line) or obj_values_pattern.search(line):
-                            results.append((filepath, idx, line.strip()))
+                        line_str = line.strip()
+                        # Ignore single line comments
+                        if line_str.startswith("//") or line_str.startswith("/*") or line_str.startswith("*"):
+                            continue
+                        # Strip inline comments (e.g. `code // comment`)
+                        code_part = line_str.split("//")[0].strip()
+                        if map_filter_pattern.search(code_part) or obj_values_pattern.search(code_part):
+                            results.append((filepath, idx, line_str))
 
     return results
 

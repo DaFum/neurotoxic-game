@@ -16,8 +16,10 @@ def scan_css_classes(css_dir="src"):
                 filepath = os.path.join(root, f)
                 with open(filepath, "r", encoding="utf-8", errors="ignore") as file:
                     content = file.read()
-                    # Match class definitions like .my-class or .custom-btn
-                    matches = re.findall(r'\.([a-zA-Z0-9_\-]+)', content)
+                    # Strip comments
+                    content = re.sub(r'/\*[\s\S]*?\*/', '', content)
+                    # Match CSS class selectors: must start with . followed by letter, underscore, or escaped char (not a digit or measurement unit like .25rem)
+                    matches = re.findall(r'(?<![a-zA-Z0-9_\-\.])\.([a-zA-Z_][a-zA-Z0-9_\-]*)', content)
                     defined_classes.update(matches)
     return defined_classes
 
@@ -29,14 +31,16 @@ def scan_jsx_classes(src_dir="src"):
                 filepath = os.path.join(root, f)
                 with open(filepath, "r", encoding="utf-8", errors="ignore") as file:
                     content = file.read()
-                    # Match className="..." or className={`...`}
-                    matches = re.findall(r'className=["`{]([^"`}]+)["`}]', content)
+                    # Find all className attributes or string literals in JSX
+                    # Match className="..." or className='...' or className={`...`} or className={...}
+                    matches = re.findall(r'className\s*=\s*(?:["\']([^"\']+)["\']|\{[`"\']([\s\S]*?)[`"\']\}|\{([\s\S]*?)\})', content)
                     for m in matches:
-                        for token in m.split():
-                            # sanitize token
-                            cleaned = token.strip("`'\"{},")
-                            if cleaned and not cleaned.startswith("$"):
-                                used_classes.add(cleaned)
+                        raw_str = m[0] or m[1] or m[2]
+                        # Extract string tokens (words, hyphenated class names)
+                        tokens = re.findall(r'[a-zA-Z0-9_\-]+', raw_str)
+                        for token in tokens:
+                            if not token.isdigit():
+                                used_classes.add(token)
     return used_classes
 
 def main():

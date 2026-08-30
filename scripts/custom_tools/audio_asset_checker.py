@@ -11,9 +11,10 @@ import sys
 
 def check_audio_anti_patterns(src_dir="src"):
     spread_issues = []
-    # Pattern matching object spread on audio-like objects
-    spread_pattern = re.compile(r'\{\s*\.\.\.(?:synth|player|audio|sound|node|oscillator|gain|filter|volume)\b')
-    assign_pattern = re.compile(r'Object\.assign\(\s*\{\}\s*,\s*(?:synth|player|audio|sound|node|oscillator|gain|filter|volume)\b')
+    # Pattern matching object spread on WebAudio / Tone.js audio node instances specifically
+    # Excludes generic game-state identifiers like `player` or `van`
+    spread_pattern = re.compile(r'\{\s*\.\.\.(?:audioSynth|synth|audioPlayer|tonePlayer|soundNode|audioNode|oscillator|gainNode|filterNode|volumeNode)\b')
+    assign_pattern = re.compile(r'Object\.assign\(\s*\{\}\s*,\s*(?:audioSynth|synth|audioPlayer|tonePlayer|soundNode|audioNode|oscillator|gainNode|filterNode|volumeNode)\b')
 
     for root, _, files in os.walk(src_dir):
         for f in files:

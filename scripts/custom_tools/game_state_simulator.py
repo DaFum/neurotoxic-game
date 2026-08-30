@@ -10,8 +10,11 @@ import sys
 
 def check_numeric_sanitization(src_dir="src/utils"):
     issues = []
-    # Pattern matching unsafe ?? on numeric fields or direct assignment without finiteNumberOr
-    unsafe_coalesce_pattern = re.compile(r'(\b(?:money|fame|fans|harmony|controversy|health|energy|luck)\b\s*\?\?\s*[0-9]+)')
+    # Match assignment / mutation arithmetic where numeric ?? fallback is stored into state or calculated as an addend/delta
+    # e.g., += (state.fame ?? 0), money: player.money ?? 0 + delta, etc.
+    assignment_coalesce_pattern = re.compile(
+        r'(?:(?:[\+\-\*\/]=|=)\s*.*|:\s*.*)\b(?:money|fame|fans|harmony|controversy|health|energy|luck)\b\s*\?\?\s*[0-9]+'
+    )
 
     for root, _, files in os.walk(src_dir):
         for f in files:
@@ -20,9 +23,13 @@ def check_numeric_sanitization(src_dir="src/utils"):
                 with open(filepath, "r", encoding="utf-8", errors="ignore") as file:
                     lines = file.readlines()
                     for idx, line in enumerate(lines, start=1):
-                        match = unsafe_coalesce_pattern.search(line)
+                        line_str = line.strip()
+                        # Ignore pure read-only condition checks (e.g. if (...) or predicate or return boolean)
+                        if line_str.startswith("if") or line_str.startswith("predicate:") or line_str.startswith("return ("):
+                            continue
+                        match = assignment_coalesce_pattern.search(line_str)
                         if match:
-                            issues.append((filepath, idx, line.strip(), match.group(0)))
+                            issues.append((filepath, idx, line_str, match.group(0)))
 
     return issues
 
