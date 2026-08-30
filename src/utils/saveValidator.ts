@@ -348,7 +348,11 @@ const validateSocial = (social: unknown): void => {
       // so validation and hydration agree on the surviving set. Throwing would
       // be worse than the original mismatch: a rejected save aborts the whole
       // load, discarding every other bit of progress over one stale deal.
-      const survivingDeals = (val as unknown[]).filter((deal, i) => {
+      const rawDeals = val as unknown[]
+      const survivingDeals: unknown[] = []
+      for (let i = 0, len = rawDeals.length; i < len; i++) {
+        if (!Object.hasOwn(rawDeals, i)) continue
+        const deal = rawDeals[i]
         if (!isLooseRecord(deal))
           throw new StateError(`activeDeals[${i}] must be an object`)
         const d = deal as Record<string, unknown>
@@ -368,9 +372,11 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `activeDeals[${i}].remainingGigs must be a finite number`
           )
-        return Number.isInteger(remainingGigs) && remainingGigs > 0
-      })
-      if (survivingDeals.length !== (val as unknown[]).length) {
+        if (Number.isInteger(remainingGigs) && remainingGigs > 0) {
+          survivingDeals.push(deal)
+        }
+      }
+      if (survivingDeals.length !== rawDeals.length) {
         typedSocial[key] = survivingDeals
       }
       continue
@@ -379,14 +385,18 @@ const validateSocial = (social: unknown): void => {
     if (key === 'regionalGigHistory') {
       if (!isLooseRecord(val))
         throw new StateError('social.regionalGigHistory must be an object')
-      const entries = Object.entries(val)
-      if (entries.length > 100)
-        throw new StateError('social.regionalGigHistory has too many regions')
-      for (const [regionId, days] of entries) {
+      const historyObj = val as Record<string, unknown>
+      let regionCount = 0
+      for (const regionId in historyObj) {
+        if (!Object.hasOwn(historyObj, regionId)) continue
+        regionCount++
+        if (regionCount > 100)
+          throw new StateError('social.regionalGigHistory has too many regions')
         if (isForbiddenKey(regionId))
           throw new StateError(
             `social.regionalGigHistory.${regionId} is reserved`
           )
+        const days = historyObj[regionId]
         if (!Array.isArray(days))
           throw new StateError(
             `social.regionalGigHistory.${regionId} must be an array`
@@ -395,14 +405,20 @@ const validateSocial = (social: unknown): void => {
           throw new StateError(
             `social.regionalGigHistory.${regionId} has too many days`
           )
-        if (
-          !days.every(
-            day => Number.isFinite(day) && Number.isInteger(day) && day >= 1
-          )
-        )
-          throw new StateError(
-            `social.regionalGigHistory.${regionId} must contain positive integer days`
-          )
+        for (let d = 0, dLen = days.length; d < dLen; d++) {
+          if (!Object.hasOwn(days, d)) continue
+          const day = days[d]
+          if (
+            typeof day !== 'number' ||
+            !Number.isFinite(day) ||
+            !Number.isInteger(day) ||
+            day < 1
+          ) {
+            throw new StateError(
+              `social.regionalGigHistory.${regionId} must contain positive integer days`
+            )
+          }
+        }
       }
       continue
     }

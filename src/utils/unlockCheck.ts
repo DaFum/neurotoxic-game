@@ -286,7 +286,7 @@ const UNLOCK_RULES: readonly UnlockRule[] = [
     eventType: 'EVENT_RESOLVED',
     member: 'LARS',
     traitId: 'peacemaker',
-    predicate: ({ state }) => (state.band.harmony ?? 1) >= 90
+    predicate: ({ state }) => finiteNumberOr(state.band.harmony, 1) >= 90
   }
 ]
 

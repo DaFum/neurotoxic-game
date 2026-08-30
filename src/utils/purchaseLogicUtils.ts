@@ -624,7 +624,7 @@ export const applyUnlockHQ = (
   switch (item.id) {
     case 'hq_room_poster_wall': {
       const clampedFame = clampPlayerFame(
-        ((nextPlayerPatch.fame as number | undefined) ?? player.fame ?? 0) + 10
+        finiteNumberOr(nextPlayerPatch.fame ?? player.fame, 0) + 10
       )
       nextPlayerPatch.fame = clampedFame
       nextPlayerPatch.fameLevel = calculateFameLevel(clampedFame)
@@ -676,7 +676,7 @@ export const applyUnlockHQ = (
         'always'
       )
       nextPlayerPatch.money = clampPlayerMoney(
-        ((nextPlayerPatch.money as number | undefined) ?? player.money ?? 0) +
+        finiteNumberOr(nextPlayerPatch.money ?? player.money, 0) +
           LABEL_CONTRACT_ADVANCE
       )
       messages.push({

@@ -236,11 +236,15 @@ export const checkSoftlock = (
     van: {
       fuel: currentFuel,
       condition: finiteNumberOr(van?.condition, 100),
-      upgrades: Array.isArray(van?.upgrades)
-        ? van.upgrades.filter(
-            (upgrade): upgrade is string => typeof upgrade === 'string'
-          )
-        : [],
+      upgrades: (() => {
+        if (!Array.isArray(van?.upgrades)) return []
+        const upgrades: string[] = []
+        for (let i = 0, len = van.upgrades.length; i < len; i++) {
+          const upgrade = van.upgrades[i]
+          if (typeof upgrade === 'string') upgrades.push(upgrade)
+        }
+        return upgrades
+      })(),
       breakdownChance: finiteNumberOr(van?.breakdownChance, 0)
     }
   }

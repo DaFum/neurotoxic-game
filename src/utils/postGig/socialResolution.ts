@@ -337,11 +337,11 @@ export const calculatePostGigStateUpdates = (
     hasBandUpdates = true
   }
 
-  let nextMoney = player.money ?? 0
+  let nextMoney = finiteNumberOr(player.money, 0)
   let appliedMoneyDelta = 0
   if (result.moneyChange) {
     const applied = applyClampedMoneyDelta(
-      player.money ?? 0,
+      finiteNumberOr(player.money, 0),
       result.moneyChange
     )
     nextMoney = applied.nextMoney
