@@ -128,7 +128,7 @@ const buildPerformanceContext = (
   const songs: Record<string, unknown>[] = []
   for (let i = 0; i < songStats.length; i++) {
     const songStat = songStats[i]
-    if (isLooseRecord(songStat) && typeof songStat.songId === 'string') {
+    if (songStat && isLooseRecord(songStat) && typeof songStat.songId === 'string') {
       const song = SONGS_BY_ID.get(songStat.songId)
       if (song) {
         songs.push(song as unknown as Record<string, unknown>)

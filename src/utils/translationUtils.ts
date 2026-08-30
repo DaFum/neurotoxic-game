@@ -39,6 +39,7 @@ export const translateContextKeys = (
     const len = context.length
     const result = new Array(len)
     for (let i = 0; i < len; i++) {
+      if (!Object.hasOwn(context, i)) continue
       const item = context[i]
       if (typeof item === 'string') {
         result[i] = isTranslatableKey(item) ? t(item) : item
