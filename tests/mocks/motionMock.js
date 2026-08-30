@@ -83,6 +83,8 @@ export const createMotionReactMock = () => {
       React.createElement(React.Fragment, null, children),
     LazyMotion: ({ children }) =>
       React.createElement(React.Fragment, null, children),
+    MotionConfig: ({ children }) =>
+      React.createElement(React.Fragment, null, children),
     // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix
     useReducedMotion: () => false,
     domAnimation: {}

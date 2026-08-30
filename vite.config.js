@@ -109,12 +109,12 @@ export default defineConfig({
             },
             {
               name: 'scene-gig',
-              test: /src[\\/](scenes[\\/]Gig\.tsx|components[\\/]stage[\\/])/,
+              test: /src[\\/](scenes[\\/]Gig\.jsx|components[\\/]stage[\\/])/,
               priority: 15
             },
             {
               name: 'scene-overworld',
-              test: /src[\\/]scenes[\\/]Overworld\.tsx/,
+              test: /src[\\/]scenes[\\/]Overworld\.jsx/,
               priority: 15
             }
           ]
