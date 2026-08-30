@@ -156,4 +156,4 @@ If a runtime delta is missing or not comparable, say `Not measured` instead of e
 - Treating an unreproduced failure as a worker-count problem.
 - Comparing timings from different commands, machines, or failure states as if they are a runtime delta.
 
-_Skill sync: compatible with React 19.2.6 / Vite 8.0.14 / Tailwind 4.3.0 baseline as of 2026-06-03._
+_Skill sync: compatible with React 19.2.8 / Vite 8.2.2 / Tailwind 4.3.3 baseline as of 2026-05-20._
