@@ -1,10 +1,17 @@
 import { useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
+import { MOTION_DURATIONS, MOTION_EASING } from '../../config/motion'
 import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
 
 /**
  * Displays the main-menu title lockup and subtitle copy.
+ *
+ * @remarks
+ * Note on Motion Performance & Accessibility:
+ * The subtitle uses a single-shot `letterSpacing` entrance animation. Because `letterSpacing`
+ * triggers layout reflows, it is strictly isolated to this one-time hero entrance and is
+ * omitted when the user has requested reduced motion.
  */
 export const MainMenuHeader = () => {
   const { t } = useTranslation()
@@ -19,8 +26,8 @@ export const MainMenuHeader = () => {
         animate={{ scale: 1, opacity: 1, y: 0 }}
         transition={
           prefersReducedMotion
-            ? { duration: 0 }
-            : { duration: 0.8, ease: 'easeOut' }
+            ? { duration: MOTION_DURATIONS.instant }
+            : { duration: MOTION_DURATIONS.hero, ease: MOTION_EASING.enter }
         }
         data-text='NEUROTOXIC'
         data-chatter-avoid=''
@@ -36,7 +43,9 @@ export const MainMenuHeader = () => {
       <AnimatedDivider
         width='100%'
         transition={
-          prefersReducedMotion ? { duration: 0 } : { duration: 0.6, delay: 0.4 }
+          prefersReducedMotion
+            ? { duration: MOTION_DURATIONS.instant }
+            : { duration: MOTION_DURATIONS.slow, delay: 0.4 }
         }
         className='bg-gradient-to-r from-transparent via-toxic-green to-transparent mb-4 max-w-md'
       />
@@ -48,7 +57,9 @@ export const MainMenuHeader = () => {
         }
         animate={{ opacity: 1, letterSpacing: '0.5em' }}
         transition={
-          prefersReducedMotion ? { duration: 0 } : { duration: 1, delay: 0.6 }
+          prefersReducedMotion
+            ? { duration: MOTION_DURATIONS.instant }
+            : { duration: MOTION_DURATIONS.long, delay: 0.6 }
         }
         className='text-lg md:text-2xl text-toxic-green/80 mb-2 font-ui text-center tracking-[0.5em]'
       >
@@ -58,7 +69,11 @@ export const MainMenuHeader = () => {
       <m.div
         initial={prefersReducedMotion ? false : { opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={prefersReducedMotion ? { duration: 0 } : { delay: 1 }}
+        transition={
+          prefersReducedMotion
+            ? { duration: MOTION_DURATIONS.instant }
+            : { delay: 1 }
+        }
         className='mb-8 sm:mb-10 px-3 py-1 border border-toxic-green/30 text-xs font-mono text-toxic-green tracking-widest'
       >
         {t('ui:mainMenu.versionBadge', {

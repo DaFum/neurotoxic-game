@@ -26,6 +26,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
+import { MOTION_TRANSITIONS } from './config/motion'
 import { AssetNotifications } from './components/assets/AssetNotifications'
 import type { GamePhase } from './types/game'
 
@@ -138,9 +139,11 @@ function GameContent() {
       {import.meta.env.DEV && <DebugLogViewer />}
 
       {/* Global Event Modal Overlay */}
-      {activeEvent && (
-        <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
-      )}
+      <AnimatePresence>
+        {activeEvent && (
+          <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
+        )}
+      </AnimatePresence>
 
       {/* Global asset risk/foreclosure modals: advanceDay can raise these from
           any scene, so they are owned here rather than inside AssetsScene. */}
@@ -154,7 +157,7 @@ function GameContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={MOTION_TRANSITIONS.scene}
               className='w-full h-full'
             >
               <SceneRouter

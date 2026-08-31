@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
+import { MOTION_TRANSITIONS } from '../config/motion'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
@@ -265,7 +266,9 @@ export const EventModal = ({
   const [previewError, setPreviewError] = useState(false)
   const [prevEventId, setPrevEventId] = useState<string | undefined>(event?.id)
   const resolvedRef = useRef(false)
+  const hasCompletedExitRef = useRef(false)
   const [isResolved, setIsResolved] = useState(false)
+  const [isExiting, setIsExiting] = useState(false)
 
   // Reset outcome and resolved guard on new events
   if (event?.id !== prevEventId) {
@@ -273,11 +276,13 @@ export const EventModal = ({
     setOutcome(null)
     setPreviewError(false)
     setIsResolved(false)
+    setIsExiting(false)
     // Reset the synchronous double-submit guard in the same guarded block as
     // isResolved so the ref and the button's disabled state never diverge.
     // (A useEffect reset would lag a render behind, leaving a window where the
     // button is enabled but handleContinue still no-ops.)
     resolvedRef.current = false
+    hasCompletedExitRef.current = false
   }
 
   // Keep game state ref stable so handleOptionSelect doesn't refresh constantly, resetting the keyboard listener
@@ -313,16 +318,41 @@ export const EventModal = ({
     }
   }, [])
 
+  const completeExit = useCallback(() => {
+    if (hasCompletedExitRef.current || !outcome) return
+    hasCompletedExitRef.current = true
+    onOptionSelect({
+      ...outcome.option,
+      _precomputedResult: outcome._precomputedResult
+    })
+  }, [onOptionSelect, outcome])
+
   const handleContinue = useCallback(() => {
     if (outcome && !resolvedRef.current) {
       resolvedRef.current = true
       setIsResolved(true)
-      onOptionSelect({
-        ...outcome.option,
-        _precomputedResult: outcome._precomputedResult
-      })
+      setIsExiting(true)
     }
-  }, [onOptionSelect, outcome])
+  }, [outcome])
+
+  const handleAnimationComplete = useCallback(() => {
+    if (isExiting) {
+      completeExit()
+    }
+  }, [isExiting, completeExit])
+
+  useEffect(() => {
+    if (!isExiting) return
+    // Fallback timer for environments where Motion's onAnimationComplete
+    // callback does not fire (such as jsdom-based tests).
+    const fallbackMs = Math.round(
+      (MOTION_TRANSITIONS.modalExit.duration ?? 0.2) * 1000
+    )
+    const timer = setTimeout(() => {
+      completeExit()
+    }, fallbackMs)
+    return () => clearTimeout(timer)
+  }, [isExiting, completeExit])
 
   const eventOptions = useMemo(
     () =>
@@ -402,16 +432,27 @@ export const EventModal = ({
     event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
-    <div
+    <m.div
       ref={containerRef}
       tabIndex={-1}
       role='dialog'
       aria-modal='true'
       aria-labelledby='event-title'
-      className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${className}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: isExiting ? 0 : 1 }}
+      exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
+      transition={MOTION_TRANSITIONS.modal}
+      onAnimationComplete={handleAnimationComplete}
+      className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${isExiting ? 'pointer-events-none' : ''} ${className}`}
     >
       {/* Backdrop */}
-      <div className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'></div>
+      <m.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: isExiting ? 0 : 1 }}
+        exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
+        transition={MOTION_TRANSITIONS.modal}
+        className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
+      />
       {/* Scanline FX on background */}
       <div
         className='absolute inset-0 pointer-events-none opacity-20'
@@ -420,11 +461,17 @@ export const EventModal = ({
             'linear-gradient(transparent 50%, var(--color-void-black-50) 50%)',
           backgroundSize: '100% 4px'
         }}
-      ></div>
+      />
 
       <m.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
+        animate={
+          isExiting
+            ? { scale: 0.95, opacity: 0, y: 10 }
+            : { scale: 1, opacity: 1, y: 0 }
+        }
+        exit={{ scale: 0.95, opacity: 0, y: 10, transition: MOTION_TRANSITIONS.modalExit }}
+        transition={MOTION_TRANSITIONS.modal}
         className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
@@ -462,6 +509,6 @@ export const EventModal = ({
           )}
         </div>
       </m.div>
-    </div>
+    </m.div>
   )
 }

@@ -26,7 +26,7 @@ const CREDIT_KEYS = [
     roleKey: 'ui:credits.role.animation',
     roleDefault: 'SPASM ANIMATION RITUALS',
     nameKey: 'ui:credits.name.animation',
-    nameDefault: 'Framer Motion // Framegrind Frenzy'
+    nameDefault: 'Motion for React // Framegrind Frenzy'
   },
   {
     roleKey: 'ui:credits.role.assets',
