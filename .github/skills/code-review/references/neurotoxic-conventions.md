@@ -85,7 +85,7 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 | `Object.hasOwn()` for untrusted keys | **Important** | Do not use `in` or bracket access without an `Object.hasOwn` guard on untrusted objects. | `AGENTS.md §TypeScript and Style` |
 | Explicit return types on exported class members | **Important** | Public members/getters of exported classes must have explicit return type annotations. | `AGENTS.md §TypeScript and Style` |
 | Type-only imports | **Minor** | Imports used only as types must use `import type`. | `AGENTS.md §TypeScript and Style` |
-| Conventional Commits | **Minor** | `type(scope): message`. Types: `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`. | `AGENTS.md §TypeScript and Style` |
+| Conventional Commits | **Minor** | Commit messages must follow the `type(scope): message` format. This repo uses `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `ci`, `build`, `style`, `revert`, and others — flag only when the format itself is absent, not when an unfamiliar type is used. | `AGENTS.md §TypeScript and Style` |
 
 ---
 

@@ -1,4 +1,3 @@
-<!-- Synced from .agents/skills/github-code-review/SKILL.md — edit there, not here -->
 ---
 name: code-review
 description: >
@@ -9,6 +8,8 @@ description: >
   Trigger on phrases like "look at PR #N", "what do you think of these changes", "is this ready to
   merge", "check my branch", "review this diff", or "can you give feedback on #N".
 ---
+
+<!-- Synced from .agents/skills/github-code-review/SKILL.md — edit there, not here -->
 
 # GitHub Code Review
 
