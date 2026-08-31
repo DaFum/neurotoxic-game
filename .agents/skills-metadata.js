@@ -57,15 +57,15 @@ test('skills-manifest.json has required meta fields', async () => {
   )
 })
 
-test('skills-manifest.json reports exactly 30 total skills', async () => {
+test('skills-manifest.json reports exactly 31 total skills', async () => {
   const { meta } = await readAgentJson('skills-manifest.json')
-  assert.strictEqual(meta.total_skills, 30)
+  assert.strictEqual(meta.total_skills, 31)
 })
 
-test('skills-manifest.json skills array has exactly 30 entries', async () => {
+test('skills-manifest.json skills array has exactly 31 entries', async () => {
   const { skills } = await readAgentJson('skills-manifest.json')
   assert.ok(Array.isArray(skills), 'skills is array')
-  assert.strictEqual(skills.length, 30)
+  assert.strictEqual(skills.length, 31)
 })
 
 test('skills-manifest.json each skill has all required fields', async () => {
@@ -195,14 +195,14 @@ test('skills-dependencies.json has meta and dependencies fields', async () => {
   )
 })
 
-test('skills-dependencies.json meta.total_skills is 30', async () => {
+test('skills-dependencies.json meta.total_skills is 31', async () => {
   const { meta } = await readAgentJson('skills-dependencies.json')
-  assert.strictEqual(meta.total_skills, 30)
+  assert.strictEqual(meta.total_skills, 31)
 })
 
-test('skills-dependencies.json dependencies has 30 skill entries', async () => {
+test('skills-dependencies.json dependencies has 31 skill entries', async () => {
   const { dependencies } = await readAgentJson('skills-dependencies.json')
-  assert.strictEqual(Object.keys(dependencies).length, 30)
+  assert.strictEqual(Object.keys(dependencies).length, 31)
 })
 
 test('skills-dependencies.json each entry has depends_on, routing_triggers, related_skills', async () => {
