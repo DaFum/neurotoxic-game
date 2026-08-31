@@ -1,6 +1,7 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
 import { QuestOfferEngine } from '../../../src/domain/questOfferEngine.ts'
+import { QUEST_REGISTRY } from '../../../src/data/questRegistry.ts'
 
 test('QuestOfferEngine', async t => {
   const baseState = () => ({
@@ -114,4 +115,30 @@ test('QuestOfferEngine', async t => {
       )
     }
   )
+
+  await t.test('handles non-finite numeric offer conditions gracefully', () => {
+    const state = baseState()
+
+    // Inject non-finite condition thresholds into quest definitions by temporarily modifying registry
+    // definitions, or test using definitions with thresholds.
+    // Quest quest_viral_dance has condition: { social: { maxTiktok: 4999 } }.
+    // If maxTiktok was NaN (e.g. from non-finite state deserialization or dynamic condition construction),
+    // isFiniteNumber(social.maxTiktok) evaluates to false, skipping the check rather than failing tiktok > NaN.
+    const originalMaxTiktok = (QUEST_REGISTRY.quest_viral_dance.offer.condition.social).maxTiktok
+    try {
+      QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok = NaN
+      assert.equal(
+        QuestOfferEngine.canOfferQuest(
+          {
+            ...state,
+            social: { loyalty: 50, controversyLevel: 0, tiktok: 10000 }
+          },
+          'quest_viral_dance'
+        ),
+        true
+      )
+    } finally {
+      QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok = originalMaxTiktok
+    }
+  })
 })
