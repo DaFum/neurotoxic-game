@@ -151,11 +151,11 @@ Files: `src/utils/audio/`
 
 ---
 
-## 12. Large or Mixed PRs
+## 12. Large PRs (>500 changed lines)
 
-When a PR touches >500 lines or spans multiple domains:
+When a PR touches >500 changed lines:
 
-1. Call `pull_request_read method=get_files` to get the full file list.
+1. Call `pull_request_read method=get_files perPage=100` and paginate (repeat with increasing `page` until the returned list has fewer than 100 entries) to get the full file list.
 2. Triage by risk tier:
    - **Tier 1 (fully review):** reducers, action creators, sanitizers, domain logic, migrations
    - **Tier 2 (fully review):** selectors, utilities with arithmetic, audio
