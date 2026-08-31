@@ -1,13 +1,19 @@
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
 
+/**
+ * Properties for the {@link ScoreDisplay} component.
+ */
 interface ScoreDisplayProps {
+  /** The current score to display. */
   score: number
 }
 
 /**
  * Displays the current score with compact gig-HUD styling.
- * @param props - Props containing the current `score` value.
+ *
+ * @param props - The properties for the {@link ScoreDisplay} component.
+ * @returns The rendered score display component.
  */
 export const ScoreDisplay = memo(function ScoreDisplay({
   score
