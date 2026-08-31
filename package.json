@@ -29,6 +29,7 @@
     "deadcode:check": "pnpm exec knip --reporter json",
     "deadcode:report": "pnpm exec knip",
     "sync:agents": "node ./scripts/sync-agent-instructions.mjs",
+    "sync:skills": "node ./scripts/sync-code-review-skill.mjs",
     "symbols:check": "node scripts/update-symbols.mjs --check",
     "symbols:update": "node ./scripts/update-symbols.mjs",
     "test": "pnpm run test:fast",

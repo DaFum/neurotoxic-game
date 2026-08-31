@@ -69,7 +69,7 @@ pull_request_read  method=get_commits      → commit messages (read intent befo
 pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues; paginate via endCursor until hasNextPage is false, then filter for unresolved and non-outdated threads)
 ```
 
-If the description is missing or a single line, note it as a Minor finding.
+If the description is missing or brief, do not treat it as an automatic Minor finding (a concise description may be completely sufficient). Only mention missing or unclear context as a review limitation in the summary if the description and commit messages together fail to provide sufficient intent or scope for the review.
 
 ### 2. Fetch the diff and identify changed domains
 
@@ -79,8 +79,7 @@ For diffs up to ~500 changed lines, fetch the full diff directly:
 pull_request_read  method=get_diff
 ```
 
-For larger diffs, call `method=get_files` first to see the file list, then triage by risk tier
-(see `references/review-checklist.md` §12) and fetch the diff to focus on Tier 1 files.
+For larger diffs (or PRs with many changed files), call `method=get_files` first to see the file list, then triage by risk tier (see `references/review-checklist.md` §12). Because calling `method=get_diff` on a large PR loads the entire diff into context regardless of triage, prefer reviewing the per-file `patch` returned by `method=get_files` for all files selected by the tier policy (including Tier 1, Tier 2, and Tier 3 spot-checks as required by `references/review-checklist.md` §12) to limit context overhead; if a patch is missing or truncated, fall back to fetching both the base version (`get_file_contents` at the base commit/SHA) and the head version (`get_file_contents` at the head commit/SHA) to compare changes.
 
 Once you know which files changed, load `references/review-checklist.md` for the matching domains.
 For any `src/` file, also load `references/neurotoxic-conventions.md`.
@@ -95,14 +94,16 @@ Work through each changed production file against the loaded checklists. For eac
 4. Does it break existing contracts (API shape, action payload, state schema)?
 5. Is the new code covered by tests that exercise the actual logic?
 
-### 4. Post inline comments, then a summary
+### 4. Post inline comments and submit review via MCP
 
 Load `references/output-formats.md` for templates and the verdict decision tree.
 
-**Inline first.** For every Important or Critical finding, post an inline comment on the specific
-changed line with: what the problem is, why it matters, and a concrete fix.
+The official GitHub MCP Server uses `pull_request_review_write` to manage reviews and `add_comment_to_pending_review` to append inline comments. Execute the write workflow using the following sequence:
 
-**Then post the top-level summary** using `engine-tools-reply_to_comment` (when running as a Copilot coding agent) or `github-mcp-server-add_pull_request_review` if available; fall back to returning the summary as your final response if no write mechanism is accessible.
+1. **Create a pending review** using `pull_request_review_write` (creating an unsubmitted pending review).
+2. **Add inline findings** for every Important or Critical finding using `add_comment_to_pending_review` on the specific file and line.
+3. **Submit the review with a final verdict** using `pull_request_review_write` (submitting the review as `APPROVE`, `REQUEST_CHANGES`, or `COMMENT` along with the summary body).
+4. **Fallback:** If `pull_request_review_write` is unavailable in the current MCP server environment, fall back to `engine-tools-reply_to_comment` (if running as a Copilot agent) or output the full review summary as your final response text.
 
 ## Quick Severity Reference
 
