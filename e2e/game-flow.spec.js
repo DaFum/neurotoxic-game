@@ -272,13 +272,13 @@ test.describe('Game Flow', () => {
       })
       const availableAction = numberedOption.or(continueOption).first()
 
-      const hasAction = await availableAction
-        .isVisible({ timeout: 500 })
+      const isClickable = await availableAction
+        .isEnabled({ timeout: 500 })
         .catch(() => false)
-      if (!hasAction) return false
+      if (!isClickable) return false
 
       return availableAction
-        .click({ timeout: 2000 })
+        .click({ timeout: 1000 })
         .then(() => true)
         .catch(() => false)
     }
