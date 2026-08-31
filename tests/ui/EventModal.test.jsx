@@ -408,13 +408,44 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
   })
 })
 
+test('EventModal renders disabled option with focus-visible ring class and tooltip', async () => {
+  const mockEvent = {
+    id: 'disabled_option_a11y_test',
+    title: 'Disabled Option Test',
+    description: 'Test disabled option focus ring and tooltip.',
+    options: [
+      {
+        label: 'Disabled Option',
+        disabled: true,
+        disabledReason: 'Custom disabled reason'
+      }
+    ]
+  }
+
+  render(<EventModal event={mockEvent} onOptionSelect={vi.fn()} />)
+
+  const optionBtn = screen.getByText('Disabled Option').closest('button')
+  expect(optionBtn).toHaveClass('focus-visible:ring-ash-gray')
+  expect(optionBtn).toHaveAttribute('aria-disabled', 'true')
+
+  // Focus the option button to trigger the tooltip
+  fireEvent.focus(optionBtn)
+
+  await waitFor(() => {
+    expect(screen.getByRole('tooltip')).toHaveTextContent(
+      'Custom disabled reason'
+    )
+  })
+})
+
 test('EventModal delays onOptionSelect until exit animation completes', () => {
   vi.useFakeTimers()
   try {
     const mockEvent = {
       id: 'async_exit_test',
       title: 'Async Exit Test',
-      description: 'onOptionSelect should not fire synchronously on continue click.',
+      description:
+        'onOptionSelect should not fire synchronously on continue click.',
       options: [{ label: 'Option 1', outcomeText: 'Exit Outcome' }]
     }
     const handleSelect = vi.fn()

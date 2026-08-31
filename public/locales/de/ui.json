@@ -299,6 +299,7 @@
   "event.new_quest": "Neue Quest",
   "event.noDescription": "Ein Ereignis nimmt seinen Lauf.",
   "event.option": "Option",
+  "event.optionDisabled": "Bedingung nicht erfüllt",
   "event.resolved": "Ereignis beendet.",
   "event.severity.critical": "KRITISCH",
   "event.story_updated": "Geschichte aktualisiert",

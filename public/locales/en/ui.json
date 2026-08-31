@@ -299,6 +299,7 @@
   "event.new_quest": "New Quest",
   "event.noDescription": "An event unfolds.",
   "event.option": "Option",
+  "event.optionDisabled": "Condition not met",
   "event.resolved": "Event resolved.",
   "event.severity.critical": "CRITICAL",
   "event.story_updated": "Story Updated",

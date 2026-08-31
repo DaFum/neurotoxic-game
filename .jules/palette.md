@@ -204,3 +204,8 @@
 
 **Learning:** In action modals (like Pirate Radio or Zealotry Actions), disabling primary execution buttons without providing a tooltip or explanation leaves users confused as to why the action is blocked when resources (funds, harmony, or controversy thresholds) are deficient.
 **Action:** Always evaluate gating conditions (daily cooldown, funds, harmony, thresholds) and wrap disabled modal action buttons in a `Tooltip` providing a specific, localized explanation for why the primary action cannot be executed.
+
+## 2026-08-17 - Focus Rings and Tooltips on Disabled Event Options
+
+**Learning:** Event option buttons in `EventModal.tsx` use `aria-disabled="true"` to maintain keyboard focusability, but lacked an explicit focus-visible ring color in their disabled state and omitted explanation tooltips.
+**Action:** Always include explicit focus ring colors (e.g., `focus-visible:ring-ash-gray/60`) on disabled `aria-disabled` controls and wrap disabled options in `Tooltip` providing localized context (e.g., `option.disabledReason` or `t('ui:event.optionDisabled')`).

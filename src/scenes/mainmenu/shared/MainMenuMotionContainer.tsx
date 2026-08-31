@@ -45,7 +45,9 @@ export const MainMenuMotionContainer = ({
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={
-        prefersReducedMotion ? { duration: MOTION_DURATIONS.instant } : { delay }
+        prefersReducedMotion
+          ? { duration: MOTION_DURATIONS.instant }
+          : { delay }
       }
       className={className}
     >

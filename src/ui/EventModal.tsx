@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { MOTION_TRANSITIONS } from '../config/motion'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
+import { Tooltip } from './shared/Tooltip'
 import { generateEffectText } from '../utils/effectFormatter'
 import { formatCurrency } from '../utils/numberUtils'
 import { resolveEventChoice, getOptionPreviewMoney } from '../utils/eventEngine'
@@ -46,12 +47,18 @@ const EventOptionButton = ({
     option.disabled ||
     (typeof option.condition === 'function' && !option.condition(gameState))
   const buttonClass = isDisabled
-    ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed'
+    ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed focus-visible:ring-ash-gray'
     : index === 0
       ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green'
       : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'
 
-  return (
+  const disabledReason = isDisabled
+    ? option.disabledReason
+      ? t(option.disabledReason, eventContext)
+      : t('ui:event.optionDisabled', { defaultValue: 'Condition not met' })
+    : undefined
+
+  const buttonContent = (
     <m.button
       type='button'
       aria-disabled={isDisabled}
@@ -78,6 +85,12 @@ const EventOptionButton = ({
       </div>
     </m.button>
   )
+
+  if (isDisabled && Boolean(disabledReason)) {
+    return <Tooltip content={disabledReason}>{buttonContent}</Tooltip>
+  }
+
+  return buttonContent
 }
 
 interface EventHeaderProps {
@@ -441,7 +454,9 @@ export const EventModal = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: isExiting ? 0 : 1 }}
       exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
-      transition={isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal}
+      transition={
+        isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
+      }
       onAnimationComplete={handleAnimationComplete}
       className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${isExiting ? 'pointer-events-none' : ''} ${className}`}
     >
@@ -450,7 +465,9 @@ export const EventModal = ({
         initial={{ opacity: 0 }}
         animate={{ opacity: isExiting ? 0 : 1 }}
         exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
-        transition={isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal}
+        transition={
+          isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
+        }
         className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
       />
       {/* Scanline FX on background */}
@@ -470,8 +487,15 @@ export const EventModal = ({
             ? { scale: 0.95, opacity: 0, y: 10 }
             : { scale: 1, opacity: 1, y: 0 }
         }
-        exit={{ scale: 0.95, opacity: 0, y: 10, transition: MOTION_TRANSITIONS.modalExit }}
-        transition={isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal}
+        exit={{
+          scale: 0.95,
+          opacity: 0,
+          y: 10,
+          transition: MOTION_TRANSITIONS.modalExit
+        }}
+        transition={
+          isExiting ? MOTION_TRANSITIONS.modalExit : MOTION_TRANSITIONS.modal
+        }
         className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
