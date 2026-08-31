@@ -411,7 +411,7 @@ export const EventModal = ({
       aria-labelledby='event-title'
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
+      exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
       transition={MOTION_TRANSITIONS.modal}
       className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${className}`}
     >
@@ -419,7 +419,7 @@ export const EventModal = ({
       <m.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
+        exit={{ opacity: 0, transition: MOTION_TRANSITIONS.modalExit }}
         transition={MOTION_TRANSITIONS.modal}
         className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
       />
@@ -436,7 +436,7 @@ export const EventModal = ({
       <m.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10, transition: MOTION_TRANSITIONS.modalExit }}
         transition={MOTION_TRANSITIONS.modal}
         className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >

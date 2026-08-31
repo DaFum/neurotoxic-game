@@ -8,10 +8,10 @@ import { AnimatedDivider, AnimatedSubtitle } from '../../ui/shared'
  * Displays the main-menu title lockup and subtitle copy.
  *
  * @remarks
- * Note on Motion Performance:
+ * Note on Motion Performance & Accessibility:
  * The subtitle uses a single-shot `letterSpacing` entrance animation. Because `letterSpacing`
  * triggers layout reflows, it is strictly isolated to this one-time hero entrance and is
- * explicitly disabled via `useReducedMotion` to prevent performance overhead on low-power devices.
+ * omitted when the user has requested reduced motion.
  */
 export const MainMenuHeader = () => {
   const { t } = useTranslation()

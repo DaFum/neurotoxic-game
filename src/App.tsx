@@ -26,6 +26,7 @@ import { Analytics } from '@vercel/analytics/react'
 import { SpeedInsights } from '@vercel/speed-insights/react'
 import { GAME_PHASES } from './context/gameConstants'
 import { SceneRouter } from './components/SceneRouter.tsx'
+import { MOTION_TRANSITIONS } from './config/motion'
 import { AssetNotifications } from './components/assets/AssetNotifications'
 import type { GamePhase } from './types/game'
 
@@ -156,7 +157,7 @@ function GameContent() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.25 }}
+              transition={MOTION_TRANSITIONS.scene}
               className='w-full h-full'
             >
               <SceneRouter
