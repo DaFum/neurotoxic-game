@@ -30,11 +30,10 @@ const HOST_DESCRIPTION = `description: >
   Copilot chat on a PR). Delegates to the canonical github-code-review skill in
   .agents/skills/github-code-review — do not invoke both simultaneously.`
 
-let generatedContent = sourceContent
-
 // Parse frontmatter in a line-ending agnostic way
 const frontmatterMatch = sourceContent.match(/^(---\r?\n[\s\S]*?\r?\n---\r?\n)/)
 
+let generatedContent
 if (frontmatterMatch) {
   let frontmatter = frontmatterMatch[1]
   const body = sourceContent.slice(frontmatter.length)

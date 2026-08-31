@@ -34,9 +34,9 @@ describe('generated code-review skill file', () => {
   Copilot chat on a PR). Delegates to the canonical github-code-review skill in
   .agents/skills/github-code-review — do not invoke both simultaneously.`
 
-    let expectedGenerated = source
     const frontmatterMatch = source.match(/^(---\r?\n[\s\S]*?\r?\n---\r?\n)/)
 
+    let expectedGenerated
     if (frontmatterMatch) {
       let frontmatter = frontmatterMatch[1]
       const body = source.slice(frontmatter.length)
