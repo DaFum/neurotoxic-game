@@ -30,12 +30,10 @@ describe('generated code-review skill file', () => {
 
     const sourceWithReplacedName = source.replace(/^name:\s*github-code-review$/m, 'name: code-review')
     const frontmatterEndIndex = sourceWithReplacedName.indexOf('---\n', 3)
-    const insertPos = frontmatterEndIndex + 4
     const expectedGenerated =
-      sourceWithReplacedName.slice(0, insertPos) +
-      '\n' +
-      EXPECTED_HEADER +
-      sourceWithReplacedName.slice(insertPos)
+      frontmatterEndIndex !== -1
+        ? sourceWithReplacedName.slice(0, frontmatterEndIndex + 4) + '\n' + EXPECTED_HEADER + sourceWithReplacedName.slice(frontmatterEndIndex + 4)
+        : `${EXPECTED_HEADER}\n${sourceWithReplacedName}`
 
     assert.equal(
       generated,
