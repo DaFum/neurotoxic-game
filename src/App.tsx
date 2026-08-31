@@ -1,5 +1,11 @@
 import { Suspense } from 'react'
-import { AnimatePresence, m, LazyMotion, domAnimation, MotionConfig } from 'motion/react'
+import {
+  AnimatePresence,
+  LazyMotion,
+  domAnimation,
+  MotionConfig
+} from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { HUD } from './ui/HUD'
 import { EventModal } from './ui/EventModal'

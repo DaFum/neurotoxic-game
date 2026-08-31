@@ -1,4 +1,4 @@
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { usePostGigLogic } from '../hooks/usePostGigLogic'
 import { GAME_PHASES } from '../context/gameConstants'

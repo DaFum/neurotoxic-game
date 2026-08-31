@@ -1,4 +1,5 @@
-import { m, AnimatePresence } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useCallback, useRef } from 'react'
 import { useTutorial } from '../hooks/useTutorial'
 

@@ -7,7 +7,8 @@ import {
   type RefObject
 } from 'react'
 import { useTranslation } from 'react-i18next'
-import { m, AnimatePresence } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'

@@ -104,7 +104,7 @@ export default defineConfig({
               name: 'vendor-tone',
               test: /node_modules[\\/]tone[\\/]/,
               priority: 20
-            },
+            }
           ]
         }
       }

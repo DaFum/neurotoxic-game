@@ -1,5 +1,5 @@
 import React from 'react'
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { Loader2 } from 'lucide-react'
 import { RazorPlayIcon } from '../../ui/shared/Icons'
 import { ActionButton } from '../../ui/shared'

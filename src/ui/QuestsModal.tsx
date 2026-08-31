@@ -9,7 +9,8 @@ import {
   IconThumbUp,
   IconCube
 } from './shared/Icons'
-import { m, AnimatePresence } from 'motion/react'
+import { AnimatePresence } from 'motion/react'
+import * as m from 'motion/react-m'
 import { ProgressBar } from './shared/index.tsx'
 import { GlitchButton } from './GlitchButton.tsx'
 import { Modal } from './shared/Modal'

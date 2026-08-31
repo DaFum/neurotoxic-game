@@ -1,5 +1,5 @@
 import { formatCurrency } from '../../utils/numberUtils'
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from '../../ui/shared'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../../utils/imageGen'

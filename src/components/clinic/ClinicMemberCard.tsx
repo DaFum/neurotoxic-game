@@ -1,4 +1,4 @@
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { formatCurrency } from '../../utils/numberUtils'
 import { GlitchButton } from '../../ui/GlitchButton'
@@ -54,7 +54,11 @@ export const ClinicMemberCard = ({
 }: ClinicMemberCardProps) => {
   const { t, i18n } = useTranslation(['ui'])
   const memberId = member.id
-  const canAffordGraft = canAfford({ currency: 'money' }, player, CLINIC_GRAFT_COST)
+  const canAffordGraft = canAfford(
+    { currency: 'money' },
+    player,
+    CLINIC_GRAFT_COST
+  )
   const hasGraft = hasTrait(member, 'neuro_overclock')
   const [isGraftModalOpen, setIsGraftModalOpen] = useState(false)
   const isFullyHealed =

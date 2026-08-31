@@ -1,5 +1,5 @@
 import React from 'react'
-import { m } from 'motion/react'
+import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { FinancialList } from './FinancialList'
 import { getFinancialColors } from '../../utils/financialColors'
