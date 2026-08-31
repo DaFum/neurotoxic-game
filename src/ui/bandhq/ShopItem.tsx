@@ -29,13 +29,7 @@ export interface ShopItemProps {
  * @param props - Shop item data, cost/ownership state, disabled state, purchase callback, and processing lock id.
  */
 export const ShopItem = React.memo(
-  ({
-    item,
-    decision,
-    isDisabled,
-    onBuy,
-    processingItemId
-  }: ShopItemProps) => {
+  ({ item, decision, isDisabled, onBuy, processingItemId }: ShopItemProps) => {
     const { t, i18n } = useTranslation(['items', 'ui'])
     const formatPrice = (v: number) => {
       const safe = Number.isFinite(v) ? v : 0

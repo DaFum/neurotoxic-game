@@ -61,9 +61,10 @@ type ToastItemProps = {
   toast: ToastPayload
   removeToast: (id: string) => void
   style: ToastStyle
+  ref?: React.Ref<HTMLDivElement>
 }
 
-const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
+const ToastItem = memo(({ toast, removeToast, style, ref }: ToastItemProps) => {
   const { t } = useTranslation(['ui', 'events', 'venues', 'items', 'economy'])
 
   useEffect(() => {
@@ -75,6 +76,7 @@ const ToastItem = memo(({ toast, removeToast, style }: ToastItemProps) => {
 
   return (
     <m.div
+      ref={ref}
       layout='position'
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}

@@ -15,15 +15,13 @@ export const AnimatedDivider = ({
   transition?: Transition
   className?: string
 }) => (
-  <div style={{ width }}>
-    <m.div
-      initial={{ scaleX: 0 }}
-      animate={{ scaleX: 1 }}
-      transition={transition}
-      style={{ transformOrigin: 'center' }}
-      className={`h-0.5 ${className}`}
-    />
-  </div>
+  <m.div
+    initial={{ scaleX: 0 }}
+    animate={{ scaleX: 1 }}
+    transition={transition}
+    style={{ width, transformOrigin: 'center' }}
+    className={`h-0.5 ${className}`}
+  />
 )
 type MotionTag = 'h1' | 'h2' | 'h3' | 'h4' | 'p' | 'span' | 'div'
 

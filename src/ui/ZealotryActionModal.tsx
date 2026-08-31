@@ -70,7 +70,8 @@ export const ZealotryActionModal = ({
       (social?.controversyLevel as number) >= config.REQUIRED_CONTROVERSY)
   const meetsZealotry =
     config.REQUIRED_ZEALOTRY == null ||
-    (isZealotryValid && (social?.zealotry as number) >= config.REQUIRED_ZEALOTRY)
+    (isZealotryValid &&
+      (social?.zealotry as number) >= config.REQUIRED_ZEALOTRY)
 
   const isDisabled = !canRun || hasRunToday
   const disabledReason = hasRunToday

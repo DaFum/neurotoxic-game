@@ -11,16 +11,12 @@ vi.mock('react-i18next', () => ({
 }))
 
 vi.mock('../../src/ui/bandhq/ShopItem', () => ({
-  ShopItem: ({
-    item,
-    decision,
-    isDisabled,
-    onBuy,
-    processingItemId
-  }) => (
+  ShopItem: ({ item, decision, isDisabled, onBuy, processingItemId }) => (
     <div data-testid={`shop-item-${item.id}`}>
       <span>{item.name}</span>
-      <span data-testid={`is-owned-${item.id}`}>{decision.isOwned ? 'Yes' : 'No'}</span>
+      <span data-testid={`is-owned-${item.id}`}>
+        {decision.isOwned ? 'Yes' : 'No'}
+      </span>
       <span data-testid={`is-disabled-${item.id}`}>
         {isDisabled ? 'Yes' : 'No'}
       </span>

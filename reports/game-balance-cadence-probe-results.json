@@ -2,10 +2,7 @@
   "productionCadenceValidationVersion": 2,
   "runsPerScenario": 2000,
   "seedNamespace": "#production-cadence-validation-v2",
-  "policies": [
-    "gap-aligned",
-    "first-income"
-  ],
+  "policies": ["gap-aligned", "first-income"],
   "status": "production-cadence-validation-passed",
   "approvedForProduction": true,
   "failedGates": [],
@@ -39,58 +36,37 @@
   "designWarnings": {
     "baseline_touring": {
       "valuePct": 1.65,
-      "corridorPct": [
-        1,
-        5
-      ],
+      "corridorPct": [1, 5],
       "classification": "inside"
     },
     "bootstrap_struggle": {
       "valuePct": 8.9,
-      "corridorPct": [
-        15,
-        30
-      ],
+      "corridorPct": [15, 30],
       "classification": "below"
     },
     "aggressive_marketing": {
       "valuePct": 2.55,
-      "corridorPct": [
-        2,
-        8
-      ],
+      "corridorPct": [2, 8],
       "classification": "inside"
     },
     "scandal_recovery": {
       "valuePct": 8.85,
-      "corridorPct": [
-        8,
-        20
-      ],
+      "corridorPct": [8, 20],
       "classification": "inside"
     },
     "festival_push": {
       "valuePct": 4.15,
-      "corridorPct": [
-        5,
-        15
-      ],
+      "corridorPct": [5, 15],
       "classification": "below"
     },
     "chaos_tour": {
       "valuePct": 3.5,
-      "corridorPct": [
-        8,
-        20
-      ],
+      "corridorPct": [8, 20],
       "classification": "below"
     },
     "cult_hypergrowth": {
       "valuePct": 2.6,
-      "corridorPct": [
-        2,
-        10
-      ],
+      "corridorPct": [2, 10],
       "classification": "inside"
     }
   },

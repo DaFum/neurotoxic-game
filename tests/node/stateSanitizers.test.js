@@ -310,7 +310,10 @@ describe('stateSanitizers', () => {
       // computes the proper preview delta (+5) based on the clamped baseline (0).
 
       const sanitizedState = sanitizeBand(unSanitizedState)
-      const preview = calculateAppliedDelta({ band: sanitizedState }, { band: delta })
+      const preview = calculateAppliedDelta(
+        { band: sanitizedState },
+        { band: delta }
+      )
 
       assert.strictEqual(preview.band.luck, 5) // Was previously computing 0, violating lockstep
       assert.strictEqual(sanitizedState.luck, 0)
