@@ -79,7 +79,7 @@ For diffs up to ~500 changed lines, fetch the full diff directly:
 pull_request_read  method=get_diff
 ```
 
-For larger diffs (or PRs with many changed files), call `method=get_files` first to see the file list, then triage by risk tier (see `references/review-checklist.md` §12). Because calling `method=get_diff` on a large PR loads the entire diff into context regardless of triage, prefer reviewing the per-file `patch` returned by `method=get_files` for all files selected by the tier policy (including Tier 1, Tier 2, and Tier 3 spot-checks as required by `references/review-checklist.md` §12) to limit context overhead; if a patch is missing or truncated, fall back to `get_file_contents` for full-file context.
+For larger diffs (or PRs with many changed files), call `method=get_files` first to see the file list, then triage by risk tier (see `references/review-checklist.md` §12). Because calling `method=get_diff` on a large PR loads the entire diff into context regardless of triage, prefer reviewing the per-file `patch` returned by `method=get_files` for all files selected by the tier policy (including Tier 1, Tier 2, and Tier 3 spot-checks as required by `references/review-checklist.md` §12) to limit context overhead; if a patch is missing or truncated, fall back to fetching both the base version (`get_file_contents` at the base commit/SHA) and the head version (`get_file_contents` at the head commit/SHA) to compare changes.
 
 Once you know which files changed, load `references/review-checklist.md` for the matching domains.
 For any `src/` file, also load `references/neurotoxic-conventions.md`.

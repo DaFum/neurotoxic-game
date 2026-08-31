@@ -28,12 +28,26 @@ describe('generated code-review skill file', () => {
     const generated = readFileSync(GENERATED, 'utf8')
     const source = readFileSync(SOURCE, 'utf8')
 
-    const sourceWithReplacedName = source.replace(/^name:\s*github-code-review$/m, 'name: code-review')
-    const frontmatterEndIndex = sourceWithReplacedName.indexOf('---\n', 3)
-    const expectedGenerated =
-      frontmatterEndIndex !== -1
-        ? sourceWithReplacedName.slice(0, frontmatterEndIndex + 4) + '\n' + EXPECTED_HEADER + sourceWithReplacedName.slice(frontmatterEndIndex + 4)
-        : `${EXPECTED_HEADER}\n${sourceWithReplacedName}`
+    const HOST_DESCRIPTION = `description: >
+  Run as the Copilot host-integrated code review for this repository. Invoke when GitHub Copilot
+  is explicitly asked to review a pull request from within the GitHub host interface (PR page,
+  Copilot chat on a PR). Delegates to the canonical github-code-review skill in
+  .agents/skills/github-code-review — do not invoke both simultaneously.`
+
+    let expectedGenerated = source
+    const frontmatterMatch = source.match(/^(---\r?\n[\s\S]*?\r?\n---\r?\n)/)
+
+    if (frontmatterMatch) {
+      let frontmatter = frontmatterMatch[1]
+      const body = source.slice(frontmatter.length)
+
+      frontmatter = frontmatter.replace(/^name:\s*github-code-review$/m, 'name: code-review')
+      frontmatter = frontmatter.replace(/^description:\s*>[\s\S]*?(?=^compatibility:)/m, `${HOST_DESCRIPTION}\n`)
+
+      expectedGenerated = `${frontmatter}\n${EXPECTED_HEADER}\n${body}`
+    } else {
+      expectedGenerated = `${EXPECTED_HEADER}\n${source}`
+    }
 
     assert.equal(
       generated,

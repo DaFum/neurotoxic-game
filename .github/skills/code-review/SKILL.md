@@ -1,12 +1,10 @@
 ---
 name: code-review
 description: >
-  Perform a thorough code review on a GitHub pull request using the GitHub MCP tools. Trigger when
-  asked to review a PR, review a pull request, check a PR, look at someone's changes, give feedback
-  on a PR, or assess whether changes are ready to merge. Also trigger when given a PR number, PR
-  URL, or branch name and asked for any kind of feedback, review, quality check, or assessment.
-  Trigger on phrases like "look at PR #N", "what do you think of these changes", "is this ready to
-  merge", "check my branch", "review this diff", or "can you give feedback on #N".
+  Run as the Copilot host-integrated code review for this repository. Invoke when GitHub Copilot
+  is explicitly asked to review a pull request from within the GitHub host interface (PR page,
+  Copilot chat on a PR). Delegates to the canonical github-code-review skill in
+  .agents/skills/github-code-review — do not invoke both simultaneously.
 compatibility: Node.js 22.13+, pnpm
 metadata:
   version: '1.0.0'
@@ -24,6 +22,7 @@ license: 'Proprietary. See LICENSE.txt for terms'
 <!-- GENERATED FROM .agents/skills/github-code-review/SKILL.md — DO NOT EDIT DIRECTLY.
      Edit .agents/skills/github-code-review/SKILL.md, then run: pnpm run sync:skills
      tests/node/skillSync.test.js fails if these drift. -->
+
 
 # GitHub Code Review
 
@@ -83,7 +82,7 @@ For diffs up to ~500 changed lines, fetch the full diff directly:
 pull_request_read  method=get_diff
 ```
 
-For larger diffs (or PRs with many changed files), call `method=get_files` first to see the file list, then triage by risk tier (see `references/review-checklist.md` §12). Because calling `method=get_diff` on a large PR loads the entire diff into context regardless of triage, prefer reviewing the per-file `patch` returned by `method=get_files` for all files selected by the tier policy (including Tier 1, Tier 2, and Tier 3 spot-checks as required by `references/review-checklist.md` §12) to limit context overhead; if a patch is missing or truncated, fall back to `get_file_contents` for full-file context.
+For larger diffs (or PRs with many changed files), call `method=get_files` first to see the file list, then triage by risk tier (see `references/review-checklist.md` §12). Because calling `method=get_diff` on a large PR loads the entire diff into context regardless of triage, prefer reviewing the per-file `patch` returned by `method=get_files` for all files selected by the tier policy (including Tier 1, Tier 2, and Tier 3 spot-checks as required by `references/review-checklist.md` §12) to limit context overhead; if a patch is missing or truncated, fall back to fetching both the base version (`get_file_contents` at the base commit/SHA) and the head version (`get_file_contents` at the head commit/SHA) to compare changes.
 
 Once you know which files changed, load `references/review-checklist.md` for the matching domains.
 For any `src/` file, also load `references/neurotoxic-conventions.md`.
