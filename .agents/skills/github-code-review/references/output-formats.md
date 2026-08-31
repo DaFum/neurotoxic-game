@@ -7,7 +7,7 @@ Reference this file when composing inline comments and summary reviews.
 Post an inline comment for every Important or Critical finding. Inline comments appear directly on
 the changed line and are the most actionable part of a review.
 
-```
+```markdown
 **[Issue title]**
 
 [One sentence: what is wrong here.]
@@ -19,7 +19,7 @@ the changed line and are the most actionable part of a review.
 
 ### Example — type guard violation
 
-```
+```markdown
 **Number() coercion on persisted value**
 
 `Number(state.streak)` silently accepts booleans, strings, and arrays from persisted state.
@@ -32,7 +32,7 @@ non-number values. Import from `src/utils/finiteNumber.ts`.
 
 ### Example — missing finiteNumberOr
 
-```
+```markdown
 **Missing finiteNumberOr before clamp**
 
 `state.coins + payload.amount` will produce `NaN` if `state.coins` was persisted as
@@ -71,7 +71,9 @@ Post one top-level comment after all inline comments are done.
 **Rules:**
 - Omit any severity section with zero findings
 - Every bullet must include `file:line` — never a vague module reference
-- "Comment" verdict = findings worth noting but none block merge
+- **Approve** = no findings, or only Minors the author can address at their discretion
+- **Request changes** = one or more Critical or Important findings that must be fixed before merge
+- **Comment** = findings worth noting but none block merge (use sparingly; prefer Approve + Minors)
 
 ---
 
@@ -81,27 +83,28 @@ Post one top-level comment after all inline comments are done.
 Are there any Critical findings?
 ├── YES → Request changes
 └── NO
-    Are there Important findings?
-    ├── YES
-    │   Are they all easily fixed (< 30 min each)?
-    │   ├── YES → Request changes (note it's a quick fix)
-    │   └── NO  → Request changes (note the scope)
+    Are there any Important findings?
+    ├── YES → Request changes
+    │         (note in the verdict if they are quick fixes)
     └── NO
         Are there Minor findings worth noting?
-        ├── YES → Approve (list minors; author can address or ignore)
-        └── NO  → Approve
+        ├── YES → Approve  (list minors; author can address or ignore)
+        └── NO  → Approve  (state you reviewed and found nothing)
 ```
+
+Use **Comment** only when you want to flag something for awareness without blocking merge — for
+example, a design concern that is out of scope for this PR but worth a follow-up discussion.
 
 ---
 
 ## Tone Guide
 
-| Situation | Good | Avoid |
-|-----------|------|-------|
-| Identifying a bug | "This will corrupt state if `streak` is `NaN`" | "You might want to consider..." |
-| Suggesting a fix | "Use `isFiniteNumber(val)` — it rejects NaN and booleans" | "Maybe use a different check?" |
-| Clean code | "Logic is sound; follows action-creator → reducer flow" | "Looks good!" (no evidence) |
-| Uncertain finding | "I can't verify this without running the code — worth checking manually" | Flagging it as Important anyway |
+| Situation | Write this | Avoid |
+|-----------|-----------|-------|
+| Identifying a bug | "This will corrupt state if `streak` is `NaN`." | "You might want to consider..." |
+| Suggesting a fix | "Use `isFiniteNumber(val)` — it rejects NaN and booleans." | "Maybe use a different check?" |
+| Clean code | "Logic is sound; follows action-creator → reducer flow." | "Looks good!" (no evidence) |
+| Uncertain finding | "I can't verify this without running the code — worth checking manually." | Flagging it as Important anyway |
 | Low-priority item | List under Minor or omit | Flagging import order as Important |
 
 ---

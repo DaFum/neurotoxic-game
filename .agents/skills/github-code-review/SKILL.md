@@ -20,7 +20,8 @@ Never flag style preferences unless an explicit repo rule is being broken.
 
 ## Reference Files
 
-Load these as needed:
+Load these as needed — they are loaded into context only when relevant, keeping the core workflow
+light:
 
 - **`references/neurotoxic-conventions.md`** — Full repo-specific rules with severity and source
   paths. Load when the diff touches any file in `src/`.
@@ -51,19 +52,21 @@ pull_request_read  method=get_review_comments  → open threads (don't re-raise 
 
 If the description is missing or a single line, note it as a Minor finding.
 
-### 2. Load reference files for the changed domains
+### 2. Fetch the diff and identify changed domains
 
-Scan the file list and load the matching checklists from `references/review-checklist.md`. For any
-`src/` file, also load `references/neurotoxic-conventions.md`.
-
-For diffs larger than 500 changed lines, call `pull_request_read method=get_files` first to
-identify which domains are touched, then triage by risk tier (see checklist §12).
-
-### 3. Read the diff
+For diffs up to ~500 changed lines, fetch the full diff directly:
 
 ```
 pull_request_read  method=get_diff
 ```
+
+For larger diffs, call `method=get_files` first to see the file list, then triage by risk tier
+(see `references/review-checklist.md` §12) and fetch the diff to focus on Tier 1 files.
+
+Once you know which files changed, load `references/review-checklist.md` for the matching domains.
+For any `src/` file, also load `references/neurotoxic-conventions.md`.
+
+### 3. Review the diff
 
 Work through each changed production file against the loaded checklists. For each file, ask:
 
@@ -75,7 +78,7 @@ Work through each changed production file against the loaded checklists. For eac
 
 ### 4. Post inline comments, then a summary
 
-See `references/output-formats.md` for templates and the verdict decision tree.
+Load `references/output-formats.md` for templates and the verdict decision tree.
 
 **Inline first.** For every Important or Critical finding, post an inline comment on the specific
 changed line with: what the problem is, why it matters, and a concrete fix.

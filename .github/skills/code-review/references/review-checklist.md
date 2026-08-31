@@ -155,10 +155,14 @@ Files: `src/utils/audio/`
 
 When a PR touches >500 lines or spans multiple domains:
 
-1. Call `pull_request_read method=get_files` to get the full file list
+1. Call `pull_request_read method=get_files` to get the full file list.
 2. Triage by risk tier:
-   - **Tier 1 (review first):** reducers, action creators, sanitizers, domain logic, migrations
-   - **Tier 2 (review second):** selectors, utilities with arithmetic, audio
+   - **Tier 1 (fully review):** reducers, action creators, sanitizers, domain logic, migrations
+   - **Tier 2 (fully review):** selectors, utilities with arithmetic, audio
    - **Tier 3 (spot-check):** components, locale files, tests, Pixi stage
-3. Note in the summary if Tier 3 files were only spot-checked, not fully reviewed
-4. State your confidence level for each tier in the summary
+3. In the summary, declare coverage for each tier:
+   - `fully reviewed` — read every changed line
+   - `spot-checked` — read a representative sample
+   - `not reviewed` — out of scope; call it out explicitly
+4. Use the verdict decision tree from `references/output-formats.md` as normal, but note any
+   confidence gaps in the summary.
