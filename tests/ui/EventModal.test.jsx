@@ -408,32 +408,40 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
   })
 })
 
-test('EventModal delays onOptionSelect until exit animation completes', async () => {
-  const mockEvent = {
-    id: 'async_exit_test',
-    title: 'Async Exit Test',
-    description: 'onOptionSelect should not fire synchronously on continue click.',
-    options: [{ label: 'Option 1', outcomeText: 'Exit Outcome' }]
-  }
-  const handleSelect = vi.fn()
+test('EventModal delays onOptionSelect until exit animation completes', () => {
+  vi.useFakeTimers()
+  try {
+    const mockEvent = {
+      id: 'async_exit_test',
+      title: 'Async Exit Test',
+      description: 'onOptionSelect should not fire synchronously on continue click.',
+      options: [{ label: 'Option 1', outcomeText: 'Exit Outcome' }]
+    }
+    const handleSelect = vi.fn()
 
-  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+    render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
 
-  fireEvent.click(screen.getByText('Option 1'))
+    fireEvent.click(screen.getByText('Option 1'))
 
-  const continueButton = await screen.findByRole('button', {
-    name: /CONTINUE/i
-  })
+    const continueButton = screen.getByRole('button', {
+      name: /CONTINUE/i
+    })
 
-  fireEvent.click(continueButton)
+    fireEvent.click(continueButton)
 
-  // Verify handleSelect is NOT called synchronously on click
-  expect(handleSelect).not.toHaveBeenCalled()
+    // Verify handleSelect is NOT called synchronously on click
+    expect(handleSelect).not.toHaveBeenCalled()
 
-  // Verify handleSelect is called after exit animation completes
-  await waitFor(() => {
+    // Advance 199 ms; exit animation fallback duration is 200 ms
+    vi.advanceTimersByTime(199)
+    expect(handleSelect).not.toHaveBeenCalled()
+
+    // Advance 1 ms (total 200 ms); fallback timer fires and calls handleSelect once
+    vi.advanceTimersByTime(1)
     expect(handleSelect).toHaveBeenCalledTimes(1)
-  })
+  } finally {
+    vi.useRealTimers()
+  }
 })
 
 test('EventModal Continue button calls onOptionSelect only once even on rapid clicks', async () => {
