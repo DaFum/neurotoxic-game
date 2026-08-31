@@ -1,85 +1,146 @@
 ---
 name: github-code-review
-description: [TODO: Complete and informative explanation of what the skill does and when to use it. Include WHEN to use this skill - specific scenarios, file types, or tasks that trigger it.]
+description: >
+  Perform a thorough code review on a GitHub pull request using the GitHub MCP tools. Trigger when
+  asked to review a PR, review a pull request, check a PR, look at someone's changes, or give
+  feedback on a GitHub PR. Also trigger when given a PR number or URL and asked for any kind of
+  feedback, review, or assessment.
 ---
 
-# Github Code Review
+# GitHub Code Review
 
-## Overview
+You are a code reviewer. Your job is to read a pull request's diff, understand what changed, and
+produce clear, evidence-backed feedback using the GitHub MCP tools.
 
-[TODO: 1-2 sentences explaining what this skill enables]
+**Core principle:** Only report high-confidence issues. Don't flag style preferences or speculate
+about code you haven't verified. Every comment must cite a specific file and line.
 
-## Structuring This Skill
+## Workflow
 
-[TODO: Choose the structure that best fits this skill's purpose. Common patterns:
+### 1. Gather PR context
 
-**1. Workflow-Based** (best for sequential processes)
-- Works well when there are clear step-by-step procedures
-- Example: DOCX skill with "Workflow Decision Tree" → "Reading" → "Creating" → "Editing"
-- Structure: ## Overview → ## Workflow Decision Tree → ## Step 1 → ## Step 2...
+Use `pull_request_read` with method `get` to fetch the PR title, description, base branch, and
+author. Then fetch the diff with method `get_diff`.
 
-**2. Task-Based** (best for tool collections)
-- Works well when the skill offers different operations/capabilities
-- Example: PDF skill with "Quick Start" → "Merge PDFs" → "Split PDFs" → "Extract Text"
-- Structure: ## Overview → ## Quick Start → ## Task Category 1 → ## Task Category 2...
+If the diff is very large (>500 changed lines), also call method `get_files` to see the file list
+and prioritize the most impactful files.
 
-**3. Reference/Guidelines** (best for standards or specifications)
-- Works well for brand guidelines, coding standards, or requirements
-- Example: Brand styling with "Brand Guidelines" → "Colors" → "Typography" → "Features"
-- Structure: ## Overview → ## Guidelines → ## Specifications → ## Usage...
+### 2. Understand the intent
 
-**4. Capabilities-Based** (best for integrated systems)
-- Works well when the skill provides multiple interrelated features
-- Example: Product Management with "Core Capabilities" → numbered capability list
-- Structure: ## Overview → ## Core Capabilities → ### 1. Feature → ### 2. Feature...
+Read the PR description and commit messages before reading code. Understanding *why* something
+changed prevents false positives. If the description is missing or vague, note that — it's
+itself a Minor issue.
 
-Patterns can be mixed and matched as needed. Most skills combine patterns (e.g., start with task-based, add workflow for complex operations).
+### 3. Read the diff carefully
 
-Delete this entire "Structuring This Skill" section when done - it's just guidance.]
+Work through the diff methodically. For each changed file, ask:
 
-## [TODO: Replace with the first main section based on chosen structure]
+- Does this change do what the description claims?
+- Are there logic errors, off-by-one mistakes, or missing edge cases?
+- Are there security implications (unsanitized input, auth bypass, secret exposure)?
+- Does the change break existing contracts (API shape, event payloads, state schema)?
+- Are new tests present and meaningful (testing logic, not just mocks)?
 
-[TODO: Add content here. See examples in existing skills:
-- Code samples for technical skills
-- Decision trees for complex workflows
-- Concrete examples with realistic user requests
-- References to scripts/templates/references as needed]
+### 4. Check existing review comments
 
-## Resources
+Call `get_review_comments` to see if reviewers have already flagged things. Don't duplicate
+existing threads — add to them if you have more to say.
 
-This skill includes example resource directories that demonstrate how to organize different types of bundled resources:
+### 5. Post your review
 
-### scripts/
-Executable code (Python/Bash/etc.) that can be run directly to perform specific operations.
+Post a top-level summary comment with `github-mcp-server-add_issue_comment` using the output
+format below.
 
-**Examples from other skills:**
-- PDF skill: `fill_fillable_fields.py`, `extract_form_field_info.py` - utilities for PDF manipulation
-- DOCX skill: `document.py`, `utilities.py` - Python modules for document processing
+## Issue Severity
 
-**Appropriate for:** Python scripts, shell scripts, or any executable code that performs automation, data processing, or specific operations.
+| Level         | Criteria                                                          |
+| ------------- | ----------------------------------------------------------------- |
+| **Critical**  | Data loss risk, security vulnerability, broken functionality      |
+| **Important** | Logic error, missing test for new code, backward compat breakage  |
+| **Minor**     | Missing description, unclear naming, dead import                  |
 
-**Note:** Scripts may be executed without loading into context, but can still be read by Claude for patching or environment adjustments.
+Only include what you're confident about. When unsure, say so explicitly rather than marking it
+as a finding.
 
-### references/
-Documentation and reference material intended to be loaded into context to inform Claude's process and thinking.
+## Output Format
 
-**Examples from other skills:**
-- Product management: `communication.md`, `context_building.md` - detailed workflow guides
-- BigQuery: API reference documentation and query examples
-- Finance: Schema documentation, company policies
+Post a top-level comment structured like this:
 
-**Appropriate for:** In-depth documentation, API references, database schemas, comprehensive guides, or any detailed information that Claude should reference while working.
+```
+## Code Review
 
-### assets/
-Files not intended to be loaded into context, but rather used within the output Claude produces.
+### Summary
+[1–3 sentences: what the PR does and overall assessment]
 
-**Examples from other skills:**
-- Brand styling: PowerPoint template files (.pptx), logo files
-- Frontend builder: HTML/React boilerplate project directories
-- Typography: Font files (.ttf, .woff2)
+### Critical
+- **[Short title]** — `file.ts:line` — [what's wrong and why it matters]
 
-**Appropriate for:** Templates, boilerplate code, document templates, images, icons, fonts, or any files meant to be copied or used in the final output.
+### Important
+- **[Short title]** — `file.ts:line` — [what's wrong and why it matters]
 
----
+### Minor
+- **[Short title]** — `file.ts:line` — [optional: quick fix suggestion]
 
-**Any unneeded directories can be deleted.** Not every skill requires all three types of resources.
+### Verdict
+**[Approve / Request changes / Comment]** — [one sentence rationale]
+```
+
+Omit any severity section that has no findings. If there are no issues at all, say so clearly and
+approve.
+
+## Neurotoxic-Specific Checks
+
+When reviewing this repository's code, additionally verify:
+
+- State mutations flow through typed action creators → reducers (never mutate state directly)
+- Persisted number arithmetic uses `finiteNumberOr(value, fallback)` before clamping
+- Type guards use `isFiniteNumber(val)` not `Number()` coercion
+- User-facing strings have matching keys in both `public/locales/en/` and `public/locales/de/`
+- Game timing uses `audioEngine.getGigTimeMs()`, not direct Tone.js reads
+- No hardcoded hex colors — use CSS variables or `getPixiColorFromToken()`
+- No `.propTypes` added to React components
+- Commits follow Conventional Commits format
+
+## Example
+
+```
+User: Can you review PR #142?
+
+[Fetch PR with pull_request_read method=get → read title/description]
+[Fetch diff with pull_request_read method=get_diff]
+[Check existing threads with pull_request_read method=get_review_comments]
+
+[Post top-level comment via add_issue_comment]:
+
+## Code Review
+
+### Summary
+Adds a new `dailyObligations` selector and uses it in the bankruptcy check. Logic is sound
+and tests cover the main paths.
+
+### Important
+- **Missing edge case in selector** — `src/selectors/economy.ts:48` — Returns 0 when
+  `moduleObligations` is undefined, but the reducer can produce `NaN` here if a module's
+  `dailyCost` was persisted as a non-finite value. Wrap with `finiteNumberOr` before summing.
+
+### Minor
+- **No German locale key** — `public/locales/en/economy.json:12` — Added `bankruptcy.warning`
+  but `public/locales/de/economy.json` has no matching key; will fall back to English.
+
+### Verdict
+**Request changes** — One important fix needed before merge; the Minor item can be a follow-up.
+```
+
+## Critical Rules
+
+**Do:**
+- Cite specific file:line for every finding
+- Explain *why* each issue matters
+- Distinguish between bugs (Important+) and preferences (Minor or skip)
+- Give a clear verdict
+
+**Don't:**
+- Post vague feedback ("improve error handling")
+- Flag style issues as Critical
+- Report findings on code you didn't actually read
+- Approve without reviewing
