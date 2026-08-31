@@ -216,8 +216,8 @@ const ChatterMessageLifetimeBar = ({
   <div className='h-[2px] w-full bg-ash-gray/10 overflow-hidden'>
     <m.div
       className={`h-full ${barColorClass} opacity-40 origin-left`}
-      initial={{ scaleX: 1 }}
-      animate={{ scaleX: 0 }}
+      initial={{ transform: 'scaleX(1)' }}
+      animate={{ transform: 'scaleX(0)' }}
       style={{ transformOrigin: 'left' }}
       transition={{
         duration: MESSAGE_LIFETIME_MS / 1000,
