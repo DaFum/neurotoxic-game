@@ -1,12 +1,10 @@
 ---
 name: code-review
 description: >
-  Perform a thorough code review on a GitHub pull request using the GitHub MCP tools. Trigger when
-  asked to review a PR, review a pull request, check a PR, look at someone's changes, give feedback
-  on a PR, or assess whether changes are ready to merge. Also trigger when given a PR number, PR
-  URL, or branch name and asked for any kind of feedback, review, quality check, or assessment.
-  Trigger on phrases like "look at PR #N", "what do you think of these changes", "is this ready to
-  merge", "check my branch", "review this diff", or "can you give feedback on #N".
+  Run as the Copilot host-integrated code review for this repository. Invoke when GitHub Copilot
+  is explicitly asked to review a pull request from within the GitHub host interface (PR page,
+  Copilot chat on a PR). Delegates to the canonical github-code-review skill in
+  .agents/skills/github-code-review — do not invoke both simultaneously.
 compatibility: Node.js 22.13+, pnpm
 metadata:
   version: '1.0.0'
@@ -61,7 +59,7 @@ Note if the PR is a draft — mention it once in the summary, but still complete
 ```
 pull_request_read  method=get              → title, description, author, base/head, draft status
 pull_request_read  method=get_commits      → commit messages (read intent before reading code)
-pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues)
+pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues; paginate via endCursor until hasNextPage is false, then filter for unresolved and non-outdated threads)
 ```
 
 If the description is missing or a single line, note it as a Minor finding.
@@ -97,7 +95,7 @@ Load `references/output-formats.md` for templates and the verdict decision tree.
 **Inline first.** For every Important or Critical finding, post an inline comment on the specific
 changed line with: what the problem is, why it matters, and a concrete fix.
 
-**Then post the top-level summary** using `github-mcp-server-add_issue_comment`.
+**Then post the top-level summary** using `engine-tools-reply_to_comment` (when running as a Copilot coding agent) or `github-mcp-server-add_pull_request_review` if available; fall back to returning the summary as your final response if no write mechanism is accessible.
 
 ## Quick Severity Reference
 

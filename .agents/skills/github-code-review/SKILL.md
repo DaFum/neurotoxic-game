@@ -59,7 +59,7 @@ Note if the PR is a draft — mention it once in the summary, but still complete
 ```
 pull_request_read  method=get              → title, description, author, base/head, draft status
 pull_request_read  method=get_commits      → commit messages (read intent before reading code)
-pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues)
+pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues; paginate via endCursor until hasNextPage is false, then filter for unresolved and non-outdated threads)
 ```
 
 If the description is missing or a single line, note it as a Minor finding.
@@ -95,7 +95,7 @@ Load `references/output-formats.md` for templates and the verdict decision tree.
 **Inline first.** For every Important or Critical finding, post an inline comment on the specific
 changed line with: what the problem is, why it matters, and a concrete fix.
 
-**Then post the top-level summary** using `github-mcp-server-add_issue_comment`.
+**Then post the top-level summary** using `engine-tools-reply_to_comment` (when running as a Copilot coding agent) or `github-mcp-server-add_pull_request_review` if available; fall back to returning the summary as your final response if no write mechanism is accessible.
 
 ## Quick Severity Reference
 
