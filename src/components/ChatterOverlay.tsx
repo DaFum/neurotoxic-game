@@ -9,6 +9,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
+import { MOTION_TRANSITIONS } from '../config/motion'
 import { GAME_PHASES } from '../context/gameConstants'
 import { useGameSelector } from '../context/GameState'
 import { useChatterLogic } from '../hooks/useChatterLogic'
@@ -212,11 +213,12 @@ const ChatterMessageBody = ({
 const ChatterMessageLifetimeBar = ({
   barColorClass
 }: ChatterMessageLifetimeBarProps) => (
-  <div className='h-[2px] w-full bg-ash-gray/10'>
+  <div className='h-[2px] w-full bg-ash-gray/10 overflow-hidden'>
     <m.div
-      className={`h-full ${barColorClass} opacity-40`}
-      initial={{ width: '100%' }}
-      animate={{ width: '0%' }}
+      className={`h-full ${barColorClass} opacity-40 origin-left`}
+      initial={{ scaleX: 1 }}
+      animate={{ scaleX: 0 }}
+      style={{ transformOrigin: 'left' }}
       transition={{
         duration: MESSAGE_LIFETIME_MS / 1000,
         ease: 'linear'
@@ -255,7 +257,7 @@ const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
       initial={{ opacity: 0, y: 18, scale: 0.96 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.9, y: -10 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      transition={MOTION_TRANSITIONS.ui}
       className='mb-2 last:mb-0'
     >
       <div

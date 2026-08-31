@@ -138,9 +138,11 @@ function GameContent() {
       {import.meta.env.DEV && <DebugLogViewer />}
 
       {/* Global Event Modal Overlay */}
-      {activeEvent && (
-        <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
-      )}
+      <AnimatePresence>
+        {activeEvent && (
+          <EventModal event={activeEvent} onOptionSelect={resolveEvent} />
+        )}
+      </AnimatePresence>
 
       {/* Global asset risk/foreclosure modals: advanceDay can raise these from
           any scene, so they are owned here rather than inside AssetsScene. */}

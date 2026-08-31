@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { ReactNode } from 'react'
+import { MOTION_DURATIONS } from '../../../config/motion'
 
 /**
  * Props for configuring the animation container within the main menu.
@@ -23,7 +24,7 @@ interface MainMenuMotionContainerProps {
  * rendering the contents immediately.
  *
  * @param props - The component properties.
- * @returns A Framer Motion div containing the animated children.
+ * @returns A Motion for React div containing the animated children.
  *
  * @example
  * ```tsx
@@ -43,7 +44,9 @@ export const MainMenuMotionContainer = ({
     <m.div
       initial={prefersReducedMotion ? false : { opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={prefersReducedMotion ? { duration: 0 } : { delay }}
+      transition={
+        prefersReducedMotion ? { duration: MOTION_DURATIONS.instant } : { delay }
+      }
       className={className}
     >
       {children}

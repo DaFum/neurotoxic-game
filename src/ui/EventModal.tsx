@@ -2,6 +2,7 @@ import { useEffect, useRef, useCallback, useState, useMemo } from 'react'
 import { logger } from '../utils/logger'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
+import { MOTION_TRANSITIONS } from '../config/motion'
 import { AlertIcon } from './shared/BrutalistUI'
 import { VoidSkullIcon } from './shared/Icons'
 import { generateEffectText } from '../utils/effectFormatter'
@@ -402,16 +403,26 @@ export const EventModal = ({
     event.description ?? event.descriptionKey ?? 'ui:event.noDescription'
 
   return (
-    <div
+    <m.div
       ref={containerRef}
       tabIndex={-1}
       role='dialog'
       aria-modal='true'
       aria-labelledby='event-title'
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={MOTION_TRANSITIONS.modal}
       className={`fixed inset-0 z-(--z-modal) flex items-center justify-center p-4 ${className}`}
     >
       {/* Backdrop */}
-      <div className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'></div>
+      <m.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={MOTION_TRANSITIONS.modal}
+        className='absolute inset-0 bg-void-black/80 backdrop-blur-sm'
+      />
       {/* Scanline FX on background */}
       <div
         className='absolute inset-0 pointer-events-none opacity-20'
@@ -420,11 +431,13 @@ export const EventModal = ({
             'linear-gradient(transparent 50%, var(--color-void-black-50) 50%)',
           backgroundSize: '100% 4px'
         }}
-      ></div>
+      />
 
       <m.div
         initial={{ scale: 0.9, opacity: 0, y: 20 }}
         animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        transition={MOTION_TRANSITIONS.modal}
         className='relative w-full max-w-4xl border-4 border-toxic-green p-3 sm:p-6 bg-void-black shadow-[4px_4px_0px_var(--color-toxic-green)] sm:shadow-[8px_8px_0px_var(--color-toxic-green)] motion-safe:animate-[glitch-anim_0.2s_ease-in-out]'
       >
         {/* Hardware details */}
@@ -462,6 +475,6 @@ export const EventModal = ({
           )}
         </div>
       </m.div>
-    </div>
+    </m.div>
   )
 }
