@@ -11,142 +11,171 @@ description: >
 
 # GitHub Code Review
 
-Review a pull request and post clear, evidence-backed feedback using the GitHub MCP tools. Post
-inline comments on specific changed lines where possible — they're far more actionable than a wall
-of text — and finish with a top-level summary.
+Review a pull request and post clear, evidence-backed feedback using the GitHub MCP tools. Lead
+with inline comments on the specific lines that need changing — they are far more actionable than a
+summary — then close with a top-level verdict comment.
 
-**Core principle:** Only report high-confidence issues. Every finding must cite a specific
-file:line. Don't flag style preferences unless the codebase has an explicit rule being broken.
+**Core principle:** Report only high-confidence findings. Every finding cites a specific file:line.
+Never flag style preferences unless an explicit repo rule is being broken.
 
 ## Before Starting
 
-You need the repository `owner`, `repo`, and pull request number. If any of these are missing from
-the user's message, extract `owner` and `repo` from the repository URL or working directory, then
-ask for the PR number if still unknown.
+You need `owner`, `repo`, and the pull request number.
+
+- If running as Copilot code review, these are already in context — proceed immediately.
+- Otherwise, derive `owner`/`repo` from the repository URL or working directory. Ask only if the
+  PR number is genuinely missing.
+
+Note if the PR is a draft — mention it once in the summary, but still complete the review.
 
 ## Workflow
 
-### 1. Gather PR context
+### 1. Fetch context (run all three in parallel)
 
-Call `pull_request_read` with:
-- `method: get` → title, description, author, base/head branches
-- `method: get_commits` → commit messages (understand intent before reading code)
-- `method: get_review_comments` → existing review threads (avoid duplicating open issues)
+```
+pull_request_read  method=get              → title, description, author, base/head, draft status
+pull_request_read  method=get_commits      → commit messages (read intent before reading code)
+pull_request_read  method=get_review_comments  → open threads (don't re-raise already-flagged issues)
+```
+
+If the description is missing or a single line, treat that as a Minor finding — good descriptions
+reduce future review time.
 
 ### 2. Read the diff
 
-Call `pull_request_read` with `method: get_diff`.
-
-If the diff is very large (>500 changed lines), call `method: get_files` first to see all changed
-files, then prioritize the highest-risk ones (new logic, security-sensitive paths, state changes).
-
-Work through the diff methodically. For each changed file, ask:
-
-- Does this change do what the description/commits claim?
-- Are there logic errors, off-by-one mistakes, or missing edge cases?
-- Are there security implications (unsanitized input, auth bypass, secret exposure)?
-- Does the change break existing contracts (API shape, event payloads, state schema)?
-- Are new tests present and meaningful (testing logic, not just scaffolding)?
-
-### 3. Neurotoxic-specific checks
-
-This repository has strict conventions — violations here are Important or Critical findings:
-
-| Rule | What to look for |
-|------|-----------------|
-| State mutations | All updates must go through typed action creators → reducers. Direct state mutation = Critical. |
-| Persisted arithmetic | `finiteNumberOr(value, fallback)` required before clamping stored numbers. Using `??` or `typeof` instead = Important. |
-| Type guards | `isFiniteNumber(val)` required — `Number()` coercion (accepts booleans/arrays/strings) = Important. |
-| i18n keys | User-facing strings need matching keys in both `public/locales/en/` and `public/locales/de/`. Missing German key = Minor. |
-| Game timing | `audioEngine.getGigTimeMs()` for gameplay timing; never direct Tone.js reads = Important. |
-| Colors | No hardcoded hex values — use CSS variables (`var(--color-*)`) or `getPixiColorFromToken()` = Minor. |
-| React components | No `.propTypes` added = Minor. |
-| Commits | Conventional Commits format = Minor if missing. |
-
-### 4. Post your review
-
-Post **inline comments** on the specific lines where issues occur — this is what makes a review
-actionable. Use the GitHub review API (submit a review with `COMMENT` or `REQUEST_CHANGES` event)
-to attach line-level comments.
-
-For each Important or Critical finding, post an inline comment on the affected line with:
-- What the problem is
-- Why it matters
-- A concrete suggestion for fixing it
-
-Then post a **top-level summary** with `github-mcp-server-add_issue_comment` using this format:
-
 ```
+pull_request_read  method=get_diff
+```
+
+For diffs larger than 500 changed lines, call `method=get_files` first. Focus on:
+- Files with new logic (reducers, selectors, action creators, utilities)
+- Security-sensitive paths (auth, input parsing, persistence)
+- Files where tests were *not* added alongside production changes
+
+Test files alone are low priority unless they contain new shared fixtures or mocks.
+
+For each changed production file, ask:
+1. Does this do what the commits/description claim?
+2. Any logic errors, off-by-one, or uncovered edge cases?
+3. Any security implications (unsanitized input, auth bypass, secret exposure)?
+4. Does it break existing contracts (API shape, action payload, state schema)?
+5. Is the code covered by new or existing tests that exercise the actual logic?
+
+### 3. Apply Neurotoxic-specific checks
+
+Violations of these conventions are bugs, not preferences:
+
+**Critical (broken functionality / data integrity)**
+- Direct state mutation — all updates must flow through typed action creators → reducers.
+- `currentGig` used as a location — derive city via `getRegionKeyForLocation`, never `player.location` directly.
+- `START_GIG` reducer changing scenes — scene navigation belongs in continuation callbacks, not reducers.
+
+**Important (type-safety / numeric correctness)**
+- `Number()` coercion instead of `isFiniteNumber(val)` — `Number()` silently accepts booleans,
+  arrays, and numeric strings, corrupting state.
+- Missing `finiteNumberOr(value, fallback)` before clamping persisted numbers — `??` and
+  `typeof === 'number'` both pass `NaN`/`Infinity`.
+- Direct Tone.js time reads for gameplay timing — use `audioEngine.getGigTimeMs()` instead.
+- Recursive object utilities missing `WeakSet` cycle guard.
+
+**Minor (convention / completeness)**
+- User-facing string added to `public/locales/en/` without a matching key in `public/locales/de/`.
+- Hardcoded hex color — use CSS variables (`var(--color-*)`) or `getPixiColorFromToken()`.
+- `.propTypes` added to a React component (not used in this codebase).
+- Commit message missing Conventional Commits format (`type(scope): message`).
+
+### 4. Post inline comments, then a summary
+
+**Inline first.** For every Important or Critical finding, post an inline comment on the specific
+changed line. Each inline comment should state: what the problem is, why it matters, and a concrete
+fix. Inline comments are what make the review actionable — the author sees them right where the
+change is.
+
+**Then post the top-level summary** using `github-mcp-server-add_issue_comment`:
+
+```markdown
 ## Code Review
 
 ### Summary
-[1–3 sentences: what the PR does and overall quality]
+[1–3 sentences: what the PR does and your overall read on quality]
 
 ### Critical
-- **[Title]** — `file.ts:line` — [what's wrong and why]
+- **[Short title]** — `path/file.ts:line` — [what's wrong and why it matters]
 
 ### Important
-- **[Title]** — `file.ts:line` — [what's wrong and why]
+- **[Short title]** — `path/file.ts:line` — [what's wrong and why it matters]
 
 ### Minor
-- **[Title]** — `file.ts:line` — [brief note, fix is obvious]
+- **[Short title]** — `path/file.ts:line` — [brief note; fix is straightforward]
 
 ### Verdict
 **[Approve / Request changes / Comment]** — [one sentence rationale]
 ```
 
-Omit severity sections with no findings. If the PR is clean, say so and approve.
+Omit any severity section with no findings. If the PR is a draft, open the verdict with "Draft —"
+and give the same honest assessment anyway.
 
-## Severity Guide
+## What Not to Flag
 
-| Level | Criteria |
-|-------|----------|
-| **Critical** | Data loss, security vulnerability, broken functionality, direct state mutation |
-| **Important** | Logic error, missing test for changed code, backward-compat breakage, `Number()` coercion |
-| **Minor** | Missing locale key, hardcoded color, unclear naming, dead import |
+Skip findings that waste review trust:
+- Import ordering or whitespace that linters already enforce
+- Refactors that don't change behavior when the result is clearly correct
+- Missing JSDoc on private helpers (this codebase doesn't require it)
+- Suggestions that are purely stylistic with no correctness or maintainability impact
 
-When unsure, say so — "I can't verify this without running the code" is better than a false finding.
+Flagging these trains the author to ignore your comments.
 
-## Example
+## Examples
 
+**Finding an issue:**
 ```
 User: Review PR #47
 
-→ pull_request_read method=get        # title: "Add streak bonus to gig score"
-→ pull_request_read method=get_commits # "feat(gig): add streak multiplier"
-→ pull_request_read method=get_review_comments  # no existing threads
-→ pull_request_read method=get_diff
+→ method=get: "Add streak bonus to gig score" (not a draft)
+→ method=get_commits: "feat(gig): add streak multiplier to completion payout"
+→ method=get_review_comments: no open threads
+→ method=get_diff: gigReducer.js:84 — bonus = Number(state.streak) * 1.1
 
-[Diff shows gigReducer.js:84 computes bonus using Number(state.streak) * 1.1]
+→ Inline comment on gigReducer.js:84:
+  "Number(state.streak) accepts booleans and strings from persisted state.
+   Use isFiniteNumber(state.streak) — it rejects NaN, Infinity, booleans, and strings.
+   (AGENTS.md: 'State and payload sanitizers must enforce strict type narrowing.')"
 
-→ Post inline comment on gigReducer.js:84:
-  "Number(state.streak) accepts non-numeric values. Use isFiniteNumber(state.streak) instead,
-   which rejects booleans, strings, and NaN (per AGENTS.md architecture constraint)."
-
-→ post add_issue_comment:
+→ Top-level comment:
 
 ## Code Review
 
 ### Summary
-Adds a streak multiplier to the gig score. Core logic is sound; one type-safety issue to fix.
+Adds a streak multiplier to gig completion payouts. Structure is clean and follows the
+action-creator → reducer flow. One type-safety issue to fix before merge.
 
 ### Important
-- **Number() coercion in streak bonus** — `src/reducers/gigReducer.js:84` — `Number(state.streak)`
-  accepts booleans and strings from persisted state. Replace with `isFiniteNumber(state.streak)`.
+- **Number() coercion on persisted streak** — `src/reducers/gigReducer.js:84` —
+  `Number(state.streak)` accepts booleans and strings. Use `isFiniteNumber(state.streak)`.
 
 ### Verdict
-**Request changes** — One important fix; otherwise ready to merge.
+**Request changes** — Fix the type guard; everything else is solid.
 ```
 
-## When There's Nothing to Fix
-
+**Clean PR:**
 ```
+User: Can you check PR #51?
+
+→ method=get: "Refactor venue selector to use getRegionKeyForLocation" (not draft)
+→ method=get_commits: "refactor(selectors): replace raw player.location with getRegionKeyForLocation"
+→ method=get_review_comments: no open threads
+→ method=get_diff: three selector files updated, raw player.location references replaced throughout,
+  existing tests pass unchanged, no new logic added
+
+→ No inline comments needed
+
 ## Code Review
 
 ### Summary
-Refactors the venue selector to use the existing `getRegionKeyForLocation` helper throughout.
-Clean change — no logic added, existing tests cover the paths.
+Replaces raw `player.location` accesses in venue selectors with `getRegionKeyForLocation`,
+consistent with the AGENTS.md architecture constraint. No logic changes; existing tests cover
+all paths.
 
 ### Verdict
-**Approve** — No issues found. Consistent with codebase conventions.
+**Approve** — Clean refactor, correct usage, no regressions.
 ```
