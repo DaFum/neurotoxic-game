@@ -408,6 +408,34 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
   })
 })
 
+test('EventModal delays onOptionSelect until exit animation completes', async () => {
+  const mockEvent = {
+    id: 'async_exit_test',
+    title: 'Async Exit Test',
+    description: 'onOptionSelect should not fire synchronously on continue click.',
+    options: [{ label: 'Option 1', outcomeText: 'Exit Outcome' }]
+  }
+  const handleSelect = vi.fn()
+
+  render(<EventModal event={mockEvent} onOptionSelect={handleSelect} />)
+
+  fireEvent.click(screen.getByText('Option 1'))
+
+  const continueButton = await screen.findByRole('button', {
+    name: /CONTINUE/i
+  })
+
+  fireEvent.click(continueButton)
+
+  // Verify handleSelect is NOT called synchronously on click
+  expect(handleSelect).not.toHaveBeenCalled()
+
+  // Verify handleSelect is called after exit animation completes
+  await waitFor(() => {
+    expect(handleSelect).toHaveBeenCalledTimes(1)
+  })
+})
+
 test('EventModal Continue button calls onOptionSelect only once even on rapid clicks', async () => {
   const mockEvent = {
     id: 'disabled_after_click_test',

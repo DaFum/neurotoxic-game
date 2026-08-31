@@ -343,11 +343,14 @@ export const EventModal = ({
 
   useEffect(() => {
     if (!isExiting) return
-    // Fallback timer for environments where Framer Motion onAnimationComplete
-    // callback does not fire (e.g. jsdom unit tests or reduced-motion)
+    // Fallback timer for environments where Motion's onAnimationComplete
+    // callback does not fire (such as jsdom-based tests).
+    const fallbackMs = Math.round(
+      (MOTION_TRANSITIONS.modalExit.duration ?? 0.2) * 1000
+    )
     const timer = setTimeout(() => {
       completeExit()
-    }, 200)
+    }, fallbackMs)
     return () => clearTimeout(timer)
   }, [isExiting, completeExit])
 
