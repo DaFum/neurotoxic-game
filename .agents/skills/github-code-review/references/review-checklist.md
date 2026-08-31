@@ -164,5 +164,8 @@ When a PR touches >500 lines or spans multiple domains:
    - `fully reviewed` — read every changed line
    - `spot-checked` — read a representative sample
    - `not reviewed` — out of scope; call it out explicitly
-4. Use the verdict decision tree from `references/output-formats.md` as normal, but note any
-   confidence gaps in the summary.
+4. If any changed file is `spot-checked` or `not reviewed`, do not use **Approve**. Use **Comment**
+   to note findings and coverage gaps, unless a Critical or Important finding was identified — in
+   that case use **Request changes** as normal.
+5. Only when every changed file is `fully reviewed`, apply the full verdict decision tree from
+   `references/output-formats.md`.

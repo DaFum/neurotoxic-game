@@ -7,6 +7,18 @@ description: >
   URL, or branch name and asked for any kind of feedback, review, quality check, or assessment.
   Trigger on phrases like "look at PR #N", "what do you think of these changes", "is this ready to
   merge", "check my branch", "review this diff", or "can you give feedback on #N".
+compatibility: Node.js 22.13+, pnpm
+metadata:
+  version: '1.0.0'
+  author: 'neurotoxic-project'
+  category: 'code-quality'
+  keywords:
+    - code-review
+    - pull-request
+    - github
+    - mcp
+  maturity: 'stable'
+license: 'Proprietary. See LICENSE.txt for terms'
 ---
 
 # GitHub Code Review
