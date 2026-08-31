@@ -74,4 +74,3 @@
 | 2026-08-21 | src/data/quests/utils/createCorporateQuest.ts | createCorporateQuest |
 | 2026-08-21 | src/components/assets/AssetsStatusStrip.tsx | StatusCell, AssetsStatusStrip |
 | 2026-08-27 | src/hooks/travel/types.ts | TravelStateBundle, TravelSettersBundle, TravelActionsParams |
-| 2026-08-31 | src/components/hud/ScoreDisplay.tsx | ScoreDisplayProps, ScoreDisplay |
