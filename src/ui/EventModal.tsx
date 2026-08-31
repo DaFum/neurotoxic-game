@@ -47,7 +47,7 @@ const EventOptionButton = ({
     option.disabled ||
     (typeof option.condition === 'function' && !option.condition(gameState))
   const buttonClass = isDisabled
-    ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed focus-visible:ring-ash-gray/60'
+    ? 'border-ash-gray/40 text-ash-gray/40 cursor-not-allowed focus-visible:ring-ash-gray'
     : index === 0
       ? 'border-toxic-green bg-toxic-green/10 hover:bg-toxic-green hover:text-void-black text-toxic-green focus-visible:ring-toxic-green'
       : 'border-star-white/50 text-star-white/50 hover:border-star-white hover:text-star-white hover:bg-star-white/10 focus-visible:ring-star-white'

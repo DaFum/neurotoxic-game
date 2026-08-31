@@ -425,7 +425,7 @@ test('EventModal renders disabled option with focus-visible ring class and toolt
   render(<EventModal event={mockEvent} onOptionSelect={vi.fn()} />)
 
   const optionBtn = screen.getByText('Disabled Option').closest('button')
-  expect(optionBtn).toHaveClass('focus-visible:ring-ash-gray/60')
+  expect(optionBtn).toHaveClass('focus-visible:ring-ash-gray')
   expect(optionBtn).toHaveAttribute('aria-disabled', 'true')
 
   // Focus the option button to trigger the tooltip
