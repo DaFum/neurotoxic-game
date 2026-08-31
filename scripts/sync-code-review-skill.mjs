@@ -7,10 +7,13 @@
  * `tests/node/skillSync.test.js` fails if they drift.
  */
 
-import { readFileSync, writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync } from 'node:fs'
+import { join } from 'node:path'
 
 const SOURCE = '.agents/skills/github-code-review/SKILL.md'
 const GENERATED = '.github/skills/code-review/SKILL.md'
+const SOURCE_REFS = '.agents/skills/github-code-review/references'
+const GENERATED_REFS = '.github/skills/code-review/references'
 
 const HEADER_COMMENT = [
   '<!-- GENERATED FROM .agents/skills/github-code-review/SKILL.md — DO NOT EDIT DIRECTLY.',
@@ -42,3 +45,10 @@ if (frontmatterEndIndex !== -1) {
 
 writeFileSync(GENERATED, generatedContent, 'utf8')
 console.log(`Synced ${GENERATED} from ${SOURCE}`)
+
+mkdirSync(GENERATED_REFS, { recursive: true })
+const refFiles = readdirSync(SOURCE_REFS)
+for (const file of refFiles) {
+  cpSync(join(SOURCE_REFS, file), join(GENERATED_REFS, file))
+}
+console.log(`Synced reference files in ${GENERATED_REFS} from ${SOURCE_REFS}`)

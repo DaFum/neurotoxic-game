@@ -8,10 +8,13 @@
 
 import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 
 const GENERATED = '.github/skills/code-review/SKILL.md'
 const SOURCE = '.agents/skills/github-code-review/SKILL.md'
+const GENERATED_REFS = '.github/skills/code-review/references'
+const SOURCE_REFS = '.agents/skills/github-code-review/references'
 
 const EXPECTED_HEADER = [
   '<!-- GENERATED FROM .agents/skills/github-code-review/SKILL.md — DO NOT EDIT DIRECTLY.',
@@ -47,5 +50,27 @@ describe('generated code-review skill file', () => {
       generated.includes('### 0. Establish trust boundary'),
       `${GENERATED} missing Trust Boundary section`
     )
+  })
+
+  it('keeps all reference files byte-identical between source and generated skill directories', () => {
+    const sourceRefFiles = readdirSync(SOURCE_REFS).sort()
+    const generatedRefFiles = readdirSync(GENERATED_REFS).sort()
+
+    assert.deepEqual(
+      generatedRefFiles,
+      sourceRefFiles,
+      `${GENERATED_REFS} file list differs from ${SOURCE_REFS}. Run: pnpm run sync:skills`
+    )
+
+    for (const file of sourceRefFiles) {
+      const sourceContent = readFileSync(join(SOURCE_REFS, file), 'utf8')
+      const generatedContent = readFileSync(join(GENERATED_REFS, file), 'utf8')
+
+      assert.equal(
+        generatedContent,
+        sourceContent,
+        `${join(GENERATED_REFS, file)} has drifted from ${join(SOURCE_REFS, file)}. Run: pnpm run sync:skills`
+      )
+    }
   })
 })
