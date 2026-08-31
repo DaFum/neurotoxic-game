@@ -456,6 +456,7 @@ export interface EventModalOption extends EventOption {
   label?: string
   flags?: string[]
   disabled?: boolean
+  disabledReason?: string
   nextEventId?: string
   skillCheck?: {
     stat: string
