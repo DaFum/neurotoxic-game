@@ -1,6 +1,9 @@
 import { expect, test, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { createMotionReactMock } from '../mocks/motionMock'
 import { EventModal } from '../../src/ui/EventModal.tsx'
+
+vi.mock('motion/react', () => createMotionReactMock())
 
 const translationBehavior = vi.hoisted(() => ({ useDefaultValue: false }))
 
@@ -98,15 +101,17 @@ test('EventModal renders event details and handles click flow', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  // Now it should call handleSelect with the precomputed result
-  expect(handleSelect).toHaveBeenCalledWith(
-    expect.objectContaining({
-      label: 'Option 1',
-      _precomputedResult: expect.objectContaining({
-        outcomeText: 'Good Outcome'
+  // Now it should call handleSelect with the precomputed result once exit animation completes
+  await waitFor(() => {
+    expect(handleSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: 'Option 1',
+        _precomputedResult: expect.objectContaining({
+          outcomeText: 'Good Outcome'
+        })
       })
-    })
-  )
+    )
+  })
 })
 
 test('EventModal handles resolveEventChoice error by showing fallback preview', async () => {
@@ -142,11 +147,13 @@ test('EventModal handles resolveEventChoice error by showing fallback preview', 
     fireEvent.click(continueButton)
 
     // It should call handleSelect with the raw option, since preview failed
-    expect(handleSelect).toHaveBeenCalledWith(
-      expect.objectContaining({
-        label: 'Option Error'
-      })
-    )
+    await waitFor(() => {
+      expect(handleSelect).toHaveBeenCalledWith(
+        expect.objectContaining({
+          label: 'Option Error'
+        })
+      )
+    })
   } finally {
     console.error = originalConsoleError
   }
@@ -178,14 +185,16 @@ test('EventModal handles keyboard selection', async () => {
   const continueButton = screen.getByText(/CONTINUE/i)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledWith(
-    expect.objectContaining({
-      label: 'Option 2',
-      _precomputedResult: expect.objectContaining({
-        outcomeText: 'Option 2 Outcome'
+  await waitFor(() => {
+    expect(handleSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        label: 'Option 2',
+        _precomputedResult: expect.objectContaining({
+          outcomeText: 'Option 2 Outcome'
+        })
       })
-    })
-  )
+    )
+  })
 })
 
 test('EventModal keyboard selection blocks disabled options', async () => {
@@ -394,7 +403,9 @@ test('EventModal double-click on Continue calls onOptionSelect exactly once', as
 
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledTimes(1)
+  await waitFor(() => {
+    expect(handleSelect).toHaveBeenCalledTimes(1)
+  })
 })
 
 test('EventModal Continue button calls onOptionSelect only once even on rapid clicks', async () => {
@@ -417,5 +428,7 @@ test('EventModal Continue button calls onOptionSelect only once even on rapid cl
   fireEvent.click(continueButton)
   fireEvent.click(continueButton)
 
-  expect(handleSelect).toHaveBeenCalledTimes(1)
+  await waitFor(() => {
+    expect(handleSelect).toHaveBeenCalledTimes(1)
+  })
 })
