@@ -1,7 +1,7 @@
 import type { GameState, QuestOfferCondition } from '../types'
 import { getQuestDefinition } from '../data/questRegistry'
 import { canAcceptQuest } from './questLifecycle'
-import { finiteNumberOr } from '../utils/gameState'
+import { finiteNumberOr, isFiniteNumber } from '../utils/gameState'
 
 const matchesSocialCondition = (
   state: GameState,
@@ -14,21 +14,21 @@ const matchesSocialCondition = (
   // "Social damage" is an OR of the two optional thresholds; when neither is
   // declared the check does not apply at all.
   const hasDamageCheck =
-    typeof social.loyaltyBelow === 'number' ||
-    typeof social.controversyAbove === 'number'
+    isFiniteNumber(social.loyaltyBelow) ||
+    isFiniteNumber(social.controversyAbove)
   const damageCheckPassed =
-    (typeof social.loyaltyBelow === 'number' &&
+    (isFiniteNumber(social.loyaltyBelow) &&
       loyalty < social.loyaltyBelow) ||
-    (typeof social.controversyAbove === 'number' &&
+    (isFiniteNumber(social.controversyAbove) &&
       controversy > social.controversyAbove)
 
   if (hasDamageCheck && !damageCheckPassed) {
     return false
   }
-  if (typeof social.minTiktok === 'number' && tiktok < social.minTiktok) {
+  if (isFiniteNumber(social.minTiktok) && tiktok < social.minTiktok) {
     return false
   }
-  if (typeof social.maxTiktok === 'number' && tiktok > social.maxTiktok) {
+  if (isFiniteNumber(social.maxTiktok) && tiktok > social.maxTiktok) {
     return false
   }
   return true
@@ -76,7 +76,7 @@ const matchesOfferCondition = (
   }
 
   if (
-    typeof condition.minFame === 'number' &&
+    isFiniteNumber(condition.minFame) &&
     finiteNumberOr(state.player?.fame, 0) < condition.minFame
   ) {
     return false

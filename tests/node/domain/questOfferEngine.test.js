@@ -114,4 +114,19 @@ test('QuestOfferEngine', async t => {
       )
     }
   )
+
+  await t.test('handles non-finite numeric offer conditions gracefully', () => {
+    const state = baseState()
+
+    assert.equal(
+      QuestOfferEngine.canOfferQuest(
+        {
+          ...state,
+          social: { loyalty: 20, controversyLevel: 40, tiktok: NaN }
+        },
+        'quest_community_outreach'
+      ),
+      true
+    )
+  })
 })
