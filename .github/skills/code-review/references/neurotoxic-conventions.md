@@ -81,10 +81,15 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 | Rule | Severity | What to look for | Source |
 |------|----------|-----------------|--------|
 | No `@ts-nocheck` / `@ts-ignore` / `any` | **Important** | CheckJS is strict for `.js/.jsx`. These suppressions are forbidden. | `AGENTS.md §TypeScript and Style` |
-| `unknown` at boundaries | **Important** | Use `unknown` for untrusted input. Narrow with guards before use. | `AGENTS.md §TypeScript and Style` |
-| `Object.hasOwn()` for untrusted keys | **Important** | Do not use `in` or bracket access without an `Object.hasOwn` guard on untrusted objects. | `AGENTS.md §TypeScript and Style` |
+| `unknown` at boundaries | **Important** | Use `unknown` for untrusted storage/API/event/external input. Narrow with guards before use. | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
+| `Object.hasOwn()` for untrusted keys | **Important** | Do not use `in` or unguarded dynamic bracket access on untrusted objects. | `AGENTS.md §TypeScript and Style` |
+| Guard indexed/lookup reads | **Important** | Narrow array/object/map lookups before dereference when the key can miss. Do not hide a possible miss with `!` or a broad assertion. | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
+| Preserve literal action discriminants | **Important** | Keep action strings in the canonical `ActionTypes` `as const` object. Do not duplicate raw action strings or widen changed action types to plain `string`. | `src/context/actionTypes.ts`, `src/AGENTS.md §TypeScript` |
+| Reuse canonical shared contracts | **Important** | If a cross-module contract already exists in `src/types/**`, import it rather than creating a second shape that can drift. Escalate only when the duplicate can desynchronize behavior/contracts. | `src/AGENTS.md §State & Types`, `src/types/AGENTS.md` |
+| React 19 refs use standard `ref` props | **Minor** | New components accept `ref` as a normal prop; do not add `forwardRef` unless an existing compatibility boundary explicitly requires it. | `src/AGENTS.md §UI & Copy` |
 | Explicit return types on exported class members | **Important** | Public members/getters of exported classes must have explicit return type annotations. | `AGENTS.md §TypeScript and Style` |
 | Type-only imports | **Minor** | Imports used only as types must use `import type`. | `AGENTS.md §TypeScript and Style` |
+| `as const satisfies` is a preferred map/config pattern | **n/a** | For finite literal maps/configs, this pattern helps preserve literal inference and key coverage. Do not flag its absence unless the actual typing permits a concrete missing-key/contract bug. | `src/AGENTS.md §TypeScript` |
 | Conventional Commits | **Minor** | Commit messages must follow the `type(scope): message` format. This repo uses `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `ci`, `build`, `style`, `revert`, and others — flag only when the format itself is absent, not when an unfamiliar type is used. | `AGENTS.md §TypeScript and Style` |
 
 ---
@@ -149,3 +154,6 @@ Flagging these wastes review trust and trains authors to ignore comments:
 - Stylistic naming preferences with no correctness impact
 - The `assertNever(action as never)` pattern in `gameReducer` — it is intentional (see §7)
 - `addContrabandHelper` being a function not an action — intentional composition pattern
+- An action creator not using `Extract<...>` when its declared return type is still equally exact and cannot drift
+- A finite config map not using `as const satisfies` when its existing typing already proves complete key coverage
+- Type-level preferences with no demonstrated runtime, contract, or repository-rule consequence
