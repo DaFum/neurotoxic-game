@@ -13,7 +13,7 @@ export const MOTION_DURATIONS = {
   slow: 0.6,
   hero: 0.8,
   long: 1.0,
-  scene: 0.25
+  scene: 0.15
 } as const
 
 export const MOTION_EASING = {

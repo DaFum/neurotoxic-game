@@ -1446,7 +1446,7 @@ const EXTERNAL = [
   { name: 'domAnimation', module: 'motion/react', isDefault: false },
   { name: 'domMax', module: 'motion/react', isDefault: false },
   { name: 'LazyMotion', module: 'motion/react', isDefault: false },
-  { name: 'm', module: 'motion/react-m', isDefault: false },
+  { name: 'm', module: 'motion/react-m', isDefault: false, isNamespace: true },
   {
     name: 'Variants',
     module: 'motion/react',
