@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import {
   AnimatePresence,
   LazyMotion,
-  domAnimation,
+  domMax,
   MotionConfig
 } from 'motion/react'
 import * as m from 'motion/react-m'
@@ -191,7 +191,7 @@ export default function App() {
   return (
     <ErrorBoundary>
       <MotionConfig reducedMotion='user'>
-        <LazyMotion features={domAnimation} strict>
+        <LazyMotion features={domMax} strict>
           <div className='noise-overlay pointer-events-none mix-blend-overlay'></div>
           <NetworkStatusProvider>
             <AudioEngineProvider>
