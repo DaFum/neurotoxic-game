@@ -198,7 +198,7 @@
       "category": "code-quality",
       "maturity": "stable",
       "version": "1.0.0",
-      "references": 3,
+      "references": 4,
       "scripts": 0,
       "keywords": [
         "code-review",
