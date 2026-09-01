@@ -47,7 +47,7 @@ Files: `src/context/actionCreators.ts`, `src/context/actionTypes.ts`
 
 - [ ] New action type is added to the canonical `ActionTypes` `as const` object; no duplicate raw action string
 - [ ] Literal action discriminants remain narrow; no widening to plain `string`
-- [ ] New/changed action creator stays tied to the canonical `GameAction` member (prefer the existing `Extract<GameAction, { type: ... }>` pattern when applicable)
+- [ ] Every new/changed `src/context` action creator returns `Extract<GameAction, { type: typeof ActionTypes.X }>` exactly; do not hand-write an equivalent action object return shape
 - [ ] Creator sanitizes raw payload before packaging it for dispatch
 - [ ] UUID/random generation occurs here rather than in reducers when the reducer needs deterministic input
 - [ ] `advanceDay(state)` is used instead of a payloadless `createAdvanceDayAction()` call
@@ -55,7 +55,7 @@ Files: `src/context/actionCreators.ts`, `src/context/actionTypes.ts`
 - [ ] Action payload type is narrow; untrusted `unknown` is not passed through without validation
 - [ ] Action contract changes update all affected reducer/tests/shared types in the same PR
 
-Do not flag a different but equally strict return type merely because it is not written with `Extract`; flag only when the action contract can drift or widen.
+Treat a hand-written return object shape on a new/changed `src/context` action creator as an **Important** repository-rule violation even when it appears structurally equivalent. The scoped contract requires `Extract<GameAction, ...>` so the creator remains coupled to the canonical discriminated union and reducer narrowing cannot drift.
 
 ---
 
