@@ -25,6 +25,7 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 |------|----------|-----------------|--------|
 | Action creator → reducer flow | **Critical** | All state mutations must go through a typed action creator dispatched to a reducer. No `setState` on game state, no direct object mutation outside a reducer. | `src/context/actionCreators.ts`, `src/context/actionTypes.ts` |
 | New actions update all three | **Critical** | Adding an action type requires: `actionTypes.ts` entry, `actionCreators.ts` creator, reducer handling. Missing any one = Critical. | `AGENTS.md §Architecture` |
+| Context action creators use canonical `Extract` return | **Important** | Every new/changed action creator under `src/context` must return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write an apparently equivalent action object return type. The explicit coupling keeps the canonical union narrowing with the reducer. | `src/context/AGENTS.md §Actions & Toasts` |
 | Creators sanitize, reducers clamp | **Important** | Action creators sanitize raw input payloads. Reducers are the final authority and re-clamp computed state. Sanitization in the wrong layer = Important. | `AGENTS.md §Architecture` |
 | No RNG in reducers | **Important** | Reducers must be pure. UUID generation and RNG calls belong in action creators. | `src/context/reducers/AGENTS.md §Reducer Flow` |
 | Toast IDs from deterministic helper | **Important** | `buildDeterministicToastId(prefix, state.toasts)` or a pre-generated payload ID — never `getSafeUUID()` inside a reducer. | `src/context/reducers/AGENTS.md §Reducer Flow` |
@@ -154,6 +155,5 @@ Flagging these wastes review trust and trains authors to ignore comments:
 - Stylistic naming preferences with no correctness impact
 - The `assertNever(action as never)` pattern in `gameReducer` — it is intentional (see §7)
 - `addContrabandHelper` being a function not an action — intentional composition pattern
-- An action creator not using `Extract<...>` when its declared return type is still equally exact and cannot drift
 - A finite config map not using `as const satisfies` when its existing typing already proves complete key coverage
 - Type-level preferences with no demonstrated runtime, contract, or repository-rule consequence
