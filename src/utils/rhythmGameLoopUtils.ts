@@ -64,7 +64,7 @@ const handleOverlayResume = (
               )
               stateRef.transportPausedByOverlay = true
             })
-        } else if (res === false) {
+        } else if ((res as unknown as boolean) === false) {
           stateRef.transportPausedByOverlay = true
         }
       } catch (err) {
@@ -93,7 +93,7 @@ const handleOverlayPause = (
     try {
       stateRef.transportPausedByOverlay = true
       const res = pauseAudio()
-      if (res && typeof res.catch === 'function') {
+      if (res && typeof res === 'object' && typeof res.catch === 'function') {
         res.catch(err => {
           logger.debug(
             'RhythmGameLoop',
