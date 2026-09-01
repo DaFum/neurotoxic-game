@@ -196,7 +196,9 @@ export const resolveBalanceTuning = (
       if (!Array.isArray(value))
         throw new TypeError('obligationStages must be an array')
       let previousThroughDay = -1
-      const newStages = new Array<{ throughDay: number; multiplier: number }>(value.length)
+      const newStages = new Array<{ throughDay: number; multiplier: number }>(
+        value.length
+      )
       for (let index = 0; index < value.length; index++) {
         const stage = value[index]
         if (!stage || typeof stage !== 'object')
@@ -207,15 +209,21 @@ export const resolveBalanceTuning = (
           throw new TypeError('Obligation stage requires own multiplier')
         let firstUnknownKey = undefined
         for (const stageKey in stage as Record<string, unknown>) {
-          if (!Object.hasOwn(stage as Record<string, unknown>, stageKey)) continue
+          if (!Object.hasOwn(stage as Record<string, unknown>, stageKey))
+            continue
           if (stageKey !== 'throughDay' && stageKey !== 'multiplier') {
             firstUnknownKey = stageKey
             break
           }
         }
         if (firstUnknownKey !== undefined)
-          throw new TypeError(`Unknown obligation stage key: ${firstUnknownKey}`)
-        const throughDay = validateNumber('durationDays', (stage as { throughDay: unknown }).throughDay)
+          throw new TypeError(
+            `Unknown obligation stage key: ${firstUnknownKey}`
+          )
+        const throughDay = validateNumber(
+          'durationDays',
+          (stage as { throughDay: unknown }).throughDay
+        )
         if (throughDay <= previousThroughDay)
           throw new RangeError(
             'Obligation stage boundaries must be strictly increasing'
