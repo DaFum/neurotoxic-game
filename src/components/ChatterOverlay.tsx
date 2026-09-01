@@ -233,33 +233,36 @@ const ChatterMessageLifetimeBar = ({
  * @param props - Component properties containing the message data, removal callback, and translation function
  * @returns The animated chatter message component
  */
-const ChatterMessage = memo(({ msg, onRemove, t }: ChatterMessageProps) => {
-  const messageScene = msg.scene
-  const sceneStyle = SCENE_STYLES[messageScene] || DEFAULT_STYLE
+const ChatterMessage = memo(
+  ({ msg, onRemove, t, ref }: ChatterMessageProps) => {
+    const messageScene = msg.scene
+    const sceneStyle = SCENE_STYLES[messageScene] || DEFAULT_STYLE
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onRemove(msg.id)
-    }, MESSAGE_LIFETIME_MS)
-    return () => clearTimeout(timer)
-  }, [msg.id, onRemove])
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        onRemove(msg.id)
+      }, MESSAGE_LIFETIME_MS)
+      return () => clearTimeout(timer)
+    }, [msg.id, onRemove])
 
-  const sceneLabel = t(`ui:chatter_labels.${messageScene}`, {
-    defaultValue: t('ui:chatter_labels.default_fallback', {
-      defaultValue: 'Band Feed'
+    const sceneLabel = t(`ui:chatter_labels.${messageScene}`, {
+      defaultValue: t('ui:chatter_labels.default_fallback', {
+        defaultValue: 'Band Feed'
+      })
     })
-  })
 
-  const textColorClass = resolveMessageTextColor(msg.type, messageScene)
+    const textColorClass = resolveMessageTextColor(msg.type, messageScene)
 
-  return (
-    <m.div
-      initial={{ opacity: 0, y: 18, scale: 0.96 }}
-      animate={{ opacity: 1, y: 0, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.9, y: -10 }}
-      transition={MOTION_TRANSITIONS.ui}
-      className='mb-2 last:mb-0'
-    >
+    return (
+      <m.div
+        ref={ref}
+        layout="position"
+        initial={{ opacity: 0, y: 18, scale: 0.96 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.9, y: -10 }}
+        transition={MOTION_TRANSITIONS.ui}
+        className='mb-2 last:mb-0'
+      >
       <div
         className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
         style={{

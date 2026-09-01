@@ -2,6 +2,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { AnimatePresence } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
+import { MOTION_TRANSITIONS } from '../config/motion'
 import { logger } from '../utils/logger'
 import { translateContextKeys } from '../utils/translationUtils'
 import { safeJsonParse } from '../utils/objectUtils'
@@ -77,10 +78,11 @@ const ToastItem = memo(({ toast, removeToast, style, ref }: ToastItemProps) => {
   return (
     <m.div
       ref={ref}
+      layout="position"
       initial={{ opacity: 0, y: 14, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: -12, scale: 0.98 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
+      transition={MOTION_TRANSITIONS.toast}
       className={`
         w-[min(34rem,94vw)] border-2 ${style.border} bg-void-black/90 backdrop-blur-md
         shadow-[0_0_0_1px_var(--color-void-black),0_10px_24px_var(--color-shadow-overlay)]

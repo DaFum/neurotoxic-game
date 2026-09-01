@@ -38,5 +38,9 @@ export const MOTION_TRANSITIONS = {
   scene: {
     duration: MOTION_DURATIONS.scene,
     ease: MOTION_EASING.enter
+  },
+  toast: {
+    duration: MOTION_DURATIONS.fast,
+    ease: MOTION_EASING.enter
   }
 } as const

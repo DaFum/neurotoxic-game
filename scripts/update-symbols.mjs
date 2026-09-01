@@ -1438,24 +1438,29 @@ const EXTERNAL = [
   // react-i18next
   { name: 'useTranslation', module: 'react-i18next', isDefault: false },
   { name: 'Trans', module: 'react-i18next', isDefault: false },
-  // framer-motion
-  { name: 'motion', module: 'framer-motion', isDefault: false },
-  { name: 'AnimatePresence', module: 'framer-motion', isDefault: false },
+  // motion
+  { name: 'motion', module: 'motion/react', isDefault: false },
+  { name: 'AnimatePresence', module: 'motion/react', isDefault: false },
+  { name: 'MotionConfig', module: 'motion/react', isDefault: false },
+  { name: 'useReducedMotion', module: 'motion/react', isDefault: false },
+  { name: 'domAnimation', module: 'motion/react', isDefault: false },
+  { name: 'LazyMotion', module: 'motion/react', isDefault: false },
+  { name: 'm', module: 'motion/react-m', isDefault: false },
   {
     name: 'Variants',
-    module: 'framer-motion',
+    module: 'motion/react',
     isDefault: false,
     typeOnly: true
   },
   {
     name: 'HTMLMotionProps',
-    module: 'framer-motion',
+    module: 'motion/react',
     isDefault: false,
     typeOnly: true
   },
   {
     name: 'Transition',
-    module: 'framer-motion',
+    module: 'motion/react',
     isDefault: false,
     typeOnly: true
   },

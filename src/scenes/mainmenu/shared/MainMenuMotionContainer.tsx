@@ -1,7 +1,5 @@
-import { useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { ReactNode } from 'react'
-import { MOTION_DURATIONS } from '../../../config/motion'
 
 /**
  * Props for configuring the animation container within the main menu.
@@ -19,9 +17,7 @@ interface MainMenuMotionContainerProps {
  * A wrapper component that applies a delayed fade-in animation to its contents.
  *
  * @remarks
- * This component automatically respects the user's system preferences for reduced motion.
- * If reduced motion is preferred, the fade-in animation and its delay are bypassed entirely,
- * rendering the contents immediately.
+ * MotionConfig reducedMotion="user" handles reduced motion preferences at root level.
  *
  * @param props - The component properties.
  * @returns A Motion for React div containing the animated children.
@@ -38,17 +34,11 @@ export const MainMenuMotionContainer = ({
   className,
   delay = 1.2
 }: MainMenuMotionContainerProps) => {
-  const prefersReducedMotion = useReducedMotion()
-
   return (
     <m.div
-      initial={prefersReducedMotion ? false : { opacity: 0 }}
+      initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={
-        prefersReducedMotion
-          ? { duration: MOTION_DURATIONS.instant }
-          : { delay }
-      }
+      transition={{ delay }}
       className={className}
     >
       {children}

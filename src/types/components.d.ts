@@ -67,6 +67,7 @@ export interface ChatterMessageProps {
   msg: ChatterMessageData
   onRemove: RemoveByIdCallback
   t: TranslationCallback
+  ref?: React.Ref<HTMLDivElement>
 }
 
 /**
