@@ -186,53 +186,78 @@ export const resolveBalanceTuning = (
   const earlyGame = { ...base.earlyGame }
   const touring = { ...base.touring }
   const recovery = { ...base.recovery }
-  for (const [key, value] of Object.entries(overrides.earlyGame ?? {})) {
+  const earlyGameOverrides = overrides.earlyGame ?? {}
+  for (const key in earlyGameOverrides) {
+    if (!Object.hasOwn(earlyGameOverrides, key)) continue
+    const value = (earlyGameOverrides as Record<string, unknown>)[key]
     if (!Object.hasOwn(earlyGame, key))
       throw new TypeError(`Unknown earlyGame key: ${key}`)
     if (key === 'obligationStages') {
       if (!Array.isArray(value))
         throw new TypeError('obligationStages must be an array')
       let previousThroughDay = -1
-      earlyGame.obligationStages = value.map((stage, index) => {
+      const newStages = new Array<{ throughDay: number; multiplier: number }>(
+        value.length
+      )
+      for (let index = 0; index < value.length; index++) {
+        const stage = value[index]
         if (!stage || typeof stage !== 'object')
           throw new TypeError(`Invalid obligation stage ${index}`)
         if (!Object.hasOwn(stage, 'throughDay'))
           throw new TypeError('Obligation stage requires own throughDay')
         if (!Object.hasOwn(stage, 'multiplier'))
           throw new TypeError('Obligation stage requires own multiplier')
-        const unknownKeys = Object.keys(stage).filter(
-          stageKey => stageKey !== 'throughDay' && stageKey !== 'multiplier'
+        let firstUnknownKey = undefined
+        for (const stageKey in stage as Record<string, unknown>) {
+          if (!Object.hasOwn(stage as Record<string, unknown>, stageKey))
+            continue
+          if (stageKey !== 'throughDay' && stageKey !== 'multiplier') {
+            firstUnknownKey = stageKey
+            break
+          }
+        }
+        if (firstUnknownKey !== undefined)
+          throw new TypeError(
+            `Unknown obligation stage key: ${firstUnknownKey}`
+          )
+        const throughDay = validateNumber(
+          'durationDays',
+          (stage as { throughDay: unknown }).throughDay
         )
-        if (unknownKeys.length > 0)
-          throw new TypeError(`Unknown obligation stage key: ${unknownKeys[0]}`)
-        const throughDay = validateNumber('durationDays', stage.throughDay)
         if (throughDay <= previousThroughDay)
           throw new RangeError(
             'Obligation stage boundaries must be strictly increasing'
           )
         previousThroughDay = throughDay
-        return {
+        newStages[index] = {
           throughDay,
           multiplier: validateNumber(
             'dailyObligationMultiplier',
-            stage.multiplier
+            (stage as { multiplier: unknown }).multiplier
           )
         }
-      })
+      }
+      earlyGame.obligationStages = newStages
       continue
     }
     Object.assign(earlyGame, {
       [key]: validateNumber(key as keyof typeof RANGES, value)
     })
   }
-  for (const [key, value] of Object.entries(overrides.touring ?? {})) {
+  const touringOverrides = overrides.touring ?? {}
+  for (const key in touringOverrides) {
+    if (!Object.hasOwn(touringOverrides, key)) continue
+    const value = (touringOverrides as Record<string, unknown>)[key]
     if (!Object.hasOwn(touring, key))
       throw new TypeError(`Unknown touring key: ${key}`)
     Object.assign(touring, {
       [key]: validateNumber(key as keyof typeof RANGES, value)
     })
   }
-  for (const [key, value] of Object.entries(overrides.recovery ?? {})) {
+  const recoveryOverrides = overrides.recovery ?? {}
+  for (const key in recoveryOverrides) {
+    if (!Object.hasOwn(recoveryOverrides, key)) continue
+    const value = (recoveryOverrides as Record<string, unknown>)[key]
     if (!Object.hasOwn(recovery, key))
       throw new TypeError(`Unknown recovery key: ${key}`)
     if (key === 'costType') {

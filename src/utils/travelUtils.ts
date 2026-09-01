@@ -91,8 +91,15 @@ export const getLocationName = (
     fallback: string
   ) => string
 ): string => {
-  const key = location || venueId || 'Unknown'
-  return translateLocation(t, key, key)
+  let locationKey: string
+  if (location !== undefined && location !== null) {
+    locationKey = location
+  } else if (venueId !== undefined && venueId !== null) {
+    locationKey = venueId
+  } else {
+    locationKey = 'Unknown'
+  }
+  return translateLocation(t, locationKey, locationKey)
 }
 
 /**

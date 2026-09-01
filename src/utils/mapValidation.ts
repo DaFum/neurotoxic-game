@@ -232,15 +232,22 @@ const validateDiversity = (
   connections: readonly ValidatedMapConnection[],
   issues: MapValidationIssue[]
 ): void => {
-  const nodeList = Object.values(nodes)
+  const nodeList = []
+  for (const key in nodes) {
+    if (Object.hasOwn(nodes, key)) {
+      nodeList.push(nodes[key] as ValidatedMapNode)
+    }
+  }
   const outDegree = new Map<string, number>()
   for (const connection of connections) {
     outDegree.set(connection.from, (outDegree.get(connection.from) ?? 0) + 1)
   }
 
-  const branchPoints = [...outDegree.values()].filter(
-    degree => degree >= 2
-  ).length
+  let branchPoints = 0
+  for (const degree of outDegree.values()) {
+    if (degree >= 2) branchPoints++
+  }
+
   if (branchPoints < MAP_DIVERSITY_REQUIREMENTS.minBranchPoints) {
     issues.push({
       code: 'diversity.branchPoints',
@@ -395,7 +402,15 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
 
   const connections = validateConnections(raw.connections, nodeIds, issues)
 
-  const startNodes = Object.values(nodes).filter(node => node.type === 'START')
+  const startNodes = []
+  for (const key in nodes) {
+    if (Object.hasOwn(nodes, key)) {
+      const node = nodes[key]
+      if (node && node.type === 'START') {
+        startNodes.push(node)
+      }
+    }
+  }
   if (startNodes.length !== 1) {
     issues.push({
       code: 'map.start.count',
@@ -412,7 +427,12 @@ export const validateGeneratedMap = (raw: unknown): MapValidationResult => {
 
   if (connections && startNodes.length === 1 && startNodes[0]) {
     const reachable = collectReachable(startNodes[0].id, connections)
-    const orphans = Object.keys(nodes).filter(id => !reachable.has(id))
+    const orphans = []
+    for (const key in nodes) {
+      if (Object.hasOwn(nodes, key) && !reachable.has(key)) {
+        orphans.push(key)
+      }
+    }
     if (orphans.length > 0) {
       issues.push({
         code: 'map.unreachableNodes',
