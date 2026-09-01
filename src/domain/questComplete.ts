@@ -9,6 +9,19 @@ import {
 } from './questHelpers'
 import { addQuest } from './questAdd'
 
+/**
+ * Resolves an active quest, applies rewards, and triggers followup logic.
+ *
+ * @remarks
+ * This function handles the removal of the quest from the active list, applies
+ * rewards via `applyQuestRewards`, updates story flags (both completing and clearing
+ * transient ones), manages cooldown policies, handles scope keys for isolation, and
+ * optionally queues up a followup quest if one is defined. It operates immutably on
+ * the game state.
+ *
+ * @param state - The current game state.
+ * @returns The updated game state after quest completion, or the exact unmodified original state reference if the quest cannot be found or resolved.
+ */
 export const completeQuest = (
   state: GameState,
   { questId, randomIdx }: { questId: string; randomIdx?: number }
