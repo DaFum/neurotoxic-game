@@ -97,7 +97,7 @@ export default defineConfig({
             },
             {
               name: 'vendor-motion',
-              test: /node_modules[\\/](motion|framer-motion)[\\/]/,
+              test: /node_modules[\\/](motion|motion-dom|motion-utils)[\\/]/,
               priority: 20
             },
             {

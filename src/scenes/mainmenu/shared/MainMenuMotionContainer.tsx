@@ -19,9 +19,8 @@ interface MainMenuMotionContainerProps {
  * A wrapper component that applies a delayed fade-in animation to its contents.
  *
  * @remarks
- * This component automatically respects the user's system preferences for reduced motion.
- * If reduced motion is preferred, the fade-in animation and its delay are bypassed entirely,
- * rendering the contents immediately.
+ * Restores explicit reducedMotion bypass so that users with reduced motion
+ * preferences do not wait through delayed opacity fades for menu controls to render.
  *
  * @param props - The component properties.
  * @returns A Motion for React div containing the animated children.

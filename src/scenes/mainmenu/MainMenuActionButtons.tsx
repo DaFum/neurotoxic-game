@@ -1,6 +1,7 @@
 import { useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
+import { MOTION_TRANSITIONS } from '../../config/motion'
 import { GlitchButton } from '../../ui/GlitchButton'
 
 interface MainMenuActionButtonsProps {
@@ -30,7 +31,9 @@ export const MainMenuActionButtons = ({
       initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={
-        prefersReducedMotion ? { duration: 0 } : { duration: 0.5, delay: 0.2 }
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { ...MOTION_TRANSITIONS.ui, delay: 0.2 }
       }
       className='flex w-full max-w-xs flex-col gap-3'
     >
