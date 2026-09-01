@@ -20,7 +20,7 @@ import { addQuest } from './questAdd'
  * the game state.
  *
  * @param state - The current game state.
- * @returns The updated game state after quest completion, or the exact unmodified original state reference if the quest cannot be found or resolved.
+ * @returns The updated game state after quest completion, or the unmodified original state if the quest cannot be resolved.
  */
 export const completeQuest = (
   state: GameState,
