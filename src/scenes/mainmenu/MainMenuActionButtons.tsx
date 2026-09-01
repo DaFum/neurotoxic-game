@@ -1,3 +1,4 @@
+import { useReducedMotion } from 'motion/react'
 import * as m from 'motion/react-m'
 import { useTranslation } from 'react-i18next'
 import { MOTION_TRANSITIONS } from '../../config/motion'
@@ -23,15 +24,17 @@ export const MainMenuActionButtons = ({
   openHQ
 }: MainMenuActionButtonsProps) => {
   const { t } = useTranslation()
+  const prefersReducedMotion = useReducedMotion()
 
   return (
     <m.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={prefersReducedMotion ? false : { opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{
-        ...MOTION_TRANSITIONS.ui,
-        delay: 0.2
-      }}
+      transition={
+        prefersReducedMotion
+          ? { duration: 0 }
+          : { ...MOTION_TRANSITIONS.ui, delay: 0.2 }
+      }
       className='flex w-full max-w-xs flex-col gap-3'
     >
       <GlitchButton
