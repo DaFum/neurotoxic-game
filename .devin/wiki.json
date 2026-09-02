@@ -30,7 +30,7 @@
     },
     {
       "author": "OpenAI",
-      "content": "Quality documentation must reflect the current repository gates from package.json and AGENTS.md: pnpm run test / test:fast for the fast loop, test:all for the full gate, test:ui, test:node, test:additional, test:e2e, typecheck, typecheck:core, typecheck:server, deadcode:check, deadcode:budget, symbols:update/symbols:check, performance tests, locale tests, and balance simulation commands. Explain which command answers which question instead of presenting every script as equally important."
+      "content": "Quality documentation must reflect the current repository gates from package.json and AGENTS.md: pnpm run test and pnpm run test:fast for the fast loop, pnpm run test:all for the full gate, plus test:ui, test:node, test:additional, test:e2e, typecheck, typecheck:core, typecheck:server, deadcode:check, deadcode:budget, symbols:update/symbols:check, performance tests, locale tests, and balance simulation commands. Explain which command answers which question instead of presenting every script as equally important."
     },
     {
       "author": "OpenAI",
@@ -221,7 +221,7 @@
       "page_notes": [
         {
           "author": "OpenAI",
-          "content": "Use package.json and root AGENTS.md as command sources of truth. Include pnpm run test/test:fast, test:all, test:ui, test:node, test:additional, test:e2e, typecheck, typecheck:core, typecheck:server, deadcode:check, deadcode:budget, symbols:update/symbols:check, relevant bench/perf commands, and balance simulation commands, but explain purpose rather than dumping scripts."
+          "content": "Use package.json and root AGENTS.md as command sources of truth. Include `pnpm run test`, `pnpm run test:fast`, `pnpm run test:all`, `pnpm run test:ui`, `pnpm run test:node`, `pnpm run test:additional`, `pnpm run test:e2e`, `pnpm run typecheck`, `pnpm run typecheck:core`, `pnpm run typecheck:server`, `pnpm run deadcode:check`, `pnpm run deadcode:budget`, `pnpm run symbols:update`, and `pnpm run symbols:check`, plus relevant bench/perf and balance simulation commands, but explain purpose rather than dumping scripts."
         }
       ]
     },
