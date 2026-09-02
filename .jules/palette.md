@@ -209,8 +209,3 @@
 
 **Learning:** Event option buttons in `EventModal.tsx` use `aria-disabled="true"` to maintain keyboard focusability, but lacked an explicit focus-visible ring color in their disabled state and omitted explanation tooltips.
 **Action:** Always include explicit focus ring colors (e.g., `focus-visible:ring-ash-gray/60`) on disabled `aria-disabled` controls and wrap disabled options in `Tooltip` providing localized context (e.g., `option.disabledReason` or `t('ui:event.optionDisabled')`).
-
-## 2026-08-18 - Full WAI-ARIA Tab Navigation and Default Button Types
-
-**Learning:** Custom tab headers using plain `<button>` elements (such as `PreGig.tsx`) lack implicit `role="tab"` and `role="tabpanel"` associations, preventing screen readers from announcing panel controls correctly. Additionally, custom button primitives (like `GlitchButton.tsx`) that omit default `type="button"` parameters cause implicit form submissions if rendered inside a `<form>`.
-**Action:** Always wrap tab controls in `role="tablist"`, bind `role="tab"` with `aria-selected` and `aria-controls`, and associate the content container with `role="tabpanel"`, `tabIndex={0}`, and `aria-labelledby`. Ensure button primitives explicitly default to `type="button"`.

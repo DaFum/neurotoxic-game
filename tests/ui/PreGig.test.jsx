@@ -713,8 +713,26 @@ describe('PreGig', () => {
 
     expect(logisticsTab.getAttribute('aria-selected')).toBe('true')
     expect(logisticsTab.getAttribute('aria-controls')).toBe('panel-logistics')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('0')
     expect(merchTab.getAttribute('aria-selected')).toBe('false')
     expect(merchTab.getAttribute('aria-controls')).toBe('panel-merch')
+    expect(merchTab.getAttribute('tabindex')).toBe('-1')
+
+    // Navigate with ArrowRight key
+    fireEvent.keyDown(logisticsTab, { key: 'ArrowRight' })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('false')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('-1')
+    expect(merchTab.getAttribute('aria-selected')).toBe('true')
+    expect(merchTab.getAttribute('tabindex')).toBe('0')
+
+    // Navigate back with ArrowLeft key
+    fireEvent.keyDown(merchTab, { key: 'ArrowLeft' })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('true')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('0')
+    expect(merchTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('tabindex')).toBe('-1')
 
     const logisticsPanel = getByRole('tabpanel')
     expect(logisticsPanel.id).toBe('panel-logistics')

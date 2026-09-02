@@ -2,7 +2,7 @@ import { SONGS_DB } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
@@ -19,6 +19,42 @@ for (let i = 0; i < SONGS_DB.length; i++) {
  */
 export const PreGig = () => {
   const [activeTab, setActiveTab] = useState<'logistics' | 'merch'>('logistics')
+
+  const handleTabKeyDown = (
+    event: React.KeyboardEvent<HTMLButtonElement>,
+    index: number
+  ) => {
+    const tabsList: Array<'logistics' | 'merch'> = ['logistics', 'merch']
+    let nextIndex: number
+
+    switch (event.key) {
+      case 'ArrowRight':
+        nextIndex = (index + 1) % tabsList.length
+        break
+      case 'ArrowLeft':
+        nextIndex = (index - 1 + tabsList.length) % tabsList.length
+        break
+      case 'Home':
+        nextIndex = 0
+        break
+      case 'End':
+        nextIndex = tabsList.length - 1
+        break
+      default:
+        return
+    }
+
+    const nextTab = tabsList[nextIndex]
+    if (!nextTab) return
+
+    event.preventDefault()
+    setActiveTab(nextTab)
+
+    const tabListEl = event.currentTarget.closest('[role="tablist"]')
+    const nextTabEl =
+      tabListEl?.querySelectorAll<HTMLElement>('[role="tab"]')[nextIndex]
+    nextTabEl?.focus()
+  }
   const {
     t,
     i18n,
@@ -66,12 +102,14 @@ export const PreGig = () => {
             id='tab-logistics'
             aria-selected={activeTab === 'logistics'}
             aria-controls='panel-logistics'
+            tabIndex={activeTab === 'logistics' ? 0 : -1}
             className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
               activeTab === 'logistics'
                 ? 'bg-toxic-green text-void-black font-bold'
                 : 'text-ash-gray hover:text-toxic-green'
             }`}
             onClick={() => setActiveTab('logistics')}
+            onKeyDown={e => handleTabKeyDown(e, 0)}
           >
             {t('ui:pregig.tabs.logistics')}
           </button>
@@ -81,12 +119,14 @@ export const PreGig = () => {
             id='tab-merch'
             aria-selected={activeTab === 'merch'}
             aria-controls='panel-merch'
+            tabIndex={activeTab === 'merch' ? 0 : -1}
             className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
               activeTab === 'merch'
                 ? 'bg-toxic-green text-void-black font-bold'
                 : 'text-ash-gray hover:text-toxic-green'
             }`}
             onClick={() => setActiveTab('merch')}
+            onKeyDown={e => handleTabKeyDown(e, 1)}
           >
             {t('ui:pregig.tabs.merch')}
           </button>
