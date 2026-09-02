@@ -147,18 +147,17 @@ export const calculateNoteY = (
 
 /**
  * Calculates a crowd member offset based on combo intensity.
- * @param params - Crowd animation inputs.
- * - `params.combo` - Current combo count.
- * - `params.timeMs` - Current time in ms.
+ *
+ * @remarks
+ * ⚡ BOLT OPTIMIZATION: Accepts positional parameters instead of an options object
+ * to prevent allocating a temporary `{ combo, timeMs }` object on every frame (60fps)
+ * in the PixiJS crowd update loop.
+ *
+ * @param combo - Current combo count.
+ * @param timeMs - Current time in ms.
  * @returns The vertical offset.
  */
-export const calculateCrowdOffset = ({
-  combo,
-  timeMs
-}: {
-  combo: number
-  timeMs: number
-}): number => {
+export const calculateCrowdOffset = (combo: number, timeMs: number): number => {
   const intensity = combo > 10 ? 2 : 1
   return Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
 }

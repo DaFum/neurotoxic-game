@@ -25,9 +25,9 @@ test('stage utils', async t => {
   })
 
   await t.test('calculateCrowdOffset', () => {
-    const offset1 = calculateCrowdOffset({ combo: 5, timeMs: 100 })
+    const offset1 = calculateCrowdOffset(5, 100)
     assert.ok(offset1 >= 0 && offset1 <= 5)
-    const offset2 = calculateCrowdOffset({ combo: 15, timeMs: 100 })
+    const offset2 = calculateCrowdOffset(15, 100)
     assert.ok(offset2 >= 0 && offset2 <= 5)
   })
 

@@ -123,7 +123,10 @@ mock.module(
   {
     namedExports: {
       ...mockPixiStageUtils,
-      calculateCrowdOffset: mock.fn(() => 10),
+      calculateCrowdOffset: mock.fn((combo, timeMs) => {
+        const intensity = combo > 10 ? 2 : 1
+        return Math.abs(Math.sin((timeMs / 100) * intensity) * 5)
+      }),
       calculateCrowdY: mock.fn(() => 100),
       getPixiColorFromToken: mock.fn(() => 0xffffff),
       CROWD_LAYOUT: {
