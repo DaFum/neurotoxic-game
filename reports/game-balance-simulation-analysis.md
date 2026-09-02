@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-09-02T13:44:53.732Z
+Erstellt am: 2026-09-02T15:49:44.326Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 55c274d8b3970592227029676dc0ca4087cb397317e2daa6c73e0fc3a3575609
-- Generator-Fingerprint: c58f8abfc9bae59e350caf9e327d68f665651dbb860aab0ee0778b66d9212261
+- Source-Fingerprint: 69590da6d0462e91a5b64108a017f79874a3ee84dfbb3e01feeea5807131579a
+- Generator-Fingerprint: 3f89e44f8014e4850c2484d260563d1ce526cdccbe0b5d7343b8aec048d5dd30
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -540,7 +540,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 | eventTriggers.preGig | ✅ | 173236 | 172564 | - |
 | eventTriggers.gigMoments | ✅ | 173236 | 22448 | - |
 | eventTriggers.postGig | ✅ | 173236 | 173061 | - |
-| quests | ✅ | offers: 10499 (u:24) | acts: 5294 (u:24), comp: 492 (u:6) | 32 in registry |
+| quests | ✅ | offers: 85318 (u:24) | acts: 42582 (u:24), comp: 501 (u:6) | 32 in registry |
 
 ## KPI-Zielkorridore (Health Check)
 
@@ -591,7 +591,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `2859a98e843bdd7ba097d20dd514685351975b2aef7e4041aa79ad0e3233511b` | `55c274d8b3970592227029676dc0ca4087cb397317e2daa6c73e0fc3a3575609` |
+| Source-Fingerprint | `55c274d8b3970592227029676dc0ca4087cb397317e2daa6c73e0fc3a3575609` | `69590da6d0462e91a5b64108a017f79874a3ee84dfbb3e01feeea5807131579a` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |

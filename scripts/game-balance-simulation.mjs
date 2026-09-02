@@ -1347,7 +1347,7 @@ const applyTriggerEvent = (
   if (!event?.options?.length || !category) return false
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const oldFame = state.player.fame
-  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng)
+  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng, counters)
   if (delta) {
     recordObservedFameChange(
       counters.fameAccounting,

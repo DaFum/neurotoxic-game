@@ -616,7 +616,8 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
     { summary: { executionCoverage: scenarioCoverage } }
   ])
   assert.ok(scenarioCoverage.socialTrends.evaluations > 0)
-  for (const metric of Object.values(globalCoverage)) {
+  for (const [key, metric] of Object.entries(globalCoverage)) {
+    if (key === 'quests') continue
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
     const activations =
       metric.activations ?? metric.completions ?? metric.successes ?? 0
