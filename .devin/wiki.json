@@ -1,160 +1,249 @@
 {
   "repo_notes": [
     {
-      "author": "Devin",
-      "content": "Neurotoxic is a frontend-first single-page application built with React 19 + Vite. Use pnpm for installs and scripts (see package.json). Node >=22 is required. Core gameplay and UI live under src/; server/serverless endpoints (leaderboard) are under api/; server helpers live in lib/. Treat large binary assets in src/assets as referenced data, not primary docs."
+      "author": "OpenAI",
+      "content": "Neurotoxic is a React 19 + Vite single-page game with gameplay and UI under src/, serverless API endpoints under api/, shared server helpers under lib/, tests under tests/ and e2e/, and build/quality tooling under scripts/ and .github/. Use package.json as the source of truth for exact dependency versions and commands; documentation should name major versions only unless a concrete version is necessary to explain compatibility. Node >=22.13.0 and pnpm are required by the repository."
     },
     {
-      "author": "Devin",
-      "content": "Priority areas to document: 1) Application architecture and entry points (src/main.tsx, src/App.tsx), 2) State management and reducer/action conventions (src/context), 3) Gameplay orchestration hooks in src/hooks (useTravelLogic, useArrivalLogic, rhythm/minigame hooks), 4) Audio engine & song metadata (src/utils/audio, src/assets), 5) Data/event pools (src/data), and 6) Tests & CI (tests/, e2e/, scripts/, .github/workflows)."
+      "author": "OpenAI",
+      "content": "Treat repository architecture rules as first-class documentation sources. Read root AGENTS.md plus the nearest nested AGENTS.md for the documented area. In particular, src/AGENTS.md defines state/type/UI boundaries, src/domain/AGENTS.md defines pure domain intent and typed side effects, src/utils/AGENTS.md defines many gameplay sources of truth, src/components/stage/AGENTS.md defines rhythm/audio invariants, and api/AGENTS.md defines backend compatibility and security contracts. Do not paraphrase these files blindly; explain why the contracts exist and point to the runtime code that implements them."
     },
     {
-      "author": "Devin",
-      "content": "src/ structure notes: - src/context: reducers, action creators, GameState and state contracts. - src/hooks: orchestration and minigame logic (useTravelLogic, useArrivalLogic, rhythm game hooks). - src/components: UI primitives and minigame UI. - src/scenes: scene components and SceneRouter lazy-loading. - src/utils: pure utilities (gameStateUtils, audio helpers) — document these domain contracts."
+      "author": "OpenAI",
+      "content": "The architectural center is not just React components. Document the flow from UI and orchestration hooks into typed action creators and reducers, plus the separate pure domain layer in src/domain. Domain modules return intent such as actions and discriminated side effects; they do not dispatch, mutate state, or persist storage. Boundary data from persistence, API, events, or quests must be treated as unknown and narrowed before actions are constructed. Reducers remain authoritative for state validity and must reject or re-clamp hostile/computed values where required by repository rules."
     },
     {
-      "author": "Devin",
-      "content": "Testing & quality: Local quality gate is `pnpm run test:all`. Fast developer loop uses `pnpm run test:fast`. Vitest (logic + UI) and node test suites split is handled by scripts in package.json and the scripts/ helpers. E2E tests live under e2e/ and use Playwright. Document test harness entrypoints and custom test utilities under tests/."
+      "author": "OpenAI",
+      "content": "Gameplay documentation must give dedicated coverage to systems that have grown beyond generic data/event descriptions: overworld/map/travel, event resolution, quests, economy/merch, long-term assets and liabilities, unlocks/progression, and minigames. For each system identify its source-of-truth files rather than duplicating constants or formulas in prose. Important examples include CHASSIS_CONFIG, MODULE_REGISTRY, unlockManager vs unlockCheck ownership, economy helpers/constants, quest domain modules, and deterministic map/RNG helpers."
     },
     {
-      "author": "Devin",
-      "content": "I18n guidance: Locales live in public/locales/en/ and public/locales/de/. All user-facing text is localized via `t('...')` or `<Trans>`. When adding or changing keys, update both locale files and run `pnpm run i18n:extract`. Document namespace conventions (ui:, scenes:, events:) rather than dumping raw translation files."
+      "author": "OpenAI",
+      "content": "Scene documentation must reflect the current named-export pattern. Scene modules such as src/scenes/Overworld.tsx export named components; src/components/SceneRouter.tsx adapts those named exports to the default shape required by React.lazy. Do not instruct contributors to convert scene modules to default exports. Explain GAME_PHASES routing, minigame fallbacks, lazy loading, and the separation between reducer state transitions and continuation callbacks that own navigation after completion flows."
     },
     {
-      "author": "Devin",
-      "content": "Audio & songs: Audio uses Tone.js and a dedicated audio engine; the canonical clock is `audioEngine.getGigTimeMs()`. Song metadata is in src/data/songs.ts; large binary assets (MIDI/OGG) live in src/assets. Track-end detection uses setlistCompleted + isNearTrackEnd semantics — document these patterns, not binary contents."
+      "author": "OpenAI",
+      "content": "Audio and rhythm timing have strict ownership. Gameplay timing uses audioEngine.getGigTimeMs(), never direct Tone.js clock reads. Track-end behavior uses setlistCompleted together with isNearTrackEnd. Non-gameplay timestamps/cooldowns/persistence metadata use the injected IClock/systemClock path. Describe the OGG-to-MIDI/procedural fallback and keep scheduling concerns inside the audio engine or rhythm utilities instead of components. Large MIDI/OGG/image assets should be referenced, not reproduced."
     },
     {
-      "author": "Devin",
-      "content": "APIs and server code: Serverless endpoints live under api/ (example: api/leaderboard). Server helper utilities live in lib/ (e.g., lib/redis.js). If you want explicit API pages, document request/response shapes and error cases for these endpoints."
+      "author": "OpenAI",
+      "content": "Backend documentation must cover trust boundaries, not only endpoint shapes. api/ currently centers on leaderboard endpoints and shared helpers in lib/. Explain backward-compatible response contracts, { error: string } error bodies, ID normalization, sanitizePlayerName, and rate-limit/client-IP handling. x-forwarded-for must not be trusted unless TRUST_PROXY=true; point to shared helpers and relevant security tests instead of suggesting direct header reads."
     },
     {
-      "author": "Devin",
-      "content": "Conventions and TypeScript: The project enforces strict TS/CheckJS rules. Avoid `any`; prefer `unknown` and narrow at boundaries. Reducers must be covered by action creators and clamp state in the action creator layer. Consult AGENTS.md files in the repo for many repository-specific conventions and restrictions before generating detailed pages."
+      "author": "OpenAI",
+      "content": "Quality documentation must reflect the current repository gates from package.json and AGENTS.md: pnpm run test / test:fast for the fast loop, test:all for the full gate, test:ui, test:node, test:additional, test:e2e, typecheck, typecheck:core, typecheck:server, deadcode:check, deadcode:budget, symbols:update/symbols:check, performance tests, locale tests, and balance simulation commands. Explain which command answers which question instead of presenting every script as equally important."
     },
     {
-      "author": "Devin",
-      "content": "What to ignore or deprioritize: - node_modules/, dist/, output/, and generated screenshots. - Large binary blobs in src/assets (MIDI/OGG) — reference them, do not include their contents. - Test snapshots and ephemeral developer tooling files."
+      "author": "OpenAI",
+      "content": "Localization is mandatory for user-visible copy. English and German resources live under public/locales/en and public/locales/de; use namespaced keys through react-i18next and keep interpolation placeholders aligned. Locale-aware currency and number formatting must follow shared helpers. Styling documentation should cover Tailwind CSS v4, CSS variables/design tokens, Pixi color token helpers, React 19 ref conventions, and the Motion package currently used for UI motion."
     },
     {
-      "author": "Devin",
-      "content": "Pages vs repo_notes recommendation: Start with `repo_notes` only (this file) so DeepWiki can auto-plan structured pages. If you require precise titles/hierarchy, switch to an explicit `pages` array and include the COMPLETE set of desired pages (pages is all-or-nothing). After regenerating, iterate with page_notes for surgical guidance."
+      "author": "OpenAI",
+      "content": "Ignore or strongly deprioritize node_modules/, dist/, generated output, generated screenshots, transient test output, binary asset contents, and duplicated agent/skill bundles unless a documentation page specifically discusses developer-agent tooling. Historical TODO/audit documents may provide context but are not sources of truth when they conflict with current runtime code, package.json, tests, or scoped AGENTS.md."
     }
   ],
   "pages": [
     {
-      "title": "Application Overview",
-      "purpose": "High-level architecture of the React + Vite single-page application. Describe bootstrap flow (src/main.tsx), App routing (src/App.tsx), SceneRouter responsibilities, and how major subsystems (state, audio, hooks) connect."
+      "title": "Project Overview",
+      "purpose": "Explain Neurotoxic's current purpose and high-level architecture as a React 19 + Vite browser game. Map the major runtime areas: bootstrap/App shell, SceneRouter and scenes, GameState/context, pure domain logic, gameplay orchestration hooks, audio/rhythm systems, data/configuration, serverless leaderboard API, persistence, localization, and testing/tooling. Use package.json and current source files as truth; avoid freezing exact dependency patch versions into prose."
     },
     {
-      "title": "Entry Points",
-      "purpose": "Bootstrap and environment: src/main.tsx, index.html, Vite config, environment variables, and dev vs production differences. Explain how the app is mounted and how to start the dev server.",
-      "parent": "Application Overview"
+      "title": "Getting Started",
+      "purpose": "Document local setup and the shortest reliable developer workflow using package.json, .nvmrc if present, and repository instructions. Cover Node >=22.13.0, pnpm install, pnpm run dev, production build/preview, and the recommended fast verification commands before larger quality gates. Explain environment/deployment prerequisites without inventing configuration not present in the repository.",
+      "parent": "Project Overview"
+    },
+    {
+      "title": "Application Architecture",
+      "purpose": "Describe the runtime architecture and data flow across src/main.tsx, src/App.tsx, src/components/SceneRouter.tsx, src/context, src/domain, src/hooks, src/scenes, src/components, src/ui, src/data, and src/utils. Emphasize responsibility boundaries: UI renders and requests actions, hooks orchestrate flows, action creators sanitize inputs, reducers own state transitions, domain modules remain pure and return intent, and side-effect executors perform external work.",
+      "parent": "Project Overview"
+    },
+    {
+      "title": "Bootstrap & App Shell",
+      "purpose": "Document application bootstrap in src/main.tsx and shell responsibilities in src/App.tsx, including providers, Suspense/lazy scene rendering, global overlays/notifications, analytics integrations, error/loading boundaries where present, and how currentScene/minigame state reaches SceneRouter. Include index.html and Vite configuration only where they affect startup or production behavior.",
+      "parent": "Application Architecture"
     },
     {
       "title": "Routing & Scenes",
-      "purpose": "SceneRouter and lazy-loading conventions for scenes under src/scenes. Document default-export expectations, scene lifecycle hooks, and how to add or replace a scene module.",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "Components & UI",
-      "purpose": "Organization of UI code: src/components and src/ui. Component composition patterns, layout primitives, and styling conventions (Tailwind v4 + CSS variables).",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "Component Library",
-      "purpose": "Reusable UI components, prop contracts, Storybook patterns (if any), and where to place shared primitives vs feature components. Reference src/components and src/ui for examples.",
-      "parent": "Components & UI"
+      "purpose": "Document GAME_PHASES and top-level scene selection in src/components/SceneRouter.tsx, the scene modules under src/scenes, lazy loading, minigame routing and fallbacks, and how new scenes are integrated. Explicitly describe the current named-export convention: scene modules export named components and SceneRouter adapts them to React.lazy's default-module shape. Explain navigation ownership and fallback-to-menu behavior.",
+      "parent": "Application Architecture",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Do not claim scene files require default exports. Use src/components/SceneRouter.tsx plus representative scenes such as src/scenes/Overworld.tsx as evidence. Note that completion reducers must not silently own navigation when repository contracts assign continuation to callbacks/hooks."
+        }
+      ]
     },
     {
       "title": "State Management",
-      "purpose": "State shape, GameState creation, reducer patterns, persistence, and where selectors/actions live (src/context). Include how GameState is hydrated and saved to localStorage.",
-      "parent": "Application Overview"
+      "purpose": "Explain the GameState architecture under src/context and shared state/type contracts under src/types. Cover initial state creation, selectors, GameState provider/hooks, reducer composition, action creators, state hydration/save flow, and how gameplay/domain code interacts with state without direct mutation. Distinguish persisted state, derived values, and transient UI/orchestration state.",
+      "parent": "Application Architecture"
     },
     {
-      "title": "Reducers & Action Creators",
-      "purpose": "Reducer implementation patterns, adding new actions, actionTypes, and actionCreators. Explain clamping of bounded state and the requirement to call assertNever in reducer default branches.",
+      "title": "Actions, Reducers & Trust Boundaries",
+      "purpose": "Document the typed action pipeline: actionTypes, GameAction contracts, action creators, reducer handlers, exhaustiveness with assertNever, sanitization/narrowing of unknown inputs, finite-number handling, clamping, and reducer authority over valid state. Explain the repository's hostile-payload model for storage/API/event boundaries and the requirement to keep action contract changes synchronized across types, creators, reducers, and tests.",
       "parent": "State Management",
       "page_notes": [
         {
-          "content": "When adding an action: update actionTypes, create an action creator that clamps inputs using helpers in src/utils/gameStateUtils.ts, and add a reducer case. Do not use 'any' — prefer 'unknown' and narrow at boundaries. Reducers must call assertNever(action) in the default branch so missing handlers fail typecheck."
+          "author": "OpenAI",
+          "content": "Do not reduce the rule to 'clamp in action creators only'. Current root/src instructions require creators to sanitize raw payloads while reducers remain authoritative and may reject hostile payloads or re-clamp computed state. Call out finiteNumberOr/isFiniteNumber behavior for persisted numeric values and why Number(value) coercion is unsafe."
         }
       ]
     },
     {
-      "title": "Hooks & Orchestration",
-      "purpose": "Orchestration hooks in src/hooks (useTravelLogic, useArrivalLogic, rhythm/minigame hooks). Describe responsibilities, typical patterns for sequencing gameplay, and how hooks dispatch actions into GameState.",
+      "title": "Persistence, Migration & Replay",
+      "purpose": "Document save/load architecture, persistence ownership, state sanitization and legacy migration paths. Cover localStorage or other persistence mechanisms actually used by the current code, migration helpers including quest legacy migration where relevant, deterministic replay requirements, cycle-safe object traversal with WeakSet where applicable, and how corrupted/non-finite persisted values are handled before gameplay arithmetic.",
       "parent": "State Management"
     },
     {
-      "title": "Gameplay Data & Event Pools",
-      "purpose": "Data-driven game configuration in src/data — event pools, special events, and how to author new event entries. Explain how event conditions and rewards map to game state changes.",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "Minigames & Rhythm Engine",
-      "purpose": "Minigame implementations and rhythm engine hooks (src/components/minigames, src/hooks/minigames). Document scoring, timing, and how to add a new minigame and integrate it with scenes and state.",
-      "parent": "Gameplay Data & Event Pools"
-    },
-    {
-      "title": "Audio Engine",
-      "purpose": "Audio architecture and integration with Tone.js: audioEngine responsibilities, scheduling patterns, and the canonical clock used for game timing. Describe how to play tracks, schedule callbacks, and handle track-end semantics.",
-      "parent": "Gameplay Data & Event Pools",
+      "title": "Domain Architecture & Side Effects",
+      "purpose": "Document src/domain as a pure gameplay/domain layer. Explain that domain functions return intent such as typed actions and discriminated SideEffect values rather than dispatching, mutating state, or persisting directly. Cover eventResolver.ts, quest domain modules, payload guards, logger-and-skip behavior for invalid external data, post-resolution side-effect execution, and deterministic handling of precomputed event results.",
+      "parent": "Application Architecture",
       "page_notes": [
         {
-          "content": "Audio rules: always use audioEngine.getGigTimeMs() as the canonical clock; do not read Tone.js time directly. Use setlistCompleted + isNearTrackEnd for track-end detection. Song tails are capped to maxNoteTime + NOTE_TAIL_MS; document where NOTE_TAIL_MS is exported. Avoid direct Tone.js scheduling in components — encapsulate in the audio engine."
+          "author": "OpenAI",
+          "content": "Use src/domain/AGENTS.md as a contract source, then ground each rule in current implementation. Explain why domain modules must not import/replay gameReducer and how useEventSystem or equivalent callers materialize post-resolution state for save side effects."
         }
       ]
     },
     {
-      "title": "Songs & Assets",
-      "purpose": "Song metadata in src/data/songs.ts, placement of MIDI/OGG files in src/assets, and rules for adding new tracks (naming, max note times, and asset sizing).",
-      "parent": "Audio Engine"
+      "title": "Gameplay Systems",
+      "purpose": "Provide a map of the major player-facing systems and their relationships: overworld travel, venues and map generation, events, quests, economy and merch, long-term assets/liabilities, unlocks/progression, gigs and minigames. Identify shared state and cross-system dependencies without duplicating formulas that belong to runtime sources of truth.",
+      "parent": "Project Overview"
     },
     {
-      "title": "Testing & CI",
-      "purpose": "Test structure, helper scripts, and CI workflows. Document test entry points (scripts/run-*.mjs), vitest splits (logic vs UI), and the repo's quality gate commands.",
-      "parent": "Application Overview",
+      "title": "Overworld, Map & Travel",
+      "purpose": "Document the Overworld scene and travel flow across src/scenes/Overworld.tsx, src/components/overworld, src/ui/overworld, src/hooks/useTravelLogic and related overworld hooks, map generation utilities, venue/city normalization, visibility/connectivity, travel minigame entry, refuel/repair/rest actions, rival escalation, and save behavior. Explain current MapNode compatibility rules and deterministic city trait generation.",
+      "parent": "Gameplay Systems"
+    },
+    {
+      "title": "Events & Event Resolution",
+      "purpose": "Document event data under src/data/events and the event engine/domain resolution flow. Cover event selection, trigger categories/points, choice resolution, skill checks, EventDelta/effect handling, queued events, typed SideEffect execution, active-event presentation, and gig_intro/gig_mid timing semantics. Explain deterministic/precomputed results and probability clamping rather than presenting event code as a simple random pool.",
+      "parent": "Gameplay Systems"
+    },
+    {
+      "title": "Quest System",
+      "purpose": "Document the complete quest lifecycle across src/data/quests, src/quests, src/domain/quest*.ts, quest types, quest event types, and UI surfaces. Cover offer/accept/add/advance/complete flows, deadlines, penalties, rewards, effects, progress events, payload validation, repeatable/side/story quest categories, localization keys, legacy migration, and event-to-quest integration.",
+      "parent": "Gameplay Systems",
       "page_notes": [
         {
-          "content": "Local quality gate: `pnpm run test:all`. Fast loop: `pnpm run test:fast`. Vitest UI and node logic suites are run via scripts in package.json. E2E tests use Playwright under e2e/. For i18n extraction run `pnpm run i18n:extract`. Document test utilities inside tests/ and how to run single test files."
+          "author": "OpenAI",
+          "content": "Treat quest deadlineOffset conversion, absolute deadlines, payload narrowing, replay determinism, and quest-domain purity as contracts. Prefer the current domain modules and quest types over historical TODO documents."
+        }
+      ]
+    },
+    {
+      "title": "Economy & Merch",
+      "purpose": "Document the live economy model using src/utils/economy, post-gig helpers, merch data/configuration, and relevant selectors. Cover gig income/expenses/net reconciliation, management cut, guaranteed daily obligations, bankruptcy checks, fame progression inputs, merch demand/allocation and prices, sponsorship/deal interactions, city traits, and the relationship to balance simulations. Point to runtime helpers/constants as sources of truth instead of copying formulas unnecessarily.",
+      "parent": "Gameplay Systems",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Explain that runtime economy helpers/constants win over simulations, tooltips, or docs. Call out calculateGigFinancials reconciliation, getTotalDailyObligations, calculateFameLevel, performance-score helpers, merch inventory allocation, and any baseline regeneration requirement when imported balance constants change."
+        }
+      ]
+    },
+    {
+      "title": "Assets, Chassis & Modules",
+      "purpose": "Document the long-term asset system: asset state/UI, CHASSIS_CONFIG, MODULE_REGISTRY, module prompts, selectors/modifiers, acquisition and repair, loans/liabilities, crowdfunding, daily asset ticks, upkeep/revenue, foreclosure, seeded RNG, and asset effects on economy/travel. Explain the sources of truth and why consumers must not duplicate chassis/module configuration or repair/amortization formulas.",
+      "parent": "Gameplay Systems",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Highlight CHASSIS_CONFIG and MODULE_REGISTRY ownership, pure reducers/ticks, UUID generation in action creators, getActiveAssetModifiers semantics, calculateChassisRepairCost, getTotalDebt/getTotalDailyObligations, crowdfunding probability ownership, and seeded RNG reservation. Keep implementation details aligned with current src/utils/AGENTS.md and runtime code."
+        }
+      ]
+    },
+    {
+      "title": "Unlocks & Progression",
+      "purpose": "Document progression and eligibility/unlock ownership. Explain the separation between src/utils/unlockManager.ts for unlock persistence and src/utils/unlockCheck.ts for eligibility evaluation, plus milestones, fame/progression gates, story flags, and any UI surfaces that expose locked/unlocked content. Identify the canonical progression data and avoid mixing persistence with eligibility logic.",
+      "parent": "Gameplay Systems"
+    },
+    {
+      "title": "Minigames",
+      "purpose": "Document travel and pre-gig minigames across src/hooks/minigames, corresponding scenes/components, minigame reducer/state, constants, result calculation, scoring/failure consequences, and routing through GAME_PHASES/MINIGAME_TYPES. Cover Tourbus, Roadie Run, Kabelsalat, Amp Calibration, and the contract between minigame completion, gig modifiers, overlays, and subsequent scene navigation.",
+      "parent": "Gameplay Systems"
+    },
+    {
+      "title": "Rhythm & Audio",
+      "purpose": "Overview the gig rhythm stack and audio architecture, showing how stage UI/Pixi rendering, rhythm-game hooks and loop utilities, song metadata, audioEngine, Tone.js, MIDI/OGG assets, timing, event pauses, and completion detection fit together. Separate gameplay timing from ordinary wall-clock/persistence timing.",
+      "parent": "Project Overview"
+    },
+    {
+      "title": "Rhythm Engine",
+      "purpose": "Document gig/rhythm gameplay implementation across stage components, rhythm hooks, rhythmGameLoopUtils and related scoring/timing utilities. Cover note scheduling and hit/miss windows, injected canonical gig time, song transitions, active-event pauses, setlist completion, gig modifiers such as damaged_gear, minigame effects, and how results are submitted without introducing timing drift.",
+      "parent": "Rhythm & Audio"
+    },
+    {
+      "title": "Audio Engine",
+      "purpose": "Document src/utils/audio and the dedicated audioEngine contract around Tone.js. Explain playback responsibilities, context/resume behavior, scheduling boundaries, audioEngine.getGigTimeMs() as the canonical gameplay clock, OGG playback and MIDI/procedural fallback, ambient versus gig audio, pause/resume behavior, and track-end semantics using setlistCompleted plus isNearTrackEnd.",
+      "parent": "Rhythm & Audio",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Never recommend direct Tone.js time reads for gameplay timing. Distinguish gameplay clock ownership from non-gameplay time, which uses the injected IClock/systemClock path. Reference NOTE_TAIL_MS/max-note-time logic only where current runtime code still uses it."
+        }
+      ]
+    },
+    {
+      "title": "Songs & Media Assets",
+      "purpose": "Document song metadata and media integration using src/data/songs.ts and the relevant asset directories. Explain track metadata, MIDI/OGG relationships, fallback expectations, naming/import patterns, duration/max-note metadata where current, and performance/bundle implications. Reference binary files but do not reproduce or deeply document their contents.",
+      "parent": "Rhythm & Audio"
+    },
+    {
+      "title": "UI & Localization",
+      "purpose": "Describe the UI architecture across src/components, src/ui, scenes and global styles, together with localization and formatting rules. Cover responsive composition, shared primitives vs feature UI, design tokens/CSS variables, Tailwind CSS v4 usage, Pixi-rendered color tokens, Motion-based transitions, accessibility-oriented semantics, and translation boundaries.",
+      "parent": "Project Overview"
+    },
+    {
+      "title": "Components, UI & Styling",
+      "purpose": "Document reusable and feature-specific UI organization under src/components and src/ui, scene composition, CSS/Tailwind v4 conventions, global tokens, z-index/custom-property syntax, Pixi/SVG brand-color sources of truth, Motion transitions/configuration, and React 19 ref handling. Explain where a new shared primitive, feature component, modal, HUD element, or scene-specific component belongs based on current patterns.",
+      "parent": "UI & Localization"
+    },
+    {
+      "title": "Localization & Formatting",
+      "purpose": "Document react-i18next setup in src/i18n.ts, English/German resources under public/locales, namespaces such as ui/events/venues, t()/Trans usage, extraction via pnpm run i18n:extract, interpolation consistency, fallback/defaultValue strategy, and locale-aware number/currency formatting through shared helpers. Explain the requirement to update EN and DE together for user-visible changes.",
+      "parent": "UI & Localization"
+    },
+    {
+      "title": "Backend & Security",
+      "purpose": "Document serverless code under api/ and shared helpers under lib/, focusing on the leaderboard surface currently reachable by the UI. Cover endpoint request/response contracts, { error: string } compatibility, Redis/server helpers where used, ID normalization, player-name sanitization, control-character handling, rate limits, client-IP resolution, TRUST_PROXY behavior, deployment environment variables, and relevant security tests.",
+      "parent": "Project Overview",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Do not suggest trusting x-forwarded-for directly. Explain the shared client-IP helper and the TRUST_PROXY=true opt-in contract. Keep endpoint documentation grounded in current api/ files; do not invent backend features that are not reachable from current UI flows."
+        }
+      ]
+    },
+    {
+      "title": "Quality Gates & Testing",
+      "purpose": "Explain the repository's layered verification strategy using package.json, tests/, e2e/, scripts/, Vitest configs and .github/workflows. Distinguish the fast developer loop, full PR gate, node tests, UI tests, performance/locale suites, E2E, type gates, dead-code budget, symbols checks, and balance simulations. Show how to select a focused test command before escalating to broader gates.",
+      "parent": "Project Overview",
+      "page_notes": [
+        {
+          "author": "OpenAI",
+          "content": "Use package.json and root AGENTS.md as command sources of truth. Include pnpm run test/test:fast, test:all, test:ui, test:node, test:additional, test:e2e, typecheck, typecheck:core, typecheck:server, deadcode:check, deadcode:budget, symbols:update/symbols:check, relevant bench/perf commands, and balance simulation commands, but explain purpose rather than dumping scripts."
         }
       ]
     },
     {
       "title": "E2E & Playwright",
-      "purpose": "End-to-end test patterns and Playwright setup under e2e/. Describe visual snapshot approach, common helpers in e2e/helpers.js, and CI sharding configuration.",
-      "parent": "Testing & CI"
+      "purpose": "Document Playwright configuration and E2E tests under e2e/, including e2e/helpers.js navigation helpers such as skipToMenu, scene setup patterns, browser-crash handling utilities, visual/screenshot testing where present, stable selectors, sharding commands, and CI integration. Explain how to reach major game states reliably without coupling tests to brittle implementation details.",
+      "parent": "Quality Gates & Testing"
     },
     {
-      "title": "Build, Tooling & Scripts",
-      "purpose": "Build and developer tooling: pnpm scripts, Vite config, TypeScript tasks, and useful scripts/ helpers (simulate, bench, typecheck). Explain developer workflows for common tasks.",
-      "parent": "Application Overview"
+      "title": "Build, Tooling, Performance & Balance",
+      "purpose": "Document Vite build/preview behavior, pnpm scripts, scripts/ helpers, PWA/compression tooling where configured, benchmark/performance suites, static/dead-code/symbol tooling, and game-balance simulation workflows. Explain which generated baselines/reports are authoritative derivatives, when they must be regenerated, and how runtime constants/helpers remain the source of truth.",
+      "parent": "Quality Gates & Testing"
     },
     {
-      "title": "Localization & i18n",
-      "purpose": "Locales storage and extraction: public/locales/en and de, usage of `t()` and `<Trans>`, and the extraction process with i18next-parser. Document namespace conventions and where to add translation keys.",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "APIs & Server Code",
-      "purpose": "Serverless endpoints under api/ (leaderboard), server helpers in lib/, request/response shapes, and usage notes for server-side utilities such as lib/redis.js.",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "TypeScript & Conventions",
-      "purpose": "Repository TypeScript and CheckJS rules, AGENTS.md conventions, patterns to avoid (no any, prefer unknown), and reducer/action guardrails. Reference jsconfig.checkjs.json and CI typecheck scripts.",
-      "parent": "Application Overview"
-    },
-    {
-      "title": "Performance & Profiling",
-      "purpose": "Performance hotspots, profiling tips, render/perf checks, and where to run benchmarking tasks (tests/performance, scripts/benchmarks). Note common pitfalls with Pixi.js and audio scheduling.",
-      "parent": "Application Overview"
+      "title": "TypeScript & Repository Conventions",
+      "purpose": "Document strict TypeScript and CheckJS expectations from tsconfig/jsconfig and scoped AGENTS.md files: no any, no ts-ignore/ts-nocheck, unknown plus explicit narrowing at boundaries, type-only imports, guarded indexed reads, as const satisfies for config maps, exhaustive reducer actions, finite-number safety, cycle-safe traversal, React 19 ref conventions, and source-of-truth ownership rules. Explain how nested AGENTS.md scopes override broader repository conventions.",
+      "parent": "Quality Gates & Testing"
     },
     {
       "title": "Contributing & PR Workflow",
-      "purpose": "Developer workflow: conventional commits requirement, lint-staged, husky hooks, PR checks, and how to run the one-command quality gate before opening a PR. Include guidance on AGENTS.md usage and testing expectations.",
-      "parent": "Application Overview"
+      "purpose": "Document the expected change workflow: read root and nearest scoped AGENTS.md before editing, keep changes surgical, use pnpm, follow Conventional Commits, update related contracts/tests/locales together, run focused verification then the appropriate full gates, check dead-code/symbol impacts for import/export changes, and prepare PR summaries with evidence. Mention repository agent/skill tooling only as supporting workflow, not as application architecture.",
+      "parent": "Project Overview"
     }
   ]
 }
