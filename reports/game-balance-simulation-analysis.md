@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-09-02T17:14:00.070Z
+Erstellt am: 2026-09-02T18:42:05.160Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3
-- Generator-Fingerprint: e72011346f74cbb0fa91aadacef26024b69403115452213f234bfd5b6bf95e1a
+- Source-Fingerprint: 873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b
+- Generator-Fingerprint: a31c185bd3a52c82e84b93898828d01674a59e4bbfbd41bd625671db4a9ba7c6
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -373,11 +373,9 @@ Diese Punkte erscheinen im Report, blockieren aber nichts:
 - ⚠️ bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
-- ⚠️ mid_game_probe: Insolvenzrate (Kalibrierung 0.05%, Holdout 0.25%) liegt unter dem Zielkorridor 0–4% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1) liegt unter dem Zielkorridor 2–4.
 - ⚠️ mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2) liegt unter dem Zielkorridor 3–5.
 - ⚠️ mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31) liegt über dem Zielkorridor 20–35.
-- ⚠️ late_game_probe: Insolvenzrate (Kalibrierung 0.2%, Holdout 0.1%) liegt unter dem Zielkorridor 0–4% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9) liegt unter dem Zielkorridor 3–6.
 
 ## Financial-Stress-Profil
@@ -546,7 +544,7 @@ Diagnostisch, nicht wertend: ob die Dominanz dichter Touren ein Balancefehler od
 | eventTriggers.preGig | ✅ | 173227 | 172563 | - |
 | eventTriggers.gigMoments | ✅ | 173227 | 22461 | - |
 | eventTriggers.postGig | ✅ | 173227 | 173056 | - |
-| quests | ✅ | offers: 85504 (u:24) | acts: 42706 (u:25), comp: 634 (u:2) | 32 in registry |
+| quests | ✅ | offers: 85504 (u:24) | acts: 42706 (u:25), comp: 1123 (u:7) | 32 in registry |
 
 ## KPI-Zielkorridore (Health Check)
 
@@ -597,7 +595,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `7c9215748cbb025e02c3db0f431ee759e480774da60309f4f3934d4446d81c3a` | `7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3` |
+| Source-Fingerprint | `7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3` | `873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |
@@ -605,18 +603,18 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Szenario | Δ Insolvenzrate | Δ Endgeld | Δ Fame/Gig | Δ Gigs |
 |---|---:|---:|---:|---:|
-| Baseline Touring | 0% | €1 | 0.49 | 0 |
-| Bootstrap Struggle | 0% | €0 | 0.52 | 0 |
-| Aggressive Marketing | 0% | €0 | 0.55 | 0 |
-| Scandal Recovery | 0% | €1 | 0.7 | 0 |
-| Festival Push | 0% | €13 | 0.66 | 0 |
-| Chaos Tour | 0% | €4 | 1.07 | 0 |
-| Cult Hypergrowth | 0% | €1 | 0.63 | 0 |
-| No Social (Fame 0-50) | 0% | €6 | 0.52 | 0 |
-| High Controversy | 0% | €0 | 0.33 | 0 |
-| Early Game Probe (Fame 0–50) | 0% | €1 | 0.51 | 0 |
-| Mid Game Probe (Fame 60–150) | 0% | €1 | 0.54 | 0 |
-| Late Game Probe (Fame 175+) | 0% | €1 | 0.52 | 0 |
+| Baseline Touring | 0% | €0 | 0 | 0 |
+| Bootstrap Struggle | 0% | €0 | 0 | 0 |
+| Aggressive Marketing | 0% | €0 | 0 | 0 |
+| Scandal Recovery | 0% | €0 | 0 | 0 |
+| Festival Push | 0% | €0 | 0 | 0 |
+| Chaos Tour | 0% | €0 | 0 | 0 |
+| Cult Hypergrowth | 0% | €0 | 0 | 0 |
+| No Social (Fame 0-50) | 0% | €0 | 0 | 0 |
+| High Controversy | 0% | €0 | 0 | 0 |
+| Early Game Probe (Fame 0–50) | 0% | €0 | 0 | 0 |
+| Mid Game Probe (Fame 60–150) | 0% | €0 | 0 | 0 |
+| Late Game Probe (Fame 175+) | 0% | €0 | 0 | 0 |
 
 ## Kurzfazit
 
@@ -633,7 +631,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 - Sicherheitsgates: 12/12 Szenarien unter ihrer harten Insolvenzgrenze; 0 ohne Korridorurteil.
 - ✅ Blockierendes Gate „Harte Sicherheitsgrenzen (Holdout)“: bestanden.
 - Risikobänder: healthy 7 · low_risk 5.
-- ⚠️ 9 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
+- ⚠️ 7 weiche Designwarnung(en) — siehe „Insolvenz-Zielkorridore“. Insolvenz ist damit nicht mehr der primäre Spannungsindikator; die weitere Bewertung läuft über Drawdown, Liquiditätsdruck und Kaufentscheidungen.
 
 - ✅ Alle bewerteten KPI-Zielkorridore eingehalten.
 - Empfehlung: Szenarien weiter gegeneinander testen und Ziel-KPI-Bänder verfeinern.

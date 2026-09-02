@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T17:14:00.070Z",
+  "generatedAt": "2026-09-02T18:42:05.160Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3",
-    "generatorFingerprint": "e72011346f74cbb0fa91aadacef26024b69403115452213f234bfd5b6bf95e1a",
+    "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
+    "generatorFingerprint": "a31c185bd3a52c82e84b93898828d01674a59e4bbfbd41bd625671db4a9ba7c6",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -1557,10 +1557,10 @@
               "status": "covered",
               "offers": 7696,
               "activations": 3881,
-              "progress": 20,
-              "completions": 54,
+              "progress": 1044,
+              "completions": 107,
               "failures": 668,
-              "rewards": 54,
+              "rewards": 107,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -1613,8 +1613,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -2601,10 +2605,10 @@
               "status": "covered",
               "offers": 6658,
               "activations": 3289,
-              "progress": 20,
-              "completions": 50,
+              "progress": 843,
+              "completions": 63,
               "failures": 554,
-              "rewards": 50,
+              "rewards": 63,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -2658,8 +2662,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -3650,10 +3658,10 @@
               "status": "covered",
               "offers": 7276,
               "activations": 3745,
-              "progress": 18,
-              "completions": 67,
+              "progress": 1015,
+              "completions": 138,
               "failures": 608,
-              "rewards": 67,
+              "rewards": 138,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -3707,8 +3715,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -4699,10 +4711,10 @@
               "status": "covered",
               "offers": 6805,
               "activations": 3470,
-              "progress": 17,
-              "completions": 44,
+              "progress": 893,
+              "completions": 68,
               "failures": 584,
-              "rewards": 44,
+              "rewards": 68,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -4758,8 +4770,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -5754,10 +5770,10 @@
               "status": "covered",
               "offers": 6379,
               "activations": 3272,
-              "progress": 13,
-              "completions": 44,
+              "progress": 737,
+              "completions": 85,
               "failures": 543,
-              "rewards": 44,
+              "rewards": 85,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -5810,8 +5826,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -6805,10 +6825,10 @@
               "status": "covered",
               "offers": 8097,
               "activations": 3965,
-              "progress": 40,
-              "completions": 74,
+              "progress": 1175,
+              "completions": 107,
               "failures": 636,
-              "rewards": 74,
+              "rewards": 107,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -6864,8 +6884,12 @@
               ],
               "uniqueQuestIdsCompleted": [
                 "quest_chapter_marker",
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -7857,10 +7881,10 @@
               "status": "covered",
               "offers": 7217,
               "activations": 3637,
-              "progress": 25,
-              "completions": 63,
+              "progress": 931,
+              "completions": 120,
               "failures": 607,
-              "rewards": 63,
+              "rewards": 120,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -7913,8 +7937,13 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_studio_demo",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -8857,10 +8886,10 @@
               "status": "covered",
               "offers": 7164,
               "activations": 3637,
-              "progress": 29,
-              "completions": 58,
+              "progress": 897,
+              "completions": 90,
               "failures": 599,
-              "rewards": 58,
+              "rewards": 90,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -8911,8 +8940,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -9903,10 +9936,10 @@
               "status": "covered",
               "offers": 5518,
               "activations": 2784,
-              "progress": 20,
-              "completions": 33,
+              "progress": 746,
+              "completions": 49,
               "failures": 505,
-              "rewards": 33,
+              "rewards": 49,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -9955,8 +9988,11 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -10951,10 +10987,10 @@
               "status": "covered",
               "offers": 6743,
               "activations": 3390,
-              "progress": 25,
-              "completions": 33,
+              "progress": 819,
+              "completions": 57,
               "failures": 587,
-              "rewards": 33,
+              "rewards": 57,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -11007,8 +11043,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -12001,10 +12041,10 @@
               "status": "covered",
               "offers": 7283,
               "activations": 3600,
-              "progress": 15,
-              "completions": 43,
+              "progress": 942,
+              "completions": 74,
               "failures": 622,
-              "rewards": 43,
+              "rewards": 74,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -12059,8 +12099,12 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -13053,10 +13097,10 @@
               "status": "covered",
               "offers": 8182,
               "activations": 4128,
-              "progress": 35,
-              "completions": 66,
+              "progress": 1215,
+              "completions": 186,
               "failures": 719,
-              "rewards": 66,
+              "rewards": 186,
               "availableIds": 32,
               "uniqueQuestIdsOffered": [
                 "quest_alchemist",
@@ -13111,8 +13155,13 @@
                 "quest_viral_dance"
               ],
               "uniqueQuestIdsCompleted": [
+                "quest_harmony_project",
                 "quest_local_legend",
-                "quest_payday"
+                "quest_merch_rush",
+                "quest_payday",
+                "quest_pick_of_destiny",
+                "quest_studio_demo",
+                "quest_venue_regular"
               ],
               "covered": true
             }
@@ -13462,7 +13511,18 @@
           },
           "corridorConfidence": "contained"
         },
-        "probeMetrics": {},
+        "probeMetrics": {
+          "noSocialFinalMoneyRatioPct": {
+            "observed": 82.63,
+            "targetRange": [
+              70,
+              95
+            ],
+            "status": "within_target",
+            "holdoutObserved": 82.67,
+            "holdoutStatus": "within_target"
+          }
+        },
         "holdout": {
           "observedPct": 4.9,
           "sampleSize": 2000,
@@ -13689,11 +13749,9 @@
       "bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.",
       "festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.",
       "chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
-      "mid_game_probe: Insolvenzrate (Kalibrierung 0.05%, Holdout 0.25%) liegt unter dem Zielkorridor 0–4% — das Szenario ist sicherer als beabsichtigt.",
       "mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1) liegt unter dem Zielkorridor 2–4.",
       "mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2) liegt unter dem Zielkorridor 3–5.",
       "mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31) liegt über dem Zielkorridor 20–35.",
-      "late_game_probe: Insolvenzrate (Kalibrierung 0.2%, Holdout 0.1%) liegt unter dem Zielkorridor 0–4% — das Szenario ist sicherer als beabsichtigt.",
       "late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9) liegt unter dem Zielkorridor 3–6."
     ]
   },
@@ -13909,10 +13967,10 @@
       "status": "covered",
       "offers": 85504,
       "activations": 42706,
-      "progress": 233,
-      "completions": 634,
+      "progress": 11049,
+      "completions": 1123,
       "failures": 7323,
-      "rewards": 634,
+      "rewards": 1123,
       "availableIds": 32,
       "uniqueQuestIdsOffered": [
         "quest_alchemist",
@@ -13968,8 +14026,13 @@
         "quest_viral_dance"
       ],
       "uniqueQuestIdsCompleted": [
+        "quest_harmony_project",
         "quest_local_legend",
-        "quest_payday"
+        "quest_merch_rush",
+        "quest_payday",
+        "quest_pick_of_destiny",
+        "quest_studio_demo",
+        "quest_venue_regular"
       ],
       "covered": true
     }
@@ -13979,16 +14042,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-09-02T16:55:09.111Z",
-      "sourceFingerprint": "7c9215748cbb025e02c3db0f431ee759e480774da60309f4f3934d4446d81c3a",
+      "generatedAt": "2026-09-02T17:14:00.070Z",
+      "sourceFingerprint": "7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-09-02T17:14:00.070Z",
-      "sourceFingerprint": "7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3",
+      "generatedAt": "2026-09-02T18:42:05.160Z",
+      "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
@@ -14005,14 +14068,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 35650,
+            "previous": 35651,
             "current": 35651,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1890.27,
+            "previous": 1890.76,
             "current": 1890.76,
-            "delta": 0.49
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 8.45,
@@ -14036,9 +14099,9 @@
             "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1812.18,
+            "previous": 1812.7,
             "current": 1812.7,
-            "delta": 0.52
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 6.47,
@@ -14062,9 +14125,9 @@
             "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1965.86,
+            "previous": 1966.41,
             "current": 1966.41,
-            "delta": 0.55
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.38,
@@ -14083,14 +14146,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 28818,
+            "previous": 28819,
             "current": 28819,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1848.13,
+            "previous": 1848.83,
             "current": 1848.83,
-            "delta": 0.7
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 6.52,
@@ -14109,14 +14172,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 36578,
+            "previous": 36591,
             "current": 36591,
-            "delta": 13
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 2059.92,
+            "previous": 2060.58,
             "current": 2060.58,
-            "delta": 0.66
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 6.83,
@@ -14135,14 +14198,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 34146,
+            "previous": 34150,
             "current": 34150,
-            "delta": 4
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1710.19,
+            "previous": 1711.26,
             "current": 1711.26,
-            "delta": 1.07
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.27,
@@ -14161,14 +14224,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 40630,
+            "previous": 40631,
             "current": 40631,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1945.58,
+            "previous": 1946.21,
             "current": 1946.21,
-            "delta": 0.63
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.34,
@@ -14187,14 +14250,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 29451,
+            "previous": 29457,
             "current": 29457,
-            "delta": 6
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1834.28,
+            "previous": 1834.8,
             "current": 1834.8,
-            "delta": 0.52
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.25,
@@ -14218,9 +14281,9 @@
             "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1822.45,
+            "previous": 1822.78,
             "current": 1822.78,
-            "delta": 0.33
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 5.78,
@@ -14239,14 +14302,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 29965,
+            "previous": 29966,
             "current": 29966,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1825.3,
+            "previous": 1825.81,
             "current": 1825.81,
-            "delta": 0.51
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.19,
@@ -14265,14 +14328,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 34311,
+            "previous": 34312,
             "current": 34312,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1860.51,
+            "previous": 1861.05,
             "current": 1861.05,
-            "delta": 0.54
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 7.51,
@@ -14291,14 +14354,14 @@
             "delta": 0
           },
           "avgFinalMoney": {
-            "previous": 41171,
+            "previous": 41172,
             "current": 41172,
-            "delta": 1
+            "delta": 0
           },
           "avgFameProgressPerGig": {
-            "previous": 1955.48,
+            "previous": 1956,
             "current": 1956,
-            "delta": 0.52
+            "delta": 0
           },
           "avgGigsPlayed": {
             "previous": 8.63,
@@ -15232,10 +15295,10 @@
             "status": "covered",
             "offers": 7962,
             "activations": 3944,
-            "progress": 23,
-            "completions": 55,
+            "progress": 997,
+            "completions": 100,
             "failures": 689,
-            "rewards": 55,
+            "rewards": 100,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -15288,8 +15351,13 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_studio_demo",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -16377,10 +16445,10 @@
             "status": "covered",
             "offers": 6636,
             "activations": 3350,
-            "progress": 19,
-            "completions": 47,
+            "progress": 798,
+            "completions": 64,
             "failures": 580,
-            "rewards": 47,
+            "rewards": 64,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -16429,8 +16497,11 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -17535,10 +17606,10 @@
             "status": "covered",
             "offers": 7373,
             "activations": 3607,
-            "progress": 16,
-            "completions": 53,
+            "progress": 951,
+            "completions": 110,
             "failures": 578,
-            "rewards": 53,
+            "rewards": 110,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -17592,8 +17663,12 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -18681,10 +18756,10 @@
             "status": "covered",
             "offers": 6869,
             "activations": 3440,
-            "progress": 30,
-            "completions": 57,
+            "progress": 926,
+            "completions": 85,
             "failures": 604,
-            "rewards": 57,
+            "rewards": 85,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -18736,8 +18811,11 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -19797,10 +19875,10 @@
             "status": "covered",
             "offers": 6654,
             "activations": 3260,
-            "progress": 12,
-            "completions": 51,
+            "progress": 639,
+            "completions": 95,
             "failures": 553,
-            "rewards": 51,
+            "rewards": 95,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -19852,8 +19930,13 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_studio_demo",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -20898,10 +20981,10 @@
             "status": "covered",
             "offers": 7809,
             "activations": 3949,
-            "progress": 33,
-            "completions": 83,
+            "progress": 1199,
+            "completions": 125,
             "failures": 701,
-            "rewards": 83,
+            "rewards": 125,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -20953,8 +21036,12 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -21983,10 +22070,10 @@
             "status": "covered",
             "offers": 7240,
             "activations": 3616,
-            "progress": 17,
-            "completions": 56,
+            "progress": 942,
+            "completions": 116,
             "failures": 585,
-            "rewards": 56,
+            "rewards": 116,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -22039,8 +22126,13 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_studio_demo",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -23051,10 +23143,10 @@
             "status": "covered",
             "offers": 7159,
             "activations": 3608,
-            "progress": 18,
-            "completions": 44,
+            "progress": 894,
+            "completions": 61,
             "failures": 624,
-            "rewards": 44,
+            "rewards": 61,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -23106,8 +23198,12 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -24075,10 +24171,10 @@
             "status": "covered",
             "offers": 5474,
             "activations": 2757,
-            "progress": 19,
-            "completions": 31,
+            "progress": 787,
+            "completions": 48,
             "failures": 488,
-            "rewards": 31,
+            "rewards": 48,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -24128,8 +24224,12 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -25200,10 +25300,10 @@
             "status": "covered",
             "offers": 6877,
             "activations": 3439,
-            "progress": 9,
-            "completions": 49,
+            "progress": 787,
+            "completions": 69,
             "failures": 604,
-            "rewards": 49,
+            "rewards": 69,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -25253,8 +25353,12 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -26350,10 +26454,10 @@
             "status": "covered",
             "offers": 7319,
             "activations": 3629,
-            "progress": 14,
-            "completions": 51,
+            "progress": 955,
+            "completions": 89,
             "failures": 648,
-            "rewards": 51,
+            "rewards": 89,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -26406,8 +26510,13 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_studio_demo",
+              "quest_venue_regular"
             ],
             "covered": true
           }
@@ -27467,10 +27576,10 @@
             "status": "covered",
             "offers": 8132,
             "activations": 4107,
-            "progress": 23,
-            "completions": 57,
+            "progress": 1174,
+            "completions": 161,
             "failures": 669,
-            "rewards": 57,
+            "rewards": 161,
             "availableIds": 32,
             "uniqueQuestIdsOffered": [
               "quest_alchemist",
@@ -27525,8 +27634,13 @@
               "quest_viral_dance"
             ],
             "uniqueQuestIdsCompleted": [
+              "quest_harmony_project",
               "quest_local_legend",
-              "quest_payday"
+              "quest_merch_rush",
+              "quest_payday",
+              "quest_pick_of_destiny",
+              "quest_studio_demo",
+              "quest_venue_regular"
             ],
             "covered": true
           }

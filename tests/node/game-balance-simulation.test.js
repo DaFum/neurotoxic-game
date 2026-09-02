@@ -2730,6 +2730,148 @@ test('quest trigger offer events map to canonical registry quest IDs', () => {
   }
 })
 
+test('applyPostGigState records quest transitions emitted by gig reducer in the snapshot', () => {
+  const state = createInitialState()
+  state.player.money = 500
+  state.player.fame = 0
+  state.player.day = 5
+
+  const venue = VENUES_BY_ID.get('stendal_adler')
+  const counters = {
+    executionCoverage: {
+      quests: {
+        status: 'covered',
+        offers: 0,
+        activations: 0,
+        progress: 0,
+        completions: 0,
+        failures: 0,
+        rewards: 0,
+        availableIds: 32,
+        uniqueQuestIdsOffered: new Set(),
+        uniqueQuestIdsActivated: new Set(),
+        uniqueQuestIdsCompleted: new Set()
+      }
+    },
+    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
+    traitUnlocks: 0
+  }
+
+  // Active gig quest that will progress/complete during gig reducer state updates
+  const gigQuest = {
+    id: 'quest_first_gig',
+    kind: 'milestone',
+    progress: 0,
+    required: 1,
+    progressRules: [{ event: 'gig.completed', amount: 1 }]
+  }
+  state.activeQuests = [gigQuest]
+
+  const financials = {
+    net: 1000,
+    income: { total: 1000, breakdown: [] },
+    expenses: { total: 0, breakdown: [] },
+    soldMerch: {}
+  }
+  const gigStats = { score: 90, accuracy: 90, misses: 0, maxCombo: 100, hitRate: 0.9, peakHype: 90 }
+
+  applyPostGigState(state, venue, 90, financials, 0, gigStats, counters)
+
+  assert.ok(
+    counters.executionCoverage.quests.progress > 0 ||
+      counters.executionCoverage.quests.completions > 0,
+    'Gig reducer quest transitions must be captured in quest coverage counters'
+  )
+})
+
+test('probe-only misses render probe warnings without false bankruptcy warnings', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 0.05 }, // inside [0, 4]
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstVanUpgradeDayMedian: 2,
+            catalogSharePurchasedPct: 37.32
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0.25 }, // inside [0, 4]
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1,
+            firstVanUpgradeDayMedian: 2,
+            catalogSharePurchasedPct: 37.32
+          }
+        }
+      }
+    ]
+  })
+
+  // No bankruptcy warning should be rendered because bankruptcy rates (0.05% / 0.25%) are within target [0, 4]
+  assert.ok(
+    !review.warnings.some(w => w.includes('mid_game_probe') && w.includes('Insolvenzrate')),
+    'Must not render bankruptcy rate warning when bankruptcy is within target corridor'
+  )
+
+  // Probe warning must be present
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('firstHqUpgradeDayMedian')),
+    'Must render probe warning for firstHqUpgradeDayMedian'
+  )
+})
+
+test('no_social_probe evaluates cross-scenario economic ratio against baseline_touring', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'baseline_touring',
+        name: 'Baseline Touring',
+        summary: {
+          avgFinalMoney: 20000,
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }
+        }
+      },
+      {
+        id: 'no_social_probe',
+        name: 'No Social (Fame 0-50)',
+        summary: {
+          avgFinalMoney: 10000, // 50% of baseline -> below corridor [70, 95]
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 5 }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'baseline_touring',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+        summary: { avgFinalMoney: 20000 }
+      },
+      {
+        id: 'no_social_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 5 },
+        summary: { avgFinalMoney: 10000 }
+      }
+    ]
+  })
+
+  const noSocial = review.scenarios.find(s => s.id === 'no_social_probe')
+  assert.ok(noSocial)
+  assert.equal(noSocial.probeMetrics.noSocialFinalMoneyRatioPct.observed, 50)
+  assert.equal(noSocial.probeMetrics.noSocialFinalMoneyRatioPct.status, 'below_target')
+  assert.ok(
+    review.warnings.some(w => w.includes('no_social_probe') && w.includes('noSocialFinalMoneyRatioPct')),
+    'Warning should be generated for no_social_probe economic ratio miss'
+  )
+})
+
 test('buildDesignRiskReview evaluates probe-specific target corridors and flags out-of-range probes', () => {
   const review = buildDesignRiskReview({
     results: [

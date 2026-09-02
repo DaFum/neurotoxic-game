@@ -2392,6 +2392,8 @@ export const applyPostGigState = (
   state.social.lastGigDay = state.player.day
   state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
 
+  const beforeQuestSnapshot = captureQuestSnapshot(state)
+
   // Canonical post-gig side effects via the real reducer handler:
   // band stress (STRESS_PER_GIG), GIG_COMPLETE trait unlocks, region/venue
   // reputation shifts (incl. blacklisting), and gig quest events.
@@ -2400,8 +2402,6 @@ export const applyPostGigState = (
   const fameBeforeGigReducer = state.player.fame
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
-
-  const beforeQuestSnapshot = captureQuestSnapshot(state)
 
   dispatchEconomyQuests(preSettlementPlayer, continueStats, questEvent => {
     const updated = QuestEvents.emit(state, questEvent)
@@ -5132,6 +5132,9 @@ export const RISK_TARGETS = {
   },
   no_social_probe: {
     bankruptcyTargetPct: [2, 12],
+    probeCorridors: {
+      noSocialFinalMoneyRatioPct: [70, 95]
+    },
     intent: 'Wirtschaftlich ca. 70–95% von Baseline; Social Media optional aber wertvoll.'
   },
   high_controversy_probe: {
@@ -5423,8 +5426,23 @@ export const describeCorridorConfidence = ({
  * one stream and below_target on the other is on a boundary, and reporting
  * either label alone would overstate what was measured.
  */
-export const getProbeMetricValue = (summary, metricKey) => {
+export const getProbeMetricValue = (summary, metricKey, allSummariesMap = null) => {
   if (!summary) return null
+  if (metricKey === 'noSocialFinalMoneyRatioPct') {
+    const baselineSummary = allSummariesMap?.get('baseline_touring')
+    const currentMoney = summary.avgFinalMoney
+    const baselineMoney = baselineSummary?.avgFinalMoney
+    if (
+      currentMoney != null &&
+      baselineMoney != null &&
+      Number.isFinite(currentMoney) &&
+      Number.isFinite(baselineMoney) &&
+      baselineMoney > 0
+    ) {
+      return Number(((currentMoney / baselineMoney) * 100).toFixed(2))
+    }
+    return null
+  }
   if (Object.hasOwn(summary, metricKey)) return summary[metricKey]
   if (summary.gigEconomics && Object.hasOwn(summary.gigEconomics, metricKey)) {
     return summary.gigEconomics[metricKey]
@@ -5631,6 +5649,13 @@ export const buildHoldoutSafetyValidation = holdoutScenarios => {
  * behind a hard cap the scenario passes with room to spare.
  */
 export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
+  const calibrationSummariesMap = new Map(
+    (results ?? []).map(r => [r.id, r.summary])
+  )
+  const holdoutSummariesMap = new Map(
+    (holdoutScenarios ?? []).map(r => [r.id, r.summary ?? r])
+  )
+
   const scenarios = (results ?? [])
     .filter(result => RISK_TARGETS[result.id])
     .map(result => {
@@ -5662,10 +5687,15 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
 
       const probeMetrics = {}
       for (const [metricKey, range] of Object.entries(probeCorridors)) {
-        const calVal = getProbeMetricValue(result.summary, metricKey)
+        const calVal = getProbeMetricValue(
+          result.summary,
+          metricKey,
+          calibrationSummariesMap
+        )
         const holdVal = getProbeMetricValue(
           holdoutEntry?.summary ?? holdoutEntry,
-          metricKey
+          metricKey,
+          holdoutSummariesMap
         )
         const calStat = classifyMetricValue(
           calVal,
@@ -5732,10 +5762,16 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
 
   const warnings = scenarios.flatMap(scenario => {
     const scenarioWarnings = []
-    const describe = RISK_STATUS_WARNING[scenario.status]
-    if (describe) {
+
+    // 1. Bankruptcy warning derived strictly from bankruptcy-only status
+    const bankruptcyRiskStatus = evaluateScenarioRiskStatus({
+      calibrationStatus: scenario.bankruptcy.status,
+      holdoutStatus: scenario.holdout.status
+    })
+    const describeBankruptcy = RISK_STATUS_WARNING[bankruptcyRiskStatus]
+    if (describeBankruptcy) {
       scenarioWarnings.push(
-        describe({
+        describeBankruptcy({
           id: scenario.id,
           calibrationPct: scenario.bankruptcy.observedPct,
           holdoutPct: scenario.holdout.observedPct,
@@ -5746,6 +5782,8 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
         })
       )
     }
+
+    // 2. Probe warnings rendered from each probe metric's own status
     for (const [metricKey, m] of Object.entries(scenario.probeMetrics ?? {})) {
       if (m.status === 'above_target') {
         scenarioWarnings.push(
