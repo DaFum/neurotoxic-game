@@ -126,7 +126,8 @@ export class CrowdManager {
    * @param timeMs - Gig time in milliseconds.
    */
   update(combo: number, isToxicMode: boolean, timeMs: number): void {
-    const yOffset = calculateCrowdOffset({ combo, timeMs })
+    // ⚡ BOLT OPTIMIZATION: Pass positional arguments directly to avoid frame-by-frame object allocation
+    const yOffset = calculateCrowdOffset(combo, timeMs)
     const nextColor = isToxicMode
       ? this.colors.toxicGreen
       : combo > 20
