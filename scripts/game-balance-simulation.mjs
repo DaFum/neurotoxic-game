@@ -31,6 +31,7 @@ import {
 import { resolveEvent } from '../src/domain/eventResolver.ts'
 import { gameReducer } from '../src/context/gameReducer.ts'
 import { QuestLifecycle } from '../src/domain/questLifecycle.ts'
+import { QuestEvents } from '../src/utils/questProgress.ts'
 import {
   normalizeTraitMap,
   applyTraitUnlocks
@@ -79,6 +80,11 @@ import {
   calculateClinicCost
 } from '../src/context/gameConstants.js'
 import { handleSetLastGigStats } from '../src/context/reducers/gigReducer.js'
+import {
+  applyNeurotoxicPenalty,
+  buildStoryFlagQuests,
+  dispatchEconomyQuests
+} from '../src/hooks/postGig/handlers/continueHandlerUtils.ts'
 import {
   purchaseChassis,
   startCrowdfund,
@@ -1209,7 +1215,7 @@ const dispatchResolvedEventChoice = (event, choice, state, scenario, rng, counte
   if (event?.id && event.id.startsWith('quest_trigger_') && counters?.executionCoverage?.quests) {
     const qCoverage = counters.executionCoverage.quests
     qCoverage.offers += 1
-    const questId = event.id.replace('quest_trigger_', '')
+    const questId = event.id.replace('quest_trigger_', 'quest_')
     qCoverage.uniqueQuestIdsOffered?.add(questId)
   }
 
@@ -2349,7 +2355,7 @@ const calculatePerformanceScore = (state, venue, modifiers, rng, song) => {
   }
 }
 
-const applyPostGigState = (
+export const applyPostGigState = (
   state,
   venue,
   performanceScore,
@@ -2377,6 +2383,37 @@ const applyPostGigState = (
     continueStats.newFame
   )
 
+  const preSettlementPlayer = { ...state.player }
+  const beforeGigSnapshot = captureQuestSnapshot(state)
+
+  dispatchEconomyQuests(preSettlementPlayer, continueStats, questEvent => {
+    const updated = QuestEvents.emit(state, questEvent)
+    if (updated !== state) {
+      Object.assign(state, updated)
+    }
+  })
+
+  const postPenaltyHarmony = applyNeurotoxicPenalty(state.band, updateBandFn => {
+    const patch = updateBandFn(state.band)
+    if (patch) {
+      state.band = { ...state.band, ...patch }
+    }
+  })
+
+  const storyQuests = buildStoryFlagQuests({
+    activeStoryFlags: state.activeStoryFlags,
+    day: state.player.day,
+    bandHarmony: state.band.harmony,
+    postPenaltyHarmony
+  })
+
+  for (const quest of storyQuests) {
+    const updated = QuestLifecycle.addQuest(state, quest)
+    if (updated !== state) {
+      Object.assign(state, updated)
+    }
+  }
+
   state.player.money = continueStats.newMoney
   state.player.fame = continueStats.newFame
   state.player.fameLevel = continueStats.fameLevel
@@ -2390,10 +2427,9 @@ const applyPostGigState = (
   state.currentGig = venue
   const traitsBefore = countBandTraits(state.band)
   const fameBeforeGigReducer = state.player.fame
-    const beforeGigSnapshot = captureQuestSnapshot(state)
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
-    recordQuestStateDiff(beforeGigSnapshot, state, counters)
+  recordQuestStateDiff(beforeGigSnapshot, state, counters)
   recordObservedFameChange(
     counters.fameAccounting,
     fameBeforeGigReducer,
@@ -5098,18 +5134,35 @@ export const RISK_TARGETS = {
   },
   high_controversy_probe: {
     bankruptcyTargetPct: [20, 35],
+    probeCorridors: {
+      finaleReachedPct: [45, 75]
+    },
     intent: 'Insolvenz 20–35%; Finale 45–75%.'
   },
   early_game_probe: {
     bankruptcyTargetPct: [2, 10],
+    probeCorridors: {
+      avgGigNet: [3500, 5500],
+      travelCostShareOfGigNetPct: [1.5, 4.0],
+      finaleReachedPct: [85, 100]
+    },
     intent: 'Gig-Netto €3,5k–5,5k; Travel/Gig-Net 1,5–4%; Finale >= 85%.'
   },
   mid_game_probe: {
     bankruptcyTargetPct: [0, 4],
+    probeCorridors: {
+      firstHqUpgradeDayMedian: [2, 4],
+      firstVanUpgradeDayMedian: [3, 5],
+      catalogSharePurchasedPct: [20, 35]
+    },
     intent: 'HQ-Upgrade Median Tag 2–4; Van Tag 3–5; Kataloganteil 20–35%.'
   },
   late_game_probe: {
     bankruptcyTargetPct: [0, 4],
+    probeCorridors: {
+      travelCostShareOfGigNetPct: [3.0, 6.0],
+      gigCapHitPct: [2.0, 10.0]
+    },
     intent: 'Travel/Gig-Net 3–6%; Cap-Hits 2–10%.'
   }
 }
@@ -5368,6 +5421,68 @@ export const describeCorridorConfidence = ({
  * one stream and below_target on the other is on a boundary, and reporting
  * either label alone would overstate what was measured.
  */
+export const getProbeMetricValue = (summary, metricKey) => {
+  if (!summary) return null
+  if (Object.hasOwn(summary, metricKey)) return summary[metricKey]
+  if (summary.gigEconomics && Object.hasOwn(summary.gigEconomics, metricKey)) {
+    return summary.gigEconomics[metricKey]
+  }
+  if (summary.tourPaths && Object.hasOwn(summary.tourPaths, metricKey)) {
+    return summary.tourPaths[metricKey]
+  }
+  if (summary.purchasePaths && Object.hasOwn(summary.purchasePaths, metricKey)) {
+    return summary.purchasePaths[metricKey]
+  }
+  return null
+}
+
+export const classifyMetricValue = (value, targetRange, sampleSize) => {
+  if (!Array.isArray(targetRange) || targetRange.length !== 2) {
+    return 'not_evaluated'
+  }
+  if (value == null || !Number.isFinite(value)) return 'not_evaluated'
+  if (
+    Number.isFinite(sampleSize) &&
+    sampleSize < RISK_EVIDENCE_MINIMUM_SAMPLE
+  ) {
+    return 'insufficient_evidence'
+  }
+  const [min, max] = targetRange
+  if (value < min) return 'below_target'
+  if (value > max) return 'above_target'
+  return 'within_target'
+}
+
+export const evaluateOverallScenarioRiskStatus = ({
+  allCalStatuses,
+  allHoldStatuses
+}) => {
+  if (
+    allCalStatuses.includes('above_safety_limit') ||
+    allHoldStatuses.includes('above_safety_limit')
+  ) {
+    return 'unsafe'
+  }
+  if (allCalStatuses.includes('insufficient_evidence')) return 'insufficient_evidence'
+  if (
+    allCalStatuses.includes('not_evaluated') ||
+    allHoldStatuses.includes('not_evaluated')
+  ) {
+    return 'not_evaluated'
+  }
+  for (let i = 0; i < allCalStatuses.length; i++) {
+    if (allCalStatuses[i] !== allHoldStatuses[i]) return 'unstable'
+  }
+  if (allCalStatuses.every(s => s === 'within_target')) return 'healthy'
+  if (
+    allCalStatuses.some(s => s === 'above_target') &&
+    !allCalStatuses.some(s => s === 'below_target')
+  ) {
+    return 'high_risk'
+  }
+  return 'low_risk'
+}
+
 export const evaluateScenarioRiskStatus = ({
   calibrationStatus,
   holdoutStatus
@@ -5517,7 +5632,9 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
   const scenarios = (results ?? [])
     .filter(result => RISK_TARGETS[result.id])
     .map(result => {
-      const targetRangePct = RISK_TARGETS[result.id].bankruptcyTargetPct
+      const targetConfig = RISK_TARGETS[result.id] ?? {}
+      const targetRangePct = targetConfig.bankruptcyTargetPct
+      const probeCorridors = targetConfig.probeCorridors ?? {}
       const safetyMaximumPct = KPI_TARGETS[result.id]?.bankruptcyMax ?? null
       const bankruptcy = result.summary?.bankruptcy ?? {}
       const observedPct = bankruptcy.ratePct
@@ -5541,9 +5658,41 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
           })
         : 'not_evaluated'
 
-      const status = evaluateScenarioRiskStatus({
-        calibrationStatus,
-        holdoutStatus
+      const probeMetrics = {}
+      for (const [metricKey, range] of Object.entries(probeCorridors)) {
+        const calVal = getProbeMetricValue(result.summary, metricKey)
+        const holdVal = getProbeMetricValue(
+          holdoutEntry?.summary ?? holdoutEntry,
+          metricKey
+        )
+        const calStat = classifyMetricValue(
+          calVal,
+          range,
+          bankruptcy.sampleSize
+        )
+        const holdStat = holdoutEntry
+          ? classifyMetricValue(
+              holdVal,
+              range,
+              holdoutBankruptcy?.sampleSize ?? bankruptcy.sampleSize
+            )
+          : 'not_evaluated'
+
+        probeMetrics[metricKey] = {
+          observed: calVal,
+          targetRange: range,
+          status: calStat,
+          holdoutObserved: holdVal,
+          holdoutStatus: holdStat
+        }
+      }
+
+      const allCalStatuses = [calibrationStatus, ...Object.values(probeMetrics).map(m => m.status)]
+      const allHoldStatuses = [holdoutStatus, ...Object.values(probeMetrics).map(m => m.holdoutStatus)]
+
+      const status = evaluateOverallScenarioRiskStatus({
+        allCalStatuses,
+        allHoldStatuses
       })
 
       return {
@@ -5564,12 +5713,11 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
             targetRangePct
           })
         },
+        probeMetrics,
         holdout: {
           observedPct: holdoutBankruptcy?.ratePct ?? null,
           sampleSize: holdoutBankruptcy?.sampleSize ?? null,
           status: holdoutStatus,
-          // Whether the scenario stays in the same risk band on a disjoint seed
-          // stream — a stricter question than "does it still pass".
           riskBandResult:
             holdoutStatus === 'not_evaluated'
               ? 'not_evaluated'
@@ -5581,23 +5729,38 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
     })
 
   const warnings = scenarios.flatMap(scenario => {
+    const scenarioWarnings = []
     const describe = RISK_STATUS_WARNING[scenario.status]
-    if (!describe) return []
-    return [
-      describe({
-        id: scenario.id,
-        calibrationPct: scenario.bankruptcy.observedPct,
-        holdoutPct: scenario.holdout.observedPct,
-        targetRangePct: scenario.bankruptcy.targetRangePct,
-        safetyMaximumPct: scenario.bankruptcy.safetyMaximumPct,
-        calibrationStatus: scenario.bankruptcy.status,
-        holdoutStatus: scenario.holdout.status
-      })
-    ]
+    if (describe) {
+      scenarioWarnings.push(
+        describe({
+          id: scenario.id,
+          calibrationPct: scenario.bankruptcy.observedPct,
+          holdoutPct: scenario.holdout.observedPct,
+          targetRangePct: scenario.bankruptcy.targetRangePct,
+          safetyMaximumPct: scenario.bankruptcy.safetyMaximumPct,
+          calibrationStatus: scenario.bankruptcy.status,
+          holdoutStatus: scenario.holdout.status
+        })
+      )
+    }
+    for (const [metricKey, m] of Object.entries(scenario.probeMetrics ?? {})) {
+      if (m.status === 'above_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}) liegt über dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      } else if (m.status === 'below_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}) liegt unter dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      }
+    }
+    return scenarioWarnings
   })
 
   return {
     blocking: false,
+    passed: scenarios.length > 0 && scenarios.every(scenario => scenario.status === 'healthy'),
     note: 'Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax.',
     evidenceMinimumSample: RISK_EVIDENCE_MINIMUM_SAMPLE,
     scenarios,
