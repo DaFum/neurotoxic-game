@@ -702,6 +702,35 @@ describe('PreGig', () => {
     expect(totalDispatches).toBe(1)
   })
 
+  test('renders tabs and tabpanels with proper WAI-ARIA attributes', async () => {
+    const { getByRole } = render(React.createElement(PreGig))
+
+    const tabList = getByRole('tablist')
+    expect(tabList).toBeTruthy()
+
+    const logisticsTab = getByRole('tab', { name: /ui:pregig.tabs.logistics/i })
+    const merchTab = getByRole('tab', { name: /ui:pregig.tabs.merch/i })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('true')
+    expect(logisticsTab.getAttribute('aria-controls')).toBe('panel-logistics')
+    expect(merchTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('aria-controls')).toBe('panel-merch')
+
+    const logisticsPanel = getByRole('tabpanel')
+    expect(logisticsPanel.id).toBe('panel-logistics')
+    expect(logisticsPanel.getAttribute('aria-labelledby')).toBe('tab-logistics')
+
+    // Switch tab to merch
+    fireEvent.click(merchTab)
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('aria-selected')).toBe('true')
+
+    const merchPanel = getByRole('tabpanel')
+    expect(merchPanel.id).toBe('panel-merch')
+    expect(merchPanel.getAttribute('aria-labelledby')).toBe('tab-merch')
+  })
+
   test('merch capacity blocks restock until an asset raises the ceiling', async () => {
     mockUseGameState.band = {
       harmony: 50,

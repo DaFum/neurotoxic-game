@@ -53,19 +53,39 @@ export const PreGig = () => {
       />
 
       <div className='w-full max-w-5xl relative z-10'>
-        <div className='flex gap-4 border-b border-concrete-gray pb-2 mb-4'>
+        <div
+          role='tablist'
+          aria-label={t('ui:pregig.tabs.title', {
+            defaultValue: 'Pre-Gig Navigation'
+          })}
+          className='flex gap-4 border-b border-concrete-gray pb-2 mb-4'
+        >
           <button
             type='button'
-            className={`font-mono uppercase px-4 py-2 ${activeTab === 'logistics' ? 'bg-toxic-green text-void-black' : 'text-ash-gray hover:text-toxic-green'}`}
-            aria-pressed={activeTab === 'logistics'}
+            role='tab'
+            id='tab-logistics'
+            aria-selected={activeTab === 'logistics'}
+            aria-controls='panel-logistics'
+            className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              activeTab === 'logistics'
+                ? 'bg-toxic-green text-void-black font-bold'
+                : 'text-ash-gray hover:text-toxic-green'
+            }`}
             onClick={() => setActiveTab('logistics')}
           >
             {t('ui:pregig.tabs.logistics')}
           </button>
           <button
             type='button'
-            className={`font-mono uppercase px-4 py-2 ${activeTab === 'merch' ? 'bg-toxic-green text-void-black' : 'text-ash-gray hover:text-toxic-green'}`}
-            aria-pressed={activeTab === 'merch'}
+            role='tab'
+            id='tab-merch'
+            aria-selected={activeTab === 'merch'}
+            aria-controls='panel-merch'
+            className={`font-mono uppercase px-4 py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+              activeTab === 'merch'
+                ? 'bg-toxic-green text-void-black font-bold'
+                : 'text-ash-gray hover:text-toxic-green'
+            }`}
             onClick={() => setActiveTab('merch')}
           >
             {t('ui:pregig.tabs.merch')}
@@ -73,7 +93,13 @@ export const PreGig = () => {
         </div>
 
         {activeTab === 'logistics' ? (
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58svh]'>
+          <div
+            role='tabpanel'
+            id='panel-logistics'
+            aria-labelledby='tab-logistics'
+            tabIndex={0}
+            className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58svh] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+          >
             <GigModifiersBlock
               t={t}
               gigModifierOptions={GIG_MODIFIER_OPTIONS}
@@ -93,15 +119,23 @@ export const PreGig = () => {
             />
           </div>
         ) : (
-          <MerchStrategyBlock
-            bandInventory={band?.inventory ?? {}}
-            customPrices={band?.merchPrices ?? {}}
-            onUpdatePrice={handleUpdateMerchPrice}
-            onRestock={handleRestockMerch}
-            restockCostMultiplier={assetModifiers.merchCostMultiplier}
-            merchCapacityBonus={assetModifiers.merchCapacityBonus}
-            playerMoney={player.money ?? 0}
-          />
+          <div
+            role='tabpanel'
+            id='panel-merch'
+            aria-labelledby='tab-merch'
+            tabIndex={0}
+            className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
+          >
+            <MerchStrategyBlock
+              bandInventory={band?.inventory ?? {}}
+              customPrices={band?.merchPrices ?? {}}
+              onUpdatePrice={handleUpdateMerchPrice}
+              onRestock={handleRestockMerch}
+              restockCostMultiplier={assetModifiers.merchCostMultiplier}
+              merchCapacityBonus={assetModifiers.merchCapacityBonus}
+              playerMoney={player.money ?? 0}
+            />
+          </div>
         )}
       </div>
 

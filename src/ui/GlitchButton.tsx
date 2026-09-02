@@ -36,6 +36,7 @@ export const GlitchButton = ({
   variant = 'primary',
   size = 'lg',
   isLoading = false,
+  type = 'button',
   ...props
 }: GlitchButtonProps) => {
   const { pending } = useFormStatus()
@@ -99,6 +100,7 @@ export const GlitchButton = ({
 
   return (
     <button
+      type={type}
       disabled={isIntervention}
       aria-disabled={isIntervention}
       aria-busy={effectiveLoading}
