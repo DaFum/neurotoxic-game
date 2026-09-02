@@ -7,6 +7,13 @@ import { RIVAL_STAY_CHANCE } from '../context/gameConstants'
 import { isEmptyObject } from './gameState'
 import { pickBoundedIndex, selectRandomItem } from './selectionUtils'
 
+// ⚡ BOLT OPTIMIZATION: Pre-calculate brand alignments array at module scope.
+// Why: Prevents repeated allocation of Object.values(BRAND_ALIGNMENTS) on every rival band generation call.
+// Impact: Reduces garbage collection pressure during rival band initialization and simulation loops.
+const BRAND_ALIGNMENT_VALUES: readonly BrandAlignment[] = Object.freeze(
+  Object.values(BRAND_ALIGNMENTS) as BrandAlignment[]
+)
+
 /**
  * Creates a rival band scaled to the current campaign day.
  *
@@ -18,9 +25,8 @@ export const generateRivalBand = (
   day: number,
   rng: () => number = secureRandom
 ): RivalBandState => {
-  const alignments = Object.values(BRAND_ALIGNMENTS) as BrandAlignment[]
   const alignment =
-    selectRandomItem(alignments, rng) ??
+    selectRandomItem(BRAND_ALIGNMENT_VALUES, rng) ??
     (BRAND_ALIGNMENTS.NEUTRAL as BrandAlignment)
 
   const powerLevel = Math.max(1, Math.floor(day / 5) + 1)
