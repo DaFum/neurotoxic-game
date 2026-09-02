@@ -8,13 +8,11 @@ import type { TravelActionsParams } from '../types'
  * This hook is used to abort or clean up travel actions that are queued but have not yet executed.
  * It ensures both the React state and the mutable refs are synchronized to null, preventing state desync.
  *
- * @param options - The destructured refs and setters required for clearing the pending travel state.
+ * @param params - The destructured refs and setters required for clearing the pending travel state.
  * @returns A stable callback function that executes the clear operation when invoked.
  */
-export const useClearPendingTravel = ({
-  refs,
-  setters
-}: Pick<TravelActionsParams, 'refs' | 'setters'>) => {
+export const useClearPendingTravel = (params: Pick<TravelActionsParams, 'refs' | 'setters'>) => {
+  const { refs, setters } = params
   return useCallback(() => {
     if (refs.pendingTimeoutRef.current) {
       clearTimeout(refs.pendingTimeoutRef.current)
