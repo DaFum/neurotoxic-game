@@ -28,6 +28,9 @@ import {
   eventEngine,
   resolveEventChoice
 } from '../src/utils/eventEngine/index.js'
+import { resolveEvent } from '../src/domain/eventResolver.ts'
+import { gameReducer } from '../src/context/gameReducer.ts'
+import { QuestLifecycle } from '../src/domain/questLifecycle.ts'
 import {
   normalizeTraitMap,
   applyTraitUnlocks
@@ -1147,6 +1150,88 @@ export const applyNegativeFinancialEventMultiplier = (
   }
 }
 
+const captureQuestSnapshot = state => ({
+  activeQuests: (state.activeQuests || []).map(q => ({
+    id: q.id,
+    progress: q.progress ?? 0
+  })),
+  completedQuestIds: state.completedQuestIds ? [...state.completedQuestIds] : []
+})
+
+const recordQuestStateDiff = (beforeSnapshot, afterState, counters) => {
+  if (!counters?.executionCoverage?.quests) return
+  const qCoverage = counters.executionCoverage.quests
+
+  const beforeActive = beforeSnapshot.activeQuests || []
+  const afterActive = afterState.activeQuests || []
+  const beforeComp = beforeSnapshot.completedQuestIds || []
+  const afterComp = afterState.completedQuestIds || []
+
+  // Check for newly added active quests
+  for (const q of afterActive) {
+    if (!beforeActive.some(b => b.id === q.id)) {
+      qCoverage.activations += 1
+      qCoverage.uniqueQuestIdsActivated?.add(q.id)
+    }
+  }
+
+  // Check progress, completions, failures and rewards across active quests
+  for (const q of afterActive) {
+    const prev = beforeActive.find(b => b.id === q.id)
+    if (prev) {
+      if ((q.progress ?? 0) > prev.progress) {
+        qCoverage.progress += 1
+      }
+    }
+  }
+
+  // Check for newly completed quests
+  for (const id of afterComp) {
+    if (!beforeComp.includes(id)) {
+      qCoverage.completions += 1
+      qCoverage.rewards += 1
+      qCoverage.uniqueQuestIdsCompleted?.add(id)
+    }
+  }
+
+  // Check for failed/removed quests
+  for (const prev of beforeActive) {
+    if (!afterActive.some(q => q.id === prev.id) && !afterComp.includes(prev.id)) {
+      qCoverage.failures += 1
+    }
+  }
+}
+
+const dispatchResolvedEventChoice = (event, choice, state, scenario, rng, counters = null) => {
+  state.activeEvent = event
+
+  // Record quest offer if this event is a quest offer event
+  if (event?.id && event.id.startsWith('quest_trigger_') && counters?.executionCoverage?.quests) {
+    const qCoverage = counters.executionCoverage.quests
+    qCoverage.offers += 1
+    const questId = event.id.replace('quest_trigger_', '')
+    qCoverage.uniqueQuestIdsOffered?.add(questId)
+  }
+
+  const precomputed = resolveEventChoice(choice, state, rng)
+  const choiceWithPrecomputed = { ...choice, _precomputedResult: precomputed }
+  const { actions } = resolveEvent(choiceWithPrecomputed, state)
+  const moneyBeforeEvent = state.player.money
+  const beforeSnapshot = captureQuestSnapshot(state)
+  for (const action of actions) {
+    Object.assign(state, gameReducer(state, action))
+  }
+  if (counters) {
+    recordQuestStateDiff(beforeSnapshot, state, counters)
+  }
+  applyNegativeFinancialEventMultiplier(
+    state,
+    moneyBeforeEvent,
+    scenario.negativeFinancialEventMultiplier
+  )
+  return precomputed.delta
+}
+
 const applyDailyEvents = (state, scenario, rng, eventCounts) => {
   const intensity = scenario.eventIntensity ?? 0.5
   let eventsApplied = 0
@@ -1157,17 +1242,7 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent(category, state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      const { delta } = resolveEventChoice(choice, state, rng)
-
-      if (delta) {
-        const moneyBeforeEvent = state.player.money
-        Object.assign(state, applyEventDelta(state, delta))
-        applyNegativeFinancialEventMultiplier(
-          state,
-          moneyBeforeEvent,
-          scenario.negativeFinancialEventMultiplier
-        )
-      }
+      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
 
       if (category === 'financial') {
         eventCounts.cashSwings += 1
@@ -1183,17 +1258,7 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent('band', state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      const { delta } = resolveEventChoice(choice, state, rng)
-
-      if (delta) {
-        const moneyBeforeEvent = state.player.money
-        Object.assign(state, applyEventDelta(state, delta))
-        applyNegativeFinancialEventMultiplier(
-          state,
-          moneyBeforeEvent,
-          scenario.negativeFinancialEventMultiplier
-        )
-      }
+      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
       eventCounts.bandEvents += 1
       eventsApplied++
     }
@@ -1222,17 +1287,7 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent('transport', state, 'travel', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      const { delta } = resolveEventChoice(choice, state, rng)
-
-      if (delta) {
-        const moneyBeforeEvent = state.player.money
-        Object.assign(state, applyEventDelta(state, delta))
-        applyNegativeFinancialEventMultiplier(
-          state,
-          moneyBeforeEvent,
-          scenario.negativeFinancialEventMultiplier
-        )
-      }
+      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
       eventCounts.equipmentEvents += 1
       eventsApplied++
     }
@@ -1260,17 +1315,10 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
   if (!event || !event.options || event.options.length === 0) return false
 
   const choice = event.options[Math.floor(rng() * event.options.length)]
-  const { delta } = resolveEventChoice(choice, state, rng)
+  const oldFame = state.player.fame
+  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng, counters)
   if (delta) {
-    const oldFame = state.player.fame
-    const moneyBeforeEvent = state.player.money
     const rawDiff = delta.player?.fame
-    Object.assign(state, applyEventDelta(state, delta))
-    applyNegativeFinancialEventMultiplier(
-      state,
-      moneyBeforeEvent,
-      scenario.negativeFinancialEventMultiplier
-    )
     const actualDiff = state.player.fame - oldFame
     accountFameChange(counters.fameAccounting, rawDiff, actualDiff)
   }
@@ -1298,16 +1346,9 @@ const applyTriggerEvent = (
   }
   if (!event?.options?.length || !category) return false
   const choice = event.options[Math.floor(rng() * event.options.length)]
-  const { delta } = resolveEventChoice(choice, state, rng)
+  const oldFame = state.player.fame
+  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng, counters)
   if (delta) {
-    const oldFame = state.player.fame
-    const moneyBeforeEvent = state.player.money
-    Object.assign(state, applyEventDelta(state, delta))
-    applyNegativeFinancialEventMultiplier(
-      state,
-      moneyBeforeEvent,
-      scenario.negativeFinancialEventMultiplier
-    )
     recordObservedFameChange(
       counters.fameAccounting,
       oldFame,
@@ -2349,8 +2390,10 @@ const applyPostGigState = (
   state.currentGig = venue
   const traitsBefore = countBandTraits(state.band)
   const fameBeforeGigReducer = state.player.fame
+    const beforeGigSnapshot = captureQuestSnapshot(state)
   const nextState = handleSetLastGigStats(state, gigStatsPayload)
   Object.assign(state, nextState)
+    recordQuestStateDiff(beforeGigSnapshot, state, counters)
   recordObservedFameChange(
     counters.fameAccounting,
     fameBeforeGigReducer,
@@ -2561,7 +2604,10 @@ export const runSingleSimulation = (
         completions: 0,
         failures: 0,
         rewards: 0,
-        availableIds: Object.keys(QUEST_REGISTRY).length
+        availableIds: Object.keys(QUEST_REGISTRY).length,
+        uniqueQuestIdsOffered: new Set(),
+        uniqueQuestIdsActivated: new Set(),
+        uniqueQuestIdsCompleted: new Set()
       }
     },
     harmonyRecovery: {
@@ -2593,7 +2639,13 @@ export const runSingleSimulation = (
     // Refused trips by reason, mirroring the production gates.
     travelBlocked: { money: 0, fuel: 0, venue_access: 0 },
     // Trips that only happened because the band refuelled first.
-    refuelledToTravel: 0
+    refuelledToTravel: 0,
+    managementCutStats: {
+      firstGigPct: null,
+      cutPctSum: 0,
+      fullCutGigs: 0,
+      totalCutMoney: 0
+    }
   }
 
   let totalGigNet = 0
@@ -2762,6 +2814,9 @@ export const runSingleSimulation = (
       band: { ...state.band, ...updates.band },
       social: { ...state.social, ...updates.social }
     }
+    const stateBeforeDeadlines = captureQuestSnapshot(state)
+    state = QuestLifecycle.checkDeadlines(state)
+    recordQuestStateDiff(stateBeforeDeadlines, state, counters)
     observeAttributedMoney(
       'daily_obligations',
       moneyBeforeStep,
@@ -3328,9 +3383,18 @@ export const runSingleSimulation = (
     // The settlement combines income and expenses in one state update. Attribute
     // its expenses separately so a profitable gig cannot erase the losses.
     const expenseBreakdown = financials?.expenses?.breakdown ?? []
+    let mgmtCutValue = 0
+    let mgmtCutPct = 0
     for (const item of expenseBreakdown) {
       const value = Math.max(0, finiteNumberOr(item.value, 0))
       const label = item.labelKey ?? ''
+      if (/management/i.test(label) || item.id === 'management_fee') {
+        mgmtCutValue += value
+        const rawRate = item.detailParams?.rate ?? item.rate
+        if (rawRate != null) {
+          mgmtCutPct = rawRate > 1 ? rawRate / 100 : rawRate
+        }
+      }
       const source = MODIFIER_EXPENSE_LABEL_KEYS.has(label)
         ? 'modifierGrossSpend'
         : /venue|promoter/i.test(label)
@@ -3339,6 +3403,14 @@ export const runSingleSimulation = (
             ? 'taxGrossSpend'
             : 'otherGrossSpend'
       grossSpendAttribution[source] += value
+    }
+    if (counters.managementCutStats) {
+      if (counters.managementCutStats.firstGigPct === null) {
+        counters.managementCutStats.firstGigPct = mgmtCutPct
+      }
+      counters.managementCutStats.cutPctSum += mgmtCutPct
+      if (mgmtCutPct >= 0.149) counters.managementCutStats.fullCutGigs += 1
+      counters.managementCutStats.totalCutMoney += mgmtCutValue
     }
     const moneyBeforeSettlement = state.player.money
 
@@ -3633,7 +3705,10 @@ export const mergeExecutionCoverage = sources => {
       completions: 0,
       failures: 0,
       rewards: 0,
-      availableIds: Object.keys(QUEST_REGISTRY).length
+        availableIds: Object.keys(QUEST_REGISTRY).length,
+        uniqueQuestIdsOffered: new Set(),
+        uniqueQuestIdsActivated: new Set(),
+        uniqueQuestIdsCompleted: new Set()
     }
   }
 
@@ -3646,13 +3721,28 @@ export const mergeExecutionCoverage = sources => {
         'activations',
         'attempts',
         'completions',
-        'successes'
+        'successes',
+        'offers',
+        'progress',
+        'failures',
+        'rewards'
       ]) {
         if (counter in target) target[counter] += current[counter] ?? 0
       }
       if (target.uniqueIdsSeen) {
         for (const id of current.uniqueIdsSeen ?? [])
           target.uniqueIdsSeen.add(id)
+      }
+      if (key === 'quests') {
+        for (const field of [
+          'uniqueQuestIdsOffered',
+          'uniqueQuestIdsActivated',
+          'uniqueQuestIdsCompleted'
+        ]) {
+          if (current[field]) {
+            for (const id of current[field]) target[field].add(id)
+          }
+        }
       }
     }
   }
@@ -3671,13 +3761,28 @@ export const mergeExecutionCoverage = sources => {
       metric.uniqueIdsSeen = Array.from(metric.uniqueIdsSeen).sort()
       metric.availableIds = COVERAGE_ID_INVENTORY[key]
     }
-    const successfulExecutions =
-      (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0
-    metric.covered =
-      successfulExecutions ||
-      (key !== 'restStops' &&
-        (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
-      (metric.uniqueIdsSeen?.length ?? 0) > 0
+    if (key === 'quests') {
+      metric.uniqueQuestIdsOffered = Array.from(metric.uniqueQuestIdsOffered).sort()
+      metric.uniqueQuestIdsActivated = Array.from(metric.uniqueQuestIdsActivated).sort()
+      metric.uniqueQuestIdsCompleted = Array.from(metric.uniqueQuestIdsCompleted).sort()
+      const fullyCovered =
+        metric.offers > 0 &&
+        metric.activations > 0 &&
+        metric.progress > 0 &&
+        metric.completions > 0 &&
+        metric.failures > 0 &&
+        metric.rewards > 0
+      metric.status = fullyCovered ? 'covered' : 'insufficient_evidence'
+      metric.covered = fullyCovered
+    } else {
+      const successfulExecutions =
+        (metric.activations ?? metric.completions ?? metric.successes ?? 0) > 0
+      metric.covered =
+        successfulExecutions ||
+        (key !== 'restStops' &&
+          (metric.evaluations ?? metric.attempts ?? 0) > 0) ||
+        (metric.uniqueIdsSeen?.length ?? 0) > 0
+    }
   }
   return coverage
 }
@@ -4022,6 +4127,42 @@ export const summarizeScenario = runs => {
     avgFinalControversy: Number(
       mean(runs.map(r => r.finalControversy)).toFixed(2)
     ),
+    managementCut: (() => {
+      const totalGigsPlayed = runs.reduce((sum, r) => sum + r.gigsPlayed, 0)
+      const firstGigs = runs
+        .map(r => r.managementCutStats?.firstGigPct)
+        .filter(v => v != null)
+      const avgFirstPct = firstGigs.length ? mean(firstGigs) * 100 : 0
+      const totalCutPctSum = runs.reduce(
+        (sum, r) => sum + (r.managementCutStats?.cutPctSum ?? 0),
+        0
+      )
+      const totalFullCutGigs = runs.reduce(
+        (sum, r) => sum + (r.managementCutStats?.fullCutGigs ?? 0),
+        0
+      )
+      const totalCutMoney = runs.reduce(
+        (sum, r) => sum + (r.managementCutStats?.totalCutMoney ?? 0),
+        0
+      )
+      return {
+        firstGigManagementCutPct: Number(avgFirstPct.toFixed(2)),
+        avgManagementCutPct: Number(
+          (
+            (totalGigsPlayed > 0 ? totalCutPctSum / totalGigsPlayed : 0) * 100
+          ).toFixed(2)
+        ),
+        fullManagementCutGigSharePct: Number(
+          (
+            (totalGigsPlayed > 0 ? totalFullCutGigs / totalGigsPlayed : 0) *
+            100
+          ).toFixed(2)
+        ),
+        totalManagementCut: Math.round(
+          runs.length ? totalCutMoney / runs.length : 0
+        )
+      }
+    })(),
     ...Object.fromEntries(
       [
         ['ClinicVisits', 'clinicVisits'],
@@ -4730,6 +4871,21 @@ export const renderExecutionCoverageRows = coverage => {
       }
       continue
     }
+    if (key === 'quests') {
+      const uniqueOffers = Array.isArray(metric.uniqueQuestIdsOffered)
+        ? metric.uniqueQuestIdsOffered.length
+        : 0
+      const uniqueActs = Array.isArray(metric.uniqueQuestIdsActivated)
+        ? metric.uniqueQuestIdsActivated.length
+        : 0
+      const uniqueComps = Array.isArray(metric.uniqueQuestIdsCompleted)
+        ? metric.uniqueQuestIdsCompleted.length
+        : 0
+      rows.push(
+        `| quests | ${metric.covered ? '✅' : '❌'} | offers: ${metric.offers ?? 0} (u:${uniqueOffers}) | acts: ${metric.activations ?? 0} (u:${uniqueActs}), comp: ${metric.completions ?? 0} (u:${uniqueComps}) | ${metric.availableIds ?? 0} in registry |`
+      )
+      continue
+    }
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
     const activations =
       metric.activations ?? metric.completions ?? metric.successes ?? 0
@@ -4848,6 +5004,41 @@ export const KPI_TARGETS = {
     moneyMax: 45000,
     fameProgressPerGigMin: 1000,
     fameProgressPerGigMax: 2200
+  },
+  no_social_probe: {
+    bankruptcyMax: 15,
+    moneyMin: 10000,
+    moneyMax: 40000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
+  },
+  high_controversy_probe: {
+    bankruptcyMax: 40,
+    moneyMin: 5000,
+    moneyMax: 35000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
+  },
+  early_game_probe: {
+    bankruptcyMax: 12,
+    moneyMin: 10000,
+    moneyMax: 35000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
+  },
+  mid_game_probe: {
+    bankruptcyMax: 5,
+    moneyMin: 15000,
+    moneyMax: 50000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
+  },
+  late_game_probe: {
+    bankruptcyMax: 5,
+    moneyMin: 20000,
+    moneyMax: 80000,
+    fameProgressPerGigMin: 1000,
+    fameProgressPerGigMax: 2200
   }
 }
 
@@ -4900,6 +5091,26 @@ export const RISK_TARGETS = {
   cult_hypergrowth: {
     bankruptcyTargetPct: [2, 10],
     intent: 'Starkes Wachstum mit einzelnen Kollapsrisiken.'
+  },
+  no_social_probe: {
+    bankruptcyTargetPct: [2, 12],
+    intent: 'Wirtschaftlich ca. 70–95% von Baseline; Social Media optional aber wertvoll.'
+  },
+  high_controversy_probe: {
+    bankruptcyTargetPct: [20, 35],
+    intent: 'Insolvenz 20–35%; Finale 45–75%.'
+  },
+  early_game_probe: {
+    bankruptcyTargetPct: [2, 10],
+    intent: 'Gig-Netto €3,5k–5,5k; Travel/Gig-Net 1,5–4%; Finale >= 85%.'
+  },
+  mid_game_probe: {
+    bankruptcyTargetPct: [0, 4],
+    intent: 'HQ-Upgrade Median Tag 2–4; Van Tag 3–5; Kataloganteil 20–35%.'
+  },
+  late_game_probe: {
+    bankruptcyTargetPct: [0, 4],
+    intent: 'Travel/Gig-Net 3–6%; Cap-Hits 2–10%.'
   }
 }
 

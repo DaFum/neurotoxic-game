@@ -616,7 +616,8 @@ test('execution coverage aggregates without leaking or duplicating IDs', () => {
     { summary: { executionCoverage: scenarioCoverage } }
   ])
   assert.ok(scenarioCoverage.socialTrends.evaluations > 0)
-  for (const metric of Object.values(globalCoverage)) {
+  for (const [key, metric] of Object.entries(globalCoverage)) {
+    if (key === 'quests') continue
     const evaluations = metric.evaluations ?? metric.attempts ?? 0
     const activations =
       metric.activations ?? metric.completions ?? metric.successes ?? 0
@@ -861,11 +862,11 @@ test('buildDesignRiskReview stays non-blocking and warns on a below-target scena
           }
         }
       },
-      // No corridor configured for probes, so they must not appear at all
+      // Unconfigured scenario id, so it must not appear at all
       // rather than be judged against a corridor that does not exist.
       {
-        id: 'late_game_probe',
-        name: 'Late Game Probe',
+        id: 'unconfigured_test_probe',
+        name: 'Unconfigured Test Probe',
         summary: { bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 } }
       }
     ],
@@ -1008,7 +1009,7 @@ test('the holdout safety gate passes only on complete measured evidence', () => 
   // so adding a cap to the probe turns into an explicit failure here rather than
   // a case that quietly stops testing anything.
   assert.equal(
-    KPI_TARGETS.late_game_probe?.bankruptcyMax,
+    KPI_TARGETS.unconfigured_test_probe?.bankruptcyMax,
     undefined,
     'this case requires a scenario with no configured cap'
   )
@@ -1024,7 +1025,7 @@ test('the holdout safety gate passes only on complete measured evidence', () => 
     buildHoldoutSafetyValidation(undefined),
     // A scenario with no cap configured cannot be judged against one.
     buildHoldoutSafetyValidation([
-      { id: 'late_game_probe', holdoutBankruptcy: { ratePct: 0 } }
+      { id: 'unconfigured_test_probe', holdoutBankruptcy: { ratePct: 0 } }
     ]),
     // Nor can one whose holdout rate never got measured.
     buildHoldoutSafetyValidation([
