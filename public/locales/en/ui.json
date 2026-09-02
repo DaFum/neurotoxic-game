@@ -1479,6 +1479,7 @@
   "pregig.startShow": "START SHOW",
   "pregig.tabs.logistics": "Logistics",
   "pregig.tabs.merch": "Merch",
+  "pregig.tabs.title": "Pre-Gig Navigation",
   "pregig.title": "PREPARATION",
   "pregig.toasts.audioFail": "Audio initialization failed.",
   "pregig.toasts.meetingHeld": "Meeting held. Vibes +{{amount}}.",

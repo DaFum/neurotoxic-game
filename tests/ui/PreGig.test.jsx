@@ -702,6 +702,60 @@ describe('PreGig', () => {
     expect(totalDispatches).toBe(1)
   })
 
+  test('renders tabs and tabpanels with proper WAI-ARIA attributes', async () => {
+    const { getByRole, getAllByRole } = render(React.createElement(PreGig))
+
+    const tabList = getByRole('tablist')
+    expect(tabList).toBeTruthy()
+
+    const logisticsTab = getByRole('tab', { name: /ui:pregig.tabs.logistics/i })
+    const merchTab = getByRole('tab', { name: /ui:pregig.tabs.merch/i })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('true')
+    expect(logisticsTab.getAttribute('aria-controls')).toBe('panel-logistics')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('0')
+    expect(merchTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('aria-controls')).toBe('panel-merch')
+    expect(merchTab.getAttribute('tabindex')).toBe('-1')
+
+    // Verify both tabpanels exist in the DOM at all times so aria-controls IDREFs are valid
+    const panels = getAllByRole('tabpanel', { hidden: true })
+    expect(panels.length).toBe(2)
+    const panelIds = panels.map(p => p.id)
+    expect(panelIds).toContain('panel-logistics')
+    expect(panelIds).toContain('panel-merch')
+
+    // Navigate with ArrowRight key
+    fireEvent.keyDown(logisticsTab, { key: 'ArrowRight' })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('false')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('-1')
+    expect(merchTab.getAttribute('aria-selected')).toBe('true')
+    expect(merchTab.getAttribute('tabindex')).toBe('0')
+
+    // Navigate back with ArrowLeft key
+    fireEvent.keyDown(merchTab, { key: 'ArrowLeft' })
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('true')
+    expect(logisticsTab.getAttribute('tabindex')).toBe('0')
+    expect(merchTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('tabindex')).toBe('-1')
+
+    const logisticsPanel = panels.find(p => p.id === 'panel-logistics')
+    expect(logisticsPanel).toBeTruthy()
+    expect(logisticsPanel.getAttribute('aria-labelledby')).toBe('tab-logistics')
+
+    // Switch tab to merch
+    fireEvent.click(merchTab)
+
+    expect(logisticsTab.getAttribute('aria-selected')).toBe('false')
+    expect(merchTab.getAttribute('aria-selected')).toBe('true')
+
+    const merchPanel = panels.find(p => p.id === 'panel-merch')
+    expect(merchPanel).toBeTruthy()
+    expect(merchPanel.getAttribute('aria-labelledby')).toBe('tab-merch')
+  })
+
   test('merch capacity blocks restock until an asset raises the ceiling', async () => {
     mockUseGameState.band = {
       harmony: 50,
