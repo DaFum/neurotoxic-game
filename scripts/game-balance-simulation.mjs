@@ -2384,7 +2384,24 @@ export const applyPostGigState = (
   )
 
   const preSettlementPlayer = { ...state.player }
-  const beforeGigSnapshot = captureQuestSnapshot(state)
+
+  state.player.money = continueStats.newMoney
+  state.player.fame = continueStats.newFame
+  state.player.fameLevel = continueStats.fameLevel
+
+  state.social.lastGigDay = state.player.day
+  state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
+
+  // Canonical post-gig side effects via the real reducer handler:
+  // band stress (STRESS_PER_GIG), GIG_COMPLETE trait unlocks, region/venue
+  // reputation shifts (incl. blacklisting), and gig quest events.
+  state.currentGig = venue
+  const traitsBefore = countBandTraits(state.band)
+  const fameBeforeGigReducer = state.player.fame
+  const nextState = handleSetLastGigStats(state, gigStatsPayload)
+  Object.assign(state, nextState)
+
+  const beforeQuestSnapshot = captureQuestSnapshot(state)
 
   dispatchEconomyQuests(preSettlementPlayer, continueStats, questEvent => {
     const updated = QuestEvents.emit(state, questEvent)
@@ -2414,22 +2431,7 @@ export const applyPostGigState = (
     }
   }
 
-  state.player.money = continueStats.newMoney
-  state.player.fame = continueStats.newFame
-  state.player.fameLevel = continueStats.fameLevel
-
-  state.social.lastGigDay = state.player.day
-  state.social.lastGigDifficulty = venue.diff ?? venue.difficulty ?? 1
-
-  // Canonical post-gig side effects via the real reducer handler:
-  // band stress (STRESS_PER_GIG), GIG_COMPLETE trait unlocks, region/venue
-  // reputation shifts (incl. blacklisting), and gig quest events.
-  state.currentGig = venue
-  const traitsBefore = countBandTraits(state.band)
-  const fameBeforeGigReducer = state.player.fame
-  const nextState = handleSetLastGigStats(state, gigStatsPayload)
-  Object.assign(state, nextState)
-  recordQuestStateDiff(beforeGigSnapshot, state, counters)
+  recordQuestStateDiff(beforeQuestSnapshot, state, counters)
   recordObservedFameChange(
     counters.fameAccounting,
     fameBeforeGigReducer,
@@ -7102,6 +7104,7 @@ export const runSimulationSuite = async (options = {}) => {
 
       return {
         id: scenario.id,
+        summary,
         calibrationStatus: calibration?.summary.kpiStatus,
         holdoutStatus: evaluation.status,
         agrees: disagreeingBands.length === 0,
