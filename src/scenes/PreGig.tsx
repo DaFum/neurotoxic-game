@@ -2,7 +2,7 @@ import { SONGS_DB } from '../data/songs'
 import { GigModifiersBlock } from '../components/pregig/GigModifiersBlock'
 import { SetlistBlock } from '../components/pregig/SetlistBlock'
 import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
-import React, { useState } from 'react'
+import { useState, type KeyboardEvent } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
@@ -21,7 +21,7 @@ export const PreGig = () => {
   const [activeTab, setActiveTab] = useState<'logistics' | 'merch'>('logistics')
 
   const handleTabKeyDown = (
-    event: React.KeyboardEvent<HTMLButtonElement>,
+    event: KeyboardEvent<HTMLButtonElement>,
     index: number
   ) => {
     const tabsList: Array<'logistics' | 'merch'> = ['logistics', 'merch']
@@ -132,51 +132,55 @@ export const PreGig = () => {
           </button>
         </div>
 
-        {activeTab === 'logistics' ? (
-          <div
-            role='tabpanel'
-            id='panel-logistics'
-            aria-labelledby='tab-logistics'
-            tabIndex={0}
-            className='grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58svh] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-          >
-            <GigModifiersBlock
-              t={t}
-              gigModifierOptions={GIG_MODIFIER_OPTIONS}
-              gigModifiers={gigModifiers}
-              toggleModifier={toggleModifier}
-              handleBandMeeting={handleBandMeeting}
-              bandMeetingCost={bandMeetingCost}
-              currentModifiers={currentModifiers}
-            />
-            <SetlistBlock
-              setlist={setlist}
-              songsDb={SONGS_DB}
-              songsDict={SONGS_DICT}
-              selectedSongIds={selectedSongIds}
-              player={player}
-              toggleSong={toggleSong}
-            />
-          </div>
-        ) : (
-          <div
-            role='tabpanel'
-            id='panel-merch'
-            aria-labelledby='tab-merch'
-            tabIndex={0}
-            className='focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
-          >
-            <MerchStrategyBlock
-              bandInventory={band?.inventory ?? {}}
-              customPrices={band?.merchPrices ?? {}}
-              onUpdatePrice={handleUpdateMerchPrice}
-              onRestock={handleRestockMerch}
-              restockCostMultiplier={assetModifiers.merchCostMultiplier}
-              merchCapacityBonus={assetModifiers.merchCapacityBonus}
-              playerMoney={player.money ?? 0}
-            />
-          </div>
-        )}
+        <div
+          role='tabpanel'
+          id='panel-logistics'
+          aria-labelledby='tab-logistics'
+          tabIndex={0}
+          hidden={activeTab !== 'logistics'}
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6 h-auto lg:h-[58svh] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+            activeTab !== 'logistics' ? 'hidden' : ''
+          }`}
+        >
+          <GigModifiersBlock
+            t={t}
+            gigModifierOptions={GIG_MODIFIER_OPTIONS}
+            gigModifiers={gigModifiers}
+            toggleModifier={toggleModifier}
+            handleBandMeeting={handleBandMeeting}
+            bandMeetingCost={bandMeetingCost}
+            currentModifiers={currentModifiers}
+          />
+          <SetlistBlock
+            setlist={setlist}
+            songsDb={SONGS_DB}
+            songsDict={SONGS_DICT}
+            selectedSongIds={selectedSongIds}
+            player={player}
+            toggleSong={toggleSong}
+          />
+        </div>
+
+        <div
+          role='tabpanel'
+          id='panel-merch'
+          aria-labelledby='tab-merch'
+          tabIndex={0}
+          hidden={activeTab !== 'merch'}
+          className={`focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black ${
+            activeTab !== 'merch' ? 'hidden' : ''
+          }`}
+        >
+          <MerchStrategyBlock
+            bandInventory={band?.inventory ?? {}}
+            customPrices={band?.merchPrices ?? {}}
+            onUpdatePrice={handleUpdateMerchPrice}
+            onRestock={handleRestockMerch}
+            restockCostMultiplier={assetModifiers.merchCostMultiplier}
+            merchCapacityBonus={assetModifiers.merchCapacityBonus}
+            playerMoney={player.money ?? 0}
+          />
+        </div>
       </div>
 
       <PreGigStartButton

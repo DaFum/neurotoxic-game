@@ -703,7 +703,7 @@ describe('PreGig', () => {
   })
 
   test('renders tabs and tabpanels with proper WAI-ARIA attributes', async () => {
-    const { getByRole } = render(React.createElement(PreGig))
+    const { getByRole, getAllByRole } = render(React.createElement(PreGig))
 
     const tabList = getByRole('tablist')
     expect(tabList).toBeTruthy()
@@ -717,6 +717,13 @@ describe('PreGig', () => {
     expect(merchTab.getAttribute('aria-selected')).toBe('false')
     expect(merchTab.getAttribute('aria-controls')).toBe('panel-merch')
     expect(merchTab.getAttribute('tabindex')).toBe('-1')
+
+    // Verify both tabpanels exist in the DOM at all times so aria-controls IDREFs are valid
+    const panels = getAllByRole('tabpanel', { hidden: true })
+    expect(panels.length).toBe(2)
+    const panelIds = panels.map(p => p.id)
+    expect(panelIds).toContain('panel-logistics')
+    expect(panelIds).toContain('panel-merch')
 
     // Navigate with ArrowRight key
     fireEvent.keyDown(logisticsTab, { key: 'ArrowRight' })
@@ -734,8 +741,8 @@ describe('PreGig', () => {
     expect(merchTab.getAttribute('aria-selected')).toBe('false')
     expect(merchTab.getAttribute('tabindex')).toBe('-1')
 
-    const logisticsPanel = getByRole('tabpanel')
-    expect(logisticsPanel.id).toBe('panel-logistics')
+    const logisticsPanel = panels.find(p => p.id === 'panel-logistics')
+    expect(logisticsPanel).toBeTruthy()
     expect(logisticsPanel.getAttribute('aria-labelledby')).toBe('tab-logistics')
 
     // Switch tab to merch
@@ -744,8 +751,8 @@ describe('PreGig', () => {
     expect(logisticsTab.getAttribute('aria-selected')).toBe('false')
     expect(merchTab.getAttribute('aria-selected')).toBe('true')
 
-    const merchPanel = getByRole('tabpanel')
-    expect(merchPanel.id).toBe('panel-merch')
+    const merchPanel = panels.find(p => p.id === 'panel-merch')
+    expect(merchPanel).toBeTruthy()
     expect(merchPanel.getAttribute('aria-labelledby')).toBe('tab-merch')
   })
 
