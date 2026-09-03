@@ -1,20 +1,20 @@
 # Roguelite Expedition Review Hardening Contract
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to apply this contract before the affected child-plan task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to apply this contract before the affected child-plan gate. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Close the final deep-review gaps in the Roguelite Expedition implementation plan before production implementation begins.
 
-**Architecture:** This file is a binding amendment to `01-expedition-core-extraction.md` through `06-balance-simulator-recalibration.md`. When an older child-plan snippet conflicts with a contract below, **this file wins** and the affected child task must be implemented with the replacement contract here. The amendments preserve the existing owners: reducers remain authoritative, navigation stays outside reducers, `unlockManager` stays the capability owner, and simulator calibration/holdout streams remain disjoint.
+**Architecture:** This file is a binding amendment to `01-expedition-core-extraction.md` through `06-balance-simulator-recalibration.md`. When an older child-plan snippet conflicts with a contract below, **this file wins** and the affected child task must use the replacement contract here. The amendments preserve repository ownership rules: reducers remain authoritative, navigation stays outside reducers, `unlockManager` remains the capability-persistence owner, and simulator calibration/holdout streams remain disjoint.
 
-**Tech Stack:** React 19, TypeScript 6, typed `GameAction`/`ActionTypes`, reducer/action-creator architecture, existing persistence adapter, Node/Vitest/Playwright tests, deterministic balance harness.
+**Tech Stack:** React 19, TypeScript 6, typed `GameAction`/`ActionTypes`, reducer/action-creator architecture, existing storage adapter and `unlockManager`, Node/Vitest/Playwright tests, deterministic balance harness.
 
 ---
 
 ## Mandatory execution order
 
-Apply these amendments at the indicated gate before continuing to dependent work:
+Apply these amendments at the named gate before continuing to dependent work:
 
-1. **G1-A** after G1 Task 4 and G1 Task 11, before the G1 stage gate.
+1. **G1-A** after G1 Task 4 and while completing G1 Task 11, before the G1 stage gate.
 2. **G2-A** while implementing G2 Tasks 8 and 11, before the G2 stage gate.
 3. **G3-A** while implementing G3 staged injury actions, before the G3 stage gate.
 4. **G4-A** while implementing obligation settlement and contextual finales, before the G4 stage gate.
@@ -25,23 +25,23 @@ No dependent gate may be considered green while its amendment is unapplied.
 
 ---
 
-## Global invariant: Reducers are authoritative
+## Global invariant: reducers are authoritative
 
-Every new action must carry **intent plus only genuinely nondeterministic tokens** that cannot be regenerated in a reducer (for example a pre-generated UUID or deterministic roll). It must not trust caller-computed prices, rewards, next-state values, capacity, rank, finale type, or other deterministic results.
+Every new action carries **intent plus only genuinely nondeterministic tokens** that cannot be regenerated in a reducer, such as a creator-generated UUID or a deterministic roll. Actions must not trust caller-computed prices, rewards, next-state values, capacity, rank, finale type, or other deterministic results.
 
-For every affected action:
+For every affected boundary:
 
 ```text
-Action creator:
-  validate obvious caller input
-  generate only UUID/seed/roll tokens when needed
-  optionally call the shared pure resolver for early rejection
+Action creator
+  -> validate obvious caller input
+  -> generate only UUID/seed/roll tokens when needed
+  -> optionally call the shared pure resolver for early rejection
 
-Reducer:
-  revalidate current state and registry ids
-  recompute the deterministic result from current canonical state/config
-  reject stale/forged payloads with the identical state reference
-  apply the mutation exactly once
+Reducer
+  -> revalidate current state and canonical registry ids
+  -> recompute deterministic results from current canonical state/config
+  -> reject stale/forged payloads with the identical state reference
+  -> apply the mutation exactly once
 ```
 
 Direct reducer tests are mandatory. A forged action must never mint money/Fame/Tour Tokens, bypass cargo capacity, choose a finale, skip an injury stage, receive a free repair, or start an invalid loadout.
@@ -59,7 +59,14 @@ Direct reducer tests are mandatory. A forged action must never mint money/Fame/T
 - Modify: `src/context/expeditionActionCreators.ts`
 - Test: `tests/node/expeditionReducer.test.js`
 
-`START_EXPEDITION` keeps the creator-generated `runId`, because reducers must not generate IDs. The reducer must nevertheless validate the payload independently:
+`START_EXPEDITION` keeps the creator-generated `runId`, because reducers must not generate IDs. The reducer nevertheless validates that id and the loadout independently. Define the exact UUID guard beside the lifecycle reducer helpers:
+
+```ts
+const EXPEDITION_RUN_ID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+```
+
+Use the canonical G1 loadout validator again inside the reducer:
 
 ```ts
 export const handleStartExpedition = (
@@ -69,66 +76,120 @@ export const handleStartExpedition = (
   if (state.expedition.status !== 'preparing') return state
   if (
     typeof payload.runId !== 'string' ||
-    !SAFE_UUID_RE.test(payload.runId)
-  ) return state
+    !EXPEDITION_RUN_ID_RE.test(payload.runId)
+  ) {
+    return state
+  }
 
   const validated = validateExpeditionLoadout(state, payload.loadout)
   if (!validated.valid) return state
 
-  return materializeStartedExpedition(
-    state,
-    validated.loadout,
-    payload.runId
-  )
+  return {
+    ...state,
+    gameMap: null,
+    currentGig: null,
+    lastGigStats: null,
+    activeEvent: null,
+    pendingEvents: [],
+    eventCooldowns: [],
+    rivalBand: null,
+    expedition: {
+      ...createDefaultExpeditionState(),
+      status: 'active',
+      runId: payload.runId,
+      loadout: validated.loadout,
+      startingMoney: finiteNumberOr(state.player.money, 0),
+      startingFame: finiteNumberOr(state.player.fame, 0)
+    }
+  }
 }
 ```
 
-The reducer uses the **validated canonical loadout**, not the raw payload object. Add direct-action tests for locked region/tour ids, duplicate crew ids, cargo overflow, invalid chassis ids, and malformed `runId`; all must return the original state reference.
+Later G2/G5 extensions to this start transition must keep the same reducer-side `validateExpeditionLoadout(state, payload.loadout)` call and then materialize cargo/insurance/starter effects from `validated.loadout`, never the raw payload object.
+
+Add direct-action tests for a locked region/tour id, duplicate crew id, cargo overflow, invalid chassis id and malformed `runId`; each returns the original state reference.
 
 ## Amendment 2: Route Rest-in-Van bankruptcy after the committed day tick
 
 **Amends:** G1 Task 11.
 
-The existing Arrival path cannot be the only daily-bankruptcy router because `useVanMaintenance.handleRestInVan()` calls `advanceDay()` without creating `pendingRouteRef`.
+The Arrival path cannot be the only daily-bankruptcy router because the current `useVanMaintenance.handleRestInVan()` calls `advanceDay()` directly and does not create `pendingRouteRef`.
 
 **Files:**
 - Modify: `src/hooks/travel/types.ts`
 - Modify: `src/hooks/travel/index.ts`
 - Modify: `src/hooks/travel/useVanMaintenance.ts`
+- Modify: `src/scenes/Overworld.tsx`
 - Test: `tests/ui/useVanMaintenance.test.tsx`
 - Keep: `tests/ui/useArrivalLogic.test.jsx`
 - Keep: `tests/node/advanceDayAssetIntegration.test.js`
 
-Extend `VanMaintenanceParams` with the committed state required to recognize completion of the rest day:
+Extend `TravelLogicParams` and `VanMaintenanceParams` with exactly these members:
 
 ```ts
-export interface VanMaintenanceParams {
-  // existing fields...
-  currentDay: number
-  expeditionStatus: GameState['expedition']['status']
-  saveGameAfterStateCommit: () => void
-  changeScene: (scene: GamePhase) => void
-}
+expeditionStatus: GameState['expedition']['status']
+saveGameAfterStateCommit: () => void
 ```
 
-Inside `useVanMaintenance` keep a day target, not a boolean, so a successful non-bankrupt rest cannot leave a stale pending flag:
+`VanMaintenanceParams` also receives the already-canonical day value:
+
+```ts
+currentDay: number
+changeScene: (scene: GamePhase) => void
+```
+
+`Overworld` selects the Expedition status and passes the existing G1 `saveGameAfterStateCommit` action into `useTravelLogic`:
+
+```tsx
+const expeditionStatus = useGameSelector(state => state.expedition.status)
+const {
+  saveGameAfterStateCommit,
+  changeScene,
+  // keep the remaining existing actions unchanged
+} = useGameActions()
+
+useTravelLogic({
+  // keep the remaining existing arguments unchanged
+  expeditionStatus,
+  saveGameAfterStateCommit,
+  changeScene
+})
+```
+
+`useTravelLogic` passes the live values into `useVanMaintenance`:
+
+```ts
+const { handleRefuel, handleRepair, handleRestInVan } = useVanMaintenance({
+  isTravelingRef: refs.isTravelingRef,
+  player: params.player,
+  band: params.band,
+  updatePlayer: params.updatePlayer,
+  updateBand: params.updateBand,
+  advanceDay: params.advanceDay,
+  dailyObligations,
+  addToast: params.addToast,
+  currentDay: finiteNumberOr(params.player.day, 0),
+  expeditionStatus: params.expeditionStatus,
+  saveGameAfterStateCommit: params.saveGameAfterStateCommit,
+  changeScene: params.changeScene
+})
+```
+
+In `useVanMaintenance.ts`, import `useEffect` and `GAME_PHASES`, then add a committed-day target:
 
 ```ts
 const pendingRestDayRef = useRef<number | null>(null)
+```
 
-const handleRestInVan = useCallback(() => {
-  // existing confirmation/recovery logic...
-  pendingRestDayRef.current = Math.max(0, Math.trunc(currentDay)) + 1
-  updateBand({ members: newMembers })
-  advanceDay()
-}, [
-  advanceDay,
-  band,
-  currentDay,
-  updateBand,
-  // existing dependencies...
-])
+On the **second/confirmed** Rest-in-Van click, immediately before the existing `updateBand({ members: newMembers })` / `advanceDay()` calls, set:
 
+```ts
+pendingRestDayRef.current = Math.max(0, Math.trunc(currentDay)) + 1
+```
+
+After `handleRestInVan`, add this effect:
+
+```ts
 useEffect(() => {
   const expectedDay = pendingRestDayRef.current
   if (expectedDay === null || currentDay < expectedDay) return
@@ -146,9 +207,9 @@ useEffect(() => {
 ])
 ```
 
-`useTravelLogic` passes `player.day`, the live Expedition status and the existing stable save/scene callbacks. Arrival routing remains unchanged for travel-owned day ticks; Rest-in-Van owns only its own post-commit route.
+The target is cleared as soon as the committed day is observed, even when the run remains active. That prevents a normal rest from leaving a stale flag that could route a later unrelated failure.
 
-Add this integration test:
+Add one UI integration test for:
 
 ```text
 active Expedition
@@ -159,7 +220,7 @@ active Expedition
 -> currentScene becomes RUN_SUMMARY
 ```
 
-Also assert a normal rest that advances the day without bankruptcy clears the pending target and does not route later on an unrelated failure.
+Add a second test proving a normal rest reaches the next day, clears the pending target and does not route when a later unrelated render reports `failed`.
 
 ---
 
@@ -198,33 +259,41 @@ export interface RepairExpeditionConditionPayload {
 
 The creator may stamp `defectRoll` only for improvisation. It must not send `moneyCost`, `sparePartsConsumed`, `nextTargetCondition`, `nextSourceCondition`, or a materialized defect.
 
-Add one shared pure resolver:
+Add the exact aggregate resolver result to `src/domain/expedition/repairs.ts`:
 
 ```ts
+export interface ResolvedExpeditionRepair {
+  nextTargetCondition: number
+  nextSourceCondition: number | null
+  moneyCost: number
+  sparePartsConsumed: number
+  hiddenDefect: HiddenDefectState | null
+}
+
 export const resolveExpeditionRepairIntent = (
   state: GameState,
   payload: RepairExpeditionConditionPayload
 ): ResolvedExpeditionRepair | null
 ```
 
-The resolver derives from current state:
+The resolver derives everything from current state and existing G2 pure helpers:
 
 ```text
-professional -> canonical missing-point cost and target 90
-field        -> current spare parts + vehicle/crew repair efficiency
-improvised   -> canonical +20 plus defect derived from target + bounded roll
-cannibalize  -> canonical source -40 / target +45
+professional -> `getProfessionalRepairCost(currentTarget)` + target 90
+field        -> current spare parts + current vehicle/crew field-repair efficiency + `resolveFieldRepair`
+improvised   -> `resolveImprovisedRepair` + defect id from `DEFECT_BY_GROUP[target]` + severity from bounded `defectRoll`
+cannibalize  -> current source/target through `resolveCannibalizeRepair`
 ```
 
-The reducer first checks `expectedTargetCondition`/`expectedSourceCondition`, calls the resolver itself, and applies only the returned canonical mutation. A replay or stale action is a no-op.
+The reducer first checks that the current target/source conditions equal `expectedTargetCondition` / `expectedSourceCondition`, then calls `resolveExpeditionRepairIntent(state, payload)` itself and applies only that canonical result. A replay or stale action is a no-op.
 
 Required hostile tests:
 
 ```text
 professional repair with insufficient current money -> identical state
 field repair with zero current spare parts -> identical state
-stale expected condition -> identical state
-unknown group/source combination -> identical state
+stale expected target/source condition -> identical state
+invalid mode/group/source combination -> identical state
 caller cannot provide a free cost/full next condition because those fields do not exist
 ```
 
@@ -241,7 +310,7 @@ export interface AddExpeditionCargoPayload {
 }
 ```
 
-Quantity is exactly one for this v1 action. The reducer derives:
+Quantity is exactly one for this v1 action. The reducer derives price and capacity:
 
 ```ts
 const price = payload.kind === 'spareParts'
@@ -252,9 +321,9 @@ const capacity = getExpeditionCargoCapacity(vehicle.cargoCapacityBonus)
 const used = getExpeditionCargoUsed(state.expedition.cargo)
 ```
 
-It rejects when `used !== expectedUsedSlots`, `used + 1 > capacity`, money is insufficient, the Expedition is not active, or the kind is invalid. The action payload must not contain caller-owned `moneyCost`, `capacity`, or quantity.
+It rejects when the Expedition is not active, `used !== payload.expectedUsedSlots`, `used + 1 > capacity`, current money is below `price`, or `kind` is invalid. The payload has no caller-owned `moneyCost`, `capacity`, or quantity.
 
-Add direct reducer tests for a forged cheap purchase, stale slot count, and capacity overflow.
+Add direct reducer tests for a forged legacy-shaped cheap purchase, stale slot count and capacity overflow.
 
 ---
 
@@ -274,9 +343,16 @@ export interface AdvanceExpeditionInjuryPayload {
 }
 ```
 
-The creator validates the member and `roll` in `[0, 1)`. The reducer revalidates the member, current stage and finite roll, derives current stamina from `state.band.members`, recomputes risk, and calls `advanceInjuryStage(current)` itself only when `roll < risk`.
+The creator validates the member and requires a finite `roll` in `[0, 1)`. The reducer revalidates the member, current stage and roll, derives current stamina from `state.band.members`, recomputes risk with the same G3 rule, and calls `advanceInjuryStage(current)` itself only when `roll < risk`.
 
-A direct action with `expectedStage:'none'` cannot jump to `serious` or `critical` because no next-stage field exists. Test stale expected stage, invalid member, non-finite/out-of-range roll, and one-stage-only progression.
+Use one shared pure risk helper so creator tests, reducer and simulator cannot drift:
+
+```ts
+export const getPostGigInjuryRisk = (stamina: number): number =>
+  stamina >= 35 ? 0 : stamina >= 20 ? 0.1 : 0.25
+```
+
+A direct action cannot jump from `none` to `serious` or `critical` because no next-stage field exists. Test stale expected stage, invalid member, non-finite/out-of-range roll and one-stage-only progression.
 
 ---
 
@@ -295,7 +371,7 @@ export interface ResolveExpeditionObligationPayload {
 }
 ```
 
-`createResolveExpeditionObligationAction(state, id)` may reject invalid requests early, but the reducer owns final settlement. It looks up the current obligation, validates `settled === false` and the expected status, then calls the canonical template/Brand-Deal settlement resolver to derive money/Fame/Heat/controversy deltas. No action may carry those values.
+`createResolveExpeditionObligationAction(state, id)` may reject invalid requests early, but the reducer owns final settlement. It looks up the current obligation, requires `settled === false` and the expected status, then calls the canonical template/Brand-Deal settlement resolver to derive money/Fame/Heat/controversy deltas. No action may carry those values.
 
 Add direct reducer tests proving a caller cannot mint a custom reward and that a replay settles nothing.
 
@@ -325,7 +401,7 @@ return {
 }
 ```
 
-The action creator does not carry `finaleType`. Add a forged direct-action test showing the caller cannot force `rival_battle`, `illegal_show`, or `corporate_showcase`.
+The action creator does not carry `finaleType`. Add a forged direct-action test showing a caller cannot force `rival_battle`, `illegal_show`, `corporate_showcase`, or `disaster_gig`.
 
 ---
 
@@ -354,36 +430,12 @@ Canonical registry:
 
 ```ts
 export const HQ_FACILITIES = Object.freeze({
-  workshop: {
-    id: 'workshop',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  },
-  rehearsal: {
-    id: 'rehearsal',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  },
-  management: {
-    id: 'management',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  },
-  garage: {
-    id: 'garage',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  },
-  blackMarket: {
-    id: 'blackMarket',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  },
-  crewLounge: {
-    id: 'crewLounge',
-    maxLevel: 3,
-    tokenCosts: [2, 4, 7]
-  }
+  workshop: { id: 'workshop', maxLevel: 3, tokenCosts: [2, 4, 7] },
+  rehearsal: { id: 'rehearsal', maxLevel: 3, tokenCosts: [2, 4, 7] },
+  management: { id: 'management', maxLevel: 3, tokenCosts: [2, 4, 7] },
+  garage: { id: 'garage', maxLevel: 3, tokenCosts: [2, 4, 7] },
+  blackMarket: { id: 'blackMarket', maxLevel: 3, tokenCosts: [2, 4, 7] },
+  crewLounge: { id: 'crewLounge', maxLevel: 3, tokenCosts: [2, 4, 7] }
 } as const)
 ```
 
@@ -406,7 +458,8 @@ rival_network       -> garage L2
 Add:
 
 ```ts
-PURCHASE_EXPEDITION_HQ_FACILITY
+PURCHASE_EXPEDITION_HQ_FACILITY:
+  'PURCHASE_EXPEDITION_HQ_FACILITY'
 
 export interface PurchaseExpeditionHqFacilityPayload {
   facilityId: HqFacilityId
@@ -414,9 +467,11 @@ export interface PurchaseExpeditionHqFacilityPayload {
 }
 ```
 
-The reducer validates the registry id, exact current level, max level and current Tour Tokens, derives the next-level cost from the registry, subtracts it once and increments exactly one level. The action does not carry cost or next level.
+The action creator validates the facility id and expected integer level, then returns `Extract<GameAction, { type: typeof ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY }>`.
 
-`BEGIN_EXPEDITION_UNLOCK_SET_PURCHASE` must additionally revalidate `requiredFacility` from current `career.hqFacilityLevels` before debiting tokens. UI visibility is not a security/progression boundary.
+The reducer validates the registry id, exact current level, max level and current Tour Tokens, derives the next-level cost from `HQ_FACILITIES[facilityId].tokenCosts[currentLevel]`, subtracts it once and increments exactly one level. The action never carries cost or next level.
+
+`BEGIN_EXPEDITION_UNLOCK_SET_PURCHASE` must additionally revalidate the selected set's `requiredFacility` against current `career.hqFacilityLevels` **before** debiting tokens or creating the pending journal. UI visibility is not a progression boundary.
 
 Required tests:
 
@@ -428,6 +483,8 @@ unknown facility -> no-op
 mechanic set before Workshop L1 -> no-op
 industry set before Management L1 -> no-op
 underground set before Black Market L1 -> no-op
+festival set before Garage L1 -> no-op
+rival set before Garage L2 -> no-op
 forged direct BEGIN cannot bypass facility requirement
 ```
 
@@ -440,6 +497,7 @@ forged direct BEGIN cannot bypass facility requirement
 **Replaces:** G5 Task 10 Step 3 action snippet.
 
 **Files:**
+- Modify: `src/domain/expedition/archive.ts`
 - Modify: `src/context/actionTypes.ts`
 - Modify: `src/types/actions.d.ts`
 - Modify: `src/types/game.d.ts`
@@ -450,7 +508,29 @@ forged direct BEGIN cannot bypass facility requirement
 - Test: `tests/node/expeditionArchive.test.js`
 - Test: `tests/node/actionCreatorSerialization.test.js`
 
-Add:
+Define the exact archive-key guard beside `addArchiveDiscovery`:
+
+```ts
+const CAREER_ARCHIVE_KEYS = new Set<keyof CareerArchive>([
+  'crewIds',
+  'moduleIds',
+  'chassisIds',
+  'rivalIds',
+  'sponsorIds',
+  'regionIds',
+  'finaleIds',
+  'eventIds',
+  'contrabandIds'
+])
+
+export const isCareerArchiveKey = (
+  value: unknown
+): value is keyof CareerArchive =>
+  typeof value === 'string' &&
+  CAREER_ARCHIVE_KEYS.has(value as keyof CareerArchive)
+```
+
+Add the canonical action:
 
 ```ts
 // ActionTypes
@@ -491,7 +571,7 @@ export const createRecordExpeditionArchiveDiscoveryAction = (
 }
 ```
 
-The reducer revalidates `key` and `id`, delegates to `addArchiveDiscovery`, and returns the identical state when unchanged. The dispatch hook exposes only the typed creator. Add serialization and malformed direct-action coverage.
+The reducer revalidates `key` and `id`, delegates to `addArchiveDiscovery`, and returns the identical state when unchanged. Add the corresponding `GameAction` member, root reducer-map entry, typed dispatch wrapper and serialization/malformed-direct-action coverage.
 
 ---
 
@@ -499,11 +579,39 @@ The reducer revalidates `key` and `id`, delegates to `addArchiveDiscovery`, and 
 
 ## Amendment 10: One Run Summary settlement effect owns both barriers
 
-**Replaces the independent settlement effects in:** G5 Task 4 and G5 Task 12.
+**Replaces the independent settlement snippets in:** G5 Task 4 Step 8 and G5 Task 12 Step 2.
 
-There is exactly one effect responsible for a finalized run:
+**Files:**
+- Modify: `src/context/useCareerDispatchActions.ts`
+- Modify: `src/scenes/RunSummary.tsx`
+- Test: `tests/ui/RunSummary.test.tsx`
+- Test: `tests/golden-path/expeditionMetaLoop.test.js`
+
+Reuse the repository's existing `getUnlocks` / `addUnlock` persistence functions and `createAddUnlockAction`; do not invent a second unlock manager.
+
+Extend `useCareerDispatchActions` with this exact helper, using the same injected `storage` adapter already required by G5 Task 3:
+
+```ts
+const persistExpeditionUnlockMarker = useCallback((unlockId: string): boolean => {
+  const alreadyPersisted = getUnlocks(storage).includes(unlockId)
+  const persisted = alreadyPersisted || addUnlock(unlockId, storage)
+  if (!persisted) return false
+
+  if (!stateRef.current.unlocks.includes(unlockId)) {
+    dispatch(createAddUnlockAction(unlockId))
+  }
+  return true
+}, [dispatch, stateRef, storage])
+```
+
+Expose `persistExpeditionUnlockMarker` together with the existing `recordExpeditionCareerResult` callback.
+
+`RunSummary` owns exactly one settlement effect. Use local UI retry state so a hard storage failure does not spin every render but the player can retry without leaving the scene:
 
 ```tsx
+const [legendaryPersistenceFailed, setLegendaryPersistenceFailed] =
+  useState(false)
+
 const runId = expedition.runId
 const isFinalized = expedition.outcome !== null && expedition.status !== 'active'
 const isCareerSettled =
@@ -514,41 +622,64 @@ const legendaryUnlockId =
     : null
 
 useEffect(() => {
-  if (!isFinalized || typeof runId !== 'string' || isCareerSettled) return
-
-  if (legendaryUnlockId && !state.unlocks.includes(legendaryUnlockId)) {
-    const persisted = addPersistentUnlock(legendaryUnlockId)
-    if (!persisted) {
-      markLegendarySettlementRetry(runId)
-      return
-    }
-
-    addUnlockToState(legendaryUnlockId)
-    return // wait for committed unlock state before career settlement
+  if (
+    !isFinalized ||
+    typeof runId !== 'string' ||
+    isCareerSettled ||
+    legendaryPersistenceFailed
+  ) {
+    return
   }
 
-  clearLegendarySettlementRetry(runId)
+  if (legendaryUnlockId && !state.unlocks.includes(legendaryUnlockId)) {
+    const persisted = persistExpeditionUnlockMarker(legendaryUnlockId)
+    if (!persisted) {
+      setLegendaryPersistenceFailed(true)
+    }
+    return // wait for committed ADD_UNLOCK state before career settlement
+  }
+
   recordExpeditionCareerResult()
 }, [
-  addUnlockToState,
   isCareerSettled,
   isFinalized,
+  legendaryPersistenceFailed,
   legendaryUnlockId,
+  persistExpeditionUnlockMarker,
   recordExpeditionCareerResult,
   runId,
   state.unlocks
 ])
 ```
 
-`Band HQ` and `Next Tour` remain disabled until `settledRunIds` contains the run id. A failed Legendary storage write therefore cannot mint Tour Tokens or permit progression past Run Summary.
+The retry control is explicit:
+
+```tsx
+const retryLegendaryPersistence = () => {
+  setLegendaryPersistenceFailed(false)
+}
+
+<RunSummaryCard
+  // keep existing summary props
+  settlementPending={!isCareerSettled}
+  settlementError={legendaryPersistenceFailed}
+  onRetrySettlement={
+    legendaryPersistenceFailed ? retryLegendaryPersistence : undefined
+  }
+  onOpenBandHq={isCareerSettled ? openBandHq : undefined}
+  onNextTour={isCareerSettled ? prepareNextExpedition : undefined}
+/>
+```
+
+Because a successful marker write dispatches the already-existing `ADD_UNLOCK` action and the effect returns, career settlement cannot happen until the next committed render contains the Legendary id in `state.unlocks`. `Band HQ` and `Next Tour` remain disabled until `settledRunIds` contains the run id.
 
 Mandatory golden-path cases:
 
 ```text
-successful finale + marker write succeeds -> marker/state commit -> career settles once
-successful finale + marker write fails -> no settledRunId, no Tour Tokens, controls disabled
-retry after storage recovers -> marker persists -> career settles once
-reload after marker persisted but before career settlement -> settles once
+successful finale + marker write succeeds -> ADD_UNLOCK commits -> career settles once
+successful finale + marker write fails -> no settledRunId, no Tour Tokens, controls disabled, Retry visible
+Retry after storage recovers -> marker persists -> ADD_UNLOCK commits -> career settles once
+reload after marker persisted but before career settlement -> marker recognized/state synchronized -> settles once
 voluntary extraction/failure -> no Legendary barrier, normal career settlement
 StrictMode double effect -> no duplicate marker or Tour Tokens
 ```
@@ -564,22 +695,22 @@ StrictMode double effect -> no duplicate marker or Tour Tokens
 Add to that task's file list and commit:
 
 ```text
-Modify: scripts/AGENTS.md
+Modify: `scripts/AGENTS.md`
 ```
 
-Replace the old ten-hop/day-horizon instruction when v15 becomes active. The resulting Balance Simulations section must state:
+Replace the old ten-hop/day-horizon instruction when v15 becomes active. The resulting **Balance Simulations** section must state:
 
 ```markdown
-- Balance harnesses import canonical reducers, action creators, configs, economy/fame helpers, event data, and minigame logic instead of reimplementing mechanics.
+- Balance harnesses import canonical reducers, action creators, configs, economy/fame helpers, event data, and minigame logic instead of reimplementing mechanics. A PreGig run executes exactly one setup minigame.
 - Frozen v14 artifacts retain the historical ten-hop / `daysPerRun: 10` semantics and `#first-income-full-reports-v1` namespace.
 - Live v15 Expedition reports use production `TourTypeDefinition.mapDepth`, extraction windows, and terminal `extracted` / `completed` / `failed` outcomes. `SIMULATION_CONSTANTS.daysPerRun` must not control v15.
 - v15 uses `#roguelite-expedition-v1`; changing a namespace creates a new unpaired cohort.
 - Progression checkpoints are route-step checkpoints, not day checkpoints. Missing late checkpoints from already-terminal runs are missing observations, never zeros.
 ```
 
-Keep the existing canonical-helper, RNG-reset, experiment-integrity and provenance requirements unless a v15 task explicitly updates them.
+Keep the existing RNG-reset, experiment-integrity and provenance requirements unless a v15 task explicitly updates them. Remove only statements whose controlling horizon is the live ten-hop/day model.
 
-The G6 cutover is not complete until the nested instruction file and simulator tests describe the same horizon semantics.
+The G6 cutover is not complete until the nested instruction file and simulator tests describe the same v15 horizon semantics.
 
 ---
 
@@ -603,15 +734,17 @@ Seed builder:
 
 ```js
 export const buildExtractionProbeSeed = (
-  cohort: 'calibration' | 'holdout',
-  profileId: string,
-  extractionStep: number,
-  runIndex: number
-): number => createScenarioSeed(
+  cohort,
+  profileId,
+  extractionStep,
+  runIndex
+) => createScenarioSeed(
   `${profileId}:${extractionStep}:${EXTRACTION_PROBE_NAMESPACES[cohort]}`,
   runIndex
 )
 ```
+
+`cohort` is validated before this helper is called and must be exactly `'calibration'` or `'holdout'`.
 
 Generate 2,000 paired snapshots per applicable profile/window **for each cohort**. Each snapshot still clones into Extract and Continue branches; calibration and holdout additionally use different seed namespaces.
 
@@ -632,8 +765,8 @@ A blocking finding exists only when the same `(profileId, extractionStep, winnin
 Update G6 Task 13 generation expectations:
 
 ```text
-- calibration probe: 2,000 paired states per applicable profile/window
-- holdout probe: 2,000 disjoint paired states per applicable profile/window
+calibration probe -> 2,000 paired states per applicable profile/window
+holdout probe     -> 2,000 disjoint paired states per applicable profile/window
 ```
 
 Update G6 Task 14 assertions:
@@ -653,26 +786,26 @@ assert.equal(probe.holdout.profileResults.length, 6)
 assert.equal(probe.blockingDecisionDominance.length, 0)
 ```
 
-Add a determinism test proving the same cohort/profile/step/index reproduces, plus a disjointness test proving calibration and holdout seeds differ for the same profile/step/index.
+Add a determinism test proving the same cohort/profile/step/index reproduces and a disjointness test proving calibration and holdout seeds differ for the same profile/step/index.
 
 ---
 
 # Hardening verification gate
 
-Before the plan is considered implementation-ready, verify the plan text itself against these contracts:
+Before the plan is considered implementation-ready, verify all of these statements against the canonical files:
 
-- [ ] `START_EXPEDITION` reducer revalidates the canonical loadout.
+- [ ] `START_EXPEDITION` reducer revalidates the canonical loadout and UUID.
 - [ ] Rest-in-Van daily bankruptcy has an explicit post-commit Run Summary route.
 - [ ] Repair actions do not carry price/next-condition/materialized-defect values.
-- [ ] Cargo purchase actions do not carry caller-owned price/capacity.
+- [ ] Cargo purchase actions do not carry caller-owned price/capacity/quantity.
 - [ ] Injury actions do not carry caller-owned next stage.
 - [ ] Obligation settlement actions do not carry reward/penalty values.
 - [ ] Finale actions do not carry caller-selected finale type.
 - [ ] HQ facility purchases have a typed reducer boundary and canonical registry.
-- [ ] Unlock-set BEGIN rechecks its required facility.
+- [ ] Unlock-set `BEGIN` rechecks its required facility.
 - [ ] Archive discovery is in `ActionTypes` + `GameAction` and uses `Extract<...>`.
-- [ ] Legendary persistence succeeds before `RECORD_EXPEDITION_CAREER_RESULT` can settle the run.
+- [ ] Legendary marker persistence and committed `ADD_UNLOCK` state happen before `RECORD_EXPEDITION_CAREER_RESULT` can settle the run.
 - [ ] G6 updates `scripts/AGENTS.md` in the horizon-cutover task.
 - [ ] Paired extraction has separate 2,000-run calibration and holdout cohorts.
 
-Run the plan's existing type/test commands after each implementation amendment. No hardening item may be weakened merely to make an existing test green; update the affected child-plan tests to exercise the corrected contract.
+Run the child plan's existing type/test commands after each implementation amendment and add the direct-action tests named here. No hardening item may be weakened merely to make an older assertion green; update that child-plan assertion to exercise the corrected contract instead.
