@@ -1161,7 +1161,7 @@ if (legendaryUnlockId && !state.unlocks.includes(legendaryUnlockId)) {
   const persisted = addPersistentUnlock(legendaryUnlockId)
   if (!persisted) return // surface retry; do not settle this run yet
 }
-recordExpeditionCareerResult(outcome)
+recordExpeditionCareerResult()
 ```
 
 Because `addPersistentUnlock` treats an already stored marker as success and the career settlement has its own bounded `settledRunIds`, rerender/reload cannot duplicate the legendary reward or double-award Tour Tokens. Failure and voluntary extraction never award a legendary finale marker.
