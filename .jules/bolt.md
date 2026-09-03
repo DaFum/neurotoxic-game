@@ -218,3 +218,8 @@
 
 **Learning:** Checking the number of keys on an object using `Object.keys(obj).length` creates an array, which could be seen as overhead. However, replacing it with a manual `for...in` loop in user-land JavaScript degrades performance in modern engines (like V8) where `Object.keys` is heavily optimized in native C++. Refactoring this solely for counting properties fails code review as an anti-pattern.
 **Action:** Never refactor `Object.keys(obj).length` into a manual user-land `for...in` loop solely to count properties. Native engine methods are generally faster. Instead, use the centralized `isEmptyObject(obj)` or `countKeys(obj)` helpers from `src/utils/gameState/checks.ts` when available.
+
+## 2026-09-03 - Module-scope Object.values vs array literals in static sets
+
+**Learning:** Refactoring top-level static initialization statements (such as `const VALID_SEVERITIES = new Set(Object.values(ErrorSeverity))`) to pass explicit array literals (`new Set([ErrorSeverity.LOW, ...])`) does not reduce array allocations (passing an array literal `[...]` still allocates an array) and yields zero runtime performance benefit because module-scope initializations run only once at startup. Furthermore, manually hardcoding values into sets breaks maintainability when definitions are updated.
+**Action:** Do not refactor module-level static initializations using `Object.values()` when evaluated only once at startup. Focus optimization efforts strictly on high-frequency hot paths (game ticks, render loops, and reducers).
