@@ -47,12 +47,14 @@
 - `src/utils/assetSections/tourbusModules.ts`
 - `src/context/actionTypes.ts`
 - `src/types/actions.d.ts`
+- `src/types/game.d.ts`
 - `src/context/expeditionActionCreators.ts`
 - `src/context/reducers/expeditionReducer.ts`
 - `src/context/reducers/expeditionSanitizers.ts`
 - `src/context/useExpeditionDispatchActions.ts`
 - `src/context/reducers/minigameReducer.ts`
-- `src/utils/gameState/delta.ts`
+- `src/utils/eventEngine/eventEffectHandlers.ts`
+- `src/domain/eventResolver.ts`
 - `src/hooks/postGig/handlers/useContinueHandler.ts`
 - `src/ui/SupplyStopModal.tsx`
 - `src/hooks/overworld/useSupplyStopModal.ts`
@@ -64,7 +66,10 @@
 - `scripts/game-balance-simulation.mjs`
 - relevant source list in `scripts/game-balance-simulation.mjs`
 - `tests/ui/SupplyStopModal.test.jsx`
+- `tests/node/eventEngine_resolver.test.js`
+- `tests/node/domain/eventResolver.test.js`
 - `tests/node/eventReducer.test.js`
+- `tests/node/actionCreatorSerialization.test.js`
 - existing minigame reducer tests for Roadie/Kabelsalat/Amp Calibration
 
 ---
@@ -780,7 +785,7 @@ Only assert these bonuses when an Expedition is active; legacy runs remain behav
 - [ ] **Step 2: Verify failure**
 
 ```bash
-pnpm exec vitest run tests/ui/ampCalibration.test.jsx tests/ui/kabelsalatMinigame.test.jsx tests/ui/roadieMinigame.test.jsx
+pnpm exec vitest run tests/ui/useRoadieLogic.test.jsx tests/ui/useKabelsalatGameEnd.test.jsx tests/logic/ampCalibrationReducer.test.js
 ```
 
 Expected: Expedition protection assertions FAIL.
@@ -1220,95 +1225,204 @@ git commit -m "feat(expedition): add optional run insurance"
 ```
 
 
-### Task 10: Extend Event Delta With an Expedition Subdelta
+### Task 10: Add the Base Expedition Event-Effect Pipeline Through Typed Actions
 
 **Files:**
 - Modify: `src/types/events.d.ts`
-- Modify: `src/utils/gameState/delta.ts`
+- Modify: `src/types/actions.d.ts`
+- Modify: `src/types/game.d.ts`
+- Modify: `src/utils/eventEngine/eventEffectHandlers.ts`
+- Modify: `src/domain/eventResolver.ts`
+- Modify: `src/context/actionTypes.ts`
+- Modify: `src/context/expeditionActionCreators.ts`
+- Modify: `src/context/reducers/expeditionReducer.ts`
+- Test: `tests/node/eventEngine_resolver.test.js`
+- Test: `tests/node/domain/eventResolver.test.js`
 - Test: `tests/node/eventReducer.test.js`
+- Test: `tests/node/actionCreatorSerialization.test.js`
 
-- [ ] **Step 1: Add failing event-delta test**
+This task establishes the reusable event boundary before Crew is implemented. G3 Task 9 extends the same contract with crew stress and the Rival Battle intent; it does not create a second event-delta path.
+
+For v1, `condition` is a signed delta: positive values repair/restore Condition and negative values damage it. Event cargo deltas may only **consume** `spareParts`/`supplies` (`<= 0`); positive cargo rewards stay on the capacity-aware Supply/Reward path.
+
+- [ ] **Step 1: Add a failing base end-to-end event-pipeline test**
+
+Start with an active Expedition whose PA is 100, Heat is 10, Exposure is 20 and `spareParts` is 1:
 
 ```js
-test('event delta can change expedition pressure, condition, cargo, and crew stress', () => {
-  const next = applyEventDelta(baseActiveExpeditionState, {
-    expedition: {
-      heat: 10,
+const choice = {
+  effect: {
+    type: 'expedition',
+    delta: {
+      heat: 4,
       exposure: -5,
       condition: { pa: -8 },
-      cargo: { spareParts: 1 },
-      crewStress: { crew_mika_tech: 12 }
+      cargo: { spareParts: -1 }
     }
-  })
-  assert.equal(next.expedition.pressure.heat, 10)
-  assert.equal(next.expedition.pressure.exposure, 0)
-  assert.equal(next.expedition.condition.pa, 92)
-  assert.equal(next.expedition.cargo.spareParts, 1)
-  assert.equal(next.expedition.crewRunById.crew_mika_tech.stress, 12)
+  }
+}
+
+const engineResolution = resolveEventChoice(choice, activeState)
+assert.deepEqual(engineResolution.delta.expedition, {
+  heat: 4,
+  exposure: -5,
+  condition: { pa: -8 },
+  cargo: { spareParts: -1 }
 })
+
+const resolution = resolveEvent(choice, activeState, fixedClock)
+let reduced = activeState
+for (const action of resolution.actions) reduced = gameReducer(reduced, action)
+assert.equal(reduced.expedition.pressure.heat, 14)
+assert.equal(reduced.expedition.pressure.exposure, 15)
+assert.equal(reduced.expedition.condition.pa, 92)
+assert.equal(reduced.expedition.cargo.spareParts, 0)
 ```
 
-- [ ] **Step 2: Verify failure**
+Also assert an authored positive event cargo grant is dropped rather than bypassing cargo-capacity validation.
 
-```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/eventReducer.test.js
-```
+- [ ] **Step 2: Add the narrow base `EventDelta.expedition` type**
 
-Expected: FAIL because `EventDelta` has no Expedition branch.
-
-- [ ] **Step 3: Add strict type**
+`src/types/events.d.ts`:
 
 ```ts
+import type { ConditionGroup } from './expedition'
+
 export interface ExpeditionEventDelta {
   heat?: number
   exposure?: number
   condition?: Partial<Record<ConditionGroup, number>>
-  cargo?: Partial<Pick<ExpeditionCargoState, 'spareParts' | 'supplies'>>
-  crewStress?: Record<string, number>
-}
-```
-
-Add `expedition?: ExpeditionEventDelta` to `EventDelta`.
-
-- [ ] **Step 4: Apply through the same pure delta pipeline**
-
-Extend `calculateAppliedDelta` / `applyEventDelta` using the same strict guards. Keep the writable Expedition subset explicit:
-
-```ts
-if (delta.expedition && next.expedition.status === 'active') {
-  const effect = sanitizeExpeditionEventDelta(delta.expedition, next.expedition)
-  next = {
-    ...next,
-    expedition: {
-      ...next.expedition,
-      condition: applyConditionDelta(next.expedition.condition, effect.condition),
-      pressure: applyPressureDelta(next.expedition.pressure, {
-        heat: effect.heat,
-        exposure: effect.exposure
-      }),
-      cargo: applyCargoDelta(next.expedition.cargo, effect.cargo),
-      crewRunById: applyKnownCrewStressDeltas(next.expedition.crewRunById, effect.crewStress)
-    }
+  cargo?: {
+    spareParts?: number
+    supplies?: number
   }
 }
+
+export type EventDelta = {
+  // existing score/player/band/social/flags fields...
+  expedition?: ExpeditionEventDelta
+}
 ```
 
-`sanitizeExpeditionEventDelta` has no fields for `outcome`, `loadout`, `routeStep`, or `career`, so raw events cannot mutate them.
+Do not add `career`, `outcome`, `routeStep`, or `loadout` fields to this event surface.
 
-- [ ] **Step 5: Run event regression**
+- [ ] **Step 3: Register `expedition` in the actual event-effect handler registry**
+
+`src/utils/eventEngine/eventEffectHandlers.ts` already owns declarative `effect.type` dispatch. Add an `expedition` handler there; unknown effect types must not be relied on because `processEffect` silently skips them.
+
+```ts
+expedition: (eff: EffectShape, delta: EventDelta) => {
+  if (!isLooseRecord(eff.delta)) return
+  const raw = eff.delta
+  const current = delta.expedition ?? {}
+  const next: ExpeditionEventDelta = { ...current }
+
+  if (isFiniteNumber(raw.heat)) {
+    next.heat = finiteNumberOr(current.heat, 0) + raw.heat
+  }
+  if (isFiniteNumber(raw.exposure)) {
+    next.exposure = finiteNumberOr(current.exposure, 0) + raw.exposure
+  }
+
+  if (isLooseRecord(raw.condition)) {
+    const condition = { ...(current.condition ?? {}) }
+    for (const group of ['pa', 'instruments', 'stageGear'] as const) {
+      const value = raw.condition[group]
+      if (isFiniteNumber(value)) {
+        condition[group] = finiteNumberOr(condition[group], 0) + value
+      }
+    }
+    if (Object.keys(condition).length > 0) next.condition = condition
+  }
+
+  if (isLooseRecord(raw.cargo)) {
+    const cargo = { ...(current.cargo ?? {}) }
+    for (const key of ['spareParts', 'supplies'] as const) {
+      const value = raw.cargo[key]
+      if (isFiniteNumber(value) && Number.isInteger(value) && value <= 0) {
+        cargo[key] = Math.trunc(finiteNumberOr(cargo[key], 0) + value)
+      }
+    }
+    if (Object.keys(cargo).length > 0) next.cargo = cargo
+  }
+
+  delta.expedition = next
+}
+```
+
+Import `ExpeditionEventDelta` as a type and use the existing `finiteNumberOr`, `isFiniteNumber`, and `isLooseRecord` strict helpers. Do not use `Number(...)` coercion.
+
+- [ ] **Step 4: Add `APPLY_EXPEDITION_EVENT_DELTA` as a separate typed state boundary**
+
+Add the action type and payload:
+
+```ts
+APPLY_EXPEDITION_EVENT_DELTA: 'APPLY_EXPEDITION_EVENT_DELTA'
+
+export interface ApplyExpeditionEventDeltaPayload {
+  heat: number
+  exposure: number
+  condition: Partial<Record<ConditionGroup, number>>
+  cargo: { spareParts: number; supplies: number }
+}
+```
+
+Add the corresponding `Action<...>` member to `GameAction`.
+
+`createApplyExpeditionEventDeltaAction(raw)` accepts `unknown`, returns `null` if no supported field survives, and canonicalizes absent numeric fields to zero. It accepts only signed finite pressure/Condition values and non-positive integer cargo consumption. Return type:
+
+```ts
+Extract<GameAction, { type: typeof ActionTypes.APPLY_EXPEDITION_EVENT_DELTA }> | null
+```
+
+- [ ] **Step 5: Convert `EventDelta.expedition` to the typed action in `eventResolver.ts`**
+
+Do not teach generic `src/utils/gameState/delta.ts` how to mutate Expedition state. Keep existing event state and Expedition state as separate reducer boundaries:
+
+```ts
+const { expedition: expeditionDelta, ...legacyDelta } = normalizedDelta
+
+actions.push(createApplyEventDeltaAction(legacyDelta as EventDeltaPayload, clock))
+
+if (expeditionDelta) {
+  const expeditionAction = createApplyExpeditionEventDeltaAction(expeditionDelta)
+  if (expeditionAction) actions.push(expeditionAction)
+}
+```
+
+`resolveEvent` remains pure: it returns actions; `useEventSystem` continues to materialize them through `gameReducer` in order.
+
+- [ ] **Step 6: Apply and revalidate the base delta in `expeditionReducer`**
+
+Return the identical state when the Expedition is not active or any present payload field is non-finite/invalid. Otherwise apply:
+
+```text
+Heat/Exposure        current + signed delta, clamp 0..100
+Condition            current + signed delta, clamp 0..100
+spareParts/supplies  current + non-positive integer delta, floor at 0
+```
+
+A malformed direct action with `cargo.spareParts: 1`, `heat: NaN`, or an unknown Condition key must be a no-op. No event action may change extraction outcome, loadout, route position, unlocks, or Career.
+
+- [ ] **Step 7: Run base pipeline and serialization gates**
 
 ```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/eventReducer.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs \
+  tests/node/eventEngine_resolver.test.js \
+  tests/node/domain/eventResolver.test.js \
+  tests/node/eventReducer.test.js \
+  tests/node/actionCreatorSerialization.test.js
 pnpm run typecheck:core
+pnpm run typecheck
 ```
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/types/events.d.ts src/utils/gameState/delta.ts tests/node/eventReducer.test.js
-git commit -m "feat(expedition): support event-driven run deltas"
+git add src/types/events.d.ts src/types/actions.d.ts src/types/game.d.ts src/utils/eventEngine/eventEffectHandlers.ts src/domain/eventResolver.ts src/context/actionTypes.ts src/context/expeditionActionCreators.ts src/context/reducers/expeditionReducer.ts tests/node/eventEngine_resolver.test.js tests/node/domain/eventResolver.test.js tests/node/eventReducer.test.js tests/node/actionCreatorSerialization.test.js
+git commit -m "feat(expedition): route base event effects through typed state"
 ```
 
 ---
