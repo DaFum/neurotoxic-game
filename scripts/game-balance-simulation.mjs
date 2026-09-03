@@ -1202,17 +1202,31 @@ const recordQuestStateDiff = (beforeSnapshot, afterState, counters) => {
 
   // Check for failed/removed quests
   for (const prev of beforeActive) {
-    if (!afterActive.some(q => q.id === prev.id) && !afterComp.includes(prev.id)) {
+    if (
+      !afterActive.some(q => q.id === prev.id) &&
+      !afterComp.includes(prev.id)
+    ) {
       qCoverage.failures += 1
     }
   }
 }
 
-const dispatchResolvedEventChoice = (event, choice, state, scenario, rng, counters = null) => {
+const dispatchResolvedEventChoice = (
+  event,
+  choice,
+  state,
+  scenario,
+  rng,
+  counters = null
+) => {
   state.activeEvent = event
 
   // Record quest offer if this event is a quest offer event
-  if (event?.id && event.id.startsWith('quest_trigger_') && counters?.executionCoverage?.quests) {
+  if (
+    event?.id &&
+    event.id.startsWith('quest_trigger_') &&
+    counters?.executionCoverage?.quests
+  ) {
     const qCoverage = counters.executionCoverage.quests
     qCoverage.offers += 1
     const questId = event.id.replace('quest_trigger_', 'quest_')
@@ -1248,7 +1262,14 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent(category, state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
+      dispatchResolvedEventChoice(
+        event,
+        choice,
+        state,
+        scenario,
+        rng,
+        eventCounts
+      )
 
       if (category === 'financial') {
         eventCounts.cashSwings += 1
@@ -1264,7 +1285,14 @@ const applyDailyEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent('band', state, 'random', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
+      dispatchResolvedEventChoice(
+        event,
+        choice,
+        state,
+        scenario,
+        rng,
+        eventCounts
+      )
       eventCounts.bandEvents += 1
       eventsApplied++
     }
@@ -1293,7 +1321,14 @@ const applyTravelEvents = (state, scenario, rng, eventCounts) => {
     const event = eventEngine.checkEvent('transport', state, 'travel', rng)
     if (event && event.options && event.options.length > 0) {
       const choice = event.options[Math.floor(rng() * event.options.length)]
-      dispatchResolvedEventChoice(event, choice, state, scenario, rng, eventCounts)
+      dispatchResolvedEventChoice(
+        event,
+        choice,
+        state,
+        scenario,
+        rng,
+        eventCounts
+      )
       eventCounts.equipmentEvents += 1
       eventsApplied++
     }
@@ -1322,7 +1357,14 @@ const maybeApplyGigEvent = (state, scenario, rng, counters) => {
 
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const oldFame = state.player.fame
-  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng, counters)
+  const delta = dispatchResolvedEventChoice(
+    event,
+    choice,
+    state,
+    scenario,
+    rng,
+    counters
+  )
   if (delta) {
     const rawDiff = delta.player?.fame
     const actualDiff = state.player.fame - oldFame
@@ -1353,7 +1395,14 @@ const applyTriggerEvent = (
   if (!event?.options?.length || !category) return false
   const choice = event.options[Math.floor(rng() * event.options.length)]
   const oldFame = state.player.fame
-  const delta = dispatchResolvedEventChoice(event, choice, state, scenario, rng, counters)
+  const delta = dispatchResolvedEventChoice(
+    event,
+    choice,
+    state,
+    scenario,
+    rng,
+    counters
+  )
   if (delta) {
     recordObservedFameChange(
       counters.fameAccounting,
@@ -2410,12 +2459,15 @@ export const applyPostGigState = (
     }
   })
 
-  const postPenaltyHarmony = applyNeurotoxicPenalty(state.band, updateBandFn => {
-    const patch = updateBandFn(state.band)
-    if (patch) {
-      state.band = { ...state.band, ...patch }
+  const postPenaltyHarmony = applyNeurotoxicPenalty(
+    state.band,
+    updateBandFn => {
+      const patch = updateBandFn(state.band)
+      if (patch) {
+        state.band = { ...state.band, ...patch }
+      }
     }
-  })
+  )
 
   const storyQuests = buildStoryFlagQuests({
     activeStoryFlags: state.activeStoryFlags,
@@ -3743,10 +3795,10 @@ export const mergeExecutionCoverage = sources => {
       completions: 0,
       failures: 0,
       rewards: 0,
-        availableIds: Object.keys(QUEST_REGISTRY).length,
-        uniqueQuestIdsOffered: new Set(),
-        uniqueQuestIdsActivated: new Set(),
-        uniqueQuestIdsCompleted: new Set()
+      availableIds: Object.keys(QUEST_REGISTRY).length,
+      uniqueQuestIdsOffered: new Set(),
+      uniqueQuestIdsActivated: new Set(),
+      uniqueQuestIdsCompleted: new Set()
     }
   }
 
@@ -3800,9 +3852,15 @@ export const mergeExecutionCoverage = sources => {
       metric.availableIds = COVERAGE_ID_INVENTORY[key]
     }
     if (key === 'quests') {
-      metric.uniqueQuestIdsOffered = Array.from(metric.uniqueQuestIdsOffered).sort()
-      metric.uniqueQuestIdsActivated = Array.from(metric.uniqueQuestIdsActivated).sort()
-      metric.uniqueQuestIdsCompleted = Array.from(metric.uniqueQuestIdsCompleted).sort()
+      metric.uniqueQuestIdsOffered = Array.from(
+        metric.uniqueQuestIdsOffered
+      ).sort()
+      metric.uniqueQuestIdsActivated = Array.from(
+        metric.uniqueQuestIdsActivated
+      ).sort()
+      metric.uniqueQuestIdsCompleted = Array.from(
+        metric.uniqueQuestIdsCompleted
+      ).sort()
       const fullyCovered =
         metric.offers > 0 &&
         metric.activations > 0 &&
@@ -4192,8 +4250,7 @@ export const summarizeScenario = runs => {
         ),
         fullManagementCutGigSharePct: Number(
           (
-            (totalGigsPlayed > 0 ? totalFullCutGigs / totalGigsPlayed : 0) *
-            100
+            (totalGigsPlayed > 0 ? totalFullCutGigs / totalGigsPlayed : 0) * 100
           ).toFixed(2)
         ),
         totalManagementCut: Math.round(
@@ -5135,7 +5192,8 @@ export const RISK_TARGETS = {
     probeCorridors: {
       noSocialFinalMoneyRatioPct: [70, 95]
     },
-    intent: 'Wirtschaftlich ca. 70–95% von Baseline; Social Media optional aber wertvoll.'
+    intent:
+      'Wirtschaftlich ca. 70–95% von Baseline; Social Media optional aber wertvoll.'
   },
   high_controversy_probe: {
     bankruptcyTargetPct: [20, 35],
@@ -5426,7 +5484,11 @@ export const describeCorridorConfidence = ({
  * one stream and below_target on the other is on a boundary, and reporting
  * either label alone would overstate what was measured.
  */
-export const getProbeMetricValue = (summary, metricKey, allSummariesMap = null) => {
+export const getProbeMetricValue = (
+  summary,
+  metricKey,
+  allSummariesMap = null
+) => {
   if (!summary) return null
   if (metricKey === 'noSocialFinalMoneyRatioPct') {
     const baselineSummary = allSummariesMap?.get('baseline_touring')
@@ -5450,7 +5512,10 @@ export const getProbeMetricValue = (summary, metricKey, allSummariesMap = null) 
   if (summary.tourPaths && Object.hasOwn(summary.tourPaths, metricKey)) {
     return summary.tourPaths[metricKey]
   }
-  if (summary.purchasePaths && Object.hasOwn(summary.purchasePaths, metricKey)) {
+  if (
+    summary.purchasePaths &&
+    Object.hasOwn(summary.purchasePaths, metricKey)
+  ) {
     return summary.purchasePaths[metricKey]
   }
   return null
@@ -5483,7 +5548,8 @@ export const evaluateOverallScenarioRiskStatus = ({
   ) {
     return 'unsafe'
   }
-  if (allCalStatuses.includes('insufficient_evidence')) return 'insufficient_evidence'
+  if (allCalStatuses.includes('insufficient_evidence'))
+    return 'insufficient_evidence'
   if (
     allCalStatuses.includes('not_evaluated') ||
     allHoldStatuses.includes('not_evaluated')
@@ -5719,8 +5785,14 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
         }
       }
 
-      const allCalStatuses = [calibrationStatus, ...Object.values(probeMetrics).map(m => m.status)]
-      const allHoldStatuses = [holdoutStatus, ...Object.values(probeMetrics).map(m => m.holdoutStatus)]
+      const allCalStatuses = [
+        calibrationStatus,
+        ...Object.values(probeMetrics).map(m => m.status)
+      ]
+      const allHoldStatuses = [
+        holdoutStatus,
+        ...Object.values(probeMetrics).map(m => m.holdoutStatus)
+      ]
 
       const status = evaluateOverallScenarioRiskStatus({
         allCalStatuses,
@@ -5770,7 +5842,8 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
     const scenarioWarnings = []
 
     // 1. Bankruptcy warning derived strictly from bankruptcy-only status
-    const describeBankruptcy = RISK_STATUS_WARNING[scenario.bankruptcy.riskStatus]
+    const describeBankruptcy =
+      RISK_STATUS_WARNING[scenario.bankruptcy.riskStatus]
     if (describeBankruptcy) {
       scenarioWarnings.push(
         describeBankruptcy({
@@ -5820,7 +5893,9 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
 
   return {
     blocking: false,
-    passed: scenarios.length > 0 && scenarios.every(scenario => scenario.status === 'healthy'),
+    passed:
+      scenarios.length > 0 &&
+      scenarios.every(scenario => scenario.status === 'healthy'),
     note: 'Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben die Sicherheitsobergrenzen in KPI_TARGETS.bankruptcyMax.',
     evidenceMinimumSample: RISK_EVIDENCE_MINIMUM_SAMPLE,
     scenarios,
