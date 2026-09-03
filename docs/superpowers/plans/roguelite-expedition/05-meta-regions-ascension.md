@@ -302,7 +302,7 @@ git commit -m "feat(expedition): record career progression"
 
 ---
 
-### Task 3: Persist Unlock Sets Atomically Through One Existing Unlock Marker
+### Task 3: Persist Unlock Sets Crash-Safely Through One Journaled Marker
 
 **Files:**
 - Create: `src/data/expedition/unlockSets.ts`
@@ -313,9 +313,11 @@ git commit -m "feat(expedition): record career progression"
 - Modify: `src/context/actionCreators.ts`
 - Modify: `src/context/careerActionCreators.ts`
 - Modify: `src/context/useCareerDispatchActions.ts`
+- Modify: `src/context/usePersistence.ts`
 - Modify: `src/context/reducers/careerReducer.ts`
 - Modify: `src/context/reducers/careerSanitizers.ts`
 - Test: `tests/node/expeditionUnlockSets.test.js`
+- Test: `tests/context/usePersistence.test.tsx`
 - Test: `tests/node/unlockManager.test.js`, `tests/utils/unlockManager.test.ts`, `tests/security/unlocksValidation.test.js`
 
 The existing unlock storage writes one marker at a time. Do **not** persist every capability in a set independently: a mid-loop storage failure would grant a partially free set. Persist exactly one `expedition.set.*` marker per purchased set and derive its capabilities in pure code.
@@ -455,36 +457,116 @@ The reducer behavior is:
 // ROLLBACK: restore pending.tokenCost exactly once, then clear pending.
 ```
 
-The sanitizer validates `setId` against `EXPEDITION_UNLOCK_SETS`, recomputes `unlockId`/`tokenCost` from the registry, and never trusts persisted cost values.
+The sanitizer validates `setId` against `EXPEDITION_UNLOCK_SETS`, recomputes `unlockId`/`tokenCost` from the registry, and never trusts persisted cost values. Direct reducer tests cover replayed BEGIN/COMPLETE/ROLLBACK and prove that only one transition changes the token balance.
 
-- [ ] **Step 5: Persist the single set marker between BEGIN and COMPLETE**
+- [ ] **Step 5: Persist the debited pending state before writing the unlock marker**
 
-Expose one namespaced persistent-unlock helper in `useGameDispatchActions.ts`:
+The transaction spans the main save key and `unlockManager`'s separate marker key, so ordering is part of correctness. Extend `usePersistence.saveGame` to return a synchronous result instead of `void`:
 
 ```ts
-const addPersistentUnlock = useCallback(
-  (unlockId: string): boolean => {
-    if (typeof unlockId !== 'string' || !unlockId.startsWith('expedition.')) return false
-    if (state.unlocks.includes(unlockId)) return true
-    if (!addUnlock(unlockId, storage)) return false
-    dispatch(createAddUnlockAction(unlockId))
-    return true
+export type SaveWriteResult = 'persistent' | 'session' | 'failed'
+
+const saveGame = useCallback(
+  (
+    showToast = true,
+    stateSnapshot: GameState = stateRef.current
+  ): SaveWriteResult => {
+    const saveData = createPersistedState(stateSnapshot, clock)
+
+    const success = safeStorageOperation(
+      'saveGame',
+      () => {
+        let hadNonFinite = false
+        const nonFiniteKeys = new Set<string>()
+        const serialized = JSON.stringify(saveData, (key, value) => {
+          if (typeof value === 'number' && !Number.isFinite(value)) {
+            hadNonFinite = true
+            if (key) nonFiniteKeys.add(key)
+            return null
+          }
+          return value
+        })
+        if (hadNonFinite) {
+          logger.warn(
+            'Persistence',
+            `Non-finite numeric value detected while saving (keys: ${Array.from(nonFiniteKeys).join(', ')}); coerced to null`
+          )
+        }
+        return writeStorageItem(SAVE_KEY, serialized, storage)
+      },
+      false
+    )
+
+    if (success) {
+      if (showToast) addToast(tRef.current('ui:toast.gameSaved'), 'success')
+      logger.info('System', 'Game Saved Successfully', null)
+      return 'persistent'
+    }
+    if (isStorageDegraded(storage)) {
+      notifyStorageDegraded()
+      logger.warn('System', 'Game saved to in-memory fallback store')
+      return 'session'
+    }
+    handleError(new StorageError('Failed to save game'), { addToast })
+    return 'failed'
   },
-  [dispatch, state.unlocks, storage]
+  [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
 )
 ```
 
-`useCareerDispatchActions` orchestrates:
+The code above preserves the existing non-finite serialization guard, logging, success toast, degraded-storage notice, and error path; the only semantic change is the explicit return value. `session` is acceptable because the same storage adapter buffers both save and unlock marker for the current session. A hard `failed` result must not be followed by an unlock-marker write.
+
+`useCareerDispatchActions` uses a post-commit effect, not same-tick dispatch chaining:
 
 ```ts
-beginUnlockSetPurchase(setId)
-// after reducer exposes pendingUnlockSetPurchase
-const ok = addPersistentUnlock(pending.unlockId)
-if (ok) completeUnlockSetPurchase(pending.setId)
-else rollbackUnlockSetPurchase(pending.setId)
+const settlementAfterPendingClearsRef = useRef<'complete' | 'rollback' | null>(null)
+
+useEffect(() => {
+  const pending = state.career.pendingUnlockSetPurchase
+
+  if (!pending) {
+    if (settlementAfterPendingClearsRef.current) {
+      settlementAfterPendingClearsRef.current = null
+      saveGame(false) // COMPLETE/ROLLBACK is now committed; persist final balance
+    }
+    return
+  }
+
+  // BEGIN has already committed here: persist the debited balance + pending journal first.
+  const debitSave = saveGame(false)
+  if (debitSave === 'failed') {
+    settlementAfterPendingClearsRef.current = 'rollback'
+    dispatch(createRollbackExpeditionUnlockSetPurchaseAction(pending.setId))
+    return
+  }
+
+  const markerAlreadyExists = getUnlocks(storage).includes(pending.unlockId)
+  const markerOk = markerAlreadyExists || addUnlock(pending.unlockId, storage)
+  if (!markerOk) {
+    settlementAfterPendingClearsRef.current = 'rollback'
+    dispatch(createRollbackExpeditionUnlockSetPurchaseAction(pending.setId))
+    return
+  }
+
+  if (!state.unlocks.includes(pending.unlockId)) {
+    dispatch(createAddUnlockAction(pending.unlockId))
+  }
+  settlementAfterPendingClearsRef.current = 'complete'
+  dispatch(createCompleteExpeditionUnlockSetPurchaseAction(pending.setId))
+}, [dispatch, saveGame, state.career.pendingUnlockSetPurchase, state.unlocks, storage])
 ```
 
-A loaded save with a pending transaction retries the same single marker. If the marker already exists, `addPersistentUnlock` treats that as success and completes rather than charging twice. This makes a storage interruption recoverable without partial capability markers.
+The UI purchase callback only dispatches `BEGIN`. The effect runs after that state is committed, creating a durable barrier before `addUnlock` can write its separate marker. Recovery rules are now explicit:
+
+```text
+crash before BEGIN save       -> old tokens, no marker
+crash after BEGIN save        -> debited pending save; reload retries marker
+crash after marker write      -> debited pending save + marker; reload detects marker and completes
+marker write fails            -> rollback restores exact tokenCost; final rollback state is saved
+COMPLETE/ROLLBACK rerender     -> final token balance is persisted once pending clears
+```
+
+This ordering prevents the previous free-unlock window where a marker could survive while the token debit existed only in React state.
 
 - [ ] **Step 6: Run unlock/storage/failure tests**
 
@@ -493,16 +575,17 @@ node --test --import tsx --experimental-test-module-mocks --import ./tests/setup
   tests/node/expeditionUnlockSets.test.js \
   tests/node/unlockManager.test.js \
   tests/security/unlocksValidation.test.js
+pnpm exec vitest run tests/context/usePersistence.test.tsx
 pnpm run typecheck:core
 ```
 
-Test these failure cases explicitly: storage write fails -> tokens restored; reload with pending + marker already written -> transaction completes; duplicate click -> only one BEGIN changes tokens.
+Test these failure cases explicitly: hard save failure before marker -> marker is never written and tokens are restored; reload with persisted pending but no marker -> marker is written then transaction completes; reload with pending + marker already written -> transaction completes without charging again; crash-model test proves the debited pending snapshot is written before `addUnlock`; duplicate click -> only one BEGIN changes tokens.
 
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/data/expedition/unlockSets.ts src/types/career.d.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/useGameDispatchActions.ts src/context/actionCreators.ts src/context/careerActionCreators.ts src/context/useCareerDispatchActions.ts src/context/reducers/careerReducer.ts src/context/reducers/careerSanitizers.ts tests/node/expeditionUnlockSets.test.js tests/node/unlockManager.test.js tests/security/unlocksValidation.test.js
-git commit -m "feat(expedition): persist atomic unlock sets"
+git add src/data/expedition/unlockSets.ts src/types/career.d.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/useGameDispatchActions.ts src/context/usePersistence.ts src/context/actionCreators.ts src/context/careerActionCreators.ts src/context/useCareerDispatchActions.ts src/context/reducers/careerReducer.ts src/context/reducers/careerSanitizers.ts tests/context/usePersistence.test.tsx tests/node/expeditionUnlockSets.test.js tests/node/unlockManager.test.js tests/security/unlocksValidation.test.js
+git commit -m "feat(expedition): journal unlock set purchases"
 ```
 
 ---
@@ -1681,9 +1764,14 @@ Assert a repeated Render/Continue click cannot grant Tour Tokens twice.
 
 - [ ] **Step 2: Record career result before presenting spendable progression**
 
-Add an idempotent settlement action keyed by the finalized run id. `RunSummary` dispatches it once, then renders the returned/persisted career delta:
+Add an idempotent settlement action keyed by the finalized run id created in G1. `START_EXPEDITION` stamps `expedition.runId` with `getSafeUUID()`, the run slice persists it through save/reload, and `FINALIZE_EXPEDITION` preserves it. `RunSummary` must read that stored id; it must never generate a new id during settlement. Dispatch the career result once, then render the returned/persisted career delta. Add the explicit boundary imports to `careerActionCreators.ts` / `careerReducer.ts` rather than relying on ambient names:
 
 ```ts
+import type { CareerState, GameAction, GameState } from '../types'
+import { ActionTypes } from './actionTypes'
+import { StateError } from '../utils/errors'
+import { finiteNumberOr, isFiniteNumber } from '../utils/gameState'
+
 export interface RecordExpeditionCareerResultPayload {
   runId: string
   outcome: 'extracted' | 'completed' | 'failed'
@@ -1691,21 +1779,55 @@ export interface RecordExpeditionCareerResultPayload {
   tourTokensEarned: number
 }
 
+export const createRecordExpeditionCareerResultAction = (
+  state: GameState,
+  tourTokensEarned: unknown
+): Extract<GameAction, { type: typeof ActionTypes.RECORD_EXPEDITION_CAREER_RESULT }> => {
+  const runId = state.expedition.runId
+  const outcome = state.expedition.outcome?.kind
+  if (
+    typeof runId !== 'string' ||
+    runId.length === 0 ||
+    !isFiniteNumber(tourTokensEarned) ||
+    !['extracted', 'completed', 'failed'].includes(outcome ?? '')
+  ) {
+    throw new StateError('Finalized expedition is missing a valid settlement identity')
+  }
+  return {
+    type: ActionTypes.RECORD_EXPEDITION_CAREER_RESULT,
+    payload: {
+      runId,
+      outcome: outcome as 'extracted' | 'completed' | 'failed',
+      regionId: state.expedition.loadout.regionId,
+      tourTokensEarned: Math.max(0, Math.trunc(tourTokensEarned))
+    }
+  }
+}
+
 export const recordExpeditionCareerResult = (
   state: CareerState,
   payload: RecordExpeditionCareerResultPayload
 ): CareerState => {
-  if (state.settledRunIds.includes(payload.runId)) return state
+  if (
+    typeof payload.runId !== 'string' ||
+    payload.runId.length === 0 ||
+    !isFiniteNumber(payload.tourTokensEarned) ||
+    payload.tourTokensEarned < 0 ||
+    state.settledRunIds.includes(payload.runId)
+  ) {
+    return state
+  }
+  const safeTokens = Math.max(0, Math.trunc(finiteNumberOr(state.tourTokens, 0)))
   return {
     ...state,
-    settledRunIds: [...state.settledRunIds, payload.runId],
-    tourTokens: state.tourTokens + payload.tourTokensEarned,
+    settledRunIds: [...state.settledRunIds, payload.runId].slice(-64),
+    tourTokens: safeTokens + Math.trunc(payload.tourTokensEarned),
     stats: applyCareerOutcome(state.stats, payload)
   }
 }
 ```
 
-`careerSanitizers.ts` bounds and deduplicates `settledRunIds`; keep only the most recent 64 ids to prevent unbounded save growth. The RunSummary shows secured Cash/Fame, Tour Tokens earned, rank change, discoveries, persistent injury/crew/rival consequences, plus `Band HQ` and `Next Tour`. No mandatory multi-screen sequence is inserted.
+`careerSanitizers.ts` independently validates and deduplicates `settledRunIds`, keeping only the most recent 64 ids. `RunSummary` calls `createRecordExpeditionCareerResultAction(state, earnedTokens)`; it never accepts or invents a `runId` from component input. If `expedition.runId` is missing/malformed, the creator refuses the award and the scene logs the invariant failure instead of minting a replacement id. Add direct-reducer tests for malformed `runId`, `NaN`/`Infinity` token values, and corrupted stored `career.tourTokens`, plus a reload-idempotence test: finalize a run, persist/reload it, render Run Summary twice, and assert exactly one token award for the same stored `runId`. The RunSummary shows secured Cash/Fame, Tour Tokens earned, rank change, discoveries, persistent injury/crew/rival consequences, plus `Band HQ` and `Next Tour`. No mandatory multi-screen sequence is inserted.
 
 - [ ] **Step 3: Ascension unlock condition**
 

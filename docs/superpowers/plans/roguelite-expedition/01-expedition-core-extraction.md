@@ -279,6 +279,7 @@ export interface ExpeditionOutcome {
 
 export interface ExpeditionState {
   status: ExpeditionStatus
+  runId: string | null
   routeStep: number
   visitedNodeIds: string[]
   intelByNodeId: Record<string, NodeIntelLevel>
@@ -351,6 +352,7 @@ import type { CareerState, ExpeditionState } from '../../types'
 
 export const createDefaultExpeditionState = (): ExpeditionState => ({
   status: 'idle',
+  runId: null,
   routeStep: 0,
   visitedNodeIds: [],
   intelByNodeId: {},
@@ -634,6 +636,7 @@ const started = gameReducer(
   createStartExpeditionAction(preparing, validLoadout)
 )
 assert.equal(started.expedition.status, 'active')
+assert.match(started.expedition.runId, /^[0-9a-f-]{36}$/i)
 assert.equal(started.expedition.startingMoney, preparing.player.money)
 assert.equal(started.expedition.startingFame, preparing.player.fame)
 
@@ -654,21 +657,24 @@ PREPARE_NEXT_EXPEDITION: 'PREPARE_NEXT_EXPEDITION'
 
 - [ ] **Step 3: Implement narrow action creators**
 
-`createStartExpeditionAction(state, loadout)` must call the pure loadout validator before constructing the action; invalid ids, duplicate crew ids, and non-integer cargo counts are rejected before dispatch. `createPrepareNextExpeditionAction()` stamps the fresh seed in the creator:
+`createStartExpeditionAction(state, loadout)` must call the pure loadout validator before constructing the action; invalid ids, duplicate crew ids, and non-integer cargo counts are rejected before dispatch. The action creator also stamps a stable `runId` with the existing `getSafeUUID()` helper; reducers never generate IDs. `createPrepareNextExpeditionAction()` stamps the fresh seed in the creator. Every new creator stays coupled to the canonical action union with `Extract<GameAction, ...>`:
 
 ```ts
 export const createStartExpeditionAction = (
   state: GameState,
   candidate: unknown
-): GameAction => {
+): Extract<GameAction, { type: typeof ActionTypes.START_EXPEDITION }> => {
   const result = validateExpeditionLoadout(state, candidate)
   if (!result.valid) throw new TypeError(result.reason)
-  return { type: ActionTypes.START_EXPEDITION, payload: { loadout: result.loadout } }
+  return {
+    type: ActionTypes.START_EXPEDITION,
+    payload: { loadout: result.loadout, runId: getSafeUUID() }
+  }
 }
 
 export const createRecordExpeditionArrivalAction = (
   nodeId: unknown
-): GameAction => {
+): Extract<GameAction, { type: typeof ActionTypes.RECORD_EXPEDITION_ARRIVAL }> => {
   if (typeof nodeId !== 'string' || nodeId.length === 0) {
     throw new TypeError('nodeId must be a non-empty string')
   }
@@ -678,14 +684,17 @@ export const createRecordExpeditionArrivalAction = (
 export const createFinalizeExpeditionAction = (
   kind: 'extracted' | 'completed' | 'failed',
   reason: unknown
-): GameAction => {
+): Extract<GameAction, { type: typeof ActionTypes.FINALIZE_EXPEDITION }> => {
   if (typeof reason !== 'string' || reason.length === 0) {
     throw new TypeError('finalize reason must be a non-empty string')
   }
   return { type: ActionTypes.FINALIZE_EXPEDITION, payload: { kind, reason } }
 }
 
-export const createPrepareNextExpeditionAction = (): GameAction => ({
+export const createPrepareNextExpeditionAction = (): Extract<
+  GameAction,
+  { type: typeof ActionTypes.PREPARE_NEXT_EXPEDITION }
+> => ({
   type: ActionTypes.PREPARE_NEXT_EXPEDITION,
   payload: { runSeed: getSecureRandomUint32() }
 })
@@ -708,6 +717,7 @@ return {
   expedition: {
     ...createDefaultExpeditionState(),
     status: 'active',
+    runId: payload.runId,
     loadout: payload.loadout,
     startingMoney: finiteNumberOr(state.player.money, 0),
     startingFame: finiteNumberOr(state.player.fame, 0)
@@ -715,7 +725,7 @@ return {
 }
 ```
 
-`PREPARE_NEXT_EXPEDITION` clears only run-scoped data, rotates `runSeed`, and preserves `player`, `band`, `assets`, `liabilities`, `career`, `unlocks`, and settings.
+`PREPARE_NEXT_EXPEDITION` clears only run-scoped data, including `runId`, rotates `runSeed`, and preserves `player`, `band`, `assets`, `liabilities`, `career`, `unlocks`, and settings. A new `runId` is created only when the next `START_EXPEDITION` action is dispatched. The Expedition sanitizer accepts `runId` only as `null` or a bounded non-empty string, so the identifier survives save/reload for the whole finalized run.
 
 - [ ] **Step 5: Wire stable dispatch wrappers**
 
@@ -993,74 +1003,245 @@ git commit -m "feat(expedition): generate profile-sized tour maps"
 
 **Files:**
 - Create: `src/domain/expedition/nodeIntel.ts`
-- Modify: `src/components/overworld/OverworldMap.tsx:118-195`
+- Modify: `src/types/expedition.d.ts`
+- Modify: `src/scenes/Overworld.tsx:29-45, 155-174`
+- Modify: `src/components/overworld/OverworldMap.tsx:18-43, 105-190`
 - Modify: `src/components/MapNodeView.tsx:152-269, 275-511`
-- Test: `tests/node/expeditionNodeIntel.test.js`, `tests/ui/MapNode.test.jsx`
+- Test: `tests/node/expeditionNodeIntel.test.js`
+- Test: `tests/ui/MapNode.test.jsx`
+- Modify/Test: `tests/ui/OverworldMap.cityStates.test.jsx`
 
-- [ ] **Step 1: Write selector tests for three intel levels**
+- [ ] **Step 1: Write selector tests for one canonical three-level contract**
 
 ```js
-const node = { id: 'n1', type: 'FESTIVAL', venue: { pay: 6000, diff: 5, price: 25 } }
-assert.deepEqual(getExpeditionNodeIntel(node, 0), {
-  dangerTier: 'high', rewardTier: 'high', exactPay: null, exactDifficulty: null
+import test from 'node:test'
+import assert from 'node:assert/strict'
+import { getExpeditionNodeIntel } from '../../src/domain/expedition/nodeIntel.ts'
+
+const node = {
+  id: 'n1',
+  layer: 3,
+  x: 0,
+  y: 0,
+  type: 'FESTIVAL',
+  venue: { id: 'festival_a', name: 'Festival A', pay: 6000, diff: 5, price: 25 }
+}
+const rivalContext = {
+  activeRivalId: 'rival_dead_circuits',
+  activeRivalLocationId: 'n1'
+}
+
+test('level zero exposes only structural type and rough tiers', () => {
+  assert.deepEqual(getExpeditionNodeIntel(node, 0, rivalContext), {
+    nodeType: 'FESTIVAL',
+    dangerTier: 'high',
+    rewardTier: 'high',
+    payoutRange: null,
+    wearTier: null,
+    rivalRisk: null,
+    exactPayout: null,
+    exactDifficulty: null,
+    projectedWear: null,
+    rivalId: null
+  })
 })
-assert.equal(getExpeditionNodeIntel(node, 2).exactPay, 6000)
-assert.equal(getExpeditionNodeIntel(node, 2).exactDifficulty, 5)
+
+test('level one reveals ranges and rival presence but no exact numeric values', () => {
+  const intel = getExpeditionNodeIntel(node, 1, rivalContext)
+  assert.deepEqual(intel.payoutRange, { min: 5100, max: 6900 })
+  assert.equal(intel.rivalRisk, 'high')
+  assert.equal(intel.exactPayout, null)
+  assert.equal(intel.exactDifficulty, null)
+  assert.equal(intel.projectedWear, null)
+  assert.equal(intel.rivalId, null)
+})
+
+test('level two reveals exact canonical venue values and rival identity', () => {
+  const intel = getExpeditionNodeIntel(node, 2, rivalContext)
+  assert.equal(intel.exactPayout, 6000)
+  assert.equal(intel.exactDifficulty, 5)
+  assert.equal(intel.rivalId, 'rival_dead_circuits')
+})
 ```
 
-- [ ] **Step 2: Implement deterministic intel derivation**
+`projectedWear` intentionally remains `null` in G1 because the Condition formula does not exist until G2. G2 Task 5 extends this same contract instead of inventing a second intel shape.
 
-Use only canonical node/venue data. No RNG in tooltip rendering:
+- [ ] **Step 2: Add the canonical intel result type and deterministic G1 selector**
+
+Extend `src/types/expedition.d.ts`:
 
 ```ts
-export const getExpeditionNodeIntel = (
-  node: MapNode,
-  level: NodeIntelLevel
-): ExpeditionNodeIntel => ({
-  nodeType: node.type,
-  dangerTier: getNodeDangerTier(node),
-  rewardTier: getNodeRewardTier(node),
-  exactPayout: level >= 1 ? getNodeExpectedPayout(node) : null,
-  exactWear: level >= 2 ? getNodeExpectedWear(node) : null,
-  rivalId: level >= 2 ? getNodeRivalId(node) : null
-})
+import type { MapNodeType } from '../utils/mapNodeTypes'
+
+export type NodeIntelBand = 'low' | 'medium' | 'high'
+
+export interface ExpeditionNodeIntelContext {
+  activeRivalId: string | null
+  activeRivalLocationId: string | null
+}
+
+export interface ExpeditionNodeIntel {
+  nodeType: MapNodeType
+  dangerTier: NodeIntelBand
+  rewardTier: NodeIntelBand
+  payoutRange: { min: number; max: number } | null
+  wearTier: NodeIntelBand | null
+  rivalRisk: NodeIntelBand | null
+  exactPayout: number | null
+  exactDifficulty: number | null
+  projectedWear: Record<ConditionGroup, number> | null
+  rivalId: string | null
+}
 ```
 
-- [ ] **Step 3: Pass `intelLevel` from OverworldMap**
+`src/domain/expedition/nodeIntel.ts` uses only data that exists at this gate. No RNG is allowed in tooltip derivation:
 
-Add the prop to `MapNodeView` and resolve it from Expedition state without changing the existing structural `visibility` prop:
+```ts
+import type {
+  ExpeditionNodeIntel,
+  ExpeditionNodeIntelContext,
+  MapNode,
+  NodeIntelBand,
+  NodeIntelLevel
+} from '../../types'
+import { isFiniteNumber } from '../../utils/gameState'
+
+const EMPTY_CONTEXT: ExpeditionNodeIntelContext = {
+  activeRivalId: null,
+  activeRivalLocationId: null
+}
+
+export const getCanonicalNodePayout = (node: MapNode): number | null => {
+  const value = node.venue?.pay
+  return isFiniteNumber(value) ? Math.max(0, value) : null
+}
+
+export const getCanonicalNodeDifficulty = (node: MapNode): number | null => {
+  const explicit = node.venue?.difficulty
+  const legacy = node.venue?.diff
+  const value = isFiniteNumber(explicit)
+    ? explicit
+    : isFiniteNumber(legacy)
+      ? legacy
+      : null
+  return value === null
+    ? null
+    : Math.max(1, Math.min(5, Math.trunc(value)))
+}
+
+const toDangerTier = (difficulty: number | null): NodeIntelBand =>
+  difficulty === null || difficulty <= 2
+    ? 'low'
+    : difficulty <= 3
+      ? 'medium'
+      : 'high'
+
+const toRewardTier = (payout: number | null): NodeIntelBand =>
+  payout === null || payout < 800
+    ? 'low'
+    : payout < 3000
+      ? 'medium'
+      : 'high'
+
+const toPayoutRange = (
+  value: number | null
+): { min: number; max: number } | null => {
+  if (value === null) return null
+  return {
+    min: Math.max(0, Math.floor((value * 0.85) / 100) * 100),
+    max: Math.ceil((value * 1.15) / 100) * 100
+  }
+}
+
+export const getExpeditionNodeIntel = (
+  node: MapNode,
+  level: NodeIntelLevel,
+  context: ExpeditionNodeIntelContext = EMPTY_CONTEXT
+): ExpeditionNodeIntel => {
+  const exactPayout = getCanonicalNodePayout(node)
+  const exactDifficulty = getCanonicalNodeDifficulty(node)
+  const rivalHere =
+    context.activeRivalLocationId === node.id &&
+    typeof context.activeRivalId === 'string'
+
+  return {
+    nodeType: node.type,
+    dangerTier: toDangerTier(exactDifficulty),
+    rewardTier: toRewardTier(exactPayout),
+    payoutRange: level >= 1 ? toPayoutRange(exactPayout) : null,
+    wearTier: null,
+    rivalRisk: level >= 1 && rivalHere ? 'high' : null,
+    exactPayout: level >= 2 ? exactPayout : null,
+    exactDifficulty: level >= 2 ? exactDifficulty : null,
+    projectedWear: null,
+    rivalId: level >= 2 && rivalHere ? context.activeRivalId : null
+  }
+}
+```
+
+This resolves one stable contract up front: the same field names are used by tests, UI, G2 wear projection, and later Pressure/Rival work. Exact payout/difficulty remain hidden through Level 1.
+
+- [ ] **Step 3: Pass Expedition intel and existing rival state into `OverworldMap`**
+
+`src/scenes/Overworld.tsx` adds one focused selector and passes only the fields the map needs:
 
 ```tsx
-// OverworldMap.tsx
-const intelLevel = expedition.intelByNodeId[node.id] ?? 0
+const expedition = useGameSelector(state => state.expedition)
+
+<OverworldMap
+  {...existingMapProps}
+  expeditionActive={expedition.status === 'active'}
+  intelByNodeId={expedition.intelByNodeId}
+/>
+```
+
+Extend `OverworldMapProps`:
+
+```ts
+expeditionActive: boolean
+intelByNodeId: Record<string, NodeIntelLevel>
+```
+
+Inside the existing node loop:
+
+```tsx
+const intelLevel = expeditionActive ? (intelByNodeId[node.id] ?? 0) : 2
+const intel = getExpeditionNodeIntel(node, intelLevel, {
+  activeRivalId: rivalBand?.id ?? null,
+  activeRivalLocationId: rivalBand?.currentLocationId ?? null
+})
 
 <MapNodeView
   {...existingNodeProps}
   visibility={visibility}
   intelLevel={intelLevel}
+  expeditionIntel={intel}
 />
 ```
 
-```ts
-// MapNodeView props
-intelLevel: NodeIntelLevel
+Legacy/non-Expedition maps use Level 2 so this feature does not remove information from the existing mode.
+
+- [ ] **Step 4: Gate the existing rival marker and tooltip details by Expedition intel**
+
+`MapNodeView` renders from the passed `expeditionIntel`; it must not recompute intelligence from structural visibility. In `OverworldMap`, keep the existing rival marker unchanged for legacy play, but require Level 1 in an Expedition:
+
+```tsx
+const shouldShowRivalMarker =
+  hasRival &&
+  visibility !== 'hidden' &&
+  (!expeditionActive || intelLevel >= 1)
 ```
 
-`MapNodeView` passes only `node` + `intelLevel` into `getExpeditionNodeIntel`; it must not infer intel from structural visibility.
+At Level 0 show node type + `dangerTier`/`rewardTier`. At Level 1 add `payoutRange`, `wearTier` when G2 populates it, and `rivalRisk`. At Level 2 add exact payout/difficulty, projected wear when available, and rival identity. Add UI assertions that a Level-1 Festival never contains the exact `6000` payout or exact difficulty value.
 
-- [ ] **Step 4: Redact tooltip details by intel level**
-
-Level 0: node type + rough danger/reward.  
-Level 1: payout range and qualitative technical/rival risk when available.  
-Level 2: exact pay/ticket/difficulty plus existing city traits.
-
-- [ ] **Step 5: Run tests and commit**
+- [ ] **Step 5: Run selector/UI tests and commit**
 
 ```bash
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionNodeIntel.test.js
-pnpm exec vitest run tests/ui/MapNode.test.jsx
-git add src/domain/expedition/nodeIntel.ts src/components tests
-git commit -m "feat(expedition): add hybrid node intelligence"
+pnpm exec vitest run tests/ui/MapNode.test.jsx tests/ui/OverworldMap.cityStates.test.jsx
+pnpm run typecheck:core
+git add src/domain/expedition/nodeIntel.ts src/types/expedition.d.ts src/scenes/Overworld.tsx src/components/overworld/OverworldMap.tsx src/components/MapNodeView.tsx tests/node/expeditionNodeIntel.test.js tests/ui/MapNode.test.jsx tests/ui/OverworldMap.cityStates.test.jsx
+git commit -m "feat(expedition): add hybrid map intelligence"
 ```
 
 ---
@@ -1171,36 +1352,63 @@ const retain = (start: number, current: number, rate: number): number => {
 
 Return both money/fame; never mutate state.
 
-- [ ] **Step 3: Implement finalize replay guard**
+- [ ] **Step 3: Implement one pure settlement transition and keep navigation outside reducers**
 
-`FINALIZE_EXPEDITION` is a no-op unless status is exactly `active`. Reuse the pure settlement function:
+`FINALIZE_EXPEDITION` is a no-op unless status is exactly `active`. Put the shared state transition in `src/domain/expedition/extraction.ts` so both the Expedition reducer and the daily-bankruptcy reducer path can use the exact same pure logic without importing one reducer from another:
 
 ```ts
-export const handleFinalizeExpedition = (state: GameState, payload: FinalizeExpeditionPayload): GameState => {
+export const finalizeExpeditionState = (
+  state: GameState,
+  payload: FinalizeExpeditionPayload
+): GameState => {
   if (state.expedition.status !== 'active') return state
   const settlement = calculateExpeditionSettlement(state, payload.kind)
   return {
     ...state,
-    player: { ...state.player, money: settlement.finalMoney, fame: settlement.finalFame },
-    currentScene: GAME_PHASES.RUN_SUMMARY,
-    expedition: { ...state.expedition, status: payload.kind, outcome: settlement.outcome }
+    player: {
+      ...state.player,
+      money: settlement.finalMoney,
+      fame: settlement.finalFame
+    },
+    expedition: {
+      ...state.expedition,
+      status: payload.kind,
+      outcome: settlement.outcome
+    }
   }
 }
 ```
 
-- [ ] **Step 4: Build confirmation dialog with exact preview**
+The reducer handler is deliberately thin:
 
-The dialog uses the same domain calculation as reducer settlement:
+```ts
+export const handleFinalizeExpedition = (
+  state: GameState,
+  payload: FinalizeExpeditionPayload
+): GameState => finalizeExpeditionState(state, payload)
+```
+
+Neither function writes `currentScene`. Add a focused reducer assertion that `currentScene` is unchanged after `FINALIZE_EXPEDITION`, plus a replay assertion that a second finalize returns the exact same state reference.
+
+- [ ] **Step 4: Build confirmation dialog with exact preview and route from the owning callback**
+
+The dialog uses the same domain calculation as reducer settlement. The UI callback performs settlement first, requests a save after the following scene commit, then routes to Run Summary; the reducer itself never changes scene:
 
 ```tsx
 const preview = calculateExpeditionSettlement(state, 'extracted')
+const onConfirmExtraction = () => {
+  finalizeExpedition('extracted', 'voluntary')
+  saveGameAfterStateCommit()
+  changeScene(GAME_PHASES.RUN_SUMMARY)
+}
+
 return <ExtractionDialog
   currentMoney={state.player.money}
   currentFame={state.player.fame}
   retainedMoney={preview.finalMoney}
   retainedFame={preview.finalFame}
   lostRewardIds={preview.lostRewardIds}
-  onConfirm={() => finalizeExpedition('extracted', 'voluntary')}
+  onConfirm={onConfirmExtraction}
 />
 ```
 
@@ -1221,20 +1429,22 @@ git commit -m "feat(expedition): add hybrid extraction settlement"
 - Modify: `src/hooks/postGig/handlers/useContinueHandler.ts:78-190`
 - Modify: `src/hooks/postGig/handlers/continueHandlerUtils.ts:160-195`
 - Modify: `src/context/reducers/systemReducer.ts:520-650`
-- Test: `tests/ui/postGigHandlerLogic.test.jsx`, `tests/node/expeditionExtraction.test.js`, `tests/node/advanceDayAssetIntegration.test.js`
+- Modify: `src/hooks/useArrivalLogic.ts:80-160`
+- Test: `tests/ui/postGigHandlerLogic.test.jsx`, `tests/node/expeditionExtraction.test.js`, `tests/node/advanceDayAssetIntegration.test.js`, `tests/ui/useArrivalLogic.test.jsx`
 
-- [ ] **Step 1: Add failing finale and bankruptcy tests**
+- [ ] **Step 1: Add failing finale, bankruptcy, and navigation-ownership tests**
 
 Pin:
 
 ```text
-active expedition + successful FINALE -> status completed -> RUN_SUMMARY
-active expedition + post-gig bankruptcy -> status failed -> RUN_SUMMARY
-active expedition + daily bankruptcy -> status failed -> RUN_SUMMARY
+FINALIZE_EXPEDITION alone changes settlement/status but preserves currentScene
+active expedition + successful FINALE -> continuation finalizes -> continuation routes RUN_SUMMARY
+active expedition + post-gig bankruptcy -> continuation finalizes -> continuation routes RUN_SUMMARY
+active expedition + daily bankruptcy -> ADVANCE_DAY marks expedition failed without scene change -> arrival post-commit effect routes RUN_SUMMARY
 legacy/non-expedition bankruptcy -> GAMEOVER unchanged
 ```
 
-- [ ] **Step 2: Add `finalizeExpedition` to post-gig dispatchers**
+- [ ] **Step 2: Finalize, then navigate from the post-gig continuation callback**
 
 Dispatch order in `handleContinue` must be:
 
@@ -1242,48 +1452,53 @@ Dispatch order in `handleContinue` must be:
 updatePlayer(new money/fame)
 quest/band side effects
 finalizeExpedition(completed|failed)
+saveGameAfterStateCommit()
+changeScene(RUN_SUMMARY)
+return
 ```
 
-because sequential reducer dispatches let finalization see the committed post-gig player totals.
+Sequential reducer dispatches let finalization see the committed post-gig totals, while the owning continuation callback — not the completion reducer — owns navigation. `saveGameAfterStateCommit()` is set before `changeScene` so the existing persistence effect saves the finalized state after the scene commit.
 
 - [ ] **Step 3: Preserve legacy transitions**
 
-Extend `handleContinueSceneTransition` with the explicit flag and return before the legacy scene branch only for an active Expedition:
+Call the Expedition branch before `handleContinueSceneTransition`; only non-Expedition continuations reach the existing helper:
 
 ```ts
-export const handleContinueSceneTransition = ({
-  isExpeditionActive,
-  ...args
-}: ContinueSceneTransitionArgs): void => {
-  if (isExpeditionActive) return
-  handleLegacyContinueSceneTransition(args)
+if (isExpeditionActive && shouldFinalizeExpedition) {
+  finalizeExpedition(expeditionOutcome, expeditionReason)
+  saveGameAfterStateCommit()
+  changeScene(GAME_PHASES.RUN_SUMMARY)
+  return
 }
+
+handleContinueSceneTransition(legacyArgs)
 ```
 
-Keep `handleLegacyContinueSceneTransition` as the existing `GAMEOVER`/`OVERWORLD` decision body (move the current body into that helper without changing its conditions). Add tests for both `true` and `false` so normal non-Expedition continuation remains byte-for-byte equivalent in outcome.
+Keep `handleContinueSceneTransition` as the existing `GAMEOVER`/`OVERWORLD` decision body without changing its legacy conditions. Add tests for Expedition and non-Expedition paths so normal continuation remains unchanged.
 
-- [ ] **Step 4: Make daily bankruptcy expedition-aware**
+- [ ] **Step 4: Make daily bankruptcy settlement pure and route after the day commit**
 
-In `applyDailyBankruptcyCheck`, call the same failure action path for Expedition:
+`applyDailyBankruptcyCheck` stays a pure reducer helper. For an active Expedition, call the same pure settlement helper used by `FINALIZE_EXPEDITION` and preserve `currentScene`; legacy bankruptcy keeps the existing `GAMEOVER` transition:
 
 ```ts
-if (shouldTriggerBankruptcy(state)) {
+const applyDailyBankruptcyCheck = (state: GameState): GameState => {
+  const total = getTotalDailyObligations(state)
+  if (!shouldTriggerBankruptcy(state.player.money, 0, total)) return state
   if (state.expedition.status === 'active') {
-    dispatch(createFinalizeExpeditionAction('failed', 'bankruptcy'))
-    return true
+    return finalizeExpeditionState(state, { kind: 'failed', reason: 'bankruptcy' })
   }
-  changeScene(GAME_PHASES.GAMEOVER)
-  return true
+  return { ...state, currentScene: GAME_PHASES.GAMEOVER }
 }
-return false
 ```
+
+Extend `useArrivalLogic`'s existing post-commit routing effect. When the committed day tick leaves `expedition.status === 'failed'`, consume `pendingRouteRef`, call `saveGameAfterStateCommit()`, route to `RUN_SUMMARY`, and return before any queued gig/overworld routing. This mirrors the existing `GAMEOVER` short-circuit without moving navigation into the reducer.
 
 - [ ] **Step 5: Run tests and commit**
 
 ```bash
-pnpm exec vitest run tests/ui/postGigHandlerLogic.test.jsx
+pnpm exec vitest run tests/ui/postGigHandlerLogic.test.jsx tests/ui/useArrivalLogic.test.jsx
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionExtraction.test.js tests/node/advanceDayAssetIntegration.test.js
-git add src/hooks/postGig src/context/reducers/systemReducer.ts tests
+git add src/hooks/postGig src/hooks/useArrivalLogic.ts src/context/reducers/systemReducer.ts tests
 git commit -m "feat(expedition): finalize tours through run summary"
 ```
 
@@ -1306,10 +1521,11 @@ createInitialState
 -> SET_MAP (8-hop deterministic map)
 -> RECORD_EXPEDITION_ARRIVAL x3
 -> FINALIZE_EXPEDITION(extracted)
+-> CHANGE_SCENE(RUN_SUMMARY) from the owning callback
 -> PREPARE_NEXT_EXPEDITION(new runSeed)
 ```
 
-Assert career/assets/unlocks persist, run state resets, runSeed changes, settlement is not double-applied, and next scene is Tour Prep.
+Assert career/assets/unlocks persist, the finalized `runId` remains stable across a save/reload, `PREPARE_NEXT_EXPEDITION` clears that id, the next `START_EXPEDITION` creates a different id, run state resets, `runSeed` changes, settlement is not double-applied, and next scene is Tour Prep.
 
 - [ ] **Step 2: Run Core stage tests**
 

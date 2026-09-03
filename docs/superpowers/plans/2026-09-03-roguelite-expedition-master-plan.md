@@ -87,6 +87,18 @@ The repository already has a dedicated unlock boundary: `src/utils/unlockManager
 
 Baseline `home` + `standard` remain always-available defaults and do not require stored unlock markers.
 
+### I. Cross-gate invariants fixed by the plan review
+
+The following contracts are non-negotiable across the child plans:
+
+- `START_EXPEDITION` creates one stable `expedition.runId` in the action creator; that id survives finalization/save/reload and is the idempotency key for the later career settlement. `RunSummary` never generates a replacement id.
+- `FINALIZE_EXPEDITION` settles state only. It never changes `currentScene`; the owning continuation/extraction/arrival callback routes to `RUN_SUMMARY` after requesting the post-commit save.
+- Node intelligence uses one stable result shape. Level 1 exposes ranges/qualitative risk only; exact payout/difficulty remain Level 2. G2 fills the already-declared projected-wear fields after the Condition formula exists.
+- Run-draft source tags are preference weights, not hard candidate pools. The global unowned pool deterministically backfills a source and a draft is skipped cleanly when fewer than three global candidates remain.
+- Unlock-set purchases use a persisted debit + pending journal as the durability barrier **before** `unlockManager` writes the separate set marker. Recovery handles pending-without-marker and pending-with-marker states without a free unlock or double charge.
+- Crew registry ids from actions/persistence are checked with `Object.hasOwn`, and Career reducers independently reject non-finite deltas plus normalize persisted numeric addends with `finiteNumberOr`.
+- `festival` is a region id, never a tour type id; the six tour ids are `standard`, `blitz`, `underground`, `corporate`, `rival_hunt`, and `survival`.
+
 ---
 
 ## Dependency Graph
@@ -134,7 +146,7 @@ Before the first production or simulator edit, execute Task 0 of `01-expedition-
 | G2 | Condition/Cargo/Insurance | G1 | cargo capacity, grouped condition, repairs, hidden defects, optional insurance, supply decisions, minigame effects work |
 | G3 | Crew | G1 | 3-slot crew loadout, stress/injury/relationship state, rest/gig/travel deltas and crisis events work |
 | G4 | Pressure/Rivals/Contracts + targeted run drafts | G2+G3 | Heat/Exposure/Obligations, event director, linked sponsor contracts, persistent rivals, contextual finale and deterministic 1-of-3 key-moment drafts work |
-| G5 | Meta progression | G4 | next-tour loop, HQ/meta facilities, regions, tour archetypes, pressure modifiers, atomic unlock sets, starter/legendary perks and archive work |
+| G5 | Meta progression | G4 | next-tour loop, HQ/meta facilities, regions, tour archetypes, pressure modifiers, crash-safe journaled unlock-set purchases, starter/legendary perks and archive work |
 | G6 | Balance release gate | G5 | 2,000-run calibration+holdout reports updated; no hard safety breach; no single strategy dominates both safety and reward |
 
 ---
@@ -507,7 +519,7 @@ Every approved design requirement has an explicit implementation owner. This is 
 | Starter perks with trade-offs | G5 Task 4 | G5 loadout/profile tests + G6 perk outcome metrics |
 | Legendary finale rewards | G5 Task 4 | G5 storage/idempotence tests + G6 unlock incidence |
 | HQ as meta hub, regions, tour archetypes | G5 Tasks 5–12 | UI/golden-path tests + G6 profile matrix |
-| Unlock sets and bounded meta currencies | G5 Tasks 1–4 | atomic-storage tests + save round-trip |
+| Unlock sets and bounded meta currencies | G5 Tasks 1–4 | journal ordering/recovery tests + save round-trip |
 | Tour Archive / discovery | G5 | archive tests; explicitly not unlock ownership |
 | Ascension / modular Tour Pressure | G5 | pressure tests + G6 representative profile matrix |
 | Anti-snowball / strategy diversity | G5 design constraints | G5 diagnostic + final G6 calibration/holdout dominance gate |

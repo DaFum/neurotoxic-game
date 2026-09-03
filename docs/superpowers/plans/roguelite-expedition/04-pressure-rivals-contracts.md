@@ -1209,7 +1209,9 @@ export const resolveExpeditionFinaleType = (ctx: {
 Add `finaleType: ExpeditionFinaleType | null` with replay-safe action/reducer:
 
 ```ts
-export const createResolveExpeditionFinaleAction = (state: GameState): GameAction | null => {
+export const createResolveExpeditionFinaleAction = (
+  state: GameState
+): Extract<GameAction, { type: typeof ActionTypes.RESOLVE_EXPEDITION_FINALE }> | null => {
   if (state.expedition.status !== 'active' || state.expedition.finaleType) return null
   return {
     type: ActionTypes.RESOLVE_EXPEDITION_FINALE,
@@ -1292,6 +1294,7 @@ The approved design calls for a strong pre-tour build plus **occasional** 1-of-3
 ```js
 import test from 'node:test'
 import assert from 'node:assert/strict'
+import { EXPEDITION_RUN_TRAITS } from '../../src/data/expedition/runTraits.ts'
 import {
   buildRunDraft,
   getRunTraitProfile
@@ -1310,18 +1313,44 @@ test('same seed/source produces the same three unique candidates', () => {
     sourceType: 'major_gig',
     ownedTraitIds: []
   })
+  assert.ok(a)
   assert.deepEqual(a, b)
   assert.equal(new Set(a.candidateTraitIds).size, 3)
 })
 
-test('draft never offers an already-owned run trait', () => {
+test('every approved source can produce three candidates in a fresh run', () => {
+  for (const sourceType of ['major_gig', 'rival', 'supply', 'crew']) {
+    const draft = buildRunDraft({
+      runSeed: 12345,
+      sourceKey: `${sourceType}:test`,
+      sourceType,
+      ownedTraitIds: []
+    })
+    assert.ok(draft, sourceType)
+    assert.equal(new Set(draft.candidateTraitIds).size, 3, sourceType)
+  }
+})
+
+test('source-local shortages fall back deterministically without offering owned traits', () => {
   const draft = buildRunDraft({
     runSeed: 12345,
     sourceKey: 'rival:rival_dead_circuits',
     sourceType: 'rival',
-    ownedTraitIds: ['road_warrior']
+    ownedTraitIds: ['backchannel']
   })
-  assert.equal(draft.candidateTraitIds.includes('road_warrior'), false)
+  assert.ok(draft)
+  assert.equal(draft.candidateTraitIds.includes('backchannel'), false)
+  assert.equal(new Set(draft.candidateTraitIds).size, 3)
+})
+
+test('an exhausted global pool returns null instead of throwing', () => {
+  const owned = Object.keys(EXPEDITION_RUN_TRAITS).slice(0, 4)
+  assert.equal(buildRunDraft({
+    runSeed: 12345,
+    sourceKey: 'crew:exhausted',
+    sourceType: 'crew',
+    ownedTraitIds: owned
+  }), null)
 })
 
 test('run trait profile composes the approved rule changes', () => {
@@ -1421,19 +1450,30 @@ Use existing deterministic helpers outside reducers:
 import { createRngStream } from '../../utils/seededRng'
 import { hashString } from '../../utils/stringUtils'
 
-export const buildRunDraft = (input: BuildRunDraftInput): PendingExpeditionDraft => {
+export const buildRunDraft = (
+  input: BuildRunDraftInput
+): PendingExpeditionDraft | null => {
+  const owned = new Set(input.ownedTraitIds)
   const eligible = Object.values(EXPEDITION_RUN_TRAITS)
-    .filter(trait => trait.sources.includes(input.sourceType))
-    .filter(trait => !input.ownedTraitIds.includes(trait.id))
+    .filter(trait => !owned.has(trait.id))
     .sort((a, b) => a.id.localeCompare(b.id))
 
-  if (eligible.length < 3) throw new RangeError('run draft requires three eligible traits')
+  if (eligible.length < 3) return null
 
   const seed = (input.runSeed ^ hashString(input.sourceKey)) >>> 0
   const rolls = createRngStream(seed, eligible.length)
   const ranked = eligible
-    .map((trait, index) => ({ trait, roll: rolls[index] ?? 0 }))
-    .sort((a, b) => a.roll - b.roll || a.trait.id.localeCompare(b.trait.id))
+    .map((trait, index) => ({
+      trait,
+      sourcePriority: trait.sources.includes(input.sourceType) ? 0 : 1,
+      roll: rolls[index] ?? 0
+    }))
+    .sort(
+      (a, b) =>
+        a.sourcePriority - b.sourcePriority ||
+        a.roll - b.roll ||
+        a.trait.id.localeCompare(b.trait.id)
+    )
 
   return {
     sourceKey: input.sourceKey,
@@ -1450,25 +1490,24 @@ export const createOfferExpeditionDraftAction = (
   state: GameState,
   sourceType: RunDraftSource,
   sourceKey: string
-): GameAction | null => {
+): Extract<GameAction, { type: typeof ActionTypes.OFFER_EXPEDITION_DRAFT }> | null => {
   if (state.expedition.status !== 'active') return null
   if (state.expedition.pendingDraft) return null
   if (state.expedition.draftTraitIds.length >= 2) return null
   if (state.expedition.draftSourceKeysSeen.includes(sourceKey)) return null
-  return {
-    type: ActionTypes.OFFER_EXPEDITION_DRAFT,
-    payload: buildRunDraft({
-      runSeed: state.runSeed,
-      sourceType,
-      sourceKey,
-      ownedTraitIds: state.expedition.draftTraitIds
-    })
-  }
+  const draft = buildRunDraft({
+    runSeed: state.runSeed,
+    sourceType,
+    sourceKey,
+    ownedTraitIds: state.expedition.draftTraitIds
+  })
+  if (!draft) return null
+  return { type: ActionTypes.OFFER_EXPEDITION_DRAFT, payload: draft }
 }
 
 export const createSelectExpeditionDraftAction = (
   traitId: unknown
-): GameAction => {
+): Extract<GameAction, { type: typeof ActionTypes.SELECT_EXPEDITION_DRAFT }> => {
   if (typeof traitId !== 'string' || !Object.hasOwn(EXPEDITION_RUN_TRAITS, traitId)) {
     throw new TypeError('unknown run trait')
   }
@@ -1476,7 +1515,7 @@ export const createSelectExpeditionDraftAction = (
 }
 ```
 
-The reducer accepts `OFFER` only when its `sourceKey` was not seen, records that source key immediately, and accepts `SELECT` only when the id is one of `pendingDraft.candidateTraitIds`; selection appends it once to `draftTraitIds` and clears `pendingDraft`.
+The reducer accepts `OFFER` only when its `sourceKey` was not seen, records that source key immediately, and accepts `SELECT` only when the id is one of `pendingDraft.candidateTraitIds`; selection appends it once to `draftTraitIds` and clears `pendingDraft`. Because a standard run accepts at most two traits, the six-trait global pool always has at least four unowned entries when a second offer is eligible; source-local pools are preferences, not hard failure boundaries. If future content exhausts the global pool below three, the offer creator returns `null` rather than throwing or opening a broken draft UI.
 
 - [ ] **Step 5: Trigger drafts only at approved high-value seams**
 

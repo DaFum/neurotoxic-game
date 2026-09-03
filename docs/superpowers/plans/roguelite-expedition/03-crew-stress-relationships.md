@@ -789,6 +789,7 @@ export interface ShiftCrewRelationshipPayload {
 
 ```ts
 import { ActionTypes } from './actionTypes'
+import type { GameAction } from '../types'
 import { isFiniteNumber } from '../utils/gameState'
 import { EXPEDITION_CREW_BY_ID } from '../data/expedition/crew'
 import { toCrewRelationshipKey } from '../domain/expedition/relationships'
@@ -798,8 +799,11 @@ export const updateCrewCareer = (
   loyaltyDelta: unknown,
   storyStepDelta: unknown,
   signatureTraitId: unknown
-) => {
-  if (typeof crewId !== 'string' || !EXPEDITION_CREW_BY_ID[crewId]) {
+): Extract<GameAction, { type: typeof ActionTypes.UPDATE_CREW_CAREER }> => {
+  if (
+    typeof crewId !== 'string' ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, crewId)
+  ) {
     throw new TypeError('Unknown expedition crew id')
   }
   if (!isFiniteNumber(loyaltyDelta) || !isFiniteNumber(storyStepDelta)) {
@@ -814,19 +818,19 @@ export const updateCrewCareer = (
       signatureTraitId:
         typeof signatureTraitId === 'string' ? signatureTraitId : null
     }
-  } as const
+  }
 }
 
 export const shiftCrewRelationship = (
   firstCrewId: unknown,
   secondCrewId: unknown,
   tierDelta: unknown
-) => {
+): Extract<GameAction, { type: typeof ActionTypes.SHIFT_CREW_RELATIONSHIP }> => {
   if (
     typeof firstCrewId !== 'string' ||
     typeof secondCrewId !== 'string' ||
-    !EXPEDITION_CREW_BY_ID[firstCrewId] ||
-    !EXPEDITION_CREW_BY_ID[secondCrewId] ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, firstCrewId) ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, secondCrewId) ||
     firstCrewId === secondCrewId
   ) {
     throw new TypeError('Relationship action requires two distinct known crew ids')
@@ -840,26 +844,51 @@ export const shiftCrewRelationship = (
       pairKey: toCrewRelationshipKey(firstCrewId, secondCrewId),
       tierDelta: Math.trunc(tierDelta)
     }
-  } as const
+  }
 }
 ```
 
-Relationship pair keys are therefore never accepted raw from UI/event input.
+Relationship pair keys are therefore never accepted raw from UI/event input. Add hostile-boundary tests for `crewId: 'constructor'`, `crewId: '__proto__'`, direct reducer payloads containing `NaN`/`Infinity`, and corrupted stored `loyalty`/`storyStep`; action creators must reject hostile IDs and reducers must return the original state or normalize stored addends without persisting non-finite values.
 
 - [ ] **Step 5: Implement and route `careerReducer`**
 
-`src/context/reducers/careerReducer.ts` exports two handlers compatible with the root reducer map:
+`src/context/reducers/careerReducer.ts` imports the strict numeric helpers and forbidden-key guard explicitly, then exports two handlers compatible with the root reducer map:
 
 ```ts
+import { finiteNumberOr, isFiniteNumber } from '../../utils/gameState'
+import { isForbiddenKey } from '../../utils/objectUtils'
+import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { shiftRelationshipTier } from '../../domain/expedition/relationships'
+
 export const handleUpdateCrewCareer = (state, payload) => {
-  const previous = state.career.crewProgressById[payload.crewId] ?? {
+  if (
+    typeof payload.crewId !== 'string' ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, payload.crewId) ||
+    !isFiniteNumber(payload.loyaltyDelta) ||
+    !isFiniteNumber(payload.storyStepDelta)
+  ) {
+    return state
+  }
+
+  const stored = state.career.crewProgressById[payload.crewId] ?? {
     loyalty: 0,
     storyStep: 0,
     signatureTraitIds: []
   }
-  const nextTraitIds = payload.signatureTraitId
-    ? [...new Set([...previous.signatureTraitIds, payload.signatureTraitId])]
+  const previous = {
+    ...stored,
+    loyalty: Math.max(0, Math.min(100, finiteNumberOr(stored.loyalty, 0))),
+    storyStep: Math.max(0, Math.trunc(finiteNumberOr(stored.storyStep, 0))),
+    signatureTraitIds: Array.isArray(stored.signatureTraitIds)
+      ? stored.signatureTraitIds.filter((id): id is string => typeof id === 'string')
+      : []
+  }
+  const safeSignatureTraitId =
+    typeof payload.signatureTraitId === 'string' ? payload.signatureTraitId : null
+  const nextTraitIds = safeSignatureTraitId
+    ? [...new Set([...previous.signatureTraitIds, safeSignatureTraitId])]
     : previous.signatureTraitIds
+
   return {
     ...state,
     career: {
@@ -868,8 +897,14 @@ export const handleUpdateCrewCareer = (state, payload) => {
         ...state.career.crewProgressById,
         [payload.crewId]: {
           ...previous,
-          loyalty: Math.max(0, Math.min(100, previous.loyalty + payload.loyaltyDelta)),
-          storyStep: Math.max(0, previous.storyStep + Math.trunc(payload.storyStepDelta)),
+          loyalty: Math.max(
+            0,
+            Math.min(100, previous.loyalty + payload.loyaltyDelta)
+          ),
+          storyStep: Math.max(
+            0,
+            previous.storyStep + Math.trunc(payload.storyStepDelta)
+          ),
           signatureTraitIds: nextTraitIds
         }
       }
@@ -877,19 +912,29 @@ export const handleUpdateCrewCareer = (state, payload) => {
   }
 }
 
-export const handleShiftCrewRelationship = (state, payload) => ({
-  ...state,
-  career: {
-    ...state.career,
-    crewRelationshipByPair: {
-      ...state.career.crewRelationshipByPair,
-      [payload.pairKey]: shiftRelationshipTier(
-        state.career.crewRelationshipByPair[payload.pairKey] ?? 'neutral',
-        payload.tierDelta
-      )
+export const handleShiftCrewRelationship = (state, payload) => {
+  if (
+    typeof payload.pairKey !== 'string' ||
+    payload.pairKey.length === 0 ||
+    isForbiddenKey(payload.pairKey) ||
+    !isFiniteNumber(payload.tierDelta)
+  ) {
+    return state
+  }
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      crewRelationshipByPair: {
+        ...state.career.crewRelationshipByPair,
+        [payload.pairKey]: shiftRelationshipTier(
+          state.career.crewRelationshipByPair[payload.pairKey] ?? 'neutral',
+          Math.trunc(payload.tierDelta)
+        )
+      }
     }
   }
-})
+}
 ```
 
 Import both handlers into `gameReducer.ts` and add the two entries to `reducerMap`. Add both action variants to `GameAction`.
@@ -1008,7 +1053,7 @@ export const createResolvePostGigInjuryAction = (
   state: GameState,
   memberId: string,
   roll: number
-): GameAction | null => {
+): Extract<GameAction, { type: typeof ActionTypes.ADVANCE_EXPEDITION_INJURY }> | null => {
   const member = state.band.members.find(item => item.id === memberId)
   if (!member) throw new TypeError('Unknown band member')
   const risk = member.stamina >= 35 ? 0 : member.stamina >= 20 ? 0.1 : 0.25

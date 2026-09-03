@@ -290,10 +290,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       extractionRiskTolerance: 0.55
     }
   }),
+  // `festival` is a region, not a tour type; this profile intentionally uses
+  // the registered `standard` tour and lets the region provide festival behavior.
   freezeProfile({
     id: 'high_exposure_performance',
     name: 'High Exposure Performance',
-    tourTypeId: 'festival',
+    tourTypeId: 'standard',
     regionId: 'festival',
     starterPerkId: 'headliner_pass',
     insurancePolicyId: 'equipment',

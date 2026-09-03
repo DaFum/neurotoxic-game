@@ -541,11 +541,13 @@ git commit -m "feat(expedition): enforce cargo capacity"
 
 **Files:**
 - Create: `src/domain/expedition/condition.ts`
+- Modify: `src/domain/expedition/nodeIntel.ts`
 - Modify: `src/context/actionTypes.ts`
 - Modify: `src/types/actions.d.ts`
 - Modify: `src/context/expeditionActionCreators.ts`
 - Modify: `src/context/reducers/expeditionReducer.ts`
 - Test: `tests/node/expeditionCondition.test.js`
+- Modify: `tests/node/expeditionNodeIntel.test.js`
 - Test: `tests/node/expeditionReducer.test.js`
 
 - [ ] **Step 1: Write failing domain tests**
@@ -587,6 +589,34 @@ test('setup protection reduces but never reverses wear', () => {
   assert.deepEqual(wear, { pa: 4, instruments: 0, stageGear: 5 })
 })
 ```
+
+Extend `tests/node/expeditionNodeIntel.test.js` to pin the staged G1 contract once Condition exists:
+
+```js
+import { getExpeditionNodeIntel } from '../../src/domain/expedition/nodeIntel.ts'
+
+const wearNode = {
+  id: 'wear-node',
+  layer: 3,
+  x: 0,
+  y: 0,
+  type: 'FESTIVAL',
+  venue: { id: 'wear-venue', name: 'Wear Venue', pay: 4000, diff: 4 }
+}
+
+const level1 = getExpeditionNodeIntel(wearNode, 1)
+assert.equal(level1.wearTier, 'high')
+assert.equal(level1.projectedWear, null)
+
+const level2 = getExpeditionNodeIntel(wearNode, 2)
+assert.deepEqual(level2.projectedWear, {
+  pa: 8,
+  instruments: 4,
+  stageGear: 5
+})
+```
+
+The projection is a forecast at reference **70% accuracy**, multiplier `1`, and zero setup protection. It is not the guaranteed post-gig wear because the player's actual performance remains skill-dependent.
 
 - [ ] **Step 2: Verify failure**
 
@@ -641,7 +671,47 @@ export const calculateGigConditionWear = ({
 }
 ```
 
-- [ ] **Step 4: Add reducer action**
+- [ ] **Step 4: Populate the existing node-intel wear fields from the canonical formula**
+
+Extend `src/domain/expedition/nodeIntel.ts`; do not rename the G1 fields:
+
+```ts
+import type { ConditionGroup, NodeIntelBand } from '../../types'
+import { calculateGigConditionWear } from './condition'
+
+export const projectNodeTechnicalWear = (
+  node: MapNode
+): Record<ConditionGroup, number> =>
+  calculateGigConditionWear({
+    venueDifficulty: getCanonicalNodeDifficulty(node) ?? 1,
+    accuracy: 70,
+    technicalWearMultiplier: 1,
+    protection: { pa: 0, instruments: 0, stageGear: 0 }
+  })
+
+const toWearTier = (
+  wear: Record<ConditionGroup, number>
+): NodeIntelBand => {
+  const total = wear.pa + wear.instruments + wear.stageGear
+  if (total >= 12) return 'high'
+  if (total >= 6) return 'medium'
+  return 'low'
+}
+```
+
+In `getExpeditionNodeIntel`, derive the projection once and expose only its qualitative band at Level 1:
+
+```ts
+const projectedWear = level >= 1 ? projectNodeTechnicalWear(node) : null
+
+// inside the existing returned object
+wearTier: projectedWear ? toWearTier(projectedWear) : null,
+projectedWear: level >= 2 ? projectedWear : null,
+```
+
+This preserves the G1 result shape and keeps actual run wear in post-gig settlement, where real accuracy and setup protection are known.
+
+- [ ] **Step 5: Add reducer action**
 
 Add `APPLY_EXPEDITION_WEAR` with payload:
 
@@ -655,19 +725,19 @@ export interface ApplyExpeditionWearPayload {
 
 Action creator sanitizes each field to finite non-negative `0..100`. Reducer only applies when `expedition.status === 'active'`, subtracts each wear value with clamp `0..100`, and clears `setupProtection` after applying the gig wear once.
 
-- [ ] **Step 5: Run domain/reducer tests**
+- [ ] **Step 6: Run domain/reducer/intel tests**
 
 ```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCondition.test.js tests/node/expeditionReducer.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCondition.test.js tests/node/expeditionNodeIntel.test.js tests/node/expeditionReducer.test.js
 pnpm run typecheck:core
 ```
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/domain/expedition/condition.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/expeditionActionCreators.ts src/context/reducers/expeditionReducer.ts tests/node/expeditionCondition.test.js tests/node/expeditionReducer.test.js
+git add src/domain/expedition/condition.ts src/domain/expedition/nodeIntel.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/expeditionActionCreators.ts src/context/reducers/expeditionReducer.ts tests/node/expeditionCondition.test.js tests/node/expeditionNodeIntel.test.js tests/node/expeditionReducer.test.js
 git commit -m "feat(expedition): apply grouped technical wear"
 ```
 
