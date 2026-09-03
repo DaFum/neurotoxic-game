@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-09-02T18:42:05.160Z
+Erstellt am: 2026-09-03T03:19:20.301Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: 873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b
-- Generator-Fingerprint: a31c185bd3a52c82e84b93898828d01674a59e4bbfbd41bd625671db4a9ba7c6
+- Source-Fingerprint: e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d
+- Generator-Fingerprint: 3771cc61f9ae99152cd11389e04e6d0189eb0ffdee0c16e855ba2484d0b5c5f7
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
@@ -361,8 +361,8 @@ Zielkorridore sind Designhypothesen und blockieren nichts. Harte Gates bleiben d
 | No Social (Fame 0-50) | 5.10% | 2–12% | 15% | 4.22–6.15% | contained | within_target | within_target | stable | 🟢 healthy |
 | High Controversy | 30.15% | 20–35% | 40% | 28.18–32.20% | contained | within_target | within_target | stable | 🟢 healthy |
 | Early Game Probe (Fame 0–50) | 6.30% | 2–10% | 12% | 5.32–7.45% | contained | within_target | within_target | stable | 🟢 healthy |
-| Mid Game Probe (Fame 60–150) | 0.05% | 0–4% | 5% | 0.01–0.28% | contained | within_target | within_target | stable | 🔵 low_risk |
-| Late Game Probe (Fame 175+) | 0.20% | 0–4% | 5% | 0.08–0.51% | contained | within_target | within_target | stable | 🔵 low_risk |
+| Mid Game Probe (Fame 60–150) | 0.05% | 0–4% | 5% | 0.01–0.28% | contained | within_target | within_target | stable | 🟢 healthy |
+| Late Game Probe (Fame 175+) | 0.20% | 0–4% | 5% | 0.08–0.51% | contained | within_target | within_target | stable | 🟢 healthy |
 
 Das Wilson-Intervall steht bewusst neben dem Punktwert: eine Rate kann im Korridor liegen, während der plausible Bereich darunter hinausreicht — das ist „auf der unteren Designgrenze“, was ein reines Pass/Fail nicht sagen kann.
 
@@ -373,10 +373,10 @@ Diese Punkte erscheinen im Report, blockieren aber nichts:
 - ⚠️ bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.
 - ⚠️ chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.
-- ⚠️ mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1) liegt unter dem Zielkorridor 2–4.
-- ⚠️ mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2) liegt unter dem Zielkorridor 3–5.
-- ⚠️ mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31) liegt über dem Zielkorridor 20–35.
-- ⚠️ late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9) liegt unter dem Zielkorridor 3–6.
+- ⚠️ mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1, Holdout 1) liegt unter dem Zielkorridor 2–4.
+- ⚠️ mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2, Holdout 2) liegt unter dem Zielkorridor 3–5.
+- ⚠️ mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31, Holdout 37.28) liegt über dem Zielkorridor 20–35.
+- ⚠️ late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9, Holdout 1.91) liegt unter dem Zielkorridor 3–6.
 
 ## Financial-Stress-Profil
 
@@ -595,7 +595,7 @@ Dieser Vergleich ist **deskriptiv und ungepaart**; die Deltas sind keine gepaart
 
 | Kennzahl | Alt | Neu |
 |---|---|---|
-| Source-Fingerprint | `7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3` | `873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b` |
+| Source-Fingerprint | `873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b` | `e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d` |
 | Runs je Szenario | 2000 | 2000 |
 | Seed-Namensraum | `#first-income-full-reports-v1` | `#first-income-full-reports-v1` |
 | Seed-Strategie | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` | `scenario-id-plus-first-income-full-report-namespace-plus-run-index` |

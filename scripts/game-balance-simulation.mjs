@@ -5727,6 +5727,11 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
         allHoldStatuses
       })
 
+      const bankruptcyRiskStatus = evaluateScenarioRiskStatus({
+        calibrationStatus,
+        holdoutStatus
+      })
+
       return {
         id: result.id,
         name: result.name,
@@ -5739,6 +5744,7 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
           targetRangePct,
           safetyMaximumPct,
           status: calibrationStatus,
+          riskStatus: bankruptcyRiskStatus,
           confidence95: bankruptcy.confidence95 ?? null,
           corridorConfidence: describeCorridorConfidence({
             confidence95: bankruptcy.confidence95,
@@ -5764,11 +5770,7 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
     const scenarioWarnings = []
 
     // 1. Bankruptcy warning derived strictly from bankruptcy-only status
-    const bankruptcyRiskStatus = evaluateScenarioRiskStatus({
-      calibrationStatus: scenario.bankruptcy.status,
-      holdoutStatus: scenario.holdout.status
-    })
-    const describeBankruptcy = RISK_STATUS_WARNING[bankruptcyRiskStatus]
+    const describeBankruptcy = RISK_STATUS_WARNING[scenario.bankruptcy.riskStatus]
     if (describeBankruptcy) {
       scenarioWarnings.push(
         describeBankruptcy({
@@ -5783,15 +5785,33 @@ export const buildDesignRiskReview = ({ results, holdoutScenarios }) => {
       )
     }
 
-    // 2. Probe warnings rendered from each probe metric's own status
+    // 2. Probe warnings rendered from each probe metric's status across calibration & holdout
     for (const [metricKey, m] of Object.entries(scenario.probeMetrics ?? {})) {
-      if (m.status === 'above_target') {
+      if (m.status === 'above_target' && m.holdoutStatus === 'above_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}, Holdout ${m.holdoutObserved}) liegt über dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      } else if (m.status === 'above_target') {
         scenarioWarnings.push(
           `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}) liegt über dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      } else if (m.holdoutStatus === 'above_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Holdout ${m.holdoutObserved}) liegt über dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      }
+
+      if (m.status === 'below_target' && m.holdoutStatus === 'below_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}, Holdout ${m.holdoutObserved}) liegt unter dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
         )
       } else if (m.status === 'below_target') {
         scenarioWarnings.push(
           `${scenario.id}: Probe-Ziel ${metricKey} (Kalibrierung ${m.observed}) liegt unter dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
+        )
+      } else if (m.holdoutStatus === 'below_target') {
+        scenarioWarnings.push(
+          `${scenario.id}: Probe-Ziel ${metricKey} (Holdout ${m.holdoutObserved}) liegt unter dem Zielkorridor ${m.targetRange[0]}–${m.targetRange[1]}.`
         )
       }
     }
@@ -6494,7 +6514,7 @@ const buildMarkdownReport = payload => {
         ? `${(c.lowerPct ?? 0).toFixed(2)}–${(c.upperPct ?? 0).toFixed(2)}%`
         : '—'
       lines.push(
-        `| ${item.name} | ${(b.observedPct ?? 0).toFixed(2)}% | ${b.targetRangePct[0]}–${b.targetRangePct[1]}% | ${b.safetyMaximumPct == null ? '—' : `${b.safetyMaximumPct}%`} | ${interval} | ${b.corridorConfidence} | ${b.status} | ${item.holdout.status} | ${item.holdout.riskBandResult} | ${RISK_STATUS_LABEL[item.status] ?? item.status} |`
+        `| ${item.name} | ${(b.observedPct ?? 0).toFixed(2)}% | ${b.targetRangePct[0]}–${b.targetRangePct[1]}% | ${b.safetyMaximumPct == null ? '—' : `${b.safetyMaximumPct}%`} | ${interval} | ${b.corridorConfidence} | ${b.status} | ${item.holdout.status} | ${item.holdout.riskBandResult} | ${RISK_STATUS_LABEL[b.riskStatus] ?? b.riskStatus} |`
       )
     }
     lines.push('')

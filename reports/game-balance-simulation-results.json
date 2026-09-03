@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-02T18:42:05.160Z",
+  "generatedAt": "2026-09-03T03:19:20.301Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
@@ -433,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
-    "generatorFingerprint": "a31c185bd3a52c82e84b93898828d01674a59e4bbfbd41bd625671db4a9ba7c6",
+    "sourceFingerprint": "e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d",
+    "generatorFingerprint": "3771cc61f9ae99152cd11389e04e6d0189eb0ffdee0c16e855ba2484d0b5c5f7",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -13294,6 +13294,7 @@
           ],
           "safetyMaximumPct": 10,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 1.43,
             "upperPct": 2.65,
@@ -13324,6 +13325,7 @@
           ],
           "safetyMaximumPct": 60,
           "status": "below_target",
+          "riskStatus": "low_risk",
           "confidence95": {
             "lowerPct": 8.29,
             "upperPct": 10.86,
@@ -13354,6 +13356,7 @@
           ],
           "safetyMaximumPct": 15,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 2.21,
             "upperPct": 3.67,
@@ -13384,6 +13387,7 @@
           ],
           "safetyMaximumPct": 50,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 7.92,
             "upperPct": 10.44,
@@ -13414,6 +13418,7 @@
           ],
           "safetyMaximumPct": 35,
           "status": "below_target",
+          "riskStatus": "low_risk",
           "confidence95": {
             "lowerPct": 3.09,
             "upperPct": 4.79,
@@ -13444,6 +13449,7 @@
           ],
           "safetyMaximumPct": 25,
           "status": "below_target",
+          "riskStatus": "low_risk",
           "confidence95": {
             "lowerPct": 3.72,
             "upperPct": 5.55,
@@ -13474,6 +13480,7 @@
           ],
           "safetyMaximumPct": 12,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 2.16,
             "upperPct": 3.62,
@@ -13504,6 +13511,7 @@
           ],
           "safetyMaximumPct": 15,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 4.22,
             "upperPct": 6.15,
@@ -13545,6 +13553,7 @@
           ],
           "safetyMaximumPct": 40,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 28.18,
             "upperPct": 32.2,
@@ -13586,6 +13595,7 @@
           ],
           "safetyMaximumPct": 12,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 5.32,
             "upperPct": 7.45,
@@ -13647,6 +13657,7 @@
           ],
           "safetyMaximumPct": 5,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 0.01,
             "upperPct": 0.28,
@@ -13708,6 +13719,7 @@
           ],
           "safetyMaximumPct": 5,
           "status": "within_target",
+          "riskStatus": "healthy",
           "confidence95": {
             "lowerPct": 0.08,
             "upperPct": 0.51,
@@ -13749,10 +13761,10 @@
       "bootstrap_struggle: Insolvenzrate (Kalibrierung 9.5%, Holdout 8.65%) liegt unter dem Zielkorridor 15–30% — das Szenario ist sicherer als beabsichtigt.",
       "festival_push: Insolvenzrate (Kalibrierung 3.85%, Holdout 4.65%) liegt unter dem Zielkorridor 5–15% — das Szenario ist sicherer als beabsichtigt.",
       "chaos_tour: Insolvenzrate (Kalibrierung 4.55%, Holdout 4%) liegt unter dem Zielkorridor 8–20% — das Szenario ist sicherer als beabsichtigt.",
-      "mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1) liegt unter dem Zielkorridor 2–4.",
-      "mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2) liegt unter dem Zielkorridor 3–5.",
-      "mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31) liegt über dem Zielkorridor 20–35.",
-      "late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9) liegt unter dem Zielkorridor 3–6."
+      "mid_game_probe: Probe-Ziel firstHqUpgradeDayMedian (Kalibrierung 1, Holdout 1) liegt unter dem Zielkorridor 2–4.",
+      "mid_game_probe: Probe-Ziel firstVanUpgradeDayMedian (Kalibrierung 2, Holdout 2) liegt unter dem Zielkorridor 3–5.",
+      "mid_game_probe: Probe-Ziel catalogSharePurchasedPct (Kalibrierung 37.31, Holdout 37.28) liegt über dem Zielkorridor 20–35.",
+      "late_game_probe: Probe-Ziel travelCostShareOfGigNetPct (Kalibrierung 1.9, Holdout 1.91) liegt unter dem Zielkorridor 3–6."
     ]
   },
   "featureInventory": {
@@ -14042,16 +14054,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-09-02T17:14:00.070Z",
-      "sourceFingerprint": "7caef7cb4139b5994d3ea074f69ef181fb9d97a58746b33106f4d1291c8c68d3",
+      "generatedAt": "2026-09-02T18:42:05.160Z",
+      "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-09-02T18:42:05.160Z",
-      "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
+      "generatedAt": "2026-09-03T03:19:20.301Z",
+      "sourceFingerprint": "e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",

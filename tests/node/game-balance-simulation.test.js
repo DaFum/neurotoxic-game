@@ -2945,3 +2945,81 @@ test('buildDesignRiskReview evaluates probe-specific target corridors and flags 
     'Warnings must name late_game_probe travelCostShareOfGigNetPct'
   )
 })
+
+test('healthy bankruptcy with calibration probe miss keeps bankruptcy risk status healthy while reporting probe warning separately', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1,
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ]
+  })
+
+  const midProbe = review.scenarios.find(s => s.id === 'mid_game_probe')
+  assert.ok(midProbe)
+  assert.equal(midProbe.bankruptcy.riskStatus, 'healthy', 'Insolvency risk status must stay healthy when bankruptcy is within target')
+  assert.equal(midProbe.status, 'low_risk', 'Scenario overall status reflects probe miss')
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('firstHqUpgradeDayMedian')),
+    'Probe warning must be generated separately'
+  )
+})
+
+test('healthy calibration probe with out-of-range holdout probe generates a warning naming the holdout breach', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 3, // in range [2, 4] for calibration
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4] in holdout!
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ]
+  })
+
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('Holdout') && w.includes('firstHqUpgradeDayMedian')),
+    'Warning must explicitly name the Holdout breach when holdout probe is out of range'
+  )
+})
