@@ -3,6 +3,19 @@ import type { MapNode } from '../../../types'
 import { handleNodeArrival } from '../../../utils/arrivalUtils'
 import type { TravelActionsParams } from '../types'
 
+/**
+ * Creates a callback to handle the side effects of arriving at or interacting with an overworld node.
+ *
+ * @remarks
+ * This callback serves as the primary router for node interaction, delegating logic to `handleNodeArrival`.
+ * Re-entering the node the band currently occupies dispatches neither a travel commit nor a day tick,
+ * so this hook manages synchronous scene changes for those cases. If a gig is successfully started by
+ * the underlying handler, the scene transitions automatically to PRE_GIG, and this function explicitly
+ * prevents bouncing the player back out to the OVERWORLD.
+ *
+ * @param options - Destructured parameters for travel actions.
+ * @returns A stable callback function that accepts a `MapNode` and an optional boolean flag to execute arrival operations.
+ */
 export const useHandleNodeArrivalCallback = ({
   refs,
   params
