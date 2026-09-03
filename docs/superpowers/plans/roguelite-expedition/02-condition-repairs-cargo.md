@@ -269,7 +269,7 @@ All multipliers default to `1`, integer/additive bonuses default to `0`.
 
 ```ts
 import type { GameState } from '../../types'
-import { finiteNumberOr } from '../../utils/finiteNumber'
+import { finiteNumberOr } from '../../utils/gameState'
 import { getAssetAggregateBoni } from '../../utils/assetSelectors'
 
 export interface ExpeditionVehicleState {
