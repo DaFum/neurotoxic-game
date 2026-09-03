@@ -1,11 +1,15 @@
 {
-  "generatedAt": "2026-09-03T03:19:20.301Z",
+  "generatedAt": "2026-09-03T20:09:22.985Z",
   "constants": {
     "reportVersion": 14,
     "runsPerScenario": 2000,
     "seedNamespace": "#first-income-full-reports-v1",
     "daysPerRun": 10,
-    "progressionCheckpointDays": [3, 5, 7],
+    "progressionCheckpointDays": [
+      3,
+      5,
+      7
+    ],
     "homeVenueId": "stendal_proberaum",
     "baseGigGapDays": 1,
     "randomModifierChance": 0.22,
@@ -33,7 +37,11 @@
       "eventIntensity": 0.35,
       "maintenanceDiscipline": 0.7,
       "minigameSkill": 0.62,
-      "traitPack": ["bandleader", "gear_nerd", "party_animal"],
+      "traitPack": [
+        "bandleader",
+        "gear_nerd",
+        "party_animal"
+      ],
       "modifierBias": {
         "promo": 0.35,
         "merch": 0.3,
@@ -65,7 +73,9 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.45,
       "minigameSkill": 0.42,
-      "traitPack": ["road_warrior"],
+      "traitPack": [
+        "road_warrior"
+      ],
       "modifierBias": {
         "promo": 0.15,
         "merch": 0.25,
@@ -97,7 +107,10 @@
       "eventIntensity": 0.62,
       "maintenanceDiscipline": 0.63,
       "minigameSkill": 0.58,
-      "traitPack": ["social_manager", "tech_wizard"],
+      "traitPack": [
+        "social_manager",
+        "tech_wizard"
+      ],
       "modifierBias": {
         "promo": 0.78,
         "merch": 0.65,
@@ -129,7 +142,10 @@
       "eventIntensity": 0.75,
       "maintenanceDiscipline": 0.6,
       "minigameSkill": 0.5,
-      "traitPack": ["bandleader", "melodic_genius"],
+      "traitPack": [
+        "bandleader",
+        "melodic_genius"
+      ],
       "modifierBias": {
         "promo": 0.2,
         "merch": 0.35,
@@ -161,7 +177,11 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.75,
       "minigameSkill": 0.66,
-      "traitPack": ["tech_wizard", "blast_machine", "social_manager"],
+      "traitPack": [
+        "tech_wizard",
+        "blast_machine",
+        "social_manager"
+      ],
       "modifierBias": {
         "promo": 0.56,
         "merch": 0.5,
@@ -193,7 +213,9 @@
       "eventIntensity": 0.95,
       "maintenanceDiscipline": 0.35,
       "minigameSkill": 0.35,
-      "traitPack": ["party_animal"],
+      "traitPack": [
+        "party_animal"
+      ],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.5,
@@ -225,7 +247,11 @@
       "eventIntensity": 0.55,
       "maintenanceDiscipline": 0.58,
       "minigameSkill": 0.64,
-      "traitPack": ["social_manager", "tech_wizard", "gear_nerd"],
+      "traitPack": [
+        "social_manager",
+        "tech_wizard",
+        "gear_nerd"
+      ],
       "modifierBias": {
         "promo": 0.88,
         "merch": 0.72,
@@ -345,7 +371,9 @@
       "eventIntensity": 0.4,
       "maintenanceDiscipline": 0.65,
       "minigameSkill": 0.55,
-      "traitPack": ["bandleader"],
+      "traitPack": [
+        "bandleader"
+      ],
       "modifierBias": {
         "promo": 0.28,
         "merch": 0.25,
@@ -377,7 +405,10 @@
       "eventIntensity": 0.5,
       "maintenanceDiscipline": 0.72,
       "minigameSkill": 0.65,
-      "traitPack": ["bandleader", "gear_nerd"],
+      "traitPack": [
+        "bandleader",
+        "gear_nerd"
+      ],
       "modifierBias": {
         "promo": 0.55,
         "merch": 0.45,
@@ -402,8 +433,8 @@
     }
   ],
   "metadata": {
-    "sourceFingerprint": "e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d",
-    "generatorFingerprint": "3771cc61f9ae99152cd11389e04e6d0189eb0ffdee0c16e855ba2484d0b5c5f7",
+    "sourceFingerprint": "657deca419501eab1be193de48a3849e19a1429faca0fb4ff35629f8409f083f",
+    "generatorFingerprint": "afb37e280e40c0e73e3ae95a62fc81f7cdf970cf98cfff45c49a7ce08d8abf2b",
     "seedNamespace": "#first-income-full-reports-v1",
     "runsPerScenario": 2000,
     "workingTreeDirty": true,
@@ -424,7 +455,10 @@
           "police_control",
           "police_contraband"
         ],
-        "triggers": ["travel", "random"]
+        "triggers": [
+          "travel",
+          "random"
+        ]
       },
       "band": {
         "count": 62,
@@ -435,7 +469,11 @@
           "asset_story_saved_local_venue",
           "asset_story_tape_culture_revival"
         ],
-        "triggers": ["random", "travel", "post_gig"]
+        "triggers": [
+          "random",
+          "travel",
+          "post_gig"
+        ]
       },
       "gig": {
         "count": 22,
@@ -446,7 +484,11 @@
           "crowd_surf_disaster",
           "gig_intro_dead_air"
         ],
-        "triggers": ["gig_mid", "gig_intro", "random"]
+        "triggers": [
+          "gig_mid",
+          "gig_intro",
+          "random"
+        ]
       },
       "financial": {
         "count": 31,
@@ -457,7 +499,10 @@
           "tax_audit",
           "broken_merch_box"
         ],
-        "triggers": ["random", "post_gig"]
+        "triggers": [
+          "random",
+          "post_gig"
+        ]
       },
       "special": {
         "count": 26,
@@ -468,12 +513,23 @@
           "legendary_patch_trader",
           "midnight_radio"
         ],
-        "triggers": ["special_location", "random", "travel", "post_gig"]
+        "triggers": [
+          "special_location",
+          "random",
+          "travel",
+          "post_gig"
+        ]
       }
     },
     "brandDeals": 54,
     "postOptions": 36,
-    "trends": ["NEUTRAL", "DRAMA", "TECH", "MUSIC", "WHOLESOME"],
+    "trends": [
+      "NEUTRAL",
+      "DRAMA",
+      "TECH",
+      "MUSIC",
+      "WHOLESOME"
+    ],
     "socialPlatforms": [
       {
         "id": "instagram",
@@ -13232,7 +13288,10 @@
           "observedPct": 1.95,
           "count": 39,
           "sampleSize": 2000,
-          "targetRangePct": [1, 5],
+          "targetRangePct": [
+            1,
+            5
+          ],
           "safetyMaximumPct": 10,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13260,7 +13319,10 @@
           "observedPct": 9.5,
           "count": 190,
           "sampleSize": 2000,
-          "targetRangePct": [15, 30],
+          "targetRangePct": [
+            15,
+            30
+          ],
           "safetyMaximumPct": 60,
           "status": "below_target",
           "riskStatus": "low_risk",
@@ -13288,7 +13350,10 @@
           "observedPct": 2.85,
           "count": 57,
           "sampleSize": 2000,
-          "targetRangePct": [2, 8],
+          "targetRangePct": [
+            2,
+            8
+          ],
           "safetyMaximumPct": 15,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13316,7 +13381,10 @@
           "observedPct": 9.1,
           "count": 182,
           "sampleSize": 2000,
-          "targetRangePct": [8, 20],
+          "targetRangePct": [
+            8,
+            20
+          ],
           "safetyMaximumPct": 50,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13344,7 +13412,10 @@
           "observedPct": 3.85,
           "count": 77,
           "sampleSize": 2000,
-          "targetRangePct": [5, 15],
+          "targetRangePct": [
+            5,
+            15
+          ],
           "safetyMaximumPct": 35,
           "status": "below_target",
           "riskStatus": "low_risk",
@@ -13372,7 +13443,10 @@
           "observedPct": 4.55,
           "count": 91,
           "sampleSize": 2000,
-          "targetRangePct": [8, 20],
+          "targetRangePct": [
+            8,
+            20
+          ],
           "safetyMaximumPct": 25,
           "status": "below_target",
           "riskStatus": "low_risk",
@@ -13400,7 +13474,10 @@
           "observedPct": 2.8,
           "count": 56,
           "sampleSize": 2000,
-          "targetRangePct": [2, 10],
+          "targetRangePct": [
+            2,
+            10
+          ],
           "safetyMaximumPct": 12,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13428,7 +13505,10 @@
           "observedPct": 5.1,
           "count": 102,
           "sampleSize": 2000,
-          "targetRangePct": [2, 12],
+          "targetRangePct": [
+            2,
+            12
+          ],
           "safetyMaximumPct": 15,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13442,7 +13522,10 @@
         "probeMetrics": {
           "noSocialFinalMoneyRatioPct": {
             "observed": 82.63,
-            "targetRange": [70, 95],
+            "targetRange": [
+              70,
+              95
+            ],
             "status": "within_target",
             "holdoutObserved": 82.67,
             "holdoutStatus": "within_target"
@@ -13464,7 +13547,10 @@
           "observedPct": 30.15,
           "count": 603,
           "sampleSize": 2000,
-          "targetRangePct": [20, 35],
+          "targetRangePct": [
+            20,
+            35
+          ],
           "safetyMaximumPct": 40,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13478,7 +13564,10 @@
         "probeMetrics": {
           "finaleReachedPct": {
             "observed": 61.7,
-            "targetRange": [45, 75],
+            "targetRange": [
+              45,
+              75
+            ],
             "status": "within_target",
             "holdoutObserved": 61.75,
             "holdoutStatus": "within_target"
@@ -13500,7 +13589,10 @@
           "observedPct": 6.3,
           "count": 126,
           "sampleSize": 2000,
-          "targetRangePct": [2, 10],
+          "targetRangePct": [
+            2,
+            10
+          ],
           "safetyMaximumPct": 12,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13514,21 +13606,30 @@
         "probeMetrics": {
           "avgGigNet": {
             "observed": 4559,
-            "targetRange": [3500, 5500],
+            "targetRange": [
+              3500,
+              5500
+            ],
             "status": "within_target",
             "holdoutObserved": 4553,
             "holdoutStatus": "within_target"
           },
           "travelCostShareOfGigNetPct": {
             "observed": 2.03,
-            "targetRange": [1.5, 4],
+            "targetRange": [
+              1.5,
+              4
+            ],
             "status": "within_target",
             "holdoutObserved": 2.04,
             "holdoutStatus": "within_target"
           },
           "finaleReachedPct": {
             "observed": 91.75,
-            "targetRange": [85, 100],
+            "targetRange": [
+              85,
+              100
+            ],
             "status": "within_target",
             "holdoutObserved": 91.4,
             "holdoutStatus": "within_target"
@@ -13550,7 +13651,10 @@
           "observedPct": 0.05,
           "count": 1,
           "sampleSize": 2000,
-          "targetRangePct": [0, 4],
+          "targetRangePct": [
+            0,
+            4
+          ],
           "safetyMaximumPct": 5,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13564,21 +13668,30 @@
         "probeMetrics": {
           "firstHqUpgradeDayMedian": {
             "observed": 1,
-            "targetRange": [2, 4],
+            "targetRange": [
+              2,
+              4
+            ],
             "status": "below_target",
             "holdoutObserved": 1,
             "holdoutStatus": "below_target"
           },
           "firstVanUpgradeDayMedian": {
             "observed": 2,
-            "targetRange": [3, 5],
+            "targetRange": [
+              3,
+              5
+            ],
             "status": "below_target",
             "holdoutObserved": 2,
             "holdoutStatus": "below_target"
           },
           "catalogSharePurchasedPct": {
             "observed": 37.31,
-            "targetRange": [20, 35],
+            "targetRange": [
+              20,
+              35
+            ],
             "status": "above_target",
             "holdoutObserved": 37.28,
             "holdoutStatus": "above_target"
@@ -13600,7 +13713,10 @@
           "observedPct": 0.2,
           "count": 4,
           "sampleSize": 2000,
-          "targetRangePct": [0, 4],
+          "targetRangePct": [
+            0,
+            4
+          ],
           "safetyMaximumPct": 5,
           "status": "within_target",
           "riskStatus": "healthy",
@@ -13614,14 +13730,20 @@
         "probeMetrics": {
           "travelCostShareOfGigNetPct": {
             "observed": 1.9,
-            "targetRange": [3, 6],
+            "targetRange": [
+              3,
+              6
+            ],
             "status": "below_target",
             "holdoutObserved": 1.91,
             "holdoutStatus": "below_target"
           },
           "gigCapHitPct": {
             "observed": 5,
-            "targetRange": [2, 10],
+            "targetRange": [
+              2,
+              10
+            ],
             "status": "within_target",
             "holdoutObserved": 5.1,
             "holdoutStatus": "within_target"
@@ -13749,7 +13871,13 @@
     "socialTrends": {
       "evaluations": 230757,
       "activations": 27835,
-      "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+      "uniqueIdsSeen": [
+        "DRAMA",
+        "MUSIC",
+        "NEUTRAL",
+        "TECH",
+        "WHOLESOME"
+      ],
       "availableIds": 5,
       "covered": true
     },
@@ -13926,16 +14054,16 @@
     "cohortDifferences": [],
     "note": "The reports have the same recorded cohort metadata. This remains a descriptive aggregate comparison, not a paired effect estimate.",
     "previous": {
-      "generatedAt": "2026-09-02T18:42:05.160Z",
-      "sourceFingerprint": "873a1a01fce0929b8ad639685cbfa7fb2651e03d378daa49031603f4a5c3685b",
+      "generatedAt": "2026-09-03T03:19:20.301Z",
+      "sourceFingerprint": "e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
       "shippedGigCadencePolicy": "first-income"
     },
     "current": {
-      "generatedAt": "2026-09-03T03:19:20.301Z",
-      "sourceFingerprint": "e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d",
+      "generatedAt": "2026-09-03T20:09:22.985Z",
+      "sourceFingerprint": "657deca419501eab1be193de48a3849e19a1429faca0fb4ff35629f8409f083f",
       "runsPerScenario": 2000,
       "seedNamespace": "#first-income-full-reports-v1",
       "seedStrategy": "scenario-id-plus-first-income-full-report-namespace-plus-run-index",
@@ -15071,7 +15199,13 @@
           "socialTrends": {
             "evaluations": 19733,
             "activations": 2397,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -16215,7 +16349,13 @@
           "socialTrends": {
             "evaluations": 18913,
             "activations": 2347,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -17370,7 +17510,13 @@
           "socialTrends": {
             "evaluations": 19654,
             "activations": 2333,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -18514,7 +18660,13 @@
           "socialTrends": {
             "evaluations": 18923,
             "activations": 2330,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -19627,7 +19779,13 @@
           "socialTrends": {
             "evaluations": 19555,
             "activations": 2329,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -20727,7 +20885,13 @@
           "socialTrends": {
             "evaluations": 19434,
             "activations": 2420,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -21810,7 +21974,13 @@
           "socialTrends": {
             "evaluations": 19628,
             "activations": 2359,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -22877,7 +23047,13 @@
           "socialTrends": {
             "evaluations": 19385,
             "activations": 2282,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -23899,7 +24075,13 @@
           "socialTrends": {
             "evaluations": 16298,
             "activations": 1887,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -25022,7 +25204,13 @@
           "socialTrends": {
             "evaluations": 19249,
             "activations": 2338,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -26170,7 +26358,13 @@
           "socialTrends": {
             "evaluations": 19996,
             "activations": 2397,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
@@ -27286,7 +27480,13 @@
           "socialTrends": {
             "evaluations": 19989,
             "activations": 2416,
-            "uniqueIdsSeen": ["DRAMA", "MUSIC", "NEUTRAL", "TECH", "WHOLESOME"],
+            "uniqueIdsSeen": [
+              "DRAMA",
+              "MUSIC",
+              "NEUTRAL",
+              "TECH",
+              "WHOLESOME"
+            ],
             "availableIds": 5,
             "covered": true
           },
