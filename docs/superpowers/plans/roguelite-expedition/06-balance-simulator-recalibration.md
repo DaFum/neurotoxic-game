@@ -648,7 +648,7 @@ git commit -m "refactor(balance): simulate expedition route horizon"
 - Modify: `scripts/utils/expedition-balance-metrics.mjs`
 - Modify: `tests/node/game-balance-simulation.test.js`
 
-- [ ] **Step 1: Add a failing telemetry-shape test**
+- [ ] **Step 1: Add a failing telemetry-shape and vehicle-owner test**
 
 For one deterministic run, assert:
 
@@ -667,9 +667,24 @@ assert.ok(Array.isArray(run.heatTimeline))
 assert.ok(Array.isArray(run.exposureTimeline))
 ```
 
+Add a deterministic fixture/run in which the canonical travel transition reduces `state.player.van.condition` below `100` while technical Expedition Condition remains unchanged, then assert the recorded vehicle minimum follows the van owner:
+
+```js
+const metrics = createExpeditionMetrics()
+const damaged = makeSimulationState({
+  playerVanCondition: 63,
+  expeditionCondition: { pa: 100, instruments: 100, stageGear: 100 }
+})
+recordConditionMinimums(metrics, damaged)
+assert.equal(metrics.conditionMinimums.vehicle, 63)
+assert.equal(metrics.conditionMinimums.pa, 100)
+```
+
+This regression must fail if vehicle durability is read from `expedition.condition`.
+
 - [ ] **Step 2: Record metrics at production ownership points**
 
-Record only after the production action/reducer succeeds. Add these local simulator helpers next to `runSingleSimulation`; they observe settled state and never reimplement production math:
+Record only after the production action/reducer succeeds. Add these local simulator helpers next to `runSingleSimulation`; they observe settled state and never reimplement production math. Vehicle durability and technical equipment deliberately have different owners: vehicle condition is `state.player.van.condition`; only `pa`, `instruments`, and `stageGear` live in `state.expedition.condition`.
 
 ```js
 const recordAppliedSpend = (metrics, category, beforeMoney, afterMoney) => {
@@ -677,9 +692,17 @@ const recordAppliedSpend = (metrics, category, beforeMoney, afterMoney) => {
   if (spend > 0) recordExpeditionSpend(metrics, category, spend)
 }
 
-const recordConditionMinimums = (metrics, expedition) => {
-  for (const key of ['vehicle', 'pa', 'instruments', 'stageGear']) {
-    const value = expedition.condition[key]
+const recordConditionMinimums = (metrics, state) => {
+  const vehicleCondition = state.player.van.condition
+  if (Number.isFinite(vehicleCondition)) {
+    metrics.conditionMinimums.vehicle = Math.min(
+      metrics.conditionMinimums.vehicle,
+      vehicleCondition
+    )
+  }
+
+  for (const key of ['pa', 'instruments', 'stageGear']) {
+    const value = state.expedition.condition[key]
     if (Number.isFinite(value)) {
       metrics.conditionMinimums[key] = Math.min(
         metrics.conditionMinimums[key],
@@ -701,7 +724,7 @@ Use them only after the owning transition, e.g.:
 const beforeRepairMoney = state.player.money
 state = gameReducer(state, createResolveExpeditionRepairAction(repairPayload))
 recordAppliedSpend(metrics, 'repair', beforeRepairMoney, state.player.money)
-recordConditionMinimums(metrics, state.expedition)
+recordConditionMinimums(metrics, state)
 
 const beforePressure = state.expedition.pressure
 state = gameReducer(state, pressureAction)
@@ -709,6 +732,8 @@ if (state.expedition.pressure !== beforePressure) {
   recordPressureSnapshot(metrics, state.expedition)
 }
 ```
+
+Call `recordConditionMinimums(metrics, state)` after every successful travel, gig-wear, insurance-rescue, and repair transition that can change either owner. Do not synthesize a `vehicle` property into `ExpeditionConditionState` merely for reporting.
 
 Ownership table:
 
@@ -723,7 +748,7 @@ Ownership table:
 | insurance claim | `insuranceClaimUsed` transitions `false -> true` |
 | starter perk | validated loadout is committed at `START_EXPEDITION` |
 | legendary unlock | completed finale persists a previously unowned `expedition.perk.legendary.*` marker |
-| condition minima | travel/gig/repair transition settles |
+| condition minima | travel/gig/repair/insurance transition settles; vehicle from `player.van.condition`, technical groups from `expedition.condition` |
 | defects/disabled assets | Condition reducer transition |
 | crew crisis/injury | Crew reducer/event settlement |
 | Heat/Exposure | pressure reducer transition |
@@ -1653,6 +1678,7 @@ G6 is complete only when all of the following are true:
 - Six canonical strategy profiles use production-valid loadout/region/tour ids.
 - Every profile has 2,000 calibration and 2,000 disjoint holdout runs.
 - Extraction, Condition, Crew, Pressure, Rival, Fog-of-War and obligation metrics are present and reconciled.
+- Vehicle-condition telemetry reads the canonical `player.van.condition` owner while technical Condition remains in `expedition.condition`.
 - No hard safety gate fails on calibration or holdout.
 - No profile materially dominates another by both `>=20%` secured reward and `>=5pp` lower failure in both calibration and holdout.
 - No Extract/Continue choice wins `>=90%` of paired states at every extraction window in both cohorts.
