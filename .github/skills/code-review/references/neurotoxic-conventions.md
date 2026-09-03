@@ -21,110 +21,110 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 
 ## 1. State Architecture
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| Action creator → reducer flow | **Critical** | All state mutations must go through a typed action creator dispatched to a reducer. No `setState` on game state, no direct object mutation outside a reducer. | `src/context/actionCreators.ts`, `src/context/actionTypes.ts` |
-| New actions update all three | **Critical** | Adding an action type requires: `actionTypes.ts` entry, `actionCreators.ts` creator, reducer handling. Missing any one = Critical. | `AGENTS.md §Architecture` |
-| Context action creators use canonical `Extract` return | **Important** | Every new/changed action creator under `src/context` must return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write an apparently equivalent action object return type. The explicit coupling keeps the canonical union narrowing with the reducer. | `src/context/AGENTS.md §Actions & Toasts` |
-| Creators sanitize, reducers clamp | **Important** | Action creators sanitize raw input payloads. Reducers are the final authority and re-clamp computed state. Sanitization in the wrong layer = Important. | `AGENTS.md §Architecture` |
-| No RNG in reducers | **Important** | Reducers must be pure. UUID generation and RNG calls belong in action creators. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| Toast IDs from deterministic helper | **Important** | `buildDeterministicToastId(prefix, state.toasts)` or a pre-generated payload ID — never `getSafeUUID()` inside a reducer. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| Domain logic stays in domain layer | **Important** | `questReducer.ts` is an integration point only. Quest logic lives in `src/domain/questLifecycle.ts`. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| Forbidden-key branch returns identical reference | **Critical** | Prototype-pollution rejection must `return state` (same reference), never `return { ...state }`. A spread still fails `reducerInvariants.test.js`. | `src/context/reducers/AGENTS.md §Load Sanitization` |
-| Minigame completion must not change `currentScene` | **Critical** | Completion reducers preserve `state.currentScene`. Navigation belongs to continuation callbacks. | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| Rule                                                   | Severity      | What to look for                                                                                                                                                                                                                                                          | Source                                                        |
+| ------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| Action creator → reducer flow                          | **Critical**  | All state mutations must go through a typed action creator dispatched to a reducer. No `setState` on game state, no direct object mutation outside a reducer.                                                                                                             | `src/context/actionCreators.ts`, `src/context/actionTypes.ts` |
+| New actions update all three                           | **Critical**  | Adding an action type requires: `actionTypes.ts` entry, `actionCreators.ts` creator, reducer handling. Missing any one = Critical.                                                                                                                                        | `AGENTS.md §Architecture`                                     |
+| Context action creators use canonical `Extract` return | **Important** | Every new/changed action creator under `src/context` must return `Extract<GameAction, { type: typeof ActionTypes.X }>`; do not hand-write an apparently equivalent action object return type. The explicit coupling keeps the canonical union narrowing with the reducer. | `src/context/AGENTS.md §Actions & Toasts`                     |
+| Creators sanitize, reducers clamp                      | **Important** | Action creators sanitize raw input payloads. Reducers are the final authority and re-clamp computed state. Sanitization in the wrong layer = Important.                                                                                                                   | `AGENTS.md §Architecture`                                     |
+| No RNG in reducers                                     | **Important** | Reducers must be pure. UUID generation and RNG calls belong in action creators.                                                                                                                                                                                           | `src/context/reducers/AGENTS.md §Reducer Flow`                |
+| Toast IDs from deterministic helper                    | **Important** | `buildDeterministicToastId(prefix, state.toasts)` or a pre-generated payload ID — never `getSafeUUID()` inside a reducer.                                                                                                                                                 | `src/context/reducers/AGENTS.md §Reducer Flow`                |
+| Domain logic stays in domain layer                     | **Important** | `questReducer.ts` is an integration point only. Quest logic lives in `src/domain/questLifecycle.ts`.                                                                                                                                                                      | `src/context/reducers/AGENTS.md §Reducer Flow`                |
+| Forbidden-key branch returns identical reference       | **Critical**  | Prototype-pollution rejection must `return state` (same reference), never `return { ...state }`. A spread still fails `reducerInvariants.test.js`.                                                                                                                        | `src/context/reducers/AGENTS.md §Load Sanitization`           |
+| Minigame completion must not change `currentScene`     | **Critical**  | Completion reducers preserve `state.currentScene`. Navigation belongs to continuation callbacks.                                                                                                                                                                          | `src/context/reducers/AGENTS.md §Reducer Flow`                |
 
 ---
 
 ## 2. Numeric Safety
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| `isFiniteNumber(val)` not `Number(val)` | **Important** | `Number()` silently accepts booleans, arrays, strings. Use `isFiniteNumber` from `src/utils/finiteNumber.ts`. | `src/utils/finiteNumber.ts:27` |
-| `finiteNumberOr(value, fallback)` before clamping | **Important** | For any persisted number arithmetic, wrap the stored addend with `finiteNumberOr`. `??` and `typeof value === 'number'` both pass `NaN`/`Infinity`. | `src/utils/finiteNumber.ts:16` |
-| `isFiniteNumber` in sanitizer paths | **Critical** | Sanitizers are the last line of defense before corrupt data reaches the state tree. Using `Number()` coercion here is Critical (vs Important elsewhere). | `src/context/reducers/AGENTS.md §Load Sanitization` |
-| `Number.isFinite` is acceptable in sanitizers | **n/a** | Sanitizer files may use `Number.isFinite` directly (standard JS). Not a violation. | `src/context/reducers/AGENTS.md §Load Sanitization` |
-| `WeakSet` for cycle safety in recursive utilities | **Important** | Recursive traversers/freezers/sanitizers need `WeakSet<object>` guards and must continue traversal through already-frozen parents. | `AGENTS.md §Architecture` |
-| Clamp probabilities to valid range | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| Rule                                              | Severity      | What to look for                                                                                                                                         | Source                                              |
+| ------------------------------------------------- | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `isFiniteNumber(val)` not `Number(val)`           | **Important** | `Number()` silently accepts booleans, arrays, strings. Use `isFiniteNumber` from `src/utils/finiteNumber.ts`.                                            | `src/utils/finiteNumber.ts:27`                      |
+| `finiteNumberOr(value, fallback)` before clamping | **Important** | For any persisted number arithmetic, wrap the stored addend with `finiteNumberOr`. `??` and `typeof value === 'number'` both pass `NaN`/`Infinity`.      | `src/utils/finiteNumber.ts:16`                      |
+| `isFiniteNumber` in sanitizer paths               | **Critical**  | Sanitizers are the last line of defense before corrupt data reaches the state tree. Using `Number()` coercion here is Critical (vs Important elsewhere). | `src/context/reducers/AGENTS.md §Load Sanitization` |
+| `Number.isFinite` is acceptable in sanitizers     | **n/a**       | Sanitizer files may use `Number.isFinite` directly (standard JS). Not a violation.                                                                       | `src/context/reducers/AGENTS.md §Load Sanitization` |
+| `WeakSet` for cycle safety in recursive utilities | **Important** | Recursive traversers/freezers/sanitizers need `WeakSet<object>` guards and must continue traversal through already-frozen parents.                       | `AGENTS.md §Architecture`                           |
+| Clamp probabilities to valid range                | **Important** | New probability fields in sanitizers must be clamped to `[0, 1]` (or narrower) — matches `plannedSuccessProbability` pattern.                            | `src/context/reducers/AGENTS.md §Long-Term Assets`  |
 
 ---
 
 ## 3. Timing and Clock
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| Gameplay timing via `audioEngine.getGigTimeMs()` | **Important** | Never call Tone.js time APIs directly for in-gig gameplay timing. | `src/utils/audio/audioEngine.ts` |
-| Non-gameplay time via `IClock` | **Important** | Timestamps, cooldowns, and persistence metadata use the injected `IClock` from `src/utils/clock.ts`. In components: `useClock()`. In pure helpers: `IClock` parameter defaulting to `systemClock`. | `src/utils/clock.ts` |
+| Rule                                             | Severity      | What to look for                                                                                                                                                                                   | Source                           |
+| ------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| Gameplay timing via `audioEngine.getGigTimeMs()` | **Important** | Never call Tone.js time APIs directly for in-gig gameplay timing.                                                                                                                                  | `src/utils/audio/audioEngine.ts` |
+| Non-gameplay time via `IClock`                   | **Important** | Timestamps, cooldowns, and persistence metadata use the injected `IClock` from `src/utils/clock.ts`. In components: `useClock()`. In pure helpers: `IClock` parameter defaulting to `systemClock`. | `src/utils/clock.ts`             |
 
 ---
 
 ## 4. Internationalization
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| Both locale files updated together | **Minor** | Any new user-facing string in `public/locales/en/<namespace>.json` needs a matching key in `public/locales/de/<namespace>.json`. | `public/locales/en/`, `public/locales/de/` |
-| Locale namespaces | **n/a** | `assets`, `chatter`, `economy`, `events`, `items`, `minigame`, `traits`, `ui`, `unlocks`, `venues` | `public/locales/en/` |
-| Currency via `formatCurrency` | **Important** | Currency shown in toast options dispatched from action creators/reducers must use `formatCurrency(value, i18n.language, signDisplay)` from `src/utils/numberUtils.ts`. | `src/utils/numberUtils.ts:74` |
+| Rule                               | Severity      | What to look for                                                                                                                                                       | Source                                     |
+| ---------------------------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ |
+| Both locale files updated together | **Minor**     | Any new user-facing string in `public/locales/en/<namespace>.json` needs a matching key in `public/locales/de/<namespace>.json`.                                       | `public/locales/en/`, `public/locales/de/` |
+| Locale namespaces                  | **n/a**       | `assets`, `chatter`, `economy`, `events`, `items`, `minigame`, `traits`, `ui`, `unlocks`, `venues`                                                                     | `public/locales/en/`                       |
+| Currency via `formatCurrency`      | **Important** | Currency shown in toast options dispatched from action creators/reducers must use `formatCurrency(value, i18n.language, signDisplay)` from `src/utils/numberUtils.ts`. | `src/utils/numberUtils.ts:74`              |
 
 ---
 
 ## 5. Visual / Color
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| No hardcoded hex in components | **Minor** | Use CSS variables (`var(--color-*)`) or `getPixiColorFromToken('--token-name')` from `src/components/stage/stageRenderUtils.ts`. | `AGENTS.md §TypeScript and Style` |
-| Brand hex fallbacks only from `brandColors.ts` | **Minor** | If a hex literal is truly needed as a fallback, it must come from `src/utils/brandColors.ts`. | `src/utils/brandColors.ts` |
-| No `.propTypes` | **Minor** | This codebase uses TypeScript/JSDoc typing. `.propTypes` must not be added. | `AGENTS.md §TypeScript and Style` |
+| Rule                                           | Severity  | What to look for                                                                                                                 | Source                            |
+| ---------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- |
+| No hardcoded hex in components                 | **Minor** | Use CSS variables (`var(--color-*)`) or `getPixiColorFromToken('--token-name')` from `src/components/stage/stageRenderUtils.ts`. | `AGENTS.md §TypeScript and Style` |
+| Brand hex fallbacks only from `brandColors.ts` | **Minor** | If a hex literal is truly needed as a fallback, it must come from `src/utils/brandColors.ts`.                                    | `src/utils/brandColors.ts`        |
+| No `.propTypes`                                | **Minor** | This codebase uses TypeScript/JSDoc typing. `.propTypes` must not be added.                                                      | `AGENTS.md §TypeScript and Style` |
 
 ---
 
 ## 6. TypeScript / CheckJS
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| No `@ts-nocheck` / `@ts-ignore` / `any` | **Important** | CheckJS is strict for `.js/.jsx`. These suppressions are forbidden. | `AGENTS.md §TypeScript and Style` |
-| `unknown` at boundaries | **Important** | Use `unknown` for untrusted storage/API/event/external input. Narrow with guards before use. | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
-| `Object.hasOwn()` for untrusted keys | **Important** | Do not use `in` or unguarded dynamic bracket access on untrusted objects. | `AGENTS.md §TypeScript and Style` |
-| Guard indexed/lookup reads | **Important** | Narrow array/object/map lookups before dereference when the key can miss. Do not hide a possible miss with `!` or a broad assertion. | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
-| Preserve literal action discriminants | **Important** | Keep action strings in the canonical `ActionTypes` `as const` object. Do not duplicate raw action strings or widen changed action types to plain `string`. | `src/context/actionTypes.ts`, `src/AGENTS.md §TypeScript` |
-| Reuse canonical shared contracts | **Important** | If a cross-module contract already exists in `src/types/**`, import it rather than creating a second shape that can drift. Escalate only when the duplicate can desynchronize behavior/contracts. | `src/AGENTS.md §State & Types`, `src/types/AGENTS.md` |
-| React 19 refs use standard `ref` props | **Minor** | New components accept `ref` as a normal prop; do not add `forwardRef` unless an existing compatibility boundary explicitly requires it. | `src/AGENTS.md §UI & Copy` |
-| Explicit return types on exported class members | **Important** | Public members/getters of exported classes must have explicit return type annotations. | `AGENTS.md §TypeScript and Style` |
-| Type-only imports | **Minor** | Imports used only as types must use `import type`. | `AGENTS.md §TypeScript and Style` |
-| `as const satisfies` is a preferred map/config pattern | **n/a** | For finite literal maps/configs, this pattern helps preserve literal inference and key coverage. Do not flag its absence unless the actual typing permits a concrete missing-key/contract bug. | `src/AGENTS.md §TypeScript` |
-| Conventional Commits | **Minor** | Commit messages must follow the `type(scope): message` format. This repo uses `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `ci`, `build`, `style`, `revert`, and others — flag only when the format itself is absent, not when an unfamiliar type is used. | `AGENTS.md §TypeScript and Style` |
+| Rule                                                   | Severity      | What to look for                                                                                                                                                                                                                                                          | Source                                                         |
+| ------------------------------------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| No `@ts-nocheck` / `@ts-ignore` / `any`                | **Important** | CheckJS is strict for `.js/.jsx`. These suppressions are forbidden.                                                                                                                                                                                                       | `AGENTS.md §TypeScript and Style`                              |
+| `unknown` at boundaries                                | **Important** | Use `unknown` for untrusted storage/API/event/external input. Narrow with guards before use.                                                                                                                                                                              | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
+| `Object.hasOwn()` for untrusted keys                   | **Important** | Do not use `in` or unguarded dynamic bracket access on untrusted objects.                                                                                                                                                                                                 | `AGENTS.md §TypeScript and Style`                              |
+| Guard indexed/lookup reads                             | **Important** | Narrow array/object/map lookups before dereference when the key can miss. Do not hide a possible miss with `!` or a broad assertion.                                                                                                                                      | `AGENTS.md §TypeScript and Style`, `src/AGENTS.md §TypeScript` |
+| Preserve literal action discriminants                  | **Important** | Keep action strings in the canonical `ActionTypes` `as const` object. Do not duplicate raw action strings or widen changed action types to plain `string`.                                                                                                                | `src/context/actionTypes.ts`, `src/AGENTS.md §TypeScript`      |
+| Reuse canonical shared contracts                       | **Important** | If a cross-module contract already exists in `src/types/**`, import it rather than creating a second shape that can drift. Escalate only when the duplicate can desynchronize behavior/contracts.                                                                         | `src/AGENTS.md §State & Types`, `src/types/AGENTS.md`          |
+| React 19 refs use standard `ref` props                 | **Minor**     | New components accept `ref` as a normal prop; do not add `forwardRef` unless an existing compatibility boundary explicitly requires it.                                                                                                                                   | `src/AGENTS.md §UI & Copy`                                     |
+| Explicit return types on exported class members        | **Important** | Public members/getters of exported classes must have explicit return type annotations.                                                                                                                                                                                    | `AGENTS.md §TypeScript and Style`                              |
+| Type-only imports                                      | **Minor**     | Imports used only as types must use `import type`.                                                                                                                                                                                                                        | `AGENTS.md §TypeScript and Style`                              |
+| `as const satisfies` is a preferred map/config pattern | **n/a**       | For finite literal maps/configs, this pattern helps preserve literal inference and key coverage. Do not flag its absence unless the actual typing permits a concrete missing-key/contract bug.                                                                            | `src/AGENTS.md §TypeScript`                                    |
+| Conventional Commits                                   | **Minor**     | Commit messages must follow the `type(scope): message` format. This repo uses `feat`, `fix`, `refactor`, `test`, `chore`, `docs`, `perf`, `ci`, `build`, `style`, `revert`, and others — flag only when the format itself is absent, not when an unfamiliar type is used. | `AGENTS.md §TypeScript and Style`                              |
 
 ---
 
 ## 7. Reducer-Specific Rules
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| Numeric payload rejection | **Important** | Reducers must reject/drop non-finite numbers with `Number.isFinite` or `finiteNumberOr` before clamping — not rely on clamps silently turning `NaN` into `0`. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| Quest events only on state change | **Important** | `QuestEvents.emit` must only fire when state actually changed. No-op dispatches must return original state without emitting. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| `fameLevel` derived alongside `fame` | **Important** | Never update `fameLevel` standalone. Always recompute via `calculateFameLevel` when `fame` changes. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| `assertNever` pattern is intentional | **n/a** | The `gameReducer` default branch uses `assertNever(action as never)`. The `as never` cast is deliberate (defense-in-depth). Do not flag as a bug. | `src/context/reducers/AGENTS.md §Reducer Flow` |
-| Contraband `activeContrabandEffects` — no dedup by `instanceId` | **Critical** | Must register exactly one entry per use. Deduping by `instanceId` leaks buffs permanently on expiry. | `src/context/reducers/AGENTS.md §Band Effects` |
+| Rule                                                            | Severity      | What to look for                                                                                                                                              | Source                                         |
+| --------------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------- |
+| Numeric payload rejection                                       | **Important** | Reducers must reject/drop non-finite numbers with `Number.isFinite` or `finiteNumberOr` before clamping — not rely on clamps silently turning `NaN` into `0`. | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| Quest events only on state change                               | **Important** | `QuestEvents.emit` must only fire when state actually changed. No-op dispatches must return original state without emitting.                                  | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| `fameLevel` derived alongside `fame`                            | **Important** | Never update `fameLevel` standalone. Always recompute via `calculateFameLevel` when `fame` changes.                                                           | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| `assertNever` pattern is intentional                            | **n/a**       | The `gameReducer` default branch uses `assertNever(action as never)`. The `as never` cast is deliberate (defense-in-depth). Do not flag as a bug.             | `src/context/reducers/AGENTS.md §Reducer Flow` |
+| Contraband `activeContrabandEffects` — no dedup by `instanceId` | **Critical**  | Must register exactly one entry per use. Deduping by `instanceId` leaks buffs permanently on expiry.                                                          | `src/context/reducers/AGENTS.md §Band Effects` |
 
 ---
 
 ## 8. Asset and Module System
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| `CHASSIS_CONFIG` and `MODULE_REGISTRY` are sources of truth | **Important** | Asset reducers read config directly. `buildDiyTier` belongs in `assetConfig.ts` only. | `AGENTS.md §Architecture` |
-| Tick functions are the daily authority | **Critical** | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| `handleInstallModule` charges only on slot transition | **Critical** | Cost is deducted only when a slot transitions `null → module`. Do not remove the stale-replay guard. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| Child modules must be uninstalled first | **Important** | `handleRemoveModule` rejects removal if any slot added by the module still has an `installedModuleId`. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
-| Loan-mode chassis payload requires valid `loanProfileId` | **Critical** | Missing/invalid `loanProfileId` → return state unchanged (defense against free-chassis exploits). | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| Rule                                                        | Severity      | What to look for                                                                                                                     | Source                                             |
+| ----------------------------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ | -------------------------------------------------- |
+| `CHASSIS_CONFIG` and `MODULE_REGISTRY` are sources of truth | **Important** | Asset reducers read config directly. `buildDiyTier` belongs in `assetConfig.ts` only.                                                | `AGENTS.md §Architecture`                          |
+| Tick functions are the daily authority                      | **Critical**  | `processAssetTick → processLiabilityTick → processCrowdfundTick → rollAssetRiskEvents` — do not add parallel action paths for these. | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| `handleInstallModule` charges only on slot transition       | **Critical**  | Cost is deducted only when a slot transitions `null → module`. Do not remove the stale-replay guard.                                 | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| Child modules must be uninstalled first                     | **Important** | `handleRemoveModule` rejects removal if any slot added by the module still has an `installedModuleId`.                               | `src/context/reducers/AGENTS.md §Long-Term Assets` |
+| Loan-mode chassis payload requires valid `loanProfileId`    | **Critical**  | Missing/invalid `loanProfileId` → return state unchanged (defense against free-chassis exploits).                                    | `src/context/reducers/AGENTS.md §Long-Term Assets` |
 
 ---
 
 ## 9. Unlock System
 
-| Rule | Severity | What to look for | Source |
-|------|----------|-----------------|--------|
-| Persistence in `unlockManager.ts` only | **Important** | `src/utils/unlockManager.ts` owns unlock persistence. Do not add persistence logic elsewhere. | `src/utils/unlockManager.ts` |
-| Eligibility in `unlockCheck.ts` only | **Important** | `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not duplicate eligibility logic in reducers or components. | `src/utils/unlockCheck.ts` |
+| Rule                                   | Severity      | What to look for                                                                                                      | Source                       |
+| -------------------------------------- | ------------- | --------------------------------------------------------------------------------------------------------------------- | ---------------------------- |
+| Persistence in `unlockManager.ts` only | **Important** | `src/utils/unlockManager.ts` owns unlock persistence. Do not add persistence logic elsewhere.                         | `src/utils/unlockManager.ts` |
+| Eligibility in `unlockCheck.ts` only   | **Important** | `src/utils/unlockCheck.ts` owns eligibility evaluation. Do not duplicate eligibility logic in reducers or components. | `src/utils/unlockCheck.ts`   |
 
 ---
 
@@ -132,16 +132,16 @@ repo-specific rules with severity and canonical source paths. Violations are bug
 
 These are easy to get wrong and worth checking explicitly in any PR touching the named areas:
 
-| Gotcha | Correct pattern | Wrong pattern |
-|--------|----------------|---------------|
-| Location / city derivation | `getRegionKeyForLocation(player.location)` from `src/utils/mapUtils.ts:144` | `player.location` directly in region-keyed state |
-| `currentGig` is a venue object | `currentGig` holds the venue. Do not use it as a city key. | `state.currentGig` used as a location string |
-| `START_GIG` side effects | Resets `gigModifiers` AND minigame state. Completion reducers must not navigate. | Reducer calling `navigate()` or changing `currentScene` on completion |
-| `lastGigStats.score` is raw | Raw score is in thousands. Outcome logic uses `accuracy` (0–100) + `failed` flag. | Comparing raw score to percentage thresholds |
-| `advanceDay` | Use typed `advanceDay(state)` from `src/context/actionCreators.ts:1226`. | Dispatching `createAdvanceDayAction()` without payload |
-| Bankruptcy check | Uses `getTotalDailyObligations(state)` from `src/utils/assetSelectors/stateAggregation.ts:75`. | Manual obligation sum in reducer |
-| Contraband duration | Measured in days, decremented on `ADVANCE_DAY` only — never per-gig. | Decrementing duration on gig events |
-| Stash hydration spread order | `{ ...itemObj, ...baseItem }` — base definition fields always win. | `{ ...baseItem, ...itemObj }` — save data overrides definition |
+| Gotcha                         | Correct pattern                                                                                | Wrong pattern                                                         |
+| ------------------------------ | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| Location / city derivation     | `getRegionKeyForLocation(player.location)` from `src/utils/mapUtils.ts:144`                    | `player.location` directly in region-keyed state                      |
+| `currentGig` is a venue object | `currentGig` holds the venue. Do not use it as a city key.                                     | `state.currentGig` used as a location string                          |
+| `START_GIG` side effects       | Resets `gigModifiers` AND minigame state. Completion reducers must not navigate.               | Reducer calling `navigate()` or changing `currentScene` on completion |
+| `lastGigStats.score` is raw    | Raw score is in thousands. Outcome logic uses `accuracy` (0–100) + `failed` flag.              | Comparing raw score to percentage thresholds                          |
+| `advanceDay`                   | Use typed `advanceDay(state)` from `src/context/actionCreators.ts:1226`.                       | Dispatching `createAdvanceDayAction()` without payload                |
+| Bankruptcy check               | Uses `getTotalDailyObligations(state)` from `src/utils/assetSelectors/stateAggregation.ts:75`. | Manual obligation sum in reducer                                      |
+| Contraband duration            | Measured in days, decremented on `ADVANCE_DAY` only — never per-gig.                           | Decrementing duration on gig events                                   |
+| Stash hydration spread order   | `{ ...itemObj, ...baseItem }` — base definition fields always win.                             | `{ ...baseItem, ...itemObj }` — save data overrides definition        |
 
 ---
 

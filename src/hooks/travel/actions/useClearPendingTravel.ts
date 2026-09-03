@@ -11,7 +11,9 @@ import type { TravelActionsParams } from '../types'
  * @param params - The destructured refs and setters required for clearing the pending travel state.
  * @returns A stable callback function that executes the clear operation when invoked.
  */
-export const useClearPendingTravel = (params: Pick<TravelActionsParams, 'refs' | 'setters'>) => {
+export const useClearPendingTravel = (
+  params: Pick<TravelActionsParams, 'refs' | 'setters'>
+) => {
   const { refs, setters } = params
   return useCallback(() => {
     if (refs.pendingTimeoutRef.current) {

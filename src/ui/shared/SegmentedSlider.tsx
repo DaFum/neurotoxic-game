@@ -86,6 +86,10 @@ export const SegmentedSlider = memo(function SegmentedSlider({
         step={inputStep}
         value={inputValue}
         onChange={onInputChange}
+        aria-orientation='horizontal'
+        aria-valuenow={inputValue}
+        aria-valuemin={inputMin}
+        aria-valuemax={inputMax}
         aria-valuetext={valueLabel}
         className='sr-only peer'
       />

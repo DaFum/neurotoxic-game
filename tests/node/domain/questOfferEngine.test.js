@@ -124,7 +124,8 @@ test('QuestOfferEngine', async t => {
     // Quest quest_viral_dance has condition: { social: { maxTiktok: 4999 } }.
     // If maxTiktok was NaN (e.g. from non-finite state deserialization or dynamic condition construction),
     // isFiniteNumber(social.maxTiktok) evaluates to false, skipping the check rather than failing tiktok > NaN.
-    const originalMaxTiktok = (QUEST_REGISTRY.quest_viral_dance.offer.condition.social).maxTiktok
+    const originalMaxTiktok =
+      QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok
     try {
       QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok = NaN
       assert.equal(
@@ -138,7 +139,8 @@ test('QuestOfferEngine', async t => {
         true
       )
     } finally {
-      QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok = originalMaxTiktok
+      QUEST_REGISTRY.quest_viral_dance.offer.condition.social.maxTiktok =
+        originalMaxTiktok
     }
   })
 })
