@@ -1297,7 +1297,7 @@ Assert `KNOWN_EVENT_IDS` includes:
 [
   'expedition_crew_tech_breakdown',
   'expedition_crew_driver_exhausted',
-  'expedition_crew_conflict'
+  'expedition_crew_conflict_mika_tom'
 ]
 ```
 
@@ -1376,7 +1376,7 @@ Register the new array in the existing validated registry:
 
 ```ts
 // src/data/events/index.ts
-import { CREW_EVENTS } from './crew'
+import { EXPEDITION_CREW_EVENTS } from './crew'
 
 export const ALL_RAW_EVENTS = [
   ...TRANSPORT_EVENTS,
@@ -1388,7 +1388,7 @@ export const ALL_RAW_EVENTS = [
   ...CONSEQUENCE_EVENTS,
   ...RELATIONSHIP_EVENTS,
   ...QUEST_EVENTS,
-  ...CREW_EVENTS
+  ...EXPEDITION_CREW_EVENTS
 ]
 ```
 
