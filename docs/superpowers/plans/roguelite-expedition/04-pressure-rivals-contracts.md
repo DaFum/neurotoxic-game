@@ -1728,9 +1728,9 @@ pnpm run test:node
 
 Expected: new report assertions fail.
 
-- [ ] **Step 3: Import production pressure/contract/director/finale helpers**
+- [ ] **Step 3: Import the production helpers owned by the earlier G4 tasks**
 
-Import the canonical production helpers directly in `scripts/game-balance-simulation.mjs`:
+Import the exact canonical exports directly in `scripts/game-balance-simulation.mjs`:
 
 ```js
 import {
@@ -1739,19 +1739,23 @@ import {
   getExposureBand
 } from '../src/domain/expedition/pressure.ts'
 import {
-  evaluateObligation,
-  getObligationProgress
+  createObligationFromTemplate,
+  recordObligationGig,
+  recordObligationArrival,
+  evaluateObligationAtFinale
 } from '../src/domain/expedition/contracts.ts'
 import {
   getPressureEventChanceMultiplier
 } from '../src/domain/expedition/pressureDirector.ts'
 import {
-  resolveExpeditionRivalOutcome
+  applyRivalOutcome
 } from '../src/domain/expedition/rivals.ts'
 import {
   resolveExpeditionFinaleType
 } from '../src/domain/expedition/finale.ts'
 ```
+
+The simulator must advance the same production contracts rather than inventing simulator-only aliases: create obligations with `createObligationFromTemplate`, advance gig and arrival progress with `recordObligationGig` / `recordObligationArrival`, evaluate terminal contract state with `evaluateObligationAtFinale`, and update persistent rival history with `applyRivalOutcome`. Do not add `evaluateObligation`, `getObligationProgress`, `resolveExpeditionRivalOutcome`, or duplicated formulas unless the owning production task first defines and tests those names as the canonical API.
 
 Add those five domain files plus `src/data/expedition/contracts.ts`, `src/data/expedition/runTraits.ts`, `src/domain/expedition/runDrafts.ts`, `src/data/events/pressure.ts`, and `src/data/events/rival.ts` to the existing frozen `BALANCE_SOURCE_FILES` array in `scripts/utils/balance-report-metadata.mjs`. The simulator calls `getPressureEventChanceMultiplier`; it must not duplicate the director weighting formula.
 
