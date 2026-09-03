@@ -1145,20 +1145,41 @@ if (perk && !isExpeditionCapabilityUnlocked(state.unlocks, perk.unlockId)) {
 
 Add sanitizer coverage so an unknown persisted `starterPerkId` becomes `null`; never coerce arbitrary values to strings.
 
-- [ ] **Step 6: Materialize only one-time starting effects at `START_EXPEDITION`**
+- [ ] **Step 6: Extend the G2 cargo materialization boundary for one-time starter effects**
 
-The reducer may materialize only stateful starting resources; multiplier effects stay pure and are recomputed by their owning helpers:
+G2 Task 4 owns the only `ExpeditionCargoLoadout -> ExpeditionCargoState` conversion. G5 must not spread raw loadout-only keys (`merchSlots`, `contrabandSlots`) into active run state. In the loadout validator, materialize first, apply the prospective starter resource, and capacity-check the resulting **run-state** cargo against the selected chassis:
+
+```ts
+const perkProfile = getStarterPerkProfile(candidate.starterPerkId)
+const baseRunCargo = materializeExpeditionCargo(candidate.cargo)
+const expandedRunCargo = {
+  ...baseRunCargo,
+  spareParts: baseRunCargo.spareParts + perkProfile.startingSpareParts
+}
+const vehicle = getExpeditionVehicleState(
+  state,
+  candidate.activeTourbusAssetId
+)
+const capacity = getExpeditionCargoCapacity(vehicle.cargoCapacityBonus)
+
+if (!canFitExpeditionCargo(expandedRunCargo, capacity)) {
+  return { valid: false, reason: 'cargo_over_capacity' }
+}
+```
+
+At the already-owned `START_EXPEDITION` reducer seam, materialize the validated loadout again and apply only the one-time stateful perk additions:
 
 ```ts
 const perkProfile = getStarterPerkProfile(payload.loadout.starterPerkId)
+const baseRunCargo = materializeExpeditionCargo(payload.loadout.cargo)
 const cargo = {
-  ...payload.loadout.cargo,
-  spareParts: payload.loadout.cargo.spareParts + perkProfile.startingSpareParts
+  ...baseRunCargo,
+  spareParts: baseRunCargo.spareParts + perkProfile.startingSpareParts
 }
 const heat = clampExpeditionHeat(perkProfile.startingHeat)
 ```
 
-Validate cargo capacity **after** starter perk expansion. If `mechanic_kit` would exceed the selected chassis capacity, `validateExpeditionLoadout` must reject the loadout instead of silently dropping the bonus part.
+Multiplier effects stay pure and are recomputed by their owning helpers. Add/keep a regression assertion that `mechanic_kit` rejects a loadout when its extra spare part would exceed the selected chassis capacity, and another that successful start state still contains `merchSlotsUsed` / `contrabandSlotsUsed` rather than the G1 loadout field names.
 
 - [ ] **Step 7: Compose perk effects at the existing owning helpers**
 
