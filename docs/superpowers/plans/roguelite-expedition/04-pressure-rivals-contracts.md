@@ -697,7 +697,6 @@ pnpm exec vitest run tests/ui/useDealHandlers.test.jsx tests/ui/postGigHandlerLo
 pnpm run typecheck:core
 ```
 
-
 Expected: PASS; no payout duplication.
 
 - [ ] **Step 5: Commit**
@@ -1104,15 +1103,15 @@ Add one ordinary event and map only the battle choice into typed Expedition inte
 export const RIVAL_EVENTS = [{
   id: 'expedition_rival_double_booked', category: 'band', trigger: 'random', chance: 0, pressureTags: ['rival'],
   options: [
-    { id: 'battle', effect: { type: 'expedition', delta: { heat: 3 } } },
+    { id: 'battle', effect: { type: 'expedition', delta: { heat: 3, rivalBattlePending: true } } },
     { id: 'split_bill', effect: { type: 'resource', resource: 'money', value: -500 } },
-    { id: 'sabotage', effect: { type: 'expedition', delta: { heat: 25, condition: { pa: 5 } } } },
+    { id: 'sabotage', effect: { type: 'expedition', delta: { heat: 25, condition: { pa: -5 } } } },
     { id: 'withdraw', effect: { type: 'resource', resource: 'fame', value: -300 } }
   ]
 }]
 ```
 
-Add `rivalBattlePending: boolean` to run state (default/sanitizer included). The event-resolution callback dispatches `setRivalBattlePending(true)` only for choice `battle`. The existing pre-gig path consumes that flag into a rival gig modifier; guarded post-gig resolution records the rival outcome and clears the flag. Split/Sabotage/Withdraw dispatch the corresponding persistent rival outcome once. No second modal/event engine is introduced.
+`rivalBattlePending` and its typed setter action were defined in G3 Task 9. The `battle` event delta above sets the declarative intent; `eventResolver` converts that field into `SET_RIVAL_BATTLE_PENDING(true)`. The existing pre-gig path consumes the committed flag into a rival gig modifier; guarded post-gig resolution records the rival outcome and dispatches the same typed setter with `false`. Split/Sabotage/Withdraw dispatch the corresponding persistent rival outcome once. `condition` is a signed delta, so sabotage uses `pa: -5` to damage the PA. No second modal/event engine is introduced.
 
 - [ ] **Step 3: Remove duplicate toast-only semantics for Expedition**
 
