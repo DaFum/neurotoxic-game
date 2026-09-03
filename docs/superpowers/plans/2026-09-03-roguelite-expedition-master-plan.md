@@ -98,6 +98,10 @@ The following contracts are non-negotiable across the child plans:
 - Unlock-set purchases use a persisted debit + pending journal as the durability barrier **before** `unlockManager` writes the separate set marker. Recovery handles pending-without-marker and pending-with-marker states without a free unlock or double charge.
 - Crew registry ids from actions/persistence are checked with `Object.hasOwn`, and Career reducers independently reject non-finite deltas plus normalize persisted numeric addends with `finiteNumberOr`.
 - `festival` is a region id, never a tour type id; the six tour ids are `standard`, `blitz`, `underground`, `corporate`, `rival_hunt`, and `survival`.
+- `RECORD_EXPEDITION_CAREER_RESULT` has one contract owned by G5 Task 2: stable `runId`, finalized outcome/region, canonical token reward, and `settledRunIds` idempotence. Its root reducer revalidates that `runId`, outcome and region still match the currently finalized Expedition before minting progress. Run Summary consumes that contract and never redefines settlement or rank math.
+- Declarative `{ type: 'expedition' }` effects are established in G2 Task 10 through `eventEffectHandlers.ts -> EventDelta.expedition -> eventResolver.ts -> APPLY_EXPEDITION_EVENT_DELTA`. G3 Task 9 extends that one path with crew stress and explicit Rival Battle intent. Generic `APPLY_EVENT_DELTA` / `src/utils/gameState/delta.ts` never silently owns Expedition state.
+- Relationship actions carry two crew ids, not a prebuilt pair key. The Career reducer revalidates both ids and derives the canonical key before any persisted write.
+- Every focused TDD command in the plan must name a file that exists before the task starts (or a file the immediately preceding step explicitly creates); a red step must fail on the new assertion, never on module/file resolution.
 
 ---
 
@@ -115,9 +119,9 @@ Foundation: state + saves + lifecycle primitives
         +--------------------+
         |                    |
         v                    v
-2. Condition/Repairs/Cargo   3. Crew/Stress/Relationships
+2. Condition/Repairs/Cargo   3. Crew/Stress/Relationships Tasks 1-8
         |                    |
-        +---------+----------+
+        +-------> G3 Tasks 9-10 <+
                   |
                   v
 4. Pressure/Rivals/Contracts/Social/Finales
