@@ -202,23 +202,38 @@ git commit -m "feat(expedition): add career stats and HQ facilities"
 
 ---
 
-### Task 2: Define Rank Progression From Mixed Career Achievements
+### Task 2: Define One Canonical, Idempotent Career Settlement Contract
 
 **Files:**
 - Create: `src/domain/expedition/career.ts`
+- Modify: `src/context/actionTypes.ts`
+- Modify: `src/types/actions.d.ts`
+- Modify: `src/types/game.d.ts`
 - Modify: `src/context/careerActionCreators.ts`
 - Modify: `src/context/reducers/careerReducer.ts`
+- Modify: `src/context/useCareerDispatchActions.ts`
+- Modify: `src/context/gameReducer.ts`
 - Test: `tests/node/expeditionCareer.test.js`
+- Test: `tests/node/actionCreatorSerialization.test.js`
 
-- [ ] **Step 1: Add failing rank tests**
+This task is the **only owner** of `RECORD_EXPEDITION_CAREER_RESULT`. Later Run Summary work may invoke this contract but must not redefine its payload, replay marker, reward math, or rank update path.
+
+- [ ] **Step 1: Add failing rank and replay-safety tests**
 
 ```js
+import test from 'node:test'
+import assert from 'node:assert/strict'
 import {
+  applyCareerOutcome,
   calculateCareerRank,
   getRunCareerReward
 } from '../../src/domain/expedition/career.ts'
+import { createRecordExpeditionCareerResultAction } from '../../src/context/careerActionCreators.ts'
+import { gameReducer } from '../../src/context/gameReducer.ts'
+import { createInitialState } from '../../src/context/initialState.ts'
+import { ActionTypes } from '../../src/context/actionTypes.ts'
 
-test('rank cannot be farmed from fame alone', () => {
+test('rank cannot be farmed from fame or one counter alone', () => {
   assert.equal(calculateCareerRank({
     successfulExtractions: 0,
     finaleCompletions: 0,
@@ -245,18 +260,94 @@ test('mixed accomplishments advance rank', () => {
   }), 'touring_force')
 })
 
-test('run career reward favors completion but gives extraction progress', () => {
+test('run rewards are canonical by outcome', () => {
   assert.deepEqual(getRunCareerReward('extracted'), { tourTokens: 1 })
   assert.deepEqual(getRunCareerReward('completed'), { tourTokens: 3 })
   assert.deepEqual(getRunCareerReward('failed'), { tourTokens: 0 })
 })
+
+test('same finalized run settles exactly once', () => {
+  const initial = createInitialState()
+  const finalized = {
+    ...initial,
+    expedition: {
+      ...initial.expedition,
+      runId: '11111111-1111-4111-8111-111111111111',
+      loadout: { ...initial.expedition.loadout, regionId: 'home' },
+      outcome: {
+        kind: 'completed', reason: 'finale', retentionRate: 1,
+        finalMoney: initial.player.money, finalFame: initial.player.fame
+      },
+      status: 'completed'
+    }
+  }
+  const action = createRecordExpeditionCareerResultAction(finalized)
+  const once = gameReducer(finalized, action)
+  const twice = gameReducer(once, action)
+  assert.equal(once.career.tourTokens, 3)
+  assert.strictEqual(twice, once)
+})
+
+test('direct reducer payload cannot mint a result for a different or unfinished run', () => {
+  const initial = createInitialState()
+  const forged = gameReducer(initial, {
+    type: ActionTypes.RECORD_EXPEDITION_CAREER_RESULT,
+    payload: {
+      runId: '22222222-2222-4222-8222-222222222222',
+      outcome: 'completed',
+      regionId: 'home',
+      tourTokensEarned: 3
+    }
+  })
+  assert.strictEqual(forged, initial)
+})
+
+test('direct reducer payload cannot choose a non-canonical token award', () => {
+  const initial = createInitialState()
+  const finalized = {
+    ...initial,
+    expedition: {
+      ...initial.expedition,
+      runId: '22222222-2222-4222-8222-222222222222',
+      status: 'completed',
+      loadout: { ...initial.expedition.loadout, regionId: 'home' },
+      outcome: {
+        kind: 'completed', reason: 'finale', retentionRate: 1,
+        finalMoney: initial.player.money, finalFame: initial.player.fame
+      }
+    }
+  }
+  const malformed = gameReducer(finalized, {
+    type: ActionTypes.RECORD_EXPEDITION_CAREER_RESULT,
+    payload: {
+      runId: finalized.expedition.runId,
+      outcome: 'completed',
+      regionId: 'home',
+      tourTokensEarned: 999
+    }
+  })
+  assert.strictEqual(malformed, finalized)
+})
 ```
 
-- [ ] **Step 2: Implement exact rank thresholds**
+- [ ] **Step 2: Implement exact rank/reward helpers and the single outcome transition**
 
-Use ordered requirements:
+`src/domain/expedition/career.ts` owns every calculation used by the reducer:
 
 ```ts
+import type {
+  CareerRivalHistory,
+  CareerState,
+  ExpeditionCareerRankId,
+  ExpeditionCareerStats,
+  RecordExpeditionCareerResultPayload
+} from '../../types'
+import { finiteNumberOr } from '../../utils/gameState'
+
+export interface CareerRankInput extends ExpeditionCareerStats {
+  rivalMilestones: number
+}
+
 const RANK_REQUIREMENTS = [
   { id: 'cult_legend', extractions: 30, finales: 20, regions: 4, rivals: 4 },
   { id: 'headliner', extractions: 24, finales: 14, regions: 4, rivals: 3 },
@@ -265,39 +356,229 @@ const RANK_REQUIREMENTS = [
   { id: 'underground_act', extractions: 5, finales: 2, regions: 1, rivals: 0 },
   { id: 'local_noise', extractions: 3, finales: 1, regions: 1, rivals: 0 }
 ] as const
-```
 
-A region counts when `regionsCompleted[id] > 0`. Rival milestones count persistent rivals at `rival`/`nemesis`/`respect`/`alliance` with encounterCount `>=3`.
+export const calculateCareerRank = (
+  input: CareerRankInput
+): ExpeditionCareerRankId => {
+  const completedRegionCount = Object.values(input.regionsCompleted)
+    .filter(value => finiteNumberOr(value, 0) > 0).length
+  return RANK_REQUIREMENTS.find(requirement =>
+    input.successfulExtractions >= requirement.extractions &&
+    input.finaleCompletions >= requirement.finales &&
+    completedRegionCount >= requirement.regions &&
+    input.rivalMilestones >= requirement.rivals
+  )?.id ?? 'unknown'
+}
 
-- [ ] **Step 3: Add `RECORD_EXPEDITION_CAREER_RESULT` action**
+export const getRunCareerReward = (
+  outcome: RecordExpeditionCareerResultPayload['outcome']
+): { tourTokens: number } => ({
+  tourTokens: outcome === 'completed' ? 3 : outcome === 'extracted' ? 1 : 0
+})
 
-Payload is derived from `expedition.outcome` and current region:
+export const countCareerRivalMilestones = (
+  rivals: Record<string, CareerRivalHistory>
+): number => Object.values(rivals).filter(rival =>
+  ['rival', 'nemesis', 'respect', 'alliance'].includes(rival.relationship) &&
+  finiteNumberOr(rival.encounterCount, 0) >= 3
+).length
 
-```ts
-export interface RecordExpeditionCareerResultPayload {
-  outcome: 'extracted' | 'completed' | 'failed'
-  regionId: string
-  tourTokens: number
-  nextRankId: ExpeditionCareerRankId
+const normalizeStats = (stats: ExpeditionCareerStats): ExpeditionCareerStats => ({
+  successfulExtractions: Math.max(0, Math.trunc(finiteNumberOr(stats.successfulExtractions, 0))),
+  finaleCompletions: Math.max(0, Math.trunc(finiteNumberOr(stats.finaleCompletions, 0))),
+  failedRuns: Math.max(0, Math.trunc(finiteNumberOr(stats.failedRuns, 0))),
+  regionsCompleted: Object.fromEntries(
+    Object.entries(stats.regionsCompleted ?? {})
+      .filter(([key]) => key.length > 0)
+      .map(([key, value]) => [key, Math.max(0, Math.trunc(finiteNumberOr(value, 0)))])
+  )
+})
+
+export const applyCareerOutcome = (
+  state: CareerState,
+  payload: Pick<RecordExpeditionCareerResultPayload, 'outcome' | 'regionId'>
+): CareerState => {
+  const previous = normalizeStats(state.stats)
+  const regionsCompleted = { ...previous.regionsCompleted }
+
+  if (payload.outcome === 'completed') {
+    regionsCompleted[payload.regionId] =
+      Math.max(0, Math.trunc(finiteNumberOr(regionsCompleted[payload.regionId], 0))) + 1
+  }
+
+  // A completed finale also secures the run, so it counts as a successful
+  // extraction in addition to its separate finale-completion counter.
+  const nextStats: ExpeditionCareerStats = {
+    successfulExtractions:
+      previous.successfulExtractions + (payload.outcome === 'failed' ? 0 : 1),
+    finaleCompletions:
+      previous.finaleCompletions + (payload.outcome === 'completed' ? 1 : 0),
+    failedRuns: previous.failedRuns + (payload.outcome === 'failed' ? 1 : 0),
+    regionsCompleted
+  }
+  const nextRankId = calculateCareerRank({
+    ...nextStats,
+    rivalMilestones: countCareerRivalMilestones(state.rivalHistoryById)
+  })
+
+  return {
+    ...state,
+    stats: nextStats,
+    rankId: nextRankId,
+    ascensionUnlocked: state.ascensionUnlocked || nextRankId === 'cult_legend'
+  }
 }
 ```
 
-Reducer increments one matching counter, region completion only for `completed`, adds Tour Tokens, and sets calculated rank. Replay is prevented by adding `careerResultRecorded: boolean` to `ExpeditionOutcome` or a top-level settlement marker; reuse the same idempotence pattern as Extraction.
+This is the only rank update path. Task 12 must not recalculate or set `nextRankId` in UI code.
 
-- [ ] **Step 4: Run tests**
+- [ ] **Step 3: Add the final action payload and derive it only from finalized Expedition state**
+
+Add `RECORD_EXPEDITION_CAREER_RESULT` to `ActionTypes` and define in `src/types/actions.d.ts`:
+
+```ts
+export interface RecordExpeditionCareerResultPayload {
+  runId: string
+  outcome: 'extracted' | 'completed' | 'failed'
+  regionId: string
+  tourTokensEarned: number
+}
+```
+
+Add the matching `Action<...>` member to `GameAction` in `src/types/game.d.ts`.
+
+`src/context/careerActionCreators.ts` does not accept a token amount from UI code:
+
+```ts
+import type {
+  GameAction,
+  GameState,
+  RecordExpeditionCareerResultPayload
+} from '../types'
+import { ActionTypes } from './actionTypes'
+import { StateError } from '../utils/errorHandler'
+import { getRunCareerReward } from '../domain/expedition/career'
+
+export const createRecordExpeditionCareerResultAction = (
+  state: GameState
+): Extract<GameAction, { type: typeof ActionTypes.RECORD_EXPEDITION_CAREER_RESULT }> => {
+  const runId = state.expedition.runId
+  const outcome = state.expedition.outcome?.kind
+  const regionId = state.expedition.loadout.regionId
+  if (
+    typeof runId !== 'string' ||
+    runId.length === 0 ||
+    runId.length > 128 ||
+    !['extracted', 'completed', 'failed'].includes(outcome ?? '') ||
+    typeof regionId !== 'string' ||
+    regionId.length === 0
+  ) {
+    throw new StateError('Finalized expedition is missing a valid career-settlement identity')
+  }
+  const canonicalOutcome = outcome as RecordExpeditionCareerResultPayload['outcome']
+  return {
+    type: ActionTypes.RECORD_EXPEDITION_CAREER_RESULT,
+    payload: {
+      runId,
+      outcome: canonicalOutcome,
+      regionId,
+      tourTokensEarned: getRunCareerReward(canonicalOutcome).tourTokens
+    }
+  }
+}
+```
+
+- [ ] **Step 4: Make the reducer authoritative and idempotent by `settledRunIds`**
+
+`src/context/reducers/careerReducer.ts` independently checks identity, token reward, region key, **and that the payload still matches the currently finalized Expedition**. Keep this handler on the root `GameState` so the reducer can enforce that trust boundary instead of trusting the action creator:
+
+```ts
+import type { GameState, RecordExpeditionCareerResultPayload } from '../../types'
+import { applyCareerOutcome, getRunCareerReward } from '../../domain/expedition/career'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/gameState'
+import { isForbiddenKey } from '../../utils/objectUtils'
+
+export const handleRecordExpeditionCareerResult = (
+  state: GameState,
+  payload: RecordExpeditionCareerResultPayload
+): GameState => {
+  const settledRunIds = Array.isArray(state.career.settledRunIds)
+    ? state.career.settledRunIds
+        .filter(id => typeof id === 'string' && id.length > 0 && id.length <= 128)
+        .slice(-64)
+    : []
+  const finalizedOutcome = state.expedition.outcome?.kind
+  const finalizedRegionId = state.expedition.loadout.regionId
+
+  if (
+    typeof payload.runId !== 'string' ||
+    payload.runId.length === 0 ||
+    payload.runId.length > 128 ||
+    payload.runId !== state.expedition.runId ||
+    !['extracted', 'completed', 'failed'].includes(payload.outcome) ||
+    payload.outcome !== finalizedOutcome ||
+    state.expedition.status !== finalizedOutcome ||
+    typeof payload.regionId !== 'string' ||
+    payload.regionId.length === 0 ||
+    payload.regionId !== finalizedRegionId ||
+    isForbiddenKey(payload.regionId) ||
+    !isFiniteNumber(payload.tourTokensEarned) ||
+    !Number.isInteger(payload.tourTokensEarned) ||
+    settledRunIds.includes(payload.runId)
+  ) {
+    return state
+  }
+
+  const canonicalTokens = getRunCareerReward(payload.outcome).tourTokens
+  if (payload.tourTokensEarned !== canonicalTokens) return state
+
+  const progressedCareer = applyCareerOutcome(state.career, payload)
+  const safeTokens = Math.max(
+    0,
+    Math.trunc(finiteNumberOr(state.career.tourTokens, 0))
+  )
+  return {
+    ...state,
+    career: {
+      ...progressedCareer,
+      settledRunIds: [...settledRunIds, payload.runId].slice(-64),
+      tourTokens: safeTokens + canonicalTokens
+    }
+  }
+}
+```
+
+Route `handleRecordExpeditionCareerResult` directly in `gameReducer`. `careerSanitizers.ts` from Task 1 remains the load boundary for `settledRunIds`; the root reducer above is the defense-in-depth gate for malformed direct actions, stale/replayed results, mismatched finalized runs, and corrupted numeric addends.
+
+- [ ] **Step 5: Expose one dispatch helper and cover serialization**
+
+`src/context/useCareerDispatchActions.ts` exposes only:
+
+```ts
+const recordExpeditionCareerResult = useCallback(() => {
+  dispatch(createRecordExpeditionCareerResultAction(stateRef.current))
+}, [dispatch, stateRef])
+```
+
+Add the new creator to `tests/node/actionCreatorSerialization.test.js`. No second settlement callback is introduced in Run Summary.
+
+- [ ] **Step 6: Run focused gates**
 
 ```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCareer.test.js tests/node/expeditionReducer.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs \
+  tests/node/expeditionCareer.test.js \
+  tests/node/actionCreatorSerialization.test.js
 pnpm run typecheck:core
+pnpm run typecheck
 ```
 
 Expected: PASS.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 7: Commit**
 
 ```bash
-git add src/domain/expedition/career.ts src/context/careerActionCreators.ts src/context/reducers/careerReducer.ts src/types/actions.d.ts src/types/expedition.d.ts tests/node/expeditionCareer.test.js tests/node/expeditionReducer.test.js
-git commit -m "feat(expedition): record career progression"
+git add src/domain/expedition/career.ts src/context/actionTypes.ts src/types/actions.d.ts src/types/game.d.ts src/context/careerActionCreators.ts src/context/reducers/careerReducer.ts src/context/useCareerDispatchActions.ts src/context/gameReducer.ts tests/node/expeditionCareer.test.js tests/node/actionCreatorSerialization.test.js
+git commit -m "feat(expedition): define canonical career settlement"
 ```
 
 ---
@@ -1744,107 +2025,81 @@ git commit -m "feat(expedition): select regions tours and pressure"
 **Files:**
 - Modify: `src/scenes/RunSummary.tsx`
 - Modify: `src/ui/expedition/RunSummaryCard.tsx`
-- Modify: `src/context/careerActionCreators.ts`
-- Modify: `src/context/reducers/careerReducer.ts`
 - Test: `tests/ui/RunSummary.test.tsx`
 - Test: `tests/golden-path/expeditionMetaLoop.test.js`
 
-- [ ] **Step 1: Add failing next-tour golden path**
+Task 2 already owns `RECORD_EXPEDITION_CAREER_RESULT`, `settledRunIds`, canonical Tour Token rewards, rank calculation, and Ascension unlock. This task consumes that contract only.
+
+- [ ] **Step 1: Add failing next-tour and reload-idempotence coverage**
 
 Golden path:
 
 ```text
 TourPrep -> active Expedition -> successful finale -> RunSummary
--> record career result once -> optional open Band HQ Expedition tab
+-> canonical Task-2 career settlement for the stored runId
+-> optional open Band HQ Expedition tab
 -> PREPARE_NEXT_EXPEDITION -> new runSeed + idle/preparing Expedition
 -> TourPrep with career/crew/rival/unlocks preserved and run-only state reset
 ```
 
-Assert a repeated Render/Continue click cannot grant Tour Tokens twice.
+Test all of these conditions:
 
-- [ ] **Step 2: Record career result before presenting spendable progression**
-
-Add an idempotent settlement action keyed by the finalized run id created in G1. `START_EXPEDITION` stamps `expedition.runId` with `getSafeUUID()`, the run slice persists it through save/reload, and `FINALIZE_EXPEDITION` preserves it. `RunSummary` must read that stored id; it must never generate a new id during settlement. Dispatch the career result once, then render the returned/persisted career delta. Add the explicit boundary imports to `careerActionCreators.ts` / `careerReducer.ts` rather than relying on ambient names:
-
-```ts
-import type { CareerState, GameAction, GameState } from '../types'
-import { ActionTypes } from './actionTypes'
-import { StateError } from '../utils/errors'
-import { finiteNumberOr, isFiniteNumber } from '../utils/gameState'
-
-export interface RecordExpeditionCareerResultPayload {
-  runId: string
-  outcome: 'extracted' | 'completed' | 'failed'
-  regionId: string
-  tourTokensEarned: number
-}
-
-export const createRecordExpeditionCareerResultAction = (
-  state: GameState,
-  tourTokensEarned: unknown
-): Extract<GameAction, { type: typeof ActionTypes.RECORD_EXPEDITION_CAREER_RESULT }> => {
-  const runId = state.expedition.runId
-  const outcome = state.expedition.outcome?.kind
-  if (
-    typeof runId !== 'string' ||
-    runId.length === 0 ||
-    !isFiniteNumber(tourTokensEarned) ||
-    !['extracted', 'completed', 'failed'].includes(outcome ?? '')
-  ) {
-    throw new StateError('Finalized expedition is missing a valid settlement identity')
-  }
-  return {
-    type: ActionTypes.RECORD_EXPEDITION_CAREER_RESULT,
-    payload: {
-      runId,
-      outcome: outcome as 'extracted' | 'completed' | 'failed',
-      regionId: state.expedition.loadout.regionId,
-      tourTokensEarned: Math.max(0, Math.trunc(tourTokensEarned))
-    }
-  }
-}
-
-export const recordExpeditionCareerResult = (
-  state: CareerState,
-  payload: RecordExpeditionCareerResultPayload
-): CareerState => {
-  if (
-    typeof payload.runId !== 'string' ||
-    payload.runId.length === 0 ||
-    !isFiniteNumber(payload.tourTokensEarned) ||
-    payload.tourTokensEarned < 0 ||
-    state.settledRunIds.includes(payload.runId)
-  ) {
-    return state
-  }
-  const safeTokens = Math.max(0, Math.trunc(finiteNumberOr(state.tourTokens, 0)))
-  return {
-    ...state,
-    settledRunIds: [...state.settledRunIds, payload.runId].slice(-64),
-    tourTokens: safeTokens + Math.trunc(payload.tourTokensEarned),
-    stats: applyCareerOutcome(state.stats, payload)
-  }
-}
+```text
+first RunSummary render records exactly the canonical reward for expedition.outcome
+StrictMode/repeated render with the same runId cannot grant Tour Tokens twice
+persist + reload finalized run -> same runId -> settlement remains idempotent
+Band HQ / Next Tour controls stay disabled until settledRunIds contains runId
+PREPARE_NEXT_EXPEDITION clears the old runId and the next START_EXPEDITION gets a new one
 ```
 
-`careerSanitizers.ts` independently validates and deduplicates `settledRunIds`, keeping only the most recent 64 ids. `RunSummary` calls `createRecordExpeditionCareerResultAction(state, earnedTokens)`; it never accepts or invents a `runId` from component input. If `expedition.runId` is missing/malformed, the creator refuses the award and the scene logs the invariant failure instead of minting a replacement id. Add direct-reducer tests for malformed `runId`, `NaN`/`Infinity` token values, and corrupted stored `career.tourTokens`, plus a reload-idempotence test: finalize a run, persist/reload it, render Run Summary twice, and assert exactly one token award for the same stored `runId`. The RunSummary shows secured Cash/Fame, Tour Tokens earned, rank change, discoveries, persistent injury/crew/rival consequences, plus `Band HQ` and `Next Tour`. No mandatory multi-screen sequence is inserted.
+- [ ] **Step 2: Trigger the existing settlement action once and wait for committed state**
 
-- [ ] **Step 3: Ascension unlock condition**
+Use the Task-2 dispatch helper; do not pass `runId`, token amount, rank, or outcome from component props:
 
-Set `career.ascensionUnlocked = true` when rank becomes `cult_legend`. The initial implementation deliberately avoids a parallel hidden story flag:
+```tsx
+const runId = expedition.runId
+const isFinalized = expedition.outcome !== null && expedition.status !== 'active'
+const isCareerSettled =
+  typeof runId === 'string' && career.settledRunIds.includes(runId)
 
-```ts
-const nextRankId = calculateCareerRank(nextCareer)
-return {
-  ...nextCareer,
-  rankId: nextRankId,
-  ascensionUnlocked: nextCareer.ascensionUnlocked || nextRankId === 'cult_legend'
-}
+useEffect(() => {
+  if (!isFinalized || typeof runId !== 'string' || isCareerSettled) return
+  recordExpeditionCareerResult()
+}, [isCareerSettled, isFinalized, recordExpeditionCareerResult, runId])
+
+useEffect(() => {
+  if (!isCareerSettled) return
+  saveGameAfterStateCommit()
+}, [isCareerSettled, saveGameAfterStateCommit])
 ```
 
-Do not clear an already unlocked Ascension state if future rank logic changes.
+Reducer idempotence is the final defense: if React StrictMode invokes the effect twice before the first rerender, the second queued `RECORD_EXPEDITION_CAREER_RESULT` sees the already-settled state and returns the identical state reference.
 
-- [ ] **Step 4: Run golden path/UI tests**
+- [ ] **Step 3: Render progression only from committed Career state**
+
+`RunSummaryCard` receives the finalized run summary plus current `career`. It may derive the display-only token award from the same pure helper, but it never writes it:
+
+```tsx
+const earnedTourTokens = expedition.outcome
+  ? getRunCareerReward(expedition.outcome.kind).tourTokens
+  : 0
+
+return (
+  <RunSummaryCard
+    outcome={expedition.outcome}
+    earnedTourTokens={earnedTourTokens}
+    rankId={career.rankId}
+    ascensionUnlocked={career.ascensionUnlocked}
+    settlementPending={!isCareerSettled}
+    onOpenBandHq={isCareerSettled ? openBandHq : undefined}
+    onNextTour={isCareerSettled ? prepareNextExpedition : undefined}
+  />
+)
+```
+
+The card shows secured Cash/Fame, canonical Tour Tokens earned, rank change/discoveries, persistent injury/crew/rival consequences, plus `Band HQ` and `Next Tour`. No second settlement reducer, `nextRankId` payload, or `careerResultRecorded` boolean is introduced.
+
+- [ ] **Step 4: Run golden-path/UI tests**
 
 ```bash
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/golden-path/expeditionMetaLoop.test.js
@@ -1857,7 +2112,7 @@ Expected: PASS.
 - [ ] **Step 5: Commit**
 
 ```bash
-git add src/scenes/RunSummary.tsx src/ui/expedition/RunSummaryCard.tsx src/context/careerActionCreators.ts src/context/reducers/careerReducer.ts tests/ui/RunSummary.test.tsx tests/golden-path/expeditionMetaLoop.test.js
+git add src/scenes/RunSummary.tsx src/ui/expedition/RunSummaryCard.tsx tests/ui/RunSummary.test.tsx tests/golden-path/expeditionMetaLoop.test.js
 git commit -m "feat(expedition): complete between-tour meta loop"
 ```
 
