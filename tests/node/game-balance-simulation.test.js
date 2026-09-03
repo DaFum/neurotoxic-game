@@ -27,6 +27,7 @@ import {
   accountFamePurchase,
   applyNegativeFinancialEventMultiplier,
   applyCatalogPurchase,
+  applyPostGigState,
   buildDesignRiskReview,
   buildHoldoutSafetyValidation,
   buildScenarioTensionReview,
@@ -2648,5 +2649,377 @@ test('a refuel rescues a fuel-blocked trip instead of losing the day', () => {
   assert.ok(
     fuelBlocked < rescued,
     `the refuel fallback must dominate surviving fuel blocks, saw ${fuelBlocked} blocks vs ${rescued} rescues`
+  )
+})
+
+test('post-gig transition orchestrates economy quest events and story-flag quests', () => {
+  const state = createInitialState()
+  state.player.money = 500
+  state.player.fame = 0
+  state.player.day = 5
+  state.activeStoryFlags = ['cancel_quest_active']
+
+  const paydayDef = {
+    id: 'quest_payday',
+    kind: 'repeatable',
+    progress: 0,
+    required: 2000,
+    progressRules: [{ event: 'economy.moneyEarned', amount: 'event.amount' }]
+  }
+
+  state.activeQuests = [paydayDef]
+
+  const venue = VENUES_BY_ID.get('stendal_adler')
+  const counters = {
+    executionCoverage: {
+      quests: {
+        status: 'covered',
+        offers: 0,
+        activations: 0,
+        progress: 0,
+        completions: 0,
+        failures: 0,
+        rewards: 0,
+        uniqueQuestIdsOffered: new Set(),
+        uniqueQuestIdsActivated: new Set(),
+        uniqueQuestIdsCompleted: new Set()
+      }
+    },
+    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
+    traitUnlocks: 0
+  }
+
+  const financials = {
+    net: 1500,
+    income: { total: 1500, breakdown: [] },
+    expenses: { total: 0, breakdown: [] },
+    soldMerch: {}
+  }
+
+  const gigStats = { score: 90, accuracy: 90, misses: 0, maxCombo: 100, hitRate: 0.9, peakHype: 90 }
+
+  applyPostGigState(state, venue, 90, financials, 0, gigStats, counters)
+
+  // 1. Money earned event from dispatchEconomyQuests progressed quest_payday
+  const updatedPayday = state.activeQuests.find(q => q.id === 'quest_payday')
+  assert.ok(updatedPayday)
+  assert.ok(updatedPayday.progress > 0, 'Economy quest event should advance quest progress')
+
+  // 2. Story flag quest quest_apology_tour was activated and added to activeQuests
+  const apologyQuest = state.activeQuests.find(q => q.id === 'quest_apology_tour')
+  assert.ok(apologyQuest, 'Story flag quest_apology_tour should be activated')
+
+  // 3. Execution coverage tracked the quest activation
+  assert.ok(counters.executionCoverage.quests.activations > 0)
+  assert.ok(counters.executionCoverage.quests.uniqueQuestIdsActivated.has('quest_apology_tour'))
+})
+
+test('quest trigger offer events map to canonical registry quest IDs', () => {
+  const scenario = probeScenario(10, { gigGapDays: 1, minigameSkill: 1, eventIntensity: 4 })
+  const run = runSingleSimulation(scenario, 9876)
+
+  const offeredSet = run.executionCoverage.quests.uniqueQuestIdsOffered
+  assert.ok(offeredSet instanceof Set || Array.isArray(offeredSet))
+  const offeredIds = Array.from(offeredSet)
+
+  for (const questId of offeredIds) {
+    assert.ok(
+      questId.startsWith('quest_'),
+      `Offered quest ID '${questId}' must carry the canonical 'quest_' prefix`
+    )
+  }
+})
+
+test('applyPostGigState records quest transitions emitted by gig reducer in the snapshot', () => {
+  const state = createInitialState()
+  state.player.money = 500
+  state.player.fame = 0
+  state.player.day = 5
+
+  const venue = VENUES_BY_ID.get('stendal_adler')
+  const counters = {
+    executionCoverage: {
+      quests: {
+        status: 'covered',
+        offers: 0,
+        activations: 0,
+        progress: 0,
+        completions: 0,
+        failures: 0,
+        rewards: 0,
+        availableIds: 32,
+        uniqueQuestIdsOffered: new Set(),
+        uniqueQuestIdsActivated: new Set(),
+        uniqueQuestIdsCompleted: new Set()
+      }
+    },
+    fameAccounting: { earned: 0, spentGross: 0, refunded: 0, spentNet: 0, lost: 0, clampAdjustment: 0 },
+    traitUnlocks: 0
+  }
+
+  // Active gig quest that will progress/complete during gig reducer state updates
+  const gigQuest = {
+    id: 'quest_first_gig',
+    kind: 'milestone',
+    progress: 0,
+    required: 1,
+    progressRules: [{ event: 'gig.completed', amount: 1 }]
+  }
+  state.activeQuests = [gigQuest]
+
+  const financials = {
+    net: 1000,
+    income: { total: 1000, breakdown: [] },
+    expenses: { total: 0, breakdown: [] },
+    soldMerch: {}
+  }
+  const gigStats = { score: 90, accuracy: 90, misses: 0, maxCombo: 100, hitRate: 0.9, peakHype: 90 }
+
+  applyPostGigState(state, venue, 90, financials, 0, gigStats, counters)
+
+  assert.ok(
+    counters.executionCoverage.quests.progress > 0 ||
+      counters.executionCoverage.quests.completions > 0,
+    'Gig reducer quest transitions must be captured in quest coverage counters'
+  )
+})
+
+test('probe-only misses render probe warnings without false bankruptcy warnings', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 0.05 }, // inside [0, 4]
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstVanUpgradeDayMedian: 2,
+            catalogSharePurchasedPct: 37.32
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0.25 }, // inside [0, 4]
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1,
+            firstVanUpgradeDayMedian: 2,
+            catalogSharePurchasedPct: 37.32
+          }
+        }
+      }
+    ]
+  })
+
+  // No bankruptcy warning should be rendered because bankruptcy rates (0.05% / 0.25%) are within target [0, 4]
+  assert.ok(
+    !review.warnings.some(w => w.includes('mid_game_probe') && w.includes('Insolvenzrate')),
+    'Must not render bankruptcy rate warning when bankruptcy is within target corridor'
+  )
+
+  // Probe warning must be present
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('firstHqUpgradeDayMedian')),
+    'Must render probe warning for firstHqUpgradeDayMedian'
+  )
+})
+
+test('no_social_probe evaluates cross-scenario economic ratio against baseline_touring', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'baseline_touring',
+        name: 'Baseline Touring',
+        summary: {
+          avgFinalMoney: 20000,
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }
+        }
+      },
+      {
+        id: 'no_social_probe',
+        name: 'No Social (Fame 0-50)',
+        summary: {
+          avgFinalMoney: 10000, // 50% of baseline -> below corridor [70, 95]
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 5 }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'baseline_touring',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+        summary: { avgFinalMoney: 20000 }
+      },
+      {
+        id: 'no_social_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 5 },
+        summary: { avgFinalMoney: 10000 }
+      }
+    ]
+  })
+
+  const noSocial = review.scenarios.find(s => s.id === 'no_social_probe')
+  assert.ok(noSocial)
+  assert.equal(noSocial.probeMetrics.noSocialFinalMoneyRatioPct.observed, 50)
+  assert.equal(noSocial.probeMetrics.noSocialFinalMoneyRatioPct.status, 'below_target')
+  assert.ok(
+    review.warnings.some(w => w.includes('no_social_probe') && w.includes('noSocialFinalMoneyRatioPct')),
+    'Warning should be generated for no_social_probe economic ratio miss'
+  )
+})
+
+test('buildDesignRiskReview evaluates probe-specific target corridors and flags out-of-range probes', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstVanUpgradeDayMedian: 2, // out of range [3, 5]
+            catalogSharePurchasedPct: 37.32 // out of range [20, 35]
+          }
+        }
+      },
+      {
+        id: 'late_game_probe',
+        name: 'Late Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
+          gigEconomics: {
+            travelCostShareOfGigNetPct: 1.9 // out of range [3.0, 6.0]
+          },
+          gigCapHitPct: 5.0
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1,
+            firstVanUpgradeDayMedian: 2,
+            catalogSharePurchasedPct: 37.32
+          }
+        }
+      },
+      {
+        id: 'late_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 0 },
+        summary: {
+          gigEconomics: {
+            travelCostShareOfGigNetPct: 1.9
+          },
+          gigCapHitPct: 5.0
+        }
+      }
+    ]
+  })
+
+  // Should not be healthy when probe-specific metrics are out of corridor
+  assert.equal(review.passed, false, 'Design risk review must not pass when probe goals are out of corridor')
+
+  const midProbe = review.scenarios.find(s => s.id === 'mid_game_probe')
+  assert.ok(midProbe)
+  assert.notEqual(midProbe.status, 'healthy', 'Mid game probe with out-of-range metrics cannot be healthy')
+
+  const lateProbe = review.scenarios.find(s => s.id === 'late_game_probe')
+  assert.ok(lateProbe)
+  assert.notEqual(lateProbe.status, 'healthy', 'Late game probe with out-of-range metrics cannot be healthy')
+
+  // Warnings must name the probe metrics that are out of corridor
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('catalogSharePurchasedPct')),
+    'Warnings must name mid_game_probe catalogSharePurchasedPct'
+  )
+  assert.ok(
+    review.warnings.some(w => w.includes('late_game_probe') && w.includes('travelCostShareOfGigNetPct')),
+    'Warnings must name late_game_probe travelCostShareOfGigNetPct'
+  )
+})
+
+test('healthy bankruptcy with calibration probe miss keeps bankruptcy risk status healthy while reporting probe warning separately', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4]
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 }, // inside target [0, 4]
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1,
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ]
+  })
+
+  const midProbe = review.scenarios.find(s => s.id === 'mid_game_probe')
+  assert.ok(midProbe)
+  assert.equal(midProbe.bankruptcy.riskStatus, 'healthy', 'Insolvency risk status must stay healthy when bankruptcy is within target')
+  assert.equal(midProbe.status, 'low_risk', 'Scenario overall status reflects probe miss')
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('firstHqUpgradeDayMedian')),
+    'Probe warning must be generated separately'
+  )
+})
+
+test('healthy calibration probe with out-of-range holdout probe generates a warning naming the holdout breach', () => {
+  const review = buildDesignRiskReview({
+    results: [
+      {
+        id: 'mid_game_probe',
+        name: 'Mid Game Probe',
+        summary: {
+          bankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 3, // in range [2, 4] for calibration
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ],
+    holdoutScenarios: [
+      {
+        id: 'mid_game_probe',
+        holdoutBankruptcy: { count: 0, sampleSize: 260, ratePct: 2 },
+        summary: {
+          purchasePaths: {
+            firstHqUpgradeDayMedian: 1, // out of range [2, 4] in holdout!
+            firstVanUpgradeDayMedian: 4,
+            catalogSharePurchasedPct: 25
+          }
+        }
+      }
+    ]
+  })
+
+  assert.ok(
+    review.warnings.some(w => w.includes('mid_game_probe') && w.includes('Holdout') && w.includes('firstHqUpgradeDayMedian')),
+    'Warning must explicitly name the Holdout breach when holdout probe is out of range'
   )
 })
