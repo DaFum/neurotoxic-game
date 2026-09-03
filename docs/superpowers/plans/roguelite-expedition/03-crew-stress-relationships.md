@@ -13,7 +13,7 @@
 ## Depends On
 
 - `01-expedition-core-extraction.md` merged.
-- `02-condition-repairs-cargo.md` may develop in parallel, but G4 cannot start until both G2 and G3 are merged.
+- `02-condition-repairs-cargo.md` may develop in parallel through G3 Tasks 1–8. G3 Tasks 9–10 require **G2 Task 10** (the base typed Expedition event-effect pipeline) because crew crises consume cargo and repair/damage Condition. G4 cannot start until both G2 and all G3 tasks are merged.
 - Existing `state.unlocks`/`unlockManager` remains the capability-unlock owner.
 
 ## File Structure
@@ -42,6 +42,8 @@
 **Modify:**
 
 - `src/types/index.ts`
+- `src/types/events.d.ts`
+- `src/types/game.d.ts`
 - `src/types/career.d.ts`
 - `src/types/expedition.d.ts`
 - `src/domain/expedition/defaults.ts`
@@ -54,6 +56,7 @@
 - `src/context/reducers/expeditionReducer.ts`
 - `src/context/useExpeditionDispatchActions.ts`
 - `src/domain/eventResolver.ts`
+- `src/utils/eventEngine/eventEffectHandlers.ts`
 - `src/data/events/index.ts`
 - `src/hooks/travel/actions/useHandleNodeArrivalCallback.ts`
 - `src/hooks/travel/useVanMaintenance.ts`
@@ -636,7 +639,7 @@ Add one legacy/inactive case asserting zero calls.
 
 ```bash
 pnpm exec vitest run tests/ui/useArrivalLogic.test.jsx tests/ui/postGigHandlerLogic.test.jsx
-pnpm run test:node -- tests/node/travelActions.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/useTravelLogic.test.js
 ```
 
 Expected: new stress assertions FAIL.
@@ -780,7 +783,8 @@ export interface UpdateCrewCareerPayload {
 }
 
 export interface ShiftCrewRelationshipPayload {
-  pairKey: string
+  firstCrewId: string
+  secondCrewId: string
   tierDelta: number
 }
 ```
@@ -792,7 +796,6 @@ import { ActionTypes } from './actionTypes'
 import type { GameAction } from '../types'
 import { isFiniteNumber } from '../utils/gameState'
 import { EXPEDITION_CREW_BY_ID } from '../data/expedition/crew'
-import { toCrewRelationshipKey } from '../domain/expedition/relationships'
 
 export const updateCrewCareer = (
   crewId: unknown,
@@ -841,24 +844,24 @@ export const shiftCrewRelationship = (
   return {
     type: ActionTypes.SHIFT_CREW_RELATIONSHIP,
     payload: {
-      pairKey: toCrewRelationshipKey(firstCrewId, secondCrewId),
+      firstCrewId,
+      secondCrewId,
       tierDelta: Math.trunc(tierDelta)
     }
   }
 }
 ```
 
-Relationship pair keys are therefore never accepted raw from UI/event input. Add hostile-boundary tests for `crewId: 'constructor'`, `crewId: '__proto__'`, direct reducer payloads containing `NaN`/`Infinity`, and corrupted stored `loyalty`/`storyStep`; action creators must reject hostile IDs and reducers must return the original state or normalize stored addends without persisting non-finite values.
+Relationship pair keys are therefore never accepted in an action payload. The creator carries the two validated crew ids and the reducer derives the canonical key itself. Add hostile-boundary tests for `crewId: 'constructor'`, `crewId: '__proto__'`, a syntactically safe but unknown direct reducer pair such as `fake_a`/`crew_mika_tech`, direct reducer payloads containing `NaN`/`Infinity`, and corrupted stored `loyalty`/`storyStep`; action creators must reject hostile IDs and reducers must return the original state or normalize stored addends without persisting non-finite values.
 
 - [ ] **Step 5: Implement and route `careerReducer`**
 
-`src/context/reducers/careerReducer.ts` imports the strict numeric helpers and forbidden-key guard explicitly, then exports two handlers compatible with the root reducer map:
+`src/context/reducers/careerReducer.ts` imports the strict numeric helpers, crew registry, and canonical relationship-key helper explicitly, then exports two handlers compatible with the root reducer map:
 
 ```ts
 import { finiteNumberOr, isFiniteNumber } from '../../utils/gameState'
-import { isForbiddenKey } from '../../utils/objectUtils'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
-import { shiftRelationshipTier } from '../../domain/expedition/relationships'
+import { shiftRelationshipTier, toCrewRelationshipKey } from '../../domain/expedition/relationships'
 
 export const handleUpdateCrewCareer = (state, payload) => {
   if (
@@ -914,21 +917,27 @@ export const handleUpdateCrewCareer = (state, payload) => {
 
 export const handleShiftCrewRelationship = (state, payload) => {
   if (
-    typeof payload.pairKey !== 'string' ||
-    payload.pairKey.length === 0 ||
-    isForbiddenKey(payload.pairKey) ||
+    typeof payload.firstCrewId !== 'string' ||
+    typeof payload.secondCrewId !== 'string' ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, payload.firstCrewId) ||
+    !Object.hasOwn(EXPEDITION_CREW_BY_ID, payload.secondCrewId) ||
+    payload.firstCrewId === payload.secondCrewId ||
     !isFiniteNumber(payload.tierDelta)
   ) {
     return state
   }
+  const pairKey = toCrewRelationshipKey(
+    payload.firstCrewId,
+    payload.secondCrewId
+  )
   return {
     ...state,
     career: {
       ...state.career,
       crewRelationshipByPair: {
         ...state.career.crewRelationshipByPair,
-        [payload.pairKey]: shiftRelationshipTier(
-          state.career.crewRelationshipByPair[payload.pairKey] ?? 'neutral',
+        [pairKey]: shiftRelationshipTier(
+          state.career.crewRelationshipByPair[pairKey] ?? 'neutral',
           Math.trunc(payload.tierDelta)
         )
       }
@@ -952,6 +961,13 @@ assert.equal(state.career.crewRelationshipByPair['crew_mika_tech::crew_tom_drive
 state = gameReducer(state, updateCrewCareer('crew_mika_tech', 5, 1, 'signature_macgyver'))
 state = gameReducer(state, updateCrewCareer('crew_mika_tech', 0, 0, 'signature_macgyver'))
 assert.deepEqual(state.career.crewProgressById.crew_mika_tech.signatureTraitIds, ['signature_macgyver'])
+
+const beforeMalformedPair = state
+const malformedPair = gameReducer(state, {
+  type: ActionTypes.SHIFT_CREW_RELATIONSHIP,
+  payload: { firstCrewId: 'fake_a', secondCrewId: 'crew_mika_tech', tierDelta: 1 }
+})
+assert.strictEqual(malformedPair, beforeMalformedPair)
 ```
 
 - [ ] **Step 7: Run persistence/reducer tests**
@@ -1086,68 +1102,180 @@ git commit -m "feat(expedition): add staged band injuries"
 
 ---
 
-### Task 9: Add an Expedition Effect to the Existing Event Resolver
+### Task 9: Extend the G2 Event Pipeline With Crew Stress and Explicit Rival-Battle Intent
+
+**Dependency:** G2 Task 10 is complete and its `EventDelta.expedition -> eventResolver -> APPLY_EXPEDITION_EVENT_DELTA -> expeditionReducer` path is green.
 
 **Files:**
+- Modify: `src/types/events.d.ts`
+- Modify: `src/types/actions.d.ts`
+- Modify: `src/types/game.d.ts`
+- Modify: `src/types/expedition.d.ts`
+- Modify: `src/domain/expedition/defaults.ts`
+- Modify: `src/context/reducers/expeditionSanitizers.ts`
+- Modify: `src/utils/eventEngine/eventEffectHandlers.ts`
 - Modify: `src/domain/eventResolver.ts`
-- Test: `tests/node/domain/eventResolver.test.js`, `tests/node/eventEngine_resolver.test.js`
+- Modify: `src/context/actionTypes.ts`
+- Modify: `src/context/expeditionActionCreators.ts`
+- Modify: `src/context/reducers/expeditionReducer.ts`
+- Test: `tests/node/eventEngine_resolver.test.js`
+- Test: `tests/node/domain/eventResolver.test.js`
 - Test: `tests/node/eventReducer.test.js`
+- Test: `tests/node/actionCreatorSerialization.test.js`
 
-- [ ] **Step 1: Add failing resolver test**
+This task **extends** the single G2 event contract. It must not reintroduce direct Expedition handling in `src/utils/gameState/delta.ts` and must not create a second event adapter.
 
-Resolve:
+- [ ] **Step 1: Add a failing crew/rival extension test through the full pipeline**
+
+Use an active Expedition with Mika selected:
 
 ```js
-{
-  type: 'expedition',
-  delta: {
-    crewStress: { crew_mika_tech: 15 },
-    heat: 4,
-    condition: { pa: -5 }
+const choice = {
+  effect: {
+    type: 'expedition',
+    delta: {
+      crewStress: { crew_mika_tech: 15 },
+      heat: 4,
+      condition: { pa: -5 },
+      cargo: { spareParts: -1 },
+      rivalBattlePending: true
+    }
+  }
+}
+
+const engineResolution = resolveEventChoice(choice, activeState)
+assert.deepEqual(engineResolution.delta.expedition?.crewStress, {
+  crew_mika_tech: 15
+})
+assert.equal(engineResolution.delta.expedition?.rivalBattlePending, true)
+
+const resolution = resolveEvent(choice, activeState, fixedClock)
+let reduced = activeState
+for (const action of resolution.actions) reduced = gameReducer(reduced, action)
+assert.equal(reduced.expedition.crewRunById.crew_mika_tech.stress, 15)
+assert.equal(reduced.expedition.pressure.heat, activeState.expedition.pressure.heat + 4)
+assert.equal(reduced.expedition.condition.pa, activeState.expedition.condition.pa - 5)
+assert.equal(reduced.expedition.cargo.spareParts, 0)
+assert.equal(reduced.expedition.rivalBattlePending, true)
+```
+
+Add direct reducer assertions for unknown `crewId: 'fake_a'`, prototype names, unselected known crew, `NaN` stress, and a non-boolean Rival Battle payload; all must preserve the original state reference.
+
+- [ ] **Step 2: Extend the existing event/state types, defaults, and sanitizer**
+
+Add to the **existing** `ExpeditionEventDelta` from G2:
+
+```ts
+crewStress?: Record<string, number>
+rivalBattlePending?: boolean
+```
+
+Extend the existing `ApplyExpeditionEventDeltaPayload` with:
+
+```ts
+crewStress: Record<string, number>
+```
+
+Add to `ExpeditionState`:
+
+```ts
+rivalBattlePending: boolean
+```
+
+Default it to `false`. `sanitizeExpeditionState` accepts only a literal boolean and otherwise falls back to `false`.
+
+- [ ] **Step 3: Extend the registered `expedition` event handler, do not replace it**
+
+Inside the G2 handler, add structural finite-number handling for crew stress and the one-way battle intent:
+
+```ts
+if (isLooseRecord(raw.crewStress)) {
+  const crewStress = { ...(current.crewStress ?? {}) }
+  for (const [crewId, value] of Object.entries(raw.crewStress)) {
+    if (isForbiddenKey(crewId) || !isFiniteNumber(value)) continue
+    crewStress[crewId] = finiteNumberOr(crewStress[crewId], 0) + value
+  }
+  if (Object.keys(crewStress).length > 0) next.crewStress = crewStress
+}
+
+if (raw.rivalBattlePending === true) next.rivalBattlePending = true
+```
+
+The event engine performs only structural sanitation here. Known/selected crew validation remains at the action-creator and reducer boundaries where `EXPEDITION_CREW_BY_ID` and current loadout are available.
+
+- [ ] **Step 4: Extend the existing event action creator and add an explicit battle-pending action**
+
+`createApplyExpeditionEventDeltaAction(state, raw)` now receives the current `GameState` so it can keep crew-stress entries only when:
+
+```text
+Object.hasOwn(EXPEDITION_CREW_BY_ID, crewId)
+AND state.expedition.loadout.crewIds.includes(crewId)
+AND value is finite
+```
+
+The creator preserves all G2 pressure/Condition/cargo validation.
+
+Add one separate action:
+
+```ts
+SET_RIVAL_BATTLE_PENDING: 'SET_RIVAL_BATTLE_PENDING'
+```
+
+with payload `boolean` and creator:
+
+```ts
+export const createSetRivalBattlePendingAction = (
+  value: unknown
+): Extract<GameAction, { type: typeof ActionTypes.SET_RIVAL_BATTLE_PENDING }> => {
+  if (typeof value !== 'boolean') throw new TypeError('rival battle pending must be boolean')
+  return { type: ActionTypes.SET_RIVAL_BATTLE_PENDING, payload: value }
+}
+```
+
+- [ ] **Step 5: Extend `eventResolver` without adding event-specific string checks**
+
+Change the G2 creator call to pass `state`, then convert the sanitized battle intent to the explicit setter action:
+
+```ts
+if (expeditionDelta) {
+  const expeditionAction = createApplyExpeditionEventDeltaAction(
+    state,
+    expeditionDelta
+  )
+  if (expeditionAction) actions.push(expeditionAction)
+  if (expeditionDelta.rivalBattlePending === true) {
+    actions.push(createSetRivalBattlePendingAction(true))
   }
 }
 ```
 
-and assert it produces an `EventDelta.expedition` with those values rather than mutating state directly.
+Do not inspect event ids such as `expedition_rival_double_booked` or choice ids such as `battle` in `eventResolver`.
 
-- [ ] **Step 2: Verify failure**
+- [ ] **Step 6: Revalidate crew endpoints and the battle flag in `expeditionReducer`**
 
-```bash
-pnpm run test:node
-```
+Extend the existing G2 `APPLY_EXPEDITION_EVENT_DELTA` handler. Before applying anything, reject a payload if any `crewStress` key is unknown, not selected in the active loadout, prototype-derived, or non-finite. Apply valid signed stress with clamp `0..100` using `finiteNumberOr` for stored stress.
 
-Expected: only the new Expedition effect assertion FAILS.
+`SET_RIVAL_BATTLE_PENDING` updates only an active Expedition, accepts only boolean payloads, and returns the identical state when the value is unchanged. Post-rival-gig resolution uses the same action with `false`; no reducer infers this flag from rival state.
 
-- [ ] **Step 3: Add strict resolver branch**
-
-The resolver branch must accept only an object under `effect.delta`, copy only finite supported fields, ignore unknown keys, and return:
-
-```ts
-{
-  player: {},
-  band: {},
-  social: {},
-  flags: {},
-  expedition: sanitizedExpeditionDelta
-}
-```
-
-The resolver never modifies `career` and never calls dispatch.
-
-- [ ] **Step 4: Run resolver/event tests**
+- [ ] **Step 7: Run extension pipeline and serialization gates**
 
 ```bash
-pnpm run test:node
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs \
+  tests/node/eventEngine_resolver.test.js \
+  tests/node/domain/eventResolver.test.js \
+  tests/node/eventReducer.test.js \
+  tests/node/actionCreatorSerialization.test.js
 pnpm run typecheck:core
+pnpm run typecheck
 ```
 
-Expected: PASS.
+Expected: PASS, including the unchanged G2 base event tests.
 
-- [ ] **Step 5: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/domain/eventResolver.ts tests
-git commit -m "feat(events): resolve expedition event effects"
+git add src/types/events.d.ts src/types/actions.d.ts src/types/game.d.ts src/types/expedition.d.ts src/domain/expedition/defaults.ts src/context/reducers/expeditionSanitizers.ts src/utils/eventEngine/eventEffectHandlers.ts src/domain/eventResolver.ts src/context/actionTypes.ts src/context/expeditionActionCreators.ts src/context/reducers/expeditionReducer.ts tests/node/eventEngine_resolver.test.js tests/node/domain/eventResolver.test.js tests/node/eventReducer.test.js tests/node/actionCreatorSerialization.test.js
+git commit -m "feat(events): extend expedition effects for crew crises"
 ```
 
 ---
