@@ -597,7 +597,9 @@ git commit -m "feat(expedition): define canonical career settlement"
 - Modify: `src/context/usePersistence.ts`
 - Modify: `src/context/reducers/careerReducer.ts`
 - Modify: `src/context/reducers/careerSanitizers.ts`
+- Modify: `src/domain/expedition/crew.ts`
 - Test: `tests/node/expeditionUnlockSets.test.js`
+- Test: `tests/node/expeditionCrewRegistry.test.js`
 - Test: `tests/context/usePersistence.test.tsx`
 - Test: `tests/node/unlockManager.test.js`, `tests/utils/unlockManager.test.ts`, `tests/security/unlocksValidation.test.js`
 
@@ -612,6 +614,7 @@ import {
   EXPEDITION_UNLOCK_SETS,
   isExpeditionCapabilityUnlocked
 } from '../../src/data/expedition/unlockSets.ts'
+import { isCrewAvailable } from '../../src/domain/expedition/crew.ts'
 
 test('every unlock set owns one namespaced marker', () => {
   const markers = EXPEDITION_UNLOCK_SETS.map(set => set.unlockId)
@@ -630,6 +633,17 @@ test('a purchased set expands to its capabilities without extra storage markers'
   assert.equal(
     isExpeditionCapabilityUnlocked([], 'expedition.region.industrial'),
     false
+  )
+})
+
+test('set-derived crew capabilities use the same resolver', () => {
+  assert.equal(
+    isCrewAvailable('crew_leyla_manager', ['expedition.set.industry_network']),
+    true
+  )
+  assert.equal(
+    isCrewAvailable('crew_saskia_security', ['expedition.set.underground_network']),
+    true
   )
 })
 ```
@@ -693,7 +707,7 @@ export const EXPEDITION_UNLOCK_SETS = Object.freeze([
 ] as const)
 ```
 
-- [ ] **Step 3: Add one pure capability resolver**
+- [ ] **Step 3: Add one pure capability resolver and route every Expedition availability check through it**
 
 ```ts
 export const isExpeditionCapabilityUnlocked = (
@@ -707,7 +721,25 @@ export const isExpeditionCapabilityUnlocked = (
 }
 ```
 
-G2/G3/G5 loadout availability uses this helper for Expedition capabilities. Baseline `home`, `standard`, and the four starter crew remain explicit always-available exceptions; do not add fake unlock markers for them.
+Baseline `home`, `standard`, and the four starter crew remain explicit always-available exceptions; do not add fake unlock markers for them. Every **non-baseline** Expedition capability check introduced in G2/G3/G5 must use `isExpeditionCapabilityUnlocked` rather than requiring the capability id itself to be stored.
+
+Upgrade the G3 crew availability helper in `src/domain/expedition/crew.ts` when unlock sets are introduced:
+
+```ts
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+
+export const isCrewAvailable = (
+  crewId: string,
+  unlocks: readonly string[]
+): boolean =>
+  Object.hasOwn(EXPEDITION_CREW_BY_ID, crewId) &&
+  (
+    STARTER_SET.has(crewId) ||
+    isExpeditionCapabilityUnlocked(unlocks, crewUnlockId(crewId))
+  )
+```
+
+Direct capability markers remain backward-compatible because the resolver checks `unlocks.includes(capabilityId)` first; purchased sets work without persisting their individual capabilities.
 
 - [ ] **Step 4: Add a recoverable Begin/Complete/Rollback purchase transaction**
 
@@ -854,6 +886,7 @@ This ordering prevents the previous free-unlock window where a marker could surv
 ```bash
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs \
   tests/node/expeditionUnlockSets.test.js \
+  tests/node/expeditionCrewRegistry.test.js \
   tests/node/unlockManager.test.js \
   tests/security/unlocksValidation.test.js
 pnpm exec vitest run tests/context/usePersistence.test.tsx
@@ -865,7 +898,7 @@ Test these failure cases explicitly: hard save failure before marker -> marker i
 - [ ] **Step 7: Commit**
 
 ```bash
-git add src/data/expedition/unlockSets.ts src/types/career.d.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/useGameDispatchActions.ts src/context/usePersistence.ts src/context/actionCreators.ts src/context/careerActionCreators.ts src/context/useCareerDispatchActions.ts src/context/reducers/careerReducer.ts src/context/reducers/careerSanitizers.ts tests/context/usePersistence.test.tsx tests/node/expeditionUnlockSets.test.js tests/node/unlockManager.test.js tests/security/unlocksValidation.test.js
+git add src/data/expedition/unlockSets.ts src/types/career.d.ts src/domain/expedition/crew.ts src/context/actionTypes.ts src/types/actions.d.ts src/context/useGameDispatchActions.ts src/context/usePersistence.ts src/context/actionCreators.ts src/context/careerActionCreators.ts src/context/useCareerDispatchActions.ts src/context/reducers/careerReducer.ts src/context/reducers/careerSanitizers.ts tests/context/usePersistence.test.tsx tests/node/expeditionUnlockSets.test.js tests/node/expeditionCrewRegistry.test.js tests/node/unlockManager.test.js tests/security/unlocksValidation.test.js
 git commit -m "feat(expedition): journal unlock set purchases"
 ```
 
@@ -1310,7 +1343,7 @@ underground: {
 }
 ```
 
-`home` is always available; other regions require their `unlockId` in `state.unlocks`.
+`home` is always available. Every other region exposes a capability id in `unlockId`; availability is true when `isExpeditionCapabilityUnlocked(state.unlocks, region.unlockId)` resolves it from either a direct marker or a purchased `expedition.set.*` marker.
 
 - [ ] **Step 3: Add pure combined-region helpers**
 
@@ -1319,6 +1352,7 @@ Implement the helper boundary in `src/domain/expedition/regionProfile.ts`; calle
 ```ts
 import { REGIONS } from '../../data/expedition/regions'
 import type { ExpeditionRegionDefinition } from '../../data/expedition/regions'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 export const getRegionDefinition = (
   id: unknown
@@ -1331,15 +1365,28 @@ export const getRegionDefinition = (
 
 export const getAvailableRegions = (
   unlocks: readonly string[]
-): ExpeditionRegionDefinition[] => {
-  const owned = new Set(unlocks.filter((id): id is string => typeof id === 'string'))
-  return Object.values(REGIONS).filter(
-    region => region.unlockId === null || owned.has(region.unlockId)
+): ExpeditionRegionDefinition[] =>
+  Object.values(REGIONS).filter(
+    region =>
+      region.unlockId === null ||
+      isExpeditionCapabilityUnlocked(unlocks, region.unlockId)
   )
-}
 ```
 
-Add assertions that `getRegionDefinition('__proto__')` and an unknown id both return the exact `home` definition, and that a region appears only after its namespaced unlock id is present.
+Add assertions that `getRegionDefinition('__proto__')` and an unknown id both return the exact `home` definition. Also pin set-derived capability resolution:
+
+```js
+assert.ok(
+  getAvailableRegions(['expedition.set.mechanic_network'])
+    .some(region => region.id === 'industrial')
+)
+assert.ok(
+  getAvailableRegions(['expedition.set.industry_network'])
+    .some(region => region.id === 'corporate')
+)
+```
+
+Keep one direct-capability-marker assertion as backward-compatibility coverage.
 
 - [ ] **Step 4: Run tests**
 
@@ -1521,19 +1568,21 @@ rival_hunt: depth8, extraction[3,6], retention .65/.45, completion 1.50, heat10,
 survival: depth9, extraction[3,6], retention .60/.40, completion 1.60, heat0
 ```
 
-- [ ] **Step 3: Availability uses `state.unlocks`**
+- [ ] **Step 3: Availability resolves capability ids through the unlock-set boundary**
 
 Extend the G1 `TourTypeDefinition` in place and keep `TOUR_TYPES.standard` as the baseline object. Add pure availability/compatibility helpers to `src/domain/expedition/loadout.ts`:
 
 ```ts
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+
 export const getAvailableTourTypes = (
   unlocks: readonly string[]
-): TourTypeDefinition[] => {
-  const owned = new Set(unlocks.filter((id): id is string => typeof id === 'string'))
-  return Object.values(TOUR_TYPES).filter(
-    tour => tour.unlockId === null || owned.has(tour.unlockId)
+): TourTypeDefinition[] =>
+  Object.values(TOUR_TYPES).filter(
+    tour =>
+      tour.unlockId === null ||
+      isExpeditionCapabilityUnlocked(unlocks, tour.unlockId)
   )
-}
 
 export const isTourRegionCompatible = (
   tour: TourTypeDefinition,
@@ -1542,7 +1591,20 @@ export const isTourRegionCompatible = (
   tour.allowedRegionIds === null || tour.allowedRegionIds.includes(regionId)
 ```
 
-`standard` uses `unlockId: null` and `allowedRegionIds: null`; every other tour uses a namespaced unlock id. `validateExpeditionLoadout` rejects a locked tour or a tour/region mismatch before `START_EXPEDITION`.
+`standard` uses `unlockId: null` and `allowedRegionIds: null`; every other tour exposes a namespaced capability id. The capability may be represented directly in `state.unlocks` or derived from its purchased `expedition.set.*` marker. Pin both paths:
+
+```js
+assert.ok(
+  getAvailableTourTypes(['expedition.set.festival_network'])
+    .some(tour => tour.id === 'blitz')
+)
+assert.ok(
+  getAvailableTourTypes(['expedition.set.industry_network'])
+    .some(tour => tour.id === 'corporate')
+)
+```
+
+`validateExpeditionLoadout` rejects a locked tour or a tour/region mismatch before `START_EXPEDITION`.
 
 - [ ] **Step 4: Run tests**
 
@@ -1951,7 +2013,10 @@ expect(screen.getByRole('button', { name: /standard/i })).toBeEnabled()
 expect(screen.queryByText(/reward multiplier/i)).not.toBeInTheDocument()
 
 render(<TourPrepHarness
-  unlocks={['expedition.region.corporate', 'expedition.tour.underground']}
+  unlocks={[
+    'expedition.set.industry_network',
+    'expedition.set.underground_network'
+  ]}
   ascensionUnlocked={true}
 />)
 fireEvent.click(screen.getByRole('button', { name: /corporate/i }))
@@ -1965,28 +2030,32 @@ expect(screen.getByText(/x1[.,]55/i)).toBeInTheDocument()
 expect(screen.getAllByRole('checkbox', { checked: true })).toHaveLength(3)
 ```
 
+This UI case intentionally uses only the persisted `expedition.set.*` markers. If the picker requires separately stored `expedition.region.*` or `expedition.tour.*` markers, the test must fail.
+
 Also assert a fourth Pressure modifier cannot be selected and that locked region/tour cards use the same disabled-control convention as Band HQ.
 
-- [ ] **Step 2: Implement pickers from canonical definitions**
+- [ ] **Step 2: Implement pickers from canonical definitions and reuse the canonical loadout validator**
 
 Each picker receives canonical ids, not arbitrary definition objects, and resolves availability through domain helpers:
 
 ```ts
-const regions = getAvailableRegions(unlocks)
-const tours = getAvailableTourTypes(unlocks)
-const pressure = career.ascensionUnlocked
+const regions = getAvailableRegions(state.unlocks)
+const tours = getAvailableTourTypes(state.unlocks)
+const pressure = state.career.ascensionUnlocked
   ? Object.values(TOUR_PRESSURE_MODIFIERS)
   : []
 
-const startDecision = validateExpeditionLoadout({
+const candidate = {
   ...draftLoadout,
   regionId: selectedRegionId,
   tourTypeId: selectedTourTypeId,
   pressureModifierIds: selectedPressureIds
-}, { unlocks, career })
+}
+
+const startDecision = validateExpeditionLoadout(state, candidate)
 ```
 
-The Start button is enabled only when `startDecision.ok === true`. Do not infer an unlock merely from career rank or discovery archive membership.
+The Tour Prep scene/harness provides the same production `GameState` shape consumed by G1; do not create a second UI-only validator signature such as `(candidate, { unlocks, career })`. The Start button is enabled only when `startDecision.valid === true`. Do not infer an unlock merely from career rank or discovery archive membership.
 
 - [ ] **Step 3: Make Tour Prep display mechanical trade-offs**
 
