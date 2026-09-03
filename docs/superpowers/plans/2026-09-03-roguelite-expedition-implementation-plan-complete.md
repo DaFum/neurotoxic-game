@@ -6,20 +6,22 @@ The original version of this file duplicated the Masterplan plus all six child p
 
 ## Canonical plan files
 
-1. [`2026-09-03-roguelite-expedition-master-plan.md`](./2026-09-03-roguelite-expedition-master-plan.md)
-2. [`roguelite-expedition/01-expedition-core-extraction.md`](./roguelite-expedition/01-expedition-core-extraction.md)
-3. [`roguelite-expedition/02-condition-repairs-cargo.md`](./roguelite-expedition/02-condition-repairs-cargo.md)
-4. [`roguelite-expedition/03-crew-stress-relationships.md`](./roguelite-expedition/03-crew-stress-relationships.md)
-5. [`roguelite-expedition/04-pressure-rivals-contracts.md`](./roguelite-expedition/04-pressure-rivals-contracts.md)
-6. [`roguelite-expedition/05-meta-regions-ascension.md`](./roguelite-expedition/05-meta-regions-ascension.md)
-7. [`roguelite-expedition/06-balance-simulator-recalibration.md`](./roguelite-expedition/06-balance-simulator-recalibration.md)
+1. [`roguelite-expedition/00-review-hardening-contract.md`](./roguelite-expedition/00-review-hardening-contract.md) — **mandatory reviewed execution contract; apply its amendments at the named G1–G6 insertion points**
+2. [`2026-09-03-roguelite-expedition-master-plan.md`](./2026-09-03-roguelite-expedition-master-plan.md)
+3. [`roguelite-expedition/01-expedition-core-extraction.md`](./roguelite-expedition/01-expedition-core-extraction.md)
+4. [`roguelite-expedition/02-condition-repairs-cargo.md`](./roguelite-expedition/02-condition-repairs-cargo.md)
+5. [`roguelite-expedition/03-crew-stress-relationships.md`](./roguelite-expedition/03-crew-stress-relationships.md)
+6. [`roguelite-expedition/04-pressure-rivals-contracts.md`](./roguelite-expedition/04-pressure-rivals-contracts.md)
+7. [`roguelite-expedition/05-meta-regions-ascension.md`](./roguelite-expedition/05-meta-regions-ascension.md)
+8. [`roguelite-expedition/06-balance-simulator-recalibration.md`](./roguelite-expedition/06-balance-simulator-recalibration.md)
 
 ## Authority and execution order
 
-- The Masterplan owns cross-gate architecture, dependencies, invariants, coverage mapping, and stage gates.
-- Each child plan owns the executable tasks for its subsystem.
-- When a contract crosses gates, the owner named in the Masterplan's **Cross-gate invariants** section is authoritative. Child plans must extend that contract rather than redefining it.
-- Execute the child plans in numerical order unless the Masterplan explicitly permits parallel development.
+- The **Review Hardening Contract is authoritative for every contract it amends**. If an older child-plan snippet conflicts with it, use the replacement contract from `00-review-hardening-contract.md`; the affected gate is not green until that amendment is applied.
+- The Masterplan owns all remaining cross-gate architecture, dependencies, invariants, coverage mapping, and stage gates.
+- Each child plan owns the executable tasks for its subsystem except where the Hardening Contract explicitly replaces or amends a step.
+- When a contract crosses gates, the owner named in the Masterplan's **Cross-gate invariants** section remains authoritative unless the Hardening Contract explicitly tightens that boundary.
+- Execute the child plans in numerical order and apply the Hardening amendments at their stated G1–G6 insertion points. The Masterplan may still permit independent G2/G3 development after G1.
 - Do not copy task bodies back into this file. Keeping this file as an index is deliberate drift prevention.
 
 ## Optional local single-file artifact
@@ -28,6 +30,8 @@ For offline reading only, a developer may generate a disposable concatenated cop
 
 ```bash
 {
+  cat docs/superpowers/plans/roguelite-expedition/00-review-hardening-contract.md
+  printf '\n\n---\n\n'
   cat docs/superpowers/plans/2026-09-03-roguelite-expedition-master-plan.md
   for file in \
     docs/superpowers/plans/roguelite-expedition/01-expedition-core-extraction.md \
