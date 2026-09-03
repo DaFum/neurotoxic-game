@@ -238,6 +238,11 @@ test('vehicle adapter falls back safely when selected asset is missing', () => {
   assert.equal(result.assetId, null)
   assert.deepEqual(result.moduleIds, [])
 })
+
+test('vehicle adapter can preview a candidate chassis before expedition start', () => {
+  const result = getExpeditionVehicleState(baseState, 'bus_1')
+  assert.equal(result.assetId, 'bus_1')
+})
 ```
 
 - [ ] **Step 2: Verify failure**
@@ -286,9 +291,10 @@ export interface ExpeditionVehicleState {
 }
 
 export const getExpeditionVehicleState = (
-  state: Pick<GameState, 'player' | 'assets' | 'expedition'>
+  state: Pick<GameState, 'player' | 'assets' | 'expedition'>,
+  activeTourbusAssetId: string | null = state.expedition.loadout.activeTourbusAssetId
 ): ExpeditionVehicleState => {
-  const selectedId = state.expedition.loadout.activeTourbusAssetId
+  const selectedId = activeTourbusAssetId
   const asset =
     selectedId === null
       ? null
@@ -316,6 +322,8 @@ export const getExpeditionVehicleState = (
   }
 }
 ```
+
+The optional `activeTourbusAssetId` is a read-only preview override for Tour Prep/loadout validation. Active-run callers omit it and continue reading the committed `expedition.loadout.activeTourbusAssetId`; no candidate value is persisted by this adapter.
 
 Update `src/utils/assetSelectors/assetFinancials.ts` so the new keys are included in the existing aggregation lists:
 
@@ -429,16 +437,20 @@ git commit -m "feat(expedition): add tourbus expedition bonuses"
 
 ---
 
-### Task 4: Implement Cargo Capacity and Loadout Validation
+### Task 4: Implement Cargo Capacity, Loadout Conversion, and Start-State Materialization
 
 **Files:**
 - Create: `src/domain/expedition/cargo.ts`
 - Modify: `src/domain/expedition/loadout.ts`
+- Modify: `src/context/reducers/expeditionReducer.ts`
 - Modify: `src/ui/expedition/TourPrepLoadout.tsx`
 - Test: `tests/node/expeditionCargo.test.js`
+- Test: `tests/node/expeditionReducer.test.js`
 - Test: `tests/ui/TourPrep.test.tsx`
 
-- [ ] **Step 1: Write failing cargo tests**
+`ExpeditionCargoLoadout` from G1 is a **selection/input** shape (`merchSlots`, `contrabandSlots`). `ExpeditionCargoState` from G2 is the **active run** shape (`merchSlotsUsed`, `contrabandSlotsUsed`). They are intentionally different types and cross exactly one explicit materialization boundary at `START_EXPEDITION`.
+
+- [ ] **Step 1: Write failing cargo/conversion tests**
 
 ```js
 import test from 'node:test'
@@ -447,7 +459,8 @@ import {
   BASE_EXPEDITION_CARGO_CAPACITY,
   getExpeditionCargoCapacity,
   getExpeditionCargoUsed,
-  canFitExpeditionCargo
+  canFitExpeditionCargo,
+  materializeExpeditionCargo
 } from '../../src/domain/expedition/cargo.ts'
 
 const cargo = {
@@ -471,6 +484,15 @@ test('cargo cannot exceed derived capacity', () => {
   assert.equal(canFitExpeditionCargo(cargo, 7), true)
   assert.equal(canFitExpeditionCargo(cargo, 6), false)
 })
+
+test('loadout cargo materializes into the active run-state field names', () => {
+  assert.deepEqual(materializeExpeditionCargo({
+    spareParts: 2,
+    supplies: 1,
+    merchSlots: 3,
+    contrabandSlots: 1
+  }), cargo)
+})
 ```
 
 - [ ] **Step 2: Verify failure**
@@ -479,17 +501,26 @@ test('cargo cannot exceed derived capacity', () => {
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCargo.test.js
 ```
 
-Expected: FAIL because cargo domain is missing.
+Expected: FAIL because cargo domain/materialization is missing.
 
-- [ ] **Step 3: Implement exact cargo arithmetic**
+- [ ] **Step 3: Implement exact cargo arithmetic and the one loadout-to-run conversion**
 
 `src/domain/expedition/cargo.ts`:
 
 ```ts
-import type { ExpeditionCargoState } from '../../types'
+import type { ExpeditionCargoLoadout, ExpeditionCargoState } from '../../types'
 
 export const BASE_EXPEDITION_CARGO_CAPACITY = 12
 export const MIN_EXPEDITION_CARGO_CAPACITY = 4
+
+export const materializeExpeditionCargo = (
+  cargo: ExpeditionCargoLoadout
+): ExpeditionCargoState => ({
+  spareParts: cargo.spareParts,
+  supplies: cargo.supplies,
+  merchSlotsUsed: cargo.merchSlots,
+  contrabandSlotsUsed: cargo.contrabandSlots
+})
 
 export const getExpeditionCargoUsed = (cargo: ExpeditionCargoState): number =>
   cargo.spareParts +
@@ -509,35 +540,93 @@ export const canFitExpeditionCargo = (
 ): boolean => getExpeditionCargoUsed(cargo) <= capacity
 ```
 
-Update loadout validation to derive vehicle bonus via `getExpeditionVehicleState` and reject start when selected cargo does not fit.
+The canonical loadout validator receives the G1 candidate, previews the candidate chassis through the adapter, converts the candidate cargo once, and rejects overflow:
 
-- [ ] **Step 4: Render capacity in Tour Prep**
+```ts
+const vehicle = getExpeditionVehicleState(
+  state,
+  candidate.activeTourbusAssetId
+)
+const capacity = getExpeditionCargoCapacity(vehicle.cargoCapacityBonus)
+const runCargo = materializeExpeditionCargo(candidate.cargo)
+if (!canFitExpeditionCargo(runCargo, capacity)) {
+  return { valid: false, reason: 'cargo_over_capacity' }
+}
+```
+
+Do not make `getExpeditionCargoCapacity` accept `GameState` or `ExpeditionLoadout`; it remains a pure numeric capacity helper. Do not pass raw `ExpeditionCargoLoadout` to APIs typed for `ExpeditionCargoState`.
+
+- [ ] **Step 4: Materialize the validated cargo at `START_EXPEDITION`**
+
+Extend the existing G1 start reducer without duplicating validation:
+
+```ts
+const cargo = materializeExpeditionCargo(payload.loadout.cargo)
+
+return {
+  ...state,
+  expedition: {
+    ...createDefaultExpeditionState(),
+    status: 'active',
+    runId: payload.runId,
+    loadout: payload.loadout,
+    cargo,
+    startingMoney: finiteNumberOr(state.player.money, 0),
+    startingFame: finiteNumberOr(state.player.fame, 0)
+  }
+}
+```
+
+Later G2/G5 tasks that extend `START_EXPEDITION` must preserve this same materialization boundary; they may adjust the **materialized run cargo** for canonical one-time effects, but must not spread raw loadout-only field names into `expedition.cargo`.
+
+- [ ] **Step 5: Render capacity in Tour Prep with the same contracts**
 
 The UI must display one bounded line such as `Cargo 7 / 12` and disable `Start Tour` when over capacity. Do not add a new permanent HUD bar:
 
 ```tsx
-const capacity = getExpeditionCargoCapacity(state, loadout)
-const used = getExpeditionCargoUsed(loadout.cargo)
+const vehicle = getExpeditionVehicleState(
+  state,
+  loadout.activeTourbusAssetId
+)
+const capacity = getExpeditionCargoCapacity(vehicle.cargoCapacityBonus)
+const used = getExpeditionCargoUsed(materializeExpeditionCargo(loadout.cargo))
 return <p aria-live="polite">{t('ui:expedition.cargo.summary', { used, capacity })}</p>
 ```
 
-Tour Prep folds `used <= capacity` into its existing `validateExpeditionLoadout` result.
+Tour Prep does not own a second capacity rule: it folds the same candidate into the existing `validateExpeditionLoadout(state, loadout)` result for Start-button gating.
 
-- [ ] **Step 5: Run tests**
+- [ ] **Step 6: Add a start-state regression test**
+
+```js
+const started = gameReducer(
+  preparing,
+  createStartExpeditionAction(preparing, validLoadout)
+)
+assert.deepEqual(started.expedition.cargo, {
+  spareParts: validLoadout.cargo.spareParts,
+  supplies: validLoadout.cargo.supplies,
+  merchSlotsUsed: validLoadout.cargo.merchSlots,
+  contrabandSlotsUsed: validLoadout.cargo.contrabandSlots
+})
+```
+
+This pins the only field-name conversion and proves selected cargo survives Tour Prep into the active run.
+
+- [ ] **Step 7: Run tests**
 
 ```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCargo.test.js
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCargo.test.js tests/node/expeditionReducer.test.js
 pnpm exec vitest run tests/ui/TourPrep.test.tsx
 pnpm run typecheck:core
 ```
 
 Expected: PASS.
 
-- [ ] **Step 6: Commit**
+- [ ] **Step 8: Commit**
 
 ```bash
-git add src/domain/expedition/cargo.ts src/domain/expedition/loadout.ts src/ui/expedition/TourPrepLoadout.tsx tests/node/expeditionCargo.test.js tests/ui/TourPrep.test.tsx
-git commit -m "feat(expedition): enforce cargo capacity"
+git add src/domain/expedition/cargo.ts src/domain/expedition/loadout.ts src/context/reducers/expeditionReducer.ts src/ui/expedition/TourPrepLoadout.tsx tests/node/expeditionCargo.test.js tests/node/expeditionReducer.test.js tests/ui/TourPrep.test.tsx
+git commit -m "feat(expedition): materialize and enforce cargo capacity"
 ```
 
 ---
@@ -1148,13 +1237,14 @@ insurancePremiumPaid: number
 
 Defaults are `null`, `false`, and `0`. The sanitizer accepts only the three policy ids. `validateExpeditionLoadout` rejects a policy when `state.player.money < getInsurancePremium(policyId)`.
 
-- [ ] **Step 4: Charge the premium exactly once when the Expedition starts**
+- [ ] **Step 4: Charge the premium exactly once when the Expedition starts while preserving cargo materialization**
 
-Extend the existing `START_EXPEDITION` reducer branch:
+Extend the existing `START_EXPEDITION` reducer branch. Task 4 remains the cargo field-name owner; insurance must carry that active run cargo forward rather than replacing it with default `{}` values:
 
 ```ts
 const premium = getInsurancePremium(payload.loadout.insurancePolicyId)
 if (finiteNumberOr(state.player.money, 0) < premium) return state
+const cargo = materializeExpeditionCargo(payload.loadout.cargo)
 
 return {
   ...state,
@@ -1162,7 +1252,9 @@ return {
   expedition: {
     ...createDefaultExpeditionState(),
     status: 'active',
+    runId: payload.runId,
     loadout: payload.loadout,
+    cargo,
     insurancePremiumPaid: premium,
     startingMoney: finiteNumberOr(state.player.money, 0) - premium,
     startingFame: finiteNumberOr(state.player.fame, 0)
@@ -1170,7 +1262,7 @@ return {
 }
 ```
 
-The premium is part of pre-tour spend; extraction never refunds it. A replayed `START_EXPEDITION` while already active remains rejected by the lifecycle reducer.
+The premium is part of pre-tour spend; extraction never refunds it. A replayed `START_EXPEDITION` while already active remains rejected by the lifecycle reducer. Keep the Task-4 start-state cargo regression green here as a cross-task guard.
 
 - [ ] **Step 5: Apply claims only at the two canonical Condition seams**
 
@@ -1723,6 +1815,7 @@ git commit -m "test(balance): measure expedition condition and cargo"
 - Travel still settles fuel/vehicle condition only once through the existing travel minigame reducer.
 - Technical wear is deterministic and applied exactly once after gigs.
 - Cargo has a meaningful capacity trade-off.
+- Selected loadout cargo is materialized once into the active run-state schema at `START_EXPEDITION` and preserved by later start extensions.
 - Supply Stops can buy safety through parts/supplies/repairs.
 - Improvisation can create hidden defects; undiscovered defects never leak into UI.
 - Existing minigames reduce future technical wear instead of becoming detached side activities.
