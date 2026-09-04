@@ -78,6 +78,7 @@ import {
   sanitizeRngSeed,
   sanitizeRunSeed
 } from './assetSanitizers'
+import { sanitizeExpeditionState } from './expeditionSanitizers'
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
@@ -258,7 +259,8 @@ export const handleLoadGame = (
     ),
     rngSeed: sanitizeRngSeed(loadedState.rngSeed),
     runSeed: sanitizeRunSeed(loadedState.runSeed),
-    rivalBand: sanitizeRivalBand(loadedState.rivalBand)
+    rivalBand: sanitizeRivalBand(loadedState.rivalBand),
+    expedition: sanitizeExpeditionState(loadedState.expedition)
   }
 
   // Apply venue migrations using spreads

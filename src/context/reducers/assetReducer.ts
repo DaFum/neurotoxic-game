@@ -31,6 +31,7 @@ import {
   createAssetRepairedQuestEvent
 } from '../../quests/producers/assetQuestEvents'
 import { getAssetSaleQuote } from '../../utils/assetSelectors/assetSaleQuote'
+import { isExpeditionChassisCommitmentLocked } from '../../domain/expedition/buildCommitment'
 
 /**
  * Finds an asset by id via a single procedural scan.
@@ -201,6 +202,10 @@ export const handleInstallModule = (
 ): GameState => {
   const { assetId, slotId, moduleId, newSlotIds } = payload
   if (!state.assets) return state
+  // An active Expedition freezes the module set of the chassis it committed
+  // to: the committed module ids are part of the run's identity, and the route
+  // was previewed with them installed. Other assets stay serviceable.
+  if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
   const moduleInfo = MODULE_REGISTRY[moduleId]
   if (!moduleInfo) return state
@@ -308,6 +313,10 @@ export const handleRemoveModule = (
 ): GameState => {
   const { assetId, slotId } = payload
   if (!state.assets) return state
+  // An active Expedition freezes the module set of the chassis it committed
+  // to: the committed module ids are part of the run's identity, and the route
+  // was previewed with them installed. Other assets stay serviceable.
+  if (isExpeditionChassisCommitmentLocked(state, assetId)) return state
 
   // ⚡ BOLT OPTIMIZATION: Replaced O(N) array methods (.find, .some, .map, .filter)
   // with procedural loops to avoid intermediate array allocations and reduce GC pressure.

@@ -164,3 +164,15 @@ export interface SpawnRivalBandPayload {
 export interface MoveRivalBandPayload {
   rivalBand: RivalBandState
 }
+
+/**
+ * Payload claiming a fresh Expedition run identity and root run seed.
+ *
+ * @remarks
+ * `runSeed` is the next value of the canonical root `GameState.runSeed`; the
+ * Expedition slice never stores a seed of its own.
+ */
+export interface PrepareExpeditionRunPayload {
+  prepId: string
+  runSeed: number
+}

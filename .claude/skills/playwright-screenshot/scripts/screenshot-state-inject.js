@@ -209,7 +209,27 @@ export const BASE_STATE = {
   liabilities: [],
   crowdfundCampaigns: [],
   rngSeed: 12345,
-  runSeed: 12345
+  runSeed: 12345,
+  // Roguelite Expedition: fixtures start outside a run. Mirrors
+  // createDefaultExpeditionState(); no seed of its own (runSeed above owns it).
+  expedition: {
+    status: 'idle',
+    prep: null,
+    runId: null,
+    routeStep: 0,
+    visitedNodeIds: [],
+    intelByNodeId: {},
+    intelGrants: [],
+    scoutReconUsedRouteSteps: [],
+    loadout: null,
+    startingMoney: 0,
+    startingFame: 0,
+    protectedCareerCash: 0,
+    rewardLedger: [],
+    extractionWindowsSeen: [],
+    pendingFailure: null,
+    outcome: null
+  }
 }
 
 // ── Per-fixture overrides ──────────────────────────────────────────────────

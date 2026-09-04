@@ -155,6 +155,74 @@ const buildPopulatedState = () => {
     currentLocationId: 'node_1'
   }
   state.unlocks = ['unlock_1', 'unlock_2']
+  // A mid-run Expedition. The shape must match exactly what
+  // `sanitizeExpeditionState` accepts and returns — an inconsistent run (no
+  // `runId`, no committed loadout) is legitimately collapsed to idle on load,
+  // which would read here as a round-trip loss rather than sanitizer intent.
+  // `intelByNodeId` is null-prototype because the sanitizer returns one, and
+  // `deepStrictEqual` compares prototypes.
+  state.expedition = {
+    status: 'active',
+    prep: { prepId: 'run_fixture_1' },
+    runId: 'run_fixture_1',
+    routeStep: 3,
+    visitedNodeIds: ['exp_node_0', 'exp_node_1'],
+    intelByNodeId: Object.assign(Object.create(null), {
+      exp_node_2: 1,
+      exp_node_3: 2
+    }),
+    intelGrants: [
+      {
+        id: 'grant_1',
+        source: 'social',
+        sourceProofId: 'social_post_7',
+        nodeId: 'exp_node_4',
+        targetLevel: 1,
+        consumed: false
+      }
+    ],
+    scoutReconUsedRouteSteps: [2],
+    loadout: {
+      tourTypeId: 'standard_tour',
+      regionId: 'industrial_belt',
+      activeTourbusAssetId: 'asset_1',
+      crewIds: ['crew_scout'],
+      cargo: { spareParts: 2, supplies: 3 },
+      starterPerkId: null,
+      nativeContracts: [
+        { templateId: 'contract_route_a', targetNodeId: 'exp_node_5' }
+      ],
+      insurancePolicyId: null,
+      pressureModifierIds: [],
+      build: {
+        setlistSongIds: ['song_1'],
+        equipment: { selectedGearItemIds: ['hq_inst_guitar_custom'] },
+        selectedTourbusModuleIds: ['tb_sleeping_berths'],
+        merch: [{ inventoryKey: 'shirts', quantity: 10 }],
+        contraband: [{ stashKey: 'stash_a', instanceId: 'inst_1', stacks: 2 }],
+        sponsorOfferId: null,
+        startingFuelTarget: 80,
+        protectedCareerCash: 250
+      }
+    },
+    startingMoney: 4200,
+    startingFame: 340,
+    protectedCareerCash: 250,
+    rewardLedger: [
+      {
+        id: 'ledger_1',
+        rewardDefinitionId: 'reward_route_spare_parts_cache',
+        sourceType: 'route_rare',
+        sourceId: 'exp_node_1',
+        secured: false,
+        earnedAtRouteStep: 1,
+        materialized: false
+      }
+    ],
+    extractionWindowsSeen: [2],
+    pendingFailure: null,
+    outcome: null
+  }
 
   return state
 }
@@ -255,7 +323,8 @@ describe('persisted save slice round-trip', () => {
       'crowdfundCampaigns',
       'rngSeed',
       'runSeed',
-      'rivalBand'
+      'rivalBand',
+      'expedition'
     ]
 
     const parsed = deserialize(serialize(persisted))

@@ -29,6 +29,7 @@ import { usePersistence } from './usePersistence'
 import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
+import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
 import {
   useFacilityDispatchActions,
   type FacilityDispatchActions
@@ -201,6 +202,11 @@ type BaseGameDispatchActions = {
   installModule: (input: Parameters<typeof installModuleAction>[0]) => void
   removeModule: (assetId: string, slotId: string) => void
   startCrowdfund: (input: Parameters<typeof startCrowdfundAction>[0]) => void
+
+  // Roguelite Expedition (G1). Creators read the same `stateRef` snapshot the
+  // reducer validates against, so a prepared run's seed and the previewed map
+  // cannot diverge.
+  prepareExpeditionRun: () => void
 }
 
 /**
@@ -438,6 +444,10 @@ export function useGameDispatchActions({
     addToast,
     tRef
   })
+  const expeditionActions = useExpeditionDispatchActions({
+    dispatch,
+    stateRef
+  })
 
   return useMemo(
     () => ({
@@ -459,7 +469,8 @@ export function useGameDispatchActions({
       ...facilityActions,
       ...questActions,
       ...rivalBandActions,
-      ...assetActions
+      ...assetActions,
+      ...expeditionActions
     }),
     [
       changeScene,
@@ -480,7 +491,8 @@ export function useGameDispatchActions({
       facilityActions,
       questActions,
       rivalBandActions,
-      assetActions
+      assetActions,
+      expeditionActions
     ]
   )
 }
