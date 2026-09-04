@@ -32,6 +32,7 @@ import {
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
+import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
   DEFECT_SEVERITY_DAMAGE,
   createDeterministicHiddenDefect
@@ -61,6 +62,7 @@ import type {
   AddExpeditionRewardPayload,
   AdvanceExpeditionRoutePayload,
   CompleteExpeditionPayload,
+  ExecuteExpeditionInspectionPayload,
   ExtractExpeditionPayload,
   PrepareExpeditionRunPayload,
   PrepareNextExpeditionPayload,
@@ -1071,6 +1073,86 @@ export const handleResolveExpeditionDefect = (
         ...tc,
         defects: updatedDefects
       }
+    }
+  }
+}
+
+/**
+ * Executes an equipment inspection during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Inspection intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleExecuteExpeditionInspection = (
+  state: GameState,
+  payload: ExecuteExpeditionInspectionPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const resolution = resolveExpeditionInspection(state, payload)
+  if (!resolution.ok) return state
+
+  const { result } = resolution
+  let nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) - result.diagnosticFee
+  )
+
+  const tc = getExpeditionTechnicalCondition(state)
+  let updatedDefects = [...tc.defects]
+  const revealedSet = new Set(result.revealedDefectIds)
+
+  if (revealedSet.size > 0) {
+    updatedDefects = updatedDefects.map(d =>
+      revealedSet.has(d.id) && d.status === 'hidden'
+        ? { ...d, status: 'revealed' as const }
+        : d
+    )
+  }
+
+  let updatedTc: ExpeditionTechnicalCondition = {
+    ...tc,
+    defects: updatedDefects
+  }
+
+  if (result.professionalRepair && payload.repairTargetGroup) {
+    const targetGroup = payload.repairTargetGroup
+    nextMoney = clampPlayerMoney(
+      nextMoney - result.professionalRepair.moneyCost
+    )
+    const nextTargetCondition = clampCondition(
+      updatedTc[targetGroup] + result.professionalRepair.targetRestore
+    )
+    updatedTc = {
+      ...updatedTc,
+      [targetGroup]: nextTargetCondition
+    }
+    if (result.professionalRepair.resolvesTargetDefects) {
+      updatedTc.defects = updatedTc.defects.map(d =>
+        d.group === targetGroup &&
+        (d.status === 'revealed' || d.status === 'triggered')
+          ? { ...d, status: 'resolved' as const }
+          : d
+      )
+    }
+  }
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    expedition: {
+      ...state.expedition,
+      technicalCondition: updatedTc
     }
   }
 }

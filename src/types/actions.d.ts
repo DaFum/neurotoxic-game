@@ -293,3 +293,9 @@ export interface ResolveExpeditionDefectPayload {
   repairResolutionId: string
   expectedRouteStep: number
 }
+
+/**
+ * Payload executing an inspection on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionInspectionPayload =
+  import('./expedition').ExpeditionInspectionIntent

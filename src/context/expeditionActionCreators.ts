@@ -14,6 +14,7 @@ import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import type { GameAction, GameState } from '../types'
 import type {
+  ExpeditionInspectionIntent,
   ExpeditionIntelSource,
   ExpeditionLoadout,
   ExpeditionRepairIntent,
@@ -363,6 +364,34 @@ export const resolveExpeditionDefect = (
     payload: {
       defectId,
       repairResolutionId,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action executing an equipment inspection during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param intent - Candidate inspection intent.
+ * @returns Typed `EXECUTE_EXPEDITION_INSPECTION` action, or `null` when run is not active.
+ */
+export const executeExpeditionInspection = (
+  state: GameState,
+  intent: ExpeditionInspectionIntent
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.EXECUTE_EXPEDITION_INSPECTION }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.EXECUTE_EXPEDITION_INSPECTION,
+    payload: {
+      mode: intent.mode,
+      ...(intent.crewId ? { crewId: intent.crewId } : {}),
+      ...(intent.repairTargetGroup
+        ? { repairTargetGroup: intent.repairTargetGroup }
+        : {}),
       expectedRouteStep: state.expedition.routeStep
     }
   }
