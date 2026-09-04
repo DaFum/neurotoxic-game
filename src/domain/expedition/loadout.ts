@@ -699,7 +699,8 @@ export interface ExpeditionDaySettlement {
  * @remarks
  * Mandatory obligations are the one in-run cost the player cannot decline, so
  * they are allowed to consume the whole spendable slice — but not a cent of the
- * protected Career Cash. A shortfall is therefore not silently forgiven and not
+ * protected Career Cash, and the floor never raises a balance that is already
+ * below it. A shortfall is therefore not silently forgiven and not
  * silently taken: it carries forward as evidence, which is what lets the failure
  * shell raise an attributable bankruptcy crisis instead of the run simply
  * stalling.
@@ -721,8 +722,13 @@ export const settleExpeditionDailyObligation = (
   }
 
   const payable = Math.min(due, Math.max(0, policy.spendableCash))
+  // The floor can only stop a payment, never fund one. Earlier stages of the
+  // same day tick (the asset and liability ticks) may already have taken the
+  // balance below the protected slice, and clamping *up* to it here would
+  // conjure the difference into existence.
+  const floor = Math.min(money, policy.protectedCareerCash)
   return {
-    nextMoney: Math.max(policy.protectedCareerCash, money - payable),
+    nextMoney: Math.max(floor, money - payable),
     unpaidObligation: due - payable
   }
 }

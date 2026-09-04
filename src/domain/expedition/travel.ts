@@ -114,9 +114,10 @@ export const resolveExpeditionTravelCost = (
 
   if (state.expedition?.status !== 'active') {
     // Career travel: the helper's litres, and wear from the minigame alone —
-    // exactly the behavior that predates the Expedition layer.
+    // exactly the behavior that predates the Expedition layer, surplus fuel
+    // pickups included.
     return {
-      fuelConsumed: Math.max(0, baseFuelLiters - minigameFuelBonus),
+      fuelConsumed: baseFuelLiters - minigameFuelBonus,
       vehicleWear: minigameConditionLoss
     }
   }
@@ -151,10 +152,10 @@ export const resolveExpeditionTravelCost = (
   )
 
   return {
-    fuelConsumed: Math.max(
-      0,
-      baseFuelLiters * fuelMultiplier - minigameFuelBonus
-    ),
+    // Signed: a minigame run that collected more fuel than the leg burns is a
+    // net gain, exactly as it was before the Expedition layer. Clamping it at
+    // zero here would quietly discard the surplus the player earned.
+    fuelConsumed: baseFuelLiters * fuelMultiplier - minigameFuelBonus,
     // Route term scaled, player term added: see the module remarks.
     vehicleWear: Math.max(0, routeWear * wearMultiplier + minigameConditionLoss)
   }

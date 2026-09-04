@@ -297,7 +297,9 @@ export interface ExpeditionRouteContext {
  * player for a single decision.
  */
 export interface ExpeditionTravelSettlement {
+  /** Net litres to deduct; negative when minigame pickups exceeded the burn. */
   fuelConsumed: number
+  /** Non-negative points of wear for `player.van.condition`. */
   vehicleWear: number
 }
 
