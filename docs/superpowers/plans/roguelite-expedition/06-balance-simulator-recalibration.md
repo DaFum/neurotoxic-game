@@ -148,7 +148,7 @@ export const EXPEDITION_BALANCE_PROFILES = [
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 95,
     protectedCashRatio: 0.15,
-    requiredCapabilitySetIds: ['underground_network', 'chassis_network'],
+    requiredCapabilitySetIds: ['underground_network', 'chassis_network', 'mechanic_network'],
     requiresAscension: true,
     decisionPolicy: 'push_heat'
   },
@@ -169,7 +169,7 @@ export const EXPEDITION_BALANCE_PROFILES = [
     equipmentPolicy: 'current_selection',
     startingFuelTarget: 85,
     protectedCashRatio: 0.30,
-    requiredCapabilitySetIds: ['mechanic_network'],
+    requiredCapabilitySetIds: ['mechanic_network', 'industry_network', 'crew_network'],
     requiresAscension: true,
     decisionPolicy: 'repair_first'
   },
@@ -245,11 +245,18 @@ Important corrections:
 scout_intel declares industry_network because Manager is not baseline
 rival_hunter declares underground_network because Security is not baseline
 clean_sponsor/high_exposure declare chassis_network because legit tier2 maps to coach
+every requiresAscension profile declares at least 3 capability-set prerequisites because G5 Ascension requires >=3 owned sets
 ```
 
 Profile test constructs each strategy using **only its declared capability provenance** and fails on any hidden capability assumption.
 
 It also imports G2 `getExpeditionChassisArchetype` and rejects any repeated hard-coded mapping drift.
+
+Validation assertion:
+
+```text
+requiresAscension === true -> requiredCapabilitySetIds.length >= 3
+```
 
 ---
 
@@ -271,7 +278,7 @@ Exact sequence:
 1. start from createInitialState or supplied linked mature fixture
 2. record required capability-set fixture markers in provenance
 3. if requiresAscension:
-     fixture must satisfy real G5 rank/set/quest prerequisites
+     fixture must satisfy real G5 rank/set/quest prerequisites using only the declared >=3 set ids
      dispatch UNLOCK_EXPEDITION_ASCENSION; direct boolean seeding forbidden
 4. ensure exact production chassis exists through purchase/asset fixture path
 5. install required modules through production INSTALL_MODULE; failure throws
@@ -281,14 +288,15 @@ Exact sequence:
      use already selected legal G1 gear ids
    equipment best_owned_selection:
      call G1 getExpeditionOwnedPerformanceGear
-     choose deterministic legal run-selection by canonical effect utility then lexical id
+     choose at most MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS by canonical effect utility then lexical id
+     validate their G2 cargo-slot cost
      DO NOT call a fictitious equip action
 9. choose first four legal unique songs by profile policy; insufficient songs throws
 10. dispatch G1 PREPARE_EXPEDITION_RUN with seed; assert root state.runSeed === seed
 11. build prepared map from the exact root runSeed
 12. dispatch G4 PREPARE_EXPEDITION_SPONSOR_OFFERS; select staged sponsorOfferId by policy; do not accept yet
 13. build native Contract offers from G4 registry; accept legal preferences up to MAX_NATIVE_EXPEDITION_CONTRACTS and compatibility rules
-14. materialize cargo from real owned inventory/stash according to policy
+14. materialize cargo from real owned inventory/stash and selected performance gear according to G2 capacity rules
 15. set exact startingFuelTarget and protectedCareerCash ratio
 16. set insurance/perk/pressure ids exactly
 17. validate with one G1 canonical loadout validator
@@ -381,7 +389,7 @@ Sponsor staged/accepted terms
 same Rival id/Nemesis level
 Finale type/result
 selected chassis + exact modules + Crew combination
-selected G1 gear ids
+selected G1 gear ids + cargo slots consumed
 Intel levels/grants/recon uses/reputation reveals
 route choices that consumed revealed information
 secured/explicitly-extracted/abandoned rare rewards
@@ -559,7 +567,7 @@ Starter perk: requested if unlocked else null
 Pressure: requested only after real Ascension unlock; otherwise []
 Sponsor: apply policy to current real staged offers
 Contracts: apply legal preference ids up to real slot/compatibility limit
-Equipment: choose only current real owned selection; never fixture-seed gear
+Equipment: choose only current real owned G1 selection, max 3 and account for G2 cargo slots; never fixture-seed gear
 Cargo/Setlist/Fuel/Cash: same deterministic policies with current legal ownership/resources
 ```
 
@@ -688,6 +696,7 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 
 - All six mature profiles construct successfully from only declared capability provenance.
 - `scout_intel` and `rival_hunter` no longer depend on undeclared Manager/Security capabilities; coach profiles declare chassis capability.
+- Every mature profile that requests Ascension declares at least the three real capability-set prerequisites required by G5.
 - Mature strategy cohorts and fresh-Career progression cohorts are separate data populations.
 - Fresh Career starts with zero Expedition facility/set/Ascension/Legendary seeding and acquires meta only through production actions.
 - Simulator imports G1-G5 production helpers instead of duplicating formulas.
