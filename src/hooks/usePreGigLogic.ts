@@ -10,6 +10,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economy'
 
+import { canStartExpeditionPreGig } from '../domain/expedition/condition'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 
@@ -72,6 +73,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const expedition = useGameSelector(state => state.expedition)
+  const canStartShow = useGameSelector(canStartExpeditionPreGig)
   const {
     changeScene,
     setSetlist,
@@ -100,7 +102,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     setlist,
     typedT,
     technicalCondition:
-      expedition?.status === 'active' ? expedition.technicalCondition : null
+      expedition?.status === 'active' ? expedition.technicalCondition : null,
+    canStartShow
   })
 
   const {

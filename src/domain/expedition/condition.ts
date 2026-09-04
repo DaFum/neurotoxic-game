@@ -17,7 +17,14 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 /**
  * All physical equipment groups tracked by technical condition.
  */
-const EXPEDITION_CONDITION_GROUPS: readonly ConditionGroup[] = [
+/**
+ * The three equipment groups technical Condition tracks.
+ *
+ * @remarks
+ * Exported so the failure shell and the recovery UI iterate the same list; a
+ * per-module copy would let one of them silently miss a group.
+ */
+export const EXPEDITION_CONDITION_GROUPS: readonly ConditionGroup[] = [
   'pa',
   'instruments',
   'stageGear'

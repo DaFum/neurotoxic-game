@@ -23,7 +23,10 @@ import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { canSpendExpeditionCash, getExpeditionSpendableCash } from './loadout'
 import { canClaimExpeditionInsurance } from './insurance'
-import { getExpeditionTechnicalCondition } from './condition'
+import {
+  EXPEDITION_CONDITION_GROUPS,
+  getExpeditionTechnicalCondition
+} from './condition'
 import { isExpeditionServiceLocation } from './repairs'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import type { GameState } from '../../types'
@@ -171,15 +174,6 @@ export const getExpeditionMobilityFailureSignal = (
     choices
   }
 }
-
-/**
- * All physical equipment groups tracked by technical condition.
- */
-const EXPEDITION_CONDITION_GROUPS: readonly ConditionGroup[] = [
-  'pa',
-  'instruments',
-  'stageGear'
-] as const
 
 /**
  * Returns available technical recovery/termination controls for a condition group.
