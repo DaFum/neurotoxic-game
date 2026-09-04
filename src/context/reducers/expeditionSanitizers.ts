@@ -642,6 +642,7 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     claimConsumed:
       readBoolean(value, 'claimConsumed') ||
       readBoolean(value, 'insuranceClaimConsumed'),
+    technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),

@@ -66,6 +66,7 @@ import {
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import {
   handleAcceptExpeditionFailure,
+  handleAcceptExpeditionTechnicalFailure,
   handleAddExpeditionReward,
   handleAdvanceExpeditionRoute,
   handleClaimExpeditionInsurance,
@@ -237,7 +238,9 @@ const reducerMap: ReducerMap = {
   [ActionTypes.RESOLVE_EXPEDITION_DEFECT]: handleResolveExpeditionDefect,
   [ActionTypes.EXECUTE_EXPEDITION_INSPECTION]:
     handleExecuteExpeditionInspection,
-  [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance
+  [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance,
+  [ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE]:
+    handleAcceptExpeditionTechnicalFailure
 }
 
 /**

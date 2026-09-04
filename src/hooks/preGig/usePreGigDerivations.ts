@@ -38,6 +38,7 @@ interface UsePreGigDerivationsReturn {
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
   selectedSongIds: Set<string>
   calculatedBudget: number
+  isStartBlocked: boolean
 }
 
 /**
@@ -142,12 +143,19 @@ export const usePreGigDerivations = ({
     return acc
   }, [assetModifiers, gigModifiers])
 
+  const isStartBlocked = useMemo(() => {
+    if (!technicalCondition) return false
+    const profile = getExpeditionConditionPerformanceProfile(technicalCondition)
+    return profile.disabledGroups.length > 0
+  }, [technicalCondition])
+
   return {
     assetModifiers,
     GIG_MODIFIER_OPTIONS,
     adjustedBandMeetingCost,
     currentModifiers,
     selectedSongIds,
-    calculatedBudget
+    calculatedBudget,
+    isStartBlocked
   }
 }

@@ -305,3 +305,10 @@ export type ExecuteExpeditionInspectionPayload =
  */
 export type ClaimExpeditionInsurancePayload =
   import('./expedition').ExpeditionInsuranceClaimIntent
+
+/**
+ * Payload accepting an explicit technical failure on equipment.
+ */
+export interface AcceptExpeditionTechnicalFailurePayload {
+  expectedRouteStep: number
+}

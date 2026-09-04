@@ -42,6 +42,7 @@ interface PreGigLogicReturn {
   selectedSongIds: Set<string>
   calculatedBudget: number
   isStarting: boolean
+  isStartBlocked: boolean
   GIG_MODIFIER_OPTIONS: ModifierOption[]
   bandMeetingCost: number
   handleBandMeeting: () => void
@@ -90,7 +91,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     adjustedBandMeetingCost,
     currentModifiers,
     selectedSongIds,
-    calculatedBudget
+    calculatedBudget,
+    isStartBlocked
   } = usePreGigDerivations({
     band,
     assets,
@@ -169,6 +171,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     selectedSongIds,
     calculatedBudget,
     isStarting,
+    isStartBlocked,
     GIG_MODIFIER_OPTIONS,
     bandMeetingCost: adjustedBandMeetingCost,
     handleBandMeeting,

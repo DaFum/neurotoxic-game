@@ -265,3 +265,27 @@ export const getExpeditionConditionActiveEffects = (
 
   return effects
 }
+
+/**
+ * Checks whether the gig show can be started given the current equipment condition.
+ *
+ * @param state - Current game state.
+ * @returns True if show can start; false if blocked by zero-Condition equipment.
+ *
+ * @remarks
+ * At a mandatory PreGig with a disabled group, Start is blocked only while at
+ * least one recovery/termination control is enabled.
+ */
+export const canStartExpeditionPreGig = (state: GameState): boolean => {
+  if (state.expedition?.status !== 'active') return true
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return true
+
+  const profile = getExpeditionConditionPerformanceProfile(tc)
+  if (profile.disabledGroups.length === 0) return true
+
+  const hasDisabled = profile.disabledGroups.some(g => tc[g] === 0)
+  if (!hasDisabled) return true
+
+  return false
+}

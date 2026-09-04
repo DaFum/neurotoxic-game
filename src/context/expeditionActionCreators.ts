@@ -424,3 +424,29 @@ export const claimExpeditionInsurance = (
     }
   }
 }
+
+/**
+ * Builds the action accepting an explicit technical failure on zero-Condition equipment.
+ *
+ * @param state - Current game state.
+ * @returns Typed `ACCEPT_EXPEDITION_TECHNICAL_FAILURE` action, or `null` when not applicable.
+ */
+export const acceptExpeditionTechnicalFailure = (
+  state: GameState
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return null
+  const hasDisabled = tc.pa === 0 || tc.instruments === 0 || tc.stageGear === 0
+  if (!hasDisabled) return null
+
+  return {
+    type: ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE,
+    payload: {
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}

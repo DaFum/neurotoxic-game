@@ -227,7 +227,8 @@ const buildPopulatedState = () => {
     outcome: null,
     insurancePolicyId: null,
     insuranceClaimConsumed: false,
-    claimConsumed: false
+    claimConsumed: false,
+    technicalFailureAccepted: false
   }
 
   return state

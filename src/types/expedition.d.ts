@@ -408,6 +408,7 @@ export interface ExpeditionState {
   insurancePolicyId?: string | null
   insuranceClaimConsumed?: boolean
   claimConsumed?: boolean
+  technicalFailureAccepted?: boolean
 }
 
 /**
