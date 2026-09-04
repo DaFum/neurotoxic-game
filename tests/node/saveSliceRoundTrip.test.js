@@ -166,7 +166,7 @@ const buildPopulatedState = () => {
     prep: { prepId: 'run_fixture_1' },
     runId: 'run_fixture_1',
     routeStep: 3,
-    visitedNodeIds: ['exp_node_0', 'exp_node_1'],
+    visitedNodeIds: ['exp_0_0', 'exp_1_1', 'exp_2_1', 'exp_3_2'],
     intelByNodeId: Object.assign(Object.create(null), {
       exp_node_2: 1,
       exp_node_3: 2
@@ -213,12 +213,12 @@ const buildPopulatedState = () => {
         // The load sanitizer resolves the reward through the canonical
         // registry and requires the derived `<definition>::<source>` id, so a
         // fixture with an invented id is legitimately dropped.
-        id: 'reward_route_merch_crate::exp_node_1',
-        rewardDefinitionId: 'reward_route_merch_crate',
+        id: 'reward_route_vinyl_stash::exp_3_2',
+        rewardDefinitionId: 'reward_route_vinyl_stash',
         sourceType: 'route_rare',
-        sourceId: 'exp_node_1',
+        sourceId: 'exp_3_2',
         secured: false,
-        earnedAtRouteStep: 1,
+        earnedAtRouteStep: 3,
         materialized: false
       }
     ],
