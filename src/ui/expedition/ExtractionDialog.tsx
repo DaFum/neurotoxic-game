@@ -89,7 +89,7 @@ export const ExtractionDialog = memo(function ExtractionDialog({
 
   const rewardLabel = (entry: ExpeditionRewardLedgerEntry): string =>
     t(`ui:expedition.reward.${entry.rewardDefinitionId}`, {
-      defaultValue: entry.rewardDefinitionId
+      defaultValue: t('ui:expedition.reward.unknown')
     })
 
   return (

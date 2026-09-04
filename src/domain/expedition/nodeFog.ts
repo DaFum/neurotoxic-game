@@ -14,7 +14,7 @@ import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionNodeIntelLevel } from './nodeIntel'
 import { resolveExpeditionTravelCost } from './travel'
 import type { GameState } from '../../types'
-import type { ExpeditionNodeFog } from '../../ui/expedition/ExpeditionNodeFogBadge'
+import type { ExpeditionNodeFog } from '../../types/expedition'
 
 /**
  * Builds the per-node fog projection for the active run.

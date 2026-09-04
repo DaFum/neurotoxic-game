@@ -210,11 +210,13 @@ export type ExpeditionRewardResolution =
  * @returns True when the named source really did just resolve.
  *
  * @remarks
- * `route_rare` requires the node to be on the prepared route and to be the one
- * the run is currently standing on. `finale_nonlegendary` requires the run to
- * be standing on the Finale. The `event_rare`, `contract` and `crew_contact`
- * families have no producer before G3/G4, so their evidence check is the one
- * function those gates extend — until then no evidence can exist and the
+ * `route_rare` requires the node to be on the prepared route, to be the one the
+ * run is currently standing on, *and* to be carrying exactly the reward the
+ * request names: standing on a node is not evidence for a reward the seed put
+ * somewhere else. The `finale_nonlegendary`, `event_rare`, `contract` and
+ * `crew_contact` families have no producer before G3/G4 — nothing yet maps a
+ * resolved Finale result to its reward — so their evidence check is the one
+ * function those gates extend, and until then no evidence can exist and the
  * reward is refused rather than minted.
  */
 const hasCanonicalSourceEvidence = (
@@ -228,13 +230,19 @@ const hasCanonicalSourceEvidence = (
   switch (sourceType) {
     case 'route_rare': {
       if (!Object.hasOwn(map.meta, sourceId)) return false
-      return map.meta[sourceId]?.routeStep === routeStep
-    }
-    case 'finale_nonlegendary': {
-      if (sourceId !== map.finaleNodeId) return false
-      return map.meta[map.finaleNodeId]?.routeStep === routeStep
+      const node = map.meta[sourceId]
+      if (node?.routeStep !== routeStep) return false
+      // The seed decides which rare a node carries, so the request must name
+      // that one. Without this a caller standing on any rare-bearing node
+      // could claim whichever registered route rare it preferred.
+      return node.hidden.rareRewardId === request.expectedRewardId
     }
     // Producers owned by G3/G4. Extended in place by the owning gate.
+    // `finale_nonlegendary` belongs here until G4's contextual Finales map a
+    // resolved `finaleResultId` to its canonical reward: standing on the
+    // Finale does not say *which* Finale reward was earned, so honoring the
+    // request would let the caller pick the better of the two.
+    case 'finale_nonlegendary':
     case 'event_rare':
     case 'contract':
     case 'crew_contact':

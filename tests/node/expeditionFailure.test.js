@@ -372,19 +372,10 @@ describe('ACCEPT_EXPEDITION_FAILURE', () => {
   })
 
   it('keeps only secured rare rewards on failure', () => {
-    let state = walkTo(startedState({ money: 5000 }), 1)
-    state = gameReducer(state, {
-      type: ActionTypes.ADD_EXPEDITION_REWARD,
-      payload: {
-        expectedRewardId: 'reward_route_merch_crate',
-        sourceType: 'route_rare',
-        sourceId:
-          state.expedition.visitedNodeIds[
-            state.expedition.visitedNodeIds.length - 1
-          ],
-        expectedRouteStep: 1
-      }
-    })
+    // Step 5 is the walk's first rare-bearing node, and arriving on it is the
+    // reward's canonical evidence, so the ledger entry is banked by the route
+    // advance itself.
+    const state = walkTo(startedState({ money: 5000 }), 5)
     assert.equal(state.expedition.rewardLedger.length, 1)
 
     const bankrupt = gameReducer(broke(state), {
@@ -395,7 +386,7 @@ describe('ACCEPT_EXPEDITION_FAILURE', () => {
       type: ActionTypes.ACCEPT_EXPEDITION_FAILURE,
       payload: {
         pendingFailureId: bankrupt.expedition.pendingFailure?.id,
-        expectedRouteStep: 1
+        expectedRouteStep: bankrupt.expedition.routeStep
       }
     })
     assert.equal(failed.expedition.status, 'failed')

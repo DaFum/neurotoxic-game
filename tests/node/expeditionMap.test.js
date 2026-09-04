@@ -180,6 +180,22 @@ describe('standard route shape', () => {
     }
   })
 
+  it('places an Underground node even when every retry hits the Rival layer', () => {
+    // Regression: on a short route the Underground candidate collapses to a
+    // single value, so all eight retries can land on the Rival layer. Seed
+    // 505375 is such a route and used to ship with no Underground node.
+    const subtypes = new Set(
+      Object.values(build(505375).meta)
+        .map(entry => entry.specialSubtype)
+        .filter(Boolean)
+    )
+    assert.ok(subtypes.has('RIVAL_ENCOUNTER'))
+    assert.ok(
+      subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET'),
+      'seed 505375: no underground node'
+    )
+  })
+
   it('omits the Rival and Underground classes when the profile forbids them', () => {
     const map = build(7, {
       ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,

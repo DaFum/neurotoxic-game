@@ -16,10 +16,12 @@ import { createDefaultExpeditionState } from '../../src/domain/expedition/defaul
 import { buildExpeditionMap } from '../../src/domain/expedition/map'
 import {
   canSpendExpeditionCash,
+  enforceExpeditionCashFloor,
   getExpeditionFuelTopUpCost,
   getExpeditionSpendableCash,
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout'
+import { deriveExpeditionPendingFailure } from '../../src/domain/expedition/failure'
 import { SONGS_BY_ID } from '../../src/data/songs'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
@@ -631,8 +633,8 @@ describe('protected career cash floor', () => {
 
   it('allows a spend that stays inside the spendable slice', () => {
     const state = activeRun()
-    const spent = spend(state, 100)
-    assert.equal(spent.player.money, 900)
+    const spent = spend(state, 40)
+    assert.equal(spent.player.money, 960)
   })
 
   it('allows a spend that lands exactly on the floor', () => {
@@ -678,14 +680,48 @@ describe('protected career cash floor', () => {
     const state = activeRun({ money: 2000, protectedCareerCash: 900 })
     const earning = {
       ...state,
-      expedition: { ...state.expedition, startingMoney: 1000, routeStep: 3 }
+      expedition: {
+        ...state.expedition,
+        startingMoney: 1000,
+        routeStep: 3,
+        // A recorded shortfall is the bankruptcy crisis's evidence, so the
+        // accept below is the live terminal path and not a forged id.
+        unpaidDailyObligation: 250
+      }
     }
+    const pending = deriveExpeditionPendingFailure(earning)
+    assert.equal(pending?.reason, 'bankruptcy')
+
     const failed = gameReducer(earning, {
       type: ActionTypes.ACCEPT_EXPEDITION_FAILURE,
-      payload: { pendingFailureId: 'nope', expectedRouteStep: 3 }
+      payload: { pendingFailureId: pending.id, expectedRouteStep: 3 }
     })
-    // Refused for a forged crisis id, not by the cash floor.
-    assert.equal(failed, earning)
+    assert.equal(failed.expedition.status, 'failed')
+    // The settlement forfeits most of what the run earned above its starting
+    // Cash — a reduction the floor guard must not roll back. The protected
+    // slice itself survives because a run can never start below it.
+    assert.equal(failed.player.money, 1250)
+    assert.ok(failed.player.money >= earning.expedition.protectedCareerCash)
+  })
+
+  it('exempts the terminal settlement from the cash floor', () => {
+    const state = activeRun({ money: 2000, protectedCareerCash: 900 })
+    const settled = { ...state, player: { ...state.player, money: 400 } }
+
+    // Directly: the guard rolls a below-floor result back for an ordinary
+    // action, and lets the terminal settlement through untouched.
+    assert.equal(
+      enforceExpeditionCashFloor(
+        state,
+        settled,
+        ActionTypes.ACCEPT_EXPEDITION_FAILURE
+      ),
+      settled
+    )
+    assert.equal(
+      enforceExpeditionCashFloor(state, settled, ActionTypes.UPDATE_PLAYER),
+      state
+    )
   })
 
   it('does not guard Career play outside a run', () => {

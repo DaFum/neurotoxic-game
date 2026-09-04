@@ -759,3 +759,28 @@ export interface ExpeditionEventResultEffect {
 export interface ExpeditionEventIntent {
   resultIds: ExpeditionEventResultId[]
 }
+
+/**
+ * The projection a node's current intel level entitles the player to see.
+ *
+ * @remarks
+ * Lives here rather than beside the badge that renders it: the Fog projection
+ * is produced in the domain and consumed by several map components, so a UI
+ * module owning the contract would make the domain depend on the view.
+ */
+export interface ExpeditionNodeFog {
+  nodeClass: ExpeditionNodeClass
+  specialSubtype: ExpeditionSpecialNodeSubtype | null
+  dangerTier: ExpeditionTier
+  rewardTier: ExpeditionTier
+  isExtractionWindow: boolean
+  intelLevel: NodeIntelLevel
+  /** Exact payout, only present once intel reaches level 1. */
+  exactPayout: number | null
+  /** Exact wear cost, only present once intel reaches level 1. */
+  exactWearCost: number | null
+  /** Event/rival identity, only present at level 2. */
+  revealedIdentity: string | null
+  /** Rare reward this node yields, only present once intel reaches level 1. */
+  rareRewardId: string | null
+}

@@ -503,6 +503,10 @@ describe('committed identity freeze while active', () => {
       type: ActionTypes.SET_SETLIST,
       payload: ['song_a', 'song_b']
     })
+    // Contents alone cannot tell accept from reject here, since the stored
+    // setlist already matches: the fresh reference is what proves the
+    // committed-setlist guard let the replay through.
+    assert.notEqual(next, state)
     assert.deepEqual(next.setlist, [{ id: 'song_a' }, { id: 'song_b' }])
   })
 
