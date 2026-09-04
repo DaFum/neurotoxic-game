@@ -81,6 +81,7 @@ import {
 import { sanitizeExpeditionState } from './expeditionSanitizers'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
 import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
+import { buildExpeditionMap } from '../../domain/expedition/map'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
 
@@ -276,11 +277,40 @@ export const handleLoadGame = (
         : createDefaultExpeditionState()
   }
 
+  // Rebuild canonical map and current node if there is an active/finalized expedition
+  let expeditionGameMap: GameMap | undefined
+  let expeditionCurrentNodeId: string | undefined
+  if (
+    safeState.expedition &&
+    safeState.expedition.status !== 'idle' &&
+    safeState.expedition.status !== 'prepared' &&
+    safeState.expedition.loadout
+  ) {
+    const canonicalMap = buildExpeditionMap(
+      safeState.runSeed,
+      safeState.expedition.loadout.tourTypeId,
+      safeState.expedition.loadout.regionId
+    )
+    expeditionGameMap = structuredClone({
+      nodes: canonicalMap.nodes,
+      connections: canonicalMap.connections
+    })
+    const lastVisited =
+      safeState.expedition.visitedNodeIds[
+        safeState.expedition.visitedNodeIds.length - 1
+      ]
+    if (lastVisited) {
+      expeditionCurrentNodeId = lastVisited
+    }
+  }
+
   // Apply venue migrations using spreads
   const migratedState: GameState = {
     ...safeState,
+    ...(expeditionGameMap ? { gameMap: expeditionGameMap } : {}),
     player: {
       ...safeState.player,
+      ...(expeditionCurrentNodeId ? { currentNodeId: expeditionCurrentNodeId } : {}),
       location:
         typeof safeState.player.location === 'string'
           ? migratePlayerLocation(safeState.player.location)

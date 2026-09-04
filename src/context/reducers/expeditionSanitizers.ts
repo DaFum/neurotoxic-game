@@ -571,26 +571,32 @@ export const sanitizeExpeditionState = (
     preparedMap = buildExpeditionMap(runSeed, loadout.tourTypeId, loadout.regionId)
   }
 
-  // Validate visitedNodeIds against the canonical DAG starting at map.startNodeId
+  // For active or terminal Expeditions, validate visitedNodeIds strictly against canonical DAG.
+  // The visited path must contain exactly routeStep + 1 nodes: startNodeId at index 0,
+  // and each step i connected to step i-1 with meta[nodeId].routeStep === i.
   const validVisitedPath: string[] = []
-  if (preparedMap && rawVisitedNodeIds.length > 0) {
-    if (rawVisitedNodeIds[0] === preparedMap.startNodeId) {
-      validVisitedPath.push(rawVisitedNodeIds[0])
-      for (let i = 1; i < rawVisitedNodeIds.length; i++) {
-        if (validVisitedPath.length > routeStep + 1) break
-        const prevId = validVisitedPath[validVisitedPath.length - 1]
-        const currId = rawVisitedNodeIds[i]
-        if (prevId !== undefined && currId !== undefined) {
-          const isConnected = preparedMap.connections.some(
-            conn => conn.from === prevId && conn.to === currId
-          )
-          if (isConnected) {
-            validVisitedPath.push(currId)
-          } else {
-            break
-          }
-        }
+  if (preparedMap && (status === 'active' || TERMINAL_STATUSES.has(status))) {
+    if (rawVisitedNodeIds.length !== routeStep + 1) {
+      return fallback
+    }
+    if (rawVisitedNodeIds[0] !== preparedMap.startNodeId) {
+      return fallback
+    }
+    validVisitedPath.push(rawVisitedNodeIds[0]!)
+    for (let i = 1; i <= routeStep; i++) {
+      const prevId = validVisitedPath[i - 1]!
+      const currId = rawVisitedNodeIds[i]!
+      const currMeta = preparedMap.meta[currId]
+      if (!currMeta || currMeta.routeStep !== i) {
+        return fallback
       }
+      const isConnected = preparedMap.connections.some(
+        conn => conn.from === prevId && conn.to === currId
+      )
+      if (!isConnected) {
+        return fallback
+      }
+      validVisitedPath.push(currId)
     }
   } else if (rawVisitedNodeIds.length > 0) {
     validVisitedPath.push(...rawVisitedNodeIds)

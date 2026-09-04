@@ -164,10 +164,7 @@ export const getExpeditionConditionSummary = (state: GameState): number => {
     return Math.round((vehicle + pa + inst + stage) / 4)
   }
 
-  return Math.max(
-    0,
-    Math.min(100, finiteNumberOr(state.player.van?.condition, 0))
-  )
+  return vehicle
 }
 
 /**
@@ -290,8 +287,8 @@ export const getExpeditionConditionActiveEffects = (
  * @returns True if show can start; false if blocked by zero-Condition equipment.
  *
  * @remarks
- * At a mandatory PreGig with a disabled group, Start is blocked only while at
- * least one recovery/termination control is enabled.
+ * Start is blocked whenever any equipment group evaluates to disabled in the active
+ * performance profile.
  */
 export const canStartExpeditionPreGig = (state: GameState): boolean => {
   if (state.expedition?.status !== 'active') return true
@@ -299,10 +296,5 @@ export const canStartExpeditionPreGig = (state: GameState): boolean => {
   if (!tc) return true
 
   const profile = getExpeditionConditionPerformanceProfile(tc)
-  if (profile.disabledGroups.length === 0) return true
-
-  const hasDisabled = profile.disabledGroups.some(g => tc[g] === 0)
-  if (!hasDisabled) return true
-
-  return false
+  return profile.disabledGroups.length === 0
 }
