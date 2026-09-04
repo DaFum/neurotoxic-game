@@ -54,6 +54,7 @@ import {
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import { applyExpeditionRouteAdvance } from './expeditionReducer'
 import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
+import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 
 /**
  * Starts the tourbus travel minigame for a selected destination node.
@@ -355,6 +356,11 @@ export const handleCompleteTravelMinigame = (
   // and the run's route step can never diverge; the helper re-validates the
   // move against the route and no-ops outside an active run.
   newState = applyExpeditionRouteAdvance(newState, targetNode.id)
+
+  // Arriving is the `post_travel` boundary a hidden defect can be set to fire
+  // at, and this is the repository's only travel path — evaluated after the
+  // route advance so a defect planted for the node just reached is in scope.
+  newState = evaluateExpeditionDefectTriggers(newState, 'post_travel')
 
   return newState
 }
