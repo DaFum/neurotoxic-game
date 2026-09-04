@@ -10,6 +10,7 @@ import {
   applyExpeditionGearPerformanceDelta,
   getExpeditionCommittedGearProfile
 } from '../domain/expedition/equipment'
+import { getExpeditionConditionPerformanceProfile } from '../domain/expedition/condition'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -62,6 +63,15 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const expeditionGearDelta = useGameSelector(state =>
     state.expedition.status === 'active'
       ? getExpeditionCommittedGearProfile(state).performanceDelta
+      : null
+  )
+  // Technical Condition only exists inside a run, so this stays null in Career
+  // play and the rhythm owners fall back to their neutral multipliers.
+  const conditionProfile = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionConditionPerformanceProfile(
+          state.expedition.technicalCondition
+        )
       : null
   )
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
@@ -162,7 +172,8 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       player,
       setlist,
       gigModifiers,
-      currentGig
+      currentGig,
+      conditionProfile
     },
     contextActions: { addToast, setLastGigStats, endGig, t }
   })
