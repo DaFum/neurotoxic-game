@@ -63,10 +63,17 @@ const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
  * safety decision — the design requires Cash to be a tool for controlling risk,
  * not an unlimited rescue. Outside a run the full balance is spendable.
  */
-export const getExpeditionSpendableCash = (state: GameState): number =>
-  state.expedition?.status === 'active'
-    ? Math.max(0, state.player.money - state.expedition.protectedCareerCash)
-    : Math.max(0, state.player.money)
+export const getExpeditionSpendableCash = (state: GameState): number => {
+  const money = finiteNumberOr(state.player.money, 0)
+  if (state.expedition?.status === 'active') {
+    const protectedCash = state.expedition.protectedCareerCash
+    if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
+      return 0
+    }
+    return Math.max(0, money - protectedCash)
+  }
+  return Math.max(0, money)
+}
 
 /**
  * Checks whether an active-Expedition spend is affordable.

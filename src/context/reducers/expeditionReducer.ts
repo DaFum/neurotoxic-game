@@ -101,6 +101,33 @@ import type {
 } from '../../types/expedition'
 
 /**
+ * Executes a vehicle insurance claim, restoring van fuel and condition.
+ */
+const applyVehicleInsuranceClaim = (state: GameState): GameState => {
+  if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
+  const currentCondition = state.player.van?.condition ?? 100
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      van: {
+        ...state.player.van,
+        fuel: Math.max(
+          state.player.van?.fuel ?? 0,
+          EXPEDITION_TOW_FUEL_RESTORED
+        ),
+        condition: currentCondition <= 0 ? 25 : currentCondition
+      }
+    },
+    expedition: {
+      ...state.expedition,
+      insuranceClaimConsumed: true,
+      claimConsumed: true
+    }
+  }
+}
+
+/**
  * Narrows a payload seed to the unsigned 32-bit integer range the root
  * `runSeed` contract uses.
  *
@@ -849,29 +876,7 @@ export const handleResolveExpeditionCrisis = (
       }
     }
 
-    if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
-    return {
-      ...state,
-      player: {
-        ...state.player,
-        van: {
-          ...state.player.van,
-          fuel: Math.max(
-            state.player.van?.fuel ?? 0,
-            EXPEDITION_TOW_FUEL_RESTORED
-          ),
-          condition:
-            (state.player.van?.condition ?? 0) <= 0
-              ? 25
-              : (state.player.van?.condition ?? 100)
-        }
-      },
-      expedition: {
-        ...state.expedition,
-        insuranceClaimConsumed: true,
-        claimConsumed: true
-      }
-    }
+    return applyVehicleInsuranceClaim(state)
   }
 
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
@@ -926,28 +931,7 @@ export const handleClaimExpeditionInsurance = (
   if (!canClaimExpeditionInsurance(state, claimType, targetGroup)) return state
 
   if (claimType === 'vehicle') {
-    return {
-      ...state,
-      player: {
-        ...state.player,
-        van: {
-          ...state.player.van,
-          fuel: Math.max(
-            state.player.van?.fuel ?? 0,
-            EXPEDITION_TOW_FUEL_RESTORED
-          ),
-          condition:
-            (state.player.van?.condition ?? 0) <= 0
-              ? 25
-              : (state.player.van?.condition ?? 100)
-        }
-      },
-      expedition: {
-        ...state.expedition,
-        insuranceClaimConsumed: true,
-        claimConsumed: true
-      }
-    }
+    return applyVehicleInsuranceClaim(state)
   }
 
   if (claimType === 'technical') {
@@ -1393,7 +1377,10 @@ export const handleApplyExpeditionEventDelta = (
     // event cannot bypass a tourbus built to survive wear.
     const multiplier = Math.max(
       0,
-      getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier
+      finiteNumberOr(
+        getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier,
+        1.0
+      )
     )
     nextExpedition = {
       ...nextExpedition,

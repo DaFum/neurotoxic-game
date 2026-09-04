@@ -678,11 +678,15 @@ describe('persisted reward ledger hardening regressions', () => {
     }
 
     const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.status, 'completed')
+    assert.equal(loaded.expedition.runId, walked.expedition.prep.prepId)
+
     const next = gameReducer(loaded, {
       type: ActionTypes.PREPARE_NEXT_EXPEDITION,
       payload: { runId: loaded.expedition.runId }
     })
 
+    assert.equal(next.expedition.status, 'idle')
     assert.equal(next.band.inventory.shirts ?? 0, initialShirts, 'materialized reward did not re-grant inventory')
   })
 

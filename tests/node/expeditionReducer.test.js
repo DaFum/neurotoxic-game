@@ -27,6 +27,7 @@ import {
 const FIRST_TOURBUS_MODULE_ID = Object.keys(MODULE_REGISTRY).find(
   id => MODULE_REGISTRY[id]?.slotType === 'tb_roof'
 )
+assert.ok(FIRST_TOURBUS_MODULE_ID, 'a tb_roof module must exist in MODULE_REGISTRY')
 
 const prepareAction = (prepId, runSeed) => ({
   type: ActionTypes.PREPARE_EXPEDITION_RUN,
