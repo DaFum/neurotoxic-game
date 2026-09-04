@@ -44,6 +44,7 @@ import {
   calculatePostGigTechnicalWear,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
+import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
@@ -81,8 +82,13 @@ export const handleSetGig = (
  */
 export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   logger.info('GameState', 'Starting Gig Sequence', payload.name)
+  // Entering PreGig is the `pre_gig` boundary a hidden defect can fire at, and
+  // it has to resolve before the screen derives its performance profile —
+  // otherwise the player would plan the gig against equipment that is about to
+  // break. No-ops outside an active run.
+  const withDefects = evaluateExpeditionDefectTriggers(state, 'pre_gig')
   return {
-    ...state,
+    ...withDefects,
     currentGig: payload,
     currentScene: GAME_PHASES.PRE_GIG,
     gigModifiers: { ...DEFAULT_GIG_MODIFIERS },
@@ -93,7 +99,7 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     // the time they render. Deliberately not persisted — a save reloaded
     // mid-gig falls back to live reputation.
     gigContextSnapshot: {
-      reputationByRegionAtStart: { ...state.reputationByRegion }
+      reputationByRegionAtStart: { ...withDefects.reputationByRegion }
     }
   }
 }
@@ -476,6 +482,10 @@ export const handleSetLastGigStats = (
         technicalCondition: updatedCondition
       }
     }
+    // The gig's own wear lands first, then the `post_gig` boundary: a defect
+    // planted by an earlier improvised repair is meant to surface as the show
+    // ends, not to be pre-empted by it.
+    nextState = evaluateExpeditionDefectTriggers(nextState, 'post_gig')
   }
 
   return nextState
