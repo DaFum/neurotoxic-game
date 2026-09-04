@@ -210,8 +210,11 @@ const buildPopulatedState = () => {
     protectedCareerCash: 250,
     rewardLedger: [
       {
-        id: 'ledger_1',
-        rewardDefinitionId: 'reward_route_spare_parts_cache',
+        // The load sanitizer resolves the reward through the canonical
+        // registry and requires the derived `<definition>::<source>` id, so a
+        // fixture with an invented id is legitimately dropped.
+        id: 'reward_route_merch_crate::exp_node_1',
+        rewardDefinitionId: 'reward_route_merch_crate',
         sourceType: 'route_rare',
         sourceId: 'exp_node_1',
         secured: false,

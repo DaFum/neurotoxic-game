@@ -50,7 +50,8 @@ export const getExpeditionNodeFogByNodeId = (
       revealedIdentity:
         intelLevel >= 2
           ? (entry.hidden.rivalId ?? entry.hidden.eventId ?? null)
-          : null
+          : null,
+      rareRewardId: intelLevel >= 1 ? entry.hidden.rareRewardId : null
     }
   }
   return out

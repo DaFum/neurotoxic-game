@@ -80,7 +80,6 @@
   "clinic.alreadyEnhanced": "Bandmitglied hat diese Erweiterung bereits",
   "clinic.alreadyGrafted": "Mitglied hat dieses Implantat bereits",
   "clinic.enhance_button": "GRAFT: CYBER-LUNGE ({{fame}} Ruhm)",
-  "clinic.iron_liver_button": "GRAFT: EISERNE LEBER ({{fame}} Ruhm)",
   "clinic.enhance_success": "Fleisch verbessert.",
   "clinic.execute_mutation": "MUTATION AUSFÜHREN",
   "clinic.fame": "RUHM:",
@@ -99,6 +98,7 @@
   "clinic.heal_button": "HEILEN ({{cost}})",
   "clinic.heal_success": "+{{stamina}} Ausdauer, +{{mood}} Stimmung. Die Leere umarmt dich.",
   "clinic.invalidMember": "Ungültiges Bandmitglied",
+  "clinic.iron_liver_button": "GRAFT: EISERNE LEBER ({{fame}} Ruhm)",
   "clinic.leave": "KLINIK VERLASSEN",
   "clinic.lore": "Opfere Geld und Ruhm für sofortige kybernetische Verbesserungen oder synthetische Heilung.",
   "clinic.mood": "Stimmung:",
@@ -342,6 +342,7 @@
   "expedition.extraction.fameForfeited": "Ruhm verloren",
   "expedition.extraction.fameRetained": "Ruhm gesichert",
   "expedition.extraction.noRares": "Keine ungesicherte seltene Beute vorhanden.",
+  "expedition.extraction.open": "JETZT AUSSTEIGEN",
   "expedition.extraction.title": "JETZT AUSSTEIGEN?",
   "expedition.extraction.willBeKept": "Wird behalten",
   "expedition.extraction.willBeLost": "Geht verloren",
@@ -364,6 +365,7 @@
   "expedition.node.danger": "Gefahr:",
   "expedition.node.extractionWindow": "Ausstieg hier möglich",
   "expedition.node.payout": "Gage:",
+  "expedition.node.rare": "Selten: {{name}}",
   "expedition.node.reward": "Beute:",
   "expedition.node.subtype.BLACK_MARKET": "Schwarzmarkt",
   "expedition.node.subtype.RIVAL_ENCOUNTER": "Rivalen-Begegnung",
@@ -1959,6 +1961,5 @@
   "zealotry.not_enough_controversy": "Nicht genug Kontroverse",
   "zealotry.not_enough_harmony": "Nicht genug Bandharmonie",
   "zealotry.not_enough_money": "Nicht genug Geld",
-  "zealotry.not_enough_zealotry": "Nicht genug Fanatismus",
-  "expedition.extraction.open": "JETZT AUSSTEIGEN"
+  "zealotry.not_enough_zealotry": "Nicht genug Fanatismus"
 }

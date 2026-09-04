@@ -298,8 +298,22 @@ describe('COMPLETE_EXPEDITION', () => {
     assert.equal(next.expedition.outcome?.settlement.retentionRate, 1)
     assert.equal(next.player.money, 5000 + 1000)
     assert.equal(next.player.fame, 100 + 50)
-    // Every rare reward is kept, without the player naming any.
-    assert.equal(next.band.inventory.shirts, 50 + 15)
+
+    // Every rare reward is kept, without the player naming any. Walking the
+    // route also banks the rares the nodes themselves carry, so the expected
+    // merch is derived from the ledger rather than hardcoded.
+    assert.deepEqual(
+      next.expedition.outcome?.settlement.abandonedRewardEntryIds,
+      []
+    )
+    const crates = next.expedition.rewardLedger.filter(
+      entry => entry.rewardDefinitionId === 'reward_route_merch_crate'
+    )
+    assert.ok(crates.length > 0)
+    assert.equal(next.band.inventory.shirts, 50 + 15 * crates.length)
+    for (const entry of next.expedition.rewardLedger) {
+      assert.equal(entry.materialized, true)
+    }
   })
 
   it('refuses completion anywhere but the Finale', () => {

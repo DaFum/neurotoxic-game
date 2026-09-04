@@ -219,6 +219,14 @@ export interface ExpeditionNodeHiddenDetail {
   rivalId: string | null
   authorityRisk: number
   hiddenOpportunityId: string | null
+  /**
+   * Rare reward this node yields on arrival, or `null`.
+   *
+   * @remarks
+   * Deterministic from the run seed and intel-gated like every other hidden
+   * field, so scouting a node tells the player whether the greed is worth it.
+   */
+  rareRewardId: string | null
 }
 
 /**

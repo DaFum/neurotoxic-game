@@ -22,6 +22,8 @@ import { SONGS_BY_ID } from '../../data/songs'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import { MERCH_PROFILES } from '../../data/merch'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
+import { logger } from '../../utils/logger'
+import { ActionTypes } from '../../context/actionTypes'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import {
@@ -533,4 +535,84 @@ export const validateExpeditionBuildCommitment = (
       }
     }
   }
+}
+
+/**
+ * Action types exempt from the protected-Cash floor.
+ *
+ * @remarks
+ * The floor guards *discretionary* spending. Three families must stay exempt:
+ *
+ * - `ADVANCE_DAY` applies mandatory obligations (upkeep, liability payments,
+ *   legacy wear). Blocking it would freeze the day tick; the design instead
+ *   wants unpayable obligations to surface as the bankruptcy crisis, which the
+ *   failure shell derives from the same spendable slice. G2 owns the full
+ *   active-Expedition day policy.
+ * - `LOAD_GAME`/`RESET_STATE` install a state rather than spend from one, so
+ *   comparing their result against the previous state's floor is meaningless.
+ * - The Expedition terminal actions settle the run. A settlement only ever
+ *   forfeits run *earnings*, so it cannot reach below the protected slice, but
+ *   exempting them keeps the floor from second-guessing the settlement math.
+ */
+const EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS: ReadonlySet<string> = new Set([
+  ActionTypes.ADVANCE_DAY,
+  ActionTypes.LOAD_GAME,
+  ActionTypes.RESET_STATE,
+  ActionTypes.EXTRACT_EXPEDITION,
+  ActionTypes.COMPLETE_EXPEDITION,
+  ActionTypes.ACCEPT_EXPEDITION_FAILURE,
+  ActionTypes.PREPARE_NEXT_EXPEDITION
+])
+
+/**
+ * Rejects any action that would spend past the protected Career Cash slice.
+ *
+ * @param previousState - State before the action reduced.
+ * @param nextState - State the action produced.
+ * @param actionType - The action's discriminant.
+ * @returns `nextState`, or `previousState` when the spend crossed the floor.
+ *
+ * @remarks
+ * One authoritative floor instead of a check at every spend site. Travel,
+ * refuelling, repairs, clinic treatments, purchases and negative event money
+ * deltas all deduct from `player.money` through their own reducers; auditing
+ * each of them would leave the next spend path added elsewhere unguarded, and
+ * the design requires the protected slice to hold against *every* in-run spend.
+ *
+ * Only a spend that actually lowers the balance is judged, so an action that
+ * nets positive or leaves Cash untouched is never rejected — including one that
+ * starts below the floor because mandatory obligations already pushed it there.
+ */
+export const enforceExpeditionCashFloor = (
+  previousState: GameState,
+  nextState: GameState,
+  actionType: string
+): GameState => {
+  if (nextState === previousState) return previousState
+  if (previousState.expedition?.status !== 'active') return nextState
+  if (EXPEDITION_CASH_FLOOR_EXEMPT_ACTIONS.has(actionType)) return nextState
+
+  const floor = Math.max(
+    0,
+    isFiniteNumber(previousState.expedition.protectedCareerCash)
+      ? previousState.expedition.protectedCareerCash
+      : 0
+  )
+  if (floor === 0) return nextState
+
+  const before = isFiniteNumber(previousState.player.money)
+    ? previousState.player.money
+    : 0
+  const after = isFiniteNumber(nextState.player.money)
+    ? nextState.player.money
+    : 0
+  if (after >= before) return nextState
+  if (after >= floor) return nextState
+
+  logger.warn(
+    'Expedition',
+    `Rejected a spend that would cross the protected Career Cash floor (${actionType})`,
+    { before, after, floor }
+  )
+  return previousState
 }

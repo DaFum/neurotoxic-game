@@ -10,11 +10,12 @@ const state: { current: GameState } = vi.hoisted(
   () => ({ current: null }) as never
 )
 const acceptExpeditionFailure = vi.hoisted(() => vi.fn())
+const resolveExpeditionCrisis = vi.hoisted(() => vi.fn())
 
 vi.mock('../../src/context/GameState', () => ({
   useGameSelector: (selector: (s: GameState) => unknown) =>
     selector(state.current),
-  useGameActions: () => ({ acceptExpeditionFailure })
+  useGameActions: () => ({ acceptExpeditionFailure, resolveExpeditionCrisis })
 }))
 
 vi.mock('../../src/utils/numberUtils', () => ({
@@ -105,6 +106,7 @@ const crisis = (
 describe('FailureCrisisDialog', () => {
   beforeEach(() => {
     acceptExpeditionFailure.mockClear()
+    resolveExpeditionCrisis.mockClear()
   })
 
   it('renders nothing while no crisis is live', () => {
@@ -159,21 +161,31 @@ describe('FailureCrisisDialog', () => {
     expect(accept).toHaveAttribute('data-variant', 'danger')
   })
 
-  it('dispatches only the terminal transition itself', () => {
-    const onRefuel = vi.fn()
-    const onTow = vi.fn()
-    state.current = buildState(crisis())
-    render(<FailureCrisisDialog onRefuel={onRefuel} onTow={onTow} />)
+  it('gives every offered choice a working handler', () => {
+    const onExtract = vi.fn()
+    state.current = buildState(
+      crisis({ choices: ['refuel', 'tow', 'extract'] })
+    )
+    render(<FailureCrisisDialog onExtract={onExtract} />)
 
+    // The paid escapes are pure state transitions and are dispatched here, so
+    // a mounted crisis can never render a button that does nothing.
+    fireEvent.click(screen.getByTestId('crisis-choice-refuel'))
+    expect(resolveExpeditionCrisis).toHaveBeenCalledWith('refuel')
+    fireEvent.click(screen.getByTestId('crisis-choice-tow'))
+    expect(resolveExpeditionCrisis).toHaveBeenCalledWith('tow')
+
+    // Extraction needs the confirmation dialog the host scene owns.
+    fireEvent.click(screen.getByTestId('crisis-choice-extract'))
+    expect(onExtract).toHaveBeenCalledTimes(1)
+  })
+
+  it('dispatches the terminal transition itself', () => {
+    state.current = buildState(crisis())
+    render(<FailureCrisisDialog />)
     fireEvent.click(screen.getByTestId('crisis-choice-accept_failure'))
     expect(acceptExpeditionFailure).toHaveBeenCalledTimes(1)
-
-    // The recovery responses belong to the host scene, not to this dialog.
-    fireEvent.click(screen.getByTestId('crisis-choice-refuel'))
-    expect(onRefuel).toHaveBeenCalledTimes(1)
-    fireEvent.click(screen.getByTestId('crisis-choice-tow'))
-    expect(onTow).toHaveBeenCalledTimes(1)
-    expect(acceptExpeditionFailure).toHaveBeenCalledTimes(1)
+    expect(resolveExpeditionCrisis).not.toHaveBeenCalled()
   })
 
   it('renders the bankruptcy family with its own copy', () => {

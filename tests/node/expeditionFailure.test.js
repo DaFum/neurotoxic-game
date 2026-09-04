@@ -12,7 +12,10 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
-import { acceptExpeditionFailure } from '../../src/context/expeditionActionCreators'
+import {
+  acceptExpeditionFailure,
+  resolveExpeditionCrisis
+} from '../../src/context/expeditionActionCreators'
 import {
   EXPEDITION_FAILURE_PRIORITY,
   EXPEDITION_TOW_COST,
@@ -429,5 +432,115 @@ describe('ACCEPT_EXPEDITION_FAILURE', () => {
       payload
     })
     assert.equal(twice, once)
+  })
+})
+
+describe('RESOLVE_EXPEDITION_CRISIS', () => {
+  /**
+   * A run stranded at route step 1 with a chosen final balance.
+   *
+   * @remarks
+   * START must be affordable, so the run always begins funded and the balance
+   * is set afterwards — a run cannot start with the empty tank *and* no cash to
+   * fill it.
+   */
+  const strandedRun = (money = 5000) =>
+    gameReducer(walkTo(startedState({ money: 5000, fuel: 0 }), 1), {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money }
+    })
+
+  const resolve = (state, choice, overrides = {}) =>
+    gameReducer(state, {
+      type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+      payload: {
+        pendingFailureId: state.expedition.pendingFailure?.id,
+        choice,
+        expectedRouteStep: state.expedition.routeStep,
+        ...overrides
+      }
+    })
+
+  it('fills the tank and charges the canonical refuel price', () => {
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    const next = resolve(state, 'refuel')
+    assert.equal(next.player.van.fuel, 100)
+    // An empty tank costs 100 litres at 1.75 EUR/l.
+    assert.equal(next.player.money, state.player.money - 175)
+  })
+
+  it('charges the tow price for a partial refill', () => {
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    const next = resolve(state, 'tow')
+    assert.equal(next.player.money, state.player.money - EXPEDITION_TOW_COST)
+    // A tow gets the run moving without also solving the next leg.
+    assert.ok(next.player.van.fuel > 0)
+    assert.ok(next.player.van.fuel < 100)
+  })
+
+  it('clears the crisis once the cause is resolved', () => {
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    const next = resolve(state, 'refuel')
+    assert.equal(next.expedition.pendingFailure, null)
+  })
+
+  it('refuses a recovery the crisis does not offer', () => {
+    // With no spendable cash the paid escapes are not offered, so paying for
+    // one must be refused rather than silently succeeding.
+    const broke = strandedRun(0)
+    if (!broke.expedition.pendingFailure) return
+    assert.equal(broke.expedition.pendingFailure.choices.includes('tow'), false)
+    assert.equal(resolve(broke, 'tow'), broke)
+    assert.equal(resolve(broke, 'refuel'), broke)
+  })
+
+  it('refuses a forged crisis id or a stale route step', () => {
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    assert.equal(
+      resolve(state, 'refuel', { pendingFailureId: 'forged' }),
+      state
+    )
+    assert.equal(resolve(state, 'refuel', { expectedRouteStep: 99 }), state)
+  })
+
+  it('refuses an unknown recovery choice', () => {
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    for (const choice of ['extract', 'accept_failure', 'teleport', null]) {
+      assert.equal(resolve(state, choice), state)
+    }
+  })
+
+  it('refuses to spend past the protected career slice', () => {
+    const base = strandedRun(5000)
+    if (!base.expedition.pendingFailure) return
+    // Only 100 spendable against a 175 refuel and a 180 tow.
+    const guarded = {
+      ...base,
+      expedition: { ...base.expedition, protectedCareerCash: 4900 }
+    }
+    assert.equal(resolve(guarded, 'refuel'), guarded)
+    assert.equal(resolve(guarded, 'tow'), guarded)
+  })
+
+  it('refuses every recovery on a healthy run', () => {
+    const healthy = walkTo(startedState({ money: 5000, fuel: 100 }), 1)
+    assert.equal(resolve(healthy, 'refuel'), healthy)
+  })
+
+  it('returns null from the creator for a recovery that is not offered', () => {
+    const healthy = walkTo(startedState({ money: 5000, fuel: 100 }), 1)
+    assert.equal(resolveExpeditionCrisis(healthy, 'refuel'), null)
+
+    const state = strandedRun()
+    if (!state.expedition.pendingFailure) return
+    const action = resolveExpeditionCrisis(state, 'refuel')
+    assert.ok(action)
+    assert.equal(action.payload.choice, 'refuel')
+    assert.equal(gameReducer(state, action).player.van.fuel, 100)
   })
 })

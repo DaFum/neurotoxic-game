@@ -225,6 +225,7 @@ type BaseGameDispatchActions = {
   completeExpedition: (finaleResultId: string) => void
   acceptExpeditionFailure: () => void
   prepareNextExpedition: () => void
+  resolveExpeditionCrisis: (choice: 'refuel' | 'tow') => void
 }
 
 /**

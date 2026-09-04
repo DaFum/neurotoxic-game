@@ -327,9 +327,11 @@ describe('sanitizeExpeditionState', () => {
 
   it('drops duplicate ledger and grant ids', () => {
     const save = activeSave()
+    // A canonical entry: the sanitizer resolves the id through the registry
+    // and requires the derived `<definition>::<source>` key.
     const entry = {
-      id: 'ledger_1',
-      rewardDefinitionId: 'reward_a',
+      id: 'reward_route_merch_crate::node_1',
+      rewardDefinitionId: 'reward_route_merch_crate',
       sourceType: 'route_rare',
       sourceId: 'node_1',
       secured: false,
@@ -555,5 +557,90 @@ describe('committed identity freeze while active', () => {
     state.expedition.loadout.activeTourbusAssetId = null
     const next = gameReducer(state, installModule('asset_bus'))
     assert.notEqual(next, state)
+  })
+})
+
+describe('persisted reward entries cannot be authored by a save', () => {
+  const saveWithLedger = rewardLedger => ({
+    status: 'active',
+    prep: { prepId: 'run_1' },
+    runId: 'run_1',
+    routeStep: 4,
+    visitedNodeIds: ['exp_0_0'],
+    loadout: {
+      tourTypeId: 'standard_tour',
+      regionId: 'industrial_belt',
+      build: { protectedCareerCash: 0 }
+    },
+    rewardLedger
+  })
+
+  const canonicalEntry = (overrides = {}) => ({
+    id: 'reward_route_merch_crate::exp_3_0',
+    rewardDefinitionId: 'reward_route_merch_crate',
+    sourceType: 'route_rare',
+    sourceId: 'exp_3_0',
+    secured: false,
+    earnedAtRouteStep: 3,
+    materialized: false,
+    ...overrides
+  })
+
+  it('accepts a well-formed canonical entry', () => {
+    const sanitized = sanitizeExpeditionState(
+      saveWithLedger([canonicalEntry()])
+    )
+    assert.equal(sanitized.rewardLedger.length, 1)
+    assert.equal(sanitized.rewardLedger[0]?.secured, false)
+  })
+
+  it('re-derives a save-claimed secured flag from the definition', () => {
+    // The attack the review named: an unsecured route rare claiming to be
+    // secured would survive a failure and then be granted at settlement.
+    const sanitized = sanitizeExpeditionState(
+      saveWithLedger([canonicalEntry({ secured: true })])
+    )
+    assert.equal(sanitized.rewardLedger[0]?.secured, false)
+  })
+
+  it('re-derives a save-claimed source family from the definition', () => {
+    const sanitized = sanitizeExpeditionState(
+      saveWithLedger([canonicalEntry({ sourceType: 'contract' })])
+    )
+    assert.equal(sanitized.rewardLedger[0]?.sourceType, 'route_rare')
+  })
+
+  it('drops a reward id the registry does not know', () => {
+    const sanitized = sanitizeExpeditionState(
+      saveWithLedger([
+        canonicalEntry({
+          id: 'reward_invented::exp_3_0',
+          rewardDefinitionId: 'reward_invented'
+        })
+      ])
+    )
+    assert.deepEqual(sanitized.rewardLedger, [])
+  })
+
+  it('drops an entry whose id the reducer could not have produced', () => {
+    // The derived `<definition>::<source>` key is what the duplicate check
+    // keys on, so a forged id could otherwise smuggle a second row.
+    for (const id of [
+      'forged',
+      'reward_route_merch_crate::other_node',
+      'reward_route_vinyl_stash::exp_3_0'
+    ]) {
+      const sanitized = sanitizeExpeditionState(
+        saveWithLedger([canonicalEntry({ id })])
+      )
+      assert.deepEqual(sanitized.rewardLedger, [], id)
+    }
+  })
+
+  it('keeps a persisted materialized flag, so a reward is never paid twice', () => {
+    const sanitized = sanitizeExpeditionState(
+      saveWithLedger([canonicalEntry({ materialized: true })])
+    )
+    assert.equal(sanitized.rewardLedger[0]?.materialized, true)
   })
 })

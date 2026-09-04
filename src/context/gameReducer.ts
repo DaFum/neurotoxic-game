@@ -72,10 +72,12 @@ import {
   handleExtractExpedition,
   handlePrepareExpeditionRun,
   handlePrepareNextExpedition,
+  handleResolveExpeditionCrisis,
   handleRevealExpeditionNodeIntel,
   handleStartExpedition
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
+import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastAction } from './actionCreators'
 import { assetForeclosed } from './assetActionCreators'
@@ -221,7 +223,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.EXTRACT_EXPEDITION]: handleExtractExpedition,
   [ActionTypes.COMPLETE_EXPEDITION]: handleCompleteExpedition,
   [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
-  [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition
+  [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
+  [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis
 }
 
 /**
@@ -361,6 +364,12 @@ export const gameReducer = (
       }
     }
   }
+
+  // The protected Career Cash slice is enforced once, here, rather than at
+  // every spend site: a run's discretionary spending must never reach below it,
+  // and a per-reducer check would leave the next spend path added elsewhere
+  // unguarded. A rejected spend returns the pre-action state unchanged.
+  nextState = enforceExpeditionCashFloor(state, nextState, action.type)
 
   // The Expedition crisis is derived, never raised by a caller, so it is
   // recomputed centrally after every action. This is the only place the stored
