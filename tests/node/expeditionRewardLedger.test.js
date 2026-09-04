@@ -434,3 +434,255 @@ describe('materialization owners', () => {
     assert.equal(next.band.inventory.shirts, 15)
   })
 })
+
+describe('persisted reward ledger hardening regressions', () => {
+  it('1. forged secured Contract reward in active save -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_contract_patch_run::forged_source',
+            rewardDefinitionId: 'reward_contract_patch_run',
+            sourceType: 'contract',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('2. forged Crew-contact reward -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_contact_backline_deal::forged_source',
+            rewardDefinitionId: 'reward_contact_backline_deal',
+            sourceType: 'crew_contact',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('3. forged Finale reward -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_finale_underground_ledger::forged_source',
+            rewardDefinitionId: 'reward_finale_underground_ledger',
+            sourceType: 'finale_nonlegendary',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('4. Route-Rare with wrong/unvisited node -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        visitedNodeIds: ['exp_start'],
+        rewardLedger: [
+          {
+            id: 'reward_route_merch_crate::exp_unvisited_node',
+            rewardDefinitionId: 'reward_route_merch_crate',
+            sourceType: 'route_rare',
+            sourceId: 'exp_unvisited_node',
+            secured: false,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('5. Route-Rare with wrong reward ID for real node -> dropped', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+    const otherReward = otherRouteRare(realReward)
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: `${otherReward}::${nodeId}`,
+            rewardDefinitionId: otherReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('6. genuine visited Route-Rare -> survives round trip', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: `${realReward}::${nodeId}`,
+            rewardDefinitionId: realReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 1)
+    assert.equal(loaded.expedition.rewardLedger[0].id, `${realReward}::${nodeId}`)
+  })
+
+  it('7. duplicate entries -> deduplicated', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const entry = {
+      id: `${realReward}::${nodeId}`,
+      rewardDefinitionId: realReward,
+      sourceType: 'route_rare',
+      sourceId: nodeId,
+      secured: false,
+      earnedAtRouteStep: RARE_ROUTE_STEP,
+      materialized: false
+    }
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [entry, entry]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 1)
+  })
+
+  it('8. corrupted/prototype keys -> rejected', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: '__proto__',
+            rewardDefinitionId: 'reward_route_merch_crate',
+            sourceType: 'route_rare',
+            sourceId: 'exp_start',
+            secured: false,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('9. accepted persisted reward with materialized: true -> does not re-materialize on terminal transition', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const initialShirts = walked.band.inventory.shirts ?? 0
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        status: 'completed',
+        runId: walked.expedition.prep.prepId,
+        rewardLedger: [
+          {
+            id: `${realReward}::${nodeId}`,
+            rewardDefinitionId: realReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: true
+          }
+        ],
+        outcome: {
+          runId: walked.expedition.prep.prepId,
+          kind: 'completed',
+          reason: null,
+          finalizedAtRouteStep: RARE_ROUTE_STEP,
+          settlement: {
+            retentionRate: 1,
+            moneyEarned: 100,
+            moneyRetained: 100,
+            moneyForfeited: 0,
+            fameEarned: 50,
+            fameRetained: 50,
+            fameForfeited: 0,
+            retainedRewardEntryIds: [`${realReward}::${nodeId}`],
+            abandonedRewardEntryIds: []
+          },
+          finaleResultId: null
+        }
+      }
+    }
+
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const next = gameReducer(loaded, {
+      type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+      payload: { runId: loaded.expedition.runId }
+    })
+
+    assert.equal(next.band.inventory.shirts ?? 0, initialShirts, 'materialized reward did not re-grant inventory')
+  })
+})

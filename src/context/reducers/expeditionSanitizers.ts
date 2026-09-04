@@ -23,6 +23,7 @@ import {
   isExpeditionRewardSecuredOnEarn,
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
+import { buildExpeditionMap } from '../../domain/expedition/map'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
@@ -531,7 +532,10 @@ const sanitizeExpeditionTechnicalCondition = (
  * No `runSeed` is read or written here — the root `GameState.runSeed` remains
  * the single map/run seed owner, so a save can never resume with two seeds.
  */
-export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
+export const sanitizeExpeditionState = (
+  value: unknown,
+  runSeed?: number
+): ExpeditionState => {
   const fallback = createDefaultExpeditionState()
   if (!isLooseRecord(value)) return fallback
 
@@ -559,12 +563,45 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     if (outcome.runId !== runId || outcome.kind !== status) return fallback
   }
 
+  const visitedNodeIds = sanitizeUniqueStrings(value.visitedNodeIds)
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
+    let preparedMap: ReturnType<typeof buildExpeditionMap> | null = null
+    if (isFiniteNumber(runSeed) && loadout) {
+      preparedMap = buildExpeditionMap(runSeed, loadout.tourTypeId, loadout.regionId)
+    }
+
     for (const raw of value.rewardLedger.slice(0, MAX_COLLECTION_ENTRIES)) {
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
+
+      // Hardening against forged persisted ledger entries in G1A/G2:
+      // Reward families whose genuine producers only exist in G3/G4
+      // ('contract', 'crew_contact', 'finale_nonlegendary', 'event_rare')
+      // cannot have valid source-proof state yet and MUST be dropped.
+      if (
+        entry.sourceType === 'contract' ||
+        entry.sourceType === 'crew_contact' ||
+        entry.sourceType === 'finale_nonlegendary' ||
+        entry.sourceType === 'event_rare'
+      ) {
+        continue
+      }
+
+      // 'route_rare' entries require proof that the source node was visited
+      // and that the canonical node reward matches definition.id.
+      if (entry.sourceType === 'route_rare') {
+        if (!visitedNodeIds.includes(entry.sourceId)) continue
+        if (preparedMap) {
+          const node = preparedMap.meta[entry.sourceId]
+          if (!node || node.hidden.rareRewardId !== entry.rewardDefinitionId) {
+            continue
+          }
+        }
+      }
+
       seenRewardIds.add(entry.id)
       rewardLedger.push(entry)
     }
