@@ -339,7 +339,9 @@ const sanitizeExpeditionLoadout = (
     },
     starterPerkId: readString(value, 'starterPerkId'),
     nativeContracts: sanitizeNativeContracts(value.nativeContracts),
-    insurancePolicyId: readString(value, 'insurancePolicyId'),
+    insurancePolicyId:
+      getExpeditionInsurancePolicy(readString(value, 'insurancePolicyId'))
+        ?.id ?? null,
     pressureModifierIds: sanitizeUniqueStrings(value.pressureModifierIds),
     build: sanitizeBuildCommitment(value.build)
   }

@@ -24,18 +24,13 @@ import {
   resolveExpeditionCrisis
 } from '../../src/context/expeditionActionCreators.ts'
 import {
-  FIXTURE_RUN_SEED,
-  fixtureLoadout,
-  fixtureMap,
   startedState,
   walkTo
 } from '../expeditionLifecycleFixture.js'
 
-const map = fixtureMap()
-
 const createZeroConditionState = (overrides = {}) => {
-  const base = startedState(FIXTURE_RUN_SEED, fixtureLoadout(map), map)
-  const active = walkTo(base, map, 'exp_node_1')
+  const base = startedState()
+  const active = walkTo(base, 1)
   active.expedition.cargo = {
     spareParts: 0,
     supplies: 0,

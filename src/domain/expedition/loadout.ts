@@ -454,6 +454,7 @@ export const validateExpeditionBuildCommitment = (
       return reject('MALFORMED_CANDIDATE')
     }
   }
+  let normalizedInsurancePolicyId: import('../../types/expedition').ExpeditionInsurancePolicyId | null = null
   if (insurancePolicyId !== null) {
     if (
       typeof insurancePolicyId !== 'string' ||
@@ -463,6 +464,7 @@ export const validateExpeditionBuildCommitment = (
     ) {
       return reject('MALFORMED_CANDIDATE')
     }
+    normalizedInsurancePolicyId = insurancePolicyId as import('../../types/expedition').ExpeditionInsurancePolicyId
   }
 
   const pressureModifierIdsRaw = candidate.pressureModifierIds
@@ -541,7 +543,7 @@ export const validateExpeditionBuildCommitment = (
       cargo: { spareParts, supplies },
       starterPerkId,
       nativeContracts,
-      insurancePolicyId,
+      insurancePolicyId: normalizedInsurancePolicyId,
       pressureModifierIds: [...pressureModifierIdsRaw],
       build: {
         setlistSongIds: [...setlistSongIds],

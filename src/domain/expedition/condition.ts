@@ -79,12 +79,18 @@ export const getExpeditionTechnicalCondition = (
  * @param condition - Equipment condition or null/undefined.
  * @returns Performance profile with audio hazards, timing, stamina, and disabled groups.
  */
+const profileCache = new Map<string, ExpeditionConditionPerformanceProfile>()
+
 export const getExpeditionConditionPerformanceProfile = (
   condition: ExpeditionTechnicalCondition | null | undefined
 ): ExpeditionConditionPerformanceProfile => {
   const pa = clampCondition(condition?.pa ?? 100)
   const instruments = clampCondition(condition?.instruments ?? 100)
   const stageGear = clampCondition(condition?.stageGear ?? 100)
+  const cacheKey = `${pa}:${instruments}:${stageGear}`
+
+  const cached = profileCache.get(cacheKey)
+  if (cached) return cached
 
   const disabledGroups: ConditionGroup[] = []
 
@@ -122,13 +128,17 @@ export const getExpeditionConditionPerformanceProfile = (
     stageGear <= 39 ? 0.85 : stageGear <= 69 ? 0.95 : 1.0
   const stageHazard = stageGear <= 39 ? 1 : 0
 
-  return {
+  Object.freeze(disabledGroups)
+  const profile: ExpeditionConditionPerformanceProfile = Object.freeze({
     audioHazardLevel: Math.max(paHazard, stageHazard),
     timingMultiplier: Number((paTiming * instTiming).toFixed(4)),
     missStaminaMultiplier: instMissStamina,
     comboRecoveryMultiplier: stageComboRecovery,
     disabledGroups
-  }
+  })
+
+  profileCache.set(cacheKey, profile)
+  return profile
 }
 
 /**
