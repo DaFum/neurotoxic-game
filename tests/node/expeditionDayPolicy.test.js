@@ -239,9 +239,8 @@ describe('the run owns its own insolvency', () => {
   })
 
   it('records what the upstream ticks took out of the protected slice', () => {
-    // Asset upkeep and liability instalments are settled by their own
-    // authorities, which know nothing about the run. What they take below the
-    // floor has to become run debt rather than vanishing.
+    // Asset upkeep and liability instalments respect protectedCareerCash during active expeditions.
+    // Shortfalls are recorded as unpaid obligations on the expedition slice without spending protected money.
     const run = startedState(
       { money: 5000, fuel: 100 },
       { build: { protectedCareerCash: 4000 } }
@@ -264,9 +263,7 @@ describe('the run owns its own insolvency', () => {
     }
     const next = gameReducer(withLiability, advanceDay(withLiability))
 
-    // The liability was paid from the protected slice, so the run owes it back
-    // on top of the day's own unpayable obligations.
-    assert.ok(next.player.money < 4000)
+    assert.equal(next.player.money, 4000)
     assert.ok(next.expedition.unpaidDailyObligation >= 120)
   })
 })

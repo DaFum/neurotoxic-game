@@ -23,6 +23,7 @@ import {
   isExpeditionRewardSecuredOnEarn,
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
+import { buildExpeditionMap } from '../../domain/expedition/map'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
@@ -531,7 +532,10 @@ const sanitizeExpeditionTechnicalCondition = (
  * No `runSeed` is read or written here — the root `GameState.runSeed` remains
  * the single map/run seed owner, so a save can never resume with two seeds.
  */
-export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
+export const sanitizeExpeditionState = (
+  value: unknown,
+  runSeed?: number
+): ExpeditionState => {
   const fallback = createDefaultExpeditionState()
   if (!isLooseRecord(value)) return fallback
 
@@ -559,12 +563,76 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     if (outcome.runId !== runId || outcome.kind !== status) return fallback
   }
 
+  const rawVisitedNodeIds = sanitizeUniqueStrings(value.visitedNodeIds)
+  const routeStep = readCount(value, 'routeStep', 0)
+
+  let preparedMap: ReturnType<typeof buildExpeditionMap> | null = null
+  if (isFiniteNumber(runSeed) && loadout) {
+    preparedMap = buildExpeditionMap(runSeed, loadout.tourTypeId, loadout.regionId)
+  }
+
+  // Validate visitedNodeIds against the canonical DAG starting at map.startNodeId
+  const validVisitedPath: string[] = []
+  if (preparedMap && rawVisitedNodeIds.length > 0) {
+    if (rawVisitedNodeIds[0] === preparedMap.startNodeId) {
+      validVisitedPath.push(rawVisitedNodeIds[0])
+      for (let i = 1; i < rawVisitedNodeIds.length; i++) {
+        if (validVisitedPath.length > routeStep + 1) break
+        const prevId = validVisitedPath[validVisitedPath.length - 1]
+        const currId = rawVisitedNodeIds[i]
+        if (prevId !== undefined && currId !== undefined) {
+          const isConnected = preparedMap.connections.some(
+            conn => conn.from === prevId && conn.to === currId
+          )
+          if (isConnected) {
+            validVisitedPath.push(currId)
+          } else {
+            break
+          }
+        }
+      }
+    }
+  } else if (rawVisitedNodeIds.length > 0) {
+    validVisitedPath.push(...rawVisitedNodeIds)
+  }
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
     for (const raw of value.rewardLedger.slice(0, MAX_COLLECTION_ENTRIES)) {
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
+
+      // Hardening against forged persisted ledger entries in G1A/G2:
+      // Reward families whose genuine producers only exist in G3/G4
+      // ('contract', 'crew_contact', 'finale_nonlegendary', 'event_rare')
+      // cannot have valid source-proof state yet and MUST be dropped.
+      if (
+        entry.sourceType === 'contract' ||
+        entry.sourceType === 'crew_contact' ||
+        entry.sourceType === 'finale_nonlegendary' ||
+        entry.sourceType === 'event_rare'
+      ) {
+        continue
+      }
+
+      // 'route_rare' entries require proof that the source node is on a valid visited path
+      // that agrees with routeStep and that the canonical node reward matches definition.id.
+      if (entry.sourceType === 'route_rare') {
+        if (!validVisitedPath.includes(entry.sourceId)) continue
+        if (preparedMap) {
+          const node = preparedMap.meta[entry.sourceId]
+          if (
+            !node ||
+            node.hidden.rareRewardId !== entry.rewardDefinitionId ||
+            entry.earnedAtRouteStep !== node.routeStep ||
+            entry.earnedAtRouteStep > routeStep
+          ) {
+            continue
+          }
+        }
+      }
+
       seenRewardIds.add(entry.id)
       rewardLedger.push(entry)
     }
@@ -586,7 +654,7 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     prep: prepId ? { prepId } : null,
     runId,
     routeStep: readCount(value, 'routeStep', 0),
-    visitedNodeIds: sanitizeUniqueStrings(value.visitedNodeIds),
+    visitedNodeIds: validVisitedPath,
     intelByNodeId: sanitizeExpeditionIntelMap(value.intelByNodeId),
     intelGrants,
     scoutReconUsedRouteSteps: sanitizeIntegerList(
