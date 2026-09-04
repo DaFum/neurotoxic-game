@@ -328,6 +328,7 @@
   "expedition.crisis.meta.tow": "Kostet Geld",
   "expedition.crisis.source.expedition_cash": "Run-Kasse",
   "expedition.crisis.source.expedition_route": "der Route",
+  "expedition.crisis.source.expedition_unpaid_obligation": "eine offene Tagespflicht",
   "expedition.crisis.title.authority_crisis": "BEHÖRDENKRISE",
   "expedition.crisis.title.bankruptcy": "KEIN GELD MEHR",
   "expedition.crisis.title.crew_collapse": "CREW AM ENDE",

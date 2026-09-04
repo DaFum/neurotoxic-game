@@ -442,6 +442,17 @@ export interface ExpeditionState {
   rewardLedger: ExpeditionRewardLedgerEntry[]
   extractionWindowsSeen: number[]
   pendingFailure: PendingExpeditionFailure | null
+  /**
+   * Mandatory daily obligation a previous day could not pay from the run's
+   * spendable Cash.
+   *
+   * @remarks
+   * The protected Career Cash slice is never spent on obligations, so a
+   * shortfall has to be recorded rather than absorbed. This is the evidence the
+   * Economic failure axis derives its crisis from, and it clears as soon as a
+   * later day can pay it.
+   */
+  unpaidDailyObligation: number
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null

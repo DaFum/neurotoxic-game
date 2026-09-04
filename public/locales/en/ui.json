@@ -328,6 +328,7 @@
   "expedition.crisis.meta.tow": "Costs cash",
   "expedition.crisis.source.expedition_cash": "run cash",
   "expedition.crisis.source.expedition_route": "the route",
+  "expedition.crisis.source.expedition_unpaid_obligation": "a missed daily obligation",
   "expedition.crisis.title.authority_crisis": "AUTHORITY CRISIS",
   "expedition.crisis.title.bankruptcy": "OUT OF MONEY",
   "expedition.crisis.title.crew_collapse": "CREW COLLAPSE",

@@ -20,7 +20,7 @@ import {
   shouldTriggerBankruptcy
 } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { canSpendExpeditionCash, getExpeditionSpendableCash } from './loadout'
 import { canClaimExpeditionInsurance } from './insurance'
 import { getExpeditionTechnicalCondition } from './condition'
@@ -89,6 +89,18 @@ export const getExpeditionEconomyFailureSignal = (
   state: GameState
 ): ExpeditionFailureSignal | null => {
   if (state.expedition?.status !== 'active') return null
+  // A recorded shortfall is realized evidence, not a projection: the day tick
+  // already tried to pay and could not. It gets its own source so the crisis
+  // names the missed obligation rather than the balance, and it is checked
+  // first because `shouldTriggerBankruptcy` would not fire at all for a run
+  // whose obligations are small but still unpayable.
+  if (finiteNumberOr(state.expedition.unpaidDailyObligation, 0) > 0) {
+    return {
+      reason: 'bankruptcy',
+      sourceId: 'expedition_unpaid_obligation',
+      choices: ['accept_failure']
+    }
+  }
   const spendable = getExpeditionSpendableCash(state)
   if (!shouldTriggerBankruptcy(spendable, 0, getTotalDailyObligations(state))) {
     return null

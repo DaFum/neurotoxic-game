@@ -631,6 +631,9 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     rewardLedger,
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
+    // A carried shortfall is a debt, so a save cannot make it negative and
+    // quietly turn it into credit.
+    unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
     outcome,
     insurancePolicyId:
       readString(value, 'insurancePolicyId') ??

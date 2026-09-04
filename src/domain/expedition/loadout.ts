@@ -24,7 +24,7 @@ import { MERCH_PROFILES } from '../../data/merch'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { logger } from '../../utils/logger'
 import { ActionTypes } from '../../context/actionTypes'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import {
   BASE_EXPEDITION_REGION_ID,
@@ -635,4 +635,94 @@ export const enforceExpeditionCashFloor = (
     { before, after, floor }
   )
   return previousState
+}
+
+/**
+ * How an active Expedition overrides the legacy daily tick.
+ *
+ * @remarks
+ * Gathered once per day tick so the pure daily-update helpers can apply the
+ * Expedition rules without each of them reaching into `state.expedition`.
+ */
+export interface ExpeditionDayPolicy {
+  /** True while an active run overrides the legacy day tick. */
+  isActive: boolean
+  /** Cash the run may spend on mandatory obligations. */
+  spendableCash: number
+  /** Floor `player.money` must never cross. */
+  protectedCareerCash: number
+  /** Obligation a previous day could not pay, carried forward. */
+  carriedUnpaidObligation: number
+}
+
+/**
+ * Reads the day policy for the current state.
+ *
+ * @param state - Current game state.
+ * @returns The policy; `isActive: false` outside a run, where the legacy tick
+ * is left completely unchanged.
+ */
+export const getExpeditionDayPolicy = (
+  state: GameState
+): ExpeditionDayPolicy => {
+  const isActive = state.expedition?.status === 'active'
+  return {
+    isActive,
+    spendableCash: isActive ? getExpeditionSpendableCash(state) : 0,
+    protectedCareerCash: isActive
+      ? Math.max(0, finiteNumberOr(state.expedition.protectedCareerCash, 0))
+      : 0,
+    carriedUnpaidObligation: isActive
+      ? Math.max(0, finiteNumberOr(state.expedition.unpaidDailyObligation, 0))
+      : 0
+  }
+}
+
+/**
+ * Outcome of settling one day's mandatory obligations inside a run.
+ */
+export interface ExpeditionDaySettlement {
+  /** Balance to write, never below the protected slice. */
+  nextMoney: number
+  /** Amount that could not be paid and carries into the next day. */
+  unpaidObligation: number
+}
+
+/**
+ * Settles a day's mandatory obligations against the run's spendable Cash.
+ *
+ * @param policy - Day policy for the current run.
+ * @param currentMoney - Balance before the settlement.
+ * @param dailyCost - Net mandatory cost for the day; negative means net income.
+ * @returns The balance to write and the shortfall to carry forward.
+ *
+ * @remarks
+ * Mandatory obligations are the one in-run cost the player cannot decline, so
+ * they are allowed to consume the whole spendable slice — but not a cent of the
+ * protected Career Cash. A shortfall is therefore not silently forgiven and not
+ * silently taken: it carries forward as evidence, which is what lets the failure
+ * shell raise an attributable bankruptcy crisis instead of the run simply
+ * stalling.
+ *
+ * A day whose net result is income still clears carried debt first, so earning
+ * the money back is a real recovery rather than a cosmetic one.
+ */
+export const settleExpeditionDailyObligation = (
+  policy: ExpeditionDayPolicy,
+  currentMoney: number,
+  dailyCost: number
+): ExpeditionDaySettlement => {
+  const money = finiteNumberOr(currentMoney, 0)
+  const due = finiteNumberOr(dailyCost, 0) + policy.carriedUnpaidObligation
+
+  // Net income for the day: nothing is owed, and the balance simply rises.
+  if (due <= 0) {
+    return { nextMoney: money - due, unpaidObligation: 0 }
+  }
+
+  const payable = Math.min(due, Math.max(0, policy.spendableCash))
+  return {
+    nextMoney: Math.max(policy.protectedCareerCash, money - payable),
+    unpaidObligation: due - payable
+  }
 }
