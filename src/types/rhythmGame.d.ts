@@ -124,6 +124,15 @@ export type RhythmModifiers = {
   activeEffects?: unknown[]
   soundcheck?: boolean
   catering?: boolean
+  /**
+   * Performance profile of the run's technical Condition, when a run is active.
+   *
+   * @remarks
+   * Carried as the profile itself rather than as copied numbers, so
+   * `getExpeditionConditionPerformanceProfile` stays the single owner of the
+   * thresholds and each consumer reads the one axis it is responsible for.
+   */
+  expeditionCondition?: import('./expedition').ExpeditionConditionPerformanceProfile
   [key: string]: unknown
 }
 

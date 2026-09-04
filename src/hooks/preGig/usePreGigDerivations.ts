@@ -106,17 +106,20 @@ export const usePreGigDerivations = ({
   )
 
   const currentModifiers = useMemo(() => {
-    const base = getGigModifiers(band, gigModifiers)
-    if (technicalCondition) {
-      const profile =
-        getExpeditionConditionPerformanceProfile(technicalCondition)
-      const conditionEffects = getExpeditionConditionActiveEffects(profile)
-      return {
-        ...base,
-        activeEffects: [...base.activeEffects, ...conditionEffects]
-      }
+    if (!technicalCondition) return getGigModifiers(band, gigModifiers)
+
+    // The same profile the gig itself will run on, passed to the same producer
+    // — so the penalties listed here are the ones the rhythm owners apply,
+    // not a parallel description of them.
+    const profile = getExpeditionConditionPerformanceProfile(technicalCondition)
+    const base = getGigModifiers(band, gigModifiers, profile)
+    return {
+      ...base,
+      activeEffects: [
+        ...base.activeEffects,
+        ...getExpeditionConditionActiveEffects(profile)
+      ]
     }
-    return base
   }, [band, gigModifiers, technicalCondition])
 
   const selectedSongIds = useMemo(() => {
