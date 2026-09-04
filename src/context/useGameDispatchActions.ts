@@ -228,6 +228,17 @@ type BaseGameDispatchActions = {
   resolveExpeditionCrisis: (
     choice: 'refuel' | 'tow' | 'insurance_claim'
   ) => void
+  executeExpeditionRepair: (
+    intent: import('../types/expedition').ExpeditionRepairIntent
+  ) => void
+  executeExpeditionInspection: (
+    intent: import('../types/expedition').ExpeditionInspectionIntent
+  ) => void
+  claimExpeditionInsurance: (payload: {
+    claimType: import('../types/expedition').ExpeditionInsuranceClaimType
+    targetGroup?: import('../types/expedition').ConditionGroup
+  }) => void
+  acceptExpeditionTechnicalFailure: () => void
 }
 
 /**

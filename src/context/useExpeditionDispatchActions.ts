@@ -1,15 +1,23 @@
 import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState } from '../types'
 import type {
+  ConditionGroup,
+  ExpeditionInspectionIntent,
+  ExpeditionInsuranceClaimType,
   ExpeditionIntelSource,
   ExpeditionLoadout,
+  ExpeditionRepairIntent,
   ExpeditionRewardSourceType
 } from '../types/expedition'
 import {
   acceptExpeditionFailure as acceptExpeditionFailureAction,
+  acceptExpeditionTechnicalFailure as acceptExpeditionTechnicalFailureAction,
   addExpeditionReward as addExpeditionRewardAction,
   advanceExpeditionRoute as advanceExpeditionRouteAction,
+  claimExpeditionInsurance as claimExpeditionInsuranceAction,
   completeExpedition as completeExpeditionAction,
+  executeExpeditionInspection as executeExpeditionInspectionAction,
+  executeExpeditionRepair as executeExpeditionRepairAction,
   extractExpedition as extractExpeditionAction,
   prepareExpeditionRun as prepareExpeditionRunAction,
   prepareNextExpedition as prepareNextExpeditionAction,
@@ -34,6 +42,10 @@ export type ExpeditionDispatchActions = Pick<
   | 'acceptExpeditionFailure'
   | 'prepareNextExpedition'
   | 'resolveExpeditionCrisis'
+  | 'executeExpeditionRepair'
+  | 'executeExpeditionInspection'
+  | 'claimExpeditionInsurance'
+  | 'acceptExpeditionTechnicalFailure'
 >
 
 interface UseExpeditionDispatchActionsProps {
@@ -93,6 +105,28 @@ export function useExpeditionDispatchActions({
         choice: 'refuel' | 'tow' | 'insurance_claim'
       ) => {
         const action = resolveExpeditionCrisisAction(stateRef.current, choice)
+        if (action) dispatch(action)
+      },
+      executeExpeditionRepair: (intent: ExpeditionRepairIntent) => {
+        const action = executeExpeditionRepairAction(stateRef.current, intent)
+        if (action) dispatch(action)
+      },
+      executeExpeditionInspection: (intent: ExpeditionInspectionIntent) => {
+        const action = executeExpeditionInspectionAction(
+          stateRef.current,
+          intent
+        )
+        if (action) dispatch(action)
+      },
+      claimExpeditionInsurance: (payload: {
+        claimType: ExpeditionInsuranceClaimType
+        targetGroup?: ConditionGroup
+      }) => {
+        const action = claimExpeditionInsuranceAction(stateRef.current, payload)
+        if (action) dispatch(action)
+      },
+      acceptExpeditionTechnicalFailure: () => {
+        const action = acceptExpeditionTechnicalFailureAction(stateRef.current)
         if (action) dispatch(action)
       }
     }),

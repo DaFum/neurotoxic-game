@@ -26,6 +26,8 @@ interface UsePreGigDerivationsProps {
   setlist: RhythmSetlistEntry[]
   typedT: TranslationCallback
   technicalCondition?: ExpeditionTechnicalCondition | null
+  /** `canStartExpeditionPreGig` for the current state. */
+  canStartShow: boolean
 }
 
 /**
@@ -57,7 +59,8 @@ export const usePreGigDerivations = ({
   gigModifiers,
   setlist,
   typedT,
-  technicalCondition
+  technicalCondition,
+  canStartShow
 }: UsePreGigDerivationsProps): UsePreGigDerivationsReturn => {
   const assetModifiers = useMemo(
     () => getActiveAssetModifiers(assets ?? []),
@@ -146,11 +149,10 @@ export const usePreGigDerivations = ({
     return acc
   }, [assetModifiers, gigModifiers])
 
-  const isStartBlocked = useMemo(() => {
-    if (!technicalCondition) return false
-    const profile = getExpeditionConditionPerformanceProfile(technicalCondition)
-    return profile.disabledGroups.length > 0
-  }, [technicalCondition])
+  // The gate itself belongs to `canStartExpeditionPreGig`; this hook only
+  // reports it. Deriving `disabledGroups` again here would be a second copy of
+  // the rule, free to drift from the one the run actually enforces.
+  const isStartBlocked = !canStartShow
 
   return {
     assetModifiers,
