@@ -17,6 +17,7 @@
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
+import { getExpeditionConditionSummary } from './condition'
 import type { GameState } from '../../types'
 
 /**
@@ -48,20 +49,6 @@ const getExpeditionConditionBand = (
   if (value >= EXPEDITION_CONDITION_BANDS.critical) return 'critical'
   return 'breaking'
 }
-
-/**
- * Summarized equipment readiness for the run HUD.
- *
- * @param state - Current game state.
- * @returns Condition in `0..100`.
- *
- * @remarks
- * G1 reads the existing canonical `player.van.condition`. G2 extends this into
- * the summary across its Vehicle/PA/Instruments/Stage-Gear groups; keeping the
- * read in one place is what lets it do so without a second condition owner.
- */
-const getExpeditionConditionSummary = (state: GameState): number =>
-  Math.max(0, Math.min(100, finiteNumberOr(state.player.van?.condition, 0)))
 
 /**
  * Negative attention accumulated by the run.

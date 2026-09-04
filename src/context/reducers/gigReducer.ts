@@ -38,6 +38,12 @@ import {
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
 import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
+import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import {
+  applyTechnicalWear,
+  calculatePostGigTechnicalWear,
+  getExpeditionTechnicalCondition
+} from '../../domain/expedition/condition'
 import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
@@ -454,6 +460,23 @@ export const handleSetLastGigStats = (
       newHarmony: nextState.band.harmony
     })
   )
+
+  if (nextState.expedition?.status === 'active') {
+    const rules = getEffectiveExpeditionRules(nextState)
+    const currentCondition = getExpeditionTechnicalCondition(nextState)
+    const wear = calculatePostGigTechnicalWear(
+      safePayload,
+      rules.numeric.technicalWearMultiplier
+    )
+    const updatedCondition = applyTechnicalWear(currentCondition, wear)
+    nextState = {
+      ...nextState,
+      expedition: {
+        ...nextState.expedition,
+        technicalCondition: updatedCondition
+      }
+    }
+  }
 
   return nextState
 }

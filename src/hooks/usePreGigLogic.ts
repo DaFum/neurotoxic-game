@@ -70,6 +70,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
+  const expedition = useGameSelector(state => state.expedition)
   const {
     changeScene,
     setSetlist,
@@ -90,7 +91,15 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     currentModifiers,
     selectedSongIds,
     calculatedBudget
-  } = usePreGigDerivations({ band, assets, gigModifiers, setlist, typedT })
+  } = usePreGigDerivations({
+    band,
+    assets,
+    gigModifiers,
+    setlist,
+    typedT,
+    technicalCondition:
+      expedition?.status === 'active' ? expedition.technicalCondition : null
+  })
 
   const {
     isStarting,

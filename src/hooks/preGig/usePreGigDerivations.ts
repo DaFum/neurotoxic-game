@@ -5,11 +5,16 @@ import type { ActiveEffectEntry } from '../../types/components'
 import type { AssetModifiers } from '../../types/assets'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { ModifierOption } from '../usePreGigLogic'
+import type { ExpeditionTechnicalCondition } from '../../types/expedition'
 import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import { getGigModifiers } from '../../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { resolveBandMeetingCost } from './preGigUtils'
+import {
+  getExpeditionConditionActiveEffects,
+  getExpeditionConditionPerformanceProfile
+} from '../../domain/expedition/condition'
 
 /**
  * Configuration properties for the pre-gig derivations hook.
@@ -20,6 +25,7 @@ interface UsePreGigDerivationsProps {
   gigModifiers: GigModifiers
   setlist: RhythmSetlistEntry[]
   typedT: TranslationCallback
+  technicalCondition?: ExpeditionTechnicalCondition | null
 }
 
 /**
@@ -49,7 +55,8 @@ export const usePreGigDerivations = ({
   assets,
   gigModifiers,
   setlist,
-  typedT
+  typedT,
+  technicalCondition
 }: UsePreGigDerivationsProps): UsePreGigDerivationsReturn => {
   const assetModifiers = useMemo(
     () => getActiveAssetModifiers(assets ?? []),
@@ -97,7 +104,19 @@ export const usePreGigDerivations = ({
     [assetModifiers.trainingCostMultiplier]
   )
 
-  const currentModifiers = getGigModifiers(band, gigModifiers)
+  const currentModifiers = useMemo(() => {
+    const base = getGigModifiers(band, gigModifiers)
+    if (technicalCondition) {
+      const profile =
+        getExpeditionConditionPerformanceProfile(technicalCondition)
+      const conditionEffects = getExpeditionConditionActiveEffects(profile)
+      return {
+        ...base,
+        activeEffects: [...base.activeEffects, ...conditionEffects]
+      }
+    }
+    return base
+  }, [band, gigModifiers, technicalCondition])
 
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()

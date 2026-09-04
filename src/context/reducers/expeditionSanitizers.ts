@@ -38,6 +38,8 @@ import type {
   ExpeditionSettlement,
   ExpeditionState,
   ExpeditionStatus,
+  ExpeditionTechnicalCondition,
+  HiddenDefectState,
   NodeIntelLevel,
   PendingExpeditionFailure
 } from '../../types/expedition'
@@ -470,6 +472,82 @@ const sanitizeExpeditionCargo = (
 }
 
 /**
+ * Sanitizes the persisted Expedition technical condition slice.
+ */
+const sanitizeExpeditionTechnicalCondition = (
+  value: unknown
+): ExpeditionTechnicalCondition | null => {
+  if (!isLooseRecord(value)) return null
+  const pa = readCount(value, 'pa', 100)
+  const instruments = readCount(value, 'instruments', 100)
+  const stageGear = readCount(value, 'stageGear', 100)
+
+  const defects: HiddenDefectState[] = []
+  if (Array.isArray(value.defects)) {
+    for (const raw of value.defects.slice(0, MAX_COLLECTION_ENTRIES)) {
+      if (!isLooseRecord(raw)) continue
+      const id = readString(raw, 'id')
+      const group = readString(raw, 'group')
+      const severity = raw.severity
+      const status = readString(raw, 'status')
+      const source = readString(raw, 'source')
+      const createdAtRouteStep = readCount(raw, 'createdAtRouteStep', 0)
+      const triggerAt = readString(raw, 'triggerAt')
+      const triggerRouteStep = readCount(raw, 'triggerRouteStep', 0)
+
+      if (
+        !id ||
+        !group ||
+        (group !== 'pa' && group !== 'instruments' && group !== 'stageGear')
+      ) {
+        continue
+      }
+      if (severity !== 1 && severity !== 2 && severity !== 3) continue
+      if (
+        status !== 'hidden' &&
+        status !== 'revealed' &&
+        status !== 'triggered' &&
+        status !== 'resolved'
+      ) {
+        continue
+      }
+      if (
+        source !== 'field_repair' &&
+        source !== 'improvise' &&
+        source !== 'critical_wear'
+      ) {
+        continue
+      }
+      if (
+        triggerAt !== 'post_travel' &&
+        triggerAt !== 'pre_gig' &&
+        triggerAt !== 'post_gig'
+      ) {
+        continue
+      }
+
+      defects.push({
+        id,
+        group,
+        severity,
+        status,
+        source,
+        createdAtRouteStep,
+        triggerAt,
+        triggerRouteStep
+      })
+    }
+  }
+
+  return {
+    pa: Math.max(0, Math.min(100, pa)),
+    instruments: Math.max(0, Math.min(100, instruments)),
+    stageGear: Math.max(0, Math.min(100, stageGear)),
+    defects
+  }
+}
+
+/**
  * Sanitizes the persisted Expedition slice.
  *
  * @param value - Untrusted `expedition` value from a save.
@@ -556,6 +634,13 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     outcome,
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
+      : {}),
+    ...(value.technicalCondition !== undefined
+      ? {
+          technicalCondition: sanitizeExpeditionTechnicalCondition(
+            value.technicalCondition
+          )
+        }
       : {})
   }
 }

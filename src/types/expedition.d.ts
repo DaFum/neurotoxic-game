@@ -404,6 +404,58 @@ export interface ExpeditionState {
   pendingFailure: PendingExpeditionFailure | null
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
+  technicalCondition?: ExpeditionTechnicalCondition | null
+}
+
+/**
+ * Physical equipment groups tracked by Expedition technical condition.
+ */
+export type ConditionGroup = 'pa' | 'instruments' | 'stageGear'
+
+/**
+ * Lifecycle status of a hidden technical defect.
+ */
+export type HiddenDefectStatus =
+  'hidden' | 'revealed' | 'triggered' | 'resolved'
+
+/**
+ * Triggers that can activate a hidden technical defect during tour progression.
+ */
+export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
+
+/**
+ * State representing an undiscovered or revealed defect on tour equipment.
+ */
+export interface HiddenDefectState {
+  id: string
+  group: ConditionGroup
+  severity: 1 | 2 | 3
+  status: HiddenDefectStatus
+  source: 'field_repair' | 'improvise' | 'critical_wear'
+  createdAtRouteStep: number
+  triggerAt: HiddenDefectTrigger
+  triggerRouteStep: number
+}
+
+/**
+ * Technical condition of the band's equipment during an Expedition.
+ */
+export interface ExpeditionTechnicalCondition {
+  pa: number
+  instruments: number
+  stageGear: number
+  defects: HiddenDefectState[]
+}
+
+/**
+ * Canonical performance profile modifiers derived from technical condition.
+ */
+export interface ExpeditionConditionPerformanceProfile {
+  audioHazardLevel: number
+  timingMultiplier: number
+  missStaminaMultiplier: number
+  comboRecoveryMultiplier: number
+  disabledGroups: ConditionGroup[]
 }
 
 /**
