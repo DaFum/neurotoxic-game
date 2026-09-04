@@ -1,246 +1,216 @@
-# Meta, Regions, Tours, HQ, Ascension, Between-Tour and Legendary Implementation Plan
+# Meta, Regions, Tours, HQ, Ascension and Legendary Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make long-term Expedition progression unlock new strategies, regions, Crew/chassis/content packages and rule-changing rewards while keeping permanent raw power small and the between-tour pause short.
+**Goal:** Build the persistent Expedition meta loop with one effective-rules path, mechanically distinct Regions/Tours, a concrete Tour-Token/rank economy, capability-gated HQ progression, a real transition away from Day-1 numeric HQ snowballing, 1–3 typed Between-Tour decisions, Tour Archive, Ascension and rule-changing Legendary rewards.
 
-**Architecture:** `career` owns ranks, Tour Tokens, HQ facilities, completed-Region familiarity, Rival/Crew history, Archive and settled-run journals; `state.unlocks`/`unlockManager` remains the capability marker boundary. All run modifiers compose through one production `getEffectiveExpeditionRules(state)` result so app and simulator cannot disagree about Region/Tour/Chassis/Crew/Starter/Draft/Pressure/Nemesis behavior. Rule-changing Legendary transforms remain explicit named capabilities inside the same effective-rules result, not temporary starter perks.
+**Architecture:** Career stores Expedition rank/counters/Tour Tokens, completed Regions, facilities, Between-Tour decision state and persistent consequence summaries. `unlockManager` remains the persistent capability-marker owner. `getEffectiveExpeditionRules(state)` is the single runtime composition path created in G2 and extended here to its final v1 form.
 
-**Tech Stack:** TypeScript 6, React 19, existing persistence/unlock manager/Band HQ, typed reducers/actions, i18next, deterministic RNG, Node/Vitest/Playwright.
+**Tech Stack:** TypeScript 6, React 19, current Band HQ/upgrade catalog/unlock manager/storage adapter, typed reducers/actions, deterministic RNG, Node/Vitest/Playwright.
 
 ---
 
-## Depends On
+## Authority and dependencies
 
-- G1B complete lifecycle and finalized `runId` outcome.
-- G2 chassis/Condition/Cargo.
-- G3 Crew Career/signature registry.
-- G4 Pressure/Contracts/Rivals/Quests/Finales/Drafts.
+```text
+approved design spec > master plan > this child plan
+```
 
-## File Structure
+`00-*` files are NON-NORMATIVE. G5 runs after G1B, G2, G3 and G4 are complete so every capability introduced here has an immediate production consumer.
+
+---
+
+## File structure
 
 **Create:**
 
-- `src/types/career.d.ts`
-- `src/data/expedition/careerRanks.ts`
 - `src/data/expedition/regions.ts`
 - `src/data/expedition/tourTypes.ts`
+- `src/data/expedition/metaEconomy.ts`
 - `src/data/expedition/unlockSets.ts`
-- `src/data/expedition/pressureModifiers.ts`
-- `src/data/expedition/legendaryRules.ts`
+- `src/data/expedition/hqFacilities.ts`
+- `src/data/expedition/betweenTourDecisions.ts`
+- `src/data/expedition/legendaryCapabilities.ts`
 - `src/domain/expedition/career.ts`
-- `src/domain/expedition/rules.ts`
-- `src/domain/expedition/tourPressure.ts`
-- `src/domain/expedition/betweenTours.ts`
-- `src/domain/expedition/archive.ts`
-- `src/ui/expedition/CareerProgress.tsx`
-- `src/ui/expedition/TourArchive.tsx`
+- `src/domain/expedition/capabilities.ts`
+- `src/domain/expedition/betweenTour.ts`
+- `src/domain/expedition/legendary.ts`
 - `src/ui/bandhq/ExpeditionMetaTab.tsx`
-- `src/ui/expedition/RegionPicker.tsx`
-- `src/ui/expedition/TourTypePicker.tsx`
-- `src/ui/expedition/PressureModifierPicker.tsx`
-- `tests/node/expeditionCareer.test.js`
-- `tests/node/expeditionRules.test.js`
-- `tests/node/expeditionUnlockSets.test.js`
-- `tests/node/expeditionTourPressure.test.js`
-- `tests/node/expeditionBetweenTours.test.js`
-- `tests/node/expeditionLegendaryRules.test.js`
-- `tests/node/expeditionArchive.test.js`
+- `src/ui/expedition/BetweenTourDecisionPanel.tsx`
+- `tests/node/expeditionMetaEconomy.test.js`
+- `tests/node/expeditionCapabilities.test.js`
+- `tests/node/expeditionBetweenTour.test.js`
+- `tests/node/expeditionLegendary.test.js`
 - `tests/ui/ExpeditionMetaTab.test.tsx`
+- `tests/ui/BetweenTourDecisionPanel.test.tsx`
 
 **Modify:**
 
+- `src/types/career.d.ts`
 - `src/types/expedition.d.ts`
 - `src/types/actions.d.ts`
 - `src/context/actionTypes.ts`
+- `src/context/GameState.tsx`
 - `src/context/careerActionCreators.ts`
+- `src/context/useCareerDispatchActions.ts`
 - `src/context/reducers/careerReducer.ts`
 - `src/context/reducers/careerSanitizers.ts`
-- `src/context/useCareerDispatchActions.ts`
 - `src/context/reducers/expeditionReducer.ts`
-- `src/context/reducers/expeditionSanitizers.ts`
-- `src/hooks/usePersistence.ts`
-- `src/utils/unlockManager.ts`
-- `src/ui/bandhq/BandHQTabsList.tsx`
-- `src/ui/bandhq/BandHQContentArea.tsx`
+- `src/domain/expedition/effectiveRules.ts`
+- `src/domain/expedition/loadout.ts`
+- `src/domain/expedition/map.ts`
+- `src/data/upgradeCatalog.ts`
+- `src/data/hqItems/hq.ts`
 - `src/ui/bandhq/UpgradesTab.tsx`
 - `src/ui/bandhq/ShopTab.tsx`
-- `src/scenes/TourPrep.tsx`
-- `src/ui/expedition/TourPrepLoadout.tsx`
-- G1/G2/G3/G4 production consumers listed in the unified rules task
+- `src/ui/bandhq/BandHQContentArea.tsx`
+- current `unlockManager`/storage adapter owner
+- Run Summary UI/controller
 - `public/locales/en/ui.json`
 - `public/locales/de/ui.json`
-- `public/locales/en/unlocks.json`
-- `public/locales/de/unlocks.json`
 
 ---
 
-## Task 1: Add Career ranks and Tour Tokens without turning Fame into a universal upgrade currency
+## Task 1: Define the concrete Career economy before any simulator measures it
 
-Career ranks:
+This closes the implementation-dependent economy gap from the 2026-09-04 review.
 
-```text
-unknown
-local_noise
-underground_act
-rising_band
-touring_force
-headliner
-cult_legend
-```
-
-Rank eligibility requires combinations of finalized evidence, not raw Fame alone:
-
-```text
-successful extractions/completions
-Region completions
-Rival/Nemesis milestones
-Sponsor/Contract milestones
-Expedition quest chain completion
-challenge achievements
-Fame threshold as one signal, not sole requirement
-```
-
-Persistent Career adds:
+### Career state
 
 ```ts
-completedExpeditionRegionIds: string[]
-settledExpeditionRunIds: string[]
+export type ExpeditionCareerRank = 'rookie' | 'roadtested' | 'headliner' | 'cult_legend'
+
+export interface ExpeditionCareerProgress {
+  tourTokens: number
+  rank: ExpeditionCareerRank
+  settledExpeditionRunIds: string[]
+  finalizedExpeditionRuns: number
+  completedExpeditionRuns: number
+  extractedExpeditionRuns: number
+  completedExpeditionRegionIds: string[]
+  completedFinaleTypes: string[]
+}
 ```
 
-A Region id enters `completedExpeditionRegionIds` only after a completed Finale in that Region, once per `runId`. G1 Intel uses this as the exact Region-familiarity proof; Archive discovery alone is insufficient.
+### Token award registry
 
-Tour Tokens are the only new dedicated permanent purchase currency. They are earned only from finalized Expedition outcomes/quest milestones and settled exactly once by `runId`.
+```ts
+export const EXPEDITION_TOUR_TOKEN_AWARDS = {
+  failed: 0,
+  extracted: 1,
+  completed: 2,
+  firstRegionCompletion: 1,
+  metaQuestMilestone: 1
+} as const
+```
 
-Public action:
+Rules:
+
+```text
+failed run                         +0
+voluntary extracted run            +1
+completed Finale                   +2
+first completion of a Region       +1 once/Region
+quest_expedition_meta_unlock step  +1, max one such bonus per run
+```
+
+A first Home completion therefore yields 3 Tokens before later-rank meta quests; it cannot buy both a 2-Token facility and a 2-Token capability set in the same first Run Summary.
+
+### Rank criteria
+
+Rank is derived, never caller supplied:
+
+```text
+rookie
+  default
+
+roadtested
+  finalizedExpeditionRuns >=2
+  AND completedExpeditionRuns >=1
+
+headliner
+  completedExpeditionRuns >=5
+  AND completedExpeditionRegionIds.length >=2
+
+cult_legend
+  completedExpeditionRuns >=10
+  AND completedExpeditionRegionIds.length >=4
+  AND max persistent Nemesis level >=3
+```
+
+`calculateExpeditionCareerRank(career)` returns the highest satisfied rank.
+
+### Settlement action
 
 ```ts
 SETTLE_EXPEDITION_CAREER_RESULT { runId: string }
 ```
 
-Reducer loads the finalized outcome, derives token/rank/Region-completion/milestone changes and rejects already-settled run ids. No payload contains token deltas or target rank.
+Reducer requires finalized G1 outcome with matching run id, rejects ids already in `settledExpeditionRunIds`, derives all counters/Region/token bonuses/rank from canonical outcome+quest evidence and applies once. No payload contains token delta or rank.
 
-Fame remains on `player.fame` and drives access/Exposure/expectations/Sponsor quality. G5 removes Expedition permanent-power purchases from Fame-only upgrade paths; unrelated legacy Shop/Upgrade purchases stay functional.
+Tests cover extracted/completed/failed, first/repeat Region, eligible/ineligible meta quest bonus, replay and save/reload.
 
 ---
 
-## Task 2: Define one complete effective-rules composition path
+## Task 2: Complete the single effective-rules composition path
 
-This replaces separate partial rule profiles.
-
-```ts
-export interface ExpeditionNumericRules {
-  startingSpareParts: number
-  startingHeat: number
-  fuelConsumptionMultiplier: number
-  roadWearMultiplier: number
-  technicalWearMultiplier: number
-  repairCostMultiplier: number
-  fieldRepairEfficiency: number
-  gigRewardMultiplier: number
-  contractRewardMultiplier: number
-  contractPenaltyMultiplier: number
-  pressureRewardMultiplier: number
-  heatGainMultiplier: number
-  exposureGainMultiplier: number
-  crewStressMultiplier: number
-  extractionRetentionMultiplier: number
-  rareRewardMultiplier: number
-  completionMultiplier: number
-  rivalEventWeightMultiplier: number
-  authorityEventWeightMultiplier: number
-  rivalRewardMultiplier: number
-  finaleRewardMultiplier: number
-  nodeIntelFloor: 0 | 1 | 2
-}
-
-export interface ExpeditionRuleFlags {
-  forcedRival: boolean
-  fieldRepairNoHiddenDefect: boolean
-  fieldRepairMinimumCondition: number | null
-  severeReliefBypass: boolean
-  extraScoutReconAfterStep4: boolean
-  firstPoorRoadIgnored: boolean
-  firstAuthoritySafeExitPreserved: boolean
-}
-
-export interface ExpeditionLegendaryRules {
-  safeHarbor: boolean
-  fixer: boolean
-  nemesisKey: boolean
-  ghostRoute: boolean
-  salvageRights: boolean
-}
-
-export interface EffectiveExpeditionRules {
-  numeric: ExpeditionNumericRules
-  flags: ExpeditionRuleFlags
-  legendary: ExpeditionLegendaryRules
-}
-
-export const getEffectiveExpeditionRules = (
-  state: GameState
-): EffectiveExpeditionRules
-```
-
-Compose in one order:
+Final v1 composition order in `src/domain/expedition/effectiveRules.ts`:
 
 ```text
 Base
 -> Region
 -> Tour Type
--> G2 Chassis profile
--> selected G3 Crew aggregate
+-> G2 Chassis
+-> G2 installed module profile
+-> selected/available G3 Crew
 -> Starter Perk
 -> G4 accepted Run Draft traits
 -> Tour Pressure modifiers
--> Nemesis numeric pressure
+-> G4 Nemesis pressure
 -> persistent Legendary capability flags
 ```
 
-Run Draft special flags such as no-hidden-defect/minimum repair and Tour Pressure reward multiplier are part of this result; G6 must not import a separate partial run-trait/pressure profile for production semantics.
-
-Clamp multiplicative numeric axes to `0.25..3`, Heat `0..100`, Intel floor `0..2`.
-
----
-
-## Task 3: Wire every effective rule to exactly one production consumer
+Use the `EffectiveExpeditionRules` type introduced by G2. Add final v1 fields only if a production consumer is named in the same task; no partial side profiles remain.
 
 Required consumer matrix:
 
 ```text
-startingSpareParts             -> G1 START Cargo materialization
-startingHeat                   -> G1 START pressure
-fuelConsumptionMultiplier      -> G2 travel Fuel settlement
-roadWearMultiplier             -> G2 travel wear
-technicalWearMultiplier        -> G2 gig technical wear
-repairCostMultiplier           -> G2 professional/field repair cost
-fieldRepairEfficiency          -> G2 field repair restore
-gigRewardMultiplier            -> canonical post-Gig Expedition positive reward
-contractRewardMultiplier       -> G4 Contract settlement
-contractPenaltyMultiplier      -> G4 Contract penalty
-pressureRewardMultiplier       -> positive run rewards earned under selected Ascension pressure; applied once at owning reward resolver
-heatGainMultiplier             -> positive Heat deltas
-exposureGainMultiplier         -> positive Exposure deltas
-crewStressMultiplier           -> G3 positive Stress gains
-extractionRetentionMultiplier  -> G1 voluntary/failure retention, capped by Tour rule
-rareRewardMultiplier           -> G1/G4 rare reward source weighting
-completionMultiplier           -> G1 completed positive run earnings only
-rivalEventWeightMultiplier     -> G4 Director Rival weighting
-authorityEventWeightMultiplier -> G4 Director Authority weighting
-rivalRewardMultiplier          -> G4 Rival reward settlement
-finaleRewardMultiplier         -> G4 non-Legendary Finale reward
-nodeIntelFloor                 -> G1 Intel selector/action entitlement
-forcedRival                    -> G4 Rival generation
-flags.*                        -> exact G2/G3/G4 consumers described by their names
-legendary.*                    -> Task 10 exact transforms
+startingSpareParts               -> G1 START cargo materialization
+startingHeat                     -> G1/G4 START pressure
+fuelConsumptionMultiplier        -> G2 travel Fuel settlement
+roadWearMultiplier               -> G2 travel wear
+technicalWearMultiplier          -> G2 gig technical wear
+repairCostMultiplier             -> G2 repair prices
+fieldRepairEfficiency            -> G2 field repair formula
+fieldRepairNoHiddenDefect        -> G2 field repair formula
+fieldRepairMinimumCondition      -> G2 field repair formula
+gigRewardMultiplier              -> canonical post-Gig positive reward
+contractRewardMultiplier         -> G4 Contract settlement
+contractPenaltyMultiplier        -> G4 Contract failure
+pressureRewardMultiplier         -> owning positive Expedition reward resolvers, once
+heatGainMultiplier               -> positive G4 Heat gains
+exposureGainMultiplier           -> positive G4 Exposure gains
+crewStressMultiplier             -> G3 positive Stress gains
+extractionRetentionMultiplier    -> G1 extracted/failed base retention
+rareRewardMultiplier             -> G1/G4 canonical rare-reward source weighting
+completionMultiplier             -> G1 completed positive earnings only
+rivalEventWeightMultiplier       -> G4 Director Rival family
+authorityEventWeightMultiplier   -> G4 Director Authority family
+rivalRewardMultiplier            -> G4 Rival reward
+finaleRewardMultiplier           -> G4 Finale positive reward
+nodeIntelFloor                   -> G1 Intel entitlement
+explicitExtractionRareCarrySlots -> G1 voluntary extraction carry selection
+severeReliefBypass               -> G4 Director explicit override only
+legendary flags                  -> Task 10 exact transforms
 ```
 
-Add parity tests proving app consumer and G6 use the same returned field for Media Frenzy, No Safety Net, Union Trouble, Press Pass, Cold Trail, Field Engineer and Authority weighting.
+Clamp multiplicative numeric axes `0.25..3`, Heat `0..100`, Intel `0..2`, carry slots `0..3`.
+
+Parity tests cover chassis+Technician+field_engineer repair, Media Frenzy, No Safety Net, Union Trouble, Press Pass, Cold Trail and Authority weighting.
 
 ---
 
-## Task 4: Implement mechanically different Regions plus approved passive Intel sources
+## Task 3: Implement mechanically distinct Regions and bounded passive Intel
 
 Initial Regions:
 
@@ -252,173 +222,288 @@ corporate
 underground
 ```
 
-Each definition includes map weights and rule differences, not only labels:
+Exact initial rule tendencies:
 
 ```text
-industrial  -> more Supply/technical events, harsher road wear, repair opportunity bonus
-festival    -> more Festivals, higher Exposure/technical wear, more Rival/Sponsor pressure
-corporate   -> stronger Sponsor/Contract pool, lower tolerated Heat, more Authority/Contract events
-underground -> Underground/Black Market route weight, Contraband/rare reward opportunities, higher Heat/Authority pressure
-home        -> baseline balanced pool
+home
+  baseline map/rules
+
+industrial
+  Supply/technical node weight +25%
+  roadWearMultiplier x1.15
+  repairCostMultiplier x0.90
+
+festival
+  Festival/high-profile node weight +30%
+  exposureGainMultiplier x1.20
+  technicalWearMultiplier x1.10
+  rivalEventWeightMultiplier x1.10
+
+corporate
+  Sponsor/Contract event weight +30%
+  authorityEventWeightMultiplier x1.15
+  contractRewardMultiplier x1.10
+  Heat >=60 makes corporate Sponsor offers ineligible
+
+underground
+  Underground/Black Market node weight +35%
+  rareRewardMultiplier x1.20
+  heatGainMultiplier x1.15
+  authorityEventWeightMultiplier x1.20
 ```
 
-Region availability uses `isExpeditionCapabilityUnlocked`, never raw capability id checks only.
+Region availability uses `isExpeditionCapabilityUnlocked`, not raw unlock ids.
 
-Passive Intel rules are deliberately narrow so Scout remains valuable:
+Passive Intel remains narrow:
 
 ```text
-Region familiarity:
-  if current region id is in career.completedExpeditionRegionIds,
-  G1 Intel at Level 0 may reveal whether a visible future node contains a hidden repair OR Sponsor opportunity,
-  but not exact opportunity id/value.
-
-Reputation:
-  at Career rank headliner or cult_legend,
-  G1 Intel at Level 0 may reveal Rival-presence category and Sponsor-opportunity presence on structurally visible nodes,
-  but not exact Rival identity/payout.
-
-Vehicle module:
-  G2 authorityIntelBonus reveals qualitative Authority-risk band one level earlier.
+completed Region familiarity -> Level-0 view may reveal hidden repair OR Sponsor opportunity presence, no exact id/value
+headliner/cult_legend rank   -> Level-0 view may reveal Rival/Sponsor presence category, no exact identity/payout
+G2 authorityIntelBonus       -> qualitative Authority band one level earlier
 ```
 
-These rules are tested alongside Scout/Contact/Social/run-trait Intel to prove they add selective information rather than a universal Level-1 floor.
+Scout/Contact/Social remain valuable because none of these grants a universal Level-1/2 reveal.
 
 ---
 
-## Task 5: Implement Tour archetypes as route/rule templates
+## Task 4: Implement Tour archetypes as route/rule templates
 
 ```text
-standard   depth 8, extraction [3,6]
-blitz      depth 6, extraction [2,4], denser Gig route
-underground depth 8, Underground route required/weighted
-corporate  depth 8, Contract/Sponsor route pressure
-rival_hunt depth 8, forced Rival route/finale behavior
-survival   depth 9, scarce recovery windows
+standard
+  depth 8
+  extraction windows [3,6]
+
+blitz
+  depth 6
+  extraction [2,4]
+  Gig route weight +25%
+  completionMultiplier x0.95
+
+underground
+  depth 8
+  extraction [3,6]
+  requires/weights Underground route class
+  startingHeat +10
+
+corporate
+  depth 8
+  extraction [3,6]
+  Sponsor/Contract pressure weight +25%
+  contractRewardMultiplier x1.10
+
+rival_hunt
+  depth 8
+  extraction [3,6]
+  forcedRival true
+  rivalEventWeightMultiplier x1.30
+
+survival
+  depth 9
+  extraction [4,7]
+  recovery-node weight -30%
+  completionMultiplier x1.20
 ```
 
-Each Tour changes route composition and rule pressure rather than just a difficulty percentage.
-
-Availability/compatibility helpers use the capability resolver and are called by the G1 loadout validator. `standard`/`home` remain baseline.
+`standard`/`home` remain baseline. Compatibility is enforced by G1 canonical loadout validator using capability resolver.
 
 ---
 
-## Task 6: Define concrete capability unlock sets, including real Rehearsal and Crew Lounge value
+## Task 5: Define exact facility registry and purchase transaction
+
+```ts
+export type HqFacilityId =
+  | 'workshop'
+  | 'rehearsal'
+  | 'management_office'
+  | 'garage'
+  | 'black_market_contact'
+  | 'crew_lounge'
+
+export const HQ_FACILITY_LEVEL_COSTS = [2, 4, 7] as const
+```
+
+Meaning: level `0->1` costs 2 Tour Tokens, `1->2` costs 4, `2->3` costs 7.
+
+Action:
+
+```ts
+PURCHASE_EXPEDITION_HQ_FACILITY {
+  facilityId: HqFacilityId
+  expectedLevel: 0 | 1 | 2
+}
+```
+
+Reducer validates known id/current expected level/max level/Tokens, derives canonical cost and updates `career.hqFacilityLevels` once. Caller never submits cost or target level.
+
+Facilities change capability eligibility, not universal numeric stats.
+
+---
+
+## Task 6: Define exact unlock-set costs/ranks/facilities and immediate consumers
 
 ```ts
 export interface ExpeditionUnlockSet {
   id: string
   unlockId: `expedition.set.${string}`
   tokenCost: number
-  requiredRank: string
+  requiredRank: ExpeditionCareerRank
   requiredFacility: { id: HqFacilityId; level: number }
   capabilityIds: string[]
 }
 ```
 
-Initial sets:
+Initial registry:
 
 ```text
 mechanic_network
-  facility Workshop L1
-  -> industrial Region, survival Tour, mechanic_kit starter perk, G2 advanced inspection option
+  tokenCost 2 | rank rookie | Workshop L1
+  -> industrial Region, survival Tour, mechanic_kit starter perk, advanced inspection
 
 industry_network
-  facility Management Office L1
+  tokenCost 3 | rank roadtested | Management Office L1
   -> Manager Crew, corporate Region/Tour, press_pass perk, premium Sponsor/Contract pool
 
 underground_network
-  facility Black Market L1
+  tokenCost 3 | rank roadtested | Black Market Contact L1
   -> Security Crew, underground Region/Tour, underground_contact perk, Black Market route content
 
 festival_network
-  facility Rehearsal L1
+  tokenCost 3 | rank roadtested | Rehearsal L1
   -> festival Region, blitz Tour, rehearsed_set perk, performance Contract pool
 
-rival_network
-  facility Management Office L2
-  -> rival_hunt Tour, Rival quest continuation content
-
 crew_network
-  facility Crew Lounge L1
-  -> enables G3 concrete signature-trait eligibility/progression for the six registered traits
+  tokenCost 4 | rank roadtested | Crew Lounge L1
+  -> G3 signature-trait eligibility/acquisition path
 
 chassis_network
-  facility Garage L1
-  -> Expedition availability of higher-tier coach/armored-hauler chassis profiles already owned/purchasable through existing asset systems
+  tokenCost 5 | rank headliner | Garage L1
+  -> higher-tier coach/armored-hauler Expedition availability when owned/purchasable in existing asset system
+
+rival_network
+  tokenCost 5 | rank headliner | Management Office L2
+  -> rival_hunt Tour + persistent Rival quest continuation content
 ```
 
-`rehearsed_set` is concrete in v1:
+`rehearsed_set` remains concrete:
 
 ```text
-first major Gig each run grants +20 setupProtection to the currently lowest technical group after PreGig setup, no direct score bonus
+first major Gig/run grants +20 setupProtection to currently lowest technical group after PreGig setup; no direct score bonus
 ```
 
-No facility/set description may say “future feature”. Every purchased set has an immediate production consumer/test.
+`isExpeditionCapabilityUnlocked(unlocks, capabilityId)` resolves direct compatible legacy markers and set-derived capabilities. Crew/Region/Tour availability must call this resolver.
 
-`isExpeditionCapabilityUnlocked(unlocks, capabilityId)` resolves both direct legacy markers and purchased set markers.
+Unlock-set purchase uses the existing crash-safe journal sequence:
+
+```text
+BEGIN validate set/rank/facility/Tokens -> debit -> persist pending
+write unlock marker through unlockManager
+COMPLETE clear pending after marker confirmed in state
+ROLLBACK exact canonical cost once if marker write fails
+```
+
+Sanitizer recomputes set id/cost from registry; persisted cost is never trusted.
 
 ---
 
-## Task 7: Make HQ facilities capability gates, not numeric stat shops
+## Task 7: Make the fresh-career Band HQ transition explicit instead of leaving the old Day-1 power loop intact
 
-Facilities:
+The old catalog remains available for unrelated legacy gameplay, but every entry that materially changes an Expedition must be classified. Add:
 
-```text
-Workshop
-Rehearsal Room
-Management Office
-Garage
-Black Market Contact
-Crew Lounge
+```ts
+export type ExpeditionLegacyHqPolicy =
+  | 'unaffected'
+  | 'between_tours_only'
+  | 'requires_roadtested'
+  | 'requires_headliner'
+  | 'requires_capability'
+
+export const EXPEDITION_LEGACY_HQ_POLICY: Record<string, ExpeditionLegacyHqPolicy>
 ```
 
-Levels 0..3 cost Tour Tokens. Initial costs `[2,4,7]` may be tuned later.
+Initial explicit classification:
 
-Facility purchases change only `career.hqFacilityLevels`; actual capabilities still come from unlock sets/registered Legendary rewards. Facility cards list which currently available set/capability becomes purchasable at the next level so the value is not abstract.
+```text
+hq_room_coffee             between_tours_only
+hq_room_sofa               between_tours_only
+hq_room_cheap_beer_fridge  between_tours_only
 
-`ExpeditionMetaTab` surfaces Career rank, Tour Tokens, facilities, unlock sets, Archive, Crew/Rival summary and Legendary capabilities.
+hq_room_cat                requires_roadtested
+hq_room_marketing          requires_roadtested
+hq_room_skull              requires_roadtested
+pr_manager_contract        requires_capability (industry_network)
+
+hq_room_beer_pipeline      requires_headliner
+
+all catalog entries not affecting Expedition resources/rules
+                           unaffected
+```
+
+Semantics:
+
+- `between_tours_only`: purchase remains legacy-compatible, but its passive recovery effect is ignored during active Expedition; G2/G3 explicit rest/recovery owners remain authoritative.
+- `requires_roadtested`/`requires_headliner`: old saves that already own the item keep it; a fresh Career cannot buy it before the rank. Purchase logic enforces the gate, not only UI.
+- `requires_capability`: requires the named Expedition capability/unlock set before purchase.
+- `unaffected`: no Expedition-specific restriction.
+
+Add a test that scans the unified upgrade catalog and fails if a new `stat_modifier`/HQ unlock is detected as affecting `harmony`, Expedition recovery, Fame/Sponsor pressure or other Expedition rule inputs without an explicit policy entry.
+
+Fresh-career design assertion:
+
+```text
+before first finalized Expedition:
+  no newly purchased Band HQ item may grant an active-Expedition Harmony/recovery/Sponsor/numeric advantage
+  Expedition-affecting purchase rate = 0
+```
+
+This closes the parallel old-Day-1-power-loop rather than merely adding a second meta tab.
 
 ---
 
-## Task 8: Remove Expedition permanent power from early Fame-only HQ/Shop paths
+## Task 8: Add starter perks without turning them into Legendary percentage ladders
 
-Audit `UpgradesTab.tsx`, `ShopTab.tsx` and `BandHQContentArea.tsx` for permanent Expedition-relevant purchases that would make a first successful run buy broad stat power with Fame/Cash alone.
-
-Rules:
+Initial starter perks unlocked by sets:
 
 ```text
-existing non-Expedition legacy purchases remain functional
-already-owned old-save effects remain honored
-new Expedition permanent capabilities require rank/facility/Tour Token/unlock-set ownership
-Fame may gate access/quality but is not the sole Expedition meta purchase currency
-no automatic Day-1 HQ purchase grants universal Expedition stats
+mechanic_kit       -> startingSpareParts +1
+press_pass         -> Exposure gain x1.10; Sponsor quality/eligibility option, no guaranteed payout
+underground_contact-> startingHeat +5; one Underground opportunity category revealed
+rehearsed_set      -> first major Gig setupProtection +20 to lowest technical group
 ```
 
-Regression tests pin old-save ownership and verify a fresh Career cannot buy an Expedition capability through Fame alone.
+All feed `getEffectiveExpeditionRules` or a named one-shot run marker. Legendary ids are never legal `starterPerkId` values.
 
 ---
 
 ## Task 9: Implement modular Ascension / Tour Pressure
 
-Modifiers:
+Registry:
 
 ```text
-bad_roads         -> reward +0.15; road wear x1.30
-media_frenzy      -> reward +0.20; Exposure gain x2.00
-no_safety_net     -> reward +0.25; extraction retention x0.75; severeReliefBypass true only for explicitly tagged extreme events
-union_trouble     -> reward +0.15; positive Crew Stress x1.25
-hostile_territory -> reward +0.20; Rival weight x1.50
+bad_roads
+  reward +0.15; road wear x1.30
+
+media_frenzy
+  reward +0.20; Exposure gain x2.00
+
+no_safety_net
+  reward +0.25; extraction retention x0.75; severeReliefBypass only for explicitly tagged extreme events
+
+union_trouble
+  reward +0.15; positive Crew Stress x1.25
+
+hostile_territory
+  reward +0.20; Rival weight x1.50
 ```
 
-Maximum three unique modifiers. Validator requires `career.ascensionUnlocked` plus known registry ids and rejects duplicates/locked use.
+Maximum three unique modifiers. G1 validator enforces registry membership, uniqueness, max-3 and `career.ascensionUnlocked`; save sanitizer removes invalid ids. `pressureRewardMultiplier = 1 + sum(rewardBonus)` applies once at owning positive reward resolver.
 
-The combined additive reward bonus becomes `numeric.pressureRewardMultiplier = 1 + sum(rewardBonus)` and is consumed once by positive Expedition reward owners. It is no longer a disconnected Tour-Pressure reward field that G6 could miss.
+G6 late-career profiles that use pressure modifiers explicitly seed/earn `ascensionUnlocked:true` through production-compatible Career fixtures.
 
 ---
 
-## Task 10: Implement rule-changing Legendary rewards as named capabilities
+## Task 10: Keep five Legendary rewards rule-changing and production-owned
 
-Persistent markers:
+Persistent capability markers:
 
 ```text
 expedition.legendary.safe_harbor
@@ -431,130 +516,214 @@ expedition.legendary.salvage_rights
 Exact transforms:
 
 ### Safe Harbor
-
-Once per run, after reaching the second normal extraction window, add one extra valid extraction opportunity at the next non-Finale node. Consumed marker lives in run state; no retention percentage bonus.
+Once/run after second normal extraction window, adds one extra valid extraction opportunity at the next non-Finale node. No retention percentage bonus.
 
 ### The Fixer
-
-Once per run, excuse one failed non-tour-ending Contract obligation. The Contract becomes completed-without-positive-payout rather than minting reward; failure penalty is skipped.
+Once/run may excuse one failed **non-tour-ending** Contract: no positive payout, failure penalty skipped. Cannot excuse `tourEndingOnFailure:true`.
 
 ### Nemesis Key
-
-When current persistent Rival is Nemesis level >=2, add one effective shortcut edge to a Rival Encounter/Finale branch through `getEffectiveNodeConnections`. Does not mutate base map.
+With active persistent Rival Nemesis `>=2`, adds one effective shortcut edge to Rival Encounter/Finale branch; base map unchanged.
 
 ### Ghost Route
-
-Once per run, convert one eligible severe Authority route/event opportunity into a deterministic Underground route/event alternative. The player chooses whether to consume it.
+Once/run player may convert one eligible severe Authority route/event opportunity into deterministic Underground alternative.
 
 ### Salvage Rights
+Once/run when technical group would hit 0, keep it at 20 by sacrificing one eligible unsecured rare reward; if none, spend two spare parts; if neither, cannot trigger.
 
-Once per run, when a technical group would hit zero, keep it at 20 by sacrificing one eligible unsecured rare reward or, if none exists, two spare parts. If neither cost exists, it cannot trigger.
-
-These are never represented as `starterPerkId` and never flattened into generic numeric bonuses.
-
-Finale Legendary persistence happens at the finalized Run Summary barrier once per `runId` and only after the owning Finale/reward resolution succeeds.
+Each capability has one run-consumed marker in Expedition state and one production activation test. Finale-earned marker persistence must succeed before Career result settlement becomes available; storage failure keeps settlement controls disabled and offers retry.
 
 ---
 
-## Task 11: Implement the Tour Archive as observation, not unlock ownership
+## Task 11: Implement Tour Archive as observation, not ownership
 
 Archive categories:
 
 ```text
-Crew
-modules
-chassis
-Rivals
-Sponsors
-Regions
-Finales
-special events
-Contraband
+Crew | modules | chassis | Rivals | Sponsors | Regions | Finales | special events | Contraband
 ```
 
-`RECORD_EXPEDITION_ARCHIVE_DISCOVERY` may only be dispatched from actual observation/use seams and reducer validates the category/id against its canonical registry/current event. Archive discovery never implies capability ownership.
+Typed action:
 
-Use it as a discovery/progression surface, not a mandatory 100% gate.
+```ts
+RECORD_EXPEDITION_ARCHIVE_DISCOVERY {
+  category: ExpeditionArchiveCategory
+  id: string
+  sourceId: string
+}
+```
+
+Creator and reducer validate category/id against canonical registry/current observed source. Archive discovery never grants capability ownership and is not a mandatory 100% progression gate.
 
 ---
 
-## Task 12: Build exactly 1–3 consequential Between-Tour decisions
+## Task 12: Define exact persisted 1–3 Between-Tour decision instances and reducer-owned resolution
 
-After a finalized run, `buildBetweenTourDecisionSet(state, runId)` deterministically selects one to three **decision ids**, not multiple targets from one family.
+This closes the caller-authorized/unspecified Between-Tour gap.
 
-Initial decisions:
+### State
+
+```ts
+export type BetweenTourDecisionType =
+  | 'injury_rehab'
+  | 'crew_debrief'
+  | 'rival_response'
+  | 'sponsor_follow_up'
+  | 'vehicle_repair'
+  | 'network_contact'
+
+export interface BetweenTourDecisionInstance {
+  id: string
+  type: BetweenTourDecisionType
+  targetId: string | null
+  optionIds: string[]
+}
+
+export interface BetweenTourRunState {
+  runId: string
+  decisions: BetweenTourDecisionInstance[]
+  resolvedOptionByDecisionId: Record<string, string>
+}
+
+// Career
+betweenTourByRunId: Record<string, BetweenTourRunState>
+```
+
+### Deterministic selection
+
+`buildBetweenTourDecisionSet(state, runId)` requires finalized run and chooses **1–3 distinct decision instances** in this priority order:
+
+```text
+1. injury_rehab      if Band critical consequence or G3 crewRecoveryDebt exists
+2. crew_debrief      if selected Crew exists; target = deterministic lowest-loyalty selected Crew, tie lexical id
+3. rival_response    if persistent Rival was encountered this run; target = exact Rival id
+4. sponsor_follow_up if Sponsor obligation existed; target = exact deal id
+5. vehicle_repair    if player.van.condition <75
+6. network_contact   fallback/remaining slot when eligible Archive discovery exists
+```
+
+Use run seed only to break equally eligible lower-priority choices; never exceed 3. If no conditional decision exists, create `crew_debrief` when a selected Crew exists, otherwise `network_contact`; thus every finalized run has at least one decision.
+
+### Exact options/effects
 
 ```text
 injury_rehab
+  pay_rehab:
+    cost €300 Career Cash if spendable outside active run
+    clear target Crew recovery debt OR reduce target persistent Band injury consequence one stage
+  accept_unavailability:
+    cost 0
+    leave recovery debt/consequence for next Tour
+
 crew_debrief
+  rest_band:
+    +1 Loyalty to the decision's target Crew, capped 100
+  develop_signature:
+    only if G3 signature eligibility is currently true
+    invoke G3 source-derived signature acquisition for the decision target
+
 rival_response
+  confront:
+    set one next-run Rival-presence preference marker for this Rival
+  cool_down:
+    set one next-run Rival-weight x0.75 marker for this Rival; forfeit one Rival rare-reward opportunity
+
 sponsor_follow_up
+  keep_relationship:
+    next offer weighting +1 bounded preference tier for target Sponsor
+  walk_away:
+    clear Sponsor preference; next-run Sponsor obligation pressure -1 bounded tier
+
 vehicle_repair
+  pay_repair:
+    derive cost = ceil((100 - van.condition) * €12)
+    require Career Cash; set canonical van condition to 100
+  carry_damage:
+    cost 0; leave current vehicle condition unchanged
+
 network_contact
+  follow_lead:
+    record one deterministic eligible Archive discovery
+  cash_out:
+    +€200 Career Cash; no Archive discovery
 ```
 
-Examples:
-
-```text
-injury_rehab:
-  spend Tour/Career Cash or next-run availability consequence
-
-crew_debrief:
-  choose rest_band (+1 Loyalty selected Crew) OR network (one deterministic undiscovered Archive discovery when available)
-
-rival_response:
-  confront (increase next Rival presence) OR cool_down (reduce Rival weight, lose one Rival reward opportunity)
-
-sponsor_follow_up:
-  keep relationship (future offer weighting) OR walk away (lower obligation pressure, lose Sponsor preference)
-
-vehicle_repair:
-  pay canonical repair or carry reduced vehicle condition into next run
-```
-
-`PREPARE_NEXT_EXPEDITION` is rejected until all generated decisions are resolved. Every decision is idempotent and keyed by finalized `runId`.
-
----
-
-## Task 13: Persistence transaction safety for unlock-set purchases
-
-Unlock-set purchase spans Career token state and `unlockManager` marker state. Preserve the existing storage adapter and add a recoverable journal:
+### Typed resolve action
 
 ```ts
-pendingUnlockSetPurchase: {
-  setId: string
-  unlockId: string
-  tokenCost: number
-} | null
+RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION {
+  runId: string
+  decisionId: string
+  optionId: string
+}
 ```
 
-Flow:
+Reducer proves finalized run, stored canonical decision instance, listed option, unresolved status and current eligibility/cost. It derives target/effect from the decision registry and commits sensitive Career/Rival/Sponsor/vehicle/signature changes itself. Caller never supplies Loyalty, Money, condition, Rival or trait deltas.
+
+Replay/StrictMode/reload is safe because `resolvedOptionByDecisionId` is persisted and duplicate resolve is a no-op.
+
+G1 `PREPARE_NEXT_EXPEDITION` requires all stored decision ids resolved.
+
+Required tests:
 
 ```text
-BEGIN -> reducer validates set/rank/facility/tokens, debits canonical token cost, stores pending
-persist debited state
-write unlock marker
-COMPLETE -> clear pending
-if marker write fails -> ROLLBACK restores exact canonical token cost once
-save final state
+1..3 decisions always
+serious Crew injury produces injury_rehab and next-tour availability consequence
+eligible crew_debrief develop_signature acquires exact G3 trait once
+rival_response uses the exact persistent Rival id
+vehicle repair price derived/revalidated in reducer
+forged decision/option -> no-op
+save/reload after one of three decisions -> only remaining two are actionable
+StrictMode duplicate dispatch -> effect once
+Next Tour blocked until all resolved
 ```
-
-Sanitizer recomputes cost/id from registry and never trusts persisted values. Tests simulate crash/reload between every transition and prove no free unlock or double debit.
 
 ---
 
-## Task 14: G5 verification and simulator handoff
+## Task 13: Build the Band HQ Expedition meta surface
 
-Export only canonical production helpers for G6:
+`ExpeditionMetaTab` shows:
 
 ```text
-getEffectiveExpeditionRules
-getAvailableRegions
-getAvailableTourTypes
-isExpeditionCapabilityUnlocked
-buildBetweenTourDecisionSet
-getLegendaryRuleState
-getCareerRankEligibility
+rank and exact next-rank criteria
+Tour Token balance and token award explanation
+facility levels/costs
+unlock sets with exact token/rank/facility requirements
+Archive
+Crew recovery/signature summary
+persistent Rival/Nemesis summary
+Legendary capabilities
+```
+
+Facility cards show the concrete capability/set unlocked at the next level. No card may advertise a future/no-consumer feature.
+
+Run Summary flow:
+
+```text
+finalized G1 outcome
+-> persist any required Legendary marker barrier
+-> SETTLE_EXPEDITION_CAREER_RESULT
+-> SETTLE_EXPEDITION_CREW_CAREER
+-> build/persist 1–3 Between-Tour decisions
+-> resolve all decisions
+-> optional Band HQ/meta purchase
+-> PREPARE_NEXT_EXPEDITION enabled
+```
+
+---
+
+## Task 14: Verification and G6 handoff
+
+Production telemetry:
+
+```text
+Tour Tokens earned by source
+rank transition run
+facility purchase run/id/level
+unlock-set purchase run/id
+fresh-career legacy Expedition-affecting HQ purchase attempts/successes
+Between-Tour decision count/type/option
+Legendary activation
+Region/Tour/capability ownership
 ```
 
 Run:
@@ -562,9 +731,7 @@ Run:
 ```bash
 pnpm run test:node
 pnpm run test:ui
-pnpm run test:additional
 pnpm run typecheck:core
-pnpm run typecheck
 pnpm run deadcode:check
 ```
 
@@ -572,15 +739,15 @@ Expected: PASS.
 
 ---
 
-## G5 Exit Criteria
+## G5 Exit criteria
 
-- App and simulator have one complete effective-rules composition path.
-- Run Draft special rules and Ascension reward multipliers cannot disappear in G6.
-- Regions/Tours differ mechanically.
-- Region familiarity, reputation and vehicle-module information sources have bounded explicit Intel effects.
-- Every HQ facility has immediate purchasable/usable capability value.
-- Rehearsal and Crew Lounge no longer sell unspecified “future” functionality.
-- Fame gates access/expectations but is not the sole Expedition permanent upgrade currency.
-- Unlock-set purchases are crash/reload safe.
-- Between-Tour always resolves 1–3 consequential decisions before the next Tour.
-- Legendary rewards change rules through five explicit production transforms and are never starter perks.
+- Tour-Token awards, rank thresholds, facility costs and every initial unlock-set cost/rank/facility requirement are explicit production registries.
+- `getEffectiveExpeditionRules` is the single final composition path and every field has one named production consumer.
+- Regions/Tours change route/rules rather than labels only.
+- A first Home completion cannot immediately buy both a facility and capability set from its normal award alone.
+- Fresh Career has **zero** newly purchased Expedition-affecting legacy HQ numeric advantages before the first finalized Expedition; old saves keep owned content.
+- Facilities unlock real immediate options; no speculative token sink exists.
+- Between-Tour loop persists exactly 1–3 typed decision instances and reducer-owned effects; Next Tour is blocked until all settle.
+- G3 signature traits can actually be acquired through a canonical Between-Tour decision.
+- Archive is observation, not ownership.
+- Five Legendary capabilities transform rules and are individually production-tested.

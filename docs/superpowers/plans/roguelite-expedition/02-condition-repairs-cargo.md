@@ -1,360 +1,315 @@
-# Condition, Repairs, Chassis, Cargo, Inspections and Insurance Implementation Plan
+# Condition, Repairs, Chassis and Cargo Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make vehicle choice, Cargo, technical wear, repair skill, hidden defects, inspections and insurance create visible trade-offs without introducing duplicate vehicle or inventory ownership.
+**Goal:** Turn vehicle choice, Cargo, technical Condition, skill-based repairs, hidden defects, inspections and insurance into concrete Expedition decisions that feed active performance and the G1 failure shell.
 
-**Architecture:** `player.van.fuel` and `player.van.condition` remain authoritative for live travel; selected `tourbus_chassis` assets/modules define Expedition build rules through pure adapters. `expedition.condition` owns only PA/Instruments/Stage Gear plus defect/setup state, while the active Cargo manifest constrains what the run can use even though canonical ownership remains in `band.inventory`/`band.stash`.
+**Architecture:** Vehicle durability remains owned by `state.player.van.condition`; technical Condition is Expedition-owned. Cargo is an actual committed manifest and active Expedition consumers see only that manifest. `getEffectiveExpeditionRules(state)` is introduced here with a G2 baseline and extended in place by G3–G5 so repair/travel formulas never bypass the eventual unified composition path.
 
-**Tech Stack:** TypeScript 6, React 19, current asset registry/selectors, existing Roadie/Kabelsalat/Amp minigames, event resolver, reducers/actions, i18next, Node/Vitest/Playwright.
+**Tech Stack:** TypeScript 6, React 19, current tourbus/chassis/module owners, existing Roadie/Kabelsalat/Amp Calibration minigames, reducers/actions, Node/Vitest/Playwright.
 
 ---
 
-## Depends On
+## Authority and dependencies
 
-- G1A prepared run/loadout/active lifecycle.
-- `getExpeditionSpendableCash` and `canSpendExpeditionCash` from G1.
-- No G3/G4 dependency is required for the core G2 tasks; later Crew/Pressure plans consume the adapters added here.
+```text
+approved design spec > master plan > this child plan
+```
 
-## File Structure
+`00-*` files are NON-NORMATIVE. G2 depends only on G1A. G3/G4/G5 extend the public effective-rules helper and consumers created here; they do not create parallel repair/travel profiles.
+
+---
+
+## File structure
 
 **Create:**
 
-- `src/domain/expedition/vehicle.ts`
+- `src/domain/expedition/effectiveRules.ts`
 - `src/domain/expedition/chassis.ts`
 - `src/domain/expedition/cargo.ts`
 - `src/domain/expedition/condition.ts`
 - `src/domain/expedition/repairs.ts`
 - `src/domain/expedition/defects.ts`
-- `src/domain/expedition/inspection.ts`
 - `src/domain/expedition/insurance.ts`
+- `src/data/expedition/insurance.ts`
 - `src/ui/expedition/ConditionPanel.tsx`
-- `src/ui/expedition/InspectionPanel.tsx`
+- `src/ui/expedition/SupplyStopModal.tsx`
+- `src/ui/expedition/RepairMinigameResult.tsx`
 - `tests/node/expeditionChassis.test.js`
 - `tests/node/expeditionCargo.test.js`
 - `tests/node/expeditionCondition.test.js`
-- `tests/node/expeditionRepairs.test.js`
+- `tests/node/expeditionRepair.test.js`
 - `tests/node/expeditionDefects.test.js`
 - `tests/node/expeditionInsurance.test.js`
+- `tests/ui/ExpeditionConditionPanel.test.tsx`
+- `tests/ui/ExpeditionSupplyStop.test.tsx`
 
 **Modify:**
 
-- `src/types/assets.d.ts`
 - `src/types/expedition.d.ts`
-- `src/utils/assetSelectors/assetFinancials.ts`
-- `src/utils/assetSections/tourbusModules.ts`
-- `src/context/actionTypes.ts`
 - `src/types/actions.d.ts`
+- `src/context/actionTypes.ts`
+- `src/context/GameState.tsx`
 - `src/context/expeditionActionCreators.ts`
+- `src/context/useExpeditionDispatchActions.ts`
 - `src/context/reducers/expeditionReducer.ts`
 - `src/context/reducers/expeditionSanitizers.ts`
 - `src/context/reducers/minigameReducer.ts`
-- `src/context/reducers/bandReducer.ts`
+- `src/context/reducers/gigReducer.ts`
+- `src/context/reducers/assetReducer.ts`
 - `src/hooks/travel/useTravelMinigame.ts`
+- `src/hooks/travel/useVanMaintenance.ts`
 - `src/hooks/postGig/handlers/useContinueHandler.ts`
-- `src/hooks/useContrabandStash.ts`
-- `src/hooks/minigames/useRoadieLogic.ts`
-- `src/hooks/useMinigameSceneLogic.ts`
+- `src/hooks/useArrivalLogic.ts`
 - `src/utils/eventEngine/eventEffectHandlers.ts`
-- `src/utils/gameState/delta.ts`
-- `src/utils/economy/gigLogic/calculators/calculateMerchIncome.ts`
-- its owning Gig economy call site
-- `src/ui/SupplyStopModal.tsx`
-- `src/hooks/overworld/useSupplyStopModal.ts`
-- `src/hooks/preGig/usePreGigHandlers.ts`
-- `src/scenes/PreGig.tsx`
-- existing rhythm hit/miss hooks (`useHandleHit` / `useHandleMiss` owners)
+- active gig/rhythm hit/miss modifier owners
+- `tests/ui/useRoadieLogic.test.jsx`
+- `tests/ui/useKabelsalatGameEnd.test.jsx`
+- `tests/logic/ampCalibrationReducer.test.js`
+- `tests/node/useTravelLogic.test.js`
 - `public/locales/en/ui.json`
 - `public/locales/de/ui.json`
 
 ---
 
-## Task 1: Derive four actual chassis playstyles from existing tourbus ownership
+## Task 1: Derive four real Expedition chassis playstyles from existing assets
 
-- [ ] **Step 1: Write failing profile tests**
-
-Use real owned `tourbus_chassis` fixtures and assert that chassis choice changes more than capacity:
-
-```js
-assert.equal(getExpeditionChassisProfile(legitTier1).id, 'compact')
-assert.equal(getExpeditionChassisProfile(diyTier1).id, 'diy')
-assert.equal(getExpeditionChassisProfile(legitTier3).id, 'coach')
-assert.equal(getExpeditionChassisProfile(diyTier3).id, 'armored_hauler')
-```
-
-- [ ] **Step 2: Add the final adapter**
+Do not create a second purchasable chassis registry. Map existing chassis flavor/tier/config into:
 
 ```ts
+export type ExpeditionChassisArchetype =
+  | 'compact'
+  | 'diy'
+  | 'coach'
+  | 'armored_hauler'
+
 export interface ExpeditionChassisProfile {
-  id: 'compact' | 'diy' | 'coach' | 'armored_hauler'
+  archetype: ExpeditionChassisArchetype
   fuelConsumptionMultiplier: number
   roadWearMultiplier: number
   cargoCapacityBonus: number
   fieldRepairEfficiency: number
   crewStressMultiplier: number
   authorityEventWeightMultiplier: number
-  hiddenContrabandSlots: number
+  hiddenContrabandCapacity: number
 }
 ```
 
-Derive from existing `tourbus_chassis` flavor/tier without adding a second asset collection:
+Initial bounded semantics:
 
 ```text
-legit tier 1      -> compact
-DIY tier 1        -> diy
-legit tier 2/3    -> coach
-DIY tier 2/3      -> armored_hauler
+compact
+  fuel x0.85 | road wear x1.10 | cargo +0 | field repair +0.00 | Stress x1.05 | Authority x0.95 | hidden Contraband 0
+
+diy
+  fuel x1.00 | road wear x1.15 | cargo +1 | field repair +0.20 | Stress x1.00 | Authority x1.00 | hidden Contraband 1
+
+coach
+  fuel x1.20 | road wear x0.85 | cargo +3 | field repair +0.05 | Stress x0.85 | Authority x1.05 | hidden Contraband 0
+
+armored_hauler
+  fuel x1.35 | road wear x0.75 | cargo +4 | field repair +0.10 | Stress x0.95 | Authority x1.20 | hidden Contraband 2
 ```
 
-Initial rule identities:
-
-```text
-compact:        fuel x0.85, road wear x1.05, cargo +0, repair +0, stress x1.00, authority x1.00
-DIY:            fuel x1.00, road wear x1.00, cargo +0, repair +0.25, stress x1.00, authority x1.00
-coach:          fuel x1.20, road wear x0.90, cargo +4, repair +0, stress x0.85, authority x1.00
-armored_hauler: fuel x1.25, road wear x1.10, cargo +3, repair +0.10, stress x1.05, authority x0.80, hidden Contraband +2
-```
-
-These are initial tuning values, but the *rule axes* are required. Chassis selection is therefore a playstyle decision even with zero modules installed.
-
-- [ ] **Step 3: Apply the profile at real consumers**
-
-```text
-fuelConsumptionMultiplier     -> travel Fuel settlement
-roadWearMultiplier            -> vehicle travel wear
-cargoCapacityBonus            -> Cargo capacity
-fieldRepairEfficiency         -> field repair restore
-crewStressMultiplier          -> G3 travel/rest stress composition
-Authority weight              -> G4 Pressure Director
-hiddenContrabandSlots         -> G4 authority/Contraband options
-```
-
-- [ ] **Step 4: Run tests**
-
-```bash
-node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionChassis.test.js tests/node/assetSelectors.test.js
-pnpm run typecheck:core
-```
-
-Expected: PASS.
+Each value must be consumed by one production owner. Tests compare identical route/build with two archetypes and prove travel cost, capacity and at least one risk/recovery choice differ before modules are considered.
 
 ---
 
-## Task 2: Give existing modules rule-changing Expedition affordances
+## Task 2: Extend existing modules only when they have real Expedition consumers
 
-Extend `AssetBoni` only where the module has a real consumer:
+Use current module ids/ownership. Add Expedition affordances through one resolver:
 
 ```ts
-cargoCapacityBonus?: number
-roadWearMultiplier?: number
-technicalWearMultiplier?: number
-fieldRepairEfficiency?: number
-inspectionLevel?: number
-hiddenContrabandSlots?: number
-authorityIntelBonus?: 1
-freeFieldRepairCharges?: number
-poorRoadProtection?: boolean
-mobileStudioAtRest?: boolean
+export interface ExpeditionVehicleModuleProfile {
+  cargoCapacityBonus: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  inspectionLevel: 0 | 1 | 2
+  authorityIntelBonus: 0 | 1
+  hiddenContrabandCapacity: number
+  restStressRecoveryBonus: number
+}
 ```
 
-Initial mappings:
+Required v1 examples:
 
 ```text
-tb_roof_rack       -> cargo +2
-tb_trailer_hitch   -> cargo +4
-tb_sleeping_bunks  -> cargo -2; G3 Rest recovery bonus
-tb_gps_jammer      -> hiddenContraband +1; inspectionLevel +1; authorityIntelBonus 1
-tb_smoke_screen    -> poorRoadProtection true
-tb_racing_seats    -> roadWear x0.95
+tb_gps_jammer -> authorityIntelBonus +1 and bounded Authority weighting reduction if existing module semantics permit
+a cargo/storage module -> cargo capacity
+bunks/rest module -> restStressRecoveryBonus
+protection/repair module -> road wear or inspectionLevel
 ```
 
-`authorityIntelBonus` is consumed only by G1 node-Intel projection: it reveals the qualitative Authority-risk band one Intel step earlier, never exact event identity or payout. This is the approved vehicle-module information source without making Scout Recon redundant.
-
-Do not add a module field unless its G1/G2/G3/G4 production consumer and test are in the same implementation sequence.
+If a current module cannot be connected to a real app consumer, do not invent a simulator-only field for it.
 
 ---
 
-## Task 3: Materialize a real Cargo manifest and use it at every active-run consumer
+## Task 3: Introduce the single effective-rules module now, then extend it in place
 
-- [ ] **Step 1: Define one active-run manifest**
+G2 creates `src/domain/expedition/effectiveRules.ts`. It is the only public compositional entrypoint from this gate onward.
 
 ```ts
-export interface ExpeditionCargoManifest {
+export interface ExpeditionNumericRules {
+  startingSpareParts: number
+  startingHeat: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  technicalWearMultiplier: number
+  repairCostMultiplier: number
+  fieldRepairEfficiency: number
+  gigRewardMultiplier: number
+  contractRewardMultiplier: number
+  contractPenaltyMultiplier: number
+  pressureRewardMultiplier: number
+  heatGainMultiplier: number
+  exposureGainMultiplier: number
+  crewStressMultiplier: number
+  extractionRetentionMultiplier: number
+  rareRewardMultiplier: number
+  completionMultiplier: number
+  rivalEventWeightMultiplier: number
+  authorityEventWeightMultiplier: number
+  rivalRewardMultiplier: number
+  finaleRewardMultiplier: number
+  nodeIntelFloor: 0 | 1 | 2
+  explicitExtractionRareCarrySlots: number
+}
+
+export interface ExpeditionRuleFlags {
+  fieldRepairNoHiddenDefect: boolean
+  fieldRepairMinimumCondition: number
+  severeReliefBypass: boolean
+}
+
+export interface EffectiveExpeditionRules {
+  numeric: ExpeditionNumericRules
+  flags: ExpeditionRuleFlags
+  legendary: Record<string, boolean>
+}
+
+export const getEffectiveExpeditionRules = (state: GameState): EffectiveExpeditionRules
+```
+
+At G2, composition is:
+
+```text
+base -> selected G2 chassis -> installed G2 module profile
+```
+
+G3, G4 and G5 modify this **same function/module** to append Crew, starter perk, run draft, region/tour, Tour Pressure, Nemesis and Legendary layers. No G2 formula may read chassis/module fields directly after this task except while constructing the effective rule result.
+
+Tests pin base/chassis/module contributions before later layers exist.
+
+---
+
+## Task 4: Materialize Cargo from real owned content and make the manifest the only active-run view
+
+```ts
+export interface ExpeditionCargoState {
   spareParts: number
   supplies: number
   merch: ExpeditionMerchSelection[]
   contraband: ExpeditionContrabandSelection[]
-  technicalGearSlots: number
-}
-
-export interface ExpeditionCargoView {
-  merch: ExpeditionMerchSelection[]
-  contraband: ExpeditionContrabandSelection[]
+  merchSlotsUsed: number
+  contrabandSlotsUsed: number
+  technicalGearSlotsUsed: number
+  totalSlotsUsed: number
+  capacity: number
 }
 ```
 
-Capacity is derived from:
+`materializeExpeditionCargo(state, loadout)` derives slot use from actual selected owned merchandise, stash instances/stacks and committed technical gear; callers never submit slot counters.
 
-```text
-base capacity
-+ chassis profile
-+ installed module effects
-- selected spare parts/supplies
-- selected merch
-- selected Contraband
-- committed technical equipment slots
-```
-
-`materializeExpeditionCargo(state, loadout)` returns `null` if selected content is not owned or capacity is exceeded.
-
-- [ ] **Step 2: Add the read boundary**
+Capacity:
 
 ```ts
-getExpeditionCargoView(state)
-getExpeditionMerchQuantity(state, inventoryKey)
-isContrabandInExpeditionManifest(state, stashKey, instanceId?)
+capacity = BASE_CARGO_CAPACITY
+  + getExpeditionChassisProfile(state).cargoCapacityBonus
+  + getExpeditionVehicleModuleProfile(state).cargoCapacityBonus
 ```
 
-Inactive run -> current canonical inventory/stash behavior. Active run -> committed manifest, clamped down to content still canonically owned.
+G1 START invokes this once after validation.
 
-- [ ] **Step 3: Wire every consumer**
+During `status === 'active'`, all of these consumers use `getExpeditionCargoView(state)` and cannot see omitted content:
 
 ```text
-calculateMerchIncome + owning Gig economy call -> manifest-limited quantities
-useContrabandStash                             -> manifest-only list
-bandReducer USE_CONTRABAND                    -> reject omitted entries
-useRoadieLogic                                 -> manifest-only candidates
-useMinigameSceneLogic                          -> manifest-only candidates
-event risk/confiscation                        -> manifest-only candidates; synchronize after canonical stash removal
+Merch gig income/settlement
+Contraband stash/use UI and reducer
+USE_CONTRABAND
+Roadie/minigame candidate selection
+Expedition event/confiscation selection
+Crafting/use path if exposed during Expedition
 ```
 
-Global non-Expedition crafting/events keep canonical inventory access.
-
-- [ ] **Step 4: Add end-to-end tests**
-
-```text
-omitted merch remains owned but earns €0 Expedition merch revenue
-selected merch cannot sell above committed quantity
-omitted Contraband cannot be shown/used/selected/confiscated
-selected Contraband disappears from manifest view after canonical consumption
-active equipment changes are blocked by G1 so technicalGearSlots cannot drift
-```
+Tests prove omitted merch earns €0 Expedition merch revenue and omitted Contraband cannot be selected, used or confiscated.
 
 ---
 
-## Task 4: Apply explainable travel and gig wear exactly once
-
-- [ ] **Step 1: Keep real owners separate**
-
-```text
-Vehicle condition -> state.player.van.condition
-PA/Instruments/Stage Gear -> state.expedition.condition
-```
-
-Do not add a synthetic `vehicle` field to `ExpeditionConditionState`.
-
-- [ ] **Step 2: Add grouped technical condition**
+## Task 5: Add technical Condition and connect it to active gameplay
 
 ```ts
 export type ConditionGroup = 'pa' | 'instruments' | 'stageGear'
-export type ConditionBand = 'good' | 'worn' | 'critical' | 'breaking'
 
 export interface ExpeditionConditionState {
   pa: number
   instruments: number
   stageGear: number
-  hiddenDefects: HiddenDefectState[]
-  setupProtection: Record<ConditionGroup, number>
-  repairContext: ExpeditionRepairMinigameContext | null
+  defects: HiddenDefectState[]
 }
 ```
 
-Bands:
+Clamp groups `0..100`. Vehicle remains `state.player.van.condition`.
 
-```text
-70–100 good
-40–69 worn
-20–39 critical
-0–19 breaking
-```
-
-- [ ] **Step 3: Travel wear uses behavior**
-
-Travel settlement derives Fuel and vehicle wear from existing distance/road/travel result plus:
-
-```text
-chassis Fuel multiplier
-chassis/module road-wear multiplier
-cargo load ratio
-G3 Driver effect
-poor-road module rule
-```
-
-Use the real travel-minigame settlement owner once; no parallel travel wear action.
-
-- [ ] **Step 4: Gig wear uses active performance**
-
-```ts
-calculateGigConditionWear({
-  venueDifficulty,
-  accuracy,
-  technicalWearMultiplier,
-  protection
-})
-```
-
-Higher difficulty/intensity raises raw wear; better setup protection lowers it. Actual accuracy is used at settlement, while Intel projections use a fixed reference accuracy only as a forecast.
-
----
-
-## Task 5: Make technical Condition visibly affect active gigs
-
-Add a pure selector:
+Canonical gameplay profile:
 
 ```ts
 export interface ExpeditionGigTechnicalModifiers {
   timingWindowMultiplier: number
-  missPenaltyMultiplier: number
+  missStaminaCostMultiplier: number
   comboRecoveryMultiplier: number
-  audioHazardChance: number
+  audioHazardLevel: 0 | 1 | 2 | 3
   disabledGroups: ConditionGroup[]
 }
-
-export const getExpeditionGigTechnicalModifiers = (
-  state: GameState
-): ExpeditionGigTechnicalModifiers
 ```
 
-Initial behavior:
+Initial semantics:
 
 ```text
-PA worn/critical     -> increasing audio/timing hazard, surfaced before play
-Instruments worn     -> slightly narrower hit window and larger miss stamina cost
-Stage Gear worn      -> slower combo/crowd recovery
-Condition 0 group    -> disabledGroups contains that group; Gig Start blocked until recovery/failure choice
+PA >=70                     no penalty
+PA 40..69                   audioHazardLevel 1
+PA 1..39                    audioHazardLevel 2; timing window x0.96
+PA 0                        disabledGroups includes pa
+
+Instruments 40..69          timing window x0.98
+Instruments 1..39           timing window x0.93; miss stamina x1.15
+Instruments 0               disabledGroups includes instruments
+
+Stage Gear 40..69           combo recovery x0.95
+Stage Gear 1..39            combo recovery x0.85; audioHazardLevel at least 1
+Stage Gear 0                disabledGroups includes stageGear
 ```
 
-Inject through the existing `useHandleHit` / `useHandleMiss` / Gig modifier seams. PreGig shows every material modifier in plain language before Start. Never hide a difficulty modifier that can make player skill feel invalid.
+PreGig displays every material modifier before Start. Active rhythm/gig owners consume these exact fields; no duplicate score engine.
 
-Tests run the same chart/inputs with healthy vs critical Condition and assert the production modifier changes only the documented dimensions.
+Post-Gig wear uses canonical Gig evidence and `getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier` exactly once.
 
 ---
 
-## Task 6: Turn field repair into active skill using existing minigames
+## Task 6: Route field repair through the unified effective-rules path
 
-- [ ] **Step 1: Add repair context**
+This closes the direct-chassis bypass from the 2026-09-04 review.
 
 ```ts
 export interface ExpeditionRepairMinigameContext {
   group: ConditionGroup
-  source: 'supply_stop' | 'failure_crisis'
+  source: 'supply_stop' | 'failure_crisis' | 'blocked_pregig'
   mode: 'field'
   baseRestore: number
   expectedRouteStep: number
 }
 ```
 
-- [ ] **Step 2: Route group to existing minigame**
+Minigame mapping:
 
 ```text
 PA          -> Amp Calibration
@@ -362,118 +317,256 @@ Stage Gear  -> Kabelsalat
 Instruments -> Roadie
 ```
 
-Entering the minigame stores `repairContext`; normal pre-gig minigame use leaves it `null`.
-
-- [ ] **Step 3: Resolve quality into repair strength**
-
-Normalize the existing minigame result to `quality` in `0..1` and use:
+Canonical resolver:
 
 ```ts
-const restore = Math.round(
-  Math.min(60, 20 + quality * 35 + chassis.fieldRepairEfficiency * 20)
-)
+export const calculateFieldRepairResult = (
+  state: GameState,
+  group: ConditionGroup,
+  quality: number
+): { restore: number; createDefect: boolean } => {
+  const rules = getEffectiveExpeditionRules(state)
+  const boundedQuality = Math.max(0, Math.min(1, quality))
+  const rawRestore = 20 + boundedQuality * 35 + rules.numeric.fieldRepairEfficiency * 20
+  const minimum = rules.flags.fieldRepairMinimumCondition
+
+  return {
+    restore: Math.max(minimum, Math.min(60, Math.round(rawRestore))),
+    createDefect: !rules.flags.fieldRepairNoHiddenDefect && boundedQuality < 0.45
+  }
+}
 ```
 
-Consume one spare part. `quality < 0.45` creates one hidden defect chance; `quality >= 0.8` clears the field-repair defect chance. G4/G5 run traits may alter these rules only through the unified effective-rules helper.
+G3 Technician contributes `+0.20` to the **same** `fieldRepairEfficiency` numeric rule. G4 `field_engineer` draft/related rule sets `fieldRepairNoHiddenDefect` and/or minimum restore through the same effective rules. No repair code reads `chassis.fieldRepairEfficiency` directly.
 
-Professional repair remains a direct expensive reliable action and does not require a minigame.
+Reducer action carries only source/group/quality evidence and expected route step; reducer/shared resolver recomputes restore, cost, spare-part consumption and defect creation.
 
-- [ ] **Step 4: Prove skill matters**
+Required parity tests:
 
-Same damaged state + low vs high minigame quality must produce different restored Condition and subsequent wear/resource burden. G6 reuses this production path in its skill probe.
+```text
+same quality + compact chassis vs DIY -> restore differs through effective rules
+same chassis + Technician -> same production formula gains Technician contribution
+field_engineer rule -> same formula suppresses defect/minimum rule
+G6 imports calculateFieldRepairResult, never duplicates formula
+```
+
+Use the real existing tests:
+
+```bash
+pnpm exec vitest run tests/ui/useRoadieLogic.test.jsx tests/ui/useKabelsalatGameEnd.test.jsx tests/logic/ampCalibrationReducer.test.js
+```
 
 ---
 
-## Task 7: Add improvisation, cannibalization and hidden defects
+## Task 7: Implement complete hidden-defect create→reveal→trigger→resolve lifecycle
 
-Repair classes:
-
-```text
-professional: expensive; reliable; no defect
-field: spare part + minigame quality
-improvise: no/low Cash; lower restore; guaranteed hidden-defect risk token
-cannibalize: sacrifice one healthy technical group/component budget to restore another
-continue broken: allowed only above 0; active gameplay penalty remains visible
-```
-
-Hidden defect state:
+Replace ambiguous booleans with one state machine:
 
 ```ts
+export type HiddenDefectStatus = 'hidden' | 'revealed' | 'triggered' | 'resolved'
+export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
+
 export interface HiddenDefectState {
   id: string
   group: ConditionGroup
   severity: 1 | 2 | 3
-  revealed: boolean
+  status: HiddenDefectStatus
   source: 'field_repair' | 'improvise' | 'critical_wear'
-  triggered: boolean
+  createdAtRouteStep: number
+  triggerAt: HiddenDefectTrigger
+  triggerRouteStep: number
 }
 ```
 
-Creation is deterministic from committed run seed + route step + source. Undiscovered defects never leak into UI selectors. Trigger/resolve is once-only.
+### Creation
+
+`createHiddenDefect(runSeed, group, source, routeStep)` deterministically derives id/severity/trigger point. Duplicate source+group+routeStep cannot create a second entry.
+
+### Reveal
+
+```ts
+REVEAL_EXPEDITION_DEFECT {
+  defectId: string
+  source: 'crew_inspection' | 'module_inspection' | 'full_service'
+  expectedRouteStep: number
+}
+```
+
+Reducer proves the source entitlement, defect is still `hidden`, current step matches and reveal rules allow it, then sets `revealed`. The UI/ARIA tree never exposes hidden id, severity, group-specific warning text or trigger timing before this transition.
+
+### Trigger
+
+```ts
+TRIGGER_EXPEDITION_DEFECT {
+  defectId: string
+  trigger: HiddenDefectTrigger
+  expectedRouteStep: number
+}
+```
+
+Lifecycle owner dispatches only after its canonical committed transition. Reducer proves the defect's stored trigger type/route step match and status is `hidden` or `revealed`, then applies one exact consequence and sets `triggered`:
+
+```text
+severity 1 -> owned Condition group -8
+severity 2 -> owned Condition group -15
+severity 3 -> owned Condition group -25 and exposes immediate repair/failure warning if resulting group reaches 0
+```
+
+The consequence uses canonical Condition mutation and cannot retrigger on replay.
+
+### Resolve
+
+Successful professional/field/cannibalize repair of the affected group may dispatch:
+
+```ts
+RESOLVE_EXPEDITION_DEFECT {
+  defectId: string
+  repairResolutionId: string
+  expectedRouteStep: number
+}
+```
+
+Reducer proves the referenced canonical repair just succeeded and group matches, then sets `resolved`. Full service may reveal and resolve according to its defined paid result. Resolved defects never trigger again.
+
+Required tests:
+
+```text
+hidden defect absent from visual/ARIA selectors
+valid inspection hidden -> revealed
+wrong/fake inspection source -> identical state
+valid lifecycle trigger applies exact severity consequence once
+trigger replay -> identical state
+repair result resolves matching defect only
+save/reload preserves status and future trigger
+G6 telemetry created/revealed/triggered/resolved increments only after reducer transition
+```
 
 ---
 
-## Task 8: Add explicit inspections
+## Task 8: Make inspections meaningful and source-owned
 
-Inspection choices are available before large Gig/Festival nodes and at Supply Stops:
+Inspection choices:
 
 ```text
-quick_check:
+quick_check
   cost 0
-  reveals condition bands only; no hidden-defect certainty
+  shows condition bands only
+  cannot reveal a hidden defect
 
-crew_inspection:
-  requires selected G3 Technician/Roadie or module inspectionLevel >=1
-  reveals one deterministic hidden defect if present
+crew_inspection
+  requires selected G3 Technician/Roadie
+  reveals one deterministic eligible hidden defect
 
-full_service:
-  uses spendable Expedition Cash
-  reveals all hidden defects
-  restores +10 to the lowest technical group, capped at 100
+module_inspection
+  requires effective vehicle inspectionLevel >=1
+  reveals one deterministic eligible hidden defect
+
+full_service
+  requires location service + spendable Expedition Cash
+  reveals all current hidden defects
+  restores +10 to lowest technical group, capped 100
+  resolves defects whose service rule covers the repaired group
 ```
 
-The player sees inspection value before paying. Full Service uses `canSpendExpeditionCash` and canonical money mutation once.
+Selectors return legal actions; reducer computes price/result. UI never submits Money delta, Condition value or defect status.
 
 ---
 
-## Task 9: Add optional insurance as a real risk-management sink
+## Task 9: Add optional insurance as a real pre-tour risk-management sink
 
-Define policies in `src/data/expedition/insurance.ts`:
+Registry:
+
+```ts
+export interface ExpeditionInsurancePolicy {
+  id: 'roadside' | 'equipment' | 'touring'
+  premium: number
+  coverage: 'vehicle' | 'technical' | 'either'
+}
+```
+
+Initial policies:
 
 ```text
-roadside  -> one vehicle rescue; excludes Contraband-caused authority outcomes
-equipment -> one technical zero-Condition rescue to 25; no vehicle coverage
-touring   -> one rescue of either class; highest premium; still excludes deliberate sabotage
+roadside  premium €300 -> one vehicle rescue; excludes Contraband/intentional sabotage Authority outcomes
+equipment premium €350 -> one technical zero-Condition rescue to 25; no vehicle coverage
+touring   premium €550 -> one rescue of either class; same exclusions
 ```
 
-Premium is paid at START from spendable Expedition Cash. Claim use is one-shot run state and reducer-derived from canonical failure source. Insurance never deletes an explicit high-risk consequence that its policy excludes.
+Premium is derived/charged once at START through `canSpendExpeditionCash`. Run state stores policy id + `claimConsumed` only.
+
+Claim trigger is source-derived from the canonical vehicle/technical zero-condition path. Reducer derives rescue amount and refuses excluded source families. Tests cover forged claim, replay and save/reload.
 
 ---
 
-## Task 10: Guarantee zero-Condition recovery without PreGig softlock
+## Task 10: Guarantee Condition-0 recovery and export the G1B technical failure signal
 
-Expose `getTechnicalFailureSignal(state)` for G1B.
+A mandatory current PreGig with a disabled technical group must never render Start disabled with no enabled action.
 
-A mandatory current PreGig with any disabled technical group produces `technical_shutdown` after Insurance/G5 Salvage Rights have had their canonical chance.
-
-The same PreGig screen must show:
+Available actions:
 
 ```text
-field_repair   -> when spare part + repair minigame path is legal
-cannibalize    -> when a valid source group/component exists
-professional   -> only if current location explicitly provides it and Cash is spendable
-accept_failure -> always available
+field_repair   when spare part + repair minigame path is legal
+cannibalize    when a healthy eligible source group/component exists
+professional   when current location provides service + spendable Cash
+insurance      when policy has unused eligible claim
+salvage_rights when G5 Legendary is eligible and has a legal sacrifice
+accept_failure always available after rescue evaluation
 ```
 
-Successful repair clears disabled status and enables Start. `accept_failure` finalizes the G1 failure path. No state may render Start disabled with zero enabled actions.
+`getTechnicalFailureSignal(state)` returns a G1B failure source only when a required disabled group remains unresolved and the player explicitly accepts failure or has exhausted/declined all canonical recovery choices.
+
+Successful recovery clears disabled state and permits Start.
+
+Golden path:
+
+```text
+post-gig wear -> Condition reaches 0
+-> next node mandatory Gig
+-> PreGig exposes recovery choices
+-> successful repair enables Start
+OR accept_failure creates technical_shutdown pending failure
+-> never softlocks
+```
 
 ---
 
-## Task 11: Build Supply Stop / Condition UI
+## Task 11: Settle travel wear/Fuel through the real vehicle owner
 
-`ConditionPanel` shows grouped semantic bands, exact values on detail expansion, revealed defects only and active modifiers.
+Create one canonical resolver at the current travel settlement seam:
 
-`SupplyStopModal` offers only legal actions from pure selectors:
+```ts
+export interface ExpeditionTravelSettlement {
+  fuelConsumed: number
+  vehicleWear: number
+}
+
+export const resolveExpeditionTravelCost = (
+  state: GameState,
+  routeContext: RouteContext
+): ExpeditionTravelSettlement
+```
+
+It uses:
+
+```text
+base route distance/road risk
+* getEffectiveExpeditionRules(state).numeric.fuelConsumptionMultiplier
+* getEffectiveExpeditionRules(state).numeric.roadWearMultiplier
+```
+
+Vehicle wear commits only to `state.player.van.condition`; it is never copied into Expedition technical Condition. Insurance/G1 Mobility failure consume that canonical owner.
+
+G3 Driver and G5 Region/Tour/Pressure later modify the same effective multipliers.
+
+Tests run identical trip with different chassis/Driver/Pressure profiles and prove the actual `player.van.condition`/Fuel owner changes.
+
+---
+
+## Task 12: Build Condition/Cargo UI and telemetry handoff
+
+`ConditionPanel` shows exact values on expansion, semantic bands, revealed/triggered defects only and active gameplay penalties.
+
+`SupplyStopModal` exposes only selector-approved actions:
 
 ```text
 buy spare parts
@@ -485,33 +578,16 @@ cannibalize
 inspection/full service
 ```
 
-Every price is derived by the owning domain helper and checked with `canSpendExpeditionCash` in reducer/action validation. UI never submits money deltas or restored Condition values.
-
----
-
-## Task 12: G2 simulator/test handoff
-
-G2 adds production metrics but does not independently implement simulation formulas. Export production helpers used later by G6:
+Telemetry is emitted only after canonical reducer transitions:
 
 ```text
-getExpeditionChassisProfile
-getExpeditionCargoView
-calculateGigConditionWear
-getExpeditionGigTechnicalModifiers
-calculateFieldRepairResult
-getTechnicalFailureSignal
-```
-
-Required telemetry ownership points:
-
-```text
-vehicle minimum -> player.van.condition
-technical minima -> expedition.condition groups
-repair spend -> after canonical money mutation
-field repair quality/use -> after repair reducer succeeds
-defect created/revealed/triggered -> after reducer transition
-insurance premium/claim -> after canonical transition
-manifest utilization -> active materialized manifest
+vehicle minimum          -> player.van.condition
+technical minima         -> expedition.condition groups
+repair spend             -> after Money mutation
+field repair quality/use -> after repair success
+defect created/revealed/triggered/resolved -> after state transition
+insurance premium/claim  -> after canonical transition
+manifest utilization     -> materialized active manifest
 ```
 
 Run:
@@ -527,15 +603,14 @@ Expected: PASS.
 
 ---
 
-## G2 Exit Criteria
+## G2 Exit criteria
 
-- Chassis choice itself creates a playstyle before modules are considered.
-- Active Expedition merch/Contraband consumers cannot see omitted manifest content.
-- Fuel/vehicle and technical Condition keep their real existing owners.
-- Travel/gig wear comes from behavior and settles exactly once.
-- Technical Condition changes active gameplay and is telegraphed.
-- Field-repair quality materially changes restored Condition.
-- Hidden defects have create→reveal→trigger/resolve lifecycle without information leaks.
-- Inspections and insurance create optional Cash-vs-risk decisions.
-- Vehicle modules include at least one real map-information affordance in addition to protection/capacity rules.
-- Condition 0 always leads to recovery or explicit run termination, never a softlock.
+- Chassis choice itself changes Fuel, cargo, repair and risk decisions before modules.
+- Every active Expedition merch/Contraband consumer is manifest-only.
+- Vehicle Condition remains in `player.van.condition`; technical Condition remains Expedition-owned.
+- Active technical Condition visibly changes rhythm/gig behavior.
+- Field Repair reads only the unified effective-rules result; chassis, Technician and field-engineer effects converge on the same formula.
+- Hidden defects have executable create/reveal/trigger/resolve transitions, exact consequences and no pre-reveal UI/ARIA leak.
+- Inspections and insurance create real Cash-vs-risk choices.
+- Condition 0 always reaches recovery or explicit failure, never a softlock.
+- G6 can import production helpers/telemetry without inventing simulator-only formulas.

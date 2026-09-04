@@ -1,85 +1,75 @@
-# Pressure, Sponsors, Contracts, Social, Rivals, Quests, Finales and Drafts Implementation Plan
+# Pressure, Sponsors, Contracts, Social, Rivals and Finales Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Turn successful Expeditions into escalating opportunity and risk through Heat, Exposure, deliberate Sponsor/Contract choices, Social trade-offs, multi-input event pressure, persistent Rival/Nemesis history, Expedition quest chains, contextual finales and occasional rule-changing run drafts.
+**Goal:** Build the Expedition pressure layer: deliberate Sponsors/native Contracts, source-derived obligations and Double Down, Social/Crowd Hype, multi-input Pressure Director, Authority risk/opportunity, persistent Rival/Nemesis identity, Expedition quests, mechanically distinct Finales and reducer-authoritative run drafts.
 
-**Architecture:** Existing Brand Deals keep their current economic owner; Expedition adds obligations without duplicating Sponsor payouts. Heat/Exposure/Obligations live in Expedition run state, while the current single `rivalBand` remains the active run actor and `career` stores persistent Rival/Nemesis history. The existing event and quest pipelines remain the only content engines. Draft candidate generation is deterministic from committed run state and recomputed by the reducer; UI never submits a candidate list.
+**Architecture:** Existing Brand Deals remain the Sponsor offer/accept owner. Native Expedition Contracts use an explicit typed constraint registry. Heat/Exposure/Crowd Hype are distinct run-state axes. Rival history persists a stable Rival snapshot/id so later tours can reactivate the same actor. Finales adapt the existing gig lifecycle rather than creating a second score engine.
 
-**Tech Stack:** TypeScript 6, React 19, current Social/Brand Deal/event/quest systems, deterministic RNG, typed reducers/actions, i18next, Node/Vitest/Playwright.
+**Tech Stack:** TypeScript 6, React 19, current Brand Deal/social/event/rival/gig/quest systems, typed actions/reducers, deterministic RNG, Node/Vitest/Playwright.
 
 ---
 
-## Depends On
+## Authority and dependencies
 
-- G1A prepared route preview, full loadout, reward ledger and base Intel.
-- G2 Condition/Cargo/chassis helpers.
-- G3 Crew/Stress/relationships/Contact Intel.
+```text
+approved design spec > master plan > this child plan
+```
 
-## File Structure
+`00-*` files are NON-NORMATIVE. G4 depends on G1A, G2 and G3. G1B consumes G4 failure/Intel/reward signals. G5 later adds Region/Tour/Meta/Legendary rules through the same effective-rule and route-owner seams defined here.
+
+---
+
+## File structure
 
 **Create:**
 
-- `src/types/contracts.d.ts`
 - `src/data/expedition/contracts.ts`
+- `src/data/expedition/pressureEvents.ts`
+- `src/data/expedition/finales.ts`
 - `src/domain/expedition/contracts.ts`
 - `src/domain/expedition/pressure.ts`
-- `src/domain/expedition/pressureDirector.ts`
+- `src/domain/expedition/crowdHype.ts`
 - `src/domain/expedition/rivals.ts`
-- `src/domain/expedition/finale.ts`
-- `src/data/expedition/runTraits.ts`
+- `src/domain/expedition/finales.ts`
 - `src/domain/expedition/runDrafts.ts`
-- `src/data/events/pressure.ts`
-- `src/data/events/rival.ts`
-- `src/data/quests/quest_expedition_run_goal.ts`
-- `src/data/quests/quest_expedition_nemesis.ts`
-- `src/data/quests/quest_expedition_meta_unlock.ts`
 - `src/quests/producers/expeditionQuestEvents.ts`
-- `src/ui/expedition/PressurePanel.tsx`
-- `src/ui/expedition/ObligationsPanel.tsx`
-- `src/ui/expedition/RunDraftModal.tsx`
-- `tests/node/expeditionPressure.test.js`
+- `src/ui/expedition/ContractPicker.tsx`
+- `src/ui/expedition/DoubleDownDialog.tsx`
+- `src/ui/expedition/PressureStatus.tsx`
+- `src/ui/expedition/RivalStatus.tsx`
 - `tests/node/expeditionContracts.test.js`
-- `tests/node/pressureDirector.test.js`
-- `tests/node/expeditionRivals.test.js`
+- `tests/node/expeditionDoubleDown.test.js`
+- `tests/node/expeditionPressure.test.js`
+- `tests/node/expeditionCrowdHype.test.js`
+- `tests/node/expeditionRival.test.js`
 - `tests/node/expeditionFinale.test.js`
-- `tests/node/expeditionRunDrafts.test.js`
-- `tests/node/expeditionQuestProducers.test.js`
-- `tests/ui/RunDraftModal.test.tsx`
+- `tests/node/expeditionRunDraft.test.js`
+- `tests/node/expeditionQuestEvents.test.js`
 
 **Modify:**
 
 - `src/types/expedition.d.ts`
-- `src/types/social.d.ts`
+- `src/types/career.d.ts`
 - `src/types/actions.d.ts`
 - `src/context/actionTypes.ts`
+- `src/context/GameState.tsx`
 - `src/context/expeditionActionCreators.ts`
+- `src/context/useExpeditionDispatchActions.ts`
 - `src/context/reducers/expeditionReducer.ts`
 - `src/context/reducers/expeditionSanitizers.ts`
-- `src/context/careerActionCreators.ts`
 - `src/context/reducers/careerReducer.ts`
 - `src/context/reducers/careerSanitizers.ts`
-- `src/hooks/postGig/handlers/types.ts`
-- `src/hooks/postGig/handlers/useDealHandlers.ts`
-- `src/hooks/postGig/handlers/useSocialPostHandler.ts`
-- `src/hooks/postGig/handlers/socialPostHandlerUtils.ts`
-- `src/hooks/postGig/handlers/useContinueHandler.ts`
-- `src/utils/postGig/socialResolution.ts`
-- `src/data/postOptions.ts`
-- `src/data/brandDeals.ts`
-- `src/utils/brandDealLogic.ts`
-- `src/utils/eventEngine/types.ts`
-- `src/utils/eventEngine/eventSelection.ts`
-- `src/utils/eventEngine/eventEffectHandlers.ts`
+- `src/domain/expedition/effectiveRules.ts`
 - `src/domain/eventResolver.ts`
-- `src/data/events/index.ts`
-- `src/data/quests/index.ts` or the repository's current quest registry owner
-- `src/utils/rivalEngine.ts`
-- `src/context/reducers/rivalReducer.ts`
-- `src/hooks/overworld/useRivalEscalation.ts`
+- `src/utils/eventEngine/eventEffectHandlers.ts`
+- `src/data/brandDeals.ts`
+- current Brand Deal offer/accept owner
+- current Rival generation/selection owner
+- current quest registry/producer registration
+- current PreGig/START_GIG/PostGig modifier owners
+- `src/hooks/postGig/handlers/useContinueHandler.ts`
 - `src/hooks/useArrivalLogic.ts`
-- `src/ui/expedition/ExpeditionStatusStrip.tsx`
-- `src/ui/expedition/RunSummaryCard.tsx`
 - `public/locales/en/ui.json`
 - `public/locales/de/ui.json`
 - `public/locales/en/events.json`
@@ -87,71 +77,53 @@
 
 ---
 
-## Task 1: Make Sponsor selection a real Tour Prep decision through existing Brand Deal ownership
-
-- [ ] **Step 1: Add Sponsor-offer UI to Tour Prep without reducer RNG**
-
-Tour Prep may call existing `generateBrandOffers(...)` through the current Social/Brand Deal orchestration path. A chosen offer is accepted through the existing Brand Deal handler first, so it becomes canonical `state.social.activeDeals` before the Expedition build is committed.
-
-The build may then store only:
+## Task 1: Keep Heat, Exposure and Crowd Hype as distinct run-state axes
 
 ```ts
-sponsorDealId: string | null
-```
-
-and validation remains:
-
-```text
-null OR exact own id currently in state.social.activeDeals
-```
-
-No reducer generates a Sponsor offer and no loadout accepts a transient offer object.
-
-- [ ] **Step 2: Add optional Expedition obligation metadata to selected real Brand Deals**
-
-```ts
-expeditionObligation?: {
-  metric: 'goodGigCount' | 'maxHeat' | 'restCount' | 'socialPostCount'
-  target: number
-  failureHeat: number
+export interface ExpeditionPressureState {
+  heat: number
+  exposure: number
+  crowdHype: number
+  severeReliefUntilRouteStep: number | null
+  lastSevereEventId: string | null
+  temporaryRouteOpportunity: ExpeditionTemporaryRouteOpportunity | null
 }
 ```
 
-At START, a committed active deal with this metadata materializes one deterministic zero-payout obligation id `${runId}:brand:${dealId}`. Existing Brand Deal money/fame remains the sole Sponsor economic payout owner.
+Clamp all three numeric axes `0..100`.
 
-- [ ] **Step 3: Test stale/replay cases**
+Semantics:
 
 ```text
-offer accepted through Brand Deal flow -> appears in activeDeals -> can be committed
-transient/unaccepted offer id -> loadout invalid
-active deal removed before START -> START invalid
-same START/replay -> no duplicate Sponsor obligation
+Heat       -> Authority/illegal/controversial risk and underground opportunities
+Exposure   -> visibility, Sponsor/Rival/media pressure and high-profile opportunities
+Crowd Hype -> contextual performance upside generated by Social/Gig momentum; NOT a permanent HUD resource
 ```
+
+Positive Heat/Exposure gains use `getEffectiveExpeditionRules(state)` multipliers. Negative deltas are not multiplied unless a named rule explicitly says so.
 
 ---
 
-## Task 2: Define native Contract families with real reward/penalty semantics
+## Task 2: Replace `{metric,target}` Contracts with an explicit constraint model
+
+This closes the schema gap from the 2026-09-04 review. No template-id special cases are permitted in the evaluator.
 
 ```ts
-export type ExpeditionContractKind =
-  | 'performance'
-  | 'behavior'
-  | 'route'
-  | 'high_risk'
+export type ExpeditionContractConstraint =
+  | { id: string; kind: 'gig_accuracy_count'; minAccuracy: number; requiredCount: number }
+  | { id: string; kind: 'max_heat'; maxHeat: number }
+  | { id: string; kind: 'visit_node'; targetNodeId: string }
+  | { id: string; kind: 'no_rest_before_finale' }
+  | { id: string; kind: 'finale_completed'; minHeatAtFinale: number | null }
+  | { id: string; kind: 'social_post_count'; requiredCount: number }
+  | { id: string; kind: 'special_finale'; profileId: ExpeditionContractSpecialFinaleProfileId }
 
-export type ExpeditionContractMetric =
-  | 'goodGigCount'
-  | 'maxHeat'
-  | 'visitedNode'
-  | 'restCount'
-  | 'finaleCompleted'
-  | 'socialPostCount'
+export type ExpeditionContractSpecialFinaleProfileId = 'all_in_showcase'
 
 export interface ExpeditionContractTemplate {
   id: string
-  kind: ExpeditionContractKind
-  metric: ExpeditionContractMetric
-  target: number
+  kind: 'performance' | 'behavior' | 'route' | 'high_risk'
+  constraints: ExpeditionContractConstraintTemplate[]
   reward: { money: number; fame: number; rewardMultiplier: number }
   failure: { heat: number; controversy: number }
   tourEndingOnFailure: boolean
@@ -162,116 +134,157 @@ export interface ExpeditionContractTemplate {
 }
 ```
 
+Route constraints are materialized from `routeTargetRule` into an exact `visit_node.targetNodeId` during prepared-map offer construction; all other constraints are copied from a known registry definition.
+
 Initial templates:
 
 ```text
-contract_three_good_gigs -> performance; 3 gigs >=65 accuracy; €1500/+500 Fame; reward x1.00
-contract_keep_it_clean   -> behavior; Heat never above 40; €1800/+300; x1.00
-contract_route_target    -> route; visit one matching prepared-map node; €1200/+400; x1.00
-contract_no_rest_finale  -> high-risk; no Rest before Finale; +1000 Fame; reward x1.20; tourEndingOnFailure false
-contract_all_in          -> high-risk; complete Finale with Heat >=60; reward x1.35; tourEndingOnFailure true
+contract_three_good_gigs
+  constraints: gig_accuracy_count(minAccuracy=65, requiredCount=3)
+  reward: €1500 +500 Fame, template multiplier 1.00
+  tourEndingOnFailure false
+
+contract_keep_it_clean
+  constraints: max_heat(maxHeat=40)
+  reward: €1800 +300 Fame, multiplier 1.00
+  tourEndingOnFailure false
+
+contract_route_target
+  constraints: visit_node(prepared deterministic target)
+  reward: €1200 +400 Fame, multiplier 1.00
+  tourEndingOnFailure false
+
+contract_no_rest_finale
+  constraints: no_rest_before_finale + finale_completed(minHeatAtFinale=null)
+  reward: +1000 Fame, multiplier 1.20
+  tourEndingOnFailure false
+
+contract_all_in
+  constraints: finale_completed(minHeatAtFinale=60) + special_finale(profileId='all_in_showcase')
+  reward: template multiplier 1.35
+  failure: Heat/controversy penalty
+  tourEndingOnFailure true
 ```
 
-`rewardMultiplier` is not dead data. Contract settlement uses:
-
-```ts
-const stackMultiplier = Math.min(1.4, 1 + Math.max(0, activeConstraintCount - 1) * 0.1)
-const finalRewardMultiplier = template.reward.rewardMultiplier * stackMultiplier
-```
-
-Apply it to that Contract's positive reward only. G5's global rule profile may further compose a `contractRewardMultiplier`; never multiply the entire run twice.
+Tests iterate every template through the generic constraint evaluator and fail if evaluator branches on a concrete template id.
 
 ---
 
-## Task 3: Validate pre-tour Contract targets against the prepared route
+## Task 3: Build deliberate pre-tour Sponsor/native-Contract choices from real owners
 
-Because G1A Tour Prep and Overworld use the same `prep.runSeed`, route contracts can bind to real reachable nodes before START.
+### Sponsor
 
-`buildContractOffer(state, template, preparedMap)`:
+Tour Prep calls existing `generateBrandOffers`/accept logic before committing the build. The selected deal must already exist in `state.social.activeDeals`; reducer never generates offers. G1 stores only `build.sponsorDealId`.
+
+At START, G4 materializes one zero-native-payout linked Sponsor obligation from that persisted deal exactly once by `runId + dealId`.
+
+### Native Contract offer
+
+```ts
+buildContractOffer(state, template, preparedMap)
+```
+
+Rules:
 
 ```text
-non-route contract -> no targetNodeId
-route contract -> choose deterministic reachable future node matching routeTargetRule
-no matching reachable node -> contract is not offered
+non-route constraints -> no targetNodeId required
+route template         -> deterministic reachable future node matching routeTargetRule
+no reachable match     -> template not offered
 ```
 
-The chosen `targetNodeId` is displayed before acceptance and stored in the validated obligation commitment; the reducer rechecks that the node exists in the same prepared map generated from the committed seed.
+The accepted result passed back to G1 is exactly:
 
-This removes the old contradiction where a Route Contract expected a target before the map existed.
+```ts
+{ templateId: string; targetNodeId: string | null }
+```
+
+G1 persists this in `loadout.nativeContracts`. START revalidates the same prepared seed/map and materializes obligations from the commitment; it never chooses a new target.
 
 ---
 
-## Task 4: Make obligation actions intent-only and reducer-authoritative
-
-Active state:
+## Task 4: Make active obligations reducer-authoritative and constraint-complete
 
 ```ts
+export interface ExpeditionConstraintProgress {
+  constraintId: string
+  value: number
+  satisfied: boolean
+  failed: boolean
+}
+
+export interface ExpeditionDoubleDownState {
+  acceptedOfferId: string
+  derivationKey: string
+  addedConstraint: ExpeditionDoubleDownConstraint
+  rewardMultiplier: 1.25 | 1.35
+  failureHeatBonus: number
+  acceptedAtRouteStep: number
+}
+
 export interface ActiveObligationState {
   id: string
   sourceType: 'native' | 'brandDeal'
   sourceId: string
-  targetNodeId: string | null
-  progress: number
+  constraints: ExpeditionContractConstraint[]
+  progressByConstraintId: Record<string, ExpeditionConstraintProgress>
   status: 'active' | 'completed' | 'failed'
   settled: boolean
-  doubledDown: boolean
+  doubleDown: ExpeditionDoubleDownState | null
 }
 ```
 
-Public actions:
+Public signal intent:
 
 ```ts
-ACCEPT_EXPEDITION_OBLIGATION {
-  templateId: string
-  targetNodeId: string | null
-  expectedRouteStep: number
-}
-
 RECORD_EXPEDITION_OBLIGATION_SIGNAL {
   signalType: 'gig' | 'arrival' | 'rest' | 'heat' | 'social_post' | 'finale'
   sourceId: string | null
   expectedRouteStep: number
 }
-
-RESOLVE_EXPEDITION_OBLIGATION {
-  id: string
-  expectedStatus: 'completed' | 'failed'
-}
 ```
 
-The signal action carries **no accuracy, Heat, node result, Finale result or materialized next obligation**. Reducer/domain helper reads the canonical just-settled source:
+Payload contains no accuracy, Heat, node result, Finale result, progress or next obligation. Reducer/domain helper reads canonical just-settled state:
 
 ```text
-gig        -> last canonical Gig result/accuracy for current node
-arrival    -> current canonical arrived node id
-rest       -> canonical Rest transition journal
-heat       -> current canonical expedition.pressure.heat after pressure settlement
-social_post-> canonical just-resolved post result
-finale     -> finalized current Finale result
+gig        -> last canonical Gig result/accuracy
+arrival    -> committed current node id
+rest       -> canonical rest transition
+heat       -> current pressure Heat
+social_post-> just-settled Social result
+finale     -> canonical Finale result + Heat-at-Finale
 ```
 
-`sourceId` is a stale/replay proof when the owner has an id; reducer requires it to match canonical state. No payload contains money/fame/heat delta or reward multiplier.
+Constraint evaluator updates all applicable constraints and status. Route target, temporal no-rest and conjunctions require no template-id branch.
 
-Completed native reward applies once through canonical money/fame mutation and emits the real quest producers:
+Settlement multiplier:
 
 ```ts
-createMoneyEarnedQuestEvent({ amount, reason })
-createFameGainedQuestEvent({ amount, reason })
+stackMultiplier = Math.min(1.4, 1 + Math.max(0, activeConstraintCount - 1) * 0.1)
+finalRewardMultiplier =
+  template.reward.rewardMultiplier
+  * stackMultiplier
+  * (obligation.doubleDown?.rewardMultiplier ?? 1)
+  * getEffectiveExpeditionRules(state).numeric.contractRewardMultiplier
 ```
 
-Failed Contract applies its canonical Heat/controversy penalty once. If `tourEndingOnFailure:true`, G1B receives `critical_contract_breach`; ordinary Contract failure never ends the Tour automatically.
+Apply only to that Contract's positive reward. Failure penalty uses the effective contract penalty rule once. Direct Money/Fame reward owner emits the existing Money/Fame quest events.
 
 ---
 
-## Task 5: Add real mid-run Double Down
+## Task 5: Persist the exact Double-Down rule instead of a boolean
 
-At route step >=3, an active non-terminal native Contract may receive one deterministic Double Down offer if its current state still permits success.
+Eligible post-Gig/Pressure seam may offer one deterministic escalation while an active obligation is eligible.
 
 ```ts
+export type ExpeditionDoubleDownConstraint =
+  | { kind: 'no_more_rest' }
+  | { kind: 'heat_cap'; maxHeat: 60 }
+  | { kind: 'finale_required' }
+  | { kind: 'social_silence'; maxPosts: 0 }
+
 export interface ExpeditionDoubleDownOffer {
   id: string
-  obligationId: string
-  addedConstraint: 'no_more_rest' | 'heat_cap_60' | 'finale_required' | 'social_post_required'
+  addedConstraint: ExpeditionDoubleDownConstraint
   rewardMultiplier: 1.25 | 1.35
   failureHeatBonus: number
 }
@@ -287,39 +300,96 @@ DOUBLE_DOWN_EXPEDITION_OBLIGATION {
 }
 ```
 
-Reducer recomputes the deterministic eligible offer from `runSeed + obligationId + routeStep`, validates `offerId`, and stores only the chosen rule marker. UI never submits constraint/reward values.
+Reducer recomputes offer from:
 
-A doubled Contract raises upside and creates a real extra restriction. Manager signature `signature_dealmaker` from G3 reveals exact failure penalty before acceptance; otherwise UI shows qualitative penalty tier.
+```text
+runSeed + obligationId + expectedRouteStep + current obligation constraints
+```
+
+and verifies `offerId`. It then stores the full normalized `ExpeditionDoubleDownState` shown in Task 4, including immutable `derivationKey`, constraint, multiplier and penalty. On LOAD_GAME sanitizer recomputes the offer from `derivationKey`/accepted route step and rejects/tames corrupted persisted values.
+
+Every later obligation signal/evaluator reads `doubleDown.addedConstraint`; settlement reads stored/revalidated multiplier/penalty. It is never re-derived from **current** route step.
+
+Manager signature `signature_dealmaker` reveals exact upside/failure penalty before accept; other players see qualitative tiers.
+
+Required tests:
+
+```text
+accept -> save/reload -> violate no_more_rest -> failure recognized
+accept -> save/reload -> complete -> persisted multiplier paid once
+forged offerId -> no-op
+replay accept -> no second constraint/multiplier
+contradictory/max stack offer not generated
+```
 
 ---
 
-## Task 6: Keep Heat and Exposure distinct and make Social strategically multi-purpose
+## Task 6: Restore Crowd Hype as the Social→active-skill bridge
 
-`pressure.ts` owns clamped 0..100 Heat/Exposure and canonical positive-gain multipliers from G5 effective rules.
+This mechanic is mandatory for design fidelity.
 
-Gig pressure remains performance-sensitive:
-
-```text
-successful/difficult/high-profile gig -> Exposure
-controversial/illegal/aggressive behavior -> Heat
-```
-
-Selected Social results must offer different strategic uses of a viral moment:
+Social choices:
 
 ```text
-push        -> Fame + Exposure; some Heat
-monetize    -> Cash + moderate Exposure
-suppress    -> lower Heat/Exposure; lower immediate upside
-weaponize   -> requires active Rival; source-bound Rival pressure/outcome effect + Heat
+push
+  +15 Crowd Hype, +Fame, +Exposure, some Heat
+
+monetize
+  +5 Crowd Hype, +Cash, moderate Exposure
+
+suppress
+  -10 Crowd Hype, lower Heat/Exposure, reduced immediate upside
+
+weaponize
+  +10 Crowd Hype, requires active Rival, source-bound Rival pressure/outcome + Heat
 ```
 
-Do not reduce Social integration to flat Heat/Exposure deltas only. At least one Social result also influences Sponsor interest, one grants Intel and one affects Rival behavior/event eligibility.
+Exact Money/Fame/Heat/Exposure values stay in the Social result registry; reducer derives deltas from validated result ids.
+
+Successful major/high-profile Gig may also add `+10 Crowd Hype`; poor Gig may subtract `10`. Clamp `0..100`.
+
+Active performance selector:
+
+```ts
+export interface ExpeditionCrowdHypeProfile {
+  comboBonusMultiplier: number
+}
+
+export const getExpeditionCrowdHypeProfile = (hype: number): ExpeditionCrowdHypeProfile => ({
+  comboBonusMultiplier:
+    hype >= 90 ? 1.25 :
+    hype >= 70 ? 1.18 :
+    hype >= 40 ? 1.10 : 1.00
+})
+```
+
+This multiplier applies **only to the combo-derived bonus earned after successful hits**. It does not widen timing windows, raise base accuracy, prevent misses or auto-award score. PreGig shows the current Hype tier and potential combo upside.
+
+G6 skill probe must hold management state/Hype constant and show that a high-Hype low-skill branch still underperforms a high-skill branch; Hype rewards execution rather than replacing it.
+
+Tests:
+
+```text
+validated Social result changes Hype
+same successful input sequence with high Hype earns greater combo bonus
+same miss-heavy sequence is not auto-rescued by Hype
+Hype is contextual UI, not seventh permanent HUD bar
+```
 
 ---
 
-## Task 7: Add a reducer-proven Social Intel producer
+## Task 7: Keep Social strategically multi-purpose and source-prove Social Intel
 
-A validated Social result can create one grant for a visible future node:
+At least one validated Social result must also affect each of:
+
+```text
+Sponsor interest/eligibility
+Rival behavior/event eligibility
+Intel
+Crowd Hype
+```
+
+Social Intel action:
 
 ```ts
 CREATE_SOCIAL_INTEL_GRANT {
@@ -330,17 +400,11 @@ CREATE_SOCIAL_INTEL_GRANT {
 }
 ```
 
-Reducer verifies that the current canonical resolved Social result contains the `expeditionIntel` effect, verifies the node is future/reachable and stores deterministic grant id:
-
-```text
-${runId}:social:${postOptionId}:${resultId}:${routeStep}:${nodeId}
-```
-
-Replay or forged result ids are no-ops. G1B consumes the grant via the base Intel action.
+Reducer proves the canonical Social result just settled, result owns the target-level rule, node is visible/reachable future content and current Intel is below target. It creates one deterministic G1 grant and rejects forged/replayed sources.
 
 ---
 
-## Task 8: Implement the full multi-input Pressure Director
+## Task 8: Implement the full multi-input Pressure Director and cross-family relief
 
 ```ts
 export interface PressureDirectorContext {
@@ -349,120 +413,107 @@ export interface PressureDirectorContext {
   cashPressure: number
   technicalConditionPressure: number
   crewStressPressure: number
-  obligationPressure: number
+  activeObligationPressure: number
   rivalPressure: number
   routeDepthPressure: number
-  severeReliefActive: boolean
 }
 ```
 
-Derive bounded 0..1 pressures from canonical state:
+All inputs are pure bounded selectors from canonical state. Event definitions declare:
 
 ```ts
-cashPressure = clamp((1000 - getExpeditionSpendableCash(state)) / 1000, 0, 1)
-technicalConditionPressure = clamp((60 - getAggregateTechnicalCondition(state)) / 60, 0, 1)
-crewStressPressure = clamp((getMaxSelectedCrewStress(state) - 50) / 50, 0, 1)
-obligationPressure = clamp(getActiveObligations(state).length / 3, 0, 1)
-rivalPressure = clamp(getCurrentRivalNemesisLevel(state) / 4, 0, 1)
-routeDepthPressure = clamp(routeStep / max(1, mapDepth - 1), 0, 1)
+severity: 'normal' | 'severe'
+pressureFamily: 'authority' | 'crew' | 'contract' | 'rival' | 'social' | 'technical'
 ```
 
-After existing eligibility/cooldowns:
+The Director:
 
 ```text
-economy/supply    -> x (1 + .50 * cashPressure)
-technical/vehicle -> x (1 + .75 * technicalConditionPressure)
-crew              -> x (1 + .75 * crewStressPressure)
-contract/sponsor  -> x (1 + .50 * obligationPressure)
-rival             -> x (1 + .50 * rivalPressure) * G5 Rival weighting
-authority/climax  -> x (1 + .25 * routeDepthPressure) * G5 Authority weighting
+1. filters by normal event eligibility/conditions/cooldowns
+2. derives bounded context
+3. applies family-specific weight bias
+4. applies same-id repeat protection
+5. if severeReliefUntilRouteStep is active, multiplies OTHER severe families by 0.35
+6. may bypass relief only when Heat >=90 or G5 explicit severeReliefBypass flag is active
+7. samples deterministically from run RNG
 ```
 
-Unknown/legacy events get identity 1. Director never forces outcomes or bypasses event conditions/cooldowns.
+After a severe negative event, set relief through the next two route steps. The Director biases events; it never forces a result or bypasses event conditions.
+
+Tests hold Heat/Exposure constant and vary Cash, Condition, Stress, obligations and route depth separately; also test severe-A→severe-B suppression.
 
 ---
 
-## Task 9: Add cross-family severe-event anti-frustration
+## Task 9: Add Authority encounters with safe costly exits and high-Heat upside
 
-Expedition state adds:
-
-```ts
-severeReliefUntilRouteStep: number
-```
-
-Every new Expedition event carries:
-
-```ts
-severity?: 'normal' | 'severe'
-pressureFamily?: 'economy' | 'technical' | 'crew' | 'contract' | 'rival' | 'authority' | 'media'
-```
-
-After a severe negative event resolves, reducer sets:
-
-```ts
-severeReliefUntilRouteStep = routeStep + 2
-```
-
-While active, eligible **severe** events from any other family receive weight x0.35. Same-event ordinary cooldown still applies separately.
-
-Opt-out exists only when the player deliberately remains in explicit extreme-risk state:
+Authority encounter choices:
 
 ```text
-Heat >=90
-OR G5 No Safety Net-like modifier explicitly sets severeReliefBypass true
-```
-
-Tests hold all other state constant and prove a severe Authority event temporarily lowers severe Rival/Crew/Contract event weights without removing normal events.
-
----
-
-## Task 10: Add telegraphed Authority and Underground opportunity encounters
-
-Create validated events:
-
-```text
-expedition_authority_roadblock
-expedition_media_frenzy
-expedition_underground_invite
-```
-
-Roadblock option families:
-
-```text
-comply/pay          -> always available when Cash is spendable
+comply/pay          -> available when protected spendable Cash can cover canonical cost
 Manager/Security    -> Crew-gated safer outcome
 hidden compartment -> G2 chassis/module gated
 surrender cargo     -> manifest-derived eligible Contraband/rare cargo only
 route detour        -> Fuel/vehicle cost
-future obligation   -> when a compatible Contract slot is available
+future obligation   -> when a compatible Contract slot exists
 ```
 
-At least one safe exit remains when the player has the required resource. If no safe exit exists and Heat reaches 100 from this encounter, emit G1B `authority_crisis` failure signal.
+At least one safe exit remains when the player has its required resource. If no legal safe exit exists and Heat reaches the explicit crisis state after the encounter, emit:
 
-The UI explains why the event occurred: Heat band, Contraband exposure, route/Pressure context.
+```ts
+getAuthorityCrisisSignal(state): ExpeditionFailureSignal | null
+```
 
-### High Heat creates opportunity, not only punishment
+### High Heat as opportunity
 
-`expedition_underground_invite` becomes eligible at Heat >=60. Accepting it records one run-scoped `temporaryRouteOpportunity` whose deterministic target is a currently reachable/future `SPECIAL` node. `getEffectiveNodeConnections` exposes one temporary edge/subtype conversion to `UNDERGROUND_MARKET` or `BLACK_MARKET` until used; declining leaves the route unchanged. This is consumed once and never mutates the base map.
-
-Thus a deliberate High-Heat build can convert pressure into an Underground route opportunity with higher rare-reward potential, while Authority risk remains visible.
+At Heat `>=60`, `expedition_underground_invite` may offer a deterministic run-scoped `temporaryRouteOpportunity`. Accepting it exposes one effective edge/subtype conversion to an Underground/Black Market route opportunity until consumed; base map is not mutated. This route carries higher rare-reward eligibility while Authority risk remains visible.
 
 ---
 
-## Task 11: Persist Rival/Nemesis history and change rules across runs
+## Task 10: Persist and reactivate the same Rival identity across runs
 
-Keep one `state.rivalBand` active-run actor. Persistent Career state:
+This closes the current `generateRivalBand()` fresh-id problem.
+
+Persistent Career record:
 
 ```ts
+export interface CareerRivalSnapshot {
+  id: string
+  name: string
+  style: string
+  preferredRegionId: string
+  signatureBehavior: 'aggressive' | 'showboat' | 'saboteur' | 'dealbreaker'
+  seed: number
+}
+
 export interface CareerRivalHistory {
   relationship: 'unknown' | 'competitive' | 'rival' | 'nemesis' | 'respect' | 'alliance'
   nemesisLevel: 0 | 1 | 2 | 3 | 4
   encounterCount: number
   lastOutcome: 'hostile_win' | 'hostile_loss' | 'respect' | 'alliance' | null
+  lastSeenRunId: string | null
+}
+
+export interface CareerRivalRecord {
+  snapshot: CareerRivalSnapshot
+  history: CareerRivalHistory
 }
 ```
 
-Use a source-bound action:
+Career stores `rivalsById: Record<string, CareerRivalRecord>`.
+
+### Selection/reactivation
+
+`selectExpeditionRivalForRun(state, preparedMap)`:
+
+```text
+1. collect existing Rival records whose preferred region/route eligibility matches
+2. choose highest nemesisLevel, then highest encounterCount, then lexical id for deterministic tie break
+3. rehydrate active `state.rivalBand` from the stored snapshot WITHOUT calling generateRivalBand()
+4. only when no existing eligible record exists may the current production generator create a new Rival
+5. immediately snapshot the new Rival once; future tours reuse that id/snapshot
+```
+
+Action:
 
 ```ts
 APPLY_EXPEDITION_RIVAL_OUTCOME {
@@ -473,53 +524,33 @@ APPLY_EXPEDITION_RIVAL_OUTCOME {
 }
 ```
 
-Reducer verifies the matching canonical just-resolved source, derives `hostile_win`/`hostile_loss`/`respect`/`alliance` from that source and applies the transition. Payload never supplies relationship or Nemesis level.
+Reducer proves active Rival id and just-resolved source, derives outcome and updates the same Career record once.
 
-Nemesis levels unlock rule changes:
+Nemesis rules:
 
 ```text
-L1 -> increased eligible Rival-event weight
-L2 -> deterministic Rival route-node insertion opportunity
-L3 -> existing generateBrandOffers pipeline loses one eligible Sponsor offer through applyNemesisSponsorInterference
-L4 -> Rival Hunt Finale priority + dedicated shortcut/Legendary interactions
+L1 -> increased eligible Rival event weight
+L2 -> deterministic Rival route-node/shortcut opportunity
+L3 -> existing Brand-offer pipeline removes one eligible Sponsor offer through source-owned interference
+L4 -> Rival Hunt Finale priority + dedicated quest/Legendary interactions
 ```
 
-Respect/Alliance decisions may reduce hostile weighting or unlock cooperative Gig variants.
+Respect/Alliance reduce hostile weighting and may unlock cooperative variants.
+
+Required linked-run test:
+
+```text
+run1 generate rival_X -> persist snapshot/history
+run2 selector rehydrates rival_X -> nemesis progresses
+run3 rehydrates same rival_X again -> L2/L3 rules alter at least route and Sponsor/finale opportunity
+assert no fresh rival id replaced it while eligible
+```
 
 ---
 
-## Task 12: Add dedicated Expedition quest paths
+## Task 11: Add dedicated Expedition quests through existing quest owners
 
-Use existing `src/data/quests/*`, quest registry and producer architecture. Add three concrete quest families:
-
-### `quest_expedition_run_goal`
-
-```text
-kind: repeatable/per-run
-progress sources: expedition.nodeResolved, expedition.extracted, expedition.finaleCompleted
-example objective: resolve 3 meaningful nodes and extract/complete
-reward: quest/milestone progress; no duplicate run reward settlement
-```
-
-### `quest_expedition_nemesis`
-
-```text
-kind: story
-activation: persistent Rival reaches relationship=rival
-steps: encounter -> choose response -> win/resolve Rival challenge -> Nemesis outcome
-progress sources: expedition.rivalEncountered / expedition.rivalOutcome / expedition.finaleCompleted
-```
-
-### `quest_expedition_meta_unlock`
-
-```text
-kind: story/challenge
-activation: G5 rank/facility requirement
-objective: complete a Region/Tour/Contract achievement
-reward: G5 namespaced capability/unlock-set eligibility, never raw universal stat power
-```
-
-Create `src/quests/producers/expeditionQuestEvents.ts` with typed producers:
+Create typed producers in `src/quests/producers/expeditionQuestEvents.ts`:
 
 ```ts
 createExpeditionNodeResolvedQuestEvent(...)
@@ -528,13 +559,28 @@ createExpeditionRivalOutcomeQuestEvent(...)
 createExpeditionFinaleQuestEvent(...)
 ```
 
-Existing Money/Fame quest producers remain used for economic deltas. G6 Career sequences must prove Nemesis/meta quest progression persists across runs.
+Quest families:
+
+```text
+quest_expedition_run_goal
+  repeatable/per-run
+  nodeResolved + extracted/completed progress
+
+quest_expedition_nemesis
+  story
+  activates when persistent same Rival reaches relationship=rival
+  encounter -> response -> challenge -> Nemesis outcome
+
+quest_expedition_meta_unlock
+  story/challenge
+  G5 rank/facility eligibility -> Region/Tour/Contract achievement -> unlock-set eligibility
+```
+
+Money/Fame rewards still emit existing economic quest events; avoid duplicate reward settlement.
 
 ---
 
-## Task 13: Resolve contextual and Contract-defined finales
-
-Finale families:
+## Task 12: Define mechanically executable contextual and Contract-special Finales
 
 ```ts
 export type ExpeditionFinaleType =
@@ -544,30 +590,71 @@ export type ExpeditionFinaleType =
   | 'illegal_show'
   | 'disaster_gig'
   | 'contract_special'
+
+export interface ExpeditionFinaleProfile {
+  timingWindowMultiplier: number
+  missPenaltyMultiplier: number
+  staminaDrainMultiplier: number
+  comboBonusMultiplier: number
+  technicalWearMultiplier: number
+  crowdHypeStartBonus: number
+  rewardMultiplier: number
+  heatOnSuccess: number
+  requiresRival: boolean
+}
 ```
 
-Priority is deterministic:
+Base registry:
 
 ```text
-explicit active special Contract finale requirement -> contract_special
-Nemesis/Rival Hunt context -> rival_battle
-aggregate technical Condition <25 -> disaster_gig
-Heat >=75 -> illegal_show
-Exposure >=60 + Sponsor obligation -> corporate_showcase
-otherwise -> region-specific headliner
+regional_headliner
+  timing 1.00 | miss 1.00 | stamina 1.00 | combo 1.10 | wear 1.00 | Hype +10 | reward 1.15 | Heat +0 | Rival false
+
+corporate_showcase
+  timing 0.97 | miss 1.10 | stamina 1.05 | combo 1.00 | wear 1.05 | Hype +0 | reward 1.20 | Heat +0 | Rival false
+
+rival_battle
+  timing 0.96 | miss 1.10 | stamina 1.05 | combo 1.20 | wear 1.00 | Hype +5 | reward 1.25 | Heat +5 | Rival true
+
+illegal_show
+  timing 0.98 | miss 1.10 | stamina 1.10 | combo 1.10 | wear 1.10 | Hype +10 | reward 1.30 | Heat +12 | Rival false
+
+disaster_gig
+  timing 0.94 | miss 1.15 | stamina 1.15 | combo 1.00 | wear 1.35 | Hype +0 | reward 1.25 | Heat +5 | Rival false
+
+contract_special
+  timing 0.95 | miss 1.15 | stamina 1.10 | combo 1.15 | wear 1.10 | Hype +5 | reward 1.35 | Heat +8 | Rival false
 ```
 
-`getExpeditionFinaleProfile(state)` returns the exact existing-Gig modifiers/reward context. It does not generate a second finale node or score engine.
+Contract special profile registry initially maps `all_in_showcase` to `contract_special`; future special profiles must remain bounded to the same fields.
 
-Each Finale type has a production test showing a distinct rule consequence, not only a label. Legendary rewards remain G5-owned.
+Selection priority:
+
+```text
+active satisfied/required `special_finale` Contract constraint -> contract_special
+Nemesis L4 / Rival Hunt context                           -> rival_battle
+aggregate technical Condition <25                         -> disaster_gig
+Heat >=75                                                  -> illegal_show
+Exposure >=60 + Sponsor obligation                         -> corporate_showcase
+otherwise                                                  -> regional_headliner
+```
+
+`getExpeditionFinaleProfile(state)` returns this exact profile and, for `contract_special`, validates the active Contract's profile id. No second finale node or score engine.
+
+Adapter:
+
+```text
+PreGig        -> surfaces profile warnings + crowdHypeStartBonus preview
+START_GIG     -> composes timing/miss/stamina/combo with existing G2/G3 modifiers exactly once
+PostGig       -> applies technicalWearMultiplier, rewardMultiplier and heatOnSuccess once
+Gig reset     -> clears Finale-only active modifier state
+```
+
+Every type gets an end-to-end production test proving at least one real gameplay rule differs while player hit/miss execution still determines outcome.
 
 ---
 
-## Task 14: Make temporary drafts reducer-authoritative
-
-Run traits remain occasional and Standard accepts at most two.
-
-Sources:
+## Task 13: Keep temporary run Drafts reducer-authoritative
 
 ```ts
 export type RunDraftSource = 'major_gig' | 'rare_event' | 'rival' | 'supply' | 'crew'
@@ -584,9 +671,7 @@ cold_trail        -> Authority event weight x0.50
 reckless_encore   -> Finale reward x1.20; voluntary extraction retention x0.85
 ```
 
-These are run-only and feed G5's single effective-rules composition path.
-
-### Intent-only offer action
+Action contains no candidates:
 
 ```ts
 OFFER_EXPEDITION_DRAFT {
@@ -596,92 +681,36 @@ OFFER_EXPEDITION_DRAFT {
 }
 ```
 
-The payload **does not** contain `candidateTraitIds`.
+Reducer proves the real just-resolved trigger and recomputes the deterministic three-candidate offer from run seed + source key + owned traits. SELECT may choose only from stored pending candidates. Standard accepts at most two traits.
 
-Reducer verifies:
+Every source pool must have at least three eligible candidates after already-owned filtering; use a deterministic global fallback pool rather than throwing.
 
-```text
-active run
-no pending draft
-fewer than two accepted traits
-sourceKey not previously used
-sourceType/sourceKey corresponds to canonical just-settled source
-```
-
-Then reducer calls the pure deterministic `buildRunDraft({runSeed, sourceType, sourceKey, ownedTraitIds})` and stores the resulting three ids. Direct dispatch cannot choose the candidate set.
-
-Selection action contains only `traitId`; reducer accepts it only when present in the pending canonical candidate list.
-
-High-value triggers:
-
-```text
-major/high-accuracy Gig after route step 2
-rare event resolution
-won Rival encounter
-paid premium Supply repair/action
-successful Crew development/crisis resolution
-```
-
-No draft on every Gig/travel/random event.
+G3/G5 contributions are folded into the same `getEffectiveExpeditionRules` helper.
 
 ---
 
-## Task 15: Build compact Pressure/Obligation/Draft UI
+## Task 14: Expose only contextual pressure UI and production telemetry
 
-Main HUD keeps only Heat from Pressure. `PressurePanel` detail shows Heat + Exposure; `ObligationsPanel` shows active/completed/failed obligations and Double Down status; Draft modal is blocking only while a pending draft exists.
-
-Obligation rows show:
+Persistent HUD remains six G1 resources. Contextual UI may show:
 
 ```text
-current condition/progress
-reward upside
-failure consequence tier/exact value when known by build
-whether failure is Tour-ending
-Double Down constraint
+Exposure band
+Crowd Hype band/combo upside
+active Sponsor/Contract constraints + Double-Down rule
+Rival/Nemesis state
+severe-event relief/reason
 ```
 
-No hidden Contract rule after acceptance.
-
----
-
-## Task 16: Export final G4 failure/reward/Intel signals for G1B
-
-`getPressureFailureSignal(state)` owns:
+Telemetry emitted only after canonical transitions:
 
 ```text
-authority_crisis
-critical_contract_breach
-```
-
-and returns legal rescue options based on the just-settled Authority/Contract state.
-
-G4 adds to G1 reward proof:
-
-```text
-event_rare
-contract
-finale_nonlegendary
-```
-
-G4 Social Intel grants are consumed by the G1 base Intel reducer path.
-
-Run G1B integration tests after these exports exist.
-
----
-
-## Task 17: G4 verification and simulator handoff
-
-Export production helpers for G6:
-
-```text
-buildPressureDirectorContext
-getPressureEventChanceMultiplier
-progressObligations
-getObligationSettlement
-source-bound Rival transition helper
-getExpeditionFinaleProfile
-buildRunDraft
-getRunTraitRules (consumed only through G5 getEffectiveExpeditionRules)
+Heat/Exposure/Hype deltas
+obligation constraint progress/failure/settlement
+Double-Down accepted/violated/completed
+Director selected event family/severity/context bands
+same Rival id and Nemesis level per run
+Finale type/profile/result
+Draft offer/choice
 ```
 
 Run:
@@ -689,7 +718,6 @@ Run:
 ```bash
 pnpm run test:node
 pnpm run test:ui
-pnpm run test:additional
 pnpm run typecheck:core
 pnpm run deadcode:check
 ```
@@ -698,18 +726,17 @@ Expected: PASS.
 
 ---
 
-## G4 Exit Criteria
+## G4 Exit criteria
 
-- Sponsor choice is deliberate and flows through existing Brand Deal ownership.
-- Native Route Contracts bind to real prepared-map targets before acceptance.
-- Contract progress/settlement is reducer-derived from canonical source state; rewardMultiplier and stacking are actually consumed.
-- Mid-run Double Down increases both constraint and upside.
-- Social supports push/monetize/suppress/weaponize plus Sponsor/Rival/Intel consequences.
-- Pressure Director uses Cash, Condition, Crew Stress, Obligations, Rival and route depth in addition to Heat/Exposure.
-- Severe-event relief works across families, not only same-event cooldown.
-- High Heat can intentionally open an Underground route opportunity rather than acting only as punishment.
-- Authority events are telegraphed decision encounters with safe but costly exits where resources permit.
-- Nemesis changes Sponsor/route/finale behavior and has a dedicated quest chain.
-- Quests own run goals, Rival chains and meta unlock objectives in addition to Money/Fame credit.
-- `contract_special` Finale exists for explicit Contract-defined finales.
-- Draft candidate lists cannot be forged by direct action payloads.
+- Every initial Contract is expressible through typed constraints with no template-id evaluator branches.
+- Route target identity survives prepared preview→G1 loadout→START.
+- `contract_special` is reachable because a Contract constraint explicitly requires a known special Finale profile.
+- Double Down persists the actual added rule/multiplier/penalty across save/reload; no lossy boolean remains.
+- Social has push/monetize/suppress/weaponize plus Sponsor/Rival/Intel/Crowd-Hype consequences.
+- Crowd Hype changes combo upside only and remains skill-dependent/contextual.
+- Pressure Director uses Heat, Exposure, Cash, Condition, Crew Stress, obligations, Rival and route depth plus cross-family severe relief.
+- High Heat can create a real Underground route opportunity while Authority risk remains.
+- Persistent Career stores/reuses the same Rival snapshot/id across later runs; Nemesis levels alter real route/Sponsor/finale rules.
+- Expedition run/Rival/meta quest families use existing quest producers/registry.
+- Every Finale type has an exact profile wired to current gig lifecycle and a production difference test.
+- Run Draft offers are source-proven and reducer-generated.
