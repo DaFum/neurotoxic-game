@@ -95,7 +95,7 @@
     "@types/react-dom": "19.2.3",
     "@typescript-eslint/eslint-plugin": "8.66.0",
     "@typescript-eslint/parser": "8.68.0",
-    "@vitejs/plugin-react": "6.0.5",
+    "@vitejs/plugin-react": "6.1.1",
     "@vitest/coverage-v8": "4.1.10",
     "autoprefixer": "10.5.4",
     "benchmark": "2.1.4",
