@@ -32,6 +32,10 @@ import {
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
+import {
+  DEFECT_SEVERITY_DAMAGE,
+  createDeterministicHiddenDefect
+} from '../../domain/expedition/defects'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
@@ -61,8 +65,11 @@ import type {
   PrepareExpeditionRunPayload,
   PrepareNextExpeditionPayload,
   ResolveExpeditionCrisisPayload,
+  ResolveExpeditionDefectPayload,
+  RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
-  StartExpeditionPayload
+  StartExpeditionPayload,
+  TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
   ExpeditionFailureReason,
@@ -878,22 +885,16 @@ export const handleExecuteExpeditionRepair = (
   }
 
   if (result.createsHiddenDefect) {
-    const defectId = `defect_${targetGroup}_${payload.mode}_step_${state.expedition.routeStep}`
-    const alreadyExists = updatedTc.defects.some(d => d.id === defectId)
+    const defect = createDeterministicHiddenDefect(
+      state.runSeed,
+      targetGroup,
+      payload.mode === 'improvise' ? 'improvise' : 'field_repair',
+      state.expedition.routeStep,
+      payload.mode === 'improvise' ? 1 : 2
+    )
+    const alreadyExists = updatedTc.defects.some(d => d.id === defect.id)
     if (!alreadyExists) {
-      updatedTc.defects = [
-        ...updatedTc.defects,
-        {
-          id: defectId,
-          group: targetGroup,
-          severity: (payload.mode === 'improvise' ? 1 : 2) as 1 | 2 | 3,
-          status: 'hidden',
-          source: payload.mode === 'improvise' ? 'improvise' : 'field_repair',
-          createdAtRouteStep: state.expedition.routeStep,
-          triggerAt: 'pre_gig',
-          triggerRouteStep: state.expedition.routeStep + 1
-        }
-      ]
+      updatedTc.defects = [...updatedTc.defects, defect]
     }
   }
 
@@ -919,6 +920,157 @@ export const handleExecuteExpeditionRepair = (
       ...state.expedition,
       cargo: nextCargo,
       technicalCondition: updatedTc
+    }
+  }
+}
+
+/**
+ * Reveals a hidden equipment defect.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, revelation source, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleRevealExpeditionDefect = (
+  state: GameState,
+  payload: RevealExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (!targetDefect || targetDefect.status !== 'hidden') return state
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'revealed'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        defects: updatedDefects
+      }
+    }
+  }
+}
+
+/**
+ * Triggers an equipment defect, inflicting condition wear.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, trigger boundary, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleTriggerExpeditionDefect = (
+  state: GameState,
+  payload: TriggerExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (
+    !targetDefect ||
+    targetDefect.status === 'triggered' ||
+    targetDefect.status === 'resolved'
+  ) {
+    return state
+  }
+
+  const damage = DEFECT_SEVERITY_DAMAGE[targetDefect.severity] || 8
+  const nextCondition = clampCondition(tc[targetDefect.group] - damage)
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'triggered'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        [targetDefect.group]: nextCondition,
+        defects: updatedDefects
+      }
+    }
+  }
+}
+
+/**
+ * Resolves an equipment defect following repair.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, repair resolution id, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleResolveExpeditionDefect = (
+  state: GameState,
+  payload: ResolveExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (!targetDefect || targetDefect.status === 'resolved') return state
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'resolved'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        defects: updatedDefects
+      }
     }
   }
 }

@@ -1,5 +1,5 @@
 import type { EventDelta } from './events'
-import type { ExpeditionRepairIntent } from './expedition'
+import type { ExpeditionRepairIntent, HiddenDefectTrigger } from './expedition'
 
 /**
  * Payload produced when the tourbus travel minigame finishes.
@@ -266,3 +266,30 @@ export interface ResolveExpeditionCrisisPayload {
  * Payload executing a repair on equipment during an active Expedition run.
  */
 export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent
+
+/**
+ * Payload revealing a hidden equipment defect during an active Expedition run.
+ */
+export interface RevealExpeditionDefectPayload {
+  defectId: string
+  source: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload triggering an equipment defect during an active Expedition run.
+ */
+export interface TriggerExpeditionDefectPayload {
+  defectId: string
+  trigger: HiddenDefectTrigger
+  expectedRouteStep: number
+}
+
+/**
+ * Payload resolving an equipment defect during an active Expedition run.
+ */
+export interface ResolveExpeditionDefectPayload {
+  defectId: string
+  repairResolutionId: string
+  expectedRouteStep: number
+}

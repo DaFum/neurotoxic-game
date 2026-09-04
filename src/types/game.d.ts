@@ -386,6 +386,22 @@ export type GameAction =
       ActionTypes['RESOLVE_EXPEDITION_CRISIS'],
       import('./actions').ResolveExpeditionCrisisPayload
     >
+  | Action<
+      ActionTypes['EXECUTE_EXPEDITION_REPAIR'],
+      import('./actions').ExecuteExpeditionRepairPayload
+    >
+  | Action<
+      ActionTypes['REVEAL_EXPEDITION_DEFECT'],
+      import('./actions').RevealExpeditionDefectPayload
+    >
+  | Action<
+      ActionTypes['TRIGGER_EXPEDITION_DEFECT'],
+      import('./actions').TriggerExpeditionDefectPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_DEFECT'],
+      import('./actions').ResolveExpeditionDefectPayload
+    >
 
 export * from './player'
 export * from './band'
