@@ -32,6 +32,10 @@ import {
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from './defaults'
 import { getExpeditionOwnedPerformanceGear } from './equipment'
+import {
+  calculateExpeditionCargoCapacity,
+  calculateExpeditionCargoUsage
+} from './cargo'
 import type { GameState } from '../../types'
 import type { LongTermAsset } from '../../types/assets'
 import type {
@@ -486,6 +490,28 @@ export const validateExpeditionBuildCommitment = (
   // counts, so G2 can add capacity without a second cargo authority.
   const { spareParts, supplies } = cargo
   if (!isNonNegativeInteger(spareParts) || !isNonNegativeInteger(supplies)) {
+    return reject('CARGO_OUT_OF_RANGE')
+  }
+
+  const chassis = activeTourbusAssetId
+    ? resolveCommittedChassis(state, activeTourbusAssetId)
+    : null
+  const cargoCapacity = calculateExpeditionCargoCapacity(
+    chassis,
+    normalizedModuleIds
+  )
+  const cargoUsage = calculateExpeditionCargoUsage(
+    {
+      spareParts,
+      supplies,
+      technicalGearItemIds: selectedGearItemIds,
+      merch,
+      contraband
+    },
+    cargoCapacity
+  )
+
+  if (cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity) {
     return reject('CARGO_OUT_OF_RANGE')
   }
 

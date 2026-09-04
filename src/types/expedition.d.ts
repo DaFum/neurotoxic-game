@@ -403,7 +403,37 @@ export interface ExpeditionState {
   extractionWindowsSeen: number[]
   pendingFailure: PendingExpeditionFailure | null
   outcome: ExpeditionOutcome | null
+  cargo?: ExpeditionCargoState | null
 }
+
+/**
+ * Manifest representing the real physical items carried in the vehicle cargo.
+ */
+export interface ExpeditionCargoState {
+  spareParts: number
+  supplies: number
+  technicalGearItemIds: string[]
+  merch: ExpeditionMerchSelection[]
+  contraband: ExpeditionContrabandSelection[]
+}
+
+/**
+ * Breakdown of visible and hidden cargo capacities and slot usage.
+ */
+export interface ExpeditionCargoCapacity {
+  visibleCapacity: number
+  hiddenCapacity: number
+  visibleSlotsUsed: number
+  hiddenSlotsUsed: number
+  availableVisibleSlots: number
+  availableHiddenSlots: number
+}
+
+/**
+ * Unified view of active cargo state combined with capacity breakdown.
+ */
+export interface ExpeditionCargoView
+  extends ExpeditionCargoState, ExpeditionCargoCapacity {}
 
 /**
  * Chassis archetypes for Expedition runs.

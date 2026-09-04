@@ -27,7 +27,7 @@ export const NEUTRAL_EXPEDITION_MODULE_PROFILE: Readonly<ExpeditionVehicleModule
 /**
  * Mapping of real Tourbus module IDs to their Expedition capability profiles.
  */
-export const EXPEDITION_MODULE_PROFILES: Readonly<
+const EXPEDITION_MODULE_PROFILES: Readonly<
   Record<string, Readonly<Partial<ExpeditionVehicleModuleProfile>>>
 > = {
   tb_roof_rack: {

@@ -98,11 +98,13 @@ test('Task 3: Single Effective-Rules Entrypoint', async t => {
           status: 'active',
           loadout: {
             activeTourbusAssetId: 'tb_asset_1',
-            selectedTourbusModuleIds: [
-              'tb_roof_rack',
-              'tb_solar_panel',
-              'tb_gps_jammer'
-            ]
+            build: {
+              selectedTourbusModuleIds: [
+                'tb_roof_rack',
+                'tb_solar_panel',
+                'tb_gps_jammer'
+              ]
+            }
           }
         },
         assets: [

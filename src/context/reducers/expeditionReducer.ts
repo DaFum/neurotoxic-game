@@ -25,6 +25,7 @@ import {
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
+import { materializeExpeditionCargo } from '../../domain/expedition/cargo'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
@@ -214,7 +215,8 @@ export const handleStartExpedition = (
       loadout: normalized,
       startingMoney: nextMoney,
       startingFame: fame,
-      protectedCareerCash: normalized.build.protectedCareerCash
+      protectedCareerCash: normalized.build.protectedCareerCash,
+      cargo: materializeExpeditionCargo(normalized, state)
     }
   }
 }
