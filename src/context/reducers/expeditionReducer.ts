@@ -56,13 +56,15 @@ import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
-  isCurrentExpeditionFailureId
+  isCurrentExpeditionFailureId,
+  syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
   AcceptExpeditionFailurePayload,
+  AcceptExpeditionTechnicalFailurePayload,
   AddExpeditionRewardPayload,
   AdvanceExpeditionRoutePayload,
   ClaimExpeditionInsurancePayload,
@@ -79,6 +81,7 @@ import type {
   TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
+  ConditionGroup,
   ExpeditionFailureReason,
   ExpeditionRepairIntent,
   ExpeditionSettlement,
@@ -814,6 +817,27 @@ export const handleResolveExpeditionCrisis = (
   if (!pending.choices.includes(choice)) return state
 
   if (choice === 'insurance_claim') {
+    if (pending.reason === 'technical_shutdown') {
+      const targetGroup = pending.sourceId as ConditionGroup
+      if (!canClaimExpeditionInsurance(state, 'technical', targetGroup)) {
+        return state
+      }
+      const tc = getExpeditionTechnicalCondition(state)
+      return {
+        ...state,
+        expedition: {
+          ...state.expedition,
+          insuranceClaimConsumed: true,
+          claimConsumed: true,
+          technicalFailureAccepted: false,
+          technicalCondition: {
+            ...tc,
+            [targetGroup]: 25
+          }
+        }
+      }
+    }
+
     if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
     return {
       ...state,
@@ -1266,4 +1290,37 @@ export const handleExecuteExpeditionInspection = (
       technicalCondition: updatedTc
     }
   }
+}
+
+/**
+ * Handles explicit acceptance of technical failure when equipment is disabled.
+ *
+ * @param state - Current game state.
+ * @param payload - Expected route step stale guard.
+ * @returns State with technicalFailureAccepted set and pendingFailure synced.
+ */
+export const handleAcceptExpeditionTechnicalFailure = (
+  state: GameState,
+  payload: AcceptExpeditionTechnicalFailurePayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return state
+  const hasDisabled = tc.pa === 0 || tc.instruments === 0 || tc.stageGear === 0
+  if (!hasDisabled) return state
+
+  return syncExpeditionPendingFailure({
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalFailureAccepted: true
+    }
+  })
 }

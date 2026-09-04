@@ -69,6 +69,7 @@ export const PreGig = () => {
     selectedSongIds,
     calculatedBudget,
     isStarting,
+    isStartBlocked,
     GIG_MODIFIER_OPTIONS,
     bandMeetingCost,
     assetModifiers,
@@ -187,6 +188,7 @@ export const PreGig = () => {
         t={t}
         isStarting={isStarting}
         isSetlistEmpty={setlist.length === 0}
+        isStartBlocked={isStartBlocked}
         onStartShow={handleStartShow}
       />
     </div>

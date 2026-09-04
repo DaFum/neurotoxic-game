@@ -9,15 +9,22 @@ type PreGigStartButtonProps = {
   t: TranslationCallback
   isStarting: boolean
   isSetlistEmpty: boolean
+  isStartBlocked?: boolean
   onStartShow: () => void | Promise<void>
 }
 
 /**
  * Shows the pre-gig start action with disabled-state copy and click handling.
- * @param props - Translator, start-state flag, setlist-empty flag, and show-start handler.
+ * @param props - Translator, start-state flag, setlist-empty flag, start-blocked flag, and show-start handler.
  */
 export const PreGigStartButton = React.memo(
-  ({ t, isStarting, isSetlistEmpty, onStartShow }: PreGigStartButtonProps) => {
+  ({
+    t,
+    isStarting,
+    isSetlistEmpty,
+    isStartBlocked,
+    onStartShow
+  }: PreGigStartButtonProps) => {
     return (
       <m.div
         initial={{ opacity: 0, y: 20 }}
@@ -27,7 +34,7 @@ export const PreGigStartButton = React.memo(
       >
         <ActionButton
           onClick={onStartShow}
-          disabled={isSetlistEmpty || isStarting}
+          disabled={isSetlistEmpty || isStarting || Boolean(isStartBlocked)}
           aria-busy={isStarting}
           className='w-full px-8 sm:px-12 py-3 sm:py-4 text-lg sm:text-2xl tracking-widest shadow-[4px_4px_0px_var(--color-blood-red)] hover:shadow-[4px_4px_0px_var(--color-blood-red)] flex items-center justify-center gap-3 sm:gap-4'
         >
