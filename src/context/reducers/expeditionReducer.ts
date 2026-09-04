@@ -26,6 +26,7 @@ import {
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
 import { materializeExpeditionCargo } from '../../domain/expedition/cargo'
+import { createDefaultTechnicalCondition } from '../../domain/expedition/condition'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
@@ -216,7 +217,8 @@ export const handleStartExpedition = (
       startingMoney: nextMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
-      cargo: materializeExpeditionCargo(normalized, state)
+      cargo: materializeExpeditionCargo(normalized, state),
+      technicalCondition: createDefaultTechnicalCondition()
     }
   }
 }
