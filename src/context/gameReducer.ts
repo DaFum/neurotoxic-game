@@ -64,7 +64,18 @@ import {
   handleBloodBankDonate
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
-import { handlePrepareExpeditionRun } from './reducers/expeditionReducer'
+import {
+  handleAcceptExpeditionFailure,
+  handleAddExpeditionReward,
+  handleAdvanceExpeditionRoute,
+  handleCompleteExpedition,
+  handleExtractExpedition,
+  handlePrepareExpeditionRun,
+  handlePrepareNextExpedition,
+  handleRevealExpeditionNodeIntel,
+  handleStartExpedition
+} from './reducers/expeditionReducer'
+import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastAction } from './actionCreators'
 import { assetForeclosed } from './assetActionCreators'
@@ -202,7 +213,15 @@ const reducerMap: ReducerMap = {
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
   [ActionTypes.START_CROWDFUND_FAILED]: handleAssetFailedAction,
   [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
-  [ActionTypes.PREPARE_EXPEDITION_RUN]: handlePrepareExpeditionRun
+  [ActionTypes.PREPARE_EXPEDITION_RUN]: handlePrepareExpeditionRun,
+  [ActionTypes.START_EXPEDITION]: handleStartExpedition,
+  [ActionTypes.ADVANCE_EXPEDITION_ROUTE]: handleAdvanceExpeditionRoute,
+  [ActionTypes.REVEAL_EXPEDITION_NODE_INTEL]: handleRevealExpeditionNodeIntel,
+  [ActionTypes.ADD_EXPEDITION_REWARD]: handleAddExpeditionReward,
+  [ActionTypes.EXTRACT_EXPEDITION]: handleExtractExpedition,
+  [ActionTypes.COMPLETE_EXPEDITION]: handleCompleteExpedition,
+  [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
+  [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition
 }
 
 /**
@@ -343,5 +362,10 @@ export const gameReducer = (
     }
   }
 
-  return nextState
+  // The Expedition crisis is derived, never raised by a caller, so it is
+  // recomputed centrally after every action. This is the only place the stored
+  // copy is written, which is what stops it from drifting from the state that
+  // caused it. `syncExpeditionPendingFailure` returns the identical reference
+  // when nothing changed, so a rejected action still leaves state untouched.
+  return syncExpeditionPendingFailure(nextState)
 }

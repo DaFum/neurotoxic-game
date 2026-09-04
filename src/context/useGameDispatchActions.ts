@@ -207,6 +207,24 @@ type BaseGameDispatchActions = {
   // reducer validates against, so a prepared run's seed and the previewed map
   // cannot diverge.
   prepareExpeditionRun: () => void
+  startExpedition: (
+    loadout: import('../types/expedition').ExpeditionLoadout
+  ) => void
+  advanceExpeditionRoute: (nodeId: string) => void
+  revealExpeditionNodeIntel: (input: {
+    nodeId: string
+    source: import('../types/expedition').ExpeditionIntelSource
+    grantId?: string
+  }) => void
+  addExpeditionReward: (input: {
+    expectedRewardId: string
+    sourceType: import('../types/expedition').ExpeditionRewardSourceType
+    sourceId: string
+  }) => void
+  extractExpedition: (explicitRareRewardIds?: string[]) => void
+  completeExpedition: (finaleResultId: string) => void
+  acceptExpeditionFailure: () => void
+  prepareNextExpedition: () => void
 }
 
 /**
