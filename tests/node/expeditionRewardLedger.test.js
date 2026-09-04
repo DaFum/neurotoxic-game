@@ -685,4 +685,39 @@ describe('persisted reward ledger hardening regressions', () => {
 
     assert.equal(next.band.inventory.shirts ?? 0, initialShirts, 'materialized reward did not re-grant inventory')
   })
+
+  it('10. forged/unconnected visitedNodeIds at routeStep 0 fails path validation and drops route_rare entry', () => {
+    const base = startedState()
+    // Find a rare node at routeStep 5
+    const targetNodeId = Object.keys(map.meta).find(
+      id => map.meta[id].hidden.rareRewardId && map.meta[id].routeStep === 5
+    )
+    assert.ok(targetNodeId)
+    const rareRewardId = map.meta[targetNodeId].hidden.rareRewardId
+
+    // Save claims routeStep 0, but lists targetNodeId in visitedNodeIds (unconnected/future)
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        routeStep: 0,
+        visitedNodeIds: [map.startNodeId, targetNodeId],
+        rewardLedger: [
+          {
+            id: `${rareRewardId}::${targetNodeId}`,
+            rewardDefinitionId: rareRewardId,
+            sourceType: 'route_rare',
+            sourceId: targetNodeId,
+            secured: false,
+            earnedAtRouteStep: 5,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.visitedNodeIds.length, 1, 'unconnected visited node dropped')
+    assert.equal(loaded.expedition.visitedNodeIds[0], map.startNodeId)
+    assert.equal(loaded.expedition.rewardLedger.length, 0, 'forged rare reward dropped')
+  })
 })

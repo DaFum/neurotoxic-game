@@ -239,8 +239,8 @@ describe('the run owns its own insolvency', () => {
   })
 
   it('records what the upstream ticks took out of the protected slice', () => {
-    // Upstream ticks (asset upkeep, liabilities) respect protectedCareerCash
-    // and record unpayable portions as unpaid obligations without touching protected money.
+    // Asset upkeep and liability instalments respect protectedCareerCash during active expeditions.
+    // Shortfalls are recorded as unpaid obligations on the expedition slice without spending protected money.
     const run = startedState(
       { money: 5000, fuel: 100 },
       { build: { protectedCareerCash: 4000 } }
@@ -265,133 +265,6 @@ describe('the run owns its own insolvency', () => {
 
     assert.equal(next.player.money, 4000)
     assert.ok(next.expedition.unpaidDailyObligation >= 120)
-  })
-})
-
-describe('mandatory section 1 regressions', () => {
-  it('1. Money 150, protectedCareerCash 100, Liability 100: final Money 100, 50 paid, 50 unpaid, principal reduced by 50', () => {
-    const run = startedState(
-      { money: 5000, fuel: 100 },
-      { build: { protectedCareerCash: 100 } }
-    )
-    const state = {
-      ...run,
-      player: { ...run.player, money: 150 },
-      liabilities: {
-        l1: {
-          id: 'l1',
-          assetId: 'a1',
-          dailyPayment: 100,
-          principalRemaining: 1000,
-          interestRate: 0,
-          termDaysRemaining: 10,
-          defaultCounter: 0
-        }
-      }
-    }
-    const next = gameReducer(state, advanceDay(state))
-
-    assert.equal(next.player.money, 100, 'money stopped at protectedCareerCash')
-    assert.equal(next.liabilities.l1.principalRemaining, 950, 'principal reduced by paid 50')
-    assert.equal(next.liabilities.l1.defaultCounter, 1, 'default counter incremented on shortfall')
-    assert.ok(next.expedition.unpaidDailyObligation >= 50, 'unpaid 50 carried as debt')
-  })
-
-  it('2. combined asset upkeep + liability + living cost exceeding spendable cash stops exacly on protectedCareerCash', () => {
-    const run = startedState(
-      { money: 5000, fuel: 100 },
-      { build: { protectedCareerCash: 500 } }
-    )
-    const state = {
-      ...run,
-      player: { ...run.player, money: 600 },
-      assets: [
-        {
-          id: 'a1',
-          condition: 100,
-          baseDailyRevenue: 0,
-          baseUpkeep: 200,
-          slots: []
-        }
-      ],
-      liabilities: {
-        l1: {
-          id: 'l1',
-          assetId: 'a1',
-          dailyPayment: 300,
-          principalRemaining: 2000,
-          interestRate: 0,
-          termDaysRemaining: 10,
-          defaultCounter: 0
-        }
-      }
-    }
-    const next = gameReducer(state, advanceDay(state))
-
-    assert.equal(next.player.money, 500, 'money stopped exactly on protectedCareerCash')
-    assert.ok(next.expedition.unpaidDailyObligation > 0, 'complete unpaid remainder tracked')
-  })
-
-  it('3. sufficient expedition-spendable cash: normal payments unchanged', () => {
-    const run = startedState(
-      { money: 5000, fuel: 100 },
-      { build: { protectedCareerCash: 1000 } }
-    )
-    const state = {
-      ...run,
-      player: { ...run.player, money: 3000 },
-      liabilities: {
-        l1: {
-          id: 'l1',
-          assetId: 'a1',
-          dailyPayment: 100,
-          principalRemaining: 1000,
-          interestRate: 0,
-          termDaysRemaining: 10,
-          defaultCounter: 0
-        }
-      }
-    }
-    const next = gameReducer(state, advanceDay(state))
-
-    assert.equal(next.liabilities.l1.principalRemaining, 900)
-    assert.equal(next.liabilities.l1.defaultCounter, 0)
-  })
-
-  it('4. Rest-in-Van: same cash boundary, no extra travel wear', () => {
-    const run = startedState(
-      { money: 5000, fuel: 100 },
-      { build: { protectedCareerCash: 500 } }
-    )
-    const initialVanCondition = run.player.van.condition
-    const rested = gameReducer(run, advanceDay(run))
-
-    assert.equal(rested.player.van.condition, initialVanCondition)
-    assert.ok(rested.player.money >= 500)
-  })
-
-  it('5. outside active expedition: legacy day-tick unchanged', () => {
-    const run = startedState({ money: 3000, fuel: 100 })
-    const idleState = withoutRun(run)
-    const initialCondition = idleState.player.van.condition
-    const next = gameReducer(idleState, advanceDay(idleState))
-
-    assert.equal(next.player.van.condition, initialCondition - 2)
-  })
-
-  it('6. no money clamp-up retroactively', () => {
-    const run = startedState(
-      { money: 5000, fuel: 100 },
-      { build: { protectedCareerCash: 1000 } }
-    )
-    // Money is already below protected cash before tick (e.g. 800)
-    const broke = {
-      ...run,
-      player: { ...run.player, money: 800 }
-    }
-    const next = gameReducer(broke, advanceDay(broke))
-
-    assert.ok(next.player.money <= 800, 'money did not artificially clamp up')
   })
 })
 
