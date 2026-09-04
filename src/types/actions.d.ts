@@ -1,4 +1,5 @@
 import type { EventDelta } from './events'
+import type { ExpeditionRepairIntent } from './expedition'
 
 /**
  * Payload produced when the tourbus travel minigame finishes.
@@ -260,3 +261,8 @@ export interface ResolveExpeditionCrisisPayload {
   choice: 'refuel' | 'tow'
   expectedRouteStep: number
 }
+
+/**
+ * Payload executing a repair on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent

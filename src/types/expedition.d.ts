@@ -459,6 +459,35 @@ export interface ExpeditionConditionPerformanceProfile {
 }
 
 /**
+ * Valid repair modes available during an Expedition.
+ */
+export type ExpeditionRepairMode =
+  'field' | 'professional' | 'improvise' | 'cannibalize'
+
+/**
+ * Intent payload to execute a repair on equipment during an Expedition.
+ */
+export interface ExpeditionRepairIntent {
+  mode: ExpeditionRepairMode
+  targetGroup: ConditionGroup
+  sourceGroup?: ConditionGroup
+  quality?: number
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of a resolved repair action.
+ */
+export interface ExpeditionRepairResult {
+  targetRestore: number
+  sourceDamage: number
+  moneyCost: number
+  sparePartsCost: number
+  createsHiddenDefect: boolean
+  resolvesTargetDefects: boolean
+}
+
+/**
  * Manifest representing the real physical items carried in the vehicle cargo.
  */
 export interface ExpeditionCargoState {
