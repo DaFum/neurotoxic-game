@@ -663,10 +663,8 @@ export const handleAdvanceDay = (
           if (!Number.isFinite(roll)) return 1
           return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
         }
-  const { player, band, social, pendingFlags } = calculateDailyUpdates(
-    state,
-    rng
-  )
+  const { player, band, social, pendingFlags, expeditionUnpaidObligation } =
+    calculateDailyUpdates(state, rng)
 
   // Reset daily event counter immutably
   const nextPlayer = { ...player, eventsTriggeredToday: 0 }
@@ -753,6 +751,22 @@ export const handleAdvanceDay = (
     eventCooldowns: activeEventCooldowns,
     questCooldowns: activeQuestCooldowns,
     toasts: traitResult.toasts
+  }
+
+  // Record what the day's mandatory obligations could not pay from the run's
+  // spendable Cash. Written even when the amount is 0 so a later solvent day
+  // clears a carried shortfall instead of leaving the crisis latched.
+  if (
+    state.expedition &&
+    state.expedition.unpaidDailyObligation !== expeditionUnpaidObligation
+  ) {
+    nextState = {
+      ...nextState,
+      expedition: {
+        ...state.expedition,
+        unpaidDailyObligation: expeditionUnpaidObligation
+      }
+    }
   }
 
   nextState = QuestLifecycle.checkDeadlines(nextState)
