@@ -350,6 +350,38 @@ export type GameAction =
       ActionTypes['PREPARE_EXPEDITION_RUN'],
       import('./actions').PrepareExpeditionRunPayload
     >
+  | Action<
+      ActionTypes['START_EXPEDITION'],
+      import('./actions').StartExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_ROUTE'],
+      import('./actions').AdvanceExpeditionRoutePayload
+    >
+  | Action<
+      ActionTypes['REVEAL_EXPEDITION_NODE_INTEL'],
+      import('./actions').RevealExpeditionNodeIntelPayload
+    >
+  | Action<
+      ActionTypes['ADD_EXPEDITION_REWARD'],
+      import('./actions').AddExpeditionRewardPayload
+    >
+  | Action<
+      ActionTypes['EXTRACT_EXPEDITION'],
+      import('./actions').ExtractExpeditionPayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION'],
+      import('./actions').CompleteExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ACCEPT_EXPEDITION_FAILURE'],
+      import('./actions').AcceptExpeditionFailurePayload
+    >
+  | Action<
+      ActionTypes['PREPARE_NEXT_EXPEDITION'],
+      import('./actions').PrepareNextExpeditionPayload
+    >
 
 export * from './player'
 export * from './band'

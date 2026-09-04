@@ -1,6 +1,21 @@
 import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState } from '../types'
-import { prepareExpeditionRun as prepareExpeditionRunAction } from './expeditionActionCreators'
+import type {
+  ExpeditionIntelSource,
+  ExpeditionLoadout,
+  ExpeditionRewardSourceType
+} from '../types/expedition'
+import {
+  acceptExpeditionFailure as acceptExpeditionFailureAction,
+  addExpeditionReward as addExpeditionRewardAction,
+  advanceExpeditionRoute as advanceExpeditionRouteAction,
+  completeExpedition as completeExpeditionAction,
+  extractExpedition as extractExpeditionAction,
+  prepareExpeditionRun as prepareExpeditionRunAction,
+  prepareNextExpedition as prepareNextExpeditionAction,
+  revealExpeditionNodeIntel as revealExpeditionNodeIntelAction,
+  startExpedition as startExpeditionAction
+} from './expeditionActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
 /**
@@ -8,7 +23,15 @@ import type { GameDispatchActions } from './useGameDispatchActions'
  */
 export type ExpeditionDispatchActions = Pick<
   GameDispatchActions,
-  'prepareExpeditionRun'
+  | 'prepareExpeditionRun'
+  | 'startExpedition'
+  | 'advanceExpeditionRoute'
+  | 'revealExpeditionNodeIntel'
+  | 'addExpeditionReward'
+  | 'extractExpedition'
+  | 'completeExpedition'
+  | 'acceptExpeditionFailure'
+  | 'prepareNextExpedition'
 >
 
 interface UseExpeditionDispatchActionsProps {
@@ -23,8 +46,10 @@ interface UseExpeditionDispatchActionsProps {
  * @returns Stable Expedition dispatch methods.
  *
  * @remarks
- * Each helper reads `stateRef.current` so the snapshot a creator derives ids
- * and seeds from is the same one the reducer validates against.
+ * Each helper reads `stateRef.current` so the snapshot a creator derives ids,
+ * seeds and stale guards from is the same one the reducer validates against.
+ * The two creators that can legitimately have nothing to dispatch return
+ * `null`, which is skipped here rather than turned into a forged payload.
  */
 export function useExpeditionDispatchActions({
   dispatch,
@@ -33,7 +58,35 @@ export function useExpeditionDispatchActions({
   return useMemo(
     () => ({
       prepareExpeditionRun: () =>
-        dispatch(prepareExpeditionRunAction(stateRef.current))
+        dispatch(prepareExpeditionRunAction(stateRef.current)),
+      startExpedition: (loadout: ExpeditionLoadout) =>
+        dispatch(startExpeditionAction(stateRef.current, loadout)),
+      advanceExpeditionRoute: (nodeId: string) =>
+        dispatch(advanceExpeditionRouteAction(stateRef.current, nodeId)),
+      revealExpeditionNodeIntel: (input: {
+        nodeId: string
+        source: ExpeditionIntelSource
+        grantId?: string
+      }) => dispatch(revealExpeditionNodeIntelAction(stateRef.current, input)),
+      addExpeditionReward: (input: {
+        expectedRewardId: string
+        sourceType: ExpeditionRewardSourceType
+        sourceId: string
+      }) => dispatch(addExpeditionRewardAction(stateRef.current, input)),
+      extractExpedition: (explicitRareRewardIds: string[] = []) =>
+        dispatch(
+          extractExpeditionAction(stateRef.current, explicitRareRewardIds)
+        ),
+      completeExpedition: (finaleResultId: string) =>
+        dispatch(completeExpeditionAction(stateRef.current, finaleResultId)),
+      acceptExpeditionFailure: () => {
+        const action = acceptExpeditionFailureAction(stateRef.current)
+        if (action) dispatch(action)
+      },
+      prepareNextExpedition: () => {
+        const action = prepareNextExpeditionAction(stateRef.current)
+        if (action) dispatch(action)
+      }
     }),
     [dispatch, stateRef]
   )
