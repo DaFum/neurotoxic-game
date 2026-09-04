@@ -720,3 +720,42 @@ export interface EffectiveExpeditionRules {
   flags: ExpeditionRuleFlags
   legendary: Record<string, boolean>
 }
+
+/**
+ * Result ids a declarative event may name to affect the active Expedition.
+ *
+ * @remarks
+ * This is the whole vocabulary an event has: the actual Heat, Condition and
+ * cargo numbers live in the Expedition's own registry, so authored content can
+ * request an outcome but never author a value.
+ */
+export type ExpeditionEventResultId =
+  | 'equipment_scuffed'
+  | 'pa_overloaded'
+  | 'spare_parts_scavenged'
+  | 'supplies_spoiled'
+  | 'attention_drawn'
+  | 'attention_faded'
+
+/**
+ * What one known event result does to the run.
+ */
+export interface ExpeditionEventResultEffect {
+  /** Points of technical wear per equipment group. */
+  conditionWear?: { pa: number; instruments: number; stageGear: number }
+  /** Signed change to consumable cargo; gains stay bounded by capacity. */
+  cargoDelta?: { spareParts?: number; supplies?: number }
+  /** Signed Heat change, applied through the single Heat write point. */
+  heat?: number
+}
+
+/**
+ * Sanitized Expedition envelope an event delta may carry.
+ *
+ * @remarks
+ * Deliberately holds ids only. A numeric field here would be a caller-supplied
+ * state change, which is exactly what the envelope exists to prevent.
+ */
+export interface ExpeditionEventIntent {
+  resultIds: ExpeditionEventResultId[]
+}

@@ -15,6 +15,8 @@ import {
   createApplyEventDeltaAction,
   createSetActiveEventAction
 } from '../context/actionCreators'
+import { applyExpeditionEventDelta } from '../context/expeditionActionCreators'
+import { sanitizeExpeditionEventResultIds } from './expedition/eventDeltas'
 import type {
   EventDelta,
   EventDeltaPayload,
@@ -208,6 +210,17 @@ export function resolveEvent(
       clock
     )
     actions.push(deltaAction)
+
+    // Expedition results travel as their own typed action: `applyEventDelta`
+    // writes the career slices, and the Expedition reducer is the authority
+    // over run state. Ids the engine did not recognize were already dropped;
+    // re-filtering here keeps a precomputed or hand-built delta from smuggling
+    // an unknown id (or a numeric field) past the boundary.
+    const expeditionAction = applyExpeditionEventDelta(
+      state,
+      sanitizeExpeditionEventResultIds(delta.expedition?.resultIds)
+    )
+    if (expeditionAction) actions.push(expeditionAction)
 
     if (flags.addQuest) {
       // Deadlines resolve against the post-delta day. Day deltas are additive

@@ -14,6 +14,7 @@ import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import type { GameAction, GameState } from '../types'
 import type {
+  ExpeditionEventResultId,
   ExpeditionInspectionIntent,
   ExpeditionIntelSource,
   ExpeditionLoadout,
@@ -446,6 +447,37 @@ export const acceptExpeditionTechnicalFailure = (
   return {
     type: ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE,
     payload: {
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action applying the Expedition results a resolved event requested.
+ *
+ * @param state - Current game state, read for the route-step stale guard.
+ * @param resultIds - Known result ids collected from the event delta.
+ * @returns Typed `APPLY_EXPEDITION_EVENT_DELTA` action, or `null` when the run
+ * is not active or the event named no known result.
+ *
+ * @remarks
+ * Carries ids only. The event engine has no business supplying Heat, Condition
+ * or cargo numbers, and the reducer looks every effect up in the Expedition's
+ * own registry regardless.
+ */
+export const applyExpeditionEventDelta = (
+  state: GameState,
+  resultIds: readonly ExpeditionEventResultId[]
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_EXPEDITION_EVENT_DELTA }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  if (resultIds.length === 0) return null
+  return {
+    type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+    payload: {
+      resultIds: [...resultIds],
       expectedRouteStep: state.expedition.routeStep
     }
   }

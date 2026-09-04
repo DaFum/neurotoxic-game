@@ -414,6 +414,10 @@ export type GameAction =
       ActionTypes['ACCEPT_EXPEDITION_TECHNICAL_FAILURE'],
       import('./actions').AcceptExpeditionTechnicalFailurePayload
     >
+  | Action<
+      ActionTypes['APPLY_EXPEDITION_EVENT_DELTA'],
+      import('./actions').ApplyExpeditionEventDeltaPayload
+    >
 
 export * from './player'
 export * from './band'
