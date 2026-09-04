@@ -402,6 +402,10 @@ export type GameAction =
       ActionTypes['RESOLVE_EXPEDITION_DEFECT'],
       import('./actions').ResolveExpeditionDefectPayload
     >
+  | Action<
+      ActionTypes['EXECUTE_EXPEDITION_INSPECTION'],
+      import('./actions').ExecuteExpeditionInspectionPayload
+    >
 
 export * from './player'
 export * from './band'

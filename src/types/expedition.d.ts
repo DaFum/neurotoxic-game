@@ -488,6 +488,43 @@ export interface ExpeditionRepairResult {
 }
 
 /**
+ * Inspection modes available during an active Expedition run.
+ */
+export type ExpeditionInspectionMode =
+  'quick_check' | 'crew_inspection' | 'module_inspection' | 'full_service'
+
+/**
+ * Player intent to inspect equipment.
+ */
+export interface ExpeditionInspectionIntent {
+  mode: ExpeditionInspectionMode
+  crewId?: string
+  repairTargetGroup?: ConditionGroup
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of an equipment inspection.
+ */
+export interface ExpeditionInspectionResult {
+  mode: ExpeditionInspectionMode
+  diagnosticFee: number
+  conditionBands?: Record<
+    ConditionGroup,
+    'optimal' | 'degraded' | 'critical' | 'disabled'
+  >
+  revealedDefectIds: string[]
+  professionalRepair?: ExpeditionRepairResult
+}
+
+/**
+ * Pure resolution outcome of an inspection intent.
+ */
+export type ExpeditionInspectionResolution =
+  | { ok: true; result: ExpeditionInspectionResult }
+  | { ok: false; reason: string }
+
+/**
  * Manifest representing the real physical items carried in the vehicle cargo.
  */
 export interface ExpeditionCargoState {

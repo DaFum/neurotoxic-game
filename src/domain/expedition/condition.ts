@@ -55,8 +55,16 @@ export const createDefaultTechnicalCondition =
  */
 export const getExpeditionTechnicalCondition = (
   state: GameState
-): ExpeditionTechnicalCondition =>
-  state.expedition?.technicalCondition ?? createDefaultTechnicalCondition()
+): ExpeditionTechnicalCondition => {
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return createDefaultTechnicalCondition()
+  return {
+    pa: clampCondition(tc.pa),
+    instruments: clampCondition(tc.instruments),
+    stageGear: clampCondition(tc.stageGear),
+    defects: Array.isArray(tc.defects) ? tc.defects : []
+  }
+}
 
 /**
  * Evaluates active gameplay performance modifiers from technical condition.
