@@ -3,8 +3,7 @@ import assert from 'node:assert/strict'
 import {
   createDeterministicHiddenDefect,
   getVisibleExpeditionDefects,
-  evaluateExpeditionDefectTriggers,
-  DEFECT_SEVERITY_DAMAGE
+  evaluateExpeditionDefectTriggers
 } from '../../src/domain/expedition/defects'
 import {
   handleRevealExpeditionDefect,

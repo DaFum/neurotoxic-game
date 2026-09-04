@@ -71,7 +71,6 @@ import {
   clampPlayerMoney,
   clampVanFuel,
   BALANCE_CONSTANTS,
-  applyEventDelta,
   hasActiveSponsorship,
   finiteNumberOr
 } from '../src/utils/gameState/index.js'

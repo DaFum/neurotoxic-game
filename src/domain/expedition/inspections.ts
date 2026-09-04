@@ -8,7 +8,6 @@
 
 import type { BandMember, GameState } from '../../types'
 import type {
-  ConditionGroup,
   ExpeditionInspectionIntent,
   ExpeditionInspectionResolution,
   ExpeditionInspectionResult

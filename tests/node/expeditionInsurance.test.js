@@ -16,8 +16,7 @@ import {
   canClaimExpeditionInsurance,
   getAvailableInsurancePolicyIds,
   getExpeditionInsurancePolicy,
-  getExpeditionInsurancePremium,
-  resolveExpeditionInsuranceClaim
+  getExpeditionInsurancePremium
 } from '../../src/domain/expedition/insurance.ts'
 import {
   claimExpeditionInsurance,
