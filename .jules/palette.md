@@ -209,8 +209,3 @@
 
 **Learning:** Event option buttons in `EventModal.tsx` use `aria-disabled="true"` to maintain keyboard focusability, but lacked an explicit focus-visible ring color in their disabled state and omitted explanation tooltips.
 **Action:** Always include explicit focus ring colors (e.g., `focus-visible:ring-ash-gray/60`) on disabled `aria-disabled` controls and wrap disabled options in `Tooltip` providing localized context (e.g., `option.disabledReason` or `t('ui:event.optionDisabled')`).
-
-## 2026-09-04 - Dynamic Focus Rings on Modal Confirmation Buttons
-
-**Learning:** Reusable confirmation buttons (such as `ConfirmButton` in assets modals) that inherit dynamic section accents (`var(--section-accent)`) must explicitly declare dynamic focus rings. Overriding default button styles without specifying focus-visible rings renders key modal action buttons invisible during keyboard navigation across asset Hub sub-screens.
-**Action:** Always apply `focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black` on shared action buttons that support dynamic color themes.
