@@ -328,6 +328,20 @@ export const buildExpeditionMap = (
         break
       }
     }
+    if (undergroundLayer === -1) {
+      // The candidate range collapses to a single value on a short route, so
+      // every retry can land on the Rival layer. The design requires the
+      // Underground class to exist wherever the route allows it, so fall back
+      // to the first legal layer rather than dropping the node. Consumes no
+      // randomness, which keeps every seed that already succeeded on its
+      // existing route.
+      for (let layer = 1; layer <= middleLayerCount; layer++) {
+        if (layer !== rivalLayer) {
+          undergroundLayer = layer
+          break
+        }
+      }
+    }
   }
 
   for (const plan of layers) {

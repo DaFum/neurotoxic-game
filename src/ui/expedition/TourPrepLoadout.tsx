@@ -166,7 +166,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                     : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                 }`}
               >
-                {songId}
+                {SONGS_BY_ID.get(songId)?.name ?? songId}
               </button>
             )
           })}

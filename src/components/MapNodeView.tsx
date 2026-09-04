@@ -13,7 +13,7 @@ import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
 import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
-import type { ExpeditionNodeFog } from '../ui/expedition/ExpeditionNodeFogBadge'
+import type { ExpeditionNodeFog } from '../types/expedition'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }

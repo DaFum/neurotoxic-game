@@ -79,6 +79,8 @@ import {
   sanitizeRunSeed
 } from './assetSanitizers'
 import { sanitizeExpeditionState } from './expeditionSanitizers'
+import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
@@ -260,7 +262,15 @@ export const handleLoadGame = (
     rngSeed: sanitizeRngSeed(loadedState.rngSeed),
     runSeed: sanitizeRunSeed(loadedState.runSeed),
     rivalBand: sanitizeRivalBand(loadedState.rivalBand),
-    expedition: sanitizeExpeditionState(loadedState.expedition)
+    // A run's entire route is derived from `runSeed`, and `sanitizeRunSeed`
+    // mints a fresh one for a save that lost or corrupted it. Keeping the run
+    // in that case would silently move it onto a different map while its
+    // visited nodes and route step still describe the old one, so a run
+    // without its seed collapses to idle the same way one without its
+    // committed build does.
+    expedition: isFiniteNumber(loadedState.runSeed)
+      ? sanitizeExpeditionState(loadedState.expedition)
+      : createDefaultExpeditionState()
   }
 
   // Apply venue migrations using spreads
