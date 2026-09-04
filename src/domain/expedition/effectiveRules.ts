@@ -48,9 +48,9 @@ export const BASE_EXPEDITION_NUMERIC_RULES: Readonly<ExpeditionNumericRules> = {
 }
 
 /**
- * Baseline rule flags before modifiers.
+ * Baseline rule flags active in any expedition before modifications.
  */
-export const BASE_EXPEDITION_RULE_FLAGS: Readonly<ExpeditionRuleFlags> = {
+const BASE_EXPEDITION_RULE_FLAGS: Readonly<ExpeditionRuleFlags> = {
   fieldRepairNoHiddenDefect: false,
   fieldRepairMinimumCondition: 0,
   severeReliefBypass: false
@@ -80,7 +80,8 @@ export const getEffectiveExpeditionRules = (
   const chassisAsset = resolveCommittedTourbus(state)
   const chassisProfile = getExpeditionChassisProfile(chassisAsset)
 
-  const moduleIds = state.expedition?.loadout?.selectedTourbusModuleIds ?? []
+  const moduleIds =
+    state.expedition?.loadout?.build?.selectedTourbusModuleIds ?? []
   const moduleProfile = aggregateExpeditionModuleProfiles(moduleIds)
 
   // Bounded authority weighting reduction if jammer active

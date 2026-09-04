@@ -24,6 +24,7 @@ import {
 } from '../../domain/expedition/rewardLedger'
 import type {
   ExpeditionBuildCommitment,
+  ExpeditionCargoState,
   ExpeditionContrabandSelection,
   ExpeditionEquipmentCommitment,
   ExpeditionFailureChoiceId,
@@ -418,6 +419,57 @@ const sanitizeOutcome = (value: unknown): ExpeditionOutcome | null => {
 }
 
 /**
+ * Sanitizes the persisted Expedition cargo slice.
+ */
+const sanitizeExpeditionCargo = (
+  value: unknown
+): ExpeditionCargoState | null => {
+  if (!isLooseRecord(value)) return null
+  const spareParts = readCount(value, 'spareParts', 0)
+  const supplies = readCount(value, 'supplies', 0)
+  const technicalGearItemIds = sanitizeStringArray(value.technicalGearItemIds)
+  const merch: ExpeditionMerchSelection[] = []
+  if (Array.isArray(value.merch)) {
+    for (const item of value.merch) {
+      if (
+        isLooseRecord(item) &&
+        typeof item.inventoryKey === 'string' &&
+        isFiniteNumber(item.quantity)
+      ) {
+        merch.push({
+          inventoryKey: item.inventoryKey,
+          quantity: Math.max(0, Math.round(item.quantity))
+        })
+      }
+    }
+  }
+  const contraband: ExpeditionContrabandSelection[] = []
+  if (Array.isArray(value.contraband)) {
+    for (const item of value.contraband) {
+      if (
+        isLooseRecord(item) &&
+        typeof item.stashKey === 'string' &&
+        isFiniteNumber(item.stacks)
+      ) {
+        contraband.push({
+          stashKey: item.stashKey,
+          instanceId:
+            typeof item.instanceId === 'string' ? item.instanceId : null,
+          stacks: Math.max(0, Math.round(item.stacks))
+        })
+      }
+    }
+  }
+  return {
+    spareParts,
+    supplies,
+    technicalGearItemIds,
+    merch,
+    contraband
+  }
+}
+
+/**
  * Sanitizes the persisted Expedition slice.
  *
  * @param value - Untrusted `expedition` value from a save.
@@ -501,6 +553,9 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     rewardLedger,
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
-    outcome
+    outcome,
+    ...(value.cargo !== undefined
+      ? { cargo: sanitizeExpeditionCargo(value.cargo) }
+      : {})
   }
 }
