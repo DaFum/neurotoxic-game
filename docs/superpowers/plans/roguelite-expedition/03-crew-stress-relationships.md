@@ -1,12 +1,12 @@
-# Crew, Stress, Relationships and Injuries Implementation Plan
+# Crew, Stress, Relationships and Injury Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Make a constrained three-slot Crew build change route information, repairs, travel, pressure and recovery while Stress, Band↔Crew relationships, Band injuries and Crew injury/unavailability create understandable run and Career consequences.
+**Goal:** Add a persistent Career/Crew layer with six distinct Crew roles, bounded Stress, source-proven relationships, Band and Crew injuries, cross-run Crew progression and signature-trait eligibility without depending on later G5 Between-Tour producers.
 
-**Architecture:** Static Crew identity/role data lives in `src/data/expedition/crew.ts`; run Stress/status lives in `expedition.crewRunById`; persistent loyalty/story/signature traits, Crew recovery debt and Expedition relationship pairs live in Career state. Persistent changes settle only from canonical finalized-run/event evidence.
+**Architecture:** G3 first establishes the missing `CareerState` owner and persistence boundary, then adds Crew mechanics. Run-local Crew state lives under `GameState.expedition`; persistent loyalty/story/relationships/recovery debt/signature traits live under `GameState.career`. G5 later consumes G3 eligibility/recovery APIs for Between-Tour choices but does not own G3 state transitions required for this gate to pass.
 
-**Tech Stack:** TypeScript 6, React 19, existing event engine/resolver, typed actions/reducers, current band/rhythm state, i18next, Node/Vitest/Playwright.
+**Tech Stack:** TypeScript 6, React 19, existing context/reducer/persistence architecture, deterministic event resolver, Node/Vitest/Playwright.
 
 ---
 
@@ -14,9 +14,10 @@
 
 ```text
 approved design spec > master plan > this child plan
+G3 depends only on G1A + G2
 ```
 
-`00-*` files are NON-NORMATIVE. G3 depends on G1A + G2. G4 consumes G3 effects later; G5 supplies Crew Lounge/Between-Tour acquisition/recovery gates without replacing G3 state/action contracts.
+G4 may consume G3 effects. G5 may invoke G3 public recovery/acquisition APIs **after G3 is already green**. No G3 exit test may require a G5 decision type/action.
 
 ---
 
@@ -24,15 +25,22 @@ approved design spec > master plan > this child plan
 
 **Create:**
 
+- `src/types/career.d.ts`
 - `src/data/expedition/crew.ts`
 - `src/data/expedition/crewSignatureTraits.ts`
+- `src/domain/expedition/career.ts`
 - `src/domain/expedition/crew.ts`
 - `src/domain/expedition/crewStress.ts`
 - `src/domain/expedition/relationships.ts`
 - `src/domain/expedition/injuries.ts`
 - `src/data/events/crew.ts`
+- `src/context/careerActionCreators.ts`
+- `src/context/useCareerDispatchActions.ts`
+- `src/context/reducers/careerReducer.ts`
+- `src/context/reducers/careerSanitizers.ts`
 - `src/ui/expedition/ExpeditionCrewPicker.tsx`
 - `src/ui/expedition/ExpeditionCrewStatus.tsx`
+- `tests/node/expeditionCareerState.test.js`
 - `tests/node/expeditionCrew.test.js`
 - `tests/node/expeditionCrewStress.test.js`
 - `tests/node/expeditionRelationships.test.js`
@@ -43,30 +51,109 @@ approved design spec > master plan > this child plan
 
 **Modify:**
 
-- `src/types/expedition.d.ts`
-- `src/types/career.d.ts`
+- `src/types/index.ts`
+- `src/types/game.d.ts`
 - `src/types/actions.d.ts`
 - `src/context/actionTypes.ts`
+- `src/context/initialState.ts`
 - `src/context/GameState.tsx`
-- `src/context/careerActionCreators.ts`
+- `src/context/useGameDispatchActions.ts`
+- `src/context/reducers/systemReducer.ts`
+- `src/context/gameReducer.ts`
+- `src/context/usePersistence.ts`
 - `src/context/expeditionActionCreators.ts`
-- `src/context/reducers/careerReducer.ts`
-- `src/context/reducers/careerSanitizers.ts`
+- `src/context/useExpeditionDispatchActions.ts`
 - `src/context/reducers/expeditionReducer.ts`
 - `src/context/reducers/expeditionSanitizers.ts`
-- `src/context/useCareerDispatchActions.ts`
-- `src/context/useExpeditionDispatchActions.ts`
 - `src/domain/expedition/effectiveRules.ts`
 - `src/utils/eventEngine/eventEffectHandlers.ts`
 - `src/domain/eventResolver.ts`
-- `src/hooks/travel/useTravelMinigame.ts`
-- `src/hooks/postGig/handlers/useContinueHandler.ts`
 - `src/hooks/useArrivalLogic.ts`
+- `src/hooks/postGig/handlers/useContinueHandler.ts`
 - active rhythm/gig hit/miss/stamina owners
+- `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js`
+- `tests/node/playwright-screenshot-fixture-validation.test.js`
+- `tests/node/saveSliceRoundTrip.test.js`
 - `public/locales/en/ui.json`
 - `public/locales/de/ui.json`
 - `public/locales/en/events.json`
 - `public/locales/de/events.json`
+
+---
+
+## Task 0: Create the persistent Career owner before any G3 mutation
+
+G3 is the first gate that requires persistent Expedition Career state, so G3 must create it rather than pretending the files already exist.
+
+```ts
+export interface CrewCareerState {
+  loyalty: number
+  storyProgress: number
+  signatureTraitId: string | null
+  unavailableUntilCompletedRunCount: number
+}
+
+export interface CrewRecoveryDebt {
+  crewId: string
+  createdFromRunId: string
+  severity: 'serious'
+  toursRemaining: 1
+}
+
+export interface CareerState {
+  crewById: Record<string, CrewCareerState>
+  expeditionRelationshipByPair: Record<string, ExpeditionRelationshipTier>
+  crewRecoveryDebtById: Record<string, CrewRecoveryDebt>
+  settledCrewRunIds: string[]
+
+  // G4/G5 append their own persistent fields later:
+  rivalsById: Record<string, never>
+  betweenTourByRunId: Record<string, never>
+  tourTokens: number
+  finalizedExpeditionRuns: number
+  completedExpeditionRuns: number
+  completedExpeditionRegionIds: string[]
+  hqFacilityLevels: Record<string, number>
+  ascensionUnlocked: boolean
+}
+```
+
+Use safe empty/default placeholders only for fields explicitly extended by later gates; later sanitizers replace the `never` placeholders with their final typed contracts.
+
+- [ ] **Step 1: Write failing Career-state boundary tests**
+
+```text
+GameState requires career
+createInitialState returns fresh career objects/maps
+screenshot BASE_STATE mirrors career
+save/reload defaults missing legacy career safely
+unknown/prototype keys dropped
+non-finite numeric fields rejected/defaulted
+useGameActions exposes named Career methods after they exist
+```
+
+- [ ] **Step 2: Wire the real boundaries**
+
+```text
+src/types/game.d.ts                -> required career: CareerState
+src/context/initialState.ts        -> fresh createInitialCareerState()
+src/context/usePersistence.ts      -> PERSISTED_FIELDS.career
+systemReducer LOAD_GAME            -> sanitizeCareerState
+GameStateProvider/dispatchValue    -> named Career actions
+Playwright BASE_STATE              -> career default
+saveSliceRoundTrip                 -> career round trip
+```
+
+Every action creator returns `Extract<GameAction, { type: typeof ActionTypes.X }>`. Reducers validate direct/malformed actions independently of creators.
+
+- [ ] **Step 3: Verify foundation**
+
+```bash
+node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionCareerState.test.js tests/node/saveSliceRoundTrip.test.js tests/node/playwright-screenshot-fixture-validation.test.js
+pnpm run typecheck:core
+```
+
+Expected: PASS before Task 1 starts.
 
 ---
 
@@ -84,122 +171,125 @@ export type ExpeditionCrewRole =
 export interface ExpeditionCrewDefinition {
   id: string
   role: ExpeditionCrewRole
-  nameKey: string
-  talentKey: string
-  traitKey: string
-  viceKey: string | null
+  displayNameKey: string
 }
 ```
 
-Initial actors:
+Initial role rule contributions:
 
 ```text
-crew_mika_tech       -> technician
-crew_anja_roadie     -> roadie
-crew_tom_driver      -> driver
-crew_leyla_manager   -> manager
-crew_nico_scout      -> scout
-crew_saskia_security -> security
+Technician
+  fieldRepairEfficiency +0.20
+  technicalWearMultiplier x0.90
+
+Roadie
+  technicalWearMultiplier x0.92
+  crewStressMultiplier x0.95
+
+Driver
+  fuelConsumptionMultiplier x0.90
+  roadWearMultiplier x0.90
+
+Manager
+  contractRewardMultiplier x1.10
+  exposureGainMultiplier x0.95
+
+Scout
+  enables G1 Scout passive/recon entitlement
+  nodeIntelFloor remains unchanged unless a signature/perk later modifies it
+
+Security
+  authorityEventWeightMultiplier x0.85
+  positive Heat gain from Authority outcomes x0.90 where the source permits mitigation
 ```
 
-Tour Prep allows at most three unique available Crew ids.
+`getCrewRuleContribution(state)` reads only selected, currently available, non-seriously-injured Crew and feeds G2's single `getEffectiveExpeditionRules(state)` path. No production code reads a second aggregate profile.
 
-Exact baseline contributions when selected and available:
+Light Crew injury halves that Crew member's numeric contribution before composition; serious injury contributes nothing for the rest of the run.
 
-```text
-Technician -> effective fieldRepairEfficiency +0.20; enables crew_inspection
-Roadie     -> effective technicalWearMultiplier x0.90; first major-Gig setupProtection +10
-Driver     -> effective fuelConsumptionMultiplier x0.90; roadWearMultiplier x0.90
-Manager    -> effective contractRewardMultiplier x1.08; enables Manager Contact/Double-Down detail options
-Scout      -> G1 passive Intel 0->1 on one deterministic visible future node; Recon entitlement
-Security   -> effective authorityEventWeightMultiplier x0.85; retains one safe comply/pay Authority option when otherwise legal
-```
-
-Extend the existing G2 `getEffectiveExpeditionRules(state)` in place with these contributions. Do not expose a second `getCrewAggregateEffects` path for production/simulator semantics.
-
-Tests prove each role changes its named real consumer and no role exists only in G6.
+Tests compare identical management state with/without each role and prove the named production consumer changes.
 
 ---
 
-## Task 2: Add contextual Crew run state and source-bound Stress
+## Task 2: Persist selected Crew and validate availability
+
+G1 loadout owns selected `crewIds`. G3 provides:
+
+```ts
+isCrewAvailable(state, crewId): boolean
+validateExpeditionCrewSelection(state, crewIds): CrewSelectionDecision
+```
+
+Rules:
+
+```text
+maximum 3 selected Crew
+unique known ids only
+baseline Crew available by registry rule
+set-derived Crew capabilities are resolved through G5's isExpeditionCapabilityUnlocked once G5 exists
+persistent unavailableUntilCompletedRunCount / recovery debt blocks selection
+no unknown/prototype ids
+```
+
+During G3-only tests, fixtures use baseline Crew only; G5 owns tests for set-gated Crew.
+
+---
+
+## Task 3: Add bounded Crew Stress with source-derived mutation
 
 ```ts
 export interface ExpeditionCrewRunState {
-  stress: number
-  status: 'available' | 'strained' | 'injured' | 'unavailable'
-  crisisId: string | null
+  stressByCrewId: Record<string, number>
+  injuryByCrewId: Record<string, 'none' | 'light' | 'serious'>
 }
 ```
 
-Stress is contextual, not a seventh permanent HUD bar.
+Stress is clamped `0..100`.
 
-Action:
+Public intent:
 
 ```ts
-ADJUST_EXPEDITION_CREW_STRESS {
+RECORD_EXPEDITION_CREW_STRESS_SOURCE {
   crewId: string
-  reason:
+  sourceType:
     | 'travel'
+    | 'poor_gig'
+    | 'crew_event'
+    | 'authority_event'
     | 'rest'
-    | 'high_heat_event'
-    | 'commitment_pressure'
-    | 'relationship_event'
-    | 'gig_recovery'
+    | 'successful_gig'
   sourceId: string
   expectedRouteStep: number
 }
 ```
 
-Reducer validates Crew id with `Object.hasOwn`, Crew is selected/currently available, source id is canonical for the reason and route step matches. It derives the delta from the owning source, applies `getEffectiveExpeditionRules(state).numeric.crewStressMultiplier` to positive gains only and clamps `0..100`.
+Reducer proves the canonical just-resolved source, derives the signed base delta and applies `getEffectiveExpeditionRules(state).numeric.crewStressMultiplier` only to positive Stress gains.
 
-Initial source deltas before multiplier:
+Initial source values:
 
 ```text
-travel poor-road/long segment +6
-rest                      -12
-high_heat_event            +10
-commitment_pressure        +8
-relationship_event         ±8 according to canonical option
-post-good-gig recovery     -5
+travel             +5
+poor_gig           +10
+crew_event         registry-defined +8..+20
+authority_event    +12
+rest               -15
+successful_gig     -5
 ```
 
-Replay/stale/forged sources are identical-state no-ops.
-
----
-
-## Task 3: Turn high Stress into a telegraphed crisis, not random unavoidable failure
+No caller supplies Stress delta.
 
 Stress bands:
 
 ```text
 0..39   stable
-40..69  strained
-70..89  high
-90..100 crisis-eligible
+40..69  tense
+70..89  crisis-eligible
+90..100 severe crisis/injury eligible
 ```
-
-At `>=90`, create at most one deterministic Crew crisis per route step if no crisis is already pending. Crisis events expose at least two legal paths when resources/state allow:
-
-```text
-rest / route opportunity cost
-spend supplies or Cash
-relationship/support option
-accept consequence
-```
-
-A crisis may create an explicit Harmony-crisis signal only after the player resolves/declines available recovery and the event definition marks the unresolved outcome as Harmony-threatening. Low Harmony alone never creates `harmony_collapse`.
-
-Export:
-
-```ts
-getUnresolvedHarmonyCrisisSignal(state): ExpeditionFailureSignal | null
-```
-
-G1B consumes this exact source.
 
 ---
 
-## Task 4: Model Crew↔Crew and Band↔Crew relationships with source-derived event outcomes
+## Task 4: Implement Crew↔Crew and Band↔Crew relationships through typed actors
 
 ```ts
 export type ExpeditionRelationshipActorRef =
@@ -207,83 +297,41 @@ export type ExpeditionRelationshipActorRef =
   | { kind: 'band'; id: string }
 
 export type ExpeditionRelationshipTier = -2 | -1 | 0 | 1 | 2
-
-export interface ExpeditionRelationshipState {
-  tier: ExpeditionRelationshipTier
-  lastSourceId: string | null
-}
 ```
 
-Validation:
-
-```text
-Crew id -> Object.hasOwn(EXPEDITION_CREW_BY_ID, id)
-Band id -> exact stable current state.band.members id
-same actor -> reject
-Band↔Band -> reject; existing band relationship owner remains canonical
-Crew↔Crew or Band↔Crew -> allowed
-```
-
-Action:
+Band ids must be validated against stable existing band-member ids from canonical state; Crew ids against `EXPEDITION_CREW_BY_ID` with `Object.hasOwn`.
 
 ```ts
-APPLY_EXPEDITION_RELATIONSHIP_OUTCOME {
-  eventId: string
-  optionId: string
+RECORD_EXPEDITION_RELATIONSHIP_OUTCOME {
   first: ExpeditionRelationshipActorRef
   second: ExpeditionRelationshipActorRef
+  sourceType: 'crew_event' | 'travel_event' | 'gig_result' | 'rival_event'
+  sourceId: string
   expectedRouteStep: number
 }
 ```
 
-Reducer proves event/option just resolved, actors match the event definition and derives tier shift from canonical event data. Caller never submits `tierDelta` or pair key.
+Reducer proves source and derives `tierDelta` from the event/result registry. It canonicalizes the pair key itself. Caller never submits pair key or delta.
 
-Required producer/consumer:
+Required production chain:
 
 ```text
-producer: expedition_crew_conflict_mika_tom (includes at least one Band↔Crew option)
-consumer: expedition_crew_contact_tip or burnout resolution changes option eligibility based on stored tier
+real Crew event resolves
+-> relationship transition persisted
+-> save/reload
+-> later Crew event condition/option changes because of tier
 ```
 
-Golden test: event changes relationship -> save/reload -> later event eligibility differs.
+At least one initial event must exercise Band↔Crew, not only Crew↔Crew.
 
 ---
 
-## Task 5: Keep staged Band-member injuries as active-performance consequences
+## Task 5: Add staged Band injuries that affect active performance
 
 ```ts
-export type BandInjuryStage = 'none' | 'strain' | 'light' | 'serious' | 'critical'
+export type ExpeditionBandInjuryStage = 'none' | 'light' | 'serious' | 'critical'
 
-// ExpeditionState
-memberInjuriesById: Record<string, BandInjuryStage>
-```
-
-Action intent:
-
-```ts
-ADVANCE_EXPEDITION_BAND_INJURY {
-  memberId: string
-  source: 'post_gig_exhaustion' | 'dangerous_event'
-  sourceId: string | null
-  expectedStage: BandInjuryStage
-  expectedRouteStep: number
-}
-```
-
-For post-gig exhaustion, deterministic run RNG/current stamina decides whether the action creator emits intent; reducer proves canonical post-Gig evidence and advances exactly one stage. Dangerous events require just-resolved event/option proof.
-
-Post-gig risk:
-
-```text
-stamina >=35 -> no roll
-20..34       -> 10%
-<20          -> 25%
-```
-
-Active performance profile:
-
-```ts
-export interface ExpeditionMemberPerformanceConstraint {
+export interface ExpeditionInjuryPerformanceProfile {
   staminaDrainMultiplier: number
   timingWindowMultiplier: number
   missPenaltyMultiplier: number
@@ -291,275 +339,220 @@ export interface ExpeditionMemberPerformanceConstraint {
 }
 ```
 
+Initial bounded profile:
+
 ```text
-none     1.00 / 1.00 / 1.00 / false
-strain   1.10 / 1.00 / 1.00 / false
-light    1.20 / 0.97 / 1.05 / false
-serious  1.35 / 0.93 / 1.10 / false
-critical 1.50 / 0.90 / 1.15 / true for injured required role
+none      stamina x1.00 | timing x1.00 | miss x1.00 | cannotPerform false
+light     stamina x1.08 | timing x0.99 | miss x1.05 | false
+serious   stamina x1.18 | timing x0.97 | miss x1.12 | false
+critical  stamina x1.30 | timing x0.94 | miss x1.20 | true only when the injured member is required by the selected performance path
 ```
 
-PreGig surfaces exact warnings; hit/miss/stamina owners consume the profile. Critical blocks only if current set cannot be staffed by a legal substitute/recovery route.
+PreGig displays the exact injury consequence. Existing active hit/miss/stamina owners consume the profile exactly once. Skill remains decisive; injuries never directly award/fail score.
+
+Injury advancement intent contains only canonical source evidence. Reducer derives next stage and refuses forged/replayed progression.
+
+If critical injury blocks the required set path, PreGig exposes canonical recovery/reroute/extract/failure options instead of deadlocking.
 
 ---
 
-## Task 6: Add bounded Crew injuries and persistent unavailability instead of replacing them with Stress
-
-This closes the 2026-09-04 fidelity gap. Crew actors use a **smaller** injury model than performing Band members because their role effect, not rhythm execution, is what becomes unavailable.
+## Task 6: Add Crew injury/unavailability without depending on G5 rehab
 
 ```ts
 export type ExpeditionCrewInjuryStage = 'none' | 'light' | 'serious'
-
-// run state
-crewInjuryById: Record<string, ExpeditionCrewInjuryStage>
-
-// Career state
-crewRecoveryDebtById: Record<string, 0 | 1>
 ```
 
-Sources:
+Rules:
 
 ```text
-dangerous travel/repair event
-Authority/Contraband confrontation
-Crew crisis option explicitly marked injuryRisk
+light    -> current-run role contribution x0.50
+serious  -> current-run role contribution x0; creates persistent CrewRecoveryDebt at Crew Career settlement
 ```
 
-Action:
+G3 must provide the public recovery API that G5 can call later:
 
 ```ts
-ADVANCE_EXPEDITION_CREW_INJURY {
+export const canResolveCrewRecoveryDebt = (
+  career: CareerState,
   crewId: string
-  sourceType: 'event' | 'travel' | 'repair'
-  sourceId: string
-  expectedStage: ExpeditionCrewInjuryStage
-  expectedRouteStep: number
+): boolean
+
+export const resolveCrewRecoveryDebt = (
+  career: CareerState,
+  crewId: string,
+  source: 'rehab' | 'served_unavailable_tour'
+): CareerState
+```
+
+This is a pure domain helper used by the Career reducer; G3 tests it directly with canonical source fixtures. **G3 does not require `injury_rehab` or any G5 action to exist.**
+
+A serious debt starts with `toursRemaining:1`. G5 later records either paid rehab or the fact that the Crew actually sat out one finalized Tour. The latter source decrements to zero and clears the debt. G3 owns the deterministic helper and tests both source kinds; G5 owns the UI/decision integration.
+
+---
+
+## Task 7: Build Crew events through the real event pipeline
+
+Use the current validated game-event schema, including required event/option text keys and supported effect types.
+
+Create `EXPEDITION_CREW_EVENTS` with at least:
+
+```text
+expedition_crew_conflict_mika_tom
+expedition_crew_band_tension
+expedition_crew_breakthrough
+expedition_crew_injury_scare
+```
+
+Register `type:'expedition'` through `src/utils/eventEngine/eventEffectHandlers.ts`; do not rely on `eventResolver.ts` alone.
+
+`EventDelta.expedition` supports only sanitized intent/result identifiers. Sensitive Stress/relationship/injury numbers are derived later from the canonical event/result registry.
+
+End-to-end test each family through:
+
+```text
+validateGameEvent
+-> resolveEventChoice
+-> resolveEvent
+-> gameReducer
+```
+
+---
+
+## Task 8: Settle persistent Crew Career state once per finalized run
+
+```ts
+SETTLE_EXPEDITION_CREW_CAREER {
+  runId: string
 }
 ```
 
-Reducer proves the canonical source, uses deterministic source-bound roll stored/derivable from run seed, advances at most one stage and updates status:
+Reducer requires matching finalized G1 outcome and rejects ids in `career.settledCrewRunIds`.
+
+For each selected Crew, derive from canonical run evidence:
 
 ```text
-light   -> role contribution x0.50 for remainder of run
-serious -> role contribution disabled for remainder of run; no instant run failure
+Loyalty
+  completed +3
+  extracted +2
+  failed -2
+  severe unresolved Crew crisis -2 additional
+  clamp 0..100
+
+Story progress
+  +1 if Crew participated in a finalized run
+  +1 additional if a source-owned personal Crew event resolved for them
+
+Serious Crew injury
+  create CrewRecoveryDebt(toursRemaining=1)
 ```
 
-On finalized run, serious Crew injury yields `crewRecoveryDebtById[crewId] = 1` unless G5 Between-Tour `injury_rehab` clears it. A Crew with recovery debt is unavailable for the next Tour Prep; after one skipped/recovered tour the debt settles to 0 through the canonical Between-Tour/run-settlement path.
+Caller supplies no loyalty/story/injury delta.
 
-No Crew death/permadeath is introduced.
-
-Tests:
-
-```text
-Technician serious injury removes repair contribution but repair remains possible through other legal paths
-Driver serious injury changes next travel cost through the same effective rules
-serious injury -> finalized run -> Career recovery debt -> next Tour Prep unavailable
-rehab choice clears debt exactly once
-save/reload preserves run injury and Career debt
-```
+Tests cover extracted/completed/failed, replay, save/reload and direct forged run id.
 
 ---
 
-## Task 7: Add treatment/recovery choices for Band and Crew injury
+## Task 9: Define signature traits and a G3-owned acquisition contract
 
-At Rest/Supply/PreGig or relevant Between-Tour contexts:
-
-```text
-Band strain/light: rest -> one stage recovery
-Band serious: treatment -> spend Expedition Cash + supplies -> one stage recovery
-Band critical: treatment/route change/extract/accept failure when performance cannot proceed
-Crew light: rest/supplies -> return contribution toward normal according to canonical action
-Crew serious: no mid-run instant full heal; may stabilize but stays unavailable this run; persistent rehab handled Between Tours
-```
-
-All prices/resources/results are reducer-derived. UI sends only actor/source/choice intent.
-
-Export:
-
-```ts
-getBandIncapacitationSignal(state): ExpeditionFailureSignal | null
-```
-
-It returns a signal only when required performance cannot be staffed/recovered and the player accepts failure/exhausts legal alternatives.
-
----
-
-## Task 8: Settle Crew Career from finalized evidence only
-
-No generic `UPDATE_CREW_CAREER` action exists.
-
-```ts
-export interface ExpeditionCrewCareerSettlement {
-  crewId: string
-  loyaltyDelta: -2 | -1 | 0 | 1 | 2
-  storyProgressDelta: 0 | 1
-  recoveryDebt: 0 | 1
-}
-```
-
-At finalization, derive settlement from canonical run evidence:
+Initial one-per-role registry:
 
 ```text
-selected + low final Stress + positive relationship outcome -> Loyalty +1
-selected + crisis resolved supportively               -> Loyalty +1, Story +1
-abandoned/betrayed canonical Crew event               -> Loyalty -1/-2 according to event definition
-serious Crew injury                                    -> recoveryDebt 1
-```
-
-Store settlement in finalized outcome snapshot.
-
-Persistent action:
-
-```ts
-SETTLE_EXPEDITION_CREW_CAREER { runId: string }
-```
-
-Reducer requires finalized matching run, refuses already-settled run ids, loads the stored settlement and applies it once. Loyalty clamps `0..100`; story progress is non-negative integer; ids must be registry-owned.
-
----
-
-## Task 9: Define six concrete signature traits and a real source-derived acquisition path
-
-Registry:
-
-```text
-signature_field_engineer -> Technician: first field repair/run ignores hidden-defect creation
-signature_stage_sense    -> Roadie: first critical Stage Gear warning gains +1 Intel detail
-signature_long_haul      -> Driver: first poor-road segment/run ignores road-wear multiplier
-signature_dealmaker      -> Manager: first G4 Double Down reveals exact upside and failure penalty
-signature_foresight      -> Scout: one extra Recon use after route step 4
-signature_crowd_control  -> Security: first Authority crisis retains comply/pay safe option when resource requirement is met
+Technician -> signature_field_surgeon
+Roadie     -> signature_load_master
+Driver     -> signature_night_driver
+Manager    -> signature_dealmaker
+Scout      -> signature_pathfinder
+Security   -> signature_cool_head
 ```
 
 Eligibility:
 
 ```text
-Crew loyalty >=60
-storyProgress >=3
-G5 Crew Lounge L1 capability owned
+loyalty >= 60
+storyProgress >= 3
+Crew Lounge capability enabled by G5 when present
 trait not already owned
-Crew not carrying unresolved recovery debt at acquisition time
+no active Crew recovery debt
 ```
 
-### Acquisition boundary
+G3 exposes:
 
-Eligibility alone is not ownership. Add:
+```ts
+getEligibleCrewSignatureTrait(state, crewId): string | null
+```
+
+and the source-derived action:
 
 ```ts
 ACQUIRE_EXPEDITION_CREW_SIGNATURE {
-  runId: string
   crewId: string
   expectedTraitId: string
+  sourceType: 'career_development'
+  sourceId: string
 }
 ```
 
-Allowed source is a G5 Between-Tour `crew_debrief` option `develop_signature` generated only after a finalized run that contains at least one eligible selected Crew member. Reducer:
+For **G3 gate tests**, `sourceId` is a canonical G3 Career-development fixture token produced by `createCrewDevelopmentEligibilityProof` after a finalized Crew settlement. Reducer recomputes eligibility/trait id; `expectedTraitId` is only a stale guard.
+
+When G5 exists, its `crew_debrief -> develop_signature` option creates the same `career_development` proof and calls this exact action. G5 owns that integration test. G3 is already green before G5.
+
+Each signature has one concrete production consumer:
 
 ```text
-proves run is finalized and Between-Tour decision/option is canonical and unresolved
-looks up Crew registry
-recomputes eligibility from current Career state
-recomputes exact trait id from Crew role registry
-requires it equals expectedTraitId as stale guard
-writes trait once
-marks the decision option consumed in the same reducer transaction or through the G5 canonical decision resolver
+field_surgeon -> field repair minimum/defect rule
+load_master   -> cargo/technical setup protection
+night_driver  -> travel Fuel/road-wear rule
+dealmaker     -> reveals exact Double-Down upside/penalty
+pathfinder    -> one bounded extra Scout Intel entitlement per run
+cool_head     -> one bounded Authority/Crew-Stress mitigation rule
 ```
-
-Caller never supplies an arbitrary trait id that can be stored unchecked.
-
-Required tests for all six traits:
-
-```text
-ineligible -> no acquisition
-eligible + canonical decision -> exact registered trait acquired
-forged trait id -> no-op
-replay -> no duplicate
-save/reload -> trait persists
-production consumer activates exactly once as specified
-```
-
-G6 may report `signatureTraitUnlockRun` only from this production acquisition transition.
 
 ---
 
-## Task 10: Add source-proven Contact Intel
-
-Concrete event: `expedition_crew_contact_tip`.
-
-Eligibility:
-
-```text
-selected Manager OR relevant bonded Band↔Crew relationship
-visible reachable future node
-current Intel < event option target level
-```
-
-Action:
+## Task 10: Add Contact Intel grant producer
 
 ```ts
 CREATE_CONTACT_INTEL_GRANT {
-  eventId: 'expedition_crew_contact_tip'
+  eventId: string
   optionId: string
   nodeId: string
   expectedRouteStep: number
 }
 ```
 
-Reducer proves just-resolved event/option, node entitlement and route step, derives target level and deterministic grant id, appends once. G1 later consumes the grant with `REVEAL_EXPEDITION_NODE_INTEL`.
-
-Forged/replayed event ids or unreachable node ids are no-ops.
+Reducer proves the just-resolved Contact/Crew event owns the grant, target is a visible/reachable future node and current Intel is below target. It creates one deterministic G1 `ExpeditionIntelGrant` and rejects forged/replayed source evidence.
 
 ---
 
-## Task 11: Register validated Crew events through the real event pipeline
+## Task 11: Verify G3 independently of G5
 
-Every new event uses the production schema:
-
-```text
-title
- description
- conditions with explicit (state: GameState) => annotations
- options[].label
- options[].outcomeText
- supported effect keys only
-```
-
-Register one `type:'expedition'` effect handler in the real `eventEffectHandlers.ts`; extend `EventDelta.expedition` once and route through typed Expedition actions. Do not mutate Expedition state through generic object spreads.
-
-Required families:
+Required G3 exit scenarios:
 
 ```text
-expedition_crew_conflict_mika_tom
-expedition_crew_contact_tip
-expedition_crew_burnout
-expedition_crew_injury_risk
+Career state defaults/persists/rehydrates safely
+all six Crew roles change their named production rule
+Stress sources are reducer-derived and bounded
+Band↔Crew and Crew↔Crew relationship changes alter later event eligibility
+Band injuries alter active performance without auto-deciding score
+Crew light/serious injury alters role contribution
+serious injury creates one recovery debt
+pure G3 recovery helper clears debt for canonical rehab or served-unavailable-tour proof
+Crew Career settlement is once-only
+signature eligibility/acquisition works through G3 career-development proof
+Contact Intel grant is source-proven
 ```
 
-End-to-end tests run:
+Explicitly forbidden G3 exit dependencies:
 
 ```text
-validateGameEvent -> resolveEventChoice -> resolveEvent -> gameReducer
+RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION
+BetweenTourDecisionType
+injury_rehab UI
+crew_debrief UI
+G5 facility purchase action
 ```
 
-and prove Stress/relationship/injury/contact outcomes actually reach state.
-
----
-
-## Task 12: UI and simulator handoff
-
-`ExpeditionCrewPicker` shows role trade-offs and next-run unavailability before START. `ExpeditionCrewStatus` shows contextual Stress, relationships, current injury/unavailability and signature trait; it is not a permanent HUD resource.
-
-G6 imports only production helpers:
-
-```text
-getEffectiveExpeditionRules
-getBandMemberPerformanceConstraint
-getBandIncapacitationSignal
-getUnresolvedHarmonyCrisisSignal
-Crew Career settlement/acquisition telemetry
-```
-
-Required focused verification:
+Run:
 
 ```bash
 pnpm run test:node
@@ -572,15 +565,27 @@ Expected: PASS.
 
 ---
 
-## G3 Exit criteria
+## G5 integration handoff
 
-- Three Crew slots select from six concrete roles and every role changes an app mechanic.
-- Stress mutations are source-bound/reducer-derived and crises are telegraphed.
-- Band↔Crew and Crew↔Crew relationships have a real producer and later consumer.
-- Band injuries visibly affect active gig execution.
-- Crew injuries/unavailability exist as a bounded distinct mechanic; serious Crew injury can persist into next-tour availability and recovery.
-- G1 failure consumes explicit incapacity/Harmony signals, never raw thresholds alone.
-- Crew Career loyalty/story/recovery settles once from finalized run evidence.
-- Signature traits have both eligibility and a real Between-Tour acquisition action; all six traits persist and have production consumers.
-- Contact Intel is source-proven and replay-safe.
-- New Crew events validate and resolve through the existing event pipeline.
+G5 must later add tests for:
+
+```text
+Crew Lounge capability -> G3 signature eligibility
+crew_debrief/develop_signature -> G3 career_development proof -> ACQUIRE action
+injury_rehab/pay_rehab -> G3 resolveCrewRecoveryDebt(..., 'rehab')
+accept_unavailability -> Crew omitted from next finalized Tour -> G3 resolveCrewRecoveryDebt(..., 'served_unavailable_tour')
+```
+
+These are G5 tests, not G3 gate requirements.
+
+---
+
+## G3 exit criteria
+
+- `GameState.career` exists as a real required/persisted/sanitized/provider-wired owner before any Crew Career mutation.
+- G3 depends only on G1A + G2 and can pass without G5 types/actions/UI.
+- Six Crew roles have exact production consumers through the single effective-rules path.
+- Crew Stress, relationships and injuries are source-derived/replay-safe.
+- Band injuries affect active gameplay; Crew injuries affect Crew availability/contribution.
+- Persistent recovery debt has a complete deterministic lifecycle API.
+- Signature traits have G3-owned eligibility/acquisition mechanics and real production consumers; G5 only supplies one later acquisition source.
