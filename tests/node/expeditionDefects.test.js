@@ -81,7 +81,6 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
 
       const nextState = handleRevealExpeditionDefect(state, {
         defectId: defect.id,
-        source: 'crew_inspection',
         expectedRouteStep: 2
       })
 
@@ -94,7 +93,6 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       // Stale route step guard
       const staleState = handleRevealExpeditionDefect(state, {
         defectId: defect.id,
-        source: 'crew_inspection',
         expectedRouteStep: 1 // state is at 2
       })
       assert.equal(staleState, state)
@@ -194,7 +192,6 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
 
       const nextState = handleResolveExpeditionDefect(state, {
         defectId: 'd1',
-        repairResolutionId: 'res_1',
         expectedRouteStep: 2
       })
 
@@ -326,8 +323,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       // 1. revealExpeditionDefect
       const revealAction = revealExpeditionDefect(
         state,
-        'defect_pa_test',
-        'crew_inspection'
+        'defect_pa_test'
       )
       assert.ok(revealAction)
       assert.equal(revealAction.type, 'REVEAL_EXPEDITION_DEFECT')
@@ -355,8 +351,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       // 3. resolveExpeditionDefect
       const resolveAction = resolveExpeditionDefect(
         state,
-        'defect_pa_test',
-        'repair_res_1'
+        'defect_pa_test'
       )
       assert.ok(resolveAction)
       assert.equal(resolveAction.type, 'RESOLVE_EXPEDITION_DEFECT')

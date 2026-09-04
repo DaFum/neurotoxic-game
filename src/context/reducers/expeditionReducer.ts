@@ -963,7 +963,8 @@ export const handleClaimExpeditionInsurance = (
         ...state.expedition,
         technicalCondition: nextTc,
         insuranceClaimConsumed: true,
-        claimConsumed: true
+        claimConsumed: true,
+        technicalFailureAccepted: false
       }
     }
   }

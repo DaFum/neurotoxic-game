@@ -299,8 +299,7 @@ export const executeExpeditionRepair = (
  */
 export const revealExpeditionDefect = (
   state: GameState,
-  defectId: string,
-  source: string
+  defectId: string
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.REVEAL_EXPEDITION_DEFECT }
@@ -310,7 +309,6 @@ export const revealExpeditionDefect = (
     type: ActionTypes.REVEAL_EXPEDITION_DEFECT,
     payload: {
       defectId,
-      source,
       expectedRouteStep: state.expedition.routeStep
     }
   }
@@ -353,8 +351,7 @@ export const triggerExpeditionDefect = (
  */
 export const resolveExpeditionDefect = (
   state: GameState,
-  defectId: string,
-  repairResolutionId: string
+  defectId: string
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RESOLVE_EXPEDITION_DEFECT }
@@ -364,7 +361,6 @@ export const resolveExpeditionDefect = (
     type: ActionTypes.RESOLVE_EXPEDITION_DEFECT,
     payload: {
       defectId,
-      repairResolutionId,
       expectedRouteStep: state.expedition.routeStep
     }
   }
@@ -407,10 +403,7 @@ export const executeExpeditionInspection = (
  */
 export const claimExpeditionInsurance = (
   state: GameState,
-  payload: {
-    claimType: 'vehicle' | 'technical'
-    targetGroup?: import('../types/expedition').ConditionGroup
-  }
+  payload: import('../types/expedition').ExpeditionInsuranceClaimInput
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.CLAIM_EXPEDITION_INSURANCE }

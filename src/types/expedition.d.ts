@@ -124,7 +124,7 @@ export interface ExpeditionLoadout {
   cargo: { spareParts: number; supplies: number }
   starterPerkId: string | null
   nativeContracts: ExpeditionNativeContractCommitment[]
-  insurancePolicyId: string | null
+  insurancePolicyId: ExpeditionInsurancePolicyId | null
   pressureModifierIds: string[]
   build: ExpeditionBuildCommitment
 }
@@ -458,7 +458,7 @@ export interface ExpeditionState {
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
-  insurancePolicyId?: string | null
+  insurancePolicyId?: ExpeditionInsurancePolicyId | null
   insuranceClaimConsumed?: boolean
   claimConsumed?: boolean
   technicalFailureAccepted?: boolean
@@ -606,11 +606,18 @@ export interface ExpeditionInsurancePolicy {
 export type ExpeditionInsuranceClaimType = 'vehicle' | 'technical'
 
 /**
- * Payload executing an insurance claim during an active Expedition run.
+ * Input for claiming insurance during an active Expedition run.
  */
-export interface ExpeditionInsuranceClaimIntent {
+export interface ExpeditionInsuranceClaimInput {
   claimType: ExpeditionInsuranceClaimType
   targetGroup?: ConditionGroup
+}
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimIntent
+  extends ExpeditionInsuranceClaimInput {
   expectedRouteStep: number
 }
 
