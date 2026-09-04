@@ -64,6 +64,26 @@ const getExpeditionConditionBand = (
 const getExpeditionHeat = (_state: GameState): number => 0
 
 /**
+ * The single write point for Heat.
+ *
+ * @param state - Current game state.
+ * @param _heatDelta - Signed Heat change requested by a resolved event.
+ * @returns The next state.
+ *
+ * @remarks
+ * The counterpart to `getExpeditionHeat`, and extended in place by G4 for the
+ * same reason: every Heat producer has to go through one function, or the first
+ * one to need a store invents the second Pressure authority. Until G4 owns
+ * Pressure there is no Heat field to write, so this returns the state
+ * unchanged — the request is accepted and has no effect yet, exactly as the
+ * read side reports `0`.
+ */
+export const applyExpeditionEventHeat = (
+  state: GameState,
+  _heatDelta: number
+): GameState => state
+
+/**
  * Immediate physical performance capacity across the band.
  *
  * @param state - Current game state.

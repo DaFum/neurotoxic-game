@@ -25,12 +25,22 @@ import {
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
-import { materializeExpeditionCargo } from '../../domain/expedition/cargo'
 import {
+  getExpeditionCargoView,
+  materializeExpeditionCargo
+} from '../../domain/expedition/cargo'
+import {
+  applyTechnicalWear,
   clampCondition,
   createDefaultTechnicalCondition,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
+import {
+  getExpeditionEventResultEffect,
+  sanitizeExpeditionEventResultIds
+} from '../../domain/expedition/eventDeltas'
+import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
+import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
@@ -67,6 +77,7 @@ import type {
   AcceptExpeditionTechnicalFailurePayload,
   AddExpeditionRewardPayload,
   AdvanceExpeditionRoutePayload,
+  ApplyExpeditionEventDeltaPayload,
   ClaimExpeditionInsurancePayload,
   CompleteExpeditionPayload,
   ExecuteExpeditionInspectionPayload,
@@ -1323,4 +1334,111 @@ export const handleAcceptExpeditionTechnicalFailure = (
       technicalFailureAccepted: true
     }
   })
+}
+
+/**
+ * Applies the Expedition results a resolved event requested.
+ *
+ * @param state - Current game state.
+ * @param payload - Known result ids plus the route-step stale guard.
+ * @returns Next state, or the identical reference when nothing applies.
+ *
+ * @remarks
+ * The event engine is the only caller, and it may only name results. Every
+ * number comes from the Expedition's own registry here, so an effect authored
+ * with a hand-picked value, an unknown result id, or a forged payload carrying
+ * Condition or cargo figures cannot move run state: unknown ids are filtered
+ * out, and a payload whose ids are all unknown leaves state untouched.
+ */
+export const handleApplyExpeditionEventDelta = (
+  state: GameState,
+  payload: ApplyExpeditionEventDeltaPayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const resultIds = sanitizeExpeditionEventResultIds(payload.resultIds)
+  if (resultIds.length === 0) return state
+
+  const wear = { pa: 0, instruments: 0, stageGear: 0 }
+  let sparePartsDelta = 0
+  let suppliesDelta = 0
+  let heatDelta = 0
+  for (const resultId of resultIds) {
+    const effect = getExpeditionEventResultEffect(resultId)
+    if (effect.conditionWear) {
+      wear.pa += effect.conditionWear.pa
+      wear.instruments += effect.conditionWear.instruments
+      wear.stageGear += effect.conditionWear.stageGear
+    }
+    if (effect.cargoDelta) {
+      sparePartsDelta += effect.cargoDelta.spareParts ?? 0
+      suppliesDelta += effect.cargoDelta.supplies ?? 0
+    }
+    heatDelta += effect.heat ?? 0
+  }
+
+  let nextExpedition = state.expedition
+
+  const hasWear = wear.pa > 0 || wear.instruments > 0 || wear.stageGear > 0
+  if (hasWear) {
+    // Scaled by the same chassis/module rule the post-gig wear uses, so an
+    // event cannot bypass a tourbus built to survive wear.
+    const multiplier = Math.max(
+      0,
+      getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier
+    )
+    nextExpedition = {
+      ...nextExpedition,
+      technicalCondition: applyTechnicalWear(
+        getExpeditionTechnicalCondition(state),
+        {
+          pa: Math.round(wear.pa * multiplier),
+          instruments: Math.round(wear.instruments * multiplier),
+          stageGear: Math.round(wear.stageGear * multiplier)
+        }
+      )
+    }
+  }
+
+  if (sparePartsDelta !== 0 || suppliesDelta !== 0) {
+    // Gains are authorized by the cargo authority's own free-slot count: an
+    // event may hand the player a spare part, but not one the bus cannot hold.
+    const view = getExpeditionCargoView(state)
+    let freeSlots = view.availableVisibleSlots
+    const grant = (current: number, delta: number): number => {
+      if (delta <= 0) return Math.max(0, current + delta)
+      const granted = Math.min(delta, freeSlots)
+      freeSlots -= granted
+      return current + granted
+    }
+    // Listed field by field rather than spread from the view: the view also
+    // carries the derived capacity numbers, and folding those into the
+    // persisted cargo would turn a computed readout into stored state.
+    nextExpedition = {
+      ...nextExpedition,
+      cargo: {
+        spareParts: grant(view.spareParts, sparePartsDelta),
+        supplies: grant(view.supplies, suppliesDelta),
+        technicalGearItemIds: view.technicalGearItemIds,
+        merch: view.merch,
+        contraband: view.contraband
+      }
+    }
+  }
+
+  const nextState =
+    nextExpedition === state.expedition
+      ? state
+      : { ...state, expedition: nextExpedition }
+
+  return syncExpeditionPendingFailure(
+    applyExpeditionEventHeat(nextState, heatDelta)
+  )
 }

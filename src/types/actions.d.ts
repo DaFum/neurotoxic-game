@@ -312,3 +312,16 @@ export type ClaimExpeditionInsurancePayload =
 export interface AcceptExpeditionTechnicalFailurePayload {
   expectedRouteStep: number
 }
+
+/**
+ * Payload applying the Expedition results a resolved event requested.
+ *
+ * @remarks
+ * Ids only, plus the usual stale guard. The reducer re-filters the ids and
+ * looks every effect up in the Expedition's own registry, so this payload can
+ * request an outcome but never carry the numbers for it.
+ */
+export interface ApplyExpeditionEventDeltaPayload {
+  resultIds: import('./expedition').ExpeditionEventResultId[]
+  expectedRouteStep: number
+}
