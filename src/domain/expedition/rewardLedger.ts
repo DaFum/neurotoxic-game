@@ -103,6 +103,19 @@ export const EXPEDITION_REWARD_REGISTRY = {
 type ExpeditionRewardId = keyof typeof EXPEDITION_REWARD_REGISTRY
 
 /**
+ * Registry ids the route builder may place on a node, ascending.
+ *
+ * @remarks
+ * Derived from the registry rather than restated, so adding a `route_rare`
+ * reward makes it placeable without a second list to keep in sync.
+ */
+export const EXPEDITION_ROUTE_RARE_REWARD_IDS: readonly string[] =
+  Object.values(EXPEDITION_REWARD_REGISTRY)
+    .filter(definition => definition.sourceType === 'route_rare')
+    .map(definition => definition.id)
+    .sort()
+
+/**
  * Resolves a reward id to its definition.
  *
  * @param rewardId - Candidate reward id from an untrusted dispatch.
@@ -142,6 +155,23 @@ export const isExpeditionRewardSecuredOnEarn = (
       return definition.securedOnEarn
   }
 }
+
+/**
+ * Builds the derived ledger-entry key for one reward and its source.
+ *
+ * @param rewardDefinitionId - Canonical reward id.
+ * @param sourceId - Canonical just-resolved source evidence id.
+ * @returns The stable entry id.
+ *
+ * @remarks
+ * Derived rather than generated, so a replayed dispatch collides with the
+ * existing entry instead of paying twice — and so the load sanitizer can prove
+ * a persisted entry's id is one the reducer could actually have produced.
+ */
+export const buildExpeditionRewardEntryId = (
+  rewardDefinitionId: string,
+  sourceId: string
+): string => `${rewardDefinitionId}::${sourceId}`
 
 /**
  * Reason a reward could not enter the ledger.
@@ -252,7 +282,7 @@ export const resolveExpeditionReward = (
     return { ok: false, reason: 'SOURCE_EVIDENCE_MISSING' }
   }
 
-  const entryId = `${definition.id}::${request.sourceId}`
+  const entryId = buildExpeditionRewardEntryId(definition.id, request.sourceId)
   if (state.expedition.rewardLedger.some(entry => entry.id === entryId)) {
     return { ok: false, reason: 'DUPLICATE_SOURCE' }
   }

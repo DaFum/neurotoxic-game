@@ -251,3 +251,12 @@ export interface AcceptExpeditionFailurePayload {
 export interface PrepareNextExpeditionPayload {
   runId: string
 }
+
+/**
+ * Payload paying for a recovery option on the run's current crisis.
+ */
+export interface ResolveExpeditionCrisisPayload {
+  pendingFailureId: string
+  choice: 'refuel' | 'tow'
+  expectedRouteStep: number
+}

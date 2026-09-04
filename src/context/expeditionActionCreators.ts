@@ -225,3 +225,35 @@ export const prepareNextExpedition = (
     payload: { runId }
   }
 }
+
+/**
+ * Builds the action paying for a recovery option on the current crisis.
+ *
+ * @param state - Current game state, read for the crisis id and route step.
+ * @param choice - The recovery the player picked.
+ * @returns Typed `RESOLVE_EXPEDITION_CRISIS` action, or `null` when the crisis
+ * is not live or does not offer that recovery.
+ *
+ * @remarks
+ * Returns `null` rather than a forged payload so a UI cannot offer a recovery
+ * the run is not actually presenting; the reducer re-derives both the crisis
+ * and the choice's legality regardless.
+ */
+export const resolveExpeditionCrisis = (
+  state: GameState,
+  choice: 'refuel' | 'tow'
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_CRISIS }
+> | null => {
+  const pending = deriveExpeditionPendingFailure(state)
+  if (!pending || !pending.choices.includes(choice)) return null
+  return {
+    type: ActionTypes.RESOLVE_EXPEDITION_CRISIS,
+    payload: {
+      pendingFailureId: pending.id,
+      choice,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}

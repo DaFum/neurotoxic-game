@@ -10,6 +10,7 @@ import { ActionButton } from '../shared/ActionButton'
 import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExtractionDialog } from './ExtractionDialog'
+import { FailureCrisisDialog } from './FailureCrisisDialog'
 
 /**
  * Reports whether the run is standing on a legal extraction window.
@@ -80,6 +81,11 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
           {t('ui:expedition.extraction.open')}
         </ActionButton>
       ) : null}
+
+      {/* The crisis dialog lives here rather than in the scene so its
+          extraction escape has an owner: it opens the same confirmation the
+          extraction button does, instead of rendering a dead button. */}
+      <FailureCrisisDialog onExtract={openDialog} />
 
       <ExtractionDialog isOpen={isDialogOpen} onClose={closeDialog} />
     </div>

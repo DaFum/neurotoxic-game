@@ -27,6 +27,8 @@ export interface ExpeditionNodeFog {
   exactWearCost: number | null
   /** Event/rival identity, only present at level 2. */
   revealedIdentity: string | null
+  /** Rare reward this node yields, only present once intel reaches level 1. */
+  rareRewardId: string | null
 }
 
 const TIER_COLORS: Record<ExpeditionTier, string> = {
@@ -108,6 +110,18 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
           )}
         </div>
       )}
+      {fog.rareRewardId ? (
+        <div
+          className='text-toxic-green-bright'
+          data-testid='expedition-node-fog-rare'
+        >
+          {t('ui:expedition.node.rare', {
+            name: t(`ui:expedition.reward.${fog.rareRewardId}`, {
+              defaultValue: fog.rareRewardId
+            })
+          })}
+        </div>
+      ) : null}
       {fog.revealedIdentity ? (
         <div
           className='text-void-purple'

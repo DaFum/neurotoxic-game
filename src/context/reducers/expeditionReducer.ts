@@ -21,6 +21,7 @@ import {
 } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
+  canSpendExpeditionCash,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -36,9 +37,13 @@ import {
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
 import {
+  EXPEDITION_TOW_COST,
+  EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
   isCurrentExpeditionFailureId
 } from '../../domain/expedition/failure'
+import { calculateRefuelCost } from '../../utils/economy'
+import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
   AcceptExpeditionFailurePayload,
@@ -48,6 +53,7 @@ import type {
   ExtractExpeditionPayload,
   PrepareExpeditionRunPayload,
   PrepareNextExpeditionPayload,
+  ResolveExpeditionCrisisPayload,
   RevealExpeditionNodeIntelPayload,
   StartExpeditionPayload
 } from '../../types/actions'
@@ -183,6 +189,12 @@ export const handleStartExpedition = (
       currentNodeId: preparedMap.startNodeId,
       van: { ...state.player.van, fuel: normalized.build.startingFuelTarget }
     },
+    // The committed songs are installed into the root setlist in the same
+    // commit. PreGig and the rhythm engine read `state.setlist`, not the
+    // loadout, so leaving them out of sync would start the run with an empty
+    // setlist — and the commitment freeze would then reject every edit that
+    // tried to repair it.
+    setlist: normalized.build.setlistSongIds.map(id => ({ id })),
     // The Expedition route becomes the played map, so the existing overworld,
     // travel and gig flow drive the run instead of a parallel route surface.
     // Cloned rather than aliased: `buildExpeditionMap` memoizes its result, and
@@ -293,7 +305,7 @@ export const applyExpeditionRouteAdvance = (
     extractionWindowsSeen.push(target.routeStep)
   }
 
-  return {
+  const advanced: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
     expedition: {
@@ -301,6 +313,36 @@ export const applyExpeditionRouteAdvance = (
       routeStep: target.routeStep,
       visitedNodeIds: [...state.expedition.visitedNodeIds, nodeId],
       extractionWindowsSeen
+    }
+  }
+
+  // Arriving on a node that carries a route rare is the canonical evidence for
+  // it, so the ledger entry is banked in the same pass. Composed rather than
+  // dispatched: a separate action could be missed and would leave the reward
+  // unearnable, and `resolveExpeditionReward` still proves the evidence, so a
+  // replayed arrival collides with the existing entry instead of paying twice.
+  const rareRewardId = target.hidden.rareRewardId
+  if (rareRewardId === null) return advanced
+
+  const definition = resolveExpeditionRewardDefinition(rareRewardId)
+  if (!definition) return advanced
+  const resolution = resolveExpeditionReward(
+    advanced,
+    {
+      expectedRewardId: definition.id,
+      sourceType: definition.sourceType,
+      sourceId: nodeId,
+      expectedRouteStep: advanced.expedition.routeStep
+    },
+    map
+  )
+  if (!resolution.ok) return advanced
+
+  return {
+    ...advanced,
+    expedition: {
+      ...advanced.expedition,
+      rewardLedger: [...advanced.expedition.rewardLedger, resolution.entry]
     }
   }
 }
@@ -691,4 +733,74 @@ export const handlePrepareNextExpedition = (
   if (unsettled) return state
 
   return { ...state, expedition: createDefaultExpeditionState() }
+}
+
+/**
+ * Resolves a fuel-stranded crisis by paying for a recovery option.
+ *
+ * @param state - Current game state.
+ * @param payload - The crisis id, the chosen recovery, and the stale guard.
+ * @returns Next state, or the identical reference when the choice is illegal.
+ *
+ * @remarks
+ * The design requires most crises to keep at least one expensive but safe
+ * escape, so these are real spends with real effects rather than dialog
+ * decoration. Both the crisis and the legality of the choice are re-derived
+ * here: a caller cannot pay for a recovery the run is not actually offering,
+ * and the cost is read from the canonical owners (`calculateRefuelCost`, the
+ * Expedition tow price) rather than from the payload.
+ *
+ * `refuel` fills the tank; `tow` restores enough fuel to leave the node without
+ * filling it, which is what makes it the pricier, less efficient escape. Both
+ * spend through the Expedition boundary, so neither can dip into the protected
+ * Career slice.
+ */
+export const handleResolveExpeditionCrisis = (
+  state: GameState,
+  payload: ResolveExpeditionCrisisPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const pending = deriveExpeditionPendingFailure(state)
+  if (!pending) return state
+  if (!isCurrentExpeditionFailureId(state, payload.pendingFailureId)) {
+    return state
+  }
+
+  const { choice } = payload
+  if (choice !== 'refuel' && choice !== 'tow') return state
+  // Only a choice the derived crisis actually offers may be paid for.
+  if (!pending.choices.includes(choice)) return state
+
+  const currentFuel = isFiniteNumber(state.player.van?.fuel)
+    ? state.player.van.fuel
+    : 0
+  const cost =
+    choice === 'refuel' ? calculateRefuelCost(currentFuel) : EXPEDITION_TOW_COST
+  if (cost <= 0) return state
+  if (!canSpendExpeditionCash(state, cost)) return state
+
+  const nextFuel =
+    choice === 'refuel'
+      ? EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+      : Math.min(
+          EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL,
+          currentFuel + EXPEDITION_TOW_FUEL_RESTORED
+        )
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) - cost),
+      van: { ...state.player.van, fuel: nextFuel }
+    }
+  }
 }

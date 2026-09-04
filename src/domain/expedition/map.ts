@@ -16,6 +16,7 @@
  */
 
 import { ALL_VENUES } from '../../data/venues'
+import { EXPEDITION_ROUTE_RARE_REWARD_IDS } from './rewardLedger'
 import { mulberry32 } from '../../utils/seededRng'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
@@ -69,6 +70,42 @@ export const FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP = 3 as const
 
 const clampInt = (value: number, min: number, max: number): number =>
   Math.min(max, Math.max(min, Math.trunc(value)))
+
+/**
+ * Route depth below which a node never carries a rare reward.
+ *
+ * @remarks
+ * A rare on the first hop would be secured before the first extraction window
+ * even opens, which would drain the push-your-luck decision of its tension.
+ */
+const RARE_REWARD_MIN_DEPTH_RATIO = 0.3
+
+/** Share of eligible nodes that carry a rare reward. */
+const RARE_REWARD_CHANCE = 0.3
+
+/**
+ * Picks the rare reward a node yields, if any.
+ *
+ * @param roll - Deterministic roll from the route RNG.
+ * @param depthRatio - Node depth as a fraction of the route length.
+ * @param isStart - Whether the node is the start node.
+ * @returns A registry reward id, or `null`.
+ */
+const pickRouteRareReward = (
+  roll: number,
+  depthRatio: number,
+  isStart: boolean
+): string | null => {
+  if (isStart || depthRatio < RARE_REWARD_MIN_DEPTH_RATIO) return null
+  if (roll >= RARE_REWARD_CHANCE) return null
+  const pool = EXPEDITION_ROUTE_RARE_REWARD_IDS
+  if (pool.length === 0) return null
+  const index = Math.min(
+    pool.length - 1,
+    Math.floor((roll / RARE_REWARD_CHANCE) * pool.length)
+  )
+  return pool[index] ?? null
+}
 
 /**
  * FNV-1a over the canonical route description.
@@ -364,7 +401,11 @@ export const buildExpeditionMap = (
             specialSubtype === 'RIVAL_ENCOUNTER' ? 'rival_primary' : null,
           authorityRisk: Math.round(rng() * 100) / 100,
           hiddenOpportunityId:
-            rng() < 0.2 ? `exp_opportunity_${plan.layer}_${index}` : null
+            rng() < 0.2 ? `exp_opportunity_${plan.layer}_${index}` : null,
+          // Route rares are the greed the extraction decision is about, so
+          // they sit on the deeper half of the route where the player has
+          // already committed something.
+          rareRewardId: pickRouteRareReward(rng(), depthRatio, isStart)
         }
       }
 
@@ -424,7 +465,7 @@ export const buildExpeditionMap = (
       .map(id => {
         const entry = meta[id]
         return entry
-          ? `${id}:${entry.nodeClass}:${entry.specialSubtype ?? '-'}:${entry.dangerTier}:${entry.rewardTier}`
+          ? `${id}:${entry.nodeClass}:${entry.specialSubtype ?? '-'}:${entry.dangerTier}:${entry.rewardTier}:${entry.hidden.rareRewardId ?? '-'}`
           : id
       })
       .join(',')}`,

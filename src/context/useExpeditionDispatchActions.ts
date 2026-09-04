@@ -13,6 +13,7 @@ import {
   extractExpedition as extractExpeditionAction,
   prepareExpeditionRun as prepareExpeditionRunAction,
   prepareNextExpedition as prepareNextExpeditionAction,
+  resolveExpeditionCrisis as resolveExpeditionCrisisAction,
   revealExpeditionNodeIntel as revealExpeditionNodeIntelAction,
   startExpedition as startExpeditionAction
 } from './expeditionActionCreators'
@@ -32,6 +33,7 @@ export type ExpeditionDispatchActions = Pick<
   | 'completeExpedition'
   | 'acceptExpeditionFailure'
   | 'prepareNextExpedition'
+  | 'resolveExpeditionCrisis'
 >
 
 interface UseExpeditionDispatchActionsProps {
@@ -85,6 +87,10 @@ export function useExpeditionDispatchActions({
       },
       prepareNextExpedition: () => {
         const action = prepareNextExpeditionAction(stateRef.current)
+        if (action) dispatch(action)
+      },
+      resolveExpeditionCrisis: (choice: 'refuel' | 'tow') => {
+        const action = resolveExpeditionCrisisAction(stateRef.current, choice)
         if (action) dispatch(action)
       }
     }),

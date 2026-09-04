@@ -17,6 +17,11 @@ import {
   sanitizeStringArray
 } from '../../utils/objectUtils'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import {
+  buildExpeditionRewardEntryId,
+  isExpeditionRewardSecuredOnEarn,
+  resolveExpeditionRewardDefinition
+} from '../../domain/expedition/rewardLedger'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionContrabandSelection,
@@ -29,7 +34,6 @@ import type {
   ExpeditionNativeContractCommitment,
   ExpeditionOutcome,
   ExpeditionRewardLedgerEntry,
-  ExpeditionRewardSourceType,
   ExpeditionSettlement,
   ExpeditionState,
   ExpeditionStatus,
@@ -51,15 +55,6 @@ const TERMINAL_STATUSES: ReadonlySet<string> = new Set<ExpeditionStatus>([
   'completed',
   'failed'
 ])
-
-const REWARD_SOURCE_TYPES: ReadonlySet<string> =
-  new Set<ExpeditionRewardSourceType>([
-    'route_rare',
-    'event_rare',
-    'contract',
-    'crew_contact',
-    'finale_nonlegendary'
-  ])
 
 const FAILURE_REASONS: ReadonlySet<string> = new Set<ExpeditionFailureReason>([
   'bankruptcy',
@@ -191,6 +186,24 @@ const sanitizeIntelGrant = (value: unknown): ExpeditionIntelGrant | null => {
   }
 }
 
+/**
+ * Sanitizes one persisted reward-ledger entry.
+ *
+ * @param value - Untrusted ledger entry from a save.
+ * @returns The entry with its definition-owned fields re-derived, or `null`.
+ *
+ * @remarks
+ * A save must not be able to author a reward. The reward id is resolved through
+ * the canonical registry and rejected when unknown, and `sourceType` plus
+ * `secured` are re-derived from that definition rather than read from the file:
+ * otherwise a crafted entry marked `secured: true, materialized: false` would
+ * be retained on failure and then granted by the terminal handler, bypassing
+ * the reducer's source-proof checks entirely.
+ *
+ * `id` must still be the derived `<definition>::<source>` key the reducer
+ * produces, so a save cannot smuggle two ledger rows for the same source past
+ * the duplicate check.
+ */
 const sanitizeRewardEntry = (
   value: unknown
 ): ExpeditionRewardLedgerEntry | null => {
@@ -198,15 +211,19 @@ const sanitizeRewardEntry = (
   const id = readString(value, 'id')
   const rewardDefinitionId = readString(value, 'rewardDefinitionId')
   const sourceId = readString(value, 'sourceId')
-  const sourceType = readString(value, 'sourceType')
-  if (!id || !rewardDefinitionId || !sourceId || !sourceType) return null
-  if (!REWARD_SOURCE_TYPES.has(sourceType)) return null
+  if (!id || !rewardDefinitionId || !sourceId) return null
+
+  const definition = resolveExpeditionRewardDefinition(rewardDefinitionId)
+  if (!definition) return null
+  if (id !== buildExpeditionRewardEntryId(definition.id, sourceId)) return null
+
   return {
     id,
-    rewardDefinitionId,
-    sourceType: sourceType as ExpeditionRewardSourceType,
+    rewardDefinitionId: definition.id,
+    // Definition-owned, never save-owned.
+    sourceType: definition.sourceType,
     sourceId,
-    secured: readBoolean(value, 'secured'),
+    secured: isExpeditionRewardSecuredOnEarn(definition),
     earnedAtRouteStep: readCount(value, 'earnedAtRouteStep', 0),
     materialized: readBoolean(value, 'materialized')
   }

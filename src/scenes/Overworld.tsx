@@ -23,7 +23,6 @@ import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
 import { getExpeditionNodeFogByNodeId } from '../domain/expedition/nodeFog'
 import { ExpeditionStatusStrip } from '../ui/expedition/ExpeditionStatusStrip'
-import { FailureCrisisDialog } from '../ui/expedition/FailureCrisisDialog'
 import { ExpeditionRunControls } from '../ui/expedition/ExpeditionRunControls'
 
 /**
@@ -180,8 +179,6 @@ export const Overworld = () => {
       <ExpeditionStatusStrip />
 
       <ExpeditionRunControls />
-
-      <FailureCrisisDialog />
 
       <EventLog t={t} day={player.day} locationId={player.location} />
 

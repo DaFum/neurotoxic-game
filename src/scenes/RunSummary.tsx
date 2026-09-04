@@ -16,13 +16,18 @@ import { formatCurrency } from '../utils/numberUtils'
  */
 export const RunSummary = () => {
   const { t, i18n } = useTranslation(['ui'])
-  const { prepareNextExpedition, changeScene } = useGameActions()
+  const { prepareNextExpedition, changeScene, saveGameAfterStateCommit } =
+    useGameActions()
   const outcome = useGameSelector(state => state.expedition.outcome)
 
   const handleContinue = useCallback(() => {
     prepareNextExpedition()
+    // Autosave covers only the gig transitions, so acknowledging a finalized
+    // run has to persist itself: otherwise quitting from the menu restores the
+    // terminal Expedition and routes the player back through this summary.
+    saveGameAfterStateCommit()
     changeScene(GAME_PHASES.MENU)
-  }, [changeScene, prepareNextExpedition])
+  }, [changeScene, prepareNextExpedition, saveGameAfterStateCommit])
 
   if (!outcome) {
     return (

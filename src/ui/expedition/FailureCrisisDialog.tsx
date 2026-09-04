@@ -12,16 +12,15 @@ import { calculateRefuelCost } from '../../utils/economy'
 import type { ExpeditionFailureChoiceId } from '../../types/expedition'
 
 /**
- * Extra responses the host scene owns, keyed by choice id.
+ * Scene-owned response for the extraction escape.
  *
  * @remarks
- * `refuel`, `tow` and `extract` are recovery actions whose spend and navigation
- * belong to the scene, not to this dialog. `accept_failure` is the one response
- * the dialog dispatches itself, because it is a pure terminal state transition.
+ * `refuel` and `tow` are pure state transitions and are dispatched here, so a
+ * mounted crisis can never render a button that does nothing. Extraction needs
+ * the confirmation dialog and the run-summary navigation the host scene owns,
+ * so that one stays a callback.
  */
 export interface FailureCrisisDialogProps {
-  onRefuel?: () => void
-  onTow?: () => void
   onExtract?: () => void
 }
 
@@ -47,12 +46,10 @@ const CHOICE_VARIANTS: Record<
  * ended from this surface without a visible, attributable cause.
  */
 export const FailureCrisisDialog = memo(function FailureCrisisDialog({
-  onRefuel,
-  onTow,
   onExtract
 }: FailureCrisisDialogProps) {
   const { t, i18n } = useTranslation('ui')
-  const { acceptExpeditionFailure } = useGameActions()
+  const { acceptExpeditionFailure, resolveExpeditionCrisis } = useGameActions()
   const pendingFailure = useGameSelector(
     state => state.expedition.pendingFailure
   )
@@ -62,14 +59,23 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     acceptExpeditionFailure()
   }, [acceptExpeditionFailure])
 
+  const handleRefuel = useCallback(
+    () => resolveExpeditionCrisis('refuel'),
+    [resolveExpeditionCrisis]
+  )
+  const handleTow = useCallback(
+    () => resolveExpeditionCrisis('tow'),
+    [resolveExpeditionCrisis]
+  )
+
   if (!pendingFailure) return null
 
   const handlerFor = (
     choice: ExpeditionFailureChoiceId
   ): (() => void) | undefined => {
     if (choice === 'accept_failure') return handleAccept
-    if (choice === 'refuel') return onRefuel
-    if (choice === 'tow') return onTow
+    if (choice === 'refuel') return handleRefuel
+    if (choice === 'tow') return handleTow
     return onExtract
   }
 

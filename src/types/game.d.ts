@@ -382,6 +382,10 @@ export type GameAction =
       ActionTypes['PREPARE_NEXT_EXPEDITION'],
       import('./actions').PrepareNextExpeditionPayload
     >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_CRISIS'],
+      import('./actions').ResolveExpeditionCrisisPayload
+    >
 
 export * from './player'
 export * from './band'

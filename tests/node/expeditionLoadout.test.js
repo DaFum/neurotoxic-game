@@ -23,6 +23,9 @@ import {
 import { SONGS_BY_ID } from '../../src/data/songs'
 import { CONTRABAND_BY_ID } from '../../src/data/contraband'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+import { gameReducer } from '../../src/context/gameReducer'
+import { ActionTypes } from '../../src/context/actionTypes'
+import { advanceDay } from '../../src/context/actionCreators'
 
 const TOUR = 'standard_tour'
 const REGION = 'industrial_belt'
@@ -575,5 +578,128 @@ describe('career cash spend boundary', () => {
     for (const amount of [Number.NaN, Number.POSITIVE_INFINITY, -1]) {
       assert.equal(canSpendExpeditionCash(state, amount), false)
     }
+  })
+})
+
+describe('protected career cash floor', () => {
+  const activeRun = ({ money = 1000, protectedCareerCash = 900 } = {}) => {
+    const state = createInitialState()
+    state.player.money = money
+    state.expedition = {
+      ...createDefaultExpeditionState(),
+      status: 'active',
+      runId: 'run_1',
+      protectedCareerCash,
+      loadout: {
+        tourTypeId: TOUR,
+        regionId: REGION,
+        activeTourbusAssetId: null,
+        crewIds: [],
+        cargo: { spareParts: 0, supplies: 0 },
+        starterPerkId: null,
+        nativeContracts: [],
+        insurancePolicyId: null,
+        pressureModifierIds: [],
+        build: {
+          setlistSongIds: [SONG_A],
+          equipment: { selectedGearItemIds: [] },
+          selectedTourbusModuleIds: [],
+          merch: [],
+          contraband: [],
+          sponsorOfferId: null,
+          startingFuelTarget: 100,
+          protectedCareerCash
+        }
+      }
+    }
+    return state
+  }
+
+  const spend = (state, amount) =>
+    gameReducer(state, {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money: state.player.money - amount }
+    })
+
+  it('rejects a discretionary spend that would cross the floor', () => {
+    // The exact case from review: 1000 cash, 900 protected, a 200 trip.
+    const state = activeRun()
+    const attempted = spend(state, 200)
+    assert.equal(attempted, state, 'the spend must be rejected outright')
+    assert.equal(attempted.player.money, 1000)
+  })
+
+  it('allows a spend that stays inside the spendable slice', () => {
+    const state = activeRun()
+    const spent = spend(state, 100)
+    assert.equal(spent.player.money, 900)
+  })
+
+  it('allows a spend that lands exactly on the floor', () => {
+    const state = activeRun()
+    assert.equal(spend(state, 100).player.money, 900)
+  })
+
+  it('never blocks income or a break-even action', () => {
+    const state = activeRun()
+    const earned = gameReducer(state, {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money: 5000 }
+    })
+    assert.equal(earned.player.money, 5000)
+
+    const unchanged = gameReducer(state, {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { fame: 10 }
+    })
+    assert.equal(unchanged.player.money, 1000)
+  })
+
+  it('does not block a run that mandatory obligations already pushed below', () => {
+    // Once the balance is under the floor, the bankruptcy crisis owns the
+    // outcome; the floor must not additionally freeze every later action.
+    const state = activeRun({ money: 100, protectedCareerCash: 900 })
+    const next = gameReducer(state, {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { fame: 5 }
+    })
+    assert.equal(next.player.fame, 5)
+  })
+
+  it('leaves the day tick free to apply mandatory obligations', () => {
+    const state = activeRun()
+    const advanced = gameReducer(state, advanceDay(state))
+    // The day must still tick: unpayable obligations surface as the bankruptcy
+    // crisis rather than a frozen reducer.
+    assert.equal(advanced.player.day, state.player.day + 1)
+  })
+
+  it('leaves the terminal settlement free to forfeit run earnings', () => {
+    const state = activeRun({ money: 2000, protectedCareerCash: 900 })
+    const earning = {
+      ...state,
+      expedition: { ...state.expedition, startingMoney: 1000, routeStep: 3 }
+    }
+    const failed = gameReducer(earning, {
+      type: ActionTypes.ACCEPT_EXPEDITION_FAILURE,
+      payload: { pendingFailureId: 'nope', expectedRouteStep: 3 }
+    })
+    // Refused for a forged crisis id, not by the cash floor.
+    assert.equal(failed, earning)
+  })
+
+  it('does not guard Career play outside a run', () => {
+    const state = createInitialState()
+    state.player.money = 1000
+    const spent = gameReducer(state, {
+      type: ActionTypes.UPDATE_PLAYER,
+      payload: { money: 10 }
+    })
+    assert.equal(spent.player.money, 10)
+  })
+
+  it('is a no-op when nothing is protected', () => {
+    const state = activeRun({ money: 1000, protectedCareerCash: 0 })
+    assert.equal(spend(state, 1000).player.money, 0)
   })
 })

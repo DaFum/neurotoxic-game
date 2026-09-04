@@ -40,6 +40,17 @@ import type {
 export const EXPEDITION_TOW_COST = 180 as const
 
 /**
+ * Fuel a tow puts back in the tank.
+ *
+ * @remarks
+ * Deliberately a partial refill rather than a full tank: a tow is the pricier,
+ * less efficient escape, so it gets the run moving again without also solving
+ * the next leg. Refuelling remains the cheaper, better option whenever it is
+ * affordable.
+ */
+export const EXPEDITION_TOW_FUEL_RESTORED = 35 as const
+
+/**
  * Order in which competing failure signals are resolved.
  *
  * @remarks

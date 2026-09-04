@@ -29,6 +29,18 @@ vi.mock('../../src/ui/expedition/ExtractionDialog', () => ({
     isOpen ? <div data-testid='extraction-dialog-open' /> : null
 }))
 
+// Structural FailureCrisisDialog mock: exposes its `onExtract` so this suite
+// can assert the crisis escape reaches the same confirmation.
+vi.mock('../../src/ui/expedition/FailureCrisisDialog', () => ({
+  FailureCrisisDialog: ({ onExtract }: { onExtract?: () => void }) => (
+    <button
+      type='button'
+      data-testid='crisis-extract-escape'
+      onClick={onExtract}
+    />
+  )
+}))
+
 vi.mock('react-i18next', () => ({
   initReactI18next: { type: '3rdParty', init: () => {} },
   useTranslation: () => ({ i18n: { language: 'en' }, t: (key: string) => key })
@@ -140,6 +152,15 @@ describe('ExpeditionRunControls', () => {
     expect(screen.getByTestId('extraction-dialog-open')).toBeInTheDocument()
     // The consequences must be shown before the run ends.
     expect(actions.extractExpedition).not.toHaveBeenCalled()
+  })
+
+  it('routes the crisis extraction escape to the same confirmation', () => {
+    state.current = buildState()
+    render(<ExpeditionRunControls />)
+    expect(screen.queryByTestId('extraction-dialog-open')).toBeNull()
+
+    fireEvent.click(screen.getByTestId('crisis-extract-escape'))
+    expect(screen.getByTestId('extraction-dialog-open')).toBeInTheDocument()
   })
 
   it('renders nothing outside an active run', () => {

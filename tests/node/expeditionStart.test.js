@@ -16,7 +16,8 @@ import {
   FIXTURE_RUN_SEED,
   fixtureLoadout,
   fixtureMap,
-  preparedState
+  preparedState,
+  walkTo
 } from '../expeditionLifecycleFixture.js'
 
 const start = (state, payload) =>
@@ -304,5 +305,152 @@ describe('route progression through the real travel path', () => {
     for (const step of state.expedition.extractionWindowsSeen) {
       assert.ok(step >= 3, 'an extraction window before step 3 was recorded')
     }
+  })
+})
+
+describe('committed setlist reaches the live gameplay state', () => {
+  it('installs the committed songs into the root setlist at START', () => {
+    const prepared = preparedState()
+    assert.deepEqual(prepared.setlist, [])
+
+    const started = start(prepared, validPayload())
+    // PreGig and the rhythm engine read `state.setlist`, not the loadout.
+    assert.deepEqual(
+      started.setlist.map(entry => entry.id),
+      started.expedition.loadout.build.setlistSongIds
+    )
+    assert.ok(started.setlist.length > 0)
+  })
+
+  it('replaces a mismatched Career setlist rather than deadlocking it', () => {
+    const prepared = preparedState()
+    const stale = { ...prepared, setlist: [{ id: 'some_other_song' }] }
+    const started = start(stale, validPayload())
+
+    assert.deepEqual(
+      started.setlist.map(entry => entry.id),
+      started.expedition.loadout.build.setlistSongIds
+    )
+    // Root and commitment now agree, so the freeze accepts the committed value
+    // instead of rejecting every attempt to repair the mismatch.
+    const reapplied = gameReducer(started, {
+      type: ActionTypes.SET_SETLIST,
+      payload: started.expedition.loadout.build.setlistSongIds
+    })
+    assert.deepEqual(
+      reapplied.setlist.map(entry => entry.id),
+      started.expedition.loadout.build.setlistSongIds
+    )
+  })
+})
+
+describe('route rares are actually earnable', () => {
+  it('places at least one rare reward on the route', () => {
+    const map = fixtureMap()
+    const rares = Object.values(map.meta).filter(
+      entry => entry.hidden.rareRewardId !== null
+    )
+    assert.ok(rares.length > 0, 'no route node carries a rare reward')
+    for (const entry of rares) {
+      assert.ok(entry.routeStep > 0, 'the start node must carry no rare')
+    }
+  })
+
+  it('banks the node rare in the same pass as the arrival', () => {
+    const map = fixtureMap()
+    let state = start(preparedState(), validPayload())
+    let banked = 0
+
+    // Walked to the Finale: branches are exclusive, so a rare may sit deeper
+    // than any fixed depth, and a run that stops early can legitimately miss
+    // every one of them.
+    while (state.expedition.visitedNodeIds.at(-1) !== map.finaleNodeId) {
+      const from =
+        state.expedition.visitedNodeIds[
+          state.expedition.visitedNodeIds.length - 1
+        ]
+      const target = map.connections.find(edge => edge.from === from)?.to
+      assert.ok(target)
+      const before = state.expedition.rewardLedger.length
+      state = gameReducer(state, {
+        type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+        payload: {
+          nodeId: target,
+          expectedRouteStep: state.expedition.routeStep
+        }
+      })
+      const expected = map.meta[target]?.hidden.rareRewardId === null ? 0 : 1
+      assert.equal(
+        state.expedition.rewardLedger.length - before,
+        expected,
+        `arrival at ${target} banked the wrong number of rewards`
+      )
+      banked += expected
+    }
+
+    // The route the fixture walks must actually yield something, otherwise the
+    // extraction decision has no greed to be about.
+    assert.ok(banked > 0, 'walking the route earned no rare reward')
+    for (const entry of state.expedition.rewardLedger) {
+      assert.equal(entry.sourceType, 'route_rare')
+      assert.equal(entry.secured, false)
+      assert.equal(entry.materialized, false)
+    }
+  })
+
+  it('does not bank the same node rare twice on a replayed arrival', () => {
+    const map = fixtureMap()
+    let state = start(preparedState(), validPayload())
+    const rareNode = Object.values(map.meta).find(
+      entry => entry.hidden.rareRewardId !== null
+    )
+    assert.ok(rareNode)
+
+    state = walkTo(state, rareNode.routeStep - 1)
+    const payload = {
+      nodeId: rareNode.nodeId,
+      expectedRouteStep: state.expedition.routeStep
+    }
+    const isNeighbour = map.connections.some(
+      edge =>
+        edge.from ===
+          state.expedition.visitedNodeIds[
+            state.expedition.visitedNodeIds.length - 1
+          ] && edge.to === rareNode.nodeId
+    )
+    if (!isNeighbour) return
+
+    const first = gameReducer(state, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload
+    })
+    assert.equal(first.expedition.rewardLedger.length, 1)
+    const replayed = gameReducer(first, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload
+    })
+    assert.equal(replayed, first)
+  })
+
+  it('earns rares through the real travel path too', () => {
+    const map = fixtureMap()
+    let state = start(preparedState(), validPayload())
+    while (state.player.currentNodeId !== map.finaleNodeId) {
+      const from = state.player.currentNodeId
+      const target = map.connections.find(edge => edge.from === from)?.to
+      assert.ok(target, `dead end at ${from}`)
+      state = gameReducer(state, {
+        type: ActionTypes.START_TRAVEL_MINIGAME,
+        payload: { targetNodeId: target }
+      })
+      state = gameReducer(state, {
+        type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+        payload: { damageTaken: 0, itemsCollected: [] }
+      })
+    }
+    assert.ok(
+      state.expedition.rewardLedger.length > 0,
+      'travelling the route earned no rare reward'
+    )
   })
 })
