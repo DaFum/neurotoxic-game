@@ -6,6 +6,7 @@ import { GlitchButton } from '../../ui/GlitchButton'
 
 interface MainMenuActionButtonsProps {
   handleStartTour: () => void
+  handleStartExpedition: () => void
   isStarting: boolean
   handleLoad: () => void
   isLoadingGame: boolean
@@ -18,6 +19,7 @@ interface MainMenuActionButtonsProps {
  */
 export const MainMenuActionButtons = ({
   handleStartTour,
+  handleStartExpedition,
   isStarting,
   handleLoad,
   isLoadingGame,
@@ -43,6 +45,14 @@ export const MainMenuActionButtons = ({
         className='relative z-20 w-full'
       >
         {t('ui:start_game')}
+      </GlitchButton>
+
+      <GlitchButton
+        onClick={handleStartExpedition}
+        variant='accent'
+        className='relative z-20 w-full'
+      >
+        {t('ui:expedition.startExpedition')}
       </GlitchButton>
 
       <GlitchButton

@@ -29,7 +29,7 @@ export const MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS = 3 as const
  * The approved design fixes the meaningful-node corridor at 7-9; the baseline
  * profile sits in the middle so Region/Tour profiles can move either way.
  */
-export const BASE_EXPEDITION_MEANINGFUL_NODES = 8 as const
+const BASE_EXPEDITION_MEANINGFUL_NODES = 8 as const
 
 /** Lower bound of the approved meaningful-node corridor. */
 export const MIN_EXPEDITION_MEANINGFUL_NODES = 7 as const

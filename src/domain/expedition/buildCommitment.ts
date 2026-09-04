@@ -27,8 +27,8 @@ import type { RhythmSetlistEntry } from '../../types/rhythmGame'
  * `prepared` deliberately does not freeze: reopening Tour Prep before START is
  * edit-only by design.
  */
-export const isExpeditionCommitmentFrozen = (state: GameState): boolean =>
-  state.expedition.status === 'active' && state.expedition.loadout !== null
+const isExpeditionCommitmentFrozen = (state: GameState): boolean =>
+  state.expedition?.status === 'active' && state.expedition.loadout !== null
 
 /**
  * Extracts the song ids a setlist payload resolves to.
@@ -36,7 +36,7 @@ export const isExpeditionCommitmentFrozen = (state: GameState): boolean =>
  * @param setlist - Raw setlist payload or persisted setlist.
  * @returns Song ids in order.
  */
-export const readSetlistSongIds = (setlist: unknown): string[] =>
+const readSetlistSongIds = (setlist: unknown): string[] =>
   normalizeSetlistForSave(setlist).map(entry => entry.id)
 
 /**

@@ -22,6 +22,8 @@ test('gameConstants - GAME_PHASES exports expected values', () => {
   assert.equal(GAME_PHASES.INTRO, 'INTRO')
   assert.equal(GAME_PHASES.CLINIC, 'CLINIC')
   assert.equal(GAME_PHASES.ASSETS, 'ASSETS')
+  assert.equal(GAME_PHASES.TOUR_PREP, 'TOUR_PREP')
+  assert.equal(GAME_PHASES.RUN_SUMMARY, 'RUN_SUMMARY')
 
   // Verify it is an object with the expected keys
   const expectedKeys = [
@@ -37,7 +39,9 @@ test('gameConstants - GAME_PHASES exports expected values', () => {
     'GAMEOVER',
     'INTRO',
     'CLINIC',
-    'ASSETS'
+    'ASSETS',
+    'TOUR_PREP',
+    'RUN_SUMMARY'
   ]
   assert.deepEqual(Object.keys(GAME_PHASES).sort(), expectedKeys.sort())
 })

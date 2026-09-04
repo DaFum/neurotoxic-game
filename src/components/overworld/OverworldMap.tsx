@@ -20,6 +20,7 @@ import type {
 import type { TranslationCallback } from '../../types/callbacks'
 import type { NodeVisibility } from '../../types/map'
 import { FLAGS } from '../../data/flags.registry'
+import type { ExpeditionNodeFog } from '../../ui/expedition/ExpeditionNodeFogBadge'
 
 const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 
@@ -32,6 +33,11 @@ interface OverworldMapProps {
   currentLayer: number
   isTraveling: boolean
   pendingTravelNode: GameMapNode | null
+  /**
+   * Hybrid-Fog projection per node while an Expedition is active. `null`
+   * outside a run, which keeps the Career map readout unchanged.
+   */
+  expeditionFogByNodeId?: Record<string, ExpeditionNodeFog> | null
   getNodeVisibility: (nodeLayer: number, currentLayer: number) => NodeVisibility
   isConnected: (nodeId: string) => boolean
   handleTravel: (node: GameMapNode) => void
@@ -82,7 +88,8 @@ export const OverworldMap = React.memo(
     currentNode,
     activeStoryFlags,
     rivalBand,
-    band
+    band,
+    expeditionFogByNodeId
   }: OverworldMapProps) => {
     const isOnlineNetwork = useNetworkStatus()
 
@@ -162,6 +169,12 @@ export const OverworldMap = React.memo(
               }
               tourSuccess={band.tourSuccess}
               cityTraits={cityTraits}
+              expeditionFog={
+                expeditionFogByNodeId &&
+                Object.hasOwn(expeditionFogByNodeId, node.id)
+                  ? expeditionFogByNodeId[node.id]
+                  : undefined
+              }
             />
             {hasRival && visibility !== 'hidden' && (
               <RivalMarker
@@ -193,6 +206,7 @@ export const OverworldMap = React.memo(
       rivalVanUrl,
       band.harmony,
       band.tourSuccess,
+      expeditionFogByNodeId,
       t
     ])
 

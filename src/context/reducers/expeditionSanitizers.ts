@@ -299,7 +299,7 @@ const sanitizeBuildCommitment = (value: unknown): ExpeditionBuildCommitment => {
  * @returns A structurally valid loadout, or `null` when the required Tour and
  * Region identity is missing.
  */
-export const sanitizeExpeditionLoadout = (
+const sanitizeExpeditionLoadout = (
   value: unknown
 ): ExpeditionLoadout | null => {
   if (!isLooseRecord(value)) return null

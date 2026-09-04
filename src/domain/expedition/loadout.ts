@@ -57,7 +57,7 @@ const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
  * not an unlimited rescue. Outside a run the full balance is spendable.
  */
 export const getExpeditionSpendableCash = (state: GameState): number =>
-  state.expedition.status === 'active'
+  state.expedition?.status === 'active'
     ? Math.max(0, state.player.money - state.expedition.protectedCareerCash)
     : Math.max(0, state.player.money)
 

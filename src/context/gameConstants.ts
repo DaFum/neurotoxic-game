@@ -19,7 +19,9 @@ export const GAME_PHASES = Object.freeze({
   GAMEOVER: 'GAMEOVER',
   INTRO: 'INTRO',
   CLINIC: 'CLINIC',
-  ASSETS: 'ASSETS'
+  ASSETS: 'ASSETS',
+  TOUR_PREP: 'TOUR_PREP',
+  RUN_SUMMARY: 'RUN_SUMMARY'
 } as const satisfies Record<string, string>)
 
 /**
