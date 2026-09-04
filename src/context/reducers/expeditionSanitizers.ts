@@ -69,7 +69,7 @@ const FAILURE_REASONS: ReadonlySet<string> = new Set<ExpeditionFailureReason>([
 ])
 
 const FAILURE_CHOICES: ReadonlySet<string> = new Set<ExpeditionFailureChoiceId>(
-  ['refuel', 'tow', 'extract', 'accept_failure']
+  ['refuel', 'tow', 'insurance_claim', 'extract', 'accept_failure']
 )
 
 const OUTCOME_KINDS: ReadonlySet<string> = new Set<ExpeditionOutcome['kind']>([
@@ -632,6 +632,16 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
     outcome,
+    insurancePolicyId:
+      readString(value, 'insurancePolicyId') ??
+      loadout?.insurancePolicyId ??
+      null,
+    insuranceClaimConsumed:
+      readBoolean(value, 'insuranceClaimConsumed') ||
+      readBoolean(value, 'claimConsumed'),
+    claimConsumed:
+      readBoolean(value, 'claimConsumed') ||
+      readBoolean(value, 'insuranceClaimConsumed'),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),

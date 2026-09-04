@@ -68,6 +68,7 @@ import {
   handleAcceptExpeditionFailure,
   handleAddExpeditionReward,
   handleAdvanceExpeditionRoute,
+  handleClaimExpeditionInsurance,
   handleCompleteExpedition,
   handleExecuteExpeditionInspection,
   handleExecuteExpeditionRepair,
@@ -234,7 +235,9 @@ const reducerMap: ReducerMap = {
   [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
   [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,
   [ActionTypes.RESOLVE_EXPEDITION_DEFECT]: handleResolveExpeditionDefect,
-  [ActionTypes.EXECUTE_EXPEDITION_INSPECTION]: handleExecuteExpeditionInspection
+  [ActionTypes.EXECUTE_EXPEDITION_INSPECTION]:
+    handleExecuteExpeditionInspection,
+  [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance
 }
 
 /**

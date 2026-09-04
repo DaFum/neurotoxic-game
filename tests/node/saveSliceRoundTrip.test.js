@@ -224,7 +224,10 @@ const buildPopulatedState = () => {
     ],
     extractionWindowsSeen: [2],
     pendingFailure: null,
-    outcome: null
+    outcome: null,
+    insurancePolicyId: null,
+    insuranceClaimConsumed: false,
+    claimConsumed: false
   }
 
   return state

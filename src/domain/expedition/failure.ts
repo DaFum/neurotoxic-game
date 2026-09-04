@@ -22,6 +22,7 @@ import {
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
+import { canClaimExpeditionInsurance } from './insurance'
 import type { GameState } from '../../types'
 import type {
   ExpeditionFailureChoiceId,
@@ -138,6 +139,9 @@ export const getExpeditionMobilityFailureSignal = (
     choices.push('refuel')
   }
   if (spendable >= EXPEDITION_TOW_COST) choices.push('tow')
+  if (canClaimExpeditionInsurance(state, 'vehicle')) {
+    choices.push('insurance_claim')
+  }
   // `accept_failure` is unconditional, which is what guarantees no softlock:
   // a crisis always has at least one legal response.
   choices.push('accept_failure')
