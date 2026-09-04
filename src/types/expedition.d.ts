@@ -324,7 +324,7 @@ export type ExpeditionFailureReason =
  * Legal responses a failure crisis may expose.
  */
 export type ExpeditionFailureChoiceId =
-  'refuel' | 'tow' | 'extract' | 'accept_failure'
+  'refuel' | 'tow' | 'insurance_claim' | 'extract' | 'accept_failure'
 
 /**
  * A raised, not-yet-terminal failure crisis with its legal recovery choices.
@@ -378,10 +378,10 @@ export interface ExpeditionOutcome {
 }
 
 /**
- * Run-scoped Expedition orchestration state.
+ * Run-scoped Expedition state.
  *
  * @remarks
- * This slice stores orchestration, immutable run commitments, Intel/reward and
+ * Every property belongs to the active or prepared run: status, route progress,
  * failure evidence, and the finalized outcome only. `player`, `band`, assets,
  * Social and the root `GameState.runSeed` remain the canonical owners of
  * everything else.
@@ -405,6 +405,9 @@ export interface ExpeditionState {
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null
+  insurancePolicyId?: string | null
+  insuranceClaimConsumed?: boolean
+  claimConsumed?: boolean
 }
 
 /**
@@ -523,6 +526,39 @@ export interface ExpeditionInspectionResult {
 export type ExpeditionInspectionResolution =
   | { ok: true; result: ExpeditionInspectionResult }
   | { ok: false; reason: string }
+
+/**
+ * Identifier of supported Expedition insurance policies.
+ */
+export type ExpeditionInsurancePolicyId = 'roadside' | 'equipment' | 'touring'
+
+/**
+ * Failure classes covered by an Expedition insurance policy.
+ */
+export type ExpeditionInsuranceCoverage = 'vehicle' | 'technical' | 'either'
+
+/**
+ * Optional insurance policy available as a pre-tour risk sink.
+ */
+export interface ExpeditionInsurancePolicy {
+  id: ExpeditionInsurancePolicyId
+  premium: number
+  coverage: ExpeditionInsuranceCoverage
+}
+
+/**
+ * Type of rescue requested in an insurance claim.
+ */
+export type ExpeditionInsuranceClaimType = 'vehicle' | 'technical'
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimIntent {
+  claimType: ExpeditionInsuranceClaimType
+  targetGroup?: ConditionGroup
+  expectedRouteStep: number
+}
 
 /**
  * Manifest representing the real physical items carried in the vehicle cargo.

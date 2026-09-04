@@ -406,6 +406,10 @@ export type GameAction =
       ActionTypes['EXECUTE_EXPEDITION_INSPECTION'],
       import('./actions').ExecuteExpeditionInspectionPayload
     >
+  | Action<
+      ActionTypes['CLAIM_EXPEDITION_INSURANCE'],
+      import('./actions').ClaimExpeditionInsurancePayload
+    >
 
 export * from './player'
 export * from './band'

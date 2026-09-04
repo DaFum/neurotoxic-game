@@ -89,7 +89,9 @@ export function useExpeditionDispatchActions({
         const action = prepareNextExpeditionAction(stateRef.current)
         if (action) dispatch(action)
       },
-      resolveExpeditionCrisis: (choice: 'refuel' | 'tow') => {
+      resolveExpeditionCrisis: (
+        choice: 'refuel' | 'tow' | 'insurance_claim'
+      ) => {
         const action = resolveExpeditionCrisisAction(stateRef.current, choice)
         if (action) dispatch(action)
       }

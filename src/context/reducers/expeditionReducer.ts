@@ -34,6 +34,10 @@ import {
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
+  canClaimExpeditionInsurance,
+  getExpeditionInsurancePremium
+} from '../../domain/expedition/insurance'
+import {
   DEFECT_SEVERITY_DAMAGE,
   createDeterministicHiddenDefect
 } from '../../domain/expedition/defects'
@@ -61,6 +65,7 @@ import type {
   AcceptExpeditionFailurePayload,
   AddExpeditionRewardPayload,
   AdvanceExpeditionRoutePayload,
+  ClaimExpeditionInsurancePayload,
   CompleteExpeditionPayload,
   ExecuteExpeditionInspectionPayload,
   ExtractExpeditionPayload,
@@ -191,12 +196,16 @@ export const handleStartExpedition = (
     currentFuel,
     normalized.build.startingFuelTarget
   )
+  const insurancePremium = getExpeditionInsurancePremium(
+    normalized.insurancePolicyId
+  )
+  const upfrontCost = fuelCost + insurancePremium
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   // The protected slice is untouchable from the very first spend, including the
-  // pre-run top-up: otherwise the build could protect cash it then spends.
-  if (money - fuelCost < normalized.build.protectedCareerCash) return state
+  // pre-run top-up and insurance premium: otherwise the build could protect cash it then spends.
+  if (money - upfrontCost < normalized.build.protectedCareerCash) return state
 
-  const nextMoney = money - fuelCost
+  const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
 
   return {
@@ -230,6 +239,9 @@ export const handleStartExpedition = (
       routeStep: 0,
       visitedNodeIds: [preparedMap.startNodeId],
       loadout: normalized,
+      insurancePolicyId: normalized.insurancePolicyId ?? null,
+      insuranceClaimConsumed: false,
+      claimConsumed: false,
       startingMoney: nextMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
@@ -795,9 +807,37 @@ export const handleResolveExpeditionCrisis = (
   }
 
   const { choice } = payload
-  if (choice !== 'refuel' && choice !== 'tow') return state
+  if (choice !== 'refuel' && choice !== 'tow' && choice !== 'insurance_claim') {
+    return state
+  }
   // Only a choice the derived crisis actually offers may be paid for.
   if (!pending.choices.includes(choice)) return state
+
+  if (choice === 'insurance_claim') {
+    if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
+    return {
+      ...state,
+      player: {
+        ...state.player,
+        van: {
+          ...state.player.van,
+          fuel: Math.max(
+            state.player.van?.fuel ?? 0,
+            EXPEDITION_TOW_FUEL_RESTORED
+          ),
+          condition:
+            (state.player.van?.condition ?? 0) <= 0
+              ? 25
+              : (state.player.van?.condition ?? 100)
+        }
+      },
+      expedition: {
+        ...state.expedition,
+        insuranceClaimConsumed: true,
+        claimConsumed: true
+      }
+    }
+  }
 
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
     ? state.player.van.fuel
@@ -823,6 +863,77 @@ export const handleResolveExpeditionCrisis = (
       van: { ...state.player.van, fuel: nextFuel }
     }
   }
+}
+
+/**
+ * Authoritatively executes an insurance claim during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Insurance claim intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleClaimExpeditionInsurance = (
+  state: GameState,
+  payload: ClaimExpeditionInsurancePayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const { claimType, targetGroup } = payload
+  if (claimType !== 'vehicle' && claimType !== 'technical') return state
+
+  if (!canClaimExpeditionInsurance(state, claimType, targetGroup)) return state
+
+  if (claimType === 'vehicle') {
+    return {
+      ...state,
+      player: {
+        ...state.player,
+        van: {
+          ...state.player.van,
+          fuel: Math.max(
+            state.player.van?.fuel ?? 0,
+            EXPEDITION_TOW_FUEL_RESTORED
+          ),
+          condition:
+            (state.player.van?.condition ?? 0) <= 0
+              ? 25
+              : (state.player.van?.condition ?? 100)
+        }
+      },
+      expedition: {
+        ...state.expedition,
+        insuranceClaimConsumed: true,
+        claimConsumed: true
+      }
+    }
+  }
+
+  if (claimType === 'technical') {
+    if (!targetGroup) return state
+    const tc = getExpeditionTechnicalCondition(state)
+    const nextTc: ExpeditionTechnicalCondition = {
+      ...tc,
+      [targetGroup]: 25
+    }
+    return {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        technicalCondition: nextTc,
+        insuranceClaimConsumed: true,
+        claimConsumed: true
+      }
+    }
+  }
+
+  return state
 }
 
 /**

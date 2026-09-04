@@ -244,7 +244,7 @@ export const prepareNextExpedition = (
  */
 export const resolveExpeditionCrisis = (
   state: GameState,
-  choice: 'refuel' | 'tow'
+  choice: 'refuel' | 'tow' | 'insurance_claim'
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RESOLVE_EXPEDITION_CRISIS }
@@ -392,6 +392,34 @@ export const executeExpeditionInspection = (
       ...(intent.repairTargetGroup
         ? { repairTargetGroup: intent.repairTargetGroup }
         : {}),
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action claiming insurance during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Insurance claim payload.
+ * @returns Typed `CLAIM_EXPEDITION_INSURANCE` action, or `null` when run is not active.
+ */
+export const claimExpeditionInsurance = (
+  state: GameState,
+  payload: {
+    claimType: 'vehicle' | 'technical'
+    targetGroup?: import('../types/expedition').ConditionGroup
+  }
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CLAIM_EXPEDITION_INSURANCE }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.CLAIM_EXPEDITION_INSURANCE,
+    payload: {
+      claimType: payload.claimType,
+      ...(payload.targetGroup ? { targetGroup: payload.targetGroup } : {}),
       expectedRouteStep: state.expedition.routeStep
     }
   }

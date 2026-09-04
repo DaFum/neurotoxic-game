@@ -258,7 +258,7 @@ export interface PrepareNextExpeditionPayload {
  */
 export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
-  choice: 'refuel' | 'tow'
+  choice: 'refuel' | 'tow' | 'insurance_claim'
   expectedRouteStep: number
 }
 
@@ -299,3 +299,9 @@ export interface ResolveExpeditionDefectPayload {
  */
 export type ExecuteExpeditionInspectionPayload =
   import('./expedition').ExpeditionInspectionIntent
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export type ClaimExpeditionInsurancePayload =
+  import('./expedition').ExpeditionInsuranceClaimIntent

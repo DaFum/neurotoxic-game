@@ -36,6 +36,7 @@ import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
 } from './cargo'
+import { getAvailableInsurancePolicyIds } from './insurance'
 import type { GameState } from '../../types'
 import type { LongTermAsset } from '../../types/assets'
 import type {
@@ -145,15 +146,6 @@ const getAvailableCrewIds = (_state: GameState): readonly string[] => []
  * @remarks G5 owns the starter-perk registry and extends this in place.
  */
 const getAvailableStarterPerkIds = (_state: GameState): readonly string[] => []
-
-/**
- * Insurance policy ids the player may commit.
- *
- * @remarks G2 owns insurance and extends this in place.
- */
-const getAvailableInsurancePolicyIds = (
-  _state: GameState
-): readonly string[] => []
 
 /**
  * Tour Pressure modifier ids the player may commit.
@@ -465,7 +457,9 @@ export const validateExpeditionBuildCommitment = (
   if (insurancePolicyId !== null) {
     if (
       typeof insurancePolicyId !== 'string' ||
-      !getAvailableInsurancePolicyIds(state).includes(insurancePolicyId)
+      !(getAvailableInsurancePolicyIds(state) as readonly string[]).includes(
+        insurancePolicyId
+      )
     ) {
       return reject('MALFORMED_CANDIDATE')
     }
