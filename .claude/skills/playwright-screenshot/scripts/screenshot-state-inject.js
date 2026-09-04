@@ -228,6 +228,7 @@ export const BASE_STATE = {
     rewardLedger: [],
     extractionWindowsSeen: [],
     pendingFailure: null,
+    unpaidDailyObligation: 0,
     outcome: null
   }
 }

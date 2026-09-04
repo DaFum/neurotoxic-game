@@ -20,10 +20,18 @@ import {
   shouldTriggerBankruptcy
 } from '../../utils/economy'
 import { getTotalDailyObligations } from '../../utils/assetSelectors'
-import { isFiniteNumber } from '../../utils/finiteNumber'
-import { getExpeditionSpendableCash } from './loadout'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
+import { canSpendExpeditionCash, getExpeditionSpendableCash } from './loadout'
+import { canClaimExpeditionInsurance } from './insurance'
+import {
+  EXPEDITION_CONDITION_GROUPS,
+  getExpeditionTechnicalCondition
+} from './condition'
+import { isExpeditionServiceLocation } from './repairs'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 import type { GameState } from '../../types'
 import type {
+  ConditionGroup,
   ExpeditionFailureChoiceId,
   ExpeditionFailureSignal,
   ExpeditionMap,
@@ -84,6 +92,18 @@ export const getExpeditionEconomyFailureSignal = (
   state: GameState
 ): ExpeditionFailureSignal | null => {
   if (state.expedition?.status !== 'active') return null
+  // A recorded shortfall is realized evidence, not a projection: the day tick
+  // already tried to pay and could not. It gets its own source so the crisis
+  // names the missed obligation rather than the balance, and it is checked
+  // first because `shouldTriggerBankruptcy` would not fire at all for a run
+  // whose obligations are small but still unpayable.
+  if (finiteNumberOr(state.expedition.unpaidDailyObligation, 0) > 0) {
+    return {
+      reason: 'bankruptcy',
+      sourceId: 'expedition_unpaid_obligation',
+      choices: ['accept_failure']
+    }
+  }
   const spendable = getExpeditionSpendableCash(state)
   if (!shouldTriggerBankruptcy(spendable, 0, getTotalDailyObligations(state))) {
     return null
@@ -138,6 +158,9 @@ export const getExpeditionMobilityFailureSignal = (
     choices.push('refuel')
   }
   if (spendable >= EXPEDITION_TOW_COST) choices.push('tow')
+  if (canClaimExpeditionInsurance(state, 'vehicle')) {
+    choices.push('insurance_claim')
+  }
   // `accept_failure` is unconditional, which is what guarantees no softlock:
   // a crisis always has at least one legal response.
   choices.push('accept_failure')
@@ -150,6 +173,139 @@ export const getExpeditionMobilityFailureSignal = (
         : 'expedition_route',
     choices
   }
+}
+
+/**
+ * Returns available technical recovery/termination controls for a condition group.
+ *
+ * @param state - Current game state.
+ * @param targetGroup - Target group to recover (or first disabled group).
+ * @returns Status of each potential recovery or termination control.
+ */
+export const getAvailableTechnicalRecoveryControls = (
+  state: GameState,
+  targetGroup?: ConditionGroup
+): {
+  fieldRepair: boolean
+  professionalRepair: boolean
+  cannibalize: boolean
+  insuranceClaim: boolean
+  salvageRights: boolean
+  acceptTechnicalFailure: boolean
+} => {
+  const tc = getExpeditionTechnicalCondition(state)
+  const group =
+    targetGroup ?? EXPEDITION_CONDITION_GROUPS.find(g => tc[g] === 0) ?? 'pa'
+
+  // Field repair requires at least one spare part in cargo
+  const spareParts = state.expedition?.cargo?.spareParts ?? 0
+  const fieldRepair = spareParts >= 1
+
+  // Professional repair requires service location and sufficient spendable cash
+  const isService = isExpeditionServiceLocation(state)
+  const rules = getEffectiveExpeditionRules(state)
+  const missing = Math.max(0, 100 - tc[group])
+  const basePrice = Math.ceil(missing * 10)
+  const proCost = Math.round(basePrice * rules.numeric.repairCostMultiplier)
+  const professionalRepair = isService && canSpendExpeditionCash(state, proCost)
+
+  // Cannibalize requires another group with condition >= 55
+  const otherGroups = EXPEDITION_CONDITION_GROUPS.filter(g => g !== group)
+  const cannibalize = otherGroups.some(other => tc[other] >= 55)
+
+  // Insurance claim requires policy covering technical and claim not yet consumed
+  const insuranceClaim = canClaimExpeditionInsurance(state, 'technical', group)
+
+  // G5 Salvage Rights when later available
+  const salvageRights = false
+
+  // Accept technical failure is always an available termination control when any group is disabled
+  const acceptTechnicalFailure = EXPEDITION_CONDITION_GROUPS.some(
+    g => tc[g] === 0
+  )
+
+  return {
+    fieldRepair,
+    professionalRepair,
+    cannibalize,
+    insuranceClaim,
+    salvageRights,
+    acceptTechnicalFailure
+  }
+}
+
+/**
+ * Evaluates whether legal technical recovery exists for a disabled equipment group.
+ *
+ * @param state - Current game state.
+ * @param targetGroup - Specific group or all disabled groups if omitted.
+ * @returns True if at least one recovery option is available.
+ */
+export const hasLegalTechnicalRecovery = (
+  state: GameState,
+  targetGroup?: ConditionGroup
+): boolean => {
+  const tc = getExpeditionTechnicalCondition(state)
+  const groupsToCheck: ConditionGroup[] = targetGroup
+    ? [targetGroup]
+    : EXPEDITION_CONDITION_GROUPS.filter(g => tc[g] === 0)
+
+  if (groupsToCheck.length === 0) return true
+
+  for (const group of groupsToCheck) {
+    const controls = getAvailableTechnicalRecoveryControls(state, group)
+    const hasRecovery =
+      controls.fieldRepair ||
+      controls.professionalRepair ||
+      controls.cannibalize ||
+      controls.insuranceClaim ||
+      controls.salvageRights
+    if (!hasRecovery) return false
+  }
+
+  return true
+}
+
+/**
+ * Derives the Technical failure signal.
+ *
+ * @param state - Current game state.
+ * @returns The signal, or `null` when healthy or recoverable without explicit acceptance.
+ *
+ * @remarks
+ * Becomes true only after explicit `accept_failure` (or `technicalFailureAccepted`)
+ * or when the current canonical crisis has no legal recovery and the player confirms termination.
+ */
+export const getTechnicalFailureSignal = (
+  state: GameState
+): ExpeditionFailureSignal | null => {
+  if (state.expedition?.status !== 'active') return null
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return null
+
+  const disabledGroup = EXPEDITION_CONDITION_GROUPS.find(
+    group => tc[group] === 0
+  )
+  if (!disabledGroup) return null
+
+  const explicitlyAccepted = Boolean(state.expedition.technicalFailureAccepted)
+  const hasRecovery = hasLegalTechnicalRecovery(state, disabledGroup)
+
+  if (explicitlyAccepted || !hasRecovery) {
+    const choices: ExpeditionFailureChoiceId[] = []
+    if (canClaimExpeditionInsurance(state, 'technical', disabledGroup)) {
+      choices.push('insurance_claim')
+    }
+    choices.push('accept_failure')
+
+    return {
+      reason: 'technical_shutdown',
+      sourceId: disabledGroup,
+      choices
+    }
+  }
+
+  return null
 }
 
 /**
@@ -171,6 +327,8 @@ export const composeExpeditionFailureSignal = (
   const signals: ExpeditionFailureSignal[] = []
   const economy = getExpeditionEconomyFailureSignal(state)
   if (economy) signals.push(economy)
+  const technical = getTechnicalFailureSignal(state)
+  if (technical) signals.push(technical)
   const mobility = getExpeditionMobilityFailureSignal(state)
   if (mobility) signals.push(mobility)
   for (const signal of laterGateSignals) {

@@ -14,9 +14,13 @@ import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import type { GameAction, GameState } from '../types'
 import type {
+  ExpeditionEventResultId,
+  ExpeditionInspectionIntent,
   ExpeditionIntelSource,
   ExpeditionLoadout,
-  ExpeditionRewardSourceType
+  ExpeditionRepairIntent,
+  ExpeditionRewardSourceType,
+  HiddenDefectTrigger
 } from '../types/expedition'
 
 /**
@@ -241,7 +245,7 @@ export const prepareNextExpedition = (
  */
 export const resolveExpeditionCrisis = (
   state: GameState,
-  choice: 'refuel' | 'tow'
+  choice: 'refuel' | 'tow' | 'insurance_claim'
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.RESOLVE_EXPEDITION_CRISIS }
@@ -253,6 +257,220 @@ export const resolveExpeditionCrisis = (
     payload: {
       pendingFailureId: pending.id,
       choice,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action executing an equipment repair during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param intent - Candidate repair intent.
+ * @returns Typed `EXECUTE_EXPEDITION_REPAIR` action, or `null` when the run is not active.
+ */
+export const executeExpeditionRepair = (
+  state: GameState,
+  intent: ExpeditionRepairIntent
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.EXECUTE_EXPEDITION_REPAIR }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.EXECUTE_EXPEDITION_REPAIR,
+    payload: {
+      mode: intent.mode,
+      targetGroup: intent.targetGroup,
+      ...(intent.sourceGroup ? { sourceGroup: intent.sourceGroup } : {}),
+      ...(intent.quality !== undefined ? { quality: intent.quality } : {}),
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action revealing a hidden equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param source - Revelation source description.
+ * @returns Typed `REVEAL_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const revealExpeditionDefect = (
+  state: GameState,
+  defectId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.REVEAL_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.REVEAL_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action triggering an equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param trigger - Trigger phase.
+ * @returns Typed `TRIGGER_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const triggerExpeditionDefect = (
+  state: GameState,
+  defectId: string,
+  trigger: HiddenDefectTrigger
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.TRIGGER_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.TRIGGER_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      trigger,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action resolving an equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param repairResolutionId - Associated repair resolution id.
+ * @returns Typed `RESOLVE_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const resolveExpeditionDefect = (
+  state: GameState,
+  defectId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.RESOLVE_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action executing an equipment inspection during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param intent - Candidate inspection intent.
+ * @returns Typed `EXECUTE_EXPEDITION_INSPECTION` action, or `null` when run is not active.
+ */
+export const executeExpeditionInspection = (
+  state: GameState,
+  intent: ExpeditionInspectionIntent
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.EXECUTE_EXPEDITION_INSPECTION }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.EXECUTE_EXPEDITION_INSPECTION,
+    payload: {
+      mode: intent.mode,
+      ...(intent.crewId ? { crewId: intent.crewId } : {}),
+      ...(intent.repairTargetGroup
+        ? { repairTargetGroup: intent.repairTargetGroup }
+        : {}),
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action claiming insurance during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Insurance claim payload.
+ * @returns Typed `CLAIM_EXPEDITION_INSURANCE` action, or `null` when run is not active.
+ */
+export const claimExpeditionInsurance = (
+  state: GameState,
+  payload: import('../types/expedition').ExpeditionInsuranceClaimInput
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CLAIM_EXPEDITION_INSURANCE }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.CLAIM_EXPEDITION_INSURANCE,
+    payload: {
+      claimType: payload.claimType,
+      ...(payload.targetGroup ? { targetGroup: payload.targetGroup } : {}),
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action accepting an explicit technical failure on zero-Condition equipment.
+ *
+ * @param state - Current game state.
+ * @returns Typed `ACCEPT_EXPEDITION_TECHNICAL_FAILURE` action, or `null` when not applicable.
+ */
+export const acceptExpeditionTechnicalFailure = (
+  state: GameState
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return null
+  const hasDisabled = tc.pa === 0 || tc.instruments === 0 || tc.stageGear === 0
+  if (!hasDisabled) return null
+
+  return {
+    type: ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE,
+    payload: {
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action applying the Expedition results a resolved event requested.
+ *
+ * @param state - Current game state, read for the route-step stale guard.
+ * @param resultIds - Known result ids collected from the event delta.
+ * @returns Typed `APPLY_EXPEDITION_EVENT_DELTA` action, or `null` when the run
+ * is not active or the event named no known result.
+ *
+ * @remarks
+ * Carries ids only. The event engine has no business supplying Heat, Condition
+ * or cargo numbers, and the reducer looks every effect up in the Expedition's
+ * own registry regardless.
+ */
+export const applyExpeditionEventDelta = (
+  state: GameState,
+  resultIds: readonly ExpeditionEventResultId[]
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.APPLY_EXPEDITION_EVENT_DELTA }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  if (resultIds.length === 0) return null
+  return {
+    type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+    payload: {
+      resultIds: [...resultIds],
       expectedRouteStep: state.expedition.routeStep
     }
   }

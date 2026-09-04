@@ -251,7 +251,8 @@ export const useHandleHit = ({
 
         const { nextOverload, didToxicModeTrigger } = calculateHitOverload(
           currentOverload,
-          toxicModeActive
+          toxicModeActive,
+          state.modifiers.expeditionCondition?.comboRecoveryMultiplier
         )
 
         const peakCandidate = Math.min(currentOverload + 4, 100)

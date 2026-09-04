@@ -3,33 +3,10 @@
  */
 
 import { memo } from 'react'
+import i18n from '../../i18n'
+import { formatCurrency } from '../../utils/numberUtils'
 import type { TranslationCallback } from '../../types/callbacks'
-import type {
-  ExpeditionNodeClass,
-  ExpeditionSpecialNodeSubtype,
-  ExpeditionTier,
-  NodeIntelLevel
-} from '../../types/expedition'
-
-/**
- * The projection a node's current intel level entitles the player to see.
- */
-export interface ExpeditionNodeFog {
-  nodeClass: ExpeditionNodeClass
-  specialSubtype: ExpeditionSpecialNodeSubtype | null
-  dangerTier: ExpeditionTier
-  rewardTier: ExpeditionTier
-  isExtractionWindow: boolean
-  intelLevel: NodeIntelLevel
-  /** Exact payout, only present once intel reaches level 1. */
-  exactPayout: number | null
-  /** Exact wear cost, only present once intel reaches level 1. */
-  exactWearCost: number | null
-  /** Event/rival identity, only present at level 2. */
-  revealedIdentity: string | null
-  /** Rare reward this node yields, only present once intel reaches level 1. */
-  rareRewardId: string | null
-}
+import type { ExpeditionNodeFog, ExpeditionTier } from '../../types/expedition'
 
 const TIER_COLORS: Record<ExpeditionTier, string> = {
   low: 'text-ash-gray',
@@ -97,8 +74,7 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
           <span className='text-star-white'>
             {t('ui:expedition.node.payout')}
           </span>{' '}
-          {fog.exactPayout}
-          {'€'}
+          {formatCurrency(fog.exactPayout, i18n.language)}
           {fog.exactWearCost === null ? null : (
             <>
               {' | '}
@@ -117,7 +93,7 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
         >
           {t('ui:expedition.node.rare', {
             name: t(`ui:expedition.reward.${fog.rareRewardId}`, {
-              defaultValue: fog.rareRewardId
+              defaultValue: t('ui:expedition.reward.unknown')
             })
           })}
         </div>
@@ -127,7 +103,9 @@ export const ExpeditionNodeFogBadge = memo(function ExpeditionNodeFogBadge({
           className='text-void-purple'
           data-testid='expedition-node-fog-identity'
         >
-          {fog.revealedIdentity}
+          {t(`ui:expedition.node.identity.${fog.revealedIdentity}`, {
+            defaultValue: t('ui:expedition.node.identity.unknown')
+          })}
         </div>
       ) : null}
     </div>

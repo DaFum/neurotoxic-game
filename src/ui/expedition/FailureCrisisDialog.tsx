@@ -30,6 +30,7 @@ const CHOICE_VARIANTS: Record<
 > = {
   refuel: 'safe',
   tow: 'safe',
+  insurance_claim: 'safe',
   extract: 'risk',
   accept_failure: 'danger'
 }
@@ -67,6 +68,10 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     () => resolveExpeditionCrisis('tow'),
     [resolveExpeditionCrisis]
   )
+  const handleInsuranceClaim = useCallback(
+    () => resolveExpeditionCrisis('insurance_claim'),
+    [resolveExpeditionCrisis]
+  )
 
   if (!pendingFailure) return null
 
@@ -76,6 +81,7 @@ export const FailureCrisisDialog = memo(function FailureCrisisDialog({
     if (choice === 'accept_failure') return handleAccept
     if (choice === 'refuel') return handleRefuel
     if (choice === 'tow') return handleTow
+    if (choice === 'insurance_claim') return handleInsuranceClaim
     return onExtract
   }
 

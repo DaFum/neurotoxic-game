@@ -75,11 +75,16 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   intelGrants: [],
   scoutReconUsedRouteSteps: [],
   loadout: null,
+  insurancePolicyId: null,
+  insuranceClaimConsumed: false,
+  claimConsumed: false,
+  technicalFailureAccepted: false,
   startingMoney: 0,
   startingFame: 0,
   protectedCareerCash: 0,
   rewardLedger: [],
   extractionWindowsSeen: [],
   pendingFailure: null,
+  unpaidDailyObligation: 0,
   outcome: null
 })

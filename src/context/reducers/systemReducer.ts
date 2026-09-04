@@ -79,6 +79,10 @@ import {
   sanitizeRunSeed
 } from './assetSanitizers'
 import { sanitizeExpeditionState } from './expeditionSanitizers'
+import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
+import { buildExpeditionMap } from '../../domain/expedition/map'
+import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
 
 /**
@@ -260,14 +264,53 @@ export const handleLoadGame = (
     rngSeed: sanitizeRngSeed(loadedState.rngSeed),
     runSeed: sanitizeRunSeed(loadedState.runSeed),
     rivalBand: sanitizeRivalBand(loadedState.rivalBand),
-    expedition: sanitizeExpeditionState(loadedState.expedition)
+    // A run's entire route is derived from `runSeed`, and `sanitizeRunSeed`
+    // mints a fresh one for a save that lost or corrupted it. Keeping the run
+    // in that case would silently move it onto a different map while its
+    // visited nodes and route step still describe the old one, so a run
+    // without its seed collapses to idle the same way one without its
+    // committed build does.
+    expedition:
+      isFiniteNumber(loadedState.runSeed) &&
+      loadedState.runSeed === (Math.trunc(loadedState.runSeed) >>> 0)
+        ? sanitizeExpeditionState(loadedState.expedition, loadedState.runSeed)
+        : createDefaultExpeditionState()
+  }
+
+  // Rebuild canonical map and current node if there is an active/finalized expedition
+  let expeditionGameMap: GameMap | undefined
+  let expeditionCurrentNodeId: string | undefined
+  if (
+    safeState.expedition &&
+    safeState.expedition.status !== 'idle' &&
+    safeState.expedition.status !== 'prepared' &&
+    safeState.expedition.loadout
+  ) {
+    const canonicalMap = buildExpeditionMap(
+      safeState.runSeed,
+      safeState.expedition.loadout.tourTypeId,
+      safeState.expedition.loadout.regionId
+    )
+    expeditionGameMap = structuredClone({
+      nodes: canonicalMap.nodes,
+      connections: canonicalMap.connections
+    })
+    const lastVisited =
+      safeState.expedition.visitedNodeIds[
+        safeState.expedition.visitedNodeIds.length - 1
+      ]
+    if (lastVisited) {
+      expeditionCurrentNodeId = lastVisited
+    }
   }
 
   // Apply venue migrations using spreads
   const migratedState: GameState = {
     ...safeState,
+    ...(expeditionGameMap ? { gameMap: expeditionGameMap } : {}),
     player: {
       ...safeState.player,
+      ...(expeditionCurrentNodeId ? { currentNodeId: expeditionCurrentNodeId } : {}),
       location:
         typeof safeState.player.location === 'string'
           ? migratePlayerLocation(safeState.player.location)
@@ -529,6 +572,13 @@ const processContrabandExpiry = (band: BandState): BandState => {
 }
 
 const applyDailyBankruptcyCheck = (state: GameState): GameState => {
+  // An active run owns its own insolvency: the day tick records what it could
+  // not pay and the Expedition raises a source-derived crisis with an
+  // accept/extract decision attached. Sending the Career to GAMEOVER here
+  // would make that dialog unreachable and take the decision away. The Career
+  // check resumes the moment the run settles.
+  if (state.expedition?.status === 'active') return state
+
   const totalDailyObligations = getTotalDailyObligations(state)
   // No gig income during day advance; obligations go through the dedicated
   // third parameter instead of being smuggled through netIncome.
@@ -563,6 +613,15 @@ export const handleAdvanceDay = (
     rng?: () => number
   }
 ): GameState => {
+  // Read before the ticks below: asset upkeep and liability instalments are
+  // mandatory costs too, and they are settled by their own authorities, which
+  // know nothing about the run's protected slice. Whatever they take out of it
+  // has to be accounted for rather than silently absorbed, so the floor as it
+  // stood before they ran is captured here.
+  const expeditionFloorBeforeTicks = Math.min(
+    finiteNumberOr(state.player.money, 0),
+    getExpeditionDayPolicy(state).protectedCareerCash
+  )
   let nextStatePre = processAssetTick(state)
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
@@ -663,10 +722,15 @@ export const handleAdvanceDay = (
           if (!Number.isFinite(roll)) return 1
           return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
         }
-  const { player, band, social, pendingFlags } = calculateDailyUpdates(
-    state,
-    rng
+  // How far the mandatory upstream ticks pushed the balance past the floor.
+  const expeditionUpstreamShortfall = Math.max(
+    0,
+    expeditionFloorBeforeTicks - finiteNumberOr(state.player.money, 0)
   )
+  const { player, band, social, pendingFlags, expeditionUnpaidObligation } =
+    calculateDailyUpdates(state, rng)
+  const unpaidDailyObligation =
+    expeditionUnpaidObligation + expeditionUpstreamShortfall
 
   // Reset daily event counter immutably
   const nextPlayer = { ...player, eventsTriggeredToday: 0 }
@@ -753,6 +817,22 @@ export const handleAdvanceDay = (
     eventCooldowns: activeEventCooldowns,
     questCooldowns: activeQuestCooldowns,
     toasts: traitResult.toasts
+  }
+
+  // Record what the day's mandatory obligations could not pay from the run's
+  // spendable Cash. Written even when the amount is 0 so a later solvent day
+  // clears a carried shortfall instead of leaving the crisis latched.
+  if (
+    state.expedition &&
+    state.expedition.unpaidDailyObligation !== unpaidDailyObligation
+  ) {
+    nextState = {
+      ...nextState,
+      expedition: {
+        ...state.expedition,
+        unpaidDailyObligation
+      }
+    }
   }
 
   nextState = QuestLifecycle.checkDeadlines(nextState)

@@ -124,7 +124,7 @@ export interface ExpeditionLoadout {
   cargo: { spareParts: number; supplies: number }
   starterPerkId: string | null
   nativeContracts: ExpeditionNativeContractCommitment[]
-  insurancePolicyId: string | null
+  insurancePolicyId: ExpeditionInsurancePolicyId | null
   pressureModifierIds: string[]
   build: ExpeditionBuildCommitment
 }
@@ -262,6 +262,48 @@ export interface ExpeditionMap {
 }
 
 /**
+ * Inputs describing one travel leg, gathered by the travel reducer.
+ *
+ * @remarks
+ * The plan calls this `RouteContext`; it is named for its domain here so it
+ * does not read as a generic map contract next to the rest of `src/types`.
+ *
+ * `distance` and `baseFuelLiters` come from the canonical
+ * `calculateTravelExpenses` helper, and the two `minigame*` fields from
+ * `calculateTravelMinigameResult`. Keeping them as inputs rather than
+ * recomputing them is what makes the settlement a single pass over numbers the
+ * existing travel path already owns.
+ */
+export interface ExpeditionRouteContext {
+  /** Node the leg arrives at; its declared wear cost is read from the route. */
+  targetNodeId: string
+  /** Base leg distance in km. */
+  distance: number
+  /** Base litres the canonical fuel helper computed for the leg. */
+  baseFuelLiters: number
+  /** Litres the travel minigame's own result recovered. */
+  minigameFuelBonus?: number
+  /** Vehicle damage the travel minigame's own result produced. */
+  minigameConditionLoss?: number
+}
+
+/**
+ * The once-only cost of one travel leg.
+ *
+ * @remarks
+ * `vehicleWear` is committed to the canonical `player.van.condition` only. It
+ * is never copied into the Expedition's technical Condition: those are two
+ * separate failure axes, and charging one trip to both would double-bill the
+ * player for a single decision.
+ */
+export interface ExpeditionTravelSettlement {
+  /** Net litres to deduct; negative when minigame pickups exceeded the burn. */
+  fuelConsumed: number
+  /** Non-negative points of wear for `player.van.condition`. */
+  vehicleWear: number
+}
+
+/**
  * Canonical source families that may produce a rare Expedition reward.
  */
 export type ExpeditionRewardSourceType =
@@ -324,7 +366,7 @@ export type ExpeditionFailureReason =
  * Legal responses a failure crisis may expose.
  */
 export type ExpeditionFailureChoiceId =
-  'refuel' | 'tow' | 'extract' | 'accept_failure'
+  'refuel' | 'tow' | 'insurance_claim' | 'extract' | 'accept_failure'
 
 /**
  * A raised, not-yet-terminal failure crisis with its legal recovery choices.
@@ -378,10 +420,10 @@ export interface ExpeditionOutcome {
 }
 
 /**
- * Run-scoped Expedition orchestration state.
+ * Run-scoped Expedition state.
  *
  * @remarks
- * This slice stores orchestration, immutable run commitments, Intel/reward and
+ * Every property belongs to the active or prepared run: status, route progress,
  * failure evidence, and the finalized outcome only. `player`, `band`, assets,
  * Social and the root `GameState.runSeed` remain the canonical owners of
  * everything else.
@@ -402,5 +444,352 @@ export interface ExpeditionState {
   rewardLedger: ExpeditionRewardLedgerEntry[]
   extractionWindowsSeen: number[]
   pendingFailure: PendingExpeditionFailure | null
+  /**
+   * Mandatory daily obligation a previous day could not pay from the run's
+   * spendable Cash.
+   *
+   * @remarks
+   * The protected Career Cash slice is never spent on obligations, so a
+   * shortfall has to be recorded rather than absorbed. This is the evidence the
+   * Economic failure axis derives its crisis from, and it clears as soon as a
+   * later day can pay it.
+   */
+  unpaidDailyObligation: number
   outcome: ExpeditionOutcome | null
+  cargo?: ExpeditionCargoState | null
+  technicalCondition?: ExpeditionTechnicalCondition | null
+  insurancePolicyId?: ExpeditionInsurancePolicyId | null
+  insuranceClaimConsumed?: boolean
+  claimConsumed?: boolean
+  technicalFailureAccepted?: boolean
+}
+
+/**
+ * Physical equipment groups tracked by Expedition technical condition.
+ */
+export type ConditionGroup = 'pa' | 'instruments' | 'stageGear'
+
+/**
+ * Lifecycle status of a hidden technical defect.
+ */
+export type HiddenDefectStatus =
+  'hidden' | 'revealed' | 'triggered' | 'resolved'
+
+/**
+ * Triggers that can activate a hidden technical defect during tour progression.
+ */
+export type HiddenDefectTrigger = 'post_travel' | 'pre_gig' | 'post_gig'
+
+/**
+ * State representing an undiscovered or revealed defect on tour equipment.
+ */
+export interface HiddenDefectState {
+  id: string
+  group: ConditionGroup
+  severity: 1 | 2 | 3
+  status: HiddenDefectStatus
+  source: 'field_repair' | 'improvise' | 'critical_wear'
+  createdAtRouteStep: number
+  triggerAt: HiddenDefectTrigger
+  triggerRouteStep: number
+}
+
+/**
+ * Technical condition of the band's equipment during an Expedition.
+ */
+export interface ExpeditionTechnicalCondition {
+  pa: number
+  instruments: number
+  stageGear: number
+  defects: HiddenDefectState[]
+}
+
+/**
+ * Canonical performance profile modifiers derived from technical condition.
+ */
+export interface ExpeditionConditionPerformanceProfile {
+  audioHazardLevel: number
+  timingMultiplier: number
+  missStaminaMultiplier: number
+  comboRecoveryMultiplier: number
+  disabledGroups: ConditionGroup[]
+}
+
+/**
+ * Valid repair modes available during an Expedition.
+ */
+export type ExpeditionRepairMode =
+  'field' | 'professional' | 'improvise' | 'cannibalize'
+
+/**
+ * Intent payload to execute a repair on equipment during an Expedition.
+ */
+export interface ExpeditionRepairIntent {
+  mode: ExpeditionRepairMode
+  targetGroup: ConditionGroup
+  sourceGroup?: ConditionGroup
+  quality?: number
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of a resolved repair action.
+ */
+export interface ExpeditionRepairResult {
+  targetRestore: number
+  sourceDamage: number
+  moneyCost: number
+  sparePartsCost: number
+  createsHiddenDefect: boolean
+  resolvesTargetDefects: boolean
+}
+
+/**
+ * Inspection modes available during an active Expedition run.
+ */
+export type ExpeditionInspectionMode =
+  'quick_check' | 'crew_inspection' | 'module_inspection' | 'full_service'
+
+/**
+ * Player intent to inspect equipment.
+ */
+export interface ExpeditionInspectionIntent {
+  mode: ExpeditionInspectionMode
+  crewId?: string
+  repairTargetGroup?: ConditionGroup
+  expectedRouteStep: number
+}
+
+/**
+ * Pure outcome of an equipment inspection.
+ */
+export interface ExpeditionInspectionResult {
+  mode: ExpeditionInspectionMode
+  diagnosticFee: number
+  conditionBands?: Record<
+    ConditionGroup,
+    'optimal' | 'degraded' | 'critical' | 'disabled'
+  >
+  revealedDefectIds: string[]
+  professionalRepair?: ExpeditionRepairResult
+}
+
+/**
+ * Pure resolution outcome of an inspection intent.
+ */
+export type ExpeditionInspectionResolution =
+  | { ok: true; result: ExpeditionInspectionResult }
+  | { ok: false; reason: string }
+
+/**
+ * Identifier of supported Expedition insurance policies.
+ */
+export type ExpeditionInsurancePolicyId = 'roadside' | 'equipment' | 'touring'
+
+/**
+ * Failure classes covered by an Expedition insurance policy.
+ */
+export type ExpeditionInsuranceCoverage = 'vehicle' | 'technical' | 'either'
+
+/**
+ * Optional insurance policy available as a pre-tour risk sink.
+ */
+export interface ExpeditionInsurancePolicy {
+  id: ExpeditionInsurancePolicyId
+  premium: number
+  coverage: ExpeditionInsuranceCoverage
+}
+
+/**
+ * Type of rescue requested in an insurance claim.
+ */
+export type ExpeditionInsuranceClaimType = 'vehicle' | 'technical'
+
+/**
+ * Input for claiming insurance during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimInput {
+  claimType: ExpeditionInsuranceClaimType
+  targetGroup?: ConditionGroup
+}
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export interface ExpeditionInsuranceClaimIntent
+  extends ExpeditionInsuranceClaimInput {
+  expectedRouteStep: number
+}
+
+/**
+ * Manifest representing the real physical items carried in the vehicle cargo.
+ */
+export interface ExpeditionCargoState {
+  spareParts: number
+  supplies: number
+  technicalGearItemIds: string[]
+  merch: ExpeditionMerchSelection[]
+  contraband: ExpeditionContrabandSelection[]
+}
+
+/**
+ * Breakdown of visible and hidden cargo capacities and slot usage.
+ */
+export interface ExpeditionCargoCapacity {
+  visibleCapacity: number
+  hiddenCapacity: number
+  visibleSlotsUsed: number
+  hiddenSlotsUsed: number
+  availableVisibleSlots: number
+  availableHiddenSlots: number
+}
+
+/**
+ * Unified view of active cargo state combined with capacity breakdown.
+ */
+export interface ExpeditionCargoView
+  extends ExpeditionCargoState, ExpeditionCargoCapacity {}
+
+/**
+ * Chassis archetypes for Expedition runs.
+ */
+export type ExpeditionChassisArchetype =
+  'compact' | 'diy' | 'coach' | 'armored_hauler'
+
+/**
+ * Profile defining mechanical adjustments for a chassis archetype.
+ */
+export interface ExpeditionChassisProfile {
+  archetype: ExpeditionChassisArchetype
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  cargoCapacityBonus: number
+  fieldRepairEfficiency: number
+  crewStressMultiplier: number
+  authorityEventWeightMultiplier: number
+  hiddenContrabandCapacity: number
+}
+
+/**
+ * Profile defining mechanical adjustments provided by an installed vehicle module.
+ */
+export interface ExpeditionVehicleModuleProfile {
+  cargoCapacityBonus: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  inspectionLevel: 0 | 1 | 2
+  authorityIntelBonus: 0 | 1
+  hiddenContrabandCapacity: number
+  restStressRecoveryBonus: number
+}
+
+/**
+ * Numeric tuning rules resolved for the current Expedition.
+ */
+export interface ExpeditionNumericRules {
+  startingSpareParts: number
+  startingHeat: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  technicalWearMultiplier: number
+  repairCostMultiplier: number
+  fieldRepairEfficiency: number
+  gigRewardMultiplier: number
+  contractRewardMultiplier: number
+  contractPenaltyMultiplier: number
+  pressureRewardMultiplier: number
+  heatGainMultiplier: number
+  exposureGainMultiplier: number
+  crewStressMultiplier: number
+  extractionRetentionMultiplier: number
+  rareRewardMultiplier: number
+  completionMultiplier: number
+  rivalEventWeightMultiplier: number
+  authorityEventWeightMultiplier: number
+  rivalRewardMultiplier: number
+  finaleRewardMultiplier: number
+  nodeIntelFloor: 0 | 1 | 2
+  explicitExtractionRareCarrySlots: number
+}
+
+/**
+ * Discrete rule flags resolved for the current Expedition.
+ */
+export interface ExpeditionRuleFlags {
+  fieldRepairNoHiddenDefect: boolean
+  fieldRepairMinimumCondition: number
+  severeReliefBypass: boolean
+}
+
+/**
+ * Complete composable effective rules governing the active Expedition.
+ */
+export interface EffectiveExpeditionRules {
+  numeric: ExpeditionNumericRules
+  flags: ExpeditionRuleFlags
+  legendary: Record<string, boolean>
+}
+
+/**
+ * Result ids a declarative event may name to affect the active Expedition.
+ *
+ * @remarks
+ * This is the whole vocabulary an event has: the actual Heat, Condition and
+ * cargo numbers live in the Expedition's own registry, so authored content can
+ * request an outcome but never author a value.
+ */
+export type ExpeditionEventResultId =
+  | 'equipment_scuffed'
+  | 'pa_overloaded'
+  | 'spare_parts_scavenged'
+  | 'supplies_spoiled'
+  | 'attention_drawn'
+  | 'attention_faded'
+
+/**
+ * What one known event result does to the run.
+ */
+export interface ExpeditionEventResultEffect {
+  /** Points of technical wear per equipment group. */
+  conditionWear?: { pa: number; instruments: number; stageGear: number }
+  /** Signed change to consumable cargo; gains stay bounded by capacity. */
+  cargoDelta?: { spareParts?: number; supplies?: number }
+  /** Signed Heat change, applied through the single Heat write point. */
+  heat?: number
+}
+
+/**
+ * Sanitized Expedition envelope an event delta may carry.
+ *
+ * @remarks
+ * Deliberately holds ids only. A numeric field here would be a caller-supplied
+ * state change, which is exactly what the envelope exists to prevent.
+ */
+export interface ExpeditionEventIntent {
+  resultIds: ExpeditionEventResultId[]
+}
+
+/**
+ * The projection a node's current intel level entitles the player to see.
+ *
+ * @remarks
+ * Lives here rather than beside the badge that renders it: the Fog projection
+ * is produced in the domain and consumed by several map components, so a UI
+ * module owning the contract would make the domain depend on the view.
+ */
+export interface ExpeditionNodeFog {
+  nodeClass: ExpeditionNodeClass
+  specialSubtype: ExpeditionSpecialNodeSubtype | null
+  dangerTier: ExpeditionTier
+  rewardTier: ExpeditionTier
+  isExtractionWindow: boolean
+  intelLevel: NodeIntelLevel
+  /** Exact payout, only present once intel reaches level 1. */
+  exactPayout: number | null
+  /** Exact wear cost, only present once intel reaches level 1. */
+  exactWearCost: number | null
+  /** Event/rival identity, only present at level 2. */
+  revealedIdentity: string | null
+  /** Rare reward this node yields, only present once intel reaches level 1. */
+  rareRewardId: string | null
 }

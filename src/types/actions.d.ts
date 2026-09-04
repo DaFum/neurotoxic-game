@@ -1,4 +1,5 @@
 import type { EventDelta } from './events'
+import type { ExpeditionRepairIntent, HiddenDefectTrigger } from './expedition'
 
 /**
  * Payload produced when the tourbus travel minigame finishes.
@@ -257,6 +258,68 @@ export interface PrepareNextExpeditionPayload {
  */
 export interface ResolveExpeditionCrisisPayload {
   pendingFailureId: string
-  choice: 'refuel' | 'tow'
+  choice: 'refuel' | 'tow' | 'insurance_claim'
+  expectedRouteStep: number
+}
+
+/**
+ * Payload executing a repair on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent
+
+/**
+ * Payload revealing a hidden equipment defect during an active Expedition run.
+ */
+export interface RevealExpeditionDefectPayload {
+  defectId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload triggering an equipment defect during an active Expedition run.
+ */
+export interface TriggerExpeditionDefectPayload {
+  defectId: string
+  trigger: HiddenDefectTrigger
+  expectedRouteStep: number
+}
+
+/**
+ * Payload resolving an equipment defect during an active Expedition run.
+ */
+export interface ResolveExpeditionDefectPayload {
+  defectId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload executing an inspection on equipment during an active Expedition run.
+ */
+export type ExecuteExpeditionInspectionPayload =
+  import('./expedition').ExpeditionInspectionIntent
+
+/**
+ * Payload executing an insurance claim during an active Expedition run.
+ */
+export type ClaimExpeditionInsurancePayload =
+  import('./expedition').ExpeditionInsuranceClaimIntent
+
+/**
+ * Payload accepting an explicit technical failure on equipment.
+ */
+export interface AcceptExpeditionTechnicalFailurePayload {
+  expectedRouteStep: number
+}
+
+/**
+ * Payload applying the Expedition results a resolved event requested.
+ *
+ * @remarks
+ * Ids only, plus the usual stale guard. The reducer re-filters the ids and
+ * looks every effect up in the Expedition's own registry, so this payload can
+ * request an outcome but never carry the numbers for it.
+ */
+export interface ApplyExpeditionEventDeltaPayload {
+  resultIds: import('./expedition').ExpeditionEventResultId[]
   expectedRouteStep: number
 }

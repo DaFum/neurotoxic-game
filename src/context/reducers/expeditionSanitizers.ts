@@ -17,13 +17,16 @@ import {
   sanitizeStringArray
 } from '../../utils/objectUtils'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { getExpeditionInsurancePolicy } from '../../domain/expedition/insurance'
 import {
   buildExpeditionRewardEntryId,
   isExpeditionRewardSecuredOnEarn,
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
+import { buildExpeditionMap } from '../../domain/expedition/map'
 import type {
   ExpeditionBuildCommitment,
+  ExpeditionCargoState,
   ExpeditionContrabandSelection,
   ExpeditionEquipmentCommitment,
   ExpeditionFailureChoiceId,
@@ -37,6 +40,8 @@ import type {
   ExpeditionSettlement,
   ExpeditionState,
   ExpeditionStatus,
+  ExpeditionTechnicalCondition,
+  HiddenDefectState,
   NodeIntelLevel,
   PendingExpeditionFailure
 } from '../../types/expedition'
@@ -66,7 +71,7 @@ const FAILURE_REASONS: ReadonlySet<string> = new Set<ExpeditionFailureReason>([
 ])
 
 const FAILURE_CHOICES: ReadonlySet<string> = new Set<ExpeditionFailureChoiceId>(
-  ['refuel', 'tow', 'extract', 'accept_failure']
+  ['refuel', 'tow', 'insurance_claim', 'extract', 'accept_failure']
 )
 
 const OUTCOME_KINDS: ReadonlySet<string> = new Set<ExpeditionOutcome['kind']>([
@@ -335,7 +340,9 @@ const sanitizeExpeditionLoadout = (
     },
     starterPerkId: readString(value, 'starterPerkId'),
     nativeContracts: sanitizeNativeContracts(value.nativeContracts),
-    insurancePolicyId: readString(value, 'insurancePolicyId'),
+    insurancePolicyId:
+      getExpeditionInsurancePolicy(readString(value, 'insurancePolicyId'))
+        ?.id ?? null,
     pressureModifierIds: sanitizeUniqueStrings(value.pressureModifierIds),
     build: sanitizeBuildCommitment(value.build)
   }
@@ -418,6 +425,103 @@ const sanitizeOutcome = (value: unknown): ExpeditionOutcome | null => {
 }
 
 /**
+ * Sanitizes the persisted Expedition cargo slice.
+ */
+const sanitizeExpeditionCargo = (
+  value: unknown
+): ExpeditionCargoState | null => {
+  if (!isLooseRecord(value)) return null
+  const spareParts = readCount(value, 'spareParts', 0)
+  const supplies = readCount(value, 'supplies', 0)
+  const technicalGearItemIds = sanitizeUniqueStrings(value.technicalGearItemIds)
+  const merch = sanitizeMerchSelections(value.merch)
+  const contraband = sanitizeContrabandSelections(value.contraband)
+  return {
+    spareParts,
+    supplies,
+    technicalGearItemIds,
+    merch,
+    contraband
+  }
+}
+
+/**
+ * Sanitizes the persisted Expedition technical condition slice.
+ */
+const sanitizeExpeditionTechnicalCondition = (
+  value: unknown
+): ExpeditionTechnicalCondition | null => {
+  if (!isLooseRecord(value)) return null
+  const pa = readCount(value, 'pa', 100)
+  const instruments = readCount(value, 'instruments', 100)
+  const stageGear = readCount(value, 'stageGear', 100)
+
+  const defects: HiddenDefectState[] = []
+  if (Array.isArray(value.defects)) {
+    for (const raw of value.defects.slice(0, MAX_COLLECTION_ENTRIES)) {
+      if (!isLooseRecord(raw)) continue
+      const id = readString(raw, 'id')
+      const group = readString(raw, 'group')
+      const severity = raw.severity
+      const status = readString(raw, 'status')
+      const source = readString(raw, 'source')
+      const createdAtRouteStep = readCount(raw, 'createdAtRouteStep', 0)
+      const triggerAt = readString(raw, 'triggerAt')
+      const triggerRouteStep = readCount(raw, 'triggerRouteStep', 0)
+
+      if (
+        !id ||
+        !group ||
+        (group !== 'pa' && group !== 'instruments' && group !== 'stageGear')
+      ) {
+        continue
+      }
+      if (severity !== 1 && severity !== 2 && severity !== 3) continue
+      if (
+        status !== 'hidden' &&
+        status !== 'revealed' &&
+        status !== 'triggered' &&
+        status !== 'resolved'
+      ) {
+        continue
+      }
+      if (
+        source !== 'field_repair' &&
+        source !== 'improvise' &&
+        source !== 'critical_wear'
+      ) {
+        continue
+      }
+      if (
+        triggerAt !== 'post_travel' &&
+        triggerAt !== 'pre_gig' &&
+        triggerAt !== 'post_gig'
+      ) {
+        continue
+      }
+
+      defects.push({
+        id,
+        group,
+        severity,
+        status,
+        source,
+        createdAtRouteStep,
+        triggerAt,
+        triggerRouteStep
+      })
+    }
+  }
+
+  return {
+    pa: Math.max(0, Math.min(100, pa)),
+    instruments: Math.max(0, Math.min(100, instruments)),
+    stageGear: Math.max(0, Math.min(100, stageGear)),
+    defects
+  }
+}
+
+/**
  * Sanitizes the persisted Expedition slice.
  *
  * @param value - Untrusted `expedition` value from a save.
@@ -428,7 +532,10 @@ const sanitizeOutcome = (value: unknown): ExpeditionOutcome | null => {
  * No `runSeed` is read or written here — the root `GameState.runSeed` remains
  * the single map/run seed owner, so a save can never resume with two seeds.
  */
-export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
+export const sanitizeExpeditionState = (
+  value: unknown,
+  runSeed?: number
+): ExpeditionState => {
   const fallback = createDefaultExpeditionState()
   if (!isLooseRecord(value)) return fallback
 
@@ -456,12 +563,82 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     if (outcome.runId !== runId || outcome.kind !== status) return fallback
   }
 
+  const rawVisitedNodeIds = sanitizeUniqueStrings(value.visitedNodeIds)
+  const routeStep = readCount(value, 'routeStep', 0)
+
+  let preparedMap: ReturnType<typeof buildExpeditionMap> | null = null
+  if (isFiniteNumber(runSeed) && loadout) {
+    preparedMap = buildExpeditionMap(runSeed, loadout.tourTypeId, loadout.regionId)
+  }
+
+  // For active or terminal Expeditions, validate visitedNodeIds strictly against canonical DAG.
+  // The visited path must contain exactly routeStep + 1 nodes: startNodeId at index 0,
+  // and each step i connected to step i-1 with meta[nodeId].routeStep === i.
+  const validVisitedPath: string[] = []
+  if (preparedMap && (status === 'active' || TERMINAL_STATUSES.has(status))) {
+    if (rawVisitedNodeIds.length !== routeStep + 1) {
+      return fallback
+    }
+    if (rawVisitedNodeIds[0] !== preparedMap.startNodeId) {
+      return fallback
+    }
+    validVisitedPath.push(rawVisitedNodeIds[0]!)
+    for (let i = 1; i <= routeStep; i++) {
+      const prevId = validVisitedPath[i - 1]!
+      const currId = rawVisitedNodeIds[i]!
+      const currMeta = preparedMap.meta[currId]
+      if (!currMeta || currMeta.routeStep !== i) {
+        return fallback
+      }
+      const isConnected = preparedMap.connections.some(
+        conn => conn.from === prevId && conn.to === currId
+      )
+      if (!isConnected) {
+        return fallback
+      }
+      validVisitedPath.push(currId)
+    }
+  } else if (rawVisitedNodeIds.length > 0) {
+    validVisitedPath.push(...rawVisitedNodeIds)
+  }
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
     for (const raw of value.rewardLedger.slice(0, MAX_COLLECTION_ENTRIES)) {
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
+
+      // Hardening against forged persisted ledger entries in G1A/G2:
+      // Reward families whose genuine producers only exist in G3/G4
+      // ('contract', 'crew_contact', 'finale_nonlegendary', 'event_rare')
+      // cannot have valid source-proof state yet and MUST be dropped.
+      if (
+        entry.sourceType === 'contract' ||
+        entry.sourceType === 'crew_contact' ||
+        entry.sourceType === 'finale_nonlegendary' ||
+        entry.sourceType === 'event_rare'
+      ) {
+        continue
+      }
+
+      // 'route_rare' entries require proof that the source node is on a valid visited path
+      // that agrees with routeStep and that the canonical node reward matches definition.id.
+      if (entry.sourceType === 'route_rare') {
+        if (!validVisitedPath.includes(entry.sourceId)) continue
+        if (preparedMap) {
+          const node = preparedMap.meta[entry.sourceId]
+          if (
+            !node ||
+            node.hidden.rareRewardId !== entry.rewardDefinitionId ||
+            entry.earnedAtRouteStep !== node.routeStep ||
+            entry.earnedAtRouteStep > routeStep
+          ) {
+            continue
+          }
+        }
+      }
+
       seenRewardIds.add(entry.id)
       rewardLedger.push(entry)
     }
@@ -483,7 +660,7 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     prep: prepId ? { prepId } : null,
     runId,
     routeStep: readCount(value, 'routeStep', 0),
-    visitedNodeIds: sanitizeUniqueStrings(value.visitedNodeIds),
+    visitedNodeIds: validVisitedPath,
     intelByNodeId: sanitizeExpeditionIntelMap(value.intelByNodeId),
     intelGrants,
     scoutReconUsedRouteSteps: sanitizeIntegerList(
@@ -501,6 +678,30 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     rewardLedger,
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
-    outcome
+    // A carried shortfall is a debt, so a save cannot make it negative and
+    // quietly turn it into credit.
+    unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
+    outcome,
+    insurancePolicyId:
+      getExpeditionInsurancePolicy(
+        readString(value, 'insurancePolicyId') ?? loadout?.insurancePolicyId
+      )?.id ?? null,
+    insuranceClaimConsumed:
+      readBoolean(value, 'insuranceClaimConsumed') ||
+      readBoolean(value, 'claimConsumed'),
+    claimConsumed:
+      readBoolean(value, 'claimConsumed') ||
+      readBoolean(value, 'insuranceClaimConsumed'),
+    technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
+    ...(value.cargo !== undefined
+      ? { cargo: sanitizeExpeditionCargo(value.cargo) }
+      : {}),
+    ...(value.technicalCondition !== undefined
+      ? {
+          technicalCondition: sanitizeExpeditionTechnicalCondition(
+            value.technicalCondition
+          )
+        }
+      : {})
   }
 }

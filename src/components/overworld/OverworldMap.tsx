@@ -20,7 +20,7 @@ import type {
 import type { TranslationCallback } from '../../types/callbacks'
 import type { NodeVisibility } from '../../types/map'
 import { FLAGS } from '../../data/flags.registry'
-import type { ExpeditionNodeFog } from '../../ui/expedition/ExpeditionNodeFogBadge'
+import type { ExpeditionNodeFog } from '../../types/expedition'
 
 const HARMONY_NODE_TYPES = new Set(['GIG', 'FESTIVAL', 'FINALE'])
 

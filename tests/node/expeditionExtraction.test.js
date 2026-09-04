@@ -48,16 +48,14 @@ const earn = (state, money, fame = 0) => ({
   }
 })
 
-const bankRouteRare = (state, rewardId = 'reward_route_merch_crate') =>
-  gameReducer(state, {
-    type: ActionTypes.ADD_EXPEDITION_REWARD,
-    payload: {
-      expectedRewardId: rewardId,
-      sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: state.expedition.routeStep
-    }
-  })
+/**
+ * The walk's first extraction window whose node also carries a route rare.
+ *
+ * Arriving there is the reward's canonical evidence, so the route advance banks
+ * the ledger entry itself — and because the node is a window, the carry
+ * decision happens on the spot.
+ */
+const RARE_WINDOW_STEP = 5
 
 const extract = (state, payload) =>
   gameReducer(state, { type: ActionTypes.EXTRACT_EXPEDITION, payload })
@@ -224,13 +222,12 @@ describe('EXTRACT_EXPEDITION', () => {
   })
 
   it('carries one explicitly named unsecured rare reward', () => {
-    let state = walkTo(startedState({ money: 5000 }), 1)
-    state = bankRouteRare(state)
+    const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
     const entryId = state.expedition.rewardLedger[0]?.id
-    state = walkTo(state, WINDOW_STEP)
+    assert.ok(entryId, 'the walk banked no route rare to carry')
 
     const carried = extract(state, {
-      expectedRouteStep: WINDOW_STEP,
+      expectedRouteStep: RARE_WINDOW_STEP,
       explicitRareRewardIds: [entryId]
     })
     assert.deepEqual(
@@ -243,11 +240,10 @@ describe('EXTRACT_EXPEDITION', () => {
   })
 
   it('abandons an unsecured rare reward the player did not name', () => {
-    let state = walkTo(startedState({ money: 5000 }), 1)
-    state = bankRouteRare(state)
-    state = walkTo(state, WINDOW_STEP)
+    const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
+    assert.equal(state.expedition.rewardLedger.length, 1)
     const abandoned = extract(state, {
-      expectedRouteStep: WINDOW_STEP,
+      expectedRouteStep: RARE_WINDOW_STEP,
       explicitRareRewardIds: []
     })
     assert.equal(
@@ -280,9 +276,7 @@ describe('EXTRACT_EXPEDITION', () => {
 
 describe('COMPLETE_EXPEDITION', () => {
   it('completes on the Finale and keeps everything', () => {
-    let state = walkTo(startedState({ money: 5000, fame: 100 }), 1)
-    state = bankRouteRare(state)
-    state = walkToFinale(state)
+    let state = walkToFinale(startedState({ money: 5000, fame: 100 }))
     state = earn(state, 1000, 50)
     const finaleStep = state.expedition.routeStep
 
@@ -459,9 +453,9 @@ describe('settlement robustness', () => {
     // A reward id retired between builds has nothing to materialize. Leaving
     // the entry unsettled would make PREPARE_NEXT refuse forever, so the run
     // summary must still be dismissible.
-    let state = walkTo(startedState({ money: 5000 }), 1)
-    state = bankRouteRare(state)
+    let state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
     const entryId = state.expedition.rewardLedger[0]?.id
+    assert.ok(entryId, 'the walk banked no route rare to retire')
     state = {
       ...state,
       expedition: {
@@ -474,10 +468,9 @@ describe('settlement robustness', () => {
         ]
       }
     }
-    state = walkTo(state, WINDOW_STEP)
 
     const extracted = extract(state, {
-      expectedRouteStep: WINDOW_STEP,
+      expectedRouteStep: RARE_WINDOW_STEP,
       explicitRareRewardIds: [entryId]
     })
     assert.equal(extracted.expedition.status, 'extracted')

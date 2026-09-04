@@ -60,6 +60,15 @@ export type EventDelta = {
     loyalty?: number
     zealotry?: number
   }
+  /**
+   * Expedition results the event requested, as ids only.
+   *
+   * @remarks
+   * The engine writes this from the `expedition` effect handler and the
+   * resolver forwards it as its own typed action, because the Expedition
+   * reducer — not `applyEventDelta` — is the authority over run state.
+   */
+  expedition?: import('./expedition').ExpeditionEventIntent
   flags: Record<string, unknown> & {
     queueEvent?: string
     unlock?: unknown

@@ -24,7 +24,8 @@ import { createInitialState } from '../../src/context/initialState'
 import {
   fixtureMap,
   startedState,
-  walkTo
+  walkTo,
+  walkToFinale
 } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
@@ -34,6 +35,38 @@ const addReward = (state, payload) =>
 
 const currentNodeId = state =>
   state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
+
+/** The first route step of the fixture walk whose node carries a route rare. */
+const RARE_ROUTE_STEP = 5
+
+/**
+ * The run standing on a rare-bearing node, with the ledger cleared.
+ *
+ * Arriving on the node is itself the canonical evidence, so the route advance
+ * already banked the entry. Clearing the ledger is what leaves the explicit
+ * dispatch a legal path to test instead of an immediate duplicate.
+ */
+const atRare = () => {
+  const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+  const nodeId = currentNodeId(walked)
+  const rareRewardId = map.meta[nodeId]?.hidden.rareRewardId
+  assert.ok(rareRewardId, 'the fixture walk reaches no rare-bearing node')
+  return {
+    state: {
+      ...walked,
+      expedition: { ...walked.expedition, rewardLedger: [] }
+    },
+    nodeId,
+    rareRewardId
+  }
+}
+
+/** The other registered route rare, i.e. one this node does not carry. */
+const otherRouteRare = rareRewardId =>
+  Object.values(EXPEDITION_REWARD_REGISTRY).find(
+    definition =>
+      definition.sourceType === 'route_rare' && definition.id !== rareRewardId
+  )?.id
 
 describe('reward registry invariants', () => {
   it('gives every reward exactly one real materialization owner', () => {
@@ -115,12 +148,12 @@ describe('derived security', () => {
   })
 
   it('ignores a caller-declared security claim', () => {
-    const state = walkTo(startedState(), 1)
+    const { state, nodeId, rareRewardId } = atRare()
     const next = addReward(state, {
-      expectedRewardId: 'reward_route_merch_crate',
+      expectedRewardId: rareRewardId,
       sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 1,
+      sourceId: nodeId,
+      expectedRouteStep: RARE_ROUTE_STEP,
       secured: true
     })
     assert.equal(next.expedition.rewardLedger.length, 1)
@@ -129,30 +162,71 @@ describe('derived security', () => {
 })
 
 describe('canonical source evidence', () => {
-  it('accepts a route rare from the node the run is standing on', () => {
-    const state = walkTo(startedState(), 1)
-    const next = addReward(state, {
-      expectedRewardId: 'reward_route_merch_crate',
-      sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 1
-    })
-    const entry = next.expedition.rewardLedger[0]
+  it('banks the node\u2019s own rare on arrival', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const entry = walked.expedition.rewardLedger.at(-1)
     assert.ok(entry)
-    assert.equal(entry.rewardDefinitionId, 'reward_route_merch_crate')
-    assert.equal(entry.earnedAtRouteStep, 1)
+    assert.equal(entry.rewardDefinitionId, map.meta[nodeId].hidden.rareRewardId)
+    assert.equal(entry.earnedAtRouteStep, RARE_ROUTE_STEP)
     assert.equal(entry.materialized, false)
   })
 
-  it('refuses a route rare naming a node the run is not on', () => {
+  it('accepts a route rare from the node the run is standing on', () => {
+    const { state, nodeId, rareRewardId } = atRare()
+    const next = addReward(state, {
+      expectedRewardId: rareRewardId,
+      sourceType: 'route_rare',
+      sourceId: nodeId,
+      expectedRouteStep: RARE_ROUTE_STEP
+    })
+    const entry = next.expedition.rewardLedger[0]
+    assert.ok(entry)
+    assert.equal(entry.rewardDefinitionId, rareRewardId)
+    assert.equal(entry.earnedAtRouteStep, RARE_ROUTE_STEP)
+    assert.equal(entry.materialized, false)
+  })
+
+  it('refuses a route rare the node does not carry', () => {
+    const { state, nodeId, rareRewardId } = atRare()
+    const other = otherRouteRare(rareRewardId)
+    assert.ok(other, 'the registry has only one route rare to compare against')
+    // Standing on a rare-bearing node is not evidence for the *other* rare.
+    assert.equal(
+      addReward(state, {
+        expectedRewardId: other,
+        sourceType: 'route_rare',
+        sourceId: nodeId,
+        expectedRouteStep: RARE_ROUTE_STEP
+      }),
+      state
+    )
+  })
+
+  it('refuses a route rare from a node that carries none', () => {
     const state = walkTo(startedState(), 1)
+    const nodeId = currentNodeId(state)
+    assert.equal(map.meta[nodeId]?.hidden.rareRewardId, null)
+    assert.equal(
+      addReward(state, {
+        expectedRewardId: 'reward_route_merch_crate',
+        sourceType: 'route_rare',
+        sourceId: nodeId,
+        expectedRouteStep: 1
+      }),
+      state
+    )
+  })
+
+  it('refuses a route rare naming a node the run is not on', () => {
+    const { state, rareRewardId } = atRare()
     for (const sourceId of [map.finaleNodeId, 'nope', '', map.startNodeId]) {
       assert.equal(
         addReward(state, {
-          expectedRewardId: 'reward_route_merch_crate',
+          expectedRewardId: rareRewardId,
           sourceType: 'route_rare',
           sourceId,
-          expectedRouteStep: 1
+          expectedRouteStep: RARE_ROUTE_STEP
         }),
         state,
         `sourceId ${sourceId}`
@@ -160,19 +234,24 @@ describe('canonical source evidence', () => {
     }
   })
 
-  it('refuses a source family whose producer arrives with G3 or G4', () => {
-    const state = walkTo(startedState(), 1)
+  it('refuses a source family whose producer arrives with a later gate', () => {
+    const { state, nodeId } = atRare()
     for (const [expectedRewardId, sourceType] of [
       ['reward_event_spare_cables', 'event_rare'],
       ['reward_contract_patch_run', 'contract'],
-      ['reward_contact_backline_deal', 'crew_contact']
+      ['reward_contact_backline_deal', 'crew_contact'],
+      // Standing on the Finale does not say *which* Finale reward was earned,
+      // so the family stays refused until G4 maps a resolved finale result to
+      // its canonical reward.
+      ['reward_finale_underground_ledger', 'finale_nonlegendary'],
+      ['reward_finale_road_crew_respect', 'finale_nonlegendary']
     ]) {
       assert.equal(
         addReward(state, {
           expectedRewardId,
           sourceType,
-          sourceId: currentNodeId(state),
-          expectedRouteStep: 1
+          sourceId: nodeId,
+          expectedRouteStep: RARE_ROUTE_STEP
         }),
         state,
         expectedRewardId
@@ -180,27 +259,46 @@ describe('canonical source evidence', () => {
     }
   })
 
-  it('refuses a reward whose declared family contradicts its definition', () => {
-    const state = walkTo(startedState(), 1)
+  it('refuses a Finale reward from the Finale node itself', () => {
+    const state = walkToFinale(startedState())
+    assert.equal(currentNodeId(state), map.finaleNodeId)
     assert.equal(
       addReward(state, {
-        expectedRewardId: 'reward_route_merch_crate',
+        expectedRewardId: 'reward_finale_underground_ledger',
+        sourceType: 'finale_nonlegendary',
+        sourceId: map.finaleNodeId,
+        expectedRouteStep: state.expedition.routeStep
+      }),
+      state
+    )
+  })
+
+  it('refuses a reward whose declared family contradicts its definition', () => {
+    const { state, nodeId, rareRewardId } = atRare()
+    assert.equal(
+      addReward(state, {
+        expectedRewardId: rareRewardId,
         sourceType: 'contract',
-        sourceId: currentNodeId(state),
-        expectedRouteStep: 1
+        sourceId: nodeId,
+        expectedRouteStep: RARE_ROUTE_STEP
       }),
       state
     )
   })
 
   it('refuses a stale route-step guard', () => {
-    const state = walkTo(startedState(), 1)
-    for (const expectedRouteStep of [0, 2, Number.NaN, '1']) {
+    const { state, nodeId, rareRewardId } = atRare()
+    for (const expectedRouteStep of [
+      0,
+      RARE_ROUTE_STEP + 1,
+      Number.NaN,
+      String(RARE_ROUTE_STEP)
+    ]) {
       assert.equal(
         addReward(state, {
-          expectedRewardId: 'reward_route_merch_crate',
+          expectedRewardId: rareRewardId,
           sourceType: 'route_rare',
-          sourceId: currentNodeId(state),
+          sourceId: nodeId,
           expectedRouteStep
         }),
         state
@@ -209,12 +307,12 @@ describe('canonical source evidence', () => {
   })
 
   it('refuses a duplicate reward from the same source', () => {
-    const state = walkTo(startedState(), 1)
+    const { state, nodeId, rareRewardId } = atRare()
     const payload = {
-      expectedRewardId: 'reward_route_merch_crate',
+      expectedRewardId: rareRewardId,
       sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 1
+      sourceId: nodeId,
+      expectedRouteStep: RARE_ROUTE_STEP
     }
     const once = addReward(state, payload)
     const twice = addReward(once, payload)
@@ -223,21 +321,13 @@ describe('canonical source evidence', () => {
   })
 
   it('allows the same reward definition from two different sources', () => {
-    let state = walkTo(startedState(), 1)
-    state = addReward(state, {
-      expectedRewardId: 'reward_route_merch_crate',
-      sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 1
-    })
-    state = walkTo(state, 2)
-    state = addReward(state, {
-      expectedRewardId: 'reward_route_merch_crate',
-      sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 2
-    })
-    assert.equal(state.expedition.rewardLedger.length, 2)
+    // Both rare-bearing nodes on the walk carry the same definition, so the
+    // ledger has to key on the source rather than on the reward.
+    const state = walkTo(startedState(), RARE_ROUTE_STEP + 1)
+    const entries = state.expedition.rewardLedger
+    assert.equal(entries.length, 2)
+    assert.equal(entries[0].rewardDefinitionId, entries[1].rewardDefinitionId)
+    assert.notEqual(entries[0].id, entries[1].id)
   })
 
   it('refuses every reward outside an active run', () => {
@@ -263,25 +353,26 @@ describe('canonical source evidence', () => {
   })
 
   it('is built by the creator from the current route step', () => {
-    const state = walkTo(startedState(), 2)
+    const { state, nodeId, rareRewardId } = atRare()
     const action = addExpeditionReward(state, {
-      expectedRewardId: 'reward_route_vinyl_stash',
+      expectedRewardId: rareRewardId,
       sourceType: 'route_rare',
-      sourceId: currentNodeId(state)
+      sourceId: nodeId
     })
-    assert.equal(action.payload.expectedRouteStep, 2)
+    assert.equal(action.payload.expectedRouteStep, RARE_ROUTE_STEP)
     assert.equal(gameReducer(state, action).expedition.rewardLedger.length, 1)
   })
 
   it('banks nothing into persistent state before settlement', () => {
-    const state = walkTo(startedState(), 1)
+    const { state, nodeId, rareRewardId } = atRare()
     const next = addReward(state, {
-      expectedRewardId: 'reward_route_merch_crate',
+      expectedRewardId: rareRewardId,
       sourceType: 'route_rare',
-      sourceId: currentNodeId(state),
-      expectedRouteStep: 1
+      sourceId: nodeId,
+      expectedRouteStep: RARE_ROUTE_STEP
     })
-    // 15 shirts are promised by the definition but must not arrive yet.
+    assert.equal(next.expedition.rewardLedger.length, 1)
+    // The definition promises inventory, but it must not arrive yet.
     assert.equal(next.band.inventory.shirts, state.band.inventory.shirts)
     assert.deepEqual(next.unlocks, state.unlocks)
   })
@@ -341,5 +432,295 @@ describe('materialization owners', () => {
       EXPEDITION_REWARD_REGISTRY.reward_route_merch_crate
     )
     assert.equal(next.band.inventory.shirts, 15)
+  })
+})
+
+describe('persisted reward ledger hardening regressions', () => {
+  it('1. forged secured Contract reward in active save -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_contract_patch_run::forged_source',
+            rewardDefinitionId: 'reward_contract_patch_run',
+            sourceType: 'contract',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('2. forged Crew-contact reward -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_contact_backline_deal::forged_source',
+            rewardDefinitionId: 'reward_contact_backline_deal',
+            sourceType: 'crew_contact',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('3. forged Finale reward -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        rewardLedger: [
+          {
+            id: 'reward_finale_underground_ledger::forged_source',
+            rewardDefinitionId: 'reward_finale_underground_ledger',
+            sourceType: 'finale_nonlegendary',
+            sourceId: 'forged_source',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('4. Route-Rare with wrong/unvisited node -> dropped', () => {
+    const base = startedState()
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        visitedNodeIds: ['exp_start'],
+        rewardLedger: [
+          {
+            id: 'reward_route_merch_crate::exp_unvisited_node',
+            rewardDefinitionId: 'reward_route_merch_crate',
+            sourceType: 'route_rare',
+            sourceId: 'exp_unvisited_node',
+            secured: false,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('5. Route-Rare with wrong reward ID for real node -> dropped', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+    const otherReward = otherRouteRare(realReward)
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: `${otherReward}::${nodeId}`,
+            rewardDefinitionId: otherReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('6. genuine visited Route-Rare -> survives round trip', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: `${realReward}::${nodeId}`,
+            rewardDefinitionId: realReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 1)
+    assert.equal(loaded.expedition.rewardLedger[0].id, `${realReward}::${nodeId}`)
+  })
+
+  it('7. duplicate entries -> deduplicated', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const entry = {
+      id: `${realReward}::${nodeId}`,
+      rewardDefinitionId: realReward,
+      sourceType: 'route_rare',
+      sourceId: nodeId,
+      secured: false,
+      earnedAtRouteStep: RARE_ROUTE_STEP,
+      materialized: false
+    }
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [entry, entry]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 1)
+  })
+
+  it('8. corrupted/prototype keys -> rejected', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        rewardLedger: [
+          {
+            id: '__proto__',
+            rewardDefinitionId: 'reward_route_merch_crate',
+            sourceType: 'route_rare',
+            sourceId: 'exp_start',
+            secured: false,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.rewardLedger.length, 0)
+  })
+
+  it('9. accepted persisted reward with materialized: true -> does not re-materialize on terminal transition', () => {
+    const walked = walkTo(startedState(), RARE_ROUTE_STEP)
+    const nodeId = currentNodeId(walked)
+    const realReward = map.meta[nodeId]?.hidden.rareRewardId
+
+    const initialShirts = walked.band.inventory.shirts ?? 0
+
+    const rawSave = {
+      ...walked,
+      expedition: {
+        ...walked.expedition,
+        status: 'completed',
+        runId: walked.expedition.prep.prepId,
+        rewardLedger: [
+          {
+            id: `${realReward}::${nodeId}`,
+            rewardDefinitionId: realReward,
+            sourceType: 'route_rare',
+            sourceId: nodeId,
+            secured: false,
+            earnedAtRouteStep: RARE_ROUTE_STEP,
+            materialized: true
+          }
+        ],
+        outcome: {
+          runId: walked.expedition.prep.prepId,
+          kind: 'completed',
+          reason: null,
+          finalizedAtRouteStep: RARE_ROUTE_STEP,
+          settlement: {
+            retentionRate: 1,
+            moneyEarned: 100,
+            moneyRetained: 100,
+            moneyForfeited: 0,
+            fameEarned: 50,
+            fameRetained: 50,
+            fameForfeited: 0,
+            retainedRewardEntryIds: [`${realReward}::${nodeId}`],
+            abandonedRewardEntryIds: []
+          },
+          finaleResultId: null
+        }
+      }
+    }
+
+    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.status, 'completed')
+    assert.equal(loaded.expedition.runId, walked.expedition.prep.prepId)
+
+    const next = gameReducer(loaded, {
+      type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+      payload: { runId: loaded.expedition.runId }
+    })
+
+    assert.equal(next.expedition.status, 'idle')
+    assert.equal(next.band.inventory.shirts ?? 0, initialShirts, 'materialized reward did not re-grant inventory')
+  })
+
+  it('10. forged/unconnected visitedNodeIds at routeStep 0 fails path validation and drops route_rare entry', () => {
+    const base = startedState()
+    // Find a rare node at routeStep 5
+    const targetNodeId = Object.keys(map.meta).find(
+      id => map.meta[id].hidden.rareRewardId && map.meta[id].routeStep === 5
+    )
+    assert.ok(targetNodeId)
+    const rareRewardId = map.meta[targetNodeId].hidden.rareRewardId
+
+    // Save claims routeStep 0, but lists targetNodeId in visitedNodeIds (unconnected/future)
+    const rawSave = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        routeStep: 0,
+        visitedNodeIds: [map.startNodeId, targetNodeId],
+        rewardLedger: [
+          {
+            id: `${rareRewardId}::${targetNodeId}`,
+            rewardDefinitionId: rareRewardId,
+            sourceType: 'route_rare',
+            sourceId: targetNodeId,
+            secured: false,
+            earnedAtRouteStep: 5,
+            materialized: false
+          }
+        ]
+      }
+    }
+    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    assert.equal(loaded.expedition.status, 'idle', 'incoherent expedition collapses to idle')
+    assert.equal(loaded.expedition.rewardLedger.length, 0, 'forged rare reward dropped')
   })
 })

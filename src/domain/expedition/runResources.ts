@@ -17,6 +17,7 @@
 
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
+import { getExpeditionConditionSummary } from './condition'
 import type { GameState } from '../../types'
 
 /**
@@ -50,20 +51,6 @@ const getExpeditionConditionBand = (
 }
 
 /**
- * Summarized equipment readiness for the run HUD.
- *
- * @param state - Current game state.
- * @returns Condition in `0..100`.
- *
- * @remarks
- * G1 reads the existing canonical `player.van.condition`. G2 extends this into
- * the summary across its Vehicle/PA/Instruments/Stage-Gear groups; keeping the
- * read in one place is what lets it do so without a second condition owner.
- */
-const getExpeditionConditionSummary = (state: GameState): number =>
-  Math.max(0, Math.min(100, finiteNumberOr(state.player.van?.condition, 0)))
-
-/**
  * Negative attention accumulated by the run.
  *
  * @param _state - Current game state.
@@ -75,6 +62,26 @@ const getExpeditionConditionSummary = (state: GameState): number =>
  * these six resources.
  */
 const getExpeditionHeat = (_state: GameState): number => 0
+
+/**
+ * The single write point for Heat.
+ *
+ * @param state - Current game state.
+ * @param _heatDelta - Signed Heat change requested by a resolved event.
+ * @returns The next state.
+ *
+ * @remarks
+ * The counterpart to `getExpeditionHeat`, and extended in place by G4 for the
+ * same reason: every Heat producer has to go through one function, or the first
+ * one to need a store invents the second Pressure authority. Until G4 owns
+ * Pressure there is no Heat field to write, so this returns the state
+ * unchanged — the request is accepted and has no effect yet, exactly as the
+ * read side reports `0`.
+ */
+export const applyExpeditionEventHeat = (
+  state: GameState,
+  _heatDelta: number
+): GameState => state
 
 /**
  * Immediate physical performance capacity across the band.

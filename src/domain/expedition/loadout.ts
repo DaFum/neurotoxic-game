@@ -24,7 +24,7 @@ import { MERCH_PROFILES } from '../../data/merch'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import { logger } from '../../utils/logger'
 import { ActionTypes } from '../../context/actionTypes'
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import {
   BASE_EXPEDITION_REGION_ID,
@@ -32,6 +32,11 @@ import {
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from './defaults'
 import { getExpeditionOwnedPerformanceGear } from './equipment'
+import {
+  calculateExpeditionCargoCapacity,
+  calculateExpeditionCargoUsage
+} from './cargo'
+import { getAvailableInsurancePolicyIds } from './insurance'
 import type { GameState } from '../../types'
 import type { LongTermAsset } from '../../types/assets'
 import type {
@@ -58,10 +63,17 @@ const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
  * safety decision — the design requires Cash to be a tool for controlling risk,
  * not an unlimited rescue. Outside a run the full balance is spendable.
  */
-export const getExpeditionSpendableCash = (state: GameState): number =>
-  state.expedition?.status === 'active'
-    ? Math.max(0, state.player.money - state.expedition.protectedCareerCash)
-    : Math.max(0, state.player.money)
+export const getExpeditionSpendableCash = (state: GameState): number => {
+  const money = finiteNumberOr(state.player.money, 0)
+  if (state.expedition?.status === 'active') {
+    const protectedCash = state.expedition.protectedCareerCash
+    if (!isFiniteNumber(protectedCash) || protectedCash < 0) {
+      return 0
+    }
+    return Math.max(0, money - protectedCash)
+  }
+  return Math.max(0, money)
+}
 
 /**
  * Checks whether an active-Expedition spend is affordable.
@@ -141,15 +153,6 @@ const getAvailableCrewIds = (_state: GameState): readonly string[] => []
  * @remarks G5 owns the starter-perk registry and extends this in place.
  */
 const getAvailableStarterPerkIds = (_state: GameState): readonly string[] => []
-
-/**
- * Insurance policy ids the player may commit.
- *
- * @remarks G2 owns insurance and extends this in place.
- */
-const getAvailableInsurancePolicyIds = (
-  _state: GameState
-): readonly string[] => []
 
 /**
  * Tour Pressure modifier ids the player may commit.
@@ -458,13 +461,17 @@ export const validateExpeditionBuildCommitment = (
       return reject('MALFORMED_CANDIDATE')
     }
   }
+  let normalizedInsurancePolicyId: import('../../types/expedition').ExpeditionInsurancePolicyId | null = null
   if (insurancePolicyId !== null) {
     if (
       typeof insurancePolicyId !== 'string' ||
-      !getAvailableInsurancePolicyIds(state).includes(insurancePolicyId)
+      !(getAvailableInsurancePolicyIds(state) as readonly string[]).includes(
+        insurancePolicyId
+      )
     ) {
       return reject('MALFORMED_CANDIDATE')
     }
+    normalizedInsurancePolicyId = insurancePolicyId as import('../../types/expedition').ExpeditionInsurancePolicyId
   }
 
   const pressureModifierIdsRaw = candidate.pressureModifierIds
@@ -486,6 +493,28 @@ export const validateExpeditionBuildCommitment = (
   // counts, so G2 can add capacity without a second cargo authority.
   const { spareParts, supplies } = cargo
   if (!isNonNegativeInteger(spareParts) || !isNonNegativeInteger(supplies)) {
+    return reject('CARGO_OUT_OF_RANGE')
+  }
+
+  const chassis = activeTourbusAssetId
+    ? resolveCommittedChassis(state, activeTourbusAssetId)
+    : null
+  const cargoCapacity = calculateExpeditionCargoCapacity(
+    chassis,
+    normalizedModuleIds
+  )
+  const cargoUsage = calculateExpeditionCargoUsage(
+    {
+      spareParts,
+      supplies,
+      technicalGearItemIds: selectedGearItemIds,
+      merch,
+      contraband
+    },
+    cargoCapacity
+  )
+
+  if (cargoUsage.visibleSlotsUsed > cargoUsage.visibleCapacity) {
     return reject('CARGO_OUT_OF_RANGE')
   }
 
@@ -521,7 +550,7 @@ export const validateExpeditionBuildCommitment = (
       cargo: { spareParts, supplies },
       starterPerkId,
       nativeContracts,
-      insurancePolicyId,
+      insurancePolicyId: normalizedInsurancePolicyId,
       pressureModifierIds: [...pressureModifierIdsRaw],
       build: {
         setlistSongIds: [...setlistSongIds],
@@ -615,4 +644,100 @@ export const enforceExpeditionCashFloor = (
     { before, after, floor }
   )
   return previousState
+}
+
+/**
+ * How an active Expedition overrides the legacy daily tick.
+ *
+ * @remarks
+ * Gathered once per day tick so the pure daily-update helpers can apply the
+ * Expedition rules without each of them reaching into `state.expedition`.
+ */
+export interface ExpeditionDayPolicy {
+  /** True while an active run overrides the legacy day tick. */
+  isActive: boolean
+  /** Cash the run may spend on mandatory obligations. */
+  spendableCash: number
+  /** Floor `player.money` must never cross. */
+  protectedCareerCash: number
+  /** Obligation a previous day could not pay, carried forward. */
+  carriedUnpaidObligation: number
+}
+
+/**
+ * Reads the day policy for the current state.
+ *
+ * @param state - Current game state.
+ * @returns The policy; `isActive: false` outside a run, where the legacy tick
+ * is left completely unchanged.
+ */
+export const getExpeditionDayPolicy = (
+  state: GameState
+): ExpeditionDayPolicy => {
+  const isActive = state.expedition?.status === 'active'
+  return {
+    isActive,
+    spendableCash: isActive ? getExpeditionSpendableCash(state) : 0,
+    protectedCareerCash: isActive
+      ? Math.max(0, finiteNumberOr(state.expedition.protectedCareerCash, 0))
+      : 0,
+    carriedUnpaidObligation: isActive
+      ? Math.max(0, finiteNumberOr(state.expedition.unpaidDailyObligation, 0))
+      : 0
+  }
+}
+
+/**
+ * Outcome of settling one day's mandatory obligations inside a run.
+ */
+export interface ExpeditionDaySettlement {
+  /** Balance to write, never below the protected slice. */
+  nextMoney: number
+  /** Amount that could not be paid and carries into the next day. */
+  unpaidObligation: number
+}
+
+/**
+ * Settles a day's mandatory obligations against the run's spendable Cash.
+ *
+ * @param policy - Day policy for the current run.
+ * @param currentMoney - Balance before the settlement.
+ * @param dailyCost - Net mandatory cost for the day; negative means net income.
+ * @returns The balance to write and the shortfall to carry forward.
+ *
+ * @remarks
+ * Mandatory obligations are the one in-run cost the player cannot decline, so
+ * they are allowed to consume the whole spendable slice — but not a cent of the
+ * protected Career Cash, and the floor never raises a balance that is already
+ * below it. A shortfall is therefore not silently forgiven and not
+ * silently taken: it carries forward as evidence, which is what lets the failure
+ * shell raise an attributable bankruptcy crisis instead of the run simply
+ * stalling.
+ *
+ * A day whose net result is income still clears carried debt first, so earning
+ * the money back is a real recovery rather than a cosmetic one.
+ */
+export const settleExpeditionDailyObligation = (
+  policy: ExpeditionDayPolicy,
+  currentMoney: number,
+  dailyCost: number
+): ExpeditionDaySettlement => {
+  const money = finiteNumberOr(currentMoney, 0)
+  const due = finiteNumberOr(dailyCost, 0) + policy.carriedUnpaidObligation
+
+  // Net income for the day: nothing is owed, and the balance simply rises.
+  if (due <= 0) {
+    return { nextMoney: money - due, unpaidObligation: 0 }
+  }
+
+  const payable = Math.min(due, Math.max(0, policy.spendableCash))
+  // The floor can only stop a payment, never fund one. Earlier stages of the
+  // same day tick (the asset and liability ticks) may already have taken the
+  // balance below the protected slice, and clamping *up* to it here would
+  // conjure the difference into existence.
+  const floor = Math.min(money, policy.protectedCareerCash)
+  return {
+    nextMoney: Math.max(floor, money - payable),
+    unpaidObligation: due - payable
+  }
 }

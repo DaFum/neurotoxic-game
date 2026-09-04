@@ -66,15 +66,23 @@ import {
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
 import {
   handleAcceptExpeditionFailure,
+  handleAcceptExpeditionTechnicalFailure,
+  handleApplyExpeditionEventDelta,
   handleAddExpeditionReward,
   handleAdvanceExpeditionRoute,
+  handleClaimExpeditionInsurance,
   handleCompleteExpedition,
+  handleExecuteExpeditionInspection,
+  handleExecuteExpeditionRepair,
   handleExtractExpedition,
   handlePrepareExpeditionRun,
   handlePrepareNextExpedition,
   handleResolveExpeditionCrisis,
+  handleResolveExpeditionDefect,
+  handleRevealExpeditionDefect,
   handleRevealExpeditionNodeIntel,
-  handleStartExpedition
+  handleStartExpedition,
+  handleTriggerExpeditionDefect
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -224,7 +232,17 @@ const reducerMap: ReducerMap = {
   [ActionTypes.COMPLETE_EXPEDITION]: handleCompleteExpedition,
   [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
   [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
-  [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis
+  [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis,
+  [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair,
+  [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
+  [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,
+  [ActionTypes.RESOLVE_EXPEDITION_DEFECT]: handleResolveExpeditionDefect,
+  [ActionTypes.EXECUTE_EXPEDITION_INSPECTION]:
+    handleExecuteExpeditionInspection,
+  [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance,
+  [ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE]:
+    handleAcceptExpeditionTechnicalFailure,
+  [ActionTypes.APPLY_EXPEDITION_EVENT_DELTA]: handleApplyExpeditionEventDelta
 }
 
 /**

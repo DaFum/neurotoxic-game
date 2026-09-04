@@ -27,6 +27,7 @@ import {
 const FIRST_TOURBUS_MODULE_ID = Object.keys(MODULE_REGISTRY).find(
   id => MODULE_REGISTRY[id]?.slotType === 'tb_roof'
 )
+assert.ok(FIRST_TOURBUS_MODULE_ID, 'a tb_roof module must exist in MODULE_REGISTRY')
 
 const prepareAction = (prepId, runSeed) => ({
   type: ActionTypes.PREPARE_EXPEDITION_RUN,
@@ -172,8 +173,8 @@ describe('sanitizeExpeditionState', () => {
     status: 'active',
     prep: { prepId: 'run_1' },
     runId: 'run_1',
-    routeStep: 4,
-    visitedNodeIds: ['n0', 'n1', 'n1'],
+    routeStep: 1,
+    visitedNodeIds: ['exp_0_0', 'exp_1_0'],
     intelByNodeId: { n2: 1, n3: 2 },
     intelGrants: [],
     scoutReconUsedRouteSteps: [2, 2, 3],
@@ -192,13 +193,53 @@ describe('sanitizeExpeditionState', () => {
   })
 
   it('resumes a consistent active run', () => {
-    const sanitized = sanitizeExpeditionState(activeSave())
+    const sanitized = sanitizeExpeditionState(activeSave(), 654321)
     assert.equal(sanitized.status, 'active')
     assert.equal(sanitized.runId, 'run_1')
-    assert.equal(sanitized.routeStep, 4)
-    assert.deepEqual(sanitized.visitedNodeIds, ['n0', 'n1'])
+    assert.equal(sanitized.routeStep, 1)
+    assert.deepEqual(sanitized.visitedNodeIds, ['exp_0_0', 'exp_1_0'])
     assert.deepEqual(sanitized.scoutReconUsedRouteSteps, [2, 3])
     assert.equal(sanitized.loadout?.tourTypeId, 'standard_tour')
+  })
+
+  it('collapses routeStep: 0 with [start, connectedStep1] to idle', () => {
+    const save = activeSave()
+    save.routeStep = 0
+    save.visitedNodeIds = ['exp_0_0', 'exp_1_0']
+    const sanitized = sanitizeExpeditionState(save, 654321)
+    assert.equal(sanitized.status, 'idle')
+  })
+
+  it('restores gameMap and player.currentNodeId from canonical buildExpeditionMap on load', () => {
+    const base = createInitialState()
+    base.runSeed = 654321
+    const rawSave = {
+      version: base.version,
+      runSeed: 654321,
+      player: {
+        ...base.player,
+        currentNodeId: 'tampered_node'
+      },
+      gameMap: {
+        nodes: {
+          exp_0_0: { id: 'exp_0_0', x: 0, y: 0, type: 'GIG' }
+        },
+        connections: []
+      },
+      expedition: {
+        ...activeSave()
+      }
+    }
+
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
+
+    assert.equal(loaded.expedition.status, 'active')
+    assert.equal(loaded.player.currentNodeId, 'exp_1_0')
+    assert.ok(loaded.gameMap?.nodes?.['exp_1_0'])
+    assert.notEqual(loaded.gameMap?.nodes?.['exp_0_0']?.x, 0)
   })
 
   it('collapses to idle when an active run has no committed build', () => {
@@ -327,13 +368,12 @@ describe('sanitizeExpeditionState', () => {
 
   it('drops duplicate ledger and grant ids', () => {
     const save = activeSave()
-    // A canonical entry: the sanitizer resolves the id through the registry
-    // and requires the derived `<definition>::<source>` key.
+    save.visitedNodeIds = ['exp_1_0']
     const entry = {
-      id: 'reward_route_merch_crate::node_1',
+      id: 'reward_route_merch_crate::exp_1_0',
       rewardDefinitionId: 'reward_route_merch_crate',
       sourceType: 'route_rare',
-      sourceId: 'node_1',
+      sourceId: 'exp_1_0',
       secured: false,
       earnedAtRouteStep: 1,
       materialized: false
@@ -503,6 +543,10 @@ describe('committed identity freeze while active', () => {
       type: ActionTypes.SET_SETLIST,
       payload: ['song_a', 'song_b']
     })
+    // Contents alone cannot tell accept from reject here, since the stored
+    // setlist already matches: the fresh reference is what proves the
+    // committed-setlist guard let the replay through.
+    assert.notEqual(next, state)
     assert.deepEqual(next.setlist, [{ id: 'song_a' }, { id: 'song_b' }])
   })
 
@@ -566,7 +610,7 @@ describe('persisted reward entries cannot be authored by a save', () => {
     prep: { prepId: 'run_1' },
     runId: 'run_1',
     routeStep: 4,
-    visitedNodeIds: ['exp_0_0'],
+    visitedNodeIds: ['exp_0_0', 'exp_1_0', 'exp_2_0', 'exp_3_0'],
     loadout: {
       tourTypeId: 'standard_tour',
       regionId: 'industrial_belt',
@@ -576,12 +620,12 @@ describe('persisted reward entries cannot be authored by a save', () => {
   })
 
   const canonicalEntry = (overrides = {}) => ({
-    id: 'reward_route_merch_crate::exp_3_0',
+    id: 'reward_route_merch_crate::exp_1_0',
     rewardDefinitionId: 'reward_route_merch_crate',
     sourceType: 'route_rare',
-    sourceId: 'exp_3_0',
+    sourceId: 'exp_1_0',
     secured: false,
-    earnedAtRouteStep: 3,
+    earnedAtRouteStep: 1,
     materialized: false,
     ...overrides
   })

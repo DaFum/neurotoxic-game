@@ -5,6 +5,7 @@ import { MerchStrategyBlock } from '../components/pregig/MerchStrategyBlock'
 import { useState, type KeyboardEvent } from 'react'
 import { PreGigHeader } from '../components/pregig/PreGigHeader'
 import { PreGigStartButton } from '../components/pregig/PreGigStartButton'
+import { ExpeditionServicePanel } from '../ui/expedition/ExpeditionServicePanel'
 import { usePreGigLogic } from '../hooks/usePreGigLogic'
 
 const SONGS_DICT = Object.create(null)
@@ -69,6 +70,7 @@ export const PreGig = () => {
     selectedSongIds,
     calculatedBudget,
     isStarting,
+    isStartBlocked,
     GIG_MODIFIER_OPTIONS,
     bandMeetingCost,
     assetModifiers,
@@ -183,10 +185,16 @@ export const PreGig = () => {
         </div>
       </div>
 
+      {/* The recovery surface has to be on this screen too: a zero-Condition
+          group blocks Start, and without a reachable repair or termination
+          control that block would be a softlock. */}
+      <ExpeditionServicePanel />
+
       <PreGigStartButton
         t={t}
         isStarting={isStarting}
         isSetlistEmpty={setlist.length === 0}
+        isStartBlocked={isStartBlocked}
         onStartShow={handleStartShow}
       />
     </div>

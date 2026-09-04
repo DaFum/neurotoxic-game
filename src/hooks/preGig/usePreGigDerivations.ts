@@ -5,11 +5,16 @@ import type { ActiveEffectEntry } from '../../types/components'
 import type { AssetModifiers } from '../../types/assets'
 import type { TranslationCallback } from '../../types/callbacks'
 import type { ModifierOption } from '../usePreGigLogic'
+import type { ExpeditionTechnicalCondition } from '../../types/expedition'
 import { MODIFIER_COSTS, calculateGigModifierCost } from '../../utils/economy'
 import { getGigModifiers } from '../../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { resolveBandMeetingCost } from './preGigUtils'
+import {
+  getExpeditionConditionActiveEffects,
+  getExpeditionConditionPerformanceProfile
+} from '../../domain/expedition/condition'
 
 /**
  * Configuration properties for the pre-gig derivations hook.
@@ -20,6 +25,9 @@ interface UsePreGigDerivationsProps {
   gigModifiers: GigModifiers
   setlist: RhythmSetlistEntry[]
   typedT: TranslationCallback
+  technicalCondition?: ExpeditionTechnicalCondition | null
+  /** `canStartExpeditionPreGig` for the current state. */
+  canStartShow: boolean
 }
 
 /**
@@ -32,6 +40,7 @@ interface UsePreGigDerivationsReturn {
   currentModifiers: { activeEffects: ActiveEffectEntry[] }
   selectedSongIds: Set<string>
   calculatedBudget: number
+  isStartBlocked: boolean
 }
 
 /**
@@ -49,7 +58,9 @@ export const usePreGigDerivations = ({
   assets,
   gigModifiers,
   setlist,
-  typedT
+  typedT,
+  technicalCondition,
+  canStartShow
 }: UsePreGigDerivationsProps): UsePreGigDerivationsReturn => {
   const assetModifiers = useMemo(
     () => getActiveAssetModifiers(assets ?? []),
@@ -97,7 +108,22 @@ export const usePreGigDerivations = ({
     [assetModifiers.trainingCostMultiplier]
   )
 
-  const currentModifiers = getGigModifiers(band, gigModifiers)
+  const currentModifiers = useMemo(() => {
+    if (!technicalCondition) return getGigModifiers(band, gigModifiers)
+
+    // The same profile the gig itself will run on, passed to the same producer
+    // — so the penalties listed here are the ones the rhythm owners apply,
+    // not a parallel description of them.
+    const profile = getExpeditionConditionPerformanceProfile(technicalCondition)
+    const base = getGigModifiers(band, gigModifiers, profile)
+    return {
+      ...base,
+      activeEffects: [
+        ...base.activeEffects,
+        ...getExpeditionConditionActiveEffects(profile)
+      ]
+    }
+  }, [band, gigModifiers, technicalCondition])
 
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()
@@ -123,12 +149,18 @@ export const usePreGigDerivations = ({
     return acc
   }, [assetModifiers, gigModifiers])
 
+  // The gate itself belongs to `canStartExpeditionPreGig`; this hook only
+  // reports it. Deriving `disabledGroups` again here would be a second copy of
+  // the rule, free to drift from the one the run actually enforces.
+  const isStartBlocked = !canStartShow
+
   return {
     assetModifiers,
     GIG_MODIFIER_OPTIONS,
     adjustedBandMeetingCost,
     currentModifiers,
     selectedSongIds,
-    calculatedBudget
+    calculatedBudget,
+    isStartBlocked
   }
 }

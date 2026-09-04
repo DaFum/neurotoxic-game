@@ -5,6 +5,7 @@ import { NEUROTOXIC_PEDAL_CROWD_DECAY_MODIFIER } from '../context/gameConstants'
 import type { BandState, BandMember } from '../types'
 import type { Song } from '../types/audio'
 import type { ActiveEffect } from '../types/components'
+import type { ExpeditionConditionPerformanceProfile } from '../types/expedition'
 
 const findMembersByName = <K extends string>(
   members: BandMember[],
@@ -57,7 +58,8 @@ const PRE_GIG_ACTIVE_EFFECTS = {
  */
 export const getGigModifiers = (
   bandState: BandState,
-  gigModifiers: Record<string, unknown> = {}
+  gigModifiers: Record<string, unknown> = {},
+  conditionProfile?: ExpeditionConditionPerformanceProfile | null
 ) => {
   const modifiers: {
     hitWindowBonus: number
@@ -146,6 +148,18 @@ export const getGigModifiers = (
       key: 'ui:pregig.effects.damagedGear',
       fallback: 'DAMAGED GEAR: Sloppy timing & weak tone'
     })
+  }
+
+  // Technical Condition rides along as the profile itself: `setupGigPhysics`
+  // reads its timing multiplier for the hit windows and the scoring hooks read
+  // the miss and streak axes, so the thresholds stay owned by one function. An
+  // audio hazard reuses the existing damaged-gear channel — the same sloppy
+  // timing the botched setup minigames already produce.
+  if (conditionProfile) {
+    modifiers.expeditionCondition = conditionProfile
+    if (conditionProfile.audioHazardLevel >= 1) {
+      modifiers.noteJitter = true
+    }
   }
 
   if (bandState.inventory?.neurotoxicPedal) {

@@ -25,6 +25,32 @@ import {
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
+import {
+  getExpeditionCargoView,
+  materializeExpeditionCargo
+} from '../../domain/expedition/cargo'
+import {
+  applyTechnicalWear,
+  clampCondition,
+  createDefaultTechnicalCondition,
+  getExpeditionTechnicalCondition
+} from '../../domain/expedition/condition'
+import {
+  getExpeditionEventResultEffect,
+  sanitizeExpeditionEventResultIds
+} from '../../domain/expedition/eventDeltas'
+import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
+import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
+import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
+import {
+  canClaimExpeditionInsurance,
+  getExpeditionInsurancePremium
+} from '../../domain/expedition/insurance'
+import {
+  DEFECT_SEVERITY_DAMAGE,
+  createDeterministicHiddenDefect
+} from '../../domain/expedition/defects'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
@@ -40,28 +66,66 @@ import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
-  isCurrentExpeditionFailureId
+  isCurrentExpeditionFailureId,
+  syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
   AcceptExpeditionFailurePayload,
+  AcceptExpeditionTechnicalFailurePayload,
   AddExpeditionRewardPayload,
   AdvanceExpeditionRoutePayload,
+  ApplyExpeditionEventDeltaPayload,
+  ClaimExpeditionInsurancePayload,
   CompleteExpeditionPayload,
+  ExecuteExpeditionInspectionPayload,
   ExtractExpeditionPayload,
   PrepareExpeditionRunPayload,
   PrepareNextExpeditionPayload,
   ResolveExpeditionCrisisPayload,
+  ResolveExpeditionDefectPayload,
+  RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
-  StartExpeditionPayload
+  StartExpeditionPayload,
+  TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
+  ConditionGroup,
   ExpeditionFailureReason,
+  ExpeditionRepairIntent,
   ExpeditionSettlement,
+  ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
+
+/**
+ * Executes a vehicle insurance claim, restoring van fuel and condition.
+ */
+const applyVehicleInsuranceClaim = (state: GameState): GameState => {
+  if (!canClaimExpeditionInsurance(state, 'vehicle')) return state
+  const currentCondition = state.player.van?.condition ?? 100
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      van: {
+        ...state.player.van,
+        fuel: Math.max(
+          state.player.van?.fuel ?? 0,
+          EXPEDITION_TOW_FUEL_RESTORED
+        ),
+        condition: currentCondition <= 0 ? 25 : currentCondition
+      }
+    },
+    expedition: {
+      ...state.expedition,
+      insuranceClaimConsumed: true,
+      claimConsumed: true
+    }
+  }
+}
 
 /**
  * Narrows a payload seed to the unsigned 32-bit integer range the root
@@ -173,12 +237,16 @@ export const handleStartExpedition = (
     currentFuel,
     normalized.build.startingFuelTarget
   )
+  const insurancePremium = getExpeditionInsurancePremium(
+    normalized.insurancePolicyId
+  )
+  const upfrontCost = fuelCost + insurancePremium
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   // The protected slice is untouchable from the very first spend, including the
-  // pre-run top-up: otherwise the build could protect cash it then spends.
-  if (money - fuelCost < normalized.build.protectedCareerCash) return state
+  // pre-run top-up and insurance premium: otherwise the build could protect cash it then spends.
+  if (money - upfrontCost < normalized.build.protectedCareerCash) return state
 
-  const nextMoney = money - fuelCost
+  const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
 
   return {
@@ -212,9 +280,14 @@ export const handleStartExpedition = (
       routeStep: 0,
       visitedNodeIds: [preparedMap.startNodeId],
       loadout: normalized,
+      insurancePolicyId: normalized.insurancePolicyId ?? null,
+      insuranceClaimConsumed: false,
+      claimConsumed: false,
       startingMoney: nextMoney,
       startingFame: fame,
-      protectedCareerCash: normalized.build.protectedCareerCash
+      protectedCareerCash: normalized.build.protectedCareerCash,
+      cargo: materializeExpeditionCargo(normalized, state),
+      technicalCondition: createDefaultTechnicalCondition()
     }
   }
 }
@@ -775,9 +848,36 @@ export const handleResolveExpeditionCrisis = (
   }
 
   const { choice } = payload
-  if (choice !== 'refuel' && choice !== 'tow') return state
+  if (choice !== 'refuel' && choice !== 'tow' && choice !== 'insurance_claim') {
+    return state
+  }
   // Only a choice the derived crisis actually offers may be paid for.
   if (!pending.choices.includes(choice)) return state
+
+  if (choice === 'insurance_claim') {
+    if (pending.reason === 'technical_shutdown') {
+      const targetGroup = pending.sourceId as ConditionGroup
+      if (!canClaimExpeditionInsurance(state, 'technical', targetGroup)) {
+        return state
+      }
+      const tc = getExpeditionTechnicalCondition(state)
+      return {
+        ...state,
+        expedition: {
+          ...state.expedition,
+          insuranceClaimConsumed: true,
+          claimConsumed: true,
+          technicalFailureAccepted: false,
+          technicalCondition: {
+            ...tc,
+            [targetGroup]: 25
+          }
+        }
+      }
+    }
+
+    return applyVehicleInsuranceClaim(state)
+  }
 
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
     ? state.player.van.fuel
@@ -803,4 +903,530 @@ export const handleResolveExpeditionCrisis = (
       van: { ...state.player.van, fuel: nextFuel }
     }
   }
+}
+
+/**
+ * Authoritatively executes an insurance claim during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Insurance claim intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleClaimExpeditionInsurance = (
+  state: GameState,
+  payload: ClaimExpeditionInsurancePayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const { claimType, targetGroup } = payload
+  if (claimType !== 'vehicle' && claimType !== 'technical') return state
+
+  if (!canClaimExpeditionInsurance(state, claimType, targetGroup)) return state
+
+  if (claimType === 'vehicle') {
+    return applyVehicleInsuranceClaim(state)
+  }
+
+  if (claimType === 'technical') {
+    if (!targetGroup) return state
+    const tc = getExpeditionTechnicalCondition(state)
+    const nextTc: ExpeditionTechnicalCondition = {
+      ...tc,
+      [targetGroup]: 25
+    }
+    return {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        technicalCondition: nextTc,
+        insuranceClaimConsumed: true,
+        claimConsumed: true,
+        technicalFailureAccepted: false
+      }
+    }
+  }
+
+  return state
+}
+
+/**
+ * Authoritatively executes a repair on equipment during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Player repair intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleExecuteExpeditionRepair = (
+  state: GameState,
+  payload: ExpeditionRepairIntent
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+
+  const resolution = resolveExpeditionRepair(state, payload)
+  if (!resolution.ok) return state
+
+  const { result } = resolution
+  const tc = getExpeditionTechnicalCondition(state)
+  const targetGroup = payload.targetGroup
+  const sourceGroup = payload.sourceGroup
+
+  const nextTargetCondition = clampCondition(
+    tc[targetGroup] + result.targetRestore
+  )
+  const nextSourceCondition = sourceGroup
+    ? clampCondition(tc[sourceGroup] - result.sourceDamage)
+    : undefined
+
+  const updatedTc: ExpeditionTechnicalCondition = {
+    ...tc,
+    [targetGroup]: nextTargetCondition,
+    ...(sourceGroup && nextSourceCondition !== undefined
+      ? { [sourceGroup]: nextSourceCondition }
+      : {})
+  }
+
+  if (result.resolvesTargetDefects && updatedTc.defects.length > 0) {
+    if (payload.mode === 'professional') {
+      updatedTc.defects = updatedTc.defects.map(d =>
+        d.group === targetGroup &&
+        (d.status === 'revealed' || d.status === 'triggered')
+          ? { ...d, status: 'resolved' as const }
+          : d
+      )
+    } else if (payload.mode === 'cannibalize') {
+      let resolvedOne = false
+      updatedTc.defects = updatedTc.defects.map(d => {
+        if (
+          !resolvedOne &&
+          d.group === targetGroup &&
+          (d.status === 'revealed' || d.status === 'triggered')
+        ) {
+          resolvedOne = true
+          return { ...d, status: 'resolved' as const }
+        }
+        return d
+      })
+    }
+  }
+
+  if (result.createsHiddenDefect) {
+    const defect = createDeterministicHiddenDefect(
+      state.runSeed,
+      targetGroup,
+      payload.mode === 'improvise' ? 'improvise' : 'field_repair',
+      state.expedition.routeStep,
+      payload.mode === 'improvise' ? 1 : 2
+    )
+    const alreadyExists = updatedTc.defects.some(d => d.id === defect.id)
+    if (!alreadyExists) {
+      updatedTc.defects = [...updatedTc.defects, defect]
+    }
+  }
+
+  const currentCargo = state.expedition.cargo
+  const nextCargo = currentCargo
+    ? {
+        ...currentCargo,
+        spareParts: Math.max(0, currentCargo.spareParts - result.sparePartsCost)
+      }
+    : null
+
+  const nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) - result.moneyCost
+  )
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    expedition: {
+      ...state.expedition,
+      cargo: nextCargo,
+      technicalCondition: updatedTc
+    }
+  }
+}
+
+/**
+ * Reveals a hidden equipment defect.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, revelation source, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleRevealExpeditionDefect = (
+  state: GameState,
+  payload: RevealExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (!targetDefect || targetDefect.status !== 'hidden') return state
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'revealed'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        defects: updatedDefects
+      }
+    }
+  }
+}
+
+/**
+ * Triggers an equipment defect, inflicting condition wear.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, trigger boundary, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleTriggerExpeditionDefect = (
+  state: GameState,
+  payload: TriggerExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (
+    !targetDefect ||
+    targetDefect.status === 'triggered' ||
+    targetDefect.status === 'resolved'
+  ) {
+    return state
+  }
+
+  const damage = DEFECT_SEVERITY_DAMAGE[targetDefect.severity] || 8
+  const nextCondition = clampCondition(tc[targetDefect.group] - damage)
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'triggered'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        [targetDefect.group]: nextCondition,
+        defects: updatedDefects
+      }
+    }
+  }
+}
+
+/**
+ * Resolves an equipment defect following repair.
+ *
+ * @param state - Current game state.
+ * @param payload - Defect id, repair resolution id, and expected route step.
+ * @returns Next state, or identical reference when preconditions fail.
+ */
+export const handleResolveExpeditionDefect = (
+  state: GameState,
+  payload: ResolveExpeditionDefectPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const tc = state.expedition.technicalCondition
+  if (!tc || !Array.isArray(tc.defects)) return state
+
+  const targetIndex = tc.defects.findIndex(d => d.id === payload.defectId)
+  if (targetIndex === -1) return state
+
+  const targetDefect = tc.defects[targetIndex]
+  if (!targetDefect || targetDefect.status === 'resolved') return state
+
+  const updatedDefects = [...tc.defects]
+  updatedDefects[targetIndex] = {
+    ...targetDefect,
+    status: 'resolved'
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalCondition: {
+        ...tc,
+        defects: updatedDefects
+      }
+    }
+  }
+}
+
+/**
+ * Executes an equipment inspection during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Inspection intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleExecuteExpeditionInspection = (
+  state: GameState,
+  payload: ExecuteExpeditionInspectionPayload
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const resolution = resolveExpeditionInspection(state, payload)
+  if (!resolution.ok) return state
+
+  const { result } = resolution
+  let nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) - result.diagnosticFee
+  )
+
+  const tc = getExpeditionTechnicalCondition(state)
+  let updatedDefects = [...tc.defects]
+  const revealedSet = new Set(result.revealedDefectIds)
+
+  if (revealedSet.size > 0) {
+    updatedDefects = updatedDefects.map(d =>
+      revealedSet.has(d.id) && d.status === 'hidden'
+        ? { ...d, status: 'revealed' as const }
+        : d
+    )
+  }
+
+  let updatedTc: ExpeditionTechnicalCondition = {
+    ...tc,
+    defects: updatedDefects
+  }
+
+  if (result.professionalRepair && payload.repairTargetGroup) {
+    const targetGroup = payload.repairTargetGroup
+    nextMoney = clampPlayerMoney(
+      nextMoney - result.professionalRepair.moneyCost
+    )
+    const nextTargetCondition = clampCondition(
+      updatedTc[targetGroup] + result.professionalRepair.targetRestore
+    )
+    updatedTc = {
+      ...updatedTc,
+      [targetGroup]: nextTargetCondition
+    }
+    if (result.professionalRepair.resolvesTargetDefects) {
+      updatedTc.defects = updatedTc.defects.map(d =>
+        d.group === targetGroup &&
+        (d.status === 'revealed' || d.status === 'triggered')
+          ? { ...d, status: 'resolved' as const }
+          : d
+      )
+    }
+  }
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    expedition: {
+      ...state.expedition,
+      technicalCondition: updatedTc
+    }
+  }
+}
+
+/**
+ * Handles explicit acceptance of technical failure when equipment is disabled.
+ *
+ * @param state - Current game state.
+ * @param payload - Expected route step stale guard.
+ * @returns State with technicalFailureAccepted set and pendingFailure synced.
+ */
+export const handleAcceptExpeditionTechnicalFailure = (
+  state: GameState,
+  payload: AcceptExpeditionTechnicalFailurePayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+  const tc = state.expedition?.technicalCondition
+  if (!tc) return state
+  const hasDisabled = tc.pa === 0 || tc.instruments === 0 || tc.stageGear === 0
+  if (!hasDisabled) return state
+
+  return syncExpeditionPendingFailure({
+    ...state,
+    expedition: {
+      ...state.expedition,
+      technicalFailureAccepted: true
+    }
+  })
+}
+
+/**
+ * Applies the Expedition results a resolved event requested.
+ *
+ * @param state - Current game state.
+ * @param payload - Known result ids plus the route-step stale guard.
+ * @returns Next state, or the identical reference when nothing applies.
+ *
+ * @remarks
+ * The event engine is the only caller, and it may only name results. Every
+ * number comes from the Expedition's own registry here, so an effect authored
+ * with a hand-picked value, an unknown result id, or a forged payload carrying
+ * Condition or cargo figures cannot move run state: unknown ids are filtered
+ * out, and a payload whose ids are all unknown leaves state untouched.
+ */
+export const handleApplyExpeditionEventDelta = (
+  state: GameState,
+  payload: ApplyExpeditionEventDeltaPayload
+): GameState => {
+  if (state.expedition?.status !== 'active') return state
+  if (payload === null || typeof payload !== 'object') return state
+  if (
+    !isFiniteNumber(payload.expectedRouteStep) ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
+
+  const resultIds = sanitizeExpeditionEventResultIds(payload.resultIds)
+  if (resultIds.length === 0) return state
+
+  const wear = { pa: 0, instruments: 0, stageGear: 0 }
+  let sparePartsDelta = 0
+  let suppliesDelta = 0
+  let heatDelta = 0
+  for (const resultId of resultIds) {
+    const effect = getExpeditionEventResultEffect(resultId)
+    if (effect.conditionWear) {
+      wear.pa += effect.conditionWear.pa
+      wear.instruments += effect.conditionWear.instruments
+      wear.stageGear += effect.conditionWear.stageGear
+    }
+    if (effect.cargoDelta) {
+      sparePartsDelta += effect.cargoDelta.spareParts ?? 0
+      suppliesDelta += effect.cargoDelta.supplies ?? 0
+    }
+    heatDelta += effect.heat ?? 0
+  }
+
+  let nextExpedition = state.expedition
+
+  const hasWear = wear.pa > 0 || wear.instruments > 0 || wear.stageGear > 0
+  if (hasWear) {
+    // Scaled by the same chassis/module rule the post-gig wear uses, so an
+    // event cannot bypass a tourbus built to survive wear.
+    const multiplier = Math.max(
+      0,
+      finiteNumberOr(
+        getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier,
+        1.0
+      )
+    )
+    nextExpedition = {
+      ...nextExpedition,
+      technicalCondition: applyTechnicalWear(
+        getExpeditionTechnicalCondition(state),
+        {
+          pa: Math.round(wear.pa * multiplier),
+          instruments: Math.round(wear.instruments * multiplier),
+          stageGear: Math.round(wear.stageGear * multiplier)
+        }
+      )
+    }
+  }
+
+  if (sparePartsDelta !== 0 || suppliesDelta !== 0) {
+    // Gains are authorized by the cargo authority's own free-slot count: an
+    // event may hand the player a spare part, but not one the bus cannot hold.
+    const view = getExpeditionCargoView(state)
+    let freeSlots = view.availableVisibleSlots
+    const grant = (current: number, delta: number): number => {
+      if (delta <= 0) return Math.max(0, current + delta)
+      const granted = Math.min(delta, freeSlots)
+      freeSlots -= granted
+      return current + granted
+    }
+    // Listed field by field rather than spread from the view: the view also
+    // carries the derived capacity numbers, and folding those into the
+    // persisted cargo would turn a computed readout into stored state.
+    nextExpedition = {
+      ...nextExpedition,
+      cargo: {
+        spareParts: grant(view.spareParts, sparePartsDelta),
+        supplies: grant(view.supplies, suppliesDelta),
+        technicalGearItemIds: view.technicalGearItemIds,
+        merch: view.merch,
+        contraband: view.contraband
+      }
+    }
+  }
+
+  const nextState =
+    nextExpedition === state.expedition
+      ? state
+      : { ...state, expedition: nextExpedition }
+
+  return syncExpeditionPendingFailure(
+    applyExpeditionEventHeat(nextState, heatDelta)
+  )
 }

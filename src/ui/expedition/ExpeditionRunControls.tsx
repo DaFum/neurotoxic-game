@@ -9,6 +9,7 @@ import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
 import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 
@@ -72,6 +73,10 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
 
   return (
     <div data-testid='expedition-run-controls'>
+      {/* Repairs and inspections belong on the road, where the player still
+          has the choice between paying for a fix and pushing on. */}
+      <ExpeditionServicePanel />
+
       {isAtExtractionWindow ? (
         <ActionButton
           onClick={openDialog}

@@ -79,7 +79,9 @@ export const useHandleMiss = ({
         baseCrowdDecay,
         gameStateRef.current.modifiers?.crowdDecay,
         gameStateRef.current.rivalPenaltyActive,
-        RIVAL_GIG_CROWD_DECAY_PENALTY
+        RIVAL_GIG_CROWD_DECAY_PENALTY,
+        gameStateRef.current.modifiers?.expeditionCondition
+          ?.missStaminaMultiplier
       )
 
       // Calculate new overload and stats outside the setState callback
