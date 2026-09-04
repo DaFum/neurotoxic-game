@@ -75,6 +75,16 @@ export const useMainMenu = () => {
     [changeScene]
   )
 
+  // Additive on purpose: the classic Start Tour path stays exactly as it was,
+  // and the Expedition gets its own entry into Tour Prep. G5 owns the HQ/hub
+  // transition that eventually makes the Expedition the default loop.
+  const handleStartExpedition = useCallback(() => {
+    changeScene(GAME_PHASES.TOUR_PREP)
+    // Fire-and-forget, matching the classic start flow: audio setup never
+    // blocks a scene transition.
+    initializeAudio()
+  }, [changeScene, initializeAudio])
+
   return {
     t,
     isStarting,
@@ -91,6 +101,7 @@ export const useMainMenu = () => {
     setShowExistingSavePrompt,
     inputRef,
     handleStartTour,
+    handleStartExpedition,
     handleNameSubmit,
     handleLoad,
     handleCredits,

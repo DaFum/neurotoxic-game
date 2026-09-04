@@ -50,6 +50,12 @@ const IntroVideo = lazy(() =>
 const AssetsScene = lazy(() =>
   import('./assets/AssetsScene.tsx').then(m => ({ default: m.AssetsScene }))
 )
+const TourPrep = lazy(() =>
+  import('../scenes/TourPrep.tsx').then(m => ({ default: m.TourPrep }))
+)
+const RunSummary = lazy(() =>
+  import('../scenes/RunSummary.tsx').then(m => ({ default: m.RunSummary }))
+)
 
 /**
  * Represents the valid application states determining the top-level scene rendering.
@@ -94,6 +100,10 @@ export function SceneRouter({ currentScene, minigameType }: SceneRouterProps) {
       return <ClinicScene />
     case GAME_PHASES.ASSETS:
       return <AssetsScene />
+    case GAME_PHASES.TOUR_PREP:
+      return <TourPrep />
+    case GAME_PHASES.RUN_SUMMARY:
+      return <RunSummary />
     case GAME_PHASES.TRAVEL_MINIGAME:
       return <TourbusScene />
     case GAME_PHASES.PRE_GIG:

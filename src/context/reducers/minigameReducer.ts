@@ -52,6 +52,7 @@ import {
   createItemDeliveredQuestEvent
 } from '../../quests/producers/itemQuestEvents'
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
+import { applyExpeditionRouteAdvance } from './expeditionReducer'
 
 /**
  * Starts the tourbus travel minigame for a selected destination node.
@@ -334,6 +335,12 @@ export const handleCompleteTravelMinigame = (
       region: getRegionKeyForLocation(nextLocation) ?? 'Unknown'
     })
   )
+
+  // Travel is also how an Expedition advances along its route. Composed in the
+  // same reducer pass rather than dispatched separately, so the player's node
+  // and the run's route step can never diverge; the helper re-validates the
+  // move against the route and no-ops outside an active run.
+  newState = applyExpeditionRouteAdvance(newState, targetNode.id)
 
   return newState
 }

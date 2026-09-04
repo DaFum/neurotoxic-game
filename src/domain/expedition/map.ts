@@ -204,6 +204,18 @@ const pickHomeVenue = (): Venue | undefined =>
     Venue | undefined
 
 /**
+ * Bounded memo cache for built routes.
+ *
+ * @remarks
+ * The builder is pure, and every reducer handler plus the map selector rebuilds
+ * the route from the same inputs on each call. Caching keeps a state-change
+ * cascade from re-running node generation dozens of times; the bound stops a
+ * long session from retaining every route it ever previewed.
+ */
+const ROUTE_CACHE = new Map<string, ExpeditionMap>()
+const ROUTE_CACHE_LIMIT = 8
+
+/**
  * Builds the deterministic Expedition route for one run.
  *
  * @param runSeed - The canonical root `GameState.runSeed`.
@@ -220,6 +232,21 @@ export const buildExpeditionMap = (
   routeProfile: ExpeditionRouteProfile = NEUTRAL_EXPEDITION_ROUTE_PROFILE
 ): ExpeditionMap => {
   const seed = Math.trunc(Number.isFinite(runSeed) ? runSeed : 0) >>> 0
+  const cacheKey = [
+    seed,
+    tourTypeId,
+    regionId,
+    routeProfile.meaningfulNodeCount,
+    routeProfile.specialWeight,
+    routeProfile.festivalWeight,
+    routeProfile.restWeight,
+    routeProfile.supplyWeight,
+    routeProfile.undergroundAllowed,
+    routeProfile.rivalAllowed
+  ].join('|')
+  const cached = ROUTE_CACHE.get(cacheKey)
+  if (cached) return cached
+
   const rng = mulberry32(seed)
   const meaningfulNodeCount = resolveMeaningfulNodeCount(routeProfile)
   const layers = planLayers(meaningfulNodeCount, rng)
@@ -404,7 +431,7 @@ export const buildExpeditionMap = (
     `edges=${connections.map(edge => `${edge.from}>${edge.to}`).join(',')}`
   ].join('|')
 
-  return {
+  const built: ExpeditionMap = {
     mapHash: hashExpeditionRoute(canonical),
     tourTypeId,
     regionId,
@@ -416,6 +443,13 @@ export const buildExpeditionMap = (
     meta,
     nodeOrder
   }
+
+  if (ROUTE_CACHE.size >= ROUTE_CACHE_LIMIT) {
+    const oldest = ROUTE_CACHE.keys().next().value
+    if (oldest !== undefined) ROUTE_CACHE.delete(oldest)
+  }
+  ROUTE_CACHE.set(cacheKey, built)
+  return built
 }
 
 /**

@@ -185,10 +185,13 @@ export const handleStartExpedition = (
     },
     // The Expedition route becomes the played map, so the existing overworld,
     // travel and gig flow drive the run instead of a parallel route surface.
-    gameMap: {
+    // Cloned rather than aliased: `buildExpeditionMap` memoizes its result, and
+    // handing the cached object graph to mutable game state would let a later
+    // in-place node update corrupt every rebuild of the same route.
+    gameMap: structuredClone({
       nodes: preparedMap.nodes,
       connections: preparedMap.connections
-    },
+    }),
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'active',
@@ -225,14 +228,40 @@ export const handleAdvanceExpeditionRoute = (
 ): GameState => {
   if (state.expedition.status !== 'active') return state
   if (payload === null || typeof payload !== 'object') return state
-  const { nodeId, expectedRouteStep } = payload
-  if (typeof nodeId !== 'string' || isForbiddenKey(nodeId)) return state
+  const { expectedRouteStep } = payload
   if (
     !isFiniteNumber(expectedRouteStep) ||
     expectedRouteStep !== state.expedition.routeStep
   ) {
     return state
   }
+  return applyExpeditionRouteAdvance(state, payload.nodeId)
+}
+
+/**
+ * Advances the run one node deeper, without the public stale guard.
+ *
+ * @param state - Current game state.
+ * @param nodeId - Target node.
+ * @returns Next state, or the identical reference for an illegal move.
+ *
+ * @remarks
+ * A pure state-to-state helper rather than a dispatched action, so the travel
+ * reducer can commit the player's move and the run's route step in one atomic
+ * pass — two dispatches could leave `player.currentNodeId` a node deeper than
+ * `expedition.routeStep`. Same authority as the public action: the target must
+ * be a real neighbour exactly one step deeper, and a run that is not active
+ * leaves the state untouched.
+ */
+export const applyExpeditionRouteAdvance = (
+  state: GameState,
+  nodeId: unknown
+): GameState => {
+  // Optional read: the travel reducer composes this on every arrival, so a
+  // state without the slice must be a no-op rather than a crash in the
+  // unrelated Career travel path.
+  if (state.expedition?.status !== 'active') return state
+  if (typeof nodeId !== 'string' || isForbiddenKey(nodeId)) return state
 
   const loadout = state.expedition.loadout
   if (!loadout) return state
@@ -244,7 +273,9 @@ export const handleAdvanceExpeditionRoute = (
   )
   if (!Object.hasOwn(map.meta, nodeId)) return state
   const target = map.meta[nodeId]
-  if (!target || target.routeStep !== expectedRouteStep + 1) return state
+  if (!target || target.routeStep !== state.expedition.routeStep + 1) {
+    return state
+  }
 
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
@@ -420,7 +451,11 @@ const materializeRetainedRewards = (
     const definition = resolveExpeditionRewardDefinition(
       entry.rewardDefinitionId
     )
-    if (!definition) return entry
+    // A definition that no longer resolves (a reward retired between builds)
+    // has nothing to apply, but the entry is still marked settled: leaving it
+    // unmaterialized would make `PREPARE_NEXT_EXPEDITION` refuse forever and
+    // strand the player on the run summary.
+    if (!definition) return { ...entry, materialized: true }
     next = materializeExpeditionReward(next, definition)
     return { ...entry, materialized: true }
   })

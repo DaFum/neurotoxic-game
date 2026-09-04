@@ -185,3 +185,124 @@ describe('START_EXPEDITION preconditions', () => {
     assert.equal(refused.expedition.status, 'prepared')
   })
 })
+
+describe('route progression through the real travel path', () => {
+  it('advances the run when the travel minigame completes', () => {
+    const started = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    const target = map.connections.find(
+      edge => edge.from === map.startNodeId
+    )?.to
+    assert.ok(target, 'the fixture route has no first hop')
+
+    const traveling = gameReducer(started, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: target }
+    })
+    const arrived = gameReducer(traveling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [] }
+    })
+
+    assert.equal(arrived.player.currentNodeId, target)
+    assert.equal(arrived.expedition.routeStep, 1)
+    assert.deepEqual(arrived.expedition.visitedNodeIds, [
+      map.startNodeId,
+      target
+    ])
+  })
+
+  it('keeps the player node and the route step in lockstep', () => {
+    // The travel commit and the route advance happen in one reducer pass, so
+    // there is no window where the player stands a node deeper than the run.
+    let state = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    for (let hop = 0; hop < 3; hop++) {
+      const from = state.player.currentNodeId
+      const target = map.connections.find(edge => edge.from === from)?.to
+      assert.ok(target, `no edge from ${from}`)
+      state = gameReducer(state, {
+        type: ActionTypes.START_TRAVEL_MINIGAME,
+        payload: { targetNodeId: target }
+      })
+      state = gameReducer(state, {
+        type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+        payload: { damageTaken: 0, itemsCollected: [] }
+      })
+      assert.equal(state.player.currentNodeId, target)
+      assert.equal(state.expedition.routeStep, hop + 1)
+    }
+  })
+
+  it('leaves Career travel untouched outside a run', () => {
+    const career = preparedState()
+    const careerIdle = {
+      ...career,
+      expedition: { ...career.expedition, status: 'idle', prep: null }
+    }
+    // Career play uses the generated overworld map, so the expedition helper
+    // must not interfere with a plain travel completion.
+    const traveling = gameReducer(careerIdle, {
+      type: ActionTypes.START_TRAVEL_MINIGAME,
+      payload: { targetNodeId: 'node_1_0' }
+    })
+    const arrived = gameReducer(traveling, {
+      type: ActionTypes.COMPLETE_TRAVEL_MINIGAME,
+      payload: { damageTaken: 0, itemsCollected: [] }
+    })
+    assert.equal(arrived.expedition.routeStep, 0)
+    assert.deepEqual(arrived.expedition.visitedNodeIds, [])
+  })
+
+  it('refuses a forged jump straight to the Finale', () => {
+    const started = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    const forged = gameReducer(started, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId: map.finaleNodeId, expectedRouteStep: 0 }
+    })
+    assert.equal(forged, started)
+  })
+
+  it('refuses a replayed arrival at the same node', () => {
+    let state = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    const target = map.connections.find(
+      edge => edge.from === map.startNodeId
+    )?.to
+    const payload = { nodeId: target, expectedRouteStep: 0 }
+    state = gameReducer(state, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload
+    })
+    const replayed = gameReducer(state, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload
+    })
+    assert.equal(replayed, state)
+    assert.equal(replayed.expedition.routeStep, 1)
+  })
+
+  it('records the extraction windows the run passed through', () => {
+    let state = start(preparedState(), validPayload())
+    const map = fixtureMap()
+    for (let hop = 0; hop < 4; hop++) {
+      const from =
+        state.expedition.visitedNodeIds[
+          state.expedition.visitedNodeIds.length - 1
+        ]
+      const target = map.connections.find(edge => edge.from === from)?.to
+      state = gameReducer(state, {
+        type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+        payload: {
+          nodeId: target,
+          expectedRouteStep: state.expedition.routeStep
+        }
+      })
+    }
+    assert.ok(state.expedition.extractionWindowsSeen.length > 0)
+    for (const step of state.expedition.extractionWindowsSeen) {
+      assert.ok(step >= 3, 'an extraction window before step 3 was recorded')
+    }
+  })
+})

@@ -12,6 +12,8 @@ import type { MapNode as GameMapNode, CityTraitState } from '../types'
 import type { NodeVisibility } from '../types/map'
 import type { TranslationCallback } from '../types/callbacks'
 import { BALANCE_CONSTANTS, calcCancellationRisk } from '../utils/gameState'
+import { ExpeditionNodeFogBadge } from '../ui/expedition/ExpeditionNodeFogBadge'
+import type { ExpeditionNodeFog } from '../ui/expedition/ExpeditionNodeFogBadge'
 
 const VAN_STYLE = { transform: 'translate(0, -50%)' }
 const MOTION_INITIAL = { scale: 0 }
@@ -37,6 +39,12 @@ interface MapNodeTooltipProps {
   tourSuccess?: number
   cityTraits?: CityTraitState
   isPendingConfirm?: boolean
+  /**
+   * Hybrid-Fog projection for this node while an Expedition is active. When
+   * present it *replaces* the exact venue readout, because the design hides
+   * exact payout and wear behind earned intel.
+   */
+  expeditionFog?: ExpeditionNodeFog
 }
 
 /**
@@ -57,6 +65,8 @@ interface MapNodeProps {
   harmony?: number
   tourSuccess?: number
   cityTraits?: CityTraitState
+  /** Hybrid-Fog projection for this node while an Expedition is active. */
+  expeditionFog?: ExpeditionNodeFog
 }
 
 /**
@@ -159,10 +169,15 @@ const MapNodeTooltip = memo(
     harmony,
     tourSuccess,
     cityTraits,
-    isPendingConfirm
+    isPendingConfirm,
+    expeditionFog
   }: MapNodeTooltipProps) => {
     const isGigLike =
       node.type === 'GIG' || node.type === 'FESTIVAL' || node.type === 'FINALE'
+    // During an Expedition the fog badge owns the numeric readout, so the
+    // Career venue block is suppressed rather than shown alongside it —
+    // otherwise the exact payout would leak at intel level 0.
+    const showCareerVenueDetail = isGigLike && !expeditionFog
 
     // `.map-wrap` clips its overflow, so a tooltip hanging below a node low on
     // the map is cut off; generated maps place nodes as far down as 86% of the
@@ -213,7 +228,9 @@ const MapNodeTooltip = memo(
           </div>
         )}
 
-        {isGigLike && (
+        {expeditionFog && <ExpeditionNodeFogBadge fog={expeditionFog} t={t} />}
+
+        {showCareerVenueDetail && (
           <div className='text-xs text-ash-gray font-mono'>
             {node.type === 'FESTIVAL' && (
               <div className='text-warning-yellow font-bold mb-1'>
@@ -287,7 +304,8 @@ export const MapNodeView = memo(
     ticketPrice,
     harmony,
     tourSuccess,
-    cityTraits
+    cityTraits,
+    expeditionFog
   }: MapNodeProps) => {
     const { t } = useTranslation(['venues', 'ui'])
     const [isHoveredLocal, setIsHoveredLocal] = useState(false)
@@ -474,6 +492,7 @@ export const MapNodeView = memo(
           tourSuccess={tourSuccess}
           cityTraits={cityTraits}
           isPendingConfirm={isPendingConfirm}
+          expeditionFog={expeditionFog}
         />
       </div>
     )
@@ -503,7 +522,13 @@ export const MapNodeView = memo(
       prev.tourSuccess === next.tourSuccess &&
       // cityTraits entries are stable references owned by gameMap.cityStates,
       // so reference equality covers all current and future trait fields.
-      prev.cityTraits === next.cityTraits
+      prev.cityTraits === next.cityTraits &&
+      // The fog projection is rebuilt per render, so identity comparison would
+      // defeat the memo; the intel level plus the reward band is what actually
+      // changes what the tooltip shows.
+      prev.expeditionFog?.intelLevel === next.expeditionFog?.intelLevel &&
+      prev.expeditionFog?.rewardTier === next.expeditionFog?.rewardTier &&
+      prev.expeditionFog?.dangerTier === next.expeditionFog?.dangerTier
     )
   }
 )

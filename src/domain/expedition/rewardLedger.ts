@@ -100,7 +100,7 @@ export const EXPEDITION_REWARD_REGISTRY = {
 /**
  * Reward id accepted by the ledger.
  */
-export type ExpeditionRewardId = keyof typeof EXPEDITION_REWARD_REGISTRY
+type ExpeditionRewardId = keyof typeof EXPEDITION_REWARD_REGISTRY
 
 /**
  * Resolves a reward id to its definition.
@@ -146,7 +146,7 @@ export const isExpeditionRewardSecuredOnEarn = (
 /**
  * Reason a reward could not enter the ledger.
  */
-export type ExpeditionRewardRejectionReason =
+type ExpeditionRewardRejectionReason =
   | 'RUN_NOT_ACTIVE'
   | 'UNKNOWN_REWARD'
   | 'SOURCE_TYPE_MISMATCH'

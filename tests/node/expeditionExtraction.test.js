@@ -439,3 +439,40 @@ describe('PREPARE_NEXT_EXPEDITION', () => {
     assert.equal(prepared.runSeed, 999)
   })
 })
+
+describe('settlement robustness', () => {
+  it('never strands the player when a retired reward cannot resolve', () => {
+    // A reward id retired between builds has nothing to materialize. Leaving
+    // the entry unsettled would make PREPARE_NEXT refuse forever, so the run
+    // summary must still be dismissible.
+    let state = walkTo(startedState({ money: 5000 }), 1)
+    state = bankRouteRare(state)
+    const entryId = state.expedition.rewardLedger[0]?.id
+    state = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        rewardLedger: [
+          {
+            ...state.expedition.rewardLedger[0],
+            rewardDefinitionId: 'reward_retired_in_a_later_build'
+          }
+        ]
+      }
+    }
+    state = walkTo(state, WINDOW_STEP)
+
+    const extracted = extract(state, {
+      expectedRouteStep: WINDOW_STEP,
+      explicitRareRewardIds: [entryId]
+    })
+    assert.equal(extracted.expedition.status, 'extracted')
+    assert.equal(extracted.expedition.rewardLedger[0]?.materialized, true)
+
+    const cleared = gameReducer(extracted, {
+      type: ActionTypes.PREPARE_NEXT_EXPEDITION,
+      payload: { runId: 'run_fixture' }
+    })
+    assert.equal(cleared.expedition.status, 'idle')
+  })
+})

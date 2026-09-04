@@ -72,7 +72,7 @@ export const EXPEDITION_FAILURE_PRIORITY = [
 export const getExpeditionEconomyFailureSignal = (
   state: GameState
 ): ExpeditionFailureSignal | null => {
-  if (state.expedition.status !== 'active') return null
+  if (state.expedition?.status !== 'active') return null
   const spendable = getExpeditionSpendableCash(state)
   if (!shouldTriggerBankruptcy(spendable, 0, getTotalDailyObligations(state))) {
     return null
@@ -100,7 +100,7 @@ export const getExpeditionEconomyFailureSignal = (
 export const getExpeditionMobilityFailureSignal = (
   state: GameState
 ): ExpeditionFailureSignal | null => {
-  if (state.expedition.status !== 'active') return null
+  if (state.expedition?.status !== 'active') return null
   if (!state.gameMap) return null
 
   const spendable = getExpeditionSpendableCash(state)
@@ -209,7 +209,10 @@ export const deriveExpeditionPendingFailure = (
   state: GameState,
   laterGateSignals: readonly ExpeditionFailureSignal[] = []
 ): PendingExpeditionFailure | null => {
-  if (state.expedition.status !== 'active') return null
+  // Optional read: this is reached from the root reducer for *every* action, so
+  // a state without the slice (an older save mid-migration, a partial fixture)
+  // must be a no-op rather than a crash in an unrelated domain.
+  if (state.expedition?.status !== 'active') return null
   const signal = composeExpeditionFailureSignal(state, laterGateSignals)
   if (!signal) return null
   return {
@@ -234,6 +237,7 @@ export const deriveExpeditionPendingFailure = (
  * rejected action leaves the exact same state object.
  */
 export const syncExpeditionPendingFailure = (state: GameState): GameState => {
+  if (!state.expedition) return state
   const derived = deriveExpeditionPendingFailure(state)
   const current = state.expedition.pendingFailure
 

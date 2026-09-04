@@ -93,7 +93,7 @@ export const getExpeditionNodeIntelLevel = (
 /**
  * Reason an intel reveal was refused.
  */
-export type ExpeditionIntelRejectionReason =
+type ExpeditionIntelRejectionReason =
   | 'RUN_NOT_ACTIVE'
   | 'UNKNOWN_NODE'
   | 'STALE_ROUTE_STEP'

@@ -34,7 +34,7 @@ export { MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS }
  * van condition) are Career-wide purchase outcomes, not gig modifiers, and are
  * deliberately left to their existing global owners.
  */
-export const EXPEDITION_GEAR_PERFORMANCE_STATS = [
+const EXPEDITION_GEAR_PERFORMANCE_STATS = [
   'guitarDifficulty',
   'drumMultiplier',
   'crowdDecay'
@@ -43,7 +43,7 @@ export const EXPEDITION_GEAR_PERFORMANCE_STATS = [
 /**
  * One `band.performance` stat an Expedition gear selection can move.
  */
-export type ExpeditionGearPerformanceStat =
+type ExpeditionGearPerformanceStat =
   (typeof EXPEDITION_GEAR_PERFORMANCE_STATS)[number]
 
 /**
@@ -188,7 +188,7 @@ export const getExpeditionCommittedGearProfile = (
   const ownedGearItemIds = getExpeditionOwnedPerformanceGear(state)
   const ownedSet = new Set(ownedGearItemIds)
   const committed =
-    state.expedition.loadout?.build.equipment.selectedGearItemIds ?? []
+    state.expedition?.loadout?.build.equipment.selectedGearItemIds ?? []
 
   const selectedGearItemIds: string[] = []
   const seen = new Set<string>()
