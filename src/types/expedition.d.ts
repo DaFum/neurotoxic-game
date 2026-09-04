@@ -424,3 +424,63 @@ export interface ExpeditionChassisProfile {
   authorityEventWeightMultiplier: number
   hiddenContrabandCapacity: number
 }
+
+/**
+ * Profile defining mechanical adjustments provided by an installed vehicle module.
+ */
+export interface ExpeditionVehicleModuleProfile {
+  cargoCapacityBonus: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  inspectionLevel: 0 | 1 | 2
+  authorityIntelBonus: 0 | 1
+  hiddenContrabandCapacity: number
+  restStressRecoveryBonus: number
+}
+
+/**
+ * Numeric tuning rules resolved for the current Expedition.
+ */
+export interface ExpeditionNumericRules {
+  startingSpareParts: number
+  startingHeat: number
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  technicalWearMultiplier: number
+  repairCostMultiplier: number
+  fieldRepairEfficiency: number
+  gigRewardMultiplier: number
+  contractRewardMultiplier: number
+  contractPenaltyMultiplier: number
+  pressureRewardMultiplier: number
+  heatGainMultiplier: number
+  exposureGainMultiplier: number
+  crewStressMultiplier: number
+  extractionRetentionMultiplier: number
+  rareRewardMultiplier: number
+  completionMultiplier: number
+  rivalEventWeightMultiplier: number
+  authorityEventWeightMultiplier: number
+  rivalRewardMultiplier: number
+  finaleRewardMultiplier: number
+  nodeIntelFloor: 0 | 1 | 2
+  explicitExtractionRareCarrySlots: number
+}
+
+/**
+ * Discrete rule flags resolved for the current Expedition.
+ */
+export interface ExpeditionRuleFlags {
+  fieldRepairNoHiddenDefect: boolean
+  fieldRepairMinimumCondition: number
+  severeReliefBypass: boolean
+}
+
+/**
+ * Complete composable effective rules governing the active Expedition.
+ */
+export interface EffectiveExpeditionRules {
+  numeric: ExpeditionNumericRules
+  flags: ExpeditionRuleFlags
+  legendary: Record<string, boolean>
+}

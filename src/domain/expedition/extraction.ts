@@ -15,6 +15,7 @@ import type {
   ExpeditionRewardLedgerEntry,
   ExpeditionSettlement
 } from '../../types/expedition'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 
 /**
  * Base Cash/Fame retention per terminal kind, before G5 multipliers.
@@ -38,7 +39,7 @@ export const MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS = 3 as const
 /**
  * Resolves how many unsecured rare rewards a voluntary extraction may carry.
  *
- * @param _state - Current game state.
+ * @param state - Current game state.
  * @returns Carry slots, always inside `1..3`.
  *
  * @remarks
@@ -49,8 +50,17 @@ export const MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS = 3 as const
  * source for the cap.
  */
 export const getExplicitExtractionRareCarrySlots = (
-  _state: GameState
-): number => BASE_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS
+  state: GameState
+): number => {
+  const rules = getEffectiveExpeditionRules(state)
+  return Math.max(
+    BASE_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS,
+    Math.min(
+      MAX_EXPLICIT_EXTRACTION_RARE_CARRY_SLOTS,
+      rules.numeric.explicitExtractionRareCarrySlots
+    )
+  )
+}
 
 /**
  * Kinds of terminal transition a settlement can describe.
