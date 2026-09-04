@@ -288,7 +288,7 @@ test('Task 6: Expedition Repair Modes Registry and Pure Resolver', async t => {
         targetRestore: 999
       })
       assert.equal(forgedState.expedition.cargo?.spareParts, 1) // still deducted 1
-      assert.ok(forgedState.expedition.technicalCondition.pa <= 100)
+      assert.equal(forgedState.expedition.technicalCondition.pa, 68)
     }
   )
 
