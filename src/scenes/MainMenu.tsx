@@ -31,6 +31,7 @@ export const MainMenu = () => {
     setShowExistingSavePrompt,
     inputRef,
     handleStartTour,
+    handleStartExpedition,
     handleNameSubmit,
     handleLoad,
     handleCredits,
@@ -68,6 +69,7 @@ export const MainMenu = () => {
 
         <MainMenuActionButtons
           handleStartTour={handleStartTour}
+          handleStartExpedition={handleStartExpedition}
           isStarting={isStarting}
           handleLoad={handleLoad}
           isLoadingGame={isLoadingGame}

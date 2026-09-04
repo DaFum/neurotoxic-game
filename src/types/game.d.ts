@@ -159,6 +159,13 @@ export interface GameState {
    * Consumed by `useMapGeneration`; unlike `rngSeed` it never rotates.
    */
   runSeed: number
+  /**
+   * Run-scoped Roguelite Expedition orchestration state. Stores run identity,
+   * the immutable committed build, Intel/reward/failure evidence and the
+   * finalized outcome only; it deliberately carries no seed of its own so
+   * `runSeed` above stays the single map/run seed owner.
+   */
+  expedition: import('./expedition').ExpeditionState
 }
 
 /**
@@ -338,6 +345,47 @@ export type GameAction =
       { reason: import('./assets').StartCrowdfundFailureReason }
     >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
+  // Roguelite Expedition (G1)
+  | Action<
+      ActionTypes['PREPARE_EXPEDITION_RUN'],
+      import('./actions').PrepareExpeditionRunPayload
+    >
+  | Action<
+      ActionTypes['START_EXPEDITION'],
+      import('./actions').StartExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_ROUTE'],
+      import('./actions').AdvanceExpeditionRoutePayload
+    >
+  | Action<
+      ActionTypes['REVEAL_EXPEDITION_NODE_INTEL'],
+      import('./actions').RevealExpeditionNodeIntelPayload
+    >
+  | Action<
+      ActionTypes['ADD_EXPEDITION_REWARD'],
+      import('./actions').AddExpeditionRewardPayload
+    >
+  | Action<
+      ActionTypes['EXTRACT_EXPEDITION'],
+      import('./actions').ExtractExpeditionPayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION'],
+      import('./actions').CompleteExpeditionPayload
+    >
+  | Action<
+      ActionTypes['ACCEPT_EXPEDITION_FAILURE'],
+      import('./actions').AcceptExpeditionFailurePayload
+    >
+  | Action<
+      ActionTypes['PREPARE_NEXT_EXPEDITION'],
+      import('./actions').PrepareNextExpeditionPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_CRISIS'],
+      import('./actions').ResolveExpeditionCrisisPayload
+    >
 
 export * from './player'
 export * from './band'

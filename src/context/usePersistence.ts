@@ -94,7 +94,8 @@ const PERSISTED_FIELDS = {
   crowdfundCampaigns: Array.isArray,
   rngSeed: isFiniteNumber,
   runSeed: isFiniteNumber,
-  rivalBand: isNullableObject
+  rivalBand: isNullableObject,
+  expedition: isLooseRecord
 } satisfies Partial<Record<keyof GameState, (value: unknown) => boolean>>
 
 const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<

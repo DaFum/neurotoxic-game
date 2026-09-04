@@ -21,6 +21,9 @@ import { EventLog } from '../ui/overworld/EventLog'
 import { translateLocation } from '../utils/locationI18n'
 import { OverworldMap } from '../components/overworld'
 import { OverworldModals } from '../components/overworld/OverworldModals'
+import { getExpeditionNodeFogByNodeId } from '../domain/expedition/nodeFog'
+import { ExpeditionStatusStrip } from '../ui/expedition/ExpeditionStatusStrip'
+import { ExpeditionRunControls } from '../ui/expedition/ExpeditionRunControls'
 
 /**
  * The map navigation scene where players select their next destination.
@@ -31,6 +34,8 @@ export const Overworld = () => {
   const gameMap = useGameSelector(state => state.gameMap)
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
+  // `null` outside a run, which keeps the Career map readout unchanged.
+  const expeditionFogByNodeId = useGameSelector(getExpeditionNodeFogByNodeId)
   const liabilities = useGameSelector(state => state.liabilities)
   const social = useGameSelector(state => state.social)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
@@ -168,7 +173,12 @@ export const Overworld = () => {
         hoveredNode={hoveredNode}
         currentNode={currentNode ?? null}
         activeStoryFlags={activeStoryFlags}
+        expeditionFogByNodeId={expeditionFogByNodeId}
       />
+
+      <ExpeditionStatusStrip />
+
+      <ExpeditionRunControls />
 
       <EventLog t={t} day={player.day} locationId={player.location} />
 

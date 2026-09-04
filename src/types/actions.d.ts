@@ -164,3 +164,99 @@ export interface SpawnRivalBandPayload {
 export interface MoveRivalBandPayload {
   rivalBand: RivalBandState
 }
+
+/**
+ * Payload claiming a fresh Expedition run identity and root run seed.
+ *
+ * @remarks
+ * `runSeed` is the next value of the canonical root `GameState.runSeed`; the
+ * Expedition slice never stores a seed of its own.
+ */
+export interface PrepareExpeditionRunPayload {
+  prepId: string
+  runSeed: number
+}
+
+/**
+ * Payload starting the prepared Expedition run as one transaction.
+ *
+ * @remarks
+ * `expectedRunSeed` is a stale guard against the canonical root
+ * `GameState.runSeed`, and `loadout` is a *candidate*: the reducer revalidates
+ * it against the route rebuilt from that seed and stores only the normalized
+ * result.
+ */
+export interface StartExpeditionPayload {
+  prepId: string
+  expectedRunSeed: number
+  loadout: unknown
+}
+
+/**
+ * Payload advancing the run one node deeper along the prepared route.
+ */
+export interface AdvanceExpeditionRoutePayload {
+  nodeId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload raising one node's Fog-of-War intel by exactly one level.
+ */
+export interface RevealExpeditionNodeIntelPayload {
+  nodeId: string
+  source: import('./expedition').ExpeditionIntelSource
+  expectedLevel: 0 | 1
+  expectedRouteStep: number
+  grantId?: string
+}
+
+/**
+ * Payload banking one source-proven rare reward in the run ledger.
+ */
+export interface AddExpeditionRewardPayload {
+  expectedRewardId: string
+  sourceType: import('./expedition').ExpeditionRewardSourceType
+  sourceId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload extracting voluntarily at a legal extraction window.
+ */
+export interface ExtractExpeditionPayload {
+  expectedRouteStep: number
+  explicitRareRewardIds: string[]
+}
+
+/**
+ * Payload completing the run after a successful Finale.
+ */
+export interface CompleteExpeditionPayload {
+  finaleResultId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload accepting the run's current source-derived failure.
+ */
+export interface AcceptExpeditionFailurePayload {
+  pendingFailureId: string
+  expectedRouteStep: number
+}
+
+/**
+ * Payload returning a finalized run to `idle`.
+ */
+export interface PrepareNextExpeditionPayload {
+  runId: string
+}
+
+/**
+ * Payload paying for a recovery option on the run's current crisis.
+ */
+export interface ResolveExpeditionCrisisPayload {
+  pendingFailureId: string
+  choice: 'refuel' | 'tow'
+  expectedRouteStep: number
+}
