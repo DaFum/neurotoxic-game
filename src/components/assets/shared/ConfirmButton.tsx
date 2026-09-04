@@ -21,7 +21,10 @@ export const ConfirmButton = ({
   return (
     <ActionButton
       variant='custom'
-      className={'px-3 py-2 text-sm disabled:opacity-40 ' + className}
+      className={
+        'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--section-accent,var(--color-toxic-green))] focus-visible:ring-offset-2 focus-visible:ring-offset-void-black px-3 py-2 text-sm disabled:opacity-40 ' +
+        className
+      }
       style={{
         background: 'var(--section-accent, var(--color-toxic-green))',
         color: 'var(--color-void-black)',
