@@ -26,7 +26,12 @@ import {
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
 import { materializeExpeditionCargo } from '../../domain/expedition/cargo'
-import { createDefaultTechnicalCondition } from '../../domain/expedition/condition'
+import {
+  clampCondition,
+  createDefaultTechnicalCondition,
+  getExpeditionTechnicalCondition
+} from '../../domain/expedition/condition'
+import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionIntelReveal } from '../../domain/expedition/nodeIntel'
 import {
   materializeExpeditionReward,
@@ -61,7 +66,9 @@ import type {
 } from '../../types/actions'
 import type {
   ExpeditionFailureReason,
+  ExpeditionRepairIntent,
   ExpeditionSettlement,
+  ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
 
@@ -805,6 +812,113 @@ export const handleResolveExpeditionCrisis = (
       ...state.player,
       money: clampPlayerMoney(finiteNumberOr(state.player.money, 0) - cost),
       van: { ...state.player.van, fuel: nextFuel }
+    }
+  }
+}
+
+/**
+ * Authoritatively executes a repair on equipment during an active Expedition run.
+ *
+ * @param state - Current game state.
+ * @param payload - Player repair intent.
+ * @returns Updated game state or original reference when precondition fails.
+ */
+export const handleExecuteExpeditionRepair = (
+  state: GameState,
+  payload: ExpeditionRepairIntent
+): GameState => {
+  if (state.expedition.status !== 'active') return state
+  if (!payload || typeof payload !== 'object') return state
+
+  const resolution = resolveExpeditionRepair(state, payload)
+  if (!resolution.ok) return state
+
+  const { result } = resolution
+  const tc = getExpeditionTechnicalCondition(state)
+  const targetGroup = payload.targetGroup
+  const sourceGroup = payload.sourceGroup
+
+  const nextTargetCondition = clampCondition(
+    tc[targetGroup] + result.targetRestore
+  )
+  const nextSourceCondition = sourceGroup
+    ? clampCondition(tc[sourceGroup] - result.sourceDamage)
+    : undefined
+
+  const updatedTc: ExpeditionTechnicalCondition = {
+    ...tc,
+    [targetGroup]: nextTargetCondition,
+    ...(sourceGroup && nextSourceCondition !== undefined
+      ? { [sourceGroup]: nextSourceCondition }
+      : {})
+  }
+
+  if (result.resolvesTargetDefects && updatedTc.defects.length > 0) {
+    if (payload.mode === 'professional') {
+      updatedTc.defects = updatedTc.defects.map(d =>
+        d.group === targetGroup &&
+        (d.status === 'revealed' || d.status === 'triggered')
+          ? { ...d, status: 'resolved' as const }
+          : d
+      )
+    } else if (payload.mode === 'cannibalize') {
+      let resolvedOne = false
+      updatedTc.defects = updatedTc.defects.map(d => {
+        if (
+          !resolvedOne &&
+          d.group === targetGroup &&
+          (d.status === 'revealed' || d.status === 'triggered')
+        ) {
+          resolvedOne = true
+          return { ...d, status: 'resolved' as const }
+        }
+        return d
+      })
+    }
+  }
+
+  if (result.createsHiddenDefect) {
+    const defectId = `defect_${targetGroup}_${payload.mode}_step_${state.expedition.routeStep}`
+    const alreadyExists = updatedTc.defects.some(d => d.id === defectId)
+    if (!alreadyExists) {
+      updatedTc.defects = [
+        ...updatedTc.defects,
+        {
+          id: defectId,
+          group: targetGroup,
+          severity: (payload.mode === 'improvise' ? 1 : 2) as 1 | 2 | 3,
+          status: 'hidden',
+          source: payload.mode === 'improvise' ? 'improvise' : 'field_repair',
+          createdAtRouteStep: state.expedition.routeStep,
+          triggerAt: 'pre_gig',
+          triggerRouteStep: state.expedition.routeStep + 1
+        }
+      ]
+    }
+  }
+
+  const currentCargo = state.expedition.cargo
+  const nextCargo = currentCargo
+    ? {
+        ...currentCargo,
+        spareParts: Math.max(0, currentCargo.spareParts - result.sparePartsCost)
+      }
+    : null
+
+  const nextMoney = clampPlayerMoney(
+    finiteNumberOr(state.player.money, 0) - result.moneyCost
+  )
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: nextMoney
+    },
+    expedition: {
+      ...state.expedition,
+      cargo: nextCargo,
+      technicalCondition: updatedTc
     }
   }
 }
