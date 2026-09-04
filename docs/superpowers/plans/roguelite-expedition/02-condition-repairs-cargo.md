@@ -210,18 +210,43 @@ G2 composes Base -> Chassis -> installed modules. G3/G4/G5 extend the same funct
 
 ---
 
-## Task 4: Materialize a real cargo manifest from owned selections
+## Task 4: Materialize a real cargo manifest from owned selections, including committed performance gear
 
 ```ts
+export const BASE_EXPEDITION_CARGO_CAPACITY = 8 as const
+
 export interface ExpeditionCargoState {
   spareParts: number
   supplies: number
+  technicalGearItemIds: string[]
   merch: ExpeditionMerchSelection[]
   contraband: ExpeditionContrabandSelection[]
 }
 ```
 
-`materializeExpeditionCargo(loadout, state)` validates exact ownership and quantities from canonical inventory/stash, derives slot use from actual selected items and the selected vehicle capacity, and stores only the committed manifest.
+`technicalGearItemIds` is not caller-entered independently: START copies exactly `loadout.build.equipment.selectedGearItemIds` from G1 after G1 validation.
+
+Capacity units:
+
+```text
+1 spare part                  = 1 visible cargo slot
+1 supply                      = 1 visible cargo slot
+1 selected technical gear id  = 1 visible cargo slot
+1 merch selection stack       = 1 visible cargo slot per selected stack
+1 Contraband stack             = 1 cargo slot, using hiddenContrabandCapacity first then visible cargo
+```
+
+Visible capacity:
+
+```ts
+BASE_EXPEDITION_CARGO_CAPACITY
++ chassis.cargoCapacityBonus
++ installedModuleProfile.cargoCapacityBonus
+```
+
+Hidden Contraband capacity is separate and may only absorb Contraband stacks.
+
+`materializeExpeditionCargo(loadout, state)` validates exact ownership/quantities from canonical inventory/stash and exact equality between G1 selected gear ids and `technicalGearItemIds`. It derives visible/hidden slot use itself.
 
 All active Expedition consumers must use `getExpeditionCargoView(state)`:
 
@@ -231,9 +256,20 @@ Contraband use/UI
 Roadie/minigame selection
 Expedition crafting/use
 Authority confiscation/event effects
+technical gear activation profile
 ```
 
-Omitted merch earns zero Expedition merch revenue. Omitted Contraband cannot be selected/used/confiscated by Expedition paths even if it still exists in persistent stash.
+Omitted merch earns zero Expedition merch revenue. Omitted Contraband cannot be selected/used/confiscated by Expedition paths even if it still exists in persistent stash. Owned but unselected HQ gear cannot affect active Expedition performance.
+
+Required tests:
+
+```text
+three selected gear items consume three cargo slots
+fourth G1 gear selection is already rejected before cargo materialization
+selected gear + merch/parts cannot exceed visible capacity
+hidden Contraband capacity cannot carry merch/gear/supplies
+unselected owned gear does not enter cargo view or active modifier profile
+```
 
 ---
 
@@ -550,7 +586,8 @@ Expected: PASS.
 
 - Every real Tourbus `{flavor,tier}` maps deterministically to one chassis archetype and G6 imports that function.
 - Every chassis/module rule has a production consumer through the single effective-rules path.
-- Cargo is a manifest of real selected ownership and omitted content cannot leak into Expedition consumers.
+- Cargo is a manifest of real selected ownership; G1 selected performance gear consumes ordinary cargo capacity and unselected gear cannot affect active Expedition play.
+- Omitted merch/Contraband/gear cannot leak into Expedition consumers.
 - Technical Condition changes real gameplay and has no softlock at zero.
 - Field/professional/improvise/cannibalize all have exact reducer-derived contracts.
 - Hidden defects have create/reveal/trigger/resolve semantics with no pre-reveal UI/ARIA leak.
