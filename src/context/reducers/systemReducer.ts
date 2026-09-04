@@ -80,6 +80,7 @@ import {
 } from './assetSanitizers'
 import { sanitizeExpeditionState } from './expeditionSanitizers'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
 
@@ -539,6 +540,13 @@ const processContrabandExpiry = (band: BandState): BandState => {
 }
 
 const applyDailyBankruptcyCheck = (state: GameState): GameState => {
+  // An active run owns its own insolvency: the day tick records what it could
+  // not pay and the Expedition raises a source-derived crisis with an
+  // accept/extract decision attached. Sending the Career to GAMEOVER here
+  // would make that dialog unreachable and take the decision away. The Career
+  // check resumes the moment the run settles.
+  if (state.expedition?.status === 'active') return state
+
   const totalDailyObligations = getTotalDailyObligations(state)
   // No gig income during day advance; obligations go through the dedicated
   // third parameter instead of being smuggled through netIncome.
@@ -573,6 +581,15 @@ export const handleAdvanceDay = (
     rng?: () => number
   }
 ): GameState => {
+  // Read before the ticks below: asset upkeep and liability instalments are
+  // mandatory costs too, and they are settled by their own authorities, which
+  // know nothing about the run's protected slice. Whatever they take out of it
+  // has to be accounted for rather than silently absorbed, so the floor as it
+  // stood before they ran is captured here.
+  const expeditionFloorBeforeTicks = Math.min(
+    finiteNumberOr(state.player.money, 0),
+    getExpeditionDayPolicy(state).protectedCareerCash
+  )
   let nextStatePre = processAssetTick(state)
   const liabilityTick = processLiabilityTick(nextStatePre)
   nextStatePre = liabilityTick.state
@@ -673,8 +690,15 @@ export const handleAdvanceDay = (
           if (!Number.isFinite(roll)) return 1
           return Math.min(Math.max(roll!, 0), 1 - Number.EPSILON)
         }
+  // How far the mandatory upstream ticks pushed the balance past the floor.
+  const expeditionUpstreamShortfall = Math.max(
+    0,
+    expeditionFloorBeforeTicks - finiteNumberOr(state.player.money, 0)
+  )
   const { player, band, social, pendingFlags, expeditionUnpaidObligation } =
     calculateDailyUpdates(state, rng)
+  const unpaidDailyObligation =
+    expeditionUnpaidObligation + expeditionUpstreamShortfall
 
   // Reset daily event counter immutably
   const nextPlayer = { ...player, eventsTriggeredToday: 0 }
@@ -768,13 +792,13 @@ export const handleAdvanceDay = (
   // clears a carried shortfall instead of leaving the crisis latched.
   if (
     state.expedition &&
-    state.expedition.unpaidDailyObligation !== expeditionUnpaidObligation
+    state.expedition.unpaidDailyObligation !== unpaidDailyObligation
   ) {
     nextState = {
       ...nextState,
       expedition: {
         ...state.expedition,
-        unpaidDailyObligation: expeditionUnpaidObligation
+        unpaidDailyObligation
       }
     }
   }

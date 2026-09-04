@@ -18,6 +18,7 @@ import { ActionTypes } from '../../src/context/actionTypes'
 import { advanceDay } from '../../src/context/actionCreators'
 import { calculateDailyUpdates } from '../../src/utils/simulationUtils'
 import { BALANCE_CONSTANTS } from '../../src/utils/gameState'
+import { GAME_PHASES } from '../../src/context/gameConstants'
 import { resolveExpeditionTravelCost } from '../../src/domain/expedition/travel'
 import { getExpeditionEconomyFailureSignal } from '../../src/domain/expedition/failure'
 import { fixtureMap, startedState } from '../expeditionLifecycleFixture.js'
@@ -209,6 +210,64 @@ describe('mandatory obligations are paid from the run slice only', () => {
       'the wealth drain was still taxing run Cash'
     )
     assert.ok(inRun.player.money > protectedCash)
+  })
+})
+
+describe('the run owns its own insolvency', () => {
+  it('does not send the Career to GAMEOVER during a run', () => {
+    // With nothing protected, a broke run used to hit the legacy bankruptcy
+    // transition, which put the game on the GAMEOVER scene and made the run's
+    // own accept/extract dialog unreachable.
+    const run = startedState({ money: 5000, fuel: 100 })
+    const broke = { ...run, player: { ...run.player, money: 0 } }
+    const next = gameReducer(broke, advanceDay(broke))
+
+    assert.equal(next.currentScene, broke.currentScene)
+    assert.equal(next.expedition.pendingFailure?.reason, 'bankruptcy')
+    assert.ok(next.expedition.unpaidDailyObligation > 0)
+  })
+
+  it('hands the Career check back once the run has settled', () => {
+    const run = startedState({ money: 5000, fuel: 100 })
+    const settled = {
+      ...run,
+      player: { ...run.player, money: 0 },
+      expedition: { ...run.expedition, status: 'idle' }
+    }
+    const next = gameReducer(settled, advanceDay(settled))
+    assert.equal(next.currentScene, GAME_PHASES.GAMEOVER)
+  })
+
+  it('records what the upstream ticks took out of the protected slice', () => {
+    // Asset upkeep and liability instalments are settled by their own
+    // authorities, which know nothing about the run. What they take below the
+    // floor has to become run debt rather than vanishing.
+    const run = startedState(
+      { money: 5000, fuel: 100 },
+      { build: { protectedCareerCash: 4000 } }
+    )
+    const withLiability = {
+      ...run,
+      player: { ...run.player, money: 4000 },
+      liabilities: {
+        liability_1: {
+          id: 'liability_1',
+          source: 'loan',
+          assetId: 'asset_1',
+          principalRemaining: 1000,
+          interestRate: 0.01,
+          dailyPayment: 120,
+          missedPayments: 0,
+          status: 'active'
+        }
+      }
+    }
+    const next = gameReducer(withLiability, advanceDay(withLiability))
+
+    // The liability was paid from the protected slice, so the run owes it back
+    // on top of the day's own unpayable obligations.
+    assert.ok(next.player.money < 4000)
+    assert.ok(next.expedition.unpaidDailyObligation >= 120)
   })
 })
 

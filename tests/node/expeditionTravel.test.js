@@ -136,14 +136,17 @@ describe('resolveExpeditionTravelCost during a run', () => {
     assert.equal(settlement.fuelConsumed, 27 - 7)
   })
 
-  it('never reports a negative cost', () => {
+  it('never reports negative wear, and nets fuel honestly', () => {
     const state = startedState()
     const settlement = resolveExpeditionTravelCost(
       state,
       routeContext({ baseFuelLiters: 5, minigameFuelBonus: 999 })
     )
-    assert.equal(settlement.fuelConsumed, 0)
+    // Wear is a cost and can never be negative. Fuel is a net figure: an
+    // oversized pickup is a gain, and `clampVanFuel` in the reducer — not this
+    // resolver — is what keeps the tank inside its bounds.
     assert.ok(settlement.vehicleWear >= 0)
+    assert.ok(settlement.fuelConsumed < 0)
   })
 
   it('falls back to a distance-derived cost for a node off the route', () => {
@@ -180,9 +183,31 @@ describe('resolveExpeditionTravelCost during a run', () => {
         Number.isFinite(settlement.vehicleWear),
         `vehicleWear for ${JSON.stringify(overrides)}`
       )
-      assert.ok(settlement.fuelConsumed >= 0)
       assert.ok(settlement.vehicleWear >= 0)
     }
+  })
+})
+
+describe('minigame fuel pickups', () => {
+  it('nets a career leg out to a fuel gain when pickups exceed the burn', () => {
+    // Career travel predates the Expedition layer and let a good minigame run
+    // end a short trip with a fuller tank. Clamping the consumption at zero
+    // would silently pocket the surplus.
+    const state = createInitialState()
+    const { fuelConsumed } = resolveExpeditionTravelCost(
+      state,
+      routeContext({ baseFuelLiters: 1.36, minigameFuelBonus: 1.5 })
+    )
+    assert.ok(fuelConsumed < 0)
+    assert.equal(Math.round(fuelConsumed * 100) / 100, -0.14)
+  })
+
+  it('nets an in-run leg out the same way', () => {
+    const state = startedState({ money: 5000, fuel: 50 })
+    const { fuelConsumed } = resolveExpeditionTravelCost(state, {
+      ...routeContext({ baseFuelLiters: 2, minigameFuelBonus: 20 })
+    })
+    assert.ok(fuelConsumed < 0)
   })
 })
 
