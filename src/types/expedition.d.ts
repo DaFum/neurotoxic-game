@@ -404,3 +404,23 @@ export interface ExpeditionState {
   pendingFailure: PendingExpeditionFailure | null
   outcome: ExpeditionOutcome | null
 }
+
+/**
+ * Chassis archetypes for Expedition runs.
+ */
+export type ExpeditionChassisArchetype =
+  'compact' | 'diy' | 'coach' | 'armored_hauler'
+
+/**
+ * Profile defining mechanical adjustments for a chassis archetype.
+ */
+export interface ExpeditionChassisProfile {
+  archetype: ExpeditionChassisArchetype
+  fuelConsumptionMultiplier: number
+  roadWearMultiplier: number
+  cargoCapacityBonus: number
+  fieldRepairEfficiency: number
+  crewStressMultiplier: number
+  authorityEventWeightMultiplier: number
+  hiddenContrabandCapacity: number
+}
