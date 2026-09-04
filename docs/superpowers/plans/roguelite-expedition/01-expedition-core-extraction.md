@@ -211,6 +211,8 @@ The Expedition Equipment axis must use the repository's real HQ purchase ownersh
 Use `GEAR_LOOKUP`, `getPrimaryEffect`, `isItemOwned`, `band.inventory`, `player.hqUpgrades` and the canonical HQ gear/instrument catalog to derive owned performance gear.
 
 ```ts
+export const MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS = 3 as const
+
 export interface ExpeditionEquipmentCommitment {
   selectedGearItemIds: string[]
 }
@@ -258,6 +260,14 @@ export interface ExpeditionLoadout {
 
 `selectedGearItemIds` is a **run-only activation selection** over already-owned real catalog items. It does not mutate persistent ownership. Outside Expedition, existing purchase semantics stay unchanged.
 
+Selection rules:
+
+```text
+0..3 unique owned ids
+unknown/unowned ids rejected
+one selected item consumes one technical-gear cargo slot in G2
+```
+
 `getExpeditionOwnedPerformanceGear(state)` derives legal owned ids from canonical purchase state. `getExpeditionCommittedGearProfile(state)` resolves only selected committed items into Expedition gig modifiers, using the same catalog effect definitions. No selected id may be unknown or unowned.
 
 - [ ] **Step 1: Add ownership/selection tests**
@@ -267,6 +277,7 @@ owned HQ instrument may be selected
 unowned id rejected
 unknown id rejected
 same owned item selected twice rejected
+fourth selected item rejected
 purchased but unselected gear does not affect active Expedition modifier
 selected gear changes the real active gig modifier path
 non-Expedition gameplay keeps existing global purchase behavior
@@ -278,7 +289,7 @@ non-Expedition gameplay keeps existing global purchase behavior
 
 ```text
 setlistSongIds             legal current songs, non-empty, unique
-equipment                  all selectedGearItemIds are canonical owned gear/instruments
+equipment                  0..3 unique selectedGearItemIds, all canonical owned gear/instruments
 selectedTourbusModuleIds   exact installed ids on selected owned chassis
 merch                      selected owned quantities only
 contraband                 selected owned stash instances/stacks only
@@ -606,7 +617,8 @@ Expected: PASS.
 ## G1 exit criteria
 
 - Root `GameState.runSeed` is the only map/run seed owner; preview and active map cannot diverge through duplicate seed state.
-- The full build commits setlist, real owned HQ gear/instruments, selected chassis/modules, real cargo/Contraband, Sponsor offer, native Contracts, Fuel and protected Career Cash.
+- The full build commits setlist, 0..3 real owned HQ gear/instruments, selected chassis/modules, real cargo/Contraband, Sponsor offer, native Contracts, Fuel and protected Career Cash.
+- Selected performance gear consumes G2 technical-gear cargo capacity; the build has a real equipment trade-off.
 - No fictitious per-member production equip action exists in the plan.
 - Hybrid Fog is monotonic and source-entitled.
 - Hybrid Extraction distinguishes secured, explicitly carried and abandoned rare rewards.
