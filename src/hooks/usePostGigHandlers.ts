@@ -37,6 +37,7 @@ interface UsePostGigHandlersProps extends HandlerDispatchers {
   financials: PostGigFinancials | null
   activeStoryFlags: string[]
   setlist: RhythmSetlistEntry[]
+  expedition: GameState['expedition']
   /** True when the completed gig sits on the FINALE map node. */
   isFinaleGig?: boolean
   totalDailyObligations: number
@@ -60,6 +61,7 @@ export function usePostGigHandlers({
   financials,
   activeStoryFlags,
   setlist,
+  expedition,
   isFinaleGig,
   totalDailyObligations,
   updatePlayer,
@@ -105,7 +107,8 @@ export function usePostGigHandlers({
       setBrandOffers,
       setPostResult,
       unlockTrait,
-      addToast
+      addToast,
+      recordExpeditionCrewStressSource
     }),
     [
       updatePlayer,
@@ -118,7 +121,8 @@ export function usePostGigHandlers({
       setBrandOffers,
       setPostResult,
       unlockTrait,
-      addToast
+      addToast,
+      recordExpeditionCrewStressSource
     ]
   )
   const handleContinue = useContinueHandler({
@@ -129,6 +133,7 @@ export function usePostGigHandlers({
     currentGig,
     lastGigStats,
     setlist,
+    expedition,
     activeStoryFlags,
     isFinaleGig,
     totalDailyObligations,

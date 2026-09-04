@@ -42,7 +42,11 @@ const EXPEDITION_EVENT_RESULTS: Readonly<
   },
   attention_faded: {
     heat: -6
-  }
+  },
+  crew_conflict_separated: {},
+  crew_band_tension_heard: {},
+  crew_breakthrough_followed: {},
+  crew_injury_scare_pushed: {}
 }
 
 /**

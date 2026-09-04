@@ -73,6 +73,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
   const expedition = useGameSelector(state => state.expedition)
+  const gameState = useGameSelector(state => state)
   const canStartShow = useGameSelector(canStartExpeditionPreGig)
   const {
     changeScene,
@@ -103,7 +104,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     typedT,
     technicalCondition:
       expedition?.status === 'active' ? expedition.technicalCondition : null,
-    canStartShow
+    canStartShow,
+    expeditionState: gameState
   })
 
   const {

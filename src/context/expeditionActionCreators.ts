@@ -475,3 +475,77 @@ export const applyExpeditionEventDelta = (
     }
   }
 }
+
+export const recordExpeditionCrewStressSource = (
+  state: GameState,
+  crewId: string,
+  sourceType: import('../types/expedition').ExpeditionCrewStressSourceType,
+  sourceId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_EXPEDITION_CREW_STRESS_SOURCE }
+> => ({
+  type: ActionTypes.RECORD_EXPEDITION_CREW_STRESS_SOURCE,
+  payload: {
+    crewId,
+    sourceType,
+    sourceId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+
+export const recordExpeditionRelationshipOutcome = (
+  state: GameState,
+  input: Omit<
+    import('../types/expedition').ExpeditionRelationshipOutcomeIntent,
+    'expectedRouteStep'
+  >
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_EXPEDITION_RELATIONSHIP_OUTCOME }
+> => ({
+  type: ActionTypes.RECORD_EXPEDITION_RELATIONSHIP_OUTCOME,
+  payload: { ...input, expectedRouteStep: state.expedition.routeStep }
+})
+
+export const advanceExpeditionCrewInjury = (
+  state: GameState,
+  targetId: string,
+  sourceId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ADVANCE_EXPEDITION_CREW_INJURY }
+> => ({
+  type: ActionTypes.ADVANCE_EXPEDITION_CREW_INJURY,
+  payload: { targetId, sourceId, expectedRouteStep: state.expedition.routeStep }
+})
+
+export const advanceExpeditionBandInjury = (
+  state: GameState,
+  targetId: string,
+  sourceId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ADVANCE_EXPEDITION_BAND_INJURY }
+> => ({
+  type: ActionTypes.ADVANCE_EXPEDITION_BAND_INJURY,
+  payload: { targetId, sourceId, expectedRouteStep: state.expedition.routeStep }
+})
+
+export const createContactIntelGrant = (
+  state: GameState,
+  eventId: string,
+  optionId: string,
+  nodeId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CREATE_CONTACT_INTEL_GRANT }
+> => ({
+  type: ActionTypes.CREATE_CONTACT_INTEL_GRANT,
+  payload: {
+    eventId,
+    optionId,
+    nodeId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})

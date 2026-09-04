@@ -178,6 +178,27 @@ export interface PrepareExpeditionRunPayload {
   runSeed: number
 }
 
+export interface ExpeditionInjurySourcePayload {
+  targetId: string
+  sourceId: string
+  expectedRouteStep: number
+}
+export interface SettleExpeditionCrewCareerPayload {
+  runId: string
+}
+export interface AcquireExpeditionCrewSignaturePayload {
+  crewId: string
+  expectedTraitId: string
+  sourceType: 'career_development'
+  sourceId: string
+}
+export interface CreateContactIntelGrantPayload {
+  eventId: string
+  optionId: string
+  nodeId: string
+  expectedRouteStep: number
+}
+
 /**
  * Payload starting the prepared Expedition run as one transaction.
  *

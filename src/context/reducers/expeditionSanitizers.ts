@@ -568,7 +568,11 @@ export const sanitizeExpeditionState = (
 
   let preparedMap: ReturnType<typeof buildExpeditionMap> | null = null
   if (isFiniteNumber(runSeed) && loadout) {
-    preparedMap = buildExpeditionMap(runSeed, loadout.tourTypeId, loadout.regionId)
+    preparedMap = buildExpeditionMap(
+      runSeed,
+      loadout.tourTypeId,
+      loadout.regionId
+    )
   }
 
   // For active or terminal Expeditions, validate visitedNodeIds strictly against canonical DAG.
@@ -615,9 +619,19 @@ export const sanitizeExpeditionState = (
       // cannot have valid source-proof state yet and MUST be dropped.
       if (
         entry.sourceType === 'contract' ||
-        entry.sourceType === 'crew_contact' ||
         entry.sourceType === 'finale_nonlegendary' ||
         entry.sourceType === 'event_rare'
+      ) {
+        continue
+      }
+      if (
+        entry.sourceType === 'crew_contact' &&
+        (entry.rewardDefinitionId !== 'reward_contact_backline_deal' ||
+          !(value.resolvedCrewSourceIds as unknown[] | undefined)?.some(
+            source =>
+              typeof source === 'string' &&
+              source.startsWith(`${entry.sourceId}:`)
+          ))
       ) {
         continue
       }
@@ -693,6 +707,16 @@ export const sanitizeExpeditionState = (
       readBoolean(value, 'claimConsumed') ||
       readBoolean(value, 'insuranceClaimConsumed'),
     technicalFailureAccepted: readBoolean(value, 'technicalFailureAccepted'),
+    crew: {
+      stressByCrewId: sanitizeCrewStressMap(
+        isLooseRecord(value.crew) ? value.crew.stressByCrewId : undefined
+      ),
+      injuryByCrewId: sanitizeCrewInjuryMap(
+        isLooseRecord(value.crew) ? value.crew.injuryByCrewId : undefined
+      )
+    },
+    bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
+    resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),
@@ -704,4 +728,51 @@ export const sanitizeExpeditionState = (
         }
       : {})
   }
+}
+
+const sanitizeCrewStressMap = (value: unknown): Record<string, number> => {
+  const result = Object.create(null) as Record<string, number>
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value)) {
+    if (isForbiddenKey(key) || !isFiniteNumber(entry)) continue
+    result[key] = Math.max(0, Math.min(100, entry))
+  }
+  return result
+}
+
+const sanitizeCrewInjuryMap = (
+  value: unknown
+): Record<string, 'none' | 'light' | 'serious'> => {
+  const result = Object.create(null) as Record<
+    string,
+    'none' | 'light' | 'serious'
+  >
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value))
+    if (
+      !isForbiddenKey(key) &&
+      (entry === 'none' || entry === 'light' || entry === 'serious')
+    )
+      result[key] = entry
+  return result
+}
+
+const sanitizeBandInjuryMap = (
+  value: unknown
+): Record<string, 'none' | 'light' | 'serious' | 'critical'> => {
+  const result = Object.create(null) as Record<
+    string,
+    'none' | 'light' | 'serious' | 'critical'
+  >
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value))
+    if (
+      !isForbiddenKey(key) &&
+      (entry === 'none' ||
+        entry === 'light' ||
+        entry === 'serious' ||
+        entry === 'critical')
+    )
+      result[key] = entry
+  return result
 }

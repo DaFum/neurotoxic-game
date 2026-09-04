@@ -11,10 +11,11 @@ import { getGigModifiers } from '../../utils/simulationUtils'
 import { getActiveAssetModifiers } from '../../utils/assetSelectors'
 import { getSongId } from '../../utils/audio/audioEngine'
 import { resolveBandMeetingCost } from './preGigUtils'
+import { getExpeditionConditionActiveEffects } from '../../domain/expedition/condition'
 import {
-  getExpeditionConditionActiveEffects,
-  getExpeditionConditionPerformanceProfile
-} from '../../domain/expedition/condition'
+  getExpeditionInjuryActiveEffects,
+  getExpeditionPerformanceProfile
+} from '../../domain/expedition/injuries'
 
 /**
  * Configuration properties for the pre-gig derivations hook.
@@ -28,6 +29,7 @@ interface UsePreGigDerivationsProps {
   technicalCondition?: ExpeditionTechnicalCondition | null
   /** `canStartExpeditionPreGig` for the current state. */
   canStartShow: boolean
+  expeditionState: GameState
 }
 
 /**
@@ -60,7 +62,8 @@ export const usePreGigDerivations = ({
   setlist,
   typedT,
   technicalCondition,
-  canStartShow
+  canStartShow,
+  expeditionState
 }: UsePreGigDerivationsProps): UsePreGigDerivationsReturn => {
   const assetModifiers = useMemo(
     () => getActiveAssetModifiers(assets ?? []),
@@ -109,21 +112,24 @@ export const usePreGigDerivations = ({
   )
 
   const currentModifiers = useMemo(() => {
-    if (!technicalCondition) return getGigModifiers(band, gigModifiers)
+    if (expeditionState.expedition?.status !== 'active') {
+      return getGigModifiers(band, gigModifiers)
+    }
 
     // The same profile the gig itself will run on, passed to the same producer
     // — so the penalties listed here are the ones the rhythm owners apply,
     // not a parallel description of them.
-    const profile = getExpeditionConditionPerformanceProfile(technicalCondition)
+    const profile = getExpeditionPerformanceProfile(expeditionState)
     const base = getGigModifiers(band, gigModifiers, profile)
     return {
       ...base,
       activeEffects: [
         ...base.activeEffects,
-        ...getExpeditionConditionActiveEffects(profile)
+        ...getExpeditionConditionActiveEffects(profile),
+        ...getExpeditionInjuryActiveEffects(expeditionState)
       ]
     }
-  }, [band, gigModifiers, technicalCondition])
+  }, [band, expeditionState, gigModifiers, technicalCondition])
 
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()

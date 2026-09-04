@@ -65,6 +65,7 @@ import { checkTraitUnlocks } from '../../utils/unlockCheck'
 import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { createInitialState } from '../initialState'
+import { sanitizeCareerState } from './careerSanitizers'
 import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
@@ -206,6 +207,7 @@ export const handleLoadGame = (
 
   const safeState: GameState = {
     ...state,
+    career: sanitizeCareerState(loadedState.career),
     version: Math.max(explicitVersion, CURRENT_SAVE_VERSION),
     player: mergedPlayer,
     band: validatedBand,
@@ -272,7 +274,7 @@ export const handleLoadGame = (
     // committed build does.
     expedition:
       isFiniteNumber(loadedState.runSeed) &&
-      loadedState.runSeed === (Math.trunc(loadedState.runSeed) >>> 0)
+      loadedState.runSeed === Math.trunc(loadedState.runSeed) >>> 0
         ? sanitizeExpeditionState(loadedState.expedition, loadedState.runSeed)
         : createDefaultExpeditionState()
   }
@@ -310,7 +312,9 @@ export const handleLoadGame = (
     ...(expeditionGameMap ? { gameMap: expeditionGameMap } : {}),
     player: {
       ...safeState.player,
-      ...(expeditionCurrentNodeId ? { currentNodeId: expeditionCurrentNodeId } : {}),
+      ...(expeditionCurrentNodeId
+        ? { currentNodeId: expeditionCurrentNodeId }
+        : {}),
       location:
         typeof safeState.player.location === 'string'
           ? migratePlayerLocation(safeState.player.location)

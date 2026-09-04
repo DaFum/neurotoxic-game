@@ -229,7 +229,24 @@ export const BASE_STATE = {
     extractionWindowsSeen: [],
     pendingFailure: null,
     unpaidDailyObligation: 0,
-    outcome: null
+    outcome: null,
+    crew: { stressByCrewId: {}, injuryByCrewId: {} },
+    bandInjuryByMemberId: {},
+    resolvedCrewSourceIds: []
+  },
+  career: {
+    crewById: {},
+    expeditionRelationshipByPair: {},
+    crewRecoveryDebtById: {},
+    settledCrewRunIds: [],
+    rivalsById: {},
+    betweenTourByRunId: {},
+    tourTokens: 0,
+    finalizedExpeditionRuns: 0,
+    completedExpeditionRuns: 0,
+    completedExpeditionRegionIds: [],
+    hqFacilityLevels: {},
+    ascensionUnlocked: false
   }
 }
 

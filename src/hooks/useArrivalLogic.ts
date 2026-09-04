@@ -45,6 +45,7 @@ export const useArrivalLogic = ({
   const gameMap = useGameSelector(state => state.gameMap)
   const player = useGameSelector(state => state.player)
   const currentScene = useGameSelector(state => state.currentScene)
+  const expedition = useGameSelector(state => state.expedition)
   const {
     advanceDay,
     saveGame,
@@ -58,7 +59,8 @@ export const useArrivalLogic = ({
     setPendingBandHQOpen,
     setPendingSupplyStopInventory,
     moveRivalBand,
-    checkRivalEncounter
+    checkRivalEncounter,
+    recordExpeditionCrewStressSource
   } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
@@ -169,6 +171,13 @@ export const useArrivalLogic = ({
       // Only trigger travel events for non-GIG destinations.
       // GIG destinations get events in the PreGig scene instead.
       const currentNode = gameMap?.nodes[player.currentNodeId]
+      if (expedition?.status === 'active') {
+        const sourceType = currentNode?.type === 'REST_STOP' ? 'rest' : 'travel'
+        const sourceId = `${sourceType}:${player.currentNodeId}:${expedition.routeStep}`
+        for (const crewId of expedition.loadout?.crewIds ?? []) {
+          recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+        }
+      }
       // If there is no resolved current node (e.g. incomplete map fixture),
       // processTravelEvents keeps legacy behavior and still attempts travel events.
       // processTravelEvents internally skips GIG nodes (isGigNode guard lives
@@ -240,7 +249,9 @@ export const useArrivalLogic = ({
     onShowSupplyStop,
     setPendingBandHQOpen,
     setPendingSupplyStopInventory,
-    rng
+    rng,
+    expedition,
+    recordExpeditionCrewStressSource
   ])
 
   return { handleArrivalSequence }

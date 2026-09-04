@@ -15,7 +15,16 @@ import {
   createApplyEventDeltaAction,
   createSetActiveEventAction
 } from '../context/actionCreators'
-import { applyExpeditionEventDelta } from '../context/expeditionActionCreators'
+import {
+  advanceExpeditionCrewInjury,
+  advanceExpeditionBandInjury,
+  applyExpeditionEventDelta,
+  createContactIntelGrant,
+  recordExpeditionCrewStressSource,
+  recordExpeditionRelationshipOutcome
+} from '../context/expeditionActionCreators'
+import { getCrewEventOutcome } from './expedition/crewEventOutcomes'
+import { buildExpeditionMap } from './expedition/map'
 import { sanitizeExpeditionEventResultIds } from './expedition/eventDeltas'
 import type {
   EventDelta,
@@ -221,6 +230,62 @@ export function resolveEvent(
       sanitizeExpeditionEventResultIds(delta.expedition?.resultIds)
     )
     if (expeditionAction) actions.push(expeditionAction)
+
+    const optionId = typeof choice.id === 'string' ? choice.id : ''
+    const eventId = state.activeEvent?.id ?? ''
+    const crewOutcome = getCrewEventOutcome(eventId, optionId)
+    if (
+      crewOutcome &&
+      delta.expedition?.resultIds.includes(crewOutcome.resultId)
+    ) {
+      const sourceId = `${eventId}:${optionId}`
+      if (crewOutcome.stress) {
+        actions.push(
+          recordExpeditionCrewStressSource(
+            state,
+            crewOutcome.stress.crewId,
+            crewOutcome.stress.sourceType,
+            sourceId
+          )
+        )
+      }
+      if (crewOutcome.relationship) {
+        actions.push(
+          recordExpeditionRelationshipOutcome(state, {
+            first: crewOutcome.relationship.first,
+            second: crewOutcome.relationship.second,
+            sourceType: 'crew_event',
+            sourceId
+          })
+        )
+      }
+      if (crewOutcome.crewInjuryId) {
+        actions.push(
+          advanceExpeditionCrewInjury(state, crewOutcome.crewInjuryId, sourceId)
+        )
+      }
+      if (crewOutcome.bandInjuryId) {
+        actions.push(
+          advanceExpeditionBandInjury(state, crewOutcome.bandInjuryId, sourceId)
+        )
+      }
+      if (crewOutcome.contactIntel && state.expedition.loadout) {
+        const map = buildExpeditionMap(
+          state.runSeed,
+          state.expedition.loadout.tourTypeId,
+          state.expedition.loadout.regionId
+        )
+        const currentNodeId = state.expedition.visitedNodeIds.at(-1)
+        const connection = map.connections.find(
+          candidate => candidate.from === currentNodeId
+        )
+        if (connection) {
+          actions.push(
+            createContactIntelGrant(state, eventId, optionId, connection.to)
+          )
+        }
+      }
+    }
 
     if (flags.addQuest) {
       // Deadlines resolve against the post-delta day. Day deltas are additive
