@@ -716,8 +716,7 @@ describe('persisted reward ledger hardening regressions', () => {
       }
     }
     const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
-    assert.equal(loaded.expedition.visitedNodeIds.length, 1, 'unconnected visited node dropped')
-    assert.equal(loaded.expedition.visitedNodeIds[0], map.startNodeId)
+    assert.equal(loaded.expedition.status, 'idle', 'incoherent expedition collapses to idle')
     assert.equal(loaded.expedition.rewardLedger.length, 0, 'forged rare reward dropped')
   })
 })
