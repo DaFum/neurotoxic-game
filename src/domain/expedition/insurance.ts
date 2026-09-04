@@ -7,9 +7,9 @@
  * notably around Contraband and intentional sabotage Authority outcomes.
  *
  * Policies:
- * - roadside: €300 -> one vehicle rescue
- * - equipment: €350 -> one technical zero-Condition rescue to 25
- * - touring: €550 -> one rescue of either class
+ * - roadside: €300 -\> one vehicle rescue
+ * - equipment: €350 -\> one technical zero-Condition rescue to 25
+ * - touring: €550 -\> one rescue of either class
  *
  * Premiums are charged once at START via the protected-Cash boundary.
  * Run state stores only policy id and whether the claim has been consumed.

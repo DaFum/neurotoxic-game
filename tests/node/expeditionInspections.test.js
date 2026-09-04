@@ -5,7 +5,6 @@ import {
   getConditionBand,
   DIAGNOSTIC_FEE_BASE
 } from '../../src/domain/expedition/inspections'
-import { handleExecuteExpeditionInspection } from '../../src/context/reducers/expeditionReducer'
 import { executeExpeditionInspection } from '../../src/context/expeditionActionCreators'
 import { gameReducer } from '../../src/context/gameReducer'
 import { createInitialState } from '../../src/context/initialState'
@@ -358,11 +357,15 @@ test('Task 8: Expedition Inspections', async t => {
         technicalCondition: { pa: 60 }
       })
 
-      // Stale route step guard
+      // The creator always stamps the *current* route step, so a stale guard
+      // can only ever come from a hand-built dispatch — which is what the
+      // reducer has to refuse.
       const staleAction = executeExpeditionInspection(state, {
         mode: 'full_service',
-        expectedRouteStep: 1 // state is at 2
+        expectedRouteStep: 1 // ignored: state is at 2
       })
+      assert.equal(staleAction.payload.expectedRouteStep, 2)
+
       const staleState = gameReducer(state, {
         type: 'EXECUTE_EXPEDITION_INSPECTION',
         payload: { mode: 'full_service', expectedRouteStep: 1 }

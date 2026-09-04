@@ -9,7 +9,6 @@
 import type {
   ConditionGroup,
   HiddenDefectState,
-  HiddenDefectStatus,
   HiddenDefectTrigger
 } from '../../types/expedition'
 import type { GameState } from '../../types'

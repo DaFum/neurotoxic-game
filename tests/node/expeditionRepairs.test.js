@@ -1,9 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import {
-  resolveExpeditionRepair,
-  isExpeditionServiceLocation
-} from '../../src/domain/expedition/repairs'
+import { resolveExpeditionRepair } from '../../src/domain/expedition/repairs'
 import { handleExecuteExpeditionRepair } from '../../src/context/reducers/expeditionReducer'
 import { executeExpeditionRepair } from '../../src/context/expeditionActionCreators'
 import { gameReducer } from '../../src/context/gameReducer'

@@ -10,10 +10,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
-import {
-  canStartExpeditionPreGig,
-  getExpeditionTechnicalCondition
-} from '../../src/domain/expedition/condition.ts'
+import { canStartExpeditionPreGig } from '../../src/domain/expedition/condition.ts'
 import {
   getAvailableTechnicalRecoveryControls,
   getTechnicalFailureSignal,
