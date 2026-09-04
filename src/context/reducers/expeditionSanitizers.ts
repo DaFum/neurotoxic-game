@@ -17,6 +17,7 @@ import {
   sanitizeStringArray
 } from '../../utils/objectUtils'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { getExpeditionInsurancePolicy } from '../../domain/expedition/insurance'
 import {
   buildExpeditionRewardEntryId,
   isExpeditionRewardSecuredOnEarn,
@@ -429,39 +430,9 @@ const sanitizeExpeditionCargo = (
   if (!isLooseRecord(value)) return null
   const spareParts = readCount(value, 'spareParts', 0)
   const supplies = readCount(value, 'supplies', 0)
-  const technicalGearItemIds = sanitizeStringArray(value.technicalGearItemIds)
-  const merch: ExpeditionMerchSelection[] = []
-  if (Array.isArray(value.merch)) {
-    for (const item of value.merch) {
-      if (
-        isLooseRecord(item) &&
-        typeof item.inventoryKey === 'string' &&
-        isFiniteNumber(item.quantity)
-      ) {
-        merch.push({
-          inventoryKey: item.inventoryKey,
-          quantity: Math.max(0, Math.round(item.quantity))
-        })
-      }
-    }
-  }
-  const contraband: ExpeditionContrabandSelection[] = []
-  if (Array.isArray(value.contraband)) {
-    for (const item of value.contraband) {
-      if (
-        isLooseRecord(item) &&
-        typeof item.stashKey === 'string' &&
-        isFiniteNumber(item.stacks)
-      ) {
-        contraband.push({
-          stashKey: item.stashKey,
-          instanceId:
-            typeof item.instanceId === 'string' ? item.instanceId : null,
-          stacks: Math.max(0, Math.round(item.stacks))
-        })
-      }
-    }
-  }
+  const technicalGearItemIds = sanitizeUniqueStrings(value.technicalGearItemIds)
+  const merch = sanitizeMerchSelections(value.merch)
+  const contraband = sanitizeContrabandSelections(value.contraband)
   return {
     spareParts,
     supplies,
@@ -636,9 +607,9 @@ export const sanitizeExpeditionState = (value: unknown): ExpeditionState => {
     unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
     outcome,
     insurancePolicyId:
-      readString(value, 'insurancePolicyId') ??
-      loadout?.insurancePolicyId ??
-      null,
+      getExpeditionInsurancePolicy(
+        readString(value, 'insurancePolicyId') ?? loadout?.insurancePolicyId
+      )?.id ?? null,
     insuranceClaimConsumed:
       readBoolean(value, 'insuranceClaimConsumed') ||
       readBoolean(value, 'claimConsumed'),

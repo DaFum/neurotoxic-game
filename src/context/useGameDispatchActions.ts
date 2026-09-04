@@ -234,10 +234,9 @@ type BaseGameDispatchActions = {
   executeExpeditionInspection: (
     intent: import('../types/expedition').ExpeditionInspectionIntent
   ) => void
-  claimExpeditionInsurance: (payload: {
-    claimType: import('../types/expedition').ExpeditionInsuranceClaimType
-    targetGroup?: import('../types/expedition').ConditionGroup
-  }) => void
+  claimExpeditionInsurance: (
+    payload: import('../types/expedition').ExpeditionInsuranceClaimInput
+  ) => void
   acceptExpeditionTechnicalFailure: () => void
 }
 

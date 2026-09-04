@@ -1,9 +1,8 @@
 import { useMemo, type Dispatch, type MutableRefObject } from 'react'
 import type { GameAction, GameState } from '../types'
 import type {
-  ConditionGroup,
   ExpeditionInspectionIntent,
-  ExpeditionInsuranceClaimType,
+  ExpeditionInsuranceClaimInput,
   ExpeditionIntelSource,
   ExpeditionLoadout,
   ExpeditionRepairIntent,
@@ -118,10 +117,7 @@ export function useExpeditionDispatchActions({
         )
         if (action) dispatch(action)
       },
-      claimExpeditionInsurance: (payload: {
-        claimType: ExpeditionInsuranceClaimType
-        targetGroup?: ConditionGroup
-      }) => {
+      claimExpeditionInsurance: (payload: ExpeditionInsuranceClaimInput) => {
         const action = claimExpeditionInsuranceAction(stateRef.current, payload)
         if (action) dispatch(action)
       },

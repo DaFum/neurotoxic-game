@@ -272,7 +272,6 @@ export type ExecuteExpeditionRepairPayload = ExpeditionRepairIntent
  */
 export interface RevealExpeditionDefectPayload {
   defectId: string
-  source: string
   expectedRouteStep: number
 }
 
@@ -290,7 +289,6 @@ export interface TriggerExpeditionDefectPayload {
  */
 export interface ResolveExpeditionDefectPayload {
   defectId: string
-  repairResolutionId: string
   expectedRouteStep: number
 }
 

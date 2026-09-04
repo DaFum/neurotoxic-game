@@ -269,9 +269,11 @@ export const handleLoadGame = (
     // visited nodes and route step still describe the old one, so a run
     // without its seed collapses to idle the same way one without its
     // committed build does.
-    expedition: isFiniteNumber(loadedState.runSeed)
-      ? sanitizeExpeditionState(loadedState.expedition)
-      : createDefaultExpeditionState()
+    expedition:
+      isFiniteNumber(loadedState.runSeed) &&
+      loadedState.runSeed === (Math.trunc(loadedState.runSeed) >>> 0)
+        ? sanitizeExpeditionState(loadedState.expedition)
+        : createDefaultExpeditionState()
   }
 
   // Apply venue migrations using spreads

@@ -21,8 +21,8 @@ export type { ExpeditionChassisArchetype, ExpeditionChassisProfile }
  */
 export const EXPEDITION_CHASSIS_PROFILES: Readonly<
   Record<ExpeditionChassisArchetype, ExpeditionChassisProfile>
-> = {
-  compact: {
+> = Object.freeze({
+  compact: Object.freeze({
     archetype: 'compact',
     fuelConsumptionMultiplier: 0.85,
     roadWearMultiplier: 1.1,
@@ -31,8 +31,8 @@ export const EXPEDITION_CHASSIS_PROFILES: Readonly<
     crewStressMultiplier: 1.05,
     authorityEventWeightMultiplier: 0.95,
     hiddenContrabandCapacity: 0
-  },
-  diy: {
+  }),
+  diy: Object.freeze({
     archetype: 'diy',
     fuelConsumptionMultiplier: 1.0,
     roadWearMultiplier: 1.15,
@@ -41,8 +41,8 @@ export const EXPEDITION_CHASSIS_PROFILES: Readonly<
     crewStressMultiplier: 1.0,
     authorityEventWeightMultiplier: 1.0,
     hiddenContrabandCapacity: 1
-  },
-  coach: {
+  }),
+  coach: Object.freeze({
     archetype: 'coach',
     fuelConsumptionMultiplier: 1.2,
     roadWearMultiplier: 0.85,
@@ -51,8 +51,8 @@ export const EXPEDITION_CHASSIS_PROFILES: Readonly<
     crewStressMultiplier: 0.85,
     authorityEventWeightMultiplier: 1.05,
     hiddenContrabandCapacity: 0
-  },
-  armored_hauler: {
+  }),
+  armored_hauler: Object.freeze({
     archetype: 'armored_hauler',
     fuelConsumptionMultiplier: 1.35,
     roadWearMultiplier: 0.75,
@@ -61,8 +61,8 @@ export const EXPEDITION_CHASSIS_PROFILES: Readonly<
     crewStressMultiplier: 0.95,
     authorityEventWeightMultiplier: 1.2,
     hiddenContrabandCapacity: 2
-  }
-}
+  })
+})
 
 /**
  * Shape of an asset or partial asset descriptor specifying chassis flavor and tier.
