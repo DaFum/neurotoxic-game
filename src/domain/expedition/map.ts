@@ -23,6 +23,7 @@ import {
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from './defaults'
+import type { GameState } from '../../types'
 import type { MapNode, Venue } from '../../types/map'
 import type { MapNodeType } from '../../utils/mapNodeTypes'
 import type {
@@ -491,6 +492,31 @@ export const buildExpeditionMap = (
   }
   ROUTE_CACHE.set(cacheKey, built)
   return built
+}
+
+/**
+ * Rebuilds the route of the currently active run.
+ *
+ * @param state - Current game state.
+ * @returns The active route, or `null` when no run is active.
+ *
+ * @remarks
+ * The route is always derived from the canonical root `runSeed` plus the
+ * committed Tour/Region rather than stored, and the builder memoizes, so
+ * repeated calls are cheap. Existing call sites inline this rebuild; new code
+ * should go through here.
+ */
+export const getActiveExpeditionMap = (
+  state: GameState
+): ExpeditionMap | null => {
+  const loadout = state.expedition?.loadout
+  if (state.expedition?.status !== 'active' || !loadout) return null
+  return buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId,
+    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  )
 }
 
 /**

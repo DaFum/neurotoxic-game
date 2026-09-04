@@ -262,6 +262,46 @@ export interface ExpeditionMap {
 }
 
 /**
+ * Inputs describing one travel leg, gathered by the travel reducer.
+ *
+ * @remarks
+ * The plan calls this `RouteContext`; it is named for its domain here so it
+ * does not read as a generic map contract next to the rest of `src/types`.
+ *
+ * `distance` and `baseFuelLiters` come from the canonical
+ * `calculateTravelExpenses` helper, and the two `minigame*` fields from
+ * `calculateTravelMinigameResult`. Keeping them as inputs rather than
+ * recomputing them is what makes the settlement a single pass over numbers the
+ * existing travel path already owns.
+ */
+export interface ExpeditionRouteContext {
+  /** Node the leg arrives at; its declared wear cost is read from the route. */
+  targetNodeId: string
+  /** Base leg distance in km. */
+  distance: number
+  /** Base litres the canonical fuel helper computed for the leg. */
+  baseFuelLiters: number
+  /** Litres the travel minigame's own result recovered. */
+  minigameFuelBonus?: number
+  /** Vehicle damage the travel minigame's own result produced. */
+  minigameConditionLoss?: number
+}
+
+/**
+ * The once-only cost of one travel leg.
+ *
+ * @remarks
+ * `vehicleWear` is committed to the canonical `player.van.condition` only. It
+ * is never copied into the Expedition's technical Condition: those are two
+ * separate failure axes, and charging one trip to both would double-bill the
+ * player for a single decision.
+ */
+export interface ExpeditionTravelSettlement {
+  fuelConsumed: number
+  vehicleWear: number
+}
+
+/**
  * Canonical source families that may produce a rare Expedition reward.
  */
 export type ExpeditionRewardSourceType =
