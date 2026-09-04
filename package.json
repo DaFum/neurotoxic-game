@@ -75,7 +75,7 @@
     "playwright": "1.62.1",
     "react": "19.2.8",
     "react-dom": "19.2.8",
-    "react-i18next": "17.0.11",
+    "react-i18next": "17.0.12",
     "redis": "6.2.1",
     "tone": "15.5.36"
   },
