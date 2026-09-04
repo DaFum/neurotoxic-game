@@ -2,29 +2,26 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** Build the authoritative Expedition lifecycle, complete Tour Prep commitment, deterministic route/Fog/Intel, source-proven reward ledger, hybrid extraction and multi-axis failure shell.
+**Goal:** Build the authoritative Expedition lifecycle, deterministic Tour Prep preview/commit flow, hybrid Fog/Intel, source-proven rewards, hybrid extraction and the multi-axis failure shell without duplicating existing game-state owners.
 
-**Architecture:** Existing `player`, `band`, assets, social and map owners remain canonical. `GameState.expedition` stores only run orchestration, immutable build commitment, Intel/reward/failure evidence and finalized outcome. Reducers/shared resolvers prove every lifecycle transition; scene navigation remains in committed-state callbacks.
+**Architecture:** Existing `player`, `band`, assets, Social, map and root `GameState.runSeed` remain canonical. `GameState.expedition` stores orchestration, immutable run commitments, Intel/reward/failure evidence and finalized outcome only. Every transition is reducer-authoritative; scene navigation occurs after committed state.
 
 **Tech Stack:** TypeScript 6, React 19, existing `ActionTypes`/`GameAction`/reducers, `MapGenerator`, deterministic RNG, i18next, Node/Vitest/Playwright.
 
 ---
 
-## Authority and dependencies
-
-This file is executable only under:
+## Authority and gate split
 
 ```text
 approved design spec > master plan > this child plan
 ```
 
-The `00-*` review files are NON-NORMATIVE historical records and must not be used as implementation overrides.
-
-Gate split:
+All `00-*` files are NON-NORMATIVE historical review records.
 
 ```text
-G1A Tasks 1–9  -> may run before G2–G4
-G1B Tasks 10–12 -> run only after G2, G3 and G4 are green
+G1A Tasks 1-9   -> independent of G2-G5
+G1B Tasks 10-12 -> after G2, G3 and G4 are green
+G5 integration  -> may further restrict Next Tour, but is not required for G1B to pass
 ```
 
 ---
@@ -42,6 +39,7 @@ G1B Tasks 10–12 -> run only after G2, G3 and G4 are green
 - `src/domain/expedition/rewardLedger.ts`
 - `src/domain/expedition/extraction.ts`
 - `src/domain/expedition/failure.ts`
+- `src/domain/expedition/equipment.ts`
 - `src/ui/expedition/TourPrepLoadout.tsx`
 - `src/ui/expedition/BuildCommitmentPanel.tsx`
 - `src/ui/expedition/ExpeditionStatusStrip.tsx`
@@ -54,6 +52,7 @@ G1B Tasks 10–12 -> run only after G2, G3 and G4 are green
 - `tests/node/expeditionRewardLedger.test.js`
 - `tests/node/expeditionExtraction.test.js`
 - `tests/node/expeditionFailure.test.js`
+- `tests/node/expeditionEquipment.test.js`
 - `tests/ui/TourPrep.test.tsx`
 - `tests/ui/ExtractionDialog.test.tsx`
 - `tests/ui/FailureCrisisDialog.test.tsx`
@@ -75,12 +74,12 @@ G1B Tasks 10–12 -> run only after G2, G3 and G4 are green
 - `src/context/reducers/systemReducer.ts`
 - `src/context/reducers/gigReducer.ts`
 - `src/context/reducers/assetReducer.ts`
-- `src/context/reducers/bandReducer.ts`
 - `src/context/gameReducer.ts`
-- `src/hooks/usePersistence.ts`
-- `src/hooks/useMapGeneration.ts`
+- `src/context/usePersistence.ts`
+- `src/context/useMapGeneration.ts`
 - `src/hooks/useArrivalLogic.ts`
-- `src/utils/eventEngine/eventEffectHandlers.ts`
+- `src/utils/purchaseLogicUtils.ts`
+- `src/ui/bandhq/hooks/usePurchaseLogic.ts`
 - `src/scenes/TourPrep.tsx`
 - `src/components/MapNodeView.tsx`
 - `.claude/skills/playwright-screenshot/scripts/screenshot-state-inject.js`
@@ -93,9 +92,9 @@ G1B Tasks 10–12 -> run only after G2, G3 and G4 are green
 
 # G1A — Foundation
 
-## Task 1: Create prepared-run state and wire it through every real GameState boundary
+## Task 1: Add Expedition state without creating a second run-seed owner
 
-- [ ] **Step 1: Add exact state types**
+The existing required root field `GameState.runSeed` remains the **single canonical map/run seed**. Do not add `expedition.runSeed`.
 
 ```ts
 export type ExpeditionStatus =
@@ -108,7 +107,6 @@ export type ExpeditionStatus =
 
 export interface ExpeditionPrepState {
   prepId: string
-  runSeed: number
 }
 
 export interface ExpeditionOutcome {
@@ -124,7 +122,6 @@ export interface ExpeditionState {
   status: ExpeditionStatus
   prep: ExpeditionPrepState | null
   runId: string | null
-  runSeed: number | null
   routeStep: number
   visitedNodeIds: string[]
   intelByNodeId: Record<string, 0 | 1 | 2>
@@ -141,9 +138,20 @@ export interface ExpeditionState {
 }
 ```
 
-- [ ] **Step 2: Define `PREPARE_EXPEDITION_RUN` as a real state transition**
+- [ ] **Step 1: Write seed-ownership tests**
 
-Creator generates only `prepId` and `runSeed`:
+Tests must start from deliberately mismatched legacy fixture data and prove no Expedition-local seed can influence map generation.
+
+```text
+PREPARE sets root GameState.runSeed atomically
+Tour Prep preview reads root runSeed
+useMapGeneration reads the same root runSeed
+START checks expectedRunSeed === state.runSeed
+save/reload preserves one seed only
+no expedition.runSeed field exists in default/sanitized state
+```
+
+- [ ] **Step 2: Implement PREPARE**
 
 ```ts
 PREPARE_EXPEDITION_RUN {
@@ -152,50 +160,40 @@ PREPARE_EXPEDITION_RUN {
 }
 ```
 
-Reducer accepts only when `status === 'idle'`, both values validate, then atomically sets:
+Creator generates `prepId` and the next deterministic/persistable run seed. Reducer accepts only from `idle`, validates both, then atomically writes:
 
 ```ts
 {
-  ...state.expedition,
-  status: 'prepared',
-  prep: { prepId, runSeed }
+  ...state,
+  runSeed: action.payload.runSeed,
+  expedition: {
+    ...state.expedition,
+    status: 'prepared',
+    prep: { prepId: action.payload.prepId }
+  }
 }
 ```
 
-While `status === 'prepared'`, reopening Tour Prep is edit-only and does not reroll the seed. Replaying the same PREPARE or sending another PREPARE while prepared/active/finalized is an identical-state no-op.
+Reopening Tour Prep while `prepared` is edit-only and never rerolls. A second PREPARE while prepared/active/finalized returns the identical state reference.
 
-- [ ] **Step 3: Wire `expedition` through initial/persisted/provider/test fixtures**
-
-Required ownership work:
+- [ ] **Step 3: Wire every required GameState boundary**
 
 ```text
-initialState.expedition              -> fresh default object
-createInitialState()                 -> fresh object/arrays/maps per call
-PERSISTED_FIELDS                     -> expedition predicate/snapshot
-systemReducer LOAD_GAME              -> expedition sanitizer
-GameDispatchActions                  -> named Expedition methods
-GameStateProvider                    -> implementations using stateRef.current where validation needs current state
-dispatchValue                        -> memoized named methods
-useGameActions()                     -> exposes those methods
-Playwright screenshot BASE_STATE     -> expedition default field
-fixture validation test              -> proves BASE_STATE keys mirror initialState
+initialState.expedition
+createInitialState() fresh Expedition object
+PERSISTED_FIELDS expedition predicate/snapshot
+systemReducer LOAD_GAME sanitizer
+GameDispatchActions named methods
+GameStateProvider implementations
+dispatchValue memoized methods
+useGameActions exposure
+Playwright screenshot BASE_STATE
+fixture validation mirror test
 ```
 
-Every creator returns `Extract<GameAction, { type: typeof ActionTypes.X }>`.
+All creators return `Extract<GameAction, { type: typeof ActionTypes.X }>`. The existing root `runSeed` persistence remains unchanged.
 
-- [ ] **Step 4: Add red/green tests**
-
-```text
-idle -> PREPARE -> prepared
-prepared replay -> same state reference
-prepared second seed -> same state reference
-prepared -> START -> active
-required top-level expedition key exists in screenshot BASE_STATE
-useGameActions exposes prepare/start/extract/complete/failure methods
-save/reload prepared state preserves prepId/runSeed/status
-```
-
-Run:
+- [ ] **Step 4: Verify**
 
 ```bash
 node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/expeditionReducer.test.js tests/node/saveSliceRoundTrip.test.js tests/node/playwright-screenshot-fixture-validation.test.js
@@ -206,14 +204,15 @@ Expected: PASS.
 
 ---
 
-## Task 2: Commit the full Tour Prep build, including route-Contract target identity
+## Task 2: Commit the real full-build dimensions, including existing purchasable gear
 
-- [ ] **Step 1: Define immutable build contracts**
+The Expedition Equipment axis must use the repository's real HQ purchase ownership model. Do **not** invent a per-member equip action.
+
+Use `GEAR_LOOKUP`, `getPrimaryEffect`, `isItemOwned`, `band.inventory`, `player.hqUpgrades` and the canonical HQ gear/instrument catalog to derive owned performance gear.
 
 ```ts
 export interface ExpeditionEquipmentCommitment {
-  memberId: string
-  slots: Array<{ slot: string; itemId: string | null }>
+  selectedGearItemIds: string[]
 }
 
 export interface ExpeditionMerchSelection {
@@ -234,11 +233,11 @@ export interface ExpeditionNativeContractCommitment {
 
 export interface ExpeditionBuildCommitment {
   setlistSongIds: string[]
-  equipment: ExpeditionEquipmentCommitment[]
+  equipment: ExpeditionEquipmentCommitment
   selectedTourbusModuleIds: string[]
   merch: ExpeditionMerchSelection[]
   contraband: ExpeditionContrabandSelection[]
-  sponsorDealId: string | null
+  sponsorOfferId: string | null
   startingFuelTarget: number
   protectedCareerCash: number
 }
@@ -257,27 +256,54 @@ export interface ExpeditionLoadout {
 }
 ```
 
-`nativeContracts` replaces the lossy `contractIds: string[]` shape. G4 owns template semantics; G1 owns preserving the exact accepted commitment through preview→START.
+`selectedGearItemIds` is a **run-only activation selection** over already-owned real catalog items. It does not mutate persistent ownership. Outside Expedition, existing purchase semantics stay unchanged.
 
-- [ ] **Step 2: Validate exact current-owner identity**
+`getExpeditionOwnedPerformanceGear(state)` derives legal owned ids from canonical purchase state. `getExpeditionCommittedGearProfile(state)` resolves only selected committed items into Expedition gig modifiers, using the same catalog effect definitions. No selected id may be unknown or unowned.
+
+- [ ] **Step 1: Add ownership/selection tests**
+
+```text
+owned HQ instrument may be selected
+unowned id rejected
+unknown id rejected
+same owned item selected twice rejected
+purchased but unselected gear does not affect active Expedition modifier
+selected gear changes the real active gig modifier path
+non-Expedition gameplay keeps existing global purchase behavior
+```
+
+- [ ] **Step 2: Validate the complete build**
 
 `validateExpeditionBuildCommitment(state, candidate, preparedMap)` proves:
 
 ```text
-setlistSongIds               exact normalized current setlist; non-empty; unique
-equipment                    exact normalized band-member equipment snapshot
-selectedTourbusModuleIds     exact installed module ids on selected owned chassis
-merch                        selected owned quantities only
-contraband                   selected owned stash instances/stacks only
-sponsorDealId                null or exact id in state.social.activeDeals
-startingFuelTarget           integer currentFuel..100
-protectedCareerCash          integer 0..player.money
-nativeContracts              unique template ids; each targetNodeId matches the prepared-map commitment returned by G4 validator
+setlistSongIds             legal current songs, non-empty, unique
+equipment                  all selectedGearItemIds are canonical owned gear/instruments
+selectedTourbusModuleIds   exact installed ids on selected owned chassis
+merch                      selected owned quantities only
+contraband                 selected owned stash instances/stacks only
+sponsorOfferId             null or exact deterministic G4 prepared Sponsor-offer id
+startingFuelTarget         integer currentFuel..100
+protectedCareerCash        integer 0..player.money
+nativeContracts            unique and valid against G4 prepared-map commitments
 ```
 
-Before G4 exists, G1A permits only `nativeContracts: []`. G4 extends the same validator in place; it does not create a second loadout validator.
+Before G4 exists, G1A permits `sponsorOfferId:null` and `nativeContracts:[]`.
 
-- [ ] **Step 3: Enforce protected Career Cash at every active Expedition spend**
+- [ ] **Step 3: Freeze committed identity while active**
+
+```text
+setlist mutation                   reject drift from committed setlist
+selected chassis module mutation   reject drift from commitment
+Expedition selectedGearItemIds     immutable for active run
+persistent HQ ownership            may not retroactively change committed Expedition gear profile
+```
+
+Mood, stamina, relationships, injuries, technical Condition and consumables remain mutable.
+
+---
+
+## Task 3: Protect Career Cash at every Expedition spend
 
 ```ts
 export const getExpeditionSpendableCash = (state: GameState): number =>
@@ -289,25 +315,13 @@ export const canSpendExpeditionCash = (state: GameState, amount: number): boolea
   Number.isFinite(amount) && amount >= 0 && getExpeditionSpendableCash(state) >= amount
 ```
 
-All Expedition repair/refuel/bribe/insurance/rescue/purchase paths and active-Expedition negative event Money effects honor this boundary. Positive earnings remain spendable.
+Every active Expedition repair/refuel/bribe/insurance/rescue/purchase and negative event Money effect must use this boundary. G2 owns the active-Expedition `ADVANCE_DAY` policy for mandatory daily obligations and legacy wear.
 
-- [ ] **Step 4: Prove preview→commit identity**
-
-Tests must assert:
-
-```text
-prepared route Contract target node displayed in Tour Prep
-same {templateId,targetNodeId} stored in validated loadout
-START materializes exactly that commitment after G4 integration
-changing prepared seed/target invalidates stale loadout
-no route target is recomputed silently at START
-```
+Tests must include a wealthy Career proving unallocated money cannot trivialize run safety.
 
 ---
 
-## Task 3: Start transactionally and freeze committed identity
-
-- [ ] **Step 1: Add START action**
+## Task 4: Start transactionally from the prepared seed/build
 
 ```ts
 START_EXPEDITION {
@@ -317,37 +331,24 @@ START_EXPEDITION {
 }
 ```
 
-Reducer requires `status === 'prepared'`, matching stored prep, re-runs the canonical loadout validator, derives Fuel top-up cost from production constants, verifies protected Cash, applies Money/Fuel once, sets `runId = prepId`, stores the normalized loadout and transitions to `active`.
-
-- [ ] **Step 2: Freeze identity during active run**
+Reducer requires:
 
 ```text
-setlist mutation               reject if normalized ids differ from committed setlist
-selected-chassis module change reject if ids differ from commitment
-band equipment patch           reject only equipment identity drift
+status === prepared
+prepId matches expedition.prep.prepId
+expectedRunSeed === state.runSeed
+canonical loadout validation succeeds
+Fuel top-up is affordable without crossing protectedCareerCash
+prepared map hash/identity matches the map generated from state.runSeed + selected Tour/Region
 ```
 
-Mood, stamina, relationships, injuries, Condition and consumables remain mutable. Compare normalized structures, never object identity/JSON serialization.
+On success it applies Fuel/Money once, sets `runId = prepId`, stores normalized loadout and transitions to `active`.
 
-- [ ] **Step 3: Materialize later subsystem commitments once**
-
-At G1B after G2–G4 exist, the same START resolver also performs, in one deterministic transaction:
-
-```text
-G2 cargo manifest materialization
-G2 insurance premium/claim state initialization
-G4 selected Sponsor obligation materialization
-G4 native Contract obligation materialization using committed {templateId,targetNodeId}
-G5 starting rules such as startingHeat/startingSpareParts when G5 is present
-```
-
-Each materializer is idempotent by `runId + sourceId` and does not regenerate offers/targets.
+G1B extends the same START transaction after G2-G4 exist with cargo/insurance/Sponsor/native-Contract materialization. It never regenerates seed, Sponsor offers or Contract targets.
 
 ---
 
-## Task 4: Build the deterministic Expedition map and required route-visible classes
-
-Use the existing map engine; do not build a second navigation system.
+## Task 5: Build one deterministic map used by preview and play
 
 ```ts
 export type ExpeditionSpecialNodeSubtype =
@@ -356,7 +357,7 @@ export type ExpeditionSpecialNodeSubtype =
   | 'BLACK_MARKET'
 ```
 
-`buildExpeditionMap(prep.runSeed, tourType, region)` is the single pure route builder used by Tour Prep preview and Overworld. Same seed/loadout yields identical node ids, subtypes, edges and Finale node. Fallback generation preserves requested depth and reachability.
+`buildExpeditionMap(state.runSeed, tourType, region, routeProfile)` is the only Expedition route builder. G5 supplies the typed Region/Tour route profile later; G1 baseline uses neutral weights.
 
 Always visible:
 
@@ -376,11 +377,11 @@ Authority probability
 hidden opportunity identity
 ```
 
-Tests cover Standard 7–9 meaningful-node shape, Rival/Underground classes and preview/active parity.
+Tests prove Standard 7-9 meaningful nodes, reachable Finale, Rival/Underground classes and preview/active parity.
 
 ---
 
-## Task 5: Implement monotonic hybrid Fog/Intel
+## Task 6: Implement monotonic Hybrid Fog/Intel
 
 ```ts
 export type NodeIntelLevel = 0 | 1 | 2
@@ -395,8 +396,6 @@ export interface ExpeditionIntelGrant {
 }
 ```
 
-Action:
-
 ```ts
 REVEAL_EXPEDITION_NODE_INTEL {
   nodeId: string
@@ -407,23 +406,11 @@ REVEAL_EXPEDITION_NODE_INTEL {
 }
 ```
 
-Reducer proves node belongs to committed map, current level matches, source entitlement exists and requested transition is monotonic exactly one level. Social/contact grants are consumed atomically. Forged source labels do not grant Intel.
-
-G1A producers:
-
-```text
-Scout passive: visible future node 0 -> 1
-Scout recon: one 1 -> 2 per route step
-starter/effective-rule floor: bounded 0..2 selector entitlement
-```
-
-G3/G4 own Contact/Social grant creation. G2/G5 own passive vehicle/Region/reputation detail flags. None makes Scout globally redundant.
+Reducer proves map membership, monotonic one-level transition and source entitlement. Social/contact grants are consumed atomically. Scout recon is bounded and replay-safe. G3/G4 create Contact/Social grants; G5 owns Region/reputation passive detail without making Scout redundant.
 
 ---
 
-## Task 6: Define the concrete rare-reward registry and source-proven ledger
-
-- [ ] **Step 1: Add definitions and ledger entries**
+## Task 7: Define source-proven rare rewards and Hybrid Extraction
 
 ```ts
 export type ExpeditionRewardSourceType =
@@ -432,15 +419,6 @@ export type ExpeditionRewardSourceType =
   | 'contract'
   | 'crew_contact'
   | 'finale_nonlegendary'
-
-export interface ExpeditionRewardDefinition {
-  id: string
-  kind: 'module' | 'crew_contact' | 'contract_token' | 'salvage' | 'other'
-  materialization: {
-    owner: 'unlock' | 'career' | 'inventory'
-    valueId: string
-  }
-}
 
 export interface ExpeditionRewardLedgerEntry {
   id: string
@@ -453,9 +431,7 @@ export interface ExpeditionRewardLedgerEntry {
 }
 ```
 
-Create `EXPEDITION_REWARD_REGISTRY` with at least one real reward for each v1 source family that G1/G3/G4 claim to emit. Registry ids are deterministic and point to real materialization owners.
-
-- [ ] **Step 2: Add source-derived intent**
+`EXPEDITION_REWARD_REGISTRY` maps each real v1 reward id to exactly one real materialization owner (`unlock`, `career`, `inventory`).
 
 ```ts
 ADD_EXPEDITION_REWARD {
@@ -466,174 +442,82 @@ ADD_EXPEDITION_REWARD {
 }
 ```
 
-`proveExpeditionRewardSource` derives the canonical registry id, security bit and source identity. Caller cannot set `secured`, `kind`, value or materialization owner.
-
-Security defaults:
+Reducer derives reward/security from canonical source evidence:
 
 ```text
-route_rare/event_rare          unsecured
-contract/crew_contact          secured
-finale_nonlegendary            secured only when its finale definition says so; otherwise unsecured
+route_rare/event_rare   unsecured
+contract/crew_contact   secured
+finale_nonlegendary     definition-owned security rule
 ```
 
-- [ ] **Step 3: Route rare producer**
+Base settlement retention before G5 multipliers:
 
-A deterministic rare route source uses `runSeed + nodeId` and the Region/Tour rare-reward table. G5 `rareRewardMultiplier` changes eligibility/weight only at this canonical producer.
+```text
+extracted  Money/Fame 0.60
+failed     Money/Fame 0.25
+completed  Money/Fame 1.00
+```
+
+Voluntary extraction may explicitly carry one eligible unsecured rare reward by default. `getEffectiveExpeditionRules(state).numeric.explicitExtractionRareCarrySlots` may raise the cap to at most 3. Failure keeps secured rare rewards only. Completion keeps all.
+
+Materialization is once-only and happens only after terminal settlement succeeds.
 
 ---
 
-## Task 7: Implement hybrid extraction with explicit rare-item carry decisions
-
-- [ ] **Step 1: Define base retention**
-
-```ts
-export const EXPEDITION_BASE_RETENTION = {
-  extracted: 0.60,
-  failed: 0.25,
-  completed: 1.00
-} as const
-```
-
-G5 `extractionRetentionMultiplier` multiplies extracted/failed Cash/Fame retention and clamps final retention to `0..1`. Completion uses its completion rule separately and never applies extraction retention twice.
-
-Retention applies only to positive run-earned Money/Fame deltas, never starting principal or losses.
-
-- [ ] **Step 2: Define explicit rare carry capacity**
-
-Base voluntary extraction may explicitly carry **one** currently-unsecured ledger entry. G5 may change `explicitExtractionRareCarrySlots` only through `getEffectiveExpeditionRules`.
-
-```ts
-export interface ExpeditionExtractionChoice {
-  explicitlyExtractRewardIds: string[]
-}
-```
-
-Validation requires ids to be unique, currently earned, unsecured, not materialized and count `<= explicitExtractionRareCarrySlots`.
-
-Settlement rules:
-
-```text
-completed  -> keep all valid ledger entries
-extracted  -> keep secured + explicitly selected unsecured entries; abandon other unsecured entries
-failed     -> keep secured only; no explicit voluntary carry selection
-```
-
-This is the approved `secured OR explicitly extracted` behavior; failure cannot masquerade as an extraction decision.
-
-- [ ] **Step 3: Define settlement result**
-
-```ts
-export interface ExpeditionSettlement {
-  kind: 'extracted' | 'completed' | 'failed'
-  retentionRate: number
-  moneyDeltaKept: number
-  fameDeltaKept: number
-  keptRewardIds: string[]
-  lostRewardIds: string[]
-}
-```
-
-`calculateExpeditionSettlement(state, kind, extractionChoice?)` is pure and is the only settlement calculator.
-
-- [ ] **Step 4: Materialize kept rewards once**
-
-`materializeExpeditionSettlementRewards(state, settlement, runId)` maps each kept registry definition into its real owner exactly once. Lost entries are never materialized. Track `entry.materialized` and finalized `runId` to prevent reload/replay duplication.
-
-- [ ] **Step 5: Extraction UI**
-
-Before confirm, show:
-
-```text
-Cash/Fame kept now
-secured rewards kept automatically
-explicit carry slots and selectable unsecured rewards
-unselected rewards that will be lost
-persistent consequences that remain
-next known route danger/reward summary
-```
-
----
-
-## Task 8: Restore exact authoritative terminal lifecycle actions
-
-No generic `FINALIZE_EXPEDITION { kind }` action is allowed.
-
-### Voluntary extraction
+## Task 8: Implement exact terminal lifecycle actions
 
 ```ts
 EXTRACT_EXPEDITION {
   expectedRouteStep: number
-  explicitlyExtractRewardIds: string[]
+  explicitRareRewardIds: string[]
 }
-```
 
-Reducer proves:
-
-```text
-status === active
-current route step/node exposes a valid extraction window
-window not already consumed/finalized
-selection passes Task 7 carry rules
-no pending mandatory terminal settlement already exists
-```
-
-Then it derives settlement, writes `status:'extracted'`, `outcome`, ledger materialization state and no scene change.
-
-### Completion
-
-```ts
 COMPLETE_EXPEDITION {
   finaleResultId: string
   expectedRouteStep: number
 }
-```
 
-Reducer proves the current committed Finale node has a canonical just-resolved successful Finale result matching `finaleResultId`, no prior outcome exists, derives completion settlement and writes `status:'completed'`.
-
-### Failure acceptance
-
-```ts
 ACCEPT_EXPEDITION_FAILURE {
   pendingFailureId: string
   expectedRouteStep: number
 }
+
+PREPARE_NEXT_EXPEDITION {
+  runId: string
+}
 ```
 
-Reducer proves `pendingFailure` exists, id/step match and the failure signal is still canonical. It derives failure settlement and writes `status:'failed'`.
-
-### Next Tour reset
-
-```ts
-PREPARE_NEXT_EXPEDITION { runId: string }
-```
-
-Reducer requires finalized matching outcome, all G3/G5 required Career/Between-Tour settlements complete, then resets to a fresh `idle` Expedition state. It never creates the next seed; a later PREPARE does that.
-
-### Navigation contract
-
-Reducers never call `changeScene`. The owning committed-state observer/callback detects active→finalized, calls `saveGameAfterStateCommit()`, then routes to `RUN_SUMMARY`. Cover every terminal owner including day-tick/rest paths.
-
-Direct-action tests:
+Reducer/shared resolver proves:
 
 ```text
-early extraction outside window -> same state
-early completion before successful Finale -> same state
-forged failure id -> same state
-duplicate extraction/completion/failure -> no second settlement/reward
-finalized state -> save -> RUN_SUMMARY callback
+active -> extracted   only at a current legal extraction window
+active -> completed   only after canonical successful Finale evidence
+active -> failed      only from current source-derived PendingFailure
+finalized -> idle     only for matching finalized run and once core settlement is complete
 ```
+
+G1B does **not** require G5 Between-Tour decisions to pass. G5 later extends the UI/selector that enables `PREPARE_NEXT_EXPEDITION` with its persisted decision-completion guard and owns those integration tests.
+
+Scene navigation stays outside reducers:
+
+```text
+terminal reducer commit
+-> saveGameAfterStateCommit()
+-> RUN_SUMMARY
+```
+
+Direct early/forged/replayed terminal actions must return identical state.
 
 ---
 
-## Task 9: Implement core Economy/Fuel failure and rescue shell
+## Task 9: Add G1A Economy/Mobility failure shell
 
 ```ts
 export type ExpeditionFailureReason =
   | 'bankruptcy'
-  | 'mobility_failure'
+  | 'fuel_stranded'
   | 'technical_shutdown'
-  | 'band_incapacitated'
-  | 'harmony_collapse'
+  | 'crew_collapse'
   | 'authority_crisis'
   | 'critical_contract_breach'
 ```
@@ -641,116 +525,70 @@ export type ExpeditionFailureReason =
 G1A owns only:
 
 ```text
-bankruptcy      -> no spendable Expedition Cash and canonical mandatory expense cannot be met
-mobility_failure -> no viable travel because Fuel/vehicle state cannot reach any legal next node after available rescue checks
+bankruptcy
+fuel_stranded
 ```
 
-Create `PendingExpeditionFailure`:
-
-```ts
-export interface PendingExpeditionFailure {
-  id: string
-  reason: ExpeditionFailureReason
-  sourceId: string
-  createdAtRouteStep: number
-  rescueOptionIds: string[]
-}
-```
-
-Economy/Mobility rescue options are pure selectors and typed intents:
-
-```text
-refuel             when legal source + spendable Cash/cargo exists
-tow/roadside       when G2 insurance/module/Cash permits
-reroute            when an effective legal alternate edge exists
-extract            only when a real extraction window exists
-accept_failure     always available after rescue evaluation
-```
-
-No terminal failure occurs merely because a numeric threshold is low; the canonical source condition must remain unresolved after offered rescue choices.
+Fuel-stranded crisis exposes canonical legal choices such as refuel/tow/extract/fail depending on current route/resources. G2/G3/G4 later export technical/Crew/Authority/Contract signals; G1B composes them into the same `PendingExpeditionFailure` state. No later domain creates a second terminal system.
 
 ---
 
-# G1B — Integration closure after G2/G3/G4
+# G1B — Integration after G2, G3 and G4
 
-## Task 10: Compose all failure producers without inventing evidence
+## Task 10: Compose later subsystem commitments and failure signals
 
-`evaluateExpeditionFailure(state)` reads only owning-domain signals:
-
-```text
-G1 bankruptcy/mobility
-G2 getTechnicalFailureSignal(state)
-G3 getBandIncapacitationSignal(state)
-G3 getUnresolvedHarmonyCrisisSignal(state)
-G4 getAuthorityCrisisSignal(state)
-G4 getCriticalContractBreachSignal(state)
-```
-
-Required semantics:
+At START, materialize once:
 
 ```text
-technical_shutdown       only after G2 recovery/insurance/Legendary checks
-band_incapacitated       only when current required performance cannot be legally staffed/recovered
-harmony_collapse         only from explicit unresolved G3 crisis evidence, never raw low Harmony alone
-authority_crisis         only after a canonical Authority encounter ends with no legal safe resolution
-critical_contract_breach only for a failed Contract whose registry says tourEndingOnFailure:true
+G2 cargo manifest
+G2 insurance state/premium
+G4 staged Sponsor acceptance + linked obligation
+G4 native Contract obligations with committed target ids
 ```
 
-Every signal carries stable source proof and creates one `PendingExpeditionFailure`; the ACCEPT action from Task 8 remains the only terminal failure transition.
+During play, compose:
+
+```text
+G2 getTechnicalFailureSignal
+G3 getCrewFailureSignal
+G4 getAuthorityCrisisSignal
+G4 getCriticalContractFailureSignal
+```
+
+into the same source-proven `pendingFailure` owner.
 
 ---
 
-## Task 11: Integrate later Intel/reward/Contract producers into the existing G1 owners
+## Task 11: Wire Contact/Social reward and Intel producers
 
-After G3/G4:
+G3/G4 source actions must end in G1-owned ledgers/grants rather than direct mutation. Required golden paths:
 
 ```text
-G3 CREATE_CONTACT_INTEL_GRANT -> G1 stored grant -> REVEAL intent -> consumed grant
-G4 CREATE_SOCIAL_INTEL_GRANT  -> same G1 grant consumer
-G3 crew_contact reward proof  -> G1 reward ledger
-G4 event_rare/contract/finale reward proofs -> G1 reward ledger
-G4 native Contract commitment -> G1 loadout/start materialization
+Contact result -> deterministic Intel grant -> reveal -> replay rejected
+Social result -> deterministic Intel grant -> reveal -> replay rejected
+Route/Event rare result -> reward ledger entry -> extraction settlement
+Contract/Finale reward -> source-proven ledger -> terminal materialization once
 ```
-
-Tests must exercise full producer→stored proof→consumer transition, forged proof and replay; direct mutation of Intel/ledger arrays is forbidden.
 
 ---
 
-## Task 12: Full Core E2E and authority regression
+## Task 12: Run core end-to-end checks without G5 forward dependencies
 
-### E2E golden path
-
-```text
-idle
--> PREPARE sets prepared + immutable seed
--> Tour Prep commits complete build including exact route-Contract target
--> START validates and enters active
--> prepared map equals Overworld map
--> resolve route nodes with Fog/Intel
--> earn secured + unsecured rare rewards
--> encounter G2/G3/G4 management consequences
--> choose extraction OR continue
--> if extracting, explicitly choose up to carry-slot unsecured rewards
--> if continuing, resolve contextual Finale
--> reducer finalizes exactly once
--> committed-state callback saves then routes Run Summary
--> G3/G5 settlements/decisions complete
--> PREPARE_NEXT_EXPEDITION resets to idle
-```
-
-### Persistent HUD test
-
-The always-present Expedition strip contains only:
+Required G1B scenarios:
 
 ```text
-Cash | Fuel | Stamina | Harmony | Equipment Condition | Heat
+PREPARE -> same-seed preview -> START -> active
+full build identities preserved
+active Expedition never crosses protectedCareerCash through G1/G2/G4 spend owners
+voluntary extraction keeps 60% base + secured/explicit rare items
+completion keeps 100% + all rare items
+failure keeps 25% + secured rare items
+technical/Crew/Authority/high-risk Contract failure reaches one terminal owner
+terminal navigation occurs after committed save
+PREPARE_NEXT succeeds in a fixture with no G5 post-run decision layer installed
 ```
 
-Exposure, Crowd Hype, Crew Stress, obligations, injuries and defects appear contextually, not as permanent extra bars.
-
-### Plan authority test
-
-`expeditionPlanAuthority.test.js` reads canonical index/master/G1–G6 and all three `00-*` files. It requires historical files to contain `NON-NORMATIVE`, rejects any historical claim such as `binding amendment`/`this file wins`, and rejects superseded public payload fragments listed in the canonical index.
+G5 adds its stricter Between-Tour gate later and tests it in G5.
 
 Run:
 
@@ -765,16 +603,12 @@ Expected: PASS.
 
 ---
 
-## G1 Exit criteria
+## G1 exit criteria
 
-- `PREPARE_EXPEDITION_RUN` actually performs `idle -> prepared`; START requires and consumes prepared state.
-- `GameState.expedition` is wired through initial state, persistence, provider/dispatch and screenshot `BASE_STATE`.
-- Tour Prep commits every approved build axis and preserves exact route-Contract targets.
-- Active setlist/equipment/module identity cannot drift.
-- Preview and Overworld use the exact prepared seed/map.
-- Fog has real 0→1→2 source-proven transitions.
-- Rare rewards have a concrete registry/owner and hybrid extraction distinguishes secured, explicitly extracted and abandoned rewards.
-- Base voluntary/failure/completion retention is explicit before G5 multipliers.
-- Extraction/completion/failure each have their own reducer-proven typed terminal action; navigation stays outside reducers.
-- Economy/Fuel plus G2–G4 failure sources converge on one pending-failure/acceptance path.
-- Full route→consequence→extract/finale→summary loop is app-tested.
+- Root `GameState.runSeed` is the only map/run seed owner; preview and active map cannot diverge through duplicate seed state.
+- The full build commits setlist, real owned HQ gear/instruments, selected chassis/modules, real cargo/Contraband, Sponsor offer, native Contracts, Fuel and protected Career Cash.
+- No fictitious per-member production equip action exists in the plan.
+- Hybrid Fog is monotonic and source-entitled.
+- Hybrid Extraction distinguishes secured, explicitly carried and abandoned rare rewards.
+- Extraction/completion/failure are reducer-authoritative and idempotent.
+- G1B is executable before G5; G5 may only add later post-run gating.
