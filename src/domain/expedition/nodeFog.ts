@@ -10,7 +10,9 @@
 
 import { buildExpeditionMap } from './map'
 import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from './defaults'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionNodeIntelLevel } from './nodeIntel'
+import { resolveExpeditionTravelCost } from './travel'
 import type { GameState } from '../../types'
 import type { ExpeditionNodeFog } from '../../ui/expedition/ExpeditionNodeFogBadge'
 
@@ -33,6 +35,14 @@ export const getExpeditionNodeFogByNodeId = (
     NEUTRAL_EXPEDITION_ROUTE_PROFILE
   )
 
+  // Resolved once for the whole projection: the travel settlement would
+  // otherwise re-aggregate the chassis and module profiles for every node.
+  const { numeric } = getEffectiveExpeditionRules(state)
+  const travelRules = {
+    fuelConsumptionMultiplier: numeric.fuelConsumptionMultiplier,
+    roadWearMultiplier: numeric.roadWearMultiplier
+  }
+
   const out: Record<string, ExpeditionNodeFog> = {}
   for (const nodeId of map.nodeOrder) {
     const entry = map.meta[nodeId]
@@ -46,7 +56,24 @@ export const getExpeditionNodeFogByNodeId = (
       isExtractionWindow: entry.isExtractionWindow,
       intelLevel,
       exactPayout: intelLevel >= 1 ? entry.hidden.exactPayout : null,
-      exactWearCost: intelLevel >= 1 ? entry.hidden.exactWearCost : null,
+      // The *effective* cost, not the route's raw declaration. Revealing the
+      // pre-multiplier number would make the Fog lie: a chassis with a
+      // road-wear multiplier would quietly charge more than the intel promised,
+      // which is exactly the invisible debuff the design forbids.
+      exactWearCost:
+        intelLevel >= 1
+          ? resolveExpeditionTravelCost(
+              state,
+              {
+                targetNodeId: nodeId,
+                distance: 0,
+                baseFuelLiters: 0,
+                minigameFuelBonus: 0,
+                minigameConditionLoss: 0
+              },
+              travelRules
+            ).vehicleWear
+          : null,
       revealedIdentity:
         intelLevel >= 2
           ? (entry.hidden.rivalId ?? entry.hidden.eventId ?? null)

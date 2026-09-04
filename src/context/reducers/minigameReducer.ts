@@ -53,6 +53,7 @@ import {
 } from '../../quests/producers/itemQuestEvents'
 import { createTravelCompletedQuestEvent } from '../../quests/producers/travelQuestEvents'
 import { applyExpeditionRouteAdvance } from './expeditionReducer'
+import { resolveExpeditionTravelCost } from '../../domain/expedition/travel'
 
 /**
  * Starts the tourbus travel minigame for a selected destination node.
@@ -134,14 +135,27 @@ export const handleCompleteTravelMinigame = (
   const { conditionLoss, fuelBonus, voidHazardHits } =
     calculateTravelMinigameResult(damageTaken, itemsCollected)
 
+  // One settlement owns the leg's Fuel and vehicle wear. During an Expedition
+  // it scales the route's declared cost by the chassis/module road-wear and
+  // fuel rules; outside one it reports the legacy numbers unchanged, so this is
+  // a single call site rather than a branch. Wear lands on `van.condition`
+  // only — the Expedition's technical Condition has its own owner.
+  const { fuelConsumed, vehicleWear } = resolveExpeditionTravelCost(state, {
+    targetNodeId: targetNode.id,
+    distance: dist,
+    baseFuelLiters: fuelLiters,
+    minigameFuelBonus: fuelBonus,
+    minigameConditionLoss: conditionLoss
+  })
+
   const nextMoney = clampPlayerMoney(
     finiteNumberOr(state.player.money, 0) - totalCost
   )
   const nextFuel = clampVanFuel(
-    finiteNumberOr(state.player.van.fuel, 0) - fuelLiters + fuelBonus
+    finiteNumberOr(state.player.van.fuel, 0) - fuelConsumed
   )
   const nextCondition = clampVanCondition(
-    finiteNumberOr(state.player.van.condition, 0) - conditionLoss
+    finiteNumberOr(state.player.van.condition, 0) - vehicleWear
   )
 
   let nextMembers = state.band.members
