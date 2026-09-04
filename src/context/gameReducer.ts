@@ -74,8 +74,11 @@ import {
   handlePrepareExpeditionRun,
   handlePrepareNextExpedition,
   handleResolveExpeditionCrisis,
+  handleResolveExpeditionDefect,
+  handleRevealExpeditionDefect,
   handleRevealExpeditionNodeIntel,
-  handleStartExpedition
+  handleStartExpedition,
+  handleTriggerExpeditionDefect
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -226,7 +229,10 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ACCEPT_EXPEDITION_FAILURE]: handleAcceptExpeditionFailure,
   [ActionTypes.PREPARE_NEXT_EXPEDITION]: handlePrepareNextExpedition,
   [ActionTypes.RESOLVE_EXPEDITION_CRISIS]: handleResolveExpeditionCrisis,
-  [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair
+  [ActionTypes.EXECUTE_EXPEDITION_REPAIR]: handleExecuteExpeditionRepair,
+  [ActionTypes.REVEAL_EXPEDITION_DEFECT]: handleRevealExpeditionDefect,
+  [ActionTypes.TRIGGER_EXPEDITION_DEFECT]: handleTriggerExpeditionDefect,
+  [ActionTypes.RESOLVE_EXPEDITION_DEFECT]: handleResolveExpeditionDefect
 }
 
 /**

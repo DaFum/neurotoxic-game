@@ -17,7 +17,8 @@ import type {
   ExpeditionIntelSource,
   ExpeditionLoadout,
   ExpeditionRepairIntent,
-  ExpeditionRewardSourceType
+  ExpeditionRewardSourceType,
+  HiddenDefectTrigger
 } from '../types/expedition'
 
 /**
@@ -281,6 +282,87 @@ export const executeExpeditionRepair = (
       targetGroup: intent.targetGroup,
       ...(intent.sourceGroup ? { sourceGroup: intent.sourceGroup } : {}),
       ...(intent.quality !== undefined ? { quality: intent.quality } : {}),
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action revealing a hidden equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param source - Revelation source description.
+ * @returns Typed `REVEAL_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const revealExpeditionDefect = (
+  state: GameState,
+  defectId: string,
+  source: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.REVEAL_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.REVEAL_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      source,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action triggering an equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param trigger - Trigger phase.
+ * @returns Typed `TRIGGER_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const triggerExpeditionDefect = (
+  state: GameState,
+  defectId: string,
+  trigger: HiddenDefectTrigger
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.TRIGGER_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.TRIGGER_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      trigger,
+      expectedRouteStep: state.expedition.routeStep
+    }
+  }
+}
+
+/**
+ * Builds the action resolving an equipment defect.
+ *
+ * @param state - Current game state.
+ * @param defectId - Target defect id.
+ * @param repairResolutionId - Associated repair resolution id.
+ * @returns Typed `RESOLVE_EXPEDITION_DEFECT` action, or `null` when run is not active.
+ */
+export const resolveExpeditionDefect = (
+  state: GameState,
+  defectId: string,
+  repairResolutionId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_DEFECT }
+> | null => {
+  if (state.expedition?.status !== 'active') return null
+  return {
+    type: ActionTypes.RESOLVE_EXPEDITION_DEFECT,
+    payload: {
+      defectId,
+      repairResolutionId,
       expectedRouteStep: state.expedition.routeStep
     }
   }
