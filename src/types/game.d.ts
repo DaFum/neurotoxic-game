@@ -159,6 +159,13 @@ export interface GameState {
    * Consumed by `useMapGeneration`; unlike `rngSeed` it never rotates.
    */
   runSeed: number
+  /**
+   * Run-scoped Roguelite Expedition orchestration state. Stores run identity,
+   * the immutable committed build, Intel/reward/failure evidence and the
+   * finalized outcome only; it deliberately carries no seed of its own so
+   * `runSeed` above stays the single map/run seed owner.
+   */
+  expedition: import('./expedition').ExpeditionState
 }
 
 /**
@@ -338,6 +345,11 @@ export type GameAction =
       { reason: import('./assets').StartCrowdfundFailureReason }
     >
   | Action<ActionTypes['ASSET_FORECLOSED'], { assetId: string }>
+  // Roguelite Expedition (G1)
+  | Action<
+      ActionTypes['PREPARE_EXPEDITION_RUN'],
+      import('./actions').PrepareExpeditionRunPayload
+    >
 
 export * from './player'
 export * from './band'

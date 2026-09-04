@@ -410,6 +410,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       band: { members: [], harmony: 100, performance: {} },
       activeEvent: null,
       gigEventScoreDelta: 0,
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       addToast: () => {},
@@ -459,6 +462,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       setlist: [song1],
       band: { members: [], harmony: 100, performance: {} },
       activeEvent: null,
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       addToast: () => {},
@@ -529,6 +535,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       setlist: [song1, song2],
       band: { members: [], harmony: 100, performance: {} },
       activeEvent: null,
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       addToast: () => {},
@@ -602,6 +611,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       setlist: [song1],
       band: { members: [], harmony: 100, performance: {} },
       activeEvent: null,
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       addToast: () => {},
@@ -680,6 +692,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
@@ -736,6 +751,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
@@ -775,6 +793,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,
@@ -843,6 +864,9 @@ describe('useRhythmGameLogic Multi-Song Support', () => {
       player: { currentNodeId: 'n1', money: 0 },
       gigModifiers: {},
       addToast: () => {},
+      // `expedition` is a required top-level GameState field; the hook reads
+      // it to decide whether committed gear neutralization applies.
+      expedition: { status: 'idle', loadout: null },
       hasUpgrade: () => false,
       setLastGigStats: mockSetLastGigStats,
       changeScene: mockChangeScene,

@@ -37,6 +37,7 @@ import {
   createVenueGoodGigQuestEvent
 } from '../../quests/producers/venueQuestEvents'
 import { normalizeSetlistForSave } from '../../utils/gameState'
+import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
 import {
   getRegionKeyForLocation,
   REGION_BLACKLIST_THRESHOLD
@@ -102,6 +103,11 @@ export const handleSetSetlist = (
   state: GameState,
   payload: RhythmSetlistEntry[]
 ): GameState => {
+  // An active Expedition freezes the committed setlist: the run's pacing and
+  // stamina plan were made against it, so a mid-run swap would let the player
+  // re-decide a commitment the route already priced in. Identical payloads
+  // still pass, so a replayed dispatch is a no-op rather than a rejection.
+  if (isExpeditionSetlistDrift(state, payload)) return state
   return { ...state, setlist: normalizeSetlistForSave(payload) }
 }
 

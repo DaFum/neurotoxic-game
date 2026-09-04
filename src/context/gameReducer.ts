@@ -64,6 +64,7 @@ import {
   handleBloodBankDonate
 } from './reducers/clinicReducer'
 import { handleAddQuest, handleAdvanceQuest } from './reducers/questReducer'
+import { handlePrepareExpeditionRun } from './reducers/expeditionReducer'
 import { MILESTONES } from '../data/milestones/milestones'
 import { createAddToastAction } from './actionCreators'
 import { assetForeclosed } from './assetActionCreators'
@@ -200,7 +201,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.REMOVE_MODULE]: handleRemoveModule,
   [ActionTypes.START_CROWDFUND]: handleStartCrowdfund,
   [ActionTypes.START_CROWDFUND_FAILED]: handleAssetFailedAction,
-  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed
+  [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
+  [ActionTypes.PREPARE_EXPEDITION_RUN]: handlePrepareExpeditionRun
 }
 
 /**
