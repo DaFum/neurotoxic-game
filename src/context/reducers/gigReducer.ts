@@ -42,8 +42,14 @@ import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRu
 import {
   applyTechnicalWear,
   calculatePostGigTechnicalWear,
+  getExpeditionConditionSummary,
   getExpeditionTechnicalCondition
 } from '../../domain/expedition/condition'
+import {
+  getExpeditionFinaleProfile,
+  selectExpeditionFinaleType
+} from '../../domain/expedition/finales'
+import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { evaluateExpeditionDefectTriggers } from '../../domain/expedition/defects'
 import {
   getRegionKeyForLocation,
@@ -87,6 +93,32 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
   // otherwise the player would plan the gig against equipment that is about to
   // break. No-ops outside an active run.
   const withDefects = evaluateExpeditionDefectTriggers(state, 'pre_gig')
+  const isExpeditionFinale =
+    withDefects.expedition?.status === 'active' &&
+    withDefects.gameMap?.nodes?.[withDefects.player.currentNodeId]?.type ===
+      'FINALE'
+  const finaleType = isExpeditionFinale
+    ? selectExpeditionFinaleType({
+        specialFinaleRequired: withDefects.expedition.activeObligations.some(
+          obligation =>
+            obligation.status === 'active' &&
+            obligation.constraints.some(
+              constraint => constraint.kind === 'special_finale'
+            )
+        ),
+        nemesisLevel: withDefects.rivalBand
+          ? withDefects.career.rivalsById[withDefects.rivalBand.id]?.history
+              .nemesisLevel
+          : 0,
+        technicalConditionAggregate: getExpeditionConditionSummary(withDefects),
+        heat: withDefects.expedition.pressure.heat,
+        exposure: withDefects.expedition.pressure.exposure,
+        hasSponsorObligation: withDefects.expedition.activeObligations.some(
+          obligation => obligation.sourceType === 'brandDeal'
+        )
+      })
+    : null
+  const finaleProfile = getExpeditionFinaleProfile(finaleType)
   return {
     ...withDefects,
     currentGig: payload,
@@ -100,7 +132,25 @@ export const handleStartGig = (state: GameState, payload: Venue): GameState => {
     // mid-gig falls back to live reputation.
     gigContextSnapshot: {
       reputationByRegionAtStart: { ...withDefects.reputationByRegion }
-    }
+    },
+    ...(withDefects.expedition
+      ? {
+          expedition: {
+            ...withDefects.expedition,
+            finaleType,
+            pressure: finaleProfile
+              ? {
+                  ...withDefects.expedition.pressure,
+                  crowdHype: Math.min(
+                    100,
+                    withDefects.expedition.pressure.crowdHype +
+                      finaleProfile.crowdHypeStartBonus
+                  )
+                }
+              : withDefects.expedition.pressure
+          }
+        }
+      : {})
   }
 }
 
@@ -470,9 +520,13 @@ export const handleSetLastGigStats = (
   if (nextState.expedition?.status === 'active') {
     const rules = getEffectiveExpeditionRules(nextState)
     const currentCondition = getExpeditionTechnicalCondition(nextState)
+    const finaleProfile = getExpeditionFinaleProfile(
+      nextState.expedition.finaleType
+    )
     const wear = calculatePostGigTechnicalWear(
       safePayload,
-      rules.numeric.technicalWearMultiplier
+      rules.numeric.technicalWearMultiplier *
+        (finaleProfile?.technicalWearMultiplier ?? 1)
     )
     const updatedCondition = applyTechnicalWear(currentCondition, wear)
     nextState = {
@@ -486,6 +540,11 @@ export const handleSetLastGigStats = (
     // planted by an earlier improvised repair is meant to surface as the show
     // ends, not to be pre-empted by it.
     nextState = evaluateExpeditionDefectTriggers(nextState, 'post_gig')
+    if (finaleProfile && safePayload.failed !== true)
+      nextState = applyExpeditionEventHeat(
+        nextState,
+        finaleProfile.heatOnSuccess
+      )
   }
 
   return nextState

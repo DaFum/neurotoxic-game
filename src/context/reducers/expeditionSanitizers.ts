@@ -27,6 +27,11 @@ import { buildExpeditionMap } from '../../domain/expedition/map'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import {
+  deriveExpeditionDoubleDownOffer,
+  materializeContractConstraints
+} from '../../domain/expedition/contracts'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
@@ -756,6 +761,9 @@ export const sanitizeExpeditionState = (
     },
     bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
+    resolvedObligationSignalIds: sanitizeUniqueStrings(
+      value.resolvedObligationSignalIds
+    ),
     pressure: sanitizeExpeditionPressure(value.pressure),
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
@@ -764,6 +772,18 @@ export const sanitizeExpeditionState = (
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
     pendingRunDraftOffer: null,
     finaleType: sanitizeFinaleType(value.finaleType),
+    lastSocialResult: sanitizeSocialResultProof(
+      value.lastSocialResult,
+      readCount(value, 'routeStep', 0)
+    ),
+    activeObligations: sanitizeActiveObligations(
+      value.activeObligations,
+      runId,
+      runSeed,
+      readCount(value, 'routeStep', 0),
+      loadout,
+      preparedMap
+    ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),
@@ -853,6 +873,141 @@ const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
   value === 'contract_special'
     ? value
     : null
+
+const sanitizeSocialResultProof = (
+  value: unknown,
+  routeStep: number
+): ExpeditionState['lastSocialResult'] => {
+  if (
+    !isLooseRecord(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.postOptionId !== 'string' ||
+    (value.resultId !== 'push' &&
+      value.resultId !== 'monetize' &&
+      value.resultId !== 'suppress' &&
+      value.resultId !== 'weaponize') ||
+    value.resolvedAtRouteStep !== routeStep ||
+    typeof value.intelConsumed !== 'boolean'
+  )
+    return null
+  const expectedId = `${value.postOptionId}:${value.resultId}:${routeStep}`
+  if (value.id !== expectedId) return null
+  return {
+    id: expectedId,
+    postOptionId: value.postOptionId,
+    resultId: value.resultId,
+    resolvedAtRouteStep: routeStep,
+    intelConsumed: value.intelConsumed
+  }
+}
+
+const sanitizeActiveObligations = (
+  value: unknown,
+  runId: string | null,
+  runSeed: number | undefined,
+  routeStep: number,
+  loadout: ExpeditionLoadout | null,
+  preparedMap: import('../../types/expedition').ExpeditionMap | null
+): ExpeditionState['activeObligations'] => {
+  if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
+  const result: ExpeditionState['activeObligations'] = []
+  const seen = new Set<string>()
+  for (const raw of value.slice(0, MAX_COLLECTION_ENTRIES)) {
+    if (!isLooseRecord(raw)) continue
+    const { id, sourceType, sourceId, status } = raw
+    if (
+      typeof id !== 'string' ||
+      typeof sourceId !== 'string' ||
+      seen.has(id) ||
+      (sourceType !== 'native' && sourceType !== 'brandDeal') ||
+      (status !== 'active' && status !== 'completed' && status !== 'failed') ||
+      typeof raw.settled !== 'boolean' ||
+      !id.startsWith(`${runId}:`) ||
+      !Array.isArray(raw.constraints) ||
+      !isLooseRecord(raw.progressByConstraintId)
+    )
+      continue
+    const template =
+      sourceType === 'native'
+        ? EXPEDITION_CONTRACTS_BY_ID.get(sourceId)
+        : undefined
+    if (sourceType === 'native' && !template) continue
+    if (sourceType === 'brandDeal' && raw.constraints.length !== 0) continue
+    let constraints: import('../../types/expedition').ExpeditionContractConstraint[] =
+      []
+    if (sourceType === 'native') {
+      const commitment = loadout?.nativeContracts.find(
+        item => item.templateId === sourceId
+      )
+      if (!template || !commitment || !preparedMap) continue
+      const canonical = materializeContractConstraints(
+        template,
+        preparedMap,
+        commitment.targetNodeId
+      )
+      if (
+        !canonical ||
+        JSON.stringify(raw.constraints) !== JSON.stringify(canonical)
+      )
+        continue
+      constraints = canonical
+    }
+    const progressByConstraintId = Object.create(
+      null
+    ) as import('../../types/expedition').ActiveObligationState['progressByConstraintId']
+    let valid = true
+    for (const constraint of constraints) {
+      const progress = raw.progressByConstraintId[constraint.id]
+      if (
+        !isLooseRecord(progress) ||
+        progress.constraintId !== constraint.id ||
+        !isFiniteNumber(progress.value) ||
+        progress.value < 0 ||
+        typeof progress.satisfied !== 'boolean' ||
+        typeof progress.failed !== 'boolean'
+      ) {
+        valid = false
+        break
+      }
+      progressByConstraintId[constraint.id] = {
+        constraintId: constraint.id,
+        value: progress.value,
+        satisfied: progress.satisfied,
+        failed: progress.failed
+      }
+    }
+    if (!valid) continue
+    let doubleDown = null
+    if (raw.doubleDown !== null) {
+      if (
+        !isLooseRecord(raw.doubleDown) ||
+        !isFiniteNumber(raw.doubleDown.acceptedAtRouteStep) ||
+        !Number.isInteger(raw.doubleDown.acceptedAtRouteStep) ||
+        raw.doubleDown.acceptedAtRouteStep > routeStep
+      )
+        continue
+      const expected = deriveExpeditionDoubleDownOffer(
+        runSeed,
+        id,
+        raw.doubleDown.acceptedAtRouteStep
+      )
+      if (JSON.stringify(raw.doubleDown) !== JSON.stringify(expected)) continue
+      doubleDown = expected
+    }
+    seen.add(id)
+    result.push({
+      id,
+      sourceType,
+      sourceId,
+      constraints,
+      progressByConstraintId,
+      status,
+      settled: raw.settled,
+      doubleDown
+    })
+  }
+  return result
+}
 
 const sanitizeCrewStressMap = (value: unknown): Record<string, number> => {
   const result = Object.create(null) as Record<string, number>

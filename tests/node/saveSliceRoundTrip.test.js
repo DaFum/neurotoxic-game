@@ -249,7 +249,22 @@ const buildPopulatedState = () => {
       injuryByCrewId: Object.create(null)
     },
     bandInjuryByMemberId: Object.create(null),
-    resolvedCrewSourceIds: []
+    resolvedCrewSourceIds: [],
+    resolvedObligationSignalIds: [],
+    pressure: {
+      heat: 0,
+      exposure: 0,
+      crowdHype: 0,
+      severeReliefUntilRouteStep: null,
+      lastSevereEventId: null,
+      temporaryRouteOpportunity: null
+    },
+    preparedSponsorOffers: [],
+    activeObligations: [],
+    runDraftTraitIds: [],
+    pendingRunDraftOffer: null,
+    finaleType: null,
+    lastSocialResult: null
   }
 
   return state

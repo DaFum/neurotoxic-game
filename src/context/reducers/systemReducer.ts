@@ -80,6 +80,7 @@ import {
   sanitizeRunSeed
 } from './assetSanitizers'
 import { sanitizeExpeditionState } from './expeditionSanitizers'
+import { validatePreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
 import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
 import { buildExpeditionMap } from '../../domain/expedition/map'
@@ -349,7 +350,17 @@ export const handleLoadGame = (
     completedQuestScopes: remapPerRegionScopeKeys(
       safeState.completedQuestScopes,
       scope => scope.questId
-    )
+    ),
+    expedition:
+      safeState.expedition.status === 'prepared'
+        ? {
+            ...safeState.expedition,
+            preparedSponsorOffers: validatePreparedExpeditionSponsorOffers(
+              safeState,
+              safeState.expedition.preparedSponsorOffers
+            )
+          }
+        : safeState.expedition
   }
 
   return migratedState

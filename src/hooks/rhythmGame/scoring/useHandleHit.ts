@@ -54,6 +54,8 @@ type HandleHitParams = {
     drumMultiplier: number
     tempoBonus: number
     critChance: number
+    comboBonusMultiplier: number
+    timingWindowMultiplier: number
   }
   activateToxicMode: () => void
   handleMiss: (count?: number, isEmptyHit?: boolean) => void
@@ -94,8 +96,14 @@ export const useHandleHit = ({
     setCorruptionBurstEndTime,
     setCorruptionState
   } = setters
-  const { guitarDifficulty, drumMultiplier, tempoBonus, critChance } =
-    performance
+  const {
+    guitarDifficulty,
+    drumMultiplier,
+    tempoBonus,
+    critChance,
+    comboBonusMultiplier,
+    timingWindowMultiplier
+  } = performance
 
   const handleHit = useCallback(
     (laneIndex: number) => {
@@ -118,7 +126,7 @@ export const useHandleHit = ({
       }
 
       const hitWindow = calculateDynamicHitWindow(
-        lane.hitWindow * (1 + tempoBonus),
+        lane.hitWindow * (1 + tempoBonus) * timingWindowMultiplier,
         state.modifiers.hitWindowBonus ?? 0,
         laneIndex,
         guitarDifficulty
@@ -221,7 +229,8 @@ export const useHandleHit = ({
           toxicModeActive,
           Boolean(state.modifiers.hasPerfektionist),
           currentAccuracy,
-          gameStateRef.current.isCorruptionBurstActive
+          gameStateRef.current.isCorruptionBurstActive,
+          comboBonusMultiplier
         )
 
         if (critChance > 0) {
@@ -297,7 +306,9 @@ export const useHandleHit = ({
       guitarDifficulty,
       drumMultiplier,
       tempoBonus,
-      critChance
+      critChance,
+      comboBonusMultiplier,
+      timingWindowMultiplier
     ]
   )
 

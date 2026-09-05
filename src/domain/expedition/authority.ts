@@ -1,5 +1,7 @@
 import { canSpendExpeditionCash } from './loadout'
 import type { GameState } from '../../types'
+import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { getExpeditionCargoView } from './cargo'
 export type ExpeditionAuthorityExitId =
   | 'pay'
   | 'crew'
@@ -13,11 +15,14 @@ export const getAvailableAuthoritySafeExits = (
   const exits: ExpeditionAuthorityExitId[] = []
   if (canSpendExpeditionCash(state, 500)) exits.push('pay')
   if (
-    state.expedition.loadout?.crewIds.some(
-      id => id.includes('manager') || id.includes('security')
-    )
+    state.expedition.loadout?.crewIds.some(id => {
+      const role = EXPEDITION_CREW_BY_ID[id]?.role
+      return role === 'manager' || role === 'security'
+    })
   )
     exits.push('crew')
+  if (getExpeditionCargoView(state).hiddenCapacity > 0)
+    exits.push('hidden_compartment')
   if ((state.expedition.cargo?.contraband.length ?? 0) > 0)
     exits.push('surrender_cargo')
   if ((state.player.van?.fuel ?? 0) >= 10) exits.push('route_detour')

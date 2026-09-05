@@ -99,6 +99,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     'none' | 'light' | 'serious' | 'critical'
   >,
   resolvedCrewSourceIds: [],
+  resolvedObligationSignalIds: [],
   pressure: {
     heat: 0,
     exposure: 0,
@@ -111,5 +112,6 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   activeObligations: [],
   runDraftTraitIds: [],
   pendingRunDraftOffer: null,
-  finaleType: null
+  finaleType: null,
+  lastSocialResult: null
 })

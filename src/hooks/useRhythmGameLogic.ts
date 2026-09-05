@@ -11,6 +11,8 @@ import {
   getExpeditionCommittedGearProfile
 } from '../domain/expedition/equipment'
 import { getExpeditionPerformanceProfile } from '../domain/expedition/injuries'
+import { getExpeditionCrowdHypeProfile } from '../domain/expedition/crowdHype'
+import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -70,6 +72,17 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   const conditionProfile = useGameSelector(state =>
     state.expedition.status === 'active'
       ? getExpeditionPerformanceProfile(state)
+      : null
+  )
+  const crowdHypeComboMultiplier = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionCrowdHypeProfile(state.expedition.pressure.crowdHype)
+          .comboBonusMultiplier
+      : 1
+  )
+  const finaleProfile = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? getExpeditionFinaleProfile(state.expedition.finaleType)
       : null
   )
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
@@ -140,7 +153,12 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
       ...band?.performance,
       tempo: finalTempo,
       critChance: finiteNumberOr(band?.crit, 0),
-      crowdControl: finiteNumberOr(band?.crowdControl, 0)
+      crowdControl: finiteNumberOr(band?.crowdControl, 0),
+      comboBonusMultiplier:
+        crowdHypeComboMultiplier * (finaleProfile?.comboBonusMultiplier ?? 1),
+      timingWindowMultiplier: finaleProfile?.timingWindowMultiplier ?? 1,
+      missPenaltyMultiplier: finaleProfile?.missPenaltyMultiplier ?? 1,
+      staminaDrainMultiplier: finaleProfile?.staminaDrainMultiplier ?? 1
     }
 
     // During an Expedition only the committed gear contributes: the delta
@@ -149,7 +167,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
     return expeditionGearDelta
       ? applyExpeditionGearPerformanceDelta(resolved, expeditionGearDelta)
       : resolved
-  }, [band, expeditionGearDelta])
+  }, [band, crowdHypeComboMultiplier, expeditionGearDelta, finaleProfile])
 
   // 2. Scoring Logic (Hits, Misses, Toxic Mode)
   const scoringActions = useRhythmGameScoring({

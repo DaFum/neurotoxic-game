@@ -3,11 +3,13 @@ import {
   MAX_NATIVE_EXPEDITION_CONTRACTS
 } from '../../data/expedition/contracts'
 import type {
+  ActiveObligationState,
   ExpeditionContractConstraint,
   ExpeditionContractTemplate,
   ExpeditionMap,
   ExpeditionNativeContractCommitment
 } from '../../types/expedition'
+import { hashExpeditionRoute } from './map'
 
 export const areExpeditionContractsCompatible = (
   ids: readonly string[]
@@ -145,3 +147,47 @@ export const materializeCommittedContracts = (
       commitment.targetNodeId
     )
   }))
+
+export const deriveExpeditionDoubleDownOffer = (
+  runSeed: number,
+  obligationId: string,
+  routeStep: number
+): NonNullable<ActiveObligationState['doubleDown']> => {
+  const derivationKey = `${runSeed}:${obligationId}:${routeStep}`
+  const options = [
+    {
+      addedConstraint: { kind: 'no_more_rest' } as const,
+      rewardMultiplier: 1.25 as const,
+      failureHeatBonus: 8
+    },
+    {
+      addedConstraint: { kind: 'heat_cap', maxHeat: 60 } as const,
+      rewardMultiplier: 1.35 as const,
+      failureHeatBonus: 12
+    },
+    {
+      addedConstraint: { kind: 'finale_required' } as const,
+      rewardMultiplier: 1.35 as const,
+      failureHeatBonus: 15
+    },
+    {
+      addedConstraint: { kind: 'social_silence', maxPosts: 0 } as const,
+      rewardMultiplier: 1.25 as const,
+      failureHeatBonus: 10
+    }
+  ] as const
+  const picked =
+    options[
+      Number.parseInt(hashExpeditionRoute(derivationKey), 16) % options.length
+    ] ?? options[0]
+  return {
+    acceptedOfferId: hashExpeditionRoute(
+      `${derivationKey}:${picked.addedConstraint.kind}`
+    ),
+    derivationKey,
+    addedConstraint: picked.addedConstraint,
+    rewardMultiplier: picked.rewardMultiplier,
+    failureHeatBonus: picked.failureHeatBonus,
+    acceptedAtRouteStep: routeStep
+  }
+}

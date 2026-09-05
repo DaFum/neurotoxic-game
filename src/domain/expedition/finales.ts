@@ -1,4 +1,6 @@
 import type { ExpeditionFinaleType } from '../../types/expedition'
+import { EXPEDITION_FINALES_BY_ID } from '../../data/expedition/finales'
+import type { ExpeditionFinaleProfile } from '../../types/expedition'
 export interface ExpeditionFinaleSelectionContext {
   specialFinaleRequired?: boolean
   nemesisLevel?: number
@@ -18,3 +20,8 @@ export const selectExpeditionFinaleType = (
     return 'corporate_showcase'
   return 'regional_headliner'
 }
+
+export const getExpeditionFinaleProfile = (
+  finaleType: ExpeditionFinaleType | null | undefined
+): ExpeditionFinaleProfile | null =>
+  finaleType ? (EXPEDITION_FINALES_BY_ID.get(finaleType) ?? null) : null

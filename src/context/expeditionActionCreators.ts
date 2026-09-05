@@ -79,6 +79,39 @@ export const selectExpeditionDraft = (
   payload: { traitId, expectedRouteStep: state.expedition.routeStep }
 })
 
+export const resolveExpeditionSocialResult = (
+  state: GameState,
+  resultId: import('../types/expedition').ExpeditionSocialResultId,
+  postOptionId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_SOCIAL_RESULT }
+> => ({
+  type: ActionTypes.RESOLVE_EXPEDITION_SOCIAL_RESULT,
+  payload: {
+    resultId,
+    postOptionId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+export const createSocialIntelGrant = (
+  state: GameState,
+  postOptionId: string,
+  resultId: import('../types/expedition').ExpeditionSocialResultId,
+  nodeId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.CREATE_SOCIAL_INTEL_GRANT }
+> => ({
+  type: ActionTypes.CREATE_SOCIAL_INTEL_GRANT,
+  payload: {
+    postOptionId,
+    resultId,
+    nodeId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+
 /**
  * Builds the PREPARE action that claims a run identity and the next run seed.
  *

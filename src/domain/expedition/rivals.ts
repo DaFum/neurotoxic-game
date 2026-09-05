@@ -26,7 +26,7 @@ export const rehydrateRivalBand = (
 })
 export const selectExpeditionRivalForRun = (
   state: GameState,
-  _preparedMap: ExpeditionMap,
+  preparedMap: ExpeditionMap,
   routeProfile: ExpeditionRouteProfile
 ): ExpeditionRivalSelection | null => {
   if (!routeProfile.rivalAllowed) return null
@@ -34,7 +34,7 @@ export const selectExpeditionRivalForRun = (
     .filter(
       record =>
         !record.snapshot.preferredRegionId ||
-        record.snapshot.preferredRegionId === state.expedition.loadout?.regionId
+        record.snapshot.preferredRegionId === preparedMap.regionId
     )
     .sort(
       (a, b) =>
@@ -61,7 +61,7 @@ export const selectExpeditionRivalForRun = (
       id: rivalBand.id,
       name: rivalBand.name,
       style: String(rivalBand.alignment),
-      preferredRegionId: state.expedition.loadout?.regionId ?? '',
+      preferredRegionId: preparedMap.regionId,
       signatureBehavior: behavior,
       seed: state.runSeed
     },

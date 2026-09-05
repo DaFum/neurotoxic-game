@@ -86,7 +86,9 @@ import {
   handleRecordExpeditionObligationSignal,
   handleDoubleDownExpeditionObligation,
   handleOfferExpeditionDraft,
-  handleSelectExpeditionDraft
+  handleSelectExpeditionDraft,
+  handleResolveExpeditionSocialResult,
+  handleCreateSocialIntelGrant
 } from './reducers/expeditionReducer'
 import { syncExpeditionPendingFailure } from '../domain/expedition/failure'
 import { enforceExpeditionCashFloor } from '../domain/expedition/loadout'
@@ -275,7 +277,10 @@ const reducerMap: ReducerMap = {
   [ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION]:
     handleDoubleDownExpeditionObligation,
   [ActionTypes.OFFER_EXPEDITION_DRAFT]: handleOfferExpeditionDraft,
-  [ActionTypes.SELECT_EXPEDITION_DRAFT]: handleSelectExpeditionDraft
+  [ActionTypes.SELECT_EXPEDITION_DRAFT]: handleSelectExpeditionDraft,
+  [ActionTypes.RESOLVE_EXPEDITION_SOCIAL_RESULT]:
+    handleResolveExpeditionSocialResult,
+  [ActionTypes.CREATE_SOCIAL_INTEL_GRANT]: handleCreateSocialIntelGrant
 }
 
 /**

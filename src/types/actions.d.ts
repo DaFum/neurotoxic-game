@@ -217,6 +217,17 @@ export interface SelectExpeditionDraftPayload {
   traitId: import('./expedition').ExpeditionRunDraftTraitId
   expectedRouteStep: number
 }
+export interface ResolveExpeditionSocialResultPayload {
+  resultId: import('./expedition').ExpeditionSocialResultId
+  postOptionId: string
+  expectedRouteStep: number
+}
+export interface CreateSocialIntelGrantPayload {
+  postOptionId: string
+  resultId: import('./expedition').ExpeditionSocialResultId
+  nodeId: string
+  expectedRouteStep: number
+}
 
 /**
  * Payload starting the prepared Expedition run as one transaction.

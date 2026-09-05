@@ -108,13 +108,15 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
           typeof snapshot.name !== 'string' ||
           typeof snapshot.style !== 'string' ||
           typeof snapshot.preferredRegionId !== 'string' ||
+          typeof snapshot.signatureBehavior !== 'string' ||
           !['aggressive', 'showboat', 'saboteur', 'dealbreaker'].includes(
-            String(snapshot.signatureBehavior)
+            snapshot.signatureBehavior
           ) ||
           !isFiniteNumber(snapshot.seed)
         )
           return null
         if (
+          typeof history.relationship !== 'string' ||
           ![
             'unknown',
             'competitive',
@@ -122,7 +124,7 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
             'nemesis',
             'respect',
             'alliance'
-          ].includes(String(history.relationship)) ||
+          ].includes(history.relationship) ||
           !isFiniteNumber(history.nemesisLevel) ||
           !Number.isInteger(history.nemesisLevel) ||
           history.nemesisLevel < 0 ||
@@ -134,9 +136,10 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
         const lastOutcome = history.lastOutcome
         if (
           lastOutcome !== null &&
-          !['hostile_win', 'hostile_loss', 'respect', 'alliance'].includes(
-            String(lastOutcome)
-          )
+          (typeof lastOutcome !== 'string' ||
+            !['hostile_win', 'hostile_loss', 'respect', 'alliance'].includes(
+              lastOutcome
+            ))
         )
           return null
         return {

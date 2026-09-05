@@ -463,6 +463,14 @@ export type GameAction =
       ActionTypes['SELECT_EXPEDITION_DRAFT'],
       import('./actions').SelectExpeditionDraftPayload
     >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_SOCIAL_RESULT'],
+      import('./actions').ResolveExpeditionSocialResultPayload
+    >
+  | Action<
+      ActionTypes['CREATE_SOCIAL_INTEL_GRANT'],
+      import('./actions').CreateSocialIntelGrantPayload
+    >
 
 export * from './player'
 export * from './band'

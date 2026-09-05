@@ -524,6 +524,15 @@ export interface ExpeditionRunDraftOffer {
   offeredAtRouteStep: number
   candidateTraitIds: ExpeditionRunDraftTraitId[]
 }
+export type ExpeditionSocialResultId =
+  'push' | 'monetize' | 'suppress' | 'weaponize'
+export interface ExpeditionSocialResultProof {
+  id: string
+  postOptionId: string
+  resultId: ExpeditionSocialResultId
+  resolvedAtRouteStep: number
+  intelConsumed: boolean
+}
 export type ExpeditionFinaleType =
   | 'regional_headliner'
   | 'corporate_showcase'
@@ -589,12 +598,14 @@ export interface ExpeditionState {
   crew?: ExpeditionCrewRunState
   bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
   resolvedCrewSourceIds?: string[]
+  resolvedObligationSignalIds: string[]
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
   finaleType: ExpeditionFinaleType | null
+  lastSocialResult: ExpeditionSocialResultProof | null
 }
 
 export type ExpeditionCrewRole =
