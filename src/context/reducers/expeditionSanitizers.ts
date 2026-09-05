@@ -627,7 +627,8 @@ export const sanitizeExpeditionState = (
       if (
         entry.sourceType === 'crew_contact' &&
         (entry.rewardDefinitionId !== 'reward_contact_backline_deal' ||
-          !(value.resolvedCrewSourceIds as unknown[] | undefined)?.some(
+          !Array.isArray(value.resolvedCrewSourceIds) ||
+          !value.resolvedCrewSourceIds.some(
             source =>
               typeof source === 'string' &&
               source.startsWith(`${entry.sourceId}:`)

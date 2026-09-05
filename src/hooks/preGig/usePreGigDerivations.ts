@@ -61,7 +61,6 @@ export const usePreGigDerivations = ({
   gigModifiers,
   setlist,
   typedT,
-  technicalCondition,
   canStartShow,
   expeditionState
 }: UsePreGigDerivationsProps): UsePreGigDerivationsReturn => {
@@ -129,7 +128,7 @@ export const usePreGigDerivations = ({
         ...getExpeditionInjuryActiveEffects(expeditionState)
       ]
     }
-  }, [band, expeditionState, gigModifiers, technicalCondition])
+  }, [band, expeditionState, gigModifiers])
 
   const selectedSongIds = useMemo(() => {
     const ids = new Set<string>()

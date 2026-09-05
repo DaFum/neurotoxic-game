@@ -38,4 +38,5 @@ export interface HandlerDispatchers {
     sourceType: 'poor_gig' | 'successful_gig',
     sourceId: string
   ) => void
+  completeExpedition: (finaleResultId: string) => void
 }

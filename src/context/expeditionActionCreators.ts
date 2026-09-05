@@ -460,7 +460,8 @@ export const acceptExpeditionTechnicalFailure = (
  */
 export const applyExpeditionEventDelta = (
   state: GameState,
-  resultIds: readonly ExpeditionEventResultId[]
+  resultIds: readonly ExpeditionEventResultId[],
+  source?: { eventId: string; optionId: string }
 ): Extract<
   GameAction,
   { type: typeof ActionTypes.APPLY_EXPEDITION_EVENT_DELTA }
@@ -471,7 +472,10 @@ export const applyExpeditionEventDelta = (
     type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
     payload: {
       resultIds: [...resultIds],
-      expectedRouteStep: state.expedition.routeStep
+      expectedRouteStep: state.expedition.routeStep,
+      ...(source
+        ? { sourceEventId: source.eventId, sourceOptionId: source.optionId }
+        : {})
     }
   }
 }

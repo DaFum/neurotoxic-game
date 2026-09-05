@@ -343,4 +343,6 @@ export interface AcceptExpeditionTechnicalFailurePayload {
 export interface ApplyExpeditionEventDeltaPayload {
   resultIds: import('./expedition').ExpeditionEventResultId[]
   expectedRouteStep: number
+  sourceEventId?: string
+  sourceOptionId?: string
 }

@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react'
-import { describe, expect, it, vi } from 'vitest'
+import { expect, it, vi } from 'vitest'
 import { ExpeditionCrewStatus } from '../../src/ui/expedition/ExpeditionCrewStatus'
 import { createInitialState } from '../../src/context/initialState'
 import type { GameState } from '../../src/types'

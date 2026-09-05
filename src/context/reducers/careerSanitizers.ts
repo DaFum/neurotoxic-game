@@ -6,6 +6,8 @@ import type {
 import type { ExpeditionRelationshipTier } from '../../types/expedition'
 import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
 import { createInitialCareerState } from '../../domain/expedition/career'
+import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 
 const safeRecord = <T>(
   value: unknown,
@@ -27,14 +29,19 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
   if (!isLooseRecord(value)) return defaults
   const boundedInt = (candidate: unknown, fallback = 0): number =>
     isFiniteNumber(candidate) ? Math.max(0, Math.floor(candidate)) : fallback
-  const crewById = safeRecord<CrewCareerState>(value.crewById, entry => {
-    if (!isLooseRecord(entry)) return null
+  const crewById = safeRecord<CrewCareerState>(value.crewById, (entry, key) => {
+    if (!Object.hasOwn(EXPEDITION_CREW_BY_ID, key) || !isLooseRecord(entry)) {
+      return null
+    }
+    const crew = EXPEDITION_CREW_BY_ID[key]
+    if (!crew) return null
+    const canonicalSignature = EXPEDITION_CREW_SIGNATURE_BY_ROLE[crew.role]
     return {
       loyalty: Math.min(100, boundedInt(entry.loyalty)),
       storyProgress: boundedInt(entry.storyProgress),
       signatureTraitId:
-        typeof entry.signatureTraitId === 'string'
-          ? entry.signatureTraitId
+        entry.signatureTraitId === canonicalSignature
+          ? canonicalSignature
           : null,
       unavailableUntilCompletedRunCount: boundedInt(
         entry.unavailableUntilCompletedRunCount

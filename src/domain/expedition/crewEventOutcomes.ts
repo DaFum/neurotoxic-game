@@ -64,7 +64,7 @@ const EXPEDITION_CREW_EVENT_OUTCOMES: readonly ExpeditionCrewEventOutcome[] = [
   }
 ]
 
-export const getCrewEventOutcome = (
+const getCrewEventOutcome = (
   eventId: string,
   optionId: string
 ): ExpeditionCrewEventOutcome | null =>

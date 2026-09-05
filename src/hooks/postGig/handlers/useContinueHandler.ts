@@ -75,7 +75,8 @@ export function useContinueHandler({
     changeScene,
     addQuest,
     applyQuestEvent,
-    recordExpeditionCrewStressSource
+    recordExpeditionCrewStressSource,
+    completeExpedition
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -163,6 +164,10 @@ export function useContinueHandler({
         }
       }
 
+      if (isFinaleGig && !bankrupt) {
+        completeExpedition(`gig:${currentGig?.id ?? 'unknown'}`)
+      }
+
       handleContinueSceneTransition({
         bankrupt,
         isFinaleGig,
@@ -198,6 +203,7 @@ export function useContinueHandler({
     addQuest,
     applyQuestEvent,
     recordExpeditionCrewStressSource,
+    completeExpedition,
     setlist,
     expedition,
     band,

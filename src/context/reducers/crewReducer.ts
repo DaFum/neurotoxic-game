@@ -5,6 +5,7 @@ import type {
 } from '../../types/actions'
 import type {
   ExpeditionCrewStressIntent,
+  ExpeditionEventResultId,
   ExpeditionRelationshipOutcomeIntent
 } from '../../types/expedition'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
@@ -33,6 +34,14 @@ const rememberSource = (state: GameState, sourceId: string): string[] => [
   sourceId
 ]
 
+const eventProofId = (state: GameState, sourceId: string): string =>
+  `${sourceId}:resolved:${state.expedition.routeStep}`
+
+const hasResolvedEventProof = (state: GameState, sourceId: string): boolean =>
+  (state.expedition.resolvedCrewSourceIds ?? []).includes(
+    eventProofId(state, sourceId)
+  )
+
 const hasCanonicalStressSource = (
   state: GameState,
   payload: ExpeditionCrewStressIntent
@@ -42,7 +51,7 @@ const hasCanonicalStressSource = (
     outcome?.stress?.crewId === payload.crewId &&
     outcome.stress.sourceType === payload.sourceType
   ) {
-    return true
+    return hasResolvedEventProof(state, payload.sourceId)
   }
   if (payload.sourceType === 'crew_event') {
     return false
@@ -144,6 +153,7 @@ export const handleRecordExpeditionRelationshipOutcome = (
     (payload.first.kind === payload.second.kind &&
       payload.first.id === payload.second.id) ||
     !outcome?.relationship ||
+    !hasResolvedEventProof(state, payload.sourceId) ||
     payload.sourceType !== 'crew_event' ||
     getExpeditionRelationshipPairKey(payload.first, payload.second) !==
       getExpeditionRelationshipPairKey(
@@ -194,6 +204,7 @@ export const handleAdvanceExpeditionCrewInjury = (
     !Object.hasOwn(EXPEDITION_CREW_BY_ID, payload.targetId) ||
     !acceptsSource(state, payload.sourceId, payload.expectedRouteStep) ||
     outcome?.crewInjuryId !== payload.targetId ||
+    !hasResolvedEventProof(state, payload.sourceId) ||
     (state.expedition.resolvedCrewSourceIds ?? []).includes(replayId)
   )
     return state
@@ -230,6 +241,7 @@ export const handleAdvanceExpeditionBandInjury = (
     ) ||
     !acceptsSource(state, payload.sourceId, payload.expectedRouteStep) ||
     outcome?.bandInjuryId !== payload.targetId ||
+    !hasResolvedEventProof(state, payload.sourceId) ||
     (state.expedition.resolvedCrewSourceIds ?? []).includes(replayId)
   )
     return state
@@ -257,6 +269,7 @@ export const handleCreateContactIntelGrant = (
   const outcome = getCrewEventOutcomeBySourceId(sourceId)
   if (
     !outcome?.contactIntel ||
+    !hasResolvedEventProof(state, sourceId) ||
     !acceptsSource(state, sourceId, payload.expectedRouteStep)
   )
     return state
@@ -301,6 +314,105 @@ export const handleCreateContactIntelGrant = (
         }
       ],
       resolvedCrewSourceIds: rememberSource(state, replayId)
+    }
+  }
+}
+
+export const applyResolvedCrewEventOutcome = (
+  state: GameState,
+  sourceEventId: unknown,
+  sourceOptionId: unknown,
+  resultIds: readonly ExpeditionEventResultId[]
+): GameState => {
+  if (
+    typeof sourceEventId !== 'string' ||
+    typeof sourceOptionId !== 'string' ||
+    state.activeEvent?.id !== sourceEventId
+  ) {
+    return state
+  }
+  const outcome = getCrewEventOutcomeBySourceId(
+    `${sourceEventId}:${sourceOptionId}`
+  )
+  if (!outcome || !resultIds.includes(outcome.resultId)) return state
+  const selectedCrewIds = state.expedition.loadout?.crewIds ?? []
+  const requiredCrewIds = [
+    outcome.stress?.crewId,
+    outcome.crewInjuryId,
+    ...(outcome.relationship
+      ? [outcome.relationship.first, outcome.relationship.second]
+          .filter(actor => actor.kind === 'crew')
+          .map(actor => actor.id)
+      : [])
+  ].filter((crewId): crewId is string => typeof crewId === 'string')
+  if (requiredCrewIds.some(crewId => !selectedCrewIds.includes(crewId))) {
+    return state
+  }
+
+  const sourceId = `${sourceEventId}:${sourceOptionId}`
+  const proofId = eventProofId(state, sourceId)
+  let next: GameState = {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      resolvedCrewSourceIds: rememberSource(state, proofId)
+    }
+  }
+  if (outcome.stress) {
+    next = handleRecordExpeditionCrewStressSource(next, {
+      crewId: outcome.stress.crewId,
+      sourceType: outcome.stress.sourceType,
+      sourceId,
+      expectedRouteStep: state.expedition.routeStep
+    })
+  }
+  if (outcome.relationship) {
+    next = handleRecordExpeditionRelationshipOutcome(next, {
+      first: outcome.relationship.first,
+      second: outcome.relationship.second,
+      sourceType: 'crew_event',
+      sourceId,
+      expectedRouteStep: state.expedition.routeStep
+    })
+  }
+  if (outcome.crewInjuryId) {
+    next = handleAdvanceExpeditionCrewInjury(next, {
+      targetId: outcome.crewInjuryId,
+      sourceId,
+      expectedRouteStep: state.expedition.routeStep
+    })
+  }
+  if (outcome.bandInjuryId) {
+    next = handleAdvanceExpeditionBandInjury(next, {
+      targetId: outcome.bandInjuryId,
+      sourceId,
+      expectedRouteStep: state.expedition.routeStep
+    })
+  }
+  if (outcome.contactIntel && next.expedition.loadout) {
+    const map = buildExpeditionMap(
+      next.runSeed,
+      next.expedition.loadout.tourTypeId,
+      next.expedition.loadout.regionId
+    )
+    const currentNodeId = next.expedition.visitedNodeIds.at(-1)
+    const target = map.connections.find(edge => edge.from === currentNodeId)?.to
+    if (target) {
+      next = handleCreateContactIntelGrant(next, {
+        eventId: sourceEventId,
+        optionId: sourceOptionId,
+        nodeId: target,
+        expectedRouteStep: state.expedition.routeStep
+      })
+    }
+  }
+  return {
+    ...next,
+    expedition: {
+      ...next.expedition,
+      resolvedCrewSourceIds: (
+        next.expedition.resolvedCrewSourceIds ?? []
+      ).filter(id => id !== proofId)
     }
   }
 }
