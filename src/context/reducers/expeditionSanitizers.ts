@@ -954,7 +954,10 @@ const sanitizeActiveObligations = (
     signalId => {
       if (!signalId.startsWith('social_post:')) return false
       if (!lastSocialResult) return false
-      return signalId === `social_post:${lastSocialResult.id}`
+      return (
+        signalId === `social_post:${lastSocialResult.id}` ||
+        signalId === `social_post:${lastSocialResult.id}:${lastSocialResult.resolvedAtRouteStep}`
+      )
     }
   ).length
 
