@@ -1613,7 +1613,7 @@ export const handleRecordExpeditionObligationSignal = (
       case 'gig':
       case 'finale':
         return state.lastGigStats && state.currentGig?.id
-          ? state.currentGig.id
+          ? `${state.currentGig.id}:${state.expedition.routeStep}`
           : null
       case 'arrival':
       case 'rest':
@@ -1854,12 +1854,14 @@ export const handleOfferExpeditionDraft = (
   const sourceProven = (() => {
     switch (payload.sourceType) {
       case 'major_gig': {
-        const node = state.gameMap?.nodes?.[payload.sourceKey]
+        const currentNode = state.player.currentNodeId
+          ? state.gameMap?.nodes?.[state.player.currentNodeId]
+          : undefined
         const isMajorClass =
-          node &&
-          (node.nodeClass === 'MAJOR_GIG' ||
-            node.type === 'MAJOR_GIG' ||
-            node.type === 'FESTIVAL')
+          currentNode &&
+          (currentNode.nodeClass === 'MAJOR_GIG' ||
+            currentNode.type === 'MAJOR_GIG' ||
+            currentNode.type === 'FESTIVAL')
         return (
           state.lastGigStats !== null &&
           state.lastGigStats.failed !== true &&

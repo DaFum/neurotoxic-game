@@ -43,7 +43,7 @@ export const usePostGigLogic = () => {
   const setlist = useGameSelector(state => state.setlist)
   const expedition = useGameSelector(state => state.expedition)
   const finaleRewardMultiplier = useGameSelector(state =>
-    state.expedition.status === 'active'
+    state.expedition?.status === 'active'
       ? (getExpeditionFinaleProfile(state.expedition.finaleType)
           ?.rewardMultiplier ?? 1)
       : 1

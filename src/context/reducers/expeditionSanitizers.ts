@@ -1028,8 +1028,13 @@ const sanitizeActiveObligations = (
     else if (
       progressList.length > 0 &&
       progressList.every(item => item.satisfied)
-    )
-      derivedStatus = 'completed'
+    ) {
+      if (doubleDown?.addedConstraint.kind === 'finale_required') {
+        derivedStatus = 'active'
+      } else {
+        derivedStatus = 'completed'
+      }
+    }
 
     seen.add(id)
     result.push({

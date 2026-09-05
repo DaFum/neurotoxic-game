@@ -4,10 +4,9 @@
 
 import { memo } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useGameActions, useGameSelector } from '../../context/GameState'
+import { useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
 import { getExpeditionRunResources } from '../../domain/expedition/runResources'
-import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
 
 /**
  * One resource readout.
@@ -105,59 +104,6 @@ export const ExpeditionStatusStrip = memo(function ExpeditionStatusStrip() {
         value={`${resources.heat}`}
         meta={t('ui:expedition.hud.routeStep', { step: routeStep })}
       />
-      <ObligationsStrip />
     </section>
-  )
-})
-
-const ObligationsStrip = memo(function ObligationsStrip() {
-  const { doubleDownExpeditionObligation } = useGameActions()
-  const activeObligations = useGameSelector(
-    state => state.expedition.activeObligations
-  )
-  const runSeed = useGameSelector(state => state.runSeed)
-  const routeStep = useGameSelector(state => state.expedition.routeStep)
-
-  if (!activeObligations || activeObligations.length === 0) return null
-
-  return (
-    <div
-      className='col-span-full border border-steel-gray bg-charcoal-gray p-2 flex flex-wrap gap-2 items-center text-xs font-mono'
-      data-testid='expedition-active-obligations'
-    >
-      {activeObligations.map(item => {
-        if (item.status !== 'active') return null
-        const offer =
-          item.doubleDown === null && runSeed
-            ? deriveExpeditionDoubleDownOffer(runSeed, item.id, routeStep)
-            : null
-        return (
-          <div
-            key={item.id}
-            className='flex items-center gap-2 border border-steel-gray px-2 py-1 bg-void-black text-star-white'
-          >
-            <span>
-              {item.sourceId}: {item.status}
-              {item.doubleDown ? ' [DOUBLE DOWN]' : ''}
-            </span>
-            {offer ? (
-              <button
-                type='button'
-                onClick={() =>
-                  doubleDownExpeditionObligation(
-                    item.id,
-                    offer.acceptedOfferId
-                  )
-                }
-                data-testid={`double-down-${item.id}`}
-                className='text-[0.625rem] bg-toxic-green text-void-black font-bold px-2 py-0.5 rounded hover:brightness-110'
-              >
-                DOUBLE DOWN
-              </button>
-            ) : null}
-          </div>
-        )
-      })}
-    </div>
   )
 })

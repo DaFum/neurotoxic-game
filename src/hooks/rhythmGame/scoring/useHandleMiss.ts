@@ -80,7 +80,9 @@ export const useHandleMiss = ({
       const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 
       const crowdDecay = calculateActiveCrowdDecay(
-        finiteNumberOr(baseCrowdDecay, 1) * finiteNumberOr(missPenaltyMultiplier, 1),
+        finiteNumberOr(baseCrowdDecay, 1) *
+          finiteNumberOr(missPenaltyMultiplier, 1) *
+          finiteNumberOr(staminaDrainMultiplier, 1),
         gameStateRef.current.modifiers?.crowdDecay,
         gameStateRef.current.rivalPenaltyActive,
         RIVAL_GIG_CROWD_DECAY_PENALTY,
