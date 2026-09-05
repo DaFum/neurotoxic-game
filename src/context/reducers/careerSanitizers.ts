@@ -1,4 +1,5 @@
 import type {
+  CareerRivalRecord,
   CareerState,
   CrewCareerState,
   CrewRecoveryDebt
@@ -91,6 +92,79 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
           )
         ]
       : [],
+    rivalsById: safeRecord<CareerRivalRecord>(
+      value.rivalsById,
+      (entry, key) => {
+        if (
+          !isLooseRecord(entry) ||
+          !isLooseRecord(entry.snapshot) ||
+          !isLooseRecord(entry.history)
+        )
+          return null
+        const snapshot = entry.snapshot
+        const history = entry.history
+        if (
+          snapshot.id !== key ||
+          typeof snapshot.name !== 'string' ||
+          typeof snapshot.style !== 'string' ||
+          typeof snapshot.preferredRegionId !== 'string' ||
+          !['aggressive', 'showboat', 'saboteur', 'dealbreaker'].includes(
+            String(snapshot.signatureBehavior)
+          ) ||
+          !isFiniteNumber(snapshot.seed)
+        )
+          return null
+        if (
+          ![
+            'unknown',
+            'competitive',
+            'rival',
+            'nemesis',
+            'respect',
+            'alliance'
+          ].includes(String(history.relationship)) ||
+          !isFiniteNumber(history.nemesisLevel) ||
+          !Number.isInteger(history.nemesisLevel) ||
+          history.nemesisLevel < 0 ||
+          history.nemesisLevel > 4 ||
+          !isFiniteNumber(history.encounterCount) ||
+          history.encounterCount < 0
+        )
+          return null
+        const lastOutcome = history.lastOutcome
+        if (
+          lastOutcome !== null &&
+          !['hostile_win', 'hostile_loss', 'respect', 'alliance'].includes(
+            String(lastOutcome)
+          )
+        )
+          return null
+        return {
+          snapshot: {
+            id: key,
+            name: snapshot.name,
+            style: snapshot.style,
+            preferredRegionId: snapshot.preferredRegionId,
+            signatureBehavior:
+              snapshot.signatureBehavior as CareerRivalRecord['snapshot']['signatureBehavior'],
+            seed: snapshot.seed
+          },
+          history: {
+            relationship:
+              history.relationship as CareerRivalRecord['history']['relationship'],
+            nemesisLevel:
+              history.nemesisLevel as CareerRivalRecord['history']['nemesisLevel'],
+            encounterCount: Math.floor(history.encounterCount),
+            lastOutcome:
+              lastOutcome as CareerRivalRecord['history']['lastOutcome'],
+            lastSeenRunId:
+              typeof history.lastSeenRunId === 'string'
+                ? history.lastSeenRunId
+                : null
+          }
+        }
+      }
+    ),
     tourTokens: boundedInt(value.tourTokens),
     finalizedExpeditionRuns: boundedInt(value.finalizedExpeditionRuns),
     completedExpeditionRuns: boundedInt(value.completedExpeditionRuns),

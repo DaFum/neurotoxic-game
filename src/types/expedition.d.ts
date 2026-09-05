@@ -419,6 +419,130 @@ export interface ExpeditionOutcome {
   finaleResultId: string | null
 }
 
+export interface ExpeditionPreparedSponsorOffer {
+  offerId: string
+  dealId: string
+  runSeed: number
+  canonicalTermsHash: string
+}
+
+export interface ExpeditionTemporaryRouteOpportunity {
+  id: string
+  subtype: 'UNDERGROUND_MARKET' | 'BLACK_MARKET' | 'RIVAL_ENCOUNTER'
+  targetNodeId: string
+  createdAtRouteStep: number
+}
+
+export interface ExpeditionPressureState {
+  heat: number
+  exposure: number
+  crowdHype: number
+  severeReliefUntilRouteStep: number | null
+  lastSevereEventId: string | null
+  temporaryRouteOpportunity: ExpeditionTemporaryRouteOpportunity | null
+}
+
+export type ExpeditionContractSpecialFinaleProfileId = 'all_in_showcase'
+export type ExpeditionContractConstraintTemplate =
+  | {
+      id: string
+      kind: 'gig_accuracy_count'
+      minAccuracy: number
+      requiredCount: number
+    }
+  | { id: string; kind: 'max_heat'; maxHeat: number }
+  | {
+      id: string
+      kind: 'visit_matching_node'
+      routeTargetRule: {
+        nodeType?: string
+        subtype?: ExpeditionSpecialNodeSubtype
+      }
+    }
+  | { id: string; kind: 'no_rest_before_finale' }
+  | { id: string; kind: 'finale_completed'; minHeatAtFinale: number | null }
+  | { id: string; kind: 'social_post_count'; requiredCount: number }
+  | {
+      id: string
+      kind: 'special_finale'
+      profileId: ExpeditionContractSpecialFinaleProfileId
+    }
+export type ExpeditionContractConstraint =
+  | Exclude<
+      ExpeditionContractConstraintTemplate,
+      { kind: 'visit_matching_node' }
+    >
+  | { id: string; kind: 'visit_node'; targetNodeId: string }
+export interface ExpeditionContractTemplate {
+  id: string
+  kind: 'performance' | 'behavior' | 'route' | 'high_risk'
+  constraints: ExpeditionContractConstraintTemplate[]
+  reward: { money: number; fame: number; rewardMultiplier: number }
+  failure: { heat: number; controversy: number }
+  tourEndingOnFailure: boolean
+}
+export interface ExpeditionConstraintProgress {
+  constraintId: string
+  value: number
+  satisfied: boolean
+  failed: boolean
+}
+export type ExpeditionDoubleDownConstraint =
+  | { kind: 'no_more_rest' }
+  | { kind: 'heat_cap'; maxHeat: 60 }
+  | { kind: 'finale_required' }
+  | { kind: 'social_silence'; maxPosts: 0 }
+export interface ExpeditionDoubleDownState {
+  acceptedOfferId: string
+  derivationKey: string
+  addedConstraint: ExpeditionDoubleDownConstraint
+  rewardMultiplier: 1.25 | 1.35
+  failureHeatBonus: number
+  acceptedAtRouteStep: number
+}
+export interface ActiveObligationState {
+  id: string
+  sourceType: 'native' | 'brandDeal'
+  sourceId: string
+  constraints: ExpeditionContractConstraint[]
+  progressByConstraintId: Record<string, ExpeditionConstraintProgress>
+  status: 'active' | 'completed' | 'failed'
+  settled: boolean
+  doubleDown: ExpeditionDoubleDownState | null
+}
+
+export type ExpeditionRunDraftTraitId =
+  | 'road_warrior'
+  | 'field_engineer'
+  | 'crew_mediator'
+  | 'backchannel'
+  | 'cold_trail'
+  | 'reckless_encore'
+export interface ExpeditionRunDraftOffer {
+  sourceType: 'major_gig' | 'rare_event' | 'rival' | 'supply' | 'crew'
+  sourceKey: string
+  offeredAtRouteStep: number
+  candidateTraitIds: ExpeditionRunDraftTraitId[]
+}
+export type ExpeditionFinaleType =
+  | 'regional_headliner'
+  | 'corporate_showcase'
+  | 'rival_battle'
+  | 'illegal_show'
+  | 'disaster_gig'
+  | 'contract_special'
+export interface ExpeditionFinaleProfile {
+  timingWindowMultiplier: number
+  missPenaltyMultiplier: number
+  staminaDrainMultiplier: number
+  comboBonusMultiplier: number
+  technicalWearMultiplier: number
+  crowdHypeStartBonus: number
+  rewardMultiplier: number
+  heatOnSuccess: number
+  requiresRival: boolean
+}
+
 /**
  * Run-scoped Expedition state.
  *
@@ -465,6 +589,12 @@ export interface ExpeditionState {
   crew?: ExpeditionCrewRunState
   bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
   resolvedCrewSourceIds?: string[]
+  pressure: ExpeditionPressureState
+  preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
+  activeObligations: ActiveObligationState[]
+  runDraftTraitIds: ExpeditionRunDraftTraitId[]
+  pendingRunDraftOffer: ExpeditionRunDraftOffer | null
+  finaleType: ExpeditionFinaleType | null
 }
 
 export type ExpeditionCrewRole =

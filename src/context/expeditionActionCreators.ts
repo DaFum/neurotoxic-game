@@ -23,6 +23,62 @@ import type {
   HiddenDefectTrigger
 } from '../types/expedition'
 
+export const recordExpeditionObligationSignal = (
+  state: GameState,
+  signalType: import('../types/actions').RecordExpeditionObligationSignalPayload['signalType'],
+  sourceId: string | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_EXPEDITION_OBLIGATION_SIGNAL }
+> => ({
+  type: ActionTypes.RECORD_EXPEDITION_OBLIGATION_SIGNAL,
+  payload: {
+    signalType,
+    sourceId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+export const doubleDownExpeditionObligation = (
+  state: GameState,
+  obligationId: string,
+  offerId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION }
+> => ({
+  type: ActionTypes.DOUBLE_DOWN_EXPEDITION_OBLIGATION,
+  payload: {
+    obligationId,
+    offerId,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+export const offerExpeditionDraft = (
+  state: GameState,
+  sourceType: import('../types/expedition').ExpeditionRunDraftOffer['sourceType'],
+  sourceKey: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.OFFER_EXPEDITION_DRAFT }
+> => ({
+  type: ActionTypes.OFFER_EXPEDITION_DRAFT,
+  payload: {
+    sourceType,
+    sourceKey,
+    expectedRouteStep: state.expedition.routeStep
+  }
+})
+export const selectExpeditionDraft = (
+  state: GameState,
+  traitId: import('../types/expedition').ExpeditionRunDraftTraitId
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.SELECT_EXPEDITION_DRAFT }
+> => ({
+  type: ActionTypes.SELECT_EXPEDITION_DRAFT,
+  payload: { traitId, expectedRouteStep: state.expedition.routeStep }
+})
+
 /**
  * Builds the PREPARE action that claims a run identity and the next run seed.
  *

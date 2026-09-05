@@ -71,6 +71,13 @@ import {
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
+import {
+  buildPreparedExpeditionSponsorOffers,
+  getCanonicalBrandDealTermsHash,
+  resolveBrandDealAcceptance
+} from '../../domain/expedition/sponsors'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { materializeContractConstraints } from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
@@ -90,6 +97,10 @@ import type {
   RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
   StartExpeditionPayload,
+  RecordExpeditionObligationSignalPayload,
+  DoubleDownExpeditionObligationPayload,
+  OfferExpeditionDraftPayload,
+  SelectExpeditionDraftPayload,
   TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
@@ -100,6 +111,9 @@ import type {
   ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
+import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
+import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
+import { hashExpeditionRoute } from '../../domain/expedition/map'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -169,13 +183,20 @@ export const handlePrepareExpeditionRun = (
   if (typeof prepId !== 'string' || prepId.length === 0) return state
   if (!isValidRunSeed(runSeed)) return state
 
-  return {
+  const preparedState: GameState = {
     ...state,
     runSeed,
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'prepared',
       prep: { prepId }
+    }
+  }
+  return {
+    ...preparedState,
+    expedition: {
+      ...preparedState.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(preparedState)
     }
   }
 }
@@ -249,15 +270,80 @@ export const handleStartExpedition = (
 
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
+  const sponsorOfferId = normalized.build.sponsorOfferId
+  const stagedSponsor =
+    sponsorOfferId === null
+      ? null
+      : state.expedition.preparedSponsorOffers.find(
+          offer => offer.offerId === sponsorOfferId
+        )
+  if (
+    sponsorOfferId !== null &&
+    (!stagedSponsor ||
+      stagedSponsor.runSeed !== state.runSeed ||
+      getCanonicalBrandDealTermsHash(stagedSponsor.dealId) !==
+        stagedSponsor.canonicalTermsHash)
+  )
+    return state
+  const sponsorAcceptance = stagedSponsor
+    ? resolveBrandDealAcceptance(
+        { ...state, player: { ...state.player, money: nextMoney } },
+        stagedSponsor.dealId
+      )
+    : null
+  if (stagedSponsor && !sponsorAcceptance) return state
+  const activeObligations: import('../../types/expedition').ActiveObligationState[] =
+    []
+  for (const commitment of normalized.nativeContracts) {
+    const template = EXPEDITION_CONTRACTS_BY_ID.get(commitment.templateId)
+    const constraints = materializeContractConstraints(
+      template,
+      preparedMap,
+      commitment.targetNodeId
+    )
+    if (!template || !constraints) return state
+    const progressByConstraintId: import('../../types/expedition').ActiveObligationState['progressByConstraintId'] =
+      Object.create(null)
+    for (const constraint of constraints)
+      progressByConstraintId[constraint.id] = {
+        constraintId: constraint.id,
+        value: 0,
+        satisfied: false,
+        failed: false
+      }
+    activeObligations.push({
+      id: `${prepId}:${template.id}`,
+      sourceType: 'native',
+      sourceId: template.id,
+      constraints,
+      progressByConstraintId,
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
+  }
+  if (stagedSponsor)
+    activeObligations.push({
+      id: `${prepId}:${stagedSponsor.dealId}`,
+      sourceType: 'brandDeal',
+      sourceId: stagedSponsor.dealId,
+      constraints: [],
+      progressByConstraintId: Object.create(null),
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
 
   return {
     ...state,
     player: {
-      ...state.player,
-      money: nextMoney,
+      ...(sponsorAcceptance?.nextPlayer ?? state.player),
+      money: sponsorAcceptance?.nextPlayer.money ?? nextMoney,
       currentNodeId: preparedMap.startNodeId,
       van: { ...state.player.van, fuel: normalized.build.startingFuelTarget }
     },
+    band: sponsorAcceptance?.nextBand ?? state.band,
+    social: sponsorAcceptance?.nextSocial ?? state.social,
     // The committed songs are installed into the root setlist in the same
     // commit. PreGig and the rhythm engine read `state.setlist`, not the
     // loadout, so leaving them out of sync would start the run with an empty
@@ -288,7 +374,9 @@ export const handleStartExpedition = (
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
       cargo: materializeExpeditionCargo(normalized, state),
-      technicalCondition: createDefaultTechnicalCondition()
+      technicalCondition: createDefaultTechnicalCondition(),
+      preparedSponsorOffers: [],
+      activeObligations
     }
   }
 }
@@ -1436,4 +1524,197 @@ export const handleApplyExpeditionEventDelta = (
   return syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+}
+
+export const handleRecordExpeditionObligationSignal = (
+  state: GameState,
+  payload: RecordExpeditionObligationSignalPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  let changed = false
+  const activeObligations = state.expedition.activeObligations.map(
+    obligation => {
+      if (obligation.status !== 'active') return obligation
+      let status: import('../../types/expedition').ActiveObligationState['status'] =
+        obligation.status
+      const progressByConstraintId = { ...obligation.progressByConstraintId }
+      for (const constraint of obligation.constraints) {
+        const prior = progressByConstraintId[constraint.id]
+        if (!prior) continue
+        const evidence = {
+          accuracy:
+            payload.signalType === 'gig'
+              ? state.lastGigStats?.accuracy
+              : undefined,
+          heat: state.expedition.pressure.heat,
+          visitedNodeId:
+            payload.signalType === 'arrival'
+              ? (state.player.currentNodeId ?? undefined)
+              : undefined,
+          rested: payload.signalType === 'rest',
+          finaleCompleted: payload.signalType === 'finale',
+          socialPosts:
+            payload.signalType === 'social_post'
+              ? prior.value + 1
+              : prior.value,
+          finaleProfileId:
+            state.expedition.finaleType === 'contract_special'
+              ? 'all_in_showcase'
+              : undefined
+        }
+        const result = evaluateExpeditionConstraint(constraint, evidence)
+        const value =
+          constraint.kind === 'gig_accuracy_count'
+            ? prior.value + result.value
+            : result.value
+        progressByConstraintId[constraint.id] = {
+          constraintId: constraint.id,
+          value,
+          satisfied:
+            constraint.kind === 'gig_accuracy_count'
+              ? value >= constraint.requiredCount
+              : result.satisfied,
+          failed: prior.failed || result.failed
+        }
+        changed = true
+      }
+      const progress = Object.values(progressByConstraintId)
+      if (progress.some(item => item.failed)) status = 'failed'
+      else if (progress.length > 0 && progress.every(item => item.satisfied))
+        status = 'completed'
+      return { ...obligation, progressByConstraintId, status }
+    }
+  )
+  return changed
+    ? { ...state, expedition: { ...state.expedition, activeObligations } }
+    : state
+}
+
+const deriveDoubleDown = (state: GameState, obligationId: string) => {
+  const derivationKey = `${state.runSeed}:${obligationId}:${state.expedition.routeStep}`
+  const options = [
+    {
+      addedConstraint: { kind: 'no_more_rest' } as const,
+      rewardMultiplier: 1.25 as const,
+      failureHeatBonus: 8
+    },
+    {
+      addedConstraint: { kind: 'heat_cap', maxHeat: 60 } as const,
+      rewardMultiplier: 1.35 as const,
+      failureHeatBonus: 12
+    },
+    {
+      addedConstraint: { kind: 'finale_required' } as const,
+      rewardMultiplier: 1.35 as const,
+      failureHeatBonus: 15
+    },
+    {
+      addedConstraint: { kind: 'social_silence', maxPosts: 0 } as const,
+      rewardMultiplier: 1.25 as const,
+      failureHeatBonus: 10
+    }
+  ]
+  const fallback = options[0]
+  if (!fallback) return null
+  const picked =
+    options[
+      Number.parseInt(hashExpeditionRoute(derivationKey), 16) % options.length
+    ] ?? fallback
+  return {
+    ...picked,
+    derivationKey,
+    offerId: hashExpeditionRoute(
+      `${derivationKey}:${picked.addedConstraint.kind}`
+    )
+  }
+}
+export const handleDoubleDownExpeditionObligation = (
+  state: GameState,
+  payload: DoubleDownExpeditionObligationPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  const index = state.expedition.activeObligations.findIndex(
+    item =>
+      item.id === payload.obligationId &&
+      item.status === 'active' &&
+      item.doubleDown === null
+  )
+  if (index < 0) return state
+  const derived = deriveDoubleDown(state, payload.obligationId)
+  if (!derived || payload.offerId !== derived.offerId) return state
+  const activeObligations = [...state.expedition.activeObligations]
+  const obligation = activeObligations[index]
+  if (!obligation) return state
+  activeObligations[index] = {
+    ...obligation,
+    doubleDown: {
+      acceptedOfferId: derived.offerId,
+      derivationKey: derived.derivationKey,
+      addedConstraint: derived.addedConstraint,
+      rewardMultiplier: derived.rewardMultiplier,
+      failureHeatBonus: derived.failureHeatBonus,
+      acceptedAtRouteStep: state.expedition.routeStep
+    }
+  }
+  return { ...state, expedition: { ...state.expedition, activeObligations } }
+}
+export const handleOfferExpeditionDraft = (
+  state: GameState,
+  payload: OfferExpeditionDraftPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.pendingRunDraftOffer
+  )
+    return state
+  if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
+    return state
+  const candidateTraitIds = deriveExpeditionDraftCandidates(
+    state.runSeed,
+    payload.sourceKey,
+    state.expedition.runDraftTraitIds
+  )
+  if (candidateTraitIds.length < 3) return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pendingRunDraftOffer: {
+        sourceType: payload.sourceType,
+        sourceKey: payload.sourceKey,
+        offeredAtRouteStep: state.expedition.routeStep,
+        candidateTraitIds
+      }
+    }
+  }
+}
+export const handleSelectExpeditionDraft = (
+  state: GameState,
+  payload: SelectExpeditionDraftPayload
+): GameState => {
+  const offer = state.expedition.pendingRunDraftOffer
+  if (
+    !offer ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.runDraftTraitIds.length >= 2 ||
+    !offer.candidateTraitIds.includes(payload.traitId)
+  )
+    return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
+      pendingRunDraftOffer: null
+    }
+  }
 }
