@@ -95,7 +95,8 @@ const PERSISTED_FIELDS = {
   rngSeed: isFiniteNumber,
   runSeed: isFiniteNumber,
   rivalBand: isNullableObject,
-  expedition: isLooseRecord
+  expedition: isLooseRecord,
+  career: isLooseRecord
 } satisfies Partial<Record<keyof GameState, (value: unknown) => boolean>>
 
 const LOADABLE_SAVE_KEYS = Object.keys(PERSISTED_FIELDS) as ReadonlyArray<

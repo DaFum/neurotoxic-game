@@ -86,5 +86,17 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   extractionWindowsSeen: [],
   pendingFailure: null,
   unpaidDailyObligation: 0,
-  outcome: null
+  outcome: null,
+  crew: {
+    stressByCrewId: Object.create(null) as Record<string, number>,
+    injuryByCrewId: Object.create(null) as Record<
+      string,
+      'none' | 'light' | 'serious'
+    >
+  },
+  bandInjuryByMemberId: Object.create(null) as Record<
+    string,
+    'none' | 'light' | 'serious' | 'critical'
+  >,
+  resolvedCrewSourceIds: []
 })

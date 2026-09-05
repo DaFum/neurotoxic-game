@@ -33,4 +33,10 @@ export interface HandlerDispatchers {
   setBrandOffers: (offers: BrandDeal[]) => void
   setPostResult: (result: PostResult) => void
   unlockTrait: (memberId: string, traitId: string) => void
+  recordExpeditionCrewStressSource: (
+    crewId: string,
+    sourceType: 'poor_gig' | 'successful_gig',
+    sourceId: string
+  ) => void
+  completeExpedition: (finaleResultId: string) => void
 }

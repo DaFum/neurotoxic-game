@@ -17,6 +17,7 @@ import type {
 } from '../../types/expedition'
 import { getExpeditionChassisProfile } from './chassis'
 import { aggregateExpeditionModuleProfiles } from './modules'
+import { getCrewRuleContribution } from './crew'
 
 /**
  * Baseline numeric rules before chassis, module, crew, or tour modifiers.
@@ -83,6 +84,7 @@ export const getEffectiveExpeditionRules = (
   const moduleIds =
     state.expedition?.loadout?.build?.selectedTourbusModuleIds ?? []
   const moduleProfile = aggregateExpeditionModuleProfiles(moduleIds)
+  const crewProfile = getCrewRuleContribution(state)
 
   // Bounded authority weighting reduction if jammer active
   const jammerReduction = moduleProfile.authorityIntelBonus > 0 ? 0.9 : 1.0
@@ -91,13 +93,26 @@ export const getEffectiveExpeditionRules = (
     ...BASE_EXPEDITION_NUMERIC_RULES,
     fuelConsumptionMultiplier:
       chassisProfile.fuelConsumptionMultiplier *
-      moduleProfile.fuelConsumptionMultiplier,
+      moduleProfile.fuelConsumptionMultiplier *
+      (crewProfile.fuelConsumptionMultiplier ?? 1),
     roadWearMultiplier:
-      chassisProfile.roadWearMultiplier * moduleProfile.roadWearMultiplier,
-    fieldRepairEfficiency: chassisProfile.fieldRepairEfficiency,
-    crewStressMultiplier: chassisProfile.crewStressMultiplier,
+      chassisProfile.roadWearMultiplier *
+      moduleProfile.roadWearMultiplier *
+      (crewProfile.roadWearMultiplier ?? 1),
+    technicalWearMultiplier: crewProfile.technicalWearMultiplier ?? 1,
+    fieldRepairEfficiency:
+      chassisProfile.fieldRepairEfficiency +
+      (crewProfile.fieldRepairEfficiency ?? 0),
+    contractRewardMultiplier: crewProfile.contractRewardMultiplier ?? 1,
+    exposureGainMultiplier: crewProfile.exposureGainMultiplier ?? 1,
+    heatGainMultiplier: crewProfile.heatGainMultiplier ?? 1,
+    crewStressMultiplier:
+      chassisProfile.crewStressMultiplier *
+      (crewProfile.crewStressMultiplier ?? 1),
     authorityEventWeightMultiplier:
-      chassisProfile.authorityEventWeightMultiplier * jammerReduction,
+      chassisProfile.authorityEventWeightMultiplier *
+      jammerReduction *
+      (crewProfile.authorityEventWeightMultiplier ?? 1),
     nodeIntelFloor: moduleProfile.authorityIntelBonus as 0 | 1 | 2,
     explicitExtractionRareCarrySlots: Math.max(
       1,

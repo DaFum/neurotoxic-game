@@ -41,6 +41,7 @@ import {
 } from '../../domain/expedition/eventDeltas'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { applyResolvedCrewEventOutcome } from './crewReducer'
 import { resolveExpeditionRepair } from '../../domain/expedition/repairs'
 import { resolveExpeditionInspection } from '../../domain/expedition/inspections'
 import {
@@ -1426,7 +1427,13 @@ export const handleApplyExpeditionEventDelta = (
       ? state
       : { ...state, expedition: nextExpedition }
 
+  const withCrewOutcome = applyResolvedCrewEventOutcome(
+    nextState,
+    payload.sourceEventId,
+    payload.sourceOptionId,
+    resultIds
+  )
   return syncExpeditionPendingFailure(
-    applyExpeditionEventHeat(nextState, heatDelta)
+    applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
 }

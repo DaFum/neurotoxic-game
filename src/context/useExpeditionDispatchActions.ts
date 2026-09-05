@@ -22,8 +22,14 @@ import {
   prepareNextExpedition as prepareNextExpeditionAction,
   resolveExpeditionCrisis as resolveExpeditionCrisisAction,
   revealExpeditionNodeIntel as revealExpeditionNodeIntelAction,
-  startExpedition as startExpeditionAction
+  startExpedition as startExpeditionAction,
+  recordExpeditionCrewStressSource as recordExpeditionCrewStressSourceAction,
+  recordExpeditionRelationshipOutcome as recordExpeditionRelationshipOutcomeAction,
+  advanceExpeditionCrewInjury as advanceExpeditionCrewInjuryAction,
+  advanceExpeditionBandInjury as advanceExpeditionBandInjuryAction,
+  createContactIntelGrant as createContactIntelGrantAction
 } from './expeditionActionCreators'
+import { createSettleExpeditionCrewCareerAction } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
 /**
@@ -45,6 +51,11 @@ export type ExpeditionDispatchActions = Pick<
   | 'executeExpeditionInspection'
   | 'claimExpeditionInsurance'
   | 'acceptExpeditionTechnicalFailure'
+  | 'recordExpeditionCrewStressSource'
+  | 'recordExpeditionRelationshipOutcome'
+  | 'advanceExpeditionCrewInjury'
+  | 'advanceExpeditionBandInjury'
+  | 'createContactIntelGrant'
 >
 
 interface UseExpeditionDispatchActionsProps {
@@ -86,15 +97,25 @@ export function useExpeditionDispatchActions({
         sourceType: ExpeditionRewardSourceType
         sourceId: string
       }) => dispatch(addExpeditionRewardAction(stateRef.current, input)),
-      extractExpedition: (explicitRareRewardIds: string[] = []) =>
+      extractExpedition: (explicitRareRewardIds: string[] = []) => {
+        const runId = stateRef.current.expedition.runId
         dispatch(
           extractExpeditionAction(stateRef.current, explicitRareRewardIds)
-        ),
-      completeExpedition: (finaleResultId: string) =>
-        dispatch(completeExpeditionAction(stateRef.current, finaleResultId)),
+        )
+        if (runId) dispatch(createSettleExpeditionCrewCareerAction(runId))
+      },
+      completeExpedition: (finaleResultId: string) => {
+        const runId = stateRef.current.expedition.runId
+        dispatch(completeExpeditionAction(stateRef.current, finaleResultId))
+        if (runId) dispatch(createSettleExpeditionCrewCareerAction(runId))
+      },
       acceptExpeditionFailure: () => {
         const action = acceptExpeditionFailureAction(stateRef.current)
-        if (action) dispatch(action)
+        if (action) {
+          const runId = stateRef.current.expedition.runId
+          dispatch(action)
+          if (runId) dispatch(createSettleExpeditionCrewCareerAction(runId))
+        }
       },
       prepareNextExpedition: () => {
         const action = prepareNextExpeditionAction(stateRef.current)
@@ -124,7 +145,41 @@ export function useExpeditionDispatchActions({
       acceptExpeditionTechnicalFailure: () => {
         const action = acceptExpeditionTechnicalFailureAction(stateRef.current)
         if (action) dispatch(action)
-      }
+      },
+      recordExpeditionCrewStressSource: (crewId, sourceType, sourceId) =>
+        dispatch(
+          recordExpeditionCrewStressSourceAction(
+            stateRef.current,
+            crewId,
+            sourceType,
+            sourceId
+          )
+        ),
+      recordExpeditionRelationshipOutcome: input =>
+        dispatch(
+          recordExpeditionRelationshipOutcomeAction(stateRef.current, input)
+        ),
+      advanceExpeditionCrewInjury: (crewId, sourceId) =>
+        dispatch(
+          advanceExpeditionCrewInjuryAction(stateRef.current, crewId, sourceId)
+        ),
+      advanceExpeditionBandInjury: (memberId, sourceId) =>
+        dispatch(
+          advanceExpeditionBandInjuryAction(
+            stateRef.current,
+            memberId,
+            sourceId
+          )
+        ),
+      createContactIntelGrant: (eventId, optionId, nodeId) =>
+        dispatch(
+          createContactIntelGrantAction(
+            stateRef.current,
+            eventId,
+            optionId,
+            nodeId
+          )
+        )
     }),
     [dispatch, stateRef]
   )

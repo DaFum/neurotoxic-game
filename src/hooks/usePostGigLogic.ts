@@ -40,6 +40,7 @@ export const usePostGigLogic = () => {
       state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
   )
   const setlist = useGameSelector(state => state.setlist)
+  const expedition = useGameSelector(state => state.expedition)
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
   const totalDailyObligations = useGameSelector(getTotalDailyObligations)
@@ -54,7 +55,9 @@ export const usePostGigLogic = () => {
     changeScene,
     unlockTrait,
     addQuest,
-    applyQuestEvent
+    applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition
   } = useGameActions()
 
   // 1. Core State
@@ -110,6 +113,7 @@ export const usePostGigLogic = () => {
     financials,
     activeStoryFlags,
     setlist,
+    expedition,
     isFinaleGig,
     totalDailyObligations,
     updatePlayer,
@@ -120,6 +124,8 @@ export const usePostGigLogic = () => {
     changeScene,
     addQuest,
     applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition,
     phase,
     setPhase,
     setPostResult,

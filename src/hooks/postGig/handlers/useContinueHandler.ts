@@ -37,6 +37,7 @@ interface UseContinueHandlerProps {
   currentGig: Venue | null
   lastGigStats: PostGigSummary | null
   setlist: RhythmSetlistEntry[]
+  expedition: GameState['expedition']
   activeStoryFlags?: string[]
   /** True when the completed gig sits on the FINALE map node — routes to the victory end screen instead of the overworld. */
   isFinaleGig?: boolean
@@ -60,6 +61,7 @@ export function useContinueHandler({
   currentGig,
   lastGigStats,
   setlist,
+  expedition,
   activeStoryFlags,
   isFinaleGig = false,
   totalDailyObligations,
@@ -72,7 +74,9 @@ export function useContinueHandler({
     addToast,
     changeScene,
     addQuest,
-    applyQuestEvent
+    applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -147,6 +151,24 @@ export function useContinueHandler({
         })
       )
 
+      const accuracy = lastGigStats?.accuracy
+      if (
+        expedition?.status === 'active' &&
+        typeof accuracy === 'number' &&
+        Number.isFinite(accuracy) &&
+        (accuracy < 60 || accuracy >= 80)
+      ) {
+        const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
+        const sourceId = `gig:${currentGig?.id ?? 'unknown'}:${expedition.routeStep}`
+        for (const crewId of expedition.loadout?.crewIds ?? []) {
+          recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+        }
+      }
+
+      if (isFinaleGig && !bankrupt) {
+        completeExpedition(`gig:${currentGig?.id ?? 'unknown'}`)
+      }
+
       handleContinueSceneTransition({
         bankrupt,
         isFinaleGig,
@@ -181,7 +203,10 @@ export function useContinueHandler({
     totalDailyObligations,
     addQuest,
     applyQuestEvent,
+    recordExpeditionCrewStressSource,
+    completeExpedition,
     setlist,
+    expedition,
     band,
     t,
     isProcessingActionRef,

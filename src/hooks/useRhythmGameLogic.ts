@@ -10,7 +10,7 @@ import {
   applyExpeditionGearPerformanceDelta,
   getExpeditionCommittedGearProfile
 } from '../domain/expedition/equipment'
-import { getExpeditionConditionPerformanceProfile } from '../domain/expedition/condition'
+import { getExpeditionPerformanceProfile } from '../domain/expedition/injuries'
 import { useRhythmGameState } from './rhythmGame/useRhythmGameState'
 import { useRhythmGameScoring } from './rhythmGame/useRhythmGameScoring'
 import { useRhythmGameAudio } from './rhythmGame/useRhythmGameAudio'
@@ -69,9 +69,7 @@ export const useRhythmGameLogic = (): RhythmGameLogicReturn => {
   // play and the rhythm owners fall back to their neutral multipliers.
   const conditionProfile = useGameSelector(state =>
     state.expedition.status === 'active'
-      ? getExpeditionConditionPerformanceProfile(
-          state.expedition.technicalCondition
-        )
+      ? getExpeditionPerformanceProfile(state)
       : null
   )
   const { setLastGigStats, addToast, endGig, triggerEvent } = useGameActions()
