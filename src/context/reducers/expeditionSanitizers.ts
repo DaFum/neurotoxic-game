@@ -919,12 +919,31 @@ const sanitizeActiveObligations = (
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
-  const gigSignalCount = resolvedObligationSignalIds.filter(s =>
-    s.startsWith('gig:')
-  ).length
-  const socialSignalCount = resolvedObligationSignalIds.filter(s =>
-    s.startsWith('social_post:')
-  ).length
+  const validSignalIds = new Set<string>()
+  if (preparedMap) {
+    for (let i = 0; i < validVisitedPath.length; i++) {
+      const nodeId = validVisitedPath[i]!
+      validSignalIds.add(`arrival:${nodeId}`)
+      validSignalIds.add(`rest:${nodeId}`)
+      const node = preparedMap.meta[nodeId]
+      if (node && (node.nodeClass === 'CLUB_GIG' || node.nodeClass === 'FESTIVAL' || node.nodeClass === 'FINALE')) {
+        validSignalIds.add(`gig:${nodeId}:${i}`)
+        if (node.nodeClass === 'FINALE') {
+          validSignalIds.add(`finale:${nodeId}:${i}`)
+        }
+      }
+    }
+  }
+
+  for (const rawSignal of resolvedObligationSignalIds) {
+    if (typeof rawSignal !== 'string') continue
+    if (rawSignal.startsWith('social_post:')) {
+      validSignalIds.add(rawSignal)
+    }
+  }
+
+  const validGigSignalCount = Array.from(validSignalIds).filter(s => s.startsWith('gig:')).length
+  const validSocialSignalCount = Array.from(validSignalIds).filter(s => s.startsWith('social_post:')).length
 
   for (const raw of value.slice(0, MAX_COLLECTION_ENTRIES)) {
     if (!isLooseRecord(raw)) continue
@@ -986,14 +1005,14 @@ const sanitizeActiveObligations = (
       let canonicalValue = progress.value
       let canonicalSatisfied = progress.satisfied
       if (constraint.kind === 'gig_accuracy_count') {
-        canonicalValue = Math.min(progress.value, gigSignalCount)
+        canonicalValue = Math.min(progress.value, validGigSignalCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
       } else if (constraint.kind === 'visit_node') {
         const visited = validVisitedPath.includes(constraint.targetNodeId)
         canonicalValue = visited ? 1 : 0
         canonicalSatisfied = visited
       } else if (constraint.kind === 'social_post_count') {
-        canonicalValue = Math.min(progress.value, socialSignalCount)
+        canonicalValue = Math.min(progress.value, validSocialSignalCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
       }
       progressByConstraintId[constraint.id] = {

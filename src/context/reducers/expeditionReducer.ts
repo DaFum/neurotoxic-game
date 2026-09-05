@@ -1847,10 +1847,13 @@ export const handleOfferExpeditionDraft = (
     return state
   if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
     return state
+
+  const occurrenceProof = `${payload.sourceType}:${payload.sourceKey}:${state.expedition.routeStep}`
   if (
-    state.expedition.consumedRunDraftSourceKeys?.includes(payload.sourceKey)
+    state.expedition.consumedRunDraftSourceKeys?.includes(occurrenceProof)
   )
     return state
+
   const sourceProven = (() => {
     switch (payload.sourceType) {
       case 'major_gig': {
@@ -1869,12 +1872,22 @@ export const handleOfferExpeditionDraft = (
           Boolean(isMajorClass)
         )
       }
-      case 'rare_event':
+      case 'rare_event': {
         return state.expedition.rewardLedger.some(
-          reward => reward.sourceId === payload.sourceKey
+          reward =>
+            reward.sourceId === payload.sourceKey &&
+            reward.earnedAtRouteStep === state.expedition.routeStep
         )
-      case 'rival':
-        return state.rivalBand?.id === payload.sourceKey
+      }
+      case 'rival': {
+        const currentNode = state.player.currentNodeId
+          ? state.gameMap?.nodes?.[state.player.currentNodeId]
+          : undefined
+        return (
+          state.rivalBand?.id === payload.sourceKey &&
+          currentNode?.specialSubtype === 'RIVAL_ENCOUNTER'
+        )
+      }
       case 'supply':
         return (
           state.player.currentNodeId === payload.sourceKey &&
@@ -1883,7 +1896,7 @@ export const handleOfferExpeditionDraft = (
       case 'crew':
         return (
           state.expedition.resolvedCrewSourceIds?.includes(
-            payload.sourceKey
+            `${payload.sourceKey}:${state.expedition.routeStep}`
           ) === true
         )
     }
@@ -1891,7 +1904,7 @@ export const handleOfferExpeditionDraft = (
   if (!sourceProven) return state
   const candidateTraitIds = deriveExpeditionDraftCandidates(
     state.runSeed,
-    payload.sourceKey,
+    occurrenceProof,
     state.expedition.runDraftTraitIds
   )
   if (candidateTraitIds.length < 3) return state
@@ -1920,15 +1933,16 @@ export const handleSelectExpeditionDraft = (
     !offer.candidateTraitIds.includes(payload.traitId)
   )
     return state
+  const occurrenceProof = `${offer.sourceType}:${offer.sourceKey}:${state.expedition.routeStep}`
   const consumed = state.expedition.consumedRunDraftSourceKeys ?? []
   return {
     ...state,
     expedition: {
       ...state.expedition,
       runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
-      consumedRunDraftSourceKeys: consumed.includes(offer.sourceKey)
+      consumedRunDraftSourceKeys: consumed.includes(occurrenceProof)
         ? consumed
-        : [...consumed, offer.sourceKey],
+        : [...consumed, occurrenceProof],
       pendingRunDraftOffer: null
     }
   }

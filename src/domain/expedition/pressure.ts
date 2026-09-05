@@ -33,20 +33,10 @@ export const derivePressureDirectorContext = (
     ? (condition.pa + condition.instruments + condition.stageGear) / 3
     : 100
   const stresses = Object.values(state.expedition.crew?.stressByCrewId ?? {})
-  const expectedFame = state.expedition.routeStep * 100
-  const actualFameGain = Math.max(
-    0,
-    state.player.fame - state.expedition.startingFame
-  )
-  const fameExpectationPressure = bounded(
-    expectedFame > actualFameGain
-      ? Math.min(100, ((expectedFame - actualFameGain) / 500) * 100)
-      : 0
-  )
   return {
     heat: bounded(state.expedition.pressure.heat),
     exposure: bounded(state.expedition.pressure.exposure),
-    fameExpectationPressure,
+    fameExpectationPressure: 0,
     cashPressure: bounded(
       state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
     ),
