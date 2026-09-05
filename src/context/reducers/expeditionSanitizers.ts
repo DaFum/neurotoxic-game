@@ -791,7 +791,11 @@ export const sanitizeExpeditionState = (
       loadout,
       preparedMap,
       sanitizeUniqueStrings(value.resolvedObligationSignalIds),
-      validVisitedPath
+      validVisitedPath,
+      sanitizeSocialResultProof(
+        value.lastSocialResult,
+        readCount(value, 'routeStep', 0)
+      )
     ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }

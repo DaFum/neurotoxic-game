@@ -1904,8 +1904,7 @@ export const handleOfferExpeditionDraft = (
         return (
           state.expedition.resolvedCrewSourceIds?.includes(
             `${payload.sourceKey}:resolved:${state.expedition.routeStep}`
-          ) === true ||
-          state.expedition.resolvedCrewSourceIds?.includes(payload.sourceKey) === true
+          ) === true
         )
     }
   })()
