@@ -47,7 +47,7 @@ export const useHandleMiss = ({
   contextActions,
   baseCrowdDecay = 1,
   missPenaltyMultiplier = 1,
-  _staminaDrainMultiplier = 1,
+  staminaDrainMultiplier: _staminaDrainMultiplier = 1,
   gameOverTimerRef
 }: HandleMissParams) => {
   const audioEngine = useAudioEngine()

@@ -928,6 +928,7 @@ const sanitizeActiveObligations = (
     const parts = signalId.split(':')
     if (parts.length !== 3) return false
     const [, nodeId, stepStr] = parts
+    if (!nodeId) return false
     const step = Number(stepStr)
     if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
       return false

@@ -258,7 +258,8 @@ export const useArrivalLogic = ({
     setPendingSupplyStopInventory,
     rng,
     expedition,
-    recordExpeditionCrewStressSource
+    recordExpeditionCrewStressSource,
+    recordExpeditionObligationSignal
   ])
 
   return { handleArrivalSequence }

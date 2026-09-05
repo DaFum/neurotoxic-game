@@ -152,6 +152,7 @@ export function useSocialPostHandler({
       setPostResult,
       setBrandOffers,
       setPhase,
+      resolveExpeditionSocialResult,
       isProcessingActionRef,
       setIsProcessingAction
     ]
