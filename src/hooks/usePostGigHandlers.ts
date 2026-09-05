@@ -74,6 +74,8 @@ export function usePostGigHandlers({
   applyQuestEvent,
   recordExpeditionCrewStressSource,
   completeExpedition,
+  recordExpeditionObligationSignal,
+  resolveExpeditionSocialResult,
   phase,
   setPhase,
   setBrandOffers,
@@ -111,7 +113,9 @@ export function usePostGigHandlers({
       unlockTrait,
       addToast,
       recordExpeditionCrewStressSource,
-      completeExpedition
+      completeExpedition,
+      recordExpeditionObligationSignal,
+      resolveExpeditionSocialResult
     }),
     [
       updatePlayer,
@@ -126,7 +130,9 @@ export function usePostGigHandlers({
       unlockTrait,
       addToast,
       recordExpeditionCrewStressSource,
-      completeExpedition
+      completeExpedition,
+      recordExpeditionObligationSignal,
+      resolveExpeditionSocialResult
     ]
   )
   const handleContinue = useContinueHandler({

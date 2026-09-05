@@ -213,6 +213,7 @@ export function useContinueHandler({
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    recordExpeditionObligationSignal,
     setlist,
     expedition,
     band,

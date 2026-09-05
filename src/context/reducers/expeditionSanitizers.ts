@@ -770,9 +770,13 @@ export const sanitizeExpeditionState = (
       runSeed
     ),
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
-    consumedRunDraftSourceKeys: sanitizeUniqueStrings(
-      value.consumedRunDraftSourceKeys
-    ),
+    ...(value.consumedRunDraftSourceKeys !== undefined
+      ? {
+          consumedRunDraftSourceKeys: sanitizeUniqueStrings(
+            value.consumedRunDraftSourceKeys
+          )
+        }
+      : {}),
     pendingRunDraftOffer: null,
     finaleType: sanitizeFinaleType(value.finaleType),
     lastSocialResult: sanitizeSocialResultProof(
@@ -919,31 +923,36 @@ const sanitizeActiveObligations = (
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
-  const validSignalIds = new Set<string>()
-  if (preparedMap) {
-    for (let i = 0; i < validVisitedPath.length; i++) {
-      const nodeId = validVisitedPath[i]!
-      validSignalIds.add(`arrival:${nodeId}`)
-      validSignalIds.add(`rest:${nodeId}`)
-      const node = preparedMap.meta[nodeId]
-      if (node && (node.nodeClass === 'CLUB_GIG' || node.nodeClass === 'FESTIVAL' || node.nodeClass === 'FINALE')) {
-        validSignalIds.add(`gig:${nodeId}:${i}`)
-        if (node.nodeClass === 'FINALE') {
-          validSignalIds.add(`finale:${nodeId}:${i}`)
-        }
-      }
-    }
-  }
+  const validGigSignalCount = resolvedObligationSignalIds.filter(signalId => {
+    if (!signalId.startsWith('gig:')) return false
+    const parts = signalId.split(':')
+    if (parts.length !== 3) return false
+    const [, nodeId, stepStr] = parts
+    const step = Number(stepStr)
+    if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
+      return false
+    if (validVisitedPath[step] !== nodeId) return false
+    if (!preparedMap) return false
+    const node = preparedMap.meta[nodeId]
+    return (
+      node &&
+      (node.nodeClass === 'CLUB_GIG' ||
+        node.nodeClass === 'FESTIVAL' ||
+        node.nodeClass === 'FINALE')
+    )
+  }).length
 
-  for (const rawSignal of resolvedObligationSignalIds) {
-    if (typeof rawSignal !== 'string') continue
-    if (rawSignal.startsWith('social_post:')) {
-      validSignalIds.add(rawSignal)
+  const lastSocialResult = sanitizeSocialResultProof(
+    value && isLooseRecord(value) ? value : null,
+    routeStep
+  )
+  const validSocialSignalCount = resolvedObligationSignalIds.filter(
+    signalId => {
+      if (!signalId.startsWith('social_post:')) return false
+      if (!lastSocialResult) return false
+      return signalId === `social_post:${lastSocialResult.id}`
     }
-  }
-
-  const validGigSignalCount = Array.from(validSignalIds).filter(s => s.startsWith('gig:')).length
-  const validSocialSignalCount = Array.from(validSignalIds).filter(s => s.startsWith('social_post:')).length
+  ).length
 
   for (const raw of value.slice(0, MAX_COLLECTION_ENTRIES)) {
     if (!isLooseRecord(raw)) continue

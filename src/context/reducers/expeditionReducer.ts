@@ -1613,7 +1613,7 @@ export const handleRecordExpeditionObligationSignal = (
       case 'gig':
       case 'finale':
         return state.lastGigStats && state.currentGig?.id
-          ? `${state.currentGig.id}:${state.expedition.routeStep}`
+          ? state.currentGig.id
           : null
       case 'arrival':
       case 'rest':
@@ -1625,7 +1625,7 @@ export const handleRecordExpeditionObligationSignal = (
     }
   })()
   if (canonicalSourceId !== payload.sourceId) return state
-  const signalId = `${payload.signalType}:${canonicalSourceId}`
+  const signalId = `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
   if (state.expedition.resolvedObligationSignalIds.includes(signalId))
     return state
   let changed = false
@@ -1885,7 +1885,7 @@ export const handleOfferExpeditionDraft = (
           : undefined
         return (
           state.rivalBand?.id === payload.sourceKey &&
-          currentNode?.specialSubtype === 'RIVAL_ENCOUNTER'
+          currentNode?.type === 'SPECIAL'
         )
       }
       case 'supply':
@@ -1895,8 +1895,8 @@ export const handleOfferExpeditionDraft = (
         )
       case 'crew':
         return (
-          state.expedition.resolvedCrewSourceIds?.includes(
-            `${payload.sourceKey}:${state.expedition.routeStep}`
+          state.expedition.resolvedCrewSourceIds?.some(
+            id => id.startsWith(`${payload.sourceKey}:`) || id === payload.sourceKey
           ) === true
         )
     }
@@ -1929,11 +1929,12 @@ export const handleSelectExpeditionDraft = (
   if (
     !offer ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
+    offer.offeredAtRouteStep !== state.expedition.routeStep ||
     state.expedition.runDraftTraitIds.length >= 2 ||
     !offer.candidateTraitIds.includes(payload.traitId)
   )
     return state
-  const occurrenceProof = `${offer.sourceType}:${offer.sourceKey}:${state.expedition.routeStep}`
+  const occurrenceProof = `${offer.sourceType}:${offer.sourceKey}:${offer.offeredAtRouteStep}`
   const consumed = state.expedition.consumedRunDraftSourceKeys ?? []
   return {
     ...state,
@@ -1961,7 +1962,7 @@ export const handleResolveExpeditionSocialResult = (
     payload.postOptionId.length === 0
   )
     return state
-  if (!state.lastGigStats && state.expedition.visitedNodeIds.length <= 1)
+  if (!state.lastGigStats)
     return state
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state

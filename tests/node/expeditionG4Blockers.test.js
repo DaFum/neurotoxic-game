@@ -309,18 +309,32 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
     edge => edge.from === started.player.currentNodeId
   )?.to
   assert.ok(targetNodeId)
-  const resolved = handleResolveExpeditionSocialResult(started, {
+
+  // Without gig evidence, social result is rejected
+  const unproven = handleResolveExpeditionSocialResult(started, {
     resultId: 'push',
     postOptionId: 'expedition-social-1',
     expectedRouteStep: 0
   })
-  const forged = handleCreateSocialIntelGrant(started, {
+  assert.strictEqual(unproven, started)
+
+  // With canonical gig evidence:
+  const startedWithGig = {
+    ...started,
+    lastGigStats: { score: 1000, accuracy: 80, failed: false }
+  }
+  const resolved = handleResolveExpeditionSocialResult(startedWithGig, {
+    resultId: 'push',
+    postOptionId: 'expedition-social-1',
+    expectedRouteStep: 0
+  })
+  const forged = handleCreateSocialIntelGrant(startedWithGig, {
     postOptionId: 'expedition-social-1',
     resultId: 'push',
     nodeId: targetNodeId,
     expectedRouteStep: 0
   })
-  assert.strictEqual(forged, started)
+  assert.strictEqual(forged, startedWithGig)
   const granted = handleCreateSocialIntelGrant(resolved, {
     postOptionId: 'expedition-social-1',
     resultId: 'push',

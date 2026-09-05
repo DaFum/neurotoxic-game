@@ -47,7 +47,7 @@ export const useHandleMiss = ({
   contextActions,
   baseCrowdDecay = 1,
   missPenaltyMultiplier = 1,
-  staminaDrainMultiplier = 1,
+  _staminaDrainMultiplier = 1,
   gameOverTimerRef
 }: HandleMissParams) => {
   const audioEngine = useAudioEngine()
@@ -81,8 +81,7 @@ export const useHandleMiss = ({
 
       const crowdDecay = calculateActiveCrowdDecay(
         finiteNumberOr(baseCrowdDecay, 1) *
-          finiteNumberOr(missPenaltyMultiplier, 1) *
-          finiteNumberOr(staminaDrainMultiplier, 1),
+          finiteNumberOr(missPenaltyMultiplier, 1),
         gameStateRef.current.modifiers?.crowdDecay,
         gameStateRef.current.rivalPenaltyActive,
         RIVAL_GIG_CROWD_DECAY_PENALTY,
@@ -183,7 +182,6 @@ export const useHandleMiss = ({
       setAccuracy,
       baseCrowdDecay,
       missPenaltyMultiplier,
-      staminaDrainMultiplier,
       t,
       gameOverTimerRef
     ]

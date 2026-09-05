@@ -64,7 +64,9 @@ export const usePostGigLogic = () => {
     addQuest,
     applyQuestEvent,
     recordExpeditionCrewStressSource,
-    completeExpedition
+    completeExpedition,
+    recordExpeditionObligationSignal,
+    resolveExpeditionSocialResult
   } = useGameActions()
 
   // 1. Core State
@@ -134,6 +136,8 @@ export const usePostGigLogic = () => {
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    recordExpeditionObligationSignal,
+    resolveExpeditionSocialResult,
     phase,
     setPhase,
     setPostResult,
