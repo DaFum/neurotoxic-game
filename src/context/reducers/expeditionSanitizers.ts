@@ -918,7 +918,8 @@ const sanitizeActiveObligations = (
   loadout: ExpeditionLoadout | null,
   preparedMap: import('../../types/expedition').ExpeditionMap | null,
   resolvedObligationSignalIds: string[] = [],
-  validVisitedPath: string[] = []
+  validVisitedPath: string[] = [],
+  lastSocialResult: ExpeditionState['lastSocialResult'] = null
 ): ExpeditionState['activeObligations'] => {
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
@@ -927,26 +928,24 @@ const sanitizeActiveObligations = (
     if (!signalId.startsWith('gig:')) return false
     const parts = signalId.split(':')
     if (parts.length !== 3) return false
-    const [, nodeId, stepStr] = parts
-    if (!nodeId) return false
+    const [, sourceId, stepStr] = parts
+    if (!sourceId) return false
     const step = Number(stepStr)
     if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
       return false
-    if (validVisitedPath[step] !== nodeId) return false
-    if (!preparedMap) return false
-    const node = preparedMap.meta[nodeId]
-    return (
-      node &&
-      (node.nodeClass === 'CLUB_GIG' ||
-        node.nodeClass === 'FESTIVAL' ||
-        node.nodeClass === 'FINALE')
-    )
+    const expNodeId = validVisitedPath[step]
+    if (!expNodeId || !preparedMap) return false
+    const node = preparedMap.nodes[expNodeId]
+    const metaNode = preparedMap.meta[expNodeId]
+    const isGigClass =
+      metaNode &&
+      (metaNode.nodeClass === 'CLUB_GIG' ||
+        metaNode.nodeClass === 'FESTIVAL' ||
+        metaNode.nodeClass === 'FINALE')
+    if (!isGigClass) return false
+    return sourceId === node?.venueId || sourceId === expNodeId
   }).length
 
-  const lastSocialResult = sanitizeSocialResultProof(
-    value && isLooseRecord(value) ? value : null,
-    routeStep
-  )
   const validSocialSignalCount = resolvedObligationSignalIds.filter(
     signalId => {
       if (!signalId.startsWith('social_post:')) return false
