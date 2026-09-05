@@ -128,6 +128,7 @@ import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDraf
 import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
 import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
 import { applyExpeditionPressureDelta } from '../../domain/expedition/pressure'
+import { POST_OPTIONS } from '../../data/postOptions'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -1625,7 +1626,7 @@ export const handleRecordExpeditionObligationSignal = (
     }
   })()
   if (canonicalSourceId !== payload.sourceId) return state
-  const signalId = `${payload.signalType}:${payload.sourceId}:${payload.expectedRouteStep}`
+  const signalId = `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
   if (state.expedition.resolvedObligationSignalIds.includes(signalId))
     return state
   let changed = false
@@ -1669,13 +1670,15 @@ export const handleRecordExpeditionObligationSignal = (
           constraint.kind === 'gig_accuracy_count'
             ? prior.value + result.value
             : result.value
+        const satisfied =
+          prior.satisfied ||
+          (constraint.kind === 'gig_accuracy_count'
+            ? value >= constraint.requiredCount
+            : result.satisfied)
         progressByConstraintId[constraint.id] = {
           constraintId: constraint.id,
           value,
-          satisfied:
-            constraint.kind === 'gig_accuracy_count'
-              ? value >= constraint.requiredCount
-              : result.satisfied,
+          satisfied,
           failed: prior.failed || result.failed
         }
         changed = true
@@ -1845,20 +1848,53 @@ export const handleOfferExpeditionDraft = (
     return state
   if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
     return state
+
+  const occurrenceProof = `${payload.sourceType}:${payload.sourceKey}:${state.expedition.routeStep}`
+  if (
+    state.expedition.consumedRunDraftSourceKeys?.includes(occurrenceProof)
+  )
+    return state
+
   const sourceProven = (() => {
     switch (payload.sourceType) {
-      case 'major_gig':
+      case 'major_gig': {
+        const currentNode = state.player.currentNodeId
+          ? state.gameMap?.nodes?.[state.player.currentNodeId]
+          : undefined
+        const isMajorClass =
+          currentNode &&
+          (currentNode.nodeClass === 'MAJOR_GIG' ||
+            currentNode.type === 'MAJOR_GIG' ||
+            currentNode.type === 'FESTIVAL')
         return (
           state.lastGigStats !== null &&
           state.lastGigStats.failed !== true &&
-          state.currentGig?.id === payload.sourceKey
+          state.currentGig?.id === payload.sourceKey &&
+          Boolean(isMajorClass)
         )
-      case 'rare_event':
+      }
+      case 'rare_event': {
         return state.expedition.rewardLedger.some(
-          reward => reward.sourceId === payload.sourceKey
+          reward =>
+            reward.sourceId === payload.sourceKey &&
+            reward.earnedAtRouteStep === state.expedition.routeStep
         )
-      case 'rival':
-        return state.rivalBand?.id === payload.sourceKey
+      }
+      case 'rival': {
+        const loadout = state.expedition.loadout
+        if (!loadout || !state.player.currentNodeId) return false
+        const map = buildExpeditionMap(
+          state.runSeed,
+          loadout.tourTypeId,
+          loadout.regionId,
+          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        )
+        const metaNode = map.meta[state.player.currentNodeId]
+        return (
+          state.rivalBand?.id === payload.sourceKey &&
+          metaNode?.specialSubtype === 'RIVAL_ENCOUNTER'
+        )
+      }
       case 'supply':
         return (
           state.player.currentNodeId === payload.sourceKey &&
@@ -1867,7 +1903,7 @@ export const handleOfferExpeditionDraft = (
       case 'crew':
         return (
           state.expedition.resolvedCrewSourceIds?.includes(
-            payload.sourceKey
+            `${payload.sourceKey}:resolved:${state.expedition.routeStep}`
           ) === true
         )
     }
@@ -1875,7 +1911,7 @@ export const handleOfferExpeditionDraft = (
   if (!sourceProven) return state
   const candidateTraitIds = deriveExpeditionDraftCandidates(
     state.runSeed,
-    payload.sourceKey,
+    occurrenceProof,
     state.expedition.runDraftTraitIds
   )
   if (candidateTraitIds.length < 3) return state
@@ -1900,15 +1936,21 @@ export const handleSelectExpeditionDraft = (
   if (
     !offer ||
     payload.expectedRouteStep !== state.expedition.routeStep ||
+    offer.offeredAtRouteStep !== state.expedition.routeStep ||
     state.expedition.runDraftTraitIds.length >= 2 ||
     !offer.candidateTraitIds.includes(payload.traitId)
   )
     return state
+  const occurrenceProof = `${offer.sourceType}:${offer.sourceKey}:${offer.offeredAtRouteStep}`
+  const consumed = state.expedition.consumedRunDraftSourceKeys ?? []
   return {
     ...state,
     expedition: {
       ...state.expedition,
       runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
+      consumedRunDraftSourceKeys: consumed.includes(occurrenceProof)
+        ? consumed
+        : [...consumed, occurrenceProof],
       pendingRunDraftOffer: null
     }
   }
@@ -1924,8 +1966,11 @@ export const handleResolveExpeditionSocialResult = (
     state.expedition.lastSocialResult?.resolvedAtRouteStep ===
       state.expedition.routeStep ||
     typeof payload.postOptionId !== 'string' ||
-    payload.postOptionId.length === 0
+    payload.postOptionId.length === 0 ||
+    !POST_OPTIONS.some(opt => opt.id === payload.postOptionId)
   )
+    return state
+  if (!state.lastGigStats)
     return state
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state
@@ -1999,7 +2044,11 @@ export const handleResolveExpeditionSocialResult = (
         reason: 'expedition_social'
       })
     )
-  return nextState
+  return handleRecordExpeditionObligationSignal(nextState, {
+    signalType: 'social_post',
+    sourceId: proofId,
+    expectedRouteStep: state.expedition.routeStep
+  })
 }
 
 export const handleCreateSocialIntelGrant = (

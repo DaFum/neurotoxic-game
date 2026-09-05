@@ -770,6 +770,13 @@ export const sanitizeExpeditionState = (
       runSeed
     ),
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
+    ...(value.consumedRunDraftSourceKeys !== undefined
+      ? {
+          consumedRunDraftSourceKeys: sanitizeUniqueStrings(
+            value.consumedRunDraftSourceKeys
+          )
+        }
+      : {}),
     pendingRunDraftOffer: null,
     finaleType: sanitizeFinaleType(value.finaleType),
     lastSocialResult: sanitizeSocialResultProof(
@@ -782,7 +789,13 @@ export const sanitizeExpeditionState = (
       runSeed,
       readCount(value, 'routeStep', 0),
       loadout,
-      preparedMap
+      preparedMap,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds),
+      validVisitedPath,
+      sanitizeSocialResultProof(
+        value.lastSocialResult,
+        readCount(value, 'routeStep', 0)
+      )
     ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
@@ -907,11 +920,47 @@ const sanitizeActiveObligations = (
   runSeed: number | undefined,
   routeStep: number,
   loadout: ExpeditionLoadout | null,
-  preparedMap: import('../../types/expedition').ExpeditionMap | null
+  preparedMap: import('../../types/expedition').ExpeditionMap | null,
+  resolvedObligationSignalIds: string[] = [],
+  validVisitedPath: string[] = [],
+  lastSocialResult: ExpeditionState['lastSocialResult'] = null
 ): ExpeditionState['activeObligations'] => {
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
+  const validGigSignalCount = resolvedObligationSignalIds.filter(signalId => {
+    if (!signalId.startsWith('gig:')) return false
+    const parts = signalId.split(':')
+    if (parts.length !== 3) return false
+    const [, sourceId, stepStr] = parts
+    if (!sourceId) return false
+    const step = Number(stepStr)
+    if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
+      return false
+    const expNodeId = validVisitedPath[step]
+    if (!expNodeId || !preparedMap) return false
+    const node = preparedMap.nodes[expNodeId]
+    const metaNode = preparedMap.meta[expNodeId]
+    const isGigClass =
+      metaNode &&
+      (metaNode.nodeClass === 'CLUB_GIG' ||
+        metaNode.nodeClass === 'FESTIVAL' ||
+        metaNode.nodeClass === 'FINALE')
+    if (!isGigClass) return false
+    return sourceId === node?.venueId || sourceId === expNodeId
+  }).length
+
+  const validSocialSignalCount = resolvedObligationSignalIds.filter(
+    signalId => {
+      if (!signalId.startsWith('social_post:')) return false
+      if (!lastSocialResult) return false
+      return (
+        signalId === `social_post:${lastSocialResult.id}` ||
+        signalId === `social_post:${lastSocialResult.id}:${lastSocialResult.resolvedAtRouteStep}`
+      )
+    }
+  ).length
+
   for (const raw of value.slice(0, MAX_COLLECTION_ENTRIES)) {
     if (!isLooseRecord(raw)) continue
     const { id, sourceType, sourceId, status } = raw
@@ -969,10 +1018,23 @@ const sanitizeActiveObligations = (
         valid = false
         break
       }
+      let canonicalValue = progress.value
+      let canonicalSatisfied = progress.satisfied
+      if (constraint.kind === 'gig_accuracy_count') {
+        canonicalValue = Math.min(progress.value, validGigSignalCount)
+        canonicalSatisfied = canonicalValue >= constraint.requiredCount
+      } else if (constraint.kind === 'visit_node') {
+        const visited = validVisitedPath.includes(constraint.targetNodeId)
+        canonicalValue = visited ? 1 : 0
+        canonicalSatisfied = visited
+      } else if (constraint.kind === 'social_post_count') {
+        canonicalValue = Math.min(progress.value, validSocialSignalCount)
+        canonicalSatisfied = canonicalValue >= constraint.requiredCount
+      }
       progressByConstraintId[constraint.id] = {
         constraintId: constraint.id,
-        value: progress.value,
-        satisfied: progress.satisfied,
+        value: canonicalValue,
+        satisfied: canonicalSatisfied,
         failed: progress.failed
       }
     }
@@ -994,6 +1056,21 @@ const sanitizeActiveObligations = (
       if (JSON.stringify(raw.doubleDown) !== JSON.stringify(expected)) continue
       doubleDown = expected
     }
+
+    const progressList = Object.values(progressByConstraintId)
+    let derivedStatus: 'active' | 'completed' | 'failed' = status
+    if (progressList.some(item => item.failed)) derivedStatus = 'failed'
+    else if (
+      progressList.length > 0 &&
+      progressList.every(item => item.satisfied)
+    ) {
+      if (doubleDown?.addedConstraint.kind === 'finale_required') {
+        derivedStatus = 'active'
+      } else {
+        derivedStatus = 'completed'
+      }
+    }
+
     seen.add(id)
     result.push({
       id,
@@ -1001,7 +1078,7 @@ const sanitizeActiveObligations = (
       sourceId,
       constraints,
       progressByConstraintId,
-      status,
+      status: derivedStatus,
       settled: raw.settled,
       doubleDown
     })
