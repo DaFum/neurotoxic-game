@@ -2,6 +2,7 @@ import { useCallback, useRef, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useAudioEngine } from '../../context/AudioEngineContext'
 import { clampUnit } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import type {
   RhythmGameRefState,
   SetLastGigStats
@@ -20,6 +21,10 @@ type RhythmPerformance = {
   critChance?: number
   /** Fractional reduction of crowd decay from band effects (0-1). */
   crowdControl?: number
+  comboBonusMultiplier?: number
+  timingWindowMultiplier?: number
+  missPenaltyMultiplier?: number
+  staminaDrainMultiplier?: number
 }
 
 type RhythmGameScoringParams = {
@@ -84,6 +89,22 @@ export const useRhythmGameScoring = ({
   const drumMultiplier = performance?.drumMultiplier ?? 1.0
   const tempoBonus = Math.max(0, performance?.tempo ?? 0)
   const critChance = clampUnit(performance?.critChance ?? 0)
+  const comboBonusMultiplier = Math.max(
+    0,
+    finiteNumberOr(performance?.comboBonusMultiplier, 1)
+  )
+  const timingWindowMultiplier = Math.max(
+    0,
+    finiteNumberOr(performance?.timingWindowMultiplier, 1)
+  )
+  const missPenaltyMultiplier = Math.max(
+    0,
+    finiteNumberOr(performance?.missPenaltyMultiplier, 1)
+  )
+  const staminaDrainMultiplier = Math.max(
+    0,
+    finiteNumberOr(performance?.staminaDrainMultiplier, 1)
+  )
 
   const gameOverTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -112,6 +133,8 @@ export const useRhythmGameScoring = ({
     setters,
     contextActions,
     baseCrowdDecay,
+    missPenaltyMultiplier,
+    staminaDrainMultiplier,
     gameOverTimerRef
   })
 
@@ -122,7 +145,9 @@ export const useRhythmGameScoring = ({
       guitarDifficulty,
       drumMultiplier,
       tempoBonus,
-      critChance
+      critChance,
+      comboBonusMultiplier,
+      timingWindowMultiplier
     },
     activateToxicMode,
     handleMiss

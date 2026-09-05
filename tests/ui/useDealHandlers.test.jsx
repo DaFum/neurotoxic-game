@@ -50,6 +50,7 @@ function makeProps(overrides = {}) {
   const dispatchers = overrides.dispatchers ?? makeDispatchers()
   return {
     player: { money: 1000, fame: 10, day: 3, location: 'berlin' },
+    band: { inventory: {} },
     social: { followers: 500, brandReputation: {} },
     isProcessingActionRef: { current: false },
     setIsProcessingAction: vi.fn(),

@@ -127,7 +127,8 @@ export const deriveFinancials = ({
   gigContext,
   cityTraits,
   assetModifiers,
-  repeatDemandContext
+  repeatDemandContext,
+  gigRewardMultiplier
 }: {
   currentGig: GameState['currentGig']
   lastGigStats: GameState['lastGigStats']
@@ -148,6 +149,7 @@ export const deriveFinancials = ({
   cityTraits?: CityTraitState
   assetModifiers?: AssetModifiers
   repeatDemandContext?: RepeatDemandContext
+  gigRewardMultiplier?: number
 }) => {
   if (!currentGig || !lastGigStats) return null
 
@@ -187,9 +189,24 @@ export const deriveFinancials = ({
     missTolerance: BALANCE_CONSTANTS.MISS_TOLERANCE,
     missMoneyPenalty: BALANCE_CONSTANTS.MISS_MONEY_PENALTY
   })
-  return repeatDemandContext
+  const demandAdjusted = repeatDemandContext
     ? applyRepeatDemandAdjustment(performanceAdjusted, repeatDemandContext)
     : performanceAdjusted
+  const rewardMultiplier = Math.max(0, finiteNumberOr(gigRewardMultiplier, 1))
+  if (rewardMultiplier === 1) return demandAdjusted
+  const income = {
+    ...demandAdjusted.income,
+    total: Math.round(demandAdjusted.income.total * rewardMultiplier),
+    breakdown: demandAdjusted.income.breakdown.map(item => ({
+      ...item,
+      value: Math.round(item.value * rewardMultiplier)
+    }))
+  }
+  return {
+    ...demandAdjusted,
+    income,
+    net: income.total - demandAdjusted.expenses.total
+  }
 }
 
 /**

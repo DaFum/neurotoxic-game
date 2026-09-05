@@ -71,6 +71,23 @@ import {
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
+import { calculateFameLevel } from '../../utils/gameState/calculations'
+import { clampControversyLevel } from '../../utils/gameState/clamps'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createFameGainedQuestEvent,
+  createMoneyEarnedQuestEvent
+} from '../../quests/producers/economyQuestEvents'
+import {
+  buildPreparedExpeditionSponsorOffers,
+  getCanonicalBrandDealTermsHash,
+  resolveBrandDealAcceptance
+} from '../../domain/expedition/sponsors'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import {
+  deriveExpeditionDoubleDownOffer,
+  materializeContractConstraints
+} from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
@@ -90,6 +107,12 @@ import type {
   RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
   StartExpeditionPayload,
+  RecordExpeditionObligationSignalPayload,
+  DoubleDownExpeditionObligationPayload,
+  OfferExpeditionDraftPayload,
+  SelectExpeditionDraftPayload,
+  ResolveExpeditionSocialResultPayload,
+  CreateSocialIntelGrantPayload,
   TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
@@ -100,6 +123,11 @@ import type {
   ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
+import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
+import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
+import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
+import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
+import { applyExpeditionPressureDelta } from '../../domain/expedition/pressure'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -169,13 +197,20 @@ export const handlePrepareExpeditionRun = (
   if (typeof prepId !== 'string' || prepId.length === 0) return state
   if (!isValidRunSeed(runSeed)) return state
 
-  return {
+  const preparedState: GameState = {
     ...state,
     runSeed,
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'prepared',
       prep: { prepId }
+    }
+  }
+  return {
+    ...preparedState,
+    expedition: {
+      ...preparedState.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(preparedState)
     }
   }
 }
@@ -249,15 +284,104 @@ export const handleStartExpedition = (
 
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
+  const sponsorOfferId = normalized.build.sponsorOfferId
+  const stagedSponsor =
+    sponsorOfferId === null
+      ? null
+      : state.expedition.preparedSponsorOffers.find(
+          offer => offer.offerId === sponsorOfferId
+        )
+  if (
+    sponsorOfferId !== null &&
+    (!stagedSponsor ||
+      stagedSponsor.runSeed !== state.runSeed ||
+      getCanonicalBrandDealTermsHash(stagedSponsor.dealId) !==
+        stagedSponsor.canonicalTermsHash)
+  )
+    return state
+  const sponsorAcceptance = stagedSponsor
+    ? resolveBrandDealAcceptance(
+        { ...state, player: { ...state.player, money: nextMoney } },
+        stagedSponsor.dealId
+      )
+    : null
+  if (stagedSponsor && !sponsorAcceptance) return state
+  const activeObligations: import('../../types/expedition').ActiveObligationState[] =
+    []
+  for (const commitment of normalized.nativeContracts) {
+    const template = EXPEDITION_CONTRACTS_BY_ID.get(commitment.templateId)
+    const constraints = materializeContractConstraints(
+      template,
+      preparedMap,
+      commitment.targetNodeId
+    )
+    if (!template || !constraints) return state
+    const progressByConstraintId: import('../../types/expedition').ActiveObligationState['progressByConstraintId'] =
+      Object.create(null)
+    for (const constraint of constraints)
+      progressByConstraintId[constraint.id] = {
+        constraintId: constraint.id,
+        value: 0,
+        satisfied: false,
+        failed: false
+      }
+    activeObligations.push({
+      id: `${prepId}:${template.id}`,
+      sourceType: 'native',
+      sourceId: template.id,
+      constraints,
+      progressByConstraintId,
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
+  }
+  if (stagedSponsor)
+    activeObligations.push({
+      id: `${prepId}:${stagedSponsor.dealId}`,
+      sourceType: 'brandDeal',
+      sourceId: stagedSponsor.dealId,
+      constraints: [],
+      progressByConstraintId: Object.create(null),
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
 
-  return {
+  const rivalSelection = selectExpeditionRivalForRun(
+    state,
+    preparedMap,
+    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  )
+  const nextCareer = rivalSelection
+    ? {
+        ...state.career,
+        rivalsById: {
+          ...state.career.rivalsById,
+          [rivalSelection.record.snapshot.id]: {
+            ...rivalSelection.record,
+            history: {
+              ...rivalSelection.record.history,
+              encounterCount: rivalSelection.record.history.encounterCount + 1,
+              lastSeenRunId: prepId
+            }
+          }
+        }
+      }
+    : state.career
+
+  let nextState: GameState = {
     ...state,
+    career: nextCareer,
+    rivalBand: rivalSelection?.rivalBand ?? null,
     player: {
-      ...state.player,
-      money: nextMoney,
+      ...(sponsorAcceptance?.nextPlayer ?? state.player),
+      money: sponsorAcceptance?.nextPlayer.money ?? nextMoney,
       currentNodeId: preparedMap.startNodeId,
       van: { ...state.player.van, fuel: normalized.build.startingFuelTarget }
     },
+    band: sponsorAcceptance?.nextBand ?? state.band,
+    social: sponsorAcceptance?.nextSocial ?? state.social,
     // The committed songs are installed into the root setlist in the same
     // commit. PreGig and the rhythm engine read `state.setlist`, not the
     // loadout, so leaving them out of sync would start the run with an empty
@@ -288,9 +412,16 @@ export const handleStartExpedition = (
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
       cargo: materializeExpeditionCargo(normalized, state),
-      technicalCondition: createDefaultTechnicalCondition()
+      technicalCondition: createDefaultTechnicalCondition(),
+      preparedSponsorOffers: [],
+      activeObligations
     }
   }
+  if (sponsorAcceptance) {
+    for (const questEvent of sponsorAcceptance.questEvents)
+      nextState = QuestEvents.emit(nextState, questEvent)
+  }
+  return nextState
 }
 
 /**
@@ -728,7 +859,35 @@ export const handleCompleteExpedition = (
     return state
   }
 
-  return finalizeExpedition(state, 'completed', {
+  let completionState = state
+  if (state.expedition.finaleType === 'rival_battle' && state.rivalBand) {
+    const rivalId = state.rivalBand.id
+    const record = state.career.rivalsById[rivalId]
+    if (record) {
+      const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
+        0 | 1 | 2 | 3 | 4
+      completionState = {
+        ...state,
+        career: {
+          ...state.career,
+          rivalsById: {
+            ...state.career.rivalsById,
+            [rivalId]: {
+              ...record,
+              history: {
+                ...record.history,
+                relationship: nemesisLevel >= 4 ? 'nemesis' : 'rival',
+                nemesisLevel,
+                lastOutcome: 'hostile_win',
+                lastSeenRunId: state.expedition.runId
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  return finalizeExpedition(completionState, 'completed', {
     reason: null,
     finaleResultId,
     explicitRareRewardIds: []
@@ -1436,4 +1595,468 @@ export const handleApplyExpeditionEventDelta = (
   return syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+}
+
+export const handleRecordExpeditionObligationSignal = (
+  state: GameState,
+  payload: RecordExpeditionObligationSignalPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  if (typeof payload.sourceId !== 'string' || payload.sourceId.length === 0)
+    return state
+  const canonicalSourceId = (() => {
+    switch (payload.signalType) {
+      case 'gig':
+      case 'finale':
+        return state.lastGigStats && state.currentGig?.id
+          ? state.currentGig.id
+          : null
+      case 'arrival':
+      case 'rest':
+        return state.player.currentNodeId
+      case 'heat':
+        return state.expedition.pressure.lastSevereEventId
+      case 'social_post':
+        return state.expedition.lastSocialResult?.id ?? null
+    }
+  })()
+  if (canonicalSourceId !== payload.sourceId) return state
+  const signalId = `${payload.signalType}:${payload.sourceId}:${payload.expectedRouteStep}`
+  if (state.expedition.resolvedObligationSignalIds.includes(signalId))
+    return state
+  let changed = false
+  let moneyDelta = 0
+  let fameDelta = 0
+  let heatDelta = 0
+  let controversyDelta = 0
+  const effectiveRules = getEffectiveExpeditionRules(state).numeric
+  const activeObligations = state.expedition.activeObligations.map(
+    obligation => {
+      if (obligation.status !== 'active') return obligation
+      let status: import('../../types/expedition').ActiveObligationState['status'] =
+        obligation.status
+      const progressByConstraintId = { ...obligation.progressByConstraintId }
+      for (const constraint of obligation.constraints) {
+        const prior = progressByConstraintId[constraint.id]
+        if (!prior) continue
+        const evidence = {
+          accuracy:
+            payload.signalType === 'gig'
+              ? state.lastGigStats?.accuracy
+              : undefined,
+          heat: state.expedition.pressure.heat,
+          visitedNodeId:
+            payload.signalType === 'arrival'
+              ? (state.player.currentNodeId ?? undefined)
+              : undefined,
+          rested: payload.signalType === 'rest',
+          finaleCompleted: payload.signalType === 'finale',
+          socialPosts:
+            payload.signalType === 'social_post'
+              ? prior.value + 1
+              : prior.value,
+          finaleProfileId:
+            state.expedition.finaleType === 'contract_special'
+              ? 'all_in_showcase'
+              : undefined
+        }
+        const result = evaluateExpeditionConstraint(constraint, evidence)
+        const value =
+          constraint.kind === 'gig_accuracy_count'
+            ? prior.value + result.value
+            : result.value
+        progressByConstraintId[constraint.id] = {
+          constraintId: constraint.id,
+          value,
+          satisfied:
+            constraint.kind === 'gig_accuracy_count'
+              ? value >= constraint.requiredCount
+              : result.satisfied,
+          failed: prior.failed || result.failed
+        }
+        changed = true
+      }
+      const progress = Object.values(progressByConstraintId)
+      if (progress.some(item => item.failed)) status = 'failed'
+      else if (progress.length > 0 && progress.every(item => item.satisfied))
+        status = 'completed'
+      const doubleDown = obligation.doubleDown
+      if (doubleDown) {
+        changed = true
+        const violated =
+          (doubleDown.addedConstraint.kind === 'no_more_rest' &&
+            payload.signalType === 'rest') ||
+          (doubleDown.addedConstraint.kind === 'heat_cap' &&
+            state.expedition.pressure.heat >
+              doubleDown.addedConstraint.maxHeat) ||
+          (doubleDown.addedConstraint.kind === 'social_silence' &&
+            payload.signalType === 'social_post')
+        if (violated) status = 'failed'
+        else if (
+          doubleDown.addedConstraint.kind === 'finale_required' &&
+          payload.signalType !== 'finale' &&
+          status === 'completed'
+        )
+          status = 'active'
+        else if (
+          doubleDown.addedConstraint.kind === 'finale_required' &&
+          payload.signalType === 'finale' &&
+          progress.every(item => item.satisfied)
+        )
+          status = 'completed'
+      }
+      let settled = obligation.settled
+      if (
+        status !== 'active' &&
+        !settled &&
+        obligation.sourceType === 'native'
+      ) {
+        const template = EXPEDITION_CONTRACTS_BY_ID.get(obligation.sourceId)
+        if (template) {
+          if (status === 'completed') {
+            const activeConstraintCount =
+              obligation.constraints.length + (doubleDown ? 1 : 0)
+            const stackMultiplier = Math.min(
+              1.4,
+              1 + Math.max(0, activeConstraintCount - 1) * 0.1
+            )
+            const multiplier =
+              template.reward.rewardMultiplier *
+              stackMultiplier *
+              (doubleDown?.rewardMultiplier ?? 1) *
+              effectiveRules.contractRewardMultiplier
+            moneyDelta += Math.round(template.reward.money * multiplier)
+            fameDelta += Math.round(template.reward.fame * multiplier)
+          } else {
+            heatDelta += Math.round(
+              (template.failure.heat + (doubleDown?.failureHeatBonus ?? 0)) *
+                effectiveRules.contractPenaltyMultiplier
+            )
+            controversyDelta += Math.round(
+              template.failure.controversy *
+                effectiveRules.contractPenaltyMultiplier
+            )
+          }
+          settled = true
+        }
+      }
+      return { ...obligation, progressByConstraintId, status, settled }
+    }
+  )
+  if (!changed) return state
+  let nextState: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + moneyDelta
+      ),
+      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta),
+      fameLevel: calculateFameLevel(
+        clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta)
+      )
+    },
+    social: {
+      ...state.social,
+      controversyLevel: clampControversyLevel(
+        finiteNumberOr(state.social.controversyLevel, 0) + controversyDelta
+      )
+    },
+    expedition: {
+      ...state.expedition,
+      activeObligations,
+      pressure: {
+        ...state.expedition.pressure,
+        heat: Math.max(
+          0,
+          Math.min(100, state.expedition.pressure.heat + heatDelta)
+        )
+      },
+      resolvedObligationSignalIds: [
+        ...state.expedition.resolvedObligationSignalIds,
+        signalId
+      ]
+    }
+  }
+  if (moneyDelta > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createMoneyEarnedQuestEvent({ amount: moneyDelta, reason: 'contract' })
+    )
+  if (fameDelta > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createFameGainedQuestEvent({ amount: fameDelta, reason: 'contract' })
+    )
+  return nextState
+}
+
+export const handleDoubleDownExpeditionObligation = (
+  state: GameState,
+  payload: DoubleDownExpeditionObligationPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  const index = state.expedition.activeObligations.findIndex(
+    item =>
+      item.id === payload.obligationId &&
+      item.status === 'active' &&
+      item.doubleDown === null
+  )
+  if (index < 0) return state
+  const derived = deriveExpeditionDoubleDownOffer(
+    state.runSeed,
+    payload.obligationId,
+    state.expedition.routeStep
+  )
+  if (payload.offerId !== derived.acceptedOfferId) return state
+  const activeObligations = [...state.expedition.activeObligations]
+  const obligation = activeObligations[index]
+  if (!obligation) return state
+  activeObligations[index] = {
+    ...obligation,
+    doubleDown: {
+      acceptedOfferId: derived.acceptedOfferId,
+      derivationKey: derived.derivationKey,
+      addedConstraint: derived.addedConstraint,
+      rewardMultiplier: derived.rewardMultiplier,
+      failureHeatBonus: derived.failureHeatBonus,
+      acceptedAtRouteStep: state.expedition.routeStep
+    }
+  }
+  return { ...state, expedition: { ...state.expedition, activeObligations } }
+}
+export const handleOfferExpeditionDraft = (
+  state: GameState,
+  payload: OfferExpeditionDraftPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.pendingRunDraftOffer
+  )
+    return state
+  if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
+    return state
+  const sourceProven = (() => {
+    switch (payload.sourceType) {
+      case 'major_gig':
+        return (
+          state.lastGigStats !== null &&
+          state.lastGigStats.failed !== true &&
+          state.currentGig?.id === payload.sourceKey
+        )
+      case 'rare_event':
+        return state.expedition.rewardLedger.some(
+          reward => reward.sourceId === payload.sourceKey
+        )
+      case 'rival':
+        return state.rivalBand?.id === payload.sourceKey
+      case 'supply':
+        return (
+          state.player.currentNodeId === payload.sourceKey &&
+          state.gameMap?.nodes?.[payload.sourceKey]?.type === 'SUPPLY_STOP'
+        )
+      case 'crew':
+        return (
+          state.expedition.resolvedCrewSourceIds?.includes(
+            payload.sourceKey
+          ) === true
+        )
+    }
+  })()
+  if (!sourceProven) return state
+  const candidateTraitIds = deriveExpeditionDraftCandidates(
+    state.runSeed,
+    payload.sourceKey,
+    state.expedition.runDraftTraitIds
+  )
+  if (candidateTraitIds.length < 3) return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pendingRunDraftOffer: {
+        sourceType: payload.sourceType,
+        sourceKey: payload.sourceKey,
+        offeredAtRouteStep: state.expedition.routeStep,
+        candidateTraitIds
+      }
+    }
+  }
+}
+export const handleSelectExpeditionDraft = (
+  state: GameState,
+  payload: SelectExpeditionDraftPayload
+): GameState => {
+  const offer = state.expedition.pendingRunDraftOffer
+  if (
+    !offer ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.runDraftTraitIds.length >= 2 ||
+    !offer.candidateTraitIds.includes(payload.traitId)
+  )
+    return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
+      pendingRunDraftOffer: null
+    }
+  }
+}
+
+export const handleResolveExpeditionSocialResult = (
+  state: GameState,
+  payload: ResolveExpeditionSocialResultPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.lastSocialResult?.resolvedAtRouteStep ===
+      state.expedition.routeStep ||
+    typeof payload.postOptionId !== 'string' ||
+    payload.postOptionId.length === 0
+  )
+    return state
+  const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+  if (!result || (result.requiresRival && !state.rivalBand)) return state
+  const proofId = `${payload.postOptionId}:${payload.resultId}:${state.expedition.routeStep}`
+  const pressure = applyExpeditionPressureDelta(state, {
+    heat: result.heat,
+    exposure: result.exposure,
+    crowdHype: result.crowdHype
+  })
+  let nextState: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + result.money
+      ),
+      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + result.fame),
+      fameLevel: calculateFameLevel(
+        clampPlayerFame(finiteNumberOr(state.player.fame, 0) + result.fame)
+      )
+    },
+    social: {
+      ...state.social,
+      brandReputation: {
+        ...state.social.brandReputation,
+        NEUTRAL: Math.max(
+          0,
+          Math.min(
+            100,
+            finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
+              result.sponsorInterest
+          )
+        )
+      }
+    },
+    rivalBand:
+      state.rivalBand && result.rivalPressure !== 0
+        ? {
+            ...state.rivalBand,
+            powerLevel: Math.max(
+              1,
+              state.rivalBand.powerLevel + Math.round(result.rivalPressure / 10)
+            )
+          }
+        : state.rivalBand,
+    expedition: {
+      ...state.expedition,
+      pressure,
+      lastSocialResult: {
+        id: proofId,
+        postOptionId: payload.postOptionId,
+        resultId: payload.resultId,
+        resolvedAtRouteStep: state.expedition.routeStep,
+        intelConsumed: false
+      }
+    }
+  }
+  if (result.money > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createMoneyEarnedQuestEvent({
+        amount: result.money,
+        reason: 'expedition_social'
+      })
+    )
+  if (result.fame > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createFameGainedQuestEvent({
+        amount: result.fame,
+        reason: 'expedition_social'
+      })
+    )
+  return nextState
+}
+
+export const handleCreateSocialIntelGrant = (
+  state: GameState,
+  payload: CreateSocialIntelGrantPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  const proof = state.expedition.lastSocialResult
+  const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+  if (
+    !proof ||
+    proof.intelConsumed ||
+    proof.postOptionId !== payload.postOptionId ||
+    proof.resultId !== payload.resultId ||
+    proof.resolvedAtRouteStep !== state.expedition.routeStep ||
+    !result?.intelTargetLevel
+  )
+    return state
+  const loadout = state.expedition.loadout
+  if (!loadout) return state
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId,
+    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  )
+  const currentNodeId = state.player.currentNodeId
+  if (
+    !currentNodeId ||
+    !map.connections.some(
+      edge => edge.from === currentNodeId && edge.to === payload.nodeId
+    )
+  )
+    return state
+  const grantId = `${proof.id}:social:${payload.nodeId}`
+  if (state.expedition.intelGrants.some(grant => grant.id === grantId))
+    return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      intelGrants: [
+        ...state.expedition.intelGrants,
+        {
+          id: grantId,
+          source: 'social',
+          sourceProofId: proof.id,
+          nodeId: payload.nodeId,
+          targetLevel: result.intelTargetLevel,
+          consumed: false
+        }
+      ],
+      lastSocialResult: { ...proof, intelConsumed: true }
+    }
+  }
 }

@@ -257,6 +257,30 @@ type BaseGameDispatchActions = {
     optionId: string,
     nodeId: string
   ) => void
+  recordExpeditionObligationSignal: (
+    signalType: import('../types/actions').RecordExpeditionObligationSignalPayload['signalType'],
+    sourceId: string | null
+  ) => void
+  doubleDownExpeditionObligation: (
+    obligationId: string,
+    offerId: string
+  ) => void
+  offerExpeditionDraft: (
+    sourceType: import('../types/expedition').ExpeditionRunDraftOffer['sourceType'],
+    sourceKey: string
+  ) => void
+  selectExpeditionDraft: (
+    traitId: import('../types/expedition').ExpeditionRunDraftTraitId
+  ) => void
+  resolveExpeditionSocialResult: (
+    resultId: import('../types/expedition').ExpeditionSocialResultId,
+    postOptionId: string
+  ) => void
+  createSocialIntelGrant: (
+    postOptionId: string,
+    resultId: import('../types/expedition').ExpeditionSocialResultId,
+    nodeId: string
+  ) => void
   settleExpeditionCrewCareer: (runId: string) => void
   acquireExpeditionCrewSignature: (
     crewId: string,

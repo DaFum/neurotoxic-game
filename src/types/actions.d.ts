@@ -198,6 +198,36 @@ export interface CreateContactIntelGrantPayload {
   nodeId: string
   expectedRouteStep: number
 }
+export interface RecordExpeditionObligationSignalPayload {
+  signalType: 'gig' | 'arrival' | 'rest' | 'heat' | 'social_post' | 'finale'
+  sourceId: string | null
+  expectedRouteStep: number
+}
+export interface DoubleDownExpeditionObligationPayload {
+  obligationId: string
+  offerId: string
+  expectedRouteStep: number
+}
+export interface OfferExpeditionDraftPayload {
+  sourceType: import('./expedition').ExpeditionRunDraftOffer['sourceType']
+  sourceKey: string
+  expectedRouteStep: number
+}
+export interface SelectExpeditionDraftPayload {
+  traitId: import('./expedition').ExpeditionRunDraftTraitId
+  expectedRouteStep: number
+}
+export interface ResolveExpeditionSocialResultPayload {
+  resultId: import('./expedition').ExpeditionSocialResultId
+  postOptionId: string
+  expectedRouteStep: number
+}
+export interface CreateSocialIntelGrantPayload {
+  postOptionId: string
+  resultId: import('./expedition').ExpeditionSocialResultId
+  nodeId: string
+  expectedRouteStep: number
+}
 
 /**
  * Payload starting the prepared Expedition run as one transaction.

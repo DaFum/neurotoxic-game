@@ -47,6 +47,11 @@ import type {
   ExpeditionLoadout,
   ExpeditionMap
 } from '../../types/expedition'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import {
+  areExpeditionContractsCompatible,
+  materializeContractConstraints
+} from './contracts'
 
 /**
  * Highest fuel level the van can be topped up to before departure.
@@ -173,20 +178,26 @@ const getAvailablePressureModifierIds = (
  * @remarks G4 owns Sponsor offers and extends this in place. Offers are derived
  * from the prepared route, never accepted from the caller.
  */
-const getAvailableSponsorOfferIds = (
-  _state: GameState,
+export const getAvailableSponsorOfferIds = (
+  state: GameState,
   _preparedMap: ExpeditionMap
-): readonly string[] => []
+): readonly string[] =>
+  state.expedition.preparedSponsorOffers.map(offer => offer.offerId)
 
 /**
  * Native Contract template ids commitable against the prepared route.
  *
  * @remarks G4 owns native Contracts and extends this in place.
  */
-const getAvailableNativeContractTemplateIds = (
+export const getAvailableNativeContractTemplateIds = (
   _state: GameState,
-  _preparedMap: ExpeditionMap
-): readonly string[] => []
+  preparedMap: ExpeditionMap
+): readonly string[] =>
+  [...EXPEDITION_CONTRACTS_BY_ID.values()]
+    .filter(
+      template => materializeContractConstraints(template, preparedMap) !== null
+    )
+    .map(template => template.id)
 
 /* -------------------------------------------------------------------------- */
 
@@ -415,6 +426,7 @@ export const validateExpeditionBuildCommitment = (
   // ── Native Contracts (G4 registry) ─────────────────────────────────────────
   const nativeContractsRaw = candidate.nativeContracts
   if (!Array.isArray(nativeContractsRaw)) return reject('MALFORMED_CANDIDATE')
+  if (nativeContractsRaw.length > 2) return reject('NATIVE_CONTRACT_INVALID')
   const availableTemplates = getAvailableNativeContractTemplateIds(
     state,
     preparedMap
@@ -444,6 +456,27 @@ export const validateExpeditionBuildCommitment = (
     }
     seenTemplateIds.add(templateId)
     nativeContracts.push({ templateId, targetNodeId })
+  }
+  if (
+    !areExpeditionContractsCompatible(
+      nativeContracts.map(contract => contract.templateId)
+    )
+  )
+    return reject('NATIVE_CONTRACT_INVALID')
+  for (const contract of nativeContracts) {
+    const template = EXPEDITION_CONTRACTS_BY_ID.get(contract.templateId)
+    const constraints = materializeContractConstraints(
+      template,
+      preparedMap,
+      contract.targetNodeId
+    )
+    if (!constraints) return reject('NATIVE_CONTRACT_INVALID')
+    const needsTarget =
+      template?.constraints.some(
+        constraint => constraint.kind === 'visit_matching_node'
+      ) ?? false
+    if (needsTarget !== (contract.targetNodeId !== null))
+      return reject('NATIVE_CONTRACT_INVALID')
   }
 
   // ── Crew, starter perk, insurance, Tour Pressure (later-gate registries) ───

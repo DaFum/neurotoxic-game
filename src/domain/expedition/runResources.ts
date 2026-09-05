@@ -19,6 +19,7 @@ import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { getExpeditionSpendableCash } from './loadout'
 import { getExpeditionConditionSummary } from './condition'
 import type { GameState } from '../../types'
+import { getEffectiveExpeditionRules } from './effectiveRules'
 
 /**
  * Condition bands the design specifies for decision-level readouts.
@@ -61,7 +62,8 @@ const getExpeditionConditionBand = (
  * than being hidden, because the design fixes the permanent HUD at exactly
  * these six resources.
  */
-const getExpeditionHeat = (_state: GameState): number => 0
+const getExpeditionHeat = (state: GameState): number =>
+  finiteNumberOr(state.expedition?.pressure?.heat, 0)
 
 /**
  * The single write point for Heat.
@@ -80,8 +82,30 @@ const getExpeditionHeat = (_state: GameState): number => 0
  */
 export const applyExpeditionEventHeat = (
   state: GameState,
-  _heatDelta: number
-): GameState => state
+  heatDelta: number
+): GameState => {
+  if (!isFiniteNumber(heatDelta) || heatDelta === 0) return state
+  const current = getExpeditionHeat(state)
+  const multiplier =
+    heatDelta > 0
+      ? Math.max(
+          0,
+          finiteNumberOr(
+            getEffectiveExpeditionRules(state).numeric.heatGainMultiplier,
+            1
+          )
+        )
+      : 1
+  const heat = Math.max(0, Math.min(100, current + heatDelta * multiplier))
+  if (heat === current) return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, heat }
+    }
+  }
+}
 
 /**
  * Immediate physical performance capacity across the band.

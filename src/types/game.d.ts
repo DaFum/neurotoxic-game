@@ -447,6 +447,30 @@ export type GameAction =
       ActionTypes['CREATE_CONTACT_INTEL_GRANT'],
       import('./actions').CreateContactIntelGrantPayload
     >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_OBLIGATION_SIGNAL'],
+      import('./actions').RecordExpeditionObligationSignalPayload
+    >
+  | Action<
+      ActionTypes['DOUBLE_DOWN_EXPEDITION_OBLIGATION'],
+      import('./actions').DoubleDownExpeditionObligationPayload
+    >
+  | Action<
+      ActionTypes['OFFER_EXPEDITION_DRAFT'],
+      import('./actions').OfferExpeditionDraftPayload
+    >
+  | Action<
+      ActionTypes['SELECT_EXPEDITION_DRAFT'],
+      import('./actions').SelectExpeditionDraftPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_SOCIAL_RESULT'],
+      import('./actions').ResolveExpeditionSocialResultPayload
+    >
+  | Action<
+      ActionTypes['CREATE_SOCIAL_INTEL_GRANT'],
+      import('./actions').CreateSocialIntelGrantPayload
+    >
 
 export * from './player'
 export * from './band'

@@ -36,6 +36,8 @@ type HandleMissParams = {
     endGig: () => void
   }
   baseCrowdDecay: number
+  missPenaltyMultiplier: number
+  staminaDrainMultiplier: number
   gameOverTimerRef: { current: ReturnType<typeof setTimeout> | null }
 }
 
@@ -44,6 +46,8 @@ export const useHandleMiss = ({
   setters,
   contextActions,
   baseCrowdDecay,
+  missPenaltyMultiplier,
+  staminaDrainMultiplier,
   gameOverTimerRef
 }: HandleMissParams) => {
   const audioEngine = useAudioEngine()
@@ -76,7 +80,7 @@ export const useHandleMiss = ({
       const currentOverload = finiteNumberOr(gameStateRef.current.overload, 0)
 
       const crowdDecay = calculateActiveCrowdDecay(
-        baseCrowdDecay,
+        baseCrowdDecay * missPenaltyMultiplier * staminaDrainMultiplier,
         gameStateRef.current.modifiers?.crowdDecay,
         gameStateRef.current.rivalPenaltyActive,
         RIVAL_GIG_CROWD_DECAY_PENALTY,
@@ -176,6 +180,8 @@ export const useHandleMiss = ({
       setOverload,
       setAccuracy,
       baseCrowdDecay,
+      missPenaltyMultiplier,
+      staminaDrainMultiplier,
       t,
       gameOverTimerRef
     ]

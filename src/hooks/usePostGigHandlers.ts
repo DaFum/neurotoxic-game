@@ -161,6 +161,7 @@ export function usePostGigHandlers({
   })
   const { handleAcceptDeal, handleRejectDeals } = useDealHandlers({
     player,
+    band,
     social,
     isProcessingActionRef,
     setIsProcessingAction,

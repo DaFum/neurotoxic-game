@@ -37,6 +37,7 @@ interface UsePostGigDerivationsProps {
   cityStates: Record<string, CityTraitState> | undefined
   triggerEvent: (type: string, id: string) => boolean
   isScreenshotMode: boolean
+  gigRewardMultiplier?: number
 }
 
 /**
@@ -59,7 +60,8 @@ export const usePostGigDerivations = ({
   activeQuests,
   cityStates,
   triggerEvent,
-  isScreenshotMode
+  isScreenshotMode,
+  gigRewardMultiplier
 }: UsePostGigDerivationsProps) => {
   const perfScore = useMemo(
     () => calculatePerformanceScore(lastGigStats?.score ?? 0),
@@ -138,7 +140,8 @@ export const usePostGigDerivations = ({
         day: player.day,
         regionId: getRegionKeyForLocation(player.location) ?? 'Unknown',
         regionalGigHistory: social.regionalGigHistory
-      }
+      },
+      gigRewardMultiplier
     })
     return nextFinancials
   }, [
@@ -155,7 +158,8 @@ export const usePostGigDerivations = ({
     activeStoryFlags,
     cityStates,
     gigContext,
-    assetModifiers
+    assetModifiers,
+    gigRewardMultiplier
   ])
 
   useEffect(() => {

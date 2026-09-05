@@ -85,6 +85,15 @@ export const getEffectiveExpeditionRules = (
     state.expedition?.loadout?.build?.selectedTourbusModuleIds ?? []
   const moduleProfile = aggregateExpeditionModuleProfiles(moduleIds)
   const crewProfile = getCrewRuleContribution(state)
+  const drafts = new Set(state.expedition.runDraftTraitIds)
+  const rivalRecord = state.rivalBand
+    ? state.career.rivalsById[state.rivalBand.id]
+    : undefined
+  const hostileRivalMultiplier =
+    rivalRecord?.history.relationship === 'respect' ||
+    rivalRecord?.history.relationship === 'alliance'
+      ? 0.65
+      : 1
 
   // Bounded authority weighting reduction if jammer active
   const jammerReduction = moduleProfile.authorityIntelBonus > 0 ? 0.9 : 1.0
@@ -95,10 +104,12 @@ export const getEffectiveExpeditionRules = (
       chassisProfile.fuelConsumptionMultiplier *
       moduleProfile.fuelConsumptionMultiplier *
       (crewProfile.fuelConsumptionMultiplier ?? 1),
-    roadWearMultiplier:
-      chassisProfile.roadWearMultiplier *
-      moduleProfile.roadWearMultiplier *
-      (crewProfile.roadWearMultiplier ?? 1),
+    finaleRewardMultiplier: drafts.has('reckless_encore') ? 1.2 : 1,
+    extractionRetentionMultiplier: drafts.has('reckless_encore') ? 0.85 : 1,
+    rivalEventWeightMultiplier:
+      (rivalRecord?.history.nemesisLevel ?? 0) >= 1
+        ? 1.35 * hostileRivalMultiplier
+        : hostileRivalMultiplier,
     technicalWearMultiplier: crewProfile.technicalWearMultiplier ?? 1,
     fieldRepairEfficiency:
       chassisProfile.fieldRepairEfficiency +
@@ -106,14 +117,24 @@ export const getEffectiveExpeditionRules = (
     contractRewardMultiplier: crewProfile.contractRewardMultiplier ?? 1,
     exposureGainMultiplier: crewProfile.exposureGainMultiplier ?? 1,
     heatGainMultiplier: crewProfile.heatGainMultiplier ?? 1,
-    crewStressMultiplier:
-      chassisProfile.crewStressMultiplier *
-      (crewProfile.crewStressMultiplier ?? 1),
     authorityEventWeightMultiplier:
       chassisProfile.authorityEventWeightMultiplier *
       jammerReduction *
-      (crewProfile.authorityEventWeightMultiplier ?? 1),
-    nodeIntelFloor: moduleProfile.authorityIntelBonus as 0 | 1 | 2,
+      (crewProfile.authorityEventWeightMultiplier ?? 1) *
+      (drafts.has('cold_trail') ? 0.5 : 1),
+    roadWearMultiplier:
+      chassisProfile.roadWearMultiplier *
+      moduleProfile.roadWearMultiplier *
+      (crewProfile.roadWearMultiplier ?? 1) *
+      (drafts.has('road_warrior') ? 0.7 : 1),
+    crewStressMultiplier:
+      chassisProfile.crewStressMultiplier *
+      (crewProfile.crewStressMultiplier ?? 1) *
+      (drafts.has('crew_mediator') ? 0.7 : 1),
+    nodeIntelFloor: Math.max(
+      moduleProfile.authorityIntelBonus,
+      drafts.has('backchannel') ? 1 : 0
+    ) as 0 | 1 | 2,
     explicitExtractionRareCarrySlots: Math.max(
       1,
       Math.min(
@@ -124,7 +145,9 @@ export const getEffectiveExpeditionRules = (
   }
 
   const flags: ExpeditionRuleFlags = {
-    ...BASE_EXPEDITION_RULE_FLAGS
+    ...BASE_EXPEDITION_RULE_FLAGS,
+    fieldRepairNoHiddenDefect: drafts.has('field_engineer'),
+    fieldRepairMinimumCondition: drafts.has('field_engineer') ? 55 : 0
   }
 
   const legendary: Record<string, boolean> = {}

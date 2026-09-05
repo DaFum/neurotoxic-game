@@ -6,6 +6,7 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
+import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
 
 /**
  * Composes post-gig state, derived results, and action handlers for the post-gig scene.
@@ -41,6 +42,12 @@ export const usePostGigLogic = () => {
   )
   const setlist = useGameSelector(state => state.setlist)
   const expedition = useGameSelector(state => state.expedition)
+  const finaleRewardMultiplier = useGameSelector(state =>
+    state.expedition.status === 'active'
+      ? (getExpeditionFinaleProfile(state.expedition.finaleType)
+          ?.rewardMultiplier ?? 1)
+      : 1
+  )
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
   const totalDailyObligations = useGameSelector(getTotalDailyObligations)
@@ -88,7 +95,8 @@ export const usePostGigLogic = () => {
       activeQuests,
       cityStates,
       triggerEvent,
-      isScreenshotMode
+      isScreenshotMode,
+      gigRewardMultiplier: finaleRewardMultiplier
     })
 
   // 3. Handlers

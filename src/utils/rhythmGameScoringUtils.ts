@@ -127,9 +127,14 @@ export const calculateFinalScore = (
   toxicModeActive: boolean,
   hasPerfektionist: boolean,
   currentAccuracy: number,
-  isCorruptionBurstActive: boolean = false
+  isCorruptionBurstActive: boolean = false,
+  comboBonusMultiplier: number = 1
 ): number => {
-  let finalScore = basePoints + currentCombo * CONSTANTS.COMBO_POINT_BONUS
+  let finalScore =
+    basePoints +
+    currentCombo *
+      CONSTANTS.COMBO_POINT_BONUS *
+      Math.max(0, finiteNumberOr(comboBonusMultiplier, 1))
 
   if (isCorruptionBurstActive) {
     finalScore *= CONSTANTS.CORRUPTION_BURST_SCORE_MULTIPLIER
