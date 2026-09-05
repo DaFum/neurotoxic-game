@@ -1625,7 +1625,7 @@ export const handleRecordExpeditionObligationSignal = (
     }
   })()
   if (canonicalSourceId !== payload.sourceId) return state
-  const signalId = `${payload.signalType}:${payload.sourceId}:${payload.expectedRouteStep}`
+  const signalId = `${payload.signalType}:${canonicalSourceId}`
   if (state.expedition.resolvedObligationSignalIds.includes(signalId))
     return state
   let changed = false
@@ -1669,13 +1669,15 @@ export const handleRecordExpeditionObligationSignal = (
           constraint.kind === 'gig_accuracy_count'
             ? prior.value + result.value
             : result.value
+        const satisfied =
+          prior.satisfied ||
+          (constraint.kind === 'gig_accuracy_count'
+            ? value >= constraint.requiredCount
+            : result.satisfied)
         progressByConstraintId[constraint.id] = {
           constraintId: constraint.id,
           value,
-          satisfied:
-            constraint.kind === 'gig_accuracy_count'
-              ? value >= constraint.requiredCount
-              : result.satisfied,
+          satisfied,
           failed: prior.failed || result.failed
         }
         changed = true
@@ -1845,14 +1847,26 @@ export const handleOfferExpeditionDraft = (
     return state
   if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
     return state
+  if (
+    state.expedition.consumedRunDraftSourceKeys?.includes(payload.sourceKey)
+  )
+    return state
   const sourceProven = (() => {
     switch (payload.sourceType) {
-      case 'major_gig':
+      case 'major_gig': {
+        const node = state.gameMap?.nodes?.[payload.sourceKey]
+        const isMajorClass =
+          node &&
+          (node.nodeClass === 'MAJOR_GIG' ||
+            node.type === 'MAJOR_GIG' ||
+            node.type === 'FESTIVAL')
         return (
           state.lastGigStats !== null &&
           state.lastGigStats.failed !== true &&
-          state.currentGig?.id === payload.sourceKey
+          state.currentGig?.id === payload.sourceKey &&
+          Boolean(isMajorClass)
         )
+      }
       case 'rare_event':
         return state.expedition.rewardLedger.some(
           reward => reward.sourceId === payload.sourceKey
@@ -1904,11 +1918,15 @@ export const handleSelectExpeditionDraft = (
     !offer.candidateTraitIds.includes(payload.traitId)
   )
     return state
+  const consumed = state.expedition.consumedRunDraftSourceKeys ?? []
   return {
     ...state,
     expedition: {
       ...state.expedition,
       runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
+      consumedRunDraftSourceKeys: consumed.includes(offer.sourceKey)
+        ? consumed
+        : [...consumed, offer.sourceKey],
       pendingRunDraftOffer: null
     }
   }
@@ -1926,6 +1944,8 @@ export const handleResolveExpeditionSocialResult = (
     typeof payload.postOptionId !== 'string' ||
     payload.postOptionId.length === 0
   )
+    return state
+  if (!state.lastGigStats && state.expedition.visitedNodeIds.length <= 1)
     return state
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state
@@ -1999,7 +2019,11 @@ export const handleResolveExpeditionSocialResult = (
         reason: 'expedition_social'
       })
     )
-  return nextState
+  return handleRecordExpeditionObligationSignal(nextState, {
+    signalType: 'social_post',
+    sourceId: proofId,
+    expectedRouteStep: state.expedition.routeStep
+  })
 }
 
 export const handleCreateSocialIntelGrant = (

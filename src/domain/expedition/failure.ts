@@ -29,6 +29,7 @@ import {
 } from './condition'
 import { isExpeditionServiceLocation } from './repairs'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { getAuthorityCrisisSignal } from './authority'
 import type { GameState } from '../../types'
 import type {
   ConditionGroup,
@@ -360,6 +361,14 @@ export const composeExpeditionFailureSignal = (
   if (technical) signals.push(technical)
   const crew = getCrewFailureSignal(state)
   if (crew) signals.push(crew)
+  const authoritySignal = getAuthorityCrisisSignal(state)
+  if (authoritySignal) {
+    signals.push({
+      reason: 'authority_crisis',
+      sourceId: authoritySignal.sourceId,
+      choices: ['accept_failure']
+    })
+  }
   const mobility = getExpeditionMobilityFailureSignal(state)
   if (mobility) signals.push(mobility)
   for (const signal of laterGateSignals) {

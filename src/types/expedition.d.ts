@@ -604,6 +604,7 @@ export interface ExpeditionState {
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
+  consumedRunDraftSourceKeys?: string[]
   finaleType: ExpeditionFinaleType | null
   lastSocialResult: ExpeditionSocialResultProof | null
 }

@@ -47,7 +47,8 @@ export function useSocialPostHandler({
     addToast,
     setPostResult,
     setBrandOffers,
-    setPhase
+      setPhase,
+      resolveExpeditionSocialResult
   }
 }: UseSocialPostHandlerProps) {
   const handlePostSelection = useCallback(
@@ -98,6 +99,9 @@ export function useSocialPostHandler({
             setPhase
           }
         })
+        if (resolveExpeditionSocialResult && option.id) {
+          resolveExpeditionSocialResult('push', option.id)
+        }
         // Guard intentionally NOT reset here: the phase transition owns the
         // lifecycle. Resetting before it runs would re-open the settlement
         // window for rapid double-clicks.

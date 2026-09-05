@@ -76,7 +76,8 @@ export function useContinueHandler({
     addQuest,
     applyQuestEvent,
     recordExpeditionCrewStressSource,
-    completeExpedition
+    completeExpedition,
+    recordExpeditionObligationSignal
   }
 }: UseContinueHandlerProps) {
   const handleContinue = useCallback(() => {
@@ -152,16 +153,23 @@ export function useContinueHandler({
       )
 
       const accuracy = lastGigStats?.accuracy
-      if (
-        expedition?.status === 'active' &&
-        typeof accuracy === 'number' &&
-        Number.isFinite(accuracy) &&
-        (accuracy < 60 || accuracy >= 80)
-      ) {
-        const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
-        const sourceId = `gig:${currentGig?.id ?? 'unknown'}:${expedition.routeStep}`
-        for (const crewId of expedition.loadout?.crewIds ?? []) {
-          recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+      if (expedition?.status === 'active' && currentGig?.id) {
+        if (recordExpeditionObligationSignal) {
+          recordExpeditionObligationSignal('gig', currentGig.id)
+          if (isFinaleGig) {
+            recordExpeditionObligationSignal('finale', currentGig.id)
+          }
+        }
+        if (
+          typeof accuracy === 'number' &&
+          Number.isFinite(accuracy) &&
+          (accuracy < 60 || accuracy >= 80)
+        ) {
+          const sourceType = accuracy < 60 ? 'poor_gig' : 'successful_gig'
+          const sourceId = `gig:${currentGig.id}:${expedition.routeStep}`
+          for (const crewId of expedition.loadout?.crewIds ?? []) {
+            recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+          }
         }
       }
 

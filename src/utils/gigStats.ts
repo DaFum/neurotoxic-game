@@ -37,8 +37,8 @@ export const updateGigPerformanceStats = (
   payload: { combo: number; overload: number }
 ): RhythmLiveStats => ({
   ...stats,
-  maxCombo: Math.max(stats.maxCombo, payload.combo),
-  peakHype: Math.max(stats.peakHype, payload.overload)
+  maxCombo: Math.max(finiteNumberOr(stats?.maxCombo, 0), payload.combo),
+  peakHype: Math.max(finiteNumberOr(stats?.peakHype, 0), payload.overload)
 })
 
 /**
