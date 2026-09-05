@@ -352,3 +352,90 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
     granted
   )
 })
+
+test('handleResolveExpeditionSocialResult rejects caller-authored mismatch resultId', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const startedWithGig = {
+    ...started,
+    lastGigStats: { score: 1000, accuracy: 80, failed: false }
+  }
+
+  // Option perf_moshpit_chaos maps to 'push'. If caller passes 'monetize', it must be rejected!
+  const forgedResult = handleResolveExpeditionSocialResult(startedWithGig, {
+    resultId: 'monetize',
+    postOptionId: 'perf_moshpit_chaos',
+    expectedRouteStep: 0
+  })
+  assert.strictEqual(forgedResult, startedWithGig)
+})
+
+test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: {
+        ...fixtureLoadout(),
+        nativeContracts: [
+          { templateId: 'contract_three_good_gigs', targetNodeId: null }
+        ]
+      }
+    }
+  })
+
+  // Start node venueId
+  const startNodeId = started.gameMap.startNodeId
+  const startVenueId = started.gameMap.nodes[startNodeId].venueId || startNodeId
+
+  // Create a state where signal ID records accuracy 50 (below contract's minAccuracy 65),
+  // but save file contains tampered progress value = 1.
+  const stateWithSubparSignal = {
+    ...started.expedition,
+    visitedNodeIds: [startNodeId],
+    routeStep: 0,
+    resolvedObligationSignalIds: [`gig:${startVenueId}:0:50`],
+    activeObligations: [
+      {
+        id: `${started.expedition.runId}:contract_three_good_gigs`,
+        sourceType: 'native',
+        sourceId: 'contract_three_good_gigs',
+        constraints: [
+          {
+            id: 'three_good_gigs',
+            kind: 'gig_accuracy_count',
+            minAccuracy: 65,
+            requiredCount: 3
+          }
+        ],
+        progressByConstraintId: {
+          three_good_gigs: {
+            constraintId: 'three_good_gigs',
+            value: 1, // Tampered progress in save file!
+            satisfied: false,
+            failed: false
+          }
+        },
+        status: 'active',
+        settled: false,
+        doubleDown: null
+      }
+    ]
+  }
+
+  const sanitized = sanitizeExpeditionState(stateWithSubparSignal, started.runSeed)
+  // Accuracy was 50 < minAccuracy 65, so progress value must be reset to 0
+  assert.equal(
+    sanitized.activeObligations[0].progressByConstraintId.three_good_gigs.value,
+    0
+  )
+})

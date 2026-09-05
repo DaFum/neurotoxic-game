@@ -28,6 +28,8 @@ import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEvent
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { POST_OPTIONS } from '../../data/postOptions'
+import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -903,6 +905,10 @@ const sanitizeSocialResultProof = (
     typeof value.intelConsumed !== 'boolean'
   )
     return null
+  const postOption = POST_OPTIONS.find(opt => opt.id === value.postOptionId)
+  if (!postOption) return null
+  const expectedResultId = deriveExpeditionSocialResultId(postOption)
+  if (value.resultId !== expectedResultId) return null
   const expectedId = `${value.postOptionId}:${value.resultId}:${routeStep}`
   if (value.id !== expectedId) return null
   return {
@@ -928,27 +934,37 @@ const sanitizeActiveObligations = (
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
-  const validGigSignalCount = resolvedObligationSignalIds.filter(signalId => {
-    if (!signalId.startsWith('gig:')) return false
-    const parts = signalId.split(':')
-    if (parts.length !== 3) return false
-    const [, sourceId, stepStr] = parts
-    if (!sourceId) return false
-    const step = Number(stepStr)
-    if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
-      return false
-    const expNodeId = validVisitedPath[step]
-    if (!expNodeId || !preparedMap) return false
-    const node = preparedMap.nodes[expNodeId]
-    const metaNode = preparedMap.meta[expNodeId]
-    const isGigClass =
-      metaNode &&
-      (metaNode.nodeClass === 'CLUB_GIG' ||
-        metaNode.nodeClass === 'FESTIVAL' ||
-        metaNode.nodeClass === 'FINALE')
-    if (!isGigClass) return false
-    return sourceId === node?.venueId || sourceId === expNodeId
-  }).length
+
+  const countQualifyingGigSignals = (minAccuracy: number): number => {
+    return resolvedObligationSignalIds.filter(signalId => {
+      if (!signalId.startsWith('gig:')) return false
+      const parts = signalId.split(':')
+      if (parts.length < 3 || parts.length > 4) return false
+      const [, sourceId, stepStr, accuracyStr] = parts
+      if (!sourceId) return false
+      const step = Number(stepStr)
+      if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
+        return false
+      const expNodeId = validVisitedPath[step]
+      if (!expNodeId || !preparedMap) return false
+      const node = preparedMap.nodes[expNodeId]
+      const metaNode = preparedMap.meta[expNodeId]
+      const isGigClass =
+        metaNode &&
+        (metaNode.nodeClass === 'CLUB_GIG' ||
+          metaNode.nodeClass === 'FESTIVAL' ||
+          metaNode.nodeClass === 'FINALE')
+      if (!isGigClass) return false
+      if (sourceId !== node?.venueId && sourceId !== expNodeId) return false
+      if (parts.length === 4) {
+        const accuracy = Number(accuracyStr)
+        if (!isFiniteNumber(accuracy) || accuracy < minAccuracy) return false
+      } else if (minAccuracy > 0) {
+        return false
+      }
+      return true
+    }).length
+  }
 
   const validSocialSignalCount = resolvedObligationSignalIds.filter(
     signalId => {
@@ -1021,7 +1037,10 @@ const sanitizeActiveObligations = (
       let canonicalValue = progress.value
       let canonicalSatisfied = progress.satisfied
       if (constraint.kind === 'gig_accuracy_count') {
-        canonicalValue = Math.min(progress.value, validGigSignalCount)
+        const qualifyingCount = countQualifyingGigSignals(
+          constraint.minAccuracy
+        )
+        canonicalValue = Math.min(progress.value, qualifyingCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
       } else if (constraint.kind === 'visit_node') {
         const visited = validVisitedPath.includes(constraint.targetNodeId)

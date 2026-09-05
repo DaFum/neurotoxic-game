@@ -59,3 +59,20 @@ export const EXPEDITION_SOCIAL_RESULTS: Readonly<
     rivalPressure: 25
   }
 }
+
+export const deriveExpeditionSocialResultId = (option: {
+  id: string
+  category?: string
+  expeditionSocialResultId?: ExpeditionSocialResultId
+}): ExpeditionSocialResultId => {
+  if (option.expeditionSocialResultId) return option.expeditionSocialResultId
+  const category = (option.category ?? '').toLowerCase()
+  if (category === 'commercial') return 'monetize'
+  if (category === 'drama') {
+    if (option.id.includes('weaponize') || option.id.includes('rival')) {
+      return 'weaponize'
+    }
+    return 'suppress'
+  }
+  return 'push'
+}
