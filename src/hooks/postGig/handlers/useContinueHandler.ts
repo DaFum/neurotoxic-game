@@ -26,6 +26,7 @@ import {
   dispatchEconomyQuests,
   handleContinueSceneTransition
 } from './continueHandlerUtils'
+import { getExpeditionFinaleProfile } from '../../../domain/expedition/finales'
 import type { HandlerDispatchers } from './types'
 
 /** Props for {@link useContinueHandler}: post-gig financials/stats, state slices, the processing guard, translator, and dispatchers. */
@@ -169,6 +170,31 @@ export function useContinueHandler({
           const sourceId = `gig:${currentGig.id}:${expedition.routeStep}`
           for (const crewId of expedition.loadout?.crewIds ?? []) {
             recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
+          }
+        }
+
+        // Apply Finale stamina multiplier to member stamina
+        if (isFinaleGig && Array.isArray(band.members)) {
+          const finaleProfile = getExpeditionFinaleProfile(expedition.finaleType)
+          const staminaMultiplier = finaleProfile?.staminaDrainMultiplier ?? 1
+          if (staminaMultiplier > 1) {
+            const baseDrain = 15
+            const extraDrain = Math.round(baseDrain * (staminaMultiplier - 1))
+            if (extraDrain > 0) {
+              updateBand((prevBand: BandState) => {
+                if (!Array.isArray(prevBand.members)) return prevBand
+                const members = prevBand.members.map(member => {
+                  if (!member) return member
+                  const currentStamina = finiteNumberOr(member.stamina, 100)
+                  const maxStamina = finiteNumberOr(member.staminaMax, 100)
+                  return {
+                    ...member,
+                    stamina: Math.max(0, Math.min(maxStamina, currentStamina - extraDrain))
+                  }
+                })
+                return { ...prevBand, members }
+              })
+            }
           }
         }
       }
