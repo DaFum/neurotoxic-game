@@ -153,6 +153,7 @@ export function useContinueHandler({
 
       const accuracy = lastGigStats?.accuracy
       if (
+        expedition?.status === 'active' &&
         typeof accuracy === 'number' &&
         Number.isFinite(accuracy) &&
         (accuracy < 60 || accuracy >= 80)

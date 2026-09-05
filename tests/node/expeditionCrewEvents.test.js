@@ -7,6 +7,7 @@ import { createInitialState } from '../../src/context/initialState.ts'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
+import { addExpeditionReward } from '../../src/context/expeditionActionCreators.ts'
 
 test('crew events validate and resolve canonical G3 actions through the real pipeline', () => {
   for (const event of EXPEDITION_CREW_EVENTS)
@@ -100,4 +101,51 @@ test('malformed persisted Crew source evidence is dropped without throwing', () 
   ]
   assert.doesNotThrow(() => sanitizeExpeditionState(raw, base.runSeed))
   assert.deepEqual(sanitizeExpeditionState(raw, base.runSeed).rewardLedger, [])
+})
+
+test('prefixed forged Contact evidence cannot preserve a secured reward', () => {
+  const base = startedState()
+  const raw = structuredClone(base.expedition)
+  const sourceId = 'expedition_crew_breakthrough:follow_lead'
+  raw.resolvedCrewSourceIds = [`${sourceId}:forged`]
+  raw.rewardLedger = [
+    {
+      id: `reward_contact_backline_deal::${sourceId}`,
+      rewardDefinitionId: 'reward_contact_backline_deal',
+      sourceType: 'crew_contact',
+      sourceId,
+      secured: true,
+      earnedAtRouteStep: raw.routeStep,
+      materialized: false
+    }
+  ]
+  assert.deepEqual(sanitizeExpeditionState(raw, base.runSeed).rewardLedger, [])
+})
+
+test('genuine Contact-earned reward evidence survives sanitization', () => {
+  const event = EXPEDITION_CREW_EVENTS.find(
+    candidate => candidate.id === 'expedition_crew_breakthrough'
+  )
+  assert.ok(event)
+  const started = startedState({}, { crewIds: ['noah', 'yara'] })
+  const state = { ...started, activeEvent: event }
+  const resolved = resolveEvent(event.options[0], state).actions.reduce(
+    gameReducer,
+    state
+  )
+  const sourceId = `${event.id}:${event.options[0].id}`
+  const rewarded = gameReducer(
+    resolved,
+    addExpeditionReward(resolved, {
+      expectedRewardId: 'reward_contact_backline_deal',
+      sourceType: 'crew_contact',
+      sourceId
+    })
+  )
+  assert.equal(rewarded.expedition.rewardLedger.length, 1)
+  assert.equal(
+    sanitizeExpeditionState(rewarded.expedition, rewarded.runSeed).rewardLedger
+      .length,
+    1
+  )
 })

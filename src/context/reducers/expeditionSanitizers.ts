@@ -24,6 +24,7 @@ import {
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
@@ -606,6 +607,45 @@ export const sanitizeExpeditionState = (
     validVisitedPath.push(...rawVisitedNodeIds)
   }
 
+  const hasCanonicalContactEvidence = (sourceId: string): boolean => {
+    const outcome = getCrewEventOutcomeBySourceId(sourceId)
+    const rawIntelGrants = value.intelGrants
+    const resolvedSourceIds = value.resolvedCrewSourceIds
+    if (
+      !outcome?.contactIntel ||
+      !preparedMap ||
+      !Array.isArray(rawIntelGrants) ||
+      !Array.isArray(resolvedSourceIds)
+    ) {
+      return false
+    }
+    const currentNodeId = validVisitedPath.at(-1)
+    return rawIntelGrants.some(rawGrant => {
+      const grant = sanitizeIntelGrant(rawGrant)
+      if (
+        !grant ||
+        grant.source !== 'contact' ||
+        grant.sourceProofId !== sourceId ||
+        grant.id !== `${sourceId}:contact:${grant.nodeId}` ||
+        !resolvedSourceIds.includes(grant.id)
+      ) {
+        return false
+      }
+      const node = preparedMap.meta[grant.nodeId]
+      const nodeRouteStep = node?.routeStep
+      return (
+        validVisitedPath.includes(grant.nodeId) ||
+        (isFiniteNumber(nodeRouteStep) &&
+          nodeRouteStep > routeStep &&
+          preparedMap.connections.some(
+            connection =>
+              connection.from === currentNodeId &&
+              connection.to === grant.nodeId
+          ))
+      )
+    })
+  }
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
@@ -627,12 +667,7 @@ export const sanitizeExpeditionState = (
       if (
         entry.sourceType === 'crew_contact' &&
         (entry.rewardDefinitionId !== 'reward_contact_backline_deal' ||
-          !Array.isArray(value.resolvedCrewSourceIds) ||
-          !value.resolvedCrewSourceIds.some(
-            source =>
-              typeof source === 'string' &&
-              source.startsWith(`${entry.sourceId}:`)
-          ))
+          !hasCanonicalContactEvidence(entry.sourceId))
       ) {
         continue
       }
