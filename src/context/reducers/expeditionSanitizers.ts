@@ -936,17 +936,23 @@ const sanitizeActiveObligations = (
   const seen = new Set<string>()
 
   const countQualifyingGigSignals = (minAccuracy: number): number => {
-    return resolvedObligationSignalIds.filter(signalId => {
-      if (!signalId.startsWith('gig:')) return false
+    const seenOccurrences = new Set<string>()
+    let qualifyingCount = 0
+    for (const signalId of resolvedObligationSignalIds) {
+      if (!signalId.startsWith('gig:')) continue
       const parts = signalId.split(':')
-      if (parts.length < 3 || parts.length > 4) return false
+      if (parts.length < 3 || parts.length > 4) continue
       const [, sourceId, stepStr, accuracyStr] = parts
-      if (!sourceId) return false
+      if (!sourceId) continue
       const step = Number(stepStr)
       if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
-        return false
+        continue
+      const occurrenceKey = `${sourceId}:${step}`
+      if (seenOccurrences.has(occurrenceKey)) continue
+      seenOccurrences.add(occurrenceKey)
+
       const expNodeId = validVisitedPath[step]
-      if (!expNodeId || !preparedMap) return false
+      if (!expNodeId || !preparedMap) continue
       const node = preparedMap.nodes[expNodeId]
       const metaNode = preparedMap.meta[expNodeId]
       const isGigClass =
@@ -954,16 +960,17 @@ const sanitizeActiveObligations = (
         (metaNode.nodeClass === 'CLUB_GIG' ||
           metaNode.nodeClass === 'FESTIVAL' ||
           metaNode.nodeClass === 'FINALE')
-      if (!isGigClass) return false
-      if (sourceId !== node?.venueId && sourceId !== expNodeId) return false
+      if (!isGigClass) continue
+      if (sourceId !== node?.venueId && sourceId !== expNodeId) continue
       if (parts.length === 4) {
         const accuracy = Number(accuracyStr)
-        if (!isFiniteNumber(accuracy) || accuracy < minAccuracy) return false
+        if (!isFiniteNumber(accuracy) || accuracy < minAccuracy) continue
       } else if (minAccuracy > 0) {
-        return false
+        continue
       }
-      return true
-    }).length
+      qualifyingCount += 1
+    }
+    return qualifyingCount
   }
 
   const validSocialSignalCount = resolvedObligationSignalIds.filter(

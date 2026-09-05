@@ -1984,11 +1984,6 @@ export const handleResolveExpeditionSocialResult = (
     return state
   const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
   if (!postOption) return state
-  if (
-    typeof postOption.condition === 'function' &&
-    !postOption.condition(state)
-  )
-    return state
   const expectedResultId = deriveExpeditionSocialResultId(postOption)
   if (payload.resultId !== expectedResultId) return state
   if (!state.lastGigStats || state.lastGigStats.failed === true)
