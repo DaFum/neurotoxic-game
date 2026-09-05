@@ -313,7 +313,7 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   // Without gig evidence, social result is rejected
   const unproven = handleResolveExpeditionSocialResult(started, {
     resultId: 'push',
-    postOptionId: 'expedition-social-1',
+    postOptionId: 'perf_moshpit_chaos',
     expectedRouteStep: 0
   })
   assert.strictEqual(unproven, started)
@@ -325,18 +325,18 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   }
   const resolved = handleResolveExpeditionSocialResult(startedWithGig, {
     resultId: 'push',
-    postOptionId: 'expedition-social-1',
+    postOptionId: 'perf_moshpit_chaos',
     expectedRouteStep: 0
   })
   const forged = handleCreateSocialIntelGrant(startedWithGig, {
-    postOptionId: 'expedition-social-1',
+    postOptionId: 'perf_moshpit_chaos',
     resultId: 'push',
     nodeId: targetNodeId,
     expectedRouteStep: 0
   })
   assert.strictEqual(forged, startedWithGig)
   const granted = handleCreateSocialIntelGrant(resolved, {
-    postOptionId: 'expedition-social-1',
+    postOptionId: 'perf_moshpit_chaos',
     resultId: 'push',
     nodeId: targetNodeId,
     expectedRouteStep: 0
@@ -344,7 +344,7 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   assert.equal(granted.expedition.intelGrants.length, 1)
   assert.strictEqual(
     handleCreateSocialIntelGrant(granted, {
-      postOptionId: 'expedition-social-1',
+      postOptionId: 'perf_moshpit_chaos',
       resultId: 'push',
       nodeId: targetNodeId,
       expectedRouteStep: 0

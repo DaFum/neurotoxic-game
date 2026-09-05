@@ -128,6 +128,7 @@ import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDraf
 import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
 import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
 import { applyExpeditionPressureDelta } from '../../domain/expedition/pressure'
+import { POST_OPTIONS } from '../../data/postOptions'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -1880,12 +1881,18 @@ export const handleOfferExpeditionDraft = (
         )
       }
       case 'rival': {
-        const currentNode = state.player.currentNodeId
-          ? state.gameMap?.nodes?.[state.player.currentNodeId]
-          : undefined
+        const loadout = state.expedition.loadout
+        if (!loadout || !state.player.currentNodeId) return false
+        const map = buildExpeditionMap(
+          state.runSeed,
+          loadout.tourTypeId,
+          loadout.regionId,
+          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        )
+        const metaNode = map.meta[state.player.currentNodeId]
         return (
           state.rivalBand?.id === payload.sourceKey &&
-          currentNode?.type === 'SPECIAL'
+          metaNode?.specialSubtype === 'RIVAL_ENCOUNTER'
         )
       }
       case 'supply':
@@ -1895,9 +1902,10 @@ export const handleOfferExpeditionDraft = (
         )
       case 'crew':
         return (
-          state.expedition.resolvedCrewSourceIds?.some(
-            id => id.startsWith(`${payload.sourceKey}:`) || id === payload.sourceKey
-          ) === true
+          state.expedition.resolvedCrewSourceIds?.includes(
+            `${payload.sourceKey}:resolved:${state.expedition.routeStep}`
+          ) === true ||
+          state.expedition.resolvedCrewSourceIds?.includes(payload.sourceKey) === true
         )
     }
   })()
@@ -1959,7 +1967,8 @@ export const handleResolveExpeditionSocialResult = (
     state.expedition.lastSocialResult?.resolvedAtRouteStep ===
       state.expedition.routeStep ||
     typeof payload.postOptionId !== 'string' ||
-    payload.postOptionId.length === 0
+    payload.postOptionId.length === 0 ||
+    !POST_OPTIONS.some(opt => opt.id === payload.postOptionId)
   )
     return state
   if (!state.lastGigStats)

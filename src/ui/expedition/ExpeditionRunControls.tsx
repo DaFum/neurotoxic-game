@@ -13,6 +13,8 @@ import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
 import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
+import { BRAND_DEALS } from '../../data/brandDeals'
+import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 
 /**
  * Reports whether the run is standing on a legal extraction window.
@@ -134,9 +136,17 @@ const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
             className='flex items-center gap-2 border border-steel-gray px-2 py-1 bg-void-black text-star-white'
           >
             <span>
-              {t(`ui:expedition.contract.${item.sourceId}`, {
-                defaultValue: item.sourceId
-              })}
+              {(() => {
+                if (item.sourceType === 'brandDeal') {
+                  const deal = BRAND_DEALS.find(d => d.id === item.sourceId)
+                  return deal
+                    ? getTranslatedBrandDealDisplay(deal, t)?.name ?? item.sourceId
+                    : item.sourceId
+                }
+                return t(`ui:expedition.contract.${item.sourceId}`, {
+                  defaultValue: item.sourceId
+                })
+              })()}
               : {t(`ui:expedition.obligations.status.${item.status}`, {
                 defaultValue: item.status
               })}
