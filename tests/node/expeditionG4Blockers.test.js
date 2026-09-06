@@ -30,6 +30,7 @@ import {
 } from '../../src/domain/expedition/pressure.ts'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
+import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules.ts'
 import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer.ts'
@@ -1271,4 +1272,48 @@ test('the four Expedition quest producers fire from their canonical owners', () 
     completed,
     'a replayed completion must be a no-op'
   )
+})
+
+test('a Nemesis at level 3 takes one staged Sponsor offer off the table', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  assert.ok(started.rivalBand)
+  const rivalId = started.rivalBand.id
+
+  const atTier = level => ({
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...started.career.rivalsById[rivalId],
+          history: {
+            ...started.career.rivalsById[rivalId].history,
+            nemesisLevel: level
+          }
+        }
+      }
+    }
+  })
+
+  const baseline = buildPreparedExpeditionSponsorOffers(atTier(0))
+  assert.equal(baseline.length, 3)
+  // Tiers below 3 do not interfere; the offers stay identical, not merely
+  // equal in count.
+  assert.deepEqual(buildPreparedExpeditionSponsorOffers(atTier(2)), baseline)
+
+  const interfered = buildPreparedExpeditionSponsorOffers(atTier(3))
+  assert.equal(interfered.length, 2)
+  // The Rival takes one off the table rather than reshuffling the staging, so
+  // the surviving offers are the same deterministic ones.
+  assert.deepEqual(interfered, baseline.slice(0, 2))
+  assert.deepEqual(buildPreparedExpeditionSponsorOffers(atTier(4)), interfered)
 })
