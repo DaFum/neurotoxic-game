@@ -555,11 +555,24 @@ export const applyExpeditionRouteAdvance = (
   // A temporary opportunity is spent by travelling it, and expires when the
   // run moves past the step it belonged to: either way it does not follow the
   // run down the route.
-  const opportunity = state.expedition.pressure.temporaryRouteOpportunity
+  //
+  // The Director's pick expires the same way, and for a sharper reason: it
+  // belongs to the step it was drawn for. Leaving it set would let the next
+  // step's Director overwrite a live decision, or - worse - let a later event
+  // resolution claim relief for an encounter that belonged two nodes back.
+  // Expiring rather than refusing the move is deliberate: the pick is not
+  // guaranteed to surface at all (the event budget is two per day, and
+  // `processTravelEvents` only offers the `transport` and `band` pools), so
+  // holding the route until it resolves could strand a run permanently.
   const pressureAfterMove =
-    opportunity === null
+    state.expedition.pressure.temporaryRouteOpportunity === null &&
+    state.expedition.pressure.pendingDirectorEventId === null
       ? state.expedition.pressure
-      : { ...state.expedition.pressure, temporaryRouteOpportunity: null }
+      : {
+          ...state.expedition.pressure,
+          temporaryRouteOpportunity: null,
+          pendingDirectorEventId: null
+        }
 
   const arrived: GameState = {
     ...state,
@@ -1647,6 +1660,27 @@ export const handleApplyExpeditionEventDelta = (
   const resultIds = sanitizeExpeditionEventResultIds(payload.resultIds)
   if (resultIds.length === 0) return state
 
+  // Source proof first, before a single delta or Director consequence is
+  // applied. A known result id is not authority: the run must actually be
+  // resolving this event - `createSetActiveEventAction(null)` is dispatched
+  // after this action, so it is still on state here - and the content registry
+  // must declare that this option of that event produces every result named.
+  // Otherwise a direct dispatch mints Condition wear, cargo and Heat, and
+  // clears the pending Director event to open severe relief, for an encounter
+  // the player never saw.
+  if (state.activeEvent?.id !== payload.sourceEventId) return state
+  if (
+    !resultIds.every(resultId =>
+      isDeclaredExpeditionEventResult(
+        payload.sourceEventId,
+        payload.sourceOptionId,
+        resultId
+      )
+    )
+  ) {
+    return state
+  }
+
   const wear = { pa: 0, instruments: 0, stageGear: 0 }
   let sparePartsDelta = 0
   let suppliesDelta = 0
@@ -1764,6 +1798,10 @@ export const handleApplyExpeditionEventDelta = (
   // actually been applied. The proof is banked first so the shared resolver can
   // prove the source the same way every other family is proven, and a replayed
   // dispatch collides with the derived entry id instead of paying twice.
+  // The source proof at the top of this handler has already established that
+  // the run is resolving this event and that the registry declares every
+  // result named, so the triple below is content evidence rather than three
+  // caller-chosen strings. Only the route map is still optional here.
   if (
     typeof payload.sourceEventId !== 'string' ||
     typeof payload.sourceOptionId !== 'string' ||
@@ -1771,25 +1809,10 @@ export const handleApplyExpeditionEventDelta = (
   ) {
     return withDirector
   }
-  // The proof must describe the event the run is actually resolving, not the
-  // one the payload names. `createSetActiveEventAction(null)` is dispatched
-  // after this action, so the resolving event is still on state here.
-  if (state.activeEvent?.id !== payload.sourceEventId) return withDirector
   let withRewards = withDirector
   for (const resultId of resultIds) {
     const rareRewardId = getExpeditionEventResultEffect(resultId).rareRewardId
     if (rareRewardId === undefined) continue
-    // ... and the registry must declare that this option of that event
-    // produces this result, so the triple is content evidence rather than
-    // three caller-chosen strings.
-    if (
-      !isDeclaredExpeditionEventResult(
-        payload.sourceEventId,
-        payload.sourceOptionId,
-        resultId
-      )
-    )
-      continue
     const sourceId = `${payload.sourceEventId}:${payload.sourceOptionId}:${resultId}`
     const proofId = `${sourceId}:${withRewards.expedition.routeStep}`
     if (withRewards.expedition.resolvedEventSourceIds?.includes(proofId))

@@ -1,13 +1,14 @@
 /**
- * Canonical evidence that an Expedition event result was really resolved.
+ * Canonical evidence that an Expedition event option really produced a result.
  *
  * @remarks
- * The Event-rare reward source is the `<eventId>:<optionId>:<resultId>` triple.
- * That triple is only evidence if the registry actually declares it: an event
- * with that id, carrying an option with that id, whose own `expedition` effect
- * names that result. Without this check the proof is minted from the payload
- * (or from a save), and a forged `APPLY_EXPEDITION_EVENT_DELTA` or a crafted
- * save can authorize the reward it names.
+ * Everything an Expedition event is allowed to cause - Condition wear, cargo,
+ * Heat, a Pressure Director consequence - hangs off the
+ * `<eventId>:<optionId>:<resultId>` triple the delta carries. That triple is
+ * only evidence if the content registry declares it: an event with that id,
+ * carrying an option with that id, whose own `expedition` effect names that
+ * result. Without this check the triple is three caller-chosen strings, and a
+ * forged `APPLY_EXPEDITION_EVENT_DELTA` authors its own proof.
  */
 
 import { EVENTS_DB } from '../../data/events'
