@@ -106,7 +106,8 @@ describe('ActionTypes', () => {
       'OFFER_EXPEDITION_DRAFT',
       'SELECT_EXPEDITION_DRAFT',
       'RESOLVE_EXPEDITION_SOCIAL_RESULT',
-      'CREATE_SOCIAL_INTEL_GRANT'
+      'CREATE_SOCIAL_INTEL_GRANT',
+      'SETTLE_EXPEDITION_CAREER_RESULT'
     ]
 
     expectedTypes.forEach(type => {

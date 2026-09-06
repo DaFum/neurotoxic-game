@@ -19,7 +19,7 @@ import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionFameProfile } from './fame'
 import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from './defaults'
-import { finiteNumberOr } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 
 /** Baseline weighting: every category as likely as the route builder makes it. */
 export const BASE_EXPEDITION_ROUTE_PRESSURE_PROFILE: Readonly<ExpeditionRoutePressureProfile> =
@@ -106,6 +106,10 @@ export const getExpeditionStaticRoutePressureProfile = (
  * Fame contributes only the high-profile signal — it is an attention signal,
  * not a route editor — and the Nemesis contributes only Rival weighting.
  *
+ * A Region may also declare a Heat ceiling above which corporate Sponsors stop
+ * signing its runs. That is a hard eligibility rule rather than a weight, so it
+ * bypasses the clamp: a floored multiplier would still offer the family.
+ *
  * Use this for anything evaluated live during a run. Anything the run
  * *commits* — the route itself, the staged Sponsor offers — must use
  * {@link getExpeditionStaticRoutePressureProfile} instead, because Fame and the
@@ -122,6 +126,14 @@ export const getExpeditionRoutePressureProfile = (
   )
   const fame = getExpeditionFameProfile(state)
 
+  // The Region's own rule, read as data: no Region id appears here.
+  const heatCeiling = getExpeditionRegion(
+    loadout?.regionId
+  )?.corporateSponsorHeatCeiling
+  const corporateSponsorsRefuse =
+    isFiniteNumber(heatCeiling) &&
+    finiteNumberOr(state.expedition?.pressure?.heat, 0) >= heatCeiling
+
   const rivalRecord = state.rivalBand
     ? state.career?.rivalsById?.[state.rivalBand.id]
     : undefined
@@ -132,6 +144,9 @@ export const getExpeditionRoutePressureProfile = (
 
   return {
     ...stable,
+    sponsorContractEventWeightMultiplier: corporateSponsorsRefuse
+      ? 0
+      : stable.sponsorContractEventWeightMultiplier,
     festivalHighProfileNodeWeightMultiplier: clampWeight(
       stable.festivalHighProfileNodeWeightMultiplier *
         fame.highProfileNodeWeightMultiplier

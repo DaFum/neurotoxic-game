@@ -10,7 +10,10 @@
 
 import { buildExpeditionMap } from './map'
 import { getEffectiveExpeditionRules } from './effectiveRules'
-import { getExpeditionNodeIntelLevel } from './nodeIntel'
+import {
+  getExpeditionIntelCapability,
+  getExpeditionNodeIntelLevel
+} from './nodeIntel'
 import { resolveExpeditionTravelCost } from './travel'
 import type { GameState } from '../../types'
 import type { ExpeditionNodeFog } from '../../types/expedition'
@@ -41,11 +44,15 @@ export const getExpeditionNodeFogByNodeId = (
     roadWearMultiplier: numeric.roadWearMultiplier
   }
 
+  // Resolved once as well: the capability derives the route step's familiarity
+  // draw, which must not be redrawn per node.
+  const capability = getExpeditionIntelCapability(state)
+
   const out: Record<string, ExpeditionNodeFog> = {}
   for (const nodeId of map.nodeOrder) {
     const entry = map.meta[nodeId]
     if (!entry) continue
-    const intelLevel = getExpeditionNodeIntelLevel(state, nodeId)
+    const intelLevel = getExpeditionNodeIntelLevel(state, nodeId, capability)
     out[nodeId] = {
       nodeClass: entry.nodeClass,
       specialSubtype: entry.specialSubtype,

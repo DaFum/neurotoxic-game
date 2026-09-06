@@ -9,13 +9,16 @@
  * reveal raises a node by exactly one level.
  *
  * The producers of Social/Contact grants belong to G3/G4 and the passive
- * Region/reputation floor to G5. Those gates extend
+ * Region/Career floor to G5. Those gates extend
  * {@link getExpeditionIntelCapability} in place rather than adding a second
  * entitlement path.
  */
 
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
+import { mulberry32 } from '../../utils/seededRng'
+import { buildExpeditionMap, hashExpeditionRoute } from './map'
+import { hasExpeditionCareerRank } from './meta'
 import type { GameState } from '../../types'
 import type {
   ExpeditionIntelSource,
@@ -39,6 +42,18 @@ export interface ExpeditionIntelCapability {
    * committed Scout redundant, so the floor stays below the maximum level.
    */
   passiveLevelFloor: NodeIntelLevel
+  /**
+   * Nodes a familiar Region and an established Career read at level 1 for free.
+   *
+   * @remarks
+   * G5's half of the passive floor is a small *set* rather than a global level,
+   * because familiarity should shorten the road, not replace the Scout: a Scout
+   * still reads every node, and only a deliberate recon or a grant reaches
+   * level 2. The set is re-derived from the run seed and the route step, so it
+   * is never dispatched, never persisted, and cannot be replayed for a second
+   * reveal.
+   */
+  familiarNodeIds: readonly string[]
   /** Whether a committed Scout enables passive per-node reveals. Owned by G3. */
   hasScout: boolean
   /** Scout recon charges for the whole run. Owned by G3. */
@@ -50,8 +65,53 @@ export interface ExpeditionIntelCapability {
  */
 export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
   passiveLevelFloor: 0,
+  familiarNodeIds: [],
   hasScout: false,
   reconCharges: 0
+}
+
+/**
+ * Picks the nodes familiarity reveals at the current route step.
+ *
+ * @param state - Current game state.
+ * @param capacity - How many nodes the run's familiarity is worth.
+ * @returns Up to `capacity` unvisited node ids, deterministic per route step.
+ *
+ * @remarks
+ * Only unvisited nodes are eligible — knowing the road already behind you is
+ * worth nothing — and the draw is keyed on the root run seed plus the route
+ * step, so the same step always reveals the same nodes and moving on costs the
+ * previous step's reveal.
+ */
+const resolveFamiliarNodeIds = (
+  state: GameState,
+  capacity: number
+): readonly string[] => {
+  const loadout = state.expedition.loadout
+  if (capacity <= 0 || state.expedition.status !== 'active' || !loadout) {
+    return []
+  }
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  const visited = new Set(state.expedition.visitedNodeIds)
+  const pool = map.nodeOrder.filter(nodeId => !visited.has(nodeId))
+  const rng = mulberry32(
+    Number.parseInt(
+      hashExpeditionRoute(
+        `${state.runSeed}:familiar_intel:${state.expedition.routeStep}`
+      ),
+      16
+    )
+  )
+  const picked: string[] = []
+  while (picked.length < capacity && pool.length > 0) {
+    const [nodeId] = pool.splice(Math.floor(rng() * pool.length), 1)
+    if (nodeId !== undefined) picked.push(nodeId)
+  }
+  return picked
 }
 
 /**
@@ -62,9 +122,13 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
  *
  * @remarks
  * G3 supplies Scout presence and recon charges from the committed Crew, and G5
- * the passive Region/reputation floor, by extending this function. Keeping it
- * the single resolver is what stops a later gate from introducing a parallel
+ * the passive Region/Career floor, by extending this function. Keeping it the
+ * single resolver is what stops a later gate from introducing a parallel
  * entitlement path.
+ *
+ * G5's two familiarity signals are things the Career finished rather than
+ * things it bought: a Region it has already taken a run to the end of, and a
+ * rank it has earned. Each is worth exactly one free node per route step.
  */
 export const getExpeditionIntelCapability = (
   state: GameState
@@ -77,8 +141,16 @@ export const getExpeditionIntelCapability = (
   })
   const pathfinder =
     state.career.crewById.noah?.signatureTraitId === 'signature_pathfinder'
+  const regionId = state.expedition.loadout?.regionId
+  const knowsRegion =
+    typeof regionId === 'string' &&
+    state.career.completedExpeditionRegionIds.includes(regionId)
+  const familiarCapacity =
+    (knowsRegion ? 1 : 0) +
+    (hasExpeditionCareerRank(state, 'headliner') ? 1 : 0)
   return {
     ...BASE_EXPEDITION_INTEL_CAPABILITY,
+    familiarNodeIds: resolveFamiliarNodeIds(state, familiarCapacity),
     hasScout,
     reconCharges: hasScout ? (pathfinder ? 2 : 1) : 0
   }
@@ -101,7 +173,13 @@ export const getExpeditionNodeIntelLevel = (
     ? state.expedition.intelByNodeId[nodeId]
     : 0
   const level = stored === 1 || stored === 2 ? stored : 0
-  return Math.max(level, capability.passiveLevelFloor) as NodeIntelLevel
+  // Familiarity contributes exactly level 1 and never more, so it can raise a
+  // node to the payout reveal but never to the identity reveal. It only ever
+  // raises the floor, so a later perk that sets a higher one still wins.
+  const passive = capability.familiarNodeIds.includes(nodeId)
+    ? Math.max(1, capability.passiveLevelFloor)
+    : capability.passiveLevelFloor
+  return Math.max(level, passive) as NodeIntelLevel
 }
 
 /**
