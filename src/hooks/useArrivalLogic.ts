@@ -60,7 +60,8 @@ export const useArrivalLogic = ({
     setPendingSupplyStopInventory,
     moveRivalBand,
     checkRivalEncounter,
-    recordExpeditionCrewStressSource
+    recordExpeditionCrewStressSource,
+    recordExpeditionObligationSignal
   } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
@@ -177,6 +178,12 @@ export const useArrivalLogic = ({
         for (const crewId of expedition.loadout?.crewIds ?? []) {
           recordExpeditionCrewStressSource(crewId, sourceType, sourceId)
         }
+        if (player.currentNodeId) {
+          recordExpeditionObligationSignal('arrival', player.currentNodeId)
+          if (currentNode?.type === 'REST_STOP') {
+            recordExpeditionObligationSignal('rest', player.currentNodeId)
+          }
+        }
       }
       // If there is no resolved current node (e.g. incomplete map fixture),
       // processTravelEvents keeps legacy behavior and still attempts travel events.
@@ -251,7 +258,8 @@ export const useArrivalLogic = ({
     setPendingSupplyStopInventory,
     rng,
     expedition,
-    recordExpeditionCrewStressSource
+    recordExpeditionCrewStressSource,
+    recordExpeditionObligationSignal
   ])
 
   return { handleArrivalSequence }

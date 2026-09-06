@@ -264,7 +264,9 @@ const buildPopulatedState = () => {
     runDraftTraitIds: [],
     pendingRunDraftOffer: null,
     finaleType: null,
-    lastSocialResult: null
+    lastSocialResult: null,
+    pendingSocialSettlement: null,
+    gigOutcomeByStep: Object.create(null)
   }
 
   return state

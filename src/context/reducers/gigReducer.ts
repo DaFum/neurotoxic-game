@@ -533,7 +533,14 @@ export const handleSetLastGigStats = (
       ...nextState,
       expedition: {
         ...nextState.expedition,
-        technicalCondition: updatedCondition
+        technicalCondition: updatedCondition,
+        pendingSocialSettlement:
+          safePayload.failed !== true
+            ? {
+                routeStep: nextState.expedition.routeStep,
+                gigId: nextState.currentGig?.id ?? null
+              }
+            : null
       }
     }
     // The gig's own wear lands first, then the `post_gig` boundary: a defect
