@@ -39,7 +39,9 @@ import {
 import { normalizeSetlistForSave } from '../../utils/gameState'
 import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import {
+  applyExpeditionSetupProtection,
   applyTechnicalWear,
   calculatePostGigTechnicalWear,
   getExpeditionConditionSummary,
@@ -542,7 +544,21 @@ export const handleSetLastGigStats = (
       rules.numeric.technicalWearMultiplier *
         (finaleProfile?.technicalWearMultiplier ?? 1)
     )
-    const updatedCondition = applyTechnicalWear(currentCondition, wear)
+    // `rehearsed_set` protects the run's *first* Gig only. No extra marker is
+    // needed: `lastGigResolvedAtRouteStep` is null until a Gig resolves and a
+    // number forever after, so a reload cannot spend the protection twice.
+    const protectedWear =
+      nextState.expedition.lastGigResolvedAtRouteStep === null ||
+      nextState.expedition.lastGigResolvedAtRouteStep === undefined
+        ? applyExpeditionSetupProtection(
+            currentCondition,
+            wear,
+            getExpeditionStarterPerk(
+              nextState.expedition.loadout?.starterPerkId
+            )?.firstGigSetupProtection ?? 0
+          )
+        : wear
+    const updatedCondition = applyTechnicalWear(currentCondition, protectedWear)
     nextState = {
       ...nextState,
       expedition: {

@@ -93,6 +93,33 @@ describe('TourPrep scene', () => {
     expect(actions.changeScene).toHaveBeenCalledWith('OVERWORLD')
   })
 
+  it('offers no starter perk until its unlock set is owned', () => {
+    state.current = buildState()
+    render(<TourPrep />)
+    // The "no perk" option is always there; a perk button is not.
+    expect(screen.getByTestId('expedition-prep-perk-none')).toBeInTheDocument()
+    expect(screen.queryByTestId('expedition-prep-perk-mechanic_kit')).toBeNull()
+  })
+
+  it('offers only the perk the owned set carries, and commits it', () => {
+    const base = buildState()
+    base.career = { ...base.career, unlockedSetIds: ['mechanic_network'] }
+    state.current = base
+    render(<TourPrep />)
+
+    const perk = screen.getByTestId('expedition-prep-perk-mechanic_kit')
+    expect(perk).toBeInTheDocument()
+    expect(screen.queryByTestId('expedition-prep-perk-press_pass')).toBeNull()
+
+    fireEvent.click(perk)
+    expect(perk).toHaveAttribute('aria-pressed', 'true')
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+    expect(actions.startExpedition).toHaveBeenCalledTimes(1)
+    expect(actions.startExpedition.mock.calls[0][0].starterPerkId).toBe(
+      'mechanic_kit'
+    )
+  })
+
   it('previews the prepared route and enables the commit', () => {
     state.current = buildState()
     render(<TourPrep />)

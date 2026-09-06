@@ -52,6 +52,10 @@ import type {
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { buildPreparedExpeditionSponsorOffers } from './sponsors'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import {
+  EXPEDITION_STARTER_PERK_IDS,
+  EXPEDITION_STARTER_PERKS
+} from '../../data/expedition/starterPerks'
 import type { ExpeditionCapabilityId } from '../../types/career'
 import {
   areExpeditionContractsCompatible,
@@ -228,9 +232,21 @@ export const getAvailableCrewIds = (state: GameState): readonly string[] =>
 /**
  * Starter perk ids the player may commit.
  *
- * @remarks G5 owns the starter-perk registry and extends this in place.
+ * @remarks
+ * A perk is selectable only once the Career owns the capability that carries
+ * it, so the list is empty for a Career that has bought no unlock set. The
+ * registry is the whole vocabulary: a Legendary id, or any id not in it, is
+ * never available.
  */
-const getAvailableStarterPerkIds = (_state: GameState): readonly string[] => []
+export const getAvailableStarterPerkIds = (
+  state: GameState
+): readonly string[] =>
+  EXPEDITION_STARTER_PERK_IDS.filter(perkId =>
+    isExpeditionCapabilityUnlocked(
+      state.career?.unlockedSetIds,
+      EXPEDITION_STARTER_PERKS[perkId].capabilityId
+    )
+  )
 
 /**
  * Tour Pressure modifier ids the player may commit.

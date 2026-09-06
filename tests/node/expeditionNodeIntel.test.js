@@ -70,6 +70,7 @@ describe('G1 baseline entitlement', () => {
       familiarNodeIds: [],
       hasRecoveryOrSponsorHint: false,
       hasRivalOrSponsorCategoryHint: false,
+      hasUndergroundCategoryHint: false,
       hasScout: false,
       reconCharges: 0
     })
@@ -78,6 +79,7 @@ describe('G1 baseline entitlement', () => {
       familiarNodeIds: [],
       hasRecoveryOrSponsorHint: false,
       hasRivalOrSponsorCategoryHint: false,
+      hasUndergroundCategoryHint: false,
       hasScout: false,
       reconCharges: 0
     })

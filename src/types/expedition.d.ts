@@ -1124,4 +1124,13 @@ export interface ExpeditionNodeFog {
   hasRecoveryOrSponsorHint: boolean | null
   /** Level-0 Rival/Sponsor category presence, earned by Career rank. */
   hasRivalOrSponsorCategoryHint: boolean | null
+  /**
+   * Level-0 Underground opportunity presence, earned by a starter perk.
+   *
+   * @remarks
+   * The `underground_contact` perk's half of its cost: the contact knows which
+   * stops deal, never what the deal is worth, so this stays a bare presence
+   * hint and the payout keeps its level-1 gate.
+   */
+  hasUndergroundCategoryHint: boolean | null
 }

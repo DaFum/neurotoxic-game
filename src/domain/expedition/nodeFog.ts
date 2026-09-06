@@ -95,6 +95,10 @@ export const getExpeditionNodeFogByNodeId = (
         ? entry.specialSubtype === 'RIVAL_ENCOUNTER' ||
           entry.hidden.rivalId !== null ||
           entry.hidden.hiddenOpportunityId !== null
+        : null,
+      hasUndergroundCategoryHint: capability.hasUndergroundCategoryHint
+        ? entry.specialSubtype === 'UNDERGROUND_MARKET' ||
+          entry.specialSubtype === 'BLACK_MARKET'
         : null
     }
   }

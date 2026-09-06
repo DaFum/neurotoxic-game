@@ -19,6 +19,7 @@ import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionOwnedPerformanceGear } from '../../domain/expedition/equipment'
 import {
   getAvailableExpeditionRegionIds,
+  getAvailableStarterPerkIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableNativeContractTemplateIds,
   getExpeditionFuelTopUpCost,
@@ -84,6 +85,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
+  const [starterPerkId, setStarterPerkId] = useState<string | null>(null)
   const [contractTemplateIds, setContractTemplateIds] = useState<string[]>([])
 
   const [tourTypeId, setTourTypeId] = useState<string>(
@@ -93,6 +95,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
 
   const availableTourTypeIds = useMemo(
     () => getAvailableExpeditionTourTypeIds(state),
+    [state]
+  )
+  const availablePerkIds = useMemo(
+    () => getAvailableStarterPerkIds(state),
     [state]
   )
   const availableRegionIds = useMemo(
@@ -147,7 +153,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       activeTourbusAssetId: null,
       crewIds: selectedCrewIds,
       cargo: { spareParts: 0, supplies: 0 },
-      starterPerkId: null,
+      starterPerkId,
       nativeContracts,
       insurancePolicyId: null,
       pressureModifierIds: [],
@@ -168,6 +174,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       regionId,
       selectedGearItemIds,
       selectedCrewIds,
+      starterPerkId,
       setlistSongIds,
       sponsorOfferId,
       startingFuelTarget,
@@ -304,6 +311,49 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
         selectedCrewIds={selectedCrewIds}
         onChange={setSelectedCrewIds}
       />
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.starterPerk')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {t('ui:expedition.prep.starterPerkHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          <button
+            type='button'
+            aria-pressed={starterPerkId === null}
+            onClick={() => setStarterPerkId(null)}
+            data-testid='expedition-prep-perk-none'
+            className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+              starterPerkId === null
+                ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+            }`}
+          >
+            {t('ui:expedition.prep.starterPerkNone')}
+          </button>
+          {availablePerkIds.map(perkId => (
+            <button
+              key={perkId}
+              type='button'
+              aria-pressed={starterPerkId === perkId}
+              onClick={() => setStarterPerkId(perkId)}
+              data-testid={`expedition-prep-perk-${perkId}`}
+              className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors ${
+                starterPerkId === perkId
+                  ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                  : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+              }`}
+            >
+              <strong>{t(`ui:expedition.perk.${perkId}`)}</strong>
+              <span className='block normal-case text-ash-gray'>
+                {t(`ui:expedition.perk.${perkId}Effect`)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
 
       <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
         <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>

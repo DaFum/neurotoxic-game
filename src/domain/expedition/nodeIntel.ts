@@ -19,6 +19,7 @@ import { isForbiddenKey } from '../../utils/objectUtils'
 import { mulberry32 } from '../../utils/seededRng'
 import { buildExpeditionMap, hashExpeditionRoute } from './map'
 import { hasExpeditionCareerRank } from './meta'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import type { GameState } from '../../types'
 import type {
   ExpeditionIntelSource,
@@ -67,6 +68,11 @@ export interface ExpeditionIntelCapability {
    * Level 0.
    */
   hasRivalOrSponsorCategoryHint: boolean
+  /**
+   * Whether the committed starter perk hints Underground opportunity presence
+   * at Level 0.
+   */
+  hasUndergroundCategoryHint: boolean
   /** Whether a committed Scout enables passive per-node reveals. Owned by G3. */
   hasScout: boolean
   /** Scout recon charges for the whole run. Owned by G3. */
@@ -81,6 +87,7 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
   familiarNodeIds: [],
   hasRecoveryOrSponsorHint: false,
   hasRivalOrSponsorCategoryHint: false,
+  hasUndergroundCategoryHint: false,
   hasScout: false,
   reconCharges: 0
 }
@@ -116,13 +123,10 @@ const REGION_FAMILIARITY_REPUTATION = 50
  *
  * @remarks
  * `reputationByRegion` is read under the committed Region id, which is what
- * the contract names. Nothing writes an Expedition Region key today - run gigs
- * credit reputation under the key derived from the node id, which is `exp` for
- * every Expedition node - so this entitlement is currently unreachable in
- * production. That producer belongs to whoever owns Region reputation; wiring
- * it here would mean inventing a key mapping the contract does not specify,
- * and inventing one silently is how an entitlement ends up stronger than the
- * design it claims to implement.
+ * the contract names, and the post-gig producer writes that same key while a
+ * run is active. There is deliberately no city-to-Region mapping in either
+ * direction: overworld reputation and Expedition Region reputation are earned
+ * separately, so playing the overworld never buys a run's free reveal.
  */
 const hasRegionFamiliarityEntitlement = (state: GameState): boolean => {
   const regionId = state.expedition.loadout?.regionId
@@ -209,6 +213,11 @@ export const getExpeditionIntelCapability = (
       state.career.completedExpeditionRegionIds.includes(regionId),
     // A Career people have heard of knows which stops draw a Rival or a brand.
     hasRivalOrSponsorCategoryHint: hasExpeditionCareerRank(state, 'headliner'),
+    // The one non-numeric half of `underground_contact`; every other perk
+    // contributes through the numeric rules alone.
+    hasUndergroundCategoryHint:
+      getExpeditionStarterPerk(state.expedition?.loadout?.starterPerkId)
+        ?.revealsUndergroundCategory === true,
     hasScout,
     reconCharges: hasScout ? (pathfinder ? 2 : 1) : 0
   }

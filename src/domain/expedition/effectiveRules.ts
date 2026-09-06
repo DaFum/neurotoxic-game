@@ -20,6 +20,7 @@ import { aggregateExpeditionModuleProfiles } from './modules'
 import { getCrewRuleContribution } from './crew'
 import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
@@ -158,6 +159,9 @@ export const getEffectiveExpeditionRules = (
     state.expedition?.loadout?.build?.selectedTourbusModuleIds ?? []
   const moduleProfile = aggregateExpeditionModuleProfiles(moduleIds)
   const crewProfile = getCrewRuleContribution(state)
+  // Starter Perk stage. One committed perk at most, and it contributes only
+  // through the profile it owns - no consumer branches on a perk id.
+  const perkNumeric = getExpeditionStarterPerk(loadout?.starterPerkId)?.numeric
   const drafts = new Set(state.expedition.runDraftTraitIds)
   const rivalRecord = state.rivalBand
     ? state.career.rivalsById[state.rivalBand.id]
@@ -178,11 +182,13 @@ export const getEffectiveExpeditionRules = (
     startingHeat:
       BASE_EXPEDITION_NUMERIC_RULES.startingHeat +
       profileValue(regionNumeric, 'startingHeat', 0) +
-      profileValue(tourNumeric, 'startingHeat', 0),
+      profileValue(tourNumeric, 'startingHeat', 0) +
+      profileValue(perkNumeric, 'startingHeat', 0),
     startingSpareParts:
       BASE_EXPEDITION_NUMERIC_RULES.startingSpareParts +
       profileValue(regionNumeric, 'startingSpareParts', 0) +
-      profileValue(tourNumeric, 'startingSpareParts', 0),
+      profileValue(tourNumeric, 'startingSpareParts', 0) +
+      profileValue(perkNumeric, 'startingSpareParts', 0),
     fuelConsumptionMultiplier:
       profileValue(regionNumeric, 'fuelConsumptionMultiplier', 1) *
       profileValue(tourNumeric, 'fuelConsumptionMultiplier', 1) *
@@ -226,7 +232,8 @@ export const getEffectiveExpeditionRules = (
     exposureGainMultiplier:
       profileValue(regionNumeric, 'exposureGainMultiplier', 1) *
       profileValue(tourNumeric, 'exposureGainMultiplier', 1) *
-      (crewProfile.exposureGainMultiplier ?? 1),
+      (crewProfile.exposureGainMultiplier ?? 1) *
+      profileValue(perkNumeric, 'exposureGainMultiplier', 1),
     heatGainMultiplier:
       profileValue(regionNumeric, 'heatGainMultiplier', 1) *
       profileValue(tourNumeric, 'heatGainMultiplier', 1) *
