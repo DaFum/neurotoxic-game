@@ -8,6 +8,7 @@ import {
   handleResolveExpeditionSocialResult,
   handleCreateSocialIntelGrant
 } from '../../src/context/reducers/expeditionReducer.ts'
+import { selectExpeditionFinaleType } from '../../src/domain/expedition/finales.ts'
 import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers.ts'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
 import {
@@ -19,6 +20,8 @@ import {
   preparedState,
   fixtureLoadout,
   fixtureMap,
+  firstExtractionRouteStep,
+  walkTo,
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
 import {
@@ -1028,5 +1031,132 @@ test('a forged temporary route opportunity does not survive a load', () => {
       started.runSeed
     ).pressure.temporaryRouteOpportunity,
     null
+  )
+})
+
+test('Nemesis advances at most one tier per run and L4 opens the Rival Finale', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  assert.ok(started.rivalBand, 'START must materialize a Rival')
+  const rivalId = started.rivalBand.id
+  assert.equal(started.career.rivalsById[rivalId].history.nemesisLevel, 0)
+
+  // L4 is what makes the Rival Finale reachable, which is the far end of the
+  // circularity this progression exists to break.
+  assert.equal(selectExpeditionFinaleType({ nemesisLevel: 4 }), 'rival_battle')
+  assert.notEqual(
+    selectExpeditionFinaleType({ nemesisLevel: 3 }),
+    'rival_battle'
+  )
+
+  // The per-run guard is `lastSeenRunId`: a run that already advanced this
+  // Rival cannot advance it again, whichever canonical outcome gets there.
+  const alreadyAdvanced = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [rivalId]: {
+          ...started.career.rivalsById[rivalId],
+          history: {
+            ...started.career.rivalsById[rivalId].history,
+            nemesisLevel: 2,
+            lastSeenRunId: started.expedition.runId
+          }
+        }
+      }
+    }
+  }
+  const atFinale = walkToFinale({
+    ...alreadyAdvanced,
+    expedition: { ...alreadyAdvanced.expedition, finaleType: 'rival_battle' }
+  })
+  const completed = gameReducer(atFinale, {
+    type: ActionTypes.COMPLETE_EXPEDITION,
+    payload: {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    }
+  })
+  assert.equal(
+    completed.career.rivalsById[rivalId].history.nemesisLevel,
+    2,
+    'a Nemesis tier must not be farmable twice inside one run'
+  )
+})
+
+test('the four Expedition quest producers fire from their canonical owners', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const from = started.expedition.visitedNodeIds.at(-1)
+  const edge = fixtureMap().connections.find(item => item.from === from)
+  assert.ok(edge)
+
+  // nodeResolved fires on a committed advance and on none of its refusals.
+  const advanced = applyExpeditionRouteAdvance(started, edge.to)
+  assert.equal(advanced.player.currentNodeId, edge.to)
+  assert.strictEqual(
+    applyExpeditionRouteAdvance(started, 'not_a_neighbour'),
+    started,
+    'a refused advance must progress nothing'
+  )
+
+  // extracted fires only on a settlement that actually happened.
+  const atWindow = walkTo(started, firstExtractionRouteStep())
+  const extracted = gameReducer(atWindow, {
+    type: ActionTypes.EXTRACT_EXPEDITION,
+    payload: {
+      expectedRouteStep: atWindow.expedition.routeStep,
+      explicitRareRewardIds: []
+    }
+  })
+  assert.equal(extracted.expedition.status, 'extracted')
+  assert.strictEqual(
+    gameReducer(extracted, {
+      type: ActionTypes.EXTRACT_EXPEDITION,
+      payload: {
+        expectedRouteStep: atWindow.expedition.routeStep,
+        explicitRareRewardIds: []
+      }
+    }),
+    extracted,
+    'a replayed extraction must be a no-op'
+  )
+
+  // finaleCompleted fires on a committed completion.
+  const atFinale = walkToFinale(started)
+  const completed = gameReducer(atFinale, {
+    type: ActionTypes.COMPLETE_EXPEDITION,
+    payload: {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    }
+  })
+  assert.equal(completed.expedition.status, 'completed')
+  assert.strictEqual(
+    gameReducer(completed, {
+      type: ActionTypes.COMPLETE_EXPEDITION,
+      payload: {
+        finaleResultId: 'finale_result_fixture',
+        expectedRouteStep: atFinale.expedition.routeStep
+      }
+    }),
+    completed,
+    'a replayed completion must be a no-op'
   )
 })
