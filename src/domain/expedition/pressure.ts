@@ -74,11 +74,27 @@ export const selectPressureEvent = (
     social: context.exposure,
     technical: context.technicalConditionPressure
   }
+  // The composed rules publish per-family event weighting, so the Director has
+  // to consume it: without this a jammer, `cold_trail`, a Security/Manager
+  // crew or a Nemesis level changes nothing about which family the run draws.
+  const effective = getEffectiveExpeditionRules(state).numeric
+  const familyWeight: Record<
+    ExpeditionPressureEvent['pressureFamily'],
+    number
+  > = {
+    authority: effective.authorityEventWeightMultiplier,
+    rival: effective.rivalEventWeightMultiplier,
+    crew: 1,
+    contract: 1,
+    social: 1,
+    technical: 1
+  }
   const weighted = events.map(event => ({
     event,
     weight:
       Math.max(0, event.baseWeight) *
       (1 + familyPressure[event.pressureFamily] / 100) *
+      Math.max(0, familyWeight[event.pressureFamily]) *
       (event.id === state.expedition.pressure.lastSevereEventId ? 0.25 : 1) *
       (event.severity === 'severe' && relief && !bypass ? 0.35 : 1)
   }))
