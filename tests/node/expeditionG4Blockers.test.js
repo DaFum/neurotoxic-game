@@ -993,6 +993,69 @@ test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
   )
 })
 
+test('the Director weights by Cash pressure and route depth', () => {
+  const base = keepItCleanState()
+  base.expedition.pressure.heat = 20
+  const contract = {
+    id: 'expedition_contract_squeeze',
+    severity: 'normal',
+    pressureFamily: 'contract',
+    baseWeight: 10,
+    negative: true
+  }
+  const social = {
+    id: 'expedition_underground_invite',
+    severity: 'normal',
+    pressureFamily: 'social',
+    baseWeight: 10,
+    negative: false
+  }
+  const severe = {
+    id: 'expedition_technical_collapse',
+    severity: 'severe',
+    pressureFamily: 'technical',
+    baseWeight: 4,
+    negative: true
+  }
+
+  // Twenty-four independent seeded draws, so the comparison is about the
+  // weighting rather than one lucky roll.
+  const draws = (state, pool, routeStep, match) =>
+    Array.from({ length: 24 }, (_, i) =>
+      selectPressureEvent(
+        {
+          ...state,
+          runSeed: 1000 + i,
+          expedition: { ...state.expedition, routeStep }
+        },
+        pool
+      )
+    ).filter(event => event !== null && match(event)).length
+
+  // A run out of spendable Cash feels it through its obligations.
+  const solvent = { ...base, player: { ...base.player, money: 5000 } }
+  const broke = {
+    ...base,
+    player: { ...base.player, money: 0 },
+    expedition: { ...base.expedition, protectedCareerCash: 0 }
+  }
+  const byContract = event => event.pressureFamily === 'contract'
+  assert.ok(
+    draws(broke, [contract, social], 1, byContract) >
+      draws(solvent, [contract, social], 1, byContract),
+    'Cash pressure must reach the obligation family'
+  )
+
+  // A deeper run draws harsher events; route depth lifts severe weights only.
+  const bySeverity = event => event.severity === 'severe'
+  const deepSevere = draws(solvent, [severe, social], 8, bySeverity)
+  const shallowSevere = draws(solvent, [severe, social], 0, bySeverity)
+  assert.ok(
+    deepSevere > shallowSevere,
+    `route depth must lift severe weights (${deepSevere} vs ${shallowSevere})`
+  )
+})
+
 test('a route advance runs one deterministic Director step', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {

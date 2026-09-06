@@ -65,13 +65,17 @@ export const selectPressureEvent = (
     state.expedition.routeStep <=
       state.expedition.pressure.severeReliefUntilRouteStep
   const bypass = context.heat >= 90
+  // Cash and route depth are run-wide rather than per-family, so they cannot
+  // simply scale every weight - that cancels out in a weighted draw and would
+  // leave both inputs derived but inert. A run out of spendable Cash feels it
+  // through its obligations and its Crew; a deeper run draws harsher events.
   const familyPressure: Record<
     ExpeditionPressureEvent['pressureFamily'],
     number
   > = {
     authority: context.heat,
-    crew: context.crewStressPressure,
-    contract: context.activeObligationPressure,
+    crew: context.crewStressPressure + context.cashPressure / 2,
+    contract: context.activeObligationPressure + context.cashPressure / 2,
     rival: context.rivalPressure,
     social: context.exposure,
     technical: context.technicalConditionPressure
@@ -97,6 +101,7 @@ export const selectPressureEvent = (
       Math.max(0, event.baseWeight) *
       (1 + familyPressure[event.pressureFamily] / 100) *
       Math.max(0, familyWeight[event.pressureFamily]) *
+      (event.severity === 'severe' ? 1 + context.routeDepthPressure / 100 : 1) *
       (event.id === state.expedition.pressure.lastSevereEventId ? 0.25 : 1) *
       (event.severity === 'severe' && relief && !bypass ? 0.35 : 1)
   }))
