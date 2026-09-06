@@ -99,17 +99,77 @@ describe('the unlock purchase is reachable through useGameActions', () => {
     )
     expect(result.current.career.pendingUnlockPurchase).toBeNull()
 
-    // The marker that makes the purchase crash-safe: the save written between
-    // the debit and the grant holds the open entry, so a process that died
-    // there would leave evidence of exactly what was taken.
+    // The save left behind is the *granted* state, not the open marker. The
+    // marker is written first so a crash in that window is recoverable, but
+    // the normal path must not leave the Career paid-up and empty-handed.
     const saved = adapter.get(SAVE_KEY)
     expect(saved).toBeTruthy()
     const persisted = JSON.parse(String(saved))
-    expect(persisted.career.pendingUnlockPurchase).toEqual({
-      setId: 'mechanic_network',
-      debitedTokens: EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    expect(persisted.career.pendingUnlockPurchase).toBeNull()
+    expect(persisted.career.unlockedSetIds).toContain('mechanic_network')
+    expect(persisted.career.tourTokens).toBe(
+      READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    )
+  })
+
+  it('recovers a crash between the debit and the grant', () => {
+    // Exactly the window the journal exists for: the process died after the
+    // marker write, so the save carries a Career that paid and owns nothing.
+    const adapter = new InMemoryAdapter()
+    const cost = EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    seedSave(adapter, {
+      tourTokens: READY_CAREER.tourTokens - cost,
+      pendingUnlockPurchase: { setId: 'mechanic_network', debitedTokens: cost }
     })
-    expect(persisted.career.unlockedSetIds).not.toContain('mechanic_network')
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+
+    // The marker is a receipt, so load finishes the grant rather than
+    // refunding: the debit is already inside the persisted balance.
+    expect(result.current.career.unlockedSetIds).toContain('mechanic_network')
+    expect(result.current.career.pendingUnlockPurchase).toBeNull()
+    expect(result.current.career.tourTokens).toBe(
+      READY_CAREER.tourTokens - cost
+    )
+
+    // And the set is owned once, not twice, however often the save is read.
+    act(() => {
+      result.current.actions.loadGame()
+    })
+    expect(
+      result.current.career.unlockedSetIds.filter(
+        (id: string) => id === 'mechanic_network'
+      )
+    ).toHaveLength(1)
+  })
+
+  it('does not block the next purchase after recovering one', () => {
+    const adapter = new InMemoryAdapter()
+    const cost = EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    seedSave(adapter, {
+      tourTokens: READY_CAREER.tourTokens - cost,
+      hqFacilityLevels: { workshop: 1, rehearsal: 1 },
+      finalizedExpeditionRuns: 2,
+      completedExpeditionRuns: 1,
+      pendingUnlockPurchase: { setId: 'mechanic_network', debitedTokens: cost }
+    })
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+    // Before the fix the recovered entry stayed open forever and
+    // `handleBeginExpeditionUnlockPurchase` refused every later purchase.
+    expect(result.current.career.pendingUnlockPurchase).toBeNull()
+
+    let bought = false
+    act(() => {
+      bought =
+        result.current.actions.purchaseExpeditionUnlockSet('festival_network')
+    })
+    expect(bought).toBe(true)
+    expect(result.current.career.unlockedSetIds).toContain('festival_network')
   })
 
   it('takes nothing when the Career cannot afford the set', () => {

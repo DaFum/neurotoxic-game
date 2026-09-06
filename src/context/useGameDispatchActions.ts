@@ -577,7 +577,13 @@ export function useGameDispatchActions({
         dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
         return false
       }
-      dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
+      const completeAction = createCompleteExpeditionUnlockPurchaseAction(setId)
+      dispatch(completeAction)
+      // Fast path: persist the granted state too, so the normal case does not
+      // leave the open marker sitting in storage. If this write fails the save
+      // still holds the marker, and the load path finishes the grant from it -
+      // either way the Career ends up owning what it paid for.
+      saveGame(false, gameReducer(opened, completeAction))
       return true
     },
     [dispatch, saveGame, stateRef]

@@ -223,3 +223,34 @@ export const isExpeditionAscensionEligible = (state: GameState): boolean => {
     state.completedQuestIds.includes(EXPEDITION_META_UNLOCK_QUEST_ID)
   )
 }
+
+/**
+ * Settles a persisted unlock-purchase journal entry at load time.
+ *
+ * @param career - Career slice as it came off the save.
+ * @returns The Career with the paid entry finished, or the same reference.
+ *
+ * @remarks
+ * The marker is a receipt: it is only ever written *after* the Tokens have
+ * been debited, so a save that still carries one is a Career that paid and did
+ * not get its set. Load therefore commits it - refunding would be wrong, since
+ * the debit is already inside the persisted balance and re-crediting it on
+ * every load would mint Tokens.
+ *
+ * Without this the entry is inert and permanent: `handleBeginExpeditionUnlockPurchase`
+ * refuses while one is open, so a crash in that window would cost the Career
+ * the Tokens *and* every future purchase.
+ */
+export const settleExpeditionUnlockJournalOnLoad = (
+  career: CareerState
+): CareerState => {
+  const pending = career.pendingUnlockPurchase
+  if (!pending) return career
+  return {
+    ...career,
+    unlockedSetIds: career.unlockedSetIds.includes(pending.setId)
+      ? career.unlockedSetIds
+      : [...career.unlockedSetIds, pending.setId],
+    pendingUnlockPurchase: null
+  }
+}
