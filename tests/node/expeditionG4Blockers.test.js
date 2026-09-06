@@ -18,8 +18,17 @@ import { getAvailableAuthoritySafeExits } from '../../src/domain/expedition/auth
 import {
   preparedState,
   fixtureLoadout,
+  fixtureMap,
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
+import {
+  resolveExpeditionPressureDirectorStep,
+  selectPressureEvent
+} from '../../src/domain/expedition/pressure.ts'
+import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
+import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
+import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules.ts'
+import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer.ts'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { calculateFinalScore } from '../../src/utils/rhythmGameScoringUtils.ts'
@@ -38,6 +47,7 @@ const activeState = () => {
       status: 'active',
       runId: 'run-1',
       routeStep: 1,
+      lastGigResolvedAtRouteStep: 1,
       activeObligations: [
         {
           id: 'run-1:contract_three_good_gigs',
@@ -323,6 +333,7 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   const startedWithGig = {
     ...started,
     lastGigStats: { score: 1000, accuracy: 80, failed: false },
+    social: { ...started.social, pendingSocialOptionId: 'perf_moshpit_chaos' },
     expedition: {
       ...started.expedition,
       pendingSocialSettlement: { routeStep: 0, gigId: null }
@@ -384,11 +395,35 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
   // With pendingSocialSettlement set from gig completion:
   const startedWithProof = {
     ...startedWithGig,
+    social: {
+      ...startedWithGig.social,
+      pendingSocialOptionId: 'perf_moshpit_chaos'
+    },
     expedition: {
       ...startedWithGig.expedition,
       pendingSocialSettlement: { routeStep: 0, gigId: null }
     }
   }
+
+  // A post option the canonical Social owner never selected is rejected, even
+  // with the settlement window open: the payload is not its own provenance.
+  assert.strictEqual(
+    handleResolveExpeditionSocialResult(
+      {
+        ...startedWithProof,
+        social: {
+          ...startedWithProof.social,
+          pendingSocialOptionId: 'perf_crowd_surf'
+        }
+      },
+      {
+        resultId: 'push',
+        postOptionId: 'perf_moshpit_chaos',
+        expectedRouteStep: 0
+      }
+    ).expedition.lastSocialResult,
+    null
+  )
 
   // Mismatched resultId 'monetize' must be rejected
   const forgedResult = handleResolveExpeditionSocialResult(startedWithProof, {
@@ -464,8 +499,7 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
   for (let step = 1; step <= gigRouteStep; step++) {
     const nextEdge = canonicalMap.connections.find(
       conn =>
-        conn.from === current &&
-        canonicalMap.meta[conn.to]?.routeStep === step
+        conn.from === current && canonicalMap.meta[conn.to]?.routeStep === step
     )
     assert.ok(nextEdge, `edge at step ${step} must exist`)
     current = nextEdge.to
@@ -604,8 +638,344 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
     null
   )
   assert.equal(
-    sanitizedHistorical.activeObligations[0].progressByConstraintId.three_good_gigs
-      .value,
+    sanitizedHistorical.activeObligations[0].progressByConstraintId
+      .three_good_gigs.value,
     0
+  )
+})
+
+const keepItCleanState = () => {
+  const state = activeState()
+  const obligation = state.expedition.activeObligations[0]
+  obligation.id = 'run-1:contract_keep_it_clean'
+  obligation.sourceId = 'contract_keep_it_clean'
+  obligation.constraints = [
+    { id: 'keep_heat_clean', kind: 'max_heat', maxHeat: 40 }
+  ]
+  obligation.progressByConstraintId = {
+    keep_heat_clean: {
+      constraintId: 'keep_heat_clean',
+      value: 0,
+      satisfied: false,
+      failed: false
+    }
+  }
+  state.player.currentNodeId = 'node-a'
+  return state
+}
+
+test('a max_heat contract pays at the Finale, not on the first safe signal', () => {
+  const state = keepItCleanState()
+  state.expedition.pressure.heat = 10
+  const safe = handleRecordExpeditionObligationSignal(state, {
+    signalType: 'gig',
+    sourceId: 'gig-proof',
+    expectedRouteStep: 1
+  })
+  assert.equal(safe.expedition.activeObligations[0].status, 'active')
+  assert.equal(safe.expedition.activeObligations[0].settled, false)
+  assert.equal(safe.player.money, state.player.money)
+
+  // A Heat spike after that early safe signal still fails the contract.
+  const hot = {
+    ...safe,
+    expedition: {
+      ...safe.expedition,
+      pressure: { ...safe.expedition.pressure, heat: 55 }
+    }
+  }
+  const failed = handleRecordExpeditionObligationSignal(hot, {
+    signalType: 'arrival',
+    sourceId: 'node-a',
+    expectedRouteStep: 1
+  })
+  assert.equal(failed.expedition.activeObligations[0].status, 'failed')
+  assert.equal(failed.expedition.activeObligations[0].settled, true)
+  assert.equal(failed.player.money, state.player.money)
+
+  // Reaching the Finale under the cap is what completes and pays it.
+  const completed = handleRecordExpeditionObligationSignal(safe, {
+    signalType: 'finale',
+    sourceId: 'gig-proof',
+    expectedRouteStep: 1
+  })
+  assert.equal(completed.expedition.activeObligations[0].status, 'completed')
+  assert.equal(completed.player.money, state.player.money + 1800)
+})
+
+test('one gig cannot re-signal an obligation after a route advance', () => {
+  const state = activeState()
+  const once = handleRecordExpeditionObligationSignal(state, {
+    signalType: 'gig',
+    sourceId: 'gig-proof',
+    expectedRouteStep: 1
+  })
+  assert.equal(
+    once.expedition.activeObligations[0].progressByConstraintId.three_good_gigs
+      .value,
+    1
+  )
+  // `lastGigStats` and `currentGig` both survive the advance, so only the
+  // resolution stamp stops the same gig counting a second time.
+  const advanced = {
+    ...once,
+    expedition: { ...once.expedition, routeStep: 2 }
+  }
+  assert.strictEqual(
+    handleRecordExpeditionObligationSignal(advanced, {
+      signalType: 'gig',
+      sourceId: 'gig-proof',
+      expectedRouteStep: 2
+    }),
+    advanced
+  )
+})
+
+test('reckless_encore trades extraction retention for its Finale multiplier', () => {
+  const state = activeState()
+  state.player.money = 5000
+  state.player.fame = 2000
+  state.expedition.startingMoney = 4000
+  state.expedition.startingFame = 1000
+  const drafted = {
+    ...state,
+    expedition: { ...state.expedition, runDraftTraitIds: ['reckless_encore'] }
+  }
+
+  const base = settleExpedition(state, 'extracted')
+  const withDraft = settleExpedition(drafted, 'extracted')
+  assert.equal(base.retentionRate, 0.6)
+  assert.equal(withDraft.retentionRate, 0.6 * 0.85)
+  assert.ok(withDraft.moneyRetained < base.moneyRetained)
+  assert.ok(withDraft.fameRetained < base.fameRetained)
+
+  // The penalty is the price of bailing out, so finishing the run keeps the
+  // canonical base rate and the Finale multiplier is the payoff.
+  assert.equal(settleExpedition(drafted, 'completed').retentionRate, 1)
+  assert.equal(
+    getEffectiveExpeditionRules(drafted).numeric.finaleRewardMultiplier,
+    1.2
+  )
+  assert.equal(
+    getEffectiveExpeditionRules(state).numeric.finaleRewardMultiplier,
+    1
+  )
+})
+
+test('sanitizeExpeditionState refuses forged terminal-contract progress', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: {
+        ...fixtureLoadout(),
+        nativeContracts: [
+          { templateId: 'contract_keep_it_clean', targetNodeId: null }
+        ]
+      }
+    }
+  })
+  const forgedObligation = {
+    id: `${started.expedition.runId}:contract_keep_it_clean`,
+    sourceType: 'native',
+    sourceId: 'contract_keep_it_clean',
+    constraints: [{ id: 'keep_heat_clean', kind: 'max_heat', maxHeat: 40 }],
+    progressByConstraintId: {
+      keep_heat_clean: {
+        constraintId: 'keep_heat_clean',
+        value: 0,
+        satisfied: true,
+        failed: false
+      }
+    },
+    status: 'completed',
+    settled: false,
+    doubleDown: null
+  }
+
+  // No canonical Finale signal in the run: the satisfied flag is not evidence.
+  const forged = sanitizeExpeditionState(
+    { ...started.expedition, activeObligations: [forgedObligation] },
+    started.runSeed
+  )
+  assert.equal(forged.activeObligations.length, 1)
+  assert.equal(
+    forged.activeObligations[0].progressByConstraintId.keep_heat_clean
+      .satisfied,
+    false
+  )
+  assert.equal(forged.activeObligations[0].status, 'active')
+
+  // With the signal proof the progress is honoured, but `settled` is derived
+  // from the terminal status rather than trusted, so the reward cannot be
+  // collected a second time after the reload.
+  const proven = sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      resolvedObligationSignalIds: ['finale:venue:0'],
+      activeObligations: [forgedObligation]
+    },
+    started.runSeed
+  )
+  assert.equal(proven.activeObligations[0].status, 'completed')
+  assert.equal(proven.activeObligations[0].settled, true)
+
+  // A persisted Heat breach re-fails the contract even when the save says it
+  // never happened.
+  const breached = sanitizeExpeditionState(
+    {
+      ...started.expedition,
+      pressure: { ...started.expedition.pressure, heat: 70 },
+      resolvedObligationSignalIds: ['finale:venue:0'],
+      activeObligations: [forgedObligation]
+    },
+    started.runSeed
+  )
+  assert.equal(breached.activeObligations[0].status, 'failed')
+})
+
+test('the Director opens a high-Heat Underground opportunity once', () => {
+  const state = keepItCleanState()
+  state.expedition.pressure.heat = 70
+  const invite = [
+    {
+      id: 'expedition_underground_invite',
+      severity: 'normal',
+      pressureFamily: 'social',
+      baseWeight: 5,
+      negative: false
+    }
+  ]
+  const opened = resolveExpeditionPressureDirectorStep(state, invite)
+  assert.deepEqual(opened.temporaryRouteOpportunity, {
+    id: 'UNDERGROUND_MARKET:run-1:1',
+    subtype: 'UNDERGROUND_MARKET',
+    targetNodeId: 'node-a',
+    createdAtRouteStep: 1
+  })
+  // Already holding one, or below the Heat gate, opens nothing further.
+  assert.strictEqual(
+    resolveExpeditionPressureDirectorStep(
+      { ...state, expedition: { ...state.expedition, pressure: opened } },
+      invite
+    ).temporaryRouteOpportunity,
+    opened.temporaryRouteOpportunity
+  )
+  const cold = {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: { ...state.expedition.pressure, heat: 59 }
+    }
+  }
+  assert.equal(
+    resolveExpeditionPressureDirectorStep(cold, invite)
+      .temporaryRouteOpportunity,
+    null
+  )
+
+  // A severe negative event opens the relief window the next two steps read.
+  const severe = resolveExpeditionPressureDirectorStep(state, [
+    {
+      id: 'expedition_technical_collapse',
+      severity: 'severe',
+      pressureFamily: 'technical',
+      baseWeight: 5,
+      negative: true
+    }
+  ])
+  assert.equal(severe.lastSevereEventId, 'expedition_technical_collapse')
+  assert.equal(severe.severeReliefUntilRouteStep, 3)
+})
+
+test('a route advance runs one deterministic Director step', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const from =
+    started.expedition.visitedNodeIds[
+      started.expedition.visitedNodeIds.length - 1
+    ]
+  const edge = fixtureMap().connections.find(item => item.from === from)
+  assert.ok(edge)
+
+  const advanced = applyExpeditionRouteAdvance(started, edge.to)
+  assert.equal(advanced.expedition.routeStep, 1)
+
+  // The Director is consulted for the step the run entered, not the one it
+  // left, and the same advance re-selects the same event instead of rolling
+  // a second one.
+  const selected = selectPressureEvent(
+    {
+      ...advanced,
+      expedition: {
+        ...advanced.expedition,
+        pressure: started.expedition.pressure
+      }
+    },
+    EXPEDITION_PRESSURE_EVENTS
+  )
+  assert.ok(selected, 'the Director selected no event for the entered step')
+  if (selected.severity === 'severe' && selected.negative) {
+    assert.equal(advanced.expedition.pressure.lastSevereEventId, selected.id)
+    assert.equal(advanced.expedition.pressure.severeReliefUntilRouteStep, 3)
+  } else {
+    assert.equal(advanced.expedition.pressure.lastSevereEventId, null)
+  }
+  assert.deepEqual(
+    applyExpeditionRouteAdvance(started, edge.to).expedition.pressure,
+    advanced.expedition.pressure
+  )
+})
+
+test('a forged temporary route opportunity does not survive a load', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const opportunity = {
+    id: `UNDERGROUND_MARKET:${started.expedition.runId}:0`,
+    subtype: 'UNDERGROUND_MARKET',
+    targetNodeId: started.player.currentNodeId,
+    createdAtRouteStep: 0
+  }
+  assert.deepEqual(
+    sanitizeExpeditionState(
+      {
+        ...started.expedition,
+        pressure: {
+          ...started.expedition.pressure,
+          temporaryRouteOpportunity: opportunity
+        }
+      },
+      started.runSeed
+    ).pressure.temporaryRouteOpportunity,
+    opportunity
+  )
+  assert.equal(
+    sanitizeExpeditionState(
+      {
+        ...started.expedition,
+        pressure: {
+          ...started.expedition.pressure,
+          temporaryRouteOpportunity: { ...opportunity, id: 'forged' }
+        }
+      },
+      started.runSeed
+    ).pressure.temporaryRouteOpportunity,
+    null
   )
 })

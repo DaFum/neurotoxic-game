@@ -130,7 +130,10 @@ import {
   EXPEDITION_SOCIAL_RESULTS,
   deriveExpeditionSocialResultId
 } from '../../domain/expedition/social'
-import { applyExpeditionPressureDelta } from '../../domain/expedition/pressure'
+import {
+  applyExpeditionPressureDelta,
+  resolveExpeditionPressureDirectorStep
+} from '../../domain/expedition/pressure'
 import { POST_OPTIONS } from '../../data/postOptions'
 
 /**
@@ -514,7 +517,7 @@ export const applyExpeditionRouteAdvance = (
     extractionWindowsSeen.push(target.routeStep)
   }
 
-  const advanced: GameState = {
+  const arrived: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
     expedition: {
@@ -524,6 +527,19 @@ export const applyExpeditionRouteAdvance = (
       extractionWindowsSeen
     }
   }
+
+  // One Director step per route step, composed here rather than dispatched:
+  // arriving a node deeper is the canonical occasion for it, and selection is
+  // seeded from `runSeed` plus the new route step, so a replayed advance picks
+  // the same event instead of rolling a second one.
+  const directorPressure = resolveExpeditionPressureDirectorStep(arrived)
+  const advanced: GameState =
+    directorPressure === arrived.expedition.pressure
+      ? arrived
+      : {
+          ...arrived,
+          expedition: { ...arrived.expedition, pressure: directorPressure }
+        }
 
   // Arriving on a node that carries a route rare is the canonical evidence for
   // it, so the ledger entry is banked in the same pass. Composed rather than
@@ -1616,7 +1632,14 @@ export const handleRecordExpeditionObligationSignal = (
     switch (payload.signalType) {
       case 'gig':
       case 'finale':
-        return state.lastGigStats && state.currentGig?.id
+        // Bound to the step the gig resolved at, not the step the caller is
+        // standing on: `applyExpeditionRouteAdvance` carries `lastGigStats`
+        // and `currentGig` forward, so an unbound source would let a single
+        // gig produce a fresh signal id at every later route step.
+        return state.lastGigStats &&
+          state.currentGig?.id &&
+          state.expedition.lastGigResolvedAtRouteStep ===
+            payload.expectedRouteStep
           ? state.currentGig.id
           : null
       case 'arrival':
@@ -1625,7 +1648,12 @@ export const handleRecordExpeditionObligationSignal = (
       case 'heat':
         return state.expedition.pressure.lastSevereEventId
       case 'social_post':
-        return state.expedition.lastSocialResult?.id ?? null
+        // Same replay window as a gig: the settled result proof persists
+        // across advances, so it only counts at the step it resolved at.
+        return state.expedition.lastSocialResult?.resolvedAtRouteStep ===
+          payload.expectedRouteStep
+          ? (state.expedition.lastSocialResult?.id ?? null)
+          : null
     }
   })()
   if (canonicalSourceId !== payload.sourceId) return state
@@ -1798,7 +1826,9 @@ export const handleRecordExpeditionObligationSignal = (
     },
     expedition: {
       ...state.expedition,
-      activeObligations: changed ? activeObligations : state.expedition.activeObligations,
+      activeObligations: changed
+        ? activeObligations
+        : state.expedition.activeObligations,
       pressure: {
         ...state.expedition.pressure,
         heat: Math.max(
@@ -1878,9 +1908,7 @@ export const handleOfferExpeditionDraft = (
     return state
 
   const occurrenceProof = `${payload.sourceType}:${payload.sourceKey}:${state.expedition.routeStep}`
-  if (
-    state.expedition.consumedRunDraftSourceKeys?.includes(occurrenceProof)
-  )
+  if (state.expedition.consumedRunDraftSourceKeys?.includes(occurrenceProof))
     return state
 
   const sourceProven = (() => {
@@ -2003,12 +2031,16 @@ export const handleResolveExpeditionSocialResult = (
       state.expedition.routeStep
   )
     return state
+  // The canonical Social-post owner (`applySocialPostResult`) stamps the option
+  // it actually resolved onto `social.pendingSocialOptionId`. Without this the
+  // payload would be its own provenance: any registry option could be settled
+  // once per route step and its freshly minted proof reused for Social Intel.
+  if (state.social.pendingSocialOptionId !== payload.postOptionId) return state
   const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
   if (!postOption) return state
   const expectedResultId = deriveExpeditionSocialResultId(postOption)
   if (payload.resultId !== expectedResultId) return state
-  if (!state.lastGigStats || state.lastGigStats.failed === true)
-    return state
+  if (!state.lastGigStats || state.lastGigStats.failed === true) return state
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state
   const proofId = `${payload.postOptionId}:${payload.resultId}:${state.expedition.routeStep}`

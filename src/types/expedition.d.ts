@@ -608,6 +608,7 @@ export interface ExpeditionState {
   finaleType: ExpeditionFinaleType | null
   lastSocialResult: ExpeditionSocialResultProof | null
   pendingSocialSettlement?: { routeStep: number; gigId: string | null } | null
+  lastGigResolvedAtRouteStep?: number | null
   gigOutcomeByStep?: Record<number, { venueId: string; accuracy: number }>
 }
 

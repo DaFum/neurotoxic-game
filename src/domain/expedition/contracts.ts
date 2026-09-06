@@ -89,9 +89,13 @@ export const evaluateExpeditionConstraint = (
     }
     case 'max_heat': {
       const value = evidence.heat ?? 0
+      // An invariant, not a completion condition: breaching the cap fails the
+      // obligation on the spot, but staying under it only counts at the run's
+      // terminal checkpoint. Satisfying it on the first safe signal would
+      // settle the reward while the rest of the run could still breach it.
       return {
         value,
-        satisfied: value <= constraint.maxHeat,
+        satisfied: !!evidence.finaleCompleted && value <= constraint.maxHeat,
         failed: value > constraint.maxHeat
       }
     }

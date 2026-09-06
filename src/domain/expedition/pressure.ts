@@ -1,4 +1,5 @@
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { EXPEDITION_PRESSURE_EVENTS } from '../../data/expedition/pressureEvents'
 import { hashExpeditionRoute } from './map'
 import { mulberry32 } from '../../utils/seededRng'
 import type { GameState } from '../../types'
@@ -98,6 +99,60 @@ export const selectPressureEvent = (
   }
   return weighted.at(-1)?.event ?? null
 }
+/**
+ * Runs one Director step for the route step the run has just entered.
+ *
+ * @param state - Current game state, already advanced to the new route step.
+ * @param events - Candidate pool; defaults to the canonical registry.
+ * @returns The next pressure slice, or the identical reference when the
+ * Director selects nothing.
+ *
+ * @remarks
+ * The single production entrypoint for {@link selectPressureEvent}. Selection
+ * is seeded from `runSeed` and the route step, so composing it into the route
+ * advance keeps the Director replay-safe: the same run picks the same event at
+ * the same step. A severe negative event opens the relief window the next two
+ * steps read, and the Underground invite is what turns high Heat into the
+ * run-scoped route opportunity rather than only a penalty.
+ */
+export const resolveExpeditionPressureDirectorStep = (
+  state: GameState,
+  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS
+): GameState['expedition']['pressure'] => {
+  const pressure = state.expedition.pressure
+  if (state.expedition.status !== 'active') return pressure
+  const event = selectPressureEvent(state, events)
+  if (!event) return pressure
+  const routeStep = state.expedition.routeStep
+  const next =
+    event.severity === 'severe' && event.negative
+      ? {
+          ...pressure,
+          lastSevereEventId: event.id,
+          severeReliefUntilRouteStep: routeStep + 2
+        }
+      : pressure
+  if (
+    event.id !== 'expedition_underground_invite' ||
+    pressure.heat < 60 ||
+    pressure.temporaryRouteOpportunity !== null ||
+    state.expedition.runId === null ||
+    typeof state.player.currentNodeId !== 'string'
+  )
+    return next
+  return {
+    ...next,
+    temporaryRouteOpportunity: {
+      // Derived, not generated: the load sanitizer re-derives this id, so a
+      // forged opportunity cannot name a step it did not fire at.
+      id: `UNDERGROUND_MARKET:${state.expedition.runId}:${routeStep}`,
+      subtype: 'UNDERGROUND_MARKET',
+      targetNodeId: state.player.currentNodeId,
+      createdAtRouteStep: routeStep
+    }
+  }
+}
+
 export const applyExpeditionPressureDelta = (
   state: GameState,
   delta: { heat?: number; exposure?: number; crowdHype?: number }

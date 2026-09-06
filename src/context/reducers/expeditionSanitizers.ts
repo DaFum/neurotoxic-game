@@ -767,7 +767,11 @@ export const sanitizeExpeditionState = (
     resolvedObligationSignalIds: sanitizeUniqueStrings(
       value.resolvedObligationSignalIds
     ),
-    pressure: sanitizeExpeditionPressure(value.pressure),
+    pressure: sanitizeExpeditionPressure(
+      value.pressure,
+      runId,
+      readCount(value, 'routeStep', 0)
+    ),
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
       runSeed
@@ -789,6 +793,10 @@ export const sanitizeExpeditionState = (
     ),
     pendingSocialSettlement: sanitizePendingSocialSettlement(
       value.pendingSocialSettlement,
+      readCount(value, 'routeStep', 0)
+    ),
+    lastGigResolvedAtRouteStep: sanitizeResolvedAtRouteStep(
+      value.lastGigResolvedAtRouteStep,
       readCount(value, 'routeStep', 0)
     ),
     gigOutcomeByStep: sanitizeGigOutcomeMap(
@@ -816,7 +824,9 @@ export const sanitizeExpeditionState = (
         lastGigStats,
         readCount(value, 'routeStep', 0),
         sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-      )
+      ),
+      sanitizeExpeditionPressure(value.pressure).heat,
+      sanitizeFinaleType(value.finaleType)
     ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
@@ -831,8 +841,47 @@ export const sanitizeExpeditionState = (
   }
 }
 
+/**
+ * Restores a run-scoped temporary route opportunity, or `null`.
+ *
+ * @param value - Persisted candidate.
+ * @param runId - Sanitized run id.
+ * @param routeStep - Sanitized current route step.
+ * @returns The opportunity when its derived id checks out, else `null`.
+ *
+ * @remarks
+ * The Director derives the id from subtype, run and firing step, so
+ * re-deriving it here is what stops a save from granting itself an
+ * opportunity the run never earned.
+ */
+const sanitizeTemporaryRouteOpportunity = (
+  value: unknown,
+  runId: string | null,
+  routeStep: number
+): ExpeditionState['pressure']['temporaryRouteOpportunity'] => {
+  if (!isLooseRecord(value) || !runId) return null
+  const { subtype, targetNodeId, createdAtRouteStep } = value
+  if (
+    (subtype !== 'UNDERGROUND_MARKET' &&
+      subtype !== 'BLACK_MARKET' &&
+      subtype !== 'RIVAL_ENCOUNTER') ||
+    typeof targetNodeId !== 'string' ||
+    isForbiddenKey(targetNodeId) ||
+    !isFiniteNumber(createdAtRouteStep) ||
+    !Number.isInteger(createdAtRouteStep) ||
+    createdAtRouteStep < 0 ||
+    createdAtRouteStep > routeStep
+  )
+    return null
+  const expectedId = `${subtype}:${runId}:${createdAtRouteStep}`
+  if (value.id !== expectedId) return null
+  return { id: expectedId, subtype, targetNodeId, createdAtRouteStep }
+}
+
 const sanitizeExpeditionPressure = (
-  value: unknown
+  value: unknown,
+  runId: string | null = null,
+  routeStep = 0
 ): ExpeditionState['pressure'] => {
   const defaults = createDefaultExpeditionState().pressure
   if (!isLooseRecord(value)) return defaults
@@ -854,7 +903,11 @@ const sanitizeExpeditionPressure = (
       typeof value.lastSevereEventId === 'string'
         ? value.lastSevereEventId
         : null,
-    temporaryRouteOpportunity: null
+    temporaryRouteOpportunity: sanitizeTemporaryRouteOpportunity(
+      value.temporaryRouteOpportunity,
+      runId,
+      routeStep
+    )
   }
 }
 
@@ -940,7 +993,11 @@ const sanitizeGigOutcomeMap = (
     ) {
       // Current step outcome present in save but no canonical lastGigStats evidence -> fail closed
       continue
-    } else if (isFiniteNumber(step) && isFiniteNumber(routeStep) && step < routeStep) {
+    } else if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step < routeStep
+    ) {
       // For historical steps, verify against resolvedObligationSignalIds signal proof: `gig:<venueId>:<step>:<accuracy>`
       const expectedSignal = `gig:${venueId}:${step}:${Math.round(accuracy)}`
       const hasProof = resolvedObligationSignalIds.includes(expectedSignal)
@@ -959,6 +1016,24 @@ const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
   value === 'illegal_show' ||
   value === 'disaster_gig' ||
   value === 'contract_special'
+    ? value
+    : null
+
+/**
+ * Restores the route step a gig resolved at, or `null`.
+ *
+ * @param value - Persisted candidate.
+ * @param routeStep - Sanitized current route step.
+ * @returns An integer step no deeper than the run, else `null`.
+ */
+const sanitizeResolvedAtRouteStep = (
+  value: unknown,
+  routeStep: number
+): number | null =>
+  isFiniteNumber(value) &&
+  Number.isInteger(value) &&
+  value >= 0 &&
+  value <= routeStep
     ? value
     : null
 
@@ -1021,7 +1096,9 @@ const sanitizeActiveObligations = (
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
   lastSocialResult: ExpeditionState['lastSocialResult'] = null,
-  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {}
+  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {},
+  heat = 0,
+  finaleType: ExpeditionState['finaleType'] = null
 ): ExpeditionState['activeObligations'] => {
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
@@ -1051,13 +1128,24 @@ const sanitizeActiveObligations = (
     return qualifyingCount
   }
 
+  // Heat, rest and Finale constraints have no per-step counter to cap, so the
+  // canonical run-scoped signal proofs stand in: without them a save can hand
+  // itself a satisfied high-risk contract and collect the Money/Fame reward.
+  const hasFinaleSignal = resolvedObligationSignalIds.some(signalId =>
+    signalId.startsWith('finale:')
+  )
+  const hasRestSignal = resolvedObligationSignalIds.some(signalId =>
+    signalId.startsWith('rest:')
+  )
+
   const validSocialSignalCount = resolvedObligationSignalIds.filter(
     signalId => {
       if (!signalId.startsWith('social_post:')) return false
       if (!lastSocialResult) return false
       return (
         signalId === `social_post:${lastSocialResult.id}` ||
-        signalId === `social_post:${lastSocialResult.id}:${lastSocialResult.resolvedAtRouteStep}`
+        signalId ===
+          `social_post:${lastSocialResult.id}:${lastSocialResult.resolvedAtRouteStep}`
       )
     }
   ).length
@@ -1121,6 +1209,7 @@ const sanitizeActiveObligations = (
       }
       let canonicalValue = progress.value
       let canonicalSatisfied = progress.satisfied
+      let canonicalFailed = progress.failed
       if (constraint.kind === 'gig_accuracy_count') {
         const qualifyingCount = countQualifyingGigSignals(
           constraint.minAccuracy
@@ -1134,12 +1223,31 @@ const sanitizeActiveObligations = (
       } else if (constraint.kind === 'social_post_count') {
         canonicalValue = Math.min(progress.value, validSocialSignalCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
+      } else if (constraint.kind === 'max_heat') {
+        canonicalValue = heat
+        canonicalSatisfied =
+          progress.satisfied && hasFinaleSignal && heat <= constraint.maxHeat
+        canonicalFailed = progress.failed || heat > constraint.maxHeat
+      } else if (constraint.kind === 'no_rest_before_finale') {
+        canonicalValue = hasRestSignal ? 1 : 0
+        canonicalSatisfied = hasFinaleSignal && !hasRestSignal
+        canonicalFailed = progress.failed || hasRestSignal
+      } else if (constraint.kind === 'finale_completed') {
+        canonicalValue = hasFinaleSignal ? 1 : 0
+        canonicalSatisfied = progress.satisfied && hasFinaleSignal
+      } else if (constraint.kind === 'special_finale') {
+        canonicalSatisfied =
+          progress.satisfied &&
+          hasFinaleSignal &&
+          finaleType === 'contract_special' &&
+          constraint.profileId === 'all_in_showcase'
+        canonicalValue = canonicalSatisfied ? 1 : 0
       }
       progressByConstraintId[constraint.id] = {
         constraintId: constraint.id,
         value: canonicalValue,
         satisfied: canonicalSatisfied,
-        failed: progress.failed
+        failed: canonicalFailed
       }
     }
     if (!valid) continue
@@ -1162,7 +1270,13 @@ const sanitizeActiveObligations = (
     }
 
     const progressList = Object.values(progressByConstraintId)
-    let derivedStatus: 'active' | 'completed' | 'failed' = status
+    // A constrained obligation's status is re-derived from the canonical
+    // progress above, never carried over from the save: trusting the persisted
+    // status would readmit exactly the terminal state the progress rebuild
+    // just refused. Brand-deal obligations carry no constraints to derive
+    // from, so theirs is kept.
+    let derivedStatus: 'active' | 'completed' | 'failed' =
+      progressList.length > 0 ? 'active' : status
     if (progressList.some(item => item.failed)) derivedStatus = 'failed'
     else if (
       progressList.length > 0 &&
@@ -1183,7 +1297,11 @@ const sanitizeActiveObligations = (
       constraints,
       progressByConstraintId,
       status: derivedStatus,
-      settled: raw.settled,
+      // A native obligation is settled in the same reducer pass that makes it
+      // terminal, so the flag is derivable: trusting a persisted `false` on a
+      // terminal obligation would pay its reward a second time.
+      settled:
+        sourceType === 'native' ? derivedStatus !== 'active' : raw.settled,
       doubleDown
     })
   }

@@ -148,7 +148,21 @@ export const settleExpedition = (
   kind: ExpeditionTerminalKind,
   explicitRareRewardIds: readonly string[] = []
 ): ExpeditionSettlement => {
-  const retentionRate = EXPEDITION_BASE_RETENTION[kind]
+  // Voluntary extraction is the only terminal kind the run-draft retention
+  // modifier touches: `reckless_encore` trades a richer Finale for a worse
+  // bail-out, so a completed or failed run keeps its canonical base rate.
+  const retentionRate =
+    kind === 'extracted'
+      ? Math.max(
+          0,
+          Math.min(
+            1,
+            EXPEDITION_BASE_RETENTION[kind] *
+              getEffectiveExpeditionRules(state).numeric
+                .extractionRetentionMultiplier
+          )
+        )
+      : EXPEDITION_BASE_RETENTION[kind]
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
 

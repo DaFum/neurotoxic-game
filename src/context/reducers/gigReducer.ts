@@ -534,6 +534,11 @@ export const handleSetLastGigStats = (
       expedition: {
         ...nextState.expedition,
         technicalCondition: updatedCondition,
+        // The route step the gig actually resolved at. `lastGigStats` and
+        // `currentGig` both survive a route advance, so obligation signals
+        // bind to this stamp instead of the caller's current step - otherwise
+        // one gig re-signals at every later step of the run.
+        lastGigResolvedAtRouteStep: nextState.expedition.routeStep,
         pendingSocialSettlement:
           safePayload.failed !== true
             ? {
