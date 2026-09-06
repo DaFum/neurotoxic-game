@@ -321,7 +321,8 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   // With canonical gig evidence:
   const startedWithGig = {
     ...started,
-    lastGigStats: { score: 1000, accuracy: 80, failed: false }
+    lastGigStats: { score: 1000, accuracy: 80, failed: false },
+    social: { ...started.social, pendingSocialOptionId: 'perf_moshpit_chaos' }
   }
   const resolved = handleResolveExpeditionSocialResult(startedWithGig, {
     resultId: 'push',
@@ -353,7 +354,7 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   )
 })
 
-test('handleResolveExpeditionSocialResult rejects caller-authored mismatch resultId', () => {
+test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or unproven resultId', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
@@ -365,26 +366,46 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch resul
   })
   const startedWithGig = {
     ...started,
-    activeEvent: { id: 'stage_diver' },
     lastGigStats: { score: 1000, accuracy: 80, failed: false }
   }
 
-  // Matching canonical resultId 'push' succeeds
-  const canonicalResult = handleResolveExpeditionSocialResult(startedWithGig, {
+  // Without pendingSocialOptionId in state, direct dispatch must be REJECTED (no-op)
+  const unprovenResult = handleResolveExpeditionSocialResult(startedWithGig, {
     resultId: 'push',
     postOptionId: 'perf_moshpit_chaos',
     expectedRouteStep: 0
   })
-  assert.notStrictEqual(canonicalResult, startedWithGig)
-  assert.equal(canonicalResult.expedition.lastSocialResult?.resultId, 'push')
+  assert.strictEqual(unprovenResult, startedWithGig)
+
+  // With pendingSocialOptionId set from canonical social post selection:
+  const startedWithProof = {
+    ...startedWithGig,
+    social: {
+      ...startedWithGig.social,
+      pendingSocialOptionId: 'perf_moshpit_chaos'
+    }
+  }
 
   // Mismatched resultId 'monetize' must be rejected
-  const forgedResult = handleResolveExpeditionSocialResult(startedWithGig, {
+  const forgedResult = handleResolveExpeditionSocialResult(startedWithProof, {
     resultId: 'monetize',
     postOptionId: 'perf_moshpit_chaos',
     expectedRouteStep: 0
   })
-  assert.strictEqual(forgedResult, startedWithGig)
+  assert.strictEqual(forgedResult, startedWithProof)
+
+  // Matching canonical resultId 'push' succeeds
+  const canonicalResult = handleResolveExpeditionSocialResult(
+    startedWithProof,
+    {
+      resultId: 'push',
+      postOptionId: 'perf_moshpit_chaos',
+      expectedRouteStep: 0
+    }
+  )
+  assert.notStrictEqual(canonicalResult, startedWithProof)
+  assert.equal(canonicalResult.expedition.lastSocialResult?.resultId, 'push')
+  assert.equal(canonicalResult.social.pendingSocialOptionId, null)
 })
 
 test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy', () => {
@@ -403,19 +424,25 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
     }
   })
 
-  const startNodeId = started.player.currentNodeId || started.expedition.visitedNodeIds[0]
+  const startNodeId =
+    started.player.currentNodeId || started.expedition.visitedNodeIds[0]
   assert.ok(startNodeId, 'startNodeId must exist')
-  const gigNodeId = started.gameMap.connections.find(edge => edge.from === startNodeId)?.to
+  const gigNodeId = started.gameMap.connections.find(
+    edge => edge.from === startNodeId
+  )?.to
   assert.ok(gigNodeId, 'gigNodeId must exist')
-  const gigVenueId = started.gameMap.nodes[gigNodeId]?.venueId || gigNodeId
+  const gigVenueId =
+    started.gameMap.nodes[gigNodeId]?.venueId || gigNodeId
 
-  // Create a state where signal ID records accuracy 50 (below contract's minAccuracy 65),
-  // but save file contains tampered progress value = 1.
-  const stateWithSubparSignal = {
+  // Test 1: Forged signal string ":100" without canonical gigOutcomeByStep proof
+  const stateWithForgedSignal = {
     ...started.expedition,
     visitedNodeIds: [startNodeId, gigNodeId],
     routeStep: 1,
-    resolvedObligationSignalIds: [`gig:${gigVenueId}:1:50`],
+    resolvedObligationSignalIds: [`gig:${gigVenueId}:1:100`],
+    gigOutcomeByStep: {
+      1: { venueId: gigVenueId, accuracy: 50 } // Actual settled accuracy is 50 < minAccuracy 65!
+    },
     activeObligations: [
       {
         id: `${started.expedition.runId}:contract_three_good_gigs`,
@@ -432,7 +459,7 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
         progressByConstraintId: {
           three_good_gigs: {
             constraintId: 'three_good_gigs',
-            value: 1, // Tampered progress in save file!
+            value: 1, // Forged progress in save file!
             satisfied: false,
             failed: false
           }
@@ -444,57 +471,32 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
     ]
   }
 
-  const sanitized = sanitizeExpeditionState(stateWithSubparSignal, started.runSeed)
-  // Accuracy was 50 < minAccuracy 65, so progress value must be reset to 0
+  const sanitizedForged = sanitizeExpeditionState(
+    stateWithForgedSignal,
+    started.runSeed
+  )
+  // Actual canonical accuracy was 50 < minAccuracy 65, so progress value must be reset to 0!
   assert.equal(
-    sanitized.activeObligations[0].progressByConstraintId.three_good_gigs.value,
+    sanitizedForged.activeObligations[0].progressByConstraintId.three_good_gigs
+      .value,
     0
   )
 
-  // Test multiple accuracy variants for the same occurrence: must count as AT MOST 1 gig
-  const stateWithDuplicateVariants = {
-    ...started.expedition,
-    visitedNodeIds: [startNodeId, gigNodeId],
-    routeStep: 1,
-    resolvedObligationSignalIds: [
-      `gig:${gigVenueId}:1:70`,
-      `gig:${gigVenueId}:1:80`,
-      `gig:${gigVenueId}:1:90`
-    ],
-    activeObligations: [
-      {
-        id: `${started.expedition.runId}:contract_three_good_gigs`,
-        sourceType: 'native',
-        sourceId: 'contract_three_good_gigs',
-        constraints: [
-          {
-            id: 'three_good_gigs',
-            kind: 'gig_accuracy_count',
-            minAccuracy: 65,
-            requiredCount: 3
-          }
-        ],
-        progressByConstraintId: {
-          three_good_gigs: {
-            constraintId: 'three_good_gigs',
-            value: 3, // Tampered value attempting to treat 3 variants as 3 gigs
-            satisfied: true,
-            failed: false
-          }
-        },
-        status: 'active',
-        settled: false,
-        doubleDown: null
-      }
-    ]
+  // Test 2: Valid canonical gigOutcomeByStep with accuracy >= 65
+  const stateWithValidOutcome = {
+    ...stateWithForgedSignal,
+    gigOutcomeByStep: {
+      1: { venueId: gigVenueId, accuracy: 85 }
+    }
   }
 
-  const sanitizedDupes = sanitizeExpeditionState(
-    stateWithDuplicateVariants,
+  const sanitizedValid = sanitizeExpeditionState(
+    stateWithValidOutcome,
     started.runSeed
   )
   assert.equal(
-    sanitizedDupes.activeObligations[0].progressByConstraintId.three_good_gigs.value,
+    sanitizedValid.activeObligations[0].progressByConstraintId.three_good_gigs
+      .value,
     1
   )
 })

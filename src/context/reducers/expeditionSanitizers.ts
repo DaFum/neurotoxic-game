@@ -785,6 +785,7 @@ export const sanitizeExpeditionState = (
       value.lastSocialResult,
       readCount(value, 'routeStep', 0)
     ),
+    gigOutcomeByStep: sanitizeGigOutcomeMap(value.gigOutcomeByStep),
     activeObligations: sanitizeActiveObligations(
       value.activeObligations,
       runId,
@@ -797,7 +798,8 @@ export const sanitizeExpeditionState = (
       sanitizeSocialResultProof(
         value.lastSocialResult,
         readCount(value, 'routeStep', 0)
-      )
+      ),
+      sanitizeGigOutcomeMap(value.gigOutcomeByStep)
     ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
@@ -879,6 +881,24 @@ const sanitizeRunDraftTraitIds = (
   ].slice(0, 2)
 }
 
+const sanitizeGigOutcomeMap = (
+  value: unknown
+): Record<number, { venueId: string; accuracy: number }> => {
+  const result: Record<number, { venueId: string; accuracy: number }> =
+    Object.create(null)
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value)) {
+    const step = Number(key)
+    if (!Number.isInteger(step) || step < 0) continue
+    if (!isLooseRecord(entry)) continue
+    const venueId = readString(entry, 'venueId')
+    const accuracy = readCount(entry, 'accuracy', -1)
+    if (!venueId || accuracy < 0 || accuracy > 100) continue
+    result[step] = { venueId, accuracy }
+  }
+  return result
+}
+
 const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
   value === 'regional_headliner' ||
   value === 'corporate_showcase' ||
@@ -929,31 +949,18 @@ const sanitizeActiveObligations = (
   preparedMap: import('../../types/expedition').ExpeditionMap | null,
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
-  lastSocialResult: ExpeditionState['lastSocialResult'] = null
+  lastSocialResult: ExpeditionState['lastSocialResult'] = null,
+  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {}
 ): ExpeditionState['activeObligations'] => {
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
 
   const countQualifyingGigSignals = (minAccuracy: number): number => {
-    const seenOccurrences = new Set<string>()
     let qualifyingCount = 0
-    for (const signalId of resolvedObligationSignalIds) {
-      if (!signalId.startsWith('gig:')) continue
-      const parts = signalId.split(':')
-      if (parts.length < 3 || parts.length > 4) continue
-      const [, sourceId, stepStr, accuracyStr] = parts
-      if (!sourceId) continue
-      const step = Number(stepStr)
-      if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
-        continue
-      const occurrenceKey = `${sourceId}:${step}`
-      if (seenOccurrences.has(occurrenceKey)) continue
-      seenOccurrences.add(occurrenceKey)
-
+    for (let step = 0; step < validVisitedPath.length; step++) {
       const expNodeId = validVisitedPath[step]
       if (!expNodeId || !preparedMap) continue
-      const node = preparedMap.nodes[expNodeId]
       const metaNode = preparedMap.meta[expNodeId]
       const isGigClass =
         metaNode &&
@@ -961,14 +968,14 @@ const sanitizeActiveObligations = (
           metaNode.nodeClass === 'FESTIVAL' ||
           metaNode.nodeClass === 'FINALE')
       if (!isGigClass) continue
-      if (sourceId !== node?.venueId && sourceId !== expNodeId) continue
-      if (parts.length === 4) {
-        const accuracy = Number(accuracyStr)
-        if (!isFiniteNumber(accuracy) || accuracy < minAccuracy) continue
-      } else if (minAccuracy > 0) {
+      const outcome = gigOutcomeByStep[step]
+      if (!outcome) continue
+      const node = preparedMap.nodes[expNodeId]
+      if (outcome.venueId !== node?.venueId && outcome.venueId !== expNodeId)
         continue
+      if (outcome.accuracy >= minAccuracy) {
+        qualifyingCount += 1
       }
-      qualifyingCount += 1
     }
     return qualifyingCount
   }

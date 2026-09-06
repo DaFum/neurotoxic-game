@@ -607,6 +607,7 @@ export interface ExpeditionState {
   consumedRunDraftSourceKeys?: string[]
   finaleType: ExpeditionFinaleType | null
   lastSocialResult: ExpeditionSocialResultProof | null
+  gigOutcomeByStep?: Record<number, { venueId: string; accuracy: number }>
 }
 
 export type ExpeditionCrewRole =

@@ -1764,6 +1764,21 @@ export const handleRecordExpeditionObligationSignal = (
     }
   )
   if (!changed) return state
+  const accuracy =
+    payload.signalType === 'gig' && state.lastGigStats
+      ? Math.round(finiteNumberOr(state.lastGigStats.accuracy, 0))
+      : null
+  const gigOutcomeByStep =
+    payload.signalType === 'gig'
+      ? {
+          ...(state.expedition.gigOutcomeByStep ?? {}),
+          [payload.expectedRouteStep]: {
+            venueId: canonicalSourceId,
+            accuracy: accuracy ?? 0
+          }
+        }
+      : state.expedition.gigOutcomeByStep
+
   let nextState: GameState = {
     ...state,
     player: {
@@ -1795,7 +1810,8 @@ export const handleRecordExpeditionObligationSignal = (
       resolvedObligationSignalIds: [
         ...state.expedition.resolvedObligationSignalIds,
         signalId
-      ]
+      ],
+      gigOutcomeByStep
     }
   }
   if (moneyDelta > 0)
@@ -1982,6 +1998,7 @@ export const handleResolveExpeditionSocialResult = (
     payload.postOptionId.length === 0
   )
     return state
+  if (state.social.pendingSocialOptionId !== payload.postOptionId) return state
   const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
   if (!postOption) return state
   const expectedResultId = deriveExpeditionSocialResultId(postOption)
@@ -2010,6 +2027,7 @@ export const handleResolveExpeditionSocialResult = (
     },
     social: {
       ...state.social,
+      pendingSocialOptionId: null,
       brandReputation: {
         ...state.social.brandReputation,
         NEUTRAL: Math.max(
