@@ -79,10 +79,6 @@ export const deriveExpeditionCareerRank = (
   return 'rookie'
 }
 
-/** Reads the current Career rank off game state. */
-const getExpeditionCareerRank = (state: GameState): ExpeditionCareerRank =>
-  deriveExpeditionCareerRank(state.career)
-
 /** Ranks in ascending order, so a gate can compare without a lookup table. */
 const RANK_ORDER: readonly ExpeditionCareerRank[] = [
   'rookie',
@@ -90,6 +86,20 @@ const RANK_ORDER: readonly ExpeditionCareerRank[] = [
   'headliner',
   'cult_legend'
 ]
+
+/**
+ * Whether a Career slice has reached at least a rank.
+ *
+ * @param career - Career slice.
+ * @param minimum - Rank the caller requires.
+ * @returns True when the derived rank is at or above it.
+ */
+export const careerHasExpeditionRank = (
+  career: CareerState,
+  minimum: ExpeditionCareerRank
+): boolean =>
+  RANK_ORDER.indexOf(deriveExpeditionCareerRank(career)) >=
+  RANK_ORDER.indexOf(minimum)
 
 /**
  * Whether the Career has reached at least a rank.
@@ -101,9 +111,7 @@ const RANK_ORDER: readonly ExpeditionCareerRank[] = [
 export const hasExpeditionCareerRank = (
   state: GameState,
   minimum: ExpeditionCareerRank
-): boolean =>
-  RANK_ORDER.indexOf(getExpeditionCareerRank(state)) >=
-  RANK_ORDER.indexOf(minimum)
+): boolean => careerHasExpeditionRank(state.career, minimum)
 
 /** What settling one run's Career result changes. */
 export interface ExpeditionCareerSettlement {

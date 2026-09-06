@@ -141,3 +141,22 @@ export const isExpeditionCapabilityUnlocked = (
   }
   return false
 }
+
+/**
+ * Whether the Career owns one unlock set outright.
+ *
+ * @param unlockedSetIds - Set ids the Career owns.
+ * @param setId - Set the caller requires.
+ * @returns True when it is owned.
+ *
+ * @remarks
+ * Used where content is gated on the *set* rather than on one of the
+ * capabilities inside it - the legacy HQ policy names sets, not capabilities.
+ */
+export const hasExpeditionUnlockSet = (
+  unlockedSetIds: readonly string[] | undefined,
+  setId: unknown
+): boolean =>
+  Array.isArray(unlockedSetIds) &&
+  isExpeditionUnlockSetId(setId) &&
+  unlockedSetIds.includes(setId)

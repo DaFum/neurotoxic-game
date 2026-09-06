@@ -1876,6 +1876,7 @@
   "shop.messages.purchaseFailed": "Purchase failed!",
   "shop.messages.purchaseSuccess": "{{itemName}} purchased!",
   "shop.messages.reputationBlocked": "Your reputation is too low to purchase {{itemName}}.",
+  "shop.messages.expeditionLocked": "This upgrade is locked until your touring career earns it.",
   "shop.messages.shrineAltar": "The Rock Gods bless you. Luck +10.",
   "shop.messages.soundproofing": "Less noise, more peace. Harmony +5",
   "shop.messages.traitUnlocked": "Unlocked Trait: {{traitName}} ({{memberId}})",

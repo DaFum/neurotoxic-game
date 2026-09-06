@@ -1876,6 +1876,7 @@
   "shop.messages.purchaseFailed": "Kauf fehlgeschlagen!",
   "shop.messages.purchaseSuccess": "{{itemName}} gekauft!",
   "shop.messages.reputationBlocked": "Dein Ruf ist zu niedrig, um {{itemName}} zu kaufen.",
+  "shop.messages.expeditionLocked": "Dieses Upgrade ist gesperrt, bis deine Tour-Karriere es freispielt.",
   "shop.messages.shrineAltar": "Die Rockgötter segnen dich. Glück +10.",
   "shop.messages.soundproofing": "Weniger Lärm, mehr Frieden. Harmonie +5",
   "shop.messages.traitUnlocked": "Eigenschaft freigeschaltet: {{traitName}} ({{memberId}})",
