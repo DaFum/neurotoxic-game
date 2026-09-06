@@ -24,6 +24,7 @@ import {
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import { EXPEDITION_UNLOCK_SET_IDS } from '../../src/data/expedition/unlockSets.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
 /** The fixture run, re-pointed at one Region and Tour. */
@@ -290,8 +291,17 @@ describe('G5 — the route-pressure profile is the second axis', () => {
 })
 
 describe('G5 — a registered Region or Tour is one a run can actually book', () => {
-  it('offers every registry entry through the availability lookups', () => {
-    const state = startedState({ money: 5000 })
+  it('offers every registry entry once its unlock set is owned', () => {
+    // Task 7 gates the non-baseline entries behind capabilities, so "reachable"
+    // now means reachable to a Career that bought the set - not to every
+    // Career. What must never happen is an entry no set can ever open.
+    const state = {
+      ...startedState({ money: 5000 }),
+      career: {
+        ...startedState({ money: 5000 }).career,
+        unlockedSetIds: [...EXPEDITION_UNLOCK_SET_IDS]
+      }
+    }
     assert.deepEqual(
       [...getAvailableExpeditionTourTypeIds(state)].sort(),
       Object.keys(EXPEDITION_TOUR_TYPES).sort()
@@ -312,7 +322,14 @@ describe('G5 — a registered Region or Tour is one a run can actually book', ()
     // Publishing a Region or Tour as data that the commitment validator then
     // refuses is the failure this guards: every pair the registry names has to
     // survive validation for a reason other than its ids.
-    const base = startedState({ money: 5000 })
+    const fresh = startedState({ money: 5000 })
+    const base = {
+      ...fresh,
+      career: {
+        ...fresh.career,
+        unlockedSetIds: [...EXPEDITION_UNLOCK_SET_IDS]
+      }
+    }
     for (const tourTypeId of Object.keys(EXPEDITION_TOUR_TYPES)) {
       for (const regionId of Object.keys(EXPEDITION_REGIONS)) {
         const candidate = {

@@ -201,6 +201,17 @@ export interface PurchaseExpeditionHqFacilityPayload {
   facilityId: string
   expectedLevel: number
 }
+/**
+ * Names the unlock set a journal step applies to.
+ *
+ * @remarks
+ * The same shape for all three steps. No cost is carried: begin derives it
+ * from the registry, and complete and rollback read it back off the journal
+ * entry, so a caller cannot choose what a purchase took or refunds.
+ */
+export interface ExpeditionUnlockPurchasePayload {
+  setId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

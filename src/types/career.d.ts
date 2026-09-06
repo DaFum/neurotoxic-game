@@ -74,6 +74,79 @@ export type ExpeditionHqFacilityId =
  */
 export type ExpeditionHqFacilityLevel = 1 | 2
 
+/**
+ * A purchasable unlock set.
+ */
+export type ExpeditionUnlockSetId =
+  | 'mechanic_network'
+  | 'industry_network'
+  | 'underground_network'
+  | 'festival_network'
+  | 'crew_network'
+  | 'chassis_network'
+  | 'rival_network'
+
+/**
+ * A capability an unlock set grants.
+ *
+ * @remarks
+ * Capabilities are the only thing a set is worth. Availability lookups ask
+ * `isExpeditionCapabilityUnlocked` for one of these rather than testing which
+ * set the Career owns, so a set can be re-costed or split without touching a
+ * single consumer.
+ */
+export type ExpeditionCapabilityId =
+  | 'region_industrial_belt'
+  | 'region_corporate_circuit'
+  | 'region_underground_scene'
+  | 'region_festival_fields'
+  | 'tour_survival_tour'
+  | 'tour_corporate_tour'
+  | 'tour_underground_tour'
+  | 'tour_blitz_tour'
+  | 'tour_rival_hunt_tour'
+  | 'crew_manager'
+  | 'crew_security'
+  | 'crew_signature_traits'
+  | 'perk_mechanic_kit'
+  | 'perk_press_pass'
+  | 'perk_underground_contact'
+  | 'perk_rehearsed_set'
+  | 'advanced_inspection'
+  | 'premium_sponsor_pool'
+  | 'performance_contract_pool'
+  | 'black_market_content'
+  | 'chassis_higher_tier'
+  | 'rival_quest_continuation'
+
+/**
+ * One unlock set: what it costs, what it needs, and what it is worth.
+ */
+export interface ExpeditionUnlockSetDefinition {
+  id: ExpeditionUnlockSetId
+  cost: number
+  requiredRank: ExpeditionCareerRank
+  requiredFacility: {
+    id: ExpeditionHqFacilityId
+    level: ExpeditionHqFacilityLevel
+  }
+  capabilities: readonly ExpeditionCapabilityId[]
+}
+
+/**
+ * A debited-but-not-yet-granted unlock purchase.
+ *
+ * @remarks
+ * The journal entry that makes the purchase crash-safe. Tokens are debited
+ * when it is written, so a process that dies before the set is granted leaves
+ * evidence of exactly what was taken and what it was for - which is what lets
+ * the load path settle it rather than silently losing the balance.
+ */
+export interface ExpeditionPendingUnlockPurchase {
+  setId: ExpeditionUnlockSetId
+  debitedTokens: number
+}
+
 export interface CareerState {
   crewById: Record<string, CrewCareerState>
   expeditionRelationshipByPair: Record<string, ExpeditionRelationshipTier>
@@ -95,5 +168,7 @@ export interface CareerState {
    */
   settledExpeditionRunIds: string[]
   hqFacilityLevels: Record<string, number>
+  unlockedSetIds: string[]
+  pendingUnlockPurchase: ExpeditionPendingUnlockPurchase | null
   ascensionUnlocked: boolean
 }

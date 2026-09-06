@@ -1,5 +1,6 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
+  ExpeditionUnlockPurchasePayload,
   PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
   SettleExpeditionCrewCareerPayload
@@ -14,6 +15,8 @@ import {
   getExpeditionHqFacilityLevelCost,
   isExpeditionHqFacilityId
 } from '../../data/expedition/hqFacilities'
+import { getExpeditionUnlockSet } from '../../data/expedition/unlockSets'
+import { hasExpeditionCareerRank } from '../../domain/expedition/meta'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 
 export const handleSettleExpeditionCrewCareer = (
@@ -206,6 +209,119 @@ export const handlePurchaseExpeditionHqFacility = (
         ...state.career.hqFacilityLevels,
         [facilityId]: targetLevel
       }
+    }
+  }
+}
+
+/**
+ * Debits the Tokens and opens the unlock journal entry.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the set being bought.
+ * @returns Next state, or the identical reference for an illegal purchase.
+ *
+ * @remarks
+ * Step one of three. Rank, facility level and Token balance are all
+ * re-derived here rather than trusted, and the debit happens *with* the
+ * journal entry in one commit: a process that dies after this leaves a save
+ * that says exactly what was taken and what it was for, which is what lets
+ * the load path settle it instead of losing the balance. Only one purchase is
+ * open at a time, so a second begin is refused rather than stacking debits.
+ */
+export const handleBeginExpeditionUnlockPurchase = (
+  state: GameState,
+  payload: ExpeditionUnlockPurchasePayload
+): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  if (state.career.pendingUnlockPurchase !== null) return state
+  const set = getExpeditionUnlockSet(payload.setId)
+  if (!set) return state
+  if (state.career.unlockedSetIds.includes(set.id)) return state
+  if (!hasExpeditionCareerRank(state, set.requiredRank)) return state
+
+  const facilityLevel = Math.max(
+    0,
+    Math.floor(
+      finiteNumberOr(
+        Object.hasOwn(state.career.hqFacilityLevels, set.requiredFacility.id)
+          ? state.career.hqFacilityLevels[set.requiredFacility.id]
+          : 0,
+        0
+      )
+    )
+  )
+  if (facilityLevel < set.requiredFacility.level) return state
+
+  const tokens = Math.max(0, finiteNumberOr(state.career.tourTokens, 0))
+  if (tokens < set.cost) return state
+
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      tourTokens: tokens - set.cost,
+      pendingUnlockPurchase: { setId: set.id, debitedTokens: set.cost }
+    }
+  }
+}
+
+/**
+ * Grants the set the open journal entry paid for.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the set being completed.
+ * @returns Next state, or the identical reference when it does not match.
+ *
+ * @remarks
+ * Step three. The payload must name the set the journal is actually holding,
+ * so a forged complete cannot grant a different - or more expensive - set
+ * than the one that was paid for.
+ */
+export const handleCompleteExpeditionUnlockPurchase = (
+  state: GameState,
+  payload: ExpeditionUnlockPurchasePayload
+): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  const pending = state.career.pendingUnlockPurchase
+  if (!pending || pending.setId !== payload.setId) return state
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      unlockedSetIds: state.career.unlockedSetIds.includes(pending.setId)
+        ? state.career.unlockedSetIds
+        : [...state.career.unlockedSetIds, pending.setId],
+      pendingUnlockPurchase: null
+    }
+  }
+}
+
+/**
+ * Refunds an open journal entry and grants nothing.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the set being rolled back.
+ * @returns Next state, or the identical reference when it does not match.
+ *
+ * @remarks
+ * The refund comes off the journal entry rather than the registry, so
+ * re-costing a set later cannot turn an old open purchase into a profit.
+ */
+export const handleRollbackExpeditionUnlockPurchase = (
+  state: GameState,
+  payload: ExpeditionUnlockPurchasePayload
+): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  const pending = state.career.pendingUnlockPurchase
+  if (!pending || pending.setId !== payload.setId) return state
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      tourTokens:
+        Math.max(0, finiteNumberOr(state.career.tourTokens, 0)) +
+        Math.max(0, finiteNumberOr(pending.debitedTokens, 0)),
+      pendingUnlockPurchase: null
     }
   }
 }

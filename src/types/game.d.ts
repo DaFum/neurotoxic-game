@@ -448,6 +448,18 @@ export type GameAction =
       import('./actions').PurchaseExpeditionHqFacilityPayload
     >
   | Action<
+      ActionTypes['BEGIN_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['ROLLBACK_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

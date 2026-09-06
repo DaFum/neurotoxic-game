@@ -51,6 +51,8 @@ import type {
 } from '../../types/expedition'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { buildPreparedExpeditionSponsorOffers } from './sponsors'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import type { ExpeditionCapabilityId } from '../../types/career'
 import {
   areExpeditionContractsCompatible,
   materializeContractConstraints
@@ -132,19 +134,66 @@ export const getExpeditionFuelTopUpCost = (
 /* -------------------------------------------------------------------------- */
 
 /**
+ * The capability each non-baseline Tour and Region is gated behind.
+ *
+ * @remarks
+ * The baseline pair is deliberately absent: `standard_tour` and
+ * `industrial_belt` are what every existing save and seed already runs, so
+ * gating them would strand Careers that predate the unlock sets. Everything
+ * else is bought.
+ */
+const TOUR_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
+  survival_tour: 'tour_survival_tour',
+  corporate_tour: 'tour_corporate_tour',
+  underground_tour: 'tour_underground_tour',
+  blitz_tour: 'tour_blitz_tour',
+  rival_hunt_tour: 'tour_rival_hunt_tour'
+}
+
+const REGION_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
+  corporate_circuit: 'region_corporate_circuit',
+  underground_scene: 'region_underground_scene',
+  festival_fields: 'region_festival_fields'
+}
+
+/**
+ * Whether the Career has bought its way to an id, or never needed to.
+ *
+ * @param state - Current game state.
+ * @param id - Tour or Region id.
+ * @param gates - The capability map for that axis.
+ * @returns True when the id is ungated or its capability is unlocked.
+ */
+const isAvailableById = (
+  state: GameState,
+  id: string,
+  gates: Readonly<Record<string, ExpeditionCapabilityId>>
+): boolean => {
+  if (!Object.hasOwn(gates, id)) return true
+  const capability = gates[id]
+  return (
+    capability !== undefined &&
+    isExpeditionCapabilityUnlocked(state.career?.unlockedSetIds, capability)
+  )
+}
+
+/**
  * Tour archetypes the player may commit.
  *
  * @remarks
- * The registry is the source of truth, so a Tour that exists as data is a Tour
- * the player can actually book. The baseline id is kept first so an existing
- * save, seed or preview that assumes it still resolves to the same route.
+ * Registered *and* unlocked. The registry stops a Tour from being published as
+ * data no run can reach; the capability gate is what makes an unlock set worth
+ * its Tokens. The baseline id is kept first and is never gated, so an existing
+ * save, seed or preview still resolves to the same route.
  */
 export const getAvailableExpeditionTourTypeIds = (
-  _state: GameState
+  state: GameState
 ): readonly string[] => [
   BASE_EXPEDITION_TOUR_TYPE_ID,
   ...Object.keys(EXPEDITION_TOUR_TYPES).filter(
-    id => id !== BASE_EXPEDITION_TOUR_TYPE_ID
+    id =>
+      id !== BASE_EXPEDITION_TOUR_TYPE_ID &&
+      isAvailableById(state, id, TOUR_CAPABILITY)
   )
 ]
 
@@ -152,16 +201,18 @@ export const getAvailableExpeditionTourTypeIds = (
  * Regions the player may commit.
  *
  * @remarks
- * Same rule as the Tours above: registered is available. Keeping this derived
- * from the registry is what stops a Region from being published as data that
- * no run can ever reach.
+ * Same rule as the Tours above: registered and unlocked. `home_turf` is the
+ * plan's numeric baseline and carries no gate, so a fresh Career always has
+ * somewhere to go besides the pre-G5 Region.
  */
 export const getAvailableExpeditionRegionIds = (
-  _state: GameState
+  state: GameState
 ): readonly string[] => [
   BASE_EXPEDITION_REGION_ID,
   ...Object.keys(EXPEDITION_REGIONS).filter(
-    id => id !== BASE_EXPEDITION_REGION_ID
+    id =>
+      id !== BASE_EXPEDITION_REGION_ID &&
+      isAvailableById(state, id, REGION_CAPABILITY)
   )
 ]
 

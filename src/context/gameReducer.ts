@@ -113,7 +113,10 @@ import {
   handleAcquireExpeditionCrewSignature,
   handleSettleExpeditionCrewCareer,
   handleSettleExpeditionCareerResult,
-  handlePurchaseExpeditionHqFacility
+  handlePurchaseExpeditionHqFacility,
+  handleBeginExpeditionUnlockPurchase,
+  handleCompleteExpeditionUnlockPurchase,
+  handleRollbackExpeditionUnlockPurchase
 } from './reducers/careerReducer'
 import {
   handleAdvanceExpeditionBandInjury,
@@ -275,6 +278,12 @@ const reducerMap: ReducerMap = {
     handleSettleExpeditionCareerResult,
   [ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY]:
     handlePurchaseExpeditionHqFacility,
+  [ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE]:
+    handleBeginExpeditionUnlockPurchase,
+  [ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE]:
+    handleCompleteExpeditionUnlockPurchase,
+  [ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE]:
+    handleRollbackExpeditionUnlockPurchase,
   [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
     handleAcquireExpeditionCrewSignature,
   [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant,

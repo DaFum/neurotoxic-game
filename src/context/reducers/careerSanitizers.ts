@@ -1,6 +1,7 @@
 import type {
   CareerRivalRecord,
   CareerState,
+  ExpeditionPendingUnlockPurchase,
   CrewCareerState,
   CrewRecoveryDebt
 } from '../../types/career'
@@ -8,6 +9,10 @@ import type { ExpeditionRelationshipTier } from '../../types/expedition'
 import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
 import { createInitialCareerState } from '../../domain/expedition/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import {
+  getExpeditionUnlockSet,
+  isExpeditionUnlockSetId
+} from '../../data/expedition/unlockSets'
 import {
   HQ_FACILITY_MAX_IMPLEMENTED_LEVEL,
   isExpeditionHqFacilityId
@@ -27,6 +32,28 @@ const safeRecord = <T>(
     if (sanitized !== null) result[key] = sanitized
   }
   return result
+}
+
+/**
+ * Narrows a persisted unlock-journal entry.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The entry, or `null` when it names nothing real.
+ *
+ * @remarks
+ * `debitedTokens` is clamped to the set's registry cost rather than trusted,
+ * so a save cannot inflate the refund a rollback pays out.
+ */
+const sanitizePendingUnlockPurchase = (
+  value: unknown
+): ExpeditionPendingUnlockPurchase | null => {
+  if (!isLooseRecord(value)) return null
+  const set = getExpeditionUnlockSet(value.setId)
+  if (!set) return null
+  const debited = isFiniteNumber(value.debitedTokens)
+    ? Math.max(0, Math.floor(value.debitedTokens))
+    : 0
+  return { setId: set.id, debitedTokens: Math.min(set.cost, debited) }
 }
 
 export const sanitizeCareerState = (value: unknown): CareerState => {
@@ -216,6 +243,23 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
           Math.floor(entry)
         )
       }
+    ),
+    unlockedSetIds: Array.isArray(value.unlockedSetIds)
+      ? [
+          ...new Set(
+            value.unlockedSetIds.filter((id): id is string =>
+              isExpeditionUnlockSetId(id)
+            )
+          )
+        ]
+      : [],
+    // Kept even though the save authors it: an open journal entry only ever
+    // *owes* the Career a refund or a set it already paid for, so a forged one
+    // cannot mint Tokens - `debitedTokens` is clamped to what the named set
+    // actually costs, and dropping the entry outright would lose a real
+    // balance when a process died mid-purchase.
+    pendingUnlockPurchase: sanitizePendingUnlockPurchase(
+      value.pendingUnlockPurchase
     ),
     ascensionUnlocked: value.ascensionUnlocked === true
   }
