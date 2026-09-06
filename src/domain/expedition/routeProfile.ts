@@ -11,10 +11,14 @@
  */
 
 import type { GameState } from '../../types'
-import type { ExpeditionRoutePressureProfile } from '../../types/expedition'
+import type {
+  ExpeditionRoutePressureProfile,
+  ExpeditionRouteProfile
+} from '../../types/expedition'
 import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionFameProfile } from './fame'
+import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from './defaults'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /** Baseline weighting: every category as likely as the route builder makes it. */
@@ -139,5 +143,44 @@ export const getExpeditionRoutePressureProfile = (
     // has driven to the top tier does the same, because at that point the feud
     // is the run whatever Tour was booked.
     forcedRival: stable.forcedRival || nemesisLevel >= 4
+  }
+}
+
+/**
+ * Derives the route profile the map is built from.
+ *
+ * @param regionId - Committed Region id.
+ * @param tourTypeId - Committed Tour Type id.
+ * @returns The G1 route profile those two produce.
+ *
+ * @remarks
+ * The map's own contract is unchanged — it still takes an
+ * `ExpeditionRouteProfile` — but the values now come from the Region and Tour
+ * registries instead of a neutral constant. That is what makes a Region change
+ * the route rather than only the numbers, and it is why this reads the
+ * run-stable half: the route is committed once and re-derived on every load,
+ * so a live signal in here would move the map under an in-flight run.
+ */
+export const deriveExpeditionRouteProfile = (
+  regionId: unknown,
+  tourTypeId: unknown
+): ExpeditionRouteProfile => {
+  const weights = getExpeditionStaticRoutePressureProfile(regionId, tourTypeId)
+  const tour = getExpeditionTourType(tourTypeId)
+  return {
+    meaningfulNodeCount:
+      tour?.depth ?? NEUTRAL_EXPEDITION_ROUTE_PROFILE.meaningfulNodeCount,
+    specialWeight: weights.undergroundNodeWeightMultiplier,
+    festivalWeight: weights.festivalHighProfileNodeWeightMultiplier,
+    restWeight: weights.recoveryNodeWeightMultiplier,
+    supplyWeight: weights.supplyNodeWeightMultiplier,
+    gigWeight: weights.gigNodeWeightMultiplier,
+    extractionWindowRange:
+      tour?.extractionWindowRange ??
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE.extractionWindowRange,
+    undergroundAllowed: true,
+    // A Tour that hunts the Rival must be able to place one; nothing here
+    // forbids it otherwise.
+    rivalAllowed: true
   }
 }

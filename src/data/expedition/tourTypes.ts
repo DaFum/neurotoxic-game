@@ -24,7 +24,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'standard_tour',
     labelKey: 'ui:expedition.tour.standard_tour',
     depth: 8,
-    extractionWindows: [3, 6],
+    extractionWindowRange: [3, 6],
     numeric: {},
     route: {},
     forcedRival: false
@@ -33,7 +33,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'blitz_tour',
     labelKey: 'ui:expedition.tour.blitz_tour',
     depth: 6,
-    extractionWindows: [2, 4],
+    extractionWindowRange: [2, 4],
     numeric: { completionMultiplier: 0.95 },
     route: {
       gigNodeWeightMultiplier: 1.25,
@@ -45,7 +45,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'underground_tour',
     labelKey: 'ui:expedition.tour.underground_tour',
     depth: 8,
-    extractionWindows: [3, 6],
+    extractionWindowRange: [3, 6],
     numeric: { startingHeat: 10 },
     route: {
       undergroundNodeWeightMultiplier: 1.3,
@@ -57,7 +57,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'corporate_tour',
     labelKey: 'ui:expedition.tour.corporate_tour',
     depth: 8,
-    extractionWindows: [3, 6],
+    extractionWindowRange: [3, 6],
     numeric: { contractRewardMultiplier: 1.1 },
     route: {
       sponsorContractEventWeightMultiplier: 1.25,
@@ -69,7 +69,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'rival_hunt_tour',
     labelKey: 'ui:expedition.tour.rival_hunt_tour',
     depth: 8,
-    extractionWindows: [3, 6],
+    extractionWindowRange: [3, 6],
     numeric: { rivalEventWeightMultiplier: 1.3 },
     route: { rivalNodeWeightMultiplier: 1.5 },
     // The one Tour that guarantees the feud rather than weighting it.
@@ -79,7 +79,7 @@ export const EXPEDITION_TOUR_TYPES = {
     id: 'survival_tour',
     labelKey: 'ui:expedition.tour.survival_tour',
     depth: 9,
-    extractionWindows: [4, 7],
+    extractionWindowRange: [4, 7],
     numeric: { completionMultiplier: 1.2 },
     route: {
       recoveryNodeWeightMultiplier: 0.7,

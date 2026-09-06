@@ -41,9 +41,10 @@ describe('G5 — Region and Tour identity is data, not branches', () => {
     }
     for (const tour of Object.values(EXPEDITION_TOUR_TYPES)) {
       assert.ok(tour.depth >= 6, `${tour.id} needs a real route depth`)
+      const [from, to] = tour.extractionWindowRange
       assert.ok(
-        tour.extractionWindows.every(step => step > 0 && step < tour.depth),
-        `${tour.id} extraction windows must sit inside its route`
+        from > 0 && from <= to && to < tour.depth,
+        `${tour.id} extraction window must sit inside its route`
       )
     }
   })

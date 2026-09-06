@@ -9,7 +9,6 @@
  */
 
 import { buildExpeditionMap } from './map'
-import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from './defaults'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionNodeIntelLevel } from './nodeIntel'
 import { resolveExpeditionTravelCost } from './travel'
@@ -31,8 +30,7 @@ export const getExpeditionNodeFogByNodeId = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
 
   // Resolved once for the whole projection: the travel settlement would

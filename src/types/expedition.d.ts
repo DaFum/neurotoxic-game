@@ -200,6 +200,16 @@ export interface ExpeditionRouteProfile {
   festivalWeight: number
   restWeight: number
   supplyWeight: number
+  gigWeight: number
+  /**
+   * Inclusive route-step range at which extraction is legal.
+   *
+   * @remarks
+   * A Tour's own shape: a blitz run offers its exits early and closes them
+   * early, a survival run offers them late. Part of the route identity, so it
+   * belongs to the profile the map is built from rather than to a constant.
+   */
+  extractionWindowRange: readonly [number, number]
   undergroundAllowed: boolean
   rivalAllowed: boolean
 }
@@ -947,8 +957,8 @@ export interface ExpeditionTourTypeDefinition {
   labelKey: string
   /** Meaningful route steps between the start and the Finale. */
   depth: number
-  /** Route steps at which extraction is legal. */
-  extractionWindows: readonly number[]
+  /** Inclusive route-step range at which extraction is legal. */
+  extractionWindowRange: readonly [number, number]
   numeric: Partial<ExpeditionNumericRules>
   route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
   forcedRival: boolean

@@ -23,6 +23,7 @@ import {
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from './defaults'
+import { deriveExpeditionRouteProfile } from './routeProfile'
 import type { GameState } from '../../types'
 import type { MapNode, Venue } from '../../types/map'
 import type { MapNodeType } from '../../utils/mapNodeTypes'
@@ -267,7 +268,10 @@ export const buildExpeditionMap = (
   runSeed: number,
   tourTypeId: string,
   regionId: string,
-  routeProfile: ExpeditionRouteProfile = NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  routeProfile: ExpeditionRouteProfile = deriveExpeditionRouteProfile(
+    regionId,
+    tourTypeId
+  )
 ): ExpeditionMap => {
   const seed = Math.trunc(Number.isFinite(runSeed) ? runSeed : 0) >>> 0
   const cacheKey = [
@@ -279,6 +283,9 @@ export const buildExpeditionMap = (
     routeProfile.festivalWeight,
     routeProfile.restWeight,
     routeProfile.supplyWeight,
+    routeProfile.gigWeight,
+    routeProfile.extractionWindowRange[0],
+    routeProfile.extractionWindowRange[1],
     routeProfile.undergroundAllowed,
     routeProfile.rivalAllowed
   ].join('|')
@@ -295,7 +302,7 @@ export const buildExpeditionMap = (
   const idsByLayer: string[][] = []
 
   const weightedEntries = [
-    { value: 'CLUB_GIG', weight: 2 },
+    { value: 'CLUB_GIG', weight: 2 * Math.max(0, routeProfile.gigWeight) },
     { value: 'FESTIVAL', weight: Math.max(0, routeProfile.festivalWeight) },
     { value: 'SUPPLY_STOP', weight: Math.max(0, routeProfile.supplyWeight) },
     { value: 'REST_STOP', weight: Math.max(0, routeProfile.restWeight) }
@@ -402,10 +409,13 @@ export const buildExpeditionMap = (
         dangerTier,
         rewardTier,
         isMeaningful: !isStart,
+        // The Tour's own window, not a global constant: a blitz run opens its
+        // exits early and closes them early, a survival run opens them late.
         isExtractionWindow:
           !isStart &&
           !isFinale &&
-          plan.layer >= FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP,
+          plan.layer >= routeProfile.extractionWindowRange[0] &&
+          plan.layer <= routeProfile.extractionWindowRange[1],
         hidden: {
           exactPayout: Math.round(
             (40 + rng() * 260) * (1 + depthRatio) * (isFinale ? 2.5 : 1)

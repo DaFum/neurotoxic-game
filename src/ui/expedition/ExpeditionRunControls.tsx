@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { GAME_PHASES } from '../../context/gameConstants'
 import { ActionButton } from '../shared/ActionButton'
-import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExtractionDialog } from './ExtractionDialog'
@@ -31,8 +30,7 @@ const useIsAtExtractionWindow = (): boolean =>
     const map = buildExpeditionMap(
       state.runSeed,
       loadout.tourTypeId,
-      loadout.regionId,
-      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      loadout.regionId
     )
     const nodeId =
       state.expedition.visitedNodeIds[

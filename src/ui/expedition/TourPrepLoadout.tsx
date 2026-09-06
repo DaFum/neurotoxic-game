@@ -10,8 +10,7 @@ import { SONGS_BY_ID } from '../../data/songs'
 import {
   BASE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
-  MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS,
-  NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from '../../domain/expedition/defaults'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionOwnedPerformanceGear } from '../../domain/expedition/equipment'
@@ -88,8 +87,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       buildExpeditionMap(
         runSeed,
         BASE_EXPEDITION_TOUR_TYPE_ID,
-        BASE_EXPEDITION_REGION_ID,
-        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        BASE_EXPEDITION_REGION_ID
       ),
     [runSeed]
   )

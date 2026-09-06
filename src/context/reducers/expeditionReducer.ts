@@ -15,10 +15,8 @@ import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
-import {
-  NEUTRAL_EXPEDITION_ROUTE_PROFILE,
-  createDefaultExpeditionState
-} from '../../domain/expedition/defaults'
+import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
   canSpendExpeditionCash,
@@ -270,12 +268,7 @@ export const handleStartExpedition = (
     return state
   }
 
-  const preparedMap = buildExpeditionMap(
-    state.runSeed,
-    tourTypeId,
-    regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
-  )
+  const preparedMap = buildExpeditionMap(state.runSeed, tourTypeId, regionId)
   const validation = validateExpeditionBuildCommitment(
     state,
     loadout,
@@ -369,7 +362,7 @@ export const handleStartExpedition = (
   const rivalSelection = selectExpeditionRivalForRun(
     state,
     preparedMap,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    deriveExpeditionRouteProfile(regionId, tourTypeId)
   )
   const nextCareer = rivalSelection
     ? {
@@ -524,8 +517,7 @@ export const applyExpeditionRouteAdvance = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   if (!Object.hasOwn(map.meta, nodeId)) return state
   const target = map.meta[nodeId]
@@ -656,8 +648,7 @@ export const handleRevealExpeditionNodeIntel = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const resolution = resolveExpeditionIntelReveal(state, payload, map)
   if (!resolution.ok) return state
@@ -720,8 +711,7 @@ export const handleAddExpeditionReward = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const resolution = resolveExpeditionReward(state, payload, map)
   if (!resolution.ok) return state
@@ -871,8 +861,7 @@ export const handleExtractExpedition = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
@@ -936,8 +925,7 @@ export const handleCompleteExpedition = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
@@ -1772,8 +1760,7 @@ export const handleApplyExpeditionEventDelta = (
     ? buildExpeditionMap(
         resolved.runSeed,
         eventRewardLoadout.tourTypeId,
-        eventRewardLoadout.regionId,
-        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        eventRewardLoadout.regionId
       )
     : null
 
@@ -2093,8 +2080,7 @@ export const handleRecordExpeditionObligationSignal = (
     const map = buildExpeditionMap(
       state.runSeed,
       contractRewardLoadout.tourTypeId,
-      contractRewardLoadout.regionId,
-      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      contractRewardLoadout.regionId
     )
     for (const obligationId of completedNativeObligationIds) {
       // A Contract completed at an earlier step already owns its entry, so the
@@ -2218,8 +2204,7 @@ export const handleOfferExpeditionDraft = (
         const map = buildExpeditionMap(
           state.runSeed,
           loadout.tourTypeId,
-          loadout.regionId,
-          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+          loadout.regionId
         )
         // The effective route, so a Nemesis shortcut counts: that overlay is
         // the tier-2 rule change, and a Rival encounter it opens is exactly
@@ -2484,8 +2469,7 @@ export const handleCreateSocialIntelGrant = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId = state.player.currentNodeId
   if (
