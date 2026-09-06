@@ -57,6 +57,22 @@ const earn = (state, money, fame = 0) => ({
  */
 const RARE_WINDOW_STEP = 5
 
+/**
+ * Puts a resolved, non-failed Finale gig on the run at its current route step.
+ *
+ * `COMPLETE_EXPEDITION` requires that proof before it will complete the run —
+ * standing on the Finale node only means the show was *started*.
+ */
+const withResolvedFinale = state => ({
+  ...state,
+  currentGig: { id: 'finale_venue' },
+  lastGigStats: { score: 1000, accuracy: 80, failed: false },
+  expedition: {
+    ...state.expedition,
+    lastGigResolvedAtRouteStep: state.expedition.routeStep
+  }
+})
+
 const extract = (state, payload) =>
   gameReducer(state, { type: ActionTypes.EXTRACT_EXPEDITION, payload })
 
@@ -276,7 +292,9 @@ describe('EXTRACT_EXPEDITION', () => {
 
 describe('COMPLETE_EXPEDITION', () => {
   it('completes on the Finale and keeps everything', () => {
-    let state = walkToFinale(startedState({ money: 5000, fame: 100 }))
+    let state = withResolvedFinale(
+      walkToFinale(startedState({ money: 5000, fame: 100 }))
+    )
     state = earn(state, 1000, 50)
     const finaleStep = state.expedition.routeStep
 
@@ -341,7 +359,7 @@ describe('COMPLETE_EXPEDITION', () => {
   })
 
   it('is built by the creator from the current route step', () => {
-    const state = walkToFinale(startedState())
+    const state = withResolvedFinale(walkToFinale(startedState()))
     const action = completeExpedition(state, 'finale_result_2')
     assert.equal(action.payload.expectedRouteStep, state.expedition.routeStep)
     assert.equal(gameReducer(state, action).expedition.status, 'completed')

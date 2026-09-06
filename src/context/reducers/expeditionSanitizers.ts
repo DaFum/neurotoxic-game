@@ -36,6 +36,7 @@ import {
   isExpeditionEventResultId
 } from '../../domain/expedition/eventDeltas'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
+import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -704,7 +705,7 @@ export const sanitizeExpeditionState = (
       if (entry.sourceType === 'event_rare') {
         const resolvedEventSourceIds = sanitizeUniqueStrings(
           value.resolvedEventSourceIds
-        )
+        ).filter(isValidExpeditionEventProofId)
         if (
           !resolvedEventSourceIds.includes(
             `${entry.sourceId}:${entry.earnedAtRouteStep}`
@@ -844,9 +845,13 @@ export const sanitizeExpeditionState = (
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
     ...(value.resolvedEventSourceIds !== undefined
       ? {
+          // Structure alone is not authority: each persisted proof has to name
+          // an event/option/result relationship the content registry actually
+          // declares, so a crafted save cannot invent its own evidence and the
+          // matching ledger row below it.
           resolvedEventSourceIds: sanitizeUniqueStrings(
             value.resolvedEventSourceIds
-          )
+          ).filter(isValidExpeditionEventProofId)
         }
       : {}),
     resolvedObligationSignalIds: sanitizeUniqueStrings(

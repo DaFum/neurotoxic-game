@@ -158,6 +158,52 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     )
   })
 
+  it('refuses to complete the run until the Finale actually resolves', () => {
+    // The reward proof is not enough on its own: `completeExpedition` is
+    // publicly dispatchable, so an unplayed or failed Finale must not reach the
+    // terminal transition either - that is what grants full retention, takes
+    // the Nemesis tier and emits `expedition.finaleCompleted`.
+    const atFinale = walkToFinale(startedState({ money: 5000 }))
+    const payload = {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    }
+
+    assert.strictEqual(
+      handleCompleteExpedition(atFinale, payload),
+      atFinale,
+      'an unplayed Finale must be an identity no-op'
+    )
+
+    const failed = {
+      ...withResolvedGig(atFinale),
+      lastGigStats: { score: 10, accuracy: 10, failed: true }
+    }
+    assert.strictEqual(
+      handleCompleteExpedition(failed, payload),
+      failed,
+      'a failed Finale must be an identity no-op'
+    )
+
+    // A gig resolved at an earlier step is not this Finale's result.
+    const staleGig = {
+      ...withResolvedGig(atFinale),
+      expedition: {
+        ...atFinale.expedition,
+        lastGigResolvedAtRouteStep: atFinale.expedition.routeStep - 1
+      }
+    }
+    assert.strictEqual(
+      handleCompleteExpedition(staleGig, payload),
+      staleGig,
+      'a Finale proven by an earlier step must be an identity no-op'
+    )
+
+    const played = withResolvedGig(atFinale)
+    const completed = handleCompleteExpedition(played, payload)
+    assert.equal(completed.expedition.status, 'completed')
+  })
+
   it('banks the Finale reward its own profile names and materializes it once', () => {
     const atFinale = withResolvedGig(
       walkToFinale(startedState({ money: 5000 }))
@@ -247,15 +293,23 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
   })
 
   it('banks an Event rare from its resolved result and keeps it on load', () => {
-    const started = startedState({ money: 5000 })
+    // A real registry event/option pair: the proof is only evidence if the
+    // content actually declares that this option produces this result, and the
+    // resolving event must be the one on state.
+    const eventId = 'expedition_underground_invite'
+    const optionId = 'take_the_address'
+    const started = {
+      ...startedState({ money: 5000 }),
+      activeEvent: { id: eventId }
+    }
     const payload = {
       resultIds: ['spare_parts_scavenged'],
       expectedRouteStep: started.expedition.routeStep,
-      sourceEventId: 'evt_roadside',
-      sourceOptionId: 'opt_scavenge'
+      sourceEventId: eventId,
+      sourceOptionId: optionId
     }
     const resolvedEvent = handleApplyExpeditionEventDelta(started, payload)
-    const sourceId = 'evt_roadside:opt_scavenge:spare_parts_scavenged'
+    const sourceId = `${eventId}:${optionId}:spare_parts_scavenged`
     const entryId = `reward_event_spare_cables::${sourceId}`
     const entry = resolvedEvent.expedition.rewardLedger.find(
       item => item.id === entryId
@@ -295,6 +349,96 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
         ...payload,
         resultIds: ['supplies_spoiled']
       }).expedition.rewardLedger.length,
+      0
+    )
+  })
+
+  it('refuses an Event rare the content never declared', () => {
+    const eventId = 'expedition_underground_invite'
+    const started = {
+      ...startedState({ money: 5000 }),
+      activeEvent: { id: eventId }
+    }
+    const basePayload = {
+      resultIds: ['spare_parts_scavenged'],
+      expectedRouteStep: started.expedition.routeStep,
+      sourceEventId: eventId,
+      sourceOptionId: 'take_the_address'
+    }
+    const banked = state =>
+      state.expedition.rewardLedger.filter(
+        entry => entry.sourceType === 'event_rare'
+      ).length
+
+    // A forged delta naming an event the run is not resolving.
+    assert.equal(
+      banked(
+        handleApplyExpeditionEventDelta(started, {
+          ...basePayload,
+          sourceEventId: 'evt_invented'
+        })
+      ),
+      0
+    )
+    // The right event, but an option that does not exist on it.
+    assert.equal(
+      banked(
+        handleApplyExpeditionEventDelta(started, {
+          ...basePayload,
+          sourceOptionId: 'opt_invented'
+        })
+      ),
+      0
+    )
+    // A real option of that event that declares a different result.
+    assert.equal(
+      banked(
+        handleApplyExpeditionEventDelta(started, {
+          ...basePayload,
+          sourceOptionId: 'stay_clean'
+        })
+      ),
+      0
+    )
+    // And with no event resolving at all.
+    assert.equal(
+      banked(
+        handleApplyExpeditionEventDelta(
+          { ...started, activeEvent: null },
+          basePayload
+        )
+      ),
+      0
+    )
+  })
+
+  it('rejects a crafted save that mints its own Event-rare proof', () => {
+    const started = startedState({ money: 5000 })
+    const forgedSourceId = 'evt_invented:opt_invented:spare_parts_scavenged'
+    const forged = sanitizeExpeditionState(
+      {
+        ...started.expedition,
+        resolvedEventSourceIds: [
+          `${forgedSourceId}:${started.expedition.routeStep}`
+        ],
+        rewardLedger: [
+          {
+            id: `reward_event_spare_cables::${forgedSourceId}`,
+            rewardDefinitionId: 'reward_event_spare_cables',
+            sourceType: 'event_rare',
+            sourceId: forgedSourceId,
+            earnedAtRouteStep: started.expedition.routeStep,
+            secured: false,
+            materialized: false
+          }
+        ]
+      },
+      started.runSeed
+    )
+    assert.deepEqual(forged.resolvedEventSourceIds, [])
+    assert.equal(
+      forged.rewardLedger.filter(entry => entry.sourceType === 'event_rare')
+        .length,
       0
     )
   })

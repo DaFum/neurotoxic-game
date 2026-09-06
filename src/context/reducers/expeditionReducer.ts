@@ -39,6 +39,7 @@ import {
   getExpeditionEventResultEffect,
   sanitizeExpeditionEventResultIds
 } from '../../domain/expedition/eventDeltas'
+import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventProof'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
@@ -931,6 +932,20 @@ export const handleCompleteExpedition = (
   if (map.meta[map.finaleNodeId]?.routeStep !== state.expedition.routeStep) {
     return state
   }
+  // Standing on the Finale node is not evidence that the Finale was played:
+  // `handleStartGig` commits `finaleType` on the way into PRE_GIG, and
+  // `completeExpedition` is publicly dispatchable. Without this the run could
+  // be completed - full retention, `expedition.finaleCompleted` emitted, the
+  // Nemesis tier taken - before the show, or after failing it. The reward
+  // resolver already demands exactly this proof; the terminal transition has
+  // to demand it too, and before anything is mutated.
+  if (
+    !state.lastGigStats ||
+    state.lastGigStats.failed === true ||
+    state.expedition.lastGigResolvedAtRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
 
   let completionState = state
   if (state.expedition.finaleType === 'rival_battle' && state.rivalBand) {
@@ -1756,10 +1771,25 @@ export const handleApplyExpeditionEventDelta = (
   ) {
     return withDirector
   }
+  // The proof must describe the event the run is actually resolving, not the
+  // one the payload names. `createSetActiveEventAction(null)` is dispatched
+  // after this action, so the resolving event is still on state here.
+  if (state.activeEvent?.id !== payload.sourceEventId) return withDirector
   let withRewards = withDirector
   for (const resultId of resultIds) {
     const rareRewardId = getExpeditionEventResultEffect(resultId).rareRewardId
     if (rareRewardId === undefined) continue
+    // ... and the registry must declare that this option of that event
+    // produces this result, so the triple is content evidence rather than
+    // three caller-chosen strings.
+    if (
+      !isDeclaredExpeditionEventResult(
+        payload.sourceEventId,
+        payload.sourceOptionId,
+        resultId
+      )
+    )
+      continue
     const sourceId = `${payload.sourceEventId}:${payload.sourceOptionId}:${resultId}`
     const proofId = `${sourceId}:${withRewards.expedition.routeStep}`
     if (withRewards.expedition.resolvedEventSourceIds?.includes(proofId))

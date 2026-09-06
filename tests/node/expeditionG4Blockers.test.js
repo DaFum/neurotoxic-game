@@ -1324,8 +1324,18 @@ test('the four Expedition quest producers fire from their canonical owners', () 
     'a replayed extraction must be a no-op'
   )
 
-  // finaleCompleted fires on a committed completion.
-  const atFinale = walkToFinale(started)
+  // finaleCompleted fires on a committed completion, which now requires the
+  // resolved non-failed Finale gig the terminal transition is proven by.
+  const walkedToFinale = walkToFinale(started)
+  const atFinale = {
+    ...walkedToFinale,
+    currentGig: { id: 'finale_venue' },
+    lastGigStats: { score: 1000, accuracy: 80, failed: false },
+    expedition: {
+      ...walkedToFinale.expedition,
+      lastGigResolvedAtRouteStep: walkedToFinale.expedition.routeStep
+    }
+  }
   const completed = gameReducer(atFinale, {
     type: ActionTypes.COMPLETE_EXPEDITION,
     payload: {
