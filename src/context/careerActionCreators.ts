@@ -117,3 +117,21 @@ export const createRollbackExpeditionUnlockPurchaseAction = (
   type: ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE,
   payload: { setId }
 })
+
+/**
+ * Opens Ascension, naming the settled run that proves it was earned.
+ *
+ * @param runId - The settled run standing as evidence.
+ * @returns The typed action.
+ *
+ * @remarks
+ * Carries no boolean. The reducer recomputes rank, unlock-set count and the
+ * meta-unlock quest from the Career itself, so a caller points at evidence and
+ * never at the conclusion.
+ */
+export const createUnlockExpeditionAscensionAction = (
+  runId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.UNLOCK_EXPEDITION_ASCENSION }
+> => ({ type: ActionTypes.UNLOCK_EXPEDITION_ASCENSION, payload: { runId } })

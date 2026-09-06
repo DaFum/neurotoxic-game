@@ -460,6 +460,10 @@ export type GameAction =
       import('./actions').ExpeditionUnlockPurchasePayload
     >
   | Action<
+      ActionTypes['UNLOCK_EXPEDITION_ASCENSION'],
+      import('./actions').UnlockExpeditionAscensionPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

@@ -142,7 +142,13 @@ const weighExpeditionPressureEvents = (
     state.expedition.pressure.severeReliefUntilRouteStep !== null &&
     state.expedition.routeStep <=
       state.expedition.pressure.severeReliefUntilRouteStep
-  const bypass = context.heat >= 90
+  // A run this hot is past being cushioned - and so is one that committed
+  // `no_safety_net`, which is exactly what that modifier's extra reward buys.
+  // The bypass only removes the relief damping; it never raises severe weight,
+  // so the worst it can do is put the run back on the undamped curve.
+  const bypass =
+    context.heat >= 90 ||
+    getEffectiveExpeditionRules(state).flags.severeReliefBypass
   // Cash and route depth are run-wide rather than per-family, so they cannot
   // simply scale every weight - that cancels out in a weighted draw and would
   // leave both inputs derived but inert. A run out of spendable Cash feels it

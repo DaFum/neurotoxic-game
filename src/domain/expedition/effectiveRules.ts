@@ -21,6 +21,12 @@ import { getCrewRuleContribution } from './crew'
 import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+import {
+  MAX_EXPEDITION_PRESSURE_MODIFIERS,
+  MAX_EXPEDITION_PRESSURE_REWARD_MULTIPLIER,
+  getExpeditionPressureModifier,
+  type ExpeditionPressureModifierDefinition
+} from '../../data/expedition/pressureModifiers'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 
 /**
@@ -162,6 +168,22 @@ export const getEffectiveExpeditionRules = (
   // Starter Perk stage. One committed perk at most, and it contributes only
   // through the profile it owns - no consumer branches on a perk id.
   const perkNumeric = getExpeditionStarterPerk(loadout?.starterPerkId)?.numeric
+  // Tour Pressure stage. Up to three modifiers, each contributing its cost
+  // through a profile like every other stage; the reward half is summed
+  // separately below because three multiplied bonuses compound past what the
+  // economy is balanced for.
+  const pressureModifiers = (loadout?.pressureModifierIds ?? [])
+    .map(getExpeditionPressureModifier)
+    .filter((modifier): modifier is ExpeditionPressureModifierDefinition =>
+      Boolean(modifier)
+    )
+    .slice(0, MAX_EXPEDITION_PRESSURE_MODIFIERS)
+  /** One modifier field's product across the committed modifiers. */
+  const pressureProduct = (key: keyof ExpeditionNumericRules): number =>
+    pressureModifiers.reduce(
+      (product, modifier) => product * profileValue(modifier.numeric, key, 1),
+      1
+    )
   const drafts = new Set(state.expedition.runDraftTraitIds)
   const rivalRecord = state.rivalBand
     ? state.career.rivalsById[state.rivalBand.id]
@@ -200,9 +222,20 @@ export const getEffectiveExpeditionRules = (
       profileValue(tourNumeric, 'finaleRewardMultiplier', 1) *
       (drafts.has('reckless_encore') ? 1.2 : 1),
     extractionRetentionMultiplier:
+      pressureProduct('extractionRetentionMultiplier') *
       profileValue(regionNumeric, 'extractionRetentionMultiplier', 1) *
       profileValue(tourNumeric, 'extractionRetentionMultiplier', 1) *
       (drafts.has('reckless_encore') ? 0.85 : 1),
+    // `1 + Σ bonus`, capped at what the three richest modifiers are worth. The
+    // cap is derived from the registry rather than written twice, so re-costing
+    // a modifier cannot silently raise the ceiling.
+    pressureRewardMultiplier: Math.min(
+      MAX_EXPEDITION_PRESSURE_REWARD_MULTIPLIER,
+      pressureModifiers.reduce(
+        (sum, modifier) => sum + Math.max(0, modifier.rewardBonus),
+        1
+      )
+    ),
     completionMultiplier:
       profileValue(regionNumeric, 'completionMultiplier', 1) *
       profileValue(tourNumeric, 'completionMultiplier', 1),
@@ -213,6 +246,7 @@ export const getEffectiveExpeditionRules = (
       profileValue(regionNumeric, 'repairCostMultiplier', 1) *
       profileValue(tourNumeric, 'repairCostMultiplier', 1),
     rivalEventWeightMultiplier:
+      pressureProduct('rivalEventWeightMultiplier') *
       profileValue(regionNumeric, 'rivalEventWeightMultiplier', 1) *
       profileValue(tourNumeric, 'rivalEventWeightMultiplier', 1) *
       ((rivalRecord?.history.nemesisLevel ?? 0) >= 1
@@ -233,7 +267,8 @@ export const getEffectiveExpeditionRules = (
       profileValue(regionNumeric, 'exposureGainMultiplier', 1) *
       profileValue(tourNumeric, 'exposureGainMultiplier', 1) *
       (crewProfile.exposureGainMultiplier ?? 1) *
-      profileValue(perkNumeric, 'exposureGainMultiplier', 1),
+      profileValue(perkNumeric, 'exposureGainMultiplier', 1) *
+      pressureProduct('exposureGainMultiplier'),
     heatGainMultiplier:
       profileValue(regionNumeric, 'heatGainMultiplier', 1) *
       profileValue(tourNumeric, 'heatGainMultiplier', 1) *
@@ -246,6 +281,7 @@ export const getEffectiveExpeditionRules = (
       (crewProfile.authorityEventWeightMultiplier ?? 1) *
       (drafts.has('cold_trail') ? 0.5 : 1),
     roadWearMultiplier:
+      pressureProduct('roadWearMultiplier') *
       profileValue(regionNumeric, 'roadWearMultiplier', 1) *
       profileValue(tourNumeric, 'roadWearMultiplier', 1) *
       chassisProfile.roadWearMultiplier *
@@ -253,6 +289,7 @@ export const getEffectiveExpeditionRules = (
       (crewProfile.roadWearMultiplier ?? 1) *
       (drafts.has('road_warrior') ? 0.7 : 1),
     crewStressMultiplier:
+      pressureProduct('crewStressMultiplier') *
       profileValue(regionNumeric, 'crewStressMultiplier', 1) *
       profileValue(tourNumeric, 'crewStressMultiplier', 1) *
       chassisProfile.crewStressMultiplier *
@@ -274,7 +311,13 @@ export const getEffectiveExpeditionRules = (
   const flags: ExpeditionRuleFlags = {
     ...BASE_EXPEDITION_RULE_FLAGS,
     fieldRepairNoHiddenDefect: drafts.has('field_engineer'),
-    fieldRepairMinimumCondition: drafts.has('field_engineer') ? 55 : 0
+    fieldRepairMinimumCondition: drafts.has('field_engineer') ? 55 : 0,
+    // A modifier may only turn a flag on. Nothing composes a `false` back over
+    // a `true`, so committing three modifiers can never *disable* a rule a
+    // fourth stage enabled.
+    severeReliefBypass: pressureModifiers.some(
+      modifier => modifier.flags?.severeReliefBypass === true
+    )
   }
 
   const legendary: Record<string, boolean> = {}

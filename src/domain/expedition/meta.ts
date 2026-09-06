@@ -10,6 +10,7 @@
  */
 
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { isExpeditionUnlockSetId } from '../../data/expedition/unlockSets'
 import type { CareerState, ExpeditionCareerRank } from '../../types/career'
 import type { GameState } from '../../types'
 
@@ -190,4 +191,35 @@ export const resolveExpeditionCareerSettlement = (
       ? [...career.completedExpeditionRegionIds, regionId]
       : [...career.completedExpeditionRegionIds]
   }
+}
+
+/** Quest whose completion is the third Ascension prerequisite. */
+export const EXPEDITION_META_UNLOCK_QUEST_ID = 'quest_expedition_meta_unlock'
+
+/** Unlock sets the Career must own before Ascension opens. */
+const EXPEDITION_ASCENSION_REQUIRED_SETS = 3
+
+/**
+ * Whether the Career has earned Ascension.
+ *
+ * @param state - Current game state.
+ * @returns True when all three prerequisites hold.
+ *
+ * @remarks
+ * Recomputed from what the Career actually did, every time it is read: rank at
+ * `headliner` or above, at least three unlock sets owned, and the meta-unlock
+ * quest completed at least once. Nothing here reads
+ * `career.ascensionUnlocked` - that field is the *consequence*, so consulting
+ * it would let one grant keep itself alive after the evidence for it changed.
+ */
+export const isExpeditionAscensionEligible = (state: GameState): boolean => {
+  if (!hasExpeditionCareerRank(state, 'headliner')) return false
+  const owned = Array.isArray(state.career?.unlockedSetIds)
+    ? new Set(state.career.unlockedSetIds.filter(isExpeditionUnlockSetId)).size
+    : 0
+  if (owned < EXPEDITION_ASCENSION_REQUIRED_SETS) return false
+  return (
+    Array.isArray(state.completedQuestIds) &&
+    state.completedQuestIds.includes(EXPEDITION_META_UNLOCK_QUEST_ID)
+  )
 }

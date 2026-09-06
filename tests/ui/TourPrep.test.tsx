@@ -120,6 +120,39 @@ describe('TourPrep scene', () => {
     )
   })
 
+  it('offers no Tour Pressure until Ascension is open', () => {
+    state.current = buildState()
+    render(<TourPrep />)
+    expect(
+      screen.queryByTestId('expedition-prep-pressure-bad_roads')
+    ).toBeNull()
+  })
+
+  it('commits up to three pressure modifiers and no more', () => {
+    const base = buildState()
+    base.career = { ...base.career, ascensionUnlocked: true }
+    state.current = base
+    render(<TourPrep />)
+
+    const pick = (id: string) =>
+      screen.getByTestId(`expedition-prep-pressure-${id}`)
+
+    fireEvent.click(pick('bad_roads'))
+    fireEvent.click(pick('media_frenzy'))
+    fireEvent.click(pick('no_safety_net'))
+    // The fourth is offered but not selectable.
+    expect(pick('union_trouble')).toBeDisabled()
+    // Deselecting frees the slot again rather than locking the picker.
+    fireEvent.click(pick('no_safety_net'))
+    expect(pick('union_trouble')).toBeEnabled()
+
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+    expect(actions.startExpedition).toHaveBeenCalledTimes(1)
+    expect(
+      actions.startExpedition.mock.calls[0][0].pressureModifierIds
+    ).toEqual(['bad_roads', 'media_frenzy'])
+  })
+
   it('previews the prepared route and enables the commit', () => {
     state.current = buildState()
     render(<TourPrep />)

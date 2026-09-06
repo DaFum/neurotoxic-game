@@ -212,6 +212,17 @@ export interface PurchaseExpeditionHqFacilityPayload {
 export interface ExpeditionUnlockPurchasePayload {
   setId: string
 }
+/**
+ * Names the finalized run whose settlement proves Ascension was earned.
+ *
+ * @remarks
+ * Carries no boolean. Every eligibility term - rank, unlock-set count and the
+ * meta-unlock quest - is recomputed in the reducer from the Career, so a
+ * caller can point at the evidence but never assert the conclusion.
+ */
+export interface UnlockExpeditionAscensionPayload {
+  runId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

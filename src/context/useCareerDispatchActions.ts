@@ -4,7 +4,8 @@ import {
   createAcquireExpeditionCrewSignatureAction,
   createSettleExpeditionCareerResultAction,
   createSettleExpeditionCrewCareerAction,
-  createPurchaseExpeditionHqFacilityAction
+  createPurchaseExpeditionHqFacilityAction,
+  createUnlockExpeditionAscensionAction
 } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
@@ -14,6 +15,7 @@ export type CareerDispatchActions = Pick<
   | 'settleExpeditionCareerResult'
   | 'acquireExpeditionCrewSignature'
   | 'purchaseExpeditionHqFacility'
+  | 'unlockExpeditionAscension'
 >
 
 export const useCareerDispatchActions = (
@@ -29,6 +31,8 @@ export const useCareerDispatchActions = (
         dispatch(
           createPurchaseExpeditionHqFacilityAction(facilityId, expectedLevel)
         ),
+      unlockExpeditionAscension: runId =>
+        dispatch(createUnlockExpeditionAscensionAction(runId)),
       acquireExpeditionCrewSignature: (crewId, expectedTraitId, sourceId) =>
         dispatch(
           createAcquireExpeditionCrewSignatureAction(

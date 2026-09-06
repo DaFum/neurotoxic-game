@@ -56,6 +56,10 @@ import {
   EXPEDITION_STARTER_PERK_IDS,
   EXPEDITION_STARTER_PERKS
 } from '../../data/expedition/starterPerks'
+import {
+  EXPEDITION_PRESSURE_MODIFIER_IDS,
+  MAX_EXPEDITION_PRESSURE_MODIFIERS
+} from '../../data/expedition/pressureModifiers'
 import type { ExpeditionCapabilityId } from '../../types/career'
 import {
   areExpeditionContractsCompatible,
@@ -263,9 +267,12 @@ export const getAvailableStarterPerkIds = (
  * @remarks G5 owns Ascension/Tour Pressure and extends this in place, including
  * the registry, uniqueness, max-3 and `career.ascensionUnlocked` gates.
  */
-const getAvailablePressureModifierIds = (
-  _state: GameState
-): readonly string[] => []
+export const getAvailablePressureModifierIds = (
+  state: GameState
+): readonly string[] =>
+  state.career?.ascensionUnlocked === true
+    ? EXPEDITION_PRESSURE_MODIFIER_IDS
+    : []
 
 /**
  * Deterministically derived Sponsor-offer ids for this run.
@@ -644,6 +651,9 @@ export const validateExpeditionBuildCommitment = (
   if (!isStringArray(pressureModifierIdsRaw))
     return reject('MALFORMED_CANDIDATE')
   if (hasDuplicates(pressureModifierIdsRaw)) {
+    return reject('PRESSURE_MODIFIERS_INVALID')
+  }
+  if (pressureModifierIdsRaw.length > MAX_EXPEDITION_PRESSURE_MODIFIERS) {
     return reject('PRESSURE_MODIFIERS_INVALID')
   }
   const availablePressure = getAvailablePressureModifierIds(state)

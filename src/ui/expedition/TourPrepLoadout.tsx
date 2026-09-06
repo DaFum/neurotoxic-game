@@ -4,6 +4,7 @@
 
 import { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
 import { SONGS_BY_ID } from '../../data/songs'
@@ -19,6 +20,7 @@ import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionOwnedPerformanceGear } from '../../domain/expedition/equipment'
 import {
   getAvailableExpeditionRegionIds,
+  getAvailablePressureModifierIds,
   getAvailableStarterPerkIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableNativeContractTemplateIds,
@@ -86,6 +88,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
   const [starterPerkId, setStarterPerkId] = useState<string | null>(null)
+  const [pressureModifierIds, setPressureModifierIds] = useState<string[]>([])
   const [contractTemplateIds, setContractTemplateIds] = useState<string[]>([])
 
   const [tourTypeId, setTourTypeId] = useState<string>(
@@ -99,6 +102,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const availablePerkIds = useMemo(
     () => getAvailableStarterPerkIds(state),
+    [state]
+  )
+  const availablePressureIds = useMemo(
+    () => getAvailablePressureModifierIds(state),
     [state]
   )
   const availableRegionIds = useMemo(
@@ -156,7 +163,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       starterPerkId,
       nativeContracts,
       insurancePolicyId: null,
-      pressureModifierIds: [],
+      pressureModifierIds,
       build: {
         setlistSongIds,
         equipment: { selectedGearItemIds },
@@ -175,6 +182,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       selectedGearItemIds,
       selectedCrewIds,
       starterPerkId,
+      pressureModifierIds,
       setlistSongIds,
       sponsorOfferId,
       startingFuelTarget,
@@ -352,6 +360,52 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               </span>
             </button>
           ))}
+        </div>
+      </fieldset>
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.tourPressure')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {availablePressureIds.length === 0
+            ? t('ui:expedition.prep.tourPressureLocked')
+            : t('ui:expedition.prep.tourPressureHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          {availablePressureIds.map(modifierId => {
+            const selected = pressureModifierIds.includes(modifierId)
+            return (
+              <button
+                key={modifierId}
+                type='button'
+                aria-pressed={selected}
+                disabled={
+                  !selected &&
+                  pressureModifierIds.length >=
+                    MAX_EXPEDITION_PRESSURE_MODIFIERS
+                }
+                onClick={() =>
+                  setPressureModifierIds(current =>
+                    selected
+                      ? current.filter(id => id !== modifierId)
+                      : [...current, modifierId]
+                  )
+                }
+                data-testid={`expedition-prep-pressure-${modifierId}`}
+                className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-40 ${
+                  selected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                }`}
+              >
+                <strong>{t(`ui:expedition.pressure.${modifierId}`)}</strong>
+                <span className='block normal-case text-ash-gray'>
+                  {t(`ui:expedition.pressure.${modifierId}Effect`)}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </fieldset>
 

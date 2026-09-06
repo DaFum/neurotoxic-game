@@ -3,12 +3,16 @@ import type {
   ExpeditionUnlockPurchasePayload,
   PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
-  SettleExpeditionCrewCareerPayload
+  SettleExpeditionCrewCareerPayload,
+  UnlockExpeditionAscensionPayload
 } from '../../types/actions'
 import type { GameState } from '../../types'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { getEligibleCrewSignatureTrait } from '../../domain/expedition/career'
-import { resolveExpeditionCareerSettlement } from '../../domain/expedition/meta'
+import {
+  isExpeditionAscensionEligible,
+  resolveExpeditionCareerSettlement
+} from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import {
@@ -323,6 +327,39 @@ export const handleRollbackExpeditionUnlockPurchase = (
         Math.max(0, finiteNumberOr(pending.debitedTokens, 0)),
       pendingUnlockPurchase: null
     }
+  }
+}
+
+/**
+ * Opens Ascension once, from the Career's own record.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the finalized run that is the evidence.
+ * @returns Next state, or the identical reference when it is not earned.
+ *
+ * @remarks
+ * The payload names a settled run and nothing else. Every eligibility term is
+ * recomputed here, so a caller cannot supply the conclusion - and a run that
+ * was never settled is not evidence, which is what stops a forged dispatch
+ * from opening Ascension on a Career that never finished anything.
+ */
+export const handleUnlockExpeditionAscension = (
+  state: GameState,
+  payload: UnlockExpeditionAscensionPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.runId !== 'string'
+  )
+    return state
+  if (state.career.ascensionUnlocked) return state
+  if (!state.career.settledExpeditionRunIds.includes(payload.runId))
+    return state
+  if (!isExpeditionAscensionEligible(state)) return state
+  return {
+    ...state,
+    career: { ...state.career, ascensionUnlocked: true }
   }
 }
 
