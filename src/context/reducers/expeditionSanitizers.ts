@@ -32,6 +32,10 @@ import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import {
+  getExpeditionEventResultEffect,
+  isExpeditionEventResultId
+} from '../../domain/expedition/eventDeltas'
+import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
 } from '../../domain/expedition/contracts'
@@ -692,13 +696,33 @@ export const sanitizeExpeditionState = (
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
 
-      // `event_rare` still has no genuine producer, so no persisted entry of
-      // that family can be real and every one is dropped. `contract` and
-      // `finale_nonlegendary` do have producers now, so they are proven
-      // against the same canonical evidence their reducers require rather
-      // than dropped - an autosave between earning a Contract reward and the
-      // terminal settlement that materializes it must not lose it.
-      if (entry.sourceType === 'event_rare') continue
+      // Every family now has a producer, so each persisted entry is proven
+      // against the same canonical evidence its reducer required rather than
+      // dropped - an autosave between earning a reward and the terminal
+      // settlement that materializes it must not lose it.
+      if (entry.sourceType === 'event_rare') {
+        const resolvedEventSourceIds = sanitizeUniqueStrings(
+          value.resolvedEventSourceIds
+        )
+        if (
+          !resolvedEventSourceIds.includes(
+            `${entry.sourceId}:${entry.earnedAtRouteStep}`
+          )
+        ) {
+          continue
+        }
+        const resultId = entry.sourceId.slice(
+          entry.sourceId.lastIndexOf(':') + 1
+        )
+        if (
+          !isExpeditionEventResultId(resultId) ||
+          getExpeditionEventResultEffect(resultId).rareRewardId !==
+            entry.rewardDefinitionId ||
+          entry.earnedAtRouteStep > routeStep
+        ) {
+          continue
+        }
+      }
       if (entry.sourceType === 'contract') {
         if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue
         if (
@@ -817,6 +841,13 @@ export const sanitizeExpeditionState = (
     },
     bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
+    ...(value.resolvedEventSourceIds !== undefined
+      ? {
+          resolvedEventSourceIds: sanitizeUniqueStrings(
+            value.resolvedEventSourceIds
+          )
+        }
+      : {}),
     resolvedObligationSignalIds: sanitizeUniqueStrings(
       value.resolvedObligationSignalIds
     ),

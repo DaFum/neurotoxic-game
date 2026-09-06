@@ -1642,9 +1642,65 @@ export const handleApplyExpeditionEventDelta = (
     payload.sourceOptionId,
     resultIds
   )
-  return syncExpeditionPendingFailure(
+  const resolved = syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+
+  // The event's own rare enters the G1 ledger here, once the deltas above have
+  // actually been applied. The proof is banked first so the shared resolver can
+  // prove the source the same way every other family is proven, and a replayed
+  // dispatch collides with the derived entry id instead of paying twice.
+  const eventRewardLoadout = resolved.expedition.loadout
+  if (
+    typeof payload.sourceEventId !== 'string' ||
+    typeof payload.sourceOptionId !== 'string' ||
+    !eventRewardLoadout
+  ) {
+    return resolved
+  }
+  let withRewards = resolved
+  for (const resultId of resultIds) {
+    const rareRewardId = getExpeditionEventResultEffect(resultId).rareRewardId
+    if (rareRewardId === undefined) continue
+    const sourceId = `${payload.sourceEventId}:${payload.sourceOptionId}:${resultId}`
+    const proofId = `${sourceId}:${withRewards.expedition.routeStep}`
+    if (withRewards.expedition.resolvedEventSourceIds?.includes(proofId))
+      continue
+    const proven: GameState = {
+      ...withRewards,
+      expedition: {
+        ...withRewards.expedition,
+        resolvedEventSourceIds: [
+          ...(withRewards.expedition.resolvedEventSourceIds ?? []),
+          proofId
+        ]
+      }
+    }
+    const resolution = resolveExpeditionReward(
+      proven,
+      {
+        expectedRewardId: rareRewardId,
+        sourceType: 'event_rare',
+        sourceId,
+        expectedRouteStep: proven.expedition.routeStep
+      },
+      buildExpeditionMap(
+        proven.runSeed,
+        eventRewardLoadout.tourTypeId,
+        eventRewardLoadout.regionId,
+        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      )
+    )
+    if (!resolution.ok) continue
+    withRewards = {
+      ...proven,
+      expedition: {
+        ...proven.expedition,
+        rewardLedger: [...proven.expedition.rewardLedger, resolution.entry]
+      }
+    }
+  }
+  return withRewards
 }
 
 export const handleRecordExpeditionObligationSignal = (

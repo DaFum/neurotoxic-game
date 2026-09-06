@@ -20,6 +20,10 @@ import type {
   ExpeditionRewardSourceType
 } from '../../types/expedition'
 import { getCrewEventOutcomeBySourceId } from './crewEventOutcomes'
+import {
+  getExpeditionEventResultEffect,
+  isExpeditionEventResultId
+} from './eventDeltas'
 import { getExpeditionFinaleRewardId } from './finales'
 
 /**
@@ -281,10 +285,25 @@ const hasCanonicalSourceEvidence = (
         getExpeditionFinaleRewardId(state.expedition.finaleType)
       )
     }
-    // Producer owned by G3. `event_rare` has no resolved-event proof outside
-    // the Crew families yet, so its evidence cannot exist and the reward is
-    // refused rather than minted.
-    case 'event_rare':
+    case 'event_rare': {
+      // The source is the resolved `<eventId>:<optionId>:<resultId>` triple the
+      // event reducer banked, so the run must actually have resolved it at
+      // this step, and the *result registry* - not the request, and not the
+      // authored event - decides which rare that result earns.
+      if (
+        !(state.expedition.resolvedEventSourceIds ?? []).includes(
+          `${sourceId}:${routeStep}`
+        )
+      ) {
+        return false
+      }
+      const resultId = sourceId.slice(sourceId.lastIndexOf(':') + 1)
+      if (!isExpeditionEventResultId(resultId)) return false
+      return (
+        getExpeditionEventResultEffect(resultId).rareRewardId ===
+        request.expectedRewardId
+      )
+    }
     case 'crew_contact': {
       const outcome = getCrewEventOutcomeBySourceId(sourceId)
       return (

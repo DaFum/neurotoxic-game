@@ -99,6 +99,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     'none' | 'light' | 'serious' | 'critical'
   >,
   resolvedCrewSourceIds: [],
+  resolvedEventSourceIds: [],
   resolvedObligationSignalIds: [],
   pressure: {
     heat: 0,

@@ -4,6 +4,7 @@ import { describe, it } from 'node:test'
 import { gameReducer } from '../../src/context/gameReducer.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import {
+  handleApplyExpeditionEventDelta,
   handleCompleteExpedition,
   handleRecordExpeditionObligationSignal
 } from '../../src/context/reducers/expeditionReducer.ts'
@@ -243,6 +244,59 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       earned.lastGigStats
     )
     assert.equal(forged.rewardLedger.length, 0)
+  })
+
+  it('banks an Event rare from its resolved result and keeps it on load', () => {
+    const started = startedState({ money: 5000 })
+    const payload = {
+      resultIds: ['spare_parts_scavenged'],
+      expectedRouteStep: started.expedition.routeStep,
+      sourceEventId: 'evt_roadside',
+      sourceOptionId: 'opt_scavenge'
+    }
+    const resolvedEvent = handleApplyExpeditionEventDelta(started, payload)
+    const sourceId = 'evt_roadside:opt_scavenge:spare_parts_scavenged'
+    const entryId = `reward_event_spare_cables::${sourceId}`
+    const entry = resolvedEvent.expedition.rewardLedger.find(
+      item => item.id === entryId
+    )
+    assert.ok(entry, 'the resolved result must bank its declared rare')
+    assert.equal(entry.sourceType, 'event_rare')
+    // Route and event rares are the greed the extraction decision is about.
+    assert.equal(entry.secured, false)
+    assert.equal(entry.materialized, false)
+
+    // Replaying the same resolution banks nothing further.
+    assert.equal(
+      handleApplyExpeditionEventDelta(resolvedEvent, payload).expedition
+        .rewardLedger.length,
+      resolvedEvent.expedition.rewardLedger.length
+    )
+
+    // The proof persists, so a reload keeps the entry...
+    assert.ok(
+      sanitizeExpeditionState(
+        resolvedEvent.expedition,
+        resolvedEvent.runSeed
+      ).rewardLedger.some(item => item.id === entryId)
+    )
+    // ...but not without it.
+    assert.equal(
+      sanitizeExpeditionState(
+        { ...resolvedEvent.expedition, resolvedEventSourceIds: [] },
+        resolvedEvent.runSeed
+      ).rewardLedger.filter(item => item.id === entryId).length,
+      0
+    )
+
+    // A result that declares no rare banks nothing.
+    assert.equal(
+      handleApplyExpeditionEventDelta(started, {
+        ...payload,
+        resultIds: ['supplies_spoiled']
+      }).expedition.rewardLedger.length,
+      0
+    )
   })
 
   it('derives the Finale reward from the profile, not the caller', () => {

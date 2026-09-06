@@ -32,7 +32,8 @@ const EXPEDITION_EVENT_RESULTS: Readonly<
     conditionWear: { pa: 15, instruments: 0, stageGear: 0 }
   },
   spare_parts_scavenged: {
-    cargoDelta: { spareParts: 1 }
+    cargoDelta: { spareParts: 1 },
+    rareRewardId: 'reward_event_spare_cables'
   },
   supplies_spoiled: {
     cargoDelta: { supplies: -1 }
