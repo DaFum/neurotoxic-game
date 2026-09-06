@@ -308,6 +308,35 @@ export const getTechnicalFailureSignal = (
   return null
 }
 
+const getCrewFailureSignal = (
+  state: GameState
+): ExpeditionFailureSignal | null => {
+  if (state.expedition?.status !== 'active') return null
+  for (const member of state.band.members) {
+    if (
+      member &&
+      state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
+    ) {
+      return {
+        reason: 'crew_collapse',
+        sourceId: member.id,
+        choices: ['accept_failure']
+      }
+    }
+  }
+  const crewIds = state.expedition.loadout?.crewIds ?? []
+  for (const crewId of crewIds) {
+    if ((state.expedition.crew?.stressByCrewId[crewId] ?? 0) >= 100) {
+      return {
+        reason: 'crew_collapse',
+        sourceId: crewId,
+        choices: ['accept_failure']
+      }
+    }
+  }
+  return null
+}
+
 /**
  * Composes every failure signal into the one terminal owner.
  *
@@ -329,6 +358,8 @@ export const composeExpeditionFailureSignal = (
   if (economy) signals.push(economy)
   const technical = getTechnicalFailureSignal(state)
   if (technical) signals.push(technical)
+  const crew = getCrewFailureSignal(state)
+  if (crew) signals.push(crew)
   const mobility = getExpeditionMobilityFailureSignal(state)
   if (mobility) signals.push(mobility)
   for (const signal of laterGateSignals) {

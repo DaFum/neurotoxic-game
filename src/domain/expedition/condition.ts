@@ -293,8 +293,13 @@ export const getExpeditionConditionActiveEffects = (
 export const canStartExpeditionPreGig = (state: GameState): boolean => {
   if (state.expedition?.status !== 'active') return true
   const tc = state.expedition?.technicalCondition
-  if (!tc) return true
+  const hasCriticalInjury = state.band.members.some(
+    (member: { id: string } | undefined) =>
+      member &&
+      state.expedition.bandInjuryByMemberId?.[member.id] === 'critical'
+  )
+  if (!tc) return !hasCriticalInjury
 
   const profile = getExpeditionConditionPerformanceProfile(tc)
-  return profile.disabledGroups.length === 0
+  return profile.disabledGroups.length === 0 && !hasCriticalInjury
 }

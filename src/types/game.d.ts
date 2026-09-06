@@ -166,6 +166,7 @@ export interface GameState {
    * `runSeed` above stays the single map/run seed owner.
    */
   expedition: import('./expedition').ExpeditionState
+  career: import('./career').CareerState
 }
 
 /**
@@ -417,6 +418,34 @@ export type GameAction =
   | Action<
       ActionTypes['APPLY_EXPEDITION_EVENT_DELTA'],
       import('./actions').ApplyExpeditionEventDeltaPayload
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_CREW_STRESS_SOURCE'],
+      import('./expedition').ExpeditionCrewStressIntent
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_RELATIONSHIP_OUTCOME'],
+      import('./expedition').ExpeditionRelationshipOutcomeIntent
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_CREW_INJURY'],
+      import('./actions').ExpeditionInjurySourcePayload
+    >
+  | Action<
+      ActionTypes['ADVANCE_EXPEDITION_BAND_INJURY'],
+      import('./actions').ExpeditionInjurySourcePayload
+    >
+  | Action<
+      ActionTypes['SETTLE_EXPEDITION_CREW_CAREER'],
+      import('./actions').SettleExpeditionCrewCareerPayload
+    >
+  | Action<
+      ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
+      import('./actions').AcquireExpeditionCrewSignaturePayload
+    >
+  | Action<
+      ActionTypes['CREATE_CONTACT_INTEL_GRANT'],
+      import('./actions').CreateContactIntelGrantPayload
     >
 
 export * from './player'

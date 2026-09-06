@@ -216,9 +216,12 @@ export function resolveEvent(
     // over run state. Ids the engine did not recognize were already dropped;
     // re-filtering here keeps a precomputed or hand-built delta from smuggling
     // an unknown id (or a numeric field) past the boundary.
+    const optionId = typeof choice.id === 'string' ? choice.id : ''
+    const eventId = state.activeEvent?.id ?? ''
     const expeditionAction = applyExpeditionEventDelta(
       state,
-      sanitizeExpeditionEventResultIds(delta.expedition?.resultIds)
+      sanitizeExpeditionEventResultIds(delta.expedition?.resultIds),
+      eventId && optionId ? { eventId, optionId } : undefined
     )
     if (expeditionAction) actions.push(expeditionAction)
 

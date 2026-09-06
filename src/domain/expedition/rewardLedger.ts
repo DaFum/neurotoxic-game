@@ -19,6 +19,7 @@ import type {
   ExpeditionRewardLedgerEntry,
   ExpeditionRewardSourceType
 } from '../../types/expedition'
+import { getCrewEventOutcomeBySourceId } from './crewEventOutcomes'
 
 /**
  * The real v1 rare-reward registry.
@@ -245,8 +246,16 @@ const hasCanonicalSourceEvidence = (
     case 'finale_nonlegendary':
     case 'event_rare':
     case 'contract':
-    case 'crew_contact':
-      return false
+    case 'crew_contact': {
+      const outcome = getCrewEventOutcomeBySourceId(sourceId)
+      return (
+        outcome?.contactIntel === true &&
+        request.expectedRewardId === 'reward_contact_backline_deal' &&
+        (state.expedition.resolvedCrewSourceIds ?? []).some(id =>
+          id.startsWith(`${sourceId}:`)
+        )
+      )
+    }
   }
 }
 

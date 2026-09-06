@@ -462,6 +462,53 @@ export interface ExpeditionState {
   insuranceClaimConsumed?: boolean
   claimConsumed?: boolean
   technicalFailureAccepted?: boolean
+  crew?: ExpeditionCrewRunState
+  bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
+  resolvedCrewSourceIds?: string[]
+}
+
+export type ExpeditionCrewRole =
+  'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'
+export interface ExpeditionCrewDefinition {
+  id: string
+  role: ExpeditionCrewRole
+  displayNameKey: string
+}
+export type ExpeditionCrewInjuryStage = 'none' | 'light' | 'serious'
+export type ExpeditionBandInjuryStage =
+  'none' | 'light' | 'serious' | 'critical'
+export interface ExpeditionCrewRunState {
+  stressByCrewId: Record<string, number>
+  injuryByCrewId: Record<string, ExpeditionCrewInjuryStage>
+}
+export type ExpeditionCrewStressSourceType =
+  | 'travel'
+  | 'poor_gig'
+  | 'crew_event'
+  | 'authority_event'
+  | 'rest'
+  | 'successful_gig'
+export interface ExpeditionCrewStressIntent {
+  crewId: string
+  sourceType: ExpeditionCrewStressSourceType
+  sourceId: string
+  expectedRouteStep: number
+}
+export type ExpeditionRelationshipActorRef =
+  { kind: 'crew'; id: string } | { kind: 'band'; id: string }
+export type ExpeditionRelationshipTier = -2 | -1 | 0 | 1 | 2
+export interface ExpeditionRelationshipOutcomeIntent {
+  first: ExpeditionRelationshipActorRef
+  second: ExpeditionRelationshipActorRef
+  sourceType: 'crew_event' | 'travel_event' | 'gig_result' | 'rival_event'
+  sourceId: string
+  expectedRouteStep: number
+}
+export interface ExpeditionInjuryPerformanceProfile {
+  staminaDrainMultiplier: number
+  timingWindowMultiplier: number
+  missPenaltyMultiplier: number
+  cannotPerform: boolean
 }
 
 /**
@@ -616,8 +663,7 @@ export interface ExpeditionInsuranceClaimInput {
 /**
  * Payload executing an insurance claim during an active Expedition run.
  */
-export interface ExpeditionInsuranceClaimIntent
-  extends ExpeditionInsuranceClaimInput {
+export interface ExpeditionInsuranceClaimIntent extends ExpeditionInsuranceClaimInput {
   expectedRouteStep: number
 }
 
@@ -745,6 +791,10 @@ export type ExpeditionEventResultId =
   | 'supplies_spoiled'
   | 'attention_drawn'
   | 'attention_faded'
+  | 'crew_conflict_separated'
+  | 'crew_band_tension_heard'
+  | 'crew_breakthrough_followed'
+  | 'crew_injury_scare_pushed'
 
 /**
  * What one known event result does to the run.

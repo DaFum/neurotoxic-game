@@ -104,6 +104,17 @@ import {
 } from './reducers/systemReducer'
 import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
+  handleAcquireExpeditionCrewSignature,
+  handleSettleExpeditionCrewCareer
+} from './reducers/careerReducer'
+import {
+  handleAdvanceExpeditionBandInjury,
+  handleAdvanceExpeditionCrewInjury,
+  handleCreateContactIntelGrant,
+  handleRecordExpeditionCrewStressSource,
+  handleRecordExpeditionRelationshipOutcome
+} from './reducers/crewReducer'
+import {
   handleSpawnRivalBand,
   handleMoveRivalBand,
   handleUpdateRivalBand,
@@ -242,7 +253,19 @@ const reducerMap: ReducerMap = {
   [ActionTypes.CLAIM_EXPEDITION_INSURANCE]: handleClaimExpeditionInsurance,
   [ActionTypes.ACCEPT_EXPEDITION_TECHNICAL_FAILURE]:
     handleAcceptExpeditionTechnicalFailure,
-  [ActionTypes.APPLY_EXPEDITION_EVENT_DELTA]: handleApplyExpeditionEventDelta
+  [ActionTypes.APPLY_EXPEDITION_EVENT_DELTA]: handleApplyExpeditionEventDelta,
+  [ActionTypes.RECORD_EXPEDITION_CREW_STRESS_SOURCE]:
+    handleRecordExpeditionCrewStressSource,
+  [ActionTypes.RECORD_EXPEDITION_RELATIONSHIP_OUTCOME]:
+    handleRecordExpeditionRelationshipOutcome,
+  [ActionTypes.ADVANCE_EXPEDITION_CREW_INJURY]:
+    handleAdvanceExpeditionCrewInjury,
+  [ActionTypes.ADVANCE_EXPEDITION_BAND_INJURY]:
+    handleAdvanceExpeditionBandInjury,
+  [ActionTypes.SETTLE_EXPEDITION_CREW_CAREER]: handleSettleExpeditionCrewCareer,
+  [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
+    handleAcquireExpeditionCrewSignature,
+  [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant
 }
 
 /**

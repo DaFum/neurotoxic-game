@@ -20,6 +20,7 @@ import {
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
 import { BuildCommitmentPanel } from './BuildCommitmentPanel'
+import { ExpeditionCrewPicker } from './ExpeditionCrewPicker'
 import type { ExpeditionLoadout } from '../../types/expedition'
 
 const MAX_SETLIST_SONGS = 4
@@ -65,6 +66,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     songIds.slice(0, 1)
   )
   const [selectedGearItemIds, setSelectedGearItemIds] = useState<string[]>([])
+  const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([])
   const [startingFuelTarget, setStartingFuelTarget] = useState<number>(() =>
     Math.round(currentFuel)
   )
@@ -86,7 +88,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       tourTypeId: BASE_EXPEDITION_TOUR_TYPE_ID,
       regionId: BASE_EXPEDITION_REGION_ID,
       activeTourbusAssetId: null,
-      crewIds: [],
+      crewIds: selectedCrewIds,
       cargo: { spareParts: 0, supplies: 0 },
       starterPerkId: null,
       nativeContracts: [],
@@ -106,6 +108,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [
       protectedCareerCash,
       selectedGearItemIds,
+      selectedCrewIds,
       setlistSongIds,
       startingFuelTarget
     ]
@@ -172,6 +175,11 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           })}
         </div>
       </fieldset>
+
+      <ExpeditionCrewPicker
+        selectedCrewIds={selectedCrewIds}
+        onChange={setSelectedCrewIds}
+      />
 
       <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
         <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>

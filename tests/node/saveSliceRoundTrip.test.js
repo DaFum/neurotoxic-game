@@ -155,6 +155,20 @@ const buildPopulatedState = () => {
     currentLocationId: 'node_1'
   }
   state.unlocks = ['unlock_1', 'unlock_2']
+  state.career = {
+    ...state.career,
+    crewById: Object.assign(Object.create(null), {
+      mika: {
+        loyalty: 62,
+        storyProgress: 3,
+        signatureTraitId: 'signature_field_surgeon',
+        unavailableUntilCompletedRunCount: 0
+      }
+    }),
+    settledCrewRunIds: ['run_settled_1'],
+    finalizedExpeditionRuns: 1,
+    completedExpeditionRuns: 1
+  }
   // A mid-run Expedition. The shape must match exactly what
   // `sanitizeExpeditionState` accepts and returns — an inconsistent run (no
   // `runId`, no committed loadout) is legitimately collapsed to idle on load,
@@ -229,7 +243,13 @@ const buildPopulatedState = () => {
     insurancePolicyId: null,
     insuranceClaimConsumed: false,
     claimConsumed: false,
-    technicalFailureAccepted: false
+    technicalFailureAccepted: false,
+    crew: {
+      stressByCrewId: Object.create(null),
+      injuryByCrewId: Object.create(null)
+    },
+    bandInjuryByMemberId: Object.create(null),
+    resolvedCrewSourceIds: []
   }
 
   return state
@@ -332,6 +352,7 @@ describe('persisted save slice round-trip', () => {
       'rngSeed',
       'runSeed',
       'rivalBand',
+      'career',
       'expedition'
     ]
 

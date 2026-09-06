@@ -32,6 +32,8 @@ import {
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from './defaults'
 import { getExpeditionOwnedPerformanceGear } from './equipment'
+import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { isCrewAvailable } from './crew'
 import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
@@ -145,7 +147,8 @@ const getAvailableRegionIds = (_state: GameState): readonly string[] => [
  * @remarks G3 owns Crew and extends this in place. No Crew exists in G1A, so
  * the only legal commitment is an empty roster.
  */
-const getAvailableCrewIds = (_state: GameState): readonly string[] => []
+export const getAvailableCrewIds = (state: GameState): readonly string[] =>
+  Object.keys(EXPEDITION_CREW_BY_ID).filter(id => isCrewAvailable(state, id))
 
 /**
  * Starter perk ids the player may commit.
@@ -446,6 +449,7 @@ export const validateExpeditionBuildCommitment = (
   // ── Crew, starter perk, insurance, Tour Pressure (later-gate registries) ───
   const crewIdsRaw = candidate.crewIds
   if (!isStringArray(crewIdsRaw)) return reject('MALFORMED_CANDIDATE')
+  if (crewIdsRaw.length > 3) return reject('MALFORMED_CANDIDATE')
   if (hasDuplicates(crewIdsRaw)) return reject('CREW_DUPLICATE')
   const availableCrew = getAvailableCrewIds(state)
   for (const crewId of crewIdsRaw) {
@@ -461,7 +465,8 @@ export const validateExpeditionBuildCommitment = (
       return reject('MALFORMED_CANDIDATE')
     }
   }
-  let normalizedInsurancePolicyId: import('../../types/expedition').ExpeditionInsurancePolicyId | null = null
+  let normalizedInsurancePolicyId:
+    import('../../types/expedition').ExpeditionInsurancePolicyId | null = null
   if (insurancePolicyId !== null) {
     if (
       typeof insurancePolicyId !== 'string' ||
@@ -471,7 +476,8 @@ export const validateExpeditionBuildCommitment = (
     ) {
       return reject('MALFORMED_CANDIDATE')
     }
-    normalizedInsurancePolicyId = insurancePolicyId as import('../../types/expedition').ExpeditionInsurancePolicyId
+    normalizedInsurancePolicyId =
+      insurancePolicyId as import('../../types/expedition').ExpeditionInsurancePolicyId
   }
 
   const pressureModifierIdsRaw = candidate.pressureModifierIds

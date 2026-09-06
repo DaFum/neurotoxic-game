@@ -14,6 +14,7 @@ import { DEFAULT_MINIGAME_STATE, GAME_PHASES } from './gameConstants'
 import { CURRENT_SAVE_VERSION } from './reducers/migrations'
 import { normalizeTraitMap } from '../utils/traitUtils'
 import { createDefaultExpeditionState } from '../domain/expedition/defaults'
+import { createInitialCareerState } from '../domain/expedition/career'
 import type {
   GameState,
   GameSettings,
@@ -285,7 +286,8 @@ const initialState: GameState = {
   // Stable map seed for this run. Crypto-derived so two sessions started in the
   // same millisecond do not share a map.
   runSeed: getSecureRandomUint32(),
-  expedition: createDefaultExpeditionState()
+  expedition: createDefaultExpeditionState(),
+  career: createInitialCareerState()
 }
 
 /**
@@ -352,5 +354,6 @@ export const createInitialState = (
   crowdfundCampaigns: [],
   rngSeed: Date.now() >>> 0,
   runSeed: getSecureRandomUint32(),
-  expedition: createDefaultExpeditionState()
+  expedition: createDefaultExpeditionState(),
+  career: createInitialCareerState()
 })

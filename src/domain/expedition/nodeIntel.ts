@@ -67,8 +67,22 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
  * entitlement path.
  */
 export const getExpeditionIntelCapability = (
-  _state: GameState
-): ExpeditionIntelCapability => BASE_EXPEDITION_INTEL_CAPABILITY
+  state: GameState
+): ExpeditionIntelCapability => {
+  const crewIds = state.expedition.loadout?.crewIds ?? []
+  const hasScout = crewIds.some(crewId => {
+    if (crewId !== 'noah') return false
+    const injury = state.expedition.crew?.injuryByCrewId[crewId] ?? 'none'
+    return injury !== 'serious'
+  })
+  const pathfinder =
+    state.career.crewById.noah?.signatureTraitId === 'signature_pathfinder'
+  return {
+    ...BASE_EXPEDITION_INTEL_CAPABILITY,
+    hasScout,
+    reconCharges: hasScout ? (pathfinder ? 2 : 1) : 0
+  }
+}
 
 /**
  * Reads a node's current intel level.

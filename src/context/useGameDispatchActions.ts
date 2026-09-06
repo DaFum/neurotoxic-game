@@ -30,6 +30,7 @@ import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
+import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   useFacilityDispatchActions,
   type FacilityDispatchActions
@@ -238,6 +239,30 @@ type BaseGameDispatchActions = {
     payload: import('../types/expedition').ExpeditionInsuranceClaimInput
   ) => void
   acceptExpeditionTechnicalFailure: () => void
+  recordExpeditionCrewStressSource: (
+    crewId: string,
+    sourceType: import('../types/expedition').ExpeditionCrewStressSourceType,
+    sourceId: string
+  ) => void
+  recordExpeditionRelationshipOutcome: (
+    input: Omit<
+      import('../types/expedition').ExpeditionRelationshipOutcomeIntent,
+      'expectedRouteStep'
+    >
+  ) => void
+  advanceExpeditionCrewInjury: (crewId: string, sourceId: string) => void
+  advanceExpeditionBandInjury: (memberId: string, sourceId: string) => void
+  createContactIntelGrant: (
+    eventId: string,
+    optionId: string,
+    nodeId: string
+  ) => void
+  settleExpeditionCrewCareer: (runId: string) => void
+  acquireExpeditionCrewSignature: (
+    crewId: string,
+    expectedTraitId: string,
+    sourceId: string
+  ) => void
 }
 
 /**
@@ -479,6 +504,7 @@ export function useGameDispatchActions({
     dispatch,
     stateRef
   })
+  const careerActions = useCareerDispatchActions(dispatch)
 
   return useMemo(
     () => ({
@@ -501,7 +527,8 @@ export function useGameDispatchActions({
       ...questActions,
       ...rivalBandActions,
       ...assetActions,
-      ...expeditionActions
+      ...expeditionActions,
+      ...careerActions
     }),
     [
       changeScene,
@@ -523,7 +550,8 @@ export function useGameDispatchActions({
       questActions,
       rivalBandActions,
       assetActions,
-      expeditionActions
+      expeditionActions,
+      careerActions
     ]
   )
 }
