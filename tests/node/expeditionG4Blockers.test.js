@@ -29,6 +29,7 @@ import {
   selectPressureEvent
 } from '../../src/domain/expedition/pressure.ts'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
+import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules.ts'
 import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer.ts'
@@ -839,9 +840,24 @@ test('sanitizeExpeditionState refuses forged terminal-contract progress', () => 
   assert.equal(breached.activeObligations[0].status, 'failed')
 })
 
-test('the Director opens a high-Heat Underground opportunity once', () => {
-  const state = keepItCleanState()
-  state.expedition.pressure.heat = 70
+test('a high-Heat Underground invite opens a route the run can actually travel', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const map = fixtureMap()
+  const hot = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      pressure: { ...started.expedition.pressure, heat: 70 }
+    }
+  }
   const invite = [
     {
       id: 'expedition_underground_invite',
@@ -851,96 +867,129 @@ test('the Director opens a high-Heat Underground opportunity once', () => {
       negative: false
     }
   ]
-  const opened = resolveExpeditionPressureDirectorStep(state, invite)
-  assert.deepEqual(opened.temporaryRouteOpportunity, {
-    id: 'UNDERGROUND_MARKET:run-1:1',
-    subtype: 'UNDERGROUND_MARKET',
-    targetNodeId: 'node-a',
-    createdAtRouteStep: 1
-  })
-  // Already holding one, or below the Heat gate, opens nothing further.
-  assert.strictEqual(
-    resolveExpeditionPressureDirectorStep(
-      { ...state, expedition: { ...state.expedition, pressure: opened } },
-      invite
-    ).temporaryRouteOpportunity,
-    opened.temporaryRouteOpportunity
-  )
-  const cold = {
-    ...state,
-    expedition: {
-      ...state.expedition,
-      pressure: { ...state.expedition.pressure, heat: 59 }
-    }
-  }
+
+  const opened = resolveExpeditionPressureDirectorStep(hot, invite, map)
+  const opportunity = opened.temporaryRouteOpportunity
+  assert.ok(opportunity, 'Heat >= 60 must open an Underground opportunity')
+  assert.equal(opportunity.subtype, 'UNDERGROUND_MARKET')
   assert.equal(
-    resolveExpeditionPressureDirectorStep(cold, invite)
+    opportunity.id,
+    `UNDERGROUND_MARKET:${started.expedition.runId}:0`
+  )
+
+  // It names a real destination one step deeper.
+  const from = started.expedition.visitedNodeIds.at(-1)
+  assert.equal(map.meta[opportunity.targetNodeId]?.routeStep, 1)
+
+  const withOpportunity = {
+    ...hot,
+    expedition: { ...hot.expedition, pressure: opened }
+  }
+
+  // The overlay makes it traversable, and the base map stays untouched.
+  const effective = getEffectiveExpeditionRoute(withOpportunity, map)
+  assert.ok(
+    effective.connections.some(
+      edge => edge.from === from && edge.to === opportunity.targetNodeId
+    )
+  )
+  assert.equal(
+    effective.subtypeByNodeId[opportunity.targetNodeId],
+    'UNDERGROUND_MARKET'
+  )
+  assert.equal(map.meta[opportunity.targetNodeId].specialSubtype ?? null, null)
+
+  // Travelling it commits and spends the opportunity.
+  const travelled = applyExpeditionRouteAdvance(
+    withOpportunity,
+    opportunity.targetNodeId
+  )
+  assert.notStrictEqual(travelled, withOpportunity)
+  assert.equal(travelled.player.currentNodeId, opportunity.targetNodeId)
+  // Spent by travelling it, so it does not follow the run down the route.
+  assert.equal(travelled.expedition.pressure.temporaryRouteOpportunity, null)
+
+  // Below the Heat gate nothing opens, and a severe negative event opens the
+  // relief window instead.
+  assert.equal(
+    resolveExpeditionPressureDirectorStep(started, invite, map)
       .temporaryRouteOpportunity,
     null
   )
-
-  // A severe negative event opens the relief window the next two steps read.
-  const severe = resolveExpeditionPressureDirectorStep(state, [
-    {
-      id: 'expedition_technical_collapse',
-      severity: 'severe',
-      pressureFamily: 'technical',
-      baseWeight: 5,
-      negative: true
-    }
-  ])
+  const severe = resolveExpeditionPressureDirectorStep(
+    hot,
+    [
+      {
+        id: 'expedition_technical_collapse',
+        severity: 'severe',
+        pressureFamily: 'technical',
+        baseWeight: 5,
+        negative: true
+      }
+    ],
+    map
+  )
   assert.equal(severe.lastSevereEventId, 'expedition_technical_collapse')
-  assert.equal(severe.severeReliefUntilRouteStep, 3)
+  assert.equal(severe.severeReliefUntilRouteStep, 2)
 })
 
-test('the Director consumes the composed authority and rival event weights', () => {
-  const state = keepItCleanState()
-  state.expedition.pressure.heat = 40
-  const authority = {
-    id: 'expedition_authority_patrol',
-    severity: 'normal',
-    pressureFamily: 'authority',
-    baseWeight: 10,
-    negative: true
-  }
-  const social = {
-    id: 'expedition_underground_invite',
-    severity: 'normal',
-    pressureFamily: 'social',
-    baseWeight: 10,
-    negative: false
-  }
+test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  assert.ok(started.rivalBand)
+  const map = fixtureMap()
+  const from = started.expedition.visitedNodeIds.at(-1)
 
-  // `cold_trail` halves Authority weighting, so the same seed and the same
-  // pool must stop picking the Authority family once the draft is held.
-  const picks = pool =>
-    Array.from({ length: 24 }, (_, step) =>
-      selectPressureEvent(
-        {
-          ...state,
-          expedition: { ...state.expedition, routeStep: step }
-        },
-        pool
-      )
-    ).filter(event => event?.pressureFamily === 'authority').length
+  // Level 1 changes event weighting only; the route is untouched.
+  assert.equal(
+    Object.keys(getEffectiveExpeditionRoute(started, map).subtypeByNodeId)
+      .length,
+    0
+  )
 
-  const withoutDraft = picks([authority, social])
-  const drafted = {
-    ...state,
-    expedition: { ...state.expedition, runDraftTraitIds: ['cold_trail'] }
+  const atTierTwo = {
+    ...started,
+    career: {
+      ...started.career,
+      rivalsById: {
+        ...started.career.rivalsById,
+        [started.rivalBand.id]: {
+          ...started.career.rivalsById[started.rivalBand.id],
+          history: {
+            ...started.career.rivalsById[started.rivalBand.id].history,
+            nemesisLevel: 2
+          }
+        }
+      }
+    }
   }
-  const withDraft = Array.from({ length: 24 }, (_, step) =>
-    selectPressureEvent(
-      {
-        ...drafted,
-        expedition: { ...drafted.expedition, routeStep: step }
-      },
-      [authority, social]
-    )
-  ).filter(event => event?.pressureFamily === 'authority').length
+  const effective = getEffectiveExpeditionRoute(atTierTwo, map)
+  const [shortcutNodeId] = Object.keys(effective.subtypeByNodeId)
+  assert.ok(shortcutNodeId, 'Nemesis level 2 must open a Rival route option')
+  assert.equal(effective.subtypeByNodeId[shortcutNodeId], 'RIVAL_ENCOUNTER')
+  assert.equal(map.meta[shortcutNodeId]?.routeStep, 1)
+  // The base route is never edited - the subtype lives only in the overlay.
+  assert.equal(map.meta[shortcutNodeId].specialSubtype ?? null, null)
   assert.ok(
-    withDraft < withoutDraft,
-    `cold_trail must reduce Authority draws (${withDraft} vs ${withoutDraft})`
+    effective.connections.some(
+      edge => edge.from === from && edge.to === shortcutNodeId
+    )
+  )
+  // Deterministic: the same run resolves the same shortcut every time.
+  assert.deepEqual(
+    getEffectiveExpeditionRoute(atTierTwo, map).connections,
+    effective.connections
+  )
+  assert.notStrictEqual(
+    applyExpeditionRouteAdvance(atTierTwo, shortcutNodeId),
+    atTierTwo
   )
 })
 

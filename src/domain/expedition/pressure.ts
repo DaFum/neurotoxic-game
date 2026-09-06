@@ -1,6 +1,8 @@
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../data/expedition/pressureEvents'
 import { hashExpeditionRoute } from './map'
+import { deriveExpeditionOverlayTarget } from './routeOverlay'
+import type { ExpeditionMap } from '../../types/expedition'
 import { mulberry32 } from '../../utils/seededRng'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
@@ -133,7 +135,8 @@ export const selectPressureEvent = (
  */
 export const resolveExpeditionPressureDirectorStep = (
   state: GameState,
-  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS
+  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS,
+  map: ExpeditionMap | null = null
 ): GameState['expedition']['pressure'] => {
   const pressure = state.expedition.pressure
   if (state.expedition.status !== 'active') return pressure
@@ -153,9 +156,17 @@ export const resolveExpeditionPressureDirectorStep = (
     pressure.heat < 60 ||
     pressure.temporaryRouteOpportunity !== null ||
     state.expedition.runId === null ||
-    typeof state.player.currentNodeId !== 'string'
+    map === null
   )
     return next
+  // The opportunity names where the run may now *go*, not where it stands: an
+  // invite that opens no new destination is not an opportunity.
+  const targetNodeId = deriveExpeditionOverlayTarget(
+    state,
+    map,
+    'underground_invite'
+  )
+  if (targetNodeId === null) return next
   return {
     ...next,
     temporaryRouteOpportunity: {
@@ -163,7 +174,7 @@ export const resolveExpeditionPressureDirectorStep = (
       // forged opportunity cannot name a step it did not fire at.
       id: `UNDERGROUND_MARKET:${state.expedition.runId}:${routeStep}`,
       subtype: 'UNDERGROUND_MARKET',
-      targetNodeId: state.player.currentNodeId,
+      targetNodeId,
       createdAtRouteStep: routeStep
     }
   }

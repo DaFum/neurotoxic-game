@@ -135,6 +135,7 @@ import {
   applyExpeditionPressureDelta,
   resolveExpeditionPressureDirectorStep
 } from '../../domain/expedition/pressure'
+import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
 import { POST_OPTIONS } from '../../data/postOptions'
 import {
   createExpeditionExtractionQuestEvent,
@@ -527,7 +528,10 @@ export const applyExpeditionRouteAdvance = (
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof currentNodeId !== 'string') return state
-  const isNeighbour = map.connections.some(
+  // The effective route, not the base map: a high-Heat Underground invite or a
+  // Nemesis shortcut is only a real opportunity if the run can actually travel
+  // it. Overlays are additive, so this never removes a legal base move.
+  const isNeighbour = getEffectiveExpeditionRoute(state, map).connections.some(
     edge => edge.from === currentNodeId && edge.to === nodeId
   )
   if (!isNeighbour) return state
@@ -540,6 +544,15 @@ export const applyExpeditionRouteAdvance = (
     extractionWindowsSeen.push(target.routeStep)
   }
 
+  // A temporary opportunity is spent by travelling it, and expires when the
+  // run moves past the step it belonged to: either way it does not follow the
+  // run down the route.
+  const opportunity = state.expedition.pressure.temporaryRouteOpportunity
+  const pressureAfterMove =
+    opportunity === null
+      ? state.expedition.pressure
+      : { ...state.expedition.pressure, temporaryRouteOpportunity: null }
+
   const arrived: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
@@ -547,7 +560,8 @@ export const applyExpeditionRouteAdvance = (
       ...state.expedition,
       routeStep: target.routeStep,
       visitedNodeIds: [...state.expedition.visitedNodeIds, nodeId],
-      extractionWindowsSeen
+      extractionWindowsSeen,
+      pressure: pressureAfterMove
     }
   }
 
@@ -555,7 +569,11 @@ export const applyExpeditionRouteAdvance = (
   // arriving a node deeper is the canonical occasion for it, and selection is
   // seeded from `runSeed` plus the new route step, so a replayed advance picks
   // the same event instead of rolling a second one.
-  const directorPressure = resolveExpeditionPressureDirectorStep(arrived)
+  const directorPressure = resolveExpeditionPressureDirectorStep(
+    arrived,
+    undefined,
+    map
+  )
   const advanced: GameState =
     directorPressure === arrived.expedition.pressure
       ? arrived
