@@ -145,10 +145,12 @@ export const getExpeditionFuelTopUpCost = (
  * The capability each non-baseline Tour and Region is gated behind.
  *
  * @remarks
- * The baseline pair is deliberately absent: `standard_tour` and
- * `industrial_belt` are what every existing save and seed already runs, so
- * gating them would strand Careers that predate the unlock sets. Everything
- * else is bought.
+ * `standard_tour` is deliberately absent - it is the one Tour every Career can
+ * always book. The free Region is `home_turf`, and it is absent from
+ * `REGION_CAPABILITY` for the same reason. `industrial_belt` is *not* free: it
+ * is the pre-G5 route baseline, but new bookings need `region_industrial_belt`
+ * (see the remark on {@link getAvailableExpeditionRegionIds}), and only a run
+ * that already committed it keeps it.
  */
 const TOUR_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
   survival_tour: 'tour_survival_tour',

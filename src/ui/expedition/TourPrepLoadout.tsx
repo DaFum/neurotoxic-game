@@ -96,6 +96,18 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const [regionId, setRegionId] = useState<string>(FREE_EXPEDITION_REGION_ID)
 
+  // Both selections are derived from the prepared route: the staged Sponsor
+  // offers and the available Contract templates are rebuilt whenever the Tour
+  // or Region changes, and a previously picked id can drop out of the new set.
+  // The button would then vanish from the screen while the id stayed in the
+  // candidate, so the commit would carry an offer this route never staged or a
+  // Contract whose target node belongs to a different map.
+  const selectRoute = useCallback((apply: () => void) => {
+    apply()
+    setSponsorOfferId(null)
+    setContractTemplateIds([])
+  }, [])
+
   const availableTourTypeIds = useMemo(
     () => getAvailableExpeditionTourTypeIds(state),
     [state]
@@ -279,7 +291,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => setTourTypeId(id)}
+                onClick={() => selectRoute(() => setTourTypeId(id))}
                 data-testid={`expedition-prep-tour-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected
@@ -300,7 +312,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => setRegionId(id)}
+                onClick={() => selectRoute(() => setRegionId(id))}
                 data-testid={`expedition-prep-region-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected
@@ -387,9 +399,11 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 }
                 onClick={() =>
                   setPressureModifierIds(current =>
-                    selected
-                      ? current.filter(id => id !== modifierId)
-                      : [...current, modifierId]
+                    toggleBounded(
+                      current,
+                      modifierId,
+                      MAX_EXPEDITION_PRESSURE_MODIFIERS
+                    )
                   )
                 }
                 data-testid={`expedition-prep-pressure-${modifierId}`}

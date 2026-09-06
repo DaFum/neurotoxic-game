@@ -21,6 +21,7 @@ import { mulberry32 } from '../../utils/seededRng'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
   MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
+  MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from './defaults'
 import { deriveExpeditionRouteProfile } from './routeProfile'
@@ -163,11 +164,16 @@ const resolveMeaningfulNodeCount = (
   const requested = Number.isFinite(profile.meaningfulNodeCount)
     ? profile.meaningfulNodeCount
     : NEUTRAL_EXPEDITION_ROUTE_PROFILE.meaningfulNodeCount
-  return clampInt(
-    requested,
-    MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
-    MAX_EXPEDITION_MEANINGFUL_NODES
-  )
+  // The shorter floor is reserved for a Tour that *declares* it. A value below
+  // it is not a short Tour, it is invalid data, and clamping it up to the
+  // declared floor would hand every malformed profile a blitz-length route it
+  // never asked for. Those fall back to the standard corridor instead.
+  const floor =
+    Number.isInteger(requested) &&
+    requested >= MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+      ? MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+      : MIN_EXPEDITION_MEANINGFUL_NODES
+  return clampInt(requested, floor, MAX_EXPEDITION_MEANINGFUL_NODES)
 }
 
 const pickWeighted = (
@@ -538,13 +544,24 @@ export const buildExpeditionMap = (
         )
       })
       const entry = candidate === undefined ? undefined : meta[candidate]
-      if (candidate !== undefined && entry !== undefined) {
+      const node = candidate === undefined ? undefined : nodes[candidate]
+      if (
+        candidate !== undefined &&
+        entry !== undefined &&
+        node !== undefined
+      ) {
         meta[candidate] = {
           ...entry,
           nodeClass: 'SPECIAL',
           specialSubtype: 'RIVAL_ENCOUNTER',
           hidden: { ...entry.hidden, rivalId: 'rival_primary' }
         }
+        // The node has to move with its metadata. Arrival reads `node.type`,
+        // so leaving a promoted node as GIG or REST_STOP would run the old
+        // flow on a node the route now promises as a Rival encounter - and a
+        // stale venue would book a gig at a stop that no longer hosts one.
+        const { venue: _venue, venueId: _venueId, ...withoutVenue } = node
+        nodes[candidate] = { ...withoutVenue, type: 'SPECIAL' }
       }
     }
   }

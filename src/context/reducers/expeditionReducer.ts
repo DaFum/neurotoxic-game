@@ -25,7 +25,9 @@ import {
 } from '../../domain/expedition/loadout'
 import {
   getExpeditionCargoView,
-  materializeExpeditionCargo
+  materializeExpeditionCargo,
+  calculateExpeditionCargoCapacity,
+  calculateExpeditionCargoUsage
 } from '../../domain/expedition/cargo'
 import {
   applyTechnicalWear,
@@ -433,15 +435,34 @@ export const handleStartExpedition = (
       startingMoney: nextMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
-      // The Tour's own starting stock rides on top of what the build packed.
+      // The Tour's own starting stock rides on top of what the build packed -
+      // but it counts against cargo like everything else. A grant that would
+      // overflow the van is truncated rather than smuggled in: the capacity
+      // model is the authority on what fits, and a starting bonus that ignored
+      // it would be free hidden space no chassis or module ever sells.
       cargo: (() => {
         const packed = materializeExpeditionCargo(normalized, state)
         const granted = Math.max(
           0,
           Math.floor(finiteNumberOr(startRules.startingSpareParts, 0))
         )
-        return granted > 0
-          ? { ...packed, spareParts: packed.spareParts + granted }
+        if (granted === 0) return packed
+        const chassisAsset =
+          (Array.isArray(state.assets) ? state.assets : []).find(
+            asset =>
+              asset.id === normalized.activeTourbusAssetId &&
+              asset.kind === 'tourbus_chassis'
+          ) ?? null
+        const usage = calculateExpeditionCargoUsage(
+          packed,
+          calculateExpeditionCargoCapacity(
+            chassisAsset,
+            normalized.build.selectedTourbusModuleIds
+          )
+        )
+        const fits = Math.min(granted, usage.availableVisibleSlots)
+        return fits > 0
+          ? { ...packed, spareParts: packed.spareParts + fits }
           : packed
       })(),
       // A Tour that starts hot starts hot: the run's opening Heat is a rule,

@@ -48,20 +48,18 @@ export const usePostGigLogic = () => {
     const profileMultiplier =
       getExpeditionFinaleProfile(state.expedition.finaleType)
         ?.rewardMultiplier ?? 1
-    // Tour Pressure is what the run agreed to carry for the whole route, so it
-    // pays on every Gig rather than only the Finale - that is the trade the
-    // modifiers' costs are priced against.
-    const rules = getEffectiveExpeditionRules(state).numeric
-    const pressureMultiplier = Math.max(
-      0,
-      finiteNumberOr(rules.pressureRewardMultiplier, 1)
-    )
+    // Tour Pressure deliberately does *not* pay here. It multiplies terminal
+    // retained Money and Fame at extraction or completion instead, so the
+    // extra reward is only collected by a run that actually survived the
+    // danger the modifiers added.
+    //
     // The run-draft Finale bonus only pays out on the Finale itself, so it is
     // composed here rather than in the profile multiplier that every node of
     // an active run carries.
     return state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
-      ? profileMultiplier * pressureMultiplier * rules.finaleRewardMultiplier
-      : profileMultiplier * pressureMultiplier
+      ? profileMultiplier *
+          getEffectiveExpeditionRules(state).numeric.finaleRewardMultiplier
+      : profileMultiplier
   })
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).

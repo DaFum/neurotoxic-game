@@ -20,6 +20,17 @@ import {
 } from '../../quests/producers/brandQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+
+/**
+ * The most genuine matches any combination may promote into the staged pool.
+ *
+ * @remarks
+ * Fame tops out at 2, and the perk and the unlock set add one each. Without
+ * this cap a Career could guarantee every staged offer is a real match, which
+ * removes the choice the staging exists to create.
+ */
+const MAX_EXPEDITION_SPONSOR_QUALITY_BIAS = 3
 
 const sponsorSeed = (seed: number): number =>
   Number.parseInt(
@@ -99,18 +110,28 @@ export const buildPreparedExpeditionSponsorOffers = (
     mulberry32(sponsorSeed(state.runSeed))
   )
   const genuine = generated.filter(offer => !offer.flavor.isStretched)
-  // `premium_sponsor_pool` buys *quality*, never count: one more of the staged
-  // offers is guaranteed to be a genuine match rather than a stretched one, so
-  // the Career sees the same number of offers and fewer of them are filler.
+  // Quality, never count. The Fame band sets the baseline guarantee, and both
+  // `premium_sponsor_pool` and the `press_pass` perk add one more genuine
+  // match on top - capped, so stacking them cannot promote more real matches
+  // than the design allows. The staged offer count is untouched either way, so
+  // neither buys extra offers or extra payout.
   const promoted = genuine.slice(
     0,
-    getExpeditionFameProfile(state).sponsorQualityBias +
-      (isExpeditionCapabilityUnlocked(
-        state.career?.unlockedSetIds,
-        'premium_sponsor_pool'
-      )
-        ? 1
-        : 0)
+    Math.min(
+      MAX_EXPEDITION_SPONSOR_QUALITY_BIAS,
+      getExpeditionFameProfile(state).sponsorQualityBias +
+        (isExpeditionCapabilityUnlocked(
+          state.career?.unlockedSetIds,
+          'premium_sponsor_pool'
+        )
+          ? 1
+          : 0) +
+        Math.max(
+          0,
+          getExpeditionStarterPerk(state.expedition?.loadout?.starterPerkId)
+            ?.sponsorQualityBias ?? 0
+        )
+    )
   )
   const promotedIds = new Set(promoted.map(offer => offer.id))
   return [...promoted, ...generated.filter(offer => !promotedIds.has(offer.id))]

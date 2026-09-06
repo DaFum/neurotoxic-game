@@ -100,25 +100,6 @@ const profileValue = (
 ): number => finiteNumberOr(profile?.[key], identity)
 
 /**
- * Evaluates the full composite rules for the current Expedition state.
- *
- * @param state - Current game state.
- * @returns Frozen effective rules structure.
- *
- * @remarks
- * The one composition path, in the order the design reads it:
- *
- * ```text
- * Base -> Region -> Tour Type -> Chassis -> installed modules -> Crew
- *      -> Starter Perk -> Run Draft traits -> Tour Pressure -> Nemesis
- *      -> Legendary flags
- * ```
- *
- * Every stage contributes through a profile it owns. No consumer anywhere
- * branches on a Region, Tour, chassis or trait id to reach a number — if a
- * rule is not composed here, it does not exist.
- */
-/**
  * The Region/Tour rare-chance multiplier, with no live inputs.
  *
  * @param regionId - Committed Region id.
@@ -152,6 +133,25 @@ export const getExpeditionRegistryRareRewardChanceMultiplier = (
       )
   )
 
+/**
+ * Evaluates the full composite rules for the current Expedition state.
+ *
+ * @param state - Current game state.
+ * @returns Frozen effective rules structure.
+ *
+ * @remarks
+ * The one composition path, in the order the design reads it:
+ *
+ * ```text
+ * Base -> Region -> Tour Type -> Chassis -> installed modules -> Crew
+ *      -> Starter Perk -> Run Draft traits -> Tour Pressure -> Nemesis
+ *      -> Legendary flags
+ * ```
+ *
+ * Every stage contributes through a profile it owns. No consumer anywhere
+ * branches on a Region, Tour, chassis or trait id to reach a number — if a
+ * rule is not composed here, it does not exist.
+ */
 export const getEffectiveExpeditionRules = (
   state: GameState
 ): EffectiveExpeditionRules => {

@@ -189,11 +189,29 @@ export const settleExpedition = (
     0,
     Math.round(fame - state.expedition.startingFame)
   )
+  // Tour Pressure pays here and nowhere else: it multiplies the Money and Fame
+  // the run terminally *retains*, on a run that extracted or completed. Not
+  // rares, not Tour Tokens, not item counts, and nothing on a failed run - the
+  // modifiers' costs are priced against what the Career actually walks away
+  // with, so paying them per-Gig would pay for danger the run never survived.
+  const pressureRewardMultiplier =
+    kind === 'failed'
+      ? 1
+      : Math.max(
+          0,
+          finiteNumberOr(
+            getEffectiveExpeditionRules(state).numeric.pressureRewardMultiplier,
+            1
+          )
+        )
   const moneyRetained = Math.floor(
-    moneyEarned * retentionRate * completionMultiplier
+    moneyEarned *
+      retentionRate *
+      completionMultiplier *
+      pressureRewardMultiplier
   )
   const fameRetained = Math.floor(
-    fameEarned * retentionRate * completionMultiplier
+    fameEarned * retentionRate * completionMultiplier * pressureRewardMultiplier
   )
 
   const { retainedRewardEntryIds, abandonedRewardEntryIds } =

@@ -20,6 +20,7 @@ export const RunSummary = () => {
     prepareNextExpedition,
     settleExpeditionCrewCareer,
     settleExpeditionCareerResult,
+    unlockExpeditionAscension,
     changeScene,
     saveGameAfterStateCommit
   } = useGameActions()
@@ -39,6 +40,13 @@ export const RunSummary = () => {
       // a second acknowledgement is an identity no-op for both.
       settleExpeditionCrewCareer(outcome.runId)
       settleExpeditionCareerResult(outcome.runId)
+      // Ascension is checked against the Career the settlement just advanced,
+      // and against this run's id while it is still settled evidence -
+      // `PREPARE_NEXT_EXPEDITION` below clears the outcome. The reducer
+      // recomputes every term and refuses when they do not hold, so calling
+      // this after every finalized run is an identity no-op until the run that
+      // actually earns it.
+      unlockExpeditionAscension(outcome.runId)
     }
     prepareNextExpedition()
     // Autosave covers only the gig transitions, so acknowledging a finalized
@@ -52,7 +60,8 @@ export const RunSummary = () => {
     prepareNextExpedition,
     saveGameAfterStateCommit,
     settleExpeditionCareerResult,
-    settleExpeditionCrewCareer
+    settleExpeditionCrewCareer,
+    unlockExpeditionAscension
   ])
 
   if (!outcome) {

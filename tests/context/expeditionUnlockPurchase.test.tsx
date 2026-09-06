@@ -99,17 +99,63 @@ describe('the unlock purchase is reachable through useGameActions', () => {
     )
     expect(result.current.career.pendingUnlockPurchase).toBeNull()
 
-    // The save left behind is the *granted* state, not the open marker. The
-    // marker is written first so a crash in that window is recoverable, but
-    // the normal path must not leave the Career paid-up and empty-handed.
+    // Whatever is in storage at this instant - the marker, or the granted
+    // state once the commit-driven save flushes - must reload to the same
+    // place. That is the actual crash-safety contract; asserting one specific
+    // intermediate would pin the timing rather than the guarantee.
     const saved = adapter.get(SAVE_KEY)
     expect(saved).toBeTruthy()
     const persisted = JSON.parse(String(saved))
-    expect(persisted.career.pendingUnlockPurchase).toBeNull()
-    expect(persisted.career.unlockedSetIds).toContain('mechanic_network')
     expect(persisted.career.tourTokens).toBe(
       READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
     )
+    act(() => {
+      result.current.actions.loadGame()
+    })
+    expect(result.current.career.unlockedSetIds).toContain('mechanic_network')
+    expect(result.current.career.pendingUnlockPurchase).toBeNull()
+    expect(result.current.career.tourTokens).toBe(
+      READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    )
+  })
+
+  it('refuses a second purchase started inside the same batch', () => {
+    // `dispatch` does not update `stateRef`, so without the guard the second
+    // call would recompute from the pre-begin snapshot and persist a state
+    // that has never seen the first purchase. The Career below can legally
+    // afford *both* sets, so only the guard can refuse the second one.
+    const adapter = new InMemoryAdapter()
+    seedSave(adapter, {
+      tourTokens: 8,
+      finalizedExpeditionRuns: 2,
+      completedExpeditionRuns: 1,
+      hqFacilityLevels: { workshop: 1, rehearsal: 1 }
+    })
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+
+    let second: boolean | null = null
+    act(() => {
+      result.current.actions.purchaseExpeditionUnlockSet('mechanic_network')
+      second =
+        result.current.actions.purchaseExpeditionUnlockSet('festival_network')
+    })
+    expect(second).toBe(false)
+    expect(result.current.career.unlockedSetIds).toEqual(['mechanic_network'])
+    expect(result.current.career.tourTokens).toBe(
+      8 - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+    )
+
+    // The guard releases at the next commit, so the second set is buyable
+    // straight afterwards rather than being lost.
+    act(() => {
+      second =
+        result.current.actions.purchaseExpeditionUnlockSet('festival_network')
+    })
+    expect(second).toBe(true)
+    expect(result.current.career.unlockedSetIds).toContain('festival_network')
   })
 
   it('recovers a crash between the debit and the grant', () => {

@@ -36,6 +36,14 @@ export interface ExpeditionStarterPerkDefinition {
    */
   numeric: Partial<ExpeditionNumericRules>
   /**
+   * Added to the effective Sponsor-quality bias.
+   *
+   * @remarks
+   * Composed with the Fame band's own bias and with `premium_sponsor_pool`,
+   * then capped: the perk buys a better pool, never a bigger one.
+   */
+  sponsorQualityBias?: number
+  /**
    * Whether the perk hints Underground opportunity presence at Level 0.
    *
    * @remarks
@@ -65,8 +73,12 @@ export const EXPEDITION_STARTER_PERKS = {
   press_pass: {
     id: 'press_pass',
     capabilityId: 'perk_press_pass',
-    // Exposure only. A press pass gets the band seen; it does not pay.
-    numeric: { exposureGainMultiplier: 1.1 }
+    numeric: {},
+    // Quality, never count or payout: one more of the staged offers is
+    // guaranteed to be a genuine match. Stacks with `premium_sponsor_pool`
+    // into the same effective bias, which is capped so the two together can
+    // never promote more real matches than the pool has room for.
+    sponsorQualityBias: 1
   },
   underground_contact: {
     id: 'underground_contact',

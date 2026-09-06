@@ -115,7 +115,10 @@ describe('standard route shape', () => {
           meaningfulNodeCount: requested
         })
       )
-      assert.ok(depth >= MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES)
+      // An *invalid* declaration falls back to the standard corridor, not to
+      // the shorter floor an explicit declaration may reach. Asserting the
+      // declared floor here would let a wrong 6-node fallback pass.
+      assert.ok(depth >= MIN_EXPEDITION_MEANINGFUL_NODES)
       assert.ok(depth <= MAX_EXPEDITION_MEANINGFUL_NODES)
     }
     // Anything that declares nothing still lands in the standard corridor.

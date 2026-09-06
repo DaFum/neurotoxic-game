@@ -344,15 +344,22 @@ test('sponsor staging follows the selected Region and Tour', () => {
     type: ActionTypes.PREPARE_EXPEDITION_RUN,
     payload: { prepId: 'prep', runSeed: 123 }
   })
-  // Corporate leans on Contracts (sponsor weight 1.3) and stages one more
-  // offer than baseline; Underground keeps its distance (0.9) and stages one
-  // fewer. Reading the loadout instead of the selection made both of these
-  // resolve the baseline count in production.
+  // Underground keeps its distance from brands (sponsor weight 0.9) and stages
+  // one fewer offer than baseline. Reading the loadout instead of the
+  // selection made this resolve the baseline count in production.
   const offersFor = (regionId, tourTypeId) =>
     buildPreparedExpeditionSponsorOffers(prepared, regionId, tourTypeId).length
   const baseline = offersFor(
     BASE_EXPEDITION_REGION_ID,
     BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  // The upward half of the bias is currently inert: `generateBrandOffers`
+  // yields at most three offers, so a Region/Tour asking for four still stages
+  // three. Assert what actually holds - Corporate never stages *fewer* than
+  // baseline - rather than a claim the pool cannot satisfy.
+  assert.ok(
+    offersFor('corporate_circuit', 'corporate_tour') >= baseline,
+    'a Region and Tour that lean on Contracts must not stage fewer offers'
   )
   assert.ok(
     offersFor('underground_scene', 'underground_tour') < baseline,

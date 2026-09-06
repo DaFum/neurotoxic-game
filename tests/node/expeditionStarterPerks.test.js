@@ -20,6 +20,7 @@ import {
 import { EXPEDITION_UNLOCK_SETS } from '../../src/data/expedition/unlockSets'
 import { getAvailableStarterPerkIds } from '../../src/domain/expedition/loadout'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules'
+import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'
 import { getExpeditionIntelCapability } from '../../src/domain/expedition/nodeIntel'
 import { applyExpeditionSetupProtection } from '../../src/domain/expedition/condition'
 import {
@@ -76,6 +77,7 @@ describe('G5 — the perk registry is the whole vocabulary', () => {
       const perk = EXPEDITION_STARTER_PERKS[perkId]
       const hasEffect =
         Object.keys(perk.numeric).length > 0 ||
+        typeof perk.sponsorQualityBias === 'number' ||
         perk.revealsUndergroundCategory === true ||
         typeof perk.firstGigSetupProtection === 'number'
       assert.ok(hasEffect, `${perkId} carries no effect at all`)
@@ -148,24 +150,34 @@ describe('G5 — each perk reaches the run through its own consumer', () => {
     )
   })
 
-  it('press_pass raises Exposure by exactly 10 percent', () => {
+  it('press_pass buys one more genuine Sponsor match, never more offers', () => {
     const started = startWithPerk('press_pass')
-    const withPerk = getEffectiveExpeditionRules(started).numeric
-    const baseline = getEffectiveExpeditionRules({
+    const without = {
       ...started,
       expedition: {
         ...started.expedition,
         loadout: { ...started.expedition.loadout, starterPerkId: null }
       }
-    }).numeric
-    assert.ok(
-      Math.abs(
-        withPerk.exposureGainMultiplier - baseline.exposureGainMultiplier * 1.1
-      ) < 1e-9
+    }
+    const offersWith = buildPreparedExpeditionSponsorOffers(
+      started,
+      started.expedition.loadout.regionId,
+      started.expedition.loadout.tourTypeId
     )
-    // Nothing else moved.
-    assert.equal(withPerk.startingHeat, baseline.startingHeat)
-    assert.equal(withPerk.gigRewardMultiplier, baseline.gigRewardMultiplier)
+    const offersWithout = buildPreparedExpeditionSponsorOffers(
+      without,
+      without.expedition.loadout.regionId,
+      without.expedition.loadout.tourTypeId
+    )
+    // Quality, never count: the same number of offers is staged either way.
+    assert.equal(offersWith.length, offersWithout.length)
+
+    // And it pays nothing on its own.
+    const rules = getEffectiveExpeditionRules(started).numeric
+    const baseline = getEffectiveExpeditionRules(without).numeric
+    assert.equal(rules.exposureGainMultiplier, baseline.exposureGainMultiplier)
+    assert.equal(rules.gigRewardMultiplier, baseline.gigRewardMultiplier)
+    assert.equal(rules.startingHeat, baseline.startingHeat)
   })
 
   it('underground_contact starts the run 5 Heat hotter and reveals the category', () => {

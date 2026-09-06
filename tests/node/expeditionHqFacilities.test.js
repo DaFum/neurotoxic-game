@@ -164,9 +164,12 @@ describe('G5 — the load sanitizer holds the same ceiling', () => {
   })
 
   it('drops a facility the registry does not know', () => {
-    const sanitized = sanitizeCareerState({
-      hqFacilityLevels: { not_a_facility: 1, __proto__: 2, workshop: 1 }
-    })
+    // `{ __proto__: 2 }` sets the prototype instead of creating an own key, so
+    // the literal never exercised the stripping at all. `JSON.parse` is how a
+    // hostile save actually arrives, and it does create the own property.
+    const raw = JSON.parse('{"not_a_facility":1,"__proto__":2,"workshop":1}')
+    assert.equal(Object.hasOwn(raw, '__proto__'), true)
+    const sanitized = sanitizeCareerState({ hqFacilityLevels: raw })
     assert.deepEqual(Object.keys(sanitized.hqFacilityLevels), ['workshop'])
     assert.equal(Object.hasOwn(sanitized.hqFacilityLevels, '__proto__'), false)
   })

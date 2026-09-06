@@ -12,6 +12,7 @@
 
 import { getUnifiedUpgradeCatalog } from '../../data/upgradeCatalog'
 import { hasExpeditionUnlockSet } from '../../data/expedition/unlockSets'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { careerHasExpeditionRank } from './meta'
 import type { CareerState } from '../../types/career'
 import type { ExpeditionStatus } from '../../types/expedition'
@@ -203,7 +204,11 @@ export const isExpeditionLegacyHqPurchaseAllowed = (
   // the Shop tab shares the same purchase path and must stay untouched.
   if (!policy || policy.kind === 'unaffected') return true
 
-  if (career.finalizedExpeditionRuns < 1) return false
+  // Narrowed before the comparison: `NaN < 1` is false, so a poisoned counter
+  // would skip this guard entirely and reach the per-policy checks, none of
+  // which re-derive the run count.
+  if (Math.floor(finiteNumberOr(career.finalizedExpeditionRuns, 0)) < 1)
+    return false
 
   switch (policy.kind) {
     case 'between_tours_only':

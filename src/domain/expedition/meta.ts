@@ -254,3 +254,47 @@ export const settleExpeditionUnlockJournalOnLoad = (
     pendingUnlockPurchase: null
   }
 }
+
+/**
+ * Re-establishes the Ascension invariant across the persistence boundary.
+ *
+ * @param state - Sanitized load state.
+ * @returns The state with Ascension and Tour Pressure reconciled.
+ *
+ * @remarks
+ * `ascensionUnlocked` is a *conclusion*, and a save authors it directly, so
+ * the load path has to recompute it from the same evidence the transition
+ * requires rather than trusting the stored boolean. A Career that does not
+ * hold every term loses the flag, and with it the Tour Pressure a run was
+ * carrying - otherwise a one-boolean save edit books modifiers the Career
+ * never earned, and `getEffectiveExpeditionRules` composes them regardless of
+ * what the START validator would have said.
+ *
+ * A legitimately earned Ascension round-trips untouched, and the START
+ * validator stays in place as defense in depth.
+ */
+export const reconcileExpeditionAscensionOnLoad = (
+  state: GameState
+): GameState => {
+  const ascended =
+    state.career.ascensionUnlocked && isExpeditionAscensionEligible(state)
+  const loadout = state.expedition?.loadout
+  const carriesPressure = (loadout?.pressureModifierIds?.length ?? 0) > 0
+  if (
+    ascended === state.career.ascensionUnlocked &&
+    (ascended || !carriesPressure)
+  ) {
+    return state
+  }
+  return {
+    ...state,
+    career: { ...state.career, ascensionUnlocked: ascended },
+    expedition:
+      loadout && !ascended
+        ? {
+            ...state.expedition,
+            loadout: { ...loadout, pressureModifierIds: [] }
+          }
+        : state.expedition
+  }
+}

@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import {
+  useRef,
   useCallback,
   useMemo,
   startTransition,
@@ -556,8 +557,16 @@ export function useGameDispatchActions({
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
+  // The committed state a purchase was last computed from. `dispatch` does not
+  // update `stateRef` synchronously, so a second purchase in the same batch
+  // would recompute from a snapshot that predates the first one and persist a
+  // save with the first purchase missing. Refusing while `stateRef` still
+  // holds that same state releases on its own at the next commit.
+  const lastUnlockPurchaseBaseRef = useRef<GameState | null>(null)
   const purchaseExpeditionUnlockSet = useCallback(
     (setId: string): boolean => {
+      const base = stateRef.current
+      if (lastUnlockPurchaseBaseRef.current === base) return false
       const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
       // The reducer is the authority on whether this purchase is legal, so the
       // outcome is taken from the reducer itself rather than re-checked here
@@ -565,28 +574,31 @@ export function useGameDispatchActions({
       // synchronously, so the committed state is computed rather than read
       // back - and it is byte-identical to what the dispatch below commits,
       // because the reducer is pure.
-      const opened = gameReducer(stateRef.current, beginAction)
+      const opened = gameReducer(base, beginAction)
       if (opened.career.pendingUnlockPurchase?.setId !== setId) return false
 
-      dispatch(beginAction)
-      // Persist the marker *before* granting, from the exact post-debit state.
-      // A process that dies here leaves a save saying precisely what was taken
-      // and what for, which is what lets the load path settle it rather than
-      // silently losing the balance.
-      if (!saveGame(false, opened)) {
-        dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
-        return false
+      lastUnlockPurchaseBaseRef.current = base
+      {
+        dispatch(beginAction)
+        // Persist the marker *before* granting, from the exact post-debit
+        // state. This is the one deliberate snapshot write: the intermediate
+        // state exists only between these two dispatches, so it can never be
+        // read back off a committed render. A process that dies here leaves a
+        // save saying precisely what was taken and what for, which is what
+        // lets the load path settle it rather than losing the balance.
+        if (!saveGame(false, opened)) {
+          dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
+          return false
+        }
+        dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
+        // The granted state is persisted from the *committed* render rather
+        // than from another local snapshot, so anything else dispatched in the
+        // same batch survives instead of being overwritten by a stale copy.
+        saveGameAfterStateCommit()
+        return true
       }
-      const completeAction = createCompleteExpeditionUnlockPurchaseAction(setId)
-      dispatch(completeAction)
-      // Fast path: persist the granted state too, so the normal case does not
-      // leave the open marker sitting in storage. If this write fails the save
-      // still holds the marker, and the load path finishes the grant from it -
-      // either way the Career ends up owning what it paid for.
-      saveGame(false, gameReducer(opened, completeAction))
-      return true
     },
-    [dispatch, saveGame, stateRef]
+    [dispatch, saveGame, saveGameAfterStateCommit, stateRef]
   )
 
   return useMemo(

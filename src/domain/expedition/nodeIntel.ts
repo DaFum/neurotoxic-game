@@ -151,9 +151,33 @@ const resolveFamiliarNodeIds = (
     loadout.tourTypeId,
     loadout.regionId
   )
+  // Reachable, not merely deeper. Once the route branches, the layers the run
+  // passed up stay unvisited forever, and a node on a branch the player can no
+  // longer take is a dead reveal: it would spend the entitlement showing
+  // payout data for a road this run cannot walk. So the pool is the forward
+  // closure of the node the run is actually standing on.
+  const current =
+    state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
+  const reachable = new Set<string>()
+  if (typeof current === 'string') {
+    const frontier = [current]
+    while (frontier.length > 0) {
+      const from = frontier.pop()
+      if (from === undefined) continue
+      for (const edge of map.connections) {
+        if (edge.from !== from || reachable.has(edge.to)) continue
+        reachable.add(edge.to)
+        frontier.push(edge.to)
+      }
+    }
+  }
   const pool = map.nodeOrder.filter(nodeId => {
     const meta = map.meta[nodeId]
-    return meta !== undefined && meta.routeStep > state.expedition.routeStep
+    return (
+      meta !== undefined &&
+      meta.routeStep > state.expedition.routeStep &&
+      reachable.has(nodeId)
+    )
   })
   const rng = mulberry32(
     Number.parseInt(
