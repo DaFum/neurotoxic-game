@@ -48,11 +48,39 @@ export const deriveExpeditionOverlayTarget = (
   state: GameState,
   map: ExpeditionMap,
   salt: string
+): string | null =>
+  deriveExpeditionOverlayTargetFrom(
+    state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1],
+    state.expedition.routeStep,
+    state.runSeed,
+    map,
+    salt
+  )
+
+/**
+ * The seeded derivation itself, independent of `GameState`.
+ *
+ * @param from - Node the run currently stands on.
+ * @param routeStep - Route step the run is at.
+ * @param runSeed - The run's seed.
+ * @param map - The canonical base route.
+ * @param salt - Which overlay source is asking.
+ * @returns The node the overlay would target, or `null`.
+ *
+ * @remarks
+ * Split out so the load sanitizer can re-derive a persisted opportunity's
+ * target without a full state: a save that names a different next-step node is
+ * then rejected instead of being handed an edge the run never earned.
+ */
+export const deriveExpeditionOverlayTargetFrom = (
+  from: unknown,
+  routeStep: number,
+  runSeed: number | undefined,
+  map: ExpeditionMap,
+  salt: string
 ): string | null => {
-  const from =
-    state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
-  if (typeof from !== 'string') return null
-  const nextRouteStep = state.expedition.routeStep + 1
+  if (typeof from !== 'string' || !Number.isFinite(runSeed)) return null
+  const nextRouteStep = routeStep + 1
   const alreadyReachable = new Set(
     map.connections.filter(edge => edge.from === from).map(edge => edge.to)
   )
@@ -63,10 +91,8 @@ export const deriveExpeditionOverlayTarget = (
   const candidates = unreached.length > 0 ? unreached : atNextStep
   if (candidates.length === 0) return null
   const index =
-    Number.parseInt(
-      hashExpeditionRoute(`${state.runSeed}:${salt}:${from}`),
-      16
-    ) % candidates.length
+    Number.parseInt(hashExpeditionRoute(`${runSeed}:${salt}:${from}`), 16) %
+    candidates.length
   return candidates[index] ?? null
 }
 

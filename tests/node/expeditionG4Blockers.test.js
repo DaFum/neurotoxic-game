@@ -1187,38 +1187,101 @@ test('a forged temporary route opportunity does not survive a load', () => {
       loadout: fixtureLoadout()
     }
   })
-  const opportunity = {
-    id: `UNDERGROUND_MARKET:${started.expedition.runId}:0`,
-    subtype: 'UNDERGROUND_MARKET',
-    targetNodeId: started.player.currentNodeId,
-    createdAtRouteStep: 0
+  const map = fixtureMap()
+  // A genuinely earned opportunity: high Heat, the Director's pick, resolved.
+  const hot = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        heat: 70,
+        pendingDirectorEventId: 'expedition_underground_invite'
+      }
+    }
   }
-  assert.deepEqual(
-    sanitizeExpeditionState(
-      {
-        ...started.expedition,
-        pressure: {
-          ...started.expedition.pressure,
-          temporaryRouteOpportunity: opportunity
-        }
-      },
-      started.runSeed
-    ).pressure.temporaryRouteOpportunity,
-    opportunity
+  const earnedPressure = applyExpeditionPressureEventResolution(
+    hot,
+    'expedition_underground_invite',
+    map
   )
-  assert.equal(
+  const opportunity = earnedPressure.temporaryRouteOpportunity
+  assert.ok(opportunity)
+
+  const loadWith = pressure =>
     sanitizeExpeditionState(
-      {
-        ...started.expedition,
-        pressure: {
-          ...started.expedition.pressure,
-          temporaryRouteOpportunity: { ...opportunity, id: 'forged' }
-        }
-      },
+      { ...started.expedition, pressure },
       started.runSeed
-    ).pressure.temporaryRouteOpportunity,
+    ).pressure.temporaryRouteOpportunity
+
+  // The earned one round-trips.
+  assert.deepEqual(loadWith(earnedPressure), opportunity)
+
+  // A different next-step target is the exploit: the save picks the node it
+  // wants an edge to and supplies the trivially derived id. The load re-derives
+  // the target from the seed, so the forged one is replaced, never granted.
+  const otherNextStep = Object.keys(map.meta).find(
+    nodeId =>
+      map.meta[nodeId]?.routeStep === 1 && nodeId !== opportunity.targetNodeId
+  )
+  assert.ok(otherNextStep, 'the fixture route needs a second node at step 1')
+  assert.equal(
+    loadWith({
+      ...earnedPressure,
+      temporaryRouteOpportunity: {
+        ...opportunity,
+        targetNodeId: otherNextStep
+      }
+    }).targetNodeId,
+    opportunity.targetNodeId
+  )
+
+  // A forged id is still refused outright.
+  assert.equal(
+    loadWith({
+      ...earnedPressure,
+      temporaryRouteOpportunity: { ...opportunity, id: 'forged' }
+    }),
     null
   )
+
+  // Heat below the invite's own threshold could not have produced one.
+  assert.equal(loadWith({ ...earnedPressure, heat: 59 }), null)
+
+  // The opportunity is spent by travelling it and expires on the next advance,
+  // so a live one always belongs to the current step: any other step is stale.
+  const step = opportunity.createdAtRouteStep
+  for (const claimed of [step + 1, step + 2]) {
+    assert.equal(
+      loadWith({
+        ...earnedPressure,
+        temporaryRouteOpportunity: {
+          id: `UNDERGROUND_MARKET:${started.expedition.runId}:${claimed}`,
+          subtype: 'UNDERGROUND_MARKET',
+          targetNodeId: opportunity.targetNodeId,
+          createdAtRouteStep: claimed
+        }
+      }),
+      null
+    )
+  }
+
+  // The other two subtypes have no producer at all, so a save naming one is
+  // inventing it.
+  for (const subtype of ['BLACK_MARKET', 'RIVAL_ENCOUNTER']) {
+    assert.equal(
+      loadWith({
+        ...earnedPressure,
+        temporaryRouteOpportunity: {
+          id: `${subtype}:${started.expedition.runId}:${opportunity.createdAtRouteStep}`,
+          subtype,
+          targetNodeId: opportunity.targetNodeId,
+          createdAtRouteStep: opportunity.createdAtRouteStep
+        }
+      }),
+      null
+    )
+  }
 })
 
 test('Nemesis advances at most one tier per run and L4 opens the Rival Finale', () => {

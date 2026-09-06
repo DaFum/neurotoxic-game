@@ -24,6 +24,7 @@ import {
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
@@ -44,6 +45,7 @@ import {
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
+  ExpeditionMap,
   ExpeditionContrabandSelection,
   ExpeditionEquipmentCommitment,
   ExpeditionFailureChoiceId,
@@ -886,7 +888,10 @@ export const sanitizeExpeditionState = (
     pressure: sanitizeExpeditionPressure(
       value.pressure,
       runId,
-      readCount(value, 'routeStep', 0)
+      routeStep,
+      runSeed,
+      preparedMap,
+      validVisitedPath[validVisitedPath.length - 1]
     ),
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
@@ -948,34 +953,70 @@ export const sanitizeExpeditionState = (
  * re-deriving it here is what stops a save from granting itself an
  * opportunity the run never earned.
  */
+/**
+ * Re-derives a persisted route opportunity, or drops it.
+ *
+ * @param value - Raw persisted opportunity.
+ * @param runId - The run's id.
+ * @param routeStep - The run's current route step.
+ * @param runSeed - The run's seed.
+ * @param map - The canonical base route, when it could be built.
+ * @param from - Node the run currently stands on.
+ * @param heat - Sanitized Heat.
+ * @returns The opportunity the run could actually have earned, or `null`.
+ *
+ * @remarks
+ * The derived id proves nothing on its own - every input to it is already in
+ * the save. So nothing here is taken from the save except the claim that an
+ * opportunity exists:
+ *
+ * - Only `UNDERGROUND_MARKET` has a producer. The other two subtypes are in
+ *   the type union with nothing that can create them, so a save naming one is
+ *   inventing it.
+ * - `targetNodeId` is re-derived from `runSeed` and the base map. A save that
+ *   names a different next-step node no longer gets an edge for it.
+ * - The opportunity is spent by travelling it and expires on the next advance,
+ *   so a live one can only belong to the current step.
+ * - Heat below the invite's own threshold could not have produced one.
+ */
 const sanitizeTemporaryRouteOpportunity = (
   value: unknown,
   runId: string | null,
-  routeStep: number
+  routeStep: number,
+  runSeed: number | undefined,
+  map: ExpeditionMap | null,
+  from: unknown,
+  heat: number
 ): ExpeditionState['pressure']['temporaryRouteOpportunity'] => {
-  if (!isLooseRecord(value) || !runId) return null
-  const { subtype, targetNodeId, createdAtRouteStep } = value
+  if (!isLooseRecord(value) || !runId || !map) return null
+  const { subtype, createdAtRouteStep } = value
   if (
-    (subtype !== 'UNDERGROUND_MARKET' &&
-      subtype !== 'BLACK_MARKET' &&
-      subtype !== 'RIVAL_ENCOUNTER') ||
-    typeof targetNodeId !== 'string' ||
-    isForbiddenKey(targetNodeId) ||
+    subtype !== 'UNDERGROUND_MARKET' ||
+    heat < 60 ||
     !isFiniteNumber(createdAtRouteStep) ||
-    !Number.isInteger(createdAtRouteStep) ||
-    createdAtRouteStep < 0 ||
-    createdAtRouteStep > routeStep
+    createdAtRouteStep !== routeStep
   )
     return null
   const expectedId = `${subtype}:${runId}:${createdAtRouteStep}`
   if (value.id !== expectedId) return null
+  const targetNodeId = deriveExpeditionOverlayTargetFrom(
+    from,
+    routeStep,
+    runSeed,
+    map,
+    'underground_invite'
+  )
+  if (targetNodeId === null || isForbiddenKey(targetNodeId)) return null
   return { id: expectedId, subtype, targetNodeId, createdAtRouteStep }
 }
 
 const sanitizeExpeditionPressure = (
   value: unknown,
   runId: string | null = null,
-  routeStep = 0
+  routeStep = 0,
+  runSeed?: number,
+  map: ExpeditionMap | null = null,
+  from: unknown = null
 ): ExpeditionState['pressure'] => {
   const defaults = createDefaultExpeditionState().pressure
   if (!isLooseRecord(value)) return defaults
@@ -1005,7 +1046,11 @@ const sanitizeExpeditionPressure = (
     temporaryRouteOpportunity: sanitizeTemporaryRouteOpportunity(
       value.temporaryRouteOpportunity,
       runId,
-      routeStep
+      routeStep,
+      runSeed,
+      map,
+      from,
+      clampAxis('heat')
     )
   }
 }
