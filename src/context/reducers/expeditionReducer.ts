@@ -213,20 +213,18 @@ export const handlePrepareExpeditionRun = (
   if (typeof prepId !== 'string' || prepId.length === 0) return state
   if (!isValidRunSeed(runSeed)) return state
 
-  const preparedState: GameState = {
+  // Sponsor offers are deliberately not staged here. PREPARE runs on Tour Prep
+  // entry, before the player has chosen a Region or a Tour, so anything staged
+  // now is staged against inputs that do not exist yet - which is how the
+  // route-specific offer count ended up never applying to a real run. The set
+  // is derived from the prepared route instead, by whoever needs it.
+  return {
     ...state,
     runSeed,
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'prepared',
       prep: { prepId }
-    }
-  }
-  return {
-    ...preparedState,
-    expedition: {
-      ...preparedState.expedition,
-      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(preparedState)
     }
   }
 }
@@ -296,10 +294,12 @@ export const handleStartExpedition = (
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
   const sponsorOfferId = normalized.build.sponsorOfferId
+  // Derived from the Region and Tour this run is actually committing to, so a
+  // non-baseline route stages the offer count its profile calls for.
   const stagedSponsor =
     sponsorOfferId === null
       ? null
-      : state.expedition.preparedSponsorOffers.find(
+      : buildPreparedExpeditionSponsorOffers(state, regionId, tourTypeId).find(
           offer => offer.offerId === sponsorOfferId
         )
   if (

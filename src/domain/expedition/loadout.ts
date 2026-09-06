@@ -50,6 +50,7 @@ import type {
   ExpeditionMap
 } from '../../types/expedition'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { buildPreparedExpeditionSponsorOffers } from './sponsors'
 import {
   areExpeditionContractsCompatible,
   materializeContractConstraints
@@ -191,16 +192,25 @@ const getAvailablePressureModifierIds = (
 ): readonly string[] => []
 
 /**
- * Deterministically prepared Sponsor-offer ids for this run.
+ * Deterministically derived Sponsor-offer ids for this run.
  *
- * @remarks G4 owns Sponsor offers and extends this in place. Offers are derived
- * from the prepared route, never accepted from the caller.
+ * @remarks
+ * Derived from the prepared route rather than read from persisted state, and
+ * the route is the authority on which Region and Tour it belongs to. That is
+ * what makes the offer set correct for the candidate being validated: the
+ * committed loadout does not exist yet at START, and at PREPARE the player has
+ * not chosen a Region or Tour at all, so a stored set is always staged against
+ * inputs it could not have known.
  */
 export const getAvailableSponsorOfferIds = (
   state: GameState,
-  _preparedMap: ExpeditionMap
+  preparedMap: ExpeditionMap
 ): readonly string[] =>
-  state.expedition.preparedSponsorOffers.map(offer => offer.offerId)
+  buildPreparedExpeditionSponsorOffers(
+    state,
+    preparedMap.regionId,
+    preparedMap.tourTypeId
+  ).map(offer => offer.offerId)
 
 /**
  * Native Contract template ids commitable against the prepared route.

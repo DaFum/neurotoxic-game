@@ -34,6 +34,10 @@ import {
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
+import {
+  BASE_EXPEDITION_REGION_ID,
+  BASE_EXPEDITION_TOUR_TYPE_ID
+} from '../../src/domain/expedition/defaults.ts'
 import { EXPEDITION_PRESSURE_EVENTS_DB } from '../../src/data/events/expeditionPressure.ts'
 import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
 import { isExpeditionEventResultId } from '../../src/domain/expedition/eventDeltas.ts'
@@ -310,12 +314,44 @@ test('persisted sponsor offers must equal the deterministic canonical offer set'
     type: ActionTypes.PREPARE_EXPEDITION_RUN,
     payload: { prepId: 'prep', runSeed: 123 }
   })
-  assert.ok(prepared.expedition.preparedSponsorOffers.length > 0)
-  const forged = structuredClone(prepared.expedition.preparedSponsorOffers)
+  // PREPARE deliberately stages nothing: it runs before the player has chosen
+  // a Region or Tour, so any set it stored would describe the baseline route
+  // rather than the one being built. The set is derived from those two ids.
+  assert.deepEqual(prepared.expedition.preparedSponsorOffers, [])
+
+  const canonical = buildPreparedExpeditionSponsorOffers(
+    prepared,
+    BASE_EXPEDITION_REGION_ID,
+    BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  assert.ok(canonical.length > 0)
+  const forged = structuredClone(canonical)
   forged.reverse()
   assert.deepEqual(
     validatePreparedExpeditionSponsorOffers(prepared, forged),
     []
+  )
+})
+
+test('sponsor staging follows the selected Region and Tour', () => {
+  const initial = createInitialState()
+  const prepared = gameReducer(initial, {
+    type: ActionTypes.PREPARE_EXPEDITION_RUN,
+    payload: { prepId: 'prep', runSeed: 123 }
+  })
+  // Corporate leans on Contracts (sponsor weight 1.3) and stages one more
+  // offer than baseline; Underground keeps its distance (0.9) and stages one
+  // fewer. Reading the loadout instead of the selection made both of these
+  // resolve the baseline count in production.
+  const offersFor = (regionId, tourTypeId) =>
+    buildPreparedExpeditionSponsorOffers(prepared, regionId, tourTypeId).length
+  const baseline = offersFor(
+    BASE_EXPEDITION_REGION_ID,
+    BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  assert.ok(
+    offersFor('underground_scene', 'underground_tour') < baseline,
+    'a Region and Tour that avoid brands must stage fewer offers'
   )
 })
 

@@ -12,6 +12,7 @@ import {
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from '../../domain/expedition/defaults'
+import { buildPreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionRegion } from '../../data/expedition/regions'
 import { getExpeditionTourType } from '../../data/expedition/tourTypes'
@@ -20,7 +21,6 @@ import {
   getAvailableExpeditionRegionIds,
   getAvailableExpeditionTourTypeIds,
   getAvailableNativeContractTemplateIds,
-  getAvailableSponsorOfferIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -108,12 +108,21 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [regionId, runSeed, tourTypeId]
   )
 
-  const sponsorOffers = useGameSelector(
-    current => current.expedition.preparedSponsorOffers
+  // Derived from the selected Region and Tour, not read from persisted state:
+  // PREPARE happens on scene entry before either is chosen, so a stored set
+  // would always describe the baseline route rather than the one being built.
+  const sponsorOffers = useMemo(
+    () =>
+      buildPreparedExpeditionSponsorOffers(
+        state,
+        preparedMap.regionId,
+        preparedMap.tourTypeId
+      ),
+    [preparedMap, state]
   )
   const availableSponsorOfferIds = useMemo(
-    () => getAvailableSponsorOfferIds(state, preparedMap),
-    [preparedMap, state]
+    () => sponsorOffers.map(offer => offer.offerId),
+    [sponsorOffers]
   )
   const availableContractTemplateIds = useMemo(
     () => getAvailableNativeContractTemplateIds(state, preparedMap),
