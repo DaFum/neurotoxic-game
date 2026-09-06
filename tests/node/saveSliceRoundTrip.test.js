@@ -265,6 +265,7 @@ const buildPopulatedState = () => {
     pendingRunDraftOffer: null,
     finaleType: null,
     lastSocialResult: null,
+    pendingSocialSettlement: null,
     gigOutcomeByStep: Object.create(null)
   }
 

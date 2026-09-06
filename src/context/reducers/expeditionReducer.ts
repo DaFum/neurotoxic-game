@@ -1763,7 +1763,6 @@ export const handleRecordExpeditionObligationSignal = (
       return { ...obligation, progressByConstraintId, status, settled }
     }
   )
-  if (!changed) return state
   const accuracy =
     payload.signalType === 'gig' && state.lastGigStats
       ? Math.round(finiteNumberOr(state.lastGigStats.accuracy, 0))
@@ -1799,7 +1798,7 @@ export const handleRecordExpeditionObligationSignal = (
     },
     expedition: {
       ...state.expedition,
-      activeObligations,
+      activeObligations: changed ? activeObligations : state.expedition.activeObligations,
       pressure: {
         ...state.expedition.pressure,
         heat: Math.max(
@@ -1998,7 +1997,12 @@ export const handleResolveExpeditionSocialResult = (
     payload.postOptionId.length === 0
   )
     return state
-  if (state.social.pendingSocialOptionId !== payload.postOptionId) return state
+  if (
+    !state.expedition.pendingSocialSettlement ||
+    state.expedition.pendingSocialSettlement.routeStep !==
+      state.expedition.routeStep
+  )
+    return state
   const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
   if (!postOption) return state
   const expectedResultId = deriveExpeditionSocialResultId(postOption)
@@ -2053,6 +2057,7 @@ export const handleResolveExpeditionSocialResult = (
     expedition: {
       ...state.expedition,
       pressure,
+      pendingSocialSettlement: null,
       lastSocialResult: {
         id: proofId,
         postOptionId: payload.postOptionId,

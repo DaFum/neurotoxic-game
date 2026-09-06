@@ -24,6 +24,7 @@ import { gameReducer } from '../../src/context/gameReducer.ts'
 import { ActionTypes } from '../../src/context/actionTypes.ts'
 import { calculateFinalScore } from '../../src/utils/rhythmGameScoringUtils.ts'
 import { validatePreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 
 const activeState = () => {
   const state = createInitialState()
@@ -322,7 +323,10 @@ test('Social Intel requires a canonical just-resolved source and is replay-safe'
   const startedWithGig = {
     ...started,
     lastGigStats: { score: 1000, accuracy: 80, failed: false },
-    social: { ...started.social, pendingSocialOptionId: 'perf_moshpit_chaos' }
+    expedition: {
+      ...started.expedition,
+      pendingSocialSettlement: { routeStep: 0, gigId: null }
+    }
   }
   const resolved = handleResolveExpeditionSocialResult(startedWithGig, {
     resultId: 'push',
@@ -369,7 +373,7 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
     lastGigStats: { score: 1000, accuracy: 80, failed: false }
   }
 
-  // Without pendingSocialOptionId in state, direct dispatch must be REJECTED (no-op)
+  // Without pendingSocialSettlement in expedition state, direct dispatch must be REJECTED (no-op)
   const unprovenResult = handleResolveExpeditionSocialResult(startedWithGig, {
     resultId: 'push',
     postOptionId: 'perf_moshpit_chaos',
@@ -377,12 +381,12 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
   })
   assert.strictEqual(unprovenResult, startedWithGig)
 
-  // With pendingSocialOptionId set from canonical social post selection:
+  // With pendingSocialSettlement set from gig completion:
   const startedWithProof = {
     ...startedWithGig,
-    social: {
-      ...startedWithGig.social,
-      pendingSocialOptionId: 'perf_moshpit_chaos'
+    expedition: {
+      ...startedWithGig.expedition,
+      pendingSocialSettlement: { routeStep: 0, gigId: null }
     }
   }
 
@@ -405,10 +409,10 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
   )
   assert.notStrictEqual(canonicalResult, startedWithProof)
   assert.equal(canonicalResult.expedition.lastSocialResult?.resultId, 'push')
-  assert.equal(canonicalResult.social.pendingSocialOptionId, null)
+  assert.equal(canonicalResult.expedition.pendingSocialSettlement, null)
 })
 
-test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy', () => {
+test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy or is forged', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
@@ -427,76 +431,181 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
   const startNodeId =
     started.player.currentNodeId || started.expedition.visitedNodeIds[0]
   assert.ok(startNodeId, 'startNodeId must exist')
-  const gigNodeId = started.gameMap.connections.find(
-    edge => edge.from === startNodeId
-  )?.to
-  assert.ok(gigNodeId, 'gigNodeId must exist')
-  const gigVenueId =
-    started.gameMap.nodes[gigNodeId]?.venueId || gigNodeId
 
-  // Test 1: Forged signal string ":100" without canonical gigOutcomeByStep proof
-  const stateWithForgedSignal = {
-    ...started.expedition,
-    visitedNodeIds: [startNodeId, gigNodeId],
-    routeStep: 1,
-    resolvedObligationSignalIds: [`gig:${gigVenueId}:1:100`],
-    gigOutcomeByStep: {
-      1: { venueId: gigVenueId, accuracy: 50 } // Actual settled accuracy is 50 < minAccuracy 65!
-    },
-    activeObligations: [
-      {
-        id: `${started.expedition.runId}:contract_three_good_gigs`,
-        sourceType: 'native',
-        sourceId: 'contract_three_good_gigs',
-        constraints: [
-          {
-            id: 'three_good_gigs',
-            kind: 'gig_accuracy_count',
-            minAccuracy: 65,
-            requiredCount: 3
-          }
-        ],
-        progressByConstraintId: {
-          three_good_gigs: {
-            constraintId: 'three_good_gigs',
-            value: 1, // Forged progress in save file!
-            satisfied: false,
-            failed: false
-          }
-        },
-        status: 'active',
-        settled: false,
-        doubleDown: null
-      }
-    ]
+  // Build the canonical map for started's loadout to get valid DAG connections and meta
+  const loadout = started.expedition.loadout
+  assert.ok(loadout, 'loadout must exist')
+  const canonicalMap = buildExpeditionMap(
+    started.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId
+  )
+  started.gameMap = structuredClone({
+    nodes: canonicalMap.nodes,
+    connections: canonicalMap.connections,
+    meta: canonicalMap.meta
+  })
+
+  // Find a node in canonicalMap that is a gig class (CLUB_GIG, FESTIVAL, or FINALE) and reachable from startNodeId
+  const gigEntry = Object.entries(canonicalMap.meta).find(
+    ([id, meta]) =>
+      id !== startNodeId &&
+      (meta.nodeClass === 'CLUB_GIG' ||
+        meta.nodeClass === 'FESTIVAL' ||
+        meta.nodeClass === 'FINALE')
+  )
+  assert.ok(gigEntry, 'gig node must exist in canonical map')
+  const [targetGigNodeId, gigMeta] = gigEntry
+  const gigRouteStep = gigMeta.routeStep
+
+  // Build a valid connected path from startNodeId to targetGigNodeId using canonicalMap connections
+  const visitedNodeIds = [startNodeId]
+  let current = startNodeId
+  for (let step = 1; step <= gigRouteStep; step++) {
+    const nextEdge = canonicalMap.connections.find(
+      conn =>
+        conn.from === current &&
+        canonicalMap.meta[conn.to]?.routeStep === step
+    )
+    assert.ok(nextEdge, `edge at step ${step} must exist`)
+    current = nextEdge.to
+    visitedNodeIds.push(current)
+  }
+  assert.equal(current, targetGigNodeId)
+  const actualGigNodeId = visitedNodeIds[gigRouteStep]
+  const gigVenueId =
+    canonicalMap.nodes[actualGigNodeId]?.venueId || actualGigNodeId
+
+  // Test 1: Save file contains forged gigOutcomeByStep accuracy: 100, but lastGigStats is missing/unverified
+  const stateWithForgedOutcome = {
+    ...started,
+    lastGigStats: null,
+    expedition: {
+      ...started.expedition,
+      visitedNodeIds,
+      routeStep: gigRouteStep,
+      resolvedObligationSignalIds: [],
+      gigOutcomeByStep: {
+        [gigRouteStep]: { venueId: gigVenueId, accuracy: 100 } // Forged in save file!
+      },
+      activeObligations: [
+        {
+          id: `${started.expedition.runId}:contract_three_good_gigs`,
+          sourceType: 'native',
+          sourceId: 'contract_three_good_gigs',
+          constraints: [
+            {
+              id: 'three_good_gigs',
+              kind: 'gig_accuracy_count',
+              minAccuracy: 65,
+              requiredCount: 3
+            }
+          ],
+          progressByConstraintId: {
+            three_good_gigs: {
+              constraintId: 'three_good_gigs',
+              value: 1, // Forged progress in save file!
+              satisfied: false,
+              failed: false
+            }
+          },
+          status: 'active',
+          settled: false,
+          doubleDown: null
+        }
+      ]
+    }
   }
 
   const sanitizedForged = sanitizeExpeditionState(
-    stateWithForgedSignal,
-    started.runSeed
+    stateWithForgedOutcome.expedition,
+    started.runSeed,
+    null
   )
-  // Actual canonical accuracy was 50 < minAccuracy 65, so progress value must be reset to 0!
+  // Unverified outcome without canonical lastGigStats evidence is dropped (failed closed), progress reset to 0!
   assert.equal(
     sanitizedForged.activeObligations[0].progressByConstraintId.three_good_gigs
       .value,
     0
   )
 
-  // Test 2: Valid canonical gigOutcomeByStep with accuracy >= 65
+  // Test 2: Canonical lastGigStats is present matching step 1 with accuracy 100
   const stateWithValidOutcome = {
-    ...stateWithForgedSignal,
-    gigOutcomeByStep: {
-      1: { venueId: gigVenueId, accuracy: 85 }
-    }
+    ...stateWithForgedOutcome,
+    lastGigStats: { score: 1000, accuracy: 100, failed: false }
   }
 
   const sanitizedValid = sanitizeExpeditionState(
-    stateWithValidOutcome,
-    started.runSeed
+    stateWithValidOutcome.expedition,
+    started.runSeed,
+    stateWithValidOutcome.lastGigStats
   )
   assert.equal(
     sanitizedValid.activeObligations[0].progressByConstraintId.three_good_gigs
       .value,
     1
+  )
+
+  // Test 3: Historical gig accuracy without signal proof is rejected during load
+  const stateWithForgedHistorical = {
+    ...started,
+    lastGigStats: null,
+    expedition: {
+      ...started.expedition,
+      visitedNodeIds,
+      routeStep: gigRouteStep + 1, // Historical step
+      resolvedObligationSignalIds: [], // Missing signal proof!
+      gigOutcomeByStep: {
+        [gigRouteStep]: { venueId: gigVenueId, accuracy: 100 }
+      },
+      activeObligations: [
+        {
+          id: `${started.expedition.runId}:contract_three_good_gigs`,
+          sourceType: 'native',
+          sourceId: 'contract_three_good_gigs',
+          constraints: [
+            {
+              id: 'three_good_gigs',
+              kind: 'gig_accuracy_count',
+              minAccuracy: 65,
+              requiredCount: 3
+            }
+          ],
+          progressByConstraintId: {
+            three_good_gigs: {
+              constraintId: 'three_good_gigs',
+              value: 1,
+              satisfied: false,
+              failed: false
+            }
+          },
+          status: 'active',
+          settled: false,
+          doubleDown: null
+        }
+      ]
+    }
+  }
+
+  // Add step + 1 to visited path so routeStep = gigRouteStep + 1 is valid
+  const stepPlus1Edge = canonicalMap.connections.find(
+    conn => conn.from === visitedNodeIds[gigRouteStep]
+  )
+  if (stepPlus1Edge) {
+    stateWithForgedHistorical.expedition.visitedNodeIds = [
+      ...visitedNodeIds,
+      stepPlus1Edge.to
+    ]
+  }
+
+  const sanitizedHistorical = sanitizeExpeditionState(
+    stateWithForgedHistorical.expedition,
+    started.runSeed,
+    null
+  )
+  assert.equal(
+    sanitizedHistorical.activeObligations[0].progressByConstraintId.three_good_gigs
+      .value,
+    0
   )
 })

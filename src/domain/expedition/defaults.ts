@@ -114,6 +114,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   pendingRunDraftOffer: null,
   finaleType: null,
   lastSocialResult: null,
+  pendingSocialSettlement: null,
   gigOutcomeByStep: Object.create(null) as Record<
     number,
     { venueId: string; accuracy: number }

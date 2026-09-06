@@ -276,7 +276,11 @@ export const handleLoadGame = (
     expedition:
       isFiniteNumber(loadedState.runSeed) &&
       loadedState.runSeed === Math.trunc(loadedState.runSeed) >>> 0
-        ? sanitizeExpeditionState(loadedState.expedition, loadedState.runSeed)
+        ? sanitizeExpeditionState(
+            loadedState.expedition,
+            loadedState.runSeed,
+            loadedState.lastGigStats
+          )
         : createDefaultExpeditionState()
   }
 
