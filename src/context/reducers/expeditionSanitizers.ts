@@ -36,7 +36,10 @@ import {
   getExpeditionEventResultEffect,
   isExpeditionEventResultId
 } from '../../domain/expedition/eventDeltas'
-import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
+import {
+  didExpeditionPressureGateOpen,
+  isExpeditionPressureEventId
+} from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
@@ -705,15 +708,23 @@ export const sanitizeExpeditionState = (
       // dropped - an autosave between earning a reward and the terminal
       // settlement that materializes it must not lose it.
       if (entry.sourceType === 'event_rare') {
-        // `resolvedEventSourceIds` is itself part of the save, so validating
-        // its shape against the registry proves only that the tuple is one the
-        // content could produce - not that this run produced it. A random
-        // event roll has no seeded anchor to re-derive it from either, unlike
-        // the route opportunity above. So an unmaterialized Event rare is
-        // dropped on load rather than authorized by evidence the save wrote
-        // itself: a reload mid-run forfeits it, which is the cost of not
-        // letting a crafted save mint one.
-        if (entry.materialized !== true) continue
+        // `resolvedEventSourceIds` is part of the save, so its shape proves
+        // only that the tuple is one the content could produce - not that this
+        // run produced it. The seeded pool gate is the anchor: it is pure in
+        // `runSeed` and the route step, so the load can re-derive whether the
+        // Director was allowed to place an event at the step the proof names,
+        // and the event named has to be one the Director can place at all.
+        //
+        // A crafted save can compute the same gate. What it cannot do is pick
+        // the step or the reward: it is left with the one rare the run would
+        // genuinely have been offered at a step that genuinely had an event,
+        // which is the same bar the route opportunity above is held to. That
+        // keeps a legitimately earned rare across a reload instead of
+        // forfeiting it.
+        if (!isExpeditionPressureEventId(entry.sourceId.split(':')[0])) continue
+        if (!didExpeditionPressureGateOpen(runSeed, entry.earnedAtRouteStep)) {
+          continue
+        }
         const resolvedEventSourceIds = sanitizeUniqueStrings(
           value.resolvedEventSourceIds
         ).filter(isValidExpeditionEventProofId)

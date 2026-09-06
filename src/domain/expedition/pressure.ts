@@ -86,6 +86,34 @@ export const derivePressureDirectorContext = (
 const EXPEDITION_PRESSURE_EVENT_POOL_RATE = 0.4 as const
 
 /**
+ * Whether the seeded pool gate opened a pressure event at a route step.
+ *
+ * @param runSeed - The run's seed.
+ * @param routeStep - Route step to judge.
+ * @returns True when this step is one the Director may place an event on.
+ *
+ * @remarks
+ * Pure in `runSeed` and the step - it reads no run state - which is what makes
+ * it the one piece of a resolved pressure event the load sanitizer can
+ * re-derive. A crafted save can compute the same roll, but that only lets it
+ * name a step the run genuinely had an event at, not one of its choosing.
+ */
+export const didExpeditionPressureGateOpen = (
+  runSeed: unknown,
+  routeStep: unknown
+): boolean => {
+  if (!Number.isFinite(runSeed)) return false
+  if (!Number.isInteger(routeStep) || (routeStep as number) < 0) return false
+  const gate = mulberry32(
+    Number.parseInt(
+      hashExpeditionRoute(`${runSeed}:pressure_gate:${routeStep}`),
+      16
+    )
+  )()
+  return gate <= EXPEDITION_PRESSURE_EVENT_POOL_RATE
+}
+
+/**
  * Weighs the pool against the Director context.
  *
  * @param state - Current game state.
@@ -211,13 +239,7 @@ export const resolveExpeditionPressureDirectorStep = (
   // One roll decides whether this step has a pressure event at all, so the
   // pool stays as rare as its neighbours; the weighting then decides which.
   const routeStep = state.expedition.routeStep
-  const gate = mulberry32(
-    Number.parseInt(
-      hashExpeditionRoute(`${state.runSeed}:pressure_gate:${routeStep}`),
-      16
-    )
-  )()
-  if (gate > EXPEDITION_PRESSURE_EVENT_POOL_RATE) return pressure
+  if (!didExpeditionPressureGateOpen(state.runSeed, routeStep)) return pressure
 
   const event = selectPressureEvent(state, eligible)
   if (!event) return pressure
