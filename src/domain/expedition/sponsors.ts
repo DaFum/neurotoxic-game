@@ -1,5 +1,6 @@
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getExpeditionStaticRoutePressureProfile } from './routeProfile'
+import { getExpeditionFameProfile } from './fame'
 import { generateBrandOffers } from '../../utils/brandDealLogic'
 import {
   getAcceptDealBandUpdateFactory,
@@ -87,7 +88,22 @@ export const buildPreparedExpeditionSponsorOffers = (
     1,
     ((rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3) + routeStagedOffers
   )
-  return generateBrandOffers(state, mulberry32(sponsorSeed(state.runSeed)))
+  // Fame biases pool *quality*, never the count: the Region and Tour decide how
+  // many offers are staged, and Fame decides how many of them are genuine
+  // matches rather than stretched ones. The bias value is the guarantee - a
+  // `touring` band is owed two real matches if the pool has them - so nothing
+  // here invents a threshold the Fame table does not already state.
+  const generated = generateBrandOffers(
+    state,
+    mulberry32(sponsorSeed(state.runSeed))
+  )
+  const genuine = generated.filter(offer => !offer.flavor.isStretched)
+  const promoted = genuine.slice(
+    0,
+    getExpeditionFameProfile(state).sponsorQualityBias
+  )
+  const promotedIds = new Set(promoted.map(offer => offer.id))
+  return [...promoted, ...generated.filter(offer => !promotedIds.has(offer.id))]
     .slice(0, stagedOfferCount)
     .map(deal => ({
       offerId: hashExpeditionRoute(

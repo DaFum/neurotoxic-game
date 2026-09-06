@@ -7,6 +7,7 @@ import { mulberry32 } from '../../utils/seededRng'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionRoutePressureProfile } from './routeProfile'
+import { getExpeditionFameProfile } from './fame'
 
 export interface PressureDirectorContext {
   heat: number
@@ -61,7 +62,11 @@ export const derivePressureDirectorContext = (
   return {
     heat: bounded(state.expedition.pressure.heat),
     exposure: bounded(state.expedition.pressure.exposure),
-    fameExpectationPressure: 0,
+    // What the scene expects of a band this well known. Read from the one
+    // Fame owner rather than recomputed, so every consumer moves together.
+    fameExpectationPressure: bounded(
+      getExpeditionFameProfile(state).expectationPressure
+    ),
     cashPressure: bounded(
       state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
     ),
@@ -149,7 +154,10 @@ const weighExpeditionPressureEvents = (
     crew: context.crewStressPressure + context.cashPressure / 2,
     contract: context.activeObligationPressure + context.cashPressure / 2,
     rival: context.rivalPressure,
-    social: context.exposure,
+    // Exposure is how visible this run has made the band; Fame expectation is
+    // how much the scene already demanded of it. Both are attention, so they
+    // pressure the same family.
+    social: context.exposure + context.fameExpectationPressure,
     technical: context.technicalConditionPressure
   }
   // The composed rules publish per-family event weighting, so the Director has
@@ -166,8 +174,12 @@ const weighExpeditionPressureEvents = (
     number
   > = {
     authority: effective.authorityEventWeightMultiplier,
+    // A band people have heard of draws more Rival attention: the third
+    // factor is Fame, alongside the composed rules and the route's own weight.
     rival:
-      effective.rivalEventWeightMultiplier * route.rivalNodeWeightMultiplier,
+      effective.rivalEventWeightMultiplier *
+      route.rivalNodeWeightMultiplier *
+      getExpeditionFameProfile(state).rivalAttentionMultiplier,
     crew: 1,
     contract: route.sponsorContractEventWeightMultiplier,
     social: 1,
