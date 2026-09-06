@@ -139,6 +139,32 @@ export const evaluateExpeditionConstraint = (
   }
 }
 
+/**
+ * Resolves the route node a template must commit, if it needs one.
+ *
+ * @param templateId - Canonical contract template id.
+ * @param preparedMap - The prepared route.
+ * @returns The target node id, or `null` for a template that needs none.
+ *
+ * @remarks
+ * The build validator requires a route Contract to name its target and every
+ * other Contract to name none. Which node that is is not the player's to pick:
+ * it is the first node on the prepared route matching the template's rule, so
+ * Tour Prep commits the same node the reducer would materialize.
+ */
+export const getExpeditionContractTargetNodeId = (
+  templateId: string,
+  preparedMap: MaterializationMap
+): string | null => {
+  const template = EXPEDITION_CONTRACTS_BY_ID.get(templateId)
+  if (!template) return null
+  const constraints = materializeContractConstraints(template, preparedMap)
+  const visit = constraints?.find(
+    constraint => constraint.kind === 'visit_node'
+  )
+  return visit?.kind === 'visit_node' ? visit.targetNodeId : null
+}
+
 export const materializeCommittedContracts = (
   commitments: readonly ExpeditionNativeContractCommitment[],
   map: MaterializationMap

@@ -421,6 +421,8 @@
   "expedition.prep.commitLabel": "Build-Festlegung",
   "expedition.prep.commitTitle": "Build festlegen",
   "expedition.prep.commitWarning": "Setlist, Equipment und Chassis-Module sind ab Tourstart gesperrt.",
+  "expedition.prep.contracts": "Verträge ({{count}}/{{max}})",
+  "expedition.prep.contractsHint": "Verträge zahlen bei Erfüllung und strafen bei Bruch. Manche lassen sich nicht kombinieren.",
   "expedition.prep.equipment": "Live-Equipment ({{count}}/{{max}})",
   "expedition.prep.equipmentHint": "Nur ausgewähltes Equipment wirkt in diesem Run. Alles andere bleibt zu Hause.",
   "expedition.prep.extractionWindows": "Ausstiegspunkte",
@@ -452,6 +454,9 @@
   "expedition.prep.routeNodes": "Routenlänge",
   "expedition.prep.setlist": "Setlist ({{count}}/{{max}})",
   "expedition.prep.spendableAfter": "Verfügbar nach Start",
+  "expedition.prep.sponsor": "Sponsorangebot",
+  "expedition.prep.sponsorHint": "Ein vorbereitetes Angebot pro Run. Die Konditionen stehen ab Tourstart fest.",
+  "expedition.prep.sponsorNone": "Kein Sponsor",
   "expedition.prep.subtitle": "Build festlegen. Mitten im Run lässt er sich nicht tauschen.",
   "expedition.prep.title": "TOURVORBEREITUNG",
   "expedition.repair.mode.cannibalize": "Ausschlachten für",
@@ -580,7 +585,9 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": ["ui:featureList.sec6.items.0"],
+      "items": [
+        "ui:featureList.sec6.items.0"
+      ],
       "description": "ui:featureList.sec6.description"
     },
     {

@@ -4,6 +4,7 @@ import { TourPrep } from '../../src/scenes/TourPrep'
 import { createInitialState } from '../../src/context/initialState'
 import { createDefaultExpeditionState } from '../../src/domain/expedition/defaults'
 import { SONGS_BY_ID } from '../../src/data/songs'
+import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'
 import type { GameState } from '../../src/types'
 
 const state: { current: GameState } = vi.hoisted(
@@ -118,6 +119,69 @@ describe('TourPrep scene', () => {
     expect(committed.build.setlistSongIds).toEqual([SONG_IDS[0]])
     expect(committed.build.sponsorOfferId).toBeNull()
     expect(committed.nativeContracts).toEqual([])
+  })
+
+  it('commits a selected sponsor offer and native contract', () => {
+    const base = buildState()
+    base.expedition = {
+      ...base.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
+    }
+    state.current = base
+    render(<TourPrep />)
+
+    const offer = base.expedition.preparedSponsorOffers[0]
+    expect(offer).toBeDefined()
+    fireEvent.click(
+      screen.getByTestId(`expedition-prep-sponsor-${offer.offerId}`)
+    )
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-contract-contract_three_good_gigs')
+    )
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+
+    const committed = actions.startExpedition.mock.calls[0][0]
+    expect(committed.build.sponsorOfferId).toBe(offer.offerId)
+    expect(committed.nativeContracts).toEqual([
+      { templateId: 'contract_three_good_gigs', targetNodeId: null }
+    ])
+  })
+
+  it('derives the route target for a route contract rather than asking', () => {
+    state.current = buildState()
+    render(<TourPrep />)
+
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-contract-contract_route_target')
+    )
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+
+    const committed = actions.startExpedition.mock.calls[0][0]
+    expect(committed.nativeContracts).toHaveLength(1)
+    // The validator requires a route contract to name its target, and the
+    // reducer materializes the same node.
+    expect(committed.nativeContracts[0].targetNodeId).toEqual(
+      expect.any(String)
+    )
+  })
+
+  it('refuses an incompatible contract pair in the picker', () => {
+    state.current = buildState()
+    render(<TourPrep />)
+
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-contract-contract_keep_it_clean')
+    )
+    // `contract_all_in` cannot be combined with `contract_keep_it_clean`, so
+    // the screen shows it as unavailable instead of failing at commit time.
+    expect(
+      screen.getByTestId('expedition-prep-contract-contract_all_in')
+    ).toBeDisabled()
+
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+    expect(
+      actions.startExpedition.mock.calls[0][0].nativeContracts
+    ).toHaveLength(1)
   })
 
   it('blocks the commit and names the reason for an illegal build', () => {
