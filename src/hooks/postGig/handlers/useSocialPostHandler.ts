@@ -48,8 +48,8 @@ export function useSocialPostHandler({
     addToast,
     setPostResult,
     setBrandOffers,
-      setPhase,
-      resolveExpeditionSocialResult
+    setPhase,
+    resolveExpeditionSocialResult
   }
 }: UseSocialPostHandlerProps) {
   const handlePostSelection = useCallback(

@@ -175,7 +175,9 @@ export function useContinueHandler({
 
         // Apply Finale stamina multiplier to member stamina
         if (isFinaleGig && Array.isArray(band.members)) {
-          const finaleProfile = getExpeditionFinaleProfile(expedition.finaleType)
+          const finaleProfile = getExpeditionFinaleProfile(
+            expedition.finaleType
+          )
           const staminaMultiplier = finaleProfile?.staminaDrainMultiplier ?? 1
           if (staminaMultiplier > 1) {
             const baseDrain = 15
@@ -189,7 +191,10 @@ export function useContinueHandler({
                   const maxStamina = finiteNumberOr(member.staminaMax, 100)
                   return {
                     ...member,
-                    stamina: Math.max(0, Math.min(maxStamina, currentStamina - extraDrain))
+                    stamina: Math.max(
+                      0,
+                      Math.min(maxStamina, currentStamina - extraDrain)
+                    )
                   }
                 })
                 return { ...prevBand, members }

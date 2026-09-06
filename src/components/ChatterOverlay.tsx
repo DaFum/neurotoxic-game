@@ -256,40 +256,41 @@ const ChatterMessage = memo(
     return (
       <m.div
         ref={ref}
-        layout="position"
+        layout='position'
         initial={{ opacity: 0, y: 18, scale: 0.96 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
         exit={{ opacity: 0, scale: 0.9, y: -10 }}
         transition={MOTION_TRANSITIONS.ui}
         className='mb-2 last:mb-0'
       >
-      <div
-        className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
-        style={{
-          boxShadow: `4px 4px 0px ${sceneStyle.accent}`
-        }}
-      >
-        {/* Left accent bar */}
         <div
-          className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
-        />
+          className={`relative overflow-hidden border-2 ${sceneStyle.borderColor} bg-void-black backdrop-blur-md`}
+          style={{
+            boxShadow: `4px 4px 0px ${sceneStyle.accent}`
+          }}
+        >
+          {/* Left accent bar */}
+          <div
+            className={`absolute inset-y-0 left-0 w-1 ${sceneStyle.barColor}`}
+          />
 
-        <ChatterMessageHeader
-          sceneStyle={sceneStyle}
-          sceneLabel={sceneLabel}
-          speaker={msg.speaker}
-        />
+          <ChatterMessageHeader
+            sceneStyle={sceneStyle}
+            sceneLabel={sceneLabel}
+            speaker={msg.speaker}
+          />
 
-        <ChatterMessageBody
-          text={t(msg.text)}
-          textColorClass={textColorClass}
-        />
+          <ChatterMessageBody
+            text={t(msg.text)}
+            textColorClass={textColorClass}
+          />
 
-        <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
-      </div>
-    </m.div>
-  )
-})
+          <ChatterMessageLifetimeBar barColorClass={sceneStyle.barColor} />
+        </div>
+      </m.div>
+    )
+  }
+)
 
 ChatterMessage.displayName = 'ChatterMessage'
 

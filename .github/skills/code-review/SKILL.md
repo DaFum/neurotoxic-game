@@ -23,7 +23,6 @@ license: 'Proprietary. See LICENSE.txt for terms'
      Edit .agents/skills/github-code-review/SKILL.md, then run: pnpm run sync:skills
      tests/node/skillSync.test.js fails if these drift. -->
 
-
 # GitHub Code Review
 
 Review Neurotoxic changes with evidence-first, risk-weighted depth. Lead with actionable inline comments on confirmed Important or Critical defects, then submit one concise top-level verdict.
@@ -155,11 +154,11 @@ Before writing comments, de-duplicate aggressively:
 
 Use the repo-specific severity in `references/neurotoxic-conventions.md` when a listed rule is violated. For unlisted defects, map severity by consequence:
 
-| Level | Use when |
-|---|---|
-| **Critical** | Data loss/corruption, security vulnerability, direct state mutation, broken state transition, exploit, or functionality that is realistically broken |
-| **Important** | Concrete logic/type/boundary error that should be fixed before merge; realistic regression risk with a clear failure mode |
-| **Minor** | Real but non-blocking repo-rule or consistency issue with low runtime impact |
+| Level         | Use when                                                                                                                                             |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Critical**  | Data loss/corruption, security vulnerability, direct state mutation, broken state transition, exploit, or functionality that is realistically broken |
+| **Important** | Concrete logic/type/boundary error that should be fixed before merge; realistic regression risk with a clear failure mode                            |
+| **Minor**     | Real but non-blocking repo-rule or consistency issue with low runtime impact                                                                         |
 
 Review **priority** and finding **severity** are separate: a Critical-risk file may be correct, while a small changed line can still contain a Critical defect.
 

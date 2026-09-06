@@ -17,8 +17,7 @@ const matchesSocialCondition = (
     isFiniteNumber(social.loyaltyBelow) ||
     isFiniteNumber(social.controversyAbove)
   const damageCheckPassed =
-    (isFiniteNumber(social.loyaltyBelow) &&
-      loyalty < social.loyaltyBelow) ||
+    (isFiniteNumber(social.loyaltyBelow) && loyalty < social.loyaltyBelow) ||
     (isFiniteNumber(social.controversyAbove) &&
       controversy > social.controversyAbove)
 

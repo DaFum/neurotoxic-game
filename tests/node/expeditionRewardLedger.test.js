@@ -455,7 +455,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -478,7 +481,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -501,7 +507,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -525,7 +534,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -552,7 +564,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(walked, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -578,9 +593,15 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(walked, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 1)
-    assert.equal(loaded.expedition.rewardLedger[0].id, `${realReward}::${nodeId}`)
+    assert.equal(
+      loaded.expedition.rewardLedger[0].id,
+      `${realReward}::${nodeId}`
+    )
   })
 
   it('7. duplicate entries -> deduplicated', () => {
@@ -605,7 +626,10 @@ describe('persisted reward ledger hardening regressions', () => {
         rewardLedger: [entry, entry]
       }
     }
-    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(walked, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 1)
   })
 
@@ -628,7 +652,10 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(walked, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.rewardLedger.length, 0)
   })
 
@@ -677,7 +704,10 @@ describe('persisted reward ledger hardening regressions', () => {
       }
     }
 
-    const loaded = gameReducer(walked, { type: ActionTypes.LOAD_GAME, payload: rawSave })
+    const loaded = gameReducer(walked, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
     assert.equal(loaded.expedition.status, 'completed')
     assert.equal(loaded.expedition.runId, walked.expedition.prep.prepId)
 
@@ -687,7 +717,11 @@ describe('persisted reward ledger hardening regressions', () => {
     })
 
     assert.equal(next.expedition.status, 'idle')
-    assert.equal(next.band.inventory.shirts ?? 0, initialShirts, 'materialized reward did not re-grant inventory')
+    assert.equal(
+      next.band.inventory.shirts ?? 0,
+      initialShirts,
+      'materialized reward did not re-grant inventory'
+    )
   })
 
   it('10. forged/unconnected visitedNodeIds at routeStep 0 fails path validation and drops route_rare entry', () => {
@@ -719,8 +753,19 @@ describe('persisted reward ledger hardening regressions', () => {
         ]
       }
     }
-    const loaded = gameReducer(base, { type: ActionTypes.LOAD_GAME, payload: rawSave })
-    assert.equal(loaded.expedition.status, 'idle', 'incoherent expedition collapses to idle')
-    assert.equal(loaded.expedition.rewardLedger.length, 0, 'forged rare reward dropped')
+    const loaded = gameReducer(base, {
+      type: ActionTypes.LOAD_GAME,
+      payload: rawSave
+    })
+    assert.equal(
+      loaded.expedition.status,
+      'idle',
+      'incoherent expedition collapses to idle'
+    )
+    assert.equal(
+      loaded.expedition.rewardLedger.length,
+      0,
+      'forged rare reward dropped'
+    )
   })
 })

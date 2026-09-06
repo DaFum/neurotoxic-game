@@ -7,7 +7,14 @@
  * `tests/node/skillSync.test.js` fails if they drift.
  */
 
-import { readFileSync, writeFileSync, readdirSync, mkdirSync, cpSync, rmSync } from 'node:fs'
+import {
+  readFileSync,
+  writeFileSync,
+  readdirSync,
+  mkdirSync,
+  cpSync,
+  rmSync
+} from 'node:fs'
 import { dirname, join } from 'node:path'
 
 const SOURCE = '.agents/skills/github-code-review/SKILL.md'
@@ -38,8 +45,14 @@ if (frontmatterMatch) {
   let frontmatter = frontmatterMatch[1]
   const body = sourceContent.slice(frontmatter.length)
 
-  frontmatter = frontmatter.replace(/^name:\s*github-code-review$/m, 'name: code-review')
-  frontmatter = frontmatter.replace(/^description:\s*>[\s\S]*?(?=^compatibility:)/m, `${HOST_DESCRIPTION}\n`)
+  frontmatter = frontmatter.replace(
+    /^name:\s*github-code-review$/m,
+    'name: code-review'
+  )
+  frontmatter = frontmatter.replace(
+    /^description:\s*>[\s\S]*?(?=^compatibility:)/m,
+    `${HOST_DESCRIPTION}\n`
+  )
 
   generatedContent = `${frontmatter}\n${HEADER_COMMENT}\n${body}`
 } else {

@@ -77,7 +77,13 @@ Hard test fails if v15 imports/reads the old day-horizon constant for terminatio
 ```ts
 export interface ExpeditionBalanceProfile {
   id: string
-  tourTypeId: 'standard' | 'blitz' | 'underground' | 'corporate' | 'rival_hunt' | 'survival'
+  tourTypeId:
+    | 'standard'
+    | 'blitz'
+    | 'underground'
+    | 'corporate'
+    | 'rival_hunt'
+    | 'survival'
   regionId: 'home' | 'industrial' | 'festival' | 'corporate' | 'underground'
   chassisSpec: {
     flavor: 'legit' | 'diy'
@@ -85,14 +91,32 @@ export interface ExpeditionBalanceProfile {
     expectedArchetype: 'compact' | 'diy' | 'coach' | 'armored_hauler'
   }
   requiredModuleIds: string[]
-  crewRoleOrder: Array<'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'>
-  starterPerkId: null | 'mechanic_kit' | 'press_pass' | 'underground_contact' | 'rehearsed_set'
+  crewRoleOrder: Array<
+    'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'
+  >
+  starterPerkId:
+    | null
+    | 'mechanic_kit'
+    | 'press_pass'
+    | 'underground_contact'
+    | 'rehearsed_set'
   insurancePolicyId: null | 'roadside' | 'equipment' | 'touring'
-  pressureModifierIds: Array<'bad_roads' | 'media_frenzy' | 'no_safety_net' | 'union_trouble' | 'hostile_territory'>
+  pressureModifierIds: Array<
+    | 'bad_roads'
+    | 'media_frenzy'
+    | 'no_safety_net'
+    | 'union_trouble'
+    | 'hostile_territory'
+  >
   nativeContractPreferenceIds: string[]
-  sponsorPolicy: 'none' | 'highest_clean_value' | 'highest_exposure_value' | 'highest_nonrival_value'
+  sponsorPolicy:
+    | 'none'
+    | 'highest_clean_value'
+    | 'highest_exposure_value'
+    | 'highest_nonrival_value'
   cargoPolicy: 'safe' | 'balanced' | 'merch' | 'contraband'
-  setlistPolicy: 'balanced_four' | 'lowest_difficulty_four' | 'highest_energy_four'
+  setlistPolicy:
+    'balanced_four' | 'lowest_difficulty_four' | 'highest_energy_four'
   equipmentPolicy: 'current_selection' | 'best_owned_selection'
   startingFuelTarget: number
   protectedCashRatio: number
@@ -120,13 +144,16 @@ export const EXPEDITION_BALANCE_PROFILES = [
     starterPerkId: 'press_pass',
     insurancePolicyId: 'touring',
     pressureModifierIds: [],
-    nativeContractPreferenceIds: ['contract_keep_it_clean', 'contract_three_good_gigs'],
+    nativeContractPreferenceIds: [
+      'contract_keep_it_clean',
+      'contract_three_good_gigs'
+    ],
     sponsorPolicy: 'highest_clean_value',
     cargoPolicy: 'safe',
     setlistPolicy: 'balanced_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 90,
-    protectedCashRatio: 0.40,
+    protectedCashRatio: 0.4,
     requiredCapabilitySetIds: ['industry_network', 'chassis_network'],
     requiresAscension: false,
     decisionPolicy: 'safe_value'
@@ -135,7 +162,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     id: 'underground_heat',
     tourTypeId: 'underground',
     regionId: 'underground',
-    chassisSpec: { flavor: 'diy', tier: 3, expectedArchetype: 'armored_hauler' },
+    chassisSpec: {
+      flavor: 'diy',
+      tier: 3,
+      expectedArchetype: 'armored_hauler'
+    },
     requiredModuleIds: ['tb_gps_jammer', 'tb_trailer_hitch', 'tb_roof_rack'],
     crewRoleOrder: ['security', 'driver', 'scout'],
     starterPerkId: 'underground_contact',
@@ -148,7 +179,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 95,
     protectedCashRatio: 0.15,
-    requiredCapabilitySetIds: ['underground_network', 'chassis_network', 'mechanic_network'],
+    requiredCapabilitySetIds: [
+      'underground_network',
+      'chassis_network',
+      'mechanic_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'push_heat'
   },
@@ -157,7 +192,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'survival',
     regionId: 'industrial',
     chassisSpec: { flavor: 'diy', tier: 2, expectedArchetype: 'diy' },
-    requiredModuleIds: ['tb_cb_radio_mesh', 'tb_roof_rack', 'tb_sleeping_bunks'],
+    requiredModuleIds: [
+      'tb_cb_radio_mesh',
+      'tb_roof_rack',
+      'tb_sleeping_bunks'
+    ],
     crewRoleOrder: ['technician', 'roadie', 'driver'],
     starterPerkId: 'mechanic_kit',
     insurancePolicyId: 'equipment',
@@ -168,8 +207,12 @@ export const EXPEDITION_BALANCE_PROFILES = [
     setlistPolicy: 'lowest_difficulty_four',
     equipmentPolicy: 'current_selection',
     startingFuelTarget: 85,
-    protectedCashRatio: 0.30,
-    requiredCapabilitySetIds: ['mechanic_network', 'industry_network', 'crew_network'],
+    protectedCashRatio: 0.3,
+    requiredCapabilitySetIds: [
+      'mechanic_network',
+      'industry_network',
+      'crew_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'repair_first'
   },
@@ -199,19 +242,30 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'blitz',
     regionId: 'festival',
     chassisSpec: { flavor: 'legit', tier: 2, expectedArchetype: 'coach' },
-    requiredModuleIds: ['tb_subwoofer_stack', 'tb_side_graphics', 'tb_sleeping_bunks'],
+    requiredModuleIds: [
+      'tb_subwoofer_stack',
+      'tb_side_graphics',
+      'tb_sleeping_bunks'
+    ],
     crewRoleOrder: ['roadie', 'manager', 'scout'],
     starterPerkId: 'rehearsed_set',
     insurancePolicyId: 'equipment',
     pressureModifierIds: ['media_frenzy'],
-    nativeContractPreferenceIds: ['contract_three_good_gigs', 'contract_no_rest_finale'],
+    nativeContractPreferenceIds: [
+      'contract_three_good_gigs',
+      'contract_no_rest_finale'
+    ],
     sponsorPolicy: 'highest_exposure_value',
     cargoPolicy: 'merch',
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 90,
     protectedCashRatio: 0.25,
-    requiredCapabilitySetIds: ['festival_network', 'industry_network', 'chassis_network'],
+    requiredCapabilitySetIds: [
+      'festival_network',
+      'industry_network',
+      'chassis_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'performance_push'
   },
@@ -220,7 +274,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'rival_hunt',
     regionId: 'festival',
     chassisSpec: { flavor: 'diy', tier: 2, expectedArchetype: 'diy' },
-    requiredModuleIds: ['tb_gps_jammer', 'tb_subwoofer_stack', 'tb_side_graphics'],
+    requiredModuleIds: [
+      'tb_gps_jammer',
+      'tb_subwoofer_stack',
+      'tb_side_graphics'
+    ],
     crewRoleOrder: ['security', 'scout', 'driver'],
     starterPerkId: 'rehearsed_set',
     insurancePolicyId: 'touring',
@@ -231,8 +289,12 @@ export const EXPEDITION_BALANCE_PROFILES = [
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 95,
-    protectedCashRatio: 0.20,
-    requiredCapabilitySetIds: ['festival_network', 'underground_network', 'rival_network'],
+    protectedCashRatio: 0.2,
+    requiredCapabilitySetIds: [
+      'festival_network',
+      'underground_network',
+      'rival_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'rival_pressure'
   }
@@ -263,11 +325,8 @@ requiresAscension === true -> requiredCapabilitySetIds.length >= 3
 ## Task 4: Build mature single-run loadouts through production owners only
 
 ```js
-export const buildProductionSimulationLoadout = (
-  fixtureState,
-  profile,
-  seed
-) => validatedActiveState
+export const buildProductionSimulationLoadout = (fixtureState, profile, seed) =>
+  validatedActiveState
 ```
 
 This builder is for mature single-run strategy comparisons only.
@@ -313,7 +372,7 @@ Resolved provenance includes:
   "seed": 123,
   "tourTypeId": "...",
   "regionId": "...",
-  "chassis": {"flavor":"...","tier":2,"archetype":"..."},
+  "chassis": { "flavor": "...", "tier": 2, "archetype": "..." },
   "moduleIds": ["..."],
   "crewIds": ["..."],
   "selectedGearItemIds": ["..."],
@@ -322,8 +381,8 @@ Resolved provenance includes:
   "pressureModifierIds": ["..."],
   "sponsorOfferId": "...",
   "acceptedSponsorDealId": "...",
-  "nativeContracts": [{"templateId":"...","targetNodeId":"..."}],
-  "cargo": {"...":"materialized manifest summary"},
+  "nativeContracts": [{ "templateId": "...", "targetNodeId": "..." }],
+  "cargo": { "...": "materialized manifest summary" },
   "setlistSongIds": ["..."],
   "startingFuelTarget": 90,
   "protectedCareerCash": 1234,
