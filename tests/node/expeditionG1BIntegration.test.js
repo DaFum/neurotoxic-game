@@ -8,6 +8,9 @@ import {
   handleRecordExpeditionObligationSignal
 } from '../../src/context/reducers/expeditionReducer.ts'
 import { getExpeditionFinaleRewardId } from '../../src/domain/expedition/finales.ts'
+import { composeExpeditionFailureSignal } from '../../src/domain/expedition/failure.ts'
+import { canSpendExpeditionCash } from '../../src/domain/expedition/loadout.ts'
+import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import {
   fixtureLoadout,
   fixtureMap,
@@ -167,5 +170,124 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       getExpeditionFinaleRewardId(null),
       'reward_finale_road_crew_respect'
     )
+  })
+})
+
+describe('G1B — core end-to-end checks without G5 forward dependencies', () => {
+  it('keeps 25% and secured rare items only on failure', () => {
+    const started = startedState({ money: 5000 })
+    const withLedger = {
+      ...started,
+      player: { ...started.player, money: 6000, fame: 400 },
+      expedition: {
+        ...started.expedition,
+        startingMoney: 5000,
+        startingFame: 100,
+        rewardLedger: [
+          {
+            id: 'reward_contract_patch_run::secured',
+            rewardDefinitionId: 'reward_contract_patch_run',
+            sourceType: 'contract',
+            sourceId: 'secured',
+            secured: true,
+            earnedAtRouteStep: 1,
+            materialized: false
+          },
+          {
+            id: 'reward_route_merch_crate::greedy',
+            rewardDefinitionId: 'reward_route_merch_crate',
+            sourceType: 'route_rare',
+            sourceId: 'greedy',
+            secured: false,
+            earnedAtRouteStep: 1,
+            materialized: false
+          }
+        ]
+      }
+    }
+
+    const failed = settleExpedition(withLedger, 'failed')
+    assert.equal(failed.retentionRate, 0.25)
+    assert.equal(failed.moneyRetained, Math.floor(1000 * 0.25))
+    assert.equal(failed.fameRetained, Math.floor(300 * 0.25))
+    assert.deepEqual(failed.retainedRewardEntryIds, [
+      'reward_contract_patch_run::secured'
+    ])
+    assert.deepEqual(failed.abandonedRewardEntryIds, [
+      'reward_route_merch_crate::greedy'
+    ])
+
+    // Completion keeps everything, so the three terminal kinds really are
+    // three different bargains rather than one.
+    const completed = settleExpedition(withLedger, 'completed')
+    assert.equal(completed.retentionRate, 1)
+    assert.equal(completed.abandonedRewardEntryIds.length, 0)
+  })
+
+  it('routes every later failure family into one terminal owner', () => {
+    const started = startedState({ money: 5000 })
+    const withBreachedContract = {
+      ...started,
+      expedition: {
+        ...started.expedition,
+        activeObligations: [
+          {
+            id: `${started.expedition.runId}:contract_all_in`,
+            sourceType: 'native',
+            sourceId: 'contract_all_in',
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'failed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+    // Bankruptcy is the run's root cause when it also applies, so the
+    // Contract family only wins once the economy is healthy - one composer
+    // resolves the competition rather than each family ending the run itself.
+    const alsoBroke = {
+      ...withBreachedContract,
+      player: { ...withBreachedContract.player, money: 0 },
+      expedition: {
+        ...withBreachedContract.expedition,
+        unpaidDailyObligation: 25
+      }
+    }
+    assert.equal(
+      composeExpeditionFailureSignal(alsoBroke)?.reason,
+      'bankruptcy'
+    )
+    assert.equal(
+      composeExpeditionFailureSignal(withBreachedContract)?.reason,
+      'critical_contract_breach'
+    )
+    // A later gate's own signal still arrives through the same composer.
+    assert.equal(
+      composeExpeditionFailureSignal(started, [
+        {
+          reason: 'crew_collapse',
+          sourceId: 'zoe',
+          choices: ['accept_failure']
+        }
+      ])?.reason,
+      'crew_collapse'
+    )
+  })
+
+  it('never lets a spend owner cross protectedCareerCash', () => {
+    const run = startedState(
+      { money: 5000 },
+      { build: { protectedCareerCash: 2000 } }
+    )
+    assert.equal(run.expedition.protectedCareerCash, 2000)
+    const spendable = run.player.money - run.expedition.protectedCareerCash
+    assert.ok(spendable > 0)
+    assert.equal(canSpendExpeditionCash(run, spendable), true)
+    assert.equal(canSpendExpeditionCash(run, spendable + 1), false)
+    // Every G1/G2/G4 spend owner asks this one gate, so the protected slice is
+    // not something an individual owner can decide to ignore.
+    assert.equal(canSpendExpeditionCash(run, run.player.money), false)
   })
 })
