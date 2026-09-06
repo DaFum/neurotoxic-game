@@ -123,6 +123,7 @@ import type {
   ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
+import type { CareerRivalRecord } from '../../types/career'
 import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
 import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
 import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
@@ -136,6 +137,12 @@ import {
 } from '../../domain/expedition/pressure'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { POST_OPTIONS } from '../../data/postOptions'
+import {
+  createExpeditionExtractionQuestEvent,
+  createExpeditionFinaleQuestEvent,
+  createExpeditionNodeResolvedQuestEvent,
+  createExpeditionRivalOutcomeQuestEvent
+} from '../../quests/producers/expeditionQuestEvents'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -478,6 +485,22 @@ export const handleAdvanceExpeditionRoute = (
  * be a real neighbour exactly one step deeper, and a run that is not active
  * leaves the state untouched.
  */
+/**
+ * Emits the node-resolved quest event for a committed route advance.
+ *
+ * @param state - State that has already advanced.
+ * @returns The same state with the event emitted.
+ *
+ * @remarks
+ * Applied on every successful exit of {@link applyExpeditionRouteAdvance} and
+ * on none of its refusals, so a stale or replayed advance progresses nothing.
+ */
+const withNodeResolved = (state: GameState): GameState =>
+  QuestEvents.emit(
+    state,
+    createExpeditionNodeResolvedQuestEvent(state.player.currentNodeId)
+  )
+
 export const applyExpeditionRouteAdvance = (
   state: GameState,
   nodeId: unknown
@@ -548,10 +571,10 @@ export const applyExpeditionRouteAdvance = (
   // unearnable, and `resolveExpeditionReward` still proves the evidence, so a
   // replayed arrival collides with the existing entry instead of paying twice.
   const rareRewardId = target.hidden.rareRewardId
-  if (rareRewardId === null) return advanced
+  if (rareRewardId === null) return withNodeResolved(advanced)
 
   const definition = resolveExpeditionRewardDefinition(rareRewardId)
-  if (!definition) return advanced
+  if (!definition) return withNodeResolved(advanced)
   const resolution = resolveExpeditionReward(
     advanced,
     {
@@ -562,15 +585,15 @@ export const applyExpeditionRouteAdvance = (
     },
     map
   )
-  if (!resolution.ok) return advanced
+  if (!resolution.ok) return withNodeResolved(advanced)
 
-  return {
+  return withNodeResolved({
     ...advanced,
     expedition: {
       ...advanced.expedition,
       rewardLedger: [...advanced.expedition.rewardLedger, resolution.entry]
     }
-  }
+  })
 }
 
 /**
@@ -828,11 +851,19 @@ export const handleExtractExpedition = (
     ? payload.explicitRareRewardIds.filter(id => typeof id === 'string')
     : []
 
-  return finalizeExpedition(state, 'extracted', {
+  const extracted = finalizeExpedition(state, 'extracted', {
     reason: null,
     finaleResultId: null,
     explicitRareRewardIds
   })
+  // Only a settlement that actually happened progresses a quest: an extraction
+  // the guards above refused returns before this point.
+  return extracted === state
+    ? extracted
+    : QuestEvents.emit(
+        extracted,
+        createExpeditionExtractionQuestEvent(state.expedition.runId ?? '')
+      )
 }
 
 /**
@@ -884,7 +915,10 @@ export const handleCompleteExpedition = (
   if (state.expedition.finaleType === 'rival_battle' && state.rivalBand) {
     const rivalId = state.rivalBand.id
     const record = state.career.rivalsById[rivalId]
-    if (record) {
+    // One Nemesis step per Rival per run, whichever canonical outcome gets
+    // there first: a run that already advanced through a settled Rival Social
+    // result does not advance again on the Finale.
+    if (record && record.history.lastSeenRunId !== state.expedition.runId) {
       const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
         0 | 1 | 2 | 3 | 4
       completionState = {
@@ -937,11 +971,20 @@ export const handleCompleteExpedition = (
     }
   }
 
-  return finalizeExpedition(completionState, 'completed', {
+  const completed = finalizeExpedition(completionState, 'completed', {
     reason: null,
     finaleResultId,
     explicitRareRewardIds: []
   })
+  return completed === completionState
+    ? completed
+    : QuestEvents.emit(
+        completed,
+        createExpeditionFinaleQuestEvent(
+          completionState.expedition.finaleType ?? 'regional_headliner',
+          true
+        )
+      )
 }
 
 /**
@@ -2174,6 +2217,46 @@ export const handleResolveExpeditionSocialResult = (
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state
   const proofId = `${payload.postOptionId}:${payload.resultId}:${state.expedition.routeStep}`
+
+  // A settled Rival-flavoured result is the canonical Rival encounter, and the
+  // only production path that advances the persistent record. `lastSeenRunId`
+  // is the per-run guard: one Nemesis step per Rival per run keeps the ladder
+  // a cross-run relationship instead of something a single tour can farm by
+  // posting repeatedly.
+  const rivalProgression = (() => {
+    if (!result.requiresRival || !state.rivalBand) return null
+    const rivalId = state.rivalBand.id
+    const record = state.career.rivalsById[rivalId]
+    if (!record) return null
+    const runId = state.expedition.runId
+    if (typeof runId !== 'string' || record.history.lastSeenRunId === runId)
+      return null
+    const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
+      0 | 1 | 2 | 3 | 4
+    return {
+      rivalId,
+      career: {
+        ...state.career,
+        rivalsById: {
+          ...state.career.rivalsById,
+          [rivalId]: {
+            ...record,
+            history: {
+              ...record.history,
+              relationship: (nemesisLevel >= 4
+                ? 'nemesis'
+                : 'rival') as CareerRivalRecord['history']['relationship'],
+              nemesisLevel,
+              encounterCount: record.history.encounterCount + 1,
+              lastOutcome:
+                'hostile_win' as CareerRivalRecord['history']['lastOutcome'],
+              lastSeenRunId: runId
+            }
+          }
+        }
+      }
+    }
+  })()
   const pressure = applyExpeditionPressureDelta(state, {
     heat: result.heat,
     exposure: result.exposure,
@@ -2206,6 +2289,7 @@ export const handleResolveExpeditionSocialResult = (
         )
       }
     },
+    career: rivalProgression?.career ?? state.career,
     rivalBand:
       state.rivalBand && result.rivalPressure !== 0
         ? {
@@ -2245,6 +2329,15 @@ export const handleResolveExpeditionSocialResult = (
         reason: 'expedition_social'
       })
     )
+  // The settled Rival encounter is this event's canonical owner: emitted only
+  // after the settlement actually succeeds, so a replayed or refused dispatch
+  // (both return early above) emits nothing.
+  if (rivalProgression) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createExpeditionRivalOutcomeQuestEvent(rivalProgression.rivalId, true)
+    )
+  }
   return handleRecordExpeditionObligationSignal(nextState, {
     signalType: 'social_post',
     sourceId: proofId,
