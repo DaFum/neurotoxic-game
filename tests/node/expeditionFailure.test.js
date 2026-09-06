@@ -196,6 +196,51 @@ describe('composition into one terminal owner', () => {
     assert.equal(composed?.reason, 'bankruptcy')
   })
 
+  it('ends the run on a breached tour-ending Contract', () => {
+    const state = startedState({ money: 5000 })
+    const breached = {
+      ...state,
+      expedition: {
+        ...state.expedition,
+        activeObligations: [
+          {
+            id: `${state.expedition.runId}:contract_all_in`,
+            sourceType: 'native',
+            sourceId: 'contract_all_in',
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'failed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+    const composed = composeExpeditionFailureSignal(breached)
+    assert.equal(composed?.reason, 'critical_contract_breach')
+    assert.equal(
+      composed?.sourceId,
+      `${state.expedition.runId}:contract_all_in`
+    )
+
+    // A contract that does not declare `tourEndingOnFailure` raises nothing:
+    // failing an ordinary contract costs Heat, it does not end the run.
+    const ordinary = {
+      ...breached,
+      expedition: {
+        ...breached.expedition,
+        activeObligations: [
+          {
+            ...breached.expedition.activeObligations[0],
+            id: `${state.expedition.runId}:contract_keep_it_clean`,
+            sourceId: 'contract_keep_it_clean'
+          }
+        ]
+      }
+    }
+    assert.equal(composeExpeditionFailureSignal(ordinary), null)
+  })
+
   it('accepts signals a later gate exports without a second system', () => {
     const state = startedState({ money: 5000 })
     const composed = composeExpeditionFailureSignal(state, [
