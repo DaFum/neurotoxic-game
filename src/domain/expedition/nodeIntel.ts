@@ -14,7 +14,7 @@
  * entitlement path.
  */
 
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { mulberry32 } from '../../utils/seededRng'
 import { buildExpeditionMap, hashExpeditionRoute } from './map'
@@ -43,17 +43,30 @@ export interface ExpeditionIntelCapability {
    */
   passiveLevelFloor: NodeIntelLevel
   /**
-   * Nodes a familiar Region and an established Career read at level 1 for free.
+   * The one node Region reputation reads at level 1 for free, if any.
    *
    * @remarks
-   * G5's half of the passive floor is a small *set* rather than a global level,
-   * because familiarity should shorten the road, not replace the Scout: a Scout
-   * still reads every node, and only a deliberate recon or a grant reaches
-   * level 2. The set is re-derived from the run seed and the route step, so it
-   * is never dispatched, never persisted, and cannot be replayed for a second
-   * reveal.
+   * Entitled solely by `reputationByRegion[regionId] >= 50`, which is the
+   * exact bar the G5 Task-4 contract sets. Completed-Region familiarity and
+   * Career rank deliberately do *not* feed this: they buy Level-0 presence
+   * hints (see {@link ExpeditionIntelPresenceHints}), because payout-level
+   * Intel for merely having finished a run here would undercut the Scout and
+   * Contact entitlements the same contract keeps as the broader information
+   * path. It is re-derived from the run seed and the route step, so it is
+   * never dispatched, never persisted, and cannot be replayed for a second
+   * reveal, and it never reaches level 2.
    */
   familiarNodeIds: readonly string[]
+  /**
+   * Whether a Region the Career has finished a run in hints repair/Sponsor
+   * opportunity presence at Level 0.
+   */
+  hasRecoveryOrSponsorHint: boolean
+  /**
+   * Whether `headliner` or above hints Rival/Sponsor category presence at
+   * Level 0.
+   */
+  hasRivalOrSponsorCategoryHint: boolean
   /** Whether a committed Scout enables passive per-node reveals. Owned by G3. */
   hasScout: boolean
   /** Scout recon charges for the whole run. Owned by G3. */
@@ -66,6 +79,8 @@ export interface ExpeditionIntelCapability {
 export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
   passiveLevelFloor: 0,
   familiarNodeIds: [],
+  hasRecoveryOrSponsorHint: false,
+  hasRivalOrSponsorCategoryHint: false,
   hasScout: false,
   reconCharges: 0
 }
@@ -85,6 +100,40 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
  * keyed on the root run seed plus the route step, so the same step always
  * reveals the same nodes and moving on costs the previous step's reveal.
  */
+/**
+ * Region reputation at or above which one node per route step reads at level 1.
+ *
+ * @remarks
+ * The G5 Task-4 contract names this threshold exactly.
+ */
+const REGION_FAMILIARITY_REPUTATION = 50
+
+/**
+ * Whether the run's Region has earned its one free reveal per route step.
+ *
+ * @param state - Current game state.
+ * @returns True once Region reputation reaches the contract threshold.
+ *
+ * @remarks
+ * `reputationByRegion` is read under the committed Region id, which is what
+ * the contract names. Nothing writes an Expedition Region key today - run gigs
+ * credit reputation under the key derived from the node id, which is `exp` for
+ * every Expedition node - so this entitlement is currently unreachable in
+ * production. That producer belongs to whoever owns Region reputation; wiring
+ * it here would mean inventing a key mapping the contract does not specify,
+ * and inventing one silently is how an entitlement ends up stronger than the
+ * design it claims to implement.
+ */
+const hasRegionFamiliarityEntitlement = (state: GameState): boolean => {
+  const regionId = state.expedition.loadout?.regionId
+  if (typeof regionId !== 'string' || isForbiddenKey(regionId)) return false
+  const reputation = state.reputationByRegion
+  if (!reputation || !Object.hasOwn(reputation, regionId)) return false
+  return (
+    finiteNumberOr(reputation[regionId], 0) >= REGION_FAMILIARITY_REPUTATION
+  )
+}
+
 const resolveFamiliarNodeIds = (
   state: GameState,
   capacity: number
@@ -130,9 +179,10 @@ const resolveFamiliarNodeIds = (
  * single resolver is what stops a later gate from introducing a parallel
  * entitlement path.
  *
- * G5's two familiarity signals are things the Career finished rather than
- * things it bought: a Region it has already taken a run to the end of, and a
- * rank it has earned. Each is worth exactly one free node per route step.
+ * G5 contributes exactly one entitlement here: the Region-reputation
+ * familiarity reveal. Everything else the Career has earned in a Region buys
+ * Level-0 presence hints instead, which is the boundary the contract draws
+ * between knowing a road and having scouted it.
  */
 export const getExpeditionIntelCapability = (
   state: GameState
@@ -146,15 +196,19 @@ export const getExpeditionIntelCapability = (
   const pathfinder =
     state.career.crewById.noah?.signatureTraitId === 'signature_pathfinder'
   const regionId = state.expedition.loadout?.regionId
-  const knowsRegion =
-    typeof regionId === 'string' &&
-    state.career.completedExpeditionRegionIds.includes(regionId)
-  const familiarCapacity =
-    (knowsRegion ? 1 : 0) +
-    (hasExpeditionCareerRank(state, 'headliner') ? 1 : 0)
   return {
     ...BASE_EXPEDITION_INTEL_CAPABILITY,
-    familiarNodeIds: resolveFamiliarNodeIds(state, familiarCapacity),
+    familiarNodeIds: resolveFamiliarNodeIds(
+      state,
+      hasRegionFamiliarityEntitlement(state) ? 1 : 0
+    ),
+    // Finishing a run in a Region tells you where the road lets you patch up
+    // or sell your name - not what either is worth.
+    hasRecoveryOrSponsorHint:
+      typeof regionId === 'string' &&
+      state.career.completedExpeditionRegionIds.includes(regionId),
+    // A Career people have heard of knows which stops draw a Rival or a brand.
+    hasRivalOrSponsorCategoryHint: hasExpeditionCareerRank(state, 'headliner'),
     hasScout,
     reconCharges: hasScout ? (pathfinder ? 2 : 1) : 0
   }

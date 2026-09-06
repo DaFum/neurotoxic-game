@@ -244,24 +244,36 @@ describe('G5 — Tour Tokens are minted from the run outcome', () => {
     )
   })
 
-  it('adds the meta-unlock milestone token at most once per run', () => {
+  it('never mints a milestone token from a sticky quest record', () => {
+    // `completedQuestIds` only ever grows and the meta-unlock quest repeats on
+    // a cooldown, so reading it would hand every later run a permanent +1 -
+    // the settled-run guard does not catch that, because it only stops the
+    // same run paying twice. The plan wants a *validated* milestone, and
+    // nothing persisted today ties a quest completion to the run it happened
+    // in, so the token is withheld rather than minted on evidence that does
+    // not prove it.
     const extracted = extractedRun()
     const runId = extracted.expedition.outcome.runId
     const withMilestone = {
       ...extracted,
       completedQuestIds: ['quest_expedition_meta_unlock']
     }
-    const settlement = resolveExpeditionCareerSettlement(withMilestone, runId)
-    // Extracted 1 + new Region 1 + milestone 1.
-    assert.equal(settlement.tourTokensAwarded, 3)
+    // Extracted 1 + new Region 1, and no milestone token.
+    assert.equal(
+      resolveExpeditionCareerSettlement(withMilestone, runId).tourTokensAwarded,
+      2
+    )
+    assert.equal(
+      resolveExpeditionCareerSettlement(extracted, runId).tourTokensAwarded,
+      2,
+      'a historical completion must not change what a run is worth'
+    )
 
     const settled = gameReducer(withMilestone, {
       type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
       payload: { runId }
     })
-    assert.equal(settled.career.tourTokens, 3)
-    // The per-run cap is the settled-run guard, so the milestone cannot be
-    // billed twice for the same run.
+    assert.equal(settled.career.tourTokens, 2)
     assert.equal(resolveExpeditionCareerSettlement(settled, runId), null)
   })
 

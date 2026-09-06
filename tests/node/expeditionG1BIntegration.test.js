@@ -328,25 +328,22 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       resolvedEvent.expedition.rewardLedger.length
     )
 
-    // The earned rare now survives a reload. The anchor is the seeded pool
-    // gate, which is pure in `runSeed` and the route step: the load re-derives
-    // that the Director was allowed to place an event at this step and that
-    // the named event is one it can place, so a genuinely earned rare is kept
-    // instead of forfeited.
-    assert.ok(
+    // This genuinely earned rare does NOT survive a reload, and that is the
+    // accepted cost rather than an oversight. Nothing in the save distinguishes
+    // it from a crafted claim: the seeded gate proves only that an event slot
+    // could open at this step, and the tuple, the proof list and the ledger
+    // entry are all save-authored. Refusing every unmaterialized Event rare on
+    // load is what makes save-minting impossible, and it falls on the window
+    // between earning the rare and the terminal settlement that materializes
+    // it. Closing that window needs a reducer-authored resolution record a save
+    // cannot construct - a persistence change this gate does not own.
+    assert.equal(
       sanitizeExpeditionState(
         resolvedEvent.expedition,
         resolvedEvent.runSeed
-      ).rewardLedger.some(item => item.id === entryId),
-      'a legitimately earned Event rare must survive a reload'
-    )
-    // ...but not without its proof.
-    assert.equal(
-      sanitizeExpeditionState(
-        { ...resolvedEvent.expedition, resolvedEventSourceIds: [] },
-        resolvedEvent.runSeed
       ).rewardLedger.filter(item => item.id === entryId).length,
-      0
+      0,
+      'an unmaterialized Event rare is not load-eligible, however it was earned'
     )
 
     // A result that declares no rare banks nothing.
@@ -418,17 +415,14 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     )
   })
 
-  it('rejects a crafted save that mints its own Event-rare proof', () => {
-    // The anchor is the seeded pool gate. For the fixture seed it is closed at
-    // route step 2, so a save that walks there and claims the rare for that
-    // step is naming a step the run provably had no pressure event at - even
-    // though the tuple itself is a real registry one.
+  it('refuses every unmaterialized Event-rare claim a save can author', () => {
+    // The seeded pool gate is not an authentication of the reward: it proves
+    // only that *some* pressure event could open at the named step, never that
+    // this event was selected or this result produced. Every field that would
+    // say so is authored by the save. So an unmaterialized Event rare is
+    // refused on load whatever step it names - including a step the gate did
+    // open, which is the case this test exists to pin down.
     const atClosedGate = walkTo(startedState({ money: 5000 }), 2)
-    assert.equal(
-      didExpeditionPressureGateOpen(atClosedGate.runSeed, 2),
-      false,
-      'the fixture needs a closed-gate step for this case'
-    )
     const canonicalSourceId =
       'expedition_underground_invite:take_the_address:spare_parts_scavenged'
     const withClaim = (expedition, step) => ({
@@ -457,12 +451,32 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       0,
       'a step the seeded gate never opened must not authorize the reward'
     )
-    // The same claim at a step the gate did open is the one the run could
-    // genuinely have earned, so it is kept - that is the deliberate bar.
+    // A step the gate *did* open is refused just the same. This assertion used
+    // to expect the claim to be kept, which codified the forgery gap as the
+    // intended bar: the gate cannot tell a real earn from a crafted one, so
+    // keeping it accepted save-authored evidence.
     assert.equal(didExpeditionPressureGateOpen(atClosedGate.runSeed, 0), true)
-    assert.equal(eventRares(withClaim(atClosedGate.expedition, 0)).length, 1)
+    assert.equal(
+      eventRares(withClaim(atClosedGate.expedition, 0)).length,
+      0,
+      'an open gate is not evidence that this reward was earned'
+    )
 
-    // An event the Director cannot place at all is refused whatever the step.
+    // What survives a reload is a rare the run already materialized, because
+    // that is a state change the reducer made rather than a claim about one.
+    const materializedClaim = withClaim(atClosedGate.expedition, 0)
+    assert.equal(
+      eventRares({
+        ...materializedClaim,
+        rewardLedger: materializedClaim.rewardLedger.map(entry => ({
+          ...entry,
+          materialized: true
+        }))
+      }).length,
+      1
+    )
+
+    // Still refused for an event the Director cannot place at all.
     const crewSourceId =
       'expedition_crew_breakthrough:follow_lead:crew_breakthrough_followed'
     assert.equal(

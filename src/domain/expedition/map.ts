@@ -20,7 +20,7 @@ import { EXPEDITION_ROUTE_RARE_REWARD_IDS } from './rewardLedger'
 import { mulberry32 } from '../../utils/seededRng'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
-  MIN_EXPEDITION_MEANINGFUL_NODES,
+  MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from './defaults'
 import { deriveExpeditionRouteProfile } from './routeProfile'
@@ -130,10 +130,16 @@ export const hashExpeditionRoute = (value: string): string => {
 }
 
 /**
- * Resolves the meaningful-node count into the approved 7-9 corridor.
+ * Resolves the meaningful-node count a route is built at.
  *
  * @param profile - Route profile supplying the requested count.
- * @returns An integer inside the corridor.
+ * @returns An integer inside the buildable range.
+ *
+ * @remarks
+ * The floor is the shortest depth a Tour may *declare*, not the standard
+ * corridor floor: clamping a declared 6 up to 7 would make the registry lie
+ * about the Blitz route's length. Anything that declares nothing still lands
+ * in the 7-9 corridor through the neutral profile.
  */
 const resolveMeaningfulNodeCount = (
   profile: ExpeditionRouteProfile
@@ -143,7 +149,7 @@ const resolveMeaningfulNodeCount = (
     : NEUTRAL_EXPEDITION_ROUTE_PROFILE.meaningfulNodeCount
   return clampInt(
     requested,
-    MIN_EXPEDITION_MEANINGFUL_NODES,
+    MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
     MAX_EXPEDITION_MEANINGFUL_NODES
   )
 }

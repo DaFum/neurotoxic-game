@@ -359,8 +359,19 @@ export const handleStartExpedition = (
       doubleDown: null
     })
 
+  // Every rule that depends on the committed Region/Tour has to be resolved
+  // against the *validated candidate*, not against `state`: the loadout is not
+  // committed until this transaction builds the next state, so reading it off
+  // `state` here resolves the baseline profile and silently drops the Tour and
+  // Region identity the run was just started with.
+  const committed: GameState = {
+    ...state,
+    expedition: { ...state.expedition, loadout: normalized }
+  }
+  const startRules = getEffectiveExpeditionRules(committed).numeric
+
   const rivalSelection = selectExpeditionRivalForRun(
-    state,
+    committed,
     preparedMap,
     deriveExpeditionRouteProfile(regionId, tourTypeId)
   )
@@ -422,7 +433,27 @@ export const handleStartExpedition = (
       startingMoney: nextMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
-      cargo: materializeExpeditionCargo(normalized, state),
+      // The Tour's own starting stock rides on top of what the build packed.
+      cargo: (() => {
+        const packed = materializeExpeditionCargo(normalized, state)
+        const granted = Math.max(
+          0,
+          Math.floor(finiteNumberOr(startRules.startingSpareParts, 0))
+        )
+        return granted > 0
+          ? { ...packed, spareParts: packed.spareParts + granted }
+          : packed
+      })(),
+      // A Tour that starts hot starts hot: the run's opening Heat is a rule,
+      // so it is written through the same default pressure state rather than
+      // by a later mutation.
+      pressure: {
+        ...createDefaultExpeditionState().pressure,
+        heat: Math.max(
+          0,
+          Math.min(100, Math.floor(finiteNumberOr(startRules.startingHeat, 0)))
+        )
+      },
       technicalCondition: createDefaultTechnicalCondition(),
       preparedSponsorOffers: [],
       activeObligations

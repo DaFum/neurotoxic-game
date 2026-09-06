@@ -33,9 +33,6 @@ const NEW_REGION_TOKEN = 1 as const
 /** Extra token for a run that carries a validated meta-unlock milestone. */
 const META_UNLOCK_QUEST_TOKEN = 1 as const
 
-/** The quest whose milestone the meta-unlock token is proven against. */
-const META_UNLOCK_QUEST_ID = 'quest_expedition_meta_unlock' as const
-
 /**
  * The furthest a persistent Rival feud has been driven.
  *
@@ -148,11 +145,20 @@ export const resolveExpeditionCareerSettlement = (
     regionId.length > 0 &&
     !career.completedExpeditionRegionIds.includes(regionId)
 
-  // The milestone is proven against the completed-quest record rather than a
-  // payload flag, and the per-run cap is the settled-run guard above.
-  const hasMetaUnlockMilestone =
-    Array.isArray(state.completedQuestIds) &&
-    state.completedQuestIds.includes(META_UNLOCK_QUEST_ID)
+  // The plan awards this token for a *validated* milestone, once per run at
+  // most. `completedQuestIds` cannot validate it: it is a sticky historical
+  // set that `completeQuest` only ever adds to, while the meta-unlock quest is
+  // repeatable on a cooldown. Reading it would mean every run settled after
+  // the quest's first completion collects the token forever, which turns a
+  // one-off milestone into a permanent +1 per run - and the settled-run guard
+  // does not catch it, because it only stops the *same* run paying twice.
+  //
+  // Nothing persisted today links a quest completion to the run it happened
+  // in, so the milestone cannot be validated at settlement. The token is
+  // therefore withheld rather than minted on evidence that does not prove it;
+  // awarding it needs a run-scoped completion record, which is a persistence
+  // change this settlement does not own.
+  const hasMetaUnlockMilestone = false
 
   return {
     tourTokensAwarded:

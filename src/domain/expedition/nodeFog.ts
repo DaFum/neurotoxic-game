@@ -83,7 +83,19 @@ export const getExpeditionNodeFogByNodeId = (
         intelLevel >= 2
           ? (entry.hidden.rivalId ?? entry.hidden.eventId ?? null)
           : null,
-      rareRewardId: intelLevel >= 1 ? entry.hidden.rareRewardId : null
+      rareRewardId: intelLevel >= 1 ? entry.hidden.rareRewardId : null,
+      // Level-0 presence hints: whether a category is here, never which one or
+      // what it pays. `null` is "not entitled to the hint" and stays distinct
+      // from `false`, which is the hint reporting the category is absent.
+      hasRecoveryOrSponsorHint: capability.hasRecoveryOrSponsorHint
+        ? entry.nodeClass === 'REST_STOP' ||
+          entry.hidden.hiddenOpportunityId !== null
+        : null,
+      hasRivalOrSponsorCategoryHint: capability.hasRivalOrSponsorCategoryHint
+        ? entry.specialSubtype === 'RIVAL_ENCOUNTER' ||
+          entry.hidden.rivalId !== null ||
+          entry.hidden.hiddenOpportunityId !== null
+        : null
     }
   }
   return out

@@ -1083,4 +1083,18 @@ export interface ExpeditionNodeFog {
   revealedIdentity: string | null
   /** Rare reward this node yields, only present once intel reaches level 1. */
   rareRewardId: string | null
+  /**
+   * Level-0 presence hints, earned rather than scouted.
+   *
+   * @remarks
+   * A hint says only *that* a category is on a node, never which one it is or
+   * what it pays. That is the whole difference between knowing a road and
+   * having scouted it, and it is why these stay readable at intel level 0
+   * while payout, wear and identity keep their level 1 and level 2 gates.
+   * `false` means the run is entitled to the hint and the node does not carry
+   * that category; `null` means the run has not earned the hint at all.
+   */
+  hasRecoveryOrSponsorHint: boolean | null
+  /** Level-0 Rival/Sponsor category presence, earned by Career rank. */
+  hasRivalOrSponsorCategoryHint: boolean | null
 }

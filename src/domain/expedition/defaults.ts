@@ -31,8 +31,21 @@ export const MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS = 3 as const
  */
 const BASE_EXPEDITION_MEANINGFUL_NODES = 8 as const
 
-/** Lower bound of the approved meaningful-node corridor. */
+/** Lower bound of the approved meaningful-node corridor for a standard run. */
 export const MIN_EXPEDITION_MEANINGFUL_NODES = 7 as const
+
+/**
+ * Shortest route a Tour may explicitly declare.
+ *
+ * @remarks
+ * The 7-9 corridor above describes a *standard* run, and it stays the shape
+ * anything that does not ask for something else gets. A Tour whose whole
+ * identity is being shorter may declare one step below it - the Blitz Tour is
+ * the authored case - so the builder honours a declared depth instead of
+ * silently clamping it up and leaving the registry stating a depth the route
+ * never has.
+ */
+export const MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES = 6 as const
 
 /** Upper bound of the approved meaningful-node corridor. */
 export const MAX_EXPEDITION_MEANINGFUL_NODES = 9 as const

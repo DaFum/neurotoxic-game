@@ -19,6 +19,7 @@ import {
   BASE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_MEANINGFUL_NODES,
+  MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from '../../src/domain/expedition/defaults'
@@ -104,16 +105,34 @@ describe('standard route shape', () => {
   })
 
   it('clamps a profile that asks for a route outside the corridor', () => {
-    for (const requested of [0, 1, 6, 10, 40, Number.NaN]) {
+    // 6 is no longer clamped away: it is the shortest depth a Tour may
+    // explicitly declare, which is what lets the Blitz Tour actually be
+    // shorter instead of the registry claiming a length the route never has.
+    for (const requested of [0, 1, 10, 40, Number.NaN]) {
       const depth = routeDepth(
         build(11, {
           ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
           meaningfulNodeCount: requested
         })
       )
-      assert.ok(depth >= MIN_EXPEDITION_MEANINGFUL_NODES)
+      assert.ok(depth >= MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES)
       assert.ok(depth <= MAX_EXPEDITION_MEANINGFUL_NODES)
     }
+    // Anything that declares nothing still lands in the standard corridor.
+    const neutralDepth = routeDepth(build(11, NEUTRAL_EXPEDITION_ROUTE_PROFILE))
+    assert.ok(neutralDepth >= MIN_EXPEDITION_MEANINGFUL_NODES)
+    assert.ok(neutralDepth <= MAX_EXPEDITION_MEANINGFUL_NODES)
+
+    // A declared six-step route is honoured exactly.
+    assert.equal(
+      routeDepth(
+        build(11, {
+          ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+          meaningfulNodeCount: MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+        })
+      ),
+      MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+    )
   })
 
   it('keeps the Finale reachable and unique', () => {

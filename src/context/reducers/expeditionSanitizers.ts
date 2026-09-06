@@ -32,14 +32,7 @@ import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
-import {
-  getExpeditionEventResultEffect,
-  isExpeditionEventResultId
-} from '../../domain/expedition/eventDeltas'
-import {
-  didExpeditionPressureGateOpen,
-  isExpeditionPressureEventId
-} from '../../domain/expedition/pressure'
+import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
@@ -708,44 +701,26 @@ export const sanitizeExpeditionState = (
       // dropped - an autosave between earning a reward and the terminal
       // settlement that materializes it must not lose it.
       if (entry.sourceType === 'event_rare') {
-        // `resolvedEventSourceIds` is part of the save, so its shape proves
-        // only that the tuple is one the content could produce - not that this
-        // run produced it. The seeded pool gate is the anchor: it is pure in
-        // `runSeed` and the route step, so the load can re-derive whether the
-        // Director was allowed to place an event at the step the proof names,
-        // and the event named has to be one the Director can place at all.
+        // Dropped unless the run has already materialized it.
         //
-        // A crafted save can compute the same gate. What it cannot do is pick
-        // the step or the reward: it is left with the one rare the run would
-        // genuinely have been offered at a step that genuinely had an event,
-        // which is the same bar the route opportunity above is held to. That
-        // keeps a legitimately earned rare across a reload instead of
-        // forfeiting it.
-        if (!isExpeditionPressureEventId(entry.sourceId.split(':')[0])) continue
-        if (!didExpeditionPressureGateOpen(runSeed, entry.earnedAtRouteStep)) {
-          continue
-        }
-        const resolvedEventSourceIds = sanitizeUniqueStrings(
-          value.resolvedEventSourceIds
-        ).filter(isValidExpeditionEventProofId)
-        if (
-          !resolvedEventSourceIds.includes(
-            `${entry.sourceId}:${entry.earnedAtRouteStep}`
-          )
-        ) {
-          continue
-        }
-        const resultId = entry.sourceId.slice(
-          entry.sourceId.lastIndexOf(':') + 1
-        )
-        if (
-          !isExpeditionEventResultId(resultId) ||
-          getExpeditionEventResultEffect(resultId).rareRewardId !==
-            entry.rewardDefinitionId ||
-          entry.earnedAtRouteStep > routeStep
-        ) {
-          continue
-        }
+        // There is no load-time proof available for an unmaterialized Event
+        // rare. The seeded pool gate is pure in `runSeed` and the route step,
+        // so it proves only that *some* pressure event could open at the step
+        // the entry names - never that this event was selected, that this
+        // option was taken, or that this result was produced. Every field that
+        // would say so (`sourceId`, `resolvedEventSourceIds`, the entry itself)
+        // is authored by the save, and the Director's actual selection depended
+        // on the live pressure at that step, which the save does not preserve
+        // in any re-derivable form.
+        //
+        // So the choice is between keeping a claim the load cannot check and
+        // losing a real reward when a run is reloaded between earning it and
+        // the terminal settlement. This takes the second: a forged save cannot
+        // mint a rare, and the cost falls on a reload window rather than on the
+        // reward rules. Closing that window needs a reducer-authored resolution
+        // record that a save cannot construct, which is a persistence change
+        // this gate does not own.
+        if (!entry.materialized) continue
       }
       if (entry.sourceType === 'contract') {
         if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue

@@ -22,10 +22,11 @@ import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
 /** The fixture run, re-pointed at one Region and given a Career history. */
-const runIn = (regionId, career = {}, expedition = {}) => {
+const runIn = (regionId, career = {}, expedition = {}, reputation = {}) => {
   const base = startedState({ money: 5000 })
   return {
     ...base,
+    reputationByRegion: { ...base.reputationByRegion, ...reputation },
     career: { ...base.career, ...career },
     expedition: {
       ...base.expedition,
@@ -104,27 +105,53 @@ describe('G5 — familiarity is bounded free Intel', () => {
     assert.equal(capability.passiveLevelFloor, 0)
   })
 
-  it('grants one node for a Region the Career has finished', () => {
+  it('gives no free reveal for finishing a run in the Region', () => {
+    // Finishing a run here buys a Level-0 presence hint, never payout-level
+    // Intel: the contract keeps the Level-1 reveal behind Region reputation so
+    // familiarity cannot stand in for a Scout or a Contact.
     const state = runIn('home_turf', {
       completedExpeditionRegionIds: ['home_turf']
     })
-    assert.equal(getExpeditionIntelCapability(state).familiarNodeIds.length, 1)
+    const capability = getExpeditionIntelCapability(state)
+    assert.deepEqual(capability.familiarNodeIds, [])
+    assert.equal(capability.hasRecoveryOrSponsorHint, true)
   })
 
-  it('grants a second node once the Career has earned a rank', () => {
+  it('gives no free reveal for Career rank either', () => {
     const state = runIn(
       'home_turf',
       careerAt({
         completedExpeditionRegionIds: ['home_turf', 'industrial_belt']
       })
     )
-    assert.equal(getExpeditionIntelCapability(state).familiarNodeIds.length, 2)
+    const capability = getExpeditionIntelCapability(state)
+    assert.deepEqual(capability.familiarNodeIds, [])
+    assert.equal(capability.hasRivalOrSponsorCategoryHint, true)
+  })
+
+  it('holds the reveal below the reputation threshold', () => {
+    const state = runIn(
+      'home_turf',
+      { completedExpeditionRegionIds: ['home_turf'] },
+      {},
+      { home_turf: 49 }
+    )
+    assert.deepEqual(getExpeditionIntelCapability(state).familiarNodeIds, [])
+  })
+
+  it('grants exactly one reveal at the reputation threshold', () => {
+    for (const reputation of [50, 80, 100]) {
+      const state = runIn('home_turf', {}, {}, { home_turf: reputation })
+      assert.equal(
+        getExpeditionIntelCapability(state).familiarNodeIds.length,
+        1,
+        `reputation ${reputation} must entitle exactly one node`
+      )
+    }
   })
 
   it('is deterministic for a route step and re-drawn on the next one', () => {
-    const state = runIn('home_turf', {
-      completedExpeditionRegionIds: ['home_turf']
-    })
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const first = getExpeditionIntelCapability(state).familiarNodeIds
     assert.deepEqual(getExpeditionIntelCapability(state).familiarNodeIds, first)
     const nextStep = {
@@ -141,9 +168,7 @@ describe('G5 — familiarity is bounded free Intel', () => {
   })
 
   it('only ever reveals the road ahead, never a passed-up branch', () => {
-    const state = runIn('home_turf', {
-      completedExpeditionRegionIds: ['home_turf']
-    })
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const map = buildExpeditionMap(
       state.runSeed,
       state.expedition.loadout.tourTypeId,
@@ -172,9 +197,7 @@ describe('G5 — familiarity is bounded free Intel', () => {
   })
 
   it('reads the familiar node at level 1 and every other node at level 0', () => {
-    const state = runIn('home_turf', {
-      completedExpeditionRegionIds: ['home_turf']
-    })
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const capability = getExpeditionIntelCapability(state)
     const [familiar] = capability.familiarNodeIds
     assert.equal(getExpeditionNodeIntelLevel(state, familiar, capability), 1)
@@ -192,12 +215,7 @@ describe('G5 — familiarity is bounded free Intel', () => {
   })
 
   it('never carries a familiar node to the identity reveal by itself', () => {
-    const state = runIn(
-      'home_turf',
-      careerAt({
-        completedExpeditionRegionIds: ['home_turf', 'industrial_belt']
-      })
-    )
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const capability = getExpeditionIntelCapability(state)
     for (const nodeId of capability.familiarNodeIds) {
       assert.ok(
@@ -208,9 +226,7 @@ describe('G5 — familiarity is bounded free Intel', () => {
   })
 
   it('does not let the free reveal be re-spent as a perk floor', () => {
-    const state = runIn('home_turf', {
-      completedExpeditionRegionIds: ['home_turf']
-    })
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const capability = getExpeditionIntelCapability(state)
     const map = buildExpeditionMap(
       state.runSeed,
@@ -232,12 +248,7 @@ describe('G5 — familiarity is bounded free Intel', () => {
   })
 
   it('leaves a committed Scout strictly better than familiarity', () => {
-    const state = runIn(
-      'home_turf',
-      careerAt({
-        completedExpeditionRegionIds: ['home_turf', 'industrial_belt']
-      })
-    )
+    const state = runIn('home_turf', {}, {}, { home_turf: 60 })
     const map = buildExpeditionMap(
       state.runSeed,
       state.expedition.loadout.tourTypeId,

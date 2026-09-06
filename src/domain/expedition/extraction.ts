@@ -9,7 +9,7 @@
  * finishing the Finale.
  */
 
-import { isFiniteNumber } from '../../utils/finiteNumber'
+import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import type { GameState } from '../../types'
 import type {
   ExpeditionRewardLedgerEntry,
@@ -163,6 +163,21 @@ export const settleExpedition = (
           )
         )
       : EXPEDITION_BASE_RETENTION[kind]
+  // The Tour's completion bonus, which the spec names as one of the two upsides
+  // greed buys (the other being unextracted rares). It applies only to a run
+  // that actually reached its Finale: a bail-out or a failure has not earned
+  // it, so a survival Tour's x1.2 cannot be collected by extracting early and
+  // a blitz Tour's x0.95 is not a penalty on runs that never completed.
+  const completionMultiplier =
+    kind === 'completed'
+      ? Math.max(
+          0,
+          finiteNumberOr(
+            getEffectiveExpeditionRules(state).numeric.completionMultiplier,
+            1
+          )
+        )
+      : 1
   const money = isFiniteNumber(state.player.money) ? state.player.money : 0
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
 
@@ -174,8 +189,12 @@ export const settleExpedition = (
     0,
     Math.round(fame - state.expedition.startingFame)
   )
-  const moneyRetained = Math.floor(moneyEarned * retentionRate)
-  const fameRetained = Math.floor(fameEarned * retentionRate)
+  const moneyRetained = Math.floor(
+    moneyEarned * retentionRate * completionMultiplier
+  )
+  const fameRetained = Math.floor(
+    fameEarned * retentionRate * completionMultiplier
+  )
 
   const { retainedRewardEntryIds, abandonedRewardEntryIds } =
     splitExpeditionRewardLedger(
@@ -189,10 +208,12 @@ export const settleExpedition = (
     retentionRate,
     moneyEarned,
     moneyRetained,
-    moneyForfeited: moneyEarned - moneyRetained,
+    // Never negative: a completion bonus above 1.0 pays out more than the run
+    // earned, and that is a bonus rather than a negative forfeit.
+    moneyForfeited: Math.max(0, moneyEarned - moneyRetained),
     fameEarned,
     fameRetained,
-    fameForfeited: fameEarned - fameRetained,
+    fameForfeited: Math.max(0, fameEarned - fameRetained),
     retainedRewardEntryIds,
     abandonedRewardEntryIds
   }
