@@ -89,17 +89,12 @@ export const handleSettleExpeditionCrewCareer = (
       ...state.career,
       crewById,
       crewRecoveryDebtById,
-      settledCrewRunIds: [...state.career.settledCrewRunIds, payload.runId],
-      finalizedExpeditionRuns:
-        Math.max(
-          0,
-          Math.floor(finiteNumberOr(state.career.finalizedExpeditionRuns, 0))
-        ) + 1,
-      completedExpeditionRuns:
-        Math.max(
-          0,
-          Math.floor(finiteNumberOr(state.career.completedExpeditionRuns, 0))
-        ) + (outcome.kind === 'completed' ? 1 : 0)
+      settledCrewRunIds: [...state.career.settledCrewRunIds, payload.runId]
+      // The run counters are deliberately not touched here. They have exactly
+      // one owner - `handleSettleExpeditionCareerResult` - because the two
+      // settlements carry independent replay guards, so incrementing in both
+      // would advance a single finalized run twice and pull rank and
+      // Crew-development gates forward at double speed.
     }
   }
 }
@@ -133,9 +128,13 @@ export const handleSettleExpeditionCareerResult = (
     ...state,
     career: {
       ...state.career,
+      // The stored balance is a persisted addend, so it is narrowed before the
+      // clamp: `Math.max` cannot recover a `NaN` or an infinity that has
+      // already poisoned the sum.
       tourTokens: Math.max(
         0,
-        state.career.tourTokens + settlement.tourTokensAwarded
+        finiteNumberOr(state.career.tourTokens, 0) +
+          settlement.tourTokensAwarded
       ),
       finalizedExpeditionRuns: settlement.finalizedExpeditionRuns,
       completedExpeditionRuns: settlement.completedExpeditionRuns,

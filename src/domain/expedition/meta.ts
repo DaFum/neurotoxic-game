@@ -9,6 +9,7 @@
  * support.
  */
 
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import type { CareerState, ExpeditionCareerRank } from '../../types/career'
 import type { GameState } from '../../types'
 
@@ -158,9 +159,19 @@ export const resolveExpeditionCareerSettlement = (
       TOKENS_BY_OUTCOME_KIND[outcome.kind] +
       (isNewRegion ? NEW_REGION_TOKEN : 0) +
       (hasMetaUnlockMilestone ? META_UNLOCK_QUEST_TOKEN : 0),
-    finalizedExpeditionRuns: career.finalizedExpeditionRuns + 1,
+    // Both counters are persisted addends: they are narrowed and floored
+    // before the increment, so a malformed save cannot carry a `NaN` or an
+    // infinity into a counter every rank gate then reads.
+    finalizedExpeditionRuns:
+      Math.max(
+        0,
+        Math.floor(finiteNumberOr(career.finalizedExpeditionRuns, 0))
+      ) + 1,
     completedExpeditionRuns:
-      career.completedExpeditionRuns + (outcome.kind === 'completed' ? 1 : 0),
+      Math.max(
+        0,
+        Math.floor(finiteNumberOr(career.completedExpeditionRuns, 0))
+      ) + (outcome.kind === 'completed' ? 1 : 0),
     completedExpeditionRegionIds: isNewRegion
       ? [...career.completedExpeditionRegionIds, regionId]
       : [...career.completedExpeditionRegionIds]

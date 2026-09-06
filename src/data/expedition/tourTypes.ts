@@ -32,7 +32,11 @@ export const EXPEDITION_TOUR_TYPES = {
   blitz_tour: {
     id: 'blitz_tour',
     labelKey: 'ui:expedition.tour.blitz_tour',
-    depth: 6,
+    // The route builder's own floor is MIN_EXPEDITION_MEANINGFUL_NODES, so a
+    // declared 6 would be silently clamped to 7 and the registry would state a
+    // depth the route never has. The Tour is short by being the shortest the
+    // builder can produce, not by naming a number it cannot honour.
+    depth: 7,
     extractionWindowRange: [2, 4],
     numeric: { completionMultiplier: 0.95 },
     route: {

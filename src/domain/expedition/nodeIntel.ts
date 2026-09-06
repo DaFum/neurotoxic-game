@@ -78,10 +78,12 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
  * @returns Up to `capacity` unvisited node ids, deterministic per route step.
  *
  * @remarks
- * Only unvisited nodes are eligible — knowing the road already behind you is
- * worth nothing — and the draw is keyed on the root run seed plus the route
- * step, so the same step always reveals the same nodes and moving on costs the
- * previous step's reveal.
+ * Only nodes deeper than the current step are eligible. Unvisited is not the
+ * same as ahead: once the route branches, the layers the run passed up stay
+ * unvisited forever, and revealing one of those would spend the entitlement on
+ * a dead branch instead of on the road the run can still take. The draw is
+ * keyed on the root run seed plus the route step, so the same step always
+ * reveals the same nodes and moving on costs the previous step's reveal.
  */
 const resolveFamiliarNodeIds = (
   state: GameState,
@@ -96,8 +98,10 @@ const resolveFamiliarNodeIds = (
     loadout.tourTypeId,
     loadout.regionId
   )
-  const visited = new Set(state.expedition.visitedNodeIds)
-  const pool = map.nodeOrder.filter(nodeId => !visited.has(nodeId))
+  const pool = map.nodeOrder.filter(nodeId => {
+    const meta = map.meta[nodeId]
+    return meta !== undefined && meta.routeStep > state.expedition.routeStep
+  })
   const rng = mulberry32(
     Number.parseInt(
       hashExpeditionRoute(

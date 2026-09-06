@@ -140,12 +140,34 @@ describe('G5 — familiarity is bounded free Intel', () => {
     )
   })
 
-  it('never reveals a node the run has already walked', () => {
+  it('only ever reveals the road ahead, never a passed-up branch', () => {
     const state = runIn('home_turf', {
       completedExpeditionRegionIds: ['home_turf']
     })
-    for (const nodeId of getExpeditionIntelCapability(state).familiarNodeIds) {
-      assert.ok(!state.expedition.visitedNodeIds.includes(nodeId))
+    const map = buildExpeditionMap(
+      state.runSeed,
+      state.expedition.loadout.tourTypeId,
+      state.expedition.loadout.regionId
+    )
+    // Unvisited is not the same as ahead: after the first branch the layers
+    // the run passed up stay unvisited forever, and spending the entitlement
+    // on one of those would reveal a node the run can never reach.
+    for (let routeStep = 0; routeStep < 6; routeStep += 1) {
+      const atStep = {
+        ...state,
+        expedition: { ...state.expedition, routeStep }
+      }
+      for (const nodeId of getExpeditionIntelCapability(atStep)
+        .familiarNodeIds) {
+        assert.ok(
+          !atStep.expedition.visitedNodeIds.includes(nodeId),
+          `step ${routeStep} revealed an already-walked node`
+        )
+        assert.ok(
+          map.meta[nodeId].routeStep > routeStep,
+          `step ${routeStep} revealed ${nodeId} at layer ${map.meta[nodeId].routeStep}`
+        )
+      }
     }
   })
 
@@ -163,7 +185,8 @@ describe('G5 — familiarity is bounded free Intel', () => {
     )
     const other = map.nodeOrder.find(
       nodeId =>
-        nodeId !== familiar && !state.expedition.visitedNodeIds.includes(nodeId)
+        nodeId !== familiar &&
+        map.meta[nodeId].routeStep > state.expedition.routeStep
     )
     assert.equal(getExpeditionNodeIntelLevel(state, other, capability), 0)
   })

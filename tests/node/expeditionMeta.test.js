@@ -141,6 +141,62 @@ describe('G5 — Tour Tokens are minted from the run outcome', () => {
     return extracted
   }
 
+  it('leaves the run counters to exactly one settlement owner', () => {
+    const extracted = extractedRun()
+    const runId = extracted.expedition.outcome.runId
+
+    // Both settlements carry independent replay guards, so if both advanced
+    // the shared counters a single finalized run would count twice and pull
+    // every rank and Crew-development gate forward at double speed.
+    const crewSettled = gameReducer(extracted, {
+      type: ActionTypes.SETTLE_EXPEDITION_CREW_CAREER,
+      payload: { runId }
+    })
+    assert.equal(
+      crewSettled.career.finalizedExpeditionRuns,
+      extracted.career.finalizedExpeditionRuns,
+      'the Crew settlement must not touch the shared run counters'
+    )
+    assert.equal(
+      crewSettled.career.completedExpeditionRuns,
+      extracted.career.completedExpeditionRuns
+    )
+
+    const bothSettled = gameReducer(crewSettled, {
+      type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
+      payload: { runId }
+    })
+    assert.equal(bothSettled.career.finalizedExpeditionRuns, 1)
+    assert.equal(bothSettled.career.completedExpeditionRuns, 0)
+  })
+
+  it('narrows a poisoned persisted balance instead of compounding it', () => {
+    const extracted = extractedRun()
+    const runId = extracted.expedition.outcome.runId
+    for (const poisoned of [Number.NaN, Number.POSITIVE_INFINITY]) {
+      const settled = gameReducer(
+        {
+          ...extracted,
+          career: {
+            ...extracted.career,
+            tourTokens: poisoned,
+            finalizedExpeditionRuns: poisoned,
+            completedExpeditionRuns: poisoned
+          }
+        },
+        {
+          type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
+          payload: { runId }
+        }
+      )
+      // `Math.max` cannot recover a sum that is already non-finite, so the
+      // stored addend has to be narrowed before the arithmetic, not after.
+      assert.equal(settled.career.tourTokens, 2)
+      assert.equal(settled.career.finalizedExpeditionRuns, 1)
+      assert.equal(settled.career.completedExpeditionRuns, 0)
+    }
+  })
+
   it('pays the outcome plus the first Region, once', () => {
     const extracted = extractedRun()
     const runId = extracted.expedition.outcome.runId
