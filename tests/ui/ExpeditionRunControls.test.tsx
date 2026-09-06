@@ -12,7 +12,8 @@ const state: { current: GameState } = vi.hoisted(
 const actions = vi.hoisted(() => ({
   changeScene: vi.fn(),
   saveGameAfterStateCommit: vi.fn(),
-  extractExpedition: vi.fn()
+  extractExpedition: vi.fn(),
+  selectExpeditionDraft: vi.fn()
 }))
 
 vi.mock('../../src/context/GameState', () => ({
@@ -179,5 +180,45 @@ describe('ExpeditionRunControls', () => {
       expect(actions.saveGameAfterStateCommit).toHaveBeenCalledTimes(1)
       expect(actions.changeScene).toHaveBeenCalledWith('RUN_SUMMARY')
     }
+  })
+})
+
+describe('Run draft picker', () => {
+  beforeEach(() => {
+    for (const fn of Object.values(actions)) fn.mockClear()
+  })
+
+  it('stays out of the way until the reducer offers a draft', () => {
+    state.current = buildState()
+    render(<ExpeditionRunControls />)
+    expect(screen.queryByTestId('expedition-run-draft-offer')).toBeNull()
+  })
+
+  it('offers the stored candidates and dispatches only the chosen id', () => {
+    const base = buildState()
+    base.expedition = {
+      ...base.expedition,
+      pendingRunDraftOffer: {
+        sourceType: 'supply',
+        sourceKey: 'exp_2_0',
+        offeredAtRouteStep: base.expedition.routeStep,
+        candidateTraitIds: ['road_warrior', 'cold_trail', 'backchannel']
+      }
+    }
+    state.current = base
+    render(<ExpeditionRunControls />)
+
+    expect(screen.getByTestId('expedition-run-draft-offer')).toBeInTheDocument()
+    // Exactly the stored candidates, no regeneration in the UI.
+    expect(screen.getByTestId('expedition-run-draft-road_warrior')).toBeTruthy()
+    expect(screen.getByTestId('expedition-run-draft-cold_trail')).toBeTruthy()
+    expect(screen.getByTestId('expedition-run-draft-backchannel')).toBeTruthy()
+    expect(
+      screen.queryByTestId('expedition-run-draft-reckless_encore')
+    ).toBeNull()
+
+    fireEvent.click(screen.getByTestId('expedition-run-draft-cold_trail'))
+    expect(actions.selectExpeditionDraft).toHaveBeenCalledTimes(1)
+    expect(actions.selectExpeditionDraft).toHaveBeenCalledWith('cold_trail')
   })
 })

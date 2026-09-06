@@ -2006,10 +2006,16 @@ export const handleOfferExpeditionDraft = (
           loadout.regionId,
           NEUTRAL_EXPEDITION_ROUTE_PROFILE
         )
-        const metaNode = map.meta[state.player.currentNodeId]
+        // The effective route, so a Nemesis shortcut counts: that overlay is
+        // the tier-2 rule change, and a Rival encounter it opens is exactly
+        // the qualifying moment a Run Draft is meant to fire on.
+        const effective = getEffectiveExpeditionRoute(state, map)
+        const subtype =
+          effective.subtypeByNodeId[state.player.currentNodeId] ??
+          map.meta[state.player.currentNodeId]?.specialSubtype
         return (
           state.rivalBand?.id === payload.sourceKey &&
-          metaNode?.specialSubtype === 'RIVAL_ENCOUNTER'
+          subtype === 'RIVAL_ENCOUNTER'
         )
       }
       case 'supply':
