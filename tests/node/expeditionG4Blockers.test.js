@@ -890,6 +890,57 @@ test('the Director opens a high-Heat Underground opportunity once', () => {
   assert.equal(severe.severeReliefUntilRouteStep, 3)
 })
 
+test('the Director consumes the composed authority and rival event weights', () => {
+  const state = keepItCleanState()
+  state.expedition.pressure.heat = 40
+  const authority = {
+    id: 'expedition_authority_patrol',
+    severity: 'normal',
+    pressureFamily: 'authority',
+    baseWeight: 10,
+    negative: true
+  }
+  const social = {
+    id: 'expedition_underground_invite',
+    severity: 'normal',
+    pressureFamily: 'social',
+    baseWeight: 10,
+    negative: false
+  }
+
+  // `cold_trail` halves Authority weighting, so the same seed and the same
+  // pool must stop picking the Authority family once the draft is held.
+  const picks = pool =>
+    Array.from({ length: 24 }, (_, step) =>
+      selectPressureEvent(
+        {
+          ...state,
+          expedition: { ...state.expedition, routeStep: step }
+        },
+        pool
+      )
+    ).filter(event => event?.pressureFamily === 'authority').length
+
+  const withoutDraft = picks([authority, social])
+  const drafted = {
+    ...state,
+    expedition: { ...state.expedition, runDraftTraitIds: ['cold_trail'] }
+  }
+  const withDraft = Array.from({ length: 24 }, (_, step) =>
+    selectPressureEvent(
+      {
+        ...drafted,
+        expedition: { ...drafted.expedition, routeStep: step }
+      },
+      [authority, social]
+    )
+  ).filter(event => event?.pressureFamily === 'authority').length
+  assert.ok(
+    withDraft < withoutDraft,
+    `cold_trail must reduce Authority draws (${withDraft} vs ${withoutDraft})`
+  )
+})
+
 test('a route advance runs one deterministic Director step', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
