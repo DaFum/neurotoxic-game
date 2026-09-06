@@ -46,6 +46,7 @@ export const useArrivalLogic = ({
   const player = useGameSelector(state => state.player)
   const currentScene = useGameSelector(state => state.currentScene)
   const expedition = useGameSelector(state => state.expedition)
+  const rivalBandId = useGameSelector(state => state.rivalBand?.id ?? null)
   const {
     advanceDay,
     saveGame,
@@ -61,7 +62,8 @@ export const useArrivalLogic = ({
     moveRivalBand,
     checkRivalEncounter,
     recordExpeditionCrewStressSource,
-    recordExpeditionObligationSignal
+    recordExpeditionObligationSignal,
+    offerExpeditionDraft
   } = useGameActions()
 
   // Stores the nodeId being processed; undefined means idle. Using the nodeId rather than a
@@ -183,6 +185,15 @@ export const useArrivalLogic = ({
           if (currentNode?.type === 'REST_STOP') {
             recordExpeditionObligationSignal('rest', player.currentNodeId)
           }
+          // Arrival is the qualifying moment for the node-shaped Run Draft
+          // sources. The reducer still proves each one and refuses a source it
+          // has already consumed at this step, so offering here cannot mint a
+          // draft the arrival did not actually earn.
+          if (offerExpeditionDraft) {
+            if (currentNode?.type === 'SUPPLY_STOP')
+              offerExpeditionDraft('supply', player.currentNodeId)
+            if (rivalBandId) offerExpeditionDraft('rival', rivalBandId)
+          }
         }
       }
       // If there is no resolved current node (e.g. incomplete map fixture),
@@ -259,7 +270,9 @@ export const useArrivalLogic = ({
     rng,
     expedition,
     recordExpeditionCrewStressSource,
-    recordExpeditionObligationSignal
+    recordExpeditionObligationSignal,
+    offerExpeditionDraft,
+    rivalBandId
   ])
 
   return { handleArrivalSequence }
