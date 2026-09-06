@@ -70,7 +70,8 @@ export const selectExpeditionRivalForRun = (
       nemesisLevel: 0,
       encounterCount: 0,
       lastOutcome: null,
-      lastSeenRunId: state.expedition.runId
+      lastSeenRunId: state.expedition.runId,
+      lastNemesisAdvanceRunId: null
     }
   }
   return { rivalBand, record, isNew: true }
