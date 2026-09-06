@@ -2,6 +2,7 @@ import {
   EXPEDITION_CONTRACTS_BY_ID,
   MAX_NATIVE_EXPEDITION_CONTRACTS
 } from '../../data/expedition/contracts'
+import type { GameState } from '../../types'
 import type {
   ActiveObligationState,
   ExpeditionContractConstraint,
@@ -194,4 +195,33 @@ export const deriveExpeditionDoubleDownOffer = (
     failureHeatBonus: picked.failureHeatBonus,
     acceptedAtRouteStep: routeStep
   }
+}
+
+/**
+ * Derives the critical-Contract crisis signal for the G1B failure composer.
+ *
+ * @param state - Current game state.
+ * @returns The breached obligation's source evidence, or `null`.
+ *
+ * @remarks
+ * `tourEndingOnFailure` is the template's own declaration that breaching it
+ * ends the run, so this reads the failed obligation rather than letting a
+ * caller name one. Exported as a signal instead of terminating the run here:
+ * `composeExpeditionFailureSignal` stays the single path from "something went
+ * wrong" to "the run is over".
+ */
+export const getCriticalContractFailureSignal = (
+  state: GameState
+): { sourceId: string; expectedRouteStep: number } | null => {
+  if (state.expedition?.status !== 'active') return null
+  const breached = state.expedition.activeObligations.find(
+    obligation =>
+      obligation.status === 'failed' &&
+      obligation.sourceType === 'native' &&
+      EXPEDITION_CONTRACTS_BY_ID.get(obligation.sourceId)
+        ?.tourEndingOnFailure === true
+  )
+  return breached
+    ? { sourceId: breached.id, expectedRouteStep: state.expedition.routeStep }
+    : null
 }
