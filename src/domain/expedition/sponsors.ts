@@ -1,4 +1,5 @@
 import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import { getExpeditionStaticRoutePressureProfile } from './routeProfile'
 import { generateBrandOffers } from '../../utils/brandDealLogic'
 import {
   getAcceptDealBandUpdateFactory,
@@ -59,7 +60,25 @@ export const buildPreparedExpeditionSponsorOffers = (
   const rivalRecord = state.rivalBand
     ? state.career?.rivalsById?.[state.rivalBand.id]
     : undefined
-  const stagedOfferCount = (rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3
+  // The run-stable half of the route profile, never the live one: these
+  // offers are committed at PREPARE and re-derived on load, so a Fame or
+  // Nemesis change mid-run must not silently produce a different set.
+  const route = getExpeditionStaticRoutePressureProfile(
+    state.expedition?.loadout?.regionId,
+    state.expedition?.loadout?.tourTypeId
+  )
+  // A Region or Tour that runs on Contracts stages one more offer to choose
+  // from; one that keeps its distance from brands stages one fewer.
+  const routeStagedOffers =
+    route.sponsorContractEventWeightMultiplier >= 1.25
+      ? 1
+      : route.sponsorContractEventWeightMultiplier <= 0.9
+        ? -1
+        : 0
+  const stagedOfferCount = Math.max(
+    1,
+    ((rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3) + routeStagedOffers
+  )
   return generateBrandOffers(state, mulberry32(sponsorSeed(state.runSeed)))
     .slice(0, stagedOfferCount)
     .map(deal => ({

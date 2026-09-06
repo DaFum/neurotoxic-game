@@ -6,6 +6,7 @@ import type { ExpeditionMap } from '../../types/expedition'
 import { mulberry32 } from '../../utils/seededRng'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { getExpeditionRoutePressureProfile } from './routeProfile'
 
 export interface PressureDirectorContext {
   heat: number
@@ -155,16 +156,22 @@ const weighExpeditionPressureEvents = (
   // to consume it: without this a jammer, `cold_trail`, a Security/Manager
   // crew or a Nemesis level changes nothing about which family the run draws.
   const effective = getEffectiveExpeditionRules(state).numeric
+  // The route-pressure profile is the second axis: it decides how often the
+  // run is *offered* a family, where the numeric rules decide what it is
+  // worth. Both compose here so a corporate Tour leans on Contract pressure
+  // without any Tour id appearing in this module.
+  const route = getExpeditionRoutePressureProfile(state)
   const familyWeight: Record<
     ExpeditionPressureEvent['pressureFamily'],
     number
   > = {
     authority: effective.authorityEventWeightMultiplier,
-    rival: effective.rivalEventWeightMultiplier,
+    rival:
+      effective.rivalEventWeightMultiplier * route.rivalNodeWeightMultiplier,
     crew: 1,
-    contract: 1,
+    contract: route.sponsorContractEventWeightMultiplier,
     social: 1,
-    technical: 1
+    technical: route.technicalNodeWeightMultiplier
   }
   const weighted = events.map(event => ({
     event,

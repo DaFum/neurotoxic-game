@@ -1,4 +1,5 @@
 import { generateRivalBand } from '../../utils/rivalEngine'
+import { getExpeditionRoutePressureProfile } from './routeProfile'
 import { mulberry32 } from '../../utils/seededRng'
 import { hashString } from '../../utils/stringUtils'
 import type { GameState, RivalBandState } from '../../types'
@@ -29,7 +30,11 @@ export const selectExpeditionRivalForRun = (
   preparedMap: ExpeditionMap,
   routeProfile: ExpeditionRouteProfile
 ): ExpeditionRivalSelection | null => {
-  if (!routeProfile.rivalAllowed) return null
+  // A Tour that hunts the Rival, or a feud the Career has driven to the top
+  // tier, forces the encounter even where the base route profile would allow
+  // the run to avoid one.
+  const route = getExpeditionRoutePressureProfile(state)
+  if (!routeProfile.rivalAllowed && !route.forcedRival) return null
   const existing = Object.values(state.career.rivalsById)
     .filter(
       record =>

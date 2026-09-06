@@ -884,6 +884,76 @@ export interface ExpeditionVehicleModuleProfile {
 /**
  * Numeric tuning rules resolved for the current Expedition.
  */
+/**
+ * A Region's canonical id.
+ */
+export type ExpeditionRegionId =
+  | 'home_turf'
+  | 'industrial_belt'
+  | 'festival_fields'
+  | 'corporate_circuit'
+  | 'underground_scene'
+
+/**
+ * A Tour Type's canonical id.
+ */
+export type ExpeditionTourTypeId =
+  | 'standard_tour'
+  | 'blitz_tour'
+  | 'underground_tour'
+  | 'corporate_tour'
+  | 'rival_hunt_tour'
+  | 'survival_tour'
+
+/**
+ * Weights that shape a run's route and content without touching its numbers.
+ *
+ * @remarks
+ * Numeric rules cannot express route identity: two Tours can share every
+ * multiplier and still need to feel different in what the route offers. These
+ * weights are that second axis, and they have exactly one owner —
+ * `getExpeditionRoutePressureProfile` — so no Region or Tour id is ever
+ * branched on outside it.
+ */
+export interface ExpeditionRoutePressureProfile {
+  supplyNodeWeightMultiplier: number
+  technicalNodeWeightMultiplier: number
+  festivalHighProfileNodeWeightMultiplier: number
+  sponsorContractEventWeightMultiplier: number
+  undergroundNodeWeightMultiplier: number
+  rivalNodeWeightMultiplier: number
+  gigNodeWeightMultiplier: number
+  recoveryNodeWeightMultiplier: number
+  forcedRival: boolean
+}
+
+/**
+ * One Region's contribution, as data.
+ */
+export interface ExpeditionRegionDefinition {
+  id: string
+  labelKey: string
+  numeric: Partial<ExpeditionNumericRules>
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  /** Heat at or above which corporate Sponsors refuse this Region's runs. */
+  corporateSponsorHeatCeiling?: number
+}
+
+/**
+ * One Tour Type's contribution, as data.
+ */
+export interface ExpeditionTourTypeDefinition {
+  id: string
+  labelKey: string
+  /** Meaningful route steps between the start and the Finale. */
+  depth: number
+  /** Route steps at which extraction is legal. */
+  extractionWindows: readonly number[]
+  numeric: Partial<ExpeditionNumericRules>
+  route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
+  forcedRival: boolean
+}
+
 export interface ExpeditionNumericRules {
   startingSpareParts: number
   startingHeat: number
