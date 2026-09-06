@@ -20,6 +20,7 @@ import type {
   ExpeditionRewardSourceType
 } from '../../types/expedition'
 import { getCrewEventOutcomeBySourceId } from './crewEventOutcomes'
+import { getExpeditionFinaleRewardId } from './finales'
 
 /**
  * The real v1 rare-reward registry.
@@ -238,14 +239,41 @@ const hasCanonicalSourceEvidence = (
       // could claim whichever registered route rare it preferred.
       return node.hidden.rareRewardId === request.expectedRewardId
     }
-    // Producers owned by G3/G4. Extended in place by the owning gate.
-    // `finale_nonlegendary` belongs here until G4's contextual Finales map a
-    // resolved `finaleResultId` to its canonical reward: standing on the
-    // Finale does not say *which* Finale reward was earned, so honoring the
-    // request would let the caller pick the better of the two.
-    case 'finale_nonlegendary':
+    case 'contract': {
+      // The obligation the run actually completed is the evidence. A caller
+      // cannot name an obligation that is still active, failed, or was never
+      // committed, and the derived entry id refuses a second claim on the
+      // same one.
+      return (
+        request.expectedRewardId === 'reward_contract_patch_run' &&
+        state.expedition.activeObligations.some(
+          obligation =>
+            obligation.id === sourceId &&
+            obligation.sourceType === 'native' &&
+            obligation.status === 'completed'
+        )
+      )
+    }
+    case 'finale_nonlegendary': {
+      // Standing on the Finale proves a Finale resolved; the run's own
+      // `finaleType` decides *which* reward that is, so the caller cannot pick
+      // the better of the two.
+      if (sourceId !== map.finaleNodeId) return false
+      if (map.meta[map.finaleNodeId]?.routeStep !== routeStep) return false
+      const current =
+        state.expedition.visitedNodeIds[
+          state.expedition.visitedNodeIds.length - 1
+        ]
+      if (current !== map.finaleNodeId) return false
+      return (
+        request.expectedRewardId ===
+        getExpeditionFinaleRewardId(state.expedition.finaleType)
+      )
+    }
+    // Producer owned by G3. `event_rare` has no resolved-event proof outside
+    // the Crew families yet, so its evidence cannot exist and the reward is
+    // refused rather than minted.
     case 'event_rare':
-    case 'contract':
     case 'crew_contact': {
       const outcome = getCrewEventOutcomeBySourceId(sourceId)
       return (

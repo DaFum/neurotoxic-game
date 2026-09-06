@@ -134,6 +134,7 @@ import {
   applyExpeditionPressureDelta,
   resolveExpeditionPressureDirectorStep
 } from '../../domain/expedition/pressure'
+import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { POST_OPTIONS } from '../../data/postOptions'
 
 /**
@@ -907,6 +908,35 @@ export const handleCompleteExpedition = (
       }
     }
   }
+  // The Finale's own reward enters the G1 ledger before settlement, so it is
+  // retained and materialized exactly once by the terminal owner rather than
+  // being granted directly here. Which reward it is comes from the run's
+  // committed Finale profile, never from the caller.
+  const finaleReward = resolveExpeditionReward(
+    completionState,
+    {
+      expectedRewardId: getExpeditionFinaleRewardId(
+        completionState.expedition.finaleType
+      ),
+      sourceType: 'finale_nonlegendary',
+      sourceId: map.finaleNodeId,
+      expectedRouteStep: completionState.expedition.routeStep
+    },
+    map
+  )
+  if (finaleReward.ok) {
+    completionState = {
+      ...completionState,
+      expedition: {
+        ...completionState.expedition,
+        rewardLedger: [
+          ...completionState.expedition.rewardLedger,
+          finaleReward.entry
+        ]
+      }
+    }
+  }
+
   return finalizeExpedition(completionState, 'completed', {
     reason: null,
     finaleResultId,
@@ -1841,6 +1871,50 @@ export const handleRecordExpeditionObligationSignal = (
         signalId
       ],
       gigOutcomeByStep
+    }
+  }
+  // A completed native Contract's item reward goes through the G1 ledger, so
+  // it is materialized once by the terminal owner. The Money/Fame the template
+  // pays is separate and already settled above.
+  const completedNativeObligationIds = activeObligations
+    .filter(
+      obligation =>
+        obligation.sourceType === 'native' && obligation.status === 'completed'
+    )
+    .map(obligation => obligation.id)
+  const contractRewardLoadout = state.expedition.loadout
+  if (
+    changed &&
+    completedNativeObligationIds.length > 0 &&
+    contractRewardLoadout
+  ) {
+    const map = buildExpeditionMap(
+      state.runSeed,
+      contractRewardLoadout.tourTypeId,
+      contractRewardLoadout.regionId,
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    for (const obligationId of completedNativeObligationIds) {
+      // A Contract completed at an earlier step already owns its entry, so the
+      // derived entry id refuses the duplicate rather than paying twice.
+      const resolution = resolveExpeditionReward(
+        nextState,
+        {
+          expectedRewardId: 'reward_contract_patch_run',
+          sourceType: 'contract',
+          sourceId: obligationId,
+          expectedRouteStep: nextState.expedition.routeStep
+        },
+        map
+      )
+      if (!resolution.ok) continue
+      nextState = {
+        ...nextState,
+        expedition: {
+          ...nextState.expedition,
+          rewardLedger: [...nextState.expedition.rewardLedger, resolution.entry]
+        }
+      }
     }
   }
   if (moneyDelta > 0)
