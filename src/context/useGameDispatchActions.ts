@@ -283,6 +283,10 @@ type BaseGameDispatchActions = {
   ) => void
   settleExpeditionCrewCareer: (runId: string) => void
   settleExpeditionCareerResult: (runId: string) => void
+  purchaseExpeditionHqFacility: (
+    facilityId: string,
+    expectedLevel: number
+  ) => void
   acquireExpeditionCrewSignature: (
     crewId: string,
     expectedTraitId: string,

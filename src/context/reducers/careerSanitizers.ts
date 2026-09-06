@@ -8,6 +8,10 @@ import type { ExpeditionRelationshipTier } from '../../types/expedition'
 import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
 import { createInitialCareerState } from '../../domain/expedition/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import {
+  HQ_FACILITY_MAX_IMPLEMENTED_LEVEL,
+  isExpeditionHqFacilityId
+} from '../../data/expedition/hqFacilities'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 
 const safeRecord = <T>(
@@ -199,8 +203,19 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
           )
         ]
       : [],
-    hqFacilityLevels: safeRecord<number>(value.hqFacilityLevels, entry =>
-      isFiniteNumber(entry) && entry >= 0 ? Math.floor(entry) : null
+    // Clamped to what is actually built, not just to a non-negative number: a
+    // save naming a level the registry never implemented would buy capability
+    // that has no consumer, and an unknown facility id would persist forever.
+    hqFacilityLevels: safeRecord<number>(
+      value.hqFacilityLevels,
+      (entry, key) => {
+        if (!isExpeditionHqFacilityId(key)) return null
+        if (!isFiniteNumber(entry) || entry < 0) return null
+        return Math.min(
+          HQ_FACILITY_MAX_IMPLEMENTED_LEVEL[key],
+          Math.floor(entry)
+        )
+      }
     ),
     ascensionUnlocked: value.ascensionUnlocked === true
   }

@@ -3,7 +3,8 @@ import type { GameAction } from '../types'
 import {
   createAcquireExpeditionCrewSignatureAction,
   createSettleExpeditionCareerResultAction,
-  createSettleExpeditionCrewCareerAction
+  createSettleExpeditionCrewCareerAction,
+  createPurchaseExpeditionHqFacilityAction
 } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
@@ -12,6 +13,7 @@ export type CareerDispatchActions = Pick<
   | 'settleExpeditionCrewCareer'
   | 'settleExpeditionCareerResult'
   | 'acquireExpeditionCrewSignature'
+  | 'purchaseExpeditionHqFacility'
 >
 
 export const useCareerDispatchActions = (
@@ -23,6 +25,10 @@ export const useCareerDispatchActions = (
         dispatch(createSettleExpeditionCrewCareerAction(runId)),
       settleExpeditionCareerResult: runId =>
         dispatch(createSettleExpeditionCareerResultAction(runId)),
+      purchaseExpeditionHqFacility: (facilityId, expectedLevel) =>
+        dispatch(
+          createPurchaseExpeditionHqFacilityAction(facilityId, expectedLevel)
+        ),
       acquireExpeditionCrewSignature: (crewId, expectedTraitId, sourceId) =>
         dispatch(
           createAcquireExpeditionCrewSignatureAction(

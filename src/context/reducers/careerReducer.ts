@@ -1,5 +1,6 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
+  PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
   SettleExpeditionCrewCareerPayload
 } from '../../types/actions'
@@ -8,6 +9,11 @@ import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { getEligibleCrewSignatureTrait } from '../../domain/expedition/career'
 import { resolveExpeditionCareerSettlement } from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { isForbiddenKey } from '../../utils/objectUtils'
+import {
+  getExpeditionHqFacilityLevelCost,
+  isExpeditionHqFacilityId
+} from '../../data/expedition/hqFacilities'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 
 export const handleSettleExpeditionCrewCareer = (
@@ -143,6 +149,63 @@ export const handleSettleExpeditionCareerResult = (
         ...state.career.settledExpeditionRunIds,
         payload.runId
       ]
+    }
+  }
+}
+
+/**
+ * Raises one HQ facility by exactly one level, debiting Tokens once.
+ *
+ * @param state - Current game state.
+ * @param payload - Facility and the level the caller believes it is at.
+ * @returns Next state, or the identical reference for an illegal purchase.
+ *
+ * @remarks
+ * Every term is re-derived: the id must be in the registry, the stale guard
+ * must match the stored level, the target must not exceed that facility's
+ * implemented ceiling, and the cost comes from the registry rather than the
+ * payload. A replayed dispatch fails its own stale guard, so a level is never
+ * bought twice.
+ */
+export const handlePurchaseExpeditionHqFacility = (
+  state: GameState,
+  payload: PurchaseExpeditionHqFacilityPayload
+): GameState => {
+  if (!payload || typeof payload !== 'object') return state
+  const { facilityId, expectedLevel } = payload
+  if (!isExpeditionHqFacilityId(facilityId)) return state
+  if (isForbiddenKey(facilityId)) return state
+  if (expectedLevel !== 0 && expectedLevel !== 1) return state
+
+  const stored = Math.max(
+    0,
+    Math.floor(
+      finiteNumberOr(
+        Object.hasOwn(state.career.hqFacilityLevels, facilityId)
+          ? state.career.hqFacilityLevels[facilityId]
+          : 0,
+        0
+      )
+    )
+  )
+  if (stored !== expectedLevel) return state
+
+  const targetLevel = stored + 1
+  const cost = getExpeditionHqFacilityLevelCost(facilityId, targetLevel)
+  if (cost === null) return state
+
+  const tokens = Math.max(0, finiteNumberOr(state.career.tourTokens, 0))
+  if (tokens < cost) return state
+
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      tourTokens: tokens - cost,
+      hqFacilityLevels: {
+        ...state.career.hqFacilityLevels,
+        [facilityId]: targetLevel
+      }
     }
   }
 }

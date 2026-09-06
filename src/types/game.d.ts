@@ -444,6 +444,10 @@ export type GameAction =
       import('./actions').SettleExpeditionCareerResultPayload
     >
   | Action<
+      ActionTypes['PURCHASE_EXPEDITION_HQ_FACILITY'],
+      import('./actions').PurchaseExpeditionHqFacilityPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

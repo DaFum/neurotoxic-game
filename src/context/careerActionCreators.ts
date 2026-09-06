@@ -25,6 +25,29 @@ export const createSettleExpeditionCareerResultAction = (
   { type: typeof ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT }
 > => ({ type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT, payload: { runId } })
 
+/**
+ * Raises one HQ facility by a single level.
+ *
+ * @param facilityId - Facility to raise.
+ * @param expectedLevel - Level the caller believes it is at now.
+ * @returns The typed action.
+ *
+ * @remarks
+ * Carries no cost. The reducer derives it from the registry, refuses a target
+ * above that facility's implemented ceiling, and debits the Tokens once - so a
+ * caller chooses *what* to build, never what it costs.
+ */
+export const createPurchaseExpeditionHqFacilityAction = (
+  facilityId: string,
+  expectedLevel: number
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY }
+> => ({
+  type: ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY,
+  payload: { facilityId, expectedLevel }
+})
+
 export const createAcquireExpeditionCrewSignatureAction = (
   crewId: string,
   expectedTraitId: string,

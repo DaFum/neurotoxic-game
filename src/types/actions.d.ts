@@ -189,6 +189,18 @@ export interface SettleExpeditionCrewCareerPayload {
 export interface SettleExpeditionCareerResultPayload {
   runId: string
 }
+/**
+ * Intent to raise one HQ facility by exactly one level.
+ *
+ * @remarks
+ * `expectedLevel` is the level the caller believes the facility is at now, so
+ * a replayed or stale dispatch is refused instead of buying a second level.
+ * The cost is never carried: the reducer derives it from the registry.
+ */
+export interface PurchaseExpeditionHqFacilityPayload {
+  facilityId: string
+  expectedLevel: number
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

@@ -55,6 +55,25 @@ export interface CareerRivalRecord {
 export type ExpeditionCareerRank =
   'rookie' | 'roadtested' | 'headliner' | 'cult_legend'
 
+/**
+ * An HQ facility the Career can build.
+ */
+export type ExpeditionHqFacilityId =
+  | 'workshop'
+  | 'rehearsal'
+  | 'management_office'
+  | 'garage'
+  | 'black_market_contact'
+  | 'crew_lounge'
+
+/**
+ * A purchasable facility level.
+ *
+ * @remarks
+ * Level 0 is "not built" and is never bought, so it is not a member here.
+ */
+export type ExpeditionHqFacilityLevel = 1 | 2
+
 export interface CareerState {
   crewById: Record<string, CrewCareerState>
   expeditionRelationshipByPair: Record<string, ExpeditionRelationshipTier>
