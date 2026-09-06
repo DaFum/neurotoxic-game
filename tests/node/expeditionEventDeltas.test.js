@@ -19,19 +19,61 @@ import { getExpeditionTechnicalCondition } from '../../src/domain/expedition/con
 import { getExpeditionCargoView } from '../../src/domain/expedition/cargo'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules'
 import { startedState } from '../expeditionLifecycleFixture.js'
+import { EVENTS_DB } from '../../src/data/events/index'
 
 /** A fresh delta accumulator in the shape the engine builds. */
 const emptyDelta = () => ({ player: {}, band: {}, social: {}, flags: {} })
 
-const applyIds = (state, resultIds, overrides = {}) =>
-  gameReducer(state, {
-    type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
-    payload: {
-      resultIds,
-      expectedRouteStep: state.expedition.routeStep,
-      ...overrides
+/**
+ * Every authored option that declares an Expedition result, as the registry
+ * has it: `{ eventId, optionId, results }`.
+ *
+ * Derived rather than hardcoded, so these tests exercise payload shapes the
+ * content can actually produce — the reducer now refuses any other shape.
+ */
+const declaringOptions = Object.values(EVENTS_DB).flatMap(pool =>
+  pool.flatMap(event =>
+    (event.options ?? []).flatMap(option => {
+      const effects = [
+        option?.effect,
+        ...(Array.isArray(option?.effects) ? option.effects : [])
+      ]
+      const results = effects
+        .filter(effect => effect?.type === 'expedition')
+        .map(effect => effect.result)
+      return results.length > 0
+        ? [{ eventId: event.id, optionId: option.id, results }]
+        : []
+    })
+  )
+)
+
+/** The event/option pair that declares a given result. */
+const sourceFor = resultId => {
+  const found = declaringOptions.find(entry => entry.results.includes(resultId))
+  assert.ok(found, `no authored option declares ${resultId}`)
+  return found
+}
+
+const applyIds = (state, resultIds, overrides = {}) => {
+  // The reducer proves the source before it applies anything, so a dispatch
+  // has to name the event it is resolving and an option that really declares
+  // these results.
+  const source = sourceFor(resultIds[0])
+  return gameReducer(
+    { ...state, activeEvent: { id: source.eventId } },
+    {
+      type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+      payload: {
+        resultIds,
+        expectedRouteStep: state.expedition.routeStep,
+        sourceEventId: source.eventId,
+        sourceOptionId: source.optionId,
+        ...overrides
+      }
     }
-  })
+  )
+}
 
 describe('the event engine only carries Expedition result ids', () => {
   it('collects a known result id into the delta envelope', () => {
@@ -129,16 +171,78 @@ describe('the reducer derives the effects from the registry', () => {
     assert.equal(after.stageGear, before.stageGear)
   })
 
-  it('sums the wear of several results in one dispatch', () => {
+  it('accumulates the wear of successive resolved results', () => {
+    // No authored option declares two Expedition results, and the reducer now
+    // refuses a payload the content cannot produce, so the sum is asserted
+    // across two real resolutions rather than one synthetic dispatch.
     const state = startedState({ money: 5000, fuel: 100 })
     const before = getExpeditionTechnicalCondition(state)
     const multiplier =
       getEffectiveExpeditionRules(state).numeric.technicalWearMultiplier
 
-    const next = applyIds(state, ['pa_overloaded', 'equipment_scuffed'])
+    const next = applyIds(applyIds(state, ['pa_overloaded']), [
+      'equipment_scuffed'
+    ])
     const after = getExpeditionTechnicalCondition(next)
-    assert.equal(after.pa, before.pa - Math.round((15 + 4) * multiplier))
+    assert.equal(
+      after.pa,
+      before.pa - Math.round(15 * multiplier) - Math.round(4 * multiplier)
+    )
     assert.equal(after.stageGear, before.stageGear - Math.round(3 * multiplier))
+  })
+
+  it('refuses a payload the content never declared', () => {
+    const state = startedState({ money: 5000, fuel: 100 })
+    const source = sourceFor('pa_overloaded')
+    const resolving = { ...state, activeEvent: { id: source.eventId } }
+    const base = {
+      expectedRouteStep: state.expedition.routeStep,
+      sourceEventId: source.eventId,
+      sourceOptionId: source.optionId
+    }
+    const dispatch = payload =>
+      gameReducer(resolving, {
+        type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+        payload: { ...base, ...payload }
+      })
+
+    // A known result that this option does not declare.
+    assert.strictEqual(dispatch({ resultIds: ['supplies_spoiled'] }), resolving)
+    // An option that does not exist on the resolving event.
+    assert.strictEqual(
+      dispatch({ resultIds: ['pa_overloaded'], sourceOptionId: 'nope' }),
+      resolving
+    )
+    // A source naming an event the run is not resolving.
+    assert.strictEqual(
+      dispatch({ resultIds: ['pa_overloaded'], sourceEventId: 'nope' }),
+      resolving
+    )
+    // No source at all, which is what an unsourced dispatch looks like.
+    assert.strictEqual(
+      gameReducer(resolving, {
+        type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+        payload: {
+          resultIds: ['pa_overloaded'],
+          expectedRouteStep: state.expedition.routeStep
+        }
+      }),
+      resolving
+    )
+  })
+
+  it('gives every Expedition-effect option an id to be proven by', () => {
+    // The event validator does not require option ids, but the source proof
+    // does: an id-less option would make its Expedition effect silently inert
+    // rather than fail loudly.
+    for (const entry of declaringOptions) {
+      assert.equal(
+        typeof entry.optionId,
+        'string',
+        `${entry.eventId} declares ${entry.results.join(',')} on an option with no id`
+      )
+      assert.ok(entry.optionId.length > 0)
+    }
   })
 
   it('applies a cargo loss and never goes below zero', () => {
@@ -200,8 +304,21 @@ describe('the reducer derives the effects from the registry', () => {
 
 describe('the reducer rejects what an event may not author', () => {
   it('ignores a payload of unknown ids', () => {
+    // Unknown ids never reach the source proof: they are dropped by the
+    // sanitizer first, leaving nothing to apply.
     const state = startedState({ money: 5000, fuel: 100 })
-    assert.equal(applyIds(state, ['grant_me_everything', 7, null]), state)
+    assert.equal(
+      gameReducer(state, {
+        type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+        payload: {
+          resultIds: ['grant_me_everything', 7, null],
+          expectedRouteStep: state.expedition.routeStep,
+          sourceEventId: 'expedition_technical_collapse',
+          sourceOptionId: 'push_the_rig'
+        }
+      }),
+      state
+    )
   })
 
   it('ignores numeric state changes smuggled into the payload', () => {
@@ -218,9 +335,19 @@ describe('the reducer rejects what an event may not author', () => {
 
   it('ignores a stale route step', () => {
     const state = startedState({ money: 5000, fuel: 100 })
+    const source = sourceFor('pa_overloaded')
+    const resolving = { ...state, activeEvent: { id: source.eventId } }
     assert.equal(
-      applyIds(state, ['pa_overloaded'], { expectedRouteStep: 99 }),
-      state
+      gameReducer(resolving, {
+        type: ActionTypes.APPLY_EXPEDITION_EVENT_DELTA,
+        payload: {
+          resultIds: ['pa_overloaded'],
+          expectedRouteStep: 99,
+          sourceEventId: source.eventId,
+          sourceOptionId: source.optionId
+        }
+      }),
+      resolving
     )
   })
 

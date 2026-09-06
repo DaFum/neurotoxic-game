@@ -3,6 +3,7 @@ import test from 'node:test'
 
 import { createInitialState } from '../../src/context/initialState.ts'
 import {
+  handleApplyExpeditionEventDelta,
   handleOfferExpeditionDraft,
   handleRecordExpeditionObligationSignal,
   handleResolveExpeditionSocialResult,
@@ -1600,6 +1601,151 @@ test('the Director and the authored events share one draw', () => {
       assert.equal(other.condition(selected), false)
     }
   }
+})
+
+test('a forged event delta cannot mint effects or clear the Director pick', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  // The Director has picked the severe technical event for this step.
+  const pending = {
+    ...started,
+    activeEvent: { id: 'expedition_technical_collapse' },
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        pendingDirectorEventId: 'expedition_technical_collapse'
+      }
+    }
+  }
+  const base = {
+    expectedRouteStep: pending.expedition.routeStep,
+    sourceEventId: 'expedition_technical_collapse',
+    sourceOptionId: 'push_the_rig'
+  }
+  // The option the fixture leans on must really declare that result, otherwise
+  // the negative cases below would pass for the wrong reason.
+  const collapse = EXPEDITION_PRESSURE_EVENTS_DB.find(
+    event => event.id === 'expedition_technical_collapse'
+  )
+  const pushTheRig = collapse.options.find(
+    option => option.id === 'push_the_rig'
+  )
+  assert.ok(pushTheRig, 'the fixture must name a real option')
+
+  // A result that option never declares: no wear, no cargo, no Heat, and the
+  // pending pick survives, so relief cannot be opened for an unseen encounter.
+  const forgedResult = handleApplyExpeditionEventDelta(pending, {
+    ...base,
+    resultIds: ['spare_parts_scavenged']
+  })
+  assert.strictEqual(forgedResult, pending)
+
+  // A real result of a real option, but of an event the run is not resolving.
+  const wrongEvent = {
+    ...pending,
+    activeEvent: { id: 'expedition_authority_patrol' }
+  }
+  assert.strictEqual(
+    handleApplyExpeditionEventDelta(wrongEvent, {
+      ...base,
+      resultIds: [pushTheRig.effect.result]
+    }),
+    wrongEvent
+  )
+
+  // An option that does not exist on the resolving event.
+  assert.strictEqual(
+    handleApplyExpeditionEventDelta(pending, {
+      ...base,
+      sourceOptionId: 'opt_invented',
+      resultIds: [pushTheRig.effect.result]
+    }),
+    pending
+  )
+
+  // With no event resolving at all.
+  const noEvent = { ...pending, activeEvent: null }
+  assert.strictEqual(
+    handleApplyExpeditionEventDelta(noEvent, {
+      ...base,
+      resultIds: [pushTheRig.effect.result]
+    }),
+    noEvent
+  )
+
+  // The canonical resolution applies the consequence exactly once and consumes
+  // the pick, so a replay finds nothing pending to resolve.
+  const resolved = handleApplyExpeditionEventDelta(pending, {
+    ...base,
+    resultIds: [pushTheRig.effect.result]
+  })
+  assert.equal(resolved.expedition.pressure.pendingDirectorEventId, null)
+  assert.equal(
+    resolved.expedition.pressure.lastSevereEventId,
+    'expedition_technical_collapse'
+  )
+  assert.equal(
+    handleApplyExpeditionEventDelta(resolved, {
+      ...base,
+      resultIds: [pushTheRig.effect.result]
+    }).expedition.pressure.lastSevereEventId,
+    'expedition_technical_collapse'
+  )
+})
+
+test("the Director's pick expires with the step it was drawn for", () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const from = started.expedition.visitedNodeIds.at(-1)
+  const edge = fixtureMap().connections.find(item => item.from === from)
+  assert.ok(edge)
+
+  const pending = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        pendingDirectorEventId: 'expedition_underground_invite'
+      }
+    }
+  }
+  const advanced = applyExpeditionRouteAdvance(pending, edge.to)
+  assert.equal(advanced.expedition.routeStep, pending.expedition.routeStep + 1)
+  // The stale pick did not follow the run: it was either replaced by this
+  // step's own draw or cleared, never carried forward as the old step's
+  // decision.
+  assert.notEqual(
+    advanced.expedition.pressure.pendingDirectorEventId,
+    'expedition_underground_invite'
+  )
+  // And no consequence of it leaked across the move.
+  assert.equal(advanced.expedition.pressure.severeReliefUntilRouteStep, null)
+  assert.equal(advanced.expedition.pressure.temporaryRouteOpportunity, null)
+
+  // A stale id from an earlier step can no longer claim its consequence.
+  assert.strictEqual(
+    applyExpeditionPressureEventResolution(
+      advanced,
+      'expedition_underground_invite'
+    ),
+    advanced.expedition.pressure
+  )
 })
 
 test('the Expedition quest families are registered against real events', () => {

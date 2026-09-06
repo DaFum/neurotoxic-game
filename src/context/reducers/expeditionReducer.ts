@@ -39,6 +39,7 @@ import {
   getExpeditionEventResultEffect,
   sanitizeExpeditionEventResultIds
 } from '../../domain/expedition/eventDeltas'
+import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventProof'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
@@ -553,11 +554,24 @@ export const applyExpeditionRouteAdvance = (
   // A temporary opportunity is spent by travelling it, and expires when the
   // run moves past the step it belonged to: either way it does not follow the
   // run down the route.
-  const opportunity = state.expedition.pressure.temporaryRouteOpportunity
+  //
+  // The Director's pick expires the same way, and for a sharper reason: it
+  // belongs to the step it was drawn for. Leaving it set would let the next
+  // step's Director overwrite a live decision, or - worse - let a later event
+  // resolution claim relief for an encounter that belonged two nodes back.
+  // Expiring rather than refusing the move is deliberate: the pick is not
+  // guaranteed to surface at all (the event budget is two per day, and
+  // `processTravelEvents` only offers the `transport` and `band` pools), so
+  // holding the route until it resolves could strand a run permanently.
   const pressureAfterMove =
-    opportunity === null
+    state.expedition.pressure.temporaryRouteOpportunity === null &&
+    state.expedition.pressure.pendingDirectorEventId === null
       ? state.expedition.pressure
-      : { ...state.expedition.pressure, temporaryRouteOpportunity: null }
+      : {
+          ...state.expedition.pressure,
+          temporaryRouteOpportunity: null,
+          pendingDirectorEventId: null
+        }
 
   const arrived: GameState = {
     ...state,
@@ -1601,6 +1615,27 @@ export const handleApplyExpeditionEventDelta = (
 
   const resultIds = sanitizeExpeditionEventResultIds(payload.resultIds)
   if (resultIds.length === 0) return state
+
+  // Source proof first, before a single delta or Director consequence is
+  // applied. A known result id is not authority: the run must actually be
+  // resolving this event - `createSetActiveEventAction(null)` is dispatched
+  // after this action, so it is still on state here - and the content registry
+  // must declare that this option of that event produces every result named.
+  // Otherwise a direct dispatch mints Condition wear, cargo and Heat, and
+  // clears the pending Director event to open severe relief, for an encounter
+  // the player never saw.
+  if (state.activeEvent?.id !== payload.sourceEventId) return state
+  if (
+    !resultIds.every(resultId =>
+      isDeclaredExpeditionEventResult(
+        payload.sourceEventId,
+        payload.sourceOptionId,
+        resultId
+      )
+    )
+  ) {
+    return state
+  }
 
   const wear = { pa: 0, instruments: 0, stageGear: 0 }
   let sparePartsDelta = 0
