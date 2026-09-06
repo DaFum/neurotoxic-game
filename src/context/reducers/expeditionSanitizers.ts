@@ -703,6 +703,15 @@ export const sanitizeExpeditionState = (
       // dropped - an autosave between earning a reward and the terminal
       // settlement that materializes it must not lose it.
       if (entry.sourceType === 'event_rare') {
+        // `resolvedEventSourceIds` is itself part of the save, so validating
+        // its shape against the registry proves only that the tuple is one the
+        // content could produce - not that this run produced it. A random
+        // event roll has no seeded anchor to re-derive it from either, unlike
+        // the route opportunity above. So an unmaterialized Event rare is
+        // dropped on load rather than authorized by evidence the save wrote
+        // itself: a reload mid-run forfeits it, which is the cost of not
+        // letting a crafted save mint one.
+        if (entry.materialized !== true) continue
         const resolvedEventSourceIds = sanitizeUniqueStrings(
           value.resolvedEventSourceIds
         ).filter(isValidExpeditionEventProofId)
@@ -749,6 +758,23 @@ export const sanitizeExpeditionState = (
           !isFiniteNumber(finaleRouteStep) ||
           entry.earnedAtRouteStep !== finaleRouteStep ||
           entry.earnedAtRouteStep > routeStep
+        ) {
+          continue
+        }
+        // Node, profile and step are all things a save at the Finale already
+        // has, and `sanitizeRewardEntry` re-derives `secured: true` for the
+        // hostile profiles - so without this a crafted save keeps an unlock it
+        // never won, through a later failure. The persisted proof therefore has
+        // to be the same one `resolveExpeditionReward` and
+        // `handleCompleteExpedition` require: the Finale gig resolved, at this
+        // step, and not failed.
+        if (
+          !isLooseRecord(lastGigStats) ||
+          lastGigStats.failed === true ||
+          sanitizeResolvedAtRouteStep(
+            value.lastGigResolvedAtRouteStep,
+            routeStep
+          ) !== finaleRouteStep
         ) {
           continue
         }

@@ -327,17 +327,33 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       resolvedEvent.expedition.rewardLedger.length
     )
 
-    // The proof persists, so a reload keeps the entry...
-    assert.ok(
+    // An unmaterialized Event rare does not survive a load: the proof list is
+    // part of the save, so it cannot authorize its own row, and a random event
+    // roll has no seeded anchor to re-derive. Reloading mid-run forfeits it.
+    assert.equal(
       sanitizeExpeditionState(
         resolvedEvent.expedition,
         resolvedEvent.runSeed
+      ).rewardLedger.filter(item => item.id === entryId).length,
+      0
+    )
+    // Once settlement has materialized it, the row is history and is kept -
+    // still only alongside a proof the registry recognizes.
+    const materialized = {
+      ...resolvedEvent.expedition,
+      rewardLedger: resolvedEvent.expedition.rewardLedger.map(item =>
+        item.id === entryId ? { ...item, materialized: true } : item
+      )
+    }
+    assert.ok(
+      sanitizeExpeditionState(
+        materialized,
+        resolvedEvent.runSeed
       ).rewardLedger.some(item => item.id === entryId)
     )
-    // ...but not without it.
     assert.equal(
       sanitizeExpeditionState(
-        { ...resolvedEvent.expedition, resolvedEventSourceIds: [] },
+        { ...materialized, resolvedEventSourceIds: [] },
         resolvedEvent.runSeed
       ).rewardLedger.filter(item => item.id === entryId).length,
       0
@@ -414,6 +430,38 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
 
   it('rejects a crafted save that mints its own Event-rare proof', () => {
     const started = startedState({ money: 5000 })
+    // A *real* registry tuple, which is the case registry-membership alone
+    // could never catch: the save names an event/option/result the content
+    // genuinely declares and pairs it with the matching ledger row.
+    const canonicalSourceId =
+      'expedition_underground_invite:take_the_address:spare_parts_scavenged'
+    const canonical = sanitizeExpeditionState(
+      {
+        ...started.expedition,
+        resolvedEventSourceIds: [
+          `${canonicalSourceId}:${started.expedition.routeStep}`
+        ],
+        rewardLedger: [
+          {
+            id: `reward_event_spare_cables::${canonicalSourceId}`,
+            rewardDefinitionId: 'reward_event_spare_cables',
+            sourceType: 'event_rare',
+            sourceId: canonicalSourceId,
+            earnedAtRouteStep: started.expedition.routeStep,
+            secured: false,
+            materialized: false
+          }
+        ]
+      },
+      started.runSeed
+    )
+    assert.equal(
+      canonical.rewardLedger.filter(entry => entry.sourceType === 'event_rare')
+        .length,
+      0,
+      'a real tuple the run never resolved must not authorize the reward'
+    )
+
     const forgedSourceId = 'evt_invented:opt_invented:spare_parts_scavenged'
     const forged = sanitizeExpeditionState(
       {
@@ -439,6 +487,63 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     assert.equal(
       forged.rewardLedger.filter(entry => entry.sourceType === 'event_rare')
         .length,
+      0
+    )
+  })
+
+  it('drops a persisted Finale reward the Finale never earned', () => {
+    // Node, profile and step are all things a save sitting at the Finale
+    // already has, and `sanitizeRewardEntry` re-derives `secured: true` for
+    // the hostile profiles - so the load proof has to be the runtime one.
+    const atFinale = withResolvedGig(
+      walkToFinale(startedState({ money: 5000 }))
+    )
+    const completed = handleCompleteExpedition(atFinale, {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    })
+    const earned = completed.expedition.rewardLedger.find(
+      entry => entry.sourceType === 'finale_nonlegendary'
+    )
+    assert.ok(earned)
+
+    // A pre-settlement save carrying the genuinely earned row survives.
+    const preSettlement = {
+      ...atFinale.expedition,
+      rewardLedger: [{ ...earned, materialized: false }]
+    }
+    const load = (expedition, lastGigStats) =>
+      sanitizeExpeditionState(
+        expedition,
+        atFinale.runSeed,
+        lastGigStats
+      ).rewardLedger.filter(entry => entry.sourceType === 'finale_nonlegendary')
+    assert.equal(load(preSettlement, atFinale.lastGigStats).length, 1)
+
+    // No resolved gig at all.
+    assert.equal(load(preSettlement, undefined).length, 0)
+    // A resolved gig that failed.
+    assert.equal(
+      load(preSettlement, { score: 10, accuracy: 10, failed: true }).length,
+      0
+    )
+    // A gig resolved at an earlier step is not this Finale's result.
+    assert.equal(
+      load(
+        {
+          ...preSettlement,
+          lastGigResolvedAtRouteStep: atFinale.expedition.routeStep - 1
+        },
+        atFinale.lastGigStats
+      ).length,
+      0
+    )
+    // And with no resolved-step stamp at all.
+    assert.equal(
+      load(
+        { ...preSettlement, lastGigResolvedAtRouteStep: null },
+        atFinale.lastGigStats
+      ).length,
       0
     )
   })
