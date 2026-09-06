@@ -1566,6 +1566,8 @@
   "postOptions.drama_manufactured.name": "Manufactured Band Drama",
   "postOptions.drama_political_take.message": "Mainstream fans bailed, but the hardcore cult just grew stronger.",
   "postOptions.drama_political_take.name": "Edgy Political Hot Take",
+  "postOptions.drama_rival_callout.message": "The clip is everywhere. So is their reply. This is a feud now.",
+  "postOptions.drama_rival_callout.name": "Call Out The Rival",
   "postOptions.drama_tour_bus_prank.message": "{{member}} loved it. The rest of the band is annoyed.",
   "postOptions.drama_tour_bus_prank.name": "Tour Bus Prank",
   "postOptions.drama_van_breakdown.message": "\"We'll make it no matter what.\" Fans eat up the struggle.",

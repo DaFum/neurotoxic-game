@@ -1566,6 +1566,8 @@
   "postOptions.drama_manufactured.name": "Inszeniertes Banddrama",
   "postOptions.drama_political_take.message": "Mainstream-Fans sprangen ab, aber der Hardcore-Kult wurde nur noch stärker.",
   "postOptions.drama_political_take.name": "Provokanter politischer Hot Take",
+  "postOptions.drama_rival_callout.message": "Der Clip ist überall. Ihre Antwort auch. Das ist jetzt eine Fehde.",
+  "postOptions.drama_rival_callout.name": "Rivalen anzählen",
   "postOptions.drama_tour_bus_prank.message": "{{member}} fand's genial. Der Rest der Band ist genervt.",
   "postOptions.drama_tour_bus_prank.name": "Tourbus-Streich",
   "postOptions.drama_van_breakdown.message": "„Wir schaffen das, egal was kommt.“ Die Fans lieben den Kampf.",

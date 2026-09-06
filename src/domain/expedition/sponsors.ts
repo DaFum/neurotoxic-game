@@ -39,11 +39,29 @@ export const getCanonicalBrandDealTermsHash = (
     })
   )
 }
+/**
+ * Staged Sponsor offers a prepared run may commit.
+ *
+ * @param state - Current game state.
+ * @returns The deterministic offers, already narrowed by Rival interference.
+ *
+ * @remarks
+ * Nemesis tier 3 is Sponsor interference: a Rival the Career has history with
+ * takes one staged offer off the table before the next tour can commit to it,
+ * which is what makes the tier a real rule change rather than a number. The
+ * cut is safe to derive here because a Nemesis tier only advances during an
+ * *active* run, so the offers a prepared run stages cannot shift underneath
+ * the load-time re-derivation that validates them.
+ */
 export const buildPreparedExpeditionSponsorOffers = (
   state: GameState
-): ExpeditionPreparedSponsorOffer[] =>
-  generateBrandOffers(state, mulberry32(sponsorSeed(state.runSeed)))
-    .slice(0, 3)
+): ExpeditionPreparedSponsorOffer[] => {
+  const rivalRecord = state.rivalBand
+    ? state.career?.rivalsById?.[state.rivalBand.id]
+    : undefined
+  const stagedOfferCount = (rivalRecord?.history.nemesisLevel ?? 0) >= 3 ? 2 : 3
+  return generateBrandOffers(state, mulberry32(sponsorSeed(state.runSeed)))
+    .slice(0, stagedOfferCount)
     .map(deal => ({
       offerId: hashExpeditionRoute(
         `${state.runSeed}:${deal.id}:${getCanonicalBrandDealTermsHash(deal.id)}`
@@ -52,6 +70,7 @@ export const buildPreparedExpeditionSponsorOffers = (
       runSeed: state.runSeed,
       canonicalTermsHash: getCanonicalBrandDealTermsHash(deal.id) ?? ''
     }))
+}
 
 export const validatePreparedExpeditionSponsorOffers = (
   state: GameState,

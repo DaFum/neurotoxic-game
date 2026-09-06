@@ -31,7 +31,10 @@ import {
   quest_burned_bridges,
   quest_venue_regular,
   quest_brand_ambassador,
-  quest_alchemist
+  quest_alchemist,
+  quest_expedition_run_goal,
+  quest_expedition_nemesis,
+  quest_expedition_meta_unlock
 } from './quests'
 
 /**
@@ -69,7 +72,10 @@ export const QUEST_REGISTRY = {
   quest_burned_bridges,
   quest_venue_regular,
   quest_brand_ambassador,
-  quest_alchemist
+  quest_alchemist,
+  quest_expedition_run_goal,
+  quest_expedition_nemesis,
+  quest_expedition_meta_unlock
 } as const satisfies Record<string, QuestDefinition>
 
 /**

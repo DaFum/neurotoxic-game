@@ -238,6 +238,35 @@ export const POST_OPTIONS = [
       })
     })
   },
+  {
+    // The one Rival-targeted post. `deriveExpeditionSocialResultId` maps a
+    // Drama option whose id names the rival onto the `weaponize` Expedition
+    // result, which is the canonical Rival encounter the Nemesis ladder
+    // advances from - so this option is what makes that progression reachable.
+    id: 'drama_rival_callout',
+    name: i18n.t('ui:postOptions.drama_rival_callout.name', {
+      defaultValue: 'Call Out The Rival'
+    }),
+    platform: SOCIAL_PLATFORMS.TIKTOK.id,
+    category: 'Drama',
+    badges: [POST_BADGES.RISK, POST_BADGES.VIRAL],
+    // Gated on an actual Rival: a callout with nobody on the other end is not
+    // a beef, and the Expedition result requires one anyway.
+    condition: ({ rivalBand }: GameState) => Boolean(rivalBand),
+    resolve: () => ({
+      type: 'FIXED',
+      success: true,
+      platform: SOCIAL_PLATFORMS.TIKTOK.id,
+      followers: 1200,
+      controversyChange: 6,
+      loyaltyChange: 3,
+      zealotryChange: 4,
+      message: i18n.t('ui:postOptions.drama_rival_callout.message', {
+        defaultValue:
+          'The clip is everywhere. So is their reply. This is a feud now.'
+      })
+    })
+  },
   // --- CATEGORY: RECOVERY & CRISIS ---
   {
     id: 'recovery_apology_tour_promo',
