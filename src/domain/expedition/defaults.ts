@@ -98,5 +98,27 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     string,
     'none' | 'light' | 'serious' | 'critical'
   >,
-  resolvedCrewSourceIds: []
+  resolvedCrewSourceIds: [],
+  resolvedObligationSignalIds: [],
+  pressure: {
+    heat: 0,
+    exposure: 0,
+    crowdHype: 0,
+    severeReliefUntilRouteStep: null,
+    lastSevereEventId: null,
+    pendingDirectorEventId: null,
+    temporaryRouteOpportunity: null
+  },
+  preparedSponsorOffers: [],
+  activeObligations: [],
+  runDraftTraitIds: [],
+  pendingRunDraftOffer: null,
+  finaleType: null,
+  lastSocialResult: null,
+  pendingSocialSettlement: null,
+  lastGigResolvedAtRouteStep: null,
+  gigOutcomeByStep: Object.create(null) as Record<
+    number,
+    { venueId: string; accuracy: number }
+  >
 })

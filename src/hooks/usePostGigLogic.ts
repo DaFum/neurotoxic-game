@@ -6,6 +6,8 @@ import { finiteNumberOr } from '../utils/finiteNumber'
 import { usePostGigHandlers } from './usePostGigHandlers'
 import { usePostGigState } from './postGig/usePostGigState'
 import { usePostGigDerivations } from './postGig/usePostGigDerivations'
+import { getExpeditionFinaleProfile } from '../domain/expedition/finales'
+import { getEffectiveExpeditionRules } from '../domain/expedition/effectiveRules'
 
 /**
  * Composes post-gig state, derived results, and action handlers for the post-gig scene.
@@ -41,6 +43,19 @@ export const usePostGigLogic = () => {
   )
   const setlist = useGameSelector(state => state.setlist)
   const expedition = useGameSelector(state => state.expedition)
+  const finaleRewardMultiplier = useGameSelector(state => {
+    if (state.expedition?.status !== 'active') return 1
+    const profileMultiplier =
+      getExpeditionFinaleProfile(state.expedition.finaleType)
+        ?.rewardMultiplier ?? 1
+    // The run-draft Finale bonus only pays out on the Finale itself, so it is
+    // composed here rather than in the profile multiplier that every node of
+    // an active run carries.
+    return state.gameMap?.nodes?.[state.player.currentNodeId]?.type === 'FINALE'
+      ? profileMultiplier *
+          getEffectiveExpeditionRules(state).numeric.finaleRewardMultiplier
+      : profileMultiplier
+  })
   // Bankruptcy must consult total daily obligations (asset upkeep/revenue and
   // liability payments), not just the gig net (AGENTS.md invariant).
   const totalDailyObligations = useGameSelector(getTotalDailyObligations)
@@ -57,7 +72,9 @@ export const usePostGigLogic = () => {
     addQuest,
     applyQuestEvent,
     recordExpeditionCrewStressSource,
-    completeExpedition
+    completeExpedition,
+    recordExpeditionObligationSignal,
+    resolveExpeditionSocialResult
   } = useGameActions()
 
   // 1. Core State
@@ -88,7 +105,8 @@ export const usePostGigLogic = () => {
       activeQuests,
       cityStates,
       triggerEvent,
-      isScreenshotMode
+      isScreenshotMode,
+      gigRewardMultiplier: finaleRewardMultiplier
     })
 
   // 3. Handlers
@@ -126,6 +144,8 @@ export const usePostGigLogic = () => {
     applyQuestEvent,
     recordExpeditionCrewStressSource,
     completeExpedition,
+    recordExpeditionObligationSignal,
+    resolveExpeditionSocialResult,
     phase,
     setPhase,
     setPostResult,

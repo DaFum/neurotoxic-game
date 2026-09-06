@@ -41,5 +41,9 @@ export const CANONICAL_QUEST_EVENT_TYPES = [
   'venue.blacklisted',
   'venue.unblacklisted',
   'region.reputationChanged',
-  'story.flagAdded'
+  'story.flagAdded',
+  'expedition.nodeResolved',
+  'expedition.extracted',
+  'expedition.rivalOutcome',
+  'expedition.finaleCompleted'
 ] as const

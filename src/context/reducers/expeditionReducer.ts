@@ -39,6 +39,7 @@ import {
   getExpeditionEventResultEffect,
   sanitizeExpeditionEventResultIds
 } from '../../domain/expedition/eventDeltas'
+import { isDeclaredExpeditionEventResult } from '../../domain/expedition/eventProof'
 import { applyExpeditionEventHeat } from '../../domain/expedition/runResources'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { applyResolvedCrewEventOutcome } from './crewReducer'
@@ -71,6 +72,23 @@ import {
   syncExpeditionPendingFailure
 } from '../../domain/expedition/failure'
 import { calculateRefuelCost } from '../../utils/economy'
+import { calculateFameLevel } from '../../utils/gameState/calculations'
+import { clampControversyLevel } from '../../utils/gameState/clamps'
+import { QuestEvents } from '../../utils/questProgress'
+import {
+  createFameGainedQuestEvent,
+  createMoneyEarnedQuestEvent
+} from '../../quests/producers/economyQuestEvents'
+import {
+  buildPreparedExpeditionSponsorOffers,
+  getCanonicalBrandDealTermsHash,
+  resolveBrandDealAcceptance
+} from '../../domain/expedition/sponsors'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import {
+  deriveExpeditionDoubleDownOffer,
+  materializeContractConstraints
+} from '../../domain/expedition/contracts'
 import { EXPENSE_CONSTANTS } from '../../utils/economy/constants'
 import type { GameState } from '../../types'
 import type {
@@ -90,6 +108,12 @@ import type {
   RevealExpeditionDefectPayload,
   RevealExpeditionNodeIntelPayload,
   StartExpeditionPayload,
+  RecordExpeditionObligationSignalPayload,
+  DoubleDownExpeditionObligationPayload,
+  OfferExpeditionDraftPayload,
+  SelectExpeditionDraftPayload,
+  ResolveExpeditionSocialResultPayload,
+  CreateSocialIntelGrantPayload,
   TriggerExpeditionDefectPayload
 } from '../../types/actions'
 import type {
@@ -100,6 +124,27 @@ import type {
   ExpeditionTechnicalCondition,
   NodeIntelLevel
 } from '../../types/expedition'
+import type { CareerRivalRecord } from '../../types/career'
+import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
+import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
+import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
+import {
+  EXPEDITION_SOCIAL_RESULTS,
+  deriveExpeditionSocialResultId
+} from '../../domain/expedition/social'
+import {
+  applyExpeditionPressureDelta,
+  applyExpeditionPressureEventResolution,
+  resolveExpeditionPressureDirectorStep
+} from '../../domain/expedition/pressure'
+import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
+import { POST_OPTIONS } from '../../data/postOptions'
+import {
+  createExpeditionExtractionQuestEvent,
+  createExpeditionFinaleQuestEvent,
+  createExpeditionNodeResolvedQuestEvent,
+  createExpeditionRivalOutcomeQuestEvent
+} from '../../quests/producers/expeditionQuestEvents'
 
 /**
  * Executes a vehicle insurance claim, restoring van fuel and condition.
@@ -169,13 +214,20 @@ export const handlePrepareExpeditionRun = (
   if (typeof prepId !== 'string' || prepId.length === 0) return state
   if (!isValidRunSeed(runSeed)) return state
 
-  return {
+  const preparedState: GameState = {
     ...state,
     runSeed,
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'prepared',
       prep: { prepId }
+    }
+  }
+  return {
+    ...preparedState,
+    expedition: {
+      ...preparedState.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(preparedState)
     }
   }
 }
@@ -249,15 +301,104 @@ export const handleStartExpedition = (
 
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
+  const sponsorOfferId = normalized.build.sponsorOfferId
+  const stagedSponsor =
+    sponsorOfferId === null
+      ? null
+      : state.expedition.preparedSponsorOffers.find(
+          offer => offer.offerId === sponsorOfferId
+        )
+  if (
+    sponsorOfferId !== null &&
+    (!stagedSponsor ||
+      stagedSponsor.runSeed !== state.runSeed ||
+      getCanonicalBrandDealTermsHash(stagedSponsor.dealId) !==
+        stagedSponsor.canonicalTermsHash)
+  )
+    return state
+  const sponsorAcceptance = stagedSponsor
+    ? resolveBrandDealAcceptance(
+        { ...state, player: { ...state.player, money: nextMoney } },
+        stagedSponsor.dealId
+      )
+    : null
+  if (stagedSponsor && !sponsorAcceptance) return state
+  const activeObligations: import('../../types/expedition').ActiveObligationState[] =
+    []
+  for (const commitment of normalized.nativeContracts) {
+    const template = EXPEDITION_CONTRACTS_BY_ID.get(commitment.templateId)
+    const constraints = materializeContractConstraints(
+      template,
+      preparedMap,
+      commitment.targetNodeId
+    )
+    if (!template || !constraints) return state
+    const progressByConstraintId: import('../../types/expedition').ActiveObligationState['progressByConstraintId'] =
+      Object.create(null)
+    for (const constraint of constraints)
+      progressByConstraintId[constraint.id] = {
+        constraintId: constraint.id,
+        value: 0,
+        satisfied: false,
+        failed: false
+      }
+    activeObligations.push({
+      id: `${prepId}:${template.id}`,
+      sourceType: 'native',
+      sourceId: template.id,
+      constraints,
+      progressByConstraintId,
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
+  }
+  if (stagedSponsor)
+    activeObligations.push({
+      id: `${prepId}:${stagedSponsor.dealId}`,
+      sourceType: 'brandDeal',
+      sourceId: stagedSponsor.dealId,
+      constraints: [],
+      progressByConstraintId: Object.create(null),
+      status: 'active',
+      settled: false,
+      doubleDown: null
+    })
 
-  return {
+  const rivalSelection = selectExpeditionRivalForRun(
+    state,
+    preparedMap,
+    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  )
+  const nextCareer = rivalSelection
+    ? {
+        ...state.career,
+        rivalsById: {
+          ...state.career.rivalsById,
+          [rivalSelection.record.snapshot.id]: {
+            ...rivalSelection.record,
+            history: {
+              ...rivalSelection.record.history,
+              encounterCount: rivalSelection.record.history.encounterCount + 1,
+              lastSeenRunId: prepId
+            }
+          }
+        }
+      }
+    : state.career
+
+  let nextState: GameState = {
     ...state,
+    career: nextCareer,
+    rivalBand: rivalSelection?.rivalBand ?? null,
     player: {
-      ...state.player,
-      money: nextMoney,
+      ...(sponsorAcceptance?.nextPlayer ?? state.player),
+      money: sponsorAcceptance?.nextPlayer.money ?? nextMoney,
       currentNodeId: preparedMap.startNodeId,
       van: { ...state.player.van, fuel: normalized.build.startingFuelTarget }
     },
+    band: sponsorAcceptance?.nextBand ?? state.band,
+    social: sponsorAcceptance?.nextSocial ?? state.social,
     // The committed songs are installed into the root setlist in the same
     // commit. PreGig and the rhythm engine read `state.setlist`, not the
     // loadout, so leaving them out of sync would start the run with an empty
@@ -288,9 +429,16 @@ export const handleStartExpedition = (
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
       cargo: materializeExpeditionCargo(normalized, state),
-      technicalCondition: createDefaultTechnicalCondition()
+      technicalCondition: createDefaultTechnicalCondition(),
+      preparedSponsorOffers: [],
+      activeObligations
     }
   }
+  if (sponsorAcceptance) {
+    for (const questEvent of sponsorAcceptance.questEvents)
+      nextState = QuestEvents.emit(nextState, questEvent)
+  }
+  return nextState
 }
 
 /**
@@ -339,6 +487,22 @@ export const handleAdvanceExpeditionRoute = (
  * be a real neighbour exactly one step deeper, and a run that is not active
  * leaves the state untouched.
  */
+/**
+ * Emits the node-resolved quest event for a committed route advance.
+ *
+ * @param state - State that has already advanced.
+ * @returns The same state with the event emitted.
+ *
+ * @remarks
+ * Applied on every successful exit of {@link applyExpeditionRouteAdvance} and
+ * on none of its refusals, so a stale or replayed advance progresses nothing.
+ */
+const withNodeResolved = (state: GameState): GameState =>
+  QuestEvents.emit(
+    state,
+    createExpeditionNodeResolvedQuestEvent(state.player.currentNodeId)
+  )
+
 export const applyExpeditionRouteAdvance = (
   state: GameState,
   nodeId: unknown
@@ -348,6 +512,11 @@ export const applyExpeditionRouteAdvance = (
   // unrelated Career travel path.
   if (state.expedition?.status !== 'active') return state
   if (typeof nodeId !== 'string' || isForbiddenKey(nodeId)) return state
+  // A pending Run Draft is this run's decision and the route waits for it.
+  // Without this the offer strands: SELECT requires the offer's own route step,
+  // so travelling first rejects every later SELECT, while the non-null offer
+  // rejects every later OFFER - the Draft system dies for the rest of the run.
+  if (state.expedition.pendingRunDraftOffer !== null) return state
 
   const loadout = state.expedition.loadout
   if (!loadout) return state
@@ -366,7 +535,10 @@ export const applyExpeditionRouteAdvance = (
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof currentNodeId !== 'string') return state
-  const isNeighbour = map.connections.some(
+  // The effective route, not the base map: a high-Heat Underground invite or a
+  // Nemesis shortcut is only a real opportunity if the run can actually travel
+  // it. Overlays are additive, so this never removes a legal base move.
+  const isNeighbour = getEffectiveExpeditionRoute(state, map).connections.some(
     edge => edge.from === currentNodeId && edge.to === nodeId
   )
   if (!isNeighbour) return state
@@ -379,16 +551,53 @@ export const applyExpeditionRouteAdvance = (
     extractionWindowsSeen.push(target.routeStep)
   }
 
-  const advanced: GameState = {
+  // A temporary opportunity is spent by travelling it, and expires when the
+  // run moves past the step it belonged to: either way it does not follow the
+  // run down the route.
+  //
+  // The Director's pick expires the same way, and for a sharper reason: it
+  // belongs to the step it was drawn for. Leaving it set would let the next
+  // step's Director overwrite a live decision, or - worse - let a later event
+  // resolution claim relief for an encounter that belonged two nodes back.
+  // Expiring rather than refusing the move is deliberate: the pick is not
+  // guaranteed to surface at all (the event budget is two per day, and
+  // `processTravelEvents` only offers the `transport` and `band` pools), so
+  // holding the route until it resolves could strand a run permanently.
+  const pressureAfterMove =
+    state.expedition.pressure.temporaryRouteOpportunity === null &&
+    state.expedition.pressure.pendingDirectorEventId === null
+      ? state.expedition.pressure
+      : {
+          ...state.expedition.pressure,
+          temporaryRouteOpportunity: null,
+          pendingDirectorEventId: null
+        }
+
+  const arrived: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
     expedition: {
       ...state.expedition,
       routeStep: target.routeStep,
       visitedNodeIds: [...state.expedition.visitedNodeIds, nodeId],
-      extractionWindowsSeen
+      extractionWindowsSeen,
+      pressure: pressureAfterMove
     }
   }
+
+  // One Director step per route step, composed here rather than dispatched:
+  // arriving a node deeper is the canonical occasion for it, and selection is
+  // seeded from `runSeed` plus the new route step, so a replayed advance picks
+  // the same event instead of rolling a second one. This *selects* only - the
+  // consequences belong to the event the player actually resolves.
+  const directorPressure = resolveExpeditionPressureDirectorStep(arrived)
+  const advanced: GameState =
+    directorPressure === arrived.expedition.pressure
+      ? arrived
+      : {
+          ...arrived,
+          expedition: { ...arrived.expedition, pressure: directorPressure }
+        }
 
   // Arriving on a node that carries a route rare is the canonical evidence for
   // it, so the ledger entry is banked in the same pass. Composed rather than
@@ -396,10 +605,10 @@ export const applyExpeditionRouteAdvance = (
   // unearnable, and `resolveExpeditionReward` still proves the evidence, so a
   // replayed arrival collides with the existing entry instead of paying twice.
   const rareRewardId = target.hidden.rareRewardId
-  if (rareRewardId === null) return advanced
+  if (rareRewardId === null) return withNodeResolved(advanced)
 
   const definition = resolveExpeditionRewardDefinition(rareRewardId)
-  if (!definition) return advanced
+  if (!definition) return withNodeResolved(advanced)
   const resolution = resolveExpeditionReward(
     advanced,
     {
@@ -410,15 +619,15 @@ export const applyExpeditionRouteAdvance = (
     },
     map
   )
-  if (!resolution.ok) return advanced
+  if (!resolution.ok) return withNodeResolved(advanced)
 
-  return {
+  return withNodeResolved({
     ...advanced,
     expedition: {
       ...advanced.expedition,
       rewardLedger: [...advanced.expedition.rewardLedger, resolution.entry]
     }
-  }
+  })
 }
 
 /**
@@ -676,11 +885,19 @@ export const handleExtractExpedition = (
     ? payload.explicitRareRewardIds.filter(id => typeof id === 'string')
     : []
 
-  return finalizeExpedition(state, 'extracted', {
+  const extracted = finalizeExpedition(state, 'extracted', {
     reason: null,
     finaleResultId: null,
     explicitRareRewardIds
   })
+  // Only a settlement that actually happened progresses a quest: an extraction
+  // the guards above refused returns before this point.
+  return extracted === state
+    ? extracted
+    : QuestEvents.emit(
+        extracted,
+        createExpeditionExtractionQuestEvent(state.expedition.runId ?? '')
+      )
 }
 
 /**
@@ -728,11 +945,58 @@ export const handleCompleteExpedition = (
     return state
   }
 
-  return finalizeExpedition(state, 'completed', {
+  let completionState = state
+  if (state.expedition.finaleType === 'rival_battle' && state.rivalBand) {
+    const rivalId = state.rivalBand.id
+    const record = state.career.rivalsById[rivalId]
+    // One Nemesis step per Rival per run, whichever canonical outcome gets
+    // there first: a run that already advanced through a settled Rival Social
+    // result does not advance again on the Finale. The guard is
+    // `lastNemesisAdvanceRunId`, not `lastSeenRunId` - START stamps the latter
+    // with this run's id when it selects the Rival, so it can never gate an
+    // advance inside the run it belongs to.
+    if (
+      record &&
+      record.history.lastNemesisAdvanceRunId !== state.expedition.runId
+    ) {
+      const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
+        0 | 1 | 2 | 3 | 4
+      completionState = {
+        ...state,
+        career: {
+          ...state.career,
+          rivalsById: {
+            ...state.career.rivalsById,
+            [rivalId]: {
+              ...record,
+              history: {
+                ...record.history,
+                relationship: nemesisLevel >= 4 ? 'nemesis' : 'rival',
+                nemesisLevel,
+                lastOutcome: 'hostile_win',
+                lastSeenRunId: state.expedition.runId,
+                lastNemesisAdvanceRunId: state.expedition.runId
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  const completed = finalizeExpedition(completionState, 'completed', {
     reason: null,
     finaleResultId,
     explicitRareRewardIds: []
   })
+  return completed === completionState
+    ? completed
+    : QuestEvents.emit(
+        completed,
+        createExpeditionFinaleQuestEvent(
+          completionState.expedition.finaleType ?? 'regional_headliner',
+          true
+        )
+      )
 }
 
 /**
@@ -1352,6 +1616,27 @@ export const handleApplyExpeditionEventDelta = (
   const resultIds = sanitizeExpeditionEventResultIds(payload.resultIds)
   if (resultIds.length === 0) return state
 
+  // Source proof first, before a single delta or Director consequence is
+  // applied. A known result id is not authority: the run must actually be
+  // resolving this event - `createSetActiveEventAction(null)` is dispatched
+  // after this action, so it is still on state here - and the content registry
+  // must declare that this option of that event produces every result named.
+  // Otherwise a direct dispatch mints Condition wear, cargo and Heat, and
+  // clears the pending Director event to open severe relief, for an encounter
+  // the player never saw.
+  if (state.activeEvent?.id !== payload.sourceEventId) return state
+  if (
+    !resultIds.every(resultId =>
+      isDeclaredExpeditionEventResult(
+        payload.sourceEventId,
+        payload.sourceOptionId,
+        resultId
+      )
+    )
+  ) {
+    return state
+  }
+
   const wear = { pa: 0, instruments: 0, stageGear: 0 }
   let sparePartsDelta = 0
   let suppliesDelta = 0
@@ -1433,7 +1718,656 @@ export const handleApplyExpeditionEventDelta = (
     payload.sourceOptionId,
     resultIds
   )
-  return syncExpeditionPendingFailure(
+  const resolved = syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+
+  // The other half of the Director's single draw: a relief window or an
+  // Underground detour is a consequence of the event the player just resolved,
+  // never of the selection alone. Resolving consumes the pending id, so it
+  // applies exactly once.
+  const directorLoadout = resolved.expedition.loadout
+  const resolvedPressure = applyExpeditionPressureEventResolution(
+    resolved,
+    payload.sourceEventId,
+    directorLoadout
+      ? buildExpeditionMap(
+          resolved.runSeed,
+          directorLoadout.tourTypeId,
+          directorLoadout.regionId,
+          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        )
+      : null
+  )
+  return resolvedPressure === resolved.expedition.pressure
+    ? resolved
+    : {
+        ...resolved,
+        expedition: { ...resolved.expedition, pressure: resolvedPressure }
+      }
+}
+
+export const handleRecordExpeditionObligationSignal = (
+  state: GameState,
+  payload: RecordExpeditionObligationSignalPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  if (typeof payload.sourceId !== 'string' || payload.sourceId.length === 0)
+    return state
+  const canonicalSourceId = (() => {
+    switch (payload.signalType) {
+      case 'gig':
+      case 'finale':
+        // Bound to the step the gig resolved at, not the step the caller is
+        // standing on: `applyExpeditionRouteAdvance` carries `lastGigStats`
+        // and `currentGig` forward, so an unbound source would let a single
+        // gig produce a fresh signal id at every later route step.
+        return state.lastGigStats &&
+          state.currentGig?.id &&
+          state.expedition.lastGigResolvedAtRouteStep ===
+            payload.expectedRouteStep
+          ? state.currentGig.id
+          : null
+      case 'arrival':
+      case 'rest':
+        return state.player.currentNodeId
+      case 'heat':
+        return state.expedition.pressure.lastSevereEventId
+      case 'social_post':
+        // Same replay window as a gig: the settled result proof persists
+        // across advances, so it only counts at the step it resolved at.
+        return state.expedition.lastSocialResult?.resolvedAtRouteStep ===
+          payload.expectedRouteStep
+          ? (state.expedition.lastSocialResult?.id ?? null)
+          : null
+    }
+  })()
+  if (canonicalSourceId !== payload.sourceId) return state
+  const signalId =
+    payload.signalType === 'gig' && state.lastGigStats
+      ? `gig:${canonicalSourceId}:${payload.expectedRouteStep}:${Math.round(
+          finiteNumberOr(state.lastGigStats.accuracy, 0)
+        )}`
+      : `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
+  const stepSignalPrefix = `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
+  if (
+    state.expedition.resolvedObligationSignalIds.some(
+      id => id === signalId || id.startsWith(`${stepSignalPrefix}:`)
+    )
+  )
+    return state
+  let changed = false
+  let moneyDelta = 0
+  let fameDelta = 0
+  let heatDelta = 0
+  let controversyDelta = 0
+  const effectiveRules = getEffectiveExpeditionRules(state).numeric
+  const activeObligations = state.expedition.activeObligations.map(
+    obligation => {
+      if (obligation.status !== 'active') return obligation
+      let status: import('../../types/expedition').ActiveObligationState['status'] =
+        obligation.status
+      const progressByConstraintId = { ...obligation.progressByConstraintId }
+      for (const constraint of obligation.constraints) {
+        const prior = progressByConstraintId[constraint.id]
+        if (!prior) continue
+        const evidence = {
+          accuracy:
+            payload.signalType === 'gig'
+              ? state.lastGigStats?.accuracy
+              : undefined,
+          heat: state.expedition.pressure.heat,
+          visitedNodeId:
+            payload.signalType === 'arrival'
+              ? (state.player.currentNodeId ?? undefined)
+              : undefined,
+          rested: payload.signalType === 'rest',
+          finaleCompleted: payload.signalType === 'finale',
+          socialPosts:
+            payload.signalType === 'social_post'
+              ? prior.value + 1
+              : prior.value,
+          finaleProfileId:
+            state.expedition.finaleType === 'contract_special'
+              ? 'all_in_showcase'
+              : undefined
+        }
+        const result = evaluateExpeditionConstraint(constraint, evidence)
+        const value =
+          constraint.kind === 'gig_accuracy_count'
+            ? prior.value + result.value
+            : result.value
+        const satisfied =
+          prior.satisfied ||
+          (constraint.kind === 'gig_accuracy_count'
+            ? value >= constraint.requiredCount
+            : result.satisfied)
+        progressByConstraintId[constraint.id] = {
+          constraintId: constraint.id,
+          value,
+          satisfied,
+          failed: prior.failed || result.failed
+        }
+        changed = true
+      }
+      const progress = Object.values(progressByConstraintId)
+      if (progress.some(item => item.failed)) status = 'failed'
+      else if (progress.length > 0 && progress.every(item => item.satisfied))
+        status = 'completed'
+      const doubleDown = obligation.doubleDown
+      if (doubleDown) {
+        changed = true
+        const violated =
+          (doubleDown.addedConstraint.kind === 'no_more_rest' &&
+            payload.signalType === 'rest') ||
+          (doubleDown.addedConstraint.kind === 'heat_cap' &&
+            state.expedition.pressure.heat >
+              doubleDown.addedConstraint.maxHeat) ||
+          (doubleDown.addedConstraint.kind === 'social_silence' &&
+            payload.signalType === 'social_post')
+        if (violated) status = 'failed'
+        else if (
+          doubleDown.addedConstraint.kind === 'finale_required' &&
+          payload.signalType !== 'finale' &&
+          status === 'completed'
+        )
+          status = 'active'
+        else if (
+          doubleDown.addedConstraint.kind === 'finale_required' &&
+          payload.signalType === 'finale' &&
+          progress.every(item => item.satisfied)
+        )
+          status = 'completed'
+      }
+      let settled = obligation.settled
+      if (
+        status !== 'active' &&
+        !settled &&
+        obligation.sourceType === 'native'
+      ) {
+        const template = EXPEDITION_CONTRACTS_BY_ID.get(obligation.sourceId)
+        if (template) {
+          if (status === 'completed') {
+            const activeConstraintCount =
+              obligation.constraints.length + (doubleDown ? 1 : 0)
+            const stackMultiplier = Math.min(
+              1.4,
+              1 + Math.max(0, activeConstraintCount - 1) * 0.1
+            )
+            const multiplier =
+              template.reward.rewardMultiplier *
+              stackMultiplier *
+              (doubleDown?.rewardMultiplier ?? 1) *
+              effectiveRules.contractRewardMultiplier
+            moneyDelta += Math.round(template.reward.money * multiplier)
+            fameDelta += Math.round(template.reward.fame * multiplier)
+          } else {
+            heatDelta += Math.round(
+              (template.failure.heat + (doubleDown?.failureHeatBonus ?? 0)) *
+                effectiveRules.contractPenaltyMultiplier
+            )
+            controversyDelta += Math.round(
+              template.failure.controversy *
+                effectiveRules.contractPenaltyMultiplier
+            )
+          }
+          settled = true
+        }
+      }
+      return { ...obligation, progressByConstraintId, status, settled }
+    }
+  )
+  const accuracy =
+    payload.signalType === 'gig' && state.lastGigStats
+      ? Math.round(finiteNumberOr(state.lastGigStats.accuracy, 0))
+      : null
+  const gigOutcomeByStep =
+    payload.signalType === 'gig'
+      ? {
+          ...(state.expedition.gigOutcomeByStep ?? {}),
+          [payload.expectedRouteStep]: {
+            venueId: canonicalSourceId,
+            accuracy: accuracy ?? 0
+          }
+        }
+      : state.expedition.gigOutcomeByStep
+
+  let nextState: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + moneyDelta
+      ),
+      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta),
+      fameLevel: calculateFameLevel(
+        clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta)
+      )
+    },
+    social: {
+      ...state.social,
+      controversyLevel: clampControversyLevel(
+        finiteNumberOr(state.social.controversyLevel, 0) + controversyDelta
+      )
+    },
+    expedition: {
+      ...state.expedition,
+      activeObligations: changed
+        ? activeObligations
+        : state.expedition.activeObligations,
+      pressure: {
+        ...state.expedition.pressure,
+        heat: Math.max(
+          0,
+          Math.min(100, state.expedition.pressure.heat + heatDelta)
+        )
+      },
+      resolvedObligationSignalIds: [
+        ...state.expedition.resolvedObligationSignalIds,
+        signalId
+      ],
+      gigOutcomeByStep
+    }
+  }
+  if (moneyDelta > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createMoneyEarnedQuestEvent({ amount: moneyDelta, reason: 'contract' })
+    )
+  if (fameDelta > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createFameGainedQuestEvent({ amount: fameDelta, reason: 'contract' })
+    )
+  return nextState
+}
+
+export const handleDoubleDownExpeditionObligation = (
+  state: GameState,
+  payload: DoubleDownExpeditionObligationPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  const index = state.expedition.activeObligations.findIndex(
+    item =>
+      item.id === payload.obligationId &&
+      item.status === 'active' &&
+      item.doubleDown === null
+  )
+  if (index < 0) return state
+  const derived = deriveExpeditionDoubleDownOffer(
+    state.runSeed,
+    payload.obligationId,
+    state.expedition.routeStep
+  )
+  if (payload.offerId !== derived.acceptedOfferId) return state
+  const activeObligations = [...state.expedition.activeObligations]
+  const obligation = activeObligations[index]
+  if (!obligation) return state
+  activeObligations[index] = {
+    ...obligation,
+    doubleDown: {
+      acceptedOfferId: derived.acceptedOfferId,
+      derivationKey: derived.derivationKey,
+      addedConstraint: derived.addedConstraint,
+      rewardMultiplier: derived.rewardMultiplier,
+      failureHeatBonus: derived.failureHeatBonus,
+      acceptedAtRouteStep: state.expedition.routeStep
+    }
+  }
+  return { ...state, expedition: { ...state.expedition, activeObligations } }
+}
+export const handleOfferExpeditionDraft = (
+  state: GameState,
+  payload: OfferExpeditionDraftPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.pendingRunDraftOffer
+  )
+    return state
+  if (typeof payload.sourceKey !== 'string' || payload.sourceKey.length === 0)
+    return state
+
+  const occurrenceProof = `${payload.sourceType}:${payload.sourceKey}:${state.expedition.routeStep}`
+  if (state.expedition.consumedRunDraftSourceKeys?.includes(occurrenceProof))
+    return state
+
+  const sourceProven = (() => {
+    switch (payload.sourceType) {
+      case 'major_gig': {
+        const currentNode = state.player.currentNodeId
+          ? state.gameMap?.nodes?.[state.player.currentNodeId]
+          : undefined
+        const isMajorClass =
+          currentNode &&
+          (currentNode.nodeClass === 'MAJOR_GIG' ||
+            currentNode.type === 'MAJOR_GIG' ||
+            currentNode.type === 'FESTIVAL')
+        return (
+          state.lastGigStats !== null &&
+          state.lastGigStats.failed !== true &&
+          state.currentGig?.id === payload.sourceKey &&
+          Boolean(isMajorClass)
+        )
+      }
+      case 'rare_event': {
+        return state.expedition.rewardLedger.some(
+          reward =>
+            reward.sourceId === payload.sourceKey &&
+            reward.earnedAtRouteStep === state.expedition.routeStep
+        )
+      }
+      case 'rival': {
+        const loadout = state.expedition.loadout
+        if (!loadout || !state.player.currentNodeId) return false
+        const map = buildExpeditionMap(
+          state.runSeed,
+          loadout.tourTypeId,
+          loadout.regionId,
+          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        )
+        // The effective route, so a Nemesis shortcut counts: that overlay is
+        // the tier-2 rule change, and a Rival encounter it opens is exactly
+        // the qualifying moment a Run Draft is meant to fire on.
+        const effective = getEffectiveExpeditionRoute(state, map)
+        const subtype =
+          effective.subtypeByNodeId[state.player.currentNodeId] ??
+          map.meta[state.player.currentNodeId]?.specialSubtype
+        return (
+          state.rivalBand?.id === payload.sourceKey &&
+          subtype === 'RIVAL_ENCOUNTER'
+        )
+      }
+      case 'supply':
+        return (
+          state.player.currentNodeId === payload.sourceKey &&
+          state.gameMap?.nodes?.[payload.sourceKey]?.type === 'SUPPLY_STOP'
+        )
+      case 'crew':
+        return (
+          state.expedition.resolvedCrewSourceIds?.includes(
+            `${payload.sourceKey}:resolved:${state.expedition.routeStep}`
+          ) === true
+        )
+    }
+  })()
+  if (!sourceProven) return state
+  const candidateTraitIds = deriveExpeditionDraftCandidates(
+    state.runSeed,
+    occurrenceProof,
+    state.expedition.runDraftTraitIds
+  )
+  if (candidateTraitIds.length < 3) return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pendingRunDraftOffer: {
+        sourceType: payload.sourceType,
+        sourceKey: payload.sourceKey,
+        offeredAtRouteStep: state.expedition.routeStep,
+        candidateTraitIds
+      }
+    }
+  }
+}
+export const handleSelectExpeditionDraft = (
+  state: GameState,
+  payload: SelectExpeditionDraftPayload
+): GameState => {
+  const offer = state.expedition.pendingRunDraftOffer
+  if (
+    !offer ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    offer.offeredAtRouteStep !== state.expedition.routeStep ||
+    state.expedition.runDraftTraitIds.length >= 2 ||
+    !offer.candidateTraitIds.includes(payload.traitId)
+  )
+    return state
+  const occurrenceProof = `${offer.sourceType}:${offer.sourceKey}:${offer.offeredAtRouteStep}`
+  const consumed = state.expedition.consumedRunDraftSourceKeys ?? []
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      runDraftTraitIds: [...state.expedition.runDraftTraitIds, payload.traitId],
+      consumedRunDraftSourceKeys: consumed.includes(occurrenceProof)
+        ? consumed
+        : [...consumed, occurrenceProof],
+      pendingRunDraftOffer: null
+    }
+  }
+}
+
+export const handleResolveExpeditionSocialResult = (
+  state: GameState,
+  payload: ResolveExpeditionSocialResultPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep ||
+    state.expedition.lastSocialResult?.resolvedAtRouteStep ===
+      state.expedition.routeStep ||
+    typeof payload.postOptionId !== 'string' ||
+    payload.postOptionId.length === 0
+  )
+    return state
+  if (
+    !state.expedition.pendingSocialSettlement ||
+    state.expedition.pendingSocialSettlement.routeStep !==
+      state.expedition.routeStep
+  )
+    return state
+  // The canonical Social-post owner (`applySocialPostResult`) stamps the option
+  // it actually resolved onto `social.pendingSocialOptionId`. Without this the
+  // payload would be its own provenance: any registry option could be settled
+  // once per route step and its freshly minted proof reused for Social Intel.
+  if (state.social.pendingSocialOptionId !== payload.postOptionId) return state
+  const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
+  if (!postOption) return state
+  const expectedResultId = deriveExpeditionSocialResultId(postOption)
+  if (payload.resultId !== expectedResultId) return state
+  if (!state.lastGigStats || state.lastGigStats.failed === true) return state
+  const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+  if (!result || (result.requiresRival && !state.rivalBand)) return state
+  const proofId = `${payload.postOptionId}:${payload.resultId}:${state.expedition.routeStep}`
+
+  // A settled Rival-flavoured result is the canonical Rival encounter, and the
+  // first production path that advances the persistent record.
+  // `lastNemesisAdvanceRunId` is the per-run guard: one Nemesis step per Rival
+  // per run keeps the ladder a cross-run relationship instead of something a
+  // single tour can farm by posting repeatedly. It is deliberately not
+  // `lastSeenRunId`, which START already set to this run's id.
+  const rivalProgression = (() => {
+    if (!result.requiresRival || !state.rivalBand) return null
+    const rivalId = state.rivalBand.id
+    const record = state.career.rivalsById[rivalId]
+    if (!record) return null
+    const runId = state.expedition.runId
+    if (
+      typeof runId !== 'string' ||
+      record.history.lastNemesisAdvanceRunId === runId
+    )
+      return null
+    const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
+      0 | 1 | 2 | 3 | 4
+    return {
+      rivalId,
+      career: {
+        ...state.career,
+        rivalsById: {
+          ...state.career.rivalsById,
+          [rivalId]: {
+            ...record,
+            history: {
+              ...record.history,
+              relationship: (nemesisLevel >= 4
+                ? 'nemesis'
+                : 'rival') as CareerRivalRecord['history']['relationship'],
+              nemesisLevel,
+              encounterCount: record.history.encounterCount + 1,
+              lastOutcome:
+                'hostile_win' as CareerRivalRecord['history']['lastOutcome'],
+              lastSeenRunId: runId,
+              lastNemesisAdvanceRunId: runId
+            }
+          }
+        }
+      }
+    }
+  })()
+  const pressure = applyExpeditionPressureDelta(state, {
+    heat: result.heat,
+    exposure: result.exposure,
+    crowdHype: result.crowdHype
+  })
+  let nextState: GameState = {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + result.money
+      ),
+      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + result.fame),
+      fameLevel: calculateFameLevel(
+        clampPlayerFame(finiteNumberOr(state.player.fame, 0) + result.fame)
+      )
+    },
+    social: {
+      ...state.social,
+      pendingSocialOptionId: null,
+      brandReputation: {
+        ...state.social.brandReputation,
+        NEUTRAL: Math.max(
+          0,
+          Math.min(
+            100,
+            finiteNumberOr(state.social.brandReputation?.NEUTRAL, 0) +
+              result.sponsorInterest
+          )
+        )
+      }
+    },
+    career: rivalProgression?.career ?? state.career,
+    rivalBand:
+      state.rivalBand && result.rivalPressure !== 0
+        ? {
+            ...state.rivalBand,
+            powerLevel: Math.max(
+              1,
+              state.rivalBand.powerLevel + Math.round(result.rivalPressure / 10)
+            )
+          }
+        : state.rivalBand,
+    expedition: {
+      ...state.expedition,
+      pressure,
+      pendingSocialSettlement: null,
+      lastSocialResult: {
+        id: proofId,
+        postOptionId: payload.postOptionId,
+        resultId: payload.resultId,
+        resolvedAtRouteStep: state.expedition.routeStep,
+        intelConsumed: false
+      }
+    }
+  }
+  if (result.money > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createMoneyEarnedQuestEvent({
+        amount: result.money,
+        reason: 'expedition_social'
+      })
+    )
+  if (result.fame > 0)
+    nextState = QuestEvents.emit(
+      nextState,
+      createFameGainedQuestEvent({
+        amount: result.fame,
+        reason: 'expedition_social'
+      })
+    )
+  // The settled Rival encounter is this event's canonical owner: emitted only
+  // after the settlement actually succeeds, so a replayed or refused dispatch
+  // (both return early above) emits nothing.
+  if (rivalProgression) {
+    nextState = QuestEvents.emit(
+      nextState,
+      createExpeditionRivalOutcomeQuestEvent(rivalProgression.rivalId, true)
+    )
+  }
+  return handleRecordExpeditionObligationSignal(nextState, {
+    signalType: 'social_post',
+    sourceId: proofId,
+    expectedRouteStep: state.expedition.routeStep
+  })
+}
+
+export const handleCreateSocialIntelGrant = (
+  state: GameState,
+  payload: CreateSocialIntelGrantPayload
+): GameState => {
+  if (
+    state.expedition.status !== 'active' ||
+    payload.expectedRouteStep !== state.expedition.routeStep
+  )
+    return state
+  const proof = state.expedition.lastSocialResult
+  const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
+  if (
+    !proof ||
+    proof.intelConsumed ||
+    proof.postOptionId !== payload.postOptionId ||
+    proof.resultId !== payload.resultId ||
+    proof.resolvedAtRouteStep !== state.expedition.routeStep ||
+    !result?.intelTargetLevel
+  )
+    return state
+  const loadout = state.expedition.loadout
+  if (!loadout) return state
+  const map = buildExpeditionMap(
+    state.runSeed,
+    loadout.tourTypeId,
+    loadout.regionId,
+    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  )
+  const currentNodeId = state.player.currentNodeId
+  if (
+    !currentNodeId ||
+    !map.connections.some(
+      edge => edge.from === currentNodeId && edge.to === payload.nodeId
+    )
+  )
+    return state
+  const grantId = `${proof.id}:social:${payload.nodeId}`
+  if (state.expedition.intelGrants.some(grant => grant.id === grantId))
+    return state
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      intelGrants: [
+        ...state.expedition.intelGrants,
+        {
+          id: grantId,
+          source: 'social',
+          sourceProofId: proof.id,
+          nodeId: payload.nodeId,
+          targetLevel: result.intelTargetLevel,
+          consumed: false
+        }
+      ],
+      lastSocialResult: { ...proof, intelConsumed: true }
+    }
+  }
 }

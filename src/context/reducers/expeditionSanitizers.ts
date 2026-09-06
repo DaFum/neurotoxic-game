@@ -24,10 +24,22 @@ import {
   resolveExpeditionRewardDefinition
 } from '../../domain/expedition/rewardLedger'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
+import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
+import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
+import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { POST_OPTIONS } from '../../data/postOptions'
+import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
+import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
+import {
+  deriveExpeditionDoubleDownOffer,
+  materializeContractConstraints
+} from '../../domain/expedition/contracts'
 import type {
   ExpeditionBuildCommitment,
   ExpeditionCargoState,
+  ExpeditionMap,
   ExpeditionContrabandSelection,
   ExpeditionEquipmentCommitment,
   ExpeditionFailureChoiceId,
@@ -535,7 +547,8 @@ const sanitizeExpeditionTechnicalCondition = (
  */
 export const sanitizeExpeditionState = (
   value: unknown,
-  runSeed?: number
+  runSeed?: number,
+  lastGigStats?: unknown
 ): ExpeditionState => {
   const fallback = createDefaultExpeditionState()
   if (!isLooseRecord(value)) return fallback
@@ -706,6 +719,7 @@ export const sanitizeExpeditionState = (
   }
 
   return {
+    ...createDefaultExpeditionState(),
     status,
     prep: prepId ? { prepId } : null,
     runId,
@@ -753,6 +767,73 @@ export const sanitizeExpeditionState = (
     },
     bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
+    resolvedObligationSignalIds: sanitizeUniqueStrings(
+      value.resolvedObligationSignalIds
+    ),
+    pressure: sanitizeExpeditionPressure(
+      value.pressure,
+      runId,
+      routeStep,
+      runSeed,
+      preparedMap,
+      validVisitedPath[validVisitedPath.length - 1]
+    ),
+    preparedSponsorOffers: sanitizePreparedSponsorOffers(
+      value.preparedSponsorOffers,
+      runSeed
+    ),
+    runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
+    ...(value.consumedRunDraftSourceKeys !== undefined
+      ? {
+          consumedRunDraftSourceKeys: sanitizeUniqueStrings(
+            value.consumedRunDraftSourceKeys
+          )
+        }
+      : {}),
+    pendingRunDraftOffer: null,
+    finaleType: sanitizeFinaleType(value.finaleType),
+    lastSocialResult: sanitizeSocialResultProof(
+      value.lastSocialResult,
+      readCount(value, 'routeStep', 0),
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    pendingSocialSettlement: sanitizePendingSocialSettlement(
+      value.pendingSocialSettlement,
+      readCount(value, 'routeStep', 0)
+    ),
+    lastGigResolvedAtRouteStep: sanitizeResolvedAtRouteStep(
+      value.lastGigResolvedAtRouteStep,
+      readCount(value, 'routeStep', 0)
+    ),
+    gigOutcomeByStep: sanitizeGigOutcomeMap(
+      value.gigOutcomeByStep,
+      lastGigStats,
+      readCount(value, 'routeStep', 0),
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    activeObligations: sanitizeActiveObligations(
+      value.activeObligations,
+      runId,
+      runSeed,
+      readCount(value, 'routeStep', 0),
+      loadout,
+      preparedMap,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds),
+      validVisitedPath,
+      sanitizeSocialResultProof(
+        value.lastSocialResult,
+        readCount(value, 'routeStep', 0),
+        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+      ),
+      sanitizeGigOutcomeMap(
+        value.gigOutcomeByStep,
+        lastGigStats,
+        readCount(value, 'routeStep', 0),
+        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+      ),
+      sanitizeExpeditionPressure(value.pressure).heat,
+      sanitizeFinaleType(value.finaleType)
+    ),
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),
@@ -764,6 +845,518 @@ export const sanitizeExpeditionState = (
         }
       : {})
   }
+}
+
+/**
+ * Restores a run-scoped temporary route opportunity, or `null`.
+ *
+ * @param value - Persisted candidate.
+ * @param runId - Sanitized run id.
+ * @param routeStep - Sanitized current route step.
+ * @returns The opportunity when its derived id checks out, else `null`.
+ *
+ * @remarks
+ * The Director derives the id from subtype, run and firing step, so
+ * re-deriving it here is what stops a save from granting itself an
+ * opportunity the run never earned.
+ */
+/**
+ * Re-derives a persisted route opportunity, or drops it.
+ *
+ * @param value - Raw persisted opportunity.
+ * @param runId - The run's id.
+ * @param routeStep - The run's current route step.
+ * @param runSeed - The run's seed.
+ * @param map - The canonical base route, when it could be built.
+ * @param from - Node the run currently stands on.
+ * @param heat - Sanitized Heat.
+ * @returns The opportunity the run could actually have earned, or `null`.
+ *
+ * @remarks
+ * The derived id proves nothing on its own - every input to it is already in
+ * the save. So nothing here is taken from the save except the claim that an
+ * opportunity exists:
+ *
+ * - Only `UNDERGROUND_MARKET` has a producer. The other two subtypes are in
+ *   the type union with nothing that can create them, so a save naming one is
+ *   inventing it.
+ * - `targetNodeId` is re-derived from `runSeed` and the base map. A save that
+ *   names a different next-step node no longer gets an edge for it.
+ * - The opportunity is spent by travelling it and expires on the next advance,
+ *   so a live one can only belong to the current step.
+ * - Heat below the invite's own threshold could not have produced one.
+ */
+const sanitizeTemporaryRouteOpportunity = (
+  value: unknown,
+  runId: string | null,
+  routeStep: number,
+  runSeed: number | undefined,
+  map: ExpeditionMap | null,
+  from: unknown,
+  heat: number
+): ExpeditionState['pressure']['temporaryRouteOpportunity'] => {
+  if (!isLooseRecord(value) || !runId || !map) return null
+  const { subtype, createdAtRouteStep } = value
+  if (
+    subtype !== 'UNDERGROUND_MARKET' ||
+    heat < 60 ||
+    !isFiniteNumber(createdAtRouteStep) ||
+    createdAtRouteStep !== routeStep
+  )
+    return null
+  const expectedId = `${subtype}:${runId}:${createdAtRouteStep}`
+  if (value.id !== expectedId) return null
+  const targetNodeId = deriveExpeditionOverlayTargetFrom(
+    from,
+    routeStep,
+    runSeed,
+    map,
+    'underground_invite'
+  )
+  if (targetNodeId === null || isForbiddenKey(targetNodeId)) return null
+  return { id: expectedId, subtype, targetNodeId, createdAtRouteStep }
+}
+
+const sanitizeExpeditionPressure = (
+  value: unknown,
+  runId: string | null = null,
+  routeStep = 0,
+  runSeed?: number,
+  map: ExpeditionMap | null = null,
+  from: unknown = null
+): ExpeditionState['pressure'] => {
+  const defaults = createDefaultExpeditionState().pressure
+  if (!isLooseRecord(value)) return defaults
+  const clampAxis = (key: 'heat' | 'exposure' | 'crowdHype'): number => {
+    const candidate = value[key]
+    return isFiniteNumber(candidate) ? Math.max(0, Math.min(100, candidate)) : 0
+  }
+  return {
+    heat: clampAxis('heat'),
+    exposure: clampAxis('exposure'),
+    crowdHype: clampAxis('crowdHype'),
+    severeReliefUntilRouteStep:
+      isFiniteNumber(value.severeReliefUntilRouteStep) &&
+      Number.isInteger(value.severeReliefUntilRouteStep) &&
+      value.severeReliefUntilRouteStep >= 0
+        ? value.severeReliefUntilRouteStep
+        : null,
+    lastSevereEventId:
+      typeof value.lastSevereEventId === 'string'
+        ? value.lastSevereEventId
+        : null,
+    pendingDirectorEventId: isExpeditionPressureEventId(
+      value.pendingDirectorEventId
+    )
+      ? value.pendingDirectorEventId
+      : null,
+    temporaryRouteOpportunity: sanitizeTemporaryRouteOpportunity(
+      value.temporaryRouteOpportunity,
+      runId,
+      routeStep,
+      runSeed,
+      map,
+      from,
+      clampAxis('heat')
+    )
+  }
+}
+
+const sanitizePreparedSponsorOffers = (
+  value: unknown,
+  runSeed: number | undefined
+): ExpeditionState['preparedSponsorOffers'] => {
+  if (!Array.isArray(value) || !isFiniteNumber(runSeed)) return []
+  const result: ExpeditionState['preparedSponsorOffers'] = []
+  const seen = new Set<string>()
+  for (const raw of value.slice(0, 3)) {
+    if (!isLooseRecord(raw)) continue
+    const { offerId, dealId, canonicalTermsHash } = raw
+    if (
+      typeof offerId !== 'string' ||
+      typeof dealId !== 'string' ||
+      typeof canonicalTermsHash !== 'string' ||
+      raw.runSeed !== runSeed ||
+      seen.has(offerId) ||
+      getCanonicalBrandDealTermsHash(dealId) !== canonicalTermsHash
+    )
+      continue
+    seen.add(offerId)
+    result.push({ offerId, dealId, runSeed, canonicalTermsHash })
+  }
+  return result
+}
+
+const sanitizeRunDraftTraitIds = (
+  value: unknown
+): ExpeditionState['runDraftTraitIds'] => {
+  if (!Array.isArray(value)) return []
+  const allowed = new Set<string>(EXPEDITION_RUN_DRAFT_TRAITS)
+  return [
+    ...new Set(
+      value.filter(
+        (entry): entry is ExpeditionState['runDraftTraitIds'][number] =>
+          typeof entry === 'string' && allowed.has(entry)
+      )
+    )
+  ].slice(0, 2)
+}
+
+const sanitizeGigOutcomeMap = (
+  value: unknown,
+  lastGigStats?: unknown,
+  routeStep?: number,
+  resolvedObligationSignalIds: string[] = []
+): Record<number, { venueId: string; accuracy: number }> => {
+  const result: Record<number, { venueId: string; accuracy: number }> =
+    Object.create(null)
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value)) {
+    const step = Number(key)
+    if (!Number.isInteger(step) || step < 0) continue
+    if (!isLooseRecord(entry)) continue
+    const venueId = readString(entry, 'venueId')
+    const accuracy = readCount(entry, 'accuracy', -1)
+    if (!venueId || accuracy < 0 || accuracy > 100) continue
+
+    // Validate against canonical lastGigStats if step matches current routeStep
+    if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step === routeStep &&
+      isLooseRecord(lastGigStats)
+    ) {
+      const canonicalAccuracy = isFiniteNumber(lastGigStats.accuracy)
+        ? lastGigStats.accuracy
+        : null
+      if (
+        canonicalAccuracy === null ||
+        lastGigStats.failed === true ||
+        Math.round(canonicalAccuracy) !== Math.round(accuracy)
+      ) {
+        continue
+      }
+    } else if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step === routeStep &&
+      !lastGigStats
+    ) {
+      // Current step outcome present in save but no canonical lastGigStats evidence -> fail closed
+      continue
+    } else if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step < routeStep
+    ) {
+      // For historical steps, verify against resolvedObligationSignalIds signal proof: `gig:<venueId>:<step>:<accuracy>`
+      const expectedSignal = `gig:${venueId}:${step}:${Math.round(accuracy)}`
+      const hasProof = resolvedObligationSignalIds.includes(expectedSignal)
+      if (!hasProof) continue
+    }
+
+    result[step] = { venueId, accuracy }
+  }
+  return result
+}
+
+const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
+  value === 'regional_headliner' ||
+  value === 'corporate_showcase' ||
+  value === 'rival_battle' ||
+  value === 'illegal_show' ||
+  value === 'disaster_gig' ||
+  value === 'contract_special'
+    ? value
+    : null
+
+/**
+ * Restores the route step a gig resolved at, or `null`.
+ *
+ * @param value - Persisted candidate.
+ * @param routeStep - Sanitized current route step.
+ * @returns An integer step no deeper than the run, else `null`.
+ */
+const sanitizeResolvedAtRouteStep = (
+  value: unknown,
+  routeStep: number
+): number | null =>
+  isFiniteNumber(value) &&
+  Number.isInteger(value) &&
+  value >= 0 &&
+  value <= routeStep
+    ? value
+    : null
+
+const sanitizePendingSocialSettlement = (
+  value: unknown,
+  routeStep: number
+): ExpeditionState['pendingSocialSettlement'] => {
+  if (!isLooseRecord(value)) return null
+  const step = readCount(value, 'routeStep', -1)
+  if (step !== routeStep) return null
+  const gigId = readString(value, 'gigId')
+  return { routeStep: step, gigId }
+}
+
+const sanitizeSocialResultProof = (
+  value: unknown,
+  routeStep: number,
+  resolvedObligationSignalIds: string[] = []
+): ExpeditionState['lastSocialResult'] => {
+  if (
+    !isLooseRecord(value) ||
+    typeof value.id !== 'string' ||
+    typeof value.postOptionId !== 'string' ||
+    (value.resultId !== 'push' &&
+      value.resultId !== 'monetize' &&
+      value.resultId !== 'suppress' &&
+      value.resultId !== 'weaponize') ||
+    value.resolvedAtRouteStep !== routeStep ||
+    typeof value.intelConsumed !== 'boolean'
+  )
+    return null
+  const postOption = POST_OPTIONS.find(opt => opt.id === value.postOptionId)
+  if (!postOption) return null
+  const expectedResultId = deriveExpeditionSocialResultId(postOption)
+  if (value.resultId !== expectedResultId) return null
+  const expectedId = `${value.postOptionId}:${value.resultId}:${routeStep}`
+  if (value.id !== expectedId) return null
+  const hasSignalProof = resolvedObligationSignalIds.some(
+    signalId =>
+      signalId === `social_post:${expectedId}` ||
+      signalId === `social_post:${expectedId}:${routeStep}`
+  )
+  if (!hasSignalProof) return null
+  return {
+    id: expectedId,
+    postOptionId: value.postOptionId,
+    resultId: value.resultId,
+    resolvedAtRouteStep: routeStep,
+    intelConsumed: value.intelConsumed
+  }
+}
+
+const sanitizeActiveObligations = (
+  value: unknown,
+  runId: string | null,
+  runSeed: number | undefined,
+  routeStep: number,
+  loadout: ExpeditionLoadout | null,
+  preparedMap: import('../../types/expedition').ExpeditionMap | null,
+  resolvedObligationSignalIds: string[] = [],
+  validVisitedPath: string[] = [],
+  lastSocialResult: ExpeditionState['lastSocialResult'] = null,
+  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {},
+  heat = 0,
+  finaleType: ExpeditionState['finaleType'] = null
+): ExpeditionState['activeObligations'] => {
+  if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
+  const result: ExpeditionState['activeObligations'] = []
+  const seen = new Set<string>()
+
+  const countQualifyingGigSignals = (minAccuracy: number): number => {
+    let qualifyingCount = 0
+    for (let step = 0; step < validVisitedPath.length; step++) {
+      const expNodeId = validVisitedPath[step]
+      if (!expNodeId || !preparedMap) continue
+      const metaNode = preparedMap.meta[expNodeId]
+      const isGigClass =
+        metaNode &&
+        (metaNode.nodeClass === 'CLUB_GIG' ||
+          metaNode.nodeClass === 'FESTIVAL' ||
+          metaNode.nodeClass === 'FINALE')
+      if (!isGigClass) continue
+      const outcome = gigOutcomeByStep[step]
+      if (!outcome) continue
+      const node = preparedMap.nodes[expNodeId]
+      if (outcome.venueId !== node?.venueId && outcome.venueId !== expNodeId)
+        continue
+      if (outcome.accuracy >= minAccuracy) {
+        qualifyingCount += 1
+      }
+    }
+    return qualifyingCount
+  }
+
+  // Heat, rest and Finale constraints have no per-step counter to cap, so the
+  // canonical run-scoped signal proofs stand in: without them a save can hand
+  // itself a satisfied high-risk contract and collect the Money/Fame reward.
+  const hasFinaleSignal = resolvedObligationSignalIds.some(signalId =>
+    signalId.startsWith('finale:')
+  )
+  const hasRestSignal = resolvedObligationSignalIds.some(signalId =>
+    signalId.startsWith('rest:')
+  )
+
+  const validSocialSignalCount = resolvedObligationSignalIds.filter(
+    signalId => {
+      if (!signalId.startsWith('social_post:')) return false
+      if (!lastSocialResult) return false
+      return (
+        signalId === `social_post:${lastSocialResult.id}` ||
+        signalId ===
+          `social_post:${lastSocialResult.id}:${lastSocialResult.resolvedAtRouteStep}`
+      )
+    }
+  ).length
+
+  for (const raw of value.slice(0, MAX_COLLECTION_ENTRIES)) {
+    if (!isLooseRecord(raw)) continue
+    const { id, sourceType, sourceId, status } = raw
+    if (
+      typeof id !== 'string' ||
+      typeof sourceId !== 'string' ||
+      seen.has(id) ||
+      (sourceType !== 'native' && sourceType !== 'brandDeal') ||
+      (status !== 'active' && status !== 'completed' && status !== 'failed') ||
+      typeof raw.settled !== 'boolean' ||
+      !id.startsWith(`${runId}:`) ||
+      !Array.isArray(raw.constraints) ||
+      !isLooseRecord(raw.progressByConstraintId)
+    )
+      continue
+    const template =
+      sourceType === 'native'
+        ? EXPEDITION_CONTRACTS_BY_ID.get(sourceId)
+        : undefined
+    if (sourceType === 'native' && !template) continue
+    if (sourceType === 'brandDeal' && raw.constraints.length !== 0) continue
+    let constraints: import('../../types/expedition').ExpeditionContractConstraint[] =
+      []
+    if (sourceType === 'native') {
+      const commitment = loadout?.nativeContracts.find(
+        item => item.templateId === sourceId
+      )
+      if (!template || !commitment || !preparedMap) continue
+      const canonical = materializeContractConstraints(
+        template,
+        preparedMap,
+        commitment.targetNodeId
+      )
+      if (
+        !canonical ||
+        JSON.stringify(raw.constraints) !== JSON.stringify(canonical)
+      )
+        continue
+      constraints = canonical
+    }
+    const progressByConstraintId = Object.create(
+      null
+    ) as import('../../types/expedition').ActiveObligationState['progressByConstraintId']
+    let valid = true
+    for (const constraint of constraints) {
+      const progress = raw.progressByConstraintId[constraint.id]
+      if (
+        !isLooseRecord(progress) ||
+        progress.constraintId !== constraint.id ||
+        !isFiniteNumber(progress.value) ||
+        progress.value < 0 ||
+        typeof progress.satisfied !== 'boolean' ||
+        typeof progress.failed !== 'boolean'
+      ) {
+        valid = false
+        break
+      }
+      let canonicalValue = progress.value
+      let canonicalSatisfied = progress.satisfied
+      let canonicalFailed = progress.failed
+      if (constraint.kind === 'gig_accuracy_count') {
+        const qualifyingCount = countQualifyingGigSignals(
+          constraint.minAccuracy
+        )
+        canonicalValue = Math.min(progress.value, qualifyingCount)
+        canonicalSatisfied = canonicalValue >= constraint.requiredCount
+      } else if (constraint.kind === 'visit_node') {
+        const visited = validVisitedPath.includes(constraint.targetNodeId)
+        canonicalValue = visited ? 1 : 0
+        canonicalSatisfied = visited
+      } else if (constraint.kind === 'social_post_count') {
+        canonicalValue = Math.min(progress.value, validSocialSignalCount)
+        canonicalSatisfied = canonicalValue >= constraint.requiredCount
+      } else if (constraint.kind === 'max_heat') {
+        canonicalValue = heat
+        canonicalSatisfied =
+          progress.satisfied && hasFinaleSignal && heat <= constraint.maxHeat
+        canonicalFailed = progress.failed || heat > constraint.maxHeat
+      } else if (constraint.kind === 'no_rest_before_finale') {
+        canonicalValue = hasRestSignal ? 1 : 0
+        canonicalSatisfied = hasFinaleSignal && !hasRestSignal
+        canonicalFailed = progress.failed || hasRestSignal
+      } else if (constraint.kind === 'finale_completed') {
+        canonicalValue = hasFinaleSignal ? 1 : 0
+        canonicalSatisfied = progress.satisfied && hasFinaleSignal
+      } else if (constraint.kind === 'special_finale') {
+        canonicalSatisfied =
+          progress.satisfied &&
+          hasFinaleSignal &&
+          finaleType === 'contract_special' &&
+          constraint.profileId === 'all_in_showcase'
+        canonicalValue = canonicalSatisfied ? 1 : 0
+      }
+      progressByConstraintId[constraint.id] = {
+        constraintId: constraint.id,
+        value: canonicalValue,
+        satisfied: canonicalSatisfied,
+        failed: canonicalFailed
+      }
+    }
+    if (!valid) continue
+    let doubleDown = null
+    if (raw.doubleDown !== null) {
+      if (
+        !isLooseRecord(raw.doubleDown) ||
+        !isFiniteNumber(raw.doubleDown.acceptedAtRouteStep) ||
+        !Number.isInteger(raw.doubleDown.acceptedAtRouteStep) ||
+        raw.doubleDown.acceptedAtRouteStep > routeStep
+      )
+        continue
+      const expected = deriveExpeditionDoubleDownOffer(
+        runSeed,
+        id,
+        raw.doubleDown.acceptedAtRouteStep
+      )
+      if (JSON.stringify(raw.doubleDown) !== JSON.stringify(expected)) continue
+      doubleDown = expected
+    }
+
+    const progressList = Object.values(progressByConstraintId)
+    // A constrained obligation's status is re-derived from the canonical
+    // progress above, never carried over from the save: trusting the persisted
+    // status would readmit exactly the terminal state the progress rebuild
+    // just refused. Brand-deal obligations carry no constraints to derive
+    // from, so theirs is kept.
+    let derivedStatus: 'active' | 'completed' | 'failed' =
+      progressList.length > 0 ? 'active' : status
+    if (progressList.some(item => item.failed)) derivedStatus = 'failed'
+    else if (
+      progressList.length > 0 &&
+      progressList.every(item => item.satisfied)
+    ) {
+      if (doubleDown?.addedConstraint.kind === 'finale_required') {
+        derivedStatus = 'active'
+      } else {
+        derivedStatus = 'completed'
+      }
+    }
+
+    seen.add(id)
+    result.push({
+      id,
+      sourceType,
+      sourceId,
+      constraints,
+      progressByConstraintId,
+      status: derivedStatus,
+      // A native obligation is settled in the same reducer pass that makes it
+      // terminal, so the flag is derivable: trusting a persisted `false` on a
+      // terminal obligation would pay its reward a second time.
+      settled:
+        sourceType === 'native' ? derivedStatus !== 'active' : raw.settled,
+      doubleDown
+    })
+  }
+  return result
 }
 
 const sanitizeCrewStressMap = (value: unknown): Record<string, number> => {

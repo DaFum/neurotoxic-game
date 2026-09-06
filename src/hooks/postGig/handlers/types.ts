@@ -39,4 +39,12 @@ export interface HandlerDispatchers {
     sourceId: string
   ) => void
   completeExpedition: (finaleResultId: string) => void
+  recordExpeditionObligationSignal?: (
+    signalType: 'gig' | 'finale' | 'arrival' | 'rest' | 'heat' | 'social_post',
+    sourceId: string
+  ) => void
+  resolveExpeditionSocialResult?: (
+    resultId: import('../../../domain/expedition/social').ExpeditionSocialResultId,
+    postOptionId: string
+  ) => void
 }

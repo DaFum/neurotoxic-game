@@ -27,7 +27,13 @@ import {
   recordExpeditionRelationshipOutcome as recordExpeditionRelationshipOutcomeAction,
   advanceExpeditionCrewInjury as advanceExpeditionCrewInjuryAction,
   advanceExpeditionBandInjury as advanceExpeditionBandInjuryAction,
-  createContactIntelGrant as createContactIntelGrantAction
+  createContactIntelGrant as createContactIntelGrantAction,
+  recordExpeditionObligationSignal as recordExpeditionObligationSignalAction,
+  doubleDownExpeditionObligation as doubleDownExpeditionObligationAction,
+  offerExpeditionDraft as offerExpeditionDraftAction,
+  selectExpeditionDraft as selectExpeditionDraftAction,
+  resolveExpeditionSocialResult as resolveExpeditionSocialResultAction,
+  createSocialIntelGrant as createSocialIntelGrantAction
 } from './expeditionActionCreators'
 import { createSettleExpeditionCrewCareerAction } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
@@ -56,6 +62,12 @@ export type ExpeditionDispatchActions = Pick<
   | 'advanceExpeditionCrewInjury'
   | 'advanceExpeditionBandInjury'
   | 'createContactIntelGrant'
+  | 'recordExpeditionObligationSignal'
+  | 'doubleDownExpeditionObligation'
+  | 'offerExpeditionDraft'
+  | 'selectExpeditionDraft'
+  | 'resolveExpeditionSocialResult'
+  | 'createSocialIntelGrant'
 >
 
 interface UseExpeditionDispatchActionsProps {
@@ -177,6 +189,45 @@ export function useExpeditionDispatchActions({
             stateRef.current,
             eventId,
             optionId,
+            nodeId
+          )
+        ),
+      recordExpeditionObligationSignal: (signalType, sourceId) =>
+        dispatch(
+          recordExpeditionObligationSignalAction(
+            stateRef.current,
+            signalType,
+            sourceId
+          )
+        ),
+      doubleDownExpeditionObligation: (obligationId, offerId) =>
+        dispatch(
+          doubleDownExpeditionObligationAction(
+            stateRef.current,
+            obligationId,
+            offerId
+          )
+        ),
+      offerExpeditionDraft: (sourceType, sourceKey) =>
+        dispatch(
+          offerExpeditionDraftAction(stateRef.current, sourceType, sourceKey)
+        ),
+      selectExpeditionDraft: traitId =>
+        dispatch(selectExpeditionDraftAction(stateRef.current, traitId)),
+      resolveExpeditionSocialResult: (resultId, postOptionId) =>
+        dispatch(
+          resolveExpeditionSocialResultAction(
+            stateRef.current,
+            resultId,
+            postOptionId
+          )
+        ),
+      createSocialIntelGrant: (postOptionId, resultId, nodeId) =>
+        dispatch(
+          createSocialIntelGrantAction(
+            stateRef.current,
+            postOptionId,
+            resultId,
             nodeId
           )
         )

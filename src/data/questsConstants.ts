@@ -158,3 +158,18 @@ export const QUEST_BRAND_AMBASSADOR = 'quest_brand_ambassador'
  * Side quest id for creating experimental enhancements.
  */
 export const QUEST_ALCHEMIST = 'quest_alchemist'
+
+/**
+ * Quest id for getting deep into one tour instead of extracting early.
+ */
+export const QUEST_EXPEDITION_RUN_GOAL = 'quest_expedition_run_goal'
+
+/**
+ * Quest id for settling repeated run-ins with the persistent Rival.
+ */
+export const QUEST_EXPEDITION_NEMESIS = 'quest_expedition_nemesis'
+
+/**
+ * Quest id for playing tours through to their Finale.
+ */
+export const QUEST_EXPEDITION_META_UNLOCK = 'quest_expedition_meta_unlock'

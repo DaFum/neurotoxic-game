@@ -16,9 +16,18 @@ import {
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { getExpeditionOwnedPerformanceGear } from '../../domain/expedition/equipment'
 import {
+  getAvailableNativeContractTemplateIds,
+  getAvailableSponsorOfferIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
+import {
+  areExpeditionContractsCompatible,
+  getExpeditionContractTargetNodeId
+} from '../../domain/expedition/contracts'
+import { MAX_NATIVE_EXPEDITION_CONTRACTS } from '../../data/expedition/contracts'
+import { BRAND_DEALS } from '../../data/brandDeals'
+import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 import { BuildCommitmentPanel } from './BuildCommitmentPanel'
 import { ExpeditionCrewPicker } from './ExpeditionCrewPicker'
 import type { ExpeditionLoadout } from '../../types/expedition'
@@ -71,6 +80,8 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     Math.round(currentFuel)
   )
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
+  const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
+  const [contractTemplateIds, setContractTemplateIds] = useState<string[]>([])
 
   const preparedMap = useMemo(
     () =>
@@ -83,6 +94,29 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [runSeed]
   )
 
+  const sponsorOffers = useGameSelector(
+    current => current.expedition.preparedSponsorOffers
+  )
+  const availableSponsorOfferIds = useMemo(
+    () => getAvailableSponsorOfferIds(state, preparedMap),
+    [preparedMap, state]
+  )
+  const availableContractTemplateIds = useMemo(
+    () => getAvailableNativeContractTemplateIds(state, preparedMap),
+    [preparedMap, state]
+  )
+
+  // The route target is derived, never picked: the reducer materializes the
+  // same node, so a committed route Contract cannot point somewhere else.
+  const nativeContracts = useMemo(
+    () =>
+      contractTemplateIds.map(templateId => ({
+        templateId,
+        targetNodeId: getExpeditionContractTargetNodeId(templateId, preparedMap)
+      })),
+    [contractTemplateIds, preparedMap]
+  )
+
   const candidate = useMemo<ExpeditionLoadout>(
     () => ({
       tourTypeId: BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -91,7 +125,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       crewIds: selectedCrewIds,
       cargo: { spareParts: 0, supplies: 0 },
       starterPerkId: null,
-      nativeContracts: [],
+      nativeContracts,
       insurancePolicyId: null,
       pressureModifierIds: [],
       build: {
@@ -100,16 +134,18 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
         selectedTourbusModuleIds: [],
         merch: [],
         contraband: [],
-        sponsorOfferId: null,
+        sponsorOfferId,
         startingFuelTarget,
         protectedCareerCash
       }
     }),
     [
+      nativeContracts,
       protectedCareerCash,
       selectedGearItemIds,
       selectedCrewIds,
       setlistSongIds,
+      sponsorOfferId,
       startingFuelTarget
     ]
   )
@@ -134,6 +170,18 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     setSetlistSongIds(current =>
       toggleBounded(current, songId, MAX_SETLIST_SONGS)
     )
+  }, [])
+
+  // Incompatible pairs are refused here rather than at commit time: the screen
+  // is about seeing the trade-off, not about being told afterwards.
+  const toggleContract = useCallback((templateId: string) => {
+    setContractTemplateIds(current => {
+      if (current.includes(templateId))
+        return current.filter(entry => entry !== templateId)
+      if (current.length >= MAX_NATIVE_EXPEDITION_CONTRACTS) return current
+      const next = [...current, templateId]
+      return areExpeditionContractsCompatible(next) ? next : current
+    })
   }, [])
 
   const toggleGear = useCallback((itemId: string) => {
@@ -180,6 +228,101 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
         selectedCrewIds={selectedCrewIds}
         onChange={setSelectedCrewIds}
       />
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.sponsor')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {t('ui:expedition.prep.sponsorHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          <button
+            type='button'
+            aria-pressed={sponsorOfferId === null}
+            onClick={() => setSponsorOfferId(null)}
+            data-testid='expedition-prep-sponsor-none'
+            className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+              sponsorOfferId === null
+                ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+            }`}
+          >
+            {t('ui:expedition.prep.sponsorNone')}
+          </button>
+          {sponsorOffers
+            .filter(offer => availableSponsorOfferIds.includes(offer.offerId))
+            .map(offer => {
+              const deal = BRAND_DEALS.find(entry => entry.id === offer.dealId)
+              const isSelected = sponsorOfferId === offer.offerId
+              return (
+                <button
+                  key={offer.offerId}
+                  type='button'
+                  aria-pressed={isSelected}
+                  onClick={() => setSponsorOfferId(offer.offerId)}
+                  data-testid={`expedition-prep-sponsor-${offer.offerId}`}
+                  className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+                    isSelected
+                      ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                      : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                  }`}
+                >
+                  {(deal
+                    ? getTranslatedBrandDealDisplay(deal, t)?.name
+                    : null) ?? offer.dealId}
+                </button>
+              )
+            })}
+        </div>
+      </fieldset>
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.contracts', {
+            count: contractTemplateIds.length,
+            max: MAX_NATIVE_EXPEDITION_CONTRACTS
+          })}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {t('ui:expedition.prep.contractsHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          {availableContractTemplateIds.map(templateId => {
+            const isSelected = contractTemplateIds.includes(templateId)
+            // A pair the registry refuses is shown as unavailable rather than
+            // accepted and rejected at commit time.
+            const isBlocked =
+              !isSelected &&
+              (contractTemplateIds.length >= MAX_NATIVE_EXPEDITION_CONTRACTS ||
+                !areExpeditionContractsCompatible([
+                  ...contractTemplateIds,
+                  templateId
+                ]))
+            return (
+              <button
+                key={templateId}
+                type='button'
+                aria-pressed={isSelected}
+                disabled={isBlocked}
+                onClick={() => toggleContract(templateId)}
+                data-testid={`expedition-prep-contract-${templateId}`}
+                className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+                  isSelected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : isBlocked
+                      ? 'border-steel-gray text-steel-gray cursor-not-allowed'
+                      : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                }`}
+              >
+                {t(`ui:expedition.contract.${templateId}`, {
+                  defaultValue: templateId
+                })}
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
 
       <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
         <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>

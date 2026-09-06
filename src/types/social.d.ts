@@ -232,6 +232,7 @@ export interface SocialState extends UnknownRecord {
   influencers: Record<string, UnknownRecord>
   scenePresence?: number
   regionalGigHistory: Record<string, number[]>
+  pendingSocialOptionId?: string | null
 }
 
 /**

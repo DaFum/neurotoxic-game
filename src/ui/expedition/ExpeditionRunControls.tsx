@@ -12,6 +12,9 @@ import { buildExpeditionMap } from '../../domain/expedition/map'
 import { ExpeditionServicePanel } from './ExpeditionServicePanel'
 import { ExtractionDialog } from './ExtractionDialog'
 import { FailureCrisisDialog } from './FailureCrisisDialog'
+import { deriveExpeditionDoubleDownOffer } from '../../domain/expedition/contracts'
+import { BRAND_DEALS } from '../../data/brandDeals'
+import { getTranslatedBrandDealDisplay } from '../../utils/brandDealI18n'
 
 /**
  * Reports whether the run is standing on a legal extraction window.
@@ -73,6 +76,13 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
 
   return (
     <div data-testid='expedition-run-controls'>
+      {/* A pending Run Draft is the run's live decision, so it sits above the
+          standing obligations rather than in a scene of its own. */}
+      <ExpeditionRunDraftPicker />
+
+      {/* Active obligations & double down controls */}
+      <ExpeditionObligationsPanel />
+
       {/* Repairs and inspections belong on the road, where the player still
           has the choice between paying for a fix and pushing on. */}
       <ExpeditionServicePanel />
@@ -93,6 +103,117 @@ export const ExpeditionRunControls = memo(function ExpeditionRunControls() {
       <FailureCrisisDialog onExtract={openDialog} />
 
       <ExtractionDialog isOpen={isDialogOpen} onClose={closeDialog} />
+    </div>
+  )
+})
+
+const ExpeditionRunDraftPicker = memo(function ExpeditionRunDraftPicker() {
+  const { t } = useTranslation('ui')
+  const { selectExpeditionDraft } = useGameActions()
+  const offer = useGameSelector(
+    state => state.expedition?.pendingRunDraftOffer ?? null
+  )
+
+  if (!offer) return null
+
+  return (
+    <div
+      className='mb-2 border border-toxic-green bg-charcoal-gray p-2 flex flex-wrap gap-2 items-center text-xs font-mono'
+      data-testid='expedition-run-draft-offer'
+    >
+      <span className='text-[0.625rem] uppercase tracking-widest text-toxic-green font-mono w-full'>
+        {t('ui:expedition.runDraft.title')}
+      </span>
+      <span className='text-[0.625rem] text-ash-gray w-full'>
+        {t('ui:expedition.runDraft.hint')}
+      </span>
+      {offer.candidateTraitIds.map(traitId => (
+        <button
+          key={traitId}
+          type='button'
+          // Only the stored id is dispatched: the reducer generated these
+          // candidates, so the UI must not be able to name a different trait.
+          onClick={() => selectExpeditionDraft(traitId)}
+          data-testid={`expedition-run-draft-${traitId}`}
+          className='min-h-11 px-3 py-2 text-xs font-mono uppercase border border-steel-gray text-ash-gray hover:border-toxic-green transition-colors'
+        >
+          {t(`ui:expedition.runDraft.trait.${traitId}`, {
+            defaultValue: traitId
+          })}
+        </button>
+      ))}
+    </div>
+  )
+})
+
+const ExpeditionObligationsPanel = memo(function ExpeditionObligationsPanel() {
+  const { t } = useTranslation('ui')
+  const { doubleDownExpeditionObligation } = useGameActions()
+  const activeObligations = useGameSelector(
+    state => state.expedition?.activeObligations
+  )
+  const runSeed = useGameSelector(state => state.runSeed)
+  const routeStep = useGameSelector(state => state.expedition?.routeStep ?? 0)
+
+  if (!activeObligations || activeObligations.length === 0) return null
+
+  return (
+    <div
+      className='mb-2 border border-steel-gray bg-charcoal-gray p-2 flex flex-wrap gap-2 items-center text-xs font-mono'
+      data-testid='expedition-active-obligations'
+    >
+      <span className='text-[0.625rem] uppercase tracking-widest text-ash-gray font-mono w-full'>
+        {t('ui:expedition.obligations.title', { defaultValue: 'Obligations' })}
+      </span>
+      {activeObligations.map(item => {
+        if (item.status !== 'active') return null
+        const offer =
+          item.doubleDown === null && runSeed !== undefined && runSeed !== null
+            ? deriveExpeditionDoubleDownOffer(runSeed, item.id, routeStep)
+            : null
+        return (
+          <div
+            key={item.id}
+            className='flex items-center gap-2 border border-steel-gray px-2 py-1 bg-void-black text-star-white'
+          >
+            <span>
+              {(() => {
+                if (item.sourceType === 'brandDeal') {
+                  const deal = BRAND_DEALS.find(d => d.id === item.sourceId)
+                  return deal
+                    ? (getTranslatedBrandDealDisplay(deal, t)?.name ??
+                        item.sourceId)
+                    : item.sourceId
+                }
+                return t(`ui:expedition.contract.${item.sourceId}`, {
+                  defaultValue: item.sourceId
+                })
+              })()}
+              :{' '}
+              {t(`ui:expedition.obligations.status.${item.status}`, {
+                defaultValue: item.status
+              })}
+              {item.doubleDown
+                ? ` [${t('ui:expedition.obligations.doubled', { defaultValue: 'DOUBLED' })}]`
+                : ''}
+            </span>
+            {offer ? (
+              <button
+                type='button'
+                onClick={() =>
+                  doubleDownExpeditionObligation(item.id, offer.acceptedOfferId)
+                }
+                data-testid={`double-down-${item.id}`}
+                className='text-[0.625rem] bg-toxic-green text-void-black font-bold px-2 py-0.5 rounded hover:brightness-110'
+              >
+                {t('ui:expedition.obligations.doubleDown', {
+                  defaultValue: 'DOUBLE DOWN'
+                })}
+              </button>
+            ) : null}
+          </div>
+        )
+      })}
     </div>
   )
 })
