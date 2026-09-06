@@ -126,7 +126,10 @@ import type {
 import { evaluateExpeditionConstraint } from '../../domain/expedition/contracts'
 import { deriveExpeditionDraftCandidates } from '../../domain/expedition/runDrafts'
 import { selectExpeditionRivalForRun } from '../../domain/expedition/rivals'
-import { EXPEDITION_SOCIAL_RESULTS } from '../../domain/expedition/social'
+import {
+  EXPEDITION_SOCIAL_RESULTS,
+  deriveExpeditionSocialResultId
+} from '../../domain/expedition/social'
 import { applyExpeditionPressureDelta } from '../../domain/expedition/pressure'
 import { POST_OPTIONS } from '../../data/postOptions'
 
@@ -1626,8 +1629,18 @@ export const handleRecordExpeditionObligationSignal = (
     }
   })()
   if (canonicalSourceId !== payload.sourceId) return state
-  const signalId = `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
-  if (state.expedition.resolvedObligationSignalIds.includes(signalId))
+  const signalId =
+    payload.signalType === 'gig' && state.lastGigStats
+      ? `gig:${canonicalSourceId}:${payload.expectedRouteStep}:${Math.round(
+          finiteNumberOr(state.lastGigStats.accuracy, 0)
+        )}`
+      : `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
+  const stepSignalPrefix = `${payload.signalType}:${canonicalSourceId}:${payload.expectedRouteStep}`
+  if (
+    state.expedition.resolvedObligationSignalIds.some(
+      id => id === signalId || id.startsWith(`${stepSignalPrefix}:`)
+    )
+  )
     return state
   let changed = false
   let moneyDelta = 0
@@ -1750,7 +1763,21 @@ export const handleRecordExpeditionObligationSignal = (
       return { ...obligation, progressByConstraintId, status, settled }
     }
   )
-  if (!changed) return state
+  const accuracy =
+    payload.signalType === 'gig' && state.lastGigStats
+      ? Math.round(finiteNumberOr(state.lastGigStats.accuracy, 0))
+      : null
+  const gigOutcomeByStep =
+    payload.signalType === 'gig'
+      ? {
+          ...(state.expedition.gigOutcomeByStep ?? {}),
+          [payload.expectedRouteStep]: {
+            venueId: canonicalSourceId,
+            accuracy: accuracy ?? 0
+          }
+        }
+      : state.expedition.gigOutcomeByStep
+
   let nextState: GameState = {
     ...state,
     player: {
@@ -1771,7 +1798,7 @@ export const handleRecordExpeditionObligationSignal = (
     },
     expedition: {
       ...state.expedition,
-      activeObligations,
+      activeObligations: changed ? activeObligations : state.expedition.activeObligations,
       pressure: {
         ...state.expedition.pressure,
         heat: Math.max(
@@ -1782,7 +1809,8 @@ export const handleRecordExpeditionObligationSignal = (
       resolvedObligationSignalIds: [
         ...state.expedition.resolvedObligationSignalIds,
         signalId
-      ]
+      ],
+      gigOutcomeByStep
     }
   }
   if (moneyDelta > 0)
@@ -1966,11 +1994,20 @@ export const handleResolveExpeditionSocialResult = (
     state.expedition.lastSocialResult?.resolvedAtRouteStep ===
       state.expedition.routeStep ||
     typeof payload.postOptionId !== 'string' ||
-    payload.postOptionId.length === 0 ||
-    !POST_OPTIONS.some(opt => opt.id === payload.postOptionId)
+    payload.postOptionId.length === 0
   )
     return state
-  if (!state.lastGigStats)
+  if (
+    !state.expedition.pendingSocialSettlement ||
+    state.expedition.pendingSocialSettlement.routeStep !==
+      state.expedition.routeStep
+  )
+    return state
+  const postOption = POST_OPTIONS.find(opt => opt.id === payload.postOptionId)
+  if (!postOption) return state
+  const expectedResultId = deriveExpeditionSocialResultId(postOption)
+  if (payload.resultId !== expectedResultId) return state
+  if (!state.lastGigStats || state.lastGigStats.failed === true)
     return state
   const result = EXPEDITION_SOCIAL_RESULTS[payload.resultId]
   if (!result || (result.requiresRival && !state.rivalBand)) return state
@@ -1994,6 +2031,7 @@ export const handleResolveExpeditionSocialResult = (
     },
     social: {
       ...state.social,
+      pendingSocialOptionId: null,
       brandReputation: {
         ...state.social.brandReputation,
         NEUTRAL: Math.max(
@@ -2019,6 +2057,7 @@ export const handleResolveExpeditionSocialResult = (
     expedition: {
       ...state.expedition,
       pressure,
+      pendingSocialSettlement: null,
       lastSocialResult: {
         id: proofId,
         postOptionId: payload.postOptionId,

@@ -364,6 +364,7 @@ export const calculatePostGigStateUpdates = (
   })
 
   const updatedSocial: Partial<GameState['social']> = {
+    pendingSocialOptionId: option.id,
     [result.platform]: Math.max(
       0,
       finiteNumberOr(social[result.platform], 0) + totalFollowers

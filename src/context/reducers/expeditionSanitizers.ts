@@ -28,6 +28,8 @@ import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEvent
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { POST_OPTIONS } from '../../data/postOptions'
+import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -542,7 +544,8 @@ const sanitizeExpeditionTechnicalCondition = (
  */
 export const sanitizeExpeditionState = (
   value: unknown,
-  runSeed?: number
+  runSeed?: number,
+  lastGigStats?: unknown
 ): ExpeditionState => {
   const fallback = createDefaultExpeditionState()
   if (!isLooseRecord(value)) return fallback
@@ -781,7 +784,18 @@ export const sanitizeExpeditionState = (
     finaleType: sanitizeFinaleType(value.finaleType),
     lastSocialResult: sanitizeSocialResultProof(
       value.lastSocialResult,
+      readCount(value, 'routeStep', 0),
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    pendingSocialSettlement: sanitizePendingSocialSettlement(
+      value.pendingSocialSettlement,
       readCount(value, 'routeStep', 0)
+    ),
+    gigOutcomeByStep: sanitizeGigOutcomeMap(
+      value.gigOutcomeByStep,
+      lastGigStats,
+      readCount(value, 'routeStep', 0),
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
     ),
     activeObligations: sanitizeActiveObligations(
       value.activeObligations,
@@ -794,7 +808,14 @@ export const sanitizeExpeditionState = (
       validVisitedPath,
       sanitizeSocialResultProof(
         value.lastSocialResult,
-        readCount(value, 'routeStep', 0)
+        readCount(value, 'routeStep', 0),
+        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+      ),
+      sanitizeGigOutcomeMap(
+        value.gigOutcomeByStep,
+        lastGigStats,
+        readCount(value, 'routeStep', 0),
+        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
       )
     ),
     ...(value.cargo !== undefined
@@ -877,6 +898,60 @@ const sanitizeRunDraftTraitIds = (
   ].slice(0, 2)
 }
 
+const sanitizeGigOutcomeMap = (
+  value: unknown,
+  lastGigStats?: unknown,
+  routeStep?: number,
+  resolvedObligationSignalIds: string[] = []
+): Record<number, { venueId: string; accuracy: number }> => {
+  const result: Record<number, { venueId: string; accuracy: number }> =
+    Object.create(null)
+  if (!isLooseRecord(value)) return result
+  for (const [key, entry] of Object.entries(value)) {
+    const step = Number(key)
+    if (!Number.isInteger(step) || step < 0) continue
+    if (!isLooseRecord(entry)) continue
+    const venueId = readString(entry, 'venueId')
+    const accuracy = readCount(entry, 'accuracy', -1)
+    if (!venueId || accuracy < 0 || accuracy > 100) continue
+
+    // Validate against canonical lastGigStats if step matches current routeStep
+    if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step === routeStep &&
+      isLooseRecord(lastGigStats)
+    ) {
+      const canonicalAccuracy = isFiniteNumber(lastGigStats.accuracy)
+        ? lastGigStats.accuracy
+        : null
+      if (
+        canonicalAccuracy === null ||
+        lastGigStats.failed === true ||
+        Math.round(canonicalAccuracy) !== Math.round(accuracy)
+      ) {
+        continue
+      }
+    } else if (
+      isFiniteNumber(step) &&
+      isFiniteNumber(routeStep) &&
+      step === routeStep &&
+      !lastGigStats
+    ) {
+      // Current step outcome present in save but no canonical lastGigStats evidence -> fail closed
+      continue
+    } else if (isFiniteNumber(step) && isFiniteNumber(routeStep) && step < routeStep) {
+      // For historical steps, verify against resolvedObligationSignalIds signal proof: `gig:<venueId>:<step>:<accuracy>`
+      const expectedSignal = `gig:${venueId}:${step}:${Math.round(accuracy)}`
+      const hasProof = resolvedObligationSignalIds.includes(expectedSignal)
+      if (!hasProof) continue
+    }
+
+    result[step] = { venueId, accuracy }
+  }
+  return result
+}
+
 const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
   value === 'regional_headliner' ||
   value === 'corporate_showcase' ||
@@ -887,9 +962,21 @@ const sanitizeFinaleType = (value: unknown): ExpeditionState['finaleType'] =>
     ? value
     : null
 
-const sanitizeSocialResultProof = (
+const sanitizePendingSocialSettlement = (
   value: unknown,
   routeStep: number
+): ExpeditionState['pendingSocialSettlement'] => {
+  if (!isLooseRecord(value)) return null
+  const step = readCount(value, 'routeStep', -1)
+  if (step !== routeStep) return null
+  const gigId = readString(value, 'gigId')
+  return { routeStep: step, gigId }
+}
+
+const sanitizeSocialResultProof = (
+  value: unknown,
+  routeStep: number,
+  resolvedObligationSignalIds: string[] = []
 ): ExpeditionState['lastSocialResult'] => {
   if (
     !isLooseRecord(value) ||
@@ -903,8 +990,18 @@ const sanitizeSocialResultProof = (
     typeof value.intelConsumed !== 'boolean'
   )
     return null
+  const postOption = POST_OPTIONS.find(opt => opt.id === value.postOptionId)
+  if (!postOption) return null
+  const expectedResultId = deriveExpeditionSocialResultId(postOption)
+  if (value.resultId !== expectedResultId) return null
   const expectedId = `${value.postOptionId}:${value.resultId}:${routeStep}`
   if (value.id !== expectedId) return null
+  const hasSignalProof = resolvedObligationSignalIds.some(
+    signalId =>
+      signalId === `social_post:${expectedId}` ||
+      signalId === `social_post:${expectedId}:${routeStep}`
+  )
+  if (!hasSignalProof) return null
   return {
     id: expectedId,
     postOptionId: value.postOptionId,
@@ -923,32 +1020,36 @@ const sanitizeActiveObligations = (
   preparedMap: import('../../types/expedition').ExpeditionMap | null,
   resolvedObligationSignalIds: string[] = [],
   validVisitedPath: string[] = [],
-  lastSocialResult: ExpeditionState['lastSocialResult'] = null
+  lastSocialResult: ExpeditionState['lastSocialResult'] = null,
+  gigOutcomeByStep: Record<number, { venueId: string; accuracy: number }> = {}
 ): ExpeditionState['activeObligations'] => {
   if (!Array.isArray(value) || !runId || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['activeObligations'] = []
   const seen = new Set<string>()
-  const validGigSignalCount = resolvedObligationSignalIds.filter(signalId => {
-    if (!signalId.startsWith('gig:')) return false
-    const parts = signalId.split(':')
-    if (parts.length !== 3) return false
-    const [, sourceId, stepStr] = parts
-    if (!sourceId) return false
-    const step = Number(stepStr)
-    if (!Number.isInteger(step) || step < 0 || step >= validVisitedPath.length)
-      return false
-    const expNodeId = validVisitedPath[step]
-    if (!expNodeId || !preparedMap) return false
-    const node = preparedMap.nodes[expNodeId]
-    const metaNode = preparedMap.meta[expNodeId]
-    const isGigClass =
-      metaNode &&
-      (metaNode.nodeClass === 'CLUB_GIG' ||
-        metaNode.nodeClass === 'FESTIVAL' ||
-        metaNode.nodeClass === 'FINALE')
-    if (!isGigClass) return false
-    return sourceId === node?.venueId || sourceId === expNodeId
-  }).length
+
+  const countQualifyingGigSignals = (minAccuracy: number): number => {
+    let qualifyingCount = 0
+    for (let step = 0; step < validVisitedPath.length; step++) {
+      const expNodeId = validVisitedPath[step]
+      if (!expNodeId || !preparedMap) continue
+      const metaNode = preparedMap.meta[expNodeId]
+      const isGigClass =
+        metaNode &&
+        (metaNode.nodeClass === 'CLUB_GIG' ||
+          metaNode.nodeClass === 'FESTIVAL' ||
+          metaNode.nodeClass === 'FINALE')
+      if (!isGigClass) continue
+      const outcome = gigOutcomeByStep[step]
+      if (!outcome) continue
+      const node = preparedMap.nodes[expNodeId]
+      if (outcome.venueId !== node?.venueId && outcome.venueId !== expNodeId)
+        continue
+      if (outcome.accuracy >= minAccuracy) {
+        qualifyingCount += 1
+      }
+    }
+    return qualifyingCount
+  }
 
   const validSocialSignalCount = resolvedObligationSignalIds.filter(
     signalId => {
@@ -1021,7 +1122,10 @@ const sanitizeActiveObligations = (
       let canonicalValue = progress.value
       let canonicalSatisfied = progress.satisfied
       if (constraint.kind === 'gig_accuracy_count') {
-        canonicalValue = Math.min(progress.value, validGigSignalCount)
+        const qualifyingCount = countQualifyingGigSignals(
+          constraint.minAccuracy
+        )
+        canonicalValue = Math.min(progress.value, qualifyingCount)
         canonicalSatisfied = canonicalValue >= constraint.requiredCount
       } else if (constraint.kind === 'visit_node') {
         const visited = validVisitedPath.includes(constraint.targetNodeId)

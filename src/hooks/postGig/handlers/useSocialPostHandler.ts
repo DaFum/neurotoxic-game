@@ -6,25 +6,7 @@ import { calculatePostGigStateUpdates } from '../../../utils/postGig'
 import { secureRandom } from '../../../utils/crypto'
 import { applySocialPostResult } from './socialPostHandlerUtils'
 import type { HandlerDispatchers } from './types'
-import type { ExpeditionSocialResultId } from '../../../domain/expedition/social'
-
-const deriveExpeditionSocialResultId = (
-  option: SocialPostOption
-): ExpeditionSocialResultId => {
-  const custom = (
-    option as { expeditionSocialResultId?: ExpeditionSocialResultId }
-  ).expeditionSocialResultId
-  if (custom) return custom
-  const category = (option.category ?? '').toLowerCase()
-  if (category === 'commercial') return 'monetize'
-  if (category === 'drama') {
-    if (option.id.includes('weaponize') || option.id.includes('rival')) {
-      return 'weaponize'
-    }
-    return 'suppress'
-  }
-  return 'push'
-}
+import { deriveExpeditionSocialResultId } from '../../../domain/expedition/social'
 
 /** Props for {@link useSocialPostHandler}: state slices, gig context, the processing guard, translator, and dispatchers. */
 export interface UseSocialPostHandlerProps {
