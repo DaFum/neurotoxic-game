@@ -25,7 +25,28 @@ export interface ExpeditionPressureEvent {
     'authority' | 'crew' | 'contract' | 'rival' | 'social' | 'technical'
   baseWeight: number
   negative: boolean
+  /**
+   * Whether the run is in a state this event can happen in at all.
+   *
+   * @remarks
+   * Task 8 has the Director filter eligibility before it samples, so the rule
+   * lives on the registry entry the Director reads rather than only on the
+   * authored event. Otherwise the Director can select a Rival ambush on a run
+   * with no Rival and the authored event then refuses itself, leaving the step
+   * silently empty.
+   */
+  isEligible?: (state: GameState) => boolean
 }
+
+/**
+ * Narrows an untrusted value to a known pressure-event id.
+ *
+ * @param value - Raw candidate, typically from a save.
+ * @returns True when the id is in the canonical registry.
+ */
+export const isExpeditionPressureEventId = (value: unknown): value is string =>
+  typeof value === 'string' &&
+  EXPEDITION_PRESSURE_EVENTS.some(event => event.id === value)
 const bounded = (value: unknown): number =>
   Math.max(0, Math.min(100, finiteNumberOr(value, 0)))
 export const derivePressureDirectorContext = (
@@ -72,10 +93,10 @@ const EXPEDITION_PRESSURE_EVENT_POOL_RATE = 0.4 as const
  * @returns Each event with the weight the Director gives it right now.
  *
  * @remarks
- * The single weighting formula. {@link selectPressureEvent} samples from it and
- * {@link getExpeditionPressureEventChance} normalizes it into an event
- * `chance`, so the pressure a run is under shapes the draw and the surfaced
- * event identically rather than through two drifting copies.
+ * The single weighting formula behind the run's one pressure draw:
+ * {@link selectPressureEvent} samples from it, and the authored events are
+ * gated on the id it produced, so the pressure a run is under shapes both the
+ * draw and the surfaced event rather than through two drifting copies.
  */
 const weighExpeditionPressureEvents = (
   state: GameState,
@@ -176,56 +197,80 @@ export const selectPressureEvent = (
  * steps read, and the Underground invite is what turns high Heat into the
  * run-scoped route opportunity rather than only a penalty.
  */
-/**
- * The share of eligibility one pressure event draws right now.
- *
- * @param state - Current game state.
- * @param eventId - Registry id of the event asking.
- * @param events - Candidate pool; defaults to the canonical registry.
- * @returns A probability in `0..1`, and `0` outside an active run.
- *
- * @remarks
- * This is how the Director actually reaches the player: an authored event
- * names this as its `chance`, so the canonical event pipeline surfaces it and
- * the canonical option/result owner applies the consequence. Probability is
- * state-derived here rather than in a condition, which is what
- * `src/data/events/AGENTS.md` requires.
- */
-export const getExpeditionPressureEventChance = (
-  state: GameState,
-  eventId: string,
-  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS
-): number => {
-  if (state.expedition?.status !== 'active') return 0
-  const weighted = weighExpeditionPressureEvents(state, events)
-  const total = weighted.reduce((sum, item) => sum + item.weight, 0)
-  if (total <= 0) return 0
-  const match = weighted.find(item => item.event.id === eventId)
-  if (!match) return 0
-  return Math.max(
-    0,
-    Math.min(1, (match.weight / total) * EXPEDITION_PRESSURE_EVENT_POOL_RATE)
-  )
-}
-
 export const resolveExpeditionPressureDirectorStep = (
   state: GameState,
-  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS,
-  map: ExpeditionMap | null = null
+  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS
 ): GameState['expedition']['pressure'] => {
   const pressure = state.expedition.pressure
   if (state.expedition.status !== 'active') return pressure
-  const event = selectPressureEvent(state, events)
+  // Eligibility first, exactly as Task 8 orders it: an event the run cannot
+  // have must not consume the step's single draw.
+  const eligible = events.filter(event => event.isEligible?.(state) ?? true)
+  if (eligible.length === 0) return pressure
+
+  // One roll decides whether this step has a pressure event at all, so the
+  // pool stays as rare as its neighbours; the weighting then decides which.
+  const routeStep = state.expedition.routeStep
+  const gate = mulberry32(
+    Number.parseInt(
+      hashExpeditionRoute(`${state.runSeed}:pressure_gate:${routeStep}`),
+      16
+    )
+  )()
+  if (gate > EXPEDITION_PRESSURE_EVENT_POOL_RATE) return pressure
+
+  const event = selectPressureEvent(state, eligible)
+  if (!event) return pressure
+  // Selection only. Relief and the Underground opportunity are consequences of
+  // an event the player actually resolved, so they are applied by
+  // `applyExpeditionPressureEventResolution` rather than here - otherwise the
+  // run could open two steps of relief for a show it never saw.
+  return { ...pressure, pendingDirectorEventId: event.id }
+}
+
+/**
+ * Applies the consequences of the Director event the player just resolved.
+ *
+ * @param state - Current game state.
+ * @param resolvedEventId - Id of the event whose option was resolved.
+ * @param map - Route used to place an Underground detour.
+ * @returns The next pressure slice, or the identical reference when the id is
+ * not the pending Director event.
+ *
+ * @remarks
+ * The other half of the single draw: only the event the canonical event
+ * lifecycle actually surfaced and resolved may open a relief window or a route
+ * opportunity, and it may do so once, because resolving clears the pending id.
+ */
+export const applyExpeditionPressureEventResolution = (
+  state: GameState,
+  resolvedEventId: unknown,
+  map: ExpeditionMap | null = null
+): GameState['expedition']['pressure'] => {
+  const pressure = state.expedition.pressure
+  if (
+    state.expedition.status !== 'active' ||
+    typeof resolvedEventId !== 'string' ||
+    pressure.pendingDirectorEventId !== resolvedEventId
+  ) {
+    return pressure
+  }
+  const event = EXPEDITION_PRESSURE_EVENTS.find(
+    entry => entry.id === resolvedEventId
+  )
   if (!event) return pressure
   const routeStep = state.expedition.routeStep
+
+  const consumed = { ...pressure, pendingDirectorEventId: null }
   const next =
     event.severity === 'severe' && event.negative
       ? {
-          ...pressure,
+          ...consumed,
           lastSevereEventId: event.id,
           severeReliefUntilRouteStep: routeStep + 2
         }
-      : pressure
+      : consumed
+
   if (
     event.id !== 'expedition_underground_invite' ||
     pressure.heat < 60 ||
@@ -234,8 +279,6 @@ export const resolveExpeditionPressureDirectorStep = (
     map === null
   )
     return next
-  // The opportunity names where the run may now *go*, not where it stands: an
-  // invite that opens no new destination is not an opportunity.
   const targetNodeId = deriveExpeditionOverlayTarget(
     state,
     map,

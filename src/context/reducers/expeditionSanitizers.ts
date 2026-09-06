@@ -35,6 +35,7 @@ import {
   getExpeditionEventResultEffect,
   isExpeditionEventResultId
 } from '../../domain/expedition/eventDeltas'
+import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -965,6 +966,11 @@ const sanitizeExpeditionPressure = (
       typeof value.lastSevereEventId === 'string'
         ? value.lastSevereEventId
         : null,
+    pendingDirectorEventId: isExpeditionPressureEventId(
+      value.pendingDirectorEventId
+    )
+      ? value.pendingDirectorEventId
+      : null,
     temporaryRouteOpportunity: sanitizeTemporaryRouteOpportunity(
       value.temporaryRouteOpportunity,
       runId,

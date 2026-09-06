@@ -258,6 +258,7 @@ const buildPopulatedState = () => {
       crowdHype: 0,
       severeReliefUntilRouteStep: null,
       lastSevereEventId: null,
+      pendingDirectorEventId: null,
       temporaryRouteOpportunity: null
     },
     preparedSponsorOffers: [],

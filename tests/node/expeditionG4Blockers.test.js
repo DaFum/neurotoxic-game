@@ -25,13 +25,13 @@ import {
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
 import {
+  applyExpeditionPressureEventResolution,
   resolveExpeditionPressureDirectorStep,
   selectPressureEvent
 } from '../../src/domain/expedition/pressure.ts'
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
-import { getExpeditionPressureEventChance } from '../../src/domain/expedition/pressure.ts'
 import { EXPEDITION_PRESSURE_EVENTS_DB } from '../../src/data/events/expeditionPressure.ts'
 import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
 import { isExpeditionEventResultId } from '../../src/domain/expedition/eventDeltas.ts'
@@ -847,7 +847,7 @@ test('sanitizeExpeditionState refuses forged terminal-contract progress', () => 
   assert.equal(breached.activeObligations[0].status, 'failed')
 })
 
-test('a high-Heat Underground invite opens a route the run can actually travel', () => {
+test('the Underground detour opens only once the player resolves the invite', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
@@ -862,82 +862,148 @@ test('a high-Heat Underground invite opens a route the run can actually travel',
     ...started,
     expedition: {
       ...started.expedition,
-      pressure: { ...started.expedition.pressure, heat: 70 }
+      pressure: {
+        ...started.expedition.pressure,
+        heat: 70,
+        pendingDirectorEventId: 'expedition_underground_invite'
+      }
     }
   }
-  const invite = [
-    {
-      id: 'expedition_underground_invite',
-      severity: 'normal',
-      pressureFamily: 'social',
-      baseWeight: 5,
-      negative: false
-    }
-  ]
 
-  const opened = resolveExpeditionPressureDirectorStep(hot, invite, map)
-  const opportunity = opened.temporaryRouteOpportunity
-  assert.ok(opportunity, 'Heat >= 60 must open an Underground opportunity')
-  assert.equal(opportunity.subtype, 'UNDERGROUND_MARKET')
-  assert.equal(
-    opportunity.id,
-    `UNDERGROUND_MARKET:${started.expedition.runId}:0`
+  // Selection alone changes nothing the player can act on.
+  assert.equal(hot.expedition.pressure.temporaryRouteOpportunity, null)
+
+  const resolvedPressure = applyExpeditionPressureEventResolution(
+    hot,
+    'expedition_underground_invite',
+    map
   )
-
-  // It names a real destination one step deeper.
-  const from = started.expedition.visitedNodeIds.at(-1)
+  const opportunity = resolvedPressure.temporaryRouteOpportunity
+  assert.ok(opportunity, 'resolving the invite must open the detour')
+  assert.equal(opportunity.subtype, 'UNDERGROUND_MARKET')
   assert.equal(map.meta[opportunity.targetNodeId]?.routeStep, 1)
+  // Resolving consumes the pick, so it cannot open a second time.
+  assert.equal(resolvedPressure.pendingDirectorEventId, null)
 
   const withOpportunity = {
     ...hot,
-    expedition: { ...hot.expedition, pressure: opened }
+    expedition: { ...hot.expedition, pressure: resolvedPressure }
   }
+  assert.strictEqual(
+    applyExpeditionPressureEventResolution(
+      withOpportunity,
+      'expedition_underground_invite',
+      map
+    ),
+    resolvedPressure
+  )
 
-  // The overlay makes it traversable, and the base map stays untouched.
+  // The overlay makes it traversable; the base map stays untouched.
+  const from = started.expedition.visitedNodeIds.at(-1)
   const effective = getEffectiveExpeditionRoute(withOpportunity, map)
   assert.ok(
     effective.connections.some(
       edge => edge.from === from && edge.to === opportunity.targetNodeId
     )
   )
-  assert.equal(
-    effective.subtypeByNodeId[opportunity.targetNodeId],
-    'UNDERGROUND_MARKET'
-  )
   assert.equal(map.meta[opportunity.targetNodeId].specialSubtype ?? null, null)
-
-  // Travelling it commits and spends the opportunity.
   const travelled = applyExpeditionRouteAdvance(
     withOpportunity,
     opportunity.targetNodeId
   )
-  assert.notStrictEqual(travelled, withOpportunity)
   assert.equal(travelled.player.currentNodeId, opportunity.targetNodeId)
-  // Spent by travelling it, so it does not follow the run down the route.
   assert.equal(travelled.expedition.pressure.temporaryRouteOpportunity, null)
 
-  // Below the Heat gate nothing opens, and a severe negative event opens the
-  // relief window instead.
+  // Below the Heat gate resolving the same invite opens nothing.
+  const cold = {
+    ...hot,
+    expedition: {
+      ...hot.expedition,
+      pressure: { ...hot.expedition.pressure, heat: 59 }
+    }
+  }
   assert.equal(
-    resolveExpeditionPressureDirectorStep(started, invite, map)
-      .temporaryRouteOpportunity,
+    applyExpeditionPressureEventResolution(
+      cold,
+      'expedition_underground_invite',
+      map
+    ).temporaryRouteOpportunity,
     null
   )
-  const severe = resolveExpeditionPressureDirectorStep(
-    hot,
-    [
-      {
-        id: 'expedition_technical_collapse',
-        severity: 'severe',
-        pressureFamily: 'technical',
-        baseWeight: 5,
-        negative: true
+})
+
+test('severe relief follows the resolved event, never the selection alone', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const selected = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      pressure: {
+        ...started.expedition.pressure,
+        pendingDirectorEventId: 'expedition_technical_collapse'
       }
-    ],
-    map
+    }
+  }
+  // A run that never resolved the event gets no anti-frustration relief for it.
+  assert.equal(selected.expedition.pressure.severeReliefUntilRouteStep, null)
+  assert.equal(selected.expedition.pressure.lastSevereEventId, null)
+
+  const resolved = applyExpeditionPressureEventResolution(
+    selected,
+    'expedition_technical_collapse'
   )
-  assert.equal(severe.lastSevereEventId, 'expedition_technical_collapse')
-  assert.equal(severe.severeReliefUntilRouteStep, 2)
+  assert.equal(resolved.lastSevereEventId, 'expedition_technical_collapse')
+  assert.equal(resolved.severeReliefUntilRouteStep, 2)
+  assert.equal(resolved.pendingDirectorEventId, null)
+
+  // An id the Director did not select resolves nothing.
+  assert.strictEqual(
+    applyExpeditionPressureEventResolution(
+      selected,
+      'expedition_authority_patrol'
+    ),
+    selected.expedition.pressure
+  )
+})
+
+test('the Director never selects an event the run is not eligible for', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  const ambush = EXPEDITION_PRESSURE_EVENTS.filter(
+    event => event.id === 'expedition_rival_ambush'
+  )
+  assert.equal(ambush.length, 1)
+
+  // With a Rival the pool is eligible; without one the Director must not spend
+  // the step on an event the authored condition would then refuse.
+  const withoutRival = { ...started, rivalBand: null }
+  for (let step = 0; step < 12; step++) {
+    const at = state => ({
+      ...state,
+      expedition: { ...state.expedition, routeStep: step }
+    })
+    assert.notEqual(
+      resolveExpeditionPressureDirectorStep(at(withoutRival), ambush)
+        .pendingDirectorEventId,
+      'expedition_rival_ambush'
+    )
+  }
+  assert.ok(started.rivalBand)
 })
 
 test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
@@ -1396,7 +1462,7 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
   assert.equal(selectExpeditionFinaleType({ nemesisLevel: 4 }), 'rival_battle')
 })
 
-test('every Director event is a real event whose chance the Director owns', () => {
+test('the Director and the authored events share one draw', () => {
   const prepared = preparedState()
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
@@ -1407,8 +1473,8 @@ test('every Director event is a real event whose chance the Director owns', () =
     }
   })
 
-  // Registry and event definitions are the same four ids, so the Director's
-  // weighting and the event the player sees cannot drift apart.
+  // Registry and authored definitions are the same four ids, so the pick and
+  // the surfaced event cannot drift apart.
   assert.deepEqual(
     EXPEDITION_PRESSURE_EVENTS_DB.map(event => event.id).sort(),
     EXPEDITION_PRESSURE_EVENTS.map(event => event.id).sort()
@@ -1421,27 +1487,32 @@ test('every Director event is a real event whose chance the Director owns', () =
       assert.equal(option.effect.type, 'expedition')
       assert.ok(isExpeditionEventResultId(option.effect.result))
     }
-    // Probability is state-derived, and zero outside an active run.
-    assert.equal(typeof event.chance, 'function')
-    assert.equal(event.chance(prepared), 0)
-    const active = event.chance(started)
-    assert.ok(active > 0 && active < 1, `${event.id} chance out of range`)
+    // No second probability: the Director already decided, so the condition is
+    // simply "am I the pick".
+    assert.equal(event.chance, 1)
     assert.equal(event.condition(prepared), false)
-  }
-
-  // High Heat shifts the pool toward the Authority family rather than simply
-  // making every pressure event more likely.
-  const hot = {
-    ...started,
-    expedition: {
-      ...started.expedition,
-      pressure: { ...started.expedition.pressure, heat: 90 }
+    assert.equal(event.condition(started), false)
+    const selected = {
+      ...started,
+      expedition: {
+        ...started.expedition,
+        pressure: {
+          ...started.expedition.pressure,
+          pendingDirectorEventId: event.id
+        }
+      }
+    }
+    assert.equal(
+      event.condition(selected),
+      true,
+      `${event.id} must surface when it is the Director's pick`
+    )
+    // And no other authored event may surface on that same step.
+    for (const other of EXPEDITION_PRESSURE_EVENTS_DB) {
+      if (other.id === event.id) continue
+      assert.equal(other.condition(selected), false)
     }
   }
-  assert.ok(
-    getExpeditionPressureEventChance(hot, 'expedition_authority_patrol') >
-      getExpeditionPressureEventChance(started, 'expedition_authority_patrol')
-  )
 })
 
 test('the Expedition quest families are registered against real events', () => {

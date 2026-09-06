@@ -133,6 +133,7 @@ import {
 } from '../../domain/expedition/social'
 import {
   applyExpeditionPressureDelta,
+  applyExpeditionPressureEventResolution,
   resolveExpeditionPressureDirectorStep
 } from '../../domain/expedition/pressure'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
@@ -569,12 +570,9 @@ export const applyExpeditionRouteAdvance = (
   // One Director step per route step, composed here rather than dispatched:
   // arriving a node deeper is the canonical occasion for it, and selection is
   // seeded from `runSeed` plus the new route step, so a replayed advance picks
-  // the same event instead of rolling a second one.
-  const directorPressure = resolveExpeditionPressureDirectorStep(
-    arrived,
-    undefined,
-    map
-  )
+  // the same event instead of rolling a second one. This *selects* only - the
+  // consequences belong to the event the player actually resolves.
+  const directorPressure = resolveExpeditionPressureDirectorStep(arrived)
   const advanced: GameState =
     directorPressure === arrived.expedition.pressure
       ? arrived
@@ -1707,19 +1705,46 @@ export const handleApplyExpeditionEventDelta = (
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
 
+  // Both consequences of this resolution read the run's route, so build it once.
+  const eventRewardLoadout = resolved.expedition.loadout
+  const eventRewardMap = eventRewardLoadout
+    ? buildExpeditionMap(
+        resolved.runSeed,
+        eventRewardLoadout.tourTypeId,
+        eventRewardLoadout.regionId,
+        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      )
+    : null
+
+  // The other half of the Director's single draw: a relief window or an
+  // Underground detour is a consequence of the event the player just resolved,
+  // never of the selection alone. Resolving consumes the pending id, so it
+  // applies exactly once.
+  const resolvedPressure = applyExpeditionPressureEventResolution(
+    resolved,
+    payload.sourceEventId,
+    eventRewardMap
+  )
+  const withDirector: GameState =
+    resolvedPressure === resolved.expedition.pressure
+      ? resolved
+      : {
+          ...resolved,
+          expedition: { ...resolved.expedition, pressure: resolvedPressure }
+        }
+
   // The event's own rare enters the G1 ledger here, once the deltas above have
   // actually been applied. The proof is banked first so the shared resolver can
   // prove the source the same way every other family is proven, and a replayed
   // dispatch collides with the derived entry id instead of paying twice.
-  const eventRewardLoadout = resolved.expedition.loadout
   if (
     typeof payload.sourceEventId !== 'string' ||
     typeof payload.sourceOptionId !== 'string' ||
-    !eventRewardLoadout
+    !eventRewardMap
   ) {
-    return resolved
+    return withDirector
   }
-  let withRewards = resolved
+  let withRewards = withDirector
   for (const resultId of resultIds) {
     const rareRewardId = getExpeditionEventResultEffect(resultId).rareRewardId
     if (rareRewardId === undefined) continue
@@ -1745,12 +1770,7 @@ export const handleApplyExpeditionEventDelta = (
         sourceId,
         expectedRouteStep: proven.expedition.routeStep
       },
-      buildExpeditionMap(
-        proven.runSeed,
-        eventRewardLoadout.tourTypeId,
-        eventRewardLoadout.regionId,
-        NEUTRAL_EXPEDITION_ROUTE_PROFILE
-      )
+      eventRewardMap
     )
     if (!resolution.ok) continue
     withRewards = {

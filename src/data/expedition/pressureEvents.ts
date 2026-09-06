@@ -1,3 +1,4 @@
+import type { GameState } from '../../types'
 import type { ExpeditionPressureEvent } from '../../domain/expedition/pressure'
 export const EXPEDITION_PRESSURE_EVENTS: readonly ExpeditionPressureEvent[] = [
   {
@@ -26,6 +27,9 @@ export const EXPEDITION_PRESSURE_EVENTS: readonly ExpeditionPressureEvent[] = [
     severity: 'severe',
     pressureFamily: 'rival',
     baseWeight: 3,
-    negative: true
+    negative: true,
+    // No Rival on the road, no ambush - the Director must not spend the step
+    // on an event that would refuse itself.
+    isEligible: (state: GameState): boolean => Boolean(state.rivalBand)
   }
 ]
