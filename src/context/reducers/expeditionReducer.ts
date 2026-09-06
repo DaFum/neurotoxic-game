@@ -511,6 +511,11 @@ export const applyExpeditionRouteAdvance = (
   // unrelated Career travel path.
   if (state.expedition?.status !== 'active') return state
   if (typeof nodeId !== 'string' || isForbiddenKey(nodeId)) return state
+  // A pending Run Draft is this run's decision and the route waits for it.
+  // Without this the offer strands: SELECT requires the offer's own route step,
+  // so travelling first rejects every later SELECT, while the non-null offer
+  // rejects every later OFFER - the Draft system dies for the rest of the run.
+  if (state.expedition.pendingRunDraftOffer !== null) return state
 
   const loadout = state.expedition.loadout
   if (!loadout) return state
@@ -932,8 +937,14 @@ export const handleCompleteExpedition = (
     const record = state.career.rivalsById[rivalId]
     // One Nemesis step per Rival per run, whichever canonical outcome gets
     // there first: a run that already advanced through a settled Rival Social
-    // result does not advance again on the Finale.
-    if (record && record.history.lastSeenRunId !== state.expedition.runId) {
+    // result does not advance again on the Finale. The guard is
+    // `lastNemesisAdvanceRunId`, not `lastSeenRunId` - START stamps the latter
+    // with this run's id when it selects the Rival, so it can never gate an
+    // advance inside the run it belongs to.
+    if (
+      record &&
+      record.history.lastNemesisAdvanceRunId !== state.expedition.runId
+    ) {
       const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
         0 | 1 | 2 | 3 | 4
       completionState = {
@@ -949,7 +960,8 @@ export const handleCompleteExpedition = (
                 relationship: nemesisLevel >= 4 ? 'nemesis' : 'rival',
                 nemesisLevel,
                 lastOutcome: 'hostile_win',
-                lastSeenRunId: state.expedition.runId
+                lastSeenRunId: state.expedition.runId,
+                lastNemesisAdvanceRunId: state.expedition.runId
               }
             }
           }
@@ -2135,17 +2147,21 @@ export const handleResolveExpeditionSocialResult = (
   const proofId = `${payload.postOptionId}:${payload.resultId}:${state.expedition.routeStep}`
 
   // A settled Rival-flavoured result is the canonical Rival encounter, and the
-  // only production path that advances the persistent record. `lastSeenRunId`
-  // is the per-run guard: one Nemesis step per Rival per run keeps the ladder
-  // a cross-run relationship instead of something a single tour can farm by
-  // posting repeatedly.
+  // first production path that advances the persistent record.
+  // `lastNemesisAdvanceRunId` is the per-run guard: one Nemesis step per Rival
+  // per run keeps the ladder a cross-run relationship instead of something a
+  // single tour can farm by posting repeatedly. It is deliberately not
+  // `lastSeenRunId`, which START already set to this run's id.
   const rivalProgression = (() => {
     if (!result.requiresRival || !state.rivalBand) return null
     const rivalId = state.rivalBand.id
     const record = state.career.rivalsById[rivalId]
     if (!record) return null
     const runId = state.expedition.runId
-    if (typeof runId !== 'string' || record.history.lastSeenRunId === runId)
+    if (
+      typeof runId !== 'string' ||
+      record.history.lastNemesisAdvanceRunId === runId
+    )
       return null
     const nemesisLevel = Math.min(4, record.history.nemesisLevel + 1) as
       0 | 1 | 2 | 3 | 4
@@ -2166,7 +2182,8 @@ export const handleResolveExpeditionSocialResult = (
               encounterCount: record.history.encounterCount + 1,
               lastOutcome:
                 'hostile_win' as CareerRivalRecord['history']['lastOutcome'],
-              lastSeenRunId: runId
+              lastSeenRunId: runId,
+              lastNemesisAdvanceRunId: runId
             }
           }
         }

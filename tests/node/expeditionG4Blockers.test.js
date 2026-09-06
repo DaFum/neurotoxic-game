@@ -18,6 +18,7 @@ import {
 import { getAvailableAuthoritySafeExits } from '../../src/domain/expedition/authority.ts'
 import {
   preparedState,
+  startedState,
   fixtureLoadout,
   fixtureMap,
   firstExtractionRouteStep,
@@ -1241,8 +1242,8 @@ test('Nemesis advances at most one tier per run and L4 opens the Rival Finale', 
     'rival_battle'
   )
 
-  // The per-run guard is `lastSeenRunId`: a run that already advanced this
-  // Rival cannot advance it again, whichever canonical outcome gets there.
+  // The per-run guard is `lastNemesisAdvanceRunId`: a run that already advanced
+  // this Rival cannot advance it again, whichever canonical outcome gets there.
   const alreadyAdvanced = {
     ...started,
     career: {
@@ -1254,7 +1255,7 @@ test('Nemesis advances at most one tier per run and L4 opens the Rival Finale', 
           history: {
             ...started.career.rivalsById[rivalId].history,
             nemesisLevel: 2,
-            lastSeenRunId: started.expedition.runId
+            lastNemesisAdvanceRunId: started.expedition.runId
           }
         }
       }
@@ -1391,28 +1392,43 @@ test('a Nemesis at level 3 takes one staged Sponsor offer off the table', () => 
 })
 
 test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
-  const prepared = preparedState()
-  const started = gameReducer(prepared, {
-    type: ActionTypes.START_EXPEDITION,
-    payload: {
-      prepId: prepared.expedition.prep.prepId,
-      expectedRunSeed: prepared.runSeed,
-      loadout: fixtureLoadout()
-    }
-  })
-  assert.ok(started.rivalBand)
-  const rivalId = started.rivalBand.id
-  assert.equal(started.career.rivalsById[rivalId].history.nemesisLevel, 0)
-
-  // The Rival-targeted post is what makes `weaponize` - and therefore the
-  // whole ladder - reachable through the canonical Social path.
+  // The Rival-targeted post is what makes `weaponize` - and therefore the whole
+  // ladder - reachable through the canonical Social path.
   const rivalPostOption = POST_OPTIONS.find(
     option => deriveExpeditionSocialResultId(option) === 'weaponize'
   )
   assert.ok(rivalPostOption, 'a production post option must resolve weaponize')
-  assert.equal(rivalPostOption.condition({ ...started }), true)
 
-  const encounter = (state, runId) =>
+  // Real run identities, never rewritten: START stamps the Rival record's
+  // `lastSeenRunId` with the id it is about to give the run, so a guard that
+  // reads that field rejects the run's own first encounter. Only a chain of
+  // genuinely STARTed runs shows that.
+  const startLinkedRun = (career, prepId) => {
+    const fresh = createInitialState()
+    fresh.player.money = 5000
+    fresh.player.fame = 100
+    fresh.player.van.fuel = 100
+    const prepared = gameReducer(
+      { ...fresh, career },
+      {
+        type: ActionTypes.PREPARE_EXPEDITION_RUN,
+        payload: { prepId, runSeed: 4242 }
+      }
+    )
+    const started = gameReducer(prepared, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId,
+        expectedRunSeed: 4242,
+        loadout: fixtureLoadout()
+      }
+    })
+    assert.equal(started.expedition.status, 'active')
+    assert.equal(started.expedition.runId, prepId)
+    return started
+  }
+
+  const encounter = state =>
     handleResolveExpeditionSocialResult(
       {
         ...state,
@@ -1423,7 +1439,6 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
         },
         expedition: {
           ...state.expedition,
-          runId,
           lastSocialResult: null,
           pendingSocialSettlement: {
             routeStep: state.expedition.routeStep,
@@ -1438,18 +1453,41 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
       }
     )
 
-  let current = started
+  const first = startLinkedRun(createInitialState().career, 'run_link_1')
+  assert.ok(first.rivalBand)
+  const rivalId = first.rivalBand.id
+  assert.equal(first.career.rivalsById[rivalId].history.nemesisLevel, 0)
+  assert.equal(rivalPostOption.condition({ ...first }), true)
+  // START already wrote this run's id here, which is exactly why it cannot also
+  // be the advance guard.
+  assert.equal(
+    first.career.rivalsById[rivalId].history.lastSeenRunId,
+    first.expedition.runId
+  )
+
+  let current = first
   for (let run = 1; run <= 4; run++) {
-    current = encounter(current, `run_${run}`)
+    if (run > 1) {
+      current = startLinkedRun(current.career, `run_link_${run}`)
+      assert.equal(
+        current.rivalBand?.id,
+        rivalId,
+        'a linked run must meet the same persistent Rival'
+      )
+    }
+    current = encounter(current)
     assert.equal(
       current.career.rivalsById[rivalId].history.nemesisLevel,
       run,
       `run ${run} must advance the persistent Rival record exactly one tier`
     )
-    // A second encounter inside the same run does not advance again.
     assert.equal(
-      encounter(current, `run_${run}`).career.rivalsById[rivalId].history
-        .nemesisLevel,
+      current.career.rivalsById[rivalId].history.lastNemesisAdvanceRunId,
+      current.expedition.runId
+    )
+    // A second canonical result inside the same run does not advance again.
+    assert.equal(
+      encounter(current).career.rivalsById[rivalId].history.nemesisLevel,
       run,
       'a Nemesis tier must not be farmable inside one run'
     )
@@ -1460,6 +1498,55 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
     'nemesis'
   )
   assert.equal(selectExpeditionFinaleType({ nemesisLevel: 4 }), 'rival_battle')
+})
+
+test('a pending Run Draft holds the route until the player picks', () => {
+  const walked = walkTo(startedState(), 1)
+  const nodeId = walked.player.currentNodeId
+  const started = {
+    ...walked,
+    gameMap: {
+      ...walked.gameMap,
+      nodes: { ...walked.gameMap?.nodes, [nodeId]: { type: 'SUPPLY_STOP' } }
+    }
+  }
+  const offered = handleOfferExpeditionDraft(started, {
+    sourceType: 'supply',
+    sourceKey: nodeId,
+    expectedRouteStep: started.expedition.routeStep
+  })
+  assert.ok(
+    offered.expedition.pendingRunDraftOffer,
+    'the fixture must actually produce a pending offer'
+  )
+  const map = fixtureMap()
+  const nextNodeId = Object.keys(map.meta).find(
+    id => map.meta[id]?.routeStep === offered.expedition.routeStep + 1
+  )
+  assert.ok(nextNodeId)
+
+  // Travelling first used to strand the offer forever: SELECT then failed its
+  // route-step check while OFFER stayed blocked by the non-null offer.
+  assert.equal(
+    applyExpeditionRouteAdvance(offered, nextNodeId),
+    offered,
+    'the route must not advance while a Run Draft is pending'
+  )
+
+  const traitId = offered.expedition.pendingRunDraftOffer.candidateTraitIds[0]
+  const picked = gameReducer(offered, {
+    type: ActionTypes.SELECT_EXPEDITION_DRAFT,
+    payload: { traitId, expectedRouteStep: offered.expedition.routeStep }
+  })
+  assert.equal(picked.expedition.pendingRunDraftOffer, null)
+  assert.ok(picked.expedition.runDraftTraitIds.includes(traitId))
+
+  const advanced = applyExpeditionRouteAdvance(picked, nextNodeId)
+  assert.equal(
+    advanced.expedition.routeStep,
+    picked.expedition.routeStep + 1,
+    'the same advance must succeed once the Draft is resolved'
+  )
 })
 
 test('the Director and the authored events share one draw', () => {

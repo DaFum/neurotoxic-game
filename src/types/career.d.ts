@@ -28,6 +28,16 @@ export interface CareerRivalHistory {
   encounterCount: number
   lastOutcome: 'hostile_win' | 'hostile_loss' | 'respect' | 'alliance' | null
   lastSeenRunId: string | null
+  /**
+   * Run in which this Rival's Nemesis level last advanced.
+   *
+   * @remarks
+   * Distinct from {@link CareerRivalHistory.lastSeenRunId}, which START stamps
+   * when it selects the Rival and therefore already equals the current run id.
+   * Reusing that field as the advance guard rejects the run's first genuine
+   * encounter; this one is only ever written by an advance.
+   */
+  lastNemesisAdvanceRunId: string | null
 }
 export interface CareerRivalRecord {
   snapshot: CareerRivalSnapshot

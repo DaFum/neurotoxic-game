@@ -163,6 +163,10 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
             lastSeenRunId:
               typeof history.lastSeenRunId === 'string'
                 ? history.lastSeenRunId
+                : null,
+            lastNemesisAdvanceRunId:
+              typeof history.lastNemesisAdvanceRunId === 'string'
+                ? history.lastNemesisAdvanceRunId
                 : null
           }
         }
