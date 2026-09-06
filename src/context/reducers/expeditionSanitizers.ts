@@ -30,6 +30,7 @@ import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
+import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -903,6 +904,11 @@ const sanitizeExpeditionPressure = (
       typeof value.lastSevereEventId === 'string'
         ? value.lastSevereEventId
         : null,
+    pendingDirectorEventId: isExpeditionPressureEventId(
+      value.pendingDirectorEventId
+    )
+      ? value.pendingDirectorEventId
+      : null,
     temporaryRouteOpportunity: sanitizeTemporaryRouteOpportunity(
       value.temporaryRouteOpportunity,
       runId,

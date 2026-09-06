@@ -4,22 +4,28 @@
  * @remarks
  * Each entry's id matches its {@link EXPEDITION_PRESSURE_EVENTS} registry
  * entry, so the Director's weighting and the event the player actually sees
- * are the same thing. The weighting arrives as a functional `chance`, which is
- * where this repo puts state-derived probability; the condition only decides
- * eligibility. Options name a canonical Expedition *result* and never carry
- * numbers of their own - the result registry owns those.
+ * are the same thing - one draw, not two. The Director makes the pick at the
+ * route advance and stores it; each event's condition is simply "am I that
+ * pick", so the event the player sees is the event whose consequences apply.
+ * Options name a canonical Expedition *result* and never carry numbers of
+ * their own - the result registry owns those.
  */
 
 import type { GameState } from '../../types'
-import { getExpeditionPressureEventChance } from '../../domain/expedition/pressure'
-
-const onActiveRun = (state: GameState): boolean =>
-  state.expedition?.status === 'active'
-
-const directorChance =
+/**
+ * Eligibility for the one event the Director selected for this route step.
+ *
+ * @remarks
+ * The Director already applied the pool rate, per-family weighting and each
+ * event's own eligibility when it made the pick, so there is nothing left to
+ * roll here: a second probability would be a second draw, and the selected
+ * event and the surfaced event could disagree.
+ */
+const isPendingDirectorEvent =
   (eventId: string) =>
-  (state: GameState): number =>
-    getExpeditionPressureEventChance(state, eventId)
+  (state: GameState): boolean =>
+    state.expedition?.status === 'active' &&
+    state.expedition.pressure?.pendingDirectorEventId === eventId
 
 export const EXPEDITION_PRESSURE_EVENTS_DB = [
   {
@@ -28,8 +34,8 @@ export const EXPEDITION_PRESSURE_EVENTS_DB = [
     title: 'events:expedition_authority_patrol.title',
     description: 'events:expedition_authority_patrol.description',
     trigger: 'random',
-    chance: directorChance('expedition_authority_patrol'),
-    condition: onActiveRun,
+    chance: 1,
+    condition: isPendingDirectorEvent('expedition_authority_patrol'),
     options: [
       {
         id: 'wave_through',
@@ -52,8 +58,8 @@ export const EXPEDITION_PRESSURE_EVENTS_DB = [
     title: 'events:expedition_underground_invite.title',
     description: 'events:expedition_underground_invite.description',
     trigger: 'random',
-    chance: directorChance('expedition_underground_invite'),
-    condition: onActiveRun,
+    chance: 1,
+    condition: isPendingDirectorEvent('expedition_underground_invite'),
     options: [
       {
         id: 'take_the_address',
@@ -76,8 +82,8 @@ export const EXPEDITION_PRESSURE_EVENTS_DB = [
     title: 'events:expedition_technical_collapse.title',
     description: 'events:expedition_technical_collapse.description',
     trigger: 'random',
-    chance: directorChance('expedition_technical_collapse'),
-    condition: onActiveRun,
+    chance: 1,
+    condition: isPendingDirectorEvent('expedition_technical_collapse'),
     options: [
       {
         id: 'push_the_rig',
@@ -100,10 +106,10 @@ export const EXPEDITION_PRESSURE_EVENTS_DB = [
     title: 'events:expedition_rival_ambush.title',
     description: 'events:expedition_rival_ambush.description',
     trigger: 'random',
-    chance: directorChance('expedition_rival_ambush'),
-    // The rival family only makes sense with a Rival on the road.
-    condition: (state: GameState): boolean =>
-      onActiveRun(state) && Boolean(state.rivalBand),
+    chance: 1,
+    // The Rival requirement lives on the registry entry the Director filters
+    // by, so it cannot select this event on a run with no Rival at all.
+    condition: isPendingDirectorEvent('expedition_rival_ambush'),
     options: [
       {
         id: 'let_it_go',

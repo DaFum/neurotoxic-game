@@ -133,6 +133,7 @@ import {
 } from '../../domain/expedition/social'
 import {
   applyExpeditionPressureDelta,
+  applyExpeditionPressureEventResolution,
   resolveExpeditionPressureDirectorStep
 } from '../../domain/expedition/pressure'
 import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
@@ -568,12 +569,9 @@ export const applyExpeditionRouteAdvance = (
   // One Director step per route step, composed here rather than dispatched:
   // arriving a node deeper is the canonical occasion for it, and selection is
   // seeded from `runSeed` plus the new route step, so a replayed advance picks
-  // the same event instead of rolling a second one.
-  const directorPressure = resolveExpeditionPressureDirectorStep(
-    arrived,
-    undefined,
-    map
-  )
+  // the same event instead of rolling a second one. This *selects* only - the
+  // consequences belong to the event the player actually resolves.
+  const directorPressure = resolveExpeditionPressureDirectorStep(arrived)
   const advanced: GameState =
     directorPressure === arrived.expedition.pressure
       ? arrived
@@ -1673,9 +1671,33 @@ export const handleApplyExpeditionEventDelta = (
     payload.sourceOptionId,
     resultIds
   )
-  return syncExpeditionPendingFailure(
+  const resolved = syncExpeditionPendingFailure(
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
+
+  // The other half of the Director's single draw: a relief window or an
+  // Underground detour is a consequence of the event the player just resolved,
+  // never of the selection alone. Resolving consumes the pending id, so it
+  // applies exactly once.
+  const directorLoadout = resolved.expedition.loadout
+  const resolvedPressure = applyExpeditionPressureEventResolution(
+    resolved,
+    payload.sourceEventId,
+    directorLoadout
+      ? buildExpeditionMap(
+          resolved.runSeed,
+          directorLoadout.tourTypeId,
+          directorLoadout.regionId,
+          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        )
+      : null
+  )
+  return resolvedPressure === resolved.expedition.pressure
+    ? resolved
+    : {
+        ...resolved,
+        expedition: { ...resolved.expedition, pressure: resolvedPressure }
+      }
 }
 
 export const handleRecordExpeditionObligationSignal = (

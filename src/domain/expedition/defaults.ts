@@ -106,6 +106,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
     crowdHype: 0,
     severeReliefUntilRouteStep: null,
     lastSevereEventId: null,
+    pendingDirectorEventId: null,
     temporaryRouteOpportunity: null
   },
   preparedSponsorOffers: [],

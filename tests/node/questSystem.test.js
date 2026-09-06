@@ -131,6 +131,19 @@ const makeProgressEvent = (source, rule) => {
         amount: 10,
         brandId: firstMatchValue(match.brandId) ?? 'test_brand'
       }
+    case 'expedition.nodeResolved':
+    case 'expedition.extracted':
+    case 'expedition.rivalOutcome':
+    case 'expedition.finaleCompleted':
+      // Mirrors src/quests/producers/expeditionQuestEvents.ts: the id of the
+      // thing that resolved rides in `context.id` and as the only tag.
+      return {
+        type: eventSource,
+        amount: 1,
+        success: true,
+        context: { id: 'test_expedition_subject' },
+        tags: ['test_expedition_subject']
+      }
     case 'story.flagAdded':
       return { type: eventSource, flag: 'test_flag' }
     case 'region.reputationChanged':

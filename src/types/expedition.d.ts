@@ -439,6 +439,12 @@ export interface ExpeditionPressureState {
   crowdHype: number
   severeReliefUntilRouteStep: number | null
   lastSevereEventId: string | null
+  /**
+   * The one event the Director selected for this route step, until it is
+   * resolved. Selection and resolution share this id so the run cannot draw
+   * a pressure event twice.
+   */
+  pendingDirectorEventId?: string | null
   temporaryRouteOpportunity: ExpeditionTemporaryRouteOpportunity | null
 }
 
