@@ -71,12 +71,15 @@ export const NEUTRAL_EXPEDITION_ROUTE_PROFILE: ExpeditionRouteProfile = {
 export const BASE_EXPEDITION_TOUR_TYPE_ID = 'standard_tour' as const
 
 /**
- * Home region the G1 baseline commits before G5 owns the Region registry.
+ * The Region every pre-G5 seed and fixture is pinned to.
  *
  * @remarks
- * Still the route baseline every pre-G5 seed and fixture is pinned to. It is
- * deliberately *not* the free Region any more: see
- * {@link FREE_EXPEDITION_REGION_ID}.
+ * No production path commits it any more - Tour Prep opens on
+ * {@link FREE_EXPEDITION_REGION_ID}, and this is reachable only by a Career
+ * that owns `mechanic_network`. It survives as the pinned route of the runs
+ * that were already committed against it and of the fixtures asserting their
+ * seeds, which is exactly why it must not be renamed to the free Region:
+ * changing it would move every pinned route.
  */
 export const BASE_EXPEDITION_REGION_ID = 'industrial_belt' as const
 

@@ -7,7 +7,12 @@
  */
 
 import assert from 'node:assert/strict'
+import { readFileSync, readdirSync } from 'node:fs'
+import { join } from 'node:path'
 import { describe, it } from 'node:test'
+
+/** Repository root, so the source sweep below does not depend on the cwd. */
+const REPO_ROOT = new URL('../../', import.meta.url).pathname
 
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
@@ -27,6 +32,14 @@ import {
 import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers'
 import { createInitialState } from '../../src/context/initialState'
 import { getEligibleCrewSignatureTrait } from '../../src/domain/expedition/career'
+import { getAvailableStarterPerkIds } from '../../src/domain/expedition/loadout'
+import { getAvailableNativeContractTemplateIds } from '../../src/domain/expedition/loadout'
+import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/loadout'
+import { isCrewAvailable } from '../../src/domain/expedition/crew'
+import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'
+import { resolveExpeditionInspection } from '../../src/domain/expedition/inspections'
+import { applyExpeditionPressureEventResolution } from '../../src/domain/expedition/pressure'
+import { selectExpeditionRivalForRun } from '../../src/domain/expedition/rivals'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
 /**
@@ -37,30 +50,34 @@ import { startedState } from '../expeditionLifecycleFixture.js'
  * code. A capability that reaches the registry without an entry here is dead
  * inventory - the Career is charged Tokens for something no availability path
  * consults - and the registry test below fails rather than shipping it.
+ *
+ * The consumer is the imported function itself rather than its name: a name
+ * that no longer exists used to sit here as a string that nothing could
+ * falsify, and two of them had already drifted off real exports.
  */
 const CAPABILITY_CONSUMERS = new Map([
-  ['region_industrial_belt', 'getAvailableExpeditionRegionIds'],
-  ['region_corporate_circuit', 'getAvailableExpeditionRegionIds'],
-  ['region_underground_scene', 'getAvailableExpeditionRegionIds'],
-  ['region_festival_fields', 'getAvailableExpeditionRegionIds'],
-  ['tour_survival_tour', 'getAvailableExpeditionTourTypeIds'],
-  ['tour_corporate_tour', 'getAvailableExpeditionTourTypeIds'],
-  ['tour_underground_tour', 'getAvailableExpeditionTourTypeIds'],
-  ['tour_blitz_tour', 'getAvailableExpeditionTourTypeIds'],
-  ['tour_rival_hunt_tour', 'getAvailableExpeditionTourTypeIds'],
-  ['crew_manager', 'isCrewAvailable'],
-  ['crew_security', 'isCrewAvailable'],
-  ['crew_signature_traits', 'getEligibleCrewSignatureTrait'],
-  ['perk_mechanic_kit', 'getAvailableStarterPerkIds'],
-  ['perk_press_pass', 'getAvailableStarterPerkIds'],
-  ['perk_underground_contact', 'getAvailableStarterPerkIds'],
-  ['perk_rehearsed_set', 'getAvailableStarterPerkIds'],
-  ['chassis_higher_tier', 'validateExpeditionBuildCommitment'],
-  ['advanced_inspection', 'getExpeditionInspectionCapability'],
-  ['premium_sponsor_pool', 'getAvailableExpeditionSponsorOfferIds'],
-  ['performance_contract_pool', 'getAvailableExpeditionSponsorOfferIds'],
-  ['black_market_content', 'getAvailableExpeditionSponsorOfferIds'],
-  ['rival_quest_continuation', 'selectExpeditionRivalForRun']
+  ['region_industrial_belt', getAvailableExpeditionRegionIds],
+  ['region_corporate_circuit', getAvailableExpeditionRegionIds],
+  ['region_underground_scene', getAvailableExpeditionRegionIds],
+  ['region_festival_fields', getAvailableExpeditionRegionIds],
+  ['tour_survival_tour', getAvailableExpeditionTourTypeIds],
+  ['tour_corporate_tour', getAvailableExpeditionTourTypeIds],
+  ['tour_underground_tour', getAvailableExpeditionTourTypeIds],
+  ['tour_blitz_tour', getAvailableExpeditionTourTypeIds],
+  ['tour_rival_hunt_tour', getAvailableExpeditionTourTypeIds],
+  ['crew_manager', isCrewAvailable],
+  ['crew_security', isCrewAvailable],
+  ['crew_signature_traits', getEligibleCrewSignatureTrait],
+  ['perk_mechanic_kit', getAvailableStarterPerkIds],
+  ['perk_press_pass', getAvailableStarterPerkIds],
+  ['perk_underground_contact', getAvailableStarterPerkIds],
+  ['perk_rehearsed_set', getAvailableStarterPerkIds],
+  ['chassis_higher_tier', validateExpeditionBuildCommitment],
+  ['advanced_inspection', resolveExpeditionInspection],
+  ['premium_sponsor_pool', buildPreparedExpeditionSponsorOffers],
+  ['performance_contract_pool', getAvailableNativeContractTemplateIds],
+  ['black_market_content', applyExpeditionPressureEventResolution],
+  ['rival_quest_continuation', selectExpeditionRivalForRun]
 ])
 
 /** A Career that satisfies everything one set needs, and nothing more. */
@@ -371,6 +388,54 @@ describe('G5 — every sold capability is authoritative somewhere', () => {
         CAPABILITY_CONSUMERS.has(capabilityId),
         `${capabilityId} is sold but has no named consumer`
       )
+      assert.equal(
+        typeof CAPABILITY_CONSUMERS.get(capabilityId),
+        'function',
+        `${capabilityId} names a consumer that does not exist`
+      )
+    }
+  })
+
+  it('names no consumer for a capability nothing sells', () => {
+    // The other direction: an entry left behind by a removed capability makes
+    // the table read as coverage it no longer provides.
+    const sold = new Set(
+      Object.values(EXPEDITION_UNLOCK_SETS).flatMap(set => set.capabilities)
+    )
+    for (const capabilityId of CAPABILITY_CONSUMERS.keys()) {
+      assert.ok(
+        sold.has(capabilityId),
+        `${capabilityId} has a consumer but no set sells it`
+      )
+    }
+  })
+
+  it('reads every sold capability from production source', () => {
+    // The table says *which* function is authoritative; this says the
+    // capability id is actually asked for outside the registry that declares
+    // it. A capability only ever mentioned by its own registry and its union
+    // type is inventory nothing consults.
+    const roots = [
+      'src/domain/expedition',
+      'src/data/expedition',
+      'src/context'
+    ]
+    const sources = roots.flatMap(root =>
+      readdirSync(join(REPO_ROOT, root), { recursive: true })
+        .filter(name => /\.tsx?$/.test(String(name)))
+        .map(name => join(REPO_ROOT, root, String(name)))
+    )
+    const corpus = sources
+      .filter(file => !file.endsWith('data/expedition/unlockSets.ts'))
+      .map(file => readFileSync(file, 'utf8'))
+      .join('\n')
+    for (const set of Object.values(EXPEDITION_UNLOCK_SETS)) {
+      for (const capabilityId of set.capabilities) {
+        assert.ok(
+          corpus.includes(`'${capabilityId}'`),
+          `${capabilityId} is never read outside its own registry`
+        )
+      }
     }
   })
 

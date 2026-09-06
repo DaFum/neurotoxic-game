@@ -108,6 +108,14 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     setContractTemplateIds([])
   }, [])
 
+  // The perk restages the Sponsor pool for the same reason: `press_pass`
+  // promotes one more genuine match, so the offer order changes and a picked
+  // id can fall outside the count the route stages.
+  const selectStarterPerk = useCallback((perkId: string | null) => {
+    setStarterPerkId(perkId)
+    setSponsorOfferId(null)
+  }, [])
+
   const availableTourTypeIds = useMemo(
     () => getAvailableExpeditionTourTypeIds(state),
     [state]
@@ -141,9 +149,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
       buildPreparedExpeditionSponsorOffers(
         state,
         preparedMap.regionId,
-        preparedMap.tourTypeId
+        preparedMap.tourTypeId,
+        starterPerkId
       ),
-    [preparedMap, state]
+    [preparedMap, starterPerkId, state]
   )
   const availableSponsorOfferIds = useMemo(
     () => sponsorOffers.map(offer => offer.offerId),
@@ -343,7 +352,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           <button
             type='button'
             aria-pressed={starterPerkId === null}
-            onClick={() => setStarterPerkId(null)}
+            onClick={() => selectStarterPerk(null)}
             data-testid='expedition-prep-perk-none'
             className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
               starterPerkId === null
@@ -358,7 +367,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
               key={perkId}
               type='button'
               aria-pressed={starterPerkId === perkId}
-              onClick={() => setStarterPerkId(perkId)}
+              onClick={() => selectStarterPerk(perkId)}
               data-testid={`expedition-prep-perk-${perkId}`}
               className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors ${
                 starterPerkId === perkId

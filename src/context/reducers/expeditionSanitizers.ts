@@ -700,28 +700,28 @@ export const sanitizeExpeditionState = (
       // against the same canonical evidence its reducer required rather than
       // dropped - an autosave between earning a reward and the terminal
       // settlement that materializes it must not lose it.
-      if (entry.sourceType === 'event_rare') {
-        // Dropped unless the run has already materialized it.
-        //
-        // There is no load-time proof available for an unmaterialized Event
-        // rare. The seeded pool gate is pure in `runSeed` and the route step,
-        // so it proves only that *some* pressure event could open at the step
-        // the entry names - never that this event was selected, that this
-        // option was taken, or that this result was produced. Every field that
-        // would say so (`sourceId`, `resolvedEventSourceIds`, the entry itself)
-        // is authored by the save, and the Director's actual selection depended
-        // on the live pressure at that step, which the save does not preserve
-        // in any re-derivable form.
-        //
-        // So the choice is between keeping a claim the load cannot check and
-        // losing a real reward when a run is reloaded between earning it and
-        // the terminal settlement. This takes the second: a forged save cannot
-        // mint a rare, and the cost falls on a reload window rather than on the
-        // reward rules. Closing that window needs a reducer-authored resolution
-        // record that a save cannot construct, which is a persistence change
-        // this gate does not own.
-        if (!entry.materialized) continue
-      }
+      // Always dropped: there is no load-time proof available for an Event
+      // rare, `materialized` included.
+      //
+      // The seeded pool gate is pure in `runSeed` and the route step, so it
+      // proves only that *some* pressure event could open at the step the
+      // entry names - never that this event was selected, that this option was
+      // taken, or that this result was produced. Every field that would say so
+      // (`sourceId`, `resolvedEventSourceIds`, `materialized`, the entry
+      // itself) is authored by the save, and the Director's actual selection
+      // depended on the live pressure at that step, which the save does not
+      // preserve in any re-derivable form. `materialized` in particular is a
+      // settlement bookkeeping flag, not evidence: a crafted save sets it to
+      // `true` and keeps an arbitrary canonical rare.
+      //
+      // So the choice is between keeping a claim the load cannot check and
+      // losing a real reward when a run is reloaded between earning it and the
+      // terminal settlement. This takes the second: a forged save cannot mint
+      // a rare, and the cost falls on a reload window rather than on the reward
+      // rules. Closing that window needs a reducer-authored resolution record
+      // that a save cannot construct, which is a persistence change this gate
+      // does not own.
+      if (entry.sourceType === 'event_rare') continue
       if (entry.sourceType === 'contract') {
         if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue
         if (

@@ -23,7 +23,10 @@ import {
   getAvailableExpeditionTourTypeIds,
   validateExpeditionBuildCommitment
 } from '../../src/domain/expedition/loadout.ts'
-import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
+import {
+  buildExpeditionMap,
+  getActiveExpeditionMap
+} from '../../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SET_IDS } from '../../src/data/expedition/unlockSets.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
@@ -162,6 +165,29 @@ describe('G5 — the profile reaches its production consumers', () => {
       'a route that keeps its distance from brands must offer fewer'
     )
     assert.ok(underground.length >= 1, 'never below one staged offer')
+  })
+
+  it('gives the active run the route its Region and Tour compose', () => {
+    // The selector used to pass the neutral profile explicitly, which handed
+    // every caller a different route - and a different `mapHash` - than the
+    // run being played, on any Region or Tour that is not the baseline.
+    const run = runIn('industrial_belt', 'survival_tour', {
+      player: { fame: 500 }
+    })
+    const active = getActiveExpeditionMap(run)
+    assert.ok(active)
+    const composed = buildExpeditionMap(
+      run.runSeed,
+      'survival_tour',
+      'industrial_belt'
+    )
+    assert.equal(active.mapHash, composed.mapHash)
+    // And that is genuinely not the baseline route, so the assertion above
+    // would fail rather than pass by coincidence.
+    assert.notEqual(
+      composed.mapHash,
+      buildExpeditionMap(run.runSeed, 'standard_tour', 'home_turf').mapHash
+    )
   })
 
   it('biases the Director toward the families the route favours', () => {

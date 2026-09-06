@@ -19,7 +19,7 @@ import {
   resolveExpeditionIntelReveal
 } from '../../src/domain/expedition/nodeIntel.ts'
 import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
-import { startedState } from '../expeditionLifecycleFixture.js'
+import { startedState, walkTo } from '../expeditionLifecycleFixture.js'
 
 /** The fixture run, re-pointed at one Region and given a Career history. */
 const runIn = (regionId, career = {}, expedition = {}, reputation = {}) => {
@@ -174,19 +174,43 @@ describe('G5 — familiarity is bounded free Intel', () => {
       state.expedition.loadout.tourTypeId,
       state.expedition.loadout.regionId
     )
+
+    /** Everything the run can still walk to from where it is standing. */
+    const reachableFrom = nodeId => {
+      const seen = new Set()
+      const frontier = [nodeId]
+      while (frontier.length > 0) {
+        const from = frontier.pop()
+        for (const edge of map.connections) {
+          if (edge.from !== from || seen.has(edge.to)) continue
+          seen.add(edge.to)
+          frontier.push(edge.to)
+        }
+      }
+      return seen
+    }
+
     // Unvisited is not the same as ahead: after the first branch the layers
     // the run passed up stay unvisited forever, and spending the entitlement
-    // on one of those would reveal a node the run can never reach.
+    // on one of those would reveal a node the run can never reach. Bumping
+    // `routeStep` alone would not catch that - the walked path has to be real,
+    // because the reveal is drawn from the node the run is standing on.
     for (let routeStep = 0; routeStep < 6; routeStep += 1) {
-      const atStep = {
-        ...state,
-        expedition: { ...state.expedition, routeStep }
-      }
-      for (const nodeId of getExpeditionIntelCapability(atStep)
-        .familiarNodeIds) {
+      const atStep = walkTo(state, routeStep)
+      assert.equal(atStep.expedition.routeStep, routeStep)
+      const visited = atStep.expedition.visitedNodeIds
+      const current = visited[visited.length - 1]
+      const reachable = reachableFrom(current)
+      const revealed = getExpeditionIntelCapability(atStep).familiarNodeIds
+      assert.equal(revealed.length, 1, `step ${routeStep} owes one reveal`)
+      for (const nodeId of revealed) {
         assert.ok(
-          !atStep.expedition.visitedNodeIds.includes(nodeId),
+          !visited.includes(nodeId),
           `step ${routeStep} revealed an already-walked node`
+        )
+        assert.ok(
+          reachable.has(nodeId),
+          `step ${routeStep} revealed ${nodeId}, unreachable from ${current}`
         )
         assert.ok(
           map.meta[nodeId].routeStep > routeStep,

@@ -59,15 +59,18 @@ export const getCanonicalBrandDealTermsHash = (
  * @param state - Current game state.
  * @param regionId - Region the offers are staged for.
  * @param tourTypeId - Tour Type the offers are staged for.
+ * @param starterPerkId - Starter perk of the build being staged, for its
+ * Sponsor-quality bias.
  * @returns The deterministic offers, already narrowed by Rival interference.
  *
  * @remarks
- * The Region and Tour arrive as arguments rather than being read off
- * `state.expedition.loadout`, because every caller needs them *before* that
+ * The Region, Tour and starter perk arrive as arguments rather than being read
+ * off `state.expedition.loadout`, because every caller needs them *before* that
  * loadout exists: PREPARE runs on scene entry, before the player has chosen
- * either, and START validates a candidate that is not committed yet. Reading
- * the loadout meant this always resolved the baseline profile in production,
- * so the route-specific offer count never applied to a real run.
+ * any of them, and START validates a candidate that is not committed yet.
+ * Reading the loadout meant this always resolved the baseline profile in
+ * production, so neither the route-specific offer count nor the perk's quality
+ * bias ever applied to a real run.
  *
  * Nemesis tier 3 is Sponsor interference: a Rival the Career has history with
  * takes one staged offer off the table before the next tour can commit to it,
@@ -79,7 +82,8 @@ export const getCanonicalBrandDealTermsHash = (
 export const buildPreparedExpeditionSponsorOffers = (
   state: GameState,
   regionId: unknown,
-  tourTypeId: unknown
+  tourTypeId: unknown,
+  starterPerkId: string | null = null
 ): ExpeditionPreparedSponsorOffer[] => {
   const rivalRecord = state.rivalBand
     ? state.career?.rivalsById?.[state.rivalBand.id]
@@ -128,8 +132,7 @@ export const buildPreparedExpeditionSponsorOffers = (
           : 0) +
         Math.max(
           0,
-          getExpeditionStarterPerk(state.expedition?.loadout?.starterPerkId)
-            ?.sponsorQualityBias ?? 0
+          getExpeditionStarterPerk(starterPerkId)?.sponsorQualityBias ?? 0
         )
     )
   )
@@ -153,7 +156,8 @@ export const validatePreparedExpeditionSponsorOffers = (
   const canonical = buildPreparedExpeditionSponsorOffers(
     state,
     state.expedition?.loadout?.regionId,
-    state.expedition?.loadout?.tourTypeId
+    state.expedition?.loadout?.tourTypeId,
+    state.expedition?.loadout?.starterPerkId ?? null
   )
   if (JSON.stringify(canonical) !== JSON.stringify(persisted)) return []
   return canonical

@@ -26,7 +26,8 @@ import { applyExpeditionSetupProtection } from '../../src/domain/expedition/cond
 import {
   FIXTURE_RUN_SEED,
   fixtureLoadout,
-  preparedState
+  preparedState,
+  walkTo
 } from '../expeditionLifecycleFixture.js'
 
 /** Every set id that grants at least one perk capability. */
@@ -151,6 +152,63 @@ describe('G5 — each perk reaches the run through its own consumer', () => {
   })
 
   it('press_pass buys one more genuine Sponsor match, never more offers', () => {
+    // The perk is chosen in the same Tour Prep build as the Sponsor offer, so
+    // it is *not* readable off `expedition.loadout` when the pool is staged:
+    // at PREPARE no loadout exists, and at START the candidate is not
+    // committed yet. It travels as an argument, like the Region and the Tour.
+    //
+    // A band this small matches one brand strictly and fills the rest of the
+    // pool loosely, and its INDIE standing scores a stretched offer above the
+    // genuine one - the only shape in which a quality bias is observable at
+    // all, since `generateBrandOffers` otherwise returns a pool of one tier.
+    //
+    // Staged from a Career owning no set: `industry_network` carries both
+    // `perk_press_pass` and `premium_sponsor_pool`, so a Career that can pick
+    // the perk already holds a bias of 1 and the perk's own +1 would land past
+    // the single genuine match. Whether the perk is *selectable* is the
+    // availability suite's contract, not this one's.
+    const base = preparedState({ money: 5000 })
+    const staging = {
+      ...base,
+      player: { ...base.player, fame: 0 },
+      social: {
+        ...base.social,
+        instagram: 500,
+        tiktok: 0,
+        youtube: 0,
+        zealotry: 40,
+        controversyLevel: 30,
+        brandReputation: { INDIE: 100 }
+      }
+    }
+    const stage = starterPerkId =>
+      buildPreparedExpeditionSponsorOffers(
+        staging,
+        'home_turf',
+        'standard_tour',
+        starterPerkId
+      ).map(offer => offer.dealId)
+
+    const withoutPerk = stage(null)
+    const withPerk = stage('press_pass')
+    // Quality: the genuine match is promoted ahead of the stretched one.
+    assert.deepEqual(withoutPerk, [
+      'indie_label_void',
+      'local_pawn_shop',
+      'neon_lung_vapes'
+    ])
+    assert.deepEqual(withPerk, [
+      'local_pawn_shop',
+      'indie_label_void',
+      'neon_lung_vapes'
+    ])
+    // Never count, and never a different set of brands to choose from.
+    assert.equal(withPerk.length, withoutPerk.length)
+    assert.deepEqual(withPerk.slice().sort(), withoutPerk.slice().sort())
+    // A perk without the bias leaves the staged pool exactly as it was.
+    assert.deepEqual(stage('mechanic_kit'), withoutPerk)
+
+    // And it pays nothing on its own.
     const started = startWithPerk('press_pass')
     const without = {
       ...started,
@@ -159,20 +217,6 @@ describe('G5 — each perk reaches the run through its own consumer', () => {
         loadout: { ...started.expedition.loadout, starterPerkId: null }
       }
     }
-    const offersWith = buildPreparedExpeditionSponsorOffers(
-      started,
-      started.expedition.loadout.regionId,
-      started.expedition.loadout.tourTypeId
-    )
-    const offersWithout = buildPreparedExpeditionSponsorOffers(
-      without,
-      without.expedition.loadout.regionId,
-      without.expedition.loadout.tourTypeId
-    )
-    // Quality, never count: the same number of offers is staged either way.
-    assert.equal(offersWith.length, offersWithout.length)
-
-    // And it pays nothing on its own.
     const rules = getEffectiveExpeditionRules(started).numeric
     const baseline = getEffectiveExpeditionRules(without).numeric
     assert.equal(rules.exposureGainMultiplier, baseline.exposureGainMultiplier)
@@ -292,7 +336,15 @@ describe('G5 — the first Gig is where rehearsed_set is actually spent', () => 
       typeof afterFirst.expedition.lastGigResolvedAtRouteStep,
       'number'
     )
-    const afterSecond = resolveGig(afterFirst).expedition.technicalCondition
+    // A second Gig happens at the *next* route step: resolving twice on the
+    // same node is a duplicate dispatch, which proves nothing about whether
+    // the protection was spent.
+    const atNextNode = walkTo(afterFirst, afterFirst.expedition.routeStep + 1)
+    assert.equal(
+      atNextNode.expedition.routeStep,
+      afterFirst.expedition.routeStep + 1
+    )
+    const afterSecond = resolveGig(atNextNode).expedition.technicalCondition
     assert.ok(
       afterSecond.instruments <
         afterFirst.expedition.technicalCondition.instruments,

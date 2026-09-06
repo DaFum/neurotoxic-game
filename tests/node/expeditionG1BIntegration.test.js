@@ -253,15 +253,30 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     // which node is SPECIAL is a property of the generator, and pinning an id
     // here made this test fail the moment route generation legitimately
     // changed.
-    const specialNodeId = map.nodeOrder.find(nodeId => {
+    // Picked off the *walked* path, not off `nodeOrder`: the route branches,
+    // so a SPECIAL node can exist in the map on a branch the canonical walk
+    // never takes, and the arrival signal would then never fire.
+    const walkedNodeIds = walkToFinale(
+      gameReducer(preparedState({ money: 5000 }), {
+        type: ActionTypes.START_EXPEDITION,
+        payload: {
+          prepId: 'run_fixture',
+          expectedRunSeed: preparedState({ money: 5000 }).runSeed,
+          loadout: fixtureLoadout()
+        }
+      })
+    ).expedition.visitedNodeIds
+    const specialNodeId = walkedNodeIds.find(nodeId => {
       const entry = map.meta[nodeId]
       return entry?.nodeClass === 'SPECIAL' && entry.routeStep > 0
     })
-    assert.ok(specialNodeId, 'the fixture route has no SPECIAL node')
+    assert.ok(specialNodeId, 'the walked route has no SPECIAL node')
     const specialStep = map.meta[specialNodeId].routeStep
     const started = startedWithContract('contract_route_target', specialNodeId)
     const atTarget = walkTo(started, specialStep)
     const targetNodeId = atTarget.expedition.visitedNodeIds.at(-1)
+    // The walk really did land on the node the Contract named.
+    assert.equal(targetNodeId, specialNodeId)
     assert.equal(
       atTarget.expedition.activeObligations[0].constraints[0].targetNodeId,
       targetNodeId
@@ -430,13 +445,13 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     )
   })
 
-  it('refuses every unmaterialized Event-rare claim a save can author', () => {
+  it('refuses every Event-rare claim a save can author', () => {
     // The seeded pool gate is not an authentication of the reward: it proves
     // only that *some* pressure event could open at the named step, never that
     // this event was selected or this result produced. Every field that would
-    // say so is authored by the save. So an unmaterialized Event rare is
-    // refused on load whatever step it names - including a step the gate did
-    // open, which is the case this test exists to pin down.
+    // say so is authored by the save. So an Event rare is refused on load
+    // whatever step it names - including a step the gate did open, which is
+    // the case this test exists to pin down.
     const atClosedGate = walkTo(startedState({ money: 5000 }), 2)
     const canonicalSourceId =
       'expedition_underground_invite:take_the_address:spare_parts_scavenged'
@@ -477,8 +492,11 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       'an open gate is not evidence that this reward was earned'
     )
 
-    // What survives a reload is a rare the run already materialized, because
-    // that is a state change the reducer made rather than a claim about one.
+    // `materialized` is no exception. It is settlement bookkeeping the save
+    // owns, not a state change the load can attribute to the reducer: a
+    // crafted save sets the flag and keeps an arbitrary canonical rare. The
+    // reward the flag describes was already applied to the player before the
+    // save was written, so nothing is owed twice by dropping the record.
     const materializedClaim = withClaim(atClosedGate.expedition, 0)
     assert.equal(
       eventRares({
@@ -488,7 +506,7 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
           materialized: true
         }))
       }).length,
-      1
+      0
     )
 
     // Still refused for an event the Director cannot place at all.

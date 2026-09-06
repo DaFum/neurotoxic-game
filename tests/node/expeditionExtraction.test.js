@@ -341,6 +341,50 @@ describe('COMPLETE_EXPEDITION', () => {
     }
   })
 
+  it('pays out a retained share above what the run earned', () => {
+    // Tour Pressure multiplies the terminally retained Money and Fame, so a
+    // completed run retains *more* than it earned. `moneyForfeited` clamps at
+    // zero and cannot express that, so a settlement that only ever subtracts
+    // the forfeited share paid the player nothing for the danger they bought.
+    const base = withResolvedFinale(
+      walkToFinale(startedState({ money: 5000, fame: 100 }))
+    )
+    const state = earn(
+      {
+        ...base,
+        expedition: {
+          ...base.expedition,
+          // Only the modifier list changes: the committed Region and Tour, and
+          // therefore the route this run walked, stay exactly as they were.
+          loadout: {
+            ...base.expedition.loadout,
+            pressureModifierIds: ['media_frenzy']
+          }
+        }
+      },
+      1000,
+      50
+    )
+
+    const next = gameReducer(state, {
+      type: ActionTypes.COMPLETE_EXPEDITION,
+      payload: {
+        finaleResultId: 'finale_result_1',
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+    const settlement = next.expedition.outcome?.settlement
+    // 1000 x 1.0 retention x 1.0 completion x 1.2 pressure.
+    assert.equal(settlement?.moneyEarned, 1000)
+    assert.equal(settlement?.moneyRetained, 1200)
+    assert.equal(settlement?.moneyForfeited, 0)
+    assert.equal(settlement?.fameRetained, 60)
+    assert.equal(settlement?.fameForfeited, 0)
+    // The bonus reaches the player rather than stopping at the outcome.
+    assert.equal(next.player.money, 5000 + 1200)
+    assert.equal(next.player.fame, 100 + 60)
+  })
+
   it('refuses completion anywhere but the Finale', () => {
     const state = walkTo(startedState(), WINDOW_STEP)
     assert.equal(

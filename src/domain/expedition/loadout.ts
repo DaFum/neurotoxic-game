@@ -285,16 +285,20 @@ export const getAvailablePressureModifierIds = (
  * what makes the offer set correct for the candidate being validated: the
  * committed loadout does not exist yet at START, and at PREPARE the player has
  * not chosen a Region or Tour at all, so a stored set is always staged against
- * inputs it could not have known.
+ * inputs it could not have known. The starter perk travels with the candidate
+ * for the same reason: `press_pass` biases the pool the build is choosing from,
+ * and that build is not committed anywhere this could read it back from.
  */
 export const getAvailableSponsorOfferIds = (
   state: GameState,
-  preparedMap: ExpeditionMap
+  preparedMap: ExpeditionMap,
+  starterPerkId: string | null = null
 ): readonly string[] =>
   buildPreparedExpeditionSponsorOffers(
     state,
     preparedMap.regionId,
-    preparedMap.tourTypeId
+    preparedMap.tourTypeId,
+    starterPerkId
   ).map(offer => offer.offerId)
 
 /**
@@ -552,8 +556,18 @@ export const validateExpeditionBuildCommitment = (
   const { sponsorOfferId } = build
   if (sponsorOfferId !== null) {
     if (typeof sponsorOfferId !== 'string') return reject('MALFORMED_CANDIDATE')
+    // The candidate's perk, not a validated one: an unavailable perk id is
+    // rejected a few checks below, so a pool widened by one can never be
+    // committed - it only keeps a legitimate `press_pass` build from being
+    // told its own staged offer is unknown.
     if (
-      !getAvailableSponsorOfferIds(state, preparedMap).includes(sponsorOfferId)
+      !getAvailableSponsorOfferIds(
+        state,
+        preparedMap,
+        typeof candidate.starterPerkId === 'string'
+          ? candidate.starterPerkId
+          : null
+      ).includes(sponsorOfferId)
     ) {
       return reject('SPONSOR_OFFER_UNKNOWN')
     }

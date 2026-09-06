@@ -301,9 +301,12 @@ export const handleStartExpedition = (
   const stagedSponsor =
     sponsorOfferId === null
       ? null
-      : buildPreparedExpeditionSponsorOffers(state, regionId, tourTypeId).find(
-          offer => offer.offerId === sponsorOfferId
-        )
+      : buildPreparedExpeditionSponsorOffers(
+          state,
+          regionId,
+          tourTypeId,
+          normalized.starterPerkId
+        ).find(offer => offer.offerId === sponsorOfferId)
   if (
     sponsorOfferId !== null &&
     (!stagedSponsor ||
@@ -781,25 +784,36 @@ export const handleAddExpeditionReward = (
  * Applies a finalized settlement to the player's Cash and Fame.
  *
  * @remarks
- * Only the *forfeited* share is deducted: the retained share is already in the
- * player's balance, and the pre-run balance plus the protected Career slice sit
- * below the run's baselines, so neither can be confiscated by a settlement.
+ * The run's earnings are already in the player's balance, so only the signed
+ * difference between what the run earned and what it retains is applied. That
+ * delta is negative for a shortfall - identical to deducting the forfeited
+ * share - and positive when the completion or Tour Pressure multiplier retains
+ * more than was earned, which `moneyForfeited` cannot express because it clamps
+ * at zero. The pre-run balance plus the protected Career slice sit below the
+ * run's baselines, so neither can be confiscated by a settlement.
  */
 const applyExpeditionSettlement = (
   state: GameState,
   settlement: ExpeditionSettlement
-): GameState => ({
-  ...state,
-  player: {
-    ...state.player,
-    money: clampPlayerMoney(
-      finiteNumberOr(state.player.money, 0) - settlement.moneyForfeited
-    ),
-    fame: clampPlayerFame(
-      finiteNumberOr(state.player.fame, 0) - settlement.fameForfeited
-    )
+): GameState => {
+  const moneyDelta =
+    finiteNumberOr(settlement.moneyRetained, 0) -
+    finiteNumberOr(settlement.moneyEarned, 0)
+  const fameDelta =
+    finiteNumberOr(settlement.fameRetained, 0) -
+    finiteNumberOr(settlement.fameEarned, 0)
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + moneyDelta
+      ),
+      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta)
+    }
   }
-})
+}
 
 /**
  * Materializes every retained reward exactly once.

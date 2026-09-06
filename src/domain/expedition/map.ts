@@ -619,12 +619,7 @@ export const getActiveExpeditionMap = (
 ): ExpeditionMap | null => {
   const loadout = state.expedition?.loadout
   if (state.expedition?.status !== 'active' || !loadout) return null
-  return buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
-  )
+  return buildExpeditionMap(state.runSeed, loadout.tourTypeId, loadout.regionId)
 }
 
 /**
