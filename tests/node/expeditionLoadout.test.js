@@ -30,7 +30,9 @@ import { ActionTypes } from '../../src/context/actionTypes'
 import { advanceDay } from '../../src/context/actionCreators'
 
 const TOUR = 'standard_tour'
-const REGION = 'industrial_belt'
+// A fresh Career's free Region. `industrial_belt` is sold from G5 on, so a
+// neutral fresh-career build has to name the one Region nothing gates.
+const REGION = 'home_turf'
 const SONG_A = [...SONGS_BY_ID.keys()][0]
 const SONG_B = [...SONGS_BY_ID.keys()][1]
 const CONTRABAND_A = [...CONTRABAND_BY_ID.keys()][0]

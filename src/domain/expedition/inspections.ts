@@ -17,6 +17,7 @@ import { getEffectiveExpeditionRules } from './effectiveRules'
 import { aggregateExpeditionModuleProfiles } from './modules'
 import { isExpeditionServiceLocation, resolveExpeditionRepair } from './repairs'
 import { getExpeditionTechnicalCondition } from './condition'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 /**
  * Baseline flat diagnostic fee for professional full service.
@@ -120,13 +121,22 @@ export const resolveExpeditionInspection = (
       }
 
       const defects = Array.isArray(tc.defects) ? tc.defects : []
-      const firstHidden = defects.find(d => d.status === 'hidden')
+      const hidden = defects.filter(d => d.status === 'hidden')
+      // A trained crew finds everything wrong with the rig in one pass; an
+      // untrained one finds the first thing. That is what `advanced_inspection`
+      // is sold for, and it is the whole difference.
+      const revealed = isExpeditionCapabilityUnlocked(
+        state.career?.unlockedSetIds,
+        'advanced_inspection'
+      )
+        ? hidden
+        : hidden.slice(0, 1)
       return {
         ok: true,
         result: {
           mode: 'crew_inspection',
           diagnosticFee: 0,
-          revealedDefectIds: firstHidden ? [firstHidden.id] : []
+          revealedDefectIds: revealed.map(defect => defect.id)
         }
       }
     }

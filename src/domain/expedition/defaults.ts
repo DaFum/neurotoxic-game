@@ -70,8 +70,26 @@ export const NEUTRAL_EXPEDITION_ROUTE_PROFILE: ExpeditionRouteProfile = {
  */
 export const BASE_EXPEDITION_TOUR_TYPE_ID = 'standard_tour' as const
 
-/** Home region the G1 baseline commits before G5 owns the Region registry. */
+/**
+ * Home region the G1 baseline commits before G5 owns the Region registry.
+ *
+ * @remarks
+ * Still the route baseline every pre-G5 seed and fixture is pinned to. It is
+ * deliberately *not* the free Region any more: see
+ * {@link FREE_EXPEDITION_REGION_ID}.
+ */
 export const BASE_EXPEDITION_REGION_ID = 'industrial_belt' as const
+
+/**
+ * The Region a Career with no unlock set may always book.
+ *
+ * @remarks
+ * A fresh Career tours `home_turf` on a `standard_tour`. Separate from
+ * {@link BASE_EXPEDITION_REGION_ID} on purpose: changing that constant would
+ * move every pinned route, while what actually needed to change is which
+ * Region is free.
+ */
+export const FREE_EXPEDITION_REGION_ID = 'home_turf' as const
 
 /**
  * Builds the idle Expedition slice.

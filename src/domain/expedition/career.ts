@@ -2,6 +2,8 @@ import type { CareerState } from '../../types/career'
 import type { GameState } from '../../types'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 
 export const createInitialCareerState = (): CareerState => ({
   crewById: Object.create(null) as CareerState['crewById'],
@@ -48,9 +50,26 @@ export const getEligibleCrewSignatureTrait = (
     state.career.crewRecoveryDebtById[crewId]
   )
     return null
+  // The set the Career paid for is the gate, not a loyalty threshold alone.
   if (
-    Object.hasOwn(state.career.hqFacilityLevels, 'crew_lounge') &&
-    (state.career.hqFacilityLevels.crew_lounge ?? 0) < 1
+    !isExpeditionCapabilityUnlocked(
+      state.career?.unlockedSetIds,
+      'crew_signature_traits'
+    )
+  )
+    return null
+  // An absent `crew_lounge` key means level 0, not "no requirement": the
+  // previous `Object.hasOwn` guard let a Career that had never built the
+  // facility through, which is the one case the requirement exists for.
+  if (
+    Math.floor(
+      finiteNumberOr(
+        Object.hasOwn(state.career.hqFacilityLevels, 'crew_lounge')
+          ? state.career.hqFacilityLevels.crew_lounge
+          : 0,
+        0
+      )
+    ) < 1
   )
     return null
   return EXPEDITION_CREW_SIGNATURE_BY_ROLE[definition.role]

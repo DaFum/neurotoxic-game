@@ -392,7 +392,17 @@ const updatePassiveEffectsAndMembers = (
     nextBand.harmony = nextHarmonySoundproofing
   }
 
-  if (nextBand.harmonyRegenTravel) {
+  // The Mobile Studio's effect is this persisted flag rather than an
+  // `hqUpgrades` id, so it needs the policy gate spelled out: it is
+  // `between_tours_only` like the rest of the comfort catalog, and an old save
+  // that owns it must not keep regenerating Harmony on the road.
+  if (
+    nextBand.harmonyRegenTravel &&
+    isExpeditionLegacyHqEffectActive(
+      expeditionPolicy.isActive,
+      'hq_van_sound_system'
+    )
+  ) {
     // increase harmony by 5 then clamp — matches the travel/arrival regen
     // (processHarmonyRegen in useArrivalLogic); wrap the addend so a
     // stale undefined/NaN harmony does not silently drop the bonus.

@@ -265,8 +265,20 @@ export function usePersistence({
     )
   }, [addToast, tRef])
 
+  /**
+   * Writes the save, reporting whether the write actually landed.
+   *
+   * @remarks
+   * The boolean exists for the crash-safe unlock journal: a caller that
+   * persists a marker between a debit and a grant has to know whether the
+   * marker survived, or it cannot decide between committing and refunding.
+   * Every other caller ignores it.
+   */
   const saveGame = useCallback(
-    (showToast = true, stateSnapshot: GameState = stateRef.current) => {
+    (
+      showToast = true,
+      stateSnapshot: GameState = stateRef.current
+    ): boolean => {
       const saveData = createPersistedState(stateSnapshot, clock)
 
       const success = safeStorageOperation(
@@ -311,6 +323,7 @@ export function usePersistence({
       } else {
         handleError(new StorageError('Failed to save game'), { addToast })
       }
+      return success === true
     },
     [addToast, clock, notifyStorageDegraded, stateRef, storage, tRef]
   )

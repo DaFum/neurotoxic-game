@@ -20,14 +20,20 @@ import {
   preparedState,
   startedState,
   walkTo,
-  walkToFinale
+  walkToFinale,
+  withExpeditionCapabilities
 } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
 
 /** Starts the fixture run carrying one native Contract. */
 const startedWithContract = (templateId, targetNodeId = null) => {
-  const prepared = preparedState({ money: 5000 })
+  // The subject is the reward ledger, not the Contract pool gate:
+  // `contract_three_good_gigs` is a performance Contract, which
+  // `festival_network` sells from G5 on.
+  const prepared = withExpeditionCapabilities(preparedState({ money: 5000 }), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {

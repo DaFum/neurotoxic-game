@@ -154,6 +154,10 @@ describe('TourPrep scene', () => {
       ...base.expedition,
       preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
     }
+    // `contract_three_good_gigs` is a performance Contract, and that pool is
+    // what `festival_network` sells. The subject here is the commit, not the
+    // pool gate, so the Career owns the set.
+    base.career = { ...base.career, unlockedSetIds: ['festival_network'] }
     state.current = base
     render(<TourPrep />)
 

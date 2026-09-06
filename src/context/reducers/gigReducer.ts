@@ -361,25 +361,30 @@ export const handleSetLastGigStats = (
   // treated as passing — matching the crisis/consequence event conditions.
   const accuracy = finiteNumberOr(safePayload.accuracy, 100)
   const gigFailed = safePayload.failed === true
-  // Region reputation and region-scoped quest events are keyed per city.
-  // player.location is the `venues:<id>.name` display key, so derive the
-  // canonical city key — checkVenueAccess reads the same key for the
-  // regional booking ban.
+  // Two keys, deliberately not one.
   //
-  // During an Expedition the committed Region is the authority instead. The
-  // run's nodes are `exp_<layer>_<index>`, so the city derivation would credit
-  // every Expedition gig to a single `exp` key and no Region would ever build
-  // reputation. This is deliberately scoped to the producer rather than folded
-  // into `getRegionKeyForLocation`: quest scopes and the overworld systems
-  // still need their existing city keys.
+  // `cityRegion` is the canonical city key: player.location is the
+  // `venues:<id>.name` display key, and checkVenueAccess, `perRegion` quest
+  // scopes and the regional booking ban all resolve the same derivation. Every
+  // venue/quest producer below keeps it, in an Expedition or out of one.
+  //
+  // `reputationRegion` is what `reputationByRegion` is keyed by. During a run
+  // that is the committed Expedition Region: the run's nodes are
+  // `exp_<layer>_<index>`, so the city derivation would credit every
+  // Expedition gig to a single `exp` key and no Region would ever build
+  // reputation. Collapsing the two would silently move city-scoped quest
+  // semantics onto Expedition Region ids, which is exactly what this split
+  // exists to prevent.
+  const cityRegion =
+    getRegionKeyForLocation(state.player?.location) || 'Unknown'
   const expeditionRegionId =
     state.expedition?.status === 'active'
       ? state.expedition.loadout?.regionId
       : null
-  const location =
-    (typeof expeditionRegionId === 'string' && expeditionRegionId.length > 0
+  const reputationRegion =
+    typeof expeditionRegionId === 'string' && expeditionRegionId.length > 0
       ? expeditionRegionId
-      : getRegionKeyForLocation(state.player?.location)) || 'Unknown'
+      : cityRegion
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)
@@ -392,7 +397,7 @@ export const handleSetLastGigStats = (
       score,
       capacity: finiteNumberOr(capacity, 0),
       venueId: state.currentGig?.id || '',
-      region: location
+      region: cityRegion
     })
   )
   nextState = QuestEvents.emit(
@@ -400,38 +405,38 @@ export const handleSetLastGigStats = (
     createVenueGigCompletedQuestEvent({
       score,
       venueId: state.currentGig?.id || '',
-      region: location
+      region: cityRegion
     })
   )
 
   if (gigFailed || accuracy < 30) {
-    if (!isForbiddenKey(location)) {
+    if (!isForbiddenKey(reputationRegion)) {
       const currentRep = finiteNumberOr(
-        nextState.reputationByRegion[location],
+        nextState.reputationByRegion[reputationRegion],
         0
       )
       const nextRep = clampReputation(currentRep - 10)
       // Emit the quest event only when reputation actually changed (it can
       // already sit at the clamp floor after repeated disasters).
       if (nextRep < currentRep) {
-        nextState.reputationByRegion[location] = nextRep
+        nextState.reputationByRegion[reputationRegion] = nextRep
         nextState = QuestEvents.emit(
           nextState,
           createRegionReputationChangedQuestEvent({
-            region: location,
+            region: reputationRegion,
             amount: nextRep - currentRep,
             reason: 'bad_gig'
           })
         )
         logger.warn(
           'GameState',
-          `Regional reputation loss in ${location} due to poor gig performance (-10)`
+          `Regional reputation loss in ${reputationRegion} due to poor gig performance (-10)`
         )
       }
       // Blacklisting stays outside the change guard so repeated poor shows
       // at the reputation floor still trigger it.
       if (
-        finiteNumberOr(nextState.reputationByRegion[location], 0) <=
+        finiteNumberOr(nextState.reputationByRegion[reputationRegion], 0) <=
         REGION_BLACKLIST_THRESHOLD
       ) {
         const gigVenueId = state.currentGig?.id || 'unknown_venue'
@@ -445,26 +450,26 @@ export const handleSetLastGigStats = (
     nextState = handleRecordBadShow(nextState)
   } else if (accuracy >= 60) {
     // Increase reputation on good gigs up to 100 max
-    if (!isForbiddenKey(location)) {
+    if (!isForbiddenKey(reputationRegion)) {
       const currentRep = finiteNumberOr(
-        nextState.reputationByRegion[location],
+        nextState.reputationByRegion[reputationRegion],
         0
       )
       const bonus = accuracy >= 90 ? 10 : 5
       const nextRep = clampReputation(currentRep + bonus)
       if (nextRep > currentRep) {
-        nextState.reputationByRegion[location] = nextRep
+        nextState.reputationByRegion[reputationRegion] = nextRep
         nextState = QuestEvents.emit(
           nextState,
           createRegionReputationChangedQuestEvent({
-            region: location,
+            region: reputationRegion,
             amount: nextRep - currentRep,
             reason: 'good_gig'
           })
         )
         logger.info(
           'GameState',
-          `Regional reputation gain in ${location} (+${bonus})`
+          `Regional reputation gain in ${reputationRegion} (+${bonus})`
         )
       }
     }
@@ -476,7 +481,7 @@ export const handleSetLastGigStats = (
         score,
         capacity: finiteNumberOr(capacity, 0),
         venueId: state.currentGig?.id || '',
-        region: location
+        region: cityRegion
       })
     )
     nextState = QuestEvents.emit(
@@ -485,7 +490,7 @@ export const handleSetLastGigStats = (
         score,
         capacity: capacity ?? undefined,
         venueId: state.currentGig?.id || '',
-        region: location
+        region: cityRegion
       })
     )
     if (capacity !== null && capacity <= 300) {
@@ -495,7 +500,7 @@ export const handleSetLastGigStats = (
           score,
           capacity,
           venueId: state.currentGig?.id || '',
-          region: location
+          region: cityRegion
         })
       )
     }

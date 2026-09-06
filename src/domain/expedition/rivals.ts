@@ -4,6 +4,7 @@ import { mulberry32 } from '../../utils/seededRng'
 import { hashString } from '../../utils/stringUtils'
 import type { GameState, RivalBandState } from '../../types'
 import type { CareerRivalRecord } from '../../types/career'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import type {
   ExpeditionMap,
   ExpeditionRouteProfile
@@ -45,7 +46,16 @@ export const selectExpeditionRivalForRun = (
   if (!routeOffersRival && !routeProfile.forcedRival && !route.forcedRival) {
     return null
   }
-  const existing = Object.values(state.career.rivalsById)
+  // Continuing a feud is what `rival_network` sells. Without it every run draws
+  // a fresh Rival, so the Nemesis ladder - and every rule change hanging off
+  // it - is only reachable once the Career has bought the continuation.
+  const canContinueFeud = isExpeditionCapabilityUnlocked(
+    state.career?.unlockedSetIds,
+    'rival_quest_continuation'
+  )
+  const existing = (
+    canContinueFeud ? Object.values(state.career.rivalsById) : []
+  )
     .filter(
       record =>
         !record.snapshot.preferredRegionId ||

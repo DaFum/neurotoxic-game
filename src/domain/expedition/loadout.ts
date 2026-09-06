@@ -29,7 +29,7 @@ import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
 import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
 import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
 import {
-  BASE_EXPEDITION_REGION_ID,
+  FREE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from './defaults'
@@ -155,10 +155,16 @@ const TOUR_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
 }
 
 const REGION_CAPABILITY: Readonly<Record<string, ExpeditionCapabilityId>> = {
+  industrial_belt: 'region_industrial_belt',
   corporate_circuit: 'region_corporate_circuit',
   underground_scene: 'region_underground_scene',
   festival_fields: 'region_festival_fields'
 }
+
+/**
+ * The highest chassis tier a Career may tour in without buying the capability.
+ */
+const FREE_EXPEDITION_CHASSIS_TIER = 1
 
 /**
  * Whether the Career has bought its way to an id, or never needed to.
@@ -206,16 +212,19 @@ export const getAvailableExpeditionTourTypeIds = (
  *
  * @remarks
  * Same rule as the Tours above: registered and unlocked. `home_turf` is the
- * plan's numeric baseline and carries no gate, so a fresh Career always has
- * somewhere to go besides the pre-G5 Region.
+ * one free Region, so a fresh Career always has somewhere to go. Everything
+ * else is sold, `industrial_belt` included: it is the pre-G5 route baseline,
+ * but keeping it free would make the `region_industrial_belt` capability that
+ * `mechanic_network` charges Tokens for dead inventory. A run that already
+ * committed it keeps it - this list only gates new bookings.
  */
 export const getAvailableExpeditionRegionIds = (
   state: GameState
 ): readonly string[] => [
-  BASE_EXPEDITION_REGION_ID,
+  FREE_EXPEDITION_REGION_ID,
   ...Object.keys(EXPEDITION_REGIONS).filter(
     id =>
-      id !== BASE_EXPEDITION_REGION_ID &&
+      id !== FREE_EXPEDITION_REGION_ID &&
       isAvailableById(state, id, REGION_CAPABILITY)
   )
 ]
@@ -285,14 +294,24 @@ export const getAvailableSponsorOfferIds = (
  * @remarks G4 owns native Contracts and extends this in place.
  */
 export const getAvailableNativeContractTemplateIds = (
-  _state: GameState,
+  state: GameState,
   preparedMap: ExpeditionMap
-): readonly string[] =>
-  [...EXPEDITION_CONTRACTS_BY_ID.values()]
+): readonly string[] => {
+  // `performance_contract_pool` is what `festival_network` charges for: the
+  // performance-kind templates are the ones a Career books on its reputation
+  // rather than on the route it happens to have drawn.
+  const hasPerformancePool = isExpeditionCapabilityUnlocked(
+    state.career?.unlockedSetIds,
+    'performance_contract_pool'
+  )
+  return [...EXPEDITION_CONTRACTS_BY_ID.values()]
     .filter(
-      template => materializeContractConstraints(template, preparedMap) !== null
+      template =>
+        (template.kind !== 'performance' || hasPerformancePool) &&
+        materializeContractConstraints(template, preparedMap) !== null
     )
     .map(template => template.id)
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -429,6 +448,19 @@ export const validateExpeditionBuildCommitment = (
   } else {
     const chassis = resolveCommittedChassis(state, activeTourbusAssetId)
     if (!chassis) return reject('MODULES_DRIFT')
+    // Owning the bus is not the same as being allowed to tour in it. A tier
+    // above the free ceiling is what `chassis_higher_tier` is sold for, so the
+    // gate lives on the commitment rather than on the purchase.
+    if (
+      Math.floor(finiteNumberOr(chassis.chassisTier, 1)) >
+        FREE_EXPEDITION_CHASSIS_TIER &&
+      !isExpeditionCapabilityUnlocked(
+        state.career?.unlockedSetIds,
+        'chassis_higher_tier'
+      )
+    ) {
+      return reject('CHASSIS_TIER_LOCKED')
+    }
     normalizedModuleIds = getInstalledModuleIds(chassis)
     const committed = [...selectedTourbusModuleIds].sort()
     if (

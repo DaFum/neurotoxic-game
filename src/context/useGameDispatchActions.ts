@@ -30,7 +30,13 @@ import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
+import { gameReducer } from './gameReducer'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
+import {
+  createBeginExpeditionUnlockPurchaseAction,
+  createCompleteExpeditionUnlockPurchaseAction,
+  createRollbackExpeditionUnlockPurchaseAction
+} from './careerActionCreators'
 import {
   useFacilityDispatchActions,
   type FacilityDispatchActions
@@ -292,6 +298,20 @@ type BaseGameDispatchActions = {
     expectedTraitId: string,
     sourceId: string
   ) => void
+  /**
+   * Buys one unlock set through the crash-safe journal.
+   *
+   * @param setId - Set to buy.
+   * @returns True once the set is granted.
+   *
+   * @remarks
+   * The whole three-step sequence behind one command: debit and open the
+   * journal entry, persist the marker, then grant - or refund if the marker
+   * did not survive. Exposing the steps individually would let a caller debit
+   * without ever committing, which is the state the journal exists to make
+   * recoverable rather than reachable.
+   */
+  purchaseExpeditionUnlockSet: (setId: string) => boolean
 }
 
 /**
@@ -535,6 +555,33 @@ export function useGameDispatchActions({
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
+  const purchaseExpeditionUnlockSet = useCallback(
+    (setId: string): boolean => {
+      const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
+      // The reducer is the authority on whether this purchase is legal, so the
+      // outcome is taken from the reducer itself rather than re-checked here
+      // against rules that could drift. `dispatch` does not update `stateRef`
+      // synchronously, so the committed state is computed rather than read
+      // back - and it is byte-identical to what the dispatch below commits,
+      // because the reducer is pure.
+      const opened = gameReducer(stateRef.current, beginAction)
+      if (opened.career.pendingUnlockPurchase?.setId !== setId) return false
+
+      dispatch(beginAction)
+      // Persist the marker *before* granting, from the exact post-debit state.
+      // A process that dies here leaves a save saying precisely what was taken
+      // and what for, which is what lets the load path settle it rather than
+      // silently losing the balance.
+      if (!saveGame(false, opened)) {
+        dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
+        return false
+      }
+      dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
+      return true
+    },
+    [dispatch, saveGame, stateRef]
+  )
+
   return useMemo(
     () => ({
       changeScene,
@@ -557,7 +604,8 @@ export function useGameDispatchActions({
       ...rivalBandActions,
       ...assetActions,
       ...expeditionActions,
-      ...careerActions
+      ...careerActions,
+      purchaseExpeditionUnlockSet
     }),
     [
       changeScene,
@@ -580,7 +628,8 @@ export function useGameDispatchActions({
       rivalBandActions,
       assetActions,
       expeditionActions,
-      careerActions
+      careerActions,
+      purchaseExpeditionUnlockSet
     ]
   )
 }

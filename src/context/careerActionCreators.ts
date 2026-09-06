@@ -64,3 +64,56 @@ export const createAcquireExpeditionCrewSignatureAction = (
     sourceId
   }
 })
+
+/**
+ * Opens the unlock-purchase journal entry and debits the Tokens.
+ *
+ * @param setId - Set being bought.
+ * @returns The typed action.
+ *
+ * @remarks
+ * Step one of three. Carries the set id alone: rank, facility level and cost
+ * are all re-derived in the reducer, so a caller chooses *what* to buy and
+ * never what it costs or whether it is allowed.
+ */
+export const createBeginExpeditionUnlockPurchaseAction = (
+  setId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE }
+> => ({
+  type: ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE,
+  payload: { setId }
+})
+
+/**
+ * Grants the set the open journal entry paid for.
+ *
+ * @param setId - Set being completed; must match the open entry.
+ * @returns The typed action.
+ */
+export const createCompleteExpeditionUnlockPurchaseAction = (
+  setId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE }
+> => ({
+  type: ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE,
+  payload: { setId }
+})
+
+/**
+ * Refunds the open journal entry and grants nothing.
+ *
+ * @param setId - Set being rolled back; must match the open entry.
+ * @returns The typed action.
+ */
+export const createRollbackExpeditionUnlockPurchaseAction = (
+  setId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE }
+> => ({
+  type: ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE,
+  payload: { setId }
+})

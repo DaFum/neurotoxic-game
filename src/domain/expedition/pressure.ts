@@ -8,6 +8,7 @@ import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
 import { getExpeditionRoutePressureProfile } from './routeProfile'
 import { getExpeditionFameProfile } from './fame'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 export interface PressureDirectorContext {
   heat: number
@@ -312,8 +313,19 @@ export const applyExpeditionPressureEventResolution = (
         }
       : consumed
 
+  // `black_market_content` gates the Black Market *interaction*, never the
+  // route. The map is still built from seed, Region, Tour and the static
+  // registry alone, so a fresh Career can draw an Underground-heavy route and
+  // gets the identical `mapHash` - it simply cannot work the market yet. The
+  // capability proves only that the event was allowed to be selected; it says
+  // nothing about whether it actually fired, so the Event-rare proof and its
+  // load sanitizer are untouched.
   if (
     event.id !== 'expedition_underground_invite' ||
+    !isExpeditionCapabilityUnlocked(
+      state.career?.unlockedSetIds,
+      'black_market_content'
+    ) ||
     pressure.heat < 60 ||
     pressure.temporaryRouteOpportunity !== null ||
     state.expedition.runId === null ||

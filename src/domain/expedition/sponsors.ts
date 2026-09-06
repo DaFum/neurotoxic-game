@@ -19,6 +19,7 @@ import {
   createBrandTrustChangedQuestEvent
 } from '../../quests/producers/brandQuestEvents'
 import { createMoneyEarnedQuestEvent } from '../../quests/producers/economyQuestEvents'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 const sponsorSeed = (seed: number): number =>
   Number.parseInt(
@@ -98,9 +99,18 @@ export const buildPreparedExpeditionSponsorOffers = (
     mulberry32(sponsorSeed(state.runSeed))
   )
   const genuine = generated.filter(offer => !offer.flavor.isStretched)
+  // `premium_sponsor_pool` buys *quality*, never count: one more of the staged
+  // offers is guaranteed to be a genuine match rather than a stretched one, so
+  // the Career sees the same number of offers and fewer of them are filler.
   const promoted = genuine.slice(
     0,
-    getExpeditionFameProfile(state).sponsorQualityBias
+    getExpeditionFameProfile(state).sponsorQualityBias +
+      (isExpeditionCapabilityUnlocked(
+        state.career?.unlockedSetIds,
+        'premium_sponsor_pool'
+      )
+        ? 1
+        : 0)
   )
   const promotedIds = new Set(promoted.map(offer => offer.id))
   return [...promoted, ...generated.filter(offer => !promotedIds.has(offer.id))]

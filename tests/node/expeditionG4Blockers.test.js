@@ -24,7 +24,8 @@ import {
   fixtureMap,
   firstExtractionRouteStep,
   walkTo,
-  walkToFinale
+  walkToFinale,
+  withExpeditionCapabilities
 } from '../expeditionLifecycleFixture.js'
 import {
   applyExpeditionPressureEventResolution,
@@ -221,7 +222,11 @@ test('career rival sanitizer rejects coercible enum impostors', () => {
 })
 
 test('active obligations survive validated load sanitization', () => {
-  const prepared = preparedState()
+  // A performance Contract; `festival_network` sells that pool from G5 on,
+  // and this test's subject is the obligation, not the pool gate.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -497,7 +502,11 @@ test('handleResolveExpeditionSocialResult rejects caller-authored mismatch or un
 })
 
 test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy fails minAccuracy or is forged', () => {
-  const prepared = preparedState()
+  // A performance Contract; `festival_network` sells that pool from G5 on,
+  // and this test's subject is the obligation, not the pool gate.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -891,7 +900,11 @@ test('sanitizeExpeditionState refuses forged terminal-contract progress', () => 
 })
 
 test('the Underground detour opens only once the player resolves the invite', () => {
-  const prepared = preparedState()
+  // Working the Black Market is what `underground_network` sells; the subject
+  // here is the detour's own gate, so the capability is granted explicitly.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'underground_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -1218,8 +1231,64 @@ test('a route advance runs one deterministic Director step', () => {
   )
 })
 
+test('the Black Market interaction is sold, and the route is not', () => {
+  const invite = 'expedition_underground_invite'
+  const startRun = career => {
+    const prepared = withExpeditionCapabilities(preparedState(), career)
+    return gameReducer(prepared, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: prepared.expedition.prep.prepId,
+        expectedRunSeed: prepared.runSeed,
+        loadout: fixtureLoadout()
+      }
+    })
+  }
+  const hot = state => ({
+    ...state,
+    expedition: {
+      ...state.expedition,
+      pressure: {
+        ...state.expedition.pressure,
+        heat: 70,
+        pendingDirectorEventId: invite
+      }
+    }
+  })
+  const map = fixtureMap()
+  const opened = state =>
+    applyExpeditionPressureEventResolution(hot(state), invite, map)
+      .temporaryRouteOpportunity
+
+  // A fresh Career draws the same route and the same invite, and the market
+  // stays shut.
+  const fresh = startRun([])
+  const bought = startRun(['underground_network'])
+  assert.equal(opened(fresh), null)
+  assert.ok(opened(bought))
+
+  // The capability must never reach the map: same seed, Region and Tour means
+  // the same route, unlock set or not.
+  assert.equal(
+    buildExpeditionMap(
+      fresh.runSeed,
+      fresh.expedition.loadout.tourTypeId,
+      fresh.expedition.loadout.regionId
+    ).mapHash,
+    buildExpeditionMap(
+      bought.runSeed,
+      bought.expedition.loadout.tourTypeId,
+      bought.expedition.loadout.regionId
+    ).mapHash
+  )
+})
+
 test('a forged temporary route opportunity does not survive a load', () => {
-  const prepared = preparedState()
+  // Working the Black Market is what `underground_network` sells; the subject
+  // here is the detour's own gate, so the capability is granted explicitly.
+  const prepared = withExpeditionCapabilities(preparedState(), [
+    'underground_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -1524,7 +1593,10 @@ test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
     fresh.player.fame = 100
     fresh.player.van.fuel = 100
     const prepared = gameReducer(
-      { ...fresh, career },
+      // Carrying a feud between runs is what `rival_network` sells. The ladder
+      // is this test's subject, so the continuation right is granted rather
+      // than re-tested here.
+      { ...fresh, career: { ...career, unlockedSetIds: ['rival_network'] } },
       {
         type: ActionTypes.PREPARE_EXPEDITION_RUN,
         payload: { prepId, runSeed: 4242 }

@@ -25,7 +25,43 @@ import {
   getAvailableExpeditionTourTypeIds
 } from '../../src/domain/expedition/loadout'
 import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers'
+import { createInitialState } from '../../src/context/initialState'
+import { getEligibleCrewSignatureTrait } from '../../src/domain/expedition/career'
 import { startedState } from '../expeditionLifecycleFixture.js'
+
+/**
+ * Every sold capability and the production path that makes it authoritative.
+ *
+ * @remarks
+ * Hand-written on purpose: it is the list a reviewer can check against the
+ * code. A capability that reaches the registry without an entry here is dead
+ * inventory - the Career is charged Tokens for something no availability path
+ * consults - and the registry test below fails rather than shipping it.
+ */
+const CAPABILITY_CONSUMERS = new Map([
+  ['region_industrial_belt', 'getAvailableExpeditionRegionIds'],
+  ['region_corporate_circuit', 'getAvailableExpeditionRegionIds'],
+  ['region_underground_scene', 'getAvailableExpeditionRegionIds'],
+  ['region_festival_fields', 'getAvailableExpeditionRegionIds'],
+  ['tour_survival_tour', 'getAvailableExpeditionTourTypeIds'],
+  ['tour_corporate_tour', 'getAvailableExpeditionTourTypeIds'],
+  ['tour_underground_tour', 'getAvailableExpeditionTourTypeIds'],
+  ['tour_blitz_tour', 'getAvailableExpeditionTourTypeIds'],
+  ['tour_rival_hunt_tour', 'getAvailableExpeditionTourTypeIds'],
+  ['crew_manager', 'isCrewAvailable'],
+  ['crew_security', 'isCrewAvailable'],
+  ['crew_signature_traits', 'getEligibleCrewSignatureTrait'],
+  ['perk_mechanic_kit', 'getAvailableStarterPerkIds'],
+  ['perk_press_pass', 'getAvailableStarterPerkIds'],
+  ['perk_underground_contact', 'getAvailableStarterPerkIds'],
+  ['perk_rehearsed_set', 'getAvailableStarterPerkIds'],
+  ['chassis_higher_tier', 'validateExpeditionBuildCommitment'],
+  ['advanced_inspection', 'getExpeditionInspectionCapability'],
+  ['premium_sponsor_pool', 'getAvailableExpeditionSponsorOfferIds'],
+  ['performance_contract_pool', 'getAvailableExpeditionSponsorOfferIds'],
+  ['black_market_content', 'getAvailableExpeditionSponsorOfferIds'],
+  ['rival_quest_continuation', 'selectExpeditionRivalForRun']
+])
 
 /** A Career that satisfies everything one set needs, and nothing more. */
 const readyFor = (setId, overrides = {}) => {
@@ -146,16 +182,15 @@ describe('G5 — capability is the only question a consumer asks', () => {
 })
 
 describe('G5 — availability follows the capability', () => {
-  it('offers only the baseline pair to a fresh Career', () => {
+  it('offers exactly home_turf and standard_tour to a fresh Career', () => {
     const fresh = startedState({ money: 5000 })
     assert.deepEqual(getAvailableExpeditionTourTypeIds(fresh), [
       'standard_tour'
     ])
-    // `home_turf` is the plan's numeric baseline and carries no gate.
-    assert.deepEqual(getAvailableExpeditionRegionIds(fresh).slice().sort(), [
-      'home_turf',
-      'industrial_belt'
-    ])
+    // One free Region, and it is the only one. `industrial_belt` is the
+    // pre-G5 route baseline but it is sold now, so leaving it here would
+    // make `region_industrial_belt` dead inventory.
+    assert.deepEqual(getAvailableExpeditionRegionIds(fresh), ['home_turf'])
   })
 
   it('opens exactly what the bought set is worth', () => {
@@ -313,5 +348,73 @@ describe('G5 — the journal survives a load', () => {
       ]
     })
     assert.deepEqual(sanitized.unlockedSetIds, ['mechanic_network'])
+  })
+})
+
+describe('G5 — every sold capability is authoritative somewhere', () => {
+  /** A fresh Career, optionally owning some sets. */
+  const careerWith = (...setIds) => {
+    const base = createInitialState()
+    return { ...base, career: { ...base.career, unlockedSetIds: setIds } }
+  }
+
+  it('sells no capability that nothing gates', () => {
+    // Dead inventory is the failure mode: a set that charges Tokens for a
+    // capability no availability path consults.
+    const gated = new Set([
+      ...Object.keys(EXPEDITION_UNLOCK_SETS).flatMap(
+        setId => EXPEDITION_UNLOCK_SETS[setId].capabilities
+      )
+    ])
+    for (const capabilityId of gated) {
+      assert.ok(
+        CAPABILITY_CONSUMERS.has(capabilityId),
+        `${capabilityId} is sold but has no named consumer`
+      )
+    }
+  })
+
+  it('gates industrial_belt rather than handing it out free', () => {
+    assert.ok(
+      !getAvailableExpeditionRegionIds(careerWith()).includes('industrial_belt')
+    )
+    assert.ok(
+      getAvailableExpeditionRegionIds(careerWith('mechanic_network')).includes(
+        'industrial_belt'
+      )
+    )
+    // The free Region is still free.
+    assert.ok(
+      getAvailableExpeditionRegionIds(careerWith()).includes('home_turf')
+    )
+  })
+
+  it('gates a Crew signature trait on the set and the built facility', () => {
+    const eligible = overrides => {
+      const base = careerWith('crew_network')
+      return getEligibleCrewSignatureTrait(
+        {
+          ...base,
+          career: {
+            ...base.career,
+            crewById: {
+              mika: {
+                loyalty: 80,
+                storyProgress: 5,
+                signatureTraitId: null,
+                unavailableUntilCompletedRunCount: 0
+              }
+            },
+            hqFacilityLevels: { crew_lounge: 1 },
+            ...overrides
+          }
+        },
+        'mika'
+      )
+    }
+    assert.ok(eligible({}))
+    // An unbuilt lounge is level 0, not "no requirement".
+    assert.equal(eligible({ hqFacilityLevels: {} }), null)
+    assert.equal(eligible({ unlockedSetIds: [] }), null)
   })
 })

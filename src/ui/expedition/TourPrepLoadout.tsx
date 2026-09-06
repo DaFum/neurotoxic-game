@@ -8,7 +8,7 @@ import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
 import { SONGS_BY_ID } from '../../data/songs'
 import {
-  BASE_EXPEDITION_REGION_ID,
+  FREE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
   MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from '../../domain/expedition/defaults'
@@ -91,7 +91,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const [tourTypeId, setTourTypeId] = useState<string>(
     BASE_EXPEDITION_TOUR_TYPE_ID
   )
-  const [regionId, setRegionId] = useState<string>(BASE_EXPEDITION_REGION_ID)
+  const [regionId, setRegionId] = useState<string>(FREE_EXPEDITION_REGION_ID)
 
   const availableTourTypeIds = useMemo(
     () => getAvailableExpeditionTourTypeIds(state),

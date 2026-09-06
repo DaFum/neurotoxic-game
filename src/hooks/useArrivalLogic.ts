@@ -165,7 +165,10 @@ export const useArrivalLogic = ({
       advanceDay()
 
       // 2. Harmony Regen (if applicable)
-      const newHarmony = processHarmonyRegen(band)
+      const newHarmony = processHarmonyRegen(
+        band,
+        expedition?.status === 'active'
+      )
       if (newHarmony !== null) {
         updateBand({ harmony: newHarmony })
       }

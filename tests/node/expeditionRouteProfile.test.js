@@ -312,10 +312,12 @@ describe('G5 — a registered Region or Tour is one a run can actually book', ()
     )
   })
 
-  it('keeps the pre-G5 baseline pair first so existing runs still resolve', () => {
+  it('puts the free fresh-Career pair first so a new run always resolves', () => {
     const state = startedState({ money: 5000 })
     assert.equal(getAvailableExpeditionTourTypeIds(state)[0], 'standard_tour')
-    assert.equal(getAvailableExpeditionRegionIds(state)[0], 'industrial_belt')
+    // `industrial_belt` is the pre-G5 *route* baseline but it is sold now, so
+    // the pair a fresh Career can actually book is `home_turf`.
+    assert.equal(getAvailableExpeditionRegionIds(state)[0], 'home_turf')
   })
 
   it('does not reject any registered pair as TOUR_OR_REGION_UNKNOWN', () => {

@@ -25,18 +25,50 @@ import {
   createSettleExpeditionCrewCareerAction
 } from '../../src/context/careerActionCreators.ts'
 
-test('six baseline crew are available and selection is bounded', () => {
+test('four free crew are available and selection is bounded', () => {
   const state = createInitialState()
   assert.equal(EXPEDITION_CREW.length, 6)
-  assert.equal(getAvailableCrewIds(state).length, 6)
+  // Manager and Security are what `industry_network` and `underground_network`
+  // are sold for, so a fresh Career fields the other four.
+  assert.deepEqual(getAvailableCrewIds(state), ['mika', 'tom', 'ines', 'noah'])
   assert.equal(
     validateExpeditionCrewSelection(state, ['mika', 'tom', 'ines']).valid,
     true
   )
   assert.equal(
-    validateExpeditionCrewSelection(state, ['mika', 'tom', 'ines', 'yara'])
+    validateExpeditionCrewSelection(state, ['mika', 'tom', 'ines', 'noah'])
       .valid,
     false
+  )
+})
+
+test('Manager and Security are hireable only once their set is owned', () => {
+  const fresh = createInitialState()
+  assert.equal(validateExpeditionCrewSelection(fresh, ['yara']).valid, false)
+  const withIndustry = {
+    ...fresh,
+    career: { ...fresh.career, unlockedSetIds: ['industry_network'] }
+  }
+  assert.equal(
+    validateExpeditionCrewSelection(withIndustry, ['yara']).valid,
+    true
+  )
+  // The set that carries Manager does not carry Security.
+  const security = EXPEDITION_CREW.find(crew => crew.role === 'security')
+  assert.ok(security)
+  assert.equal(
+    validateExpeditionCrewSelection(withIndustry, [security.id]).valid,
+    false
+  )
+  assert.equal(
+    validateExpeditionCrewSelection(
+      {
+        ...fresh,
+        career: { ...fresh.career, unlockedSetIds: ['underground_network'] }
+      },
+      [security.id]
+    ).valid,
+    true
   )
 })
 

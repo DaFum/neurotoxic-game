@@ -152,6 +152,7 @@ export type ExpeditionBuildRejectionReason =
   | 'CREW_DUPLICATE'
   | 'CARGO_OUT_OF_RANGE'
   | 'PRESSURE_MODIFIERS_INVALID'
+  | 'CHASSIS_TIER_LOCKED'
 
 /**
  * Result of validating a candidate {@link ExpeditionLoadout}.
