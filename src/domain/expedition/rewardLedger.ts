@@ -20,6 +20,11 @@ import type {
   ExpeditionRewardSourceType
 } from '../../types/expedition'
 import { getCrewEventOutcomeBySourceId } from './crewEventOutcomes'
+import {
+  getExpeditionEventResultEffect,
+  isExpeditionEventResultId
+} from './eventDeltas'
+import { getExpeditionFinaleRewardId } from './finales'
 
 /**
  * The real v1 rare-reward registry.
@@ -238,14 +243,67 @@ const hasCanonicalSourceEvidence = (
       // could claim whichever registered route rare it preferred.
       return node.hidden.rareRewardId === request.expectedRewardId
     }
-    // Producers owned by G3/G4. Extended in place by the owning gate.
-    // `finale_nonlegendary` belongs here until G4's contextual Finales map a
-    // resolved `finaleResultId` to its canonical reward: standing on the
-    // Finale does not say *which* Finale reward was earned, so honoring the
-    // request would let the caller pick the better of the two.
-    case 'finale_nonlegendary':
-    case 'event_rare':
-    case 'contract':
+    case 'contract': {
+      // The obligation the run actually completed is the evidence. A caller
+      // cannot name an obligation that is still active, failed, or was never
+      // committed, and the derived entry id refuses a second claim on the
+      // same one.
+      return (
+        request.expectedRewardId === 'reward_contract_patch_run' &&
+        state.expedition.activeObligations.some(
+          obligation =>
+            obligation.id === sourceId &&
+            obligation.sourceType === 'native' &&
+            obligation.status === 'completed'
+        )
+      )
+    }
+    case 'finale_nonlegendary': {
+      // Standing on the Finale node is *not* the evidence: `handleStartGig`
+      // commits `finaleType` on the way into PRE_GIG, so the node check alone
+      // would let the generic reward action bank a secured Finale reward
+      // before the show is played - and keep it through a failed Finale. The
+      // resolved gig at this step is what proves the Finale actually happened.
+      if (sourceId !== map.finaleNodeId) return false
+      if (map.meta[map.finaleNodeId]?.routeStep !== routeStep) return false
+      const current =
+        state.expedition.visitedNodeIds[
+          state.expedition.visitedNodeIds.length - 1
+        ]
+      if (current !== map.finaleNodeId) return false
+      if (
+        !state.lastGigStats ||
+        state.lastGigStats.failed === true ||
+        state.expedition.lastGigResolvedAtRouteStep !== routeStep
+      ) {
+        return false
+      }
+      // The run's own `finaleType` decides *which* reward this is, so the
+      // caller cannot pick the better of the two.
+      return (
+        request.expectedRewardId ===
+        getExpeditionFinaleRewardId(state.expedition.finaleType)
+      )
+    }
+    case 'event_rare': {
+      // The source is the resolved `<eventId>:<optionId>:<resultId>` triple the
+      // event reducer banked, so the run must actually have resolved it at
+      // this step, and the *result registry* - not the request, and not the
+      // authored event - decides which rare that result earns.
+      if (
+        !(state.expedition.resolvedEventSourceIds ?? []).includes(
+          `${sourceId}:${routeStep}`
+        )
+      ) {
+        return false
+      }
+      const resultId = sourceId.slice(sourceId.lastIndexOf(':') + 1)
+      if (!isExpeditionEventResultId(resultId)) return false
+      return (
+        getExpeditionEventResultEffect(resultId).rareRewardId ===
+        request.expectedRewardId
+      )
+    }
     case 'crew_contact': {
       const outcome = getCrewEventOutcomeBySourceId(sourceId)
       return (

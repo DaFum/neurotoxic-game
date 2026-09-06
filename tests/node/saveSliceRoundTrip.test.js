@@ -250,6 +250,7 @@ const buildPopulatedState = () => {
     },
     bandInjuryByMemberId: Object.create(null),
     resolvedCrewSourceIds: [],
+    resolvedEventSourceIds: [],
     resolvedObligationSignalIds: [],
     pressure: {
       heat: 0,

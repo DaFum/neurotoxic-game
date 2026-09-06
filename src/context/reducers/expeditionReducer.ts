@@ -137,6 +137,7 @@ import {
   applyExpeditionPressureEventResolution,
   resolveExpeditionPressureDirectorStep
 } from '../../domain/expedition/pressure'
+import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import { getEffectiveExpeditionRoute } from '../../domain/expedition/routeOverlay'
 import { POST_OPTIONS } from '../../data/postOptions'
 import {
@@ -944,6 +945,20 @@ export const handleCompleteExpedition = (
   if (map.meta[map.finaleNodeId]?.routeStep !== state.expedition.routeStep) {
     return state
   }
+  // Standing on the Finale node is not evidence that the Finale was played:
+  // `handleStartGig` commits `finaleType` on the way into PRE_GIG, and
+  // `completeExpedition` is publicly dispatchable. Without this the run could
+  // be completed - full retention, `expedition.finaleCompleted` emitted, the
+  // Nemesis tier taken - before the show, or after failing it. The reward
+  // resolver already demands exactly this proof; the terminal transition has
+  // to demand it too, and before anything is mutated.
+  if (
+    !state.lastGigStats ||
+    state.lastGigStats.failed === true ||
+    state.expedition.lastGigResolvedAtRouteStep !== state.expedition.routeStep
+  ) {
+    return state
+  }
 
   let completionState = state
   if (state.expedition.finaleType === 'rival_battle' && state.rivalBand) {
@@ -983,6 +998,35 @@ export const handleCompleteExpedition = (
       }
     }
   }
+  // The Finale's own reward enters the G1 ledger before settlement, so it is
+  // retained and materialized exactly once by the terminal owner rather than
+  // being granted directly here. Which reward it is comes from the run's
+  // committed Finale profile, never from the caller.
+  const finaleReward = resolveExpeditionReward(
+    completionState,
+    {
+      expectedRewardId: getExpeditionFinaleRewardId(
+        completionState.expedition.finaleType
+      ),
+      sourceType: 'finale_nonlegendary',
+      sourceId: map.finaleNodeId,
+      expectedRouteStep: completionState.expedition.routeStep
+    },
+    map
+  )
+  if (finaleReward.ok) {
+    completionState = {
+      ...completionState,
+      expedition: {
+        ...completionState.expedition,
+        rewardLedger: [
+          ...completionState.expedition.rewardLedger,
+          finaleReward.entry
+        ]
+      }
+    }
+  }
+
   const completed = finalizeExpedition(completionState, 'completed', {
     reason: null,
     finaleResultId,
@@ -1722,29 +1766,87 @@ export const handleApplyExpeditionEventDelta = (
     applyExpeditionEventHeat(withCrewOutcome, heatDelta)
   )
 
+  // Both consequences of this resolution read the run's route, so build it once.
+  const eventRewardLoadout = resolved.expedition.loadout
+  const eventRewardMap = eventRewardLoadout
+    ? buildExpeditionMap(
+        resolved.runSeed,
+        eventRewardLoadout.tourTypeId,
+        eventRewardLoadout.regionId,
+        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      )
+    : null
+
   // The other half of the Director's single draw: a relief window or an
   // Underground detour is a consequence of the event the player just resolved,
   // never of the selection alone. Resolving consumes the pending id, so it
   // applies exactly once.
-  const directorLoadout = resolved.expedition.loadout
   const resolvedPressure = applyExpeditionPressureEventResolution(
     resolved,
     payload.sourceEventId,
-    directorLoadout
-      ? buildExpeditionMap(
-          resolved.runSeed,
-          directorLoadout.tourTypeId,
-          directorLoadout.regionId,
-          NEUTRAL_EXPEDITION_ROUTE_PROFILE
-        )
-      : null
+    eventRewardMap
   )
-  return resolvedPressure === resolved.expedition.pressure
-    ? resolved
-    : {
-        ...resolved,
-        expedition: { ...resolved.expedition, pressure: resolvedPressure }
+  const withDirector: GameState =
+    resolvedPressure === resolved.expedition.pressure
+      ? resolved
+      : {
+          ...resolved,
+          expedition: { ...resolved.expedition, pressure: resolvedPressure }
+        }
+
+  // The event's own rare enters the G1 ledger here, once the deltas above have
+  // actually been applied. The proof is banked first so the shared resolver can
+  // prove the source the same way every other family is proven, and a replayed
+  // dispatch collides with the derived entry id instead of paying twice.
+  // The source proof at the top of this handler has already established that
+  // the run is resolving this event and that the registry declares every
+  // result named, so the triple below is content evidence rather than three
+  // caller-chosen strings. Only the route map is still optional here.
+  if (
+    typeof payload.sourceEventId !== 'string' ||
+    typeof payload.sourceOptionId !== 'string' ||
+    !eventRewardMap
+  ) {
+    return withDirector
+  }
+  let withRewards = withDirector
+  for (const resultId of resultIds) {
+    const rareRewardId = getExpeditionEventResultEffect(resultId).rareRewardId
+    if (rareRewardId === undefined) continue
+    const sourceId = `${payload.sourceEventId}:${payload.sourceOptionId}:${resultId}`
+    const proofId = `${sourceId}:${withRewards.expedition.routeStep}`
+    if (withRewards.expedition.resolvedEventSourceIds?.includes(proofId))
+      continue
+    const proven: GameState = {
+      ...withRewards,
+      expedition: {
+        ...withRewards.expedition,
+        resolvedEventSourceIds: [
+          ...(withRewards.expedition.resolvedEventSourceIds ?? []),
+          proofId
+        ]
       }
+    }
+    const resolution = resolveExpeditionReward(
+      proven,
+      {
+        expectedRewardId: rareRewardId,
+        sourceType: 'event_rare',
+        sourceId,
+        expectedRouteStep: proven.expedition.routeStep
+      },
+      eventRewardMap
+    )
+    if (!resolution.ok) continue
+    withRewards = {
+      ...proven,
+      expedition: {
+        ...proven.expedition,
+        rewardLedger: [...proven.expedition.rewardLedger, resolution.entry]
+      }
+    }
+  }
+  return withRewards
 }
 
 export const handleRecordExpeditionObligationSignal = (
@@ -1971,6 +2073,50 @@ export const handleRecordExpeditionObligationSignal = (
         signalId
       ],
       gigOutcomeByStep
+    }
+  }
+  // A completed native Contract's item reward goes through the G1 ledger, so
+  // it is materialized once by the terminal owner. The Money/Fame the template
+  // pays is separate and already settled above.
+  const completedNativeObligationIds = activeObligations
+    .filter(
+      obligation =>
+        obligation.sourceType === 'native' && obligation.status === 'completed'
+    )
+    .map(obligation => obligation.id)
+  const contractRewardLoadout = state.expedition.loadout
+  if (
+    changed &&
+    completedNativeObligationIds.length > 0 &&
+    contractRewardLoadout
+  ) {
+    const map = buildExpeditionMap(
+      state.runSeed,
+      contractRewardLoadout.tourTypeId,
+      contractRewardLoadout.regionId,
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    for (const obligationId of completedNativeObligationIds) {
+      // A Contract completed at an earlier step already owns its entry, so the
+      // derived entry id refuses the duplicate rather than paying twice.
+      const resolution = resolveExpeditionReward(
+        nextState,
+        {
+          expectedRewardId: 'reward_contract_patch_run',
+          sourceType: 'contract',
+          sourceId: obligationId,
+          expectedRouteStep: nextState.expedition.routeStep
+        },
+        map
+      )
+      if (!resolution.ok) continue
+      nextState = {
+        ...nextState,
+        expedition: {
+          ...nextState.expedition,
+          rewardLedger: [...nextState.expedition.rewardLedger, resolution.entry]
+        }
+      }
     }
   }
   if (moneyDelta > 0)

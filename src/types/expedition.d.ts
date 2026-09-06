@@ -604,6 +604,7 @@ export interface ExpeditionState {
   crew?: ExpeditionCrewRunState
   bandInjuryByMemberId?: Record<string, ExpeditionBandInjuryStage>
   resolvedCrewSourceIds?: string[]
+  resolvedEventSourceIds?: string[]
   resolvedObligationSignalIds: string[]
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
@@ -951,6 +952,15 @@ export type ExpeditionEventResultId =
  * What one known event result does to the run.
  */
 export interface ExpeditionEventResultEffect {
+  /**
+   * Registry id of the rare reward this result earns, if any.
+   *
+   * @remarks
+   * Named here rather than by the event, for the same reason the numbers are:
+   * an authored event may name a *result*, never a reward, so a hand-written
+   * effect cannot mint a reward the run's own rules would never produce.
+   */
+  rareRewardId?: string
   /** Points of technical wear per equipment group. */
   conditionWear?: { pa: number; instruments: number; stageGear: number }
   /** Signed change to consumable cargo; gains stay bounded by capacity. */

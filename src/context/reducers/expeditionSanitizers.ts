@@ -31,7 +31,13 @@ import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
+import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
+import {
+  getExpeditionEventResultEffect,
+  isExpeditionEventResultId
+} from '../../domain/expedition/eventDeltas'
 import { isExpeditionPressureEventId } from '../../domain/expedition/pressure'
+import { isValidExpeditionEventProofId } from '../../domain/expedition/eventProof'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -659,6 +665,34 @@ export const sanitizeExpeditionState = (
     })
   }
 
+  // Hoisted above the ledger: a Contract reward's evidence is the completed
+  // obligation that earned it, and only the *sanitized* obligations count -
+  // validating against the raw persisted ones would let a forged obligation
+  // vouch for a forged reward.
+  const sanitizedObligations = sanitizeActiveObligations(
+    value.activeObligations,
+    runId,
+    runSeed,
+    routeStep,
+    loadout,
+    preparedMap,
+    sanitizeUniqueStrings(value.resolvedObligationSignalIds),
+    validVisitedPath,
+    sanitizeSocialResultProof(
+      value.lastSocialResult,
+      routeStep,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    sanitizeGigOutcomeMap(
+      value.gigOutcomeByStep,
+      lastGigStats,
+      routeStep,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    sanitizeExpeditionPressure(value.pressure).heat,
+    sanitizeFinaleType(value.finaleType)
+  )
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
@@ -666,16 +700,86 @@ export const sanitizeExpeditionState = (
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
 
-      // Hardening against forged persisted ledger entries in G1A/G2:
-      // Reward families whose genuine producers only exist in G3/G4
-      // ('contract', 'crew_contact', 'finale_nonlegendary', 'event_rare')
-      // cannot have valid source-proof state yet and MUST be dropped.
-      if (
-        entry.sourceType === 'contract' ||
-        entry.sourceType === 'finale_nonlegendary' ||
-        entry.sourceType === 'event_rare'
-      ) {
-        continue
+      // Every family now has a producer, so each persisted entry is proven
+      // against the same canonical evidence its reducer required rather than
+      // dropped - an autosave between earning a reward and the terminal
+      // settlement that materializes it must not lose it.
+      if (entry.sourceType === 'event_rare') {
+        // `resolvedEventSourceIds` is itself part of the save, so validating
+        // its shape against the registry proves only that the tuple is one the
+        // content could produce - not that this run produced it. A random
+        // event roll has no seeded anchor to re-derive it from either, unlike
+        // the route opportunity above. So an unmaterialized Event rare is
+        // dropped on load rather than authorized by evidence the save wrote
+        // itself: a reload mid-run forfeits it, which is the cost of not
+        // letting a crafted save mint one.
+        if (entry.materialized !== true) continue
+        const resolvedEventSourceIds = sanitizeUniqueStrings(
+          value.resolvedEventSourceIds
+        ).filter(isValidExpeditionEventProofId)
+        if (
+          !resolvedEventSourceIds.includes(
+            `${entry.sourceId}:${entry.earnedAtRouteStep}`
+          )
+        ) {
+          continue
+        }
+        const resultId = entry.sourceId.slice(
+          entry.sourceId.lastIndexOf(':') + 1
+        )
+        if (
+          !isExpeditionEventResultId(resultId) ||
+          getExpeditionEventResultEffect(resultId).rareRewardId !==
+            entry.rewardDefinitionId ||
+          entry.earnedAtRouteStep > routeStep
+        ) {
+          continue
+        }
+      }
+      if (entry.sourceType === 'contract') {
+        if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue
+        if (
+          !sanitizedObligations.some(
+            obligation =>
+              obligation.id === entry.sourceId &&
+              obligation.sourceType === 'native' &&
+              obligation.status === 'completed'
+          )
+        ) {
+          continue
+        }
+      }
+      if (entry.sourceType === 'finale_nonlegendary') {
+        if (!preparedMap) continue
+        const finaleNodeId = preparedMap.finaleNodeId
+        const finaleRouteStep = preparedMap.meta[finaleNodeId]?.routeStep
+        if (
+          entry.sourceId !== finaleNodeId ||
+          entry.rewardDefinitionId !==
+            getExpeditionFinaleRewardId(sanitizeFinaleType(value.finaleType)) ||
+          !isFiniteNumber(finaleRouteStep) ||
+          entry.earnedAtRouteStep !== finaleRouteStep ||
+          entry.earnedAtRouteStep > routeStep
+        ) {
+          continue
+        }
+        // Node, profile and step are all things a save at the Finale already
+        // has, and `sanitizeRewardEntry` re-derives `secured: true` for the
+        // hostile profiles - so without this a crafted save keeps an unlock it
+        // never won, through a later failure. The persisted proof therefore has
+        // to be the same one `resolveExpeditionReward` and
+        // `handleCompleteExpedition` require: the Finale gig resolved, at this
+        // step, and not failed.
+        if (
+          !isLooseRecord(lastGigStats) ||
+          lastGigStats.failed === true ||
+          sanitizeResolvedAtRouteStep(
+            value.lastGigResolvedAtRouteStep,
+            routeStep
+          ) !== finaleRouteStep
+        ) {
+          continue
+        }
       }
       if (
         entry.sourceType === 'crew_contact' &&
@@ -767,6 +871,17 @@ export const sanitizeExpeditionState = (
     },
     bandInjuryByMemberId: sanitizeBandInjuryMap(value.bandInjuryByMemberId),
     resolvedCrewSourceIds: sanitizeUniqueStrings(value.resolvedCrewSourceIds),
+    ...(value.resolvedEventSourceIds !== undefined
+      ? {
+          // Structure alone is not authority: each persisted proof has to name
+          // an event/option/result relationship the content registry actually
+          // declares, so a crafted save cannot invent its own evidence and the
+          // matching ledger row below it.
+          resolvedEventSourceIds: sanitizeUniqueStrings(
+            value.resolvedEventSourceIds
+          ).filter(isValidExpeditionEventProofId)
+        }
+      : {}),
     resolvedObligationSignalIds: sanitizeUniqueStrings(
       value.resolvedObligationSignalIds
     ),
@@ -811,29 +926,7 @@ export const sanitizeExpeditionState = (
       readCount(value, 'routeStep', 0),
       sanitizeUniqueStrings(value.resolvedObligationSignalIds)
     ),
-    activeObligations: sanitizeActiveObligations(
-      value.activeObligations,
-      runId,
-      runSeed,
-      readCount(value, 'routeStep', 0),
-      loadout,
-      preparedMap,
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds),
-      validVisitedPath,
-      sanitizeSocialResultProof(
-        value.lastSocialResult,
-        readCount(value, 'routeStep', 0),
-        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-      ),
-      sanitizeGigOutcomeMap(
-        value.gigOutcomeByStep,
-        lastGigStats,
-        readCount(value, 'routeStep', 0),
-        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-      ),
-      sanitizeExpeditionPressure(value.pressure).heat,
-      sanitizeFinaleType(value.finaleType)
-    ),
+    activeObligations: sanitizedObligations,
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),

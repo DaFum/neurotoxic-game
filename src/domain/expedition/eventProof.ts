@@ -70,3 +70,26 @@ export const isDeclaredExpeditionEventResult = (
   typeof optionId === 'string' &&
   typeof resultId === 'string' &&
   (DECLARED_RESULTS.get(`${eventId}:${optionId}`)?.has(resultId) ?? false)
+
+/**
+ * Whether a persisted `<eventId>:<optionId>:<resultId>:<routeStep>` proof is
+ * structurally valid against the registry.
+ *
+ * @param value - Raw proof string from a save.
+ * @returns True when the triple is declared and the route step is a
+ * non-negative integer.
+ *
+ * @remarks
+ * Ids never contain `:`, so the split is exact. A save that invents a proof
+ * string therefore cannot name an event/option/result relationship the content
+ * does not have.
+ */
+export const isValidExpeditionEventProofId = (value: unknown): boolean => {
+  if (typeof value !== 'string') return false
+  const parts = value.split(':')
+  if (parts.length !== 4) return false
+  const [eventId, optionId, resultId, routeStep] = parts
+  if (!isDeclaredExpeditionEventResult(eventId, optionId, resultId))
+    return false
+  return /^\d+$/.test(routeStep ?? '')
+}
