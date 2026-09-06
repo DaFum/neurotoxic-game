@@ -15,6 +15,7 @@ export const quest_expedition_nemesis = {
   deadlineOffset: 40,
   repeatPolicy: 'cooldown',
   cooldownDays: 20,
+  progressSource: 'expedition_rival_outcome',
   progressRules: [
     { event: 'expedition.rivalOutcome', amount: 'fixed', fixedAmount: 1 }
   ],

@@ -35,7 +35,10 @@ export const LEGACY_QUEST_EVENT_TYPES: Record<
   venue_blacklisted: 'venue.blacklisted',
   venue_unblacklisted: 'venue.unblacklisted',
   region_reputation_changed: 'region.reputationChanged',
-  story_flag_added: 'story.flagAdded'
+  story_flag_added: 'story.flagAdded',
+  expedition_node_resolved: 'expedition.nodeResolved',
+  expedition_rival_outcome: 'expedition.rivalOutcome',
+  expedition_finale_completed: 'expedition.finaleCompleted'
 }
 
 /** Legacy `progressSource` names accepted by quest rules. */

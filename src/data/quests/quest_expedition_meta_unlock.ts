@@ -15,6 +15,7 @@ export const quest_expedition_meta_unlock = {
   deadlineOffset: 45,
   repeatPolicy: 'cooldown',
   cooldownDays: 25,
+  progressSource: 'expedition_finale_completed',
   progressRules: [
     { event: 'expedition.finaleCompleted', amount: 'fixed', fixedAmount: 1 }
   ],

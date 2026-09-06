@@ -15,6 +15,7 @@ export const quest_expedition_run_goal = {
   deadlineOffset: 14,
   repeatPolicy: 'cooldown',
   cooldownDays: 8,
+  progressSource: 'expedition_node_resolved',
   progressRules: [
     { event: 'expedition.nodeResolved', amount: 'fixed', fixedAmount: 1 }
   ],
