@@ -29,6 +29,10 @@ import {
   FORECLOSURE_FAME_PENALTY,
   RISK_EVENT_CONDITION_LOSS
 } from './assetConfig'
+import {
+  getExpeditionDayPolicy,
+  settleExpeditionDailyObligation
+} from '../domain/expedition/loadout'
 
 /**
  * Success probability for a crowdfund campaign, given current fame, scene
@@ -98,17 +102,28 @@ export const processAssetTick = (state: GameState): GameState => {
 
   const currentFame = finiteNumberOr(state.player.fame, 0)
   const nextFame = Math.max(0, currentFame + fameDelta)
-  // Money is deliberately NOT clamped here: a transiently negative balance
-  // must survive until later day-tick stages (e.g. merch/newsletter income in
-  // calculateDailyUpdates) have been applied — clamping per stage would
-  // silently forgive debt. handleAdvanceDay's final calculateDailyUpdates
-  // pass owns the clamp; this function must only run inside that pipeline.
-  // Wrap both addends with finiteNumberOr: a persisted non-finite money (or a
-  // non-finite delta) would otherwise propagate NaN until the final
-  // calculateDailyUpdates clamp short-circuits it to 0, silently zeroing the
-  // balance instead of preserving it (AGENTS.md arithmetic-then-clamp rule).
-  const nextMoney =
+
+  let nextMoney =
     finiteNumberOr(state.player.money, 0) + finiteNumberOr(moneyDelta, 0)
+  let nextExpedition = state.expedition
+
+  if (state.expedition?.status === 'active') {
+    const policy = getExpeditionDayPolicy(state)
+    const dailyCost = -finiteNumberOr(moneyDelta, 0)
+    const settlement = settleExpeditionDailyObligation(
+      policy,
+      finiteNumberOr(state.player.money, 0),
+      dailyCost
+    )
+    nextMoney = settlement.nextMoney
+    if (nextExpedition) {
+      nextExpedition = {
+        ...nextExpedition,
+        unpaidDailyObligation: settlement.unpaidObligation
+      }
+    }
+  }
+
   const nextPlayer =
     fameDelta !== 0
       ? {
@@ -155,6 +170,7 @@ export const processAssetTick = (state: GameState): GameState => {
     ...state,
     assets: nextAssets,
     player: nextPlayer,
+    ...(nextExpedition !== state.expedition ? { expedition: nextExpedition } : {}),
     ...(nextBand !== state.band ? { band: nextBand } : {})
   }
 }
@@ -178,6 +194,9 @@ export const processLiabilityTick = (
   const nextLiabilities: Record<string, Liability> = {}
   const foreclosedAssetIds = new Set<string>()
 
+  let nextExpedition = state.expedition
+  let additionalUnpaidObligation = 0
+
   // ⚡ BOLT OPTIMIZATION: Replaced Object.values() with for...in loop.
   // Why: Avoid allocating an intermediate array for GC on every daily tick.
   // Impact: Reduces GC pressure by avoiding array allocation for all liabilities.
@@ -193,34 +212,90 @@ export const processLiabilityTick = (
     const interestPortion = liability.principalRemaining * dailyRate
     const payoff = liability.principalRemaining + interestPortion
     const payment = Math.min(liability.dailyPayment, payoff)
-    if (currentMoney >= payment) {
-      currentMoney -= payment
-      const principalRemaining = Math.max(
-        0,
-        liability.principalRemaining - (payment - interestPortion)
-      )
-      const termDaysRemaining = liability.termDaysRemaining - 1
-      if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
-      nextLiabilities[liability.id] = {
-        ...liability,
-        principalRemaining,
-        termDaysRemaining,
-        defaultCounter: 0
+
+    if (state.expedition?.status === 'active') {
+      const policy = getExpeditionDayPolicy(state)
+      const availableCash = Math.max(0, currentMoney - policy.protectedCareerCash)
+      const payable = Math.min(payment, availableCash)
+      const unpaid = payment - payable
+
+      if (payable > 0) {
+        currentMoney -= payable
       }
-    } else {
-      const defaultCounter = liability.defaultCounter + 1
-      if (defaultCounter >= 7) {
-        // Apply the fame penalty exactly once per newly foreclosed asset:
-        // a single asset may have multiple liabilities (e.g. loan + future
-        // crowdfund top-up). Without this guard the player would lose
-        // 2× FORECLOSURE_FAME_PENALTY for the same asset.
-        if (!foreclosedAssetIds.has(liability.assetId)) {
-          foreclosedAssetIds.add(liability.assetId)
-          nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
+
+      if (unpaid > 0) {
+        additionalUnpaidObligation += unpaid
+        const defaultCounter = liability.defaultCounter + 1
+        if (defaultCounter >= 7) {
+          if (!foreclosedAssetIds.has(liability.assetId)) {
+            foreclosedAssetIds.add(liability.assetId)
+            nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
+          }
+        } else {
+          const principalReduction = Math.max(0, payable - interestPortion)
+          const principalRemaining = Math.max(
+            0,
+            liability.principalRemaining - principalReduction
+          )
+          nextLiabilities[liability.id] = {
+            ...liability,
+            principalRemaining,
+            defaultCounter
+          }
         }
       } else {
-        nextLiabilities[liability.id] = { ...liability, defaultCounter }
+        const principalRemaining = Math.max(
+          0,
+          liability.principalRemaining - (payment - interestPortion)
+        )
+        const termDaysRemaining = liability.termDaysRemaining - 1
+        if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
+        nextLiabilities[liability.id] = {
+          ...liability,
+          principalRemaining,
+          termDaysRemaining,
+          defaultCounter: 0
+        }
       }
+    } else {
+      if (currentMoney >= payment) {
+        currentMoney -= payment
+        const principalRemaining = Math.max(
+          0,
+          liability.principalRemaining - (payment - interestPortion)
+        )
+        const termDaysRemaining = liability.termDaysRemaining - 1
+        if (termDaysRemaining <= 0 || principalRemaining <= 0) continue
+        nextLiabilities[liability.id] = {
+          ...liability,
+          principalRemaining,
+          termDaysRemaining,
+          defaultCounter: 0
+        }
+      } else {
+        const defaultCounter = liability.defaultCounter + 1
+        if (defaultCounter >= 7) {
+          // Apply the fame penalty exactly once per newly foreclosed asset:
+          // a single asset may have multiple liabilities (e.g. loan + future
+          // crowdfund top-up). Without this guard the player would lose
+          // 2× FORECLOSURE_FAME_PENALTY for the same asset.
+          if (!foreclosedAssetIds.has(liability.assetId)) {
+            foreclosedAssetIds.add(liability.assetId)
+            nextFame = Math.max(0, nextFame - FORECLOSURE_FAME_PENALTY)
+          }
+        } else {
+          nextLiabilities[liability.id] = { ...liability, defaultCounter }
+        }
+      }
+    }
+  }
+
+  if (nextExpedition && additionalUnpaidObligation > 0) {
+    nextExpedition = {
+      ...nextExpedition,
+      unpaidDailyObligation:
+        finiteNumberOr(nextExpedition.unpaidDailyObligation, 0) +
+        additionalUnpaidObligation
     }
   }
 
@@ -264,7 +339,8 @@ export const processLiabilityTick = (
         fameLevel: calculateFameLevel(nextFame)
       },
       assets: nextAssets,
-      liabilities: finalLiabilities
+      liabilities: finalLiabilities,
+      ...(nextExpedition !== state.expedition ? { expedition: nextExpedition } : {})
     },
     foreclosedKinds
   }

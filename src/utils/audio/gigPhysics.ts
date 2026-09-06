@@ -5,6 +5,7 @@ import { calculateGigPhysics, getGigModifiers } from '../simulationUtils'
 import type { Song } from '../../types/audio'
 import type { BandState, GameMap, GigModifiers } from '../../types'
 import type { RhythmModifiers } from '../../types/rhythmGame'
+import type { ExpeditionConditionPerformanceProfile } from '../../types/expedition'
 
 /**
  * Resolves the per-gig rhythm tuning from band state, modifiers, and map position.
@@ -28,14 +29,19 @@ export const setupGigPhysics = (
   currentGigId: string | undefined,
   gameMap: GameMap,
   playerNodeId: string,
-  setlistFirstId: string | undefined
+  setlistFirstId: string | undefined,
+  conditionProfile?: ExpeditionConditionPerformanceProfile | null
 ): {
   mergedModifiers: RhythmModifiers
   speed: number
   hitWindows: number[]
 } | null => {
   // Narrow the modifiers returned from simulation layer to the RhythmModifiers shape
-  const maybeActiveModifiers = getGigModifiers(band, gigModifiers)
+  const maybeActiveModifiers = getGigModifiers(
+    band,
+    gigModifiers,
+    conditionProfile
+  )
   const isRhythmModifiers = (v: unknown): v is RhythmModifiers => {
     if (typeof v !== 'object' || v === null) return false
     const obj = v as Record<string, unknown>
@@ -110,13 +116,21 @@ export const setupGigPhysics = (
   let hitWindowBonus = mergedModifiers.hitWindowBonus ?? 0
   if (mergedModifiers.soundcheck) hitWindowBonus += 30
 
+  // A degraded PA or worn instruments tighten the timing the player actually
+  // has to hit — the profile's advertised penalty landing on the real windows,
+  // not just on the PreGig text.
+  const timingMultiplier = Math.max(
+    0,
+    finiteNumberOr(conditionProfile?.timingMultiplier, 1)
+  )
+
   return {
     mergedModifiers,
     speed,
     hitWindows: [
-      physics.hitWindows.guitar + hitWindowBonus,
-      physics.hitWindows.drums + hitWindowBonus,
-      physics.hitWindows.bass + hitWindowBonus
+      (physics.hitWindows.guitar + hitWindowBonus) * timingMultiplier,
+      (physics.hitWindows.drums + hitWindowBonus) * timingMultiplier,
+      (physics.hitWindows.bass + hitWindowBonus) * timingMultiplier
     ]
   }
 }

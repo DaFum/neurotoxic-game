@@ -10,6 +10,7 @@ import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { MODIFIER_COSTS } from '../utils/economy'
 
+import { canStartExpeditionPreGig } from '../domain/expedition/condition'
 import { usePreGigDerivations } from './preGig/usePreGigDerivations'
 import { usePreGigHandlers } from './preGig/usePreGigHandlers'
 
@@ -42,6 +43,7 @@ interface PreGigLogicReturn {
   selectedSongIds: Set<string>
   calculatedBudget: number
   isStarting: boolean
+  isStartBlocked: boolean
   GIG_MODIFIER_OPTIONS: ModifierOption[]
   bandMeetingCost: number
   handleBandMeeting: () => void
@@ -70,6 +72,8 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
   const band = useGameSelector(state => state.band)
   const assets = useGameSelector(state => state.assets)
   const isScreenshotMode = useGameSelector(state => state.isScreenshotMode)
+  const expedition = useGameSelector(state => state.expedition)
+  const canStartShow = useGameSelector(canStartExpeditionPreGig)
   const {
     changeScene,
     setSetlist,
@@ -89,8 +93,18 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     adjustedBandMeetingCost,
     currentModifiers,
     selectedSongIds,
-    calculatedBudget
-  } = usePreGigDerivations({ band, assets, gigModifiers, setlist, typedT })
+    calculatedBudget,
+    isStartBlocked
+  } = usePreGigDerivations({
+    band,
+    assets,
+    gigModifiers,
+    setlist,
+    typedT,
+    technicalCondition:
+      expedition?.status === 'active' ? expedition.technicalCondition : null,
+    canStartShow
+  })
 
   const {
     isStarting,
@@ -160,6 +174,7 @@ export const usePreGigLogic = (): PreGigLogicReturn => {
     selectedSongIds,
     calculatedBudget,
     isStarting,
+    isStartBlocked,
     GIG_MODIFIER_OPTIONS,
     bandMeetingCost: adjustedBandMeetingCost,
     handleBandMeeting,

@@ -2,6 +2,7 @@ import type { EventDelta } from '../../types'
 import { finiteNumberOr } from '../gameState'
 import { resolveTemplateString } from './templateResolver'
 import { asNumber, clampMoneyChange, clampPercentageAmount } from './helpers'
+import { isExpeditionEventResultId } from '../../domain/expedition/eventDeltas'
 import type { EffectShape, EngineGameState, TemplateContext } from './types'
 
 /**
@@ -200,6 +201,19 @@ const EVENT_EFFECT_HANDLERS = Object.assign(Object.create(null), {
       if (!delta.flags.addQuest) delta.flags.addQuest = []
       delta.flags.addQuest.push(eff.quest)
     }
+  },
+  /**
+   * expedition
+   * Reads `eff.result` and nothing else. An event names an Expedition outcome;
+   * the numbers behind it belong to the run's own registry, so a `value` on
+   * this effect is ignored rather than honored, and an unknown result id adds
+   * nothing to the delta at all.
+   */
+  expedition: (eff: EffectShape, delta: EventDelta) => {
+    if (!isExpeditionEventResultId(eff.result)) return
+    const previous = delta.expedition?.resultIds ?? []
+    if (previous.includes(eff.result)) return
+    delta.expedition = { resultIds: [...previous, eff.result] }
   },
   stash_confiscate: (
     eff: EffectShape,
