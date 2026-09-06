@@ -2,13 +2,16 @@ import { useMemo, type Dispatch } from 'react'
 import type { GameAction } from '../types'
 import {
   createAcquireExpeditionCrewSignatureAction,
+  createSettleExpeditionCareerResultAction,
   createSettleExpeditionCrewCareerAction
 } from './careerActionCreators'
 import type { GameDispatchActions } from './useGameDispatchActions'
 
 export type CareerDispatchActions = Pick<
   GameDispatchActions,
-  'settleExpeditionCrewCareer' | 'acquireExpeditionCrewSignature'
+  | 'settleExpeditionCrewCareer'
+  | 'settleExpeditionCareerResult'
+  | 'acquireExpeditionCrewSignature'
 >
 
 export const useCareerDispatchActions = (
@@ -18,6 +21,8 @@ export const useCareerDispatchActions = (
     () => ({
       settleExpeditionCrewCareer: runId =>
         dispatch(createSettleExpeditionCrewCareerAction(runId)),
+      settleExpeditionCareerResult: runId =>
+        dispatch(createSettleExpeditionCareerResultAction(runId)),
       acquireExpeditionCrewSignature: (crewId, expectedTraitId, sourceId) =>
         dispatch(
           createAcquireExpeditionCrewSignatureAction(

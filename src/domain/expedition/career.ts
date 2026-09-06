@@ -18,6 +18,7 @@ export const createInitialCareerState = (): CareerState => ({
   finalizedExpeditionRuns: 0,
   completedExpeditionRuns: 0,
   completedExpeditionRegionIds: [],
+  settledExpeditionRunIds: [],
   hqFacilityLevels: Object.create(null) as CareerState['hqFacilityLevels'],
   ascensionUnlocked: false
 })

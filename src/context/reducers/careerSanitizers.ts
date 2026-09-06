@@ -92,6 +92,19 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
           )
         ]
       : [],
+    // Kept even though the ids themselves are save-authored: this list only
+    // ever *refuses* a settlement, so a forged entry costs the player a Token
+    // rather than minting one, and dropping it would let a replayed settlement
+    // pay twice.
+    settledExpeditionRunIds: Array.isArray(value.settledExpeditionRunIds)
+      ? [
+          ...new Set(
+            value.settledExpeditionRunIds.filter(
+              (id): id is string => typeof id === 'string'
+            )
+          )
+        ]
+      : [],
     rivalsById: safeRecord<CareerRivalRecord>(
       value.rivalsById,
       (entry, key) => {

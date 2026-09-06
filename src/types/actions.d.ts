@@ -186,6 +186,9 @@ export interface ExpeditionInjurySourcePayload {
 export interface SettleExpeditionCrewCareerPayload {
   runId: string
 }
+export interface SettleExpeditionCareerResultPayload {
+  runId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

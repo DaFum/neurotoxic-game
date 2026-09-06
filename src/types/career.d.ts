@@ -44,6 +44,17 @@ export interface CareerRivalRecord {
   history: CareerRivalHistory
 }
 
+/**
+ * The Career's derived standing, never stored and never caller supplied.
+ *
+ * @remarks
+ * Ranks come from accomplishments — finalized and completed runs, the Regions
+ * they happened in, and how far a persistent Rival feud has gone — so Fame
+ * alone can never buy one.
+ */
+export type ExpeditionCareerRank =
+  'rookie' | 'roadtested' | 'headliner' | 'cult_legend'
+
 export interface CareerState {
   crewById: Record<string, CrewCareerState>
   expeditionRelationshipByPair: Record<string, ExpeditionRelationshipTier>
@@ -55,6 +66,15 @@ export interface CareerState {
   finalizedExpeditionRuns: number
   completedExpeditionRuns: number
   completedExpeditionRegionIds: string[]
+  /**
+   * Runs whose Career result has already been settled.
+   *
+   * @remarks
+   * Separate from `settledCrewRunIds`: Crew settlement and Career settlement
+   * are different transitions with different evidence, and sharing one list
+   * would let either silently consume the other's replay guard.
+   */
+  settledExpeditionRunIds: string[]
   hqFacilityLevels: Record<string, number>
   ascensionUnlocked: boolean
 }

@@ -1,10 +1,12 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
+  SettleExpeditionCareerResultPayload,
   SettleExpeditionCrewCareerPayload
 } from '../../types/actions'
 import type { GameState } from '../../types'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { getEligibleCrewSignatureTrait } from '../../domain/expedition/career'
+import { resolveExpeditionCareerSettlement } from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 
@@ -98,6 +100,50 @@ export const handleSettleExpeditionCrewCareer = (
           0,
           Math.floor(finiteNumberOr(state.career.completedExpeditionRuns, 0))
         ) + (outcome.kind === 'completed' ? 1 : 0)
+    }
+  }
+}
+
+/**
+ * Settles one finalized run's Career result exactly once.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the run to settle.
+ * @returns State with the Career counters, Regions and Tokens advanced.
+ *
+ * @remarks
+ * The payload names a run; the reducer derives everything else from that run's
+ * own finalized outcome. A run whose outcome is missing or does not match, and
+ * a run already settled, both return the identical state — so a replayed or
+ * forged dispatch cannot mint a second Token.
+ */
+export const handleSettleExpeditionCareerResult = (
+  state: GameState,
+  payload: SettleExpeditionCareerResultPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.runId !== 'string'
+  )
+    return state
+  const settlement = resolveExpeditionCareerSettlement(state, payload.runId)
+  if (!settlement) return state
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      tourTokens: Math.max(
+        0,
+        state.career.tourTokens + settlement.tourTokensAwarded
+      ),
+      finalizedExpeditionRuns: settlement.finalizedExpeditionRuns,
+      completedExpeditionRuns: settlement.completedExpeditionRuns,
+      completedExpeditionRegionIds: settlement.completedExpeditionRegionIds,
+      settledExpeditionRunIds: [
+        ...state.career.settledExpeditionRunIds,
+        payload.runId
+      ]
     }
   }
 }
