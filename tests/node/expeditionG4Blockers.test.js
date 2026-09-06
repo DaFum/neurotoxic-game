@@ -31,6 +31,12 @@ import {
 import { EXPEDITION_PRESSURE_EVENTS } from '../../src/data/expedition/pressureEvents.ts'
 import { getEffectiveExpeditionRoute } from '../../src/domain/expedition/routeOverlay.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
+import { getExpeditionPressureEventChance } from '../../src/domain/expedition/pressure.ts'
+import { EXPEDITION_PRESSURE_EVENTS_DB } from '../../src/data/events/expeditionPressure.ts'
+import { QUEST_REGISTRY } from '../../src/data/questRegistry.ts'
+import { isExpeditionEventResultId } from '../../src/domain/expedition/eventDeltas.ts'
+import { POST_OPTIONS } from '../../src/data/postOptions.ts'
+import { deriveExpeditionSocialResultId } from '../../src/domain/expedition/social.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
 import { getEffectiveExpeditionRules } from '../../src/domain/expedition/effectiveRules.ts'
 import { applyExpeditionRouteAdvance } from '../../src/context/reducers/expeditionReducer.ts'
@@ -1316,4 +1322,142 @@ test('a Nemesis at level 3 takes one staged Sponsor offer off the table', () => 
   // the surviving offers are the same deterministic ones.
   assert.deepEqual(interfered, baseline.slice(0, 2))
   assert.deepEqual(buildPreparedExpeditionSponsorOffers(atTier(4)), interfered)
+})
+
+test('a Rival climbs 0 to 4 across linked runs, one tier per run', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+  assert.ok(started.rivalBand)
+  const rivalId = started.rivalBand.id
+  assert.equal(started.career.rivalsById[rivalId].history.nemesisLevel, 0)
+
+  // The Rival-targeted post is what makes `weaponize` - and therefore the
+  // whole ladder - reachable through the canonical Social path.
+  const rivalPostOption = POST_OPTIONS.find(
+    option => deriveExpeditionSocialResultId(option) === 'weaponize'
+  )
+  assert.ok(rivalPostOption, 'a production post option must resolve weaponize')
+  assert.equal(rivalPostOption.condition({ ...started }), true)
+
+  const encounter = (state, runId) =>
+    handleResolveExpeditionSocialResult(
+      {
+        ...state,
+        lastGigStats: { score: 1000, accuracy: 80, failed: false },
+        social: {
+          ...state.social,
+          pendingSocialOptionId: rivalPostOption.id
+        },
+        expedition: {
+          ...state.expedition,
+          runId,
+          lastSocialResult: null,
+          pendingSocialSettlement: {
+            routeStep: state.expedition.routeStep,
+            gigId: null
+          }
+        }
+      },
+      {
+        resultId: 'weaponize',
+        postOptionId: rivalPostOption.id,
+        expectedRouteStep: state.expedition.routeStep
+      }
+    )
+
+  let current = started
+  for (let run = 1; run <= 4; run++) {
+    current = encounter(current, `run_${run}`)
+    assert.equal(
+      current.career.rivalsById[rivalId].history.nemesisLevel,
+      run,
+      `run ${run} must advance the persistent Rival record exactly one tier`
+    )
+    // A second encounter inside the same run does not advance again.
+    assert.equal(
+      encounter(current, `run_${run}`).career.rivalsById[rivalId].history
+        .nemesisLevel,
+      run,
+      'a Nemesis tier must not be farmable inside one run'
+    )
+  }
+
+  assert.equal(
+    current.career.rivalsById[rivalId].history.relationship,
+    'nemesis'
+  )
+  assert.equal(selectExpeditionFinaleType({ nemesisLevel: 4 }), 'rival_battle')
+})
+
+test('every Director event is a real event whose chance the Director owns', () => {
+  const prepared = preparedState()
+  const started = gameReducer(prepared, {
+    type: ActionTypes.START_EXPEDITION,
+    payload: {
+      prepId: prepared.expedition.prep.prepId,
+      expectedRunSeed: prepared.runSeed,
+      loadout: fixtureLoadout()
+    }
+  })
+
+  // Registry and event definitions are the same four ids, so the Director's
+  // weighting and the event the player sees cannot drift apart.
+  assert.deepEqual(
+    EXPEDITION_PRESSURE_EVENTS_DB.map(event => event.id).sort(),
+    EXPEDITION_PRESSURE_EVENTS.map(event => event.id).sort()
+  )
+
+  for (const event of EXPEDITION_PRESSURE_EVENTS_DB) {
+    // Options name a canonical result and never carry numbers of their own.
+    assert.ok(event.options.length >= 1, `${event.id} needs an option`)
+    for (const option of event.options) {
+      assert.equal(option.effect.type, 'expedition')
+      assert.ok(isExpeditionEventResultId(option.effect.result))
+    }
+    // Probability is state-derived, and zero outside an active run.
+    assert.equal(typeof event.chance, 'function')
+    assert.equal(event.chance(prepared), 0)
+    const active = event.chance(started)
+    assert.ok(active > 0 && active < 1, `${event.id} chance out of range`)
+    assert.equal(event.condition(prepared), false)
+  }
+
+  // High Heat shifts the pool toward the Authority family rather than simply
+  // making every pressure event more likely.
+  const hot = {
+    ...started,
+    expedition: {
+      ...started.expedition,
+      pressure: { ...started.expedition.pressure, heat: 90 }
+    }
+  }
+  assert.ok(
+    getExpeditionPressureEventChance(hot, 'expedition_authority_patrol') >
+      getExpeditionPressureEventChance(started, 'expedition_authority_patrol')
+  )
+})
+
+test('the Expedition quest families are registered against real events', () => {
+  const families = [
+    ['quest_expedition_run_goal', 'expedition.nodeResolved'],
+    ['quest_expedition_nemesis', 'expedition.rivalOutcome'],
+    ['quest_expedition_meta_unlock', 'expedition.finaleCompleted']
+  ]
+  for (const [questId, eventType] of families) {
+    const quest = QUEST_REGISTRY[questId]
+    assert.ok(quest, `${questId} must be in the production registry`)
+    assert.ok(
+      quest.progressRules.some(rule => rule.event === eventType),
+      `${questId} must progress on ${eventType}`
+    )
+    assert.ok(quest.required > 0)
+    assert.ok(quest.rewards.length > 0)
+  }
 })

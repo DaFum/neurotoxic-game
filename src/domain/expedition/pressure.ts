@@ -54,11 +54,33 @@ export const derivePressureDirectorContext = (
     routeDepthPressure: bounded(state.expedition.routeStep * 10)
   }
 }
-export const selectPressureEvent = (
+/**
+ * Share of eligibility the whole pressure pool draws at one qualifying moment.
+ *
+ * @remarks
+ * Spread across the pool rather than per event, so adding a fifth event makes
+ * the existing four rarer instead of making pressure events as a whole more
+ * frequent. Sized against the neighbouring Crew events' flat `0.1`.
+ */
+const EXPEDITION_PRESSURE_EVENT_POOL_RATE = 0.4 as const
+
+/**
+ * Weighs the pool against the Director context.
+ *
+ * @param state - Current game state.
+ * @param events - Candidate pool.
+ * @returns Each event with the weight the Director gives it right now.
+ *
+ * @remarks
+ * The single weighting formula. {@link selectPressureEvent} samples from it and
+ * {@link getExpeditionPressureEventChance} normalizes it into an event
+ * `chance`, so the pressure a run is under shapes the draw and the surfaced
+ * event identically rather than through two drifting copies.
+ */
+const weighExpeditionPressureEvents = (
   state: GameState,
   events: readonly ExpeditionPressureEvent[]
-): ExpeditionPressureEvent | null => {
-  if (events.length === 0) return null
+): Array<{ event: ExpeditionPressureEvent; weight: number }> => {
   const context = derivePressureDirectorContext(state)
   const relief =
     state.expedition.pressure.severeReliefUntilRouteStep !== null &&
@@ -105,6 +127,22 @@ export const selectPressureEvent = (
       (event.id === state.expedition.pressure.lastSevereEventId ? 0.25 : 1) *
       (event.severity === 'severe' && relief && !bypass ? 0.35 : 1)
   }))
+  return weighted
+}
+
+/**
+ * Samples one pressure event for the current route step.
+ *
+ * @param state - Current game state.
+ * @param events - Candidate pool.
+ * @returns The selected event, or `null` when nothing is eligible.
+ */
+export const selectPressureEvent = (
+  state: GameState,
+  events: readonly ExpeditionPressureEvent[]
+): ExpeditionPressureEvent | null => {
+  if (events.length === 0) return null
+  const weighted = weighExpeditionPressureEvents(state, events)
   const total = weighted.reduce((sum, item) => sum + item.weight, 0)
   if (total <= 0) return null
   const rng = mulberry32(
@@ -138,6 +176,38 @@ export const selectPressureEvent = (
  * steps read, and the Underground invite is what turns high Heat into the
  * run-scoped route opportunity rather than only a penalty.
  */
+/**
+ * The share of eligibility one pressure event draws right now.
+ *
+ * @param state - Current game state.
+ * @param eventId - Registry id of the event asking.
+ * @param events - Candidate pool; defaults to the canonical registry.
+ * @returns A probability in `0..1`, and `0` outside an active run.
+ *
+ * @remarks
+ * This is how the Director actually reaches the player: an authored event
+ * names this as its `chance`, so the canonical event pipeline surfaces it and
+ * the canonical option/result owner applies the consequence. Probability is
+ * state-derived here rather than in a condition, which is what
+ * `src/data/events/AGENTS.md` requires.
+ */
+export const getExpeditionPressureEventChance = (
+  state: GameState,
+  eventId: string,
+  events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS
+): number => {
+  if (state.expedition?.status !== 'active') return 0
+  const weighted = weighExpeditionPressureEvents(state, events)
+  const total = weighted.reduce((sum, item) => sum + item.weight, 0)
+  if (total <= 0) return 0
+  const match = weighted.find(item => item.event.id === eventId)
+  if (!match) return 0
+  return Math.max(
+    0,
+    Math.min(1, (match.weight / total) * EXPEDITION_PRESSURE_EVENT_POOL_RATE)
+  )
+}
+
 export const resolveExpeditionPressureDirectorStep = (
   state: GameState,
   events: readonly ExpeditionPressureEvent[] = EXPEDITION_PRESSURE_EVENTS,
