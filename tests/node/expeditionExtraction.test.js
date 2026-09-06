@@ -24,6 +24,7 @@ import {
   settleExpedition,
   splitExpeditionRewardLedger
 } from '../../src/domain/expedition/extraction'
+import { EXPEDITION_REWARD_REGISTRY } from '../../src/domain/expedition/rewardLedger'
 import {
   firstExtractionRouteStep,
   fixtureMap,
@@ -239,25 +240,37 @@ describe('EXTRACT_EXPEDITION', () => {
 
   it('carries one explicitly named unsecured rare reward', () => {
     const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
-    const entryId = state.expedition.rewardLedger[0]?.id
-    assert.ok(entryId, 'the walk banked no route rare to carry')
+    const entry = state.expedition.rewardLedger[0]
+    assert.ok(entry, 'the walk banked no route rare to carry')
+    // Read from the registry rather than hardcoded: which rare this seed puts
+    // at this step is a property of the route, and the route legitimately
+    // changes when the generator does. What must hold is that the named entry
+    // materializes exactly its declared amount, whichever rare it is.
+    const definition = EXPEDITION_REWARD_REGISTRY[entry.rewardDefinitionId]
+    assert.ok(definition, `unknown reward ${entry.rewardDefinitionId}`)
+    const before = state.band.inventory[definition.target] ?? 0
 
     const carried = extract(state, {
       expectedRouteStep: RARE_WINDOW_STEP,
-      explicitRareRewardIds: [entryId]
+      explicitRareRewardIds: [entry.id]
     })
     assert.deepEqual(
       carried.expedition.outcome?.settlement.retainedRewardEntryIds,
-      [entryId]
+      [entry.id]
     )
-    // 15 shirts, materialized once, after the settlement committed.
-    assert.equal(carried.band.inventory.shirts, 50 + 15)
+    assert.equal(
+      carried.band.inventory[definition.target],
+      before + definition.amount
+    )
     assert.equal(carried.expedition.rewardLedger[0]?.materialized, true)
   })
 
   it('abandons an unsecured rare reward the player did not name', () => {
     const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
     assert.equal(state.expedition.rewardLedger.length, 1)
+    const entry = state.expedition.rewardLedger[0]
+    const definition = EXPEDITION_REWARD_REGISTRY[entry.rewardDefinitionId]
+    const before = state.band.inventory[definition.target] ?? 0
     const abandoned = extract(state, {
       expectedRouteStep: RARE_WINDOW_STEP,
       explicitRareRewardIds: []
@@ -266,7 +279,7 @@ describe('EXTRACT_EXPEDITION', () => {
       abandoned.expedition.outcome?.settlement.abandonedRewardEntryIds.length,
       1
     )
-    assert.equal(abandoned.band.inventory.shirts, 50)
+    assert.equal(abandoned.band.inventory[definition.target] ?? 0, before)
     assert.equal(abandoned.expedition.rewardLedger[0]?.materialized, false)
   })
 

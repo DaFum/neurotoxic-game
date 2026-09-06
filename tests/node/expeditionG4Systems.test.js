@@ -192,7 +192,18 @@ test('rival selection and quest/event seams are deterministic production data', 
     'expedition.rivalOutcome'
   )
   assert.ok(getAvailableNativeContractTemplateIds(state, map).length >= 4)
-  assert.deepEqual(getAvailableSponsorOfferIds(state, map), [])
+  // Sponsor offers are derived from the route's own Region and Tour now, not
+  // read out of persisted state, so this is a real set rather than the empty
+  // list an unstaged `preparedSponsorOffers` used to produce.
+  assert.deepEqual(
+    getAvailableSponsorOfferIds(state, map),
+    buildPreparedExpeditionSponsorOffers(
+      state,
+      map.regionId,
+      map.tourTypeId
+    ).map(offer => offer.offerId)
+  )
+  assert.ok(getAvailableSponsorOfferIds(state, map).length > 0)
   assert.deepEqual(materializeCommittedContracts([], map), [])
   assert.equal(applyExpeditionPressureDelta(state, { heat: 5 }).heat, 5)
   assert.equal(

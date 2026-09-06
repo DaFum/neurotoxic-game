@@ -241,11 +241,20 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
   })
 
   it('keeps an earned Contract reward across a load round-trip', () => {
-    // `contract_route_target` materializes onto the fixture's SPECIAL node at
-    // step 3, which the canonical walk actually visits - so the obligation is
-    // completed through the production arrival signal rather than by hand.
-    const started = startedWithContract('contract_route_target', 'exp_3_0')
-    const atTarget = walkTo(started, 3)
+    // `contract_route_target` materializes onto a SPECIAL node the canonical
+    // walk visits, so the obligation completes through the production arrival
+    // signal rather than by hand. Derived from the route rather than named:
+    // which node is SPECIAL is a property of the generator, and pinning an id
+    // here made this test fail the moment route generation legitimately
+    // changed.
+    const specialNodeId = map.nodeOrder.find(nodeId => {
+      const entry = map.meta[nodeId]
+      return entry?.nodeClass === 'SPECIAL' && entry.routeStep > 0
+    })
+    assert.ok(specialNodeId, 'the fixture route has no SPECIAL node')
+    const specialStep = map.meta[specialNodeId].routeStep
+    const started = startedWithContract('contract_route_target', specialNodeId)
+    const atTarget = walkTo(started, specialStep)
     const targetNodeId = atTarget.expedition.visitedNodeIds.at(-1)
     assert.equal(
       atTarget.expedition.activeObligations[0].constraints[0].targetNodeId,

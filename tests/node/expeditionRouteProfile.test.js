@@ -122,21 +122,32 @@ describe('G5 — the profile reaches its production consumers', () => {
       player: { fame: 12000 }
     })
     assert.deepEqual(
-      buildPreparedExpeditionSponsorOffers(quiet),
-      buildPreparedExpeditionSponsorOffers(famous)
+      buildPreparedExpeditionSponsorOffers(
+        quiet,
+        'corporate_circuit',
+        'corporate_tour'
+      ),
+      buildPreparedExpeditionSponsorOffers(
+        famous,
+        'corporate_circuit',
+        'corporate_tour'
+      )
     )
   })
 
   it('lets a Contract-heavy route stage one more Sponsor offer', () => {
-    const neutral = buildPreparedExpeditionSponsorOffers(
-      runIn('home_turf', 'standard_tour', { player: { fame: 500 } })
-    )
-    const corporate = buildPreparedExpeditionSponsorOffers(
-      runIn('corporate_circuit', 'corporate_tour', { player: { fame: 500 } })
-    )
-    const underground = buildPreparedExpeditionSponsorOffers(
-      runIn('underground_scene', 'underground_tour', { player: { fame: 500 } })
-    )
+    // The Region and Tour are arguments now, not read off the loadout: every
+    // caller needs the set before a loadout exists, which is why passing only
+    // `state` silently resolved the baseline profile for all three of these.
+    const offersFor = (regionId, tourTypeId) =>
+      buildPreparedExpeditionSponsorOffers(
+        runIn(regionId, tourTypeId, { player: { fame: 500 } }),
+        regionId,
+        tourTypeId
+      )
+    const neutral = offersFor('home_turf', 'standard_tour')
+    const corporate = offersFor('corporate_circuit', 'corporate_tour')
+    const underground = offersFor('underground_scene', 'underground_tour')
     // The upward side is capped by the generator's pool rather than by the
     // route: with three brand offers available, a Contract-heavy route asks
     // for four and still gets three. Asserted as "no fewer" so this stays

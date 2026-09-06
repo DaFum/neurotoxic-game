@@ -530,31 +530,36 @@ test('sanitizeExpeditionState rejects gig_accuracy_count progress when accuracy 
     meta: canonicalMap.meta
   })
 
-  // Find a node in canonicalMap that is a gig class (CLUB_GIG, FESTIVAL, or FINALE) and reachable from startNodeId
-  const gigEntry = Object.entries(canonicalMap.meta).find(
-    ([id, meta]) =>
-      id !== startNodeId &&
-      (meta.nodeClass === 'CLUB_GIG' ||
-        meta.nodeClass === 'FESTIVAL' ||
-        meta.nodeClass === 'FINALE')
-  )
-  assert.ok(gigEntry, 'gig node must exist in canonical map')
-  const [targetGigNodeId, gigMeta] = gigEntry
-  const gigRouteStep = gigMeta.routeStep
-
-  // Build a valid connected path from startNodeId to targetGigNodeId using canonicalMap connections
-  const visitedNodeIds = [startNodeId]
-  let current = startNodeId
-  for (let step = 1; step <= gigRouteStep; step++) {
+  // Walk the canonical path first, then take a gig node *from that path*.
+  // Picking one out of meta order and assuming the greedy walk reaches it is
+  // what broke here: a gig node can exist on a branch this walk never takes,
+  // and which branch carries one legitimately changes with route generation.
+  const walkedNodeIds = [startNodeId]
+  let cursor = startNodeId
+  for (
+    let step = 1;
+    step <= canonicalMap.meta[canonicalMap.finaleNodeId].routeStep;
+    step++
+  ) {
     const nextEdge = canonicalMap.connections.find(
       conn =>
-        conn.from === current && canonicalMap.meta[conn.to]?.routeStep === step
+        conn.from === cursor && canonicalMap.meta[conn.to]?.routeStep === step
     )
-    assert.ok(nextEdge, `edge at step ${step} must exist`)
-    current = nextEdge.to
-    visitedNodeIds.push(current)
+    if (!nextEdge) break
+    cursor = nextEdge.to
+    walkedNodeIds.push(cursor)
   }
-  assert.equal(current, targetGigNodeId)
+  const gigRouteStep = walkedNodeIds.findIndex(id => {
+    const entry = canonicalMap.meta[id]
+    return (
+      id !== startNodeId &&
+      (entry?.nodeClass === 'CLUB_GIG' ||
+        entry?.nodeClass === 'FESTIVAL' ||
+        entry?.nodeClass === 'FINALE')
+    )
+  })
+  assert.ok(gigRouteStep > 0, 'the walked route must reach a gig node')
+  const visitedNodeIds = walkedNodeIds.slice(0, gigRouteStep + 1)
   const actualGigNodeId = visitedNodeIds[gigRouteStep]
   const gigVenueId =
     canonicalMap.nodes[actualGigNodeId]?.venueId || actualGigNodeId
