@@ -70,7 +70,7 @@ export const EXPEDITION_REGIONS = {
     id: 'underground_scene',
     labelKey: 'ui:expedition.region.underground_scene',
     numeric: {
-      rareRewardMultiplier: 1.2,
+      rareRewardChanceMultiplier: 1.2,
       heatGainMultiplier: 1.15,
       authorityEventWeightMultiplier: 1.2
     },

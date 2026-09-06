@@ -18,6 +18,7 @@ export const RunSummary = () => {
   const { t, i18n } = useTranslation(['ui'])
   const {
     prepareNextExpedition,
+    settleExpeditionCrewCareer,
     settleExpeditionCareerResult,
     changeScene,
     saveGameAfterStateCommit
@@ -31,7 +32,14 @@ export const RunSummary = () => {
     // would silently pay nothing for every run the Career ever finishes. The
     // reducer is still the authority - it names no amount, only the run - and
     // refuses a run it has already settled, so acknowledging twice pays once.
-    if (outcome) settleExpeditionCareerResult(outcome.runId)
+    if (outcome) {
+      // Crew first, then Career: the two settlements own different slices and
+      // carry their own replay guards (`settledCrewRunIds` versus
+      // `settledExpeditionRunIds`), so neither can pay for the other's run and
+      // a second acknowledgement is an identity no-op for both.
+      settleExpeditionCrewCareer(outcome.runId)
+      settleExpeditionCareerResult(outcome.runId)
+    }
     prepareNextExpedition()
     // Autosave covers only the gig transitions, so acknowledging a finalized
     // run has to persist itself: otherwise quitting from the menu restores the
@@ -43,7 +51,8 @@ export const RunSummary = () => {
     outcome,
     prepareNextExpedition,
     saveGameAfterStateCommit,
-    settleExpeditionCareerResult
+    settleExpeditionCareerResult,
+    settleExpeditionCrewCareer
   ])
 
   if (!outcome) {

@@ -41,7 +41,7 @@ export const BASE_EXPEDITION_NUMERIC_RULES: Readonly<ExpeditionNumericRules> = {
   exposureGainMultiplier: 1.0,
   crewStressMultiplier: 1.0,
   extractionRetentionMultiplier: 1.0,
-  rareRewardMultiplier: 1.0,
+  rareRewardChanceMultiplier: 1.0,
   completionMultiplier: 1.0,
   rivalEventWeightMultiplier: 1.0,
   authorityEventWeightMultiplier: 1.0,
@@ -111,6 +111,40 @@ const profileValue = (
  * branches on a Region, Tour, chassis or trait id to reach a number — if a
  * rule is not composed here, it does not exist.
  */
+/**
+ * The Region/Tour rare-chance multiplier, with no live inputs.
+ *
+ * @param regionId - Committed Region id.
+ * @param tourTypeId - Committed Tour Type id.
+ * @returns The composed multiplier, floored at 0.
+ *
+ * @remarks
+ * The route is the canonical rare roll and it is built once, deterministically,
+ * from the seed and these two ids - preview and play must produce the same
+ * route or every extraction decision was made against a route the player never
+ * walked. So the multiplier that reaches it has to be pure in the same inputs.
+ * Chassis, modules and Crew deliberately do not contribute: none of them is
+ * known when the route is built, and letting them in would make the route
+ * change under a build edit.
+ */
+export const getExpeditionRegistryRareRewardChanceMultiplier = (
+  regionId: unknown,
+  tourTypeId: unknown
+): number =>
+  Math.max(
+    0,
+    profileValue(
+      getExpeditionRegion(regionId)?.numeric,
+      'rareRewardChanceMultiplier',
+      1
+    ) *
+      profileValue(
+        getExpeditionTourType(tourTypeId)?.numeric,
+        'rareRewardChanceMultiplier',
+        1
+      )
+  )
+
 export const getEffectiveExpeditionRules = (
   state: GameState
 ): EffectiveExpeditionRules => {
@@ -166,9 +200,9 @@ export const getEffectiveExpeditionRules = (
     completionMultiplier:
       profileValue(regionNumeric, 'completionMultiplier', 1) *
       profileValue(tourNumeric, 'completionMultiplier', 1),
-    rareRewardMultiplier:
-      profileValue(regionNumeric, 'rareRewardMultiplier', 1) *
-      profileValue(tourNumeric, 'rareRewardMultiplier', 1),
+    rareRewardChanceMultiplier:
+      profileValue(regionNumeric, 'rareRewardChanceMultiplier', 1) *
+      profileValue(tourNumeric, 'rareRewardChanceMultiplier', 1),
     repairCostMultiplier:
       profileValue(regionNumeric, 'repairCostMultiplier', 1) *
       profileValue(tourNumeric, 'repairCostMultiplier', 1),

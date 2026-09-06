@@ -185,7 +185,8 @@ export const deriveExpeditionRouteProfile = (
   return {
     meaningfulNodeCount:
       tour?.depth ?? NEUTRAL_EXPEDITION_ROUTE_PROFILE.meaningfulNodeCount,
-    specialWeight: weights.undergroundNodeWeightMultiplier,
+    undergroundWeight: weights.undergroundNodeWeightMultiplier,
+    rivalWeight: weights.rivalNodeWeightMultiplier,
     festivalWeight: weights.festivalHighProfileNodeWeightMultiplier,
     restWeight: weights.recoveryNodeWeightMultiplier,
     supplyWeight: weights.supplyNodeWeightMultiplier,
@@ -193,9 +194,9 @@ export const deriveExpeditionRouteProfile = (
     extractionWindowRange:
       tour?.extractionWindowRange ??
       NEUTRAL_EXPEDITION_ROUTE_PROFILE.extractionWindowRange,
-    undergroundAllowed: true,
-    // A Tour that hunts the Rival must be able to place one; nothing here
-    // forbids it otherwise.
-    rivalAllowed: true
+
+    // A Tour that hunts the Rival guarantees one; everything else takes the
+    // weighted chance its Region and Tour add up to.
+    forcedRival: weights.forcedRival
   }
 }

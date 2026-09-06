@@ -30,11 +30,21 @@ export const selectExpeditionRivalForRun = (
   preparedMap: ExpeditionMap,
   routeProfile: ExpeditionRouteProfile
 ): ExpeditionRivalSelection | null => {
-  // A Tour that hunts the Rival, or a feud the Career has driven to the top
-  // tier, forces the encounter even where the base route profile would allow
-  // the run to avoid one.
+  // The route decides. Rival encounters are a weighted category now, so a run
+  // gets a Rival because its route actually offers one - which is how the
+  // Region/Tour Rival weight reaches this consumer at all.
+  const routeOffersRival = preparedMap.nodeOrder.some(
+    nodeId => preparedMap.meta[nodeId]?.specialSubtype === 'RIVAL_ENCOUNTER'
+  )
+  // A Tour that hunts the Rival guarantees the encounter, and so does a feud
+  // the Career has driven to the top tier. `routeProfile` carries the
+  // committed Region and Tour; the live profile is read only for the Nemesis
+  // case, because at START the loadout is not committed yet and reading the
+  // Tour off it resolved the baseline with `forcedRival` always false.
   const route = getExpeditionRoutePressureProfile(state)
-  if (!routeProfile.rivalAllowed && !route.forcedRival) return null
+  if (!routeOffersRival && !routeProfile.forcedRival && !route.forcedRival) {
+    return null
+  }
   const existing = Object.values(state.career.rivalsById)
     .filter(
       record =>

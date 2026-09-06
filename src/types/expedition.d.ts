@@ -196,7 +196,6 @@ export type ExpeditionTier = 'low' | 'moderate' | 'high'
  */
 export interface ExpeditionRouteProfile {
   meaningfulNodeCount: number
-  specialWeight: number
   festivalWeight: number
   restWeight: number
   supplyWeight: number
@@ -210,8 +209,27 @@ export interface ExpeditionRouteProfile {
    * belongs to the profile the map is built from rather than to a constant.
    */
   extractionWindowRange: readonly [number, number]
-  undergroundAllowed: boolean
-  rivalAllowed: boolean
+  /**
+   * Scales the chance that the route offers an Underground node at all.
+   *
+   * @remarks
+   * A chance rather than a guarantee, because a guaranteed node makes the
+   * multiplier a placebo: if every route already has one, `1.35x` cannot make
+   * Underground any more frequent. A Standard route may or may not offer one;
+   * an Underground Region or Tour usually does.
+   */
+  undergroundWeight: number
+  /** Scales the chance that the route offers a Rival encounter. */
+  rivalWeight: number
+  /**
+   * Guarantees a reachable Rival encounter regardless of the weighted roll.
+   *
+   * @remarks
+   * Applied as a deterministic post-pass rather than by forcing the roll, so a
+   * Rival-hunt Tour is the same route it would otherwise have been plus the
+   * encounter it promises.
+   */
+  forcedRival: boolean
 }
 
 /**
@@ -980,7 +998,16 @@ export interface ExpeditionNumericRules {
   exposureGainMultiplier: number
   crewStressMultiplier: number
   extractionRetentionMultiplier: number
-  rareRewardMultiplier: number
+  /**
+   * Scales the *probability* of a chance-based rare reward, nothing else.
+   *
+   * @remarks
+   * Not carry slots, not item quantity, not reward value: `underground_scene`
+   * at 1.2 means a 20% better chance at a rare, not 20% more loot. A rare a
+   * decision grants outright - a Finale reward, an authored event result - is
+   * deterministic and never re-rolled, so this cannot touch it.
+   */
+  rareRewardChanceMultiplier: number
   completionMultiplier: number
   rivalEventWeightMultiplier: number
   authorityEventWeightMultiplier: number

@@ -55,14 +55,14 @@ export const MAX_EXPEDITION_MEANINGFUL_NODES = 9 as const
  */
 export const NEUTRAL_EXPEDITION_ROUTE_PROFILE: ExpeditionRouteProfile = {
   meaningfulNodeCount: BASE_EXPEDITION_MEANINGFUL_NODES,
-  specialWeight: 1,
+  undergroundWeight: 1,
+  rivalWeight: 1,
   festivalWeight: 1,
   restWeight: 1,
   supplyWeight: 1,
   gigWeight: 1,
   extractionWindowRange: [3, 6],
-  undergroundAllowed: true,
-  rivalAllowed: true
+  forcedRival: false
 }
 
 /**

@@ -73,7 +73,7 @@ describe('G5 — Region and Tour identity is data, not branches', () => {
     const underground = getEffectiveExpeditionRules(
       runIn('underground_scene', 'standard_tour')
     ).numeric
-    assert.equal(underground.rareRewardMultiplier, 1.2)
+    assert.equal(underground.rareRewardChanceMultiplier, 1.2)
     assert.equal(underground.heatGainMultiplier, 1.15)
     assert.equal(
       underground.authorityEventWeightMultiplier /

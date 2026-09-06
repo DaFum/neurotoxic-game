@@ -363,7 +363,21 @@ export const handleSetLastGigStats = (
   // player.location is the `venues:<id>.name` display key, so derive the
   // canonical city key — checkVenueAccess reads the same key for the
   // regional booking ban.
-  const location = getRegionKeyForLocation(state.player?.location) || 'Unknown'
+  //
+  // During an Expedition the committed Region is the authority instead. The
+  // run's nodes are `exp_<layer>_<index>`, so the city derivation would credit
+  // every Expedition gig to a single `exp` key and no Region would ever build
+  // reputation. This is deliberately scoped to the producer rather than folded
+  // into `getRegionKeyForLocation`: quest scopes and the overworld systems
+  // still need their existing city keys.
+  const expeditionRegionId =
+    state.expedition?.status === 'active'
+      ? state.expedition.loadout?.regionId
+      : null
+  const location =
+    (typeof expeditionRegionId === 'string' && expeditionRegionId.length > 0
+      ? expeditionRegionId
+      : getRegionKeyForLocation(state.player?.location)) || 'Unknown'
   const capacity =
     typeof state.currentGig?.capacity === 'number' &&
     Number.isFinite(state.currentGig.capacity)

@@ -183,43 +183,108 @@ describe('standard route shape', () => {
     }
   })
 
-  it('places Rival and Underground special classes', () => {
-    for (const seed of SEEDS) {
-      const map = build(seed)
-      const subtypes = new Set(
-        Object.values(map.meta)
-          .map(entry => entry.specialSubtype)
-          .filter(Boolean)
-      )
-      assert.ok(subtypes.has('RIVAL_ENCOUNTER'), `seed ${seed}: no rival node`)
+  const specialSubtypes = map =>
+    new Set(
+      Object.values(map.meta)
+        .map(entry => entry.specialSubtype)
+        .filter(Boolean)
+    )
+
+  const routeOffers = (subtypes, kind) =>
+    kind === 'rival'
+      ? subtypes.has('RIVAL_ENCOUNTER')
+      : subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET')
+
+  /** Share of seeds whose route offers a category, as a percentage. */
+  const offerRate = (kind, profile, seeds = 400) => {
+    let hits = 0
+    for (let seed = 0; seed < seeds; seed++) {
+      if (routeOffers(specialSubtypes(build(seed, profile)), kind)) hits++
+    }
+    return (hits / seeds) * 100
+  }
+
+  it('offers Rival and Underground as weighted categories, not guarantees', () => {
+    // Deliberately not "every seed has both". A guaranteed node makes the
+    // Region/Tour multipliers placebos: if every route already carries one,
+    // no weight can make the category more frequent. A neutral route offers
+    // each often but not always.
+    const rival = offerRate('rival', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
+    const underground = offerRate(
+      'underground',
+      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    )
+    for (const [kind, rate] of [
+      ['rival', rival],
+      ['underground', underground]
+    ]) {
       assert.ok(
-        subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET'),
-        `seed ${seed}: no underground node`
+        rate > 25 && rate < 90,
+        `${kind} offered on ${rate.toFixed(0)}% of seeds is not a real weight`
       )
     }
   })
 
-  it('places an Underground node even when every retry hits the Rival layer', () => {
-    // Regression: on a short route the Underground candidate collapses to a
-    // single value, so all eight retries can land on the Rival layer. Seed
-    // 505375 is such a route and used to ship with no Underground node.
-    const subtypes = new Set(
-      Object.values(build(505375).meta)
-        .map(entry => entry.specialSubtype)
-        .filter(Boolean)
-    )
-    assert.ok(subtypes.has('RIVAL_ENCOUNTER'))
+  it('lets the weight actually move the frequency', () => {
+    const heavier = offerRate('underground', {
+      ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+      undergroundWeight: 1.35
+    })
+    const baseline = offerRate('underground', NEUTRAL_EXPEDITION_ROUTE_PROFILE)
     assert.ok(
-      subtypes.has('UNDERGROUND_MARKET') || subtypes.has('BLACK_MARKET'),
-      'seed 505375: no underground node'
+      heavier > baseline,
+      `1.35x underground (${heavier.toFixed(0)}%) must beat baseline (${baseline.toFixed(0)}%)`
+    )
+    assert.equal(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 0
+      }),
+      0,
+      'a zero weight must take the category off the route entirely'
     )
   })
 
-  it('omits the Rival and Underground classes when the profile forbids them', () => {
+  it('guarantees a Rival encounter on a forced-Rival profile', () => {
+    // The weighted roll can legitimately miss, so the guarantee is a
+    // deterministic post-pass rather than a rigged roll.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        forcedRival: true
+      }),
+      100
+    )
+    // Even with the roll disabled outright.
+    assert.equal(
+      offerRate('rival', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      }),
+      100
+    )
+  })
+
+  it('does not lose an Underground node it rolled to a layer collision', () => {
+    // Regression: on a short route the Underground candidate collapses to a
+    // single value, so all eight retries can land on the Rival layer. A route
+    // that rolled Underground must still get it rather than silently dropping
+    // the node - the fallback is about not losing a rolled category, which is
+    // different from guaranteeing one.
+    assert.ok(
+      offerRate('underground', {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        undergroundWeight: 3
+      }) === 100
+    )
+  })
+
+  it('omits both classes when the profile weights them to zero', () => {
     const map = build(7, {
       ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
-      rivalAllowed: false,
-      undergroundAllowed: false
+      rivalWeight: 0,
+      undergroundWeight: 0
     })
     for (const entry of Object.values(map.meta)) {
       assert.equal(entry.specialSubtype, null)
