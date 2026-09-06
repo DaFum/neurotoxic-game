@@ -30,6 +30,7 @@ import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
+import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
 import {
   deriveExpeditionDoubleDownOffer,
   materializeContractConstraints
@@ -656,6 +657,34 @@ export const sanitizeExpeditionState = (
     })
   }
 
+  // Hoisted above the ledger: a Contract reward's evidence is the completed
+  // obligation that earned it, and only the *sanitized* obligations count -
+  // validating against the raw persisted ones would let a forged obligation
+  // vouch for a forged reward.
+  const sanitizedObligations = sanitizeActiveObligations(
+    value.activeObligations,
+    runId,
+    runSeed,
+    routeStep,
+    loadout,
+    preparedMap,
+    sanitizeUniqueStrings(value.resolvedObligationSignalIds),
+    validVisitedPath,
+    sanitizeSocialResultProof(
+      value.lastSocialResult,
+      routeStep,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    sanitizeGigOutcomeMap(
+      value.gigOutcomeByStep,
+      lastGigStats,
+      routeStep,
+      sanitizeUniqueStrings(value.resolvedObligationSignalIds)
+    ),
+    sanitizeExpeditionPressure(value.pressure).heat,
+    sanitizeFinaleType(value.finaleType)
+  )
+
   const rewardLedger: ExpeditionRewardLedgerEntry[] = []
   const seenRewardIds = new Set<string>()
   if (Array.isArray(value.rewardLedger)) {
@@ -663,16 +692,40 @@ export const sanitizeExpeditionState = (
       const entry = sanitizeRewardEntry(raw)
       if (!entry || seenRewardIds.has(entry.id)) continue
 
-      // Hardening against forged persisted ledger entries in G1A/G2:
-      // Reward families whose genuine producers only exist in G3/G4
-      // ('contract', 'crew_contact', 'finale_nonlegendary', 'event_rare')
-      // cannot have valid source-proof state yet and MUST be dropped.
-      if (
-        entry.sourceType === 'contract' ||
-        entry.sourceType === 'finale_nonlegendary' ||
-        entry.sourceType === 'event_rare'
-      ) {
-        continue
+      // `event_rare` still has no genuine producer, so no persisted entry of
+      // that family can be real and every one is dropped. `contract` and
+      // `finale_nonlegendary` do have producers now, so they are proven
+      // against the same canonical evidence their reducers require rather
+      // than dropped - an autosave between earning a Contract reward and the
+      // terminal settlement that materializes it must not lose it.
+      if (entry.sourceType === 'event_rare') continue
+      if (entry.sourceType === 'contract') {
+        if (entry.rewardDefinitionId !== 'reward_contract_patch_run') continue
+        if (
+          !sanitizedObligations.some(
+            obligation =>
+              obligation.id === entry.sourceId &&
+              obligation.sourceType === 'native' &&
+              obligation.status === 'completed'
+          )
+        ) {
+          continue
+        }
+      }
+      if (entry.sourceType === 'finale_nonlegendary') {
+        if (!preparedMap) continue
+        const finaleNodeId = preparedMap.finaleNodeId
+        const finaleRouteStep = preparedMap.meta[finaleNodeId]?.routeStep
+        if (
+          entry.sourceId !== finaleNodeId ||
+          entry.rewardDefinitionId !==
+            getExpeditionFinaleRewardId(sanitizeFinaleType(value.finaleType)) ||
+          !isFiniteNumber(finaleRouteStep) ||
+          entry.earnedAtRouteStep !== finaleRouteStep ||
+          entry.earnedAtRouteStep > routeStep
+        ) {
+          continue
+        }
       }
       if (
         entry.sourceType === 'crew_contact' &&
@@ -805,29 +858,7 @@ export const sanitizeExpeditionState = (
       readCount(value, 'routeStep', 0),
       sanitizeUniqueStrings(value.resolvedObligationSignalIds)
     ),
-    activeObligations: sanitizeActiveObligations(
-      value.activeObligations,
-      runId,
-      runSeed,
-      readCount(value, 'routeStep', 0),
-      loadout,
-      preparedMap,
-      sanitizeUniqueStrings(value.resolvedObligationSignalIds),
-      validVisitedPath,
-      sanitizeSocialResultProof(
-        value.lastSocialResult,
-        readCount(value, 'routeStep', 0),
-        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-      ),
-      sanitizeGigOutcomeMap(
-        value.gigOutcomeByStep,
-        lastGigStats,
-        readCount(value, 'routeStep', 0),
-        sanitizeUniqueStrings(value.resolvedObligationSignalIds)
-      ),
-      sanitizeExpeditionPressure(value.pressure).heat,
-      sanitizeFinaleType(value.finaleType)
-    ),
+    activeObligations: sanitizedObligations,
     ...(value.cargo !== undefined
       ? { cargo: sanitizeExpeditionCargo(value.cargo) }
       : {}),

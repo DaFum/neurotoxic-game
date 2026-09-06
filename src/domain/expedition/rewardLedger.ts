@@ -255,9 +255,11 @@ const hasCanonicalSourceEvidence = (
       )
     }
     case 'finale_nonlegendary': {
-      // Standing on the Finale proves a Finale resolved; the run's own
-      // `finaleType` decides *which* reward that is, so the caller cannot pick
-      // the better of the two.
+      // Standing on the Finale node is *not* the evidence: `handleStartGig`
+      // commits `finaleType` on the way into PRE_GIG, so the node check alone
+      // would let the generic reward action bank a secured Finale reward
+      // before the show is played - and keep it through a failed Finale. The
+      // resolved gig at this step is what proves the Finale actually happened.
       if (sourceId !== map.finaleNodeId) return false
       if (map.meta[map.finaleNodeId]?.routeStep !== routeStep) return false
       const current =
@@ -265,6 +267,15 @@ const hasCanonicalSourceEvidence = (
           state.expedition.visitedNodeIds.length - 1
         ]
       if (current !== map.finaleNodeId) return false
+      if (
+        !state.lastGigStats ||
+        state.lastGigStats.failed === true ||
+        state.expedition.lastGigResolvedAtRouteStep !== routeStep
+      ) {
+        return false
+      }
+      // The run's own `finaleType` decides *which* reward this is, so the
+      // caller cannot pick the better of the two.
       return (
         request.expectedRewardId ===
         getExpeditionFinaleRewardId(state.expedition.finaleType)

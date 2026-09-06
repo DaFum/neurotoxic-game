@@ -8,6 +8,7 @@ import {
   handleRecordExpeditionObligationSignal
 } from '../../src/context/reducers/expeditionReducer.ts'
 import { getExpeditionFinaleRewardId } from '../../src/domain/expedition/finales.ts'
+import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
 import { composeExpeditionFailureSignal } from '../../src/domain/expedition/failure.ts'
 import { canSpendExpeditionCash } from '../../src/domain/expedition/loadout.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
@@ -16,13 +17,14 @@ import {
   fixtureMap,
   preparedState,
   startedState,
+  walkTo,
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
 
 /** Starts the fixture run carrying one native Contract. */
-const startedWithContract = templateId => {
+const startedWithContract = (templateId, targetNodeId = null) => {
   const prepared = preparedState({ money: 5000 })
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
@@ -31,7 +33,7 @@ const startedWithContract = templateId => {
       expectedRunSeed: prepared.runSeed,
       loadout: {
         ...fixtureLoadout(),
-        nativeContracts: [{ templateId, targetNodeId: null }]
+        nativeContracts: [{ templateId, targetNodeId }]
       }
     }
   })
@@ -120,8 +122,45 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     )
   })
 
-  it('banks the Finale reward its own profile names and materializes it once', () => {
+  it('refuses the Finale reward until the Finale actually resolves', () => {
+    // `handleStartGig` commits `finaleType` on the way into PRE_GIG, so
+    // standing on the Finale node is true before the show is played.
     const atFinale = walkToFinale(startedState({ money: 5000 }))
+    const unplayed = handleCompleteExpedition(atFinale, {
+      finaleResultId: 'finale_result_fixture',
+      expectedRouteStep: atFinale.expedition.routeStep
+    })
+    assert.equal(
+      unplayed.expedition.rewardLedger.filter(
+        entry => entry.sourceType === 'finale_nonlegendary'
+      ).length,
+      0
+    )
+
+    // A failed Finale earns nothing either - the reward is secured on earn for
+    // the hostile profiles, so banking it early would survive the failure.
+    const failedFinale = handleCompleteExpedition(
+      {
+        ...withResolvedGig(atFinale),
+        lastGigStats: { score: 10, accuracy: 10, failed: true }
+      },
+      {
+        finaleResultId: 'finale_result_fixture',
+        expectedRouteStep: atFinale.expedition.routeStep
+      }
+    )
+    assert.equal(
+      failedFinale.expedition.rewardLedger.filter(
+        entry => entry.sourceType === 'finale_nonlegendary'
+      ).length,
+      0
+    )
+  })
+
+  it('banks the Finale reward its own profile names and materializes it once', () => {
+    const atFinale = withResolvedGig(
+      walkToFinale(startedState({ money: 5000 }))
+    )
     assert.equal(
       atFinale.expedition.visitedNodeIds.at(-1),
       map.finaleNodeId,
@@ -151,6 +190,59 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
         entries[0].id
       )
     )
+  })
+
+  it('keeps an earned Contract reward across a load round-trip', () => {
+    // `contract_route_target` materializes onto the fixture's SPECIAL node at
+    // step 3, which the canonical walk actually visits - so the obligation is
+    // completed through the production arrival signal rather than by hand.
+    const started = startedWithContract('contract_route_target', 'exp_3_0')
+    const atTarget = walkTo(started, 3)
+    const targetNodeId = atTarget.expedition.visitedNodeIds.at(-1)
+    assert.equal(
+      atTarget.expedition.activeObligations[0].constraints[0].targetNodeId,
+      targetNodeId
+    )
+    const obligationId = atTarget.expedition.activeObligations[0].id
+
+    const earned = handleRecordExpeditionObligationSignal(atTarget, {
+      signalType: 'arrival',
+      sourceId: targetNodeId,
+      expectedRouteStep: atTarget.expedition.routeStep
+    })
+    assert.equal(earned.expedition.activeObligations[0].status, 'completed')
+    const entryId = `reward_contract_patch_run::${obligationId}`
+    assert.ok(earned.expedition.rewardLedger.some(e => e.id === entryId))
+
+    // An autosave lands between earning the reward and the terminal
+    // settlement that materializes it; the reload must not drop it.
+    const reloaded = sanitizeExpeditionState(
+      earned.expedition,
+      earned.runSeed,
+      earned.lastGigStats
+    )
+    assert.ok(
+      reloaded.rewardLedger.some(e => e.id === entryId),
+      'a genuinely earned Contract reward must survive the load sanitizer'
+    )
+
+    // A forged entry naming an obligation the run never completed is still
+    // dropped, because the evidence is the sanitized obligation itself.
+    const forged = sanitizeExpeditionState(
+      {
+        ...earned.expedition,
+        rewardLedger: [
+          {
+            ...earned.expedition.rewardLedger.find(e => e.id === entryId),
+            id: 'reward_contract_patch_run::never_completed',
+            sourceId: 'never_completed'
+          }
+        ]
+      },
+      earned.runSeed,
+      earned.lastGigStats
+    )
+    assert.equal(forged.rewardLedger.length, 0)
   })
 
   it('derives the Finale reward from the profile, not the caller', () => {
