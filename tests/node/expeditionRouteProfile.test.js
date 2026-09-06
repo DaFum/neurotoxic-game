@@ -18,6 +18,12 @@ import {
 import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions.ts'
 import { EXPEDITION_TOUR_TYPES } from '../../src/data/expedition/tourTypes.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
+import {
+  getAvailableExpeditionRegionIds,
+  getAvailableExpeditionTourTypeIds,
+  validateExpeditionBuildCommitment
+} from '../../src/domain/expedition/loadout.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
 /** The fixture run, re-pointed at one Region and Tour. */
@@ -269,5 +275,51 @@ describe('G5 — the route-pressure profile is the second axis', () => {
     }
     // A top-tier feud forces the encounter whatever Tour was booked.
     assert.equal(profile.forcedRival, true)
+  })
+})
+
+describe('G5 — a registered Region or Tour is one a run can actually book', () => {
+  it('offers every registry entry through the availability lookups', () => {
+    const state = startedState({ money: 5000 })
+    assert.deepEqual(
+      [...getAvailableExpeditionTourTypeIds(state)].sort(),
+      Object.keys(EXPEDITION_TOUR_TYPES).sort()
+    )
+    assert.deepEqual(
+      [...getAvailableExpeditionRegionIds(state)].sort(),
+      Object.keys(EXPEDITION_REGIONS).sort()
+    )
+  })
+
+  it('keeps the pre-G5 baseline pair first so existing runs still resolve', () => {
+    const state = startedState({ money: 5000 })
+    assert.equal(getAvailableExpeditionTourTypeIds(state)[0], 'standard_tour')
+    assert.equal(getAvailableExpeditionRegionIds(state)[0], 'industrial_belt')
+  })
+
+  it('does not reject any registered pair as TOUR_OR_REGION_UNKNOWN', () => {
+    // Publishing a Region or Tour as data that the commitment validator then
+    // refuses is the failure this guards: every pair the registry names has to
+    // survive validation for a reason other than its ids.
+    const base = startedState({ money: 5000 })
+    for (const tourTypeId of Object.keys(EXPEDITION_TOUR_TYPES)) {
+      for (const regionId of Object.keys(EXPEDITION_REGIONS)) {
+        const candidate = {
+          ...base.expedition.loadout,
+          tourTypeId,
+          regionId
+        }
+        const result = validateExpeditionBuildCommitment(
+          base,
+          candidate,
+          buildExpeditionMap(base.runSeed, tourTypeId, regionId)
+        )
+        assert.notEqual(
+          result.valid === false ? result.reason : null,
+          'TOUR_OR_REGION_UNKNOWN',
+          `${tourTypeId} in ${regionId} must be bookable`
+        )
+      }
+    }
   })
 })

@@ -26,6 +26,8 @@ import { logger } from '../../utils/logger'
 import { ActionTypes } from '../../context/actionTypes'
 import { finiteNumberOr, isFiniteNumber } from '../../utils/finiteNumber'
 import { isForbiddenKey, isLooseRecord } from '../../utils/objectUtils'
+import { EXPEDITION_REGIONS } from '../../data/expedition/regions'
+import { EXPEDITION_TOUR_TYPES } from '../../data/expedition/tourTypes'
 import {
   BASE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
@@ -131,19 +133,35 @@ export const getExpeditionFuelTopUpCost = (
 /**
  * Tour archetypes the player may commit.
  *
- * @remarks G5 owns the Tour registry and extends this in place.
+ * @remarks
+ * The registry is the source of truth, so a Tour that exists as data is a Tour
+ * the player can actually book. The baseline id is kept first so an existing
+ * save, seed or preview that assumes it still resolves to the same route.
  */
-const getAvailableTourTypeIds = (_state: GameState): readonly string[] => [
-  BASE_EXPEDITION_TOUR_TYPE_ID
+export const getAvailableExpeditionTourTypeIds = (
+  _state: GameState
+): readonly string[] => [
+  BASE_EXPEDITION_TOUR_TYPE_ID,
+  ...Object.keys(EXPEDITION_TOUR_TYPES).filter(
+    id => id !== BASE_EXPEDITION_TOUR_TYPE_ID
+  )
 ]
 
 /**
  * Regions the player may commit.
  *
- * @remarks G5 owns the Region registry and extends this in place.
+ * @remarks
+ * Same rule as the Tours above: registered is available. Keeping this derived
+ * from the registry is what stops a Region from being published as data that
+ * no run can ever reach.
  */
-const getAvailableRegionIds = (_state: GameState): readonly string[] => [
-  BASE_EXPEDITION_REGION_ID
+export const getAvailableExpeditionRegionIds = (
+  _state: GameState
+): readonly string[] => [
+  BASE_EXPEDITION_REGION_ID,
+  ...Object.keys(EXPEDITION_REGIONS).filter(
+    id => id !== BASE_EXPEDITION_REGION_ID
+  )
 ]
 
 /**
@@ -277,8 +295,8 @@ export const validateExpeditionBuildCommitment = (
     return reject('TOUR_OR_REGION_UNKNOWN')
   }
   if (
-    !getAvailableTourTypeIds(state).includes(tourTypeId) ||
-    !getAvailableRegionIds(state).includes(regionId)
+    !getAvailableExpeditionTourTypeIds(state).includes(tourTypeId) ||
+    !getAvailableExpeditionRegionIds(state).includes(regionId)
   ) {
     return reject('TOUR_OR_REGION_UNKNOWN')
   }
