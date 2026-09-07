@@ -269,6 +269,34 @@ describe('standard route shape', () => {
     )
   })
 
+  it('converts the runtime node, not just its metadata', () => {
+    // The post-pass promotes a node the roll did not pick, so it has to move
+    // both representations. Arrival reads `nodes[nodeId].type`, so a node left
+    // as `GIG` or `REST_STOP` would run its old content while the metadata
+    // promised a Rival - and a venue-bearing node would carry a venue the
+    // encounter has no use for.
+    for (const seed of SEEDS) {
+      const map = build(seed, {
+        ...NEUTRAL_EXPEDITION_ROUTE_PROFILE,
+        rivalWeight: 0,
+        forcedRival: true
+      })
+      const rivalNodeIds = map.nodeOrder.filter(
+        nodeId => map.meta[nodeId]?.specialSubtype === 'RIVAL_ENCOUNTER'
+      )
+      assert.equal(rivalNodeIds.length, 1, `seed ${seed} has no forced Rival`)
+      const nodeId = rivalNodeIds[0]
+      assert.equal(map.nodes[nodeId].type, 'SPECIAL', `seed ${seed} node type`)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venue'), false)
+      assert.equal(Object.hasOwn(map.nodes[nodeId], 'venueId'), false)
+      // The metadata the conversion promised is still there, and the node
+      // keeps its own identity and place on the route.
+      assert.equal(map.meta[nodeId].nodeClass, 'SPECIAL')
+      assert.equal(map.nodes[nodeId].id, nodeId)
+      assert.ok(map.connections.some(edge => edge.to === nodeId))
+    }
+  })
+
   it('does not lose an Underground node it rolled to a layer collision', () => {
     // Regression: on a short route the Underground candidate collapses to a
     // single value, so all eight retries can land on the Rival layer. A route

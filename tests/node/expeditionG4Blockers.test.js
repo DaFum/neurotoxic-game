@@ -344,16 +344,21 @@ test('sponsor staging follows the selected Region and Tour', () => {
     type: ActionTypes.PREPARE_EXPEDITION_RUN,
     payload: { prepId: 'prep', runSeed: 123 }
   })
-  // Underground keeps its distance from brands (sponsor weight 0.9) and stages
-  // one fewer offer than baseline. Reading the loadout instead of the
-  // selection made this resolve the baseline count in production.
+  // What the plan requires is that `sponsorContractEventWeightMultiplier` has a
+  // real consumer in the staging path, and that is what this pins: staging
+  // reads the *selected* Region and Tour rather than the loadout, which is
+  // what made it resolve the baseline count in production.
+  //
+  // The exact +1/-1 count mapping below is coverage of the current
+  // implementation, not a G5 design invariant. If the offer algorithm changes
+  // while keeping the multiplier's consumer, these counts are free to change.
   const offersFor = (regionId, tourTypeId) =>
     buildPreparedExpeditionSponsorOffers(prepared, regionId, tourTypeId).length
   const baseline = offersFor(
     BASE_EXPEDITION_REGION_ID,
     BASE_EXPEDITION_TOUR_TYPE_ID
   )
-  // The upward half of the bias is currently inert: `generateBrandOffers`
+  // The upward half of that mapping is currently inert: `generateBrandOffers`
   // yields at most three offers, so a Region/Tour asking for four still stages
   // three. Assert what actually holds - Corporate never stages *fewer* than
   // baseline - rather than a claim the pool cannot satisfy.

@@ -139,7 +139,12 @@ describe('G5 — the profile reaches its production consumers', () => {
     )
   })
 
-  it('lets a Contract-heavy route stage one more Sponsor offer', () => {
+  it('lets the route bias how many Sponsor offers are staged', () => {
+    // The plan requires `sponsorContractEventWeightMultiplier` to have a real
+    // consumer in the staging path; the ±1 count mapping is this
+    // implementation's choice, so the assertions below are implementation
+    // coverage rather than a design invariant.
+    //
     // The Region and Tour are arguments now, not read off the loadout: every
     // caller needs the set before a loadout exists, which is why passing only
     // `state` silently resolved the baseline profile for all three of these.
