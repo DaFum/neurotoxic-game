@@ -172,5 +172,65 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
 
     const domCheck = checkStrategyDominance(calBatch, holBatch)
     assert.ok(typeof domCheck.ok === 'boolean')
+    assert.ok(Array.isArray(domCheck.corridorFindings))
+    assert.ok(Array.isArray(domCheck.dominanceViolations))
+    // `ok` describes the blocking half only.
+    assert.equal(domCheck.ok, domCheck.dominanceViolations.length === 0)
+  })
+
+  it('separates soft corridor findings from a blocking dominance verdict', () => {
+    // G6 Task 7 calls the corridors tuneable hypotheses and says dominance
+    // blocks only when the same conclusion reproduces in disjoint calibration
+    // and holdout. Folding a corridor miss into the blocking set turned a
+    // tuning note into a release stopper.
+    const summary = over => ({
+      completedRate: 0.5,
+      extractedRate: 0.5,
+      failedRate: 0,
+      meanNodes: 8,
+      meanMoney: 1000,
+      meanDepth: 8,
+      meanFame: 100,
+      ...over
+    })
+
+    // A trivial-completion profile is a corridor finding, never a block.
+    const trivial = {
+      profileSummaries: {
+        a: summary({ completedRate: 1, extractedRate: 0 }),
+        b: summary(),
+        c: summary()
+      }
+    }
+    const corridorOnly = checkStrategyDominance(trivial, trivial)
+    assert.equal(corridorOnly.dominanceViolations.length, 0)
+    assert.equal(corridorOnly.ok, true)
+    // Reported once per cohort, because the hypothesis is checked against both.
+    assert.equal(
+      corridorOnly.corridorFindings.filter(f => /trivial 100%/.test(f)).length,
+      2
+    )
+
+    // A profile strictly better on completion, money and failure in BOTH
+    // cohorts blocks.
+    const dominated = {
+      profileSummaries: {
+        a: summary({ completedRate: 0.9, meanMoney: 5000, failedRate: 0 }),
+        b: summary({ completedRate: 0.4, meanMoney: 1000, failedRate: 0.2 }),
+        c: summary({ completedRate: 0.3, meanMoney: 900, failedRate: 0.3 })
+      }
+    }
+    const blocked = checkStrategyDominance(dominated, dominated)
+    assert.equal(blocked.ok, false)
+    assert.equal(blocked.dominanceViolations.length, 1)
+    assert.match(
+      blocked.dominanceViolations[0],
+      /^Profile a strictly dominates/
+    )
+
+    // The same conclusion in only one cohort does not block.
+    const notReproduced = checkStrategyDominance(dominated, trivial)
+    assert.equal(notReproduced.ok, true)
+    assert.equal(notReproduced.dominanceViolations.length, 0)
   })
 })

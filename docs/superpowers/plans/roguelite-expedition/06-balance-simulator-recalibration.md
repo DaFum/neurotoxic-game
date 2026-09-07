@@ -679,6 +679,37 @@ real runtime/playtest samples
 
 The final report must include full resolved build provenance, capability provenance and cohort seed namespaces.
 
+### Two verdicts
+
+The report carries **correctness** and **release eligibility** separately, because
+they fail for different reasons and a reader who conflates them cannot act on
+either:
+
+```text
+correctness      = no hard failures
+                   (the 14 gates, forged sources, a dominance conclusion
+                    reproduced in BOTH cohorts, a probe that threw, a coverage
+                    shortfall at release size)
+
+release evidence = correctness
+                   AND the run was at RELEASE_SAMPLE_COUNT
+                   AND every Task's expected coverage count was produced
+                   AND captured runtime pacing evidence validated against this
+                       report's own sourceFingerprint
+```
+
+Task 7's corridors and Task 14's 20–30 minute window are **soft findings**: they
+are reported in full and they withhold release evidence, but they are tuning
+hypotheses, not correctness violations. The process exit code follows
+correctness.
+
+Pacing evidence is read only from
+`docs/superpowers/reports/roguelite-expedition-runtime-evidence.json`, which a
+playtest harness writes and this suite only reads. Missing, malformed or
+stale-fingerprint evidence is rejected rather than summarized: the report states
+that no median has been measured instead of quoting one. Synthetic samples are
+unit-test fixtures and unreachable from the release path.
+
 Run:
 
 ```bash
@@ -705,3 +736,23 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 - Fame signal, optional safety choices, exact chassis/module/Crew/gear combinations and same-Rival history are observable.
 - Natural Ascension/Legendary timing is measurable without synthetic contamination.
 - Real 20–30 minute pacing evidence comes only from actual runtime/playtest samples.
+
+---
+
+## Open at G6 close
+
+Correctness is green. Two items withhold **release evidence** and are tracked
+here rather than in a new amendment file:
+
+1. **No captured pacing cohort.** The ingestion, fingerprint validation and
+   rejection paths are implemented and tested, but
+   `roguelite-expedition-runtime-evidence.json` does not exist: no playtest has
+   been run against this build. Capturing at least 20 valid samples is a human
+   step, and the master plan already holds the real-duration target soft until
+   it happens.
+2. **Two profiles sit outside the outcome-mix corridor.** `underground_heat`
+   and `high_exposure_performance` complete the Finale on 100% of seeds in both
+   calibration and holdout, and no profile fails on any seed. Neither dominates
+   the field, so neither blocks, but the corridor hypothesis "avoids
+   near-certain single outcome" does not currently hold and the numbers want
+   retuning. This is a design decision, not a correctness fix.

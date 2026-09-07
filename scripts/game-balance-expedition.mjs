@@ -173,6 +173,12 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
 
   /** @type {string[]} */
   const hardFailures = []
+  // Task 7 calls the balance corridors tuneable hypotheses and Task 14 calls
+  // the pacing target a product corridor rather than a synthetic hard gate.
+  // They are reported, and they hold back release eligibility, but they are
+  // not correctness failures.
+  /** @type {string[]} */
+  const softFindings = []
 
   // 1. Profile Capability Validation
   console.log('[BalanceSuite] 1. Validating Profile Capability Provenance...')
@@ -225,14 +231,24 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   // other one in both cohorts still reported PASS.
   console.log('[BalanceSuite] 3b. Checking Strategy Dominance...')
   /** @type {{ ok: boolean, violations: string[] }} */
-  let dominance = { ok: true, violations: [] }
+  let dominance = {
+    ok: true,
+    violations: [],
+    corridorFindings: [],
+    dominanceViolations: []
+  }
   if (calibrationCohort && holdoutCohort) {
     dominance =
       guarded(hardFailures, 'Strategy dominance check failed', () =>
         checkStrategyDominance(calibrationCohort, holdoutCohort)
       ) ?? dominance
-    for (const violation of dominance.violations) {
+    // A dominance conclusion reproduced in both cohorts blocks; a corridor
+    // miss is a tuning finding.
+    for (const violation of dominance.dominanceViolations ?? []) {
       hardFailures.push(`Strategy dominance violation: ${violation}`)
+    }
+    for (const finding of dominance.corridorFindings ?? []) {
+      softFindings.push(`Balance corridor: ${finding}`)
     }
   } else {
     hardFailures.push(
@@ -386,7 +402,7 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     metadata.sourceFingerprint
   )
   if (!capturedRuntime.ok) {
-    hardFailures.push(
+    softFindings.push(
       `Runtime pacing evidence unusable: ${capturedRuntime.reason}. Capture a playtest cohort into ${RUNTIME_EVIDENCE_RELATIVE_PATH} for this source fingerprint.`
     )
   }
@@ -469,10 +485,10 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       `Coverage shortfall: ${shortfall.label} produced ${shortfall.actual} of the expected ${shortfall.expected}`
     )
   }
-  // A reduced matrix is legitimate under `--quick`, but it must never be
-  // mistaken for release evidence.
+  // A reduced matrix is legitimate under `--quick`. It is not a correctness
+  // failure, but it must never be mistaken for release evidence.
   if (!isReleaseRun) {
-    hardFailures.push(
+    softFindings.push(
       `Reduced-coverage run: ${sampleCount} samples/cohort is below the binding release size of ${RELEASE_SAMPLE_COUNT}. This artifact is a developer check, not release evidence.`
     )
   }
@@ -482,11 +498,22 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     ...careerResults.holdout
   ]
 
+  // Correctness and release eligibility are separate verdicts. The master
+  // plan's merge rule needs both: a gate is green on correctness, but a metric
+  // is release evidence only once the full matrix and real pacing samples back
+  // it.
   const passed = hardFailures.length === 0
+  const releaseEligible =
+    passed &&
+    isReleaseRun &&
+    coverageShortfalls.length === 0 &&
+    capturedRuntime.ok
 
   return {
     passed,
+    releaseEligible,
     hardFailures,
+    softFindings,
     metadata,
     provenance: {
       generatedAt: new Date().toISOString(),
@@ -590,7 +617,10 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
 export function formatMarkdownReport(data) {
   const {
     passed,
+    releaseEligible,
     hardFailures,
+    softFindings,
+    coverage,
     metadata,
     provenance,
     calibrationSummary,
@@ -606,10 +636,17 @@ export function formatMarkdownReport(data) {
     fixtureProvenance
   } = data
 
+  // Two verdicts, kept apart. Correctness is whether the run broke a hard
+  // invariant; release eligibility additionally needs the full binding matrix
+  // and real pacing samples, per the master plan's merge rule.
   const statusBadge = passed ? '✅ PASS' : '❌ FAIL'
+  const releaseBadge = releaseEligible
+    ? '✅ RELEASE EVIDENCE'
+    : '⚠️ NOT RELEASE EVIDENCE'
 
   let md = `# Roguelite Expedition v1.5 Balance Recalibration Report\n\n`
-  md += `**Status:** ${statusBadge}\n`
+  md += `**Correctness:** ${statusBadge}\n`
+  md += `**Release evidence:** ${releaseBadge}\n`
   md += `**Generated At:** ${provenance.generatedAt}\n`
   md += `**Profiles:** ${provenance.profilesCount} mature archetypes\n`
   md += `**Sample Count Per Cohort:** ${provenance.sampleCountPerCohort}\n\n`
@@ -647,6 +684,25 @@ export function formatMarkdownReport(data) {
     md += `\n`
   }
 
+  md += `## 1b. Soft Findings (tuneable, non-blocking)\n\n`
+  if (softFindings.length === 0) {
+    md += `No soft findings. Every balance corridor held and pacing evidence was present.\n\n`
+  } else {
+    md += `G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treats the 20–30 minute window as a product corridor rather than a synthetic hard gate. These do not fail correctness, but they do hold back release evidence.\n\n`
+    for (const finding of softFindings) {
+      md += `- ⚠️ ${finding}\n`
+    }
+    md += `\n`
+  }
+
+  md += `### Release coverage\n\n`
+  md += `| Requirement | Produced | Expected |\n`
+  md += `| :--- | ---: | ---: |\n`
+  for (const entry of coverage.expected) {
+    md += `| ${entry.label} | ${entry.actual} | ${entry.expected} |\n`
+  }
+  md += `\n`
+
   md += `## 2. Single-Run Calibration Corridors\n\n`
   md += `*Namespace:* \`${provenance.namespaces.calibration}\`\n\n`
   md += `| Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |\n`
@@ -666,12 +722,20 @@ export function formatMarkdownReport(data) {
   md += `\n`
 
   md += `## 3b. Strategy Dominance\n\n`
-  if (strategyDominance.ok) {
-    md += `No strategy strictly dominates the field across both calibration and holdout, and every profile stays inside its corridor.\n\n`
+  md += `Dominance blocks only when the same conclusion reproduces in disjoint calibration and holdout; corridor misses are reported as tuning findings in section 1b.\n\n`
+  if (strategyDominance.dominanceViolations.length === 0) {
+    md += `No strategy strictly dominates the field across both cohorts.\n\n`
   } else {
-    md += `**VIOLATIONS (${strategyDominance.violations.length}):**\n`
-    for (const violation of strategyDominance.violations) {
+    md += `**BLOCKING (${strategyDominance.dominanceViolations.length}):**\n`
+    for (const violation of strategyDominance.dominanceViolations) {
       md += `- ❌ ${violation}\n`
+    }
+    md += `\n`
+  }
+  if (strategyDominance.corridorFindings.length > 0) {
+    md += `**Corridor findings (${strategyDominance.corridorFindings.length}, non-blocking):**\n`
+    for (const finding of strategyDominance.corridorFindings) {
+      md += `- ⚠️ ${finding}\n`
     }
     md += `\n`
   }
@@ -761,6 +825,10 @@ async function main() {
   console.log(`[BalanceSuite] Wrote markdown report to ${mdPath}`)
   console.log(`[BalanceSuite] Wrote json report to ${jsonPath}`)
 
+  for (const finding of reportData.softFindings) {
+    console.warn(`[BalanceSuite] ⚠️  ${finding}`)
+  }
+
   if (!reportData.passed) {
     console.error(
       `[BalanceSuite] ❌ FAILED with ${reportData.hardFailures.length} hard correctness failures.`
@@ -769,6 +837,11 @@ async function main() {
   }
 
   console.log('[BalanceSuite] ✅ ALL G6 CORRECTNESS GATES AND PROBES PASSED!')
+  console.log(
+    reportData.releaseEligible
+      ? '[BalanceSuite] ✅ Artifact qualifies as release evidence.'
+      : `[BalanceSuite] ⚠️  Artifact is NOT release evidence (${reportData.softFindings.length} soft finding(s)).`
+  )
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

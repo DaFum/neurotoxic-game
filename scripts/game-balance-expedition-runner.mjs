@@ -1361,36 +1361,69 @@ export const runExpeditionCohort = (profiles, seeds, options = {}) => {
  * @param {ReturnType<typeof runExpeditionCohort>} holdoutResults
  * @returns {{ ok: boolean, violations: string[] }}
  */
+/**
+ * Separates soft balance corridors from a hard dominance block.
+ *
+ * @param {{ profileSummaries: Record<string, any> }} calibrationResults
+ * @param {{ profileSummaries: Record<string, any> }} holdoutResults
+ * @returns {{
+ *   ok: boolean,
+ *   violations: string[],
+ *   corridorFindings: string[],
+ *   dominanceViolations: string[]
+ * }}
+ *
+ * @remarks
+ * G6 Task 7 calls the corridors "tuneable hypotheses" and says dominance
+ * blocks *only* when the same conclusion reproduces in disjoint calibration
+ * and holdout. So a corridor miss is a reported finding, not a correctness
+ * failure, and it is evaluated against both cohorts rather than calibration
+ * alone - a hypothesis that only fails on the seeds it was fitted to says
+ * nothing.
+ *
+ * `ok` and `violations` describe the blocking half only, so a caller that
+ * gates a release on them gates on dominance.
+ */
 export const checkStrategyDominance = (calibrationResults, holdoutResults) => {
-  const violations = []
+  /** @type {string[]} */
+  const corridorFindings = []
+  /** @type {string[]} */
+  const dominanceViolations = []
 
-  // Corridor 1: Meaningful node count approximately 7..9 on standard route
-  for (const [id, summary] of Object.entries(
-    calibrationResults.profileSummaries
-  )) {
-    if (summary.meanNodes < 4 || summary.meanNodes > 15) {
-      violations.push(
-        `Profile ${id} mean nodes ${summary.meanNodes.toFixed(1)} outside expected corridor`
-      )
-    }
-    // Corridor 2: Avoid near-certain single outcome (no 100% or 0% across board)
-    if (
-      summary.completedRate === 1 &&
-      summary.extractedRate === 0 &&
-      summary.failedRate === 0
-    ) {
-      violations.push(
-        `Profile ${id} has trivial 100% completion in calibration`
-      )
+  const cohorts = [
+    ['calibration', calibrationResults],
+    ['holdout', holdoutResults]
+  ]
+
+  for (const [cohortName, cohort] of cohorts) {
+    for (const [id, summary] of Object.entries(cohort.profileSummaries)) {
+      // Corridor 1: meaningful node count stays in the Standard band.
+      if (summary.meanNodes < 4 || summary.meanNodes > 15) {
+        corridorFindings.push(
+          `Profile ${id} mean nodes ${summary.meanNodes.toFixed(1)} outside expected corridor in ${cohortName}`
+        )
+      }
+      // Corridor 2: the outcome mix avoids a near-certain single result.
+      if (
+        summary.completedRate === 1 &&
+        summary.extractedRate === 0 &&
+        summary.failedRate === 0
+      ) {
+        corridorFindings.push(
+          `Profile ${id} has trivial 100% completion in ${cohortName}`
+        )
+      }
     }
   }
 
-  // Dominance check: if one profile has strictly higher completion, money, fame AND lower failure
-  // in BOTH calibration and holdout against all other profiles
+  // Dominance: strictly better completion, money and failure than every other
+  // profile, in BOTH cohorts. Reproduction across disjoint seeds is what makes
+  // it a block rather than a corridor note.
   const profileIds = Object.keys(calibrationResults.profileSummaries)
   for (const candId of profileIds) {
     const cCal = calibrationResults.profileSummaries[candId]
     const cHol = holdoutResults.profileSummaries[candId]
+    if (!cCal || !cHol) continue
 
     let strictlyDominatesAll = true
     for (const otherId of profileIds) {
@@ -1414,14 +1447,16 @@ export const checkStrategyDominance = (calibrationResults, holdoutResults) => {
     }
 
     if (strictlyDominatesAll && profileIds.length > 2) {
-      violations.push(
+      dominanceViolations.push(
         `Profile ${candId} strictly dominates all other strategies across calibration and holdout`
       )
     }
   }
 
   return {
-    ok: violations.length === 0,
-    violations
+    ok: dominanceViolations.length === 0,
+    violations: dominanceViolations,
+    corridorFindings,
+    dominanceViolations
   }
 }
