@@ -80,8 +80,30 @@ describe('no fictitious per-member equip action', () => {
 
 describe('plan authority records', () => {
   const planDir = 'docs/superpowers/plans/roguelite-expedition'
+  const masterPlanPath =
+    'docs/superpowers/plans/2026-09-03-roguelite-expedition-master-plan.md'
+  const indexPath =
+    'docs/superpowers/plans/2026-09-03-roguelite-expedition-implementation-plan-complete.md'
 
-  it('marks every 00-* child file as non-normative', () => {
+  const CANONICAL_CHILDREN = [
+    '01-expedition-core-extraction.md',
+    '02-condition-repairs-cargo.md',
+    '03-crew-stress-relationships.md',
+    '04-pressure-rivals-contracts.md',
+    '05-meta-regions-ascension.md',
+    '06-balance-simulator-recalibration.md'
+  ]
+
+  const BANNED_EXECUTABLE_FRAGMENTS = [
+    'SECURE_EXPEDITION_REWARD',
+    'cashReserveFloor:',
+    "starterPerkId: 'headliner_pass'",
+    "starterPerkId: 'nemesis_dossier'",
+    'obligation: ActiveObligationState',
+    'candidateTraitIds: string[]'
+  ]
+
+  it('marks every 00-* child file as non-normative and rejects binding amendments', () => {
     const files = readdirSync(repoPath(planDir)).filter(name =>
       name.startsWith('00')
     )
@@ -93,21 +115,62 @@ describe('plan authority records', () => {
         /NON-NORMATIVE|non-normative/,
         `${file} must declare itself non-normative so a superseded contract cannot be implemented`
       )
+      assert.doesNotMatch(
+        source,
+        /this file wins/i,
+        `${file} must not claim precedence over normative plans`
+      )
+      assert.doesNotMatch(
+        source,
+        /(?<!not\s+(?:a\s+)?)binding amendment/i,
+        `${file} must not claim to be a binding amendment`
+      )
+      for (const fragment of BANNED_EXECUTABLE_FRAGMENTS) {
+        assert.equal(
+          source.includes(fragment),
+          false,
+          `${file} contains banned executable fragment: ${fragment}`
+        )
+      }
     }
   })
 
-  it('keeps the six normative child plans present', () => {
-    const expected = [
-      '01-expedition-core-extraction.md',
-      '02-condition-repairs-cargo.md',
-      '03-crew-stress-relationships.md',
-      '04-pressure-rivals-contracts.md',
-      '05-meta-regions-ascension.md',
-      '06-balance-simulator-recalibration.md'
-    ]
+  it('keeps the six normative child plans present without banned fragments', () => {
     const present = readdirSync(repoPath(planDir))
-    for (const file of expected) {
+    for (const file of CANONICAL_CHILDREN) {
       assert.ok(present.includes(file), `${file} is missing`)
+      const source = readFileSync(repoPath(`${planDir}/${file}`), 'utf8')
+      for (const fragment of BANNED_EXECUTABLE_FRAGMENTS) {
+        assert.equal(
+          source.includes(fragment),
+          false,
+          `${file} contains banned executable fragment: ${fragment}`
+        )
+      }
+    }
+  })
+
+  it('verifies master plan and index authority records', () => {
+    const masterSource = readFileSync(repoPath(masterPlanPath), 'utf8')
+    for (const fragment of BANNED_EXECUTABLE_FRAGMENTS) {
+      assert.equal(
+        masterSource.includes(fragment),
+        false,
+        `${masterPlanPath} contains banned executable fragment: ${fragment}`
+      )
+    }
+
+    const indexSource = readFileSync(repoPath(indexPath), 'utf8')
+    const strippedIndex = indexSource.replace(
+      /## Mechanical authority guard[\s\S]*?## Deep-review closure/m,
+      ''
+    )
+    for (const fragment of BANNED_EXECUTABLE_FRAGMENTS) {
+      assert.equal(
+        strippedIndex.includes(fragment),
+        false,
+        `${indexPath} contains banned executable fragment outside guard: ${fragment}`
+      )
     }
   })
 })
