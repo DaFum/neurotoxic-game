@@ -12,6 +12,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 
 import { gameReducer } from '../../src/context/gameReducer'
+import { sanitizeCareerState } from '../../src/context/reducers/careerSanitizers'
 import { ActionTypes } from '../../src/context/actionTypes'
 import {
   createGenerateExpeditionBetweenTourDecisionsAction,
@@ -625,5 +626,130 @@ describe('G5 — the next Tour waits for the answers', () => {
       paid.player.money,
       generated.player.money + BETWEEN_TOUR_CASH_OUT_PAYOUT
     )
+  })
+})
+
+describe('G5 — the decisions survive a load', () => {
+  it('preserves the decision set, the consequences and the lean', () => {
+    // All three are saved with the Career slice, and the load path was
+    // replacing them with defaults. An absent decision set counts as resolved,
+    // so that loss also opened the next Tour on a run never answered.
+    const raw = {
+      betweenTourByRunId: {
+        run_1: {
+          runId: 'run_1',
+          decisions: [
+            {
+              id: 'run_1:injury_rehab:mika',
+              type: 'injury_rehab',
+              target: { kind: 'crew', id: 'mika' },
+              optionIds: BETWEEN_TOUR_OPTIONS.injury_rehab.slice()
+            }
+          ],
+          resolvedOptionByDecisionId: {}
+        }
+      },
+      bandConsequenceByMemberId: { member_1: 'serious' },
+      nextTourPreferences: {
+        rival: { rivalId: 'rival_1', stance: 'confront' },
+        sponsor: { dealId: 'deal_1', bias: -1 }
+      }
+    }
+    const sanitized = sanitizeCareerState(raw)
+    assert.equal(sanitized.betweenTourByRunId.run_1.runId, 'run_1')
+    assert.equal(sanitized.betweenTourByRunId.run_1.decisions.length, 1)
+    // `safeRecord` builds null-prototype records on purpose, so the entries
+    // are compared rather than the object identity - and that property is
+    // asserted here rather than assumed.
+    assert.equal(
+      Object.getPrototypeOf(sanitized.bandConsequenceByMemberId),
+      null
+    )
+    assert.deepEqual(
+      { ...sanitized.bandConsequenceByMemberId },
+      {
+        member_1: 'serious'
+      }
+    )
+    assert.deepEqual(sanitized.nextTourPreferences, {
+      rival: { rivalId: 'rival_1', stance: 'confront' },
+      sponsor: { dealId: 'deal_1', bias: -1 }
+    })
+  })
+
+  it('drops what a save must not be able to author', () => {
+    const sanitized = sanitizeCareerState({
+      betweenTourByRunId: {
+        // The key is how a resolve addresses the set, so a mismatched runId
+        // would answer a different run's questions.
+        mismatched: {
+          runId: 'other',
+          decisions: [],
+          resolvedOptionByDecisionId: {}
+        },
+        run_2: {
+          runId: 'run_2',
+          decisions: [
+            {
+              id: 'd1',
+              type: 'not_a_family',
+              target: { kind: 'crew', id: 'mika' },
+              optionIds: ['pay_rehab']
+            },
+            {
+              id: 'd2',
+              type: 'injury_rehab',
+              target: { kind: 'nobody', id: 'x' },
+              optionIds: ['pay_rehab']
+            },
+            {
+              id: 'd3',
+              type: 'injury_rehab',
+              target: { kind: 'crew', id: 'mika' },
+              // No option the family offers, so it could never be answered -
+              // and an unanswerable decision blocks the next Tour forever.
+              optionIds: ['grant_myself_everything']
+            },
+            {
+              id: 'd4',
+              type: 'rival_response',
+              target: { kind: 'rival', id: 'rival_1' },
+              optionIds: ['confront', 'grant_myself_everything']
+            }
+          ],
+          resolvedOptionByDecisionId: {
+            d4: 'grant_myself_everything',
+            unknown_decision: 'confront'
+          }
+        }
+      },
+      bandConsequenceByMemberId: { a: 'critical', b: 'invented_stage', c: 7 },
+      nextTourPreferences: {
+        rival: { rivalId: 'rival_1', stance: 'obliterate' },
+        sponsor: { dealId: 'deal_1', bias: 99 }
+      }
+    })
+
+    assert.equal(
+      Object.hasOwn(sanitized.betweenTourByRunId, 'mismatched'),
+      false
+    )
+    const kept = sanitized.betweenTourByRunId.run_2
+    // Only the one decision that is both a real family and answerable.
+    assert.deepEqual(
+      kept.decisions.map(decision => decision.id),
+      ['d4']
+    )
+    assert.deepEqual(kept.decisions[0].optionIds, ['confront'])
+    // An answer naming an option the family does not offer is not an answer.
+    assert.deepEqual({ ...kept.resolvedOptionByDecisionId }, {})
+    assert.deepEqual(
+      { ...sanitized.bandConsequenceByMemberId },
+      { a: 'critical' }
+    )
+    assert.deepEqual(sanitized.nextTourPreferences, {
+      rival: null,
+      sponsor: null
+    })
   })
 })

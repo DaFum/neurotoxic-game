@@ -1,11 +1,18 @@
 import type {
+  BetweenTourDecisionInstance,
+  BetweenTourNextTourPreferences,
+  BetweenTourRunState,
+  BetweenTourTarget,
   CareerRivalRecord,
   CareerState,
   ExpeditionPendingUnlockPurchase,
   CrewCareerState,
   CrewRecoveryDebt
 } from '../../types/career'
-import type { ExpeditionRelationshipTier } from '../../types/expedition'
+import type {
+  ExpeditionBandInjuryStage,
+  ExpeditionRelationshipTier
+} from '../../types/expedition'
 import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { createInitialCareerState } from '../../domain/expedition/career'
@@ -20,6 +27,11 @@ import {
 } from '../../data/expedition/hqFacilities'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
+import {
+  BETWEEN_TOUR_OPTIONS,
+  MAX_BETWEEN_TOUR_DECISIONS,
+  isBetweenTourDecisionType
+} from '../../data/expedition/betweenTour'
 import {
   EXPEDITION_ARCHIVE_CATEGORIES,
   isCanonicalExpeditionArchiveEntry
@@ -291,7 +303,206 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     // grants nothing, so a forged entry buys a line of text and no authority.
     // Unknown categories and ids are dropped so the log cannot become a place
     // to store arbitrary strings under a Career's name.
-    archiveByCategory: sanitizeExpeditionArchive(value.archiveByCategory)
+    archiveByCategory: sanitizeExpeditionArchive(value.archiveByCategory),
+    // All three are saved with the Career slice and were being replaced by
+    // defaults on load, which discarded unanswered decisions, the injuries
+    // they were about, and the lean the last answers left. An absent decision
+    // set counts as resolved, so that loss also let the next Tour open on a
+    // run whose questions were never asked.
+    betweenTourByRunId: sanitizeBetweenTourByRunId(value.betweenTourByRunId),
+    bandConsequenceByMemberId: sanitizeBandConsequences(
+      value.bandConsequenceByMemberId
+    ),
+    nextTourPreferences: sanitizeNextTourPreferences(value.nextTourPreferences)
+  }
+}
+
+/** The target kinds a decision may name. */
+const BETWEEN_TOUR_TARGET_KINDS: ReadonlySet<string> = new Set([
+  'crew',
+  'band',
+  'rival',
+  'sponsor',
+  'vehicle',
+  'archive'
+])
+
+/**
+ * Narrows the actor a persisted decision is about.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The target, or `null` when it names nothing the union allows.
+ */
+const sanitizeBetweenTourTarget = (
+  value: unknown
+): BetweenTourTarget | null => {
+  if (!isLooseRecord(value)) return null
+  const { kind, id } = value
+  if (typeof kind !== 'string' || !BETWEEN_TOUR_TARGET_KINDS.has(kind)) {
+    return null
+  }
+  if (typeof id !== 'string' || id === '' || isForbiddenKey(id)) return null
+  // The only vehicle a Tour has.
+  if (kind === 'vehicle' && id !== 'active_van') return null
+  return { kind, id } as BetweenTourTarget
+}
+
+/**
+ * Narrows one persisted decision instance.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The decision, or `null` when it is not answerable.
+ *
+ * @remarks
+ * `optionIds` is the authority at resolve time, so it is narrowed to the
+ * options the family actually offers rather than trusted - otherwise a save
+ * could add an option the registry has no effect for, and answering it would
+ * consume the decision for nothing. A decision left with no valid option is
+ * dropped, because an unanswerable decision would block the next Tour forever.
+ */
+const sanitizeBetweenTourDecision = (
+  value: unknown
+): BetweenTourDecisionInstance | null => {
+  if (!isLooseRecord(value)) return null
+  const { id, type, target, optionIds } = value
+  if (typeof id !== 'string' || id === '' || isForbiddenKey(id)) return null
+  if (!isBetweenTourDecisionType(type)) return null
+  const sanitizedTarget = sanitizeBetweenTourTarget(target)
+  if (sanitizedTarget === null) return null
+  const offered = BETWEEN_TOUR_OPTIONS[type]
+  const sanitizedOptionIds = Array.isArray(optionIds)
+    ? [
+        ...new Set(
+          optionIds.filter(
+            (option): option is string =>
+              typeof option === 'string' && offered.includes(option)
+          )
+        )
+      ]
+    : []
+  if (sanitizedOptionIds.length === 0) return null
+  return { id, type, target: sanitizedTarget, optionIds: sanitizedOptionIds }
+}
+
+/**
+ * Narrows the persisted Between-Tour decision sets.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The sets, keyed by the run that generated them.
+ *
+ * @remarks
+ * Preserved rather than defaulted, because an absent set counts as resolved:
+ * dropping these on load would let `PREPARE_NEXT_EXPEDITION` clear a run whose
+ * decisions were never answered, losing both the questions and the
+ * consequences they were about. The entry's `runId` must match its own key, or
+ * a resolve addressed by run id would act on a different set.
+ */
+const sanitizeBetweenTourByRunId = (
+  value: unknown
+): Record<string, BetweenTourRunState> =>
+  safeRecord(value, (entry, key) => {
+    if (!isLooseRecord(entry)) return null
+    if (entry.runId !== key) return null
+    const decisions: BetweenTourDecisionInstance[] = []
+    const seen = new Set<string>()
+    if (Array.isArray(entry.decisions)) {
+      for (const candidate of entry.decisions) {
+        const decision = sanitizeBetweenTourDecision(candidate)
+        if (decision === null || seen.has(decision.id)) continue
+        seen.add(decision.id)
+        decisions.push(decision)
+      }
+    }
+    // The generator never produces more than the cap, so a longer set is
+    // forged - and truncating one would leave an arbitrary subset.
+    if (decisions.length === 0) return null
+    if (decisions.length > MAX_BETWEEN_TOUR_DECISIONS) return null
+    const resolvedOptionByDecisionId = safeRecord(
+      entry.resolvedOptionByDecisionId,
+      (option, decisionId) => {
+        const decision = decisions.find(item => item.id === decisionId)
+        if (!decision) return null
+        return typeof option === 'string' && decision.optionIds.includes(option)
+          ? option
+          : null
+      }
+    )
+    return { runId: key, decisions, resolvedOptionByDecisionId }
+  })
+
+/** The injury stages a carried Band consequence may hold. */
+const BAND_INJURY_STAGES: ReadonlySet<string> = new Set([
+  'none',
+  'light',
+  'serious',
+  'critical'
+])
+
+/**
+ * Narrows the Band consequences carried past the run that caused them.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The stages, keyed by member id.
+ *
+ * @remarks
+ * A consequence only ever gives a Between-Tour decision something to treat, so
+ * a forged stage buys a question rather than a capability - but dropping the
+ * record would silently heal an injury the run really recorded.
+ */
+const sanitizeBandConsequences = (
+  value: unknown
+): Record<string, ExpeditionBandInjuryStage> =>
+  safeRecord(value, entry =>
+    typeof entry === 'string' && BAND_INJURY_STAGES.has(entry)
+      ? (entry as ExpeditionBandInjuryStage)
+      : null
+  )
+
+/** Narrows a persisted Rival stance to the two the union allows. */
+const asRivalStance = (value: unknown): 'confront' | 'cool_down' | null =>
+  value === 'confront' || value === 'cool_down' ? value : null
+
+/** Narrows a persisted Sponsor bias to the single step either way. */
+const asSponsorBias = (value: unknown): 1 | -1 | null =>
+  value === 1 || value === -1 ? value : null
+
+/**
+ * Narrows what the last Between-Tour answers left for the next Tour.
+ *
+ * @param value - Raw candidate from the save.
+ * @returns The preferences, with any malformed slot emptied.
+ *
+ * @remarks
+ * Both slots are single and bounded by design - a lean on the next Tour rather
+ * than a purchase - so each is either a well-formed preference or absent. A
+ * partial one is dropped rather than half-applied.
+ */
+const sanitizeNextTourPreferences = (
+  value: unknown
+): BetweenTourNextTourPreferences => {
+  const empty: BetweenTourNextTourPreferences = { rival: null, sponsor: null }
+  if (!isLooseRecord(value)) return empty
+  const rivalRaw = isLooseRecord(value.rival) ? value.rival : null
+  const sponsorRaw = isLooseRecord(value.sponsor) ? value.sponsor : null
+  const rivalId = rivalRaw?.rivalId
+  const dealId = sponsorRaw?.dealId
+  const stance = asRivalStance(rivalRaw?.stance)
+  const bias = asSponsorBias(sponsorRaw?.bias)
+  return {
+    rival:
+      typeof rivalId === 'string' &&
+      rivalId !== '' &&
+      !isForbiddenKey(rivalId) &&
+      stance !== null
+        ? { rivalId, stance }
+        : null,
+    sponsor:
+      typeof dealId === 'string' &&
+      dealId !== '' &&
+      !isForbiddenKey(dealId) &&
+      bias !== null
+        ? { dealId, bias }
+        : null
   }
 }
 
