@@ -12,6 +12,7 @@ const state: { current: GameState } = vi.hoisted(
 )
 const actions = vi.hoisted(() => ({
   prepareExpeditionRun: vi.fn(),
+  prepareExpeditionSponsorOffers: vi.fn(),
   startExpedition: vi.fn(),
   changeScene: vi.fn(),
   saveGameAfterStateCommit: vi.fn()

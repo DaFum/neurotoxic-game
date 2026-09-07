@@ -2,7 +2,7 @@
  * The constrained pre-tour build surface.
  */
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
@@ -68,7 +68,7 @@ const toggleBounded = (
  */
 export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const { t, i18n } = useTranslation('ui')
-  const { startExpedition } = useGameActions()
+  const { startExpedition, prepareExpeditionSponsorOffers } = useGameActions()
   const runSeed = useGameSelector(state => state.runSeed)
   const money = useGameSelector(state => state.player.money)
   const currentFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
@@ -141,19 +141,37 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [regionId, runSeed, tourTypeId]
   )
 
-  // Derived from the selected Region and Tour, not read from persisted state:
+  // Derived from the selected Region and Tour, or staged in state:
   // PREPARE happens on scene entry before either is chosen, so a stored set
   // would always describe the baseline route rather than the one being built.
   const sponsorOffers = useMemo(
     () =>
-      buildPreparedExpeditionSponsorOffers(
-        state,
-        preparedMap.regionId,
-        preparedMap.tourTypeId,
-        starterPerkId
-      ),
+      state.expedition.preparedSponsorOffers &&
+      state.expedition.preparedSponsorOffers.length > 0
+        ? state.expedition.preparedSponsorOffers
+        : buildPreparedExpeditionSponsorOffers(
+            state,
+            preparedMap.regionId,
+            preparedMap.tourTypeId,
+            starterPerkId
+          ),
     [preparedMap, starterPerkId, state]
   )
+
+  useEffect(() => {
+    prepareExpeditionSponsorOffers?.(
+      preparedMap.regionId,
+      preparedMap.tourTypeId,
+      starterPerkId
+    )
+  }, [
+    prepareExpeditionSponsorOffers,
+    preparedMap.regionId,
+    preparedMap.tourTypeId,
+    runSeed,
+    starterPerkId
+  ])
+
   const availableSponsorOfferIds = useMemo(
     () => sponsorOffers.map(offer => offer.offerId),
     [sponsorOffers]
@@ -224,8 +242,13 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
 
   const handleCommit = useCallback(() => {
     if (!validation.valid) return
+    prepareExpeditionSponsorOffers?.(
+      validation.normalized.regionId,
+      validation.normalized.tourTypeId,
+      validation.normalized.starterPerkId
+    )
     startExpedition(validation.normalized)
-  }, [startExpedition, validation])
+  }, [prepareExpeditionSponsorOffers, startExpedition, validation])
 
   const toggleSong = useCallback((songId: string) => {
     setSetlistSongIds(current =>

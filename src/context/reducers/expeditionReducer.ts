@@ -15,7 +15,11 @@ import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
-import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import {
+  BASE_EXPEDITION_REGION_ID,
+  BASE_EXPEDITION_TOUR_TYPE_ID,
+  createDefaultExpeditionState
+} from '../../domain/expedition/defaults'
 import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
@@ -112,6 +116,7 @@ import type {
   ExecuteExpeditionInspectionPayload,
   ExtractExpeditionPayload,
   PrepareExpeditionRunPayload,
+  PrepareExpeditionSponsorOffersPayload,
   PrepareNextExpeditionPayload,
   ResolveExpeditionCrisisPayload,
   ResolveExpeditionDefectPayload,
@@ -242,6 +247,46 @@ export const handlePrepareExpeditionRun = (
 }
 
 /**
+ * Stages deterministic Sponsor offers for a prepared run.
+ *
+ * @param state - Current game state.
+ * @param payload - Expected root run seed and candidate route parameters.
+ * @returns Next state with staged sponsor offers, or identical state reference.
+ *
+ * @remarks
+ * Staged offers are computed deterministically from the root run seed and
+ * stored on the prepared state snapshot. START revalidates that the committed
+ * sponsor offer came from this exact snapshot.
+ */
+export const handlePrepareExpeditionSponsorOffers = (
+  state: GameState,
+  payload: PrepareExpeditionSponsorOffersPayload
+): GameState => {
+  if (state.expedition.status !== 'prepared') return state
+  if (payload === null || typeof payload !== 'object') return state
+
+  const { expectedRunSeed, regionId, tourTypeId, starterPerkId } = payload
+  if (!isFiniteNumber(expectedRunSeed) || expectedRunSeed !== state.runSeed) {
+    return state
+  }
+
+  const preparedSponsorOffers = buildPreparedExpeditionSponsorOffers(
+    state,
+    regionId ?? BASE_EXPEDITION_REGION_ID,
+    tourTypeId ?? BASE_EXPEDITION_TOUR_TYPE_ID,
+    starterPerkId ?? null
+  )
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      preparedSponsorOffers
+    }
+  }
+}
+
+/**
  * Starts the prepared run as one transaction.
  *
  * @param state - Current game state.
@@ -285,8 +330,8 @@ export const handleStartExpedition = (
     preparedMap
   )
   if (!validation.valid) return state
-  const normalized = validation.normalized
 
+  const { normalized } = validation
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
     ? state.player.van.fuel
     : 0
@@ -306,17 +351,14 @@ export const handleStartExpedition = (
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
   const sponsorOfferId = normalized.build.sponsorOfferId
-  // Derived from the Region and Tour this run is actually committing to, so a
-  // non-baseline route stages the offer count its profile calls for.
+  // Must exist in the persisted preparedSponsorOffers snapshot staged for
+  // this run, verifying both root runSeed and canonical terms hash.
   const stagedSponsor =
     sponsorOfferId === null
       ? null
-      : buildPreparedExpeditionSponsorOffers(
-          state,
-          regionId,
-          tourTypeId,
-          normalized.starterPerkId
-        ).find(offer => offer.offerId === sponsorOfferId)
+      : ((state.expedition.preparedSponsorOffers ?? []).find(
+          offer => offer.offerId === sponsorOfferId
+        ) ?? null)
   if (
     sponsorOfferId !== null &&
     (!stagedSponsor ||
