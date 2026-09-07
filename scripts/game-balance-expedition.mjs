@@ -63,6 +63,22 @@ const CAREER_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#career#holdout'
  * `generatorFingerprint` so a harness edit invalidates a stale artifact the
  * same way a source edit does.
  */
+/**
+ * Runs per profile per cohort for a release artifact.
+ *
+ * G6 Task 8 makes 2,000 binding for the calibration and holdout cohorts, and
+ * Tasks 9 and 11 repeat it for the paired probes. `--quick` trades that
+ * statistical power for a developer-speed check, and must never be the size a
+ * committed report was generated at.
+ */
+const RELEASE_SAMPLE_COUNT = 2000
+
+/** Developer-speed size behind `--quick`. Not a release size. */
+const QUICK_SAMPLE_COUNT = 20
+
+/** Upper bound on six-run fresh-Career sequences per profile per cohort. */
+const CAREER_SEQUENCE_CAP = 5
+
 const GENERATOR_PATHS = Object.freeze([
   'scripts/game-balance-expedition.mjs',
   'scripts/game-balance-expedition-runner.mjs',
@@ -130,9 +146,18 @@ const acrossCohorts = (hardFailures, label, namespaces, probeCount, run) => {
  * @param {{ sampleCount?: number }} [options={}]
  */
 export async function executeBalanceRecalibrationSuite(options = {}) {
-  const sampleCount = options.sampleCount ?? 20
-  const probeCount = Math.max(5, Math.floor(sampleCount / 2))
-  const careerSequenceCount = Math.max(1, Math.min(3, Math.floor(probeCount / 2)))
+  const sampleCount = options.sampleCount ?? RELEASE_SAMPLE_COUNT
+  // G6 Tasks 9 and 11 require the same 2,000 matched states per profile and
+  // cohort that Task 8 requires of the single-run cohorts, so the probes run
+  // at the cohort size rather than at a fraction of it.
+  const probeCount = sampleCount
+  // Task 12 sets no cohort size for the fresh-Career sequences: each one is a
+  // whole six-run Career, and what it reports is progression timing rather
+  // than a distribution. Scaled far below the paired-probe size.
+  const careerSequenceCount = Math.max(
+    1,
+    Math.min(CAREER_SEQUENCE_CAP, Math.ceil(sampleCount / 400))
+  )
 
   console.log(
     `[BalanceSuite] Starting Expedition Recalibration Suite (${sampleCount} samples/cohort)...`
@@ -522,7 +547,7 @@ export function formatMarkdownReport(data) {
  */
 async function main() {
   const isQuick = process.argv.includes('--quick')
-  const sampleCount = isQuick ? 5 : 20
+  const sampleCount = isQuick ? QUICK_SAMPLE_COUNT : RELEASE_SAMPLE_COUNT
 
   const reportData = await executeBalanceRecalibrationSuite({ sampleCount })
   const mdReport = formatMarkdownReport(reportData)

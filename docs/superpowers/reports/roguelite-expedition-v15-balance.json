@@ -6,14 +6,14 @@
   ],
   "metadata": {
     "sourceFingerprint": "f220a3feed11ae1cb5fdba0c208001d9cb3a7ac6b31c7cc65fcf91777813b136",
-    "generatorFingerprint": "46ecc03023f2657763701b540732dc34d7c059558b43993514858a24421b8bf3",
+    "generatorFingerprint": "49e09bc257d9c3aca26e0afd7fa8fc44a1b041b96e61b6425d21adb3289037d8",
     "seedNamespace": "#roguelite-expedition-v1#calibration",
-    "runsPerScenario": 20,
+    "runsPerScenario": 2000,
     "workingTreeDirty": true,
     "artifactSchemaVersion": 1
   },
   "provenance": {
-    "generatedAt": "2026-09-07T12:28:12.864Z",
+    "generatedAt": "2026-09-07T12:53:50.670Z",
     "namespaces": {
       "calibration": "#roguelite-expedition-v1#calibration",
       "holdout": "#roguelite-expedition-v1#holdout",
@@ -26,16 +26,16 @@
       "careerHoldout": "#roguelite-expedition-v1#career#holdout"
     },
     "profilesCount": 6,
-    "sampleCountPerCohort": 20
+    "sampleCountPerCohort": 2000
   },
   "calibrationSummary": {
     "clean_sponsor": {
-      "completedRate": 0.45,
-      "extractedRate": 0.55,
+      "completedRate": 0.415,
+      "extractedRate": 0.585,
       "failedRate": 0,
-      "meanDepth": 6.7,
-      "meanNodes": 7.7,
-      "meanMoney": 489355,
+      "meanDepth": 6.7665,
+      "meanNodes": 7.7665,
+      "meanMoney": 489326.8365,
       "meanFame": 150
     },
     "underground_heat": {
@@ -44,25 +44,25 @@
       "failedRate": 0,
       "meanDepth": 8,
       "meanNodes": 9,
-      "meanMoney": 487086.15,
+      "meanMoney": 487061.1405,
       "meanFame": 150
     },
     "diy_repair": {
       "completedRate": 0,
       "extractedRate": 1,
       "failedRate": 0,
-      "meanDepth": 4.15,
-      "meanNodes": 5.15,
-      "meanMoney": 493169.6,
+      "meanDepth": 4.3955,
+      "meanNodes": 5.3955,
+      "meanMoney": 493028.1605,
       "meanFame": 150
     },
     "scout_intel": {
-      "completedRate": 0.15,
-      "extractedRate": 0.85,
+      "completedRate": 0.137,
+      "extractedRate": 0.863,
       "failedRate": 0,
-      "meanDepth": 5.45,
-      "meanNodes": 6.45,
-      "meanMoney": 493415.7,
+      "meanDepth": 5.5075,
+      "meanNodes": 6.5075,
+      "meanMoney": 493379.3805,
       "meanFame": 150
     },
     "high_exposure_performance": {
@@ -71,27 +71,27 @@
       "failedRate": 0,
       "meanDepth": 6,
       "meanNodes": 7,
-      "meanMoney": 491499.9,
+      "meanMoney": 491526.644,
       "meanFame": 777
     },
     "rival_hunter": {
-      "completedRate": 0.4,
-      "extractedRate": 0.6,
+      "completedRate": 0.3705,
+      "extractedRate": 0.6295,
       "failedRate": 0,
-      "meanDepth": 6.7,
-      "meanNodes": 7.7,
-      "meanMoney": 493859.6,
+      "meanDepth": 6.6635,
+      "meanNodes": 7.6635,
+      "meanMoney": 493833.0675,
       "meanFame": 150
     }
   },
   "holdoutSummary": {
     "clean_sponsor": {
-      "completedRate": 0.6,
-      "extractedRate": 0.4,
+      "completedRate": 0.421,
+      "extractedRate": 0.579,
       "failedRate": 0,
-      "meanDepth": 7.15,
-      "meanNodes": 8.15,
-      "meanMoney": 489408.3,
+      "meanDepth": 6.788,
+      "meanNodes": 7.788,
+      "meanMoney": 489327.1265,
       "meanFame": 150
     },
     "underground_heat": {
@@ -100,25 +100,25 @@
       "failedRate": 0,
       "meanDepth": 8,
       "meanNodes": 9,
-      "meanMoney": 487134.55,
+      "meanMoney": 487062.594,
       "meanFame": 150
     },
     "diy_repair": {
       "completedRate": 0,
       "extractedRate": 1,
       "failedRate": 0,
-      "meanDepth": 4.35,
-      "meanNodes": 5.35,
-      "meanMoney": 492997.4,
+      "meanDepth": 4.408,
+      "meanNodes": 5.408,
+      "meanMoney": 493027.862,
       "meanFame": 150
     },
     "scout_intel": {
-      "completedRate": 0.25,
-      "extractedRate": 0.75,
+      "completedRate": 0.1395,
+      "extractedRate": 0.8605,
       "failedRate": 0,
-      "meanDepth": 5.95,
-      "meanNodes": 6.95,
-      "meanMoney": 493259.5,
+      "meanDepth": 5.5185,
+      "meanNodes": 6.5185,
+      "meanMoney": 493374.404,
       "meanFame": 150
     },
     "high_exposure_performance": {
@@ -127,16 +127,16 @@
       "failedRate": 0,
       "meanDepth": 6,
       "meanNodes": 7,
-      "meanMoney": 491523,
-      "meanFame": 777
+      "meanMoney": 491527.744,
+      "meanFame": 776.6865
     },
     "rival_hunter": {
-      "completedRate": 0.4,
-      "extractedRate": 0.6,
+      "completedRate": 0.36,
+      "extractedRate": 0.64,
       "failedRate": 0,
-      "meanDepth": 6.8,
-      "meanNodes": 7.8,
-      "meanMoney": 493899.7,
+      "meanDepth": 6.638,
+      "meanNodes": 7.638,
+      "meanMoney": 493826.4905,
       "meanFame": 150
     }
   },
@@ -148,8 +148,8 @@
     ]
   },
   "extractionProbe": {
-    "calibrationPairs": 30,
-    "holdoutPairs": 30,
+    "calibrationPairs": 6000,
+    "holdoutPairs": 6000,
     "samples": [
       {
         "profileId": "clean_sponsor",
@@ -274,7 +274,7 @@
     ]
   },
   "skillProbe": {
-    "triosCount": 20,
+    "triosCount": 4000,
     "samples": [
       {
         "profileId": "clean_sponsor",
@@ -1115,7 +1115,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "1c3d4b0f-8fb7-42b2-b2a5-8088d5d901fe",
+                  "id": "7d39cc6a-02ae-4c41-aae0-63031a061b17",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -1124,7 +1124,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "ac9bc78f-b6ff-4b1d-9424-ea430fb52ce2",
+                      "id": "f5d4ef94-257f-4f58-8658-49ed59117ab5",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -1133,7 +1133,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "afbb6f0a-388b-4583-b703-af6ef165ac9b",
+                      "id": "353e39fc-dac4-412a-aee8-201547c4164f",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -1142,7 +1142,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "11582a69-38cc-4b30-bfc5-c186042d15b8",
+                      "id": "9c901e6d-c19c-4d5a-ba40-c79eb058f419",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -1151,7 +1151,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "23537836-c704-47ac-aa4d-76fbd7870b1a",
+                      "id": "392afb26-86b8-420c-b592-e391febfb8bd",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -1160,7 +1160,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "3bc6b09e-7963-47eb-ad94-f64dd21f7bfa",
+                      "id": "a7d3c646-c004-49ea-b975-31d26fa9fb6e",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -1169,7 +1169,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "0435edbb-a8a1-4050-9a86-106f6b57f4a5",
+                      "id": "d09e9f2c-cc18-4fb5-ab59-c477b1045b2d",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -1185,7 +1185,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696919,
+              "rngSeed": 2079092281,
               "runSeed": 3921558177,
               "expedition": {
                 "status": "extracted",
@@ -1203,7 +1203,16 @@
                   "exp_5_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_0": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -1212,7 +1221,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "1c3d4b0f-8fb7-42b2-b2a5-8088d5d901fe",
+                  "activeTourbusAssetId": "7d39cc6a-02ae-4c41-aae0-63031a061b17",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -2386,7 +2395,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "70998a51-2434-494f-8a6f-667f1666f19d",
+                  "id": "3e950cd9-9070-4524-8f9b-5277ddfb473a",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -2395,7 +2404,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "fc58972d-4a97-4675-98ff-07ba949edf3b",
+                      "id": "79626743-3c7f-45a5-b177-8435c904297c",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -2404,7 +2413,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "3f215757-90ba-49e9-a98c-86eafbc06f2a",
+                      "id": "25060ae8-745e-4a54-a479-11eb2e54c9ab",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -2413,7 +2422,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "67ae0e32-51dc-4bb1-8fea-1881f13c3291",
+                      "id": "b32e570c-d95d-47e8-9111-8dce9389ebf5",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -2422,7 +2431,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "f172f7dd-1001-446f-bd21-82dfae4c7eff",
+                      "id": "b4188f6f-b2fe-4a64-aafa-30562f2bfd65",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -2431,7 +2440,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "09a46bd3-07c1-4076-ada3-f760b1c4ff07",
+                      "id": "c02a24ca-ea12-48e5-9cd1-13d586fc49af",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -2440,7 +2449,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "62d05e12-d34b-4253-9858-4e5b78d246cc",
+                      "id": "6d5f83b4-b544-4d0a-af21-732fbb39b65c",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -2456,7 +2465,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696921,
+              "rngSeed": 2079092282,
               "runSeed": 3921558177,
               "expedition": {
                 "status": "extracted",
@@ -2475,7 +2484,18 @@
                   "exp_6_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_0": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -2484,7 +2504,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "70998a51-2434-494f-8a6f-667f1666f19d",
+                  "activeTourbusAssetId": "3e950cd9-9070-4524-8f9b-5277ddfb473a",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -3655,7 +3675,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "ec8ff912-7a1d-4261-8d13-9fd01cd12098",
+                  "id": "ad4ad948-f00e-4b91-bc32-a2fccad57f4b",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -3664,7 +3684,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "ba48f7da-03e5-4737-99d2-15e14c625768",
+                      "id": "cdb63ee8-e169-4d48-b0d9-e2f2a4eb7bc8",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -3673,7 +3693,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "d4888ce3-8c84-4496-9b34-dd5e1ebb0d44",
+                      "id": "dc14f3c0-b78d-4ac8-9843-c6a35ccdeef1",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -3682,7 +3702,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "ab04eca4-5741-48c7-8538-dd8d50f087c9",
+                      "id": "6710defb-f02e-4b2d-ab1b-a9b8419736cd",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -3691,7 +3711,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "89c998ca-1c16-485d-a163-caf50157584d",
+                      "id": "067229bd-6740-4016-b968-a5ccc2b1a0c3",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -3700,7 +3720,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "79729ed5-2d9f-4fcf-a088-ef1a38dbe90b",
+                      "id": "a179706b-056d-4cc4-88db-3a8480b1c6a4",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -3709,7 +3729,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "95fac242-2582-4b20-86db-e3ce5d0671bf",
+                      "id": "76bd431f-5668-4fdc-9513-5eb825f8a11a",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -3725,7 +3745,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696922,
+              "rngSeed": 2079092284,
               "runSeed": 3921558177,
               "expedition": {
                 "status": "completed",
@@ -3746,7 +3766,20 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_0": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1,
+                  "exp_7_1": 1,
+                  "exp_8_0": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -3755,7 +3788,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "ec8ff912-7a1d-4261-8d13-9fd01cd12098",
+                  "activeTourbusAssetId": "ad4ad948-f00e-4b91-bc32-a2fccad57f4b",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -5010,7 +5043,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "4bda17ea-4acf-4d80-80aa-e36e13dd3f68",
+                  "id": "63e841ea-cfc7-4d7c-b46e-eb18fa447592",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -5019,7 +5052,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "95281fef-2583-4886-9de3-578d4e7f426a",
+                      "id": "f59f90ef-9709-4cf9-8f5e-2da3ebc51ebb",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -5028,7 +5061,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "149c6ec1-f329-4dfb-8730-d7c3893e9e42",
+                      "id": "ed259e3f-77fa-4ed2-a646-6ec1b235abec",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -5037,7 +5070,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "c9d21a5b-2fdc-4f10-b66f-f2c69fd795c4",
+                      "id": "dbcb5080-3ee9-4460-93b5-e060ba89c6ab",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -5046,7 +5079,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "dda875db-25d5-423e-a982-89724d8cf2f8",
+                      "id": "e8f94134-cbb7-4ee3-a808-ae41be43eacf",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -5055,7 +5088,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "78f2b980-8625-4a56-8c34-abf1b0d04413",
+                      "id": "83166b6d-2cc7-4828-ac70-dcc8691d0779",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -5064,7 +5097,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "49ed7b68-a035-42eb-a4a8-11aed6490b75",
+                      "id": "a983b8c8-f93d-46e5-a8a9-1ae17e4cca62",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -5080,7 +5113,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696924,
+              "rngSeed": 2079092286,
               "runSeed": 3904780558,
               "expedition": {
                 "status": "extracted",
@@ -5099,7 +5132,15 @@
                   "exp_6_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -5108,7 +5149,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "4bda17ea-4acf-4d80-80aa-e36e13dd3f68",
+                  "activeTourbusAssetId": "63e841ea-cfc7-4d7c-b46e-eb18fa447592",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -6390,7 +6431,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "3b9cfcb0-375f-4867-b2f4-13e2a9ba03a3",
+                  "id": "c0756824-d58d-458d-b8a3-4d1d86f11e45",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -6399,7 +6440,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "49246cb1-9443-4161-8b58-5d3a92a4f4c4",
+                      "id": "2b00615a-2a9c-4298-98bd-c80dbb39a98c",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -6408,7 +6449,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "ce5c098e-c2c2-4021-9186-8012b86870ac",
+                      "id": "4714a5f7-51cb-42ef-9623-3ad509776770",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -6417,7 +6458,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "a545f15c-58ac-42b7-ba1e-30aaa2ba3f43",
+                      "id": "40455ff1-ac9d-4f49-9970-1639b9badf96",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -6426,7 +6467,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "7f87cd74-a96a-4732-8778-0f71ec55596c",
+                      "id": "3df3a018-3762-4d5c-bbbb-1d893828bf0f",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -6435,7 +6476,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "6aec3693-95a4-4f9a-9662-05bb06cb5a75",
+                      "id": "3e649db0-2668-4169-a9ea-4a71eb4779c7",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -6444,7 +6485,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "c064aa50-3605-4edb-8424-e35fd18fc571",
+                      "id": "61b300ab-9b24-4341-96d7-12a28296993e",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -6460,7 +6501,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696928,
+              "rngSeed": 2079092288,
               "runSeed": 3904780558,
               "expedition": {
                 "status": "extracted",
@@ -6479,7 +6520,15 @@
                   "exp_6_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -6488,7 +6537,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "3b9cfcb0-375f-4867-b2f4-13e2a9ba03a3",
+                  "activeTourbusAssetId": "c0756824-d58d-458d-b8a3-4d1d86f11e45",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -6900,11 +6949,9 @@
                 "exp_4_1",
                 "exp_5_1",
                 "exp_6_1",
-                "exp_7_1",
-                "exp_7_2",
-                "exp_8_0"
+                "exp_7_1"
               ],
-              "inspectedFieldsCount": 36,
+              "inspectedFieldsCount": 30,
               "routeChoicesInfluencedByIntel": 0
             },
             "finalState": {
@@ -7756,7 +7803,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "160b20c5-5d4b-4035-8aaf-23dc91088a37",
+                  "id": "4b002f7a-41b8-4da3-a541-371121abecb1",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -7765,7 +7812,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "6823050c-2d4d-47d5-b8b8-318fabe175c2",
+                      "id": "ac39cf6b-a6ca-452c-a888-1291ccfbddb7",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -7774,7 +7821,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "560853da-c6a0-4df9-a6ce-46db707a5d21",
+                      "id": "ef159c59-9e83-48f9-aae7-c4be1f145eb4",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -7783,7 +7830,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "03a2d75d-96a7-4e89-b5b6-82eb2a171ccb",
+                      "id": "a19ad7b1-2f76-4c0e-9da5-365b6392e412",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -7792,7 +7839,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "d730b2cc-6545-4cbc-8fd2-816bbe115b0c",
+                      "id": "099105d1-821f-40a1-9819-fe7a260a7bcb",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -7801,7 +7848,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "0558d1a6-8c2f-45a1-9628-9137fa1ef857",
+                      "id": "e4cb80ad-1441-4000-92ce-37be91b4c7bc",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -7810,7 +7857,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "6ec4d49e-1ecf-4d44-963a-54a86529f677",
+                      "id": "83fbe0f6-c92f-480c-a127-7ecde4bc2a2f",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -7826,7 +7873,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696930,
+              "rngSeed": 2079092291,
               "runSeed": 3904780558,
               "expedition": {
                 "status": "completed",
@@ -7847,7 +7894,16 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1,
+                  "exp_7_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -7856,7 +7912,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "160b20c5-5d4b-4035-8aaf-23dc91088a37",
+                  "activeTourbusAssetId": "4b002f7a-41b8-4da3-a541-371121abecb1",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -9110,7 +9166,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "327d2c0e-f3f9-496a-ac75-f5e6ec0f52a5",
+                  "id": "7bd945f4-00cf-4fe5-b9e4-3a5656020922",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -9119,7 +9175,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "88ccc2ff-687f-482c-9fbe-001fd3820a77",
+                      "id": "1286a492-127b-481c-8547-9607244fea55",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -9128,7 +9184,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "7c2f15cf-5c1d-4fd4-8342-7ab324b23170",
+                      "id": "107ed53f-786d-42ac-aea9-d82fde77fe52",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -9137,7 +9193,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "8406d1cb-affb-4bf4-bc10-40eb66fe810e",
+                      "id": "82ec35a0-ac00-45a9-a0f7-1bd40f60220e",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -9146,7 +9202,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "0924fe50-f99a-4968-8185-24cc8a067238",
+                      "id": "d73c353a-0c32-490c-ae33-94d1aae40bb2",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -9155,7 +9211,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "d774fda6-00e6-4225-aab9-d64d750b73fe",
+                      "id": "ed07ca38-5222-432d-930e-dec6f5b2a61f",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -9164,7 +9220,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "54f06212-6610-4091-8ba6-d3c1c0c8ab9c",
+                      "id": "414e1c66-f3e0-443f-8da9-5aaf94d851d3",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -9180,7 +9236,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696932,
+              "rngSeed": 2079092296,
               "runSeed": 3888002939,
               "expedition": {
                 "status": "extracted",
@@ -9199,7 +9255,14 @@
                   "exp_6_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -9208,7 +9271,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "327d2c0e-f3f9-496a-ac75-f5e6ec0f52a5",
+                  "activeTourbusAssetId": "7bd945f4-00cf-4fe5-b9e4-3a5656020922",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -10440,7 +10503,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "6a55c4df-5bf9-410c-a1c0-704ecd72cad1",
+                  "id": "80581bbc-c869-467c-bbf8-b5db3c86642f",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -10449,7 +10512,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "9772e292-25bb-426e-b8c9-60cc792b1b4e",
+                      "id": "6c9314a6-527d-414a-944a-1f211fa4ff93",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -10458,7 +10521,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "b8eb55aa-8e99-4601-97bf-4a3f28d63c0f",
+                      "id": "6dbb6763-6d49-4cf2-aa5b-e79a8f2662ab",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -10467,7 +10530,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "53173699-0df2-45b0-9761-01ac87e3c6c2",
+                      "id": "b5cfbbbe-9254-4eb5-a2c8-d32f99beb51b",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -10476,7 +10539,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "1ccd5274-f7ca-4857-bc3d-44e791866c04",
+                      "id": "87c09fef-b281-4e1d-96c1-6fdd69961570",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -10485,7 +10548,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "36c3df41-c9bb-4e53-93ae-77dee92d68a1",
+                      "id": "f946eb40-5383-4927-9c48-ca23747ee10a",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -10494,7 +10557,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "a6622311-bfd0-4c3a-b1d2-2cadd5df09cf",
+                      "id": "2bd7b2cb-9ea9-454e-8daa-e3e87b4f3a68",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -10510,7 +10573,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696934,
+              "rngSeed": 2079092298,
               "runSeed": 3888002939,
               "expedition": {
                 "status": "completed",
@@ -10531,7 +10594,16 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1,
+                  "exp_7_1": 1,
+                  "exp_8_0": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -10540,7 +10612,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "6a55c4df-5bf9-410c-a1c0-704ecd72cad1",
+                  "activeTourbusAssetId": "80581bbc-c869-467c-bbf8-b5db3c86642f",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -10970,10 +11042,9 @@
                 "exp_5_1",
                 "exp_6_1",
                 "exp_6_2",
-                "exp_7_1",
-                "exp_8_0"
+                "exp_7_1"
               ],
-              "inspectedFieldsCount": 30,
+              "inspectedFieldsCount": 27,
               "routeChoicesInfluencedByIntel": 0
             },
             "finalState": {
@@ -11784,7 +11855,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "fcb0b72b-575c-4337-b73f-a6141333b698",
+                  "id": "74832f22-d8b2-4e6a-900f-debe70b6862f",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -11793,7 +11864,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "beb59cfe-f3cd-480a-b11c-f46ed733cde8",
+                      "id": "fd3f2a0f-fdaa-453e-bbb9-879813c5a626",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -11802,7 +11873,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "465edaf8-341e-424c-85e8-cdf5a58ec286",
+                      "id": "7b8bb165-05d6-45f3-9ee6-805219bd0eb2",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -11811,7 +11882,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "ee86d196-9a63-453e-939d-e18e989f4b18",
+                      "id": "1f602a19-ebf4-4519-8c58-d73a29338340",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -11820,7 +11891,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "8f0de921-c12a-4f9b-a9bc-f72f38d7b644",
+                      "id": "4c0413dc-1660-4f7c-bd02-2c186a1cb76e",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -11829,7 +11900,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "1300d704-d5bd-446d-b03a-c29eca049c0a",
+                      "id": "d13e8e67-6e8f-4b85-b363-28d034442b1f",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -11838,7 +11909,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "1e15a527-746e-4609-8672-e254fc549c04",
+                      "id": "e475b0a0-06be-4071-ab12-cf437d51da19",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -11854,7 +11925,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696936,
+              "rngSeed": 2079092300,
               "runSeed": 3888002939,
               "expedition": {
                 "status": "completed",
@@ -11875,7 +11946,15 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1,
+                  "exp_7_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -11884,7 +11963,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "fcb0b72b-575c-4337-b73f-a6141333b698",
+                  "activeTourbusAssetId": "74832f22-d8b2-4e6a-900f-debe70b6862f",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -13224,7 +13303,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "bc23640c-d13d-4002-a523-6070e5dd42db",
+                  "id": "941dd710-a8d1-46bd-ab7f-7fdbbcb9c033",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -13233,7 +13312,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "dc7b2afb-6557-498a-af73-fc8db6fe8f2a",
+                      "id": "d62e0889-21fb-4815-a9db-457ad1c0f0c6",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -13242,7 +13321,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "3aec0b75-1694-464a-86dc-89f60f327f3a",
+                      "id": "cbad1530-5230-4a54-9f5a-850d526e19ac",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -13251,7 +13330,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "ed55bfb3-dd73-46fc-996d-c283beb301f3",
+                      "id": "de2785d7-9410-4f76-9071-75b58cadd76d",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -13260,7 +13339,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "5a98e316-14e5-44d6-80a2-357afef76538",
+                      "id": "f908a5f9-e6a7-45f8-8b2e-62cc20d04e59",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -13269,7 +13348,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "5c2ba3aa-4acf-4733-8a2c-4123e897d620",
+                      "id": "33e7207c-0803-470d-91f6-9d536736500b",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -13278,7 +13357,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "125dcbe5-4b84-4f08-8a28-4605a97c4037",
+                      "id": "fd68a1f6-67ea-47b2-aeda-cdcc3331591b",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -13294,7 +13373,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696938,
+              "rngSeed": 2079092302,
               "runSeed": 3871225320,
               "expedition": {
                 "status": "extracted",
@@ -13312,7 +13391,16 @@
                   "exp_5_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -13321,7 +13409,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "bc23640c-d13d-4002-a523-6070e5dd42db",
+                  "activeTourbusAssetId": "941dd710-a8d1-46bd-ab7f-7fdbbcb9c033",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -14637,7 +14725,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "a034e1fc-ec51-44b2-8517-ee3e5bb7070a",
+                  "id": "e49daea8-a059-44fd-90a3-7d3babb29f4a",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -14646,7 +14734,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "219ee54a-3f46-4ced-ba4f-69dad2bba8fe",
+                      "id": "fd12a4fc-5e07-46b0-922f-1a4a2cf978b6",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -14655,7 +14743,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "04740564-ce1f-4bc2-9f54-3919d7ed69cb",
+                      "id": "c706df02-af74-4b3b-ad6f-c7192bed17ac",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -14664,7 +14752,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "192bf8ca-8575-4e82-b875-0b712d5bbdeb",
+                      "id": "f0e84ddf-db32-42c6-8622-7281cf845e71",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -14673,7 +14761,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "b436a04e-2545-4c4b-889f-eb9abbc9e17c",
+                      "id": "95cc86b3-c4d9-4717-be56-f2dca401a845",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -14682,7 +14770,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "d7887f85-f2f1-42f5-b74b-d4fa718d180f",
+                      "id": "3fe89684-8835-40b2-b6d8-37de88f1f204",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -14691,7 +14779,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "15eda58c-edf2-4658-a841-215a4b35960c",
+                      "id": "8c6e5295-56f7-4a0f-b95c-0feee8d0776b",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -14707,7 +14795,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696940,
+              "rngSeed": 2079092304,
               "runSeed": 3871225320,
               "expedition": {
                 "status": "completed",
@@ -14728,7 +14816,20 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1,
+                  "exp_7_1": 1,
+                  "exp_8_0": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -14737,7 +14838,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "a034e1fc-ec51-44b2-8517-ee3e5bb7070a",
+                  "activeTourbusAssetId": "e49daea8-a059-44fd-90a3-7d3babb29f4a",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -15170,10 +15271,9 @@
                 "exp_5_2",
                 "exp_6_1",
                 "exp_6_2",
-                "exp_7_1",
-                "exp_8_0"
+                "exp_7_1"
               ],
-              "inspectedFieldsCount": 42,
+              "inspectedFieldsCount": 39,
               "routeChoicesInfluencedByIntel": 0
             },
             "finalState": {
@@ -16095,7 +16195,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "407f87fc-5272-4481-a33a-804586f2dc29",
+                  "id": "3b364d6a-8125-4110-bbde-d5bbbfd22a1f",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -16104,7 +16204,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "487db91c-b13b-4d45-8baa-84608e2d6cf2",
+                      "id": "2068dcbf-5611-4164-9b4f-ba40fcf20183",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -16113,7 +16213,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "0e7ec7ec-0d08-44b3-86b8-b35f27efcd00",
+                      "id": "05fc54f4-e5f0-4692-941d-5f7fb5661539",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -16122,7 +16222,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "b90e53c4-6c5b-490a-941a-205907b17cf2",
+                      "id": "eb91551c-9479-40c2-8b64-5816a5c7d7d9",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -16131,7 +16231,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "20d15ef4-b443-4644-9905-5647ac14c2c8",
+                      "id": "ddaa9c94-1ee7-4c86-a21f-8ea3feb16fbe",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -16140,7 +16240,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "de4f37fc-2130-4f6b-af69-cf02b9cf4ca0",
+                      "id": "1af605d1-d950-4222-8c58-46d336e6e0ca",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -16149,7 +16249,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "81a7563b-0396-44b0-b7a5-086daf2638a4",
+                      "id": "afcfa1f6-5bf0-4a0d-951a-30548ab12e55",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -16165,7 +16265,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696941,
+              "rngSeed": 2079092307,
               "runSeed": 3871225320,
               "expedition": {
                 "status": "completed",
@@ -16186,7 +16286,19 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_1_2": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_3_2": 1,
+                  "exp_4_1": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_6_2": 1,
+                  "exp_7_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -16195,7 +16307,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "407f87fc-5272-4481-a33a-804586f2dc29",
+                  "activeTourbusAssetId": "3b364d6a-8125-4110-bbde-d5bbbfd22a1f",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -17475,7 +17587,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "a3c32277-7f17-4229-bb99-0e28afe28e90",
+                  "id": "76d4a6b9-c4d1-4a31-b87b-debaef5ffd18",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -17484,7 +17596,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "0a42ec54-e2fc-4e8e-89ce-6c7e0d75e25a",
+                      "id": "9953aaa6-da56-4a2d-ab92-18b421e00d23",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -17493,7 +17605,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "11b69865-31a6-4509-a80a-2a348e239979",
+                      "id": "c35ed50e-4799-4b75-955c-3c6b697e47a1",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -17502,7 +17614,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "36f70e17-bf2e-4843-8f7d-e2b424628215",
+                      "id": "b3b9f3f8-636b-45e1-afb0-899c431c1d67",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -17511,7 +17623,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "2bf0b05b-26c0-4ce6-83aa-e39e041cfe2a",
+                      "id": "2b0176d3-fdab-40ca-a15d-38dfb7d551fd",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -17520,7 +17632,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "2618c7b6-2a29-4dd5-9272-b574ccfba71a",
+                      "id": "fab9d95d-d8a3-4463-af7e-51a9af41c58f",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -17529,7 +17641,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "8c52c6af-0104-4217-bc70-ce1e473f6fd1",
+                      "id": "1878e1e1-fc9f-4ecf-94a2-1bfcb2aa19bd",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -17545,7 +17657,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696943,
+              "rngSeed": 2079092310,
               "runSeed": 3988668653,
               "expedition": {
                 "status": "extracted",
@@ -17564,7 +17676,16 @@
                   "exp_6_1"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -17573,7 +17694,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "a3c32277-7f17-4229-bb99-0e28afe28e90",
+                  "activeTourbusAssetId": "76d4a6b9-c4d1-4a31-b87b-debaef5ffd18",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -18845,7 +18966,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "ab566e6c-d836-4b6f-b76e-d8879571008b",
+                  "id": "5412f4f9-f8cf-4843-a2b5-1dcbcd57f703",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -18854,7 +18975,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "3a0dcf45-98ca-4d2d-8e98-451d1cd5b564",
+                      "id": "af47d636-d80a-47b0-b64e-4bbd79a1f4fd",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -18863,7 +18984,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "ecedd86d-815e-4c09-be25-c3640ea25a55",
+                      "id": "d1bca14a-f453-4107-a760-a882901141f8",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -18872,7 +18993,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "be7bb210-22ca-45fa-83e1-a6471f238e98",
+                      "id": "0853ea6a-a396-46de-8ad4-158b6acf5d6f",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -18881,7 +19002,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "e9f08fe6-3e99-43ec-bf03-bbc2c5db7721",
+                      "id": "8467a41c-330a-4e1b-a0a8-c8972247e809",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -18890,7 +19011,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "f7cbf289-b00b-4290-afdb-b9f1f882681f",
+                      "id": "32617d6d-c8de-4303-af14-092c29e76845",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -18899,7 +19020,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "ea32ff9c-9e89-46e7-a18b-ab6936f8fe2b",
+                      "id": "620ded7d-1000-417c-b4de-53606c8e2cfb",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -18915,7 +19036,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696945,
+              "rngSeed": 2079092313,
               "runSeed": 3988668653,
               "expedition": {
                 "status": "completed",
@@ -18936,7 +19057,18 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_7_1": 1,
+                  "exp_8_0": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -18945,7 +19077,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "ab566e6c-d836-4b6f-b76e-d8879571008b",
+                  "activeTourbusAssetId": "5412f4f9-f8cf-4843-a2b5-1dcbcd57f703",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -19397,10 +19529,9 @@
                 "exp_5_1",
                 "exp_5_2",
                 "exp_6_1",
-                "exp_7_1",
-                "exp_8_0"
+                "exp_7_1"
               ],
-              "inspectedFieldsCount": 36,
+              "inspectedFieldsCount": 33,
               "routeChoicesInfluencedByIntel": 0
             },
             "finalState": {
@@ -20241,7 +20372,7 @@
               "completedMilestones": [],
               "assets": [
                 {
-                  "id": "0da6757a-8eae-42df-9794-7248b9084d6f",
+                  "id": "fb00d73a-5b5d-4d88-8859-b394a857637e",
                   "kind": "tourbus_chassis",
                   "chassisFlavor": "legit",
                   "chassisTier": 2,
@@ -20250,7 +20381,7 @@
                   "baseDailyRevenue": 0,
                   "slots": [
                     {
-                      "id": "347efddd-aa0a-4bda-8033-0809739dd1c4",
+                      "id": "e8ba61aa-6756-44c0-a163-036dd905b819",
                       "slotType": "tb_roof",
                       "position": {
                         "x": 0,
@@ -20259,7 +20390,7 @@
                       "installedModuleId": "tb_solar_panel"
                     },
                     {
-                      "id": "61949d4a-c722-4ac0-903f-b53855ba1a29",
+                      "id": "8062d894-916e-4506-a1a0-ff9cd2a391c5",
                       "slotType": "tb_front",
                       "position": {
                         "x": 0,
@@ -20268,7 +20399,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "97a52e94-fbb5-4fea-8079-bd334392d6b4",
+                      "id": "3368dbcb-7002-4f7e-a2fb-fa51c94fcfa9",
                       "slotType": "tb_interior_driver",
                       "position": {
                         "x": 0,
@@ -20277,7 +20408,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "62b7e352-3fbf-41e5-a79d-464c30dac636",
+                      "id": "9b3c3671-7167-49ac-9193-194837a339b6",
                       "slotType": "tb_audio",
                       "position": {
                         "x": 0,
@@ -20286,7 +20417,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "e998a2cb-6844-4112-a466-afff50732197",
+                      "id": "b591ecab-6dcf-48b3-8213-7dccf399321c",
                       "slotType": "tb_side",
                       "position": {
                         "x": 0,
@@ -20295,7 +20426,7 @@
                       "installedModuleId": null
                     },
                     {
-                      "id": "7ce42e7e-ea5c-4809-8797-9aa7ef8f4c4c",
+                      "id": "1f57e437-7eaa-48d5-891f-26de7858a571",
                       "slotType": "tb_interior_cabin",
                       "position": {
                         "x": 0,
@@ -20311,7 +20442,7 @@
               ],
               "liabilities": {},
               "crowdfundCampaigns": [],
-              "rngSeed": 2077696947,
+              "rngSeed": 2079092315,
               "runSeed": 3988668653,
               "expedition": {
                 "status": "completed",
@@ -20332,7 +20463,17 @@
                   "exp_8_0"
                 ],
                 "intelByNodeId": {
-                  "exp_1_0": 1
+                  "exp_1_0": 2,
+                  "exp_1_1": 1,
+                  "exp_2_0": 1,
+                  "exp_2_1": 1,
+                  "exp_3_1": 1,
+                  "exp_4_1": 1,
+                  "exp_4_2": 1,
+                  "exp_5_1": 1,
+                  "exp_5_2": 1,
+                  "exp_6_1": 1,
+                  "exp_7_1": 1
                 },
                 "intelGrants": [],
                 "scoutReconUsedRouteSteps": [
@@ -20341,7 +20482,7 @@
                 "loadout": {
                   "tourTypeId": "corporate_tour",
                   "regionId": "corporate_circuit",
-                  "activeTourbusAssetId": "0da6757a-8eae-42df-9794-7248b9084d6f",
+                  "activeTourbusAssetId": "fb00d73a-5b5d-4d88-8859-b394a857637e",
                   "crewIds": [
                     "yara",
                     "tom",
@@ -20754,9 +20895,9 @@
     ]
   },
   "fogProbe": {
-    "calibrationPairs": 50,
-    "holdoutPairs": 50,
-    "revealedNodeCount": 230,
+    "calibrationPairs": 10000,
+    "holdoutPairs": 10000,
+    "revealedNodeCount": 49785,
     "samples": [
       {
         "profileId": "clean_sponsor",
@@ -20960,9 +21101,9 @@
     ]
   },
   "careerSequences": {
-    "calibrationCount": 6,
-    "holdoutCount": 6,
-    "sequencesCount": 12,
+    "calibrationCount": 10,
+    "holdoutCount": 10,
+    "sequencesCount": 20,
     "metrics": [
       {
         "firstRoadtestedRun": null,
@@ -21022,6 +21163,44 @@
       {
         "firstRoadtestedRun": null,
         "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": 2,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1.3333333333333333,
+        "fixtureCapabilitySetIds": [
+          [],
+          [],
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": 2,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 2,
+        "fixtureCapabilitySetIds": [
+          [],
+          [],
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
         "firstMetaFacilityRun": null,
         "firstPermanentExpeditionCapabilityRun": null,
         "run1PermanentCapabilityPurchaseRate": false,
@@ -21049,6 +21228,42 @@
         "signatureTraitUnlockRun": null,
         "betweenTourDecisionMean": 1,
         "fixtureCapabilitySetIds": [
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": null,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 2,
+        "fixtureCapabilitySetIds": [
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": 2,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1.3333333333333333,
+        "fixtureCapabilitySetIds": [
+          [],
+          [],
           [],
           []
         ]
@@ -21137,6 +21352,42 @@
         "firstAscensionUnlockRun": null,
         "firstNaturalLegendaryRun": null,
         "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1.6666666666666667,
+        "fixtureCapabilitySetIds": [
+          [],
+          [],
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": null,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1,
+        "fixtureCapabilitySetIds": [
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": 2,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
         "betweenTourDecisionMean": 1.3333333333333333,
         "fixtureCapabilitySetIds": [
           [],
@@ -21181,6 +21432,42 @@
           [],
           []
         ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": 2,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1.6666666666666667,
+        "fixtureCapabilitySetIds": [
+          [],
+          [],
+          [],
+          []
+        ]
+      },
+      {
+        "firstRoadtestedRun": null,
+        "firstHeadlinerRun": null,
+        "firstMetaFacilityRun": null,
+        "firstPermanentExpeditionCapabilityRun": null,
+        "run1PermanentCapabilityPurchaseRate": false,
+        "run1LegacyExpeditionAffectingHqPurchaseRate": false,
+        "firstLegacyExpeditionAffectingHqPurchaseRun": null,
+        "firstAscensionUnlockRun": null,
+        "firstNaturalLegendaryRun": null,
+        "signatureTraitUnlockRun": null,
+        "betweenTourDecisionMean": 1,
+        "fixtureCapabilitySetIds": [
+          [],
+          []
+        ]
       }
     ],
     "funding": [
@@ -21222,6 +21509,32 @@
         ]
       },
       {
+        "profileId": "clean_sponsor",
+        "sequenceSeed": 1134463885,
+        "runsRequested": 6,
+        "runsCompleted": 3,
+        "haltedAtRun": 4,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted",
+          "extracted",
+          "failed"
+        ]
+      },
+      {
+        "profileId": "clean_sponsor",
+        "sequenceSeed": 1017020552,
+        "runsRequested": 6,
+        "runsCompleted": 3,
+        "haltedAtRun": 4,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted",
+          "extracted",
+          "failed"
+        ]
+      },
+      {
         "profileId": "high_exposure_performance",
         "sequenceSeed": 1084131028,
         "runsRequested": 6,
@@ -21246,6 +21559,30 @@
       {
         "profileId": "high_exposure_performance",
         "sequenceSeed": 1117686266,
+        "runsRequested": 6,
+        "runsCompleted": 1,
+        "haltedAtRun": 2,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "failed"
+        ]
+      },
+      {
+        "profileId": "high_exposure_performance",
+        "sequenceSeed": 1134463885,
+        "runsRequested": 6,
+        "runsCompleted": 3,
+        "haltedAtRun": 4,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted",
+          "extracted",
+          "failed"
+        ]
+      },
+      {
+        "profileId": "high_exposure_performance",
+        "sequenceSeed": 1017020552,
         "runsRequested": 6,
         "runsCompleted": 1,
         "haltedAtRun": 2,
@@ -21293,6 +21630,30 @@
         ]
       },
       {
+        "profileId": "clean_sponsor",
+        "sequenceSeed": 248413458,
+        "runsRequested": 6,
+        "runsCompleted": 3,
+        "haltedAtRun": 4,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted",
+          "extracted",
+          "failed"
+        ]
+      },
+      {
+        "profileId": "clean_sponsor",
+        "sequenceSeed": 164525363,
+        "runsRequested": 6,
+        "runsCompleted": 1,
+        "haltedAtRun": 2,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted"
+        ]
+      },
+      {
         "profileId": "high_exposure_performance",
         "sequenceSeed": 231635839,
         "runsRequested": 6,
@@ -21327,6 +21688,30 @@
         "haltReason": "start_refused_insufficient_career_funds",
         "runOutcomes": [
           "completed",
+          "failed"
+        ]
+      },
+      {
+        "profileId": "high_exposure_performance",
+        "sequenceSeed": 248413458,
+        "runsRequested": 6,
+        "runsCompleted": 3,
+        "haltedAtRun": 4,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
+          "extracted",
+          "extracted",
+          "failed"
+        ]
+      },
+      {
+        "profileId": "high_exposure_performance",
+        "sequenceSeed": 164525363,
+        "runsRequested": 6,
+        "runsCompleted": 1,
+        "haltedAtRun": 2,
+        "haltReason": "start_refused_insufficient_career_funds",
+        "runOutcomes": [
           "failed"
         ]
       }

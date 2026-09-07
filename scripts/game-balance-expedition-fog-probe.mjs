@@ -7,59 +7,17 @@
  * and makes decision with revealed fields inspected by decision policy.
  */
 
-import { gameReducer } from '../src/context/gameReducer.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
-import { revealExpeditionNodeIntel } from '../src/context/expeditionActionCreators.ts'
 import {
   evaluateCandidateNode,
-  runExpeditionSimulation
+  runExpeditionSimulation,
+  revealCandidateIntel
 } from './game-balance-expedition-runner.mjs'
 import { buildProductionSimulationLoadout } from './game-balance-expedition-profiles.mjs'
 
 export const FOG_CALIBRATION_NAMESPACE =
   '#roguelite-expedition-v1#fog#calibration'
 export const FOG_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#fog#holdout'
-
-/**
- * Raises node intel through the canonical reducer for every candidate it can.
- *
- * A Scout reads the route passively up to level 1, and a deliberate recon
- * raises one node per route step to level 2. Both go through
- * `REVEAL_EXPEDITION_NODE_INTEL`, so a request the run is not entitled to is
- * refused by the reducer rather than filtered here - the probe reveals exactly
- * what the run could legally have revealed, and no more.
- *
- * @param {import('../src/types').GameState} state
- * @param {string[]} candidateIds
- * @returns {{ state: import('../src/types').GameState, revealedNodeIds: string[] }}
- */
-const revealCandidateIntel = (state, candidateIds) => {
-  let next = state
-  for (const nodeId of candidateIds) {
-    const passive = gameReducer(
-      next,
-      revealExpeditionNodeIntel(next, { nodeId, source: 'scout_passive' })
-    )
-    if (passive !== next) next = passive
-  }
-  // One recon charge per route step, so at most one candidate reaches level 2.
-  for (const nodeId of candidateIds) {
-    const recon = gameReducer(
-      next,
-      revealExpeditionNodeIntel(next, { nodeId, source: 'scout_recon' })
-    )
-    if (recon !== next) {
-      next = recon
-      break
-    }
-  }
-  return {
-    state: next,
-    revealedNodeIds: candidateIds.filter(
-      nodeId => (next.expedition.intelByNodeId[nodeId] ?? 0) > 0
-    )
-  }
-}
 
 /**
  * Runs a matched hybrid-fog information counterfactual pair for a profile and seed.

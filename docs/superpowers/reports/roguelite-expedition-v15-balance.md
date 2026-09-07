@@ -1,18 +1,18 @@
 # Roguelite Expedition v1.5 Balance Recalibration Report
 
 **Status:** ❌ FAIL
-**Generated At:** 2026-09-07T12:28:12.864Z
+**Generated At:** 2026-09-07T12:53:50.670Z
 **Profiles:** 6 mature archetypes
-**Sample Count Per Cohort:** 20
+**Sample Count Per Cohort:** 2000
 
 ## 0. Artifact Provenance
 
 | Field | Value |
 | :--- | :--- |
 | Source fingerprint | `f220a3feed11ae1cb5fdba0c208001d9cb3a7ac6b31c7cc65fcf91777813b136` |
-| Generator fingerprint | `46ecc03023f2657763701b540732dc34d7c059558b43993514858a24421b8bf3` |
+| Generator fingerprint | `49e09bc257d9c3aca26e0afd7fa8fc44a1b041b96e61b6425d21adb3289037d8` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
-| Runs per scenario | 20 |
+| Runs per scenario | 2000 |
 | Working tree dirty | YES |
 | Artifact schema version | 1 |
 
@@ -28,12 +28,12 @@
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 45.0% | 55.0% | 0.0% | 6.7 | $489355 | 150 |
-| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487086 | 150 |
-| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.2 | $493170 | 150 |
-| `scout_intel` | 15.0% | 85.0% | 0.0% | 5.5 | $493416 | 150 |
-| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491500 | 777 |
-| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.7 | $493860 | 150 |
+| `clean_sponsor` | 41.5% | 58.5% | 0.0% | 6.8 | $489327 | 150 |
+| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487061 | 150 |
+| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.4 | $493028 | 150 |
+| `scout_intel` | 13.7% | 86.3% | 0.0% | 5.5 | $493379 | 150 |
+| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491527 | 777 |
+| `rival_hunter` | 37.0% | 62.9% | 0.0% | 6.7 | $493833 | 150 |
 
 ## 3. Single-Run Holdout Confirmation
 
@@ -41,12 +41,12 @@
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 60.0% | 40.0% | 0.0% | 7.2 | $489408 | 150 |
-| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487135 | 150 |
-| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.3 | $492997 | 150 |
-| `scout_intel` | 25.0% | 75.0% | 0.0% | 6.0 | $493260 | 150 |
-| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491523 | 777 |
-| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.8 | $493900 | 150 |
+| `clean_sponsor` | 42.1% | 57.9% | 0.0% | 6.8 | $489327 | 150 |
+| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487063 | 150 |
+| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.4 | $493028 | 150 |
+| `scout_intel` | 14.0% | 86.1% | 0.0% | 5.5 | $493374 | 150 |
+| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491528 | 777 |
+| `rival_hunter` | 36.0% | 64.0% | 0.0% | 6.6 | $493826 | 150 |
 
 ## 3b. Strategy Dominance
 
@@ -56,24 +56,24 @@
 
 ## 4. Paired Extraction Counterfactuals
 
-Evaluated 30 calibration and 30 holdout matched window decisions under identical state, map, and RNG seeds.
+Evaluated 6000 calibration and 6000 holdout matched window decisions under identical state, map, and RNG seeds.
 - **Voluntary Extraction:** Secures current retained earnings and rare items with zero risk of further technical collapse.
 - **Push Counterfactual:** Faces remaining route challenges, risking total failure vs achieving Finale completion payouts.
 
 ## 5. Matched Skill-vs-Management Probe
 
-Evaluated 20 matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).
+Evaluated 4000 matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).
 - Proves higher player skill significantly increases Gig rewards and lowers wear/repair burdens while management choices remain decisive.
 
 ## 6. Matched Hybrid-Fog Counterfactuals
 
-Evaluated 50 calibration and 50 holdout matched route decision pairs.
+Evaluated 10000 calibration and 10000 holdout matched route decision pairs.
 - Intel is raised by dispatching `REVEAL_EXPEDITION_NODE_INTEL` through the reducer (Scout passive to level 1, one recon charge to level 2); the informed branch reads its choices off `expedition.intelByNodeId`.
-- 230 node reveals were accepted by the reducer across the probe.
+- 49785 node reveals were accepted by the reducer across the probe.
 
 ## 7. Fresh-Career Progression Sequences
 
-Evaluated 12 progression sequences (6 calibration, 6 holdout) starting with ZERO meta facilities, ZERO unlock sets, and Ascension locked.
+Evaluated 20 progression sequences (10 calibration, 10 holdout) starting with ZERO meta facilities, ZERO unlock sets, and Ascension locked.
 - Baseline `initialState` purse and Fame — no seeded head start.
 - Fuel is topped up by the build's own `startingFuelTarget`, charged at START; van wear carries between Tours.
 - Fixture capability sets are strictly empty for all fresh runs.
@@ -83,15 +83,23 @@ Evaluated 12 progression sequences (6 calibration, 6 holdout) starting with ZERO
 | `clean_sponsor` | 1084131028 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 1100908647 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 1117686266 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1134463885 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1017020552 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 1084131028 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 1100908647 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1134463885 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1017020552 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 214858220 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 265191077 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 164525363 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 231635839 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 214858220 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 265191077 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 164525363 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 
 ## 8. Late-Game Legendary Edge Coverage
 

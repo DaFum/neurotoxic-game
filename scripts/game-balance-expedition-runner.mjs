@@ -522,6 +522,47 @@ export const verifyTravelWearSingleSettlement = (
 }
 
 /**
+ * Raises node intel through the canonical reducer for every candidate it can.
+ *
+ * A Scout reads the route passively up to level 1, and a deliberate recon
+ * raises one node per route step to level 2. Both go through
+ * `REVEAL_EXPEDITION_NODE_INTEL`, so a request the run is not entitled to is
+ * refused by the reducer rather than filtered here - callers learn exactly
+ * what the run could legally reveal, and no more.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {string[]} candidateNodeIds
+ * @returns {{ state: import('../src/types').GameState, revealedNodeIds: string[] }}
+ */
+export const revealCandidateIntel = (state, candidateNodeIds) => {
+  let next = state
+  for (const nodeId of candidateNodeIds) {
+    const passive = gameReducer(
+      next,
+      revealExpeditionNodeIntel(next, { nodeId, source: 'scout_passive' })
+    )
+    if (passive !== next) next = passive
+  }
+  // One recon charge per route step, so at most one candidate reaches level 2.
+  for (const nodeId of candidateNodeIds) {
+    const recon = gameReducer(
+      next,
+      revealExpeditionNodeIntel(next, { nodeId, source: 'scout_recon' })
+    )
+    if (recon !== next) {
+      next = recon
+      break
+    }
+  }
+  return {
+    state: next,
+    revealedNodeIds: candidateNodeIds.filter(
+      nodeId => (next.expedition.intelByNodeId[nodeId] ?? 0) > 0
+    )
+  }
+}
+
+/**
  * Finds or synthesizes a venue object for a gig node.
  *
  * @param {string} nodeId
@@ -1014,25 +1055,23 @@ export const runExpeditionSimulation = (
 
     const candidateNodeIds = outgoingEdges.map(edge => edge.to)
 
-    // Intel revelation hook (Scout or recon)
+    // Intel revelation hook (Scout or recon). Only reveals the reducer
+    // actually accepted are counted: marking a node revealed on dispatch
+    // alone let the simulator's local map claim intel the run does not hold,
+    // and the route policy then scored against knowledge production refused.
     if (
       profile.decisionPolicy === 'intel_then_value' ||
       profile.crewRoleOrder.includes('scout')
     ) {
-      for (const targetId of candidateNodeIds) {
-        if (!revealedNodes[targetId]) {
-          const intelAction = revealExpeditionNodeIntel(state, {
-            nodeId: targetId,
-            source: 'scout_recon'
-          })
-          if (intelAction) {
-            state = gameReducer(state, intelAction)
-            revealedNodes[targetId] = true
-            telemetry.revealedIntelNodes.push(targetId)
-            telemetry.inspectedFieldsCount += 3
-          }
+      const revealed = revealCandidateIntel(state, candidateNodeIds)
+      for (const nodeId of revealed.revealedNodeIds) {
+        if (!revealedNodes[nodeId]) {
+          revealedNodes[nodeId] = true
+          telemetry.revealedIntelNodes.push(nodeId)
+          telemetry.inspectedFieldsCount += 3
         }
       }
+      state = revealed.state
     }
 
     let chosenNextId = candidateNodeIds[0]
@@ -1050,7 +1089,7 @@ export const runExpeditionSimulation = (
           state,
           profile,
           map,
-          revealedNodes
+          state.expedition.intelByNodeId
         )
         if (score > bestScore) {
           bestScore = score
