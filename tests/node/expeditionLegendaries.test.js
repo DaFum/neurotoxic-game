@@ -407,6 +407,19 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
     assert.equal(deriveExpeditionNemesisKeyTarget(owned, map), target)
   })
 
+  it('only ever shortcuts to a node that really is a Rival Encounter', () => {
+    // The plan makes this "one effective shortcut edge to Rival
+    // Encounter/Finale branch". Arrival routes on the node's own type, so a
+    // shortcut that landed on a Gig would advertise a Rival Encounter through
+    // the overlay and then play a gig - the same node/metadata disagreement
+    // the forced-Rival post-pass fixes in the map builder.
+    const owned = owning('nemesis_key')
+    const target = deriveExpeditionNemesisKeyTarget(owned, map)
+    assert.ok(target)
+    assert.equal(map.meta[target].specialSubtype, 'RIVAL_ENCOUNTER')
+    assert.equal(map.nodes[target].type, 'SPECIAL')
+  })
+
   it('adds the jump to the effective route without touching the map', () => {
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)

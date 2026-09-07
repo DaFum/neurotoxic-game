@@ -218,10 +218,16 @@ export const deriveExpeditionNemesisKeyTarget = (
       map.meta[nodeId]?.routeStep === targetStep && nodeId !== map.finaleNodeId
   )
   if (atStep.length === 0) return null
-  const rivalNodes = atStep.filter(
+  // The plan makes this "one effective shortcut edge to Rival Encounter/Finale
+  // branch", so a step with no Rival Encounter has nothing to shortcut *to*
+  // and the Legendary simply has no target this run. Falling back to any node
+  // at the step advertised a Rival Encounter through the overlay while the
+  // node stayed a Gig or Rest Stop, and arrival - which routes on the node's
+  // own type - then ran the original flow.
+  const candidates = atStep.filter(
     nodeId => map.meta[nodeId]?.specialSubtype === 'RIVAL_ENCOUNTER'
   )
-  const candidates = rivalNodes.length > 0 ? rivalNodes : atStep
+  if (candidates.length === 0) return null
   const index =
     Number.parseInt(
       hashExpeditionRoute(`${state.runSeed}:legendary-nemesis-key:${from}`),
@@ -280,6 +286,11 @@ export const deriveExpeditionGhostRouteTarget = (
     const subtype = map.meta[nodeId]?.specialSubtype
     return subtype === 'UNDERGROUND_MARKET' || subtype === 'BLACK_MARKET'
   })
+  // Unlike the Nemesis Key shortcut, the plan's verb here is *convert*: the
+  // Legendary turns the Authority opportunity into an Underground alternative
+  // rather than routing to one that already exists, so a step without an
+  // Underground node still has a target. See the arrival caveat on
+  // `getEffectiveExpeditionRoute`.
   const candidates = underground.length > 0 ? underground : atStep
   const index =
     Number.parseInt(
