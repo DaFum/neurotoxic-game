@@ -83,11 +83,11 @@ const parseZealotryActionPayload = (
   optionalGainFields = false
 ): ZealotryPayloadParsed | null => {
   if (!payload || typeof payload !== 'object') return null
-  const parsedCost = Number(payload.cost)
-  const parsedFameGain = Number(payload.fameGain)
-  const parsedZealotryGain = Number(payload.zealotryGain)
-  const parsedControversyGain = Number(payload.controversyGain)
-  const parsedHarmonyCost = Number(payload.harmonyCost)
+  const parsedCost = isFiniteNumber(payload.cost) ? payload.cost : 0
+  const parsedFameGain = isFiniteNumber(payload.fameGain) ? payload.fameGain : 0
+  const parsedZealotryGain = isFiniteNumber(payload.zealotryGain) ? payload.zealotryGain : 0
+  const parsedControversyGain = isFiniteNumber(payload.controversyGain) ? payload.controversyGain : 0
+  const parsedHarmonyCost = isFiniteNumber(payload.harmonyCost) ? payload.harmonyCost : 0
 
   const requireGain = (raw: unknown, parsed: number): boolean =>
     optionalGainFields
@@ -157,8 +157,8 @@ const appendDeltaSuccessToast = (
 const readPlayerFundsAndHarmony = (
   state: GameState
 ): { money: number; harmony: number } | null => {
-  const money = Number(state.player.money)
-  const harmony = Number(state.band.harmony)
+  const money = isFiniteNumber(state.player.money) ? state.player.money : 0
+  const harmony = isFiniteNumber(state.band.harmony) ? state.band.harmony : 0
   if (
     !Number.isFinite(money) ||
     !Number.isFinite(harmony) ||
@@ -235,17 +235,17 @@ export const handleUpdateSocial = (
 
   if (updates.zealotry !== undefined) {
     updates.zealotry = clampZealotry(
-      finiteNumberOr(Number(updates.zealotry), 0)
+      finiteNumberOr(updates.zealotry, 0)
     )
   }
 
   if (updates.loyalty !== undefined) {
-    updates.loyalty = clampLoyalty(finiteNumberOr(Number(updates.loyalty), 0))
+    updates.loyalty = clampLoyalty(finiteNumberOr(updates.loyalty, 0))
   }
 
   if (updates.controversyLevel !== undefined) {
     updates.controversyLevel = clampControversyLevel(
-      finiteNumberOr(Number(updates.controversyLevel), 0)
+      finiteNumberOr(updates.controversyLevel, 0)
     )
   }
 

@@ -1,6 +1,6 @@
 import { NEUTRAL_ASSET_MODIFIERS } from '../assetSelectors'
 import type { AssetModifiers } from '../../types/assets'
-import { clamp0to100, finiteNumberOr } from '../gameState'
+import { clamp0to100, finiteNumberOr, isFiniteNumber } from '../gameState'
 import { bandHasTrait } from '../traitUtils'
 import type { PlayerState, BandState, SocialState } from '../../types'
 
@@ -219,7 +219,7 @@ export const shouldTriggerBankruptcy = (
   netIncome: number | null | undefined,
   totalDailyObligations: number = 0
 ) => {
-  const val = Number(newMoney)
+  const val = isFiniteNumber(newMoney) ? newMoney : NaN
   if (!Number.isFinite(val)) {
     throw new TypeError('newMoney must be a finite number')
   }
