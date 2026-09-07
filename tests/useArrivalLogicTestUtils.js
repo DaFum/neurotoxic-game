@@ -18,7 +18,10 @@ const mockGameState = {
   checkRivalEncounter: vi.fn(),
   band: { harmony: 50, harmonyRegenTravel: false, members: [] },
   gameMap: { nodes: {} },
-  player: { currentNodeId: 'node_start' }
+  player: { currentNodeId: 'node_start' },
+  // No run by default. A suite that needs one replaces this wholesale, and
+  // the reset below puts it back so the state cannot leak into the next test.
+  expedition: null
 }
 
 const mockUseGameState = vi.fn(() => mockGameState)
@@ -59,6 +62,7 @@ export const resetMockGameState = () => {
   mockGameState.band = { harmony: 50, harmonyRegenTravel: false, members: [] }
   mockGameState.gameMap = { nodes: {} }
   mockGameState.player = { currentNodeId: 'node_start' }
+  mockGameState.expedition = null
 }
 
 // Honor the production contract: useGameActions exposes only dispatchers.

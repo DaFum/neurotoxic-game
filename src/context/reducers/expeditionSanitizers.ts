@@ -25,6 +25,7 @@ import {
 } from '../../domain/expedition/rewardLedger'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
+import { deriveExpeditionGhostRouteTargetFrom } from '../../domain/expedition/legendaries'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
@@ -659,6 +660,14 @@ export const sanitizeExpeditionState = (
     validVisitedPath.push(...rawVisitedNodeIds)
   }
 
+  // Narrowed to the registry only: an over-claimed consumption can never grant
+  // anything, it can only spend a Legendary the run already owns, so the save
+  // is allowed to say a run has used one. Read here because the travelled
+  // conversion below is only legitimate if the Legendary really was spent.
+  const consumedLegendaryIds = Array.isArray(value.consumedLegendaryIds)
+    ? [...new Set(value.consumedLegendaryIds.filter(isExpeditionLegendaryId))]
+    : []
+
   const hasCanonicalContactEvidence = (sourceId: string): boolean => {
     const outcome = getCrewEventOutcomeBySourceId(sourceId)
     const rawIntelGrants = value.intelGrants
@@ -871,9 +880,14 @@ export const sanitizeExpeditionState = (
     // Narrowed to the registry only: an over-claimed consumption can never
     // grant anything, it can only spend a Legendary the run already owns, so
     // the save is allowed to say a run has used one.
-    consumedLegendaryIds: Array.isArray(value.consumedLegendaryIds)
-      ? [...new Set(value.consumedLegendaryIds.filter(isExpeditionLegendaryId))]
-      : [],
+    consumedLegendaryIds,
+    arrivedOverlay: sanitizeArrivedOverlay(
+      value.arrivedOverlay,
+      validVisitedPath,
+      runSeed,
+      preparedMap,
+      consumedLegendaryIds
+    ),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
     // A carried shortfall is a debt, so a save cannot make it negative and
     // quietly turn it into credit.
@@ -1037,6 +1051,50 @@ const sanitizeTemporaryRouteOpportunity = (
   )
   if (targetNodeId === null || isForbiddenKey(targetNodeId)) return null
   return { id: expectedId, subtype, targetNodeId, createdAtRouteStep }
+}
+
+/**
+ * Narrows the overlay a persisted run claims to have travelled into its node.
+ *
+ * @param value - Raw candidate from the save.
+ * @param visitedPath - The already-validated path the run walked.
+ * @param runSeed - The run's seed.
+ * @param map - The canonical route, when it could be built.
+ * @param consumedLegendaryIds - Legendaries the run has spent.
+ * @returns The conversion the run could actually have travelled, or `null`.
+ *
+ * @remarks
+ * Re-derived rather than trusted, because arrival resolves this instead of the
+ * node's own class: a forged record would hand the run an Underground stop in
+ * place of the Gig the route put there.
+ *
+ * Ghost Route is the only overlay that converts a node the base map does not
+ * already make special - the Nemesis Key jump targets a real Rival Encounter -
+ * so this accepts nothing else, and only from a run whose Legendary is spent
+ * and whose previous node really does seed this one.
+ */
+const sanitizeArrivedOverlay = (
+  value: unknown,
+  visitedPath: readonly string[],
+  runSeed: number | undefined,
+  map: ExpeditionMap | null,
+  consumedLegendaryIds: readonly string[]
+): ExpeditionState['arrivedOverlay'] => {
+  if (!isLooseRecord(value) || !map) return null
+  if (value.subtype !== 'UNDERGROUND_MARKET') return null
+  if (!consumedLegendaryIds.includes('ghost_route')) return null
+  const nodeId = readString(value, 'nodeId')
+  if (!nodeId || nodeId !== visitedPath.at(-1)) return null
+  const from = visitedPath.at(-2)
+  const fromStep = from === undefined ? undefined : map.meta[from]?.routeStep
+  if (fromStep === undefined) return null
+  if (
+    deriveExpeditionGhostRouteTargetFrom(from, fromStep, runSeed, map) !==
+    nodeId
+  ) {
+    return null
+  }
+  return { nodeId, subtype: 'UNDERGROUND_MARKET' }
 }
 
 const sanitizeExpeditionPressure = (

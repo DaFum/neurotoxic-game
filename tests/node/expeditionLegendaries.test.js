@@ -596,6 +596,70 @@ describe('G5 — Ghost Route is the Underground way out', () => {
     assert.equal(canExpeditionGhostRouteConvert(corneredAgain), false)
     assert.ok(getAuthorityCrisisSignal(corneredAgain))
   })
+
+  it('records the conversion so arrival resolves it as Underground', () => {
+    const owned = cornered(['ghost_route'])
+    const target = deriveExpeditionGhostRouteTarget(owned, map)
+    // The point of the record: the node the detour lands on is not itself an
+    // Underground node, so its own class would resolve the arrival.
+    assert.equal(map.meta[target].specialSubtype, null)
+    const escaped = gameReducer(owned, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
+    })
+    assert.deepEqual(escaped.expedition.arrivedOverlay, {
+      nodeId: target,
+      subtype: 'UNDERGROUND_MARKET'
+    })
+
+    // It describes the node the run stands on, so the next move drops it.
+    const moved = walkTo(escaped, escaped.expedition.routeStep + 1)
+    assert.equal(moved.expedition.arrivedOverlay, null)
+  })
+
+  it('survives a reload only as far as the run can prove it', () => {
+    const owned = cornered(['ghost_route'])
+    const target = deriveExpeditionGhostRouteTarget(owned, map)
+    const escaped = gameReducer(owned, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
+    })
+
+    const reloaded = sanitizeExpeditionState(
+      JSON.parse(JSON.stringify(escaped.expedition)),
+      escaped.runSeed
+    )
+    assert.deepEqual(reloaded.arrivedOverlay, {
+      nodeId: target,
+      subtype: 'UNDERGROUND_MARKET'
+    })
+
+    // A save that claims the conversion without having spent the Legendary is
+    // claiming an Underground stop in place of the Gig the route put there.
+    const unspent = sanitizeExpeditionState(
+      JSON.parse(
+        JSON.stringify({ ...escaped.expedition, consumedLegendaryIds: [] })
+      ),
+      escaped.runSeed
+    )
+    assert.equal(unspent.arrivedOverlay, null)
+
+    // And one that names a node the previous step does not seed is rejected
+    // even with the Legendary spent.
+    const elsewhere = sanitizeExpeditionState(
+      JSON.parse(
+        JSON.stringify({
+          ...escaped.expedition,
+          arrivedOverlay: {
+            nodeId: escaped.expedition.visitedNodeIds[0],
+            subtype: 'UNDERGROUND_MARKET'
+          }
+        })
+      ),
+      escaped.runSeed
+    )
+    assert.equal(elsewhere.arrivedOverlay, null)
+  })
 })
 
 describe('G5 — Salvage Rights trades a rare for a wiped group', () => {

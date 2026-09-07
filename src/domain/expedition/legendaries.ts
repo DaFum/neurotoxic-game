@@ -313,13 +313,42 @@ export const canExpeditionGhostRouteConvert = (state: GameState): boolean =>
 export const deriveExpeditionGhostRouteTarget = (
   state: GameState,
   map: ExpeditionMap
+): string | null =>
+  canExpeditionGhostRouteConvert(state)
+    ? deriveExpeditionGhostRouteTargetFrom(
+        state.expedition.visitedNodeIds[
+          state.expedition.visitedNodeIds.length - 1
+        ],
+        state.expedition.routeStep,
+        state.runSeed,
+        map
+      )
+    : null
+
+/**
+ * The seeded derivation itself, independent of `GameState`.
+ *
+ * @param from - Node the run is leaving.
+ * @param routeStep - Route step it is leaving from.
+ * @param runSeed - The run's seed.
+ * @param map - The run's canonical route.
+ * @returns The node the detour would reach, or `null`.
+ *
+ * @remarks
+ * Split out so the load sanitizer can re-derive a travelled conversion from
+ * the node the run came from: a save claiming the Legendary converted some
+ * other node is then rejected rather than handed an Underground arrival it
+ * never earned.
+ */
+export const deriveExpeditionGhostRouteTargetFrom = (
+  from: unknown,
+  routeStep: number,
+  runSeed: number | undefined,
+  map: ExpeditionMap
 ): string | null => {
-  if (!canExpeditionGhostRouteConvert(state)) return null
-  const from =
-    state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
-  if (typeof from !== 'string' || !Number.isFinite(state.runSeed)) return null
+  if (typeof from !== 'string' || !Number.isFinite(runSeed)) return null
   const atStep = map.nodeOrder.filter(
-    nodeId => map.meta[nodeId]?.routeStep === state.expedition.routeStep + 1
+    nodeId => map.meta[nodeId]?.routeStep === routeStep + 1
   )
   if (atStep.length === 0) return null
   const underground = atStep.filter(nodeId => {
@@ -329,12 +358,13 @@ export const deriveExpeditionGhostRouteTarget = (
   // Unlike the Nemesis Key shortcut, the plan's verb here is *convert*: the
   // Legendary turns the Authority opportunity into an Underground alternative
   // rather than routing to one that already exists, so a step without an
-  // Underground node still has a target. See the arrival caveat on
-  // `getEffectiveExpeditionRoute`.
+  // Underground node still has a target. The conversion is recorded on the
+  // move as `expedition.arrivedOverlay`, which is what carries it into
+  // arrival - the node's own class would otherwise resolve the flow.
   const candidates = underground.length > 0 ? underground : atStep
   const index =
     Number.parseInt(
-      hashExpeditionRoute(`${state.runSeed}:legendary-ghost-route:${from}`),
+      hashExpeditionRoute(`${runSeed}:legendary-ghost-route:${from}`),
       16
     ) % candidates.length
   return candidates[index] ?? null

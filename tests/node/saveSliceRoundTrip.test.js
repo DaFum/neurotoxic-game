@@ -253,6 +253,9 @@ const buildPopulatedState = () => {
     ],
     extractionWindowsSeen: [2],
     consumedLegendaryIds: ['the_fixer'],
+    // No Ghost Route conversion on this walk, so the slice carries the empty
+    // record rather than omitting it.
+    arrivedOverlay: null,
     pendingFailure: null,
     unpaidDailyObligation: 0,
     outcome: null,

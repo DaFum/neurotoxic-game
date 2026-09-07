@@ -649,6 +649,10 @@ export const applyExpeditionRouteAdvance = (
       routeStep: target.routeStep,
       visitedNodeIds: [...state.expedition.visitedNodeIds, nodeId],
       extractionWindowsSeen,
+      // Cleared by default, and set below only for the one overlay that
+      // converts a node: it describes the node the run stands on, so carrying
+      // an earlier one forward would resolve this arrival as the last.
+      arrivedOverlay: null,
       pressure: pressureAfterMove
     }
   }
@@ -665,6 +669,18 @@ export const applyExpeditionRouteAdvance = (
     arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
   } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
     arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
+    // The conversion has to outlive the move. Every overlay is derived from
+    // the node the run is leaving, so it is gone by the time arrival resolves
+    // - and arrival routes on the node's own class, which would play the Gig
+    // this Legendary was the escape from. Recorded here, the one point at
+    // which both the overlay and its destination are known.
+    arrived = {
+      ...arrived,
+      expedition: {
+        ...arrived.expedition,
+        arrivedOverlay: { nodeId, subtype: 'UNDERGROUND_MARKET' }
+      }
+    }
   }
 
   // One Director step per route step, composed here rather than dispatched:

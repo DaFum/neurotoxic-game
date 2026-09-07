@@ -477,6 +477,18 @@ export interface ExpeditionTemporaryRouteOpportunity {
   createdAtRouteStep: number
 }
 
+/**
+ * The overlay a move travelled, and the node it landed on.
+ *
+ * @remarks
+ * `subtype` is what the overlay advertised, which is not always what the base
+ * node is: Ghost Route converts an ordinary node into the Underground way out.
+ */
+export interface ExpeditionArrivedOverlay {
+  nodeId: string
+  subtype: ExpeditionSpecialNodeSubtype
+}
+
 export interface ExpeditionPressureState {
   heat: number
   exposure: number
@@ -635,6 +647,20 @@ export interface ExpeditionState {
    * living in different slices.
    */
   consumedLegendaryIds: string[]
+  /**
+   * The overlay subtype the run travelled into the node it stands on.
+   *
+   * @remarks
+   * An overlay is derived from the node the run is leaving, so it is gone the
+   * moment the move lands and the arrived node would otherwise be resolved by
+   * its base class alone - a Ghost Route escape onto a Gig node would play the
+   * show it was an escape from. Recorded here at the move, because that is the
+   * only point at which both the overlay and its destination are known.
+   *
+   * Cleared by any move that travelled no overlay, so it always describes the
+   * current node and never an earlier one.
+   */
+  arrivedOverlay: ExpeditionArrivedOverlay | null
   pendingFailure: PendingExpeditionFailure | null
   /**
    * Mandatory daily obligation a previous day could not pay from the run's

@@ -121,6 +121,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   rewardLedger: [],
   extractionWindowsSeen: [],
   consumedLegendaryIds: [],
+  arrivedOverlay: null,
   pendingFailure: null,
   unpaidDailyObligation: 0,
   outcome: null,
