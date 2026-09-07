@@ -9,7 +9,10 @@ import {
   CAREER_CALIBRATION_NAMESPACE,
   CAREER_HOLDOUT_NAMESPACE,
   runFreshCareerSequence,
-  buildLegalLoadoutApproximation
+  buildLegalLoadoutApproximation,
+  selectBetweenTourOption,
+  purchaseNextPersonaMeta,
+  summarizeCareerCashflow
 } from '../../scripts/game-balance-expedition-career.mjs'
 import { createInitialState } from '../../src/context/initialState.ts'
 import { EXPEDITION_BALANCE_PROFILES } from '../../scripts/game-balance-expedition-profiles.mjs'
@@ -91,6 +94,86 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     }
   })
 
+  it('uses the persona meta policy for costly and relationship decisions', () => {
+    const policy = {
+      crew_debrief: ['develop_signature', 'rest_band'],
+      rival_response: ['confront', 'cool_down'],
+      sponsor_follow_up: ['keep_relationship', 'walk_away']
+    }
+    assert.equal(
+      selectBetweenTourOption(
+        { type: 'crew_debrief', optionIds: ['rest_band', 'develop_signature'] },
+        policy
+      ),
+      'develop_signature'
+    )
+    assert.equal(
+      selectBetweenTourOption(
+        { type: 'rival_response', optionIds: ['confront', 'cool_down'] },
+        policy
+      ),
+      'confront'
+    )
+    assert.equal(
+      selectBetweenTourOption(
+        {
+          type: 'sponsor_follow_up',
+          optionIds: ['keep_relationship', 'walk_away']
+        },
+        policy
+      ),
+      'keep_relationship'
+    )
+  })
+
+  it('buys the first missing capability prerequisite at its production cost', () => {
+    const state = createInitialState()
+    state.career.tourTokens = 2
+    const result = purchaseNextPersonaMeta(state, {
+      requiredCapabilitySetIds: ['mechanic_network']
+    })
+    assert.equal(result.purchaseType, 'facility')
+    assert.equal(result.state.career.hqFacilityLevels.workshop, 1)
+    assert.equal(
+      result.state.career.hqFacilityLevels.black_market_contact ?? 0,
+      0
+    )
+  })
+
+  it('aggregates existing cashflow evidence by run', () => {
+    assert.deepEqual(
+      summarizeCareerCashflow([
+        {
+          cashflowByRun: [
+            {
+              run: 1,
+              prepSpend: 10,
+              repairSpend: 20,
+              inRunDelta: 30,
+              settlement: 40,
+              cashAfterRun: 50,
+              nextRunMinimumCost: 60,
+              halted: false
+            }
+          ]
+        }
+      ]),
+      [
+        {
+          run: 1,
+          samples: 1,
+          halted: 0,
+          meanPrepSpend: 10,
+          meanRepairSpend: 20,
+          meanInRunDelta: 30,
+          meanSettlement: 40,
+          meanCashAfterRun: 50,
+          meanNextRunMinimumCost: 60
+        }
+      ]
+    )
+  })
+
   it('runs a fresh career 6-run sequence with zero initial meta and earns progression naturally', () => {
     const profile = EXPEDITION_BALANCE_PROFILES[0]
     const sequenceSeed = 9001
@@ -138,6 +221,11 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     if (result.finalState.career.ascensionUnlocked) {
       assert.ok(result.metrics.firstAscensionUnlockRun !== null)
     }
+    assert.ok(
+      result.metrics.sponsorOffersStaged >= result.metrics.sponsorOffersAccepted
+    )
+    assert.ok(result.metrics.sponsorOffersStaged > 0)
+    assert.ok(result.metrics.sponsorOffersAccepted > 0)
   })
 
   it('records the Task 12 progression observables from real Career state', () => {

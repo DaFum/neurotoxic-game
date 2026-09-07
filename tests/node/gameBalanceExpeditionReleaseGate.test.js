@@ -187,3 +187,54 @@ test('persistent outcome-mix corridor findings block release evidence', async ()
   assert.equal(blockers.length, 1)
   assert.match(blockers[0], /unresolved balance corridor finding/)
 })
+
+test('97% extraction is an outcome corridor finding in both cohorts', () => {
+  const summary = {
+    completedRate: 0.03,
+    extractedRate: 0.97,
+    failedRate: 0,
+    meanNodes: 8,
+    meanMoney: 1000,
+    meanDepth: 8,
+    meanFame: 100
+  }
+  const cohort = { profileSummaries: { diy_repair: summary } }
+  const result = checkStrategyDominance(cohort, cohort)
+  assert.ok(
+    result.corridorFindings.some(
+      finding =>
+        finding.includes('extractedRate') && finding.includes('calibration')
+    )
+  )
+  assert.ok(
+    result.corridorFindings.some(
+      finding =>
+        finding.includes('extractedRate') && finding.includes('holdout')
+    )
+  )
+})
+
+test('a missing failure rate is checked in both cohorts', () => {
+  const summary = {
+    completedRate: 0.5,
+    extractedRate: 0.5,
+    failedRate: 0,
+    meanNodes: 8,
+    meanMoney: 1000,
+    meanDepth: 8,
+    meanFame: 100
+  }
+  const cohort = { profileSummaries: { clean_sponsor: summary } }
+  const result = checkStrategyDominance(cohort, cohort)
+  assert.ok(
+    result.corridorFindings.some(
+      finding =>
+        finding.includes('failedRate') && finding.includes('calibration')
+    )
+  )
+  assert.ok(
+    result.corridorFindings.some(
+      finding => finding.includes('failedRate') && finding.includes('holdout')
+    )
+  )
+})

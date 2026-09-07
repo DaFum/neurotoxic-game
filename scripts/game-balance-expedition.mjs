@@ -37,7 +37,10 @@ import {
   FOG_REPUTATION_CALIBRATION_NAMESPACE,
   FOG_REPUTATION_HOLDOUT_NAMESPACE
 } from './game-balance-expedition-fog-probe.mjs'
-import { runFreshCareerSequence } from './game-balance-expedition-career.mjs'
+import {
+  runFreshCareerSequence,
+  summarizeCareerCashflow
+} from './game-balance-expedition-career.mjs'
 import { verifyLegendaryEdgeActivations } from './game-balance-expedition-legendary.mjs'
 import {
   summarizeRuntimeDurations,
@@ -678,6 +681,10 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       calibrationCount: careerResults.calibration.length,
       holdoutCount: careerResults.holdout.length,
       sequencesCount: allCareerSequences.length,
+      cashflowByRun: {
+        calibration: summarizeCareerCashflow(careerResults.calibration),
+        holdout: summarizeCareerCashflow(careerResults.holdout)
+      },
       metrics: allCareerSequences.map(r => r.metrics),
       funding: allCareerSequences.map(r => ({
         profileId: r.profileId,

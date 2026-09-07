@@ -2057,6 +2057,12 @@ export const runExpeditionCohort = (profiles, seeds, options = {}) => {
  * `ok` and `violations` describe the blocking half only, so a caller that
  * gates a release on them gates on dominance.
  */
+export const EXPEDITION_OUTCOME_RATE_CORRIDORS = Object.freeze({
+  completedRate: Object.freeze([0.2, 0.9]),
+  extractedRate: Object.freeze([0.05, 0.9]),
+  failedRate: Object.freeze([0.02, 0.5])
+})
+
 export const checkStrategyDominance = (calibrationResults, holdoutResults) => {
   /** @type {string[]} */
   const corridorFindings = []
@@ -2076,15 +2082,15 @@ export const checkStrategyDominance = (calibrationResults, holdoutResults) => {
           `Profile ${id} mean nodes ${summary.meanNodes.toFixed(1)} outside expected corridor in ${cohortName}`
         )
       }
-      // Corridor 2: the outcome mix avoids a near-certain single result.
-      if (
-        summary.completedRate === 1 &&
-        summary.extractedRate === 0 &&
-        summary.failedRate === 0
-      ) {
-        corridorFindings.push(
-          `Profile ${id} has trivial 100% completion in ${cohortName}`
-        )
+      // Corridor 2: every terminal outcome remains meaningfully represented.
+      for (const [rateName, corridor] of Object.entries(
+        EXPEDITION_OUTCOME_RATE_CORRIDORS
+      )) {
+        const rate = summary[rateName]
+        if (rate < corridor[0] || rate > corridor[1])
+          corridorFindings.push(
+            `Profile ${id} ${rateName} ${(rate * 100).toFixed(1)}% outside ${(corridor[0] * 100).toFixed(0)}-${(corridor[1] * 100).toFixed(0)}% corridor in ${cohortName}`
+          )
       }
     }
   }
