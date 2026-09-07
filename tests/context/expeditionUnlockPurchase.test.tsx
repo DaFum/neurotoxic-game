@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { renderHook, act } from '@testing-library/react'
 import type { ReactNode } from 'react'
 
@@ -117,6 +117,43 @@ describe('the unlock purchase is reachable through useGameActions', () => {
     expect(result.current.career.tourTokens).toBe(
       READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
     )
+  })
+
+  it('never writes a save that omits a change from the same batch', () => {
+    // The journal used to persist a locally computed post-debit snapshot.
+    // That snapshot is derived from the state the provider last rendered, so
+    // anything dispatched earlier in the same batch is missing from it - and
+    // writing it puts the omission into storage, where a process exit before
+    // the next save makes it permanent. Every write the purchase makes must
+    // therefore carry the committed state, not a simulation of it.
+    const adapter = new InMemoryAdapter()
+    seedSave(adapter)
+    const { result } = renderProvider(adapter)
+    act(() => {
+      result.current.actions.loadGame()
+    })
+
+    const writes = vi.spyOn(adapter, 'set')
+    let bought = false
+    act(() => {
+      result.current.actions.updateSettings({ tutorialSeen: true })
+      bought =
+        result.current.actions.purchaseExpeditionUnlockSet('mechanic_network')
+    })
+    expect(bought).toBe(true)
+
+    const saves = writes.mock.calls
+      .filter(([key]) => key === SAVE_KEY)
+      .map(([, value]) => JSON.parse(String(value)))
+    expect(saves.length).toBeGreaterThan(0)
+    for (const save of saves) {
+      expect(save.settings.tutorialSeen).toBe(true)
+      // And the debit the journal entry is a receipt for is in every one of
+      // them, which is what makes the entry recoverable.
+      expect(save.career.tourTokens).toBe(
+        READY_CAREER.tourTokens - EXPEDITION_UNLOCK_SETS.mechanic_network.cost
+      )
+    }
   })
 
   it('refuses a second purchase started inside the same batch', () => {

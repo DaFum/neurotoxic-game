@@ -135,7 +135,14 @@ type BaseGameDispatchActions = {
   consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
   advanceDay: () => void
   saveGame: (showToast?: boolean, stateSnapshot?: GameState) => void
-  saveGameAfterStateCommit: () => void
+  /**
+   * Persists the state as of the next commit.
+   *
+   * @remarks
+   * `onSaved` reports whether that write landed, for the one caller whose next
+   * dispatch depends on it.
+   */
+  saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
   loadGame: () => boolean
   deleteSave: () => void
   resetState: () => void
@@ -320,7 +327,7 @@ type BaseGameDispatchActions = {
    * Buys one unlock set through the crash-safe journal.
    *
    * @param setId - Set to buy.
-   * @returns True once the set is granted.
+   * @returns True when the purchase was legal and has been opened.
    *
    * @remarks
    * The whole three-step sequence behind one command: debit and open the
@@ -328,6 +335,11 @@ type BaseGameDispatchActions = {
    * did not survive. Exposing the steps individually would let a caller debit
    * without ever committing, which is the state the journal exists to make
    * recoverable rather than reachable.
+   *
+   * The marker is written from the committed post-debit state, so the grant
+   * lands one commit after this returns. `false` still means nothing was
+   * taken; `true` means the sequence is under way and will finish by granting
+   * or refunding.
    */
   purchaseExpeditionUnlockSet: (setId: string) => boolean
   /**
@@ -591,9 +603,10 @@ export function useGameDispatchActions({
 
   // The committed state a purchase was last computed from. `dispatch` does not
   // update `stateRef` synchronously, so a second purchase in the same batch
-  // would recompute from a snapshot that predates the first one and persist a
-  // save with the first purchase missing. Refusing while `stateRef` still
-  // holds that same state releases on its own at the next commit.
+  // would judge its own legality against a snapshot that predates the first
+  // one - and then open a journal entry the reducer refuses. Refusing while
+  // `stateRef` still holds that same state releases on its own at the next
+  // commit.
   const lastUnlockPurchaseBaseRef = useRef<GameState | null>(null)
   const purchaseExpeditionUnlockSet = useCallback(
     (setId: string): boolean => {
@@ -601,36 +614,39 @@ export function useGameDispatchActions({
       if (lastUnlockPurchaseBaseRef.current === base) return false
       const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
       // The reducer is the authority on whether this purchase is legal, so the
-      // outcome is taken from the reducer itself rather than re-checked here
-      // against rules that could drift. `dispatch` does not update `stateRef`
-      // synchronously, so the committed state is computed rather than read
-      // back - and it is byte-identical to what the dispatch below commits,
-      // because the reducer is pure.
+      // answer is taken from the reducer itself rather than re-checked here
+      // against rules that could drift. Running it locally is the only way to
+      // ask before dispatching; nothing but that answer is read off the
+      // result.
       const opened = gameReducer(base, beginAction)
       if (opened.career.pendingUnlockPurchase?.setId !== setId) return false
 
       lastUnlockPurchaseBaseRef.current = base
-      {
-        dispatch(beginAction)
-        // Persist the marker *before* granting, from the exact post-debit
-        // state. This is the one deliberate snapshot write: the intermediate
-        // state exists only between these two dispatches, so it can never be
-        // read back off a committed render. A process that dies here leaves a
-        // save saying precisely what was taken and what for, which is what
-        // lets the load path settle it rather than losing the balance.
-        if (!saveGame(false, opened)) {
-          dispatch(createRollbackExpeditionUnlockPurchaseAction(setId))
-          return false
-        }
-        dispatch(createCompleteExpeditionUnlockPurchaseAction(setId))
-        // The granted state is persisted from the *committed* render rather
-        // than from another local snapshot, so anything else dispatched in the
-        // same batch survives instead of being overwritten by a stale copy.
-        saveGameAfterStateCommit()
-        return true
-      }
+      dispatch(beginAction)
+      // Persist the marker *before* granting, but from the committed
+      // post-debit render rather than from `opened`: that local snapshot is
+      // only what this one action would do to the state `stateRef` last saw,
+      // so anything else dispatched in the same batch is missing from it and
+      // writing it would drop those updates from storage. `opened` therefore
+      // decides only whether the purchase is legal.
+      //
+      // The grant waits for that write, which is the whole point of the
+      // journal: a process that dies in this window leaves a save saying
+      // precisely what was taken and what for, and the load path settles it
+      // rather than losing the balance.
+      saveGameAfterStateCommit(saved => {
+        dispatch(
+          saved
+            ? createCompleteExpeditionUnlockPurchaseAction(setId)
+            : createRollbackExpeditionUnlockPurchaseAction(setId)
+        )
+        // The granted state replaces the marker in storage at the next commit,
+        // so an open entry is never left behind for the load path to settle.
+        if (saved) saveGameAfterStateCommit()
+      })
+      return true
     },
-    [dispatch, saveGame, saveGameAfterStateCommit, stateRef]
+    [dispatch, saveGameAfterStateCommit, stateRef]
   )
 
   const claimExpeditionLegendaryReward = useCallback(
