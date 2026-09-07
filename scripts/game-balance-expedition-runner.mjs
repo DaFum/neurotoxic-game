@@ -33,7 +33,21 @@ import { getExpeditionCargoView } from '../src/domain/expedition/cargo.ts'
 import { getExpeditionNodeFogByNodeId } from '../src/domain/expedition/nodeFog.ts'
 import { isExpeditionSafeHarborWindow } from '../src/domain/expedition/legendaries.ts'
 import { ALL_VENUES } from '../src/data/venues.ts'
-import { buildGigStatsSnapshot } from '../src/utils/gigStats.ts'
+import {
+  buildGigStatsSnapshot,
+  calculateAccuracy
+} from '../src/utils/gigStats.ts'
+import {
+  LANE_INDICES,
+  calculateDynamicHitWindow,
+  calculatePoints,
+  calculateFinalScore,
+  calculateMissImpact,
+  calculateHitCorruption,
+  calculateHitOverload,
+  checkIsGameOver,
+  isPerfectHit
+} from '../src/utils/rhythmGameScoringUtils.ts'
 import {
   extractExpedition,
   completeExpedition,
@@ -70,6 +84,16 @@ export const HOLDOUT_COHORT_NAMESPACE = '#roguelite-expedition-v1#holdout'
 const MAX_ROUTE_STEPS = 30
 /** Namespace for the per-leg deterministic RNG handed to the travel minigame. */
 const TRAVEL_RNG_NAMESPACE = '#roguelite-expedition-v1#travel'
+/** Namespace for the per-note timing jitter of a simulated Gig. */
+const SKILL_TIMING_NAMESPACE = '#roguelite-expedition-v1#skill-timing'
+
+/**
+ * Deterministic value in [0, 1) derived from a string key.
+ *
+ * @param {string} key
+ * @returns {number}
+ */
+const deriveUnitInterval = key => deriveCohortSeed(key, 0) / 4294967296
 /** Van condition is stored fractionally; wear comparisons tolerate float noise. */
 const TRAVEL_WEAR_EPSILON = 1e-6
 
@@ -567,57 +591,177 @@ export const revealCandidateIntel = (state, candidateNodeIds) => {
   }
 }
 
-/**
- * Notes a simulated Gig attempts. Fixed so a tier's miss count is a property
- * of its accuracy rather than of route length.
- */
+/** Notes a simulated Gig attempts, fixed so a tier's miss count reflects its accuracy. */
 const SIMULATED_GIG_NOTE_COUNT = 200
 
+/** Spacing between simulated notes, in ms. Only relative timing matters here. */
+const SIMULATED_NOTE_SPACING_MS = 250
+
+/** The three lanes the production scorer recognises, cycled deterministically. */
+const SIMULATED_LANES = [
+  LANE_INDICES.GUITAR,
+  LANE_INDICES.DRUMS,
+  LANE_INDICES.BASS
+]
+
 /**
- * Builds a complete, production-shaped Gig result for a skill tier.
+ * Plays a Gig note-by-note through the production rhythm scorers.
  *
- * @param {number} gigAccuracy - Target hit accuracy, 0-100.
- * @param {number} _routeStep - Route step. Accepted so a caller can key a
- * future per-step variation off it; the tiers are deterministic today.
- * @returns {import('../src/utils/gigStats.ts').GigStatsSnapshot}
+ * @param {number} gigAccuracy - Target hit accuracy, 0-100, standing in for the
+ * player's timing skill.
+ * @param {number} routeStep - Route step, mixed into the deterministic timing
+ * jitter so two Gigs on one run are not identical.
+ * @param {{ baseHitWindow?: number, guitarDifficulty?: number, crowdDecay?: number }} [rules={}]
+ * @returns {{
+ *   stats: import('../src/utils/gigStats.ts').GigStatsSnapshot,
+ *   realizedHypeComboBonus: number,
+ *   toxicModeTriggers: number,
+ *   endHealth: number
+ * }}
  *
  * @remarks
- * The probe used to dispatch `{ score, accuracy, failed }` and nothing else.
- * `calculatePostGigTechnicalWear` reads `misses`, so every tier was scored as
- * a flawless run for instrument wear and the skill comparison never touched
- * the production consequence it claimed to measure. Hits and misses are
- * derived here and the snapshot itself is built by `buildGigStatsSnapshot`,
- * so accuracy comes from `calculateAccuracy` rather than from the caller.
+ * The harness owns one thing only: whether a given note is struck accurately,
+ * which is what "player skill" means here. Everything downstream - the hit
+ * window, whether the strike lands, whether it is perfect, the points, the
+ * combo bonus, Overload/Hype gain and Toxic Mode, corruption, crowd-energy
+ * decay and the fail condition - is computed by the production owners in
+ * `rhythmGameScoringUtils`. Synthesising those counters locally meant a change
+ * to combo, stamina or Hype behaviour could leave this probe's numbers
+ * untouched while the report still claimed Task 10 evidence.
+ *
+ * `realizedHypeComboBonus` is measured rather than assumed: it is the score the
+ * combo term actually contributed, taken as the difference between the
+ * production score for the live combo and the same call at combo zero.
  */
-export const resolveSimulatedGigPerformance = (gigAccuracy, _routeStep) => {
-  const clampedAccuracy = Math.max(0, Math.min(100, gigAccuracy))
-  const perfectHits = Math.round(
-    (clampedAccuracy / 100) * SIMULATED_GIG_NOTE_COUNT
-  )
-  const misses = SIMULATED_GIG_NOTE_COUNT - perfectHits
-  // A clean streak scales with accuracy; Hype follows the streak, which is
-  // what lets the regression show Hype amplifying good play without rescuing
-  // miss-heavy play.
-  const maxCombo = perfectHits === 0 ? 0 : Math.max(1, Math.round(perfectHits / 2))
-  const peakHype = Math.min(100, Math.round(clampedAccuracy))
-  const failed = clampedAccuracy < 30
+export const resolveSimulatedGigPerformance = (
+  gigAccuracy,
+  routeStep,
+  rules = {}
+) => {
+  const baseHitWindow = rules.baseHitWindow ?? 120
+  const guitarDifficulty = rules.guitarDifficulty ?? 1
+  const crowdDecay = rules.crowdDecay ?? 1
 
-  return buildGigStatsSnapshot(
-    Math.round(clampedAccuracy * 80 + 2000),
+  const clampedAccuracy = Math.max(0, Math.min(100, gigAccuracy))
+
+  let score = 0
+  let combo = 0
+  let maxCombo = 0
+  let perfectHits = 0
+  let hits = 0
+  let misses = 0
+  let overload = 0
+  let peakHype = 0
+  let corruptionLevel = 0
+  let isCorruptionBurstActive = false
+  let toxicModeActive = false
+  let toxicModeTriggers = 0
+  let health = 100
+  let failed = false
+  let realizedHypeComboBonus = 0
+
+  for (let index = 0; index < SIMULATED_GIG_NOTE_COUNT; index++) {
+    const laneIndex = SIMULATED_LANES[index % SIMULATED_LANES.length]
+    const noteTime = index * SIMULATED_NOTE_SPACING_MS
+    const hitWindow = calculateDynamicHitWindow(
+      baseHitWindow,
+      0,
+      laneIndex,
+      guitarDifficulty
+    )
+
+    // Deterministic timing error, tightening as skill rises. A tier that hits
+    // 90% accuracy strikes within the window on ~90% of notes, and its errors
+    // cluster nearer the centre, which is what earns perfect hits.
+    const jitter = deriveUnitInterval(
+      `${SKILL_TIMING_NAMESPACE}:${clampedAccuracy}:${routeStep}:${index}`
+    )
+    const skillFactor = Math.max(0.01, clampedAccuracy / 100)
+    // Errors are spread uniformly over +/-spread, so the share landing inside
+    // the window is `hitWindow / spread`. Setting spread to `hitWindow /
+    // skillFactor` makes that share the tier's accuracy: the harness decides
+    // only how precisely the player strikes, and production decides what a
+    // strike of that precision is worth.
+    const spreadMs = hitWindow / skillFactor
+    const timingErrorMs = (jitter * 2 - 1) * spreadMs
+    const elapsed = noteTime + timingErrorMs
+
+    const landed = Math.abs(elapsed - noteTime) < hitWindow
+    if (!landed) {
+      misses++
+      combo = 0
+      const impact = calculateMissImpact(1, false, overload, health, crowdDecay)
+      overload = impact.nextOverload
+      health = impact.nextHealth
+      if (checkIsGameOver(health, failed)) failed = true
+      continue
+    }
+
+    if (isPerfectHit(elapsed, noteTime, hitWindow)) perfectHits++
+    else hits++
+
+    const basePoints = calculatePoints(laneIndex)
+    const currentAccuracy = calculateAccuracy(perfectHits + hits, misses)
+    const withCombo = calculateFinalScore(
+      basePoints,
+      combo,
+      toxicModeActive,
+      false,
+      currentAccuracy,
+      isCorruptionBurstActive
+    )
+    const withoutCombo = calculateFinalScore(
+      basePoints,
+      0,
+      toxicModeActive,
+      false,
+      currentAccuracy,
+      isCorruptionBurstActive
+    )
+    realizedHypeComboBonus += withCombo - withoutCombo
+    score += withCombo
+
+    combo++
+    maxCombo = Math.max(maxCombo, combo)
+
+    // Crowd energy recovers on a clean hit. This is the one step of the hit
+    // path that lives inline in `useHandleHit` rather than in a pure scorer,
+    // so it is mirrored here rather than imported; without it the lower tiers
+    // bled to zero and every low-skill Gig read as a failure.
+    health = Math.max(0, Math.min(100, health + (toxicModeActive ? 1 : 2)))
+
+    const corruption = calculateHitCorruption(
+      corruptionLevel,
+      isCorruptionBurstActive
+    )
+    corruptionLevel = corruption.nextCorruption
+    if (corruption.didBurstTrigger) isCorruptionBurstActive = true
+
+    const nextOverload = calculateHitOverload(overload, toxicModeActive)
+    overload = nextOverload.nextOverload
+    if (nextOverload.didToxicModeTrigger) {
+      toxicModeActive = true
+      toxicModeTriggers++
+    }
+    peakHype = Math.max(peakHype, overload)
+  }
+
+  const stats = buildGigStatsSnapshot(
+    score,
     {
       perfectHits,
-      hits: 0,
+      hits,
       misses,
       maxCombo,
       peakHype,
-      corruptionLevel: 0
+      corruptionLevel
     },
-    // Toxic time is not modelled by the skill tiers; kept at zero rather than
-    // invented, and deterministic across the matched trio.
     0,
     [],
     failed
   )
+
+  return { stats, realizedHypeComboBonus, toxicModeTriggers, endHealth: health }
 }
 
 /**
@@ -894,6 +1038,9 @@ export const runExpeditionSimulation = (
     crewStressMax: 0,
     crowdHypeMax: state.expedition.pressure?.crowdHype ?? 0,
     realizedHypeComboBonusTotal: 0,
+    toxicModeTriggers: 0,
+    gigMissesTotal: 0,
+    maxComboBest: 0,
     sponsorAccepted: Boolean(profile.sponsorPolicy !== 'none'),
     rivalId: state.rivalBand?.id ?? null,
     meaningfulNodesVisited: 0,
@@ -1054,9 +1201,20 @@ export const runExpeditionSimulation = (
       // 2. SET_LAST_GIG_STATS, from the production snapshot builder so the
       // downstream reducers see hits, misses, combo and Hype rather than a
       // bare accuracy number.
-      const gigStats = resolveSimulatedGigPerformance(
+      const performance = resolveSimulatedGigPerformance(
         gigAccuracy,
         state.expedition.routeStep
+      )
+      const gigStats = performance.stats
+      // Measured, not assumed: the score the combo term actually contributed
+      // across the Gig, so the Hype amplification claim has a number behind it.
+      telemetry.realizedHypeComboBonusTotal +=
+        performance.realizedHypeComboBonus
+      telemetry.toxicModeTriggers += performance.toxicModeTriggers
+      telemetry.gigMissesTotal += gigStats.misses
+      telemetry.maxComboBest = Math.max(
+        telemetry.maxComboBest,
+        gigStats.maxCombo
       )
       state = gameReducer(state, {
         type: ActionTypes.SET_LAST_GIG_STATS,

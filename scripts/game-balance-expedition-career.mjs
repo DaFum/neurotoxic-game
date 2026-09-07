@@ -23,8 +23,18 @@ import {
   getAvailableExpeditionRegionIds,
   getAvailableExpeditionTourTypeIds,
   getAvailablePressureModifierIds,
+  getAvailableStarterPerkIds,
+  getAvailableCrewIds,
   validateExpeditionBuildCommitment
 } from '../src/domain/expedition/loadout.ts'
+import { getExpeditionOwnedPerformanceGear } from '../src/domain/expedition/equipment.ts'
+import { MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS } from '../src/domain/expedition/defaults.ts'
+import { EXPEDITION_CREW } from '../src/data/expedition/crew.ts'
+import {
+  areExpeditionContractsCompatible,
+  getExpeditionContractTargetNodeId
+} from '../src/domain/expedition/contracts.ts'
+import { getAvailableNativeContractTemplateIds } from '../src/domain/expedition/loadout.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../src/data/expedition/unlockSets.ts'
 import { HQ_FACILITY_IDS } from '../src/data/expedition/hqFacilities.ts'
@@ -42,16 +52,28 @@ export const CAREER_HOLDOUT_NAMESPACE =
   '#roguelite-expedition-v1#career#holdout'
 
 /**
- * Builds the best currently legal approximation of a persona profile in a live Career state.
+ * Builds the best currently legal approximation of a persona profile.
  *
- * @param {import('../src/types').GameState} state
+ * @param {import('../src/types').GameState} state - Live fresh-Career state.
  * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
  * @returns {import('../src/types/expedition').ExpeditionLoadout}
+ *
+ * @remarks
+ * Every axis walks the Task 12 fallback ladder against what the Career
+ * currently owns: requested when legal, otherwise the declared fallback,
+ * otherwise nothing. Nothing is fixture-seeded - a Career that has not bought a
+ * chassis commits `null`, and a Career that has not unlocked a Region books
+ * `home_turf`.
+ *
+ * Returning a flat empty build instead made the 1,000-sequence cohorts measure
+ * one generic baseline rather than six personas' legal progression, so their
+ * survival, economy and meta timing were not the evidence the report claimed.
  */
 export const buildLegalLoadoutApproximation = (state, profile) => {
   const canonicalTour = toCanonicalTourTypeId(profile.tourTypeId)
   const canonicalRegion = toCanonicalRegionId(profile.regionId)
 
+  // Tour / Region: requested when unlocked, else the always-bookable baseline.
   const availableTours = getAvailableExpeditionTourTypeIds(state)
   const tourTypeId = availableTours.includes(canonicalTour)
     ? canonicalTour
@@ -62,25 +84,106 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
     ? canonicalRegion
     : 'home_turf'
 
-  // Chassis: use requested if owned and legal, else fallback to starter van (null)
-  const activeTourbusAssetId = null
+  // Chassis: requested when owned, else the first owned legal Tourbus sorted
+  // legit-then-tier-then-id. A Career that owns none commits the starter van.
+  const ownedChassis = (Array.isArray(state.assets) ? state.assets : [])
+    .filter(asset => asset?.kind === 'tourbus_chassis')
+    .sort((a, b) => {
+      const flavorRank = entry => (entry.chassisFlavor === 'legit' ? 0 : 1)
+      const tierRank = entry => finiteNumberOr(entry.chassisTier, 1)
+      return (
+        flavorRank(a) - flavorRank(b) ||
+        tierRank(a) - tierRank(b) ||
+        String(a.id).localeCompare(String(b.id))
+      )
+    })
+  const requestedChassis = ownedChassis.find(
+    asset =>
+      asset.chassisFlavor === profile.chassisSpec.flavor &&
+      finiteNumberOr(asset.chassisTier, 1) === profile.chassisSpec.tier
+  )
+  const activeTourbusAssetId =
+    requestedChassis?.id ?? ownedChassis[0]?.id ?? null
 
-  // Crew: select available crew matching order, max 3
+  // Modules: only ids actually installed on the committed chassis.
+  const committedChassis = activeTourbusAssetId
+    ? ownedChassis.find(asset => asset.id === activeTourbusAssetId)
+    : null
+  const installedModuleIds = new Set(
+    (Array.isArray(committedChassis?.installedModuleIds)
+      ? committedChassis.installedModuleIds
+      : []
+    ).filter(id => typeof id === 'string')
+  )
+  const selectedTourbusModuleIds = profile.requiredModuleIds.filter(id =>
+    installedModuleIds.has(id)
+  )
+
+  // Crew: walk the persona's role order, taking only currently available
+  // members, capped at the production maximum.
+  const availableCrewIds = new Set(getAvailableCrewIds(state))
   const crewIds = []
+  for (const role of profile.crewRoleOrder) {
+    if (crewIds.length >= 3) break
+    const match = EXPEDITION_CREW.find(
+      crew =>
+        crew.role === role &&
+        availableCrewIds.has(crew.id) &&
+        !crewIds.includes(crew.id)
+    )
+    if (match) crewIds.push(match.id)
+  }
 
-  // Starter perk: requested if unlocked in career, else null
+  // Starter perk: requested only when the Career actually unlocked it.
+  const availablePerkIds = getAvailableStarterPerkIds(state)
   const starterPerkId =
-    profile.starterPerkId &&
-    state.career.unlockedSetIds.includes('starter_perks_network')
+    profile.starterPerkId && availablePerkIds.includes(profile.starterPerkId)
       ? profile.starterPerkId
       : null
 
-  // Pressure: allowed only after real Ascension unlock
+  // Pressure: only after a real Ascension unlock.
   const pressureModifierIds = state.career.ascensionUnlocked
     ? profile.pressureModifierIds.filter(id =>
         getAvailablePressureModifierIds(state).includes(id)
       )
     : []
+
+  // Equipment: only gear the Career already owns, capped by the production
+  // limit; never seeded.
+  const ownedGearItemIds = getExpeditionOwnedPerformanceGear(state)
+  const selectedGearItemIds = [...ownedGearItemIds]
+    .sort((a, b) => String(a).localeCompare(String(b)))
+    .slice(0, Math.min(3, MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS))
+
+  // Contracts: the persona's preferences, in order, filtered through the same
+  // availability and compatibility owners the reducer uses, with route targets
+  // derived rather than asked for. Guessing at the rules here got the whole
+  // sequence rejected with NATIVE_CONTRACT_INVALID before run 1.
+  const preparedMap = buildExpeditionMap(state.runSeed, tourTypeId, regionId)
+  const availableTemplateIds = getAvailableNativeContractTemplateIds(
+    state,
+    preparedMap
+  )
+  const nativeContracts = []
+  for (const templateId of profile.nativeContractPreferenceIds) {
+    if (nativeContracts.length >= 2) break
+    if (!availableTemplateIds.includes(templateId)) continue
+    const candidateIds = [
+      ...nativeContracts.map(entry => entry.templateId),
+      templateId
+    ]
+    if (!areExpeditionContractsCompatible(candidateIds)) continue
+    nativeContracts.push({
+      templateId,
+      targetNodeId: getExpeditionContractTargetNodeId(templateId, preparedMap)
+    })
+  }
+
+  // Cargo: the persona's policy against what the Career can currently afford,
+  // never a seeded stock.
+  const spendable = Math.max(0, finiteNumberOr(state.player.money, 0))
+  const cargoBudget = profile.cargoPolicy === 'safe' ? 0.1 : 0.05
+  const spareParts = spendable > 400 ? Math.floor(cargoBudget * 10) : 0
 
   const setlistSongIds = [...SONGS_BY_ID.keys()].slice(0, 4)
 
@@ -89,17 +192,19 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
     regionId,
     activeTourbusAssetId,
     crewIds,
-    cargo: { spareParts: 0, supplies: 0 },
+    cargo: { spareParts, supplies: 0 },
     starterPerkId,
-    nativeContracts: [],
+    nativeContracts,
     insurancePolicyId: null,
     pressureModifierIds,
     build: {
       setlistSongIds,
-      equipment: { selectedGearItemIds: [] },
-      selectedTourbusModuleIds: [],
+      equipment: { selectedGearItemIds },
+      selectedTourbusModuleIds,
       merch: [],
       contraband: [],
+      // Staged offers are applied by the caller, which has the prepared
+      // snapshot; the builder never invents one.
       sponsorOfferId: null,
       // A build may only top the tank up, never siphon it, so a Career that
       // ended its last Tour above the profile's target commits that higher
@@ -143,6 +248,11 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
  *     firstAscensionUnlockRun: number | null,
  *     firstNaturalLegendaryRun: number | null,
  *     signatureTraitUnlockRun: number | null,
+ *     crewRecoveryDebtDurations: Array<{ crewId: string, openedAtRun: number, clearedAtRun: number, tours: number }>,
+ *     rivalIdsByRun: string[],
+ *     sameRivalReturnRate: number,
+ *     maxNemesisLevel: number,
+ *     nemesisLevelAdvancedRuns: Array<{ run: number, level: number }>,
  *     betweenTourDecisionMean: number,
  *     fixtureCapabilitySetIds: string[][]
  *   },
@@ -184,12 +294,19 @@ export const runFreshCareerSequence = (
     firstAscensionUnlockRun: null,
     firstNaturalLegendaryRun: null,
     signatureTraitUnlockRun: null,
+    crewRecoveryDebtDurations: [],
+    rivalIdsByRun: [],
+    sameRivalReturnRate: 0,
+    maxNemesisLevel: 0,
+    nemesisLevelAdvancedRuns: [],
     betweenTourDecisionMean: 0,
     fixtureCapabilitySetIds: []
   }
 
   const runOutcomes = []
   let totalBetweenTourDecisions = 0
+  /** @type {Map<string, number>} Crew id -> run its recovery debt opened in. */
+  const crewRecoveryDebtOpenedAt = new Map()
   /** @type {number | null} */
   let haltedAtRun = null
   /** @type {string | null} */
@@ -282,6 +399,52 @@ export const runFreshCareerSequence = (
         type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
         payload: { runId }
       })
+
+      // Task 12 progression observables, read off the Career the settlements
+      // just advanced. These were declared in the metrics object and never
+      // written, so the report claimed evidence it had not collected.
+      if (
+        metrics.signatureTraitUnlockRun === null &&
+        Object.values(state.career.crewById ?? {}).some(
+          crew => crew?.signatureTraitId
+        )
+      ) {
+        metrics.signatureTraitUnlockRun = runIdx
+      }
+
+      // Crew recovery debt: how many Tours a serious injury actually costs.
+      // Opened debts are recorded when they appear and closed when the Career
+      // drops them, so the duration is observed rather than assumed.
+      const openDebts = state.career.crewRecoveryDebtById ?? {}
+      for (const [crewId, debt] of Object.entries(openDebts)) {
+        if (!debt || crewRecoveryDebtOpenedAt.has(crewId)) continue
+        crewRecoveryDebtOpenedAt.set(crewId, runIdx)
+      }
+      for (const [crewId, openedAt] of [...crewRecoveryDebtOpenedAt]) {
+        if (Object.hasOwn(openDebts, crewId)) continue
+        crewRecoveryDebtOpenedAt.delete(crewId)
+        metrics.crewRecoveryDebtDurations.push({
+          crewId,
+          openedAtRun: openedAt,
+          clearedAtRun: runIdx,
+          tours: runIdx - openedAt
+        })
+      }
+
+      // Same-Rival return / Nemesis progression across the sequence.
+      const rivalId = state.rivalBand?.id ?? null
+      if (rivalId) {
+        metrics.rivalIdsByRun.push(rivalId)
+        const record = state.career.rivalsById?.[rivalId]
+        const nemesisLevel = record?.history?.nemesisLevel ?? 0
+        if (nemesisLevel > metrics.maxNemesisLevel) {
+          metrics.maxNemesisLevel = nemesisLevel
+          metrics.nemesisLevelAdvancedRuns.push({
+            run: runIdx,
+            level: nemesisLevel
+          })
+        }
+      }
 
       // Step C: Generate and resolve Between-Tour decisions
       state = gameReducer(state, {
@@ -396,6 +559,16 @@ export const runFreshCareerSequence = (
     } else if (rank === 'headliner' && metrics.firstHeadlinerRun === null) {
       metrics.firstHeadlinerRun = runIdx
     }
+  }
+
+  // Same-Rival return rate: the share of Rival appearances after the first that
+  // reused the identity the Career had already met.
+  const rivalIds = metrics.rivalIdsByRun
+  if (rivalIds.length > 1) {
+    const first = rivalIds[0]
+    metrics.sameRivalReturnRate =
+      rivalIds.slice(1).filter(id => id === first).length /
+      (rivalIds.length - 1)
   }
 
   const runsCompleted = runOutcomes.length

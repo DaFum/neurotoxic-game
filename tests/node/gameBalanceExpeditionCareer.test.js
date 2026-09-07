@@ -13,6 +13,9 @@ import {
 } from '../../scripts/game-balance-expedition-career.mjs'
 import { createInitialState } from '../../src/context/initialState.ts'
 import { EXPEDITION_BALANCE_PROFILES } from '../../scripts/game-balance-expedition-profiles.mjs'
+import { getAvailableCrewIds } from '../../src/domain/expedition/loadout.ts'
+import { getExpeditionOwnedPerformanceGear } from '../../src/domain/expedition/equipment.ts'
+import { EXPEDITION_CREW } from '../../src/data/expedition/crew.ts'
 import { generateCohortSeeds } from '../../scripts/game-balance-expedition-runner.mjs'
 
 describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
@@ -39,12 +42,53 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
 
     const loadout = buildLegalLoadoutApproximation(state, profile)
 
+    // Gated axes fall back, because a fresh Career owns none of them.
     assert.equal(loadout.tourTypeId, 'standard_tour')
     assert.equal(loadout.regionId, 'home_turf')
     assert.equal(loadout.activeTourbusAssetId, null)
-    assert.deepEqual(loadout.crewIds, [])
     assert.equal(loadout.starterPerkId, null)
     assert.deepEqual(loadout.pressureModifierIds, [])
+    assert.deepEqual(loadout.build.selectedTourbusModuleIds, [])
+
+    // Ungated axes take the persona's real choices. Returning a flat empty
+    // build here made every sequence measure one generic baseline instead of
+    // the six personas.
+    const available = new Set(getAvailableCrewIds(state))
+    assert.ok(loadout.crewIds.length > 0)
+    assert.ok(loadout.crewIds.length <= 3)
+    for (const crewId of loadout.crewIds) {
+      assert.ok(available.has(crewId), `${crewId} is not currently available`)
+    }
+    // Chosen by the persona's declared role order.
+    const roleOf = crewId =>
+      EXPEDITION_CREW.find(crew => crew.id === crewId)?.role
+    const chosenRoles = loadout.crewIds.map(roleOf)
+    const expectedRoles = profile.crewRoleOrder.filter(role =>
+      chosenRoles.includes(role)
+    )
+    assert.deepEqual(chosenRoles, expectedRoles)
+
+    assert.ok(loadout.nativeContracts.length <= 2)
+    for (const entry of loadout.nativeContracts) {
+      assert.ok(
+        profile.nativeContractPreferenceIds.includes(entry.templateId),
+        `${entry.templateId} is not one of the persona's preferences`
+      )
+    }
+  })
+
+  it('never commits gear, modules or a chassis the fresh Career does not own', () => {
+    const state = createInitialState()
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      const loadout = buildLegalLoadoutApproximation(state, profile)
+      const owned = new Set(getExpeditionOwnedPerformanceGear(state))
+      for (const itemId of loadout.build.equipment.selectedGearItemIds) {
+        assert.ok(owned.has(itemId), `${itemId} was fixture-seeded`)
+      }
+      // No chassis owned means no chassis committed, and therefore no modules.
+      assert.equal(loadout.activeTourbusAssetId, null)
+      assert.deepEqual(loadout.build.selectedTourbusModuleIds, [])
+    }
   })
 
   it('runs a fresh career 6-run sequence with zero initial meta and earns progression naturally', () => {
@@ -85,5 +129,39 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     if (result.finalState.career.ascensionUnlocked) {
       assert.ok(result.metrics.firstAscensionUnlockRun !== null)
     }
+  })
+
+  it('records the Task 12 progression observables from real Career state', () => {
+    // `signatureTraitUnlockRun` was declared and never written, and there was
+    // no recovery-debt or Nemesis metric at all, so the report claimed
+    // progression evidence it had not collected.
+    const result = runFreshCareerSequence(
+      undefined,
+      EXPEDITION_BALANCE_PROFILES[0],
+      9001,
+      6
+    )
+    const metrics = result.metrics
+
+    assert.ok(
+      metrics.signatureTraitUnlockRun === null ||
+        Number.isInteger(metrics.signatureTraitUnlockRun)
+    )
+    assert.ok(Array.isArray(metrics.crewRecoveryDebtDurations))
+    for (const entry of metrics.crewRecoveryDebtDurations) {
+      assert.equal(typeof entry.crewId, 'string')
+      assert.ok(entry.tours >= 0)
+      assert.equal(entry.tours, entry.clearedAtRun - entry.openedAtRun)
+    }
+
+    // Rival identity is observed per run, so a Career that meets the same
+    // Rival twice is distinguishable from one that is handed a fresh id.
+    assert.ok(Array.isArray(metrics.rivalIdsByRun))
+    assert.equal(metrics.rivalIdsByRun.length <= result.runsCompleted, true)
+    assert.ok(
+      metrics.sameRivalReturnRate >= 0 && metrics.sameRivalReturnRate <= 1
+    )
+    assert.ok(Number.isInteger(metrics.maxNemesisLevel))
+    assert.ok(Array.isArray(metrics.nemesisLevelAdvancedRuns))
   })
 })

@@ -744,15 +744,28 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 Correctness is green. Two items withhold **release evidence** and are tracked
 here rather than in a new amendment file:
 
-1. **No captured pacing cohort.** The ingestion, fingerprint validation and
+1. **A fresh Career cannot fund six Tours, so Task 12's binding evidence does
+   not exist.** At release size only 44 of 6,000 calibration and 37 of 6,000
+   holdout sequences complete all six runs; the rest halt on
+   `start_refused_insufficient_career_funds` after two to four Tours. The
+   sequences themselves are correct - they build each persona's best currently
+   legal loadout and settle through production transitions - the Career simply
+   runs out of money. This is the one **hard** coverage shortfall, and the fix
+   is an economy decision (starting purse, payouts, or per-Tour cost), not a
+   harness change.
+2. **No captured pacing cohort.** The ingestion, fingerprint validation and
    rejection paths are implemented and tested, but
    `roguelite-expedition-runtime-evidence.json` does not exist: no playtest has
    been run against this build. Capturing at least 20 valid samples is a human
    step, and the master plan already holds the real-duration target soft until
    it happens.
-2. **Two profiles sit outside the outcome-mix corridor.** `underground_heat`
+3. **Two profiles sit outside the outcome-mix corridor.** `underground_heat`
    and `high_exposure_performance` complete the Finale on 100% of seeds in both
    calibration and holdout, and no profile fails on any seed. Neither dominates
    the field, so neither blocks, but the corridor hypothesis "avoids
    near-certain single outcome" does not currently hold and the numbers want
    retuning. This is a design decision, not a correctness fix.
+4. **Same-Rival return rate reads 0.** With sequences ending after two or three
+   Tours, the persistent-Nemesis observable has almost no runway to show
+   reuse. It is now measured per run rather than absent, so it will become
+   meaningful once (1) is resolved.

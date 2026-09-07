@@ -70,35 +70,53 @@ describe('Skill vs Management Probe (G6 Task 10)', () => {
     )
   })
 
-  it('produces complete production gig stats per tier, not a bare accuracy', () => {
-    // The probe used to dispatch only score/accuracy/failed. `misses` was
-    // absent, so `calculatePostGigTechnicalWear` scored every tier as a
-    // flawless run for instrument wear.
-    for (const [accuracy, tier] of [
-      [45, 'low'],
-      [70, 'competent'],
-      [90, 'high']
-    ]) {
-      const stats = resolveSimulatedGigPerformance(accuracy, 0)
-      assert.ok(stats.misses > 0, `${tier} tier reported no misses`)
+  it('drives each tier through the production rhythm scorers', () => {
+    // The probe used to invent a note result locally and hand the counters to
+    // the stats packager. `buildGigStatsSnapshot` packages and derives
+    // accuracy; it is not the hit/combo/Hype gameplay owner. Every field below
+    // now comes out of `rhythmGameScoringUtils` note by note, so a change to
+    // production combo or Overload behaviour moves these numbers.
+    const tiers = [45, 72, 90].map(accuracy => ({
+      accuracy,
+      result: resolveSimulatedGigPerformance(accuracy, 0)
+    }))
+
+    for (const { accuracy, result } of tiers) {
+      const stats = result.stats
+      assert.ok(stats.misses > 0, `tier ${accuracy} reported no misses`)
       assert.ok(stats.perfectHits > 0)
       assert.ok(stats.maxCombo > 0)
-      // Accuracy comes from the production owner, not from the caller.
-      assert.equal(
-        stats.accuracy,
-        calculateAccuracy(stats.perfectHits, stats.misses)
+      // Accuracy is the production owner's, computed over the notes actually
+      // struck rather than echoed back from the requested tier.
+      assert.ok(stats.accuracy > 0 && stats.accuracy <= 100)
+      assert.ok(
+        stats.accuracy >= calculateAccuracy(stats.perfectHits, stats.misses)
       )
+      // Timing precision tracks the requested tier rather than being asserted
+      // into existence: the harness only decides how precisely notes are
+      // struck.
+      assert.ok(Math.abs(stats.accuracy - accuracy) <= 10)
     }
+
+    const [low, competent, high] = tiers.map(t => t.result)
+    // Monotone in skill, all derived by production scorers.
+    assert.ok(low.stats.misses > competent.stats.misses)
+    assert.ok(competent.stats.misses > high.stats.misses)
+    assert.ok(high.stats.maxCombo > low.stats.maxCombo)
+    assert.ok(high.stats.score > low.stats.score)
+
+    // The Hype/combo contribution is measured, not initialized and forgotten.
+    assert.ok(low.realizedHypeComboBonus > 0)
+    assert.ok(high.realizedHypeComboBonus > low.realizedHypeComboBonus)
   })
 
   it('keeps miss-heavy play costly no matter how high Hype climbs', () => {
     // Task 10's acceptance criterion: Hype amplifies successful execution but
     // must not rescue miss-heavy play.
-    const low = resolveSimulatedGigPerformance(45, 0)
-    const high = resolveSimulatedGigPerformance(90, 0)
+    const low = resolveSimulatedGigPerformance(45, 0).stats
+    const high = resolveSimulatedGigPerformance(90, 0).stats
 
     assert.ok(low.misses > high.misses)
-    assert.ok(low.peakHype < high.peakHype)
 
     const lowWear = calculatePostGigTechnicalWear(low)
     const highWear = calculatePostGigTechnicalWear(high)
