@@ -158,3 +158,28 @@ export const createCommitExpeditionLegendaryRewardAction = (
   type: ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD,
   payload: { runId, expectedCapabilityId }
 })
+
+/**
+ * Records one Archive discovery.
+ *
+ * @param category - Archive category the entry belongs to.
+ * @param id - The entry the run met.
+ * @param sourceId - Proof of the encounter, checked by the reducer.
+ * @returns The typed action.
+ *
+ * @remarks
+ * The Archive is a log, so the creator asserts nothing: the reducer validates
+ * the id against its registry and the proof against the state it is dispatched
+ * on, and a claim that fails either is simply not recorded.
+ */
+export const createRecordExpeditionArchiveDiscoveryAction = (
+  category: string,
+  id: string,
+  sourceId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY }
+> => ({
+  type: ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY,
+  payload: { category, id, sourceId }
+})

@@ -468,6 +468,10 @@ export type GameAction =
       import('./actions').CommitExpeditionLegendaryRewardPayload
     >
   | Action<
+      ActionTypes['RECORD_EXPEDITION_ARCHIVE_DISCOVERY'],
+      import('./actions').RecordExpeditionArchiveDiscoveryPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

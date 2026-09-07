@@ -237,6 +237,20 @@ export interface CommitExpeditionLegendaryRewardPayload {
   runId: string
   expectedCapabilityId: string
 }
+
+/**
+ * Records one thing the run met, in the Archive category it belongs to.
+ *
+ * @remarks
+ * `sourceId` is the proof, not a label: the reducer checks it against what the
+ * run is actually observing, so an id that is real but was never encountered
+ * is refused. Nothing the Archive holds grants anything.
+ */
+export interface RecordExpeditionArchiveDiscoveryPayload {
+  category: string
+  id: string
+  sourceId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

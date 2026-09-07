@@ -4,6 +4,7 @@ import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { createEmptyExpeditionArchive } from './archive'
 
 export const createInitialCareerState = (): CareerState => ({
   crewById: Object.create(null) as CareerState['crewById'],
@@ -26,7 +27,8 @@ export const createInitialCareerState = (): CareerState => ({
   pendingUnlockPurchase: null,
   ascensionUnlocked: false,
   legendaryIds: [],
-  legendaryClaimedRunIds: []
+  legendaryClaimedRunIds: [],
+  archiveByCategory: createEmptyExpeditionArchive()
 })
 
 export const createCrewDevelopmentEligibilityProof = (

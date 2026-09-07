@@ -64,6 +64,7 @@ import {
   settleExpedition,
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
+import { recordExpeditionArchiveObservations } from './careerReducer'
 import {
   applyExpeditionSalvageRights,
   consumeExpeditionLegendary,
@@ -495,7 +496,11 @@ export const handleStartExpedition = (
     for (const questEvent of sponsorAcceptance.questEvents)
       nextState = QuestEvents.emit(nextState, questEvent)
   }
-  return nextState
+  // Swept here as well as at the finalizer: the build is what the Career met
+  // by committing to it, and a run that never reaches a terminal transition -
+  // abandoned, or still in progress when the save is closed - would otherwise
+  // record nothing at all.
+  return recordExpeditionArchiveObservations(nextState)
 }
 
 /**
@@ -907,7 +912,7 @@ const finalizeExpedition = (
     settlement.retainedRewardEntryIds
   )
 
-  return {
+  const finalized: GameState = {
     ...materialized,
     expedition: {
       ...materialized.expedition,
@@ -923,6 +928,12 @@ const finalizeExpedition = (
       }
     }
   }
+
+  // The last moment the run's observations are all still readable: the loadout
+  // is committed, the resolved events are in the proof list, and the Finale
+  // result exists. `PREPARE_NEXT_EXPEDITION` clears every one of them, so a
+  // sweep after this point would record nothing.
+  return recordExpeditionArchiveObservations(finalized)
 }
 
 /**

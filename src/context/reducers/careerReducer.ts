@@ -1,6 +1,7 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
   CommitExpeditionLegendaryRewardPayload,
+  RecordExpeditionArchiveDiscoveryPayload,
   ExpeditionUnlockPurchasePayload,
   PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
@@ -24,6 +25,11 @@ import { getExpeditionUnlockSet } from '../../data/expedition/unlockSets'
 import { hasExpeditionCareerRank } from '../../domain/expedition/meta'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
 import { resolveExpeditionLegendaryCandidate } from '../../domain/expedition/legendaries'
+import {
+  canRecordExpeditionArchiveDiscovery,
+  sweepExpeditionArchiveObservations
+} from '../../domain/expedition/archive'
+import { isExpeditionArchiveCategory } from '../../data/expedition/archive'
 
 export const handleSettleExpeditionCrewCareer = (
   state: GameState,
@@ -411,6 +417,74 @@ export const handleCommitExpeditionLegendaryReward = (
       ]
     }
   }
+}
+
+/**
+ * Records one Archive discovery.
+ *
+ * @param state - Current game state.
+ * @param payload - The category, entry and proof being claimed.
+ * @returns Next state, or the identical reference when nothing is recorded.
+ *
+ * @remarks
+ * Refused unless the id is canonical for its category *and* the proof still
+ * holds against this state. A duplicate is an identity no-op rather than a
+ * rejection: meeting the same Rival twice is not an error, it just does not
+ * grow the log.
+ *
+ * The Archive grants nothing. It is written here and read nowhere that decides
+ * what a Career may do, which is the whole contract.
+ */
+export const handleRecordExpeditionArchiveDiscovery = (
+  state: GameState,
+  payload: RecordExpeditionArchiveDiscoveryPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.id !== 'string' ||
+    typeof payload.sourceId !== 'string' ||
+    !isExpeditionArchiveCategory(payload.category)
+  ) {
+    return state
+  }
+  const { category, id, sourceId } = payload
+  if (!canRecordExpeditionArchiveDiscovery(state, category, id, sourceId)) {
+    return state
+  }
+  const recorded = state.career.archiveByCategory[category] ?? []
+  if (recorded.includes(id)) return state
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      archiveByCategory: {
+        ...state.career.archiveByCategory,
+        [category]: [...recorded, id]
+      }
+    }
+  }
+}
+
+/**
+ * Records every discovery the current state can prove.
+ *
+ * @param state - Current game state.
+ * @returns Next state, or the identical reference when nothing is new.
+ *
+ * @remarks
+ * Each claim still goes through {@link handleRecordExpeditionArchiveDiscovery},
+ * so the sweep only decides what to *offer* - a claim it composes wrongly is
+ * refused exactly as a dispatched one would be.
+ */
+export const recordExpeditionArchiveObservations = (
+  state: GameState
+): GameState => {
+  let next = state
+  for (const claim of sweepExpeditionArchiveObservations(state)) {
+    next = handleRecordExpeditionArchiveDiscovery(next, claim)
+  }
+  return next
 }
 
 export const handleAcquireExpeditionCrewSignature = (

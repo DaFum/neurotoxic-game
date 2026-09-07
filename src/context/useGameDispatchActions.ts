@@ -299,6 +299,11 @@ type BaseGameDispatchActions = {
     expectedLevel: number
   ) => void
   unlockExpeditionAscension: (runId: string) => void
+  recordExpeditionArchiveDiscovery: (
+    category: string,
+    id: string,
+    sourceId: string
+  ) => void
   acquireExpeditionCrewSignature: (
     crewId: string,
     expectedTraitId: string,

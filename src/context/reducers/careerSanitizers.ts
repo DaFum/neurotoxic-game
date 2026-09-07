@@ -7,6 +7,7 @@ import type {
 } from '../../types/career'
 import type { ExpeditionRelationshipTier } from '../../types/expedition'
 import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
+import { isForbiddenKey } from '../../utils/objectUtils'
 import { createInitialCareerState } from '../../domain/expedition/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
 import {
@@ -19,6 +20,11 @@ import {
 } from '../../data/expedition/hqFacilities'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
+import {
+  EXPEDITION_ARCHIVE_CATEGORIES,
+  isCanonicalExpeditionArchiveEntry
+} from '../../data/expedition/archive'
+import { createEmptyExpeditionArchive } from '../../domain/expedition/archive'
 
 const safeRecord = <T>(
   value: unknown,
@@ -279,6 +285,40 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
             )
           )
         ]
-      : []
+      : [],
+    // Narrowed to the registries, but not re-proven: the encounters the
+    // Archive records happened in runs whose state is long gone, and the log
+    // grants nothing, so a forged entry buys a line of text and no authority.
+    // Unknown categories and ids are dropped so the log cannot become a place
+    // to store arbitrary strings under a Career's name.
+    archiveByCategory: sanitizeExpeditionArchive(value.archiveByCategory)
   }
+}
+
+/** Keeps only canonical entries, under categories the Archive has. */
+const sanitizeExpeditionArchive = (
+  value: unknown
+): CareerState['archiveByCategory'] => {
+  const archive = createEmptyExpeditionArchive()
+  if (!isLooseRecord(value)) return archive
+  for (const category of EXPEDITION_ARCHIVE_CATEGORIES) {
+    if (!Object.hasOwn(value, category)) continue
+    const entries = value[category]
+    if (!Array.isArray(entries)) continue
+    archive[category] = [
+      ...new Set(
+        entries.filter(
+          (id): id is string =>
+            typeof id === 'string' &&
+            // `rival` has no static registry, so its ids are the Career's own
+            // generated Rivals: narrowed to a plain non-forbidden string here
+            // and re-proven against `rivalsById` when one is recorded.
+            (category === 'rival'
+              ? id.length > 0 && !isForbiddenKey(id)
+              : isCanonicalExpeditionArchiveEntry(category, id))
+        )
+      )
+    ]
+  }
+  return archive
 }

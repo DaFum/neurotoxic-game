@@ -132,6 +132,25 @@ export type ExpeditionLegendaryId =
   'safe_harbor' | 'the_fixer' | 'nemesis_key' | 'ghost_route' | 'salvage_rights'
 
 /**
+ * The Tour Archive's categories.
+ *
+ * @remarks
+ * A record of what the Career has met. The Archive holds no authority: it
+ * never grants a capability and never gates a completion, so nothing reads it
+ * to decide what a Career may do.
+ */
+export type ExpeditionArchiveCategory =
+  | 'crew'
+  | 'module'
+  | 'chassis'
+  | 'rival'
+  | 'sponsor'
+  | 'region'
+  | 'finale'
+  | 'special_event'
+  | 'contraband'
+
+/**
  * One unlock set: what it costs, what it needs, and what it is worth.
  */
 export interface ExpeditionUnlockSetDefinition {
@@ -194,4 +213,14 @@ export interface CareerState {
    * against the owned list, which cannot tell a second claim from the first.
    */
   legendaryClaimedRunIds: string[]
+  /**
+   * Everything the Career has met, by category.
+   *
+   * @remarks
+   * Discovery only. Every entry is canonical and carries a source proof the
+   * reducer checked against what the run was actually observing, so the log
+   * cannot be used to assert something the Career never encountered - but
+   * nothing consults it for permission either.
+   */
+  archiveByCategory: Record<ExpeditionArchiveCategory, string[]>
 }
