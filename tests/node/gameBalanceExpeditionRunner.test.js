@@ -207,7 +207,8 @@ describe('Expedition Balance Runner (G6 Tasks 5-8)', () => {
     assert.equal(corridorOnly.ok, true)
     // Reported once per cohort, because the hypothesis is checked against both.
     assert.equal(
-      corridorOnly.corridorFindings.filter(f => /trivial 100%/.test(f)).length,
+      corridorOnly.corridorFindings.filter(f => /completedRate 100\.0%/.test(f))
+        .length,
       2
     )
 

@@ -38,19 +38,136 @@ import {
 import { getAvailableNativeContractTemplateIds } from '../src/domain/expedition/loadout.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../src/data/expedition/unlockSets.ts'
-import { HQ_FACILITY_IDS } from '../src/data/expedition/hqFacilities.ts'
+import { getExpeditionHqFacilityLevelCost } from '../src/data/expedition/hqFacilities.ts'
+import {
+  createBeginExpeditionUnlockPurchaseAction,
+  createCompleteExpeditionUnlockPurchaseAction,
+  createPurchaseExpeditionHqFacilityAction
+} from '../src/context/careerActionCreators.ts'
+import { prepareExpeditionSponsorOffers } from '../src/context/expeditionActionCreators.ts'
+import { getExpeditionInsurancePremium } from '../src/domain/expedition/insurance.ts'
 import { doesLegacyHqItemTouchExpedition } from '../src/domain/expedition/legacyHqPolicy.ts'
 import { ALL_HQ_ITEMS } from '../src/data/hqItems.ts'
 import { SONGS_BY_ID } from '../src/data/songs.ts'
 import {
   toCanonicalRegionId,
-  toCanonicalTourTypeId
+  toCanonicalTourTypeId,
+  pickSponsorOffer
 } from './game-balance-expedition-profiles.mjs'
 import { runExpeditionSimulation } from './game-balance-expedition-runner.mjs'
 import { finiteNumberOr } from '../src/utils/finiteNumber.ts'
 
 /** Production ceiling on a committed starting Fuel target. */
 const MAX_EXPEDITION_FUEL = 100
+
+const DEFAULT_BETWEEN_TOUR_POLICY = Object.freeze({
+  sponsor_advance: ['take_advance', 'decline_advance'],
+  injury_rehab: ['accept_unavailability', 'pay_rehab'],
+  crew_debrief: ['rest_band', 'develop_signature'],
+  rival_response: ['cool_down', 'confront'],
+  sponsor_follow_up: ['walk_away', 'keep_relationship'],
+  vehicle_repair: ['carry_damage', 'pay_repair'],
+  network_contact: ['cash_out', 'follow_lead']
+})
+
+export const selectBetweenTourOption = (decision, personaPolicy) => {
+  const preferences =
+    personaPolicy?.[decision.type] ??
+    DEFAULT_BETWEEN_TOUR_POLICY[decision.type] ??
+    []
+  return (
+    preferences.find(optionId => decision.optionIds.includes(optionId)) ??
+    decision.optionIds[0]
+  )
+}
+
+export const purchaseNextPersonaMeta = (state, profile) => {
+  const setId = profile.requiredCapabilitySetIds.find(
+    id => !state.career.unlockedSetIds.includes(id)
+  )
+  if (!setId) return { state, purchaseType: null }
+  const set = EXPEDITION_UNLOCK_SETS[setId]
+  if (!set) return { state, purchaseType: null }
+  const currentLevel =
+    state.career.hqFacilityLevels[set.requiredFacility.id] ?? 0
+  if (currentLevel < set.requiredFacility.level) {
+    const nextLevel = currentLevel + 1
+    const cost = getExpeditionHqFacilityLevelCost(
+      set.requiredFacility.id,
+      nextLevel
+    )
+    if (cost === null || finiteNumberOr(state.career.tourTokens, 0) < cost)
+      return { state, purchaseType: null }
+    const nextState = gameReducer(
+      state,
+      createPurchaseExpeditionHqFacilityAction(
+        set.requiredFacility.id,
+        currentLevel
+      )
+    )
+    return {
+      state: nextState,
+      purchaseType: nextState === state ? null : 'facility'
+    }
+  }
+  if (finiteNumberOr(state.career.tourTokens, 0) < set.cost)
+    return { state, purchaseType: null }
+  const begun = gameReducer(
+    state,
+    createBeginExpeditionUnlockPurchaseAction(setId)
+  )
+  const completed =
+    begun === state
+      ? state
+      : gameReducer(begun, createCompleteExpeditionUnlockPurchaseAction(setId))
+  return { state: completed, purchaseType: completed === begun ? null : 'set' }
+}
+
+export const summarizeCareerCashflow = sequences => {
+  const byRun = new Map()
+  for (const sequence of sequences)
+    for (const entry of sequence.cashflowByRun ?? []) {
+      const aggregate = byRun.get(entry.run) ?? {
+        run: entry.run,
+        samples: 0,
+        halted: 0,
+        prepSpend: 0,
+        sponsorIncome: 0,
+        repairSpend: 0,
+        inRunDelta: 0,
+        settlement: 0,
+        cashAfterRun: 0,
+        nextRunMinimumCost: 0
+      }
+      aggregate.samples++
+      aggregate.halted += entry.halted ? 1 : 0
+      for (const key of [
+        'prepSpend',
+        'sponsorIncome',
+        'repairSpend',
+        'inRunDelta',
+        'settlement',
+        'cashAfterRun',
+        'nextRunMinimumCost'
+      ])
+        aggregate[key] += finiteNumberOr(entry[key], 0)
+      byRun.set(entry.run, aggregate)
+    }
+  return [...byRun.values()]
+    .sort((a, b) => a.run - b.run)
+    .map(entry => ({
+      run: entry.run,
+      samples: entry.samples,
+      halted: entry.halted,
+      meanPrepSpend: entry.prepSpend / entry.samples,
+      meanSponsorIncome: entry.sponsorIncome / entry.samples,
+      meanRepairSpend: entry.repairSpend / entry.samples,
+      meanInRunDelta: entry.inRunDelta / entry.samples,
+      meanSettlement: entry.settlement / entry.samples,
+      meanCashAfterRun: entry.cashAfterRun / entry.samples,
+      meanNextRunMinimumCost: entry.nextRunMinimumCost / entry.samples
+    }))
+}
 
 export const CAREER_CALIBRATION_NAMESPACE =
   '#roguelite-expedition-v1#career#calibration'
@@ -352,6 +469,9 @@ export const runFreshCareerSequence = (
     signatureTraitUnlockRun: null,
     crewRecoveryDebtDurations: [],
     sponsorAdvancesTaken: 0,
+    sponsorOffersStaged: 0,
+    sponsorOffersSelected: 0,
+    sponsorOffersAccepted: 0,
     normalTerminals: 0,
     solventAfterNormalTerminal: 0,
     insolventAfterNormalTerminalRuns: [],
@@ -389,7 +509,32 @@ export const runFreshCareerSequence = (
     })
 
     // 2. Build legal approximation of loadout
-    const legalLoadout = buildLegalLoadoutApproximation(state, profile)
+    let legalLoadout = buildLegalLoadoutApproximation(state, profile)
+    state = gameReducer(
+      state,
+      prepareExpeditionSponsorOffers(
+        state,
+        legalLoadout.regionId,
+        legalLoadout.tourTypeId,
+        legalLoadout.starterPerkId
+      )
+    )
+    metrics.sponsorOffersStaged += state.expedition.preparedSponsorOffers.length
+    const sponsor =
+      profile.sponsorPolicy === 'none'
+        ? null
+        : pickSponsorOffer(
+            state.expedition.preparedSponsorOffers,
+            profile.sponsorPolicy,
+            state.rivalBand?.alignment ?? null
+          )
+    if (sponsor) {
+      metrics.sponsorOffersSelected += 1
+      legalLoadout = {
+        ...legalLoadout,
+        build: { ...legalLoadout.build, sponsorOfferId: sponsor.offerId }
+      }
+    }
 
     // No between-tour restock. The tank is filled by the build's own
     // `startingFuelTarget`, which START charges for through
@@ -442,6 +587,8 @@ export const runFreshCareerSequence = (
         fuelBeforeRun,
         vanConditionBeforeRun,
         prepSpend: null,
+        sponsorIncome: null,
+        cashBeforeSimulation: null,
         repairSpend: null,
         settlement: null,
         cashAfterRun: cashBeforeRun,
@@ -452,8 +599,23 @@ export const runFreshCareerSequence = (
       haltReason = 'start_refused_insufficient_career_funds'
       break
     }
-    // START charges the whole upfront commitment in one transaction.
-    const prepSpend = cashBeforeRun - finiteNumberOr(state.player.money, 0)
+    const prepSpend =
+      getExpeditionFuelTopUpCost(
+        fuelBeforeRun,
+        validation.normalized.build.startingFuelTarget
+      ) + getExpeditionInsurancePremium(validation.normalized.insurancePolicyId)
+    const cashBeforeSimulation = finiteNumberOr(state.player.money, 0)
+    const sponsorIncome = cashBeforeSimulation - (cashBeforeRun - prepSpend)
+    if (
+      sponsor &&
+      state.expedition.activeObligations.some(
+        obligation =>
+          obligation.sourceType === 'brandDeal' &&
+          obligation.sourceId === sponsor.dealId
+      )
+    ) {
+      metrics.sponsorOffersAccepted += 1
+    }
 
     // 4. Run through simulation
     const simResult = runExpeditionSimulation(state, profile, runSeed, {
@@ -573,24 +735,10 @@ export const runFreshCareerSequence = (
       const decisions = state.career.betweenTourByRunId[runId]?.decisions ?? []
       totalBetweenTourDecisions += decisions.length
       for (const dec of decisions) {
-        // The persona takes a Sponsor advance whenever one is offered: it is
-        // only generated for a Career that cannot fund its next Tour at all,
-        // so declining is choosing to end the Career. Every other family keeps
-        // the free option, which is what makes the sequence's economy the
-        // finding rather than the policy's spending.
-        const free =
-          dec.type === 'sponsor_advance'
-            ? 'take_advance'
-            : (dec.optionIds.find(opt =>
-                [
-                  'accept_unavailability',
-                  'rest_band',
-                  'carry_damage',
-                  'cool_down',
-                  'walk_away',
-                  'cash_out'
-                ].includes(opt)
-              ) ?? dec.optionIds[0])
+        // Resolve every generated family through the persona's declared meta
+        // preferences. The generated instance remains authoritative: a policy
+        // can only choose an option that Production actually offered.
+        const free = selectBetweenTourOption(dec, profile.betweenTourMetaPolicy)
         const beforeAdvance = state.career.sponsorAdvance
         state = gameReducer(state, {
           type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
@@ -602,59 +750,17 @@ export const runFreshCareerSequence = (
       }
 
       // Step D: Perform at most ONE facility OR unlock-set purchase from earned Tour Tokens
-      const currentTokens = finiteNumberOr(state.career.tourTokens, 0)
-      let purchaseMade = false
-
-      // Try purchasing required facility first
-      if (!purchaseMade) {
-        for (const facId of HQ_FACILITY_IDS) {
-          const curLvl = state.career.hqFacilityLevels[facId] ?? 0
-          if (curLvl === 0 && currentTokens >= 3) {
-            const nextState = gameReducer(state, {
-              type: ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY,
-              payload: { facilityId: facId, expectedLevel: 0 }
-            })
-            if (nextState !== state) {
-              state = nextState
-              purchaseMade = true
-              if (metrics.firstMetaFacilityRun === null) {
-                metrics.firstMetaFacilityRun = runIdx
-              }
-              break
-            }
-          }
-        }
-      }
-
-      // Try purchasing unlock-set if no facility bought
-      if (!purchaseMade) {
-        for (const setId of profile.requiredCapabilitySetIds) {
-          if (!state.career.unlockedSetIds.includes(setId)) {
-            const set = EXPEDITION_UNLOCK_SETS[setId]
-            if (set && currentTokens >= set.cost) {
-              let s1 = gameReducer(state, {
-                type: ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE,
-                payload: { setId }
-              })
-              if (s1 !== state) {
-                let s2 = gameReducer(s1, {
-                  type: ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE,
-                  payload: { setId }
-                })
-                if (s2 !== s1) {
-                  state = s2
-                  if (metrics.firstPermanentExpeditionCapabilityRun === null) {
-                    metrics.firstPermanentExpeditionCapabilityRun = runIdx
-                  }
-                  if (runIdx === 1) {
-                    metrics.run1PermanentCapabilityPurchaseRate = true
-                  }
-                  break
-                }
-              }
-            }
-          }
-        }
+      const purchase = purchaseNextPersonaMeta(state, profile)
+      state = purchase.state
+      if (
+        purchase.purchaseType === 'facility' &&
+        metrics.firstMetaFacilityRun === null
+      )
+        metrics.firstMetaFacilityRun = runIdx
+      if (purchase.purchaseType === 'set') {
+        if (metrics.firstPermanentExpeditionCapabilityRun === null)
+          metrics.firstPermanentExpeditionCapabilityRun = runIdx
+        if (runIdx === 1) metrics.run1PermanentCapabilityPurchaseRate = true
       }
 
       // Step E: Ascension check
@@ -713,8 +819,10 @@ export const runFreshCareerSequence = (
       fuelBeforeRun,
       vanConditionBeforeRun,
       prepSpend,
+      sponsorIncome,
+      cashBeforeSimulation,
       repairSpend: simResult.telemetry.repairSpend,
-      inRunDelta: cashAtTerminal - (cashBeforeRun - prepSpend),
+      inRunDelta: cashAtTerminal - cashBeforeSimulation,
       settlement: cashAfterRun - cashAtTerminal,
       cashAfterRun,
       nextRunMinimumCost: estimateMinimumNextRunCost(state, profile),

@@ -150,6 +150,17 @@ describe('plan authority records', () => {
     }
   })
 
+  it('rejects parallel Expedition implementation plans outside the canonical chain', () => {
+    const rootExpeditionPlans = readdirSync(repoPath('docs/superpowers/plans'))
+      .filter(name => /expedition/i.test(name) && name.endsWith('.md'))
+      .sort()
+
+    assert.deepEqual(rootExpeditionPlans, [
+      '2026-09-03-roguelite-expedition-implementation-plan-complete.md',
+      '2026-09-03-roguelite-expedition-master-plan.md'
+    ])
+  })
+
   it('verifies master plan and index authority records', () => {
     const masterSource = readFileSync(repoPath(masterPlanPath), 'utf8')
     for (const fragment of BANNED_EXECUTABLE_FRAGMENTS) {

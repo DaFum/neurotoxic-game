@@ -348,6 +348,12 @@ export const validateExpeditionBalanceProfile = profile => {
       `Profile ${profile.id}: requiresAscension must declare >= 3 capability sets (got ${profile.requiredCapabilitySetIds.length})`
     )
   }
+  if (
+    !profile.betweenTourMetaPolicy ||
+    typeof profile.betweenTourMetaPolicy !== 'object'
+  ) {
+    throw new Error(`Profile ${profile.id}: missing betweenTourMetaPolicy`)
+  }
 
   return true
 }
@@ -380,6 +386,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'contract_three_good_gigs'
     ],
     sponsorPolicy: 'highest_clean_value',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['develop_signature', 'rest_band'],
+      sponsor_follow_up: ['keep_relationship', 'walk_away'],
+      rival_response: ['cool_down', 'confront']
+    }),
     cargoPolicy: 'safe',
     setlistPolicy: 'balanced_four',
     equipmentPolicy: 'best_owned_selection',
@@ -427,6 +438,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     pressureModifierIds: ['media_frenzy', 'hostile_territory'],
     nativeContractPreferenceIds: ['contract_all_in'],
     sponsorPolicy: 'none',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['develop_signature', 'rest_band'],
+      rival_response: ['confront', 'cool_down'],
+      sponsor_follow_up: ['walk_away', 'keep_relationship']
+    }),
     cargoPolicy: 'contraband',
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
@@ -478,6 +494,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     pressureModifierIds: ['bad_roads'],
     nativeContractPreferenceIds: ['contract_route_target'],
     sponsorPolicy: 'none',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['develop_signature', 'rest_band'],
+      rival_response: ['cool_down', 'confront'],
+      sponsor_follow_up: ['walk_away', 'keep_relationship']
+    }),
     cargoPolicy: 'balanced',
     setlistPolicy: 'lowest_difficulty_four',
     equipmentPolicy: 'current_selection',
@@ -526,6 +547,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     pressureModifierIds: [],
     nativeContractPreferenceIds: ['contract_route_target'],
     sponsorPolicy: 'none',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['rest_band', 'develop_signature'],
+      rival_response: ['cool_down', 'confront'],
+      sponsor_follow_up: ['keep_relationship', 'walk_away']
+    }),
     cargoPolicy: 'safe',
     setlistPolicy: 'balanced_four',
     equipmentPolicy: 'current_selection',
@@ -576,6 +602,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'contract_no_rest_finale'
     ],
     sponsorPolicy: 'highest_exposure_value',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['develop_signature', 'rest_band'],
+      rival_response: ['confront', 'cool_down'],
+      sponsor_follow_up: ['keep_relationship', 'walk_away']
+    }),
     cargoPolicy: 'merch',
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
@@ -627,6 +658,11 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     pressureModifierIds: ['hostile_territory'],
     nativeContractPreferenceIds: ['contract_all_in', 'contract_no_rest_finale'],
     sponsorPolicy: 'highest_nonrival_value',
+    betweenTourMetaPolicy: Object.freeze({
+      crew_debrief: ['develop_signature', 'rest_band'],
+      rival_response: ['confront', 'cool_down'],
+      sponsor_follow_up: ['keep_relationship', 'walk_away']
+    }),
     cargoPolicy: 'balanced',
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
