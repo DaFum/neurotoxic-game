@@ -440,6 +440,46 @@ export type GameAction =
       import('./actions').SettleExpeditionCrewCareerPayload
     >
   | Action<
+      ActionTypes['SETTLE_EXPEDITION_CAREER_RESULT'],
+      import('./actions').SettleExpeditionCareerResultPayload
+    >
+  | Action<
+      ActionTypes['PURCHASE_EXPEDITION_HQ_FACILITY'],
+      import('./actions').PurchaseExpeditionHqFacilityPayload
+    >
+  | Action<
+      ActionTypes['BEGIN_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['COMPLETE_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['ROLLBACK_EXPEDITION_UNLOCK_PURCHASE'],
+      import('./actions').ExpeditionUnlockPurchasePayload
+    >
+  | Action<
+      ActionTypes['UNLOCK_EXPEDITION_ASCENSION'],
+      import('./actions').UnlockExpeditionAscensionPayload
+    >
+  | Action<
+      ActionTypes['COMMIT_EXPEDITION_LEGENDARY_REWARD'],
+      import('./actions').CommitExpeditionLegendaryRewardPayload
+    >
+  | Action<
+      ActionTypes['RECORD_EXPEDITION_ARCHIVE_DISCOVERY'],
+      import('./actions').RecordExpeditionArchiveDiscoveryPayload
+    >
+  | Action<
+      ActionTypes['GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS'],
+      import('./actions').GenerateExpeditionBetweenTourDecisionsPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION'],
+      import('./actions').ResolveExpeditionBetweenTourDecisionPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

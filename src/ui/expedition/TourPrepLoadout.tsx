@@ -4,20 +4,26 @@
 
 import { memo, useCallback, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
 import { SONGS_BY_ID } from '../../data/songs'
 import {
-  BASE_EXPEDITION_REGION_ID,
+  FREE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
-  MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS,
-  NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  MAX_EXPEDITION_PERFORMANCE_GEAR_ITEMS
 } from '../../domain/expedition/defaults'
+import { buildPreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
 import { buildExpeditionMap } from '../../domain/expedition/map'
+import { getExpeditionRegion } from '../../data/expedition/regions'
+import { getExpeditionTourType } from '../../data/expedition/tourTypes'
 import { getExpeditionOwnedPerformanceGear } from '../../domain/expedition/equipment'
 import {
+  getAvailableExpeditionRegionIds,
+  getAvailablePressureModifierIds,
+  getAvailableStarterPerkIds,
+  getAvailableExpeditionTourTypeIds,
   getAvailableNativeContractTemplateIds,
-  getAvailableSponsorOfferIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -81,25 +87,76 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
+  const [starterPerkId, setStarterPerkId] = useState<string | null>(null)
+  const [pressureModifierIds, setPressureModifierIds] = useState<string[]>([])
   const [contractTemplateIds, setContractTemplateIds] = useState<string[]>([])
 
-  const preparedMap = useMemo(
-    () =>
-      buildExpeditionMap(
-        runSeed,
-        BASE_EXPEDITION_TOUR_TYPE_ID,
-        BASE_EXPEDITION_REGION_ID,
-        NEUTRAL_EXPEDITION_ROUTE_PROFILE
-      ),
-    [runSeed]
+  const [tourTypeId, setTourTypeId] = useState<string>(
+    BASE_EXPEDITION_TOUR_TYPE_ID
+  )
+  const [regionId, setRegionId] = useState<string>(FREE_EXPEDITION_REGION_ID)
+
+  // Both selections are derived from the prepared route: the staged Sponsor
+  // offers and the available Contract templates are rebuilt whenever the Tour
+  // or Region changes, and a previously picked id can drop out of the new set.
+  // The button would then vanish from the screen while the id stayed in the
+  // candidate, so the commit would carry an offer this route never staged or a
+  // Contract whose target node belongs to a different map.
+  const selectRoute = useCallback((apply: () => void) => {
+    apply()
+    setSponsorOfferId(null)
+    setContractTemplateIds([])
+  }, [])
+
+  // The perk restages the Sponsor pool for the same reason: `press_pass`
+  // promotes one more genuine match, so the offer order changes and a picked
+  // id can fall outside the count the route stages.
+  const selectStarterPerk = useCallback((perkId: string | null) => {
+    setStarterPerkId(perkId)
+    setSponsorOfferId(null)
+  }, [])
+
+  const availableTourTypeIds = useMemo(
+    () => getAvailableExpeditionTourTypeIds(state),
+    [state]
+  )
+  const availablePerkIds = useMemo(
+    () => getAvailableStarterPerkIds(state),
+    [state]
+  )
+  const availablePressureIds = useMemo(
+    () => getAvailablePressureModifierIds(state),
+    [state]
+  )
+  const availableRegionIds = useMemo(
+    () => getAvailableExpeditionRegionIds(state),
+    [state]
   )
 
-  const sponsorOffers = useGameSelector(
-    current => current.expedition.preparedSponsorOffers
+  // The route is rebuilt whenever either axis changes, because the Tour and the
+  // Region are what the route is made of: previewing one pair and committing
+  // another is exactly what the START parity check exists to refuse.
+  const preparedMap = useMemo(
+    () => buildExpeditionMap(runSeed, tourTypeId, regionId),
+    [regionId, runSeed, tourTypeId]
+  )
+
+  // Derived from the selected Region and Tour, not read from persisted state:
+  // PREPARE happens on scene entry before either is chosen, so a stored set
+  // would always describe the baseline route rather than the one being built.
+  const sponsorOffers = useMemo(
+    () =>
+      buildPreparedExpeditionSponsorOffers(
+        state,
+        preparedMap.regionId,
+        preparedMap.tourTypeId,
+        starterPerkId
+      ),
+    [preparedMap, starterPerkId, state]
   )
   const availableSponsorOfferIds = useMemo(
-    () => getAvailableSponsorOfferIds(state, preparedMap),
-    [preparedMap, state]
+    () => sponsorOffers.map(offer => offer.offerId),
+    [sponsorOffers]
   )
   const availableContractTemplateIds = useMemo(
     () => getAvailableNativeContractTemplateIds(state, preparedMap),
@@ -119,15 +176,15 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
 
   const candidate = useMemo<ExpeditionLoadout>(
     () => ({
-      tourTypeId: BASE_EXPEDITION_TOUR_TYPE_ID,
-      regionId: BASE_EXPEDITION_REGION_ID,
+      tourTypeId,
+      regionId,
       activeTourbusAssetId: null,
       crewIds: selectedCrewIds,
       cargo: { spareParts: 0, supplies: 0 },
-      starterPerkId: null,
+      starterPerkId,
       nativeContracts,
       insurancePolicyId: null,
-      pressureModifierIds: [],
+      pressureModifierIds,
       build: {
         setlistSongIds,
         equipment: { selectedGearItemIds },
@@ -142,11 +199,15 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [
       nativeContracts,
       protectedCareerCash,
+      regionId,
       selectedGearItemIds,
       selectedCrewIds,
+      starterPerkId,
+      pressureModifierIds,
       setlistSongIds,
       sponsorOfferId,
-      startingFuelTarget
+      startingFuelTarget,
+      tourTypeId
     ]
   )
 
@@ -224,10 +285,152 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
         </div>
       </fieldset>
 
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.route')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {t('ui:expedition.prep.routeHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          {availableTourTypeIds.map((id: string) => {
+            const isSelected = tourTypeId === id
+            return (
+              <button
+                key={id}
+                type='button'
+                aria-pressed={isSelected}
+                onClick={() => selectRoute(() => setTourTypeId(id))}
+                data-testid={`expedition-prep-tour-${id}`}
+                className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+                  isSelected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                }`}
+              >
+                {t(getExpeditionTourType(id)?.labelKey ?? id)}
+              </button>
+            )
+          })}
+        </div>
+        <div className='flex flex-wrap gap-2'>
+          {availableRegionIds.map((id: string) => {
+            const isSelected = regionId === id
+            return (
+              <button
+                key={id}
+                type='button'
+                aria-pressed={isSelected}
+                onClick={() => selectRoute(() => setRegionId(id))}
+                data-testid={`expedition-prep-region-${id}`}
+                className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+                  isSelected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                }`}
+              >
+                {t(getExpeditionRegion(id)?.labelKey ?? id)}
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
+
       <ExpeditionCrewPicker
         selectedCrewIds={selectedCrewIds}
         onChange={setSelectedCrewIds}
       />
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.starterPerk')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {t('ui:expedition.prep.starterPerkHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          <button
+            type='button'
+            aria-pressed={starterPerkId === null}
+            onClick={() => selectStarterPerk(null)}
+            data-testid='expedition-prep-perk-none'
+            className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
+              starterPerkId === null
+                ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+            }`}
+          >
+            {t('ui:expedition.prep.starterPerkNone')}
+          </button>
+          {availablePerkIds.map(perkId => (
+            <button
+              key={perkId}
+              type='button'
+              aria-pressed={starterPerkId === perkId}
+              onClick={() => selectStarterPerk(perkId)}
+              data-testid={`expedition-prep-perk-${perkId}`}
+              className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors ${
+                starterPerkId === perkId
+                  ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                  : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+              }`}
+            >
+              <strong>{t(`ui:expedition.perk.${perkId}`)}</strong>
+              <span className='block normal-case text-ash-gray'>
+                {t(`ui:expedition.perk.${perkId}Effect`)}
+              </span>
+            </button>
+          ))}
+        </div>
+      </fieldset>
+
+      <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
+        <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>
+          {t('ui:expedition.prep.tourPressure')}
+        </legend>
+        <p className='text-xs text-ash-gray'>
+          {availablePressureIds.length === 0
+            ? t('ui:expedition.prep.tourPressureLocked')
+            : t('ui:expedition.prep.tourPressureHint')}
+        </p>
+        <div className='flex flex-wrap gap-2'>
+          {availablePressureIds.map(modifierId => {
+            const selected = pressureModifierIds.includes(modifierId)
+            return (
+              <button
+                key={modifierId}
+                type='button'
+                aria-pressed={selected}
+                disabled={
+                  !selected &&
+                  pressureModifierIds.length >=
+                    MAX_EXPEDITION_PRESSURE_MODIFIERS
+                }
+                onClick={() =>
+                  setPressureModifierIds(current =>
+                    toggleBounded(
+                      current,
+                      modifierId,
+                      MAX_EXPEDITION_PRESSURE_MODIFIERS
+                    )
+                  )
+                }
+                data-testid={`expedition-prep-pressure-${modifierId}`}
+                className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors disabled:opacity-40 ${
+                  selected
+                    ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                    : 'border-steel-gray text-ash-gray hover:border-toxic-green'
+                }`}
+              >
+                <strong>{t(`ui:expedition.pressure.${modifierId}`)}</strong>
+                <span className='block normal-case text-ash-gray'>
+                  {t(`ui:expedition.pressure.${modifierId}Effect`)}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </fieldset>
 
       <fieldset className='border border-steel-gray p-3 flex flex-col gap-2'>
         <legend className='text-xs uppercase tracking-widest text-toxic-green px-1'>

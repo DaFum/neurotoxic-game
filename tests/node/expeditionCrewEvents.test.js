@@ -39,7 +39,12 @@ test('breakthrough produces one source-proven Contact Intel grant', () => {
     candidate => candidate.id === 'expedition_crew_breakthrough'
   )
   assert.ok(event)
-  const started = startedState({}, { crewIds: ['noah', 'yara'] })
+  const started = startedState(
+    // Yara is the Manager, whom `industry_network` sells. This suite's subject
+    // is the Crew event, not the hiring gate.
+    { unlockedSetIds: ['industry_network'] },
+    { crewIds: ['noah', 'yara'] }
+  )
   const state = { ...started, activeEvent: event }
   const resolution = resolveEvent(event.options[0], state)
   const next = resolution.actions.reduce(gameReducer, state)
@@ -127,7 +132,12 @@ test('genuine Contact-earned reward evidence survives sanitization', () => {
     candidate => candidate.id === 'expedition_crew_breakthrough'
   )
   assert.ok(event)
-  const started = startedState({}, { crewIds: ['noah', 'yara'] })
+  const started = startedState(
+    // Yara is the Manager, whom `industry_network` sells. This suite's subject
+    // is the Crew event, not the hiring gate.
+    { unlockedSetIds: ['industry_network'] },
+    { crewIds: ['noah', 'yara'] }
+  )
   const state = { ...started, activeEvent: event }
   const resolved = resolveEvent(event.options[0], state).actions.reduce(
     gameReducer,

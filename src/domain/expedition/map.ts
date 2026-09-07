@@ -20,9 +20,12 @@ import { EXPEDITION_ROUTE_RARE_REWARD_IDS } from './rewardLedger'
 import { mulberry32 } from '../../utils/seededRng'
 import {
   MAX_EXPEDITION_MEANINGFUL_NODES,
+  MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES,
   MIN_EXPEDITION_MEANINGFUL_NODES,
   NEUTRAL_EXPEDITION_ROUTE_PROFILE
 } from './defaults'
+import { deriveExpeditionRouteProfile } from './routeProfile'
+import { getExpeditionRegistryRareRewardChanceMultiplier } from './effectiveRules'
 import type { GameState } from '../../types'
 import type { MapNode, Venue } from '../../types/map'
 import type { MapNodeType } from '../../utils/mapNodeTypes'
@@ -85,6 +88,16 @@ const RARE_REWARD_MIN_DEPTH_RATIO = 0.3
 const RARE_REWARD_CHANCE = 0.3
 
 /**
+ * Baseline chance that a route offers a Rival or an Underground node.
+ *
+ * @remarks
+ * Scaled by the Region/Tour weight and clamped to 0..1, so a neutral profile
+ * offers each about half the time and a profile built around one pushes it
+ * toward certain without ever guaranteeing it by accident.
+ */
+const BASE_SPECIAL_ROUTE_CHANCE = 0.55
+
+/**
  * Picks the rare reward a node yields, if any.
  *
  * @param roll - Deterministic roll from the route RNG.
@@ -95,15 +108,20 @@ const RARE_REWARD_CHANCE = 0.3
 const pickRouteRareReward = (
   roll: number,
   depthRatio: number,
-  isStart: boolean
+  isStart: boolean,
+  chanceMultiplier: number
 ): string | null => {
   if (isStart || depthRatio < RARE_REWARD_MIN_DEPTH_RATIO) return null
-  if (roll >= RARE_REWARD_CHANCE) return null
+  // The Region/Tour multiplier scales the *chance* and nothing else: which
+  // rare the pool yields is still the same draw, so `underground_scene` at 1.2
+  // is a better shot at a rare rather than a better rare or more of them.
+  const chance = Math.max(0, Math.min(1, RARE_REWARD_CHANCE * chanceMultiplier))
+  if (chance <= 0 || roll >= chance) return null
   const pool = EXPEDITION_ROUTE_RARE_REWARD_IDS
   if (pool.length === 0) return null
   const index = Math.min(
     pool.length - 1,
-    Math.floor((roll / RARE_REWARD_CHANCE) * pool.length)
+    Math.floor((roll / chance) * pool.length)
   )
   return pool[index] ?? null
 }
@@ -129,10 +147,16 @@ export const hashExpeditionRoute = (value: string): string => {
 }
 
 /**
- * Resolves the meaningful-node count into the approved 7-9 corridor.
+ * Resolves the meaningful-node count a route is built at.
  *
  * @param profile - Route profile supplying the requested count.
- * @returns An integer inside the corridor.
+ * @returns An integer inside the buildable range.
+ *
+ * @remarks
+ * The floor is the shortest depth a Tour may *declare*, not the standard
+ * corridor floor: clamping a declared 6 up to 7 would make the registry lie
+ * about the Blitz route's length. Anything that declares nothing still lands
+ * in the 7-9 corridor through the neutral profile.
  */
 const resolveMeaningfulNodeCount = (
   profile: ExpeditionRouteProfile
@@ -140,11 +164,16 @@ const resolveMeaningfulNodeCount = (
   const requested = Number.isFinite(profile.meaningfulNodeCount)
     ? profile.meaningfulNodeCount
     : NEUTRAL_EXPEDITION_ROUTE_PROFILE.meaningfulNodeCount
-  return clampInt(
-    requested,
-    MIN_EXPEDITION_MEANINGFUL_NODES,
-    MAX_EXPEDITION_MEANINGFUL_NODES
-  )
+  // The shorter floor is reserved for a Tour that *declares* it. A value below
+  // it is not a short Tour, it is invalid data, and clamping it up to the
+  // declared floor would hand every malformed profile a blitz-length route it
+  // never asked for. Those fall back to the standard corridor instead.
+  const floor =
+    Number.isInteger(requested) &&
+    requested >= MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+      ? MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES
+      : MIN_EXPEDITION_MEANINGFUL_NODES
+  return clampInt(requested, floor, MAX_EXPEDITION_MEANINGFUL_NODES)
 }
 
 const pickWeighted = (
@@ -267,20 +296,29 @@ export const buildExpeditionMap = (
   runSeed: number,
   tourTypeId: string,
   regionId: string,
-  routeProfile: ExpeditionRouteProfile = NEUTRAL_EXPEDITION_ROUTE_PROFILE
+  routeProfile: ExpeditionRouteProfile = deriveExpeditionRouteProfile(
+    regionId,
+    tourTypeId
+  )
 ): ExpeditionMap => {
   const seed = Math.trunc(Number.isFinite(runSeed) ? runSeed : 0) >>> 0
+  // Pure in the Region and Tour, which the cache key already carries.
+  const rareRewardChanceMultiplier =
+    getExpeditionRegistryRareRewardChanceMultiplier(regionId, tourTypeId)
   const cacheKey = [
     seed,
     tourTypeId,
     regionId,
     routeProfile.meaningfulNodeCount,
-    routeProfile.specialWeight,
+    routeProfile.undergroundWeight,
+    routeProfile.rivalWeight,
     routeProfile.festivalWeight,
     routeProfile.restWeight,
     routeProfile.supplyWeight,
-    routeProfile.undergroundAllowed,
-    routeProfile.rivalAllowed
+    routeProfile.gigWeight,
+    routeProfile.extractionWindowRange[0],
+    routeProfile.extractionWindowRange[1],
+    routeProfile.forcedRival
   ].join('|')
   const cached = ROUTE_CACHE.get(cacheKey)
   if (cached) return cached
@@ -295,7 +333,7 @@ export const buildExpeditionMap = (
   const idsByLayer: string[][] = []
 
   const weightedEntries = [
-    { value: 'CLUB_GIG', weight: 2 },
+    { value: 'CLUB_GIG', weight: 2 * Math.max(0, routeProfile.gigWeight) },
     { value: 'FESTIVAL', weight: Math.max(0, routeProfile.festivalWeight) },
     { value: 'SUPPLY_STOP', weight: Math.max(0, routeProfile.supplyWeight) },
     { value: 'REST_STOP', weight: Math.max(0, routeProfile.restWeight) }
@@ -304,19 +342,26 @@ export const buildExpeditionMap = (
     weight: number
   }>
 
-  // Reserved special placements. The design requires Rival and Underground
-  // classes to exist on a Standard route, so they are placed rather than left
-  // to a weighted roll that could omit them entirely.
+  // Rival and Underground are weighted categories, not reservations. A
+  // guaranteed node would make their multipliers placebos: if every route
+  // already has one, `1.35x` Underground cannot raise Underground frequency.
+  // So a Standard route *may* offer each, and a Region or Tour built around one
+  // usually does. A Rival-hunt Tour gets its guarantee from the post-pass
+  // below rather than by rigging this roll.
   const middleLayerCount = meaningfulNodeCount - 1
-  const rivalLayer = routeProfile.rivalAllowed
-    ? clampInt(
-        1 + Math.floor(rng() * Math.max(1, middleLayerCount - 2)),
-        1,
-        middleLayerCount
-      )
-    : -1
+  const presenceChance = (weight: number): number =>
+    Math.max(0, Math.min(1, BASE_SPECIAL_ROUTE_CHANCE * Math.max(0, weight)))
+
+  const rivalLayer =
+    rng() < presenceChance(routeProfile.rivalWeight)
+      ? clampInt(
+          1 + Math.floor(rng() * Math.max(1, middleLayerCount - 2)),
+          1,
+          middleLayerCount
+        )
+      : -1
   let undergroundLayer = -1
-  if (routeProfile.undergroundAllowed) {
+  if (rng() < presenceChance(routeProfile.undergroundWeight)) {
     for (let attempt = 0; attempt < 8; attempt++) {
       const candidate = clampInt(
         2 + Math.floor(rng() * Math.max(1, middleLayerCount - 1)),
@@ -330,11 +375,9 @@ export const buildExpeditionMap = (
     }
     if (undergroundLayer === -1) {
       // The candidate range collapses to a single value on a short route, so
-      // every retry can land on the Rival layer. The design requires the
-      // Underground class to exist wherever the route allows it, so fall back
-      // to the first legal layer rather than dropping the node. Consumes no
-      // randomness, which keeps every seed that already succeeded on its
-      // existing route.
+      // every retry can land on the Rival layer. Falling back to the first
+      // legal layer keeps a route that rolled Underground from losing it, and
+      // consumes no randomness so seeds that already succeeded are unchanged.
       for (let layer = 1; layer <= middleLayerCount; layer++) {
         if (layer !== rivalLayer) {
           undergroundLayer = layer
@@ -402,10 +445,13 @@ export const buildExpeditionMap = (
         dangerTier,
         rewardTier,
         isMeaningful: !isStart,
+        // The Tour's own window, not a global constant: a blitz run opens its
+        // exits early and closes them early, a survival run opens them late.
         isExtractionWindow:
           !isStart &&
           !isFinale &&
-          plan.layer >= FIRST_EXPEDITION_EXTRACTION_ROUTE_STEP,
+          plan.layer >= routeProfile.extractionWindowRange[0] &&
+          plan.layer <= routeProfile.extractionWindowRange[1],
         hidden: {
           exactPayout: Math.round(
             (40 + rng() * 260) * (1 + depthRatio) * (isFinale ? 2.5 : 1)
@@ -420,7 +466,12 @@ export const buildExpeditionMap = (
           // Route rares are the greed the extraction decision is about, so
           // they sit on the deeper half of the route where the player has
           // already committed something.
-          rareRewardId: pickRouteRareReward(rng(), depthRatio, isStart)
+          rareRewardId: pickRouteRareReward(
+            rng(),
+            depthRatio,
+            isStart,
+            rareRewardChanceMultiplier
+          )
         }
       }
 
@@ -471,6 +522,49 @@ export const buildExpeditionMap = (
   const startNodeId = idsByLayer[0]?.[0] ?? nodeId(0, 0)
   const finaleNodeId =
     idsByLayer[idsByLayer.length - 1]?.[0] ?? nodeId(meaningfulNodeCount, 0)
+
+  // Forced-Rival post-pass. A Tour that hunts the Rival promises the
+  // encounter, and the weighted roll above can legitimately miss it, so
+  // exactly one suitable middle-layer node is converted rather than the roll
+  // being rigged: the route stays the one the seed produced, plus the node the
+  // Tour guarantees. Deterministic and consumes no randomness, so it runs
+  // before the hash and preview and play cannot disagree.
+  if (routeProfile.forcedRival) {
+    const alreadyOffered = nodeOrder.some(
+      id => meta[id]?.specialSubtype === 'RIVAL_ENCOUNTER'
+    )
+    if (!alreadyOffered) {
+      const candidate = nodeOrder.find(id => {
+        const entry = meta[id]
+        return (
+          entry !== undefined &&
+          entry.routeStep > 0 &&
+          entry.routeStep < meaningfulNodeCount &&
+          entry.specialSubtype === null
+        )
+      })
+      const entry = candidate === undefined ? undefined : meta[candidate]
+      const node = candidate === undefined ? undefined : nodes[candidate]
+      if (
+        candidate !== undefined &&
+        entry !== undefined &&
+        node !== undefined
+      ) {
+        meta[candidate] = {
+          ...entry,
+          nodeClass: 'SPECIAL',
+          specialSubtype: 'RIVAL_ENCOUNTER',
+          hidden: { ...entry.hidden, rivalId: 'rival_primary' }
+        }
+        // The node has to move with its metadata. Arrival reads `node.type`,
+        // so leaving a promoted node as GIG or REST_STOP would run the old
+        // flow on a node the route now promises as a Rival encounter - and a
+        // stale venue would book a gig at a stop that no longer hosts one.
+        const { venue: _venue, venueId: _venueId, ...withoutVenue } = node
+        nodes[candidate] = { ...withoutVenue, type: 'SPECIAL' }
+      }
+    }
+  }
 
   const canonical = [
     `seed=${seed}`,
@@ -525,12 +619,7 @@ export const getActiveExpeditionMap = (
 ): ExpeditionMap | null => {
   const loadout = state.expedition?.loadout
   if (state.expedition?.status !== 'active' || !loadout) return null
-  return buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
-  )
+  return buildExpeditionMap(state.runSeed, loadout.tourTypeId, loadout.regionId)
 }
 
 /**

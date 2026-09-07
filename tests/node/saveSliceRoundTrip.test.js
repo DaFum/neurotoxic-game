@@ -16,7 +16,15 @@ import {
 } from '../../src/context/usePersistence'
 import { handleLoadGame } from '../../src/context/reducers/systemReducer'
 import { createFixedClock } from '../../src/utils/clock'
+import { buildExpeditionMap } from '../../src/domain/expedition/map'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
+
+/**
+ * The fixture seed, shared by the persisted state and the route derived from
+ * it. Written twice, these drift and the load sanitizer drops the reward entry -
+ * which surfaces as a route-generation failure rather than the mismatch it is.
+ */
+const FIXTURE_RUN_SEED = 654322
 
 const clock = createFixedClock(Date.parse('2026-01-01T00:00:00Z'))
 
@@ -144,7 +152,11 @@ const buildPopulatedState = () => {
     }
   ]
   state.rngSeed = 123456
-  state.runSeed = 654321
+  // `FIXTURE_RUN_SEED` is deliberately not the original 654321: the reward
+  // ledger is re-validated on load against the canonical route, and that seed
+  // no longer produces a route rare at all, so the fixture had no legitimate
+  // entry to preserve.
+  state.runSeed = FIXTURE_RUN_SEED
   // `sanitizeRivalBand` returns exactly these five fields — `fame` is not one of
   // them, so an invented field would read as a round-trip loss.
   state.rivalBand = {
@@ -179,8 +191,8 @@ const buildPopulatedState = () => {
     status: 'active',
     prep: { prepId: 'run_fixture_1' },
     runId: 'run_fixture_1',
-    routeStep: 3,
-    visitedNodeIds: ['exp_0_0', 'exp_1_1', 'exp_2_1', 'exp_3_2'],
+    routeStep: rareWalk.routeStep,
+    visitedNodeIds: rareWalk.visitedNodeIds,
     intelByNodeId: Object.assign(Object.create(null), {
       exp_node_2: 1,
       exp_node_3: 2
@@ -225,18 +237,25 @@ const buildPopulatedState = () => {
     rewardLedger: [
       {
         // The load sanitizer resolves the reward through the canonical
-        // registry and requires the derived `<definition>::<source>` id, so a
-        // fixture with an invented id is legitimately dropped.
-        id: 'reward_route_vinyl_stash::exp_3_2',
-        rewardDefinitionId: 'reward_route_vinyl_stash',
+        // registry, requires the derived `<definition>::<source>` id, and
+        // re-checks the node actually carries that rare - so the entry is
+        // derived from the route rather than written by hand. Pinning a node
+        // id and a reward id here made this fixture stale the moment route
+        // generation legitimately changed.
+        id: `${rareWalk.rareRewardId}::${rareWalk.rareNodeId}`,
+        rewardDefinitionId: rareWalk.rareRewardId,
         sourceType: 'route_rare',
-        sourceId: 'exp_3_2',
+        sourceId: rareWalk.rareNodeId,
         secured: false,
-        earnedAtRouteStep: 3,
+        earnedAtRouteStep: rareWalk.routeStep,
         materialized: false
       }
     ],
     extractionWindowsSeen: [2],
+    consumedLegendaryIds: ['the_fixer'],
+    // No Ghost Route conversion on this walk, so the slice carries the empty
+    // record rather than omitting it.
+    arrivedOverlay: null,
     pendingFailure: null,
     unpaidDailyObligation: 0,
     outcome: null,
@@ -277,6 +296,42 @@ const buildPopulatedState = () => {
 
 const serialize = value => JSON.stringify(value)
 const deserialize = value => JSON.parse(value)
+
+/**
+ * A real path on the fixture's own route ending on a rare-bearing node.
+ *
+ * The reward ledger is re-validated on load against the canonical route, so a
+ * hand-written entry only survives while it happens to describe a node that
+ * still carries that rare. Deriving it keeps this fixture about round-trip
+ * preservation rather than about route generation.
+ */
+const findRareWalk = (runSeed, tourTypeId, regionId) => {
+  const map = buildExpeditionMap(runSeed, tourTypeId, regionId)
+  const queue = [[map.startNodeId]]
+  while (queue.length > 0) {
+    const path = queue.shift()
+    const nodeId = path[path.length - 1]
+    const entry = map.meta[nodeId]
+    if (entry?.hidden.rareRewardId && path.length > 1) {
+      return {
+        visitedNodeIds: path,
+        routeStep: entry.routeStep,
+        rareNodeId: nodeId,
+        rareRewardId: entry.hidden.rareRewardId
+      }
+    }
+    for (const edge of map.connections) {
+      if (edge.from === nodeId) queue.push([...path, edge.to])
+    }
+  }
+  throw new Error('the fixture route carries no rare reward')
+}
+
+const rareWalk = findRareWalk(
+  FIXTURE_RUN_SEED,
+  'standard_tour',
+  'industrial_belt'
+)
 
 describe('persisted save slice round-trip', () => {
   const persisted = createPersistedState(buildPopulatedState(), clock)

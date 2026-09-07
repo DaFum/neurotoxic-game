@@ -64,6 +64,14 @@ test('Task 4: Expedition Cargo Manifest and Capacity Model', async t => {
       condition: 100,
       upgrades: [GEAR_1, GEAR_2, GEAR_3, GEAR_4]
     }
+    // The subject here is cargo capacity, not bookability. `industrial_belt`
+    // and the higher-tier chassis these expectations are pinned to are both
+    // sold from G5 on, so the booking rights are granted explicitly rather
+    // than letting a Region or chassis gate decide a capacity assertion.
+    state.career = {
+      ...state.career,
+      unlockedSetIds: ['mechanic_network', 'chassis_network']
+    }
     return state
   }
 

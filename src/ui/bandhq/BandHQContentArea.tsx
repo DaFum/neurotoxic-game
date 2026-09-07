@@ -1,6 +1,7 @@
 import React, { Suspense, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getUnifiedUpgradeCatalog } from '../../data/upgradeCatalog'
+import { isExpeditionLegacyHqPurchaseAllowed } from '../../domain/expedition/legacyHqPolicy'
 import type { CatalogItem } from '../../types/components'
 import type { PurchaseDecision } from '../../types/purchase'
 import { usePurchaseLogic } from './hooks/usePurchaseLogic'
@@ -45,6 +46,8 @@ export const BandHQContentArea = ({
   const activeQuests = useGameSelector(state => state.activeQuests)
   const venueBlacklist = useGameSelector(state => state.venueBlacklist)
   const reputationByRegion = useGameSelector(state => state.reputationByRegion)
+  const career = useGameSelector(state => state.career)
+  const expeditionStatus = useGameSelector(state => state.expedition.status)
 
   const {
     updatePlayer,
@@ -89,6 +92,16 @@ export const BandHQContentArea = ({
     addToast
   })
 
+  // The legacy catalog predates Expeditions, so an entry that reaches an
+  // Expedition domain is gated on what the Career actually earned. Shop items
+  // are not in the unified upgrade catalog and pass through untouched.
+  const isExpeditionUnlocked = (item: CatalogItem) =>
+    isExpeditionLegacyHqPurchaseAllowed(
+      career,
+      expeditionStatus,
+      String(item.id)
+    )
+
   // Shared props for the SHOP and UPGRADES catalog tabs. The purchase-logic
   // predicates are typed for concrete item shapes while both tabs consume the
   // generic CatalogItem surface, so the cast is centralized here once instead
@@ -96,9 +109,21 @@ export const BandHQContentArea = ({
   const catalogTabProps = {
     player,
     handleBuy: (item: CatalogItem) => {
+      if (!isExpeditionUnlocked(item)) {
+        addToast(
+          t('ui:shop.messages.expeditionLocked', {
+            defaultValue:
+              'This upgrade is locked until your touring career earns it.'
+          }),
+          'warning'
+        )
+        return
+      }
       void handleBuyWithLock(item)
     },
-    isItemDisabled: isItemDisabled as unknown as (item: CatalogItem) => boolean,
+    isItemDisabled: (item: CatalogItem) =>
+      !isExpeditionUnlocked(item) ||
+      (isItemDisabled as unknown as (item: CatalogItem) => boolean)(item),
     getPurchaseDecision: getPurchaseDecision as unknown as (
       item: CatalogItem
     ) => PurchaseDecision,

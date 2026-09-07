@@ -1,5 +1,6 @@
 import type { TFunction } from 'i18next'
 import {
+  useRef,
   useCallback,
   useMemo,
   startTransition,
@@ -22,7 +23,7 @@ import {
   writeGlobalSettings
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
-import { getUnlocks } from '../utils/unlockManager'
+import { addUnlockWithPersistence, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
@@ -30,7 +31,17 @@ import { useEventSystem } from './useEventSystem'
 import { useMinigameDispatchActions } from './useMinigameDispatchActions'
 import { useAssetDispatchActions } from './useAssetDispatchActions'
 import { useExpeditionDispatchActions } from './useExpeditionDispatchActions'
+import { gameReducer } from './gameReducer'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
+import {
+  createBeginExpeditionUnlockPurchaseAction,
+  createCommitExpeditionLegendaryRewardAction,
+  createCompleteExpeditionUnlockPurchaseAction,
+  createRollbackExpeditionUnlockPurchaseAction
+} from './careerActionCreators'
+import type { ExpeditionLegendaryClaim } from '../types/expedition'
+import { getExpeditionLegendaryMarkerId } from '../data/expedition/legendaries'
+import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
 import {
   useFacilityDispatchActions,
   type FacilityDispatchActions
@@ -74,6 +85,7 @@ import {
   createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
   createSetPendingRiskEventAction,
+  createAddUnlockAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
 import {
@@ -123,7 +135,14 @@ type BaseGameDispatchActions = {
   consumeItem: (itemId: Parameters<typeof createConsumeItemAction>[0]) => void
   advanceDay: () => void
   saveGame: (showToast?: boolean, stateSnapshot?: GameState) => void
-  saveGameAfterStateCommit: () => void
+  /**
+   * Persists the state as of the next commit.
+   *
+   * @remarks
+   * `onSaved` reports whether that write landed, for the one caller whose next
+   * dispatch depends on it.
+   */
+  saveGameAfterStateCommit: (onSaved?: (saved: boolean) => void) => void
   loadGame: () => boolean
   deleteSave: () => void
   resetState: () => void
@@ -282,11 +301,63 @@ type BaseGameDispatchActions = {
     nodeId: string
   ) => void
   settleExpeditionCrewCareer: (runId: string) => void
+  settleExpeditionCareerResult: (runId: string) => void
+  purchaseExpeditionHqFacility: (
+    facilityId: string,
+    expectedLevel: number
+  ) => void
+  unlockExpeditionAscension: (runId: string) => void
+  recordExpeditionArchiveDiscovery: (
+    category: string,
+    id: string,
+    sourceId: string
+  ) => void
+  generateExpeditionBetweenTourDecisions: (runId: string) => void
+  resolveExpeditionBetweenTourDecision: (
+    runId: string,
+    decisionId: string,
+    optionId: string
+  ) => void
   acquireExpeditionCrewSignature: (
     crewId: string,
     expectedTraitId: string,
     sourceId: string
   ) => void
+  /**
+   * Buys one unlock set through the crash-safe journal.
+   *
+   * @param setId - Set to buy.
+   * @returns True when the purchase was legal and has been opened.
+   *
+   * @remarks
+   * The whole three-step sequence behind one command: debit and open the
+   * journal entry, persist the marker, then grant - or refund if the marker
+   * did not survive. Exposing the steps individually would let a caller debit
+   * without ever committing, which is the state the journal exists to make
+   * recoverable rather than reachable.
+   *
+   * The marker is written from the committed post-debit state, so the grant
+   * lands one commit after this returns. `false` still means nothing was
+   * taken; `true` means the sequence is under way and will finish by granting
+   * or refunding.
+   */
+  purchaseExpeditionUnlockSet: (setId: string) => boolean
+  /**
+   * Claims the Legendary a finalized Finale earned.
+   *
+   * @remarks
+   * The durable marker is the barrier: it is written before anything is
+   * granted, and a failed write mints nothing at all, so the caller may offer
+   * a retry rather than having to reconcile a half-award.
+   *
+   * The three outcomes are deliberately distinguishable, because a caller has
+   * to treat two of them differently from each other and from success: a run
+   * that owes nothing (`not_applicable`) may settle at once, while a run that
+   * owes a Legendary it could not durably record (`persistence_failed`) must
+   * not be settled at all until the claim succeeds. Collapsing those two into
+   * one falsy answer is what let settlement proceed over a lost award.
+   */
+  claimExpeditionLegendaryReward: (runId: string) => ExpeditionLegendaryClaim
 }
 
 /**
@@ -530,6 +601,98 @@ export function useGameDispatchActions({
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
+  // A resolved decision is persisted Career state that changes nothing about
+  // the scene, so the write has to travel with the dispatch: the autosave the
+  // player would otherwise wait for fires on a scene transition, and a crash
+  // after paying for rehab but before the last answer restored the open
+  // decision and let the same choice be taken twice. Answering is the command,
+  // so the save belongs here rather than in the one scene that renders it.
+  const resolveExpeditionBetweenTourDecision = useCallback(
+    (runId: string, decisionId: string, optionId: string) => {
+      careerActions.resolveExpeditionBetweenTourDecision(
+        runId,
+        decisionId,
+        optionId
+      )
+      saveGameAfterStateCommit()
+    },
+    [careerActions, saveGameAfterStateCommit]
+  )
+
+  // The committed state a purchase was last computed from. `dispatch` does not
+  // update `stateRef` synchronously, so a second purchase in the same batch
+  // would judge its own legality against a snapshot that predates the first
+  // one - and then open a journal entry the reducer refuses. Refusing while
+  // `stateRef` still holds that same state releases on its own at the next
+  // commit.
+  const lastUnlockPurchaseBaseRef = useRef<GameState | null>(null)
+  const purchaseExpeditionUnlockSet = useCallback(
+    (setId: string): boolean => {
+      const base = stateRef.current
+      if (lastUnlockPurchaseBaseRef.current === base) return false
+      const beginAction = createBeginExpeditionUnlockPurchaseAction(setId)
+      // The reducer is the authority on whether this purchase is legal, so the
+      // answer is taken from the reducer itself rather than re-checked here
+      // against rules that could drift. Running it locally is the only way to
+      // ask before dispatching; nothing but that answer is read off the
+      // result.
+      const opened = gameReducer(base, beginAction)
+      if (opened.career.pendingUnlockPurchase?.setId !== setId) return false
+
+      lastUnlockPurchaseBaseRef.current = base
+      dispatch(beginAction)
+      // Persist the marker *before* granting, but from the committed
+      // post-debit render rather than from `opened`: that local snapshot is
+      // only what this one action would do to the state `stateRef` last saw,
+      // so anything else dispatched in the same batch is missing from it and
+      // writing it would drop those updates from storage. `opened` therefore
+      // decides only whether the purchase is legal.
+      //
+      // The grant waits for that write, which is the whole point of the
+      // journal: a process that dies in this window leaves a save saying
+      // precisely what was taken and what for, and the load path settles it
+      // rather than losing the balance.
+      saveGameAfterStateCommit(saved => {
+        dispatch(
+          saved
+            ? createCompleteExpeditionUnlockPurchaseAction(setId)
+            : createRollbackExpeditionUnlockPurchaseAction(setId)
+        )
+        // The granted state replaces the marker in storage at the next commit,
+        // so an open entry is never left behind for the load path to settle.
+        if (saved) saveGameAfterStateCommit()
+      })
+      return true
+    },
+    [dispatch, saveGameAfterStateCommit, stateRef]
+  )
+
+  const claimExpeditionLegendaryReward = useCallback(
+    (runId: string): ExpeditionLegendaryClaim => {
+      const base = stateRef.current
+      // Derived here only to know *which* marker to write. The reducer derives
+      // it again from the same outcome and refuses a mismatch, so this read
+      // cannot choose the award - a stale one simply claims nothing.
+      const candidate = resolveExpeditionLegendaryCandidate(base, runId)
+      if (candidate === null) return 'not_applicable'
+      // Persistence first, and it is a hard barrier: a Legendary that exists
+      // only in this session's state would be silently gone on the next load,
+      // and the Career would have spent its one claim on the run. A marker
+      // kept in the session fallback is exactly that loss, so `session_only`
+      // is refused here even though the unlock stays readable this session -
+      // only a durable marker may buy the irreversible commit.
+      const markerId = getExpeditionLegendaryMarkerId(candidate)
+      if (addUnlockWithPersistence(markerId, storage) !== 'persisted') {
+        return 'persistence_failed'
+      }
+      dispatch(createAddUnlockAction(markerId))
+      dispatch(createCommitExpeditionLegendaryRewardAction(runId, candidate))
+      saveGameAfterStateCommit()
+      return 'claimed'
+    },
+    [dispatch, saveGameAfterStateCommit, stateRef, storage]
+  )
+
   return useMemo(
     () => ({
       changeScene,
@@ -552,7 +715,10 @@ export function useGameDispatchActions({
       ...rivalBandActions,
       ...assetActions,
       ...expeditionActions,
-      ...careerActions
+      ...careerActions,
+      resolveExpeditionBetweenTourDecision,
+      purchaseExpeditionUnlockSet,
+      claimExpeditionLegendaryReward
     }),
     [
       changeScene,
@@ -575,7 +741,10 @@ export function useGameDispatchActions({
       rivalBandActions,
       assetActions,
       expeditionActions,
-      careerActions
+      careerActions,
+      resolveExpeditionBetweenTourDecision,
+      purchaseExpeditionUnlockSet,
+      claimExpeditionLegendaryReward
     ]
   )
 }

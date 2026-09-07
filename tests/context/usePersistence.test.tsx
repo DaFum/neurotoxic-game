@@ -124,7 +124,7 @@ describe('usePersistence', () => {
     })
   })
 
-  it('flushes a queued save after the provider observes committed state', () => {
+  it('flushes a queued save at the next commit, not at the next scene', () => {
     const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
 
     try {
@@ -140,22 +140,65 @@ describe('usePersistence', () => {
         { initialProps: { currentScene: 'TRAVEL_MINIGAME' } }
       )
 
+      // The commit a command makes without navigating: the state changes, the
+      // scene does not. The request used to sit in a ref until some later
+      // scene transition happened to run the effect, so a change like this one
+      // was never written at all.
       act(() => {
+        mockStateRef.current = {
+          currentScene: 'TRAVEL_MINIGAME',
+          currentGig: { id: 'venue_1' }
+        }
         result.current.saveGameAfterStateCommit()
       })
-      expect(safeStorageOperation).not.toHaveBeenCalled()
-
-      mockStateRef.current = {
-        currentScene: 'PRE_GIG',
-        currentGig: { id: 'venue_1' }
-      }
-      rerender({ currentScene: 'PRE_GIG' })
 
       expect(safeStorageOperation).toHaveBeenCalledTimes(1)
       expect(JSON.parse(localStorage.getItem(SAVE_KEY) ?? '{}')).toMatchObject({
-        currentScene: 'PRE_GIG',
+        currentScene: 'TRAVEL_MINIGAME',
         currentGig: { id: 'venue_1' }
       })
+
+      // One save per request, not one per render: a re-render that asked for
+      // nothing must not rewrite the save.
+      rerender({ currentScene: 'TRAVEL_MINIGAME' })
+      expect(safeStorageOperation).toHaveBeenCalledTimes(1)
+    } finally {
+      setItemSpy.mockRestore()
+    }
+  })
+
+  it('reports the write outcome to a caller waiting on it', () => {
+    const setItemSpy = vi.spyOn(window.localStorage, 'setItem')
+
+    try {
+      const { result } = renderHook(() =>
+        usePersistence({
+          currentScene: 'MOCK_SCENE',
+          stateRef: mockStateRef,
+          dispatch: mockDispatch,
+          addToast: mockAddToast,
+          tRef: mockTRef
+        })
+      )
+
+      let saved: boolean | null = null
+      act(() => {
+        result.current.saveGameAfterStateCommit(outcome => {
+          saved = outcome
+        })
+      })
+      expect(saved).toBe(true)
+
+      // A refused write is the case the continuation exists for: the unlock
+      // journal refunds on it rather than granting.
+      vi.mocked(safeStorageOperation).mockReturnValue(false)
+      let refused: boolean | null = null
+      act(() => {
+        result.current.saveGameAfterStateCommit(outcome => {
+          refused = outcome
+        })
+      })
+      expect(refused).toBe(false)
     } finally {
       setItemSpy.mockRestore()
     }

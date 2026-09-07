@@ -11,6 +11,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
+import { calculateFameLevel } from '../../src/utils/gameState/calculations'
 import {
   completeExpedition,
   extractExpedition,
@@ -24,6 +25,7 @@ import {
   settleExpedition,
   splitExpeditionRewardLedger
 } from '../../src/domain/expedition/extraction'
+import { EXPEDITION_REWARD_REGISTRY } from '../../src/domain/expedition/rewardLedger'
 import {
   firstExtractionRouteStep,
   fixtureMap,
@@ -211,6 +213,25 @@ describe('EXTRACT_EXPEDITION', () => {
     assert.equal(next.player.fame, 100 + 30)
   })
 
+  it('recomputes fameLevel with the Fame the settlement writes', () => {
+    // `fameLevel` is derived from `fame`, so a settlement that moves Fame
+    // without recomputing the rank leaves later Fame-level-dependent costs
+    // reading the old one.
+    // Earned Fame large enough that the retained 60% crosses a band:
+    // fameLevel is floor(sqrt(fame / 200)), so 100 -> 280 moves 0 -> 1.
+    const state = earn(atWindow(), 1000, 300)
+    const before = state.player.fameLevel
+    const next = extract(state, {
+      expectedRouteStep: WINDOW_STEP,
+      explicitRareRewardIds: []
+    })
+    assert.equal(next.player.fame, 100 + 180)
+    assert.equal(next.player.fameLevel, calculateFameLevel(next.player.fame))
+    // The fixture has to actually cross a band, or the assertion above holds
+    // for a stale value too.
+    assert.notEqual(next.player.fameLevel, before)
+  })
+
   it('refuses extraction before the route offers a window', () => {
     const early = startedState()
     for (const step of [0, 1]) {
@@ -239,25 +260,37 @@ describe('EXTRACT_EXPEDITION', () => {
 
   it('carries one explicitly named unsecured rare reward', () => {
     const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
-    const entryId = state.expedition.rewardLedger[0]?.id
-    assert.ok(entryId, 'the walk banked no route rare to carry')
+    const entry = state.expedition.rewardLedger[0]
+    assert.ok(entry, 'the walk banked no route rare to carry')
+    // Read from the registry rather than hardcoded: which rare this seed puts
+    // at this step is a property of the route, and the route legitimately
+    // changes when the generator does. What must hold is that the named entry
+    // materializes exactly its declared amount, whichever rare it is.
+    const definition = EXPEDITION_REWARD_REGISTRY[entry.rewardDefinitionId]
+    assert.ok(definition, `unknown reward ${entry.rewardDefinitionId}`)
+    const before = state.band.inventory[definition.target] ?? 0
 
     const carried = extract(state, {
       expectedRouteStep: RARE_WINDOW_STEP,
-      explicitRareRewardIds: [entryId]
+      explicitRareRewardIds: [entry.id]
     })
     assert.deepEqual(
       carried.expedition.outcome?.settlement.retainedRewardEntryIds,
-      [entryId]
+      [entry.id]
     )
-    // 15 shirts, materialized once, after the settlement committed.
-    assert.equal(carried.band.inventory.shirts, 50 + 15)
+    assert.equal(
+      carried.band.inventory[definition.target],
+      before + definition.amount
+    )
     assert.equal(carried.expedition.rewardLedger[0]?.materialized, true)
   })
 
   it('abandons an unsecured rare reward the player did not name', () => {
     const state = walkTo(startedState({ money: 5000 }), RARE_WINDOW_STEP)
     assert.equal(state.expedition.rewardLedger.length, 1)
+    const entry = state.expedition.rewardLedger[0]
+    const definition = EXPEDITION_REWARD_REGISTRY[entry.rewardDefinitionId]
+    const before = state.band.inventory[definition.target] ?? 0
     const abandoned = extract(state, {
       expectedRouteStep: RARE_WINDOW_STEP,
       explicitRareRewardIds: []
@@ -266,7 +299,7 @@ describe('EXTRACT_EXPEDITION', () => {
       abandoned.expedition.outcome?.settlement.abandonedRewardEntryIds.length,
       1
     )
-    assert.equal(abandoned.band.inventory.shirts, 50)
+    assert.equal(abandoned.band.inventory[definition.target] ?? 0, before)
     assert.equal(abandoned.expedition.rewardLedger[0]?.materialized, false)
   })
 
@@ -326,6 +359,50 @@ describe('COMPLETE_EXPEDITION', () => {
     for (const entry of next.expedition.rewardLedger) {
       assert.equal(entry.materialized, true)
     }
+  })
+
+  it('pays out a retained share above what the run earned', () => {
+    // Tour Pressure multiplies the terminally retained Money and Fame, so a
+    // completed run retains *more* than it earned. `moneyForfeited` clamps at
+    // zero and cannot express that, so a settlement that only ever subtracts
+    // the forfeited share paid the player nothing for the danger they bought.
+    const base = withResolvedFinale(
+      walkToFinale(startedState({ money: 5000, fame: 100 }))
+    )
+    const state = earn(
+      {
+        ...base,
+        expedition: {
+          ...base.expedition,
+          // Only the modifier list changes: the committed Region and Tour, and
+          // therefore the route this run walked, stay exactly as they were.
+          loadout: {
+            ...base.expedition.loadout,
+            pressureModifierIds: ['media_frenzy']
+          }
+        }
+      },
+      1000,
+      50
+    )
+
+    const next = gameReducer(state, {
+      type: ActionTypes.COMPLETE_EXPEDITION,
+      payload: {
+        finaleResultId: 'finale_result_1',
+        expectedRouteStep: state.expedition.routeStep
+      }
+    })
+    const settlement = next.expedition.outcome?.settlement
+    // 1000 x 1.0 retention x 1.0 completion x 1.2 pressure.
+    assert.equal(settlement?.moneyEarned, 1000)
+    assert.equal(settlement?.moneyRetained, 1200)
+    assert.equal(settlement?.moneyForfeited, 0)
+    assert.equal(settlement?.fameRetained, 60)
+    assert.equal(settlement?.fameForfeited, 0)
+    // The bonus reaches the player rather than stopping at the outcome.
+    assert.equal(next.player.money, 5000 + 1200)
+    assert.equal(next.player.fame, 100 + 60)
   })
 
   it('refuses completion anywhere but the Finale', () => {

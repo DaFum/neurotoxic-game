@@ -9,9 +9,11 @@
  */
 
 import { buildExpeditionMap } from './map'
-import { NEUTRAL_EXPEDITION_ROUTE_PROFILE } from './defaults'
 import { getEffectiveExpeditionRules } from './effectiveRules'
-import { getExpeditionNodeIntelLevel } from './nodeIntel'
+import {
+  getExpeditionIntelCapability,
+  getExpeditionNodeIntelLevel
+} from './nodeIntel'
 import { resolveExpeditionTravelCost } from './travel'
 import type { GameState } from '../../types'
 import type { ExpeditionNodeFog } from '../../types/expedition'
@@ -31,8 +33,7 @@ export const getExpeditionNodeFogByNodeId = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
 
   // Resolved once for the whole projection: the travel settlement would
@@ -43,11 +44,15 @@ export const getExpeditionNodeFogByNodeId = (
     roadWearMultiplier: numeric.roadWearMultiplier
   }
 
+  // Resolved once as well: the capability derives the route step's familiarity
+  // draw, which must not be redrawn per node.
+  const capability = getExpeditionIntelCapability(state)
+
   const out: Record<string, ExpeditionNodeFog> = {}
   for (const nodeId of map.nodeOrder) {
     const entry = map.meta[nodeId]
     if (!entry) continue
-    const intelLevel = getExpeditionNodeIntelLevel(state, nodeId)
+    const intelLevel = getExpeditionNodeIntelLevel(state, nodeId, capability)
     out[nodeId] = {
       nodeClass: entry.nodeClass,
       specialSubtype: entry.specialSubtype,
@@ -78,7 +83,23 @@ export const getExpeditionNodeFogByNodeId = (
         intelLevel >= 2
           ? (entry.hidden.rivalId ?? entry.hidden.eventId ?? null)
           : null,
-      rareRewardId: intelLevel >= 1 ? entry.hidden.rareRewardId : null
+      rareRewardId: intelLevel >= 1 ? entry.hidden.rareRewardId : null,
+      // Level-0 presence hints: whether a category is here, never which one or
+      // what it pays. `null` is "not entitled to the hint" and stays distinct
+      // from `false`, which is the hint reporting the category is absent.
+      hasRecoveryOrSponsorHint: capability.hasRecoveryOrSponsorHint
+        ? entry.nodeClass === 'REST_STOP' ||
+          entry.hidden.hiddenOpportunityId !== null
+        : null,
+      hasRivalOrSponsorCategoryHint: capability.hasRivalOrSponsorCategoryHint
+        ? entry.specialSubtype === 'RIVAL_ENCOUNTER' ||
+          entry.hidden.rivalId !== null ||
+          entry.hidden.hiddenOpportunityId !== null
+        : null,
+      hasUndergroundCategoryHint: capability.hasUndergroundCategoryHint
+        ? entry.specialSubtype === 'UNDERGROUND_MARKET' ||
+          entry.specialSubtype === 'BLACK_MARKET'
+        : null
     }
   }
   return out

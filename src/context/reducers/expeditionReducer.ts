@@ -15,10 +15,8 @@ import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
-import {
-  NEUTRAL_EXPEDITION_ROUTE_PROFILE,
-  createDefaultExpeditionState
-} from '../../domain/expedition/defaults'
+import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
   canSpendExpeditionCash,
@@ -27,7 +25,9 @@ import {
 } from '../../domain/expedition/loadout'
 import {
   getExpeditionCargoView,
-  materializeExpeditionCargo
+  materializeExpeditionCargo,
+  calculateExpeditionCargoCapacity,
+  calculateExpeditionCargoUsage
 } from '../../domain/expedition/cargo'
 import {
   applyTechnicalWear,
@@ -64,6 +64,16 @@ import {
   settleExpedition,
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
+import { recordExpeditionArchiveObservations } from './careerReducer'
+import { areBetweenTourDecisionsResolved } from '../../domain/expedition/betweenTour'
+import {
+  applyExpeditionSalvageRights,
+  consumeExpeditionLegendary,
+  deriveExpeditionGhostRouteTarget,
+  deriveExpeditionNemesisKeyTarget,
+  isExpeditionLegendaryAvailable,
+  isExpeditionSafeHarborWindow
+} from '../../domain/expedition/legendaries'
 import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
@@ -215,20 +225,18 @@ export const handlePrepareExpeditionRun = (
   if (typeof prepId !== 'string' || prepId.length === 0) return state
   if (!isValidRunSeed(runSeed)) return state
 
-  const preparedState: GameState = {
+  // Sponsor offers are deliberately not staged here. PREPARE runs on Tour Prep
+  // entry, before the player has chosen a Region or a Tour, so anything staged
+  // now is staged against inputs that do not exist yet - which is how the
+  // route-specific offer count ended up never applying to a real run. The set
+  // is derived from the prepared route instead, by whoever needs it.
+  return {
     ...state,
     runSeed,
     expedition: {
       ...createDefaultExpeditionState(),
       status: 'prepared',
       prep: { prepId }
-    }
-  }
-  return {
-    ...preparedState,
-    expedition: {
-      ...preparedState.expedition,
-      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(preparedState)
     }
   }
 }
@@ -270,12 +278,7 @@ export const handleStartExpedition = (
     return state
   }
 
-  const preparedMap = buildExpeditionMap(
-    state.runSeed,
-    tourTypeId,
-    regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
-  )
+  const preparedMap = buildExpeditionMap(state.runSeed, tourTypeId, regionId)
   const validation = validateExpeditionBuildCommitment(
     state,
     loadout,
@@ -303,12 +306,17 @@ export const handleStartExpedition = (
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
   const sponsorOfferId = normalized.build.sponsorOfferId
+  // Derived from the Region and Tour this run is actually committing to, so a
+  // non-baseline route stages the offer count its profile calls for.
   const stagedSponsor =
     sponsorOfferId === null
       ? null
-      : state.expedition.preparedSponsorOffers.find(
-          offer => offer.offerId === sponsorOfferId
-        )
+      : buildPreparedExpeditionSponsorOffers(
+          state,
+          regionId,
+          tourTypeId,
+          normalized.starterPerkId
+        ).find(offer => offer.offerId === sponsorOfferId)
   if (
     sponsorOfferId !== null &&
     (!stagedSponsor ||
@@ -366,10 +374,21 @@ export const handleStartExpedition = (
       doubleDown: null
     })
 
+  // Every rule that depends on the committed Region/Tour has to be resolved
+  // against the *validated candidate*, not against `state`: the loadout is not
+  // committed until this transaction builds the next state, so reading it off
+  // `state` here resolves the baseline profile and silently drops the Tour and
+  // Region identity the run was just started with.
+  const committed: GameState = {
+    ...state,
+    expedition: { ...state.expedition, loadout: normalized }
+  }
+  const startRules = getEffectiveExpeditionRules(committed).numeric
+
   const rivalSelection = selectExpeditionRivalForRun(
-    state,
+    committed,
     preparedMap,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    deriveExpeditionRouteProfile(regionId, tourTypeId)
   )
   const nextCareer = rivalSelection
     ? {
@@ -429,7 +448,46 @@ export const handleStartExpedition = (
       startingMoney: nextMoney,
       startingFame: fame,
       protectedCareerCash: normalized.build.protectedCareerCash,
-      cargo: materializeExpeditionCargo(normalized, state),
+      // The Tour's own starting stock rides on top of what the build packed -
+      // but it counts against cargo like everything else. A grant that would
+      // overflow the van is truncated rather than smuggled in: the capacity
+      // model is the authority on what fits, and a starting bonus that ignored
+      // it would be free hidden space no chassis or module ever sells.
+      cargo: (() => {
+        const packed = materializeExpeditionCargo(normalized, state)
+        const granted = Math.max(
+          0,
+          Math.floor(finiteNumberOr(startRules.startingSpareParts, 0))
+        )
+        if (granted === 0) return packed
+        const chassisAsset =
+          (Array.isArray(state.assets) ? state.assets : []).find(
+            asset =>
+              asset.id === normalized.activeTourbusAssetId &&
+              asset.kind === 'tourbus_chassis'
+          ) ?? null
+        const usage = calculateExpeditionCargoUsage(
+          packed,
+          calculateExpeditionCargoCapacity(
+            chassisAsset,
+            normalized.build.selectedTourbusModuleIds
+          )
+        )
+        const fits = Math.min(granted, usage.availableVisibleSlots)
+        return fits > 0
+          ? { ...packed, spareParts: packed.spareParts + fits }
+          : packed
+      })(),
+      // A Tour that starts hot starts hot: the run's opening Heat is a rule,
+      // so it is written through the same default pressure state rather than
+      // by a later mutation.
+      pressure: {
+        ...createDefaultExpeditionState().pressure,
+        heat: Math.max(
+          0,
+          Math.min(100, Math.floor(finiteNumberOr(startRules.startingHeat, 0)))
+        )
+      },
       technicalCondition: createDefaultTechnicalCondition(),
       preparedSponsorOffers: [],
       activeObligations
@@ -439,7 +497,11 @@ export const handleStartExpedition = (
     for (const questEvent of sponsorAcceptance.questEvents)
       nextState = QuestEvents.emit(nextState, questEvent)
   }
-  return nextState
+  // Swept here as well as at the finalizer: the build is what the Career met
+  // by committing to it, and a run that never reaches a terminal transition -
+  // abandoned, or still in progress when the save is closed - would otherwise
+  // record nothing at all.
+  return recordExpeditionArchiveObservations(nextState)
 }
 
 /**
@@ -524,22 +586,27 @@ export const applyExpeditionRouteAdvance = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   if (!Object.hasOwn(map.meta, nodeId)) return state
   const target = map.meta[nodeId]
-  if (!target || target.routeStep !== state.expedition.routeStep + 1) {
-    return state
-  }
+  // One step, or the two the Nemesis Key jump covers. The edge check below is
+  // what actually authorizes the longer move: every base connection spans one
+  // layer, so a two-step arrival is only ever reachable through an overlay.
+  const stepsAhead = target
+    ? target.routeStep - state.expedition.routeStep
+    : Number.NaN
+  if (!target || (stepsAhead !== 1 && stepsAhead !== 2)) return state
 
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof currentNodeId !== 'string') return state
-  // The effective route, not the base map: a high-Heat Underground invite or a
-  // Nemesis shortcut is only a real opportunity if the run can actually travel
-  // it. Overlays are additive, so this never removes a legal base move.
-  const isNeighbour = getEffectiveExpeditionRoute(state, map).connections.some(
+  // The effective route, not the base map: a high-Heat Underground invite, a
+  // Nemesis shortcut or a Legendary overlay is only a real opportunity if the
+  // run can actually travel it. Overlays are additive, so this never removes a
+  // legal base move.
+  const effectiveRoute = getEffectiveExpeditionRoute(state, map)
+  const isNeighbour = effectiveRoute.connections.some(
     edge => edge.from === currentNodeId && edge.to === nodeId
   )
   if (!isNeighbour) return state
@@ -574,7 +641,7 @@ export const applyExpeditionRouteAdvance = (
           pendingDirectorEventId: null
         }
 
-  const arrived: GameState = {
+  let arrived: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
     expedition: {
@@ -582,7 +649,48 @@ export const applyExpeditionRouteAdvance = (
       routeStep: target.routeStep,
       visitedNodeIds: [...state.expedition.visitedNodeIds, nodeId],
       extractionWindowsSeen,
+      // Cleared by default, and set below only for the one overlay that
+      // converts a node: it describes the node the run stands on, so carrying
+      // an earlier one forward would resolve this arrival as the last.
+      arrivedOverlay: null,
       pressure: pressureAfterMove
+    }
+  }
+
+  // A Legendary overlay is spent by being travelled, and only then: offering
+  // the opportunity costs nothing, and a run that declined it still holds the
+  // Legendary. Ghost Route is checked against the *pre-move* state because its
+  // trigger is the Authority pressure the run was standing in.
+  if (
+    stepsAhead === 2 &&
+    isExpeditionLegendaryAvailable(state, 'nemesis_key') &&
+    deriveExpeditionNemesisKeyTarget(state, map) === nodeId
+  ) {
+    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
+  } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
+    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
+  }
+
+  // The overlay has to outlive the move. Every one of them is derived from the
+  // node the run is leaving, so the conversion is gone by the time arrival
+  // resolves - and arrival routes on the node's own class, which is the flow
+  // the overlay was offered *instead of*: a Ghost Route escape would play the
+  // Gig it was the escape from, and a Rival shortcut would arrive at a Rest
+  // Stop. Recorded here, the one point at which both the overlay and its
+  // destination are known.
+  const travelledSubtype = effectiveRoute.subtypeByNodeId[nodeId]
+  const travelledSource = effectiveRoute.sourceByNodeId[nodeId]
+  if (travelledSubtype && travelledSource) {
+    arrived = {
+      ...arrived,
+      expedition: {
+        ...arrived.expedition,
+        arrivedOverlay: {
+          nodeId,
+          subtype: travelledSubtype,
+          source: travelledSource
+        }
+      }
     }
   }
 
@@ -656,8 +764,7 @@ export const handleRevealExpeditionNodeIntel = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const resolution = resolveExpeditionIntelReveal(state, payload, map)
   if (!resolution.ok) return state
@@ -720,8 +827,7 @@ export const handleAddExpeditionReward = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const resolution = resolveExpeditionReward(state, payload, map)
   if (!resolution.ok) return state
@@ -739,25 +845,43 @@ export const handleAddExpeditionReward = (
  * Applies a finalized settlement to the player's Cash and Fame.
  *
  * @remarks
- * Only the *forfeited* share is deducted: the retained share is already in the
- * player's balance, and the pre-run balance plus the protected Career slice sit
- * below the run's baselines, so neither can be confiscated by a settlement.
+ * The run's earnings are already in the player's balance, so only the signed
+ * difference between what the run earned and what it retains is applied. That
+ * delta is negative for a shortfall - identical to deducting the forfeited
+ * share - and positive when the completion or Tour Pressure multiplier retains
+ * more than was earned, which `moneyForfeited` cannot express because it clamps
+ * at zero. The pre-run balance plus the protected Career slice sit below the
+ * run's baselines, so neither can be confiscated by a settlement.
  */
 const applyExpeditionSettlement = (
   state: GameState,
   settlement: ExpeditionSettlement
-): GameState => ({
-  ...state,
-  player: {
-    ...state.player,
-    money: clampPlayerMoney(
-      finiteNumberOr(state.player.money, 0) - settlement.moneyForfeited
-    ),
-    fame: clampPlayerFame(
-      finiteNumberOr(state.player.fame, 0) - settlement.fameForfeited
-    )
+): GameState => {
+  const moneyDelta =
+    finiteNumberOr(settlement.moneyRetained, 0) -
+    finiteNumberOr(settlement.moneyEarned, 0)
+  const fameDelta =
+    finiteNumberOr(settlement.fameRetained, 0) -
+    finiteNumberOr(settlement.fameEarned, 0)
+
+  const nextFame = clampPlayerFame(
+    finiteNumberOr(state.player.fame, 0) + fameDelta
+  )
+
+  return {
+    ...state,
+    player: {
+      ...state.player,
+      money: clampPlayerMoney(
+        finiteNumberOr(state.player.money, 0) + moneyDelta
+      ),
+      fame: nextFame,
+      // `fameLevel` is derived from `fame`, so writing one without the other
+      // leaves later Fame-level-dependent costs reading the old rank.
+      fameLevel: calculateFameLevel(nextFame)
+    }
   }
-})
+}
 
 /**
  * Materializes every retained reward exactly once.
@@ -823,7 +947,7 @@ const finalizeExpedition = (
     settlement.retainedRewardEntryIds
   )
 
-  return {
+  const finalized: GameState = {
     ...materialized,
     expedition: {
       ...materialized.expedition,
@@ -839,6 +963,12 @@ const finalizeExpedition = (
       }
     }
   }
+
+  // The last moment the run's observations are all still readable: the loadout
+  // is committed, the resolved events are in the proof list, and the Finale
+  // result exists. `PREPARE_NEXT_EXPEDITION` clears every one of them, so a
+  // sweep after this point would record nothing.
+  return recordExpeditionArchiveObservations(finalized)
 }
 
 /**
@@ -871,15 +1001,18 @@ export const handleExtractExpedition = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
+  // Safe Harbor is an *extra* opportunity, so it is composed with the base
+  // window rather than replacing it: the route's own windows are unchanged and
+  // the Legendary only ever adds the one node its own predicate names.
   const atWindow =
-    typeof currentNodeId === 'string' &&
-    Object.hasOwn(map.meta, currentNodeId) &&
-    map.meta[currentNodeId]?.isExtractionWindow === true
+    (typeof currentNodeId === 'string' &&
+      Object.hasOwn(map.meta, currentNodeId) &&
+      map.meta[currentNodeId]?.isExtractionWindow === true) ||
+    isExpeditionSafeHarborWindow(state, map)
   if (!canExtractExpedition(state, atWindow)) return state
 
   const explicitRareRewardIds = Array.isArray(payload.explicitRareRewardIds)
@@ -936,8 +1069,7 @@ export const handleCompleteExpedition = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
@@ -1113,6 +1245,11 @@ export const handlePrepareNextExpedition = (
       !entry.materialized
   )
   if (unsettled) return state
+  // Every Between-Tour question the Tour asked must be answered first: the
+  // decisions read the Career the settlements advanced, and returning to idle
+  // clears the outcome they were derived from. An unanswered set would be
+  // stranded - permanently open on a run whose evidence is gone.
+  if (!areBetweenTourDecisionsResolved(state, runId)) return state
 
   return { ...state, expedition: createDefaultExpeditionState() }
 }
@@ -1751,10 +1888,18 @@ export const handleApplyExpeditionEventDelta = (
     }
   }
 
-  const nextState =
+  const withEventWear =
     nextExpedition === state.expedition
       ? state
       : { ...state, expedition: nextExpedition }
+  // The same rescue the post-gig wear gets: a group an event took to zero is
+  // the same loss whether a show or a breakdown caused it.
+  const nextState = hasWear
+    ? applyExpeditionSalvageRights(
+        withEventWear,
+        getExpeditionTechnicalCondition(state)
+      )
+    : withEventWear
 
   const withCrewOutcome = applyResolvedCrewEventOutcome(
     nextState,
@@ -1772,8 +1917,7 @@ export const handleApplyExpeditionEventDelta = (
     ? buildExpeditionMap(
         resolved.runSeed,
         eventRewardLoadout.tourTypeId,
-        eventRewardLoadout.regionId,
-        NEUTRAL_EXPEDITION_ROUTE_PROFILE
+        eventRewardLoadout.regionId
       )
     : null
 
@@ -1907,6 +2051,9 @@ export const handleRecordExpeditionObligationSignal = (
   let fameDelta = 0
   let heatDelta = 0
   let controversyDelta = 0
+  // One excuse per run, and one per signal: two Contracts failing on the same
+  // signal must not both be waived by a single Legendary.
+  let fixerSpent = false
   const effectiveRules = getEffectiveExpeditionRules(state).numeric
   const activeObligations = state.expedition.activeObligations.map(
     obligation => {
@@ -2007,6 +2154,17 @@ export const handleRecordExpeditionObligationSignal = (
               effectiveRules.contractRewardMultiplier
             moneyDelta += Math.round(template.reward.money * multiplier)
             fameDelta += Math.round(template.reward.fame * multiplier)
+          } else if (
+            // The Fixer excuses exactly one failed Contract, and never the
+            // kind that ends the tour: a breach the run cannot survive is not
+            // a bad night the Career can make a phone call about. There is no
+            // payout either - the Contract still failed, the penalty simply
+            // does not land.
+            !template.tourEndingOnFailure &&
+            !fixerSpent &&
+            isExpeditionLegendaryAvailable(state, 'the_fixer')
+          ) {
+            fixerSpent = true
           } else {
             heatDelta += Math.round(
               (template.failure.heat + (doubleDown?.failureHeatBonus ?? 0)) *
@@ -2072,7 +2230,12 @@ export const handleRecordExpeditionObligationSignal = (
         ...state.expedition.resolvedObligationSignalIds,
         signalId
       ],
-      gigOutcomeByStep
+      gigOutcomeByStep,
+      // Recorded on the same commit that skipped the penalty, so a reload
+      // cannot separate the waiver from the fact that it was spent.
+      consumedLegendaryIds: fixerSpent
+        ? [...state.expedition.consumedLegendaryIds, 'the_fixer']
+        : state.expedition.consumedLegendaryIds
     }
   }
   // A completed native Contract's item reward goes through the G1 ledger, so
@@ -2093,8 +2256,7 @@ export const handleRecordExpeditionObligationSignal = (
     const map = buildExpeditionMap(
       state.runSeed,
       contractRewardLoadout.tourTypeId,
-      contractRewardLoadout.regionId,
-      NEUTRAL_EXPEDITION_ROUTE_PROFILE
+      contractRewardLoadout.regionId
     )
     for (const obligationId of completedNativeObligationIds) {
       // A Contract completed at an earlier step already owns its entry, so the
@@ -2218,8 +2380,7 @@ export const handleOfferExpeditionDraft = (
         const map = buildExpeditionMap(
           state.runSeed,
           loadout.tourTypeId,
-          loadout.regionId,
-          NEUTRAL_EXPEDITION_ROUTE_PROFILE
+          loadout.regionId
         )
         // The effective route, so a Nemesis shortcut counts: that overlay is
         // the tier-2 rule change, and a Rival encounter it opens is exactly
@@ -2484,8 +2645,7 @@ export const handleCreateSocialIntelGrant = (
   const map = buildExpeditionMap(
     state.runSeed,
     loadout.tourTypeId,
-    loadout.regionId,
-    NEUTRAL_EXPEDITION_ROUTE_PROFILE
+    loadout.regionId
   )
   const currentNodeId = state.player.currentNodeId
   if (

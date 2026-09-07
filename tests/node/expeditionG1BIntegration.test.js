@@ -10,6 +10,7 @@ import {
 } from '../../src/context/reducers/expeditionReducer.ts'
 import { getExpeditionFinaleRewardId } from '../../src/domain/expedition/finales.ts'
 import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSanitizers.ts'
+import { didExpeditionPressureGateOpen } from '../../src/domain/expedition/pressure.ts'
 import { composeExpeditionFailureSignal } from '../../src/domain/expedition/failure.ts'
 import { canSpendExpeditionCash } from '../../src/domain/expedition/loadout.ts'
 import { settleExpedition } from '../../src/domain/expedition/extraction.ts'
@@ -19,14 +20,20 @@ import {
   preparedState,
   startedState,
   walkTo,
-  walkToFinale
+  walkToFinale,
+  withExpeditionCapabilities
 } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
 
 /** Starts the fixture run carrying one native Contract. */
 const startedWithContract = (templateId, targetNodeId = null) => {
-  const prepared = preparedState({ money: 5000 })
+  // The subject is the reward ledger, not the Contract pool gate:
+  // `contract_three_good_gigs` is a performance Contract, which
+  // `festival_network` sells from G5 on.
+  const prepared = withExpeditionCapabilities(preparedState({ money: 5000 }), [
+    'festival_network'
+  ])
   const started = gameReducer(prepared, {
     type: ActionTypes.START_EXPEDITION,
     payload: {
@@ -240,12 +247,36 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
   })
 
   it('keeps an earned Contract reward across a load round-trip', () => {
-    // `contract_route_target` materializes onto the fixture's SPECIAL node at
-    // step 3, which the canonical walk actually visits - so the obligation is
-    // completed through the production arrival signal rather than by hand.
-    const started = startedWithContract('contract_route_target', 'exp_3_0')
-    const atTarget = walkTo(started, 3)
+    // `contract_route_target` materializes onto a SPECIAL node the canonical
+    // walk visits, so the obligation completes through the production arrival
+    // signal rather than by hand. Derived from the route rather than named:
+    // which node is SPECIAL is a property of the generator, and pinning an id
+    // here made this test fail the moment route generation legitimately
+    // changed.
+    // Picked off the *walked* path, not off `nodeOrder`: the route branches,
+    // so a SPECIAL node can exist in the map on a branch the canonical walk
+    // never takes, and the arrival signal would then never fire.
+    const walkedNodeIds = walkToFinale(
+      gameReducer(preparedState({ money: 5000 }), {
+        type: ActionTypes.START_EXPEDITION,
+        payload: {
+          prepId: 'run_fixture',
+          expectedRunSeed: preparedState({ money: 5000 }).runSeed,
+          loadout: fixtureLoadout()
+        }
+      })
+    ).expedition.visitedNodeIds
+    const specialNodeId = walkedNodeIds.find(nodeId => {
+      const entry = map.meta[nodeId]
+      return entry?.nodeClass === 'SPECIAL' && entry.routeStep > 0
+    })
+    assert.ok(specialNodeId, 'the walked route has no SPECIAL node')
+    const specialStep = map.meta[specialNodeId].routeStep
+    const started = startedWithContract('contract_route_target', specialNodeId)
+    const atTarget = walkTo(started, specialStep)
     const targetNodeId = atTarget.expedition.visitedNodeIds.at(-1)
+    // The walk really did land on the node the Contract named.
+    assert.equal(targetNodeId, specialNodeId)
     assert.equal(
       atTarget.expedition.activeObligations[0].constraints[0].targetNodeId,
       targetNodeId
@@ -327,36 +358,22 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
       resolvedEvent.expedition.rewardLedger.length
     )
 
-    // An unmaterialized Event rare does not survive a load: the proof list is
-    // part of the save, so it cannot authorize its own row, and a random event
-    // roll has no seeded anchor to re-derive. Reloading mid-run forfeits it.
+    // This genuinely earned rare does NOT survive a reload, and that is the
+    // accepted cost rather than an oversight. Nothing in the save distinguishes
+    // it from a crafted claim: the seeded gate proves only that an event slot
+    // could open at this step, and the tuple, the proof list and the ledger
+    // entry are all save-authored. Refusing every unmaterialized Event rare on
+    // load is what makes save-minting impossible, and it falls on the window
+    // between earning the rare and the terminal settlement that materializes
+    // it. Closing that window needs a reducer-authored resolution record a save
+    // cannot construct - a persistence change this gate does not own.
     assert.equal(
       sanitizeExpeditionState(
         resolvedEvent.expedition,
         resolvedEvent.runSeed
       ).rewardLedger.filter(item => item.id === entryId).length,
-      0
-    )
-    // Once settlement has materialized it, the row is history and is kept -
-    // still only alongside a proof the registry recognizes.
-    const materialized = {
-      ...resolvedEvent.expedition,
-      rewardLedger: resolvedEvent.expedition.rewardLedger.map(item =>
-        item.id === entryId ? { ...item, materialized: true } : item
-      )
-    }
-    assert.ok(
-      sanitizeExpeditionState(
-        materialized,
-        resolvedEvent.runSeed
-      ).rewardLedger.some(item => item.id === entryId)
-    )
-    assert.equal(
-      sanitizeExpeditionState(
-        { ...materialized, resolvedEventSourceIds: [] },
-        resolvedEvent.runSeed
-      ).rewardLedger.filter(item => item.id === entryId).length,
-      0
+      0,
+      'an unmaterialized Event rare is not load-eligible, however it was earned'
     )
 
     // A result that declares no rare banks nothing.
@@ -428,60 +445,113 @@ describe('G1B — Contract and Finale rewards reach the G1 ledger', () => {
     )
   })
 
-  it('rejects a crafted save that mints its own Event-rare proof', () => {
-    const started = startedState({ money: 5000 })
-    // A *real* registry tuple, which is the case registry-membership alone
-    // could never catch: the save names an event/option/result the content
-    // genuinely declares and pairs it with the matching ledger row.
+  it('refuses every Event-rare claim a save can author', () => {
+    // The seeded pool gate is not an authentication of the reward: it proves
+    // only that *some* pressure event could open at the named step, never that
+    // this event was selected or this result produced. Every field that would
+    // say so is authored by the save. So an Event rare is refused on load
+    // whatever step it names - including a step the gate did open, which is
+    // the case this test exists to pin down.
+    const atClosedGate = walkTo(startedState({ money: 5000 }), 2)
     const canonicalSourceId =
       'expedition_underground_invite:take_the_address:spare_parts_scavenged'
-    const canonical = sanitizeExpeditionState(
-      {
-        ...started.expedition,
-        resolvedEventSourceIds: [
-          `${canonicalSourceId}:${started.expedition.routeStep}`
-        ],
+    const withClaim = (expedition, step) => ({
+      ...expedition,
+      resolvedEventSourceIds: [`${canonicalSourceId}:${step}`],
+      rewardLedger: [
+        {
+          id: `reward_event_spare_cables::${canonicalSourceId}`,
+          rewardDefinitionId: 'reward_event_spare_cables',
+          sourceType: 'event_rare',
+          sourceId: canonicalSourceId,
+          earnedAtRouteStep: step,
+          secured: false,
+          materialized: false
+        }
+      ]
+    })
+    const eventRares = expedition =>
+      sanitizeExpeditionState(
+        expedition,
+        atClosedGate.runSeed
+      ).rewardLedger.filter(entry => entry.sourceType === 'event_rare')
+
+    assert.equal(
+      eventRares(withClaim(atClosedGate.expedition, 2)).length,
+      0,
+      'a step the seeded gate never opened must not authorize the reward'
+    )
+    // A step the gate *did* open is refused just the same. This assertion used
+    // to expect the claim to be kept, which codified the forgery gap as the
+    // intended bar: the gate cannot tell a real earn from a crafted one, so
+    // keeping it accepted save-authored evidence.
+    assert.equal(didExpeditionPressureGateOpen(atClosedGate.runSeed, 0), true)
+    assert.equal(
+      eventRares(withClaim(atClosedGate.expedition, 0)).length,
+      0,
+      'an open gate is not evidence that this reward was earned'
+    )
+
+    // `materialized` is no exception. It is settlement bookkeeping the save
+    // owns, not a state change the load can attribute to the reducer: a
+    // crafted save sets the flag and keeps an arbitrary canonical rare. The
+    // reward the flag describes was already applied to the player before the
+    // save was written, so nothing is owed twice by dropping the record.
+    const materializedClaim = withClaim(atClosedGate.expedition, 0)
+    assert.equal(
+      eventRares({
+        ...materializedClaim,
+        rewardLedger: materializedClaim.rewardLedger.map(entry => ({
+          ...entry,
+          materialized: true
+        }))
+      }).length,
+      0
+    )
+
+    // Still refused for an event the Director cannot place at all.
+    const crewSourceId =
+      'expedition_crew_breakthrough:follow_lead:crew_breakthrough_followed'
+    assert.equal(
+      eventRares({
+        ...atClosedGate.expedition,
+        resolvedEventSourceIds: [`${crewSourceId}:0`],
         rewardLedger: [
           {
-            id: `reward_event_spare_cables::${canonicalSourceId}`,
+            id: `reward_event_spare_cables::${crewSourceId}`,
             rewardDefinitionId: 'reward_event_spare_cables',
             sourceType: 'event_rare',
-            sourceId: canonicalSourceId,
-            earnedAtRouteStep: started.expedition.routeStep,
+            sourceId: crewSourceId,
+            earnedAtRouteStep: 0,
             secured: false,
             materialized: false
           }
         ]
-      },
-      started.runSeed
-    )
-    assert.equal(
-      canonical.rewardLedger.filter(entry => entry.sourceType === 'event_rare')
-        .length,
+      }).length,
       0,
-      'a real tuple the run never resolved must not authorize the reward'
+      'only an event the Director can place may anchor an Event rare'
     )
 
+    // An invented tuple is still stripped from the proof list outright, so it
+    // never reaches the anchor check.
     const forgedSourceId = 'evt_invented:opt_invented:spare_parts_scavenged'
     const forged = sanitizeExpeditionState(
       {
-        ...started.expedition,
-        resolvedEventSourceIds: [
-          `${forgedSourceId}:${started.expedition.routeStep}`
-        ],
+        ...atClosedGate.expedition,
+        resolvedEventSourceIds: [`${forgedSourceId}:0`],
         rewardLedger: [
           {
             id: `reward_event_spare_cables::${forgedSourceId}`,
             rewardDefinitionId: 'reward_event_spare_cables',
             sourceType: 'event_rare',
             sourceId: forgedSourceId,
-            earnedAtRouteStep: started.expedition.routeStep,
+            earnedAtRouteStep: 0,
             secured: false,
             materialized: false
           }
         ]
       },
-      started.runSeed
+      atClosedGate.runSeed
     )
     assert.deepEqual(forged.resolvedEventSourceIds, [])
     assert.equal(

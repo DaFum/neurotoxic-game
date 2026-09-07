@@ -46,6 +46,11 @@ test('signature proof is derived after settlement and acquisition rejects stale 
     career: {
       ...base.career,
       finalizedExpeditionRuns: 3,
+      // Signature traits are what `crew_network` sells, and the Crew Lounge is
+      // its facility. This test's subject is the proof and the stale-id
+      // rejection, so the entitlement is granted rather than re-tested.
+      unlockedSetIds: ['crew_network'],
+      hqFacilityLevels: { crew_lounge: 1 },
       crewById: {
         mika: {
           loyalty: 60,

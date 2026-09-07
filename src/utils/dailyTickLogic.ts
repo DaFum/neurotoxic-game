@@ -18,6 +18,7 @@ import {
   settleExpeditionDailyObligation,
   type ExpeditionDayPolicy
 } from '../domain/expedition/loadout'
+import { isExpeditionLegacyHqEffectActive } from '../domain/expedition/legacyHqPolicy'
 import type { PlayerState, BandState, GameState, SocialState } from '../types'
 import {
   DEFAULT_BALANCE_TUNING,
@@ -285,18 +286,26 @@ const updatePassiveEffectsAndMembers = (
   nextBand: BandState,
   nextSocial: SocialState,
   controversySnapshot: number,
-  rng: () => number
+  rng: () => number,
+  expeditionPolicy: ExpeditionDayPolicy
 ) => {
   // 4. Passive Effects
   const hqUpgrades = nextPlayer.hqUpgrades || []
   const hqUpgradesSet = new Set(hqUpgrades)
 
+  // The HQ comfort upgrades are `between_tours_only`: ownership survives, but
+  // their recovery does not follow the band onto the road, so a run cannot be
+  // sustained by furniture bought back home.
+  const isOwnedAndActive = (itemId: string) =>
+    hqUpgradesSet.has(itemId) &&
+    isExpeditionLegacyHqEffectActive(expeditionPolicy.isActive, itemId)
+
   // Coffee & Beer Fridge: Mood recovery
-  const hasCoffee = hqUpgradesSet.has('hq_room_coffee')
-  const hasBeerFridge = hqUpgradesSet.has('hq_room_cheap_beer_fridge')
+  const hasCoffee = isOwnedAndActive('hq_room_coffee')
+  const hasBeerFridge = isOwnedAndActive('hq_room_cheap_beer_fridge')
   // Sofa & Old Couch: Stamina recovery
-  const hasSofa = hqUpgradesSet.has('hq_room_sofa')
-  const hasOldCouch = hqUpgradesSet.has('hq_room_old_couch')
+  const hasSofa = isOwnedAndActive('hq_room_sofa')
+  const hasOldCouch = isOwnedAndActive('hq_room_old_couch')
 
   const membersArray = Array.isArray(nextBand.members) ? nextBand.members : []
   const nextMembers = new Array(membersArray.length)
@@ -376,14 +385,24 @@ const updatePassiveEffectsAndMembers = (
 
   // Soundproofing: Harmony boost — wrap the addend so a stale undefined/NaN
   // harmony does not silently drop the bonus (matches the travel regen path).
-  if (hqUpgradesSet.has('hq_room_diy_soundproofing')) {
+  if (isOwnedAndActive('hq_room_diy_soundproofing')) {
     const nextHarmonySoundproofing = clampBandHarmony(
       finiteNumberOr(nextBand.harmony, 0) + 1
     )
     nextBand.harmony = nextHarmonySoundproofing
   }
 
-  if (nextBand.harmonyRegenTravel) {
+  // The Mobile Studio's effect is this persisted flag rather than an
+  // `hqUpgrades` id, so it needs the policy gate spelled out: it is
+  // `between_tours_only` like the rest of the comfort catalog, and an old save
+  // that owns it must not keep regenerating Harmony on the road.
+  if (
+    nextBand.harmonyRegenTravel &&
+    isExpeditionLegacyHqEffectActive(
+      expeditionPolicy.isActive,
+      'hq_van_sound_system'
+    )
+  ) {
     // increase harmony by 5 then clamp — matches the travel/arrival regen
     // (processHarmonyRegen in useArrivalLogic); wrap the addend so a
     // stale undefined/NaN harmony does not silently drop the bonus.
@@ -448,7 +467,8 @@ export const calculateDailyUpdates = (
     nextBand,
     nextSocial,
     controversySnapshot,
-    rng
+    rng,
+    expeditionPolicy
   )
 
   return {

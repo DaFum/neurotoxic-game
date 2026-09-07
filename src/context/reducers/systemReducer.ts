@@ -66,6 +66,10 @@ import { applyTraitUnlocks } from '../../utils/traitUtils'
 import { getRegionKeyForLocation } from '../../utils/mapUtils'
 import { createInitialState } from '../initialState'
 import { sanitizeCareerState } from './careerSanitizers'
+import {
+  reconcileExpeditionAscensionOnLoad,
+  settleExpeditionUnlockJournalOnLoad
+} from '../../domain/expedition/meta'
 import { GAME_PHASES } from '../gameConstants'
 import { QuestLifecycle } from '../../domain/questLifecycle'
 import { getQuestDefinition } from '../../data/questRegistry'
@@ -208,7 +212,12 @@ export const handleLoadGame = (
 
   const safeState: GameState = {
     ...state,
-    career: sanitizeCareerState(loadedState.career),
+    // A save carrying an open journal entry is a Career that was debited and
+    // never granted, so the load finishes it rather than leaving the Tokens
+    // spent and every later purchase blocked.
+    career: settleExpeditionUnlockJournalOnLoad(
+      sanitizeCareerState(loadedState.career)
+    ),
     version: Math.max(explicitVersion, CURRENT_SAVE_VERSION),
     player: mergedPlayer,
     band: validatedBand,
@@ -367,7 +376,10 @@ export const handleLoadGame = (
         : safeState.expedition
   }
 
-  return migratedState
+  // Last, because it reads Career *and* quest evidence that the steps above
+  // sanitize: a persisted Ascension boolean is re-earned or dropped here, and
+  // Tour Pressure goes with it.
+  return reconcileExpeditionAscensionOnLoad(migratedState)
 }
 
 /**

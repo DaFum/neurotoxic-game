@@ -6,6 +6,9 @@ import type { ExpeditionMap } from '../../types/expedition'
 import { mulberry32 } from '../../utils/seededRng'
 import type { GameState } from '../../types'
 import { getEffectiveExpeditionRules } from './effectiveRules'
+import { getExpeditionRoutePressureProfile } from './routeProfile'
+import { getExpeditionFameProfile } from './fame'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 
 export interface PressureDirectorContext {
   heat: number
@@ -60,7 +63,11 @@ export const derivePressureDirectorContext = (
   return {
     heat: bounded(state.expedition.pressure.heat),
     exposure: bounded(state.expedition.pressure.exposure),
-    fameExpectationPressure: 0,
+    // What the scene expects of a band this well known. Read from the one
+    // Fame owner rather than recomputed, so every consumer moves together.
+    fameExpectationPressure: bounded(
+      getExpeditionFameProfile(state).expectationPressure
+    ),
     cashPressure: bounded(
       state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
     ),
@@ -86,6 +93,34 @@ export const derivePressureDirectorContext = (
 const EXPEDITION_PRESSURE_EVENT_POOL_RATE = 0.4 as const
 
 /**
+ * Whether the seeded pool gate opened a pressure event at a route step.
+ *
+ * @param runSeed - The run's seed.
+ * @param routeStep - Route step to judge.
+ * @returns True when this step is one the Director may place an event on.
+ *
+ * @remarks
+ * Pure in `runSeed` and the step - it reads no run state - which is what makes
+ * it the one piece of a resolved pressure event the load sanitizer can
+ * re-derive. A crafted save can compute the same roll, but that only lets it
+ * name a step the run genuinely had an event at, not one of its choosing.
+ */
+export const didExpeditionPressureGateOpen = (
+  runSeed: unknown,
+  routeStep: unknown
+): boolean => {
+  if (!Number.isFinite(runSeed)) return false
+  if (!Number.isInteger(routeStep) || (routeStep as number) < 0) return false
+  const gate = mulberry32(
+    Number.parseInt(
+      hashExpeditionRoute(`${runSeed}:pressure_gate:${routeStep}`),
+      16
+    )
+  )()
+  return gate <= EXPEDITION_PRESSURE_EVENT_POOL_RATE
+}
+
+/**
  * Weighs the pool against the Director context.
  *
  * @param state - Current game state.
@@ -107,7 +142,13 @@ const weighExpeditionPressureEvents = (
     state.expedition.pressure.severeReliefUntilRouteStep !== null &&
     state.expedition.routeStep <=
       state.expedition.pressure.severeReliefUntilRouteStep
-  const bypass = context.heat >= 90
+  // A run this hot is past being cushioned - and so is one that committed
+  // `no_safety_net`, which is exactly what that modifier's extra reward buys.
+  // The bypass only removes the relief damping; it never raises severe weight,
+  // so the worst it can do is put the run back on the undamped curve.
+  const bypass =
+    context.heat >= 90 ||
+    getEffectiveExpeditionRules(state).flags.severeReliefBypass
   // Cash and route depth are run-wide rather than per-family, so they cannot
   // simply scale every weight - that cancels out in a weighted draw and would
   // leave both inputs derived but inert. A run out of spendable Cash feels it
@@ -120,23 +161,36 @@ const weighExpeditionPressureEvents = (
     crew: context.crewStressPressure + context.cashPressure / 2,
     contract: context.activeObligationPressure + context.cashPressure / 2,
     rival: context.rivalPressure,
-    social: context.exposure,
+    // Exposure is how visible this run has made the band; Fame expectation is
+    // how much the scene already demanded of it. Both are attention, so they
+    // pressure the same family.
+    social: context.exposure + context.fameExpectationPressure,
     technical: context.technicalConditionPressure
   }
   // The composed rules publish per-family event weighting, so the Director has
   // to consume it: without this a jammer, `cold_trail`, a Security/Manager
   // crew or a Nemesis level changes nothing about which family the run draws.
   const effective = getEffectiveExpeditionRules(state).numeric
+  // The route-pressure profile is the second axis: it decides how often the
+  // run is *offered* a family, where the numeric rules decide what it is
+  // worth. Both compose here so a corporate Tour leans on Contract pressure
+  // without any Tour id appearing in this module.
+  const route = getExpeditionRoutePressureProfile(state)
   const familyWeight: Record<
     ExpeditionPressureEvent['pressureFamily'],
     number
   > = {
     authority: effective.authorityEventWeightMultiplier,
-    rival: effective.rivalEventWeightMultiplier,
+    // A band people have heard of draws more Rival attention: the third
+    // factor is Fame, alongside the composed rules and the route's own weight.
+    rival:
+      effective.rivalEventWeightMultiplier *
+      route.rivalNodeWeightMultiplier *
+      getExpeditionFameProfile(state).rivalAttentionMultiplier,
     crew: 1,
-    contract: 1,
+    contract: route.sponsorContractEventWeightMultiplier,
     social: 1,
-    technical: 1
+    technical: route.technicalNodeWeightMultiplier
   }
   const weighted = events.map(event => ({
     event,
@@ -211,13 +265,7 @@ export const resolveExpeditionPressureDirectorStep = (
   // One roll decides whether this step has a pressure event at all, so the
   // pool stays as rare as its neighbours; the weighting then decides which.
   const routeStep = state.expedition.routeStep
-  const gate = mulberry32(
-    Number.parseInt(
-      hashExpeditionRoute(`${state.runSeed}:pressure_gate:${routeStep}`),
-      16
-    )
-  )()
-  if (gate > EXPEDITION_PRESSURE_EVENT_POOL_RATE) return pressure
+  if (!didExpeditionPressureGateOpen(state.runSeed, routeStep)) return pressure
 
   const event = selectPressureEvent(state, eligible)
   if (!event) return pressure
@@ -271,8 +319,19 @@ export const applyExpeditionPressureEventResolution = (
         }
       : consumed
 
+  // `black_market_content` gates the Black Market *interaction*, never the
+  // route. The map is still built from seed, Region, Tour and the static
+  // registry alone, so a fresh Career can draw an Underground-heavy route and
+  // gets the identical `mapHash` - it simply cannot work the market yet. The
+  // capability proves only that the event was allowed to be selected; it says
+  // nothing about whether it actually fired, so the Event-rare proof and its
+  // load sanitizer are untouched.
   if (
     event.id !== 'expedition_underground_invite' ||
+    !isExpeditionCapabilityUnlocked(
+      state.career?.unlockedSetIds,
+      'black_market_content'
+    ) ||
     pressure.heat < 60 ||
     pressure.temporaryRouteOpportunity !== null ||
     state.expedition.runId === null ||

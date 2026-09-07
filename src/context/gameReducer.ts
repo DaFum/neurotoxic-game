@@ -111,7 +111,17 @@ import {
 import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
   handleAcquireExpeditionCrewSignature,
-  handleSettleExpeditionCrewCareer
+  handleUnlockExpeditionAscension,
+  handleCommitExpeditionLegendaryReward,
+  handleRecordExpeditionArchiveDiscovery,
+  handleGenerateExpeditionBetweenTourDecisions,
+  handleResolveExpeditionBetweenTourDecision,
+  handleSettleExpeditionCrewCareer,
+  handleSettleExpeditionCareerResult,
+  handlePurchaseExpeditionHqFacility,
+  handleBeginExpeditionUnlockPurchase,
+  handleCompleteExpeditionUnlockPurchase,
+  handleRollbackExpeditionUnlockPurchase
 } from './reducers/careerReducer'
 import {
   handleAdvanceExpeditionBandInjury,
@@ -269,6 +279,25 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ADVANCE_EXPEDITION_BAND_INJURY]:
     handleAdvanceExpeditionBandInjury,
   [ActionTypes.SETTLE_EXPEDITION_CREW_CAREER]: handleSettleExpeditionCrewCareer,
+  [ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT]:
+    handleSettleExpeditionCareerResult,
+  [ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY]:
+    handlePurchaseExpeditionHqFacility,
+  [ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE]:
+    handleBeginExpeditionUnlockPurchase,
+  [ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE]:
+    handleCompleteExpeditionUnlockPurchase,
+  [ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE]:
+    handleRollbackExpeditionUnlockPurchase,
+  [ActionTypes.UNLOCK_EXPEDITION_ASCENSION]: handleUnlockExpeditionAscension,
+  [ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD]:
+    handleCommitExpeditionLegendaryReward,
+  [ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY]:
+    handleRecordExpeditionArchiveDiscovery,
+  [ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS]:
+    handleGenerateExpeditionBetweenTourDecisions,
+  [ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION]:
+    handleResolveExpeditionBetweenTourDecision,
   [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
     handleAcquireExpeditionCrewSignature,
   [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant,
