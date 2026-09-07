@@ -983,10 +983,45 @@ export interface ExpeditionRoutePressureProfile {
 /**
  * One Region's contribution, as data.
  */
+/**
+ * The numeric fields a Region or Tour profile may contribute.
+ *
+ * @remarks
+ * `getEffectiveExpeditionRules` composes an explicit subset of
+ * {@link ExpeditionNumericRules} from the Region and Tour profiles. Every key
+ * outside that subset keeps its base value however the registry declares it,
+ * so typing these profiles as the full `Partial<ExpeditionNumericRules>` let a
+ * balance edit add a field that compiles, passes `satisfies`, and does
+ * nothing. Narrowed to the keys the composition actually reads, so an unread
+ * one is a compile error instead of a silent placebo.
+ */
+export type ExpeditionComposableNumericRuleKey =
+  | 'startingHeat'
+  | 'startingSpareParts'
+  | 'fuelConsumptionMultiplier'
+  | 'roadWearMultiplier'
+  | 'technicalWearMultiplier'
+  | 'repairCostMultiplier'
+  | 'contractRewardMultiplier'
+  | 'heatGainMultiplier'
+  | 'exposureGainMultiplier'
+  | 'crewStressMultiplier'
+  | 'extractionRetentionMultiplier'
+  | 'rareRewardChanceMultiplier'
+  | 'completionMultiplier'
+  | 'rivalEventWeightMultiplier'
+  | 'authorityEventWeightMultiplier'
+  | 'finaleRewardMultiplier'
+
+/** A Region or Tour numeric contribution, limited to the composed keys. */
+export type ExpeditionComposableNumericProfile = Partial<
+  Pick<ExpeditionNumericRules, ExpeditionComposableNumericRuleKey>
+>
+
 export interface ExpeditionRegionDefinition {
   id: ExpeditionRegionId
   labelKey: string
-  numeric: Partial<ExpeditionNumericRules>
+  numeric: ExpeditionComposableNumericProfile
   route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
   /** Heat at or above which corporate Sponsors refuse this Region's runs. */
   corporateSponsorHeatCeiling?: number
@@ -1002,7 +1037,7 @@ export interface ExpeditionTourTypeDefinition {
   depth: number
   /** Inclusive route-step range at which extraction is legal. */
   extractionWindowRange: readonly [number, number]
-  numeric: Partial<ExpeditionNumericRules>
+  numeric: ExpeditionComposableNumericProfile
   route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
   forcedRival: boolean
 }
