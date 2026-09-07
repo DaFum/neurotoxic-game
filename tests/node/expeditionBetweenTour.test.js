@@ -629,6 +629,85 @@ describe('G5 — the next Tour waits for the answers', () => {
   })
 })
 
+describe('G5 — the Sponsor follow-up is about this run', () => {
+  /** A settled run carrying one committed Sponsor obligation. */
+  const withSponsorObligation = sourceId => {
+    const base = settled()
+    return {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        activeObligations: [
+          {
+            id: `obligation_${sourceId}`,
+            sourceType: 'brandDeal',
+            sourceId,
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'completed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+  }
+
+  it('targets the deal the run actually committed to', () => {
+    const generated = generate(withSponsorObligation('deal_carried'))
+    const decision = decisionOf(generated, 'sponsor_follow_up')
+    assert.ok(decision)
+    assert.deepEqual(decision.target, {
+      kind: 'sponsor',
+      id: 'deal_carried'
+    })
+  })
+
+  it('generates nothing for a sponsorless run with an older deal active', () => {
+    // The Career's deal list outlives a Tour, so reading it would follow up on
+    // a deal this run never carried.
+    const base = settled()
+    const sponsorless = {
+      ...base,
+      social: {
+        ...base.social,
+        activeDeals: [{ id: 'deal_from_an_earlier_tour' }]
+      },
+      expedition: { ...base.expedition, activeObligations: [] }
+    }
+    assert.equal(
+      decisionOf(generate(sponsorless), 'sponsor_follow_up'),
+      undefined
+    )
+  })
+
+  it('ignores a native Contract, which is not a Sponsor', () => {
+    const base = settled()
+    const nativeOnly = {
+      ...base,
+      expedition: {
+        ...base.expedition,
+        activeObligations: [
+          {
+            id: 'obligation_native',
+            sourceType: 'native',
+            sourceId: 'contract_keep_it_clean',
+            constraints: [],
+            progressByConstraintId: {},
+            status: 'completed',
+            settled: true,
+            doubleDown: null
+          }
+        ]
+      }
+    }
+    assert.equal(
+      decisionOf(generate(nativeOnly), 'sponsor_follow_up'),
+      undefined
+    )
+  })
+})
+
 describe('G5 — the decisions survive a load', () => {
   it('preserves the decision set, the consequences and the lean', () => {
     // All three are saved with the Career slice, and the load path was

@@ -176,16 +176,36 @@ const resolveRivalResponseTarget = (
   return chosen ? { kind: 'rival', id: chosen[0] } : null
 }
 
-/** The `sponsor_follow_up` target: the deal the run was actually carrying. */
+/**
+ * The `sponsor_follow_up` target: the deal the run was actually carrying.
+ *
+ * @param state - State the settlements have already advanced.
+ * @returns The Sponsor obligation from the finalized run, or `null`.
+ *
+ * @remarks
+ * Read from the run's own frozen `activeObligations`, not from
+ * `social.activeDeals`. The Career's deal list outlives any single Tour, so a
+ * Career that toured sponsorless while an older deal was still active would
+ * generate a follow-up about a deal this run never carried - and the decision
+ * exists to follow up on what the run committed to.
+ *
+ * `sourceType === 'brandDeal'` is the run-scoped proof: a `native` obligation
+ * is a Contract the route offered, not a Sponsor. The lexical pick only ever
+ * breaks a tie between several the same run really carried.
+ */
 const resolveSponsorFollowUpTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
-  const deals: string[] = []
-  for (const deal of state.social?.activeDeals ?? []) {
-    if (typeof deal.id === 'string') deals.push(deal.id)
+  const sourceIds: string[] = []
+  for (const obligation of state.expedition?.activeObligations ?? []) {
+    if (obligation.sourceType !== 'brandDeal') continue
+    if (typeof obligation.sourceId !== 'string' || obligation.sourceId === '')
+      continue
+    if (!sourceIds.includes(obligation.sourceId))
+      sourceIds.push(obligation.sourceId)
   }
-  deals.sort((a, b) => a.localeCompare(b))
-  const chosen = deals[0]
+  sourceIds.sort((a, b) => a.localeCompare(b))
+  const chosen = sourceIds[0]
   return chosen === undefined ? null : { kind: 'sponsor', id: chosen }
 }
 
