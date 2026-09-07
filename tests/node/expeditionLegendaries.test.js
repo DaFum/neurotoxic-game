@@ -437,6 +437,46 @@ describe('G5 — Nemesis Key is the only two-step move in the run', () => {
     assert.equal(deriveExpeditionNemesisKeyTarget(jumped, map), null)
   })
 
+  it('survives a save and load rather than resetting the run', () => {
+    // A jump advances `routeStep` by two while appending one node, so the
+    // load path's "exactly routeStep + 1 visited nodes" rule rejected a legal
+    // move and collapsed the whole active run to idle.
+    const owned = owning('nemesis_key')
+    const target = deriveExpeditionNemesisKeyTarget(owned, map)
+    const jumped = gameReducer(owned, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
+    })
+    assert.equal(jumped.expedition.routeStep, owned.expedition.routeStep + 2)
+
+    const reloaded = sanitizeExpeditionState(
+      JSON.parse(JSON.stringify(jumped.expedition)),
+      jumped.runSeed
+    )
+    assert.equal(reloaded.status, 'active')
+    assert.equal(reloaded.routeStep, jumped.expedition.routeStep)
+    assert.deepEqual(reloaded.visitedNodeIds, jumped.expedition.visitedNodeIds)
+    assert.deepEqual(reloaded.consumedLegendaryIds, ['nemesis_key'])
+  })
+
+  it('refuses a two-layer gap the Legendary did not pay for', () => {
+    const owned = owning('nemesis_key')
+    const target = deriveExpeditionNemesisKeyTarget(owned, map)
+    const jumped = gameReducer(owned, {
+      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
+      payload: { nodeId: target, expectedRouteStep: owned.expedition.routeStep }
+    })
+    // Same path, but the save no longer claims the Legendary was spent - so
+    // the gap is unauthorized and the run must not resume across it.
+    const forged = sanitizeExpeditionState(
+      JSON.parse(
+        JSON.stringify({ ...jumped.expedition, consumedLegendaryIds: [] })
+      ),
+      jumped.runSeed
+    )
+    assert.equal(forged.status, 'idle')
+  })
+
   it('refuses the same jump to a Career that does not own it', () => {
     const owned = owning('nemesis_key')
     const target = deriveExpeditionNemesisKeyTarget(owned, map)

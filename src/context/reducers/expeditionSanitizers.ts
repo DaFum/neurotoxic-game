@@ -592,32 +592,68 @@ export const sanitizeExpeditionState = (
     )
   }
 
-  // For active or terminal Expeditions, validate visitedNodeIds strictly against canonical DAG.
-  // The visited path must contain exactly routeStep + 1 nodes: startNodeId at index 0,
-  // and each step i connected to step i-1 with meta[nodeId].routeStep === i.
+  // Nemesis Key is the only overlay that spans two layers
+  // (`routeOverlay.ts` passes `stepsAhead: 2` for it and nothing else), and it
+  // is consumed by being travelled - so a run may hold at most one two-layer
+  // gap in its path, and only if that Legendary is recorded as spent. Read
+  // ahead of the narrowing below because the path check needs it here.
+  const consumedNemesisKey =
+    Array.isArray(value.consumedLegendaryIds) &&
+    value.consumedLegendaryIds.includes('nemesis_key')
+
+  // For active or terminal Expeditions, validate visitedNodeIds strictly
+  // against the canonical DAG: startNodeId at index 0, strictly increasing
+  // route steps, and every move either a base connection or the one
+  // overlay-authorized two-layer jump. The last node's step is what
+  // `routeStep` must equal - a jump advances the step by two while appending a
+  // single node, so counting nodes against `routeStep + 1` rejected a legal
+  // Nemesis Key move and reset the whole run to idle on reload.
   const validVisitedPath: string[] = []
   if (preparedMap && (status === 'active' || TERMINAL_STATUSES.has(status))) {
-    if (rawVisitedNodeIds.length !== routeStep + 1) {
+    if (rawVisitedNodeIds.length !== routeStep + 1 && !consumedNemesisKey) {
       return fallback
     }
     if (rawVisitedNodeIds[0] !== preparedMap.startNodeId) {
       return fallback
     }
+    if (preparedMap.meta[rawVisitedNodeIds[0]!]?.routeStep !== 0) {
+      return fallback
+    }
     validVisitedPath.push(rawVisitedNodeIds[0]!)
-    for (let i = 1; i <= routeStep; i++) {
+    let twoLayerJumps = 0
+    for (let i = 1; i < rawVisitedNodeIds.length; i++) {
       const prevId = validVisitedPath[i - 1]!
       const currId = rawVisitedNodeIds[i]!
+      const prevMeta = preparedMap.meta[prevId]
       const currMeta = preparedMap.meta[currId]
-      if (!currMeta || currMeta.routeStep !== i) {
-        return fallback
-      }
-      const isConnected = preparedMap.connections.some(
-        conn => conn.from === prevId && conn.to === currId
-      )
-      if (!isConnected) {
+      if (!prevMeta || !currMeta) return fallback
+      const span = currMeta.routeStep - prevMeta.routeStep
+      if (span === 1) {
+        const isConnected = preparedMap.connections.some(
+          conn => conn.from === prevId && conn.to === currId
+        )
+        if (!isConnected) return fallback
+      } else if (span === 2 && consumedNemesisKey && twoLayerJumps === 0) {
+        // The overlay edge itself is not in the base map, so the check is that
+        // the target sits two layers downstream on a branch the run could
+        // actually have been standing on - not at an arbitrary depth.
+        const reachableViaOneNode = preparedMap.connections.some(
+          first =>
+            first.from === prevId &&
+            preparedMap.connections.some(
+              second => second.from === first.to && second.to === currId
+            )
+        )
+        if (!reachableViaOneNode) return fallback
+        twoLayerJumps += 1
+      } else {
         return fallback
       }
       validVisitedPath.push(currId)
+    }
+    // The path has to end where the run says it is.
+    if (preparedMap.meta[validVisitedPath.at(-1)!]?.routeStep !== routeStep) {
+      return fallback
     }
   } else if (rawVisitedNodeIds.length > 0) {
     validVisitedPath.push(...rawVisitedNodeIds)
