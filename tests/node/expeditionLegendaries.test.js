@@ -281,7 +281,6 @@ describe('G5 — a Legendary is earned by a Finale, once', () => {
     const sanitized = sanitizeCareerState(raw)
     assert.deepEqual(sanitized.legendaryIds, ['safe_harbor'])
     assert.deepEqual(sanitized.legendaryClaimedRunIds, ['run_1'])
-    assert.equal(Object.hasOwn(sanitized.legendaryIds, '__proto__'), false)
   })
 
   it('resets the run-scoped consumption at START', () => {

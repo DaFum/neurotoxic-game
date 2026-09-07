@@ -10,6 +10,7 @@
 
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
@@ -35,7 +36,7 @@ import {
   walkToFinale
 } from '../expeditionLifecycleFixture.js'
 
-const REPO_ROOT = new URL('../../', import.meta.url).pathname
+const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url))
 
 const record = (state, category, id, sourceId) =>
   gameReducer(
@@ -347,15 +348,24 @@ describe('G5 — the Archive is written by the run, not by a caller', () => {
 describe('G5 — the Archive survives a load without becoming authority', () => {
   it('keeps canonical entries and drops everything else', () => {
     const contrabandId = [...CONTRABAND_BY_ID.keys()][0]
+    // Built from JSON text, not an object literal: `__proto__:` in a literal
+    // sets the prototype instead of creating an own property, and
+    // `JSON.stringify` then omits it entirely - so the sanitizer would never
+    // see the hostile key this case exists to reject.
     const raw = JSON.parse(
-      JSON.stringify({
-        region: [FIXTURE_REGION_ID, 'not_a_region', FIXTURE_REGION_ID],
-        contraband: [contrabandId, ''],
-        rival: ['rival_1', 42],
-        not_a_category: ['whatever'],
-        __proto__: ['hostile']
-      })
+      `{
+        "region": ${JSON.stringify([
+          FIXTURE_REGION_ID,
+          'not_a_region',
+          FIXTURE_REGION_ID
+        ])},
+        "contraband": ${JSON.stringify([contrabandId, ''])},
+        "rival": ["rival_1", 42],
+        "not_a_category": ["whatever"],
+        "__proto__": ["hostile"]
+      }`
     )
+    assert.equal(Object.hasOwn(raw, '__proto__'), true)
     const sanitized = sanitizeCareerState({ archiveByCategory: raw })
     assert.deepEqual(sanitized.archiveByCategory.region, [FIXTURE_REGION_ID])
     assert.deepEqual(sanitized.archiveByCategory.contraband, [contrabandId])

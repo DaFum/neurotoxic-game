@@ -11,6 +11,7 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
+import { calculateFameLevel } from '../../src/utils/gameState/calculations'
 import {
   completeExpedition,
   extractExpedition,
@@ -210,6 +211,25 @@ describe('EXTRACT_EXPEDITION', () => {
     assert.equal(next.expedition.outcome?.settlement.retentionRate, 0.6)
     assert.equal(next.player.money, 5000 + 600)
     assert.equal(next.player.fame, 100 + 30)
+  })
+
+  it('recomputes fameLevel with the Fame the settlement writes', () => {
+    // `fameLevel` is derived from `fame`, so a settlement that moves Fame
+    // without recomputing the rank leaves later Fame-level-dependent costs
+    // reading the old one.
+    // Earned Fame large enough that the retained 60% crosses a band:
+    // fameLevel is floor(sqrt(fame / 200)), so 100 -> 280 moves 0 -> 1.
+    const state = earn(atWindow(), 1000, 300)
+    const before = state.player.fameLevel
+    const next = extract(state, {
+      expectedRouteStep: WINDOW_STEP,
+      explicitRareRewardIds: []
+    })
+    assert.equal(next.player.fame, 100 + 180)
+    assert.equal(next.player.fameLevel, calculateFameLevel(next.player.fame))
+    // The fixture has to actually cross a band, or the assertion above holds
+    // for a stale value too.
+    assert.notEqual(next.player.fameLevel, before)
   })
 
   it('refuses extraction before the route offers a window', () => {

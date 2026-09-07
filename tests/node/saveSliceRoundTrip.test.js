@@ -19,6 +19,13 @@ import { createFixedClock } from '../../src/utils/clock'
 import { buildExpeditionMap } from '../../src/domain/expedition/map'
 import { CHASSIS_CONFIG } from '../../src/utils/assetConfig'
 
+/**
+ * The fixture seed, shared by the persisted state and the route derived from
+ * it. Written twice, these drift and the load sanitizer drops the reward entry -
+ * which surfaces as a route-generation failure rather than the mismatch it is.
+ */
+const FIXTURE_RUN_SEED = 654322
+
 const clock = createFixedClock(Date.parse('2026-01-01T00:00:00Z'))
 
 /**
@@ -145,10 +152,11 @@ const buildPopulatedState = () => {
     }
   ]
   state.rngSeed = 123456
-  // 654322 rather than 654321: the reward ledger is re-validated on load
-  // against the canonical route, and 654321 no longer produces a route rare at
-  // all, so the fixture had no legitimate entry to preserve.
-  state.runSeed = 654322
+  // `FIXTURE_RUN_SEED` is deliberately not the original 654321: the reward
+  // ledger is re-validated on load against the canonical route, and that seed
+  // no longer produces a route rare at all, so the fixture had no legitimate
+  // entry to preserve.
+  state.runSeed = FIXTURE_RUN_SEED
   // `sanitizeRivalBand` returns exactly these five fields — `fame` is not one of
   // them, so an invented field would read as a round-trip loss.
   state.rivalBand = {
@@ -316,7 +324,11 @@ const findRareWalk = (runSeed, tourTypeId, regionId) => {
   throw new Error('the fixture route carries no rare reward')
 }
 
-const rareWalk = findRareWalk(654322, 'standard_tour', 'industrial_belt')
+const rareWalk = findRareWalk(
+  FIXTURE_RUN_SEED,
+  'standard_tour',
+  'industrial_belt'
+)
 
 describe('persisted save slice round-trip', () => {
   const persisted = createPersistedState(buildPopulatedState(), clock)

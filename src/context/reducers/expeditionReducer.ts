@@ -837,6 +837,10 @@ const applyExpeditionSettlement = (
     finiteNumberOr(settlement.fameRetained, 0) -
     finiteNumberOr(settlement.fameEarned, 0)
 
+  const nextFame = clampPlayerFame(
+    finiteNumberOr(state.player.fame, 0) + fameDelta
+  )
+
   return {
     ...state,
     player: {
@@ -844,7 +848,10 @@ const applyExpeditionSettlement = (
       money: clampPlayerMoney(
         finiteNumberOr(state.player.money, 0) + moneyDelta
       ),
-      fame: clampPlayerFame(finiteNumberOr(state.player.fame, 0) + fameDelta)
+      fame: nextFame,
+      // `fameLevel` is derived from `fame`, so writing one without the other
+      // leaves later Fame-level-dependent costs reading the old rank.
+      fameLevel: calculateFameLevel(nextFame)
     }
   }
 }

@@ -8,11 +8,12 @@
 
 import assert from 'node:assert/strict'
 import { readFileSync, readdirSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
 import { join } from 'node:path'
 import { describe, it } from 'node:test'
 
 /** Repository root, so the source sweep below does not depend on the cwd. */
-const REPO_ROOT = new URL('../../', import.meta.url).pathname
+const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url))
 
 import { gameReducer } from '../../src/context/gameReducer'
 import { ActionTypes } from '../../src/context/actionTypes'
