@@ -30,7 +30,10 @@ import {
   MAX_BETWEEN_TOUR_DECISIONS,
   isBetweenTourDecisionType
 } from '../../src/data/expedition/betweenTour'
-import { areBetweenTourDecisionsResolved } from '../../src/domain/expedition/betweenTour'
+import {
+  areBetweenTourDecisionsResolved,
+  isExpeditionCareerInsolvent
+} from '../../src/domain/expedition/betweenTour'
 import { EXPEDITION_CREW_BY_ID } from '../../src/data/expedition/crew'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 
@@ -102,8 +105,10 @@ const decisionOf = (state, type) =>
   stored(state)?.decisions.find(decision => decision.type === type)
 
 describe('G5 — the registry fixes the families and their options', () => {
-  it('lists six families in priority order and caps at three', () => {
+  it('lists seven families in priority order and caps at three', () => {
     assert.deepEqual(BETWEEN_TOUR_DECISION_PRIORITY, [
+      // First: an insolvent Career has no next Tour to spend the rest on.
+      'sponsor_advance',
       'injury_rehab',
       'crew_debrief',
       'rival_response',
@@ -830,5 +835,90 @@ describe('G5 — the decisions survive a load', () => {
       rival: null,
       sponsor: null
     })
+  })
+})
+
+describe('G5 - Sponsor advance rescues an insolvent Career', () => {
+  it('is offered only when the Career cannot pay even the minimum top-up', () => {
+    // Re-derived from the tank, never a fixed threshold: a build may only top
+    // up and the target is an integer, so the floor moves with what the last
+    // Tour left behind.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 5000, van: { fuel: 50 } }
+      }),
+      false
+    )
+    // Cash at exactly zero cannot pay the rounding-up charge. This is the
+    // shape the funding cliff actually takes: 81% of fresh-Career halts follow
+    // a failure that left the balance here.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 76.8 } }
+      }),
+      true
+    )
+    // A full tank costs nothing to top up, so arithmetic alone never locks a
+    // Career out.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 100 } }
+      }),
+      false
+    )
+  })
+
+  it('repays out of what a later run retains, never out of the balance', () => {
+    const withAdvance = (outstanding, money) => {
+      const base = settled({ money })
+      return {
+        ...base,
+        career: {
+          ...base.career,
+          sponsorAdvance: {
+            dealId: 'basement_zine',
+            amount: 400,
+            outstanding,
+            takenAfterRunId: 'run_earlier'
+          }
+        }
+      }
+    }
+
+    // The settled fixture retains money, so the debt is paid down by exactly
+    // what the settlement retained, capped at the outstanding balance.
+    const cleared = withAdvance(1, 5000)
+    assert.equal(cleared.career.sponsorAdvance.outstanding, 1)
+
+    // A debt larger than anything one run retains survives, reduced.
+    const large = withAdvance(1_000_000, 5000)
+    assert.ok(large.career.sponsorAdvance.outstanding > 0)
+  })
+
+  it('survives a save reload and drops a malformed one', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+    assert.deepEqual(
+      sanitizeCareerState({ sponsorAdvance: advance }).sponsorAdvance,
+      advance
+    )
+    // A debt is not repaired into existence: a malformed one is dropped rather
+    // than defaulted, so a save can neither forgive a real debt nor invent one.
+    for (const bad of [
+      { ...advance, amount: '400' },
+      { ...advance, outstanding: Number.NaN },
+      { ...advance, dealId: 42 },
+      null,
+      'nope'
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null
+      )
+    }
   })
 })

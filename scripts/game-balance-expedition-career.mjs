@@ -49,6 +49,9 @@ import {
 import { runExpeditionSimulation } from './game-balance-expedition-runner.mjs'
 import { finiteNumberOr } from '../src/utils/finiteNumber.ts'
 
+/** Production ceiling on a committed starting Fuel target. */
+const MAX_EXPEDITION_FUEL = 100
+
 export const CAREER_CALIBRATION_NAMESPACE =
   '#roguelite-expedition-v1#career#calibration'
 export const CAREER_HOLDOUT_NAMESPACE =
@@ -209,20 +212,43 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
       // Staged offers are applied by the caller, which has the prepared
       // snapshot; the builder never invents one.
       sponsorOfferId: null,
-      // A build may only top the tank up, never siphon it, so a Career that
-      // ended its last Tour above the profile's target commits that higher
-      // level rather than an illegal one.
-      startingFuelTarget: Math.min(
-        100,
-        Math.max(
-          50,
-          profile.startingFuelTarget,
-          Math.ceil(finiteNumberOr(state.player.van?.fuel, 0))
-        )
-      ),
+      // A build may only top the tank up, never siphon it, so the floor is
+      // whatever the last Tour left. Above that floor the persona asks for its
+      // preferred level, but only as far as the Career can actually pay for:
+      // "best currently legal approximation" includes affordable. Insisting on
+      // the preferred target while broke made the builder refuse Tours a real
+      // player would simply book with a smaller top-up.
+      startingFuelTarget: affordableFuelTarget(state, profile),
       protectedCareerCash: 0
     }
   }
+}
+
+/**
+ * The highest Fuel target this Career can both legally commit and afford.
+ *
+ * @param state - Live Career state.
+ * @param profile - Persona whose preferred target is the ceiling.
+ * @returns A legal `startingFuelTarget`.
+ *
+ * @remarks
+ * START charges `getExpeditionFuelTopUpCost(currentFuel, target)` before
+ * anything else, so a target the Career cannot pay for is refused outright.
+ * The floor is the current level - a build may only top up - and that floor
+ * always costs nothing, so a Career is never locked out of booking entirely.
+ */
+const affordableFuelTarget = (state, profile) => {
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
+  const floor = Math.min(MAX_EXPEDITION_FUEL, Math.ceil(currentFuel))
+  const preferred = Math.min(
+    MAX_EXPEDITION_FUEL,
+    Math.max(floor, profile.startingFuelTarget)
+  )
+  const money = Math.max(0, finiteNumberOr(state.player.money, 0))
+  for (let target = preferred; target > floor; target--) {
+    if (getExpeditionFuelTopUpCost(currentFuel, target) <= money) return target
+  }
+  return floor
 }
 
 /**
@@ -325,6 +351,7 @@ export const runFreshCareerSequence = (
     firstNaturalLegendaryRun: null,
     signatureTraitUnlockRun: null,
     crewRecoveryDebtDurations: [],
+    sponsorAdvancesTaken: 0,
     normalTerminals: 0,
     solventAfterNormalTerminal: 0,
     insolventAfterNormalTerminalRuns: [],
@@ -535,21 +562,32 @@ export const runFreshCareerSequence = (
       const decisions = state.career.betweenTourByRunId[runId]?.decisions ?? []
       totalBetweenTourDecisions += decisions.length
       for (const dec of decisions) {
+        // The persona takes a Sponsor advance whenever one is offered: it is
+        // only generated for a Career that cannot fund its next Tour at all,
+        // so declining is choosing to end the Career. Every other family keeps
+        // the free option, which is what makes the sequence's economy the
+        // finding rather than the policy's spending.
         const free =
-          dec.optionIds.find(opt =>
-            [
-              'accept_unavailability',
-              'rest_band',
-              'carry_damage',
-              'cool_down',
-              'walk_away',
-              'cash_out'
-            ].includes(opt)
-          ) ?? dec.optionIds[0]
+          dec.type === 'sponsor_advance'
+            ? 'take_advance'
+            : (dec.optionIds.find(opt =>
+                [
+                  'accept_unavailability',
+                  'rest_band',
+                  'carry_damage',
+                  'cool_down',
+                  'walk_away',
+                  'cash_out'
+                ].includes(opt)
+              ) ?? dec.optionIds[0])
+        const beforeAdvance = state.career.sponsorAdvance
         state = gameReducer(state, {
           type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
           payload: { runId, decisionId: dec.id, optionId: free }
         })
+        if (beforeAdvance === null && state.career.sponsorAdvance !== null) {
+          metrics.sponsorAdvancesTaken += 1
+        }
       }
 
       // Step D: Perform at most ONE facility OR unlock-set purchase from earned Tour Tokens

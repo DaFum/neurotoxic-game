@@ -70,7 +70,16 @@ import {
 /**
  * Highest fuel level the van can be topped up to before departure.
  */
-const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+/**
+ * Ceiling on a committed starting Fuel target.
+ *
+ * @remarks
+ * Exported so callers that need to reason about the cheapest legal build - the
+ * Between-Tour insolvency check, the balance harness - use the same ceiling the
+ * validator enforces rather than a literal of their own.
+ */
+export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
  * Cash the player may spend inside an active Expedition.

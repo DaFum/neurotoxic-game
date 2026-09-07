@@ -959,12 +959,36 @@ const applyExpeditionSettlement = (
     finiteNumberOr(state.player.fame, 0) + fameDelta
   )
 
+  // A Sponsor advance is repaid out of what this run actually retains, never
+  // out of the Career's standing balance: the Tour that recovers pays for the
+  // Tour that failed, and a run that retained nothing simply carries the debt
+  // forward. Taking it from the balance instead could push a Career that just
+  // failed straight back below the booking floor the advance existed to clear.
+  const advance = state.career.sponsorAdvance
+  const repayable = Math.max(
+    0,
+    Math.min(
+      finiteNumberOr(advance?.outstanding, 0),
+      finiteNumberOr(settlement.moneyRetained, 0)
+    )
+  )
+  const nextAdvance =
+    advance === null
+      ? null
+      : repayable >= advance.outstanding
+        ? null
+        : { ...advance, outstanding: advance.outstanding - repayable }
+
   return {
     ...state,
+    career:
+      advance === nextAdvance
+        ? state.career
+        : { ...state.career, sponsorAdvance: nextAdvance },
     player: {
       ...state.player,
       money: clampPlayerMoney(
-        finiteNumberOr(state.player.money, 0) + moneyDelta
+        finiteNumberOr(state.player.money, 0) + moneyDelta - repayable
       ),
       fame: nextFame,
       // `fameLevel` is derived from `fame`, so writing one without the other

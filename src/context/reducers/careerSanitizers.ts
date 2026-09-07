@@ -310,6 +310,7 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     // set counts as resolved, so that loss also let the next Tour open on a
     // run whose questions were never asked.
     betweenTourByRunId: sanitizeBetweenTourByRunId(value.betweenTourByRunId),
+    sponsorAdvance: sanitizeSponsorAdvance(value.sponsorAdvance),
     bandConsequenceByMemberId: sanitizeBandConsequences(
       value.bandConsequenceByMemberId
     ),
@@ -397,6 +398,37 @@ const sanitizeBetweenTourDecision = (
  * consequences they were about. The entry's `runId` must match its own key, or
  * a resolve addressed by run id would act on a different set.
  */
+/**
+ * Narrows a persisted Sponsor advance.
+ *
+ * @param value - Raw persisted advance.
+ * @returns The narrowed advance, or `null`.
+ *
+ * @remarks
+ * An advance is a debt, so a malformed one is dropped rather than repaired:
+ * inventing an `outstanding` a save did not carry would either forgive a real
+ * debt or charge one the Career never took.
+ */
+const sanitizeSponsorAdvance = (
+  value: unknown
+): CareerState['sponsorAdvance'] => {
+  if (!isLooseRecord(value)) return null
+  const { dealId, takenAfterRunId } = value
+  if (typeof dealId !== 'string' || isForbiddenKey(dealId)) return null
+  if (typeof takenAfterRunId !== 'string') return null
+  const { amount, outstanding } = value
+  // `isFiniteNumber` rather than coercion: a numeric string or a boolean is a
+  // malformed debt, not a small one.
+  if (!isFiniteNumber(amount) || amount <= 0) return null
+  if (!isFiniteNumber(outstanding) || outstanding < 0) return null
+  return {
+    dealId,
+    amount: Math.round(amount),
+    outstanding: Math.round(outstanding),
+    takenAfterRunId
+  }
+}
+
 const sanitizeBetweenTourByRunId = (
   value: unknown
 ): Record<string, BetweenTourRunState> =>

@@ -27,16 +27,23 @@ import {
   BETWEEN_TOUR_DECISION_PRIORITY,
   BETWEEN_TOUR_OPTIONS,
   BETWEEN_TOUR_REHAB_COST,
+  BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT,
+  BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE,
   BETWEEN_TOUR_REPAIR_CONDITION_CEILING,
   BETWEEN_TOUR_REPAIR_COST_PER_POINT,
   MAX_BETWEEN_TOUR_DECISIONS
 } from '../../data/expedition/betweenTour'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getEligibleCrewSignatureTrait } from './career'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { hashExpeditionRoute } from './map'
 import { resolveCrewRecoveryDebt } from './injuries'
 import { clampPlayerMoney } from '../../utils/gameState/clamps'
+import {
+  getExpeditionFuelTopUpCost,
+  EXPEDITION_MAX_STARTING_FUEL
+} from './loadout'
 
 /** Band consequence stages, weakest first. */
 const BAND_CONSEQUENCE_ORDER = ['none', 'light', 'serious', 'critical'] as const
@@ -193,6 +200,73 @@ const resolveRivalResponseTarget = (
  * is a Contract the route offered, not a Sponsor. The lexical pick only ever
  * breaks a tie between several the same run really carried.
  */
+/**
+ * The `sponsor_advance` target: the Sponsor willing to front an insolvent Career.
+ *
+ * @param state - State the settlements have already advanced.
+ * @returns The Sponsor the failed run was carrying, or `null`.
+ *
+ * @remarks
+ * Generated only when all three hold: the run actually failed, the Career
+ * cannot fund the cheapest legal next build, and no advance is already
+ * outstanding. A Career that bailed out voluntarily is not owed a rescue, and
+ * one that can still afford a Tour does not need one - 81% of fresh-Career
+ * funding halts follow a failure, which is the case this exists for.
+ *
+ * The Sponsor is the one the failed run carried, read from the run's own frozen
+ * obligations for the same reason `sponsor_follow_up` does: the Career's deal
+ * list outlives the Tour.
+ */
+/**
+ * Whether the Career can no longer fund the cheapest legal next Expedition.
+ *
+ * @param state - State the settlements have already advanced.
+ * @returns True when even a minimal build is unaffordable.
+ *
+ * @remarks
+ * The Fuel top-up is the whole discretionary floor: a Career between Tours owns
+ * whatever chassis and gear it already has, so `getExpeditionFuelTopUpCost` at
+ * the minimum legal target is what START would actually charge. Deliberately
+ * not a fixed threshold - the floor moves with how much Fuel the last Tour left
+ * in the tank.
+ */
+export const isExpeditionCareerInsolvent = (state: GameState): boolean => {
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
+  // A build may only top up and the target is an integer, so the cheapest
+  // legal target is the current level rounded up. That is a small charge, but
+  // a Career sitting at exactly zero cannot pay even that - which is the shape
+  // the funding cliff actually takes.
+  const target = Math.min(EXPEDITION_MAX_STARTING_FUEL, Math.ceil(currentFuel))
+  const cost = getExpeditionFuelTopUpCost(currentFuel, target)
+  return finiteNumberOr(state.player.money, 0) < cost
+}
+
+const resolveSponsorAdvanceTarget = (
+  state: GameState
+): BetweenTourTarget | null => {
+  if (state.expedition.outcome?.kind !== 'failed') return null
+  if (state.career.sponsorAdvance !== null) return null
+  if (!isExpeditionCareerInsolvent(state)) return null
+
+  // The Sponsor the failed run carried, when it carried one. Most Careers that
+  // reach this point toured sponsorless - that is part of why they are broke -
+  // so a deal the run never had is the fallback rather than a reason to offer
+  // nothing. It is the lowest-upfront deal in the registry, resolved
+  // deterministically: the band that just failed is not being courted by
+  // anyone good.
+  const carried = resolveSponsorFollowUpTarget(state)
+  if (carried) return carried
+
+  const cheapest = [...BRAND_DEALS_BY_ID.values()]
+    .slice()
+    .sort(
+      (a, b) =>
+        finiteNumberOr(a.offer?.upfront, 0) -
+          finiteNumberOr(b.offer?.upfront, 0) || a.id.localeCompare(b.id)
+    )[0]
+  return cheapest ? { kind: 'sponsor', id: cheapest.id } : null
+}
+
 const resolveSponsorFollowUpTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
@@ -292,6 +366,9 @@ export const generateBetweenTourDecisions = (
         break
       case 'rival_response':
         add(type, withAllOptions(type, resolveRivalResponseTarget(state)))
+        break
+      case 'sponsor_advance':
+        add(type, withAllOptions(type, resolveSponsorAdvanceTarget(state)))
         break
       case 'sponsor_follow_up':
         add(type, withAllOptions(type, resolveSponsorFollowUpTarget(state)))
@@ -473,6 +550,40 @@ export const applyBetweenTourDecisionOption = (
       }
     }
 
+    case 'sponsor_advance': {
+      if (decision.target.kind !== 'sponsor') return null
+      if (optionId === 'decline_advance') return state
+      if (optionId !== 'take_advance') return null
+      // Re-derived, never trusted from the decision: the Career may have been
+      // made solvent by an earlier decision in the same Between-Tour set, and
+      // an advance it no longer needs is not one it may take.
+      if (state.career.sponsorAdvance !== null) return null
+      if (!isExpeditionCareerInsolvent(state)) return null
+      const runId = state.expedition.outcome?.runId
+      if (typeof runId !== 'string') return null
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          money: clampPlayerMoney(
+            finiteNumberOr(state.player.money, 0) +
+              BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT
+          )
+        },
+        career: {
+          ...state.career,
+          sponsorAdvance: {
+            dealId: decision.target.id,
+            amount: BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT,
+            outstanding: Math.round(
+              BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT *
+                BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE
+            ),
+            takenAfterRunId: runId
+          }
+        }
+      }
+    }
     case 'sponsor_follow_up': {
       if (decision.target.kind !== 'sponsor') return null
       if (optionId === 'keep_relationship') {
