@@ -212,6 +212,43 @@ describe('TourPrep scene', () => {
     ])
   })
 
+  it('keeps Sponsor and Contract picks when the route is re-picked unchanged', () => {
+    // Sponsor offers and Contracts are staged per Region/Tour, so a real route
+    // change must drop them - but re-picking the route already active is not a
+    // change. It used to clear both anyway, and a fresh Career has exactly one
+    // Tour and one Region, so every click on those buttons silently discarded
+    // the player's picks.
+    const base = buildState()
+    base.expedition = {
+      ...base.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
+    }
+    base.career = { ...base.career, unlockedSetIds: ['festival_network'] }
+    state.current = base
+    render(<TourPrep />)
+
+    const offer = base.expedition.preparedSponsorOffers[0]
+    expect(offer).toBeDefined()
+    fireEvent.click(
+      screen.getByTestId(`expedition-prep-sponsor-${offer.offerId}`)
+    )
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-contract-contract_three_good_gigs')
+    )
+
+    // Re-pick the Tour and Region that are already active.
+    fireEvent.click(screen.getByTestId('expedition-prep-tour-standard_tour'))
+    fireEvent.click(screen.getByTestId('expedition-prep-region-home_turf'))
+
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+
+    const committed = actions.startExpedition.mock.calls[0][0]
+    expect(committed.build.sponsorOfferId).toBe(offer.offerId)
+    expect(committed.nativeContracts).toEqual([
+      { templateId: 'contract_three_good_gigs', targetNodeId: null }
+    ])
+  })
+
   it('derives the route target for a route contract rather than asking', () => {
     state.current = buildState()
     render(<TourPrep />)

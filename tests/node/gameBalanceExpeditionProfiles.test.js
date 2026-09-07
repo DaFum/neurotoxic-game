@@ -12,7 +12,8 @@ import {
   validateExpeditionBalanceProfile,
   toCanonicalTourTypeId,
   toCanonicalRegionId,
-  buildProductionSimulationLoadout
+  buildProductionSimulationLoadout,
+  MATURE_FIXTURE_VERSION
 } from '../../scripts/game-balance-expedition-profiles.mjs'
 import { getExpeditionChassisArchetype } from '../../src/domain/expedition/chassis.ts'
 import { EXPEDITION_TOUR_TYPES } from '../../src/data/expedition/tourTypes.ts'
@@ -191,13 +192,60 @@ describe('Expedition Balance Profiles (G6 Tasks 1-3)', () => {
       protectedCashRatio: 0.35,
       requiredCapabilitySetIds: ['industry_network'], // only 1 set!
       requiresAscension: true,
-      decisionPolicy: 'safe_value'
+      decisionPolicy: 'safe_value',
+      matureFixture: {
+        version: MATURE_FIXTURE_VERSION,
+        money: 500000,
+        fame: 150,
+        memberSkills: { tech: 5, technical: 5, charisma: 5 },
+        vanUpgrades: []
+      }
     }
 
     assert.throws(
       () => validateExpeditionBalanceProfile(invalidProfile),
       /requiresAscension must declare >= 3 capability sets/
     )
+  })
+
+  it('rejects a profile that leaves mature fixture inputs undeclared', () => {
+    // G6 Task 2 forbids hidden Cash/Fame/skill/equipment defaults. A profile
+    // without the block would send the builder back to its own constants,
+    // which is what made two runs of one profile irreproducible from the
+    // profile alone.
+    const base = EXPEDITION_BALANCE_PROFILES[0]
+    const withoutFixture = { ...base }
+    delete withoutFixture.matureFixture
+    assert.throws(
+      () => validateExpeditionBalanceProfile(withoutFixture),
+      /missing matureFixture/
+    )
+
+    assert.throws(
+      () =>
+        validateExpeditionBalanceProfile({
+          ...base,
+          matureFixture: { ...base.matureFixture, version: 999 }
+        }),
+      /matureFixture\.version 999 is not the supported/
+    )
+
+    assert.throws(
+      () =>
+        validateExpeditionBalanceProfile({
+          ...base,
+          matureFixture: { ...base.matureFixture, money: Number.NaN }
+        }),
+      /matureFixture\.money must be a non-negative finite number/
+    )
+  })
+
+  it('declares the mature fixture on every shipped profile', () => {
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      assert.equal(profile.matureFixture.version, MATURE_FIXTURE_VERSION)
+      assert.ok(profile.matureFixture.money >= 0)
+      assert.ok(Array.isArray(profile.matureFixture.vanUpgrades))
+    }
   })
 
   describe('buildProductionSimulationLoadout (G6 Task 4)', () => {

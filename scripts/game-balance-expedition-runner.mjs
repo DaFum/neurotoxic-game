@@ -30,8 +30,10 @@ import {
 } from '../src/domain/expedition/extraction.ts'
 import { canSpendExpeditionCash } from '../src/domain/expedition/loadout.ts'
 import { getExpeditionCargoView } from '../src/domain/expedition/cargo.ts'
+import { getExpeditionNodeFogByNodeId } from '../src/domain/expedition/nodeFog.ts'
 import { isExpeditionSafeHarborWindow } from '../src/domain/expedition/legendaries.ts'
 import { ALL_VENUES } from '../src/data/venues.ts'
+import { buildGigStatsSnapshot } from '../src/utils/gigStats.ts'
 import {
   extractExpedition,
   completeExpedition,
@@ -56,7 +58,10 @@ import {
   toCanonicalRegionId,
   toCanonicalTourTypeId
 } from './game-balance-expedition-profiles.mjs'
-import { finiteNumberOr } from '../src/utils/finiteNumber.ts'
+import {
+  finiteNumberOr,
+  isFiniteNumber
+} from '../src/utils/finiteNumber.ts'
 import { clampVanCondition } from '../src/utils/gameState/index.ts'
 
 export const CALIBRATION_COHORT_NAMESPACE =
@@ -563,6 +568,59 @@ export const revealCandidateIntel = (state, candidateNodeIds) => {
 }
 
 /**
+ * Notes a simulated Gig attempts. Fixed so a tier's miss count is a property
+ * of its accuracy rather than of route length.
+ */
+const SIMULATED_GIG_NOTE_COUNT = 200
+
+/**
+ * Builds a complete, production-shaped Gig result for a skill tier.
+ *
+ * @param {number} gigAccuracy - Target hit accuracy, 0-100.
+ * @param {number} _routeStep - Route step. Accepted so a caller can key a
+ * future per-step variation off it; the tiers are deterministic today.
+ * @returns {import('../src/utils/gigStats.ts').GigStatsSnapshot}
+ *
+ * @remarks
+ * The probe used to dispatch `{ score, accuracy, failed }` and nothing else.
+ * `calculatePostGigTechnicalWear` reads `misses`, so every tier was scored as
+ * a flawless run for instrument wear and the skill comparison never touched
+ * the production consequence it claimed to measure. Hits and misses are
+ * derived here and the snapshot itself is built by `buildGigStatsSnapshot`,
+ * so accuracy comes from `calculateAccuracy` rather than from the caller.
+ */
+export const resolveSimulatedGigPerformance = (gigAccuracy, _routeStep) => {
+  const clampedAccuracy = Math.max(0, Math.min(100, gigAccuracy))
+  const perfectHits = Math.round(
+    (clampedAccuracy / 100) * SIMULATED_GIG_NOTE_COUNT
+  )
+  const misses = SIMULATED_GIG_NOTE_COUNT - perfectHits
+  // A clean streak scales with accuracy; Hype follows the streak, which is
+  // what lets the regression show Hype amplifying good play without rescuing
+  // miss-heavy play.
+  const maxCombo = perfectHits === 0 ? 0 : Math.max(1, Math.round(perfectHits / 2))
+  const peakHype = Math.min(100, Math.round(clampedAccuracy))
+  const failed = clampedAccuracy < 30
+
+  return buildGigStatsSnapshot(
+    Math.round(clampedAccuracy * 80 + 2000),
+    {
+      perfectHits,
+      hits: 0,
+      misses,
+      maxCombo,
+      peakHype,
+      corruptionLevel: 0
+    },
+    // Toxic time is not modelled by the skill tiers; kept at zero rather than
+    // invented, and deterministic across the matched trio.
+    0,
+    [],
+    failed
+  )
+}
+
+/**
  * Finds or synthesizes a venue object for a gig node.
  *
  * @param {string} nodeId
@@ -599,7 +657,7 @@ const resolveVenueForNode = (nodeId, map) => {
  * @param {import('../src/types').GameState} state
  * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
  * @param {import('../src/types/expedition').ExpeditionMap} map
- * @param {Record<string, boolean>} revealedNodes
+ * @param {Record<string, import('../src/types/expedition').ExpeditionNodeFog>} fogByNodeId
  * @returns {number}
  */
 export const evaluateCandidateNode = (
@@ -607,7 +665,7 @@ export const evaluateCandidateNode = (
   state,
   profile,
   map,
-  revealedNodes = {}
+  fogByNodeId = {}
 ) => {
   if (candidateNodeId === map.finaleNodeId) {
     return 1000 // Always prioritize the Finale if reached
@@ -626,7 +684,15 @@ export const evaluateCandidateNode = (
     typeof meta.rewardTier === 'number'
       ? meta.rewardTier
       : (TIER_NUMERIC[meta.rewardTier] ?? 2)
-  const isRevealed = Boolean(revealedNodes[candidateNodeId])
+  // Read through the production Fog projection, never off `map.meta.hidden`.
+  // The policy may only consume what the run's intel level actually entitles
+  // it to; scoring against raw hidden map data made the informed branch a
+  // foregone conclusion and measured nothing about the reveal system.
+  const fog = Object.hasOwn(fogByNodeId, candidateNodeId)
+    ? fogByNodeId[candidateNodeId]
+    : null
+  const intelLevel = fog?.intelLevel ?? 0
+  const isRevealed = intelLevel >= 1
   const subtype = meta.specialSubtype
 
   let score = 50
@@ -665,12 +731,19 @@ export const evaluateCandidateNode = (
       break
     }
     case 'intel_then_value': {
+      // Level 1 exposes payout, wear and the rare; level 2 adds identity.
+      // Those are the fields this policy is allowed to price.
       if (isRevealed) {
         score += 40
-        if (meta.hidden?.rareRewardId) score += 60
-        if (meta.hidden?.exactDanger && meta.hidden.exactDanger > 50)
-          score -= 25
+        if (fog?.rareRewardId) score += 60
+        if (isFiniteNumber(fog?.exactPayout)) {
+          score += Math.min(40, fog.exactPayout / 25)
+        }
+        if (isFiniteNumber(fog?.exactWearCost)) {
+          score -= Math.min(30, fog.exactWearCost)
+        }
       }
+      if (intelLevel >= 2 && fog?.revealedIdentity) score += 15
       if (nodeClass === 'CLUB_GIG') score += 30
       else if (nodeClass === 'FESTIVAL') score += 35
       score += rewardTier * 20
@@ -758,6 +831,9 @@ const shouldExtractAtWindow = (state, profile) => {
  * @param {number} [options.overrideRepairQuality]
  * @param {(nodeId: string, candidates: string[], state: any) => string} [options.routeDecisionSpy]
  * @param {(canExtract: boolean, state: any) => boolean} [options.extractionDecisionSpy]
+ * @param {boolean} [options.disableAutoIntelReveal] - Suppresses the Scout's
+ * automatic per-step reveal. The Fog probe's masked branch needs it: with the
+ * reveal still firing, branch A consumed intel it was supposed to lack.
  * @param {(step: number, state: any) => void} [options.onRouteStep]
  * @returns {{
  *   outcome: 'extracted' | 'completed' | 'failed',
@@ -975,17 +1051,19 @@ export const runExpeditionSimulation = (
         payload: venue
       })
 
-      // 2. SET_LAST_GIG_STATS
-      const failedGig = gigAccuracy < 30
-      const score = Math.round(gigAccuracy * 80 + 2000)
+      // 2. SET_LAST_GIG_STATS, from the production snapshot builder so the
+      // downstream reducers see hits, misses, combo and Hype rather than a
+      // bare accuracy number.
+      const gigStats = resolveSimulatedGigPerformance(
+        gigAccuracy,
+        state.expedition.routeStep
+      )
       state = gameReducer(state, {
         type: ActionTypes.SET_LAST_GIG_STATS,
         payload: {
-          score,
-          accuracy: gigAccuracy,
-          failed: failedGig,
-          cashEarned: failedGig ? 50 : 250,
-          fansEarned: failedGig ? 0 : 50
+          ...gigStats,
+          cashEarned: gigStats.failed ? 50 : 250,
+          fansEarned: gigStats.failed ? 0 : 50
         }
       })
 
@@ -1060,8 +1138,9 @@ export const runExpeditionSimulation = (
     // alone let the simulator's local map claim intel the run does not hold,
     // and the route policy then scored against knowledge production refused.
     if (
-      profile.decisionPolicy === 'intel_then_value' ||
-      profile.crewRoleOrder.includes('scout')
+      options.disableAutoIntelReveal !== true &&
+      (profile.decisionPolicy === 'intel_then_value' ||
+        profile.crewRoleOrder.includes('scout'))
     ) {
       const revealed = revealCandidateIntel(state, candidateNodeIds)
       for (const nodeId of revealed.revealedNodeIds) {
@@ -1089,7 +1168,7 @@ export const runExpeditionSimulation = (
           state,
           profile,
           map,
-          state.expedition.intelByNodeId
+          getExpeditionNodeFogByNodeId(state) ?? {}
         )
         if (score > bestScore) {
           bestScore = score

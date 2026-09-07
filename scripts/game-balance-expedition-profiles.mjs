@@ -195,6 +195,42 @@ export const validateExpeditionBalanceProfile = profile => {
     )
   }
 
+  const fixture = profile.matureFixture
+  if (!fixture || typeof fixture !== 'object') {
+    throw new Error(
+      `Profile ${profile.id}: missing matureFixture. G6 Task 2 forbids hidden Cash/Fame/skill/equipment defaults, so every fixture input that can move a balance number must be declared on the profile.`
+    )
+  }
+  if (fixture.version !== MATURE_FIXTURE_VERSION) {
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.version ${fixture.version} is not the supported ${MATURE_FIXTURE_VERSION}`
+    )
+  }
+  if (!isFiniteNumber(fixture.money) || fixture.money < 0) {
+    throw new Error(`Profile ${profile.id}: matureFixture.money must be a non-negative finite number`)
+  }
+  if (!isFiniteNumber(fixture.fame) || fixture.fame < 0) {
+    throw new Error(`Profile ${profile.id}: matureFixture.fame must be a non-negative finite number`)
+  }
+  if (!fixture.memberSkills || typeof fixture.memberSkills !== 'object') {
+    throw new Error(`Profile ${profile.id}: matureFixture.memberSkills must be an object`)
+  }
+  for (const skill of ['tech', 'technical', 'charisma']) {
+    if (!isFiniteNumber(fixture.memberSkills[skill])) {
+      throw new Error(
+        `Profile ${profile.id}: matureFixture.memberSkills.${skill} must be a finite number`
+      )
+    }
+  }
+  if (
+    !Array.isArray(fixture.vanUpgrades) ||
+    fixture.vanUpgrades.some(id => typeof id !== 'string')
+  ) {
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.vanUpgrades must be an array of strings`
+    )
+  }
+
   if (!Array.isArray(profile.requiredModuleIds)) {
     throw new Error(`Profile ${profile.id}: requiredModuleIds must be an array`)
   }
@@ -303,6 +339,15 @@ export const validateExpeditionBalanceProfile = profile => {
 /**
  * Six production-valid mature-build strategies (G6 Task 3).
  */
+/**
+ * Schema version of the declared mature-fixture block.
+ *
+ * @remarks
+ * Bumped whenever a field is added or its meaning changes, so an artifact
+ * generated against an older shape cannot be mistaken for current evidence.
+ */
+export const MATURE_FIXTURE_VERSION = 1
+
 export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
   Object.freeze({
     id: 'clean_sponsor',
@@ -326,6 +371,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     protectedCashRatio: 0.4,
     requiredCapabilitySetIds: ['industry_network', 'chassis_network'],
     requiresAscension: false,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'safe_value'
   }),
   Object.freeze({
@@ -355,6 +416,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'mechanic_network'
     ],
     requiresAscension: true,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'push_heat'
   }),
   Object.freeze({
@@ -385,6 +462,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'chassis_network'
     ],
     requiresAscension: true,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'repair_first'
   }),
   Object.freeze({
@@ -406,6 +499,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     protectedCashRatio: 0.35,
     requiredCapabilitySetIds: ['industry_network'],
     requiresAscension: false,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'intel_then_value'
   }),
   Object.freeze({
@@ -438,6 +547,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'chassis_network'
     ],
     requiresAscension: true,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'performance_push'
   }),
   Object.freeze({
@@ -468,6 +593,22 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       'chassis_network'
     ],
     requiresAscension: true,
+    // Every mature-fixture input that can move a balance number, declared
+    // rather than defaulted. The builder used to raise these silently, so two
+    // runs of the same profile could only be reproduced by knowing the
+    // builder's constants; they are versioned here and echoed into the
+    // artifact's fixture provenance.
+    matureFixture: Object.freeze({
+      version: 1,
+      money: 500000,
+      fame: 150,
+      memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      vanUpgrades: Object.freeze([
+        'stage_monitors',
+        'amp_overdrive',
+        'effects_rack'
+      ])
+    }),
     decisionPolicy: 'rival_pressure'
   })
 ])
@@ -530,25 +671,27 @@ export const buildProductionSimulationLoadout = (
     ? structuredClone(fixtureState)
     : createInitialState()
 
-  // Ensure baseline funds, songs, skills, fame, and pre-run fuel for mature loadout assembly
-  state.player.money = Math.max(state.player.money ?? 0, 500000)
-  state.player.fame = Math.max(state.player.fame ?? 0, 150)
+  // The mature fixture is applied from the profile's own declaration, not from
+  // builder constants. These values drive protected Cash, Sponsor quality and
+  // post-gig outcomes, so a reader of the profile has to be able to see them.
+  const matureFixture = profile.matureFixture
+  state.player.money = matureFixture.money
+  state.player.fame = matureFixture.fame
   if (!state.player.van) {
     state.player.van = { fuel: 50, condition: 100, maxFuel: 100, upgrades: [] }
-  } else {
-    state.player.van.fuel = Math.min(
-      state.player.van.fuel ?? 50,
-      profile.startingFuelTarget - 10
-    )
   }
+  // Below the committed target, so START's top-up is a real charge rather than
+  // a no-op against an already-full tank.
+  state.player.van.fuel = Math.min(
+    state.player.van.fuel ?? 50,
+    profile.startingFuelTarget - 10
+  )
   if (state.band?.members) {
     for (const member of state.band.members) {
       if (member) {
         member.skills = {
           ...(member.skills ?? {}),
-          tech: 5,
-          technical: 5,
-          charisma: 5
+          ...matureFixture.memberSkills
         }
       }
     }
@@ -721,7 +864,7 @@ export const buildProductionSimulationLoadout = (
         ...state.player,
         van: {
           ...state.player.van,
-          upgrades: ['stage_monitors', 'amp_overdrive', 'effects_rack']
+          upgrades: [...matureFixture.vanUpgrades]
         }
       }
     }
@@ -938,7 +1081,19 @@ export const buildProductionSimulationLoadout = (
     setlistSongIds: [...setlistSongIds],
     startingFuelTarget: profile.startingFuelTarget,
     protectedCareerCash,
-    fixtureCapabilitySetIds
+    fixtureCapabilitySetIds,
+    // Task 15 requires the artifact to carry enough provenance to reproduce a
+    // run from the profile alone. These are the resolved fixture inputs, so a
+    // reader never has to know a builder constant to repeat the run.
+    matureFixture: {
+      version: matureFixture.version,
+      money: matureFixture.money,
+      fame: matureFixture.fame,
+      memberSkills: { ...matureFixture.memberSkills },
+      vanUpgrades: [...matureFixture.vanUpgrades],
+      resolvedVanUpgrades: [...(state.player?.van?.upgrades ?? [])],
+      resolvedStartingVanFuel: state.player?.van?.fuel ?? null
+    }
   }
 
   activeState.expedition.provenance = provenance

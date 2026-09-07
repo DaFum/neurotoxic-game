@@ -102,11 +102,21 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   // The button would then vanish from the screen while the id stayed in the
   // candidate, so the commit would carry an offer this route never staged or a
   // Contract whose target node belongs to a different map.
-  const selectRoute = useCallback((apply: () => void) => {
-    apply()
-    setSponsorOfferId(null)
-    setContractTemplateIds([])
-  }, [])
+  // Sponsor offers and native Contracts are staged for a specific Region and
+  // Tour, so an actual route change has to drop both. A click that re-picks
+  // the route already active is not a change: it used to clear them anyway,
+  // and since a fresh Career has exactly one Tour and one Region, every click
+  // on those buttons silently discarded the player's Contract and Sponsor
+  // picks.
+  const selectRoute = useCallback(
+    (currentId: string, nextId: string, apply: () => void) => {
+      if (currentId === nextId) return
+      apply()
+      setSponsorOfferId(null)
+      setContractTemplateIds([])
+    },
+    []
+  )
 
   // The perk restages the Sponsor pool for the same reason: `press_pass`
   // promotes one more genuine match, so the offer order changes and a picked
@@ -323,7 +333,9 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => selectRoute(() => setTourTypeId(id))}
+                onClick={() =>
+                  selectRoute(tourTypeId, id, () => setTourTypeId(id))
+                }
                 data-testid={`expedition-prep-tour-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected
@@ -344,7 +356,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => selectRoute(() => setRegionId(id))}
+                onClick={() => selectRoute(regionId, id, () => setRegionId(id))}
                 data-testid={`expedition-prep-region-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected

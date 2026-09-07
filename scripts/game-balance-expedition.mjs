@@ -32,12 +32,17 @@ import {
 } from './game-balance-expedition-runner.mjs'
 import { runExtractionCounterfactualPair } from './game-balance-expedition-extraction-probe.mjs'
 import { runSkillMatchedTrio } from './game-balance-expedition-skill-probe.mjs'
-import { runFogCounterfactualPair } from './game-balance-expedition-fog-probe.mjs'
+import {
+  runFogCounterfactualPair,
+  FOG_REPUTATION_CALIBRATION_NAMESPACE,
+  FOG_REPUTATION_HOLDOUT_NAMESPACE
+} from './game-balance-expedition-fog-probe.mjs'
 import { runFreshCareerSequence } from './game-balance-expedition-career.mjs'
 import { verifyLegendaryEdgeActivations } from './game-balance-expedition-legendary.mjs'
 import {
   summarizeRuntimeDurations,
-  CANONICAL_PLAYTEST_SAMPLES
+  loadCapturedRuntimeEvidence,
+  RUNTIME_EVIDENCE_RELATIVE_PATH
 } from './game-balance-expedition-runtime.mjs'
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 import { createInitialState } from '../src/context/initialState.ts'
@@ -52,17 +57,13 @@ const EXTRACTION_CALIB_NAMESPACE =
   '#roguelite-expedition-v1#extraction#calibration'
 const EXTRACTION_HOLDOUT_NAMESPACE =
   '#roguelite-expedition-v1#extraction#holdout'
-const SKILL_NAMESPACE = '#roguelite-expedition-v1#skill#calibration'
+const SKILL_CALIB_NAMESPACE = '#roguelite-expedition-v1#skill#calibration'
+const SKILL_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#skill#holdout'
 const FOG_CALIB_NAMESPACE = '#roguelite-expedition-v1#fog#calibration'
 const FOG_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#fog#holdout'
 const CAREER_CALIB_NAMESPACE = '#roguelite-expedition-v1#career#calibration'
 const CAREER_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#career#holdout'
 
-/**
- * The scripts whose contents decide the numbers in this report. Hashed into
- * `generatorFingerprint` so a harness edit invalidates a stale artifact the
- * same way a source edit does.
- */
 /**
  * Runs per profile per cohort for a release artifact.
  *
@@ -76,9 +77,21 @@ const RELEASE_SAMPLE_COUNT = 2000
 /** Developer-speed size behind `--quick`. Not a release size. */
 const QUICK_SAMPLE_COUNT = 20
 
-/** Upper bound on six-run fresh-Career sequences per profile per cohort. */
-const CAREER_SEQUENCE_CAP = 5
+/**
+ * Six-run fresh-Career sequences per profile per cohort at release size.
+ *
+ * G6 Task 12 binds 1,000. Each sequence is a whole Career rather than a single
+ * run, so it is scaled off the cohort size rather than equal to it: at the
+ * release 2,000 this yields the binding 1,000, and `--quick` scales down with
+ * everything else.
+ */
+const careerSequencesFor = sampleCount => Math.max(1, Math.round(sampleCount / 2))
 
+/**
+ * The scripts whose contents decide the numbers in this report. Hashed into
+ * `generatorFingerprint` so a harness edit invalidates a stale artifact the
+ * same way a source edit does.
+ */
 const GENERATOR_PATHS = Object.freeze([
   'scripts/game-balance-expedition.mjs',
   'scripts/game-balance-expedition-runner.mjs',
@@ -151,13 +164,8 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   // cohort that Task 8 requires of the single-run cohorts, so the probes run
   // at the cohort size rather than at a fraction of it.
   const probeCount = sampleCount
-  // Task 12 sets no cohort size for the fresh-Career sequences: each one is a
-  // whole six-run Career, and what it reports is progression timing rather
-  // than a distribution. Scaled far below the paired-probe size.
-  const careerSequenceCount = Math.max(
-    1,
-    Math.min(CAREER_SEQUENCE_CAP, Math.ceil(sampleCount / 400))
-  )
+  const careerSequenceCount = careerSequencesFor(sampleCount)
+  const isReleaseRun = sampleCount >= RELEASE_SAMPLE_COUNT
 
   console.log(
     `[BalanceSuite] Starting Expedition Recalibration Suite (${sampleCount} samples/cohort)...`
@@ -168,6 +176,8 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
 
   // 1. Profile Capability Validation
   console.log('[BalanceSuite] 1. Validating Profile Capability Provenance...')
+  /** @type {any[]} */
+  const fixtureProvenance = []
   for (const profile of EXPEDITION_BALANCE_PROFILES) {
     try {
       validateExpeditionBalanceProfile(profile)
@@ -176,6 +186,12 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
         hardFailures.push(
           `Profile ${profile.id} failed to build production loadout`
         )
+      }
+      // Echoed into the artifact so a run is reproducible from the profile
+      // alone, without knowing any builder constant.
+      const resolved = state?.expedition?.provenance?.matureFixture
+      if (resolved) {
+        fixtureProvenance.push({ profileId: profile.id, ...resolved })
       }
     } catch (err) {
       hardFailures.push(
@@ -228,11 +244,10 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   console.log(
     '[BalanceSuite] 4. Running Matched Extraction Counterfactual Probes...'
   )
-  const extractionProfiles = [
-    EXPEDITION_BALANCE_PROFILES[0],
-    EXPEDITION_BALANCE_PROFILES[2],
-    EXPEDITION_BALANCE_PROFILES[3]
-  ]
+  // Every profile, not a hand-picked three: Task 9 binds the matrix per
+  // profile, and a subset cannot show that extraction economics differ by
+  // strategy.
+  const extractionProfiles = EXPEDITION_BALANCE_PROFILES
   /** @type {{ calibration: any[], holdout: any[] }} */
   const extractionResults = { calibration: [], holdout: [] }
   for (const profile of extractionProfiles) {
@@ -256,22 +271,23 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
 
   // 5. Paired Skill-vs-Management Probes
   console.log('[BalanceSuite] 5. Running Matched Skill-vs-Management Probes...')
-  const skillProfiles = [
-    EXPEDITION_BALANCE_PROFILES[0],
-    EXPEDITION_BALANCE_PROFILES[1]
-  ] // baseline, scout
-  /** @type {any[]} */
-  const skillResults = []
+  const skillProfiles = EXPEDITION_BALANCE_PROFILES
+  /** @type {{ calibration: any[], holdout: any[] }} */
+  const skillResults = { calibration: [], holdout: [] }
   for (const profile of skillProfiles) {
-    for (let i = 0; i < probeCount; i++) {
-      const seed = deriveCohortSeed(SKILL_NAMESPACE, i)
-      const trio = guarded(
-        hardFailures,
-        `Skill probe failed for ${profile.id} (seed ${seed})`,
-        () => runSkillMatchedTrio(undefined, profile, seed)
-      )
-      if (trio) skillResults.push({ profileId: profile.id, seed, trio })
-    }
+    const perProfile = acrossCohorts(
+      hardFailures,
+      `Skill probe ${profile.id}`,
+      { calibration: SKILL_CALIB_NAMESPACE, holdout: SKILL_HOLDOUT_NAMESPACE },
+      probeCount,
+      seed => ({
+        profileId: profile.id,
+        seed,
+        trio: runSkillMatchedTrio(undefined, profile, seed)
+      })
+    )
+    skillResults.calibration.push(...perProfile.calibration)
+    skillResults.holdout.push(...perProfile.holdout)
   }
 
   // 6. Paired Hybrid-Fog Counterfactual Probes, across both cohorts
@@ -283,30 +299,55 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       p.decisionPolicy === 'intel_then_value' ||
       p.crewRoleOrder.includes('scout')
   )
-  /** @type {{ calibration: any[], holdout: any[] }} */
-  const fogResults = { calibration: [], holdout: [] }
-  for (const profile of fogProfiles) {
-    const perProfile = acrossCohorts(
-      hardFailures,
-      `Fog probe ${profile.id}`,
-      { calibration: FOG_CALIB_NAMESPACE, holdout: FOG_HOLDOUT_NAMESPACE },
-      probeCount,
-      seed => ({
-        profileId: profile.id,
-        seed,
-        pair: runFogCounterfactualPair(undefined, profile, seed)
-      })
-    )
-    fogResults.calibration.push(...perProfile.calibration)
-    fogResults.holdout.push(...perProfile.holdout)
+  // Task 11 binds two source-faithful cohorts, not one: a Scout recon case and
+  // a separate reputation case across the G5 familiarity threshold. Each gets
+  // its own disjoint calibration/holdout namespaces.
+  const FOG_SOURCE_NAMESPACES = {
+    scout_recon: {
+      calibration: FOG_CALIB_NAMESPACE,
+      holdout: FOG_HOLDOUT_NAMESPACE
+    },
+    reputation: {
+      calibration: FOG_REPUTATION_CALIBRATION_NAMESPACE,
+      holdout: FOG_REPUTATION_HOLDOUT_NAMESPACE
+    }
+  }
+  /** @type {Record<string, { calibration: any[], holdout: any[] }>} */
+  const fogResultsBySource = {
+    scout_recon: { calibration: [], holdout: [] },
+    reputation: { calibration: [], holdout: [] }
+  }
+  for (const source of ['scout_recon', 'reputation']) {
+    for (const profile of fogProfiles) {
+      const perProfile = acrossCohorts(
+        hardFailures,
+        `Fog probe ${source} ${profile.id}`,
+        FOG_SOURCE_NAMESPACES[source],
+        probeCount,
+        seed => ({
+          profileId: profile.id,
+          seed,
+          pair: runFogCounterfactualPair(undefined, profile, seed, source)
+        })
+      )
+      fogResultsBySource[source].calibration.push(...perProfile.calibration)
+      fogResultsBySource[source].holdout.push(...perProfile.holdout)
+    }
+  }
+  const fogResults = {
+    calibration: [
+      ...fogResultsBySource.scout_recon.calibration,
+      ...fogResultsBySource.reputation.calibration
+    ],
+    holdout: [
+      ...fogResultsBySource.scout_recon.holdout,
+      ...fogResultsBySource.reputation.holdout
+    ]
   }
 
   // 7. Fresh-Career Progression Sequences, across both cohorts
   console.log('[BalanceSuite] 7. Running Fresh-Career Progression Sequences...')
-  const careerProfiles = [
-    EXPEDITION_BALANCE_PROFILES[0],
-    EXPEDITION_BALANCE_PROFILES[4]
-  ] // baseline, heavy_production
+  const careerProfiles = EXPEDITION_BALANCE_PROFILES
   /** @type {{ calibration: any[], holdout: any[] }} */
   const careerResults = { calibration: [], holdout: [] }
   for (const profile of careerProfiles) {
@@ -324,9 +365,32 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     careerResults.holdout.push(...perProfile.holdout)
   }
 
-  // 8. Runtime & Playtest Duration Evidence
-  console.log('[BalanceSuite] 8. Aggregating Runtime Duration Evidence...')
-  const runtimeSummary = summarizeRuntimeDurations(CANONICAL_PLAYTEST_SAMPLES)
+  // Built before the pacing step, which validates captured evidence against
+  // this exact source fingerprint.
+  const metadata = await buildArtifactMetadata({
+    root: REPO_ROOT,
+    generatorPaths: GENERATOR_PATHS,
+    seedNamespace: CALIBRATION_NAMESPACE,
+    runsPerScenario: sampleCount
+  })
+
+  // 8. Runtime & Playtest Duration Evidence.
+  //
+  // Read from captured evidence, never synthesized here. The report used to
+  // summarize a literal array, so it stated a confident median for a build
+  // nobody had played; missing or stale capture is now a hard failure rather
+  // than a number.
+  console.log('[BalanceSuite] 8. Loading Captured Runtime Duration Evidence...')
+  const capturedRuntime = await loadCapturedRuntimeEvidence(
+    REPO_ROOT,
+    metadata.sourceFingerprint
+  )
+  if (!capturedRuntime.ok) {
+    hardFailures.push(
+      `Runtime pacing evidence unusable: ${capturedRuntime.reason}. Capture a playtest cohort into ${RUNTIME_EVIDENCE_RELATIVE_PATH} for this source fingerprint.`
+    )
+  }
+  const runtimeSummary = summarizeRuntimeDurations(capturedRuntime.samples)
 
   // 9. Legendary Edge Fixtures Verification. Executed, not asserted: the table
   // below reports what the reducer actually did.
@@ -340,6 +404,79 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     hardFailures.push(failure)
   }
 
+  // Release coverage gate. Without it, `passed` could turn green once the
+  // current balance violations are tuned away while most of the binding
+  // evidence matrix was still missing - the counts are part of the claim, not
+  // an implementation detail of how long the run took.
+  const profileCount = EXPEDITION_BALANCE_PROFILES.length
+  const expectedCoverage = [
+    {
+      label: 'Task 8 calibration cohort',
+      actual: calibrationCohort ? sampleCount : 0,
+      expected: sampleCount
+    },
+    {
+      label: 'Task 8 holdout cohort',
+      actual: holdoutCohort ? sampleCount : 0,
+      expected: sampleCount
+    },
+    {
+      label: 'Task 9 extraction pairs (calibration)',
+      actual: extractionResults.calibration.length,
+      expected: probeCount * extractionProfiles.length
+    },
+    {
+      label: 'Task 9 extraction pairs (holdout)',
+      actual: extractionResults.holdout.length,
+      expected: probeCount * extractionProfiles.length
+    },
+    {
+      label: 'Task 10 skill trios (calibration)',
+      actual: skillResults.calibration.length,
+      expected: probeCount * skillProfiles.length
+    },
+    {
+      label: 'Task 10 skill trios (holdout)',
+      actual: skillResults.holdout.length,
+      expected: probeCount * skillProfiles.length
+    },
+    {
+      label: 'Task 11 fog pairs (calibration, both sources)',
+      actual: fogResults.calibration.length,
+      expected: probeCount * fogProfiles.length * 2
+    },
+    {
+      label: 'Task 11 fog pairs (holdout, both sources)',
+      actual: fogResults.holdout.length,
+      expected: probeCount * fogProfiles.length * 2
+    },
+    {
+      label: 'Task 12 fresh-Career sequences (calibration)',
+      actual: careerResults.calibration.length,
+      expected: careerSequenceCount * careerProfiles.length
+    },
+    {
+      label: 'Task 12 fresh-Career sequences (holdout)',
+      actual: careerResults.holdout.length,
+      expected: careerSequenceCount * careerProfiles.length
+    }
+  ]
+  const coverageShortfalls = expectedCoverage.filter(
+    entry => entry.actual < entry.expected
+  )
+  for (const shortfall of coverageShortfalls) {
+    hardFailures.push(
+      `Coverage shortfall: ${shortfall.label} produced ${shortfall.actual} of the expected ${shortfall.expected}`
+    )
+  }
+  // A reduced matrix is legitimate under `--quick`, but it must never be
+  // mistaken for release evidence.
+  if (!isReleaseRun) {
+    hardFailures.push(
+      `Reduced-coverage run: ${sampleCount} samples/cohort is below the binding release size of ${RELEASE_SAMPLE_COUNT}. This artifact is a developer check, not release evidence.`
+    )
+  }
+
   const allCareerSequences = [
     ...careerResults.calibration,
     ...careerResults.holdout
@@ -350,12 +487,7 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   return {
     passed,
     hardFailures,
-    metadata: await buildArtifactMetadata({
-      root: REPO_ROOT,
-      generatorPaths: GENERATOR_PATHS,
-      seedNamespace: CALIBRATION_NAMESPACE,
-      runsPerScenario: sampleCount
-    }),
+    metadata,
     provenance: {
       generatedAt: new Date().toISOString(),
       namespaces: {
@@ -363,14 +495,23 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
         holdout: HOLDOUT_NAMESPACE,
         extractionCalibration: EXTRACTION_CALIB_NAMESPACE,
         extractionHoldout: EXTRACTION_HOLDOUT_NAMESPACE,
-        skill: SKILL_NAMESPACE,
+        skillCalibration: SKILL_CALIB_NAMESPACE,
+        skillHoldout: SKILL_HOLDOUT_NAMESPACE,
         fogCalibration: FOG_CALIB_NAMESPACE,
         fogHoldout: FOG_HOLDOUT_NAMESPACE,
+        fogReputationCalibration: FOG_REPUTATION_CALIBRATION_NAMESPACE,
+        fogReputationHoldout: FOG_REPUTATION_HOLDOUT_NAMESPACE,
         careerCalibration: CAREER_CALIB_NAMESPACE,
         careerHoldout: CAREER_HOLDOUT_NAMESPACE
       },
       profilesCount: EXPEDITION_BALANCE_PROFILES.length,
       sampleCountPerCohort: sampleCount
+    },
+    coverage: {
+      isReleaseRun,
+      profileCount,
+      expected: expectedCoverage,
+      shortfalls: coverageShortfalls
     },
     calibrationSummary: calibrationCohort?.profileSummaries ?? {},
     holdoutSummary: holdoutCohort?.profileSummaries ?? {},
@@ -381,18 +522,34 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       samples: extractionResults.calibration.slice(0, 5)
     },
     skillProbe: {
-      triosCount: skillResults.length,
-      samples: skillResults.slice(0, 5)
+      calibrationTrios: skillResults.calibration.length,
+      holdoutTrios: skillResults.holdout.length,
+      samples: skillResults.calibration.slice(0, 5)
     },
     fogProbe: {
       calibrationPairs: fogResults.calibration.length,
       holdoutPairs: fogResults.holdout.length,
-      revealedNodeCount: [
-        ...fogResults.calibration,
-        ...fogResults.holdout
-      ].reduce(
-        (total, entry) => total + (entry.pair?.revealedNodeIds?.length ?? 0),
-        0
+      bySource: Object.fromEntries(
+        Object.entries(fogResultsBySource).map(([source, cohorts]) => {
+          const all = [...cohorts.calibration, ...cohorts.holdout]
+          const atDecision = all.filter(
+            entry => (entry.pair?.revealedCandidateIds?.length ?? 0) > 0
+          )
+          const changed = atDecision.filter(entry => entry.pair?.routeChanged)
+          return [
+            source,
+            {
+              pairs: all.length,
+              revealUsed: all.filter(entry => entry.pair?.revealUsed).length,
+              revealAtDecision: atDecision.length,
+              routeChanged: changed.length,
+              revealUsedRouteUnchangedRate:
+                atDecision.length === 0
+                  ? null
+                  : (atDecision.length - changed.length) / atDecision.length
+            }
+          ]
+        })
       ),
       samples: fogResults.calibration.slice(0, 5)
     },
@@ -412,7 +569,15 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       }))
     },
     legendaryEdgeCoverage: legendary.statusById,
-    runtimeDuration: runtimeSummary
+    runtimeDuration: runtimeSummary,
+    runtimeEvidence: {
+      ok: capturedRuntime.ok,
+      reason: capturedRuntime.reason,
+      capturedAt: capturedRuntime.capturedAt,
+      sourceFingerprint: capturedRuntime.sourceFingerprint,
+      evidencePath: RUNTIME_EVIDENCE_RELATIVE_PATH
+    },
+    fixtureProvenance
   }
 }
 
@@ -436,7 +601,9 @@ export function formatMarkdownReport(data) {
     fogProbe,
     careerSequences,
     legendaryEdgeCoverage,
-    runtimeDuration
+    runtimeDuration,
+    runtimeEvidence,
+    fixtureProvenance
   } = data
 
   const statusBadge = passed ? '✅ PASS' : '❌ FAIL'
@@ -456,6 +623,18 @@ export function formatMarkdownReport(data) {
   md += `| Runs per scenario | ${metadata.runsPerScenario} |\n`
   md += `| Working tree dirty | ${metadata.workingTreeDirty ? 'YES' : 'no'} |\n`
   md += `| Artifact schema version | ${metadata.artifactSchemaVersion} |\n\n`
+
+  md += `### Resolved mature-fixture inputs\n\n`
+  md += `Every fixture value that can move a balance number, declared on the profile rather than defaulted by the builder.\n\n`
+  md += `| Profile | Fixture v | Cash | Fame | Member skills | Van upgrades | Start fuel |\n`
+  md += `| :--- | ---: | ---: | ---: | :--- | :--- | ---: |\n`
+  for (const entry of fixtureProvenance) {
+    const skills = Object.entries(entry.memberSkills)
+      .map(([name, value]) => `${name}=${value}`)
+      .join(' ')
+    md += `| \`${entry.profileId}\` | ${entry.version} | $${entry.money} | ${entry.fame} | ${skills} | ${entry.resolvedVanUpgrades.join(', ') || '-'} | ${entry.resolvedStartingVanFuel ?? '-'} |\n`
+  }
+  md += `\n`
 
   md += `## 1. Hard Correctness Failures\n\n`
   if (hardFailures.length === 0) {
@@ -508,8 +687,18 @@ export function formatMarkdownReport(data) {
 
   md += `## 6. Matched Hybrid-Fog Counterfactuals\n\n`
   md += `Evaluated ${fogProbe.calibrationPairs} calibration and ${fogProbe.holdoutPairs} holdout matched route decision pairs.\n`
-  md += `- Intel is raised by dispatching \`REVEAL_EXPEDITION_NODE_INTEL\` through the reducer (Scout passive to level 1, one recon charge to level 2); the informed branch reads its choices off \`expedition.intelByNodeId\`.\n`
-  md += `- ${fogProbe.revealedNodeCount} node reveals were accepted by the reducer across the probe.\n\n`
+  md += `Both branches derive from one canonical decision state with the Scout's automatic per-step reveal suppressed, so the only pre-decision difference is the single legal reveal branch B spends. Choices are scored off the production Fog projection (\`getExpeditionNodeFogByNodeId\`), never off raw hidden map data.\n\n`
+  md += `| Source | Pairs | Reveal granted | Reveal at decision | Route changed | Reveal-unused rate |\n`
+  md += `| :--- | ---: | ---: | ---: | ---: | ---: |\n`
+  for (const [source, stats] of Object.entries(fogProbe.bySource)) {
+    const unusedRate =
+      stats.revealUsedRouteUnchangedRate === null
+        ? 'n/a'
+        : `${(stats.revealUsedRouteUnchangedRate * 100).toFixed(1)}%`
+    md += `| \`${source}\` | ${stats.pairs} | ${stats.revealUsed} | ${stats.revealAtDecision} | ${stats.routeChanged} | ${unusedRate} |\n`
+  }
+  md += `\n`
+  md += `The reputation entitlement draws its one bounded level-1 read from the whole forward route, so it lands on an immediate candidate only occasionally; "reveal at decision" separates that from a reveal the policy simply could not price yet.\n\n`
 
   md += `## 7. Fresh-Career Progression Sequences\n\n`
   md += `Evaluated ${careerSequences.sequencesCount} progression sequences (${careerSequences.calibrationCount} calibration, ${careerSequences.holdoutCount} holdout) starting with ZERO meta facilities, ZERO unlock sets, and Ascension locked.\n`
@@ -533,11 +722,16 @@ export function formatMarkdownReport(data) {
   md += `| **Salvage Rights** | ${legendaryEdgeCoverage.salvage_rights} | Rescues zeroed condition group to 20% floor using spare parts / rare |\n\n`
 
   md += `## 9. Real Runtime / Playtest Evidence\n\n`
-  md += `Evaluated ${runtimeDuration.count} empirical playtest sessions across archetypes.\n`
-  md += `- **Median Duration:** ${runtimeDuration.medianMinutes} min (Target Corridor: 20–30 min)\n`
-  md += `- **p25 Duration:** ${runtimeDuration.p25Minutes} min\n`
-  md += `- **p75 Duration:** ${runtimeDuration.p75Minutes} min\n`
-  md += `- **Corridor Status:** ${runtimeDuration.corridorStatus.toUpperCase()} (${runtimeDuration.inTargetCorridor ? 'PASS' : 'OUTSIDE_CORRIDOR'})\n\n`
+  if (!runtimeEvidence.ok) {
+    md += `**NO USABLE PACING EVIDENCE.** ${runtimeEvidence.reason}\n\n`
+    md += `Pacing is read only from captured playtest artifacts recorded against this report's source fingerprint (\`${runtimeEvidence.evidencePath}\`). No median is stated, because none has been measured for this build.\n\n`
+  } else {
+    md += `Evaluated ${runtimeDuration.count} captured playtest sessions${runtimeEvidence.capturedAt ? ` (captured ${runtimeEvidence.capturedAt})` : ''}, recorded against source \`${(runtimeEvidence.sourceFingerprint ?? '').slice(0, 12)}\`.\n`
+    md += `- **Median Duration:** ${runtimeDuration.medianMinutes} min (Target Corridor: 20–30 min)\n`
+    md += `- **p25 Duration:** ${runtimeDuration.p25Minutes} min\n`
+    md += `- **p75 Duration:** ${runtimeDuration.p75Minutes} min\n`
+    md += `- **Corridor Status:** ${runtimeDuration.corridorStatus.toUpperCase()} (${runtimeDuration.inTargetCorridor ? 'PASS' : 'OUTSIDE_CORRIDOR'})\n\n`
+  }
 
   return md
 }

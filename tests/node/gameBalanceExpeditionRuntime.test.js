@@ -16,10 +16,15 @@ import {
   createExpeditionRuntimeSample,
   isValidRuntimeSample,
   summarizeRuntimeDurations,
-  CANONICAL_PLAYTEST_SAMPLES,
+  SYNTHETIC_RUNTIME_FIXTURE_SAMPLES,
+  loadCapturedRuntimeEvidence,
+  RUNTIME_EVIDENCE_SCHEMA_VERSION,
   TARGET_CORRIDOR_MIN_MINUTES,
   TARGET_CORRIDOR_MAX_MINUTES
 } from '../../scripts/game-balance-expedition-runtime.mjs'
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import path from 'node:path'
 import { createFixedClock } from '../../src/utils/clock.ts'
 
 describe('Expedition Runtime Duration Evidence (G6 Task 14)', () => {
@@ -71,7 +76,7 @@ describe('Expedition Runtime Duration Evidence (G6 Task 14)', () => {
   })
 
   it('correctly calculates median, p25, p75 and checks the 20-30 min target corridor', () => {
-    const summary = summarizeRuntimeDurations(CANONICAL_PLAYTEST_SAMPLES)
+    const summary = summarizeRuntimeDurations(SYNTHETIC_RUNTIME_FIXTURE_SAMPLES)
 
     assert.equal(summary.count, 10)
     assert.ok(summary.minMs > 0)
@@ -96,5 +101,93 @@ describe('Expedition Runtime Duration Evidence (G6 Task 14)', () => {
     assert.equal(emptySummary.medianMs, 0)
     assert.equal(emptySummary.inTargetCorridor, false)
     assert.equal(emptySummary.corridorStatus, 'no_samples')
+  })
+
+  describe('captured runtime evidence (G6 Task 14)', () => {
+    const FINGERPRINT = 'a'.repeat(64)
+
+    const writeEvidence = async body => {
+      const root = await mkdtemp(path.join(tmpdir(), 'runtime-evidence-'))
+      await mkdir(path.join(root, 'docs', 'superpowers', 'reports'), {
+        recursive: true
+      })
+      if (body !== null) {
+        await writeFile(
+          path.join(
+            root,
+            'docs',
+            'superpowers',
+            'reports',
+            'roguelite-expedition-runtime-evidence.json'
+          ),
+          typeof body === 'string' ? body : JSON.stringify(body),
+          'utf8'
+        )
+      }
+      return root
+    }
+
+    const sample = {
+      buildProfileId: 'clean_sponsor',
+      startedAtMs: 1000,
+      finalizedAtMs: 1500000,
+      realDurationMs: 1499000,
+      outcome: 'completed',
+      meaningfulNodes: 12
+    }
+
+    it('rejects missing evidence rather than falling back to literals', async () => {
+      const root = await writeEvidence(null)
+      const result = await loadCapturedRuntimeEvidence(root, FINGERPRINT)
+      assert.equal(result.ok, false)
+      assert.match(result.reason, /no captured playtest evidence/)
+      assert.deepEqual(result.samples, [])
+    })
+
+    it('rejects evidence captured against a different source fingerprint', async () => {
+      const root = await writeEvidence({
+        schemaVersion: RUNTIME_EVIDENCE_SCHEMA_VERSION,
+        sourceFingerprint: 'b'.repeat(64),
+        samples: [sample]
+      })
+      const result = await loadCapturedRuntimeEvidence(root, FINGERPRINT)
+      assert.equal(result.ok, false)
+      assert.match(result.reason, /stale/)
+    })
+
+    it('rejects malformed samples and empty cohorts', async () => {
+      const emptyRoot = await writeEvidence({
+        schemaVersion: RUNTIME_EVIDENCE_SCHEMA_VERSION,
+        sourceFingerprint: FINGERPRINT,
+        samples: []
+      })
+      assert.match(
+        (await loadCapturedRuntimeEvidence(emptyRoot, FINGERPRINT)).reason,
+        /no samples/
+      )
+
+      const badRoot = await writeEvidence({
+        schemaVersion: RUNTIME_EVIDENCE_SCHEMA_VERSION,
+        sourceFingerprint: FINGERPRINT,
+        samples: [{ ...sample, realDurationMs: 5 }]
+      })
+      assert.match(
+        (await loadCapturedRuntimeEvidence(badRoot, FINGERPRINT)).reason,
+        /malformed/
+      )
+    })
+
+    it('accepts evidence captured against the current source', async () => {
+      const root = await writeEvidence({
+        schemaVersion: RUNTIME_EVIDENCE_SCHEMA_VERSION,
+        sourceFingerprint: FINGERPRINT,
+        capturedAt: '2026-09-07T00:00:00.000Z',
+        samples: [sample]
+      })
+      const result = await loadCapturedRuntimeEvidence(root, FINGERPRINT)
+      assert.equal(result.ok, true)
+      assert.equal(result.samples.length, 1)
+      assert.equal(result.capturedAt, '2026-09-07T00:00:00.000Z')
+    })
   })
 })

@@ -8,6 +8,9 @@ import { describe, it } from 'node:test'
 import {
   FOG_CALIBRATION_NAMESPACE,
   FOG_HOLDOUT_NAMESPACE,
+  FOG_REPUTATION_CALIBRATION_NAMESPACE,
+  FOG_REPUTATION_HOLDOUT_NAMESPACE,
+  FOG_INTEL_SOURCES,
   runFogCounterfactualPair,
   runFogProbeCohort
 } from '../../scripts/game-balance-expedition-fog-probe.mjs'
@@ -45,10 +48,69 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
       assert.ok(pair.candidateCount >= 2)
       assert.ok(typeof pair.chosenNodeA === 'string')
       assert.ok(typeof pair.chosenNodeB === 'string')
-      assert.ok(pair.inspectedFields.includes('rareRewardId'))
-      assert.ok(pair.inspectedFields.includes('exactDanger'))
       assert.ok(pair.branchA)
       assert.ok(pair.branchB)
+
+      // Branch purity: the masked branch holds no intel on any candidate, and
+      // exactly one legal recon charge separates it from the informed one.
+      for (const level of Object.values(pair.intelLevelsA)) {
+        assert.equal(level, 0)
+      }
+      assert.equal(pair.revealedNodeIds.length, 1)
+      assert.equal(
+        Object.values(pair.intelLevelsB).filter(level => level >= 1).length,
+        1
+      )
+
+      // Reported fields must come from the production projection. Level 1
+      // exposes payout/wear/rare; `exactDanger` is not a field the Fog has.
+      assert.equal(pair.inspectedFieldsA.includes('exactPayout'), false)
+      assert.ok(pair.inspectedFieldsB.includes('exactPayout'))
+      assert.ok(pair.inspectedFieldsB.includes('exactWearCost'))
+      for (const fields of [pair.inspectedFieldsA, pair.inspectedFieldsB]) {
+        assert.equal(fields.includes('exactDanger'), false)
+      }
+    }
+  })
+
+  it('keeps the reputation cohort disjoint from the Scout cohort', () => {
+    assert.deepEqual(FOG_INTEL_SOURCES, ['scout_recon', 'reputation'])
+    const calSeeds = generateCohortSeeds(
+      FOG_REPUTATION_CALIBRATION_NAMESPACE,
+      50
+    )
+    const holSeeds = generateCohortSeeds(FOG_REPUTATION_HOLDOUT_NAMESPACE, 50)
+    const scoutSeeds = new Set(
+      generateCohortSeeds(FOG_CALIBRATION_NAMESPACE, 50)
+    )
+    const calSet = new Set(calSeeds)
+    for (const seed of holSeeds) {
+      assert.equal(calSet.has(seed), false)
+    }
+    for (const seed of calSeeds) {
+      assert.equal(scoutSeeds.has(seed), false)
+    }
+  })
+
+  it('runs a reputation counterfactual across the G5 familiarity threshold', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES.find(
+      p => p.id === 'scout_intel'
+    )
+    assert.ok(profile)
+
+    const pair = runFogCounterfactualPair(
+      undefined,
+      profile,
+      8001,
+      'reputation'
+    )
+    assert.equal(pair.source, 'reputation')
+    if (pair.matchedDecisionFound) {
+      // Crossing the threshold must grant the bounded level-1 read somewhere
+      // on the forward route, even when it does not land on a candidate.
+      assert.ok(pair.revealUsed)
+      assert.ok(pair.revealedNodeIds.length > 0)
+      assert.ok(pair.revealedCandidateIds.length <= pair.revealedNodeIds.length)
     }
   })
 
@@ -65,5 +127,16 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
     assert.equal(cohort.totalPairs, 5)
     assert.ok(Number.isFinite(cohort.routeChangedRate))
     assert.ok(Number.isFinite(cohort.meanDeltaMoney))
+
+    // Task 11's blocking fidelity failure is the policy never consuming a
+    // reveal it was actually shown. Recorded per source so the report can
+    // state it rather than imply it.
+    assert.ok(cohort.revealUsedCount > 0)
+    assert.ok(Number.isFinite(cohort.revealUsedRouteUnchangedRate))
+    assert.ok(
+      cohort.revealAtDecisionCount === 0 ||
+        cohort.revealUsedRouteUnchangedRate < 1,
+      'the route policy never consumed a reveal it was shown at the decision point'
+    )
   })
 })

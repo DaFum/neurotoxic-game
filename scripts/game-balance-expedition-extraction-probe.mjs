@@ -51,64 +51,29 @@ export const runExtractionCounterfactualPair = (
   seed,
   options = {}
 ) => {
-  let windowState = null
-  let windowStep = null
+  /** @type {{ state: import('../src/types').GameState, routeStep: number }[]} */
+  const capturedWindows = []
 
-  // Step 1: Run simulation with a spy that captures state at the first extraction window
+  // Step 1: Run once, capturing EVERY legal extraction window. Task 9 pairs
+  // each window against the same downstream continuation; stopping at the
+  // first one measured a single decision and called it the run's extraction
+  // economics.
   const initialResult = runExpeditionSimulation(fixtureState, profile, seed, {
     ...options,
     extractionDecisionSpy: (canExtract, state) => {
-      if (canExtract && !windowState) {
-        windowState = structuredClone(state)
-        windowStep = state.expedition.routeStep
-        // Force continue on this discovery run so we don't extract immediately if not needed
-        return false
+      if (canExtract) {
+        capturedWindows.push({
+          state: structuredClone(state),
+          routeStep: state.expedition.routeStep
+        })
       }
-      return false // Continue until we know what happens
+      // Always continue: branch B is the single downstream continuation every
+      // captured window is compared against.
+      return false
     }
   })
 
-  if (!windowState) {
-    return {
-      windowEncountered: false,
-      windowRouteStep: null,
-      branchA: null,
-      branchB: null,
-      deltaMoney: null,
-      deltaFame: null
-    }
-  }
-
-  // Branch A: Force extraction right at this window
-  const carrySlots = getExplicitExtractionRareCarrySlots(windowState)
-  const unmaterializedRares = windowState.expedition.rewardLedger
-    .filter(entry => !entry.secured && !entry.abandoned)
-    .slice(0, carrySlots)
-    .map(entry => entry.id)
-
-  const extractAction = extractExpedition(windowState, unmaterializedRares)
-  let stateA = gameReducer(windowState, extractAction)
-  const runIdA = stateA.expedition.outcome?.runId
-  if (runIdA) {
-    stateA = gameReducer(stateA, {
-      type: ActionTypes.SETTLE_EXPEDITION_CREW_CAREER,
-      payload: { runId: runIdA }
-    })
-    stateA = gameReducer(stateA, {
-      type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
-      payload: { runId: runIdA }
-    })
-  }
-
-  const branchA = {
-    outcome: /** @type {'extracted'} */ ('extracted'),
-    retainedMoney: stateA.player.money,
-    retainedFame: stateA.player.fame,
-    explicitlyExtractedRares: unmaterializedRares.length
-  }
-
-  // Branch B: Continue downstream using standard profile policy from this point
-  // initialResult already continued past this window with standard downstream logic!
+  // Branch B: Continue downstream using standard profile policy.
   const branchB = {
     outcome: initialResult.outcome,
     retainedMoney: initialResult.telemetry.retainedMoney,
@@ -118,13 +83,76 @@ export const runExtractionCounterfactualPair = (
     abandonedRares: initialResult.telemetry.abandonedRares
   }
 
+  /**
+   * Extracts at one captured window and settles it, so branch A is a real
+   * terminal Career result rather than a mid-run snapshot.
+   *
+   * @param {{ state: import('../src/types').GameState, routeStep: number }} window
+   */
+  const extractAt = window => {
+    const carrySlots = getExplicitExtractionRareCarrySlots(window.state)
+    const unmaterializedRares = window.state.expedition.rewardLedger
+      .filter(entry => !entry.secured && !entry.abandoned)
+      .slice(0, carrySlots)
+      .map(entry => entry.id)
+
+    let stateA = gameReducer(
+      window.state,
+      extractExpedition(window.state, unmaterializedRares)
+    )
+    const runIdA = stateA.expedition.outcome?.runId
+    if (runIdA) {
+      stateA = gameReducer(stateA, {
+        type: ActionTypes.SETTLE_EXPEDITION_CREW_CAREER,
+        payload: { runId: runIdA }
+      })
+      stateA = gameReducer(stateA, {
+        type: ActionTypes.SETTLE_EXPEDITION_CAREER_RESULT,
+        payload: { runId: runIdA }
+      })
+    }
+
+    const branchA = {
+      outcome: /** @type {'extracted'} */ ('extracted'),
+      retainedMoney: stateA.player.money,
+      retainedFame: stateA.player.fame,
+      explicitlyExtractedRares: unmaterializedRares.length
+    }
+    return {
+      windowRouteStep: window.routeStep,
+      branchA,
+      deltaMoney: branchB.retainedMoney - branchA.retainedMoney,
+      deltaFame: branchB.retainedFame - branchA.retainedFame
+    }
+  }
+
+  const windows = capturedWindows.map(extractAt)
+
+  if (windows.length === 0) {
+    return {
+      windowEncountered: false,
+      windowCount: 0,
+      windows: [],
+      windowRouteStep: null,
+      branchA: null,
+      branchB: null,
+      deltaMoney: null,
+      deltaFame: null
+    }
+  }
+
+  const first = windows[0]
   return {
     windowEncountered: true,
-    windowRouteStep: windowStep,
-    branchA,
+    windowCount: windows.length,
+    windows,
+    // The first window stays on the top level so a reader (and the existing
+    // corridor assertions) keep a single canonical pair to point at.
+    windowRouteStep: first.windowRouteStep,
+    branchA: first.branchA,
     branchB,
-    deltaMoney: branchB.retainedMoney - branchA.retainedMoney,
-    deltaFame: branchB.retainedFame - branchA.retainedFame
+    deltaMoney: first.deltaMoney,
+    deltaFame: first.deltaFame
   }
 }
 
@@ -169,7 +197,7 @@ export const runExtractionProbeCohort = (profiles, seeds, options = {}) => {
       })
 
       if (pair.windowEncountered && pair.branchA && pair.branchB) {
-        windowsEncounteredCount++
+        windowsEncounteredCount += pair.windowCount
         totalDeltaMoney += pair.deltaMoney
         totalDeltaFame += pair.deltaFame
 
