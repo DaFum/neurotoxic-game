@@ -39,8 +39,8 @@ test('shouldTriggerBankruptcy throws for invalid money input', () => {
   assert.throws(() => shouldTriggerBankruptcy('bankrupt', 0), TypeError)
 })
 
-test('shouldTriggerBankruptcy handles numeric strings', () => {
-  assert.strictEqual(shouldTriggerBankruptcy('-10', 0), true)
-  assert.strictEqual(shouldTriggerBankruptcy('0', -10), true)
-  assert.strictEqual(shouldTriggerBankruptcy('0', 0), false)
+test('shouldTriggerBankruptcy rejects numeric strings strictly', () => {
+  assert.throws(() => shouldTriggerBankruptcy('-10', 0), TypeError)
+  assert.throws(() => shouldTriggerBankruptcy('0', -10), TypeError)
+  assert.throws(() => shouldTriggerBankruptcy('0', 0), TypeError)
 })
