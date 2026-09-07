@@ -16,7 +16,8 @@ import {
   canClaimExpeditionInsurance,
   getAvailableInsurancePolicyIds,
   getExpeditionInsurancePolicy,
-  getExpeditionInsurancePremium
+  getExpeditionInsurancePremium,
+  resolveExpeditionInsuranceClaim
 } from '../../src/domain/expedition/insurance.ts'
 import {
   claimExpeditionInsurance,
@@ -388,5 +389,27 @@ describe('touring policy flexibility', () => {
     // Now empty fuel - cannot use touring insurance again
     afterTech.player.van.fuel = 0
     assert.equal(canClaimExpeditionInsurance(afterTech, 'vehicle'), false)
+  })
+
+  it('resolves claim directly via resolveExpeditionInsuranceClaim', () => {
+    const state = startedState(
+      { money: 1000 },
+      { insurancePolicyId: 'roadside' }
+    )
+    state.player.van.fuel = 0
+    const resolution = resolveExpeditionInsuranceClaim(state, {
+      claimType: 'vehicle'
+    })
+    assert.equal(resolution.ok, true)
+    if (resolution.ok) {
+      assert.equal(resolution.claimType, 'vehicle')
+      assert.equal(resolution.restoredValue, EXPEDITION_TOW_FUEL_RESTORED)
+    }
+
+    const badResolution = resolveExpeditionInsuranceClaim(state, {
+      claimType: 'technical',
+      targetGroup: 'instruments'
+    })
+    assert.equal(badResolution.ok, false)
   })
 })

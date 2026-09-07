@@ -18,6 +18,7 @@
     "lint:fix": "eslint . --fix && pnpm run lint:css:fix",
     "prepare": "husky",
     "preview": "vite preview",
+    "balance:expedition": "node --import tsx scripts/game-balance-expedition.mjs",
     "simulate:balance": "node --import tsx scripts/game-balance-simulation.mjs",
     "simulate:balance:experiments": "node --import tsx scripts/game-balance-experiments.mjs",
     "simulate:balance:tension": "node --import tsx scripts/game-balance-tension-report.mjs",

@@ -3,7 +3,9 @@
 ## Balance Simulations
 
 - Balance harnesses must import canonical reducers, action creators, configs, economy/fame helpers, event data, and minigame logic instead of reimplementing mechanics. A PreGig run executes exactly one setup minigame; simulating all three triples its stress effects.
-- A run follows the generated map's ten-hop horizon. Keep `SIMULATION_CONSTANTS.daysPerRun` and progression checkpoints within that horizon. Recalibrate `KPI_TARGETS`, progression bands, Fame-per-gig bands, and solvent-money caps after changing the horizon, `GLOBAL_PAYOUT_NERF`, or `FAME_PROGRESS_CONSTANTS`.
+- The v14 historical harness keeps its 10-hop/daysPerRun semantics. Keep `SIMULATION_CONSTANTS.daysPerRun` and progression checkpoints within that horizon for v14.
+- The v15 Expedition harness must not use `daysPerRun` as a terminal condition; route-step checkpoints replace day checkpoints, and terminal outcomes are strictly `extracted`, `completed`, or `failed` derived from production `TourTypeDefinition` route depth and extraction windows.
+- All production RNG/provenance/reproducibility rules remain mandatory.
 - `gigGapDays` controls frequency; `SHIPPED_GIG_CADENCE_POLICY` controls eligible days and belongs in the harness. Main reports use 2,000 runs and `SIMULATION_CONSTANTS.seedNamespace`; changing the namespace creates unpaired cohorts.
 - Diagnose insolvency before and after the first gig separately through `run.earlyRunway`. Sample `observeEarlyRunwayMoney()` after every money-moving call; sampling only after a group can hide an intermediate trough.
 
