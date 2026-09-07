@@ -26,7 +26,8 @@ import {
 } from '../src/domain/expedition/failure.ts'
 import {
   canExtractExpedition,
-  getExplicitExtractionRareCarrySlots
+  getExplicitExtractionRareCarrySlots,
+  settleExpedition
 } from '../src/domain/expedition/extraction.ts'
 import { canSpendExpeditionCash } from '../src/domain/expedition/loadout.ts'
 import { getExpeditionCargoView } from '../src/domain/expedition/cargo.ts'
@@ -951,39 +952,103 @@ export const evaluateCandidateNode = (
  * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
  * @returns {boolean}
  */
-const shouldExtractAtWindow = (state, profile) => {
+const explainExtractionDecision = (state, profile) => {
   const vanCond = state.player.van.condition ?? 100
   const vanFuel = state.player.van.fuel ?? 100
   const techCond = getExpeditionConditionSummary(state)
+  const spareParts = state.expedition.cargo?.spareParts ?? 0
   const spendableCash =
     state.player.money -
     (state.expedition.loadout?.build?.protectedCareerCash ?? 0)
 
+  // Which clause fired, not just whether one did. A profile that always
+  // extracts tells you nothing on its own; the reason code says whether the
+  // run was actually in trouble or the policy's threshold simply sits above
+  // where a healthy run operates.
+  /** @type {string | null} */
+  let reason
   switch (profile.decisionPolicy) {
     case 'clean_sponsor':
-      return (
-        vanCond < 40 || techCond < 40 || vanFuel < 25 || spendableCash < 100
-      )
+      reason =
+        vanCond < 40
+          ? 'van_condition'
+          : techCond < 40
+            ? 'technical_condition'
+            : vanFuel < 25
+              ? 'fuel'
+              : spendableCash < 100
+                ? 'cash'
+                : null
+      break
     case 'push_heat':
-      return vanCond < 15 || techCond < 15 || vanFuel < 15
+      reason =
+        vanCond < 15
+          ? 'van_condition'
+          : techCond < 15
+            ? 'technical_condition'
+            : vanFuel < 15
+              ? 'fuel'
+              : null
+      break
     case 'repair_first':
-      return (
-        vanCond < 35 ||
-        techCond < 35 ||
-        (spendableCash < 50 && (state.expedition.cargo?.spareParts ?? 0) === 0)
-      )
+      reason =
+        vanCond < 35
+          ? 'van_condition'
+          : techCond < 35
+            ? 'technical_condition'
+            : spendableCash < 50 && spareParts === 0
+              ? 'cash_without_parts'
+              : null
+      break
     case 'intel_then_value': {
       const rareCount = state.expedition.rewardLedger.filter(
         e => !e.abandoned
       ).length
-      return rareCount >= 1 && (vanCond < 45 || techCond < 45)
+      reason =
+        rareCount >= 1 && (vanCond < 45 || techCond < 45)
+          ? vanCond < 45
+            ? 'van_condition'
+            : 'technical_condition'
+          : null
+      break
     }
     case 'performance_push':
-      return techCond < 25 || vanCond < 25
+      reason =
+        techCond < 25
+          ? 'technical_condition'
+          : vanCond < 25
+            ? 'van_condition'
+            : null
+      break
     case 'rival_pressure':
-      return vanCond < 20 || techCond < 20
+      reason =
+        vanCond < 20
+          ? 'van_condition'
+          : techCond < 20
+            ? 'technical_condition'
+            : null
+      break
     default:
-      return vanCond < 30 || techCond < 30
+      reason =
+        vanCond < 30
+          ? 'van_condition'
+          : techCond < 30
+            ? 'technical_condition'
+            : null
+  }
+
+  return {
+    extract: reason !== null,
+    reason,
+    routeStep: state.expedition.routeStep,
+    vanCondition: vanCond,
+    technicalCondition: techCond,
+    fuel: vanFuel,
+    spendableCash,
+    spareParts,
+    // The production settlement, so "what extracting is worth right now" is the
+    // game's own number rather than a harness estimate.
+    extractRetainedMoney: settleExpedition(state, 'extracted').moneyRetained
   }
 }
 
@@ -1065,6 +1130,7 @@ export const runExpeditionSimulation = (
     crewStressMax: 0,
     crowdHypeMax: state.expedition.pressure?.crowdHype ?? 0,
     realizedHypeComboBonusTotal: 0,
+    extractionDecisions: [],
     gigNetTotal: 0,
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
@@ -1345,7 +1411,13 @@ export const runExpeditionSimulation = (
     if (options.extractionDecisionSpy) {
       shouldExtract = options.extractionDecisionSpy(extractionAllowed, state)
     } else if (extractionAllowed) {
-      shouldExtract = shouldExtractAtWindow(state, profile)
+      // Recorded at every legal window, taken or not: a profile that never
+      // extracts and one that always does look identical in the outcome mix,
+      // and only the reason code separates "the run was in trouble" from "the
+      // policy's threshold sits where a healthy run already is".
+      const decision = explainExtractionDecision(state, profile)
+      telemetry.extractionDecisions.push(decision)
+      shouldExtract = decision.extract
     }
 
     if (shouldExtract && extractionAllowed) {
