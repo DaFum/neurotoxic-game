@@ -26,7 +26,7 @@ const mockStorage = {
 global.localStorage = mockStorage
 
 test('UnlockManager Unit Tests', async t => {
-  const { getUnlocks, addUnlock, __testInternals } =
+  const { getUnlocks, addUnlock, addUnlockWithPersistence, __testInternals } =
     await import('../../src/utils/unlockManager')
   const { resetStorageFallback } = await import('../../src/utils/storage')
   const clearCache = __testInternals.clearCache
@@ -192,6 +192,76 @@ test('UnlockManager Unit Tests', async t => {
 
       clearCache()
       assert.deepEqual(getUnlocks(), ['legacy_unlock'])
+    }
+  )
+
+  await t.test(
+    'addUnlockWithPersistence reports a durable write as persisted',
+    () => {
+      assert.equal(addUnlockWithPersistence('durable_item'), 'persisted')
+      assert.equal(mockStorage.store['neurotoxic_unlock:durable_item'], '1')
+    }
+  )
+
+  await t.test(
+    'addUnlockWithPersistence reports a refused write as session_only',
+    () => {
+      const originalSetItem = mockStorage.setItem
+      mockStorage.setItem = () => {
+        throw new Error('Storage Full')
+      }
+
+      try {
+        // The unlock is still retained for the session - that is what makes it
+        // indistinguishable from a durable one by presence alone, and exactly
+        // why a caller granting something irreversible needs this answer.
+        assert.equal(addUnlockWithPersistence('buffered_item'), 'session_only')
+        assert.deepEqual(getUnlocks(), ['buffered_item'])
+        assert.equal(
+          Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:buffered_item'),
+          false
+        )
+      } finally {
+        mockStorage.setItem = originalSetItem
+      }
+    }
+  )
+
+  await t.test(
+    'an already-present id reports the durability of the write that added it',
+    () => {
+      const originalSetItem = mockStorage.setItem
+      mockStorage.setItem = () => {
+        throw new Error('Storage Full')
+      }
+      try {
+        assert.equal(addUnlockWithPersistence('again'), 'session_only')
+      } finally {
+        mockStorage.setItem = originalSetItem
+      }
+
+      // Present in the set now, so nothing is written - but it is still not
+      // durable, and reporting `persisted` here would reopen the hole.
+      assert.equal(addUnlockWithPersistence('again'), 'session_only')
+
+      // A durable write for the same id supersedes the buffered one.
+      assert.equal(addUnlockWithPersistence('durable_now'), 'persisted')
+      assert.equal(addUnlockWithPersistence('durable_now'), 'persisted')
+    }
+  )
+
+  await t.test(
+    'addUnlockWithPersistence reports failed when the store is unreadable',
+    () => {
+      const originalGetItem = mockStorage.getItem
+      mockStorage.getItem = () => {
+        throw new Error('Access Denied')
+      }
+      try {
+        assert.equal(addUnlockWithPersistence('unreadable'), 'failed')
+      } finally {
+        mockStorage.getItem = originalGetItem
+      }
     }
   )
 })
