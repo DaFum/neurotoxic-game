@@ -980,7 +980,7 @@ export const handleExtractExpedition = (
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   // Safe Harbor is an *extra* opportunity, so it is composed with the base
   // window rather than replacing it: the route's own windows are unchanged and
-  // the Legendary only ever adds the one node after the second of them.
+  // the Legendary only ever adds the one node its own predicate names.
   const atWindow =
     (typeof currentNodeId === 'string' &&
       Object.hasOwn(map.meta, currentNodeId) &&

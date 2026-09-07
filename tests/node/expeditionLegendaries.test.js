@@ -40,7 +40,8 @@ import { sanitizeExpeditionState } from '../../src/context/reducers/expeditionSa
 import {
   fixtureMap,
   startedState,
-  walkTo
+  walkTo,
+  walkToFinale
 } from '../expeditionLifecycleFixture.js'
 
 const map = fixtureMap()
@@ -309,71 +310,92 @@ describe('G5 — a Legendary is earned by a Finale, once', () => {
 
 describe('G5 — Safe Harbor is one extra extraction opportunity', () => {
   /**
-   * The two windows to record, chosen so the node after them is *not* itself a
-   * base window.
+   * The step the Legendary is owed on, derived from the route.
    *
-   * Derived rather than pinned: the fixture route's own extraction corridor
-   * decides which step qualifies, and a hardcoded pair silently stops testing
-   * the Legendary the moment the corridor moves.
+   * A Tour's windows are one contiguous corridor, so this is the first step
+   * past it that is not the Finale. Derived rather than pinned: a hardcoded
+   * step silently stops testing the Legendary the moment the corridor moves.
    */
-  const WINDOWS_SEEN = (() => {
-    const steps = [
-      ...new Set(
-        map.nodeOrder
-          .filter(nodeId => map.meta[nodeId]?.isExtractionWindow === true)
-          .map(nodeId => map.meta[nodeId].routeStep)
-      )
-    ].sort((a, b) => a - b)
-    const second = steps.find(
-      step =>
-        steps.indexOf(step) >= 1 &&
-        !steps.includes(step + 1) &&
-        map.meta[map.finaleNodeId].routeStep !== step + 1
+  /** Normal windows the run must pass first, per the plan's transform. */
+  const REQUIRED_WINDOWS = 2
+
+  const GRANT_STEP = (() => {
+    const finaleStep = map.meta[map.finaleNodeId].routeStep
+    const windowEnd = Math.max(
+      ...map.nodeOrder
+        .filter(nodeId => map.meta[nodeId]?.isExtractionWindow === true)
+        .map(nodeId => map.meta[nodeId].routeStep)
     )
-    assert.ok(second, 'the fixture route offers no non-window step to grant')
-    return [steps[steps.indexOf(second) - 1], second]
+    const step = windowEnd + 1
+    assert.ok(
+      step < finaleStep,
+      'the fixture route offers no non-window step to grant'
+    )
+    return step
   })()
 
-  /** A run standing one step past its second recorded window. */
-  const pastSecondWindow = (legendaryIds, windows) => {
-    const base = owning(...legendaryIds)
-    const walked = walkTo(base, Math.max(...windows) + 1)
-    return {
-      ...walked,
-      expedition: { ...walked.expedition, extractionWindowsSeen: windows }
-    }
-  }
+  /**
+   * A run standing on the grant step with the window history a real walk
+   * produced.
+   *
+   * @remarks
+   * Deliberately does **not** overwrite `extractionWindowsSeen`. An artificial
+   * pair was what hid the defect this fixture now proves: with the production
+   * history the corridor records, the second window is nowhere near the last,
+   * so a grant pinned to "the step after the second window" landed inside the
+   * corridor and was refused for already being a normal opportunity.
+   */
+  const atGrantStep = legendaryIds =>
+    walkTo(owning(...legendaryIds), GRANT_STEP)
 
-  it('opens the node after the second window and nowhere else', () => {
-    const owned = pastSecondWindow(['safe_harbor'], WINDOWS_SEEN)
-    assert.equal(isExpeditionSafeHarborWindow(owned, map), true)
-    // One window is not two.
-    assert.equal(
-      isExpeditionSafeHarborWindow(
-        pastSecondWindow(['safe_harbor'], [WINDOWS_SEEN[0]]),
-        map
-      ),
-      false
+  it('opens the first node past the window corridor', () => {
+    const owned = atGrantStep(['safe_harbor'])
+    // The history a walked run actually carries, not a chosen pair.
+    assert.ok(
+      owned.expedition.extractionWindowsSeen.length > REQUIRED_WINDOWS,
+      'the fixture walk must pass more than the two required windows'
     )
-    // And the grant belongs to that one node: standing anywhere else on the
-    // route, it is not owed. Derived from the same walk, so only the recorded
-    // windows differ.
-    const elsewhere = {
+    assert.equal(isExpeditionSafeHarborWindow(owned, map), true)
+  })
+
+  it('is not owed before the second window', () => {
+    // One window is not two, and nothing before the corridor is two either.
+    const early = walkTo(owning('safe_harbor'), 1)
+    assert.ok(early.expedition.extractionWindowsSeen.length < REQUIRED_WINDOWS)
+    assert.equal(isExpeditionSafeHarborWindow(early, map), false)
+
+    const owned = atGrantStep(['safe_harbor'])
+    const oneWindow = {
       ...owned,
-      expedition: { ...owned.expedition, extractionWindowsSeen: [3, 4] }
+      expedition: {
+        ...owned.expedition,
+        extractionWindowsSeen: [owned.expedition.extractionWindowsSeen[0]]
+      }
     }
-    assert.equal(isExpeditionSafeHarborWindow(elsewhere, map), false)
+    assert.equal(isExpeditionSafeHarborWindow(oneWindow, map), false)
+  })
+
+  it('is not owed on a node the route already opens, nor on the Finale', () => {
+    // Inside the corridor the base route is the opportunity, so the Legendary
+    // adds nothing and must not claim to.
+    const inCorridor = walkTo(owning('safe_harbor'), GRANT_STEP - 1)
+    assert.equal(
+      map.meta[inCorridor.expedition.visitedNodeIds.at(-1)].isExtractionWindow,
+      true
+    )
+    assert.equal(isExpeditionSafeHarborWindow(inCorridor, map), false)
+
+    const finale = walkToFinale(owning('safe_harbor'))
+    assert.equal(finale.expedition.visitedNodeIds.at(-1), map.finaleNodeId)
+    assert.equal(isExpeditionSafeHarborWindow(finale, map), false)
   })
 
   it('does nothing for a Career that does not own it', () => {
-    assert.equal(
-      isExpeditionSafeHarborWindow(pastSecondWindow([], WINDOWS_SEEN), map),
-      false
-    )
+    assert.equal(isExpeditionSafeHarborWindow(atGrantStep([]), map), false)
   })
 
   it('lets the run extract on it through the production reducer', () => {
-    const owned = pastSecondWindow(['safe_harbor'], WINDOWS_SEEN)
+    const owned = atGrantStep(['safe_harbor'])
     // The base route does not offer this node, which is what makes the
     // extraction below evidence of the Legendary rather than of the route.
     const nodeId = owned.expedition.visitedNodeIds.at(-1)
@@ -385,7 +407,7 @@ describe('G5 — Safe Harbor is one extra extraction opportunity', () => {
     assert.equal(extracted.expedition.status, 'extracted')
 
     // Without the Legendary the identical dispatch is refused.
-    const unowned = pastSecondWindow([], WINDOWS_SEEN)
+    const unowned = atGrantStep([])
     assert.equal(
       gameReducer(unowned, {
         type: ActionTypes.EXTRACT_EXPEDITION,

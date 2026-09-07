@@ -148,6 +148,43 @@ export const resolveExpeditionLegendaryCandidate = (
 const SAFE_HARBOR_REQUIRED_WINDOWS = 2
 
 /**
+ * The one route step Safe Harbor can turn into an extraction opportunity.
+ *
+ * @param map - The run's canonical route.
+ * @param afterStep - The second normal window the run has already passed.
+ * @returns That step, or `null` when the route offers none.
+ *
+ * @remarks
+ * A Tour's windows are one contiguous corridor, so the step right after the
+ * second of them is normally still inside it - and an opportunity the base
+ * route already offers is not an extra one. The entitlement therefore stays
+ * pending past the corridor and lands on the first step beyond it that is not
+ * the Finale, which is the "next non-Finale node" the plan names.
+ *
+ * Derived from the route rather than counted from the window, because that is
+ * what makes the grant exist at all: pinning it to `afterStep + 1` left every
+ * canonical Tour with no eligible node, since each one's corridor runs
+ * unbroken to the step before the Finale.
+ */
+const resolveExpeditionSafeHarborStep = (
+  map: ExpeditionMap,
+  afterStep: number
+): number | null => {
+  let earliest: number | null = null
+  for (const nodeId of map.nodeOrder) {
+    if (nodeId === map.finaleNodeId) continue
+    const entry = map.meta[nodeId]
+    if (!entry || entry.isExtractionWindow || entry.routeStep <= afterStep) {
+      continue
+    }
+    if (earliest === null || entry.routeStep < earliest) {
+      earliest = entry.routeStep
+    }
+  }
+  return earliest
+}
+
+/**
  * Whether Safe Harbor makes the current node an extraction opportunity.
  *
  * @param state - Current game state.
@@ -155,10 +192,10 @@ const SAFE_HARBOR_REQUIRED_WINDOWS = 2
  * @returns True when the run may extract here on Safe Harbor alone.
  *
  * @remarks
- * The node immediately after the second normal window, and only that one: the
- * grant is a single extra opportunity rather than a standing permit, so it
- * expires by the run walking past it. No consumption record is needed because
- * the only way to spend it ends the run.
+ * The first node past the second normal window that the base route does not
+ * already open, and only that one: the grant is a single extra opportunity
+ * rather than a standing permit, so it expires by the run walking past it. No
+ * consumption record is needed because the only way to spend it ends the run.
  *
  * The Finale is excluded - completing there is already the better outcome, and
  * an extraction on the Finale node would trade a completion for a retention
@@ -173,7 +210,10 @@ export const isExpeditionSafeHarborWindow = (
   if (seen.length < SAFE_HARBOR_REQUIRED_WINDOWS) return false
   const secondWindow = seen[SAFE_HARBOR_REQUIRED_WINDOWS - 1]
   if (secondWindow === undefined) return false
-  if (state.expedition.routeStep !== secondWindow + 1) return false
+  const grantStep = resolveExpeditionSafeHarborStep(map, secondWindow)
+  if (grantStep === null || state.expedition.routeStep !== grantStep) {
+    return false
+  }
   const nodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof nodeId !== 'string' || nodeId === map.finaleNodeId) return false
