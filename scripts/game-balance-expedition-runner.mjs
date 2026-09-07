@@ -20,6 +20,15 @@ import {
   isExpeditionServiceLocation
 } from '../src/domain/expedition/repairs.ts'
 import { getVisibleExpeditionDefects } from '../src/domain/expedition/defects.ts'
+import { derivePressureDirectorContext } from '../src/domain/expedition/pressure.ts'
+import { EXPEDITION_PRESSURE_EVENTS_DB } from '../src/data/events/expeditionPressure.ts'
+import { resolveEvent } from '../src/domain/eventResolver.ts'
+import { POST_OPTIONS } from '../src/data/postOptions.ts'
+import {
+  EXPEDITION_SOCIAL_RESULTS,
+  deriveExpeditionSocialResultId
+} from '../src/domain/expedition/social.ts'
+import { calculatePostGigStateUpdates } from '../src/utils/postGig/socialResolution.ts'
 import {
   deriveExpeditionPendingFailure,
   EXPEDITION_TOW_COST
@@ -61,7 +70,8 @@ import {
 } from '../src/context/expeditionActionCreators.ts'
 import {
   createStartTravelMinigameAction,
-  createCompleteTravelMinigameAction
+  createCompleteTravelMinigameAction,
+  createSetActiveEventAction
 } from '../src/context/actionCreators.ts'
 import { areBetweenTourDecisionsResolved } from '../src/domain/expedition/betweenTour.ts'
 import { getActiveAssetModifiers } from '../src/utils/assetSelectors.ts'
@@ -95,6 +105,7 @@ export const HOLDOUT_COHORT_NAMESPACE = '#roguelite-expedition-v1#holdout'
 const MAX_ROUTE_STEPS = 30
 /** Namespace for the per-leg deterministic RNG handed to the travel minigame. */
 const TRAVEL_RNG_NAMESPACE = '#roguelite-expedition-v1#travel'
+const SOCIAL_RNG_NAMESPACE = '#roguelite-expedition-v1#social'
 /** Namespace for the per-note timing jitter of a simulated Gig. */
 const SKILL_TIMING_NAMESPACE = '#roguelite-expedition-v1#skill-timing'
 
@@ -946,109 +957,436 @@ export const evaluateCandidateNode = (
 }
 
 /**
- * Evaluates whether a profile's policy decides to extract at the current extraction window.
+ * The Expedition Social result each policy reaches for after a clean Gig.
+ *
+ * @remarks
+ * The four results are genuinely different bets - `push` buys Exposure with
+ * Heat, `monetize` buys cash with a little Exposure, `suppress` spends a post
+ * to cool both and buy level-2 Intel, `weaponize` escalates a Rival - so the
+ * pick is a persona decision. Falls back down the list when an option is not
+ * legal right now (no Rival on state, an option whose own condition fails).
+ */
+const SOCIAL_RESULT_PREFERENCE = {
+  safe_value: ['monetize', 'suppress'],
+  push_heat: ['push', 'weaponize'],
+  repair_first: ['monetize', 'suppress'],
+  intel_then_value: ['suppress', 'monetize'],
+  performance_push: ['push', 'monetize'],
+  rival_pressure: ['weaponize', 'push']
+}
+
+/**
+ * Posts about the Gig that just resolved, if the run is standing on a
+ * settlement window.
  *
  * @param {import('../src/types').GameState} state
  * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
- * @returns {boolean}
+ * @param {number} seed
+ * @param {Record<string, any>} telemetry
+ * @returns {import('../src/types').GameState}
+ *
+ * @remarks
+ * Exposure has exactly one writer on an active run, and it is this settlement.
+ * A harness that never posted therefore measured `pressure.exposure` at zero
+ * for every profile at every window - including `high_exposure_performance`,
+ * a persona built entirely around the number. The post's own math comes from
+ * `calculatePostGigStateUpdates`, and both writes go through their reducers,
+ * so the harness chooses an option and nothing more.
+ */
+const playPendingSocialPost = (state, profile, seed, telemetry) => {
+  const settlement = state.expedition?.pendingSocialSettlement
+  if (!settlement || settlement.routeStep !== state.expedition.routeStep) {
+    return state
+  }
+  if (!state.lastGigStats || state.lastGigStats.failed === true) return state
+
+  const preferences = SOCIAL_RESULT_PREFERENCE[profile.decisionPolicy] ?? [
+    'push'
+  ]
+  const legalOptions = POST_OPTIONS.filter(option => {
+    if (typeof option.condition === 'function' && !option.condition(state)) {
+      return false
+    }
+    const result = EXPEDITION_SOCIAL_RESULTS[deriveExpeditionSocialResultId(option)]
+    return Boolean(result) && (!result.requiresRival || Boolean(state.rivalBand))
+  })
+  const option =
+    preferences
+      .map(resultId =>
+        legalOptions.find(
+          candidate => deriveExpeditionSocialResultId(candidate) === resultId
+        )
+      )
+      .find(Boolean) ?? legalOptions[0]
+  if (!option) return state
+
+  // Three independent draws in the production signature, kept seed-derived so
+  // the post is as replayable as the rest of the run.
+  const draw = salt =>
+    deriveCohortSeed(
+      `${SOCIAL_RNG_NAMESPACE}:${seed}:${state.expedition.routeStep}:${salt}`,
+      0
+    ) / 4294967296
+
+  const updates = calculatePostGigStateUpdates({
+    option,
+    player: state.player,
+    band: state.band,
+    social: state.social,
+    lastGigStats: state.lastGigStats,
+    currentGig: state.currentGig,
+    perfScore: state.lastGigStats.accuracy ?? 0,
+    secureRandomValue: draw('secure'),
+    selectionRandomValue: draw('selection'),
+    viralRandomValue: draw('viral')
+  })
+
+  let next = gameReducer(state, {
+    type: ActionTypes.UPDATE_SOCIAL,
+    payload: updates.updatedSocial
+  })
+  // The reducer proves the option against `social.pendingSocialOptionId`, which
+  // the update above stamps. If that did not land, the settlement would be
+  // refused anyway - bail rather than dispatch a doomed action.
+  if (next.social.pendingSocialOptionId !== option.id) return state
+
+  const resultId = deriveExpeditionSocialResultId(option)
+  const exposureBefore = finiteNumberOr(next.expedition.pressure.exposure, 0)
+  const heatBefore = finiteNumberOr(next.expedition.pressure.heat, 0)
+  next = gameReducer(next, {
+    type: ActionTypes.RESOLVE_EXPEDITION_SOCIAL_RESULT,
+    payload: {
+      resultId,
+      postOptionId: option.id,
+      expectedRouteStep: next.expedition.routeStep
+    }
+  })
+  if (next.expedition.lastSocialResult?.resolvedAtRouteStep === undefined) {
+    return next
+  }
+
+  telemetry.socialPosts.push({
+    routeStep: state.expedition.routeStep,
+    optionId: option.id,
+    resultId,
+    exposureDelta:
+      finiteNumberOr(next.expedition.pressure.exposure, 0) - exposureBefore,
+    heatDelta: finiteNumberOr(next.expedition.pressure.heat, 0) - heatBefore
+  })
+  return next
+}
+
+/**
+ * Options a policy prefers when a Pressure Director event surfaces.
+ *
+ * @remarks
+ * Ordered by preference; the first option the event actually offers wins. The
+ * Director's events trade Heat against Condition, cargo and route access, so
+ * the choice is a real persona decision rather than a coin flip: a Heat-averse
+ * Sponsor tour takes the long way, an Underground run takes the address.
+ */
+const PRESSURE_EVENT_OPTION_PREFERENCE = {
+  safe_value: ['take_the_long_way', 'stay_clean'],
+  push_heat: ['wave_through', 'take_the_address'],
+  repair_first: ['take_the_address', 'take_the_long_way', 'stay_clean'],
+  intel_then_value: ['take_the_address', 'take_the_long_way'],
+  performance_push: ['wave_through', 'take_the_address'],
+  rival_pressure: ['wave_through', 'take_the_address']
+}
+
+/**
+ * Plays the Pressure Director event the route advance selected, if any.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
+ * @param {Record<string, any>} telemetry
+ * @returns {import('../src/types').GameState}
+ *
+ * @remarks
+ * The Director *selects* an event on arrival and stores its id; the Heat,
+ * Exposure, Condition and cargo consequences only land when the player
+ * resolves it. A harness that never resolved one left
+ * `state.expedition.pressure.heat` and `.exposure` at zero for the whole run,
+ * so every Heat- and Exposure-driven balance number measured a system the
+ * simulation had staged and never played — the same parity gap the missing
+ * `deriveFinancials` call was. Resolution goes through `resolveEvent`, the
+ * production owner, so the harness picks an option and nothing else.
+ */
+const playPendingPressureEvent = (state, profile, telemetry) => {
+  const pendingId = state.expedition?.pressure?.pendingDirectorEventId
+  if (typeof pendingId !== 'string') return state
+
+  const definition = EXPEDITION_PRESSURE_EVENTS_DB.find(
+    event => event.id === pendingId
+  )
+  if (!definition) return state
+
+  // The reducer proves the source against `state.activeEvent.id`, so the event
+  // has to actually be on state before it can be resolved — exactly the guard
+  // that stops a direct dispatch from minting Heat for an unseen encounter.
+  let next = gameReducer(state, createSetActiveEventAction(definition))
+  if (next.activeEvent?.id !== pendingId) return state
+
+  const preferences =
+    PRESSURE_EVENT_OPTION_PREFERENCE[profile.decisionPolicy] ?? []
+  const option =
+    definition.options.find(candidate =>
+      preferences.includes(candidate.id)
+    ) ?? definition.options[0]
+  if (!option) return state
+
+  const heatBefore = finiteNumberOr(next.expedition.pressure.heat, 0)
+  const exposureBefore = finiteNumberOr(next.expedition.pressure.exposure, 0)
+
+  for (const action of resolveEvent(option, next).actions) {
+    next = gameReducer(next, action)
+  }
+  next = gameReducer(next, createSetActiveEventAction(null))
+
+  telemetry.pressureEvents.push({
+    routeStep: state.expedition.routeStep,
+    eventId: pendingId,
+    optionId: option.id,
+    heatDelta:
+      finiteNumberOr(next.expedition.pressure.heat, 0) - heatBefore,
+    exposureDelta:
+      finiteNumberOr(next.expedition.pressure.exposure, 0) - exposureBefore
+  })
+  return next
+}
+
+/**
+ * Per-policy weights over the pressure dimensions, plus the tolerance the
+ * weighted score has to clear before the policy bails out.
+ *
+ * @remarks
+ * This table replaces a single-variable cascade. The previous policy compared
+ * van condition against one per-persona constant and nothing else, so the
+ * measured completion rate was `P(van condition stays above that constant)` and
+ * Heat, Exposure, obligations and value-at-risk could not move it however far
+ * the game's own numbers swung. The dimensions below come from
+ * `derivePressureDirectorContext`, the production owner the pressure Director
+ * itself weighs its event pool with, so the policy and the game read the run
+ * through the same lens.
+ */
+const EXTRACTION_POLICY_WEIGHTS = {
+  safe_value: {
+    survival: 1,
+    heat: 1,
+    exposure: 0.5,
+    crewStress: 0.6,
+    obligation: 1,
+    rival: 0.3,
+    depth: 0.4,
+    value: 0.9,
+    cash: 0.8,
+    tolerance: 26
+  },
+  push_heat: {
+    survival: 0.8,
+    heat: 0.25,
+    exposure: 0.4,
+    crewStress: 0.3,
+    obligation: 0.2,
+    rival: 0.3,
+    depth: 0.2,
+    value: 0.4,
+    cash: 0.5,
+    tolerance: 37.5
+  },
+  repair_first: {
+    survival: 1,
+    heat: 0.4,
+    exposure: 0.2,
+    crewStress: 0.5,
+    obligation: 0.3,
+    rival: 0.2,
+    depth: 0.4,
+    value: 0.6,
+    cash: 0.9,
+    tolerance: 30
+  },
+  intel_then_value: {
+    survival: 0.7,
+    heat: 0.5,
+    exposure: 0.4,
+    crewStress: 0.4,
+    obligation: 0.5,
+    rival: 0.3,
+    depth: 0.3,
+    value: 1,
+    cash: 0.6,
+    tolerance: 16.5
+  },
+  performance_push: {
+    survival: 0.8,
+    heat: 0.6,
+    exposure: 1,
+    crewStress: 0.7,
+    obligation: 0.5,
+    rival: 0.3,
+    depth: 0.3,
+    value: 0.5,
+    cash: 0.6,
+    tolerance: 37
+  },
+  rival_pressure: {
+    survival: 0.9,
+    heat: 0.5,
+    exposure: 0.3,
+    crewStress: 0.4,
+    obligation: 0.3,
+    rival: 1,
+    depth: 0.3,
+    value: 0.5,
+    cash: 0.6,
+    tolerance: 39
+  }
+}
+
+/**
+ * The weights used when a profile names a policy the table does not cover.
+ */
+const DEFAULT_EXTRACTION_POLICY_WEIGHTS = {
+  survival: 1,
+  heat: 0.5,
+  exposure: 0.4,
+  crewStress: 0.4,
+  obligation: 0.4,
+  rival: 0.4,
+  depth: 0.3,
+  value: 0.6,
+  cash: 0.7,
+  tolerance: 42
+}
+
+/**
+ * Evaluates whether a profile's policy decides to extract at the current extraction window,
+ * and records which pressure the decision actually came from.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
+ * @returns {{
+ *   extract: boolean,
+ *   reason: string | null,
+ *   score: number,
+ *   tolerance: number,
+ *   pressures: Record<string, number>,
+ *   routeStep: number,
+ *   vanCondition: number,
+ *   technicalCondition: number,
+ *   fuel: number,
+ *   spendableCash: number,
+ *   spareParts: number,
+ *   heat: number,
+ *   exposure: number,
+ *   extractRetainedMoney: number,
+ *   moneyAtRisk: number
+ * }}
  */
 const explainExtractionDecision = (state, profile) => {
-  const vanCond = state.player.van.condition ?? 100
-  const vanFuel = state.player.van.fuel ?? 100
+  const vanCond = finiteNumberOr(state.player.van.condition, 100)
+  const vanFuel = finiteNumberOr(state.player.van.fuel, 100)
   const techCond = getExpeditionConditionSummary(state)
-  const spareParts = state.expedition.cargo?.spareParts ?? 0
-  const spendableCash =
-    state.player.money -
-    (state.expedition.loadout?.build?.protectedCareerCash ?? 0)
+  const spareParts = finiteNumberOr(state.expedition.cargo?.spareParts, 0)
+  const protectedCash = finiteNumberOr(
+    state.expedition.loadout?.build?.protectedCareerCash,
+    0
+  )
+  const spendableCash = finiteNumberOr(state.player.money, 0) - protectedCash
 
-  // Which clause fired, not just whether one did. A profile that always
-  // extracts tells you nothing on its own; the reason code says whether the
-  // run was actually in trouble or the policy's threshold simply sits above
-  // where a healthy run operates.
-  /** @type {string | null} */
-  let reason
-  switch (profile.decisionPolicy) {
-    case 'clean_sponsor':
-      reason =
-        vanCond < 40
-          ? 'van_condition'
-          : techCond < 40
-            ? 'technical_condition'
-            : vanFuel < 25
-              ? 'fuel'
-              : spendableCash < 100
-                ? 'cash'
-                : null
-      break
-    case 'push_heat':
-      reason =
-        vanCond < 15
-          ? 'van_condition'
-          : techCond < 15
-            ? 'technical_condition'
-            : vanFuel < 15
-              ? 'fuel'
-              : null
-      break
-    case 'repair_first':
-      reason =
-        vanCond < 35
-          ? 'van_condition'
-          : techCond < 35
-            ? 'technical_condition'
-            : spendableCash < 50 && spareParts === 0
-              ? 'cash_without_parts'
-              : null
-      break
-    case 'intel_then_value': {
-      const rareCount = state.expedition.rewardLedger.filter(
-        e => !e.abandoned
-      ).length
-      reason =
-        rareCount >= 1 && (vanCond < 45 || techCond < 45)
-          ? vanCond < 45
-            ? 'van_condition'
-            : 'technical_condition'
-          : null
-      break
-    }
-    case 'performance_push':
-      reason =
-        techCond < 25
-          ? 'technical_condition'
-          : vanCond < 25
-            ? 'van_condition'
-            : null
-      break
-    case 'rival_pressure':
-      reason =
-        vanCond < 20
-          ? 'van_condition'
-          : techCond < 20
-            ? 'technical_condition'
-            : null
-      break
-    default:
-      reason =
-        vanCond < 30
-          ? 'van_condition'
-          : techCond < 30
-            ? 'technical_condition'
-            : null
+  // The production Director's own reading of the run. Using it rather than a
+  // harness copy is what makes Heat and Exposure changes in `src/` show up in
+  // this decision at all.
+  const context = derivePressureDirectorContext(state)
+
+  // What bailing out banks versus what failing here would leave. The gap is
+  // the money the run is currently carrying unbanked, priced by the production
+  // settlement rather than by an estimate.
+  const extractRetainedMoney = settleExpedition(state, 'extracted').moneyRetained
+  const failedRetainedMoney = settleExpedition(state, 'failed').moneyRetained
+  const moneyAtRisk = Math.max(0, extractRetainedMoney - failedRetainedMoney)
+
+  const bounded = value => Math.max(0, Math.min(100, finiteNumberOr(value, 0)))
+
+  const pressures = {
+    // Fuel is scaled so a half tank reads as no pressure and a quarter tank as
+    // half: below that the run is choosing between a Supply Stop and a tow.
+    survival: Math.max(
+      bounded(100 - vanCond),
+      context.technicalConditionPressure,
+      bounded(100 - vanFuel * 2)
+    ),
+    heat: context.heat,
+    exposure: context.exposure,
+    crewStress: context.crewStressPressure,
+    obligation: context.activeObligationPressure,
+    rival: context.rivalPressure,
+    depth: context.routeDepthPressure,
+    // The share of the band's post-run wealth that is still unbanked. Losing
+    // 1,200 with 300 in the bank is a different decision from losing 1,200 with
+    // 5,000 in the bank, and a flat currency threshold cannot tell them apart.
+    value: bounded(
+      (100 * moneyAtRisk) /
+        Math.max(1, moneyAtRisk + Math.max(0, spendableCash))
+    ),
+    // Spare parts are a repair the run has already paid for, so an empty wallet
+    // with parts aboard is not the same emergency as an empty wallet without.
+    cash: Math.max(
+      context.cashPressure,
+      spendableCash < 150 && spareParts === 0 ? 100 : 0
+    )
   }
+
+  const weights =
+    EXTRACTION_POLICY_WEIGHTS[profile.decisionPolicy] ??
+    DEFAULT_EXTRACTION_POLICY_WEIGHTS
+  let weightedTotal = 0
+  let weightSum = 0
+  /** @type {string | null} */
+  let dominant = null
+  let dominantContribution = -1
+  for (const [dimension, pressure] of Object.entries(pressures)) {
+    const weight = finiteNumberOr(weights[dimension], 0)
+    if (weight <= 0) continue
+    const contribution = weight * pressure
+    weightedTotal += contribution
+    weightSum += weight
+    if (contribution > dominantContribution) {
+      dominantContribution = contribution
+      dominant = dimension
+    }
+  }
+  const score = weightSum > 0 ? weightedTotal / weightSum : 0
+  const tolerance = finiteNumberOr(
+    weights.tolerance,
+    DEFAULT_EXTRACTION_POLICY_WEIGHTS.tolerance
+  )
+
+  // Which pressure carried the decision, not just that one did. A profile that
+  // always extracts and one that never does look identical in the outcome mix;
+  // the dominant dimension is what separates "the run was in trouble" from
+  // "the policy's tolerance sits where a healthy run already operates".
+  const reason = score >= tolerance ? dominant : null
 
   return {
     extract: reason !== null,
     reason,
+    score: Math.round(score * 10) / 10,
+    tolerance,
+    pressures,
     routeStep: state.expedition.routeStep,
     vanCondition: vanCond,
     technicalCondition: techCond,
     fuel: vanFuel,
     spendableCash,
     spareParts,
+    heat: context.heat,
+    exposure: context.exposure,
     // The production settlement, so "what extracting is worth right now" is the
     // game's own number rather than a harness estimate.
-    extractRetainedMoney: settleExpedition(state, 'extracted').moneyRetained
+    extractRetainedMoney,
+    moneyAtRisk
   }
 }
 
@@ -1131,6 +1469,8 @@ export const runExpeditionSimulation = (
     crowdHypeMax: state.expedition.pressure?.crowdHype ?? 0,
     realizedHypeComboBonusTotal: 0,
     extractionDecisions: [],
+    pressureEvents: [],
+    socialPosts: [],
     gigNetTotal: 0,
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
@@ -1382,6 +1722,11 @@ export const runExpeditionSimulation = (
         }
       }
 
+      // 3b. Post about the show. The Gig opened a Social settlement window at
+      // this route step, and that settlement is the only writer of
+      // `pressure.exposure` on an active run.
+      state = playPendingSocialPost(state, profile, seed, telemetry)
+
       // 4. Obligations signal
       state = gameReducer(state, {
         type: ActionTypes.RECORD_EXPEDITION_OBLIGATION_SIGNAL,
@@ -1554,6 +1899,13 @@ export const runExpeditionSimulation = (
     telemetry.defectsTriggered = visibleDefects.filter(
       d => d.status === 'triggered'
     ).length
+
+    // The Director selected an event for this arrival; playing it is what
+    // turns that selection into Heat, Exposure, wear and cargo. Without this
+    // the run reaches its Finale with pressure.heat still at its starting
+    // value, and every Heat-driven number is measured against a system that
+    // was staged and never played.
+    state = playPendingPressureEvent(state, profile, telemetry)
   }
 
   // Safety: if loop exceeded max steps without terminal transition

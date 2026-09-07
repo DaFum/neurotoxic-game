@@ -133,6 +133,8 @@ export const BALANCE_SOURCE_FILES = Object.freeze([
   'src/domain/expedition/nodeFog.ts',
   'src/domain/expedition/nodeIntel.ts',
   'src/domain/expedition/pressure.ts',
+  'src/data/events/expeditionPressure.ts',
+  'src/domain/eventResolver.ts',
   'src/domain/expedition/relationships.ts',
   'src/domain/expedition/repairs.ts',
   'src/domain/expedition/rewardLedger.ts',
