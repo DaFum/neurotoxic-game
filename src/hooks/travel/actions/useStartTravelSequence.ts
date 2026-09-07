@@ -6,13 +6,26 @@ import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 import type { TravelActionsParams } from '../types'
 
-interface UseStartTravelSequenceParams extends Pick<
-  TravelActionsParams,
-  'refs' | 'setters' | 'params'
-> {
+/**
+ * Configuration for the start travel sequence action hook.
+ */
+interface UseStartTravelSequenceParams
+  extends Pick<TravelActionsParams, 'refs' | 'setters' | 'params'> {
+  /** Callback to reset any travel preparations that may have been configured but not finalized. */
   clearPendingTravel: () => void
 }
 
+/**
+ * Initializes and executes a node-to-node travel sequence.
+ *
+ * @remarks
+ * Verifies audio context availability before emitting travel sound effects, then
+ * transitions the game map out of idle state into the active minigame. Gracefully
+ * catches setup errors and resets travel flags.
+ *
+ * @param params - Configuration parameters injecting map references, setters, and external callbacks.
+ * @returns A callback that triggers the travel transition to the specified target node.
+ */
 export const useStartTravelSequence = ({
   refs,
   setters,
