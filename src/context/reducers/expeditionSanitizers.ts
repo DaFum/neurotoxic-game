@@ -680,6 +680,10 @@ export const sanitizeExpeditionState = (
     validVisitedPath[validVisitedPath.length - 1]
   )
 
+  const preparedSponsorProvenance = sanitizePreparedSponsorProvenance(
+    value.preparedSponsorProvenance
+  )
+
   const hasCanonicalContactEvidence = (sourceId: string): boolean => {
     const outcome = getCrewEventOutcomeBySourceId(sourceId)
     const rawIntelGrants = value.intelGrants
@@ -946,6 +950,12 @@ export const sanitizeExpeditionState = (
       value.preparedSponsorOffers,
       runSeed
     ),
+    // The staged offers are only re-derivable from the route they were staged
+    // for, so the provenance has to survive the load with them. Dropping it
+    // here left a prepared save holding offers START could no longer accept.
+    ...(preparedSponsorProvenance === undefined
+      ? {}
+      : { preparedSponsorProvenance }),
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
     ...(value.consumedRunDraftSourceKeys !== undefined
       ? {
@@ -1218,6 +1228,44 @@ const sanitizePreparedSponsorOffers = (
     result.push({ offerId, dealId, runSeed, canonicalTermsHash })
   }
   return result
+}
+
+/**
+ * Narrows the persisted Sponsor staging provenance to its declared shape.
+ *
+ * @param value - Raw persisted provenance.
+ * @returns The narrowed provenance, or `undefined` when the save carries none
+ * or carries a malformed one.
+ *
+ * @remarks
+ * Shape only. Whether the Region, Tour and perk are still *available* to this
+ * Career is decided by `validatePreparedExpeditionSponsorOffers`, which has the
+ * whole `GameState` to answer it with; a sanitizer that guessed here would
+ * either drop a legal staging or admit a locked one.
+ */
+const sanitizePreparedSponsorProvenance = (
+  value: unknown
+): ExpeditionState['preparedSponsorProvenance'] => {
+  if (!isLooseRecord(value)) return undefined
+  const { regionId, tourTypeId, starterPerkId } = value
+  if (
+    typeof regionId !== 'string' ||
+    typeof tourTypeId !== 'string' ||
+    isForbiddenKey(regionId) ||
+    isForbiddenKey(tourTypeId)
+  )
+    return undefined
+  if (
+    starterPerkId !== null &&
+    starterPerkId !== undefined &&
+    (typeof starterPerkId !== 'string' || isForbiddenKey(starterPerkId))
+  )
+    return undefined
+  return {
+    regionId,
+    tourTypeId,
+    starterPerkId: typeof starterPerkId === 'string' ? starterPerkId : null
+  }
 }
 
 const sanitizeRunDraftTraitIds = (

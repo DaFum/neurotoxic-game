@@ -11,7 +11,10 @@ import { mulberry32 } from '../../utils/seededRng'
 import { hashExpeditionRoute } from './map'
 import type { GameState } from '../../types'
 import type { BrandDeal } from '../../types/social'
-import type { ExpeditionPreparedSponsorOffer } from '../../types/expedition'
+import type {
+  ExpeditionPreparedSponsorOffer,
+  ExpeditionSponsorStagingProvenance
+} from '../../types/expedition'
 import type { QuestEvent } from '../../types/quest'
 import {
   createBrandDealCompletedQuestEvent,
@@ -163,18 +166,46 @@ export const buildPreparedExpeditionSponsorOffers = (
     }))
 }
 
+/**
+ * Re-derives a persisted Sponsor staging on load and keeps it only if it still
+ * reproduces exactly.
+ *
+ * @param state - Loaded game state.
+ * @param persisted - The offer snapshot the save carried.
+ * @param provenance - The route the snapshot was staged for, already narrowed
+ * for shape and confirmed available to this Career; pass `undefined` to clear.
+ * @returns The surviving snapshot and provenance, or both empty.
+ *
+ * @remarks
+ * The snapshot is only re-derivable from the Region, Tour and perk it was
+ * generated for, which is what the provenance carries. Reading them off
+ * `state.expedition.loadout` instead - as this did - always resolved the
+ * baseline profile, because a `prepared` run has no committed loadout yet: a
+ * staging for any non-baseline route failed its own reproduction check and was
+ * silently wiped on every load.
+ *
+ * Offers and provenance are returned together and cleared together. Keeping
+ * one without the other would leave either offers START can no longer validate
+ * or a provenance describing offers that no longer exist.
+ */
 export const validatePreparedExpeditionSponsorOffers = (
   state: GameState,
-  persisted: readonly ExpeditionPreparedSponsorOffer[]
-): ExpeditionPreparedSponsorOffer[] => {
+  persisted: readonly ExpeditionPreparedSponsorOffer[],
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+): {
+  offers: ExpeditionPreparedSponsorOffer[]
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+} => {
+  const cleared = { offers: [], provenance: undefined }
+  if (!provenance) return cleared
   const canonical = buildPreparedExpeditionSponsorOffers(
     state,
-    state.expedition?.loadout?.regionId,
-    state.expedition?.loadout?.tourTypeId,
-    state.expedition?.loadout?.starterPerkId ?? null
+    provenance.regionId,
+    provenance.tourTypeId,
+    provenance.starterPerkId
   )
-  if (JSON.stringify(canonical) !== JSON.stringify(persisted)) return []
-  return canonical
+  if (JSON.stringify(canonical) !== JSON.stringify(persisted)) return cleared
+  return { offers: canonical, provenance }
 }
 
 export interface BrandDealAcceptanceResult {

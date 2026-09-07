@@ -236,6 +236,41 @@ export const getAvailableExpeditionRegionIds = (
 ]
 
 /**
+ * Whether a persisted Sponsor staging still names a Region, Tour and perk this
+ * Career may actually book.
+ *
+ * @param state - Loaded game state.
+ * @param provenance - The staging provenance a save carried.
+ * @returns `true` when every axis is still available to this Career.
+ *
+ * @remarks
+ * The sanitizer only narrows the provenance's shape; availability needs the
+ * whole Career, so it is re-derived here on load. Without it a hand-edited save
+ * could stage offers for a Region or perk it never unlocked and have START
+ * honour them.
+ */
+export const isExpeditionStagingRouteAvailable = (
+  state: GameState,
+  provenance:
+    | { regionId: string; tourTypeId: string; starterPerkId: string | null }
+    | undefined
+): boolean => {
+  if (!provenance) return false
+  if (!getAvailableExpeditionRegionIds(state).includes(provenance.regionId)) {
+    return false
+  }
+  if (
+    !getAvailableExpeditionTourTypeIds(state).includes(provenance.tourTypeId)
+  ) {
+    return false
+  }
+  return (
+    provenance.starterPerkId === null ||
+    getAvailableStarterPerkIds(state).includes(provenance.starterPerkId)
+  )
+}
+
+/**
  * Crew ids the player may commit.
  *
  * @remarks G3 owns Crew and extends this in place. No Crew exists in G1A, so

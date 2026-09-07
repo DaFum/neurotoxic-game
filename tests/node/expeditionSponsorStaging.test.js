@@ -20,12 +20,14 @@ import {
   prepareExpeditionSponsorOffers
 } from '../../src/context/expeditionActionCreators.ts'
 import { getCanonicalBrandDealTermsHash } from '../../src/domain/expedition/sponsors.ts'
+import { EXPEDITION_UNLOCK_SETS } from '../../src/data/expedition/unlockSets.ts'
 import {
   FIXTURE_REGION_ID,
   FIXTURE_RUN_SEED,
   FIXTURE_TOUR_ID,
   fixtureLoadout,
-  preparedState
+  preparedState,
+  withExpeditionCapabilities
 } from '../expeditionLifecycleFixture.js'
 
 describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
@@ -247,6 +249,97 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
       ),
       false
     )
+  })
+
+  it('survives a LOAD_GAME round trip for an unlocked non-baseline route', () => {
+    // The snapshot is only re-derivable from the Region/Tour/perk it was
+    // staged for. A prepared run has no committed loadout, so a validator
+    // reading the loadout resolved the baseline profile and wiped every
+    // non-baseline staging on load - and START then had no offer to accept.
+    const prep = withExpeditionCapabilities(
+      preparedState(),
+      Object.keys(EXPEDITION_UNLOCK_SETS)
+    )
+    const stagedState = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        'underground_scene',
+        'underground_tour',
+        'underground_contact'
+      )
+    )
+    const stagedOffers = stagedState.expedition.preparedSponsorOffers
+    assert.ok(stagedOffers.length > 0)
+    assert.deepEqual(stagedState.expedition.preparedSponsorProvenance, {
+      regionId: 'underground_scene',
+      tourTypeId: 'underground_tour',
+      starterPerkId: 'underground_contact'
+    })
+
+    const loaded = gameReducer(createInitialState(), {
+      type: ActionTypes.LOAD_GAME,
+      payload: JSON.parse(JSON.stringify(stagedState))
+    })
+
+    assert.equal(loaded.expedition.status, 'prepared')
+    assert.deepEqual(loaded.expedition.preparedSponsorOffers, stagedOffers)
+    assert.deepEqual(
+      loaded.expedition.preparedSponsorProvenance,
+      stagedState.expedition.preparedSponsorProvenance
+    )
+
+    // START accepts the staged offer that survived the round trip.
+    const started = gameReducer(loaded, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout: fixtureLoadout({
+          regionId: 'underground_scene',
+          tourTypeId: 'underground_tour',
+          starterPerkId: 'underground_contact',
+          build: { sponsorOfferId: stagedOffers[0].offerId }
+        })
+      }
+    })
+    assert.equal(started.expedition.status, 'active')
+    assert.deepEqual(started.expedition.preparedSponsorOffers, [])
+    assert.equal(started.expedition.preparedSponsorProvenance, undefined)
+    assert.equal(
+      started.expedition.activeObligations.some(
+        obligation => obligation.sourceType === 'brandDeal'
+      ),
+      true
+    )
+  })
+
+  it('clears offers and provenance together when the staged route is no longer available', () => {
+    const prep = withExpeditionCapabilities(
+      preparedState(),
+      Object.keys(EXPEDITION_UNLOCK_SETS)
+    )
+    const stagedState = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        'underground_scene',
+        'underground_tour'
+      )
+    )
+    assert.ok(stagedState.expedition.preparedSponsorOffers.length > 0)
+
+    // A save that kept the staging but lost the capability that unlocked it.
+    const revoked = JSON.parse(JSON.stringify(stagedState))
+    revoked.career.unlockedSetIds = []
+
+    const loaded = gameReducer(createInitialState(), {
+      type: ActionTypes.LOAD_GAME,
+      payload: revoked
+    })
+
+    assert.deepEqual(loaded.expedition.preparedSponsorOffers, [])
+    assert.equal(loaded.expedition.preparedSponsorProvenance, undefined)
   })
 
   it('rejects PREPARE_EXPEDITION_SPONSOR_OFFERS for locked or invalid route and perks', () => {

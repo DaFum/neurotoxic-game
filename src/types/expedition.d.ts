@@ -634,6 +634,21 @@ export interface ExpeditionFinaleProfile {
  * Social and the root `GameState.runSeed` remain the canonical owners of
  * everything else.
  */
+/**
+ * The route a Sponsor offer snapshot was staged for.
+ *
+ * @remarks
+ * START re-derives the snapshot from these three axes and rejects a commitment
+ * that does not match them, so a staging generated for one Region/Tour/perk
+ * cannot be spent on another. It carries no seed of its own: the root
+ * `runSeed` is the single owner, and the staged offers already record it.
+ */
+export interface ExpeditionSponsorStagingProvenance {
+  regionId: string
+  tourTypeId: string
+  starterPerkId: string | null
+}
+
 export interface ExpeditionState {
   status: ExpeditionStatus
   prep: ExpeditionPrepState | null
@@ -698,11 +713,7 @@ export interface ExpeditionState {
   resolvedObligationSignalIds: string[]
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
-  preparedSponsorProvenance?: {
-    regionId: string
-    tourTypeId: string
-    starterPerkId: string | null
-  }
+  preparedSponsorProvenance?: ExpeditionSponsorStagingProvenance
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
