@@ -464,10 +464,30 @@ finale_nonlegendary     definition-owned security rule
 Base settlement retention before G5 multipliers:
 
 ```text
-extracted  Money/Fame 0.60
+extracted  Money/Fame 0.70
 failed     Money/Fame 0.25
 completed  Money/Fame 1.00
 ```
+
+`extracted` was `0.60` when G1 first closed. It is `0.70` from the G6 Phase A
+economy pass onward, and this contract - not the production constant - is the
+change of record.
+
+The spec (section 8) sets the design range at *roughly 50-70% of run Cash/Fame
+secured*, so `0.70` stays inside the approved band; what moved is which point
+in that band this build binds. The reason is measured rather than aesthetic:
+at `0.60` a voluntary extraction returned so little that a fresh Career could
+not fund its next Tour from one, and 99.1% of six-run sequences halted on
+insufficient Career funds. `0.70` is one of four Phase A levers against that
+cliff, alongside real Gig payouts, adaptive Fuel targets and the Sponsor
+advance.
+
+Dependent evidence that moves with this number, and must be regenerated rather
+than inherited when it changes again:
+
+- `tests/ui/ExtractionDialog.test.tsx` - the shown retained/forfeited split
+- `docs/superpowers/reports/roguelite-expedition-v15-balance.{md,json}` - every
+  retained-Cash and retained-Fame figure in the v15 artifact
 
 Voluntary extraction may explicitly carry one eligible unsecured rare reward by default. `getEffectiveExpeditionRules(state).numeric.explicitExtractionRareCarrySlots` may raise the cap to at most 3. Failure keeps secured rare rewards only. Completion keeps all.
 

@@ -651,6 +651,7 @@ Reducer validates canonical registry/current observed source. Archive never gran
 
 ```ts
 export type BetweenTourDecisionType =
+  | 'sponsor_advance'
   | 'injury_rehab'
   | 'crew_debrief'
   | 'rival_response'
@@ -685,6 +686,12 @@ G5 replaces G3's placeholder `betweenTourByRunId` with the final typed record.
 Decision selection priority and target rules:
 
 ```text
+0. sponsor_advance
+   only when ALL THREE hold: the run's terminal kind is 'failed',
+   career.sponsorAdvance is null, and isExpeditionCareerInsolvent(state);
+   target is the Sponsor the failed run carried, else the lowest-upfront
+   deal in the registry, id lexical on a tie
+
 1. injury_rehab
    first serious Crew recovery debt by created run order then crew id;
    otherwise highest-stage persistent Band consequence, id lexical
@@ -711,6 +718,57 @@ Decision selection priority and target rules:
 ```
 
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
+
+### `sponsor_advance` — added by the G6 Phase A economy pass
+
+G5 first closed with six families. `sponsor_advance` is the seventh, and this
+contract - not the production code - is the change of record.
+
+It is deliberately first in priority, and that placement has a cost worth
+stating plainly: at most three decisions are generated, so on the runs where it
+appears it displaces the third-priority decision that would otherwise have been
+offered. That trade is the point. It is generated only for a Career that has
+just *failed* a run and cannot afford even the minimum Fuel top-up for the next
+one, and for such a Career a Crew debrief or an Archive lead is a decision about
+a Tour it can no longer start. Every other Between-Tour set is unaffected: the
+three preconditions are all false on a Career that completed or extracted.
+
+It is the only family that persists Cash debt, so it carries persistence and
+exit criteria the other six do not:
+
+```text
+persisted   career.sponsorAdvance: {
+              dealId, amount, outstanding, takenAfterRunId
+            } | null
+
+options     take_advance     -> +€400 Career Cash now,
+                                outstanding = round(400 * 1.25) = €500
+            decline_advance  -> no state change
+
+repayment   applyExpeditionSettlement subtracts from what a LATER run
+            retains, capped at both the retained amount and the
+            outstanding balance; never from the standing Career balance,
+            so a debt cannot bankrupt a Career between Tours
+
+exit        cleared when outstanding reaches 0; the record is then null
+            and a new advance may be offered again
+
+re-check    both `sponsorAdvance === null` and insolvency are re-derived
+            at apply time, not trusted from the decision: an earlier
+            decision in the same set may have already made the Career
+            solvent
+
+load        an advance is dropped, never repaired, unless dealId is in the
+            canonical Sponsor registry, amount is exactly €400, and
+            outstanding is an integer in [0, 500]
+```
+
+Dependent evidence that moves with this family:
+
+- `tests/node/expeditionBetweenTour.test.js` - generation preconditions,
+  repayment source, and the load-path guard
+- `docs/superpowers/reports/roguelite-expedition-v15-balance.{md,json}` - the
+  Task 12 fresh-Career sequence counts
 
 Exact options:
 

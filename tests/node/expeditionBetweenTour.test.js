@@ -921,4 +921,42 @@ describe('G5 - Sponsor advance rescues an insolvent Career', () => {
       )
     }
   })
+
+  it('refuses a debt production could never have created', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+
+    // `applyExpeditionSettlement` subtracts `outstanding` from the Cash a run
+    // retains, so a finite-but-arbitrary balance is not cosmetic: it would
+    // quietly drain every future settlement. There is one legal principal and
+    // one legal ceiling, and the load path is where a forged save is stopped.
+    for (const [label, bad] of [
+      ['an unknown Sponsor', { ...advance, dealId: 'no_such_sponsor' }],
+      ['a drained balance', { ...advance, outstanding: 1_000_000 }],
+      ['one cent over the ceiling', { ...advance, outstanding: 501 }],
+      ['a fractional debt', { ...advance, outstanding: 499.5 }],
+      ['a principal nobody offers', { ...advance, amount: 100_000 }],
+      ['a rounded-looking principal', { ...advance, amount: 401 }]
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null,
+        `${label} must be dropped, not repaired`
+      )
+    }
+
+    // The ceiling itself and a part-repaid balance both survive: the guard
+    // rejects what production cannot mint, not every debt.
+    for (const outstanding of [500, 250, 0]) {
+      assert.deepEqual(
+        sanitizeCareerState({ sponsorAdvance: { ...advance, outstanding } })
+          .sponsorAdvance,
+        { ...advance, outstanding }
+      )
+    }
+  })
 })
