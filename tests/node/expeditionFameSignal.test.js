@@ -14,7 +14,7 @@ import { getExpeditionFameProfile } from '../../src/domain/expedition/fame.ts'
 import { derivePressureDirectorContext } from '../../src/domain/expedition/pressure.ts'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors.ts'
 import { getExpeditionRoutePressureProfile } from '../../src/domain/expedition/routeProfile.ts'
-import { deriveExpeditionRouteProfile } from '../../src/domain/expedition/routeProfile.ts'
+import { buildExpeditionMap } from '../../src/domain/expedition/map.ts'
 import { deriveExpeditionCareerRank } from '../../src/domain/expedition/meta.ts'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
@@ -98,9 +98,21 @@ describe('G5 — Fame reaches its production consumers', () => {
     // The map is built from the run-stable half and compared by `mapHash`, so
     // Fame must not reach it or Tour Prep could preview a route the run then
     // does not walk.
-    assert.deepEqual(
-      deriveExpeditionRouteProfile('home_turf', 'standard_tour'),
-      deriveExpeditionRouteProfile('home_turf', 'standard_tour')
+    const unknown = atFame(0)
+    const famous = atFame(50000)
+    // Same seed, same Region, same Tour - only Fame differs.
+    assert.equal(unknown.runSeed, famous.runSeed)
+    assert.equal(
+      buildExpeditionMap(unknown.runSeed, 'standard_tour', 'home_turf').mapHash,
+      buildExpeditionMap(famous.runSeed, 'standard_tour', 'home_turf').mapHash
+    )
+
+    // And the counterpart, so this is not two constants agreeing: the *live*
+    // profile does read Fame, which is what makes the map's independence a
+    // property worth pinning rather than an accident of the signature.
+    assert.notDeepEqual(
+      getExpeditionRoutePressureProfile(unknown, 'home_turf', 'standard_tour'),
+      getExpeditionRoutePressureProfile(famous, 'home_turf', 'standard_tour')
     )
   })
 })

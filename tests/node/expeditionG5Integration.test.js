@@ -47,6 +47,7 @@ import { isExpeditionLegacyHqPurchaseAllowed } from '../../src/domain/expedition
 import { areBetweenTourDecisionsResolved } from '../../src/domain/expedition/betweenTour'
 import { EXPEDITION_REGIONS } from '../../src/data/expedition/regions'
 import { EXPEDITION_TOUR_TYPES } from '../../src/data/expedition/tourTypes'
+import { walkToFinale } from '../expeditionLifecycleFixture.js'
 
 const SONG_ID = [...SONGS_BY_ID.keys()][0]
 
@@ -72,32 +73,6 @@ const loadoutFor = (regionId, tourTypeId) => ({
     protectedCareerCash: 0
   }
 })
-
-/** Walks the committed route to the Finale through ADVANCE only. */
-const walkToFinale = state => {
-  const loadout = state.expedition.loadout
-  const map = buildExpeditionMap(
-    state.runSeed,
-    loadout.tourTypeId,
-    loadout.regionId
-  )
-  let current = state
-  while (current.expedition.visitedNodeIds.at(-1) !== map.finaleNodeId) {
-    const from = current.expedition.visitedNodeIds.at(-1)
-    const edge = map.connections.find(entry => entry.from === from)
-    assert.ok(edge, `no outgoing edge from ${from}`)
-    const next = gameReducer(current, {
-      type: ActionTypes.ADVANCE_EXPEDITION_ROUTE,
-      payload: {
-        nodeId: edge.to,
-        expectedRouteStep: current.expedition.routeStep
-      }
-    })
-    assert.notEqual(next, current, `advance to ${edge.to} was refused`)
-    current = next
-  }
-  return current
-}
 
 /**
  * One complete Tour, entirely through production dispatches.
@@ -258,7 +233,20 @@ const buySet = (state, setId) => {
  * expensive part, and every assertion below reads the same Career rather than
  * a differently-shaped shortcut to it.
  */
-const tourredCareer = (() => {
+let touredCareerCache = null
+
+/**
+ * The toured Career, built on first use rather than at module scope.
+ *
+ * @remarks
+ * Seven Tours through the production path is the expensive part, so it is built
+ * once and shared - but building it while the module evaluates would surface
+ * any assertion inside `runTour` or `buySet` as an import error with no owning
+ * test, and every `describe` in this file would be skipped rather than one test
+ * failing. Memoized behind a call so a failure reports where it happened.
+ */
+const touredCareer = () => {
+  if (touredCareerCache) return touredCareerCache
   let state = createInitialState()
   state.player.money = 500000
   // Accepted, then completed by the two Finales the Career actually plays -
@@ -285,12 +273,13 @@ const tourredCareer = (() => {
   state = buySet(state, 'industry_network')
   state = buySet(state, 'festival_network')
   state = runTour(state, 7, 'home_turf', 'standard_tour')
-  return state
-})()
+  touredCareerCache = state
+  return touredCareerCache
+}
 
 describe('G5 evidence — a real Career earns its rank and its meta', () => {
   it('reaches headliner from completed runs and Regions alone', () => {
-    const career = tourredCareer.career
+    const career = touredCareer().career
     assert.equal(deriveExpeditionCareerRank(career), 'headliner')
     assert.equal(career.completedExpeditionRuns, 7)
     assert.equal(career.finalizedExpeditionRuns, 7)
@@ -306,23 +295,23 @@ describe('G5 evidence — a real Career earns its rank and its meta', () => {
     assert.equal(fresh.career.ascensionUnlocked, false)
     assert.deepEqual(getAvailablePressureModifierIds(fresh), [])
 
-    assert.equal(isExpeditionAscensionEligible(tourredCareer), true)
-    assert.equal(tourredCareer.career.ascensionUnlocked, true)
+    assert.equal(isExpeditionAscensionEligible(touredCareer()), true)
+    assert.equal(touredCareer().career.ascensionUnlocked, true)
     assert.deepEqual(
-      tourredCareer.completedQuestIds.includes('quest_expedition_meta_unlock'),
+      touredCareer().completedQuestIds.includes('quest_expedition_meta_unlock'),
       true,
       'the meta-unlock quest must be completed by the Finales, not seeded'
     )
-    assert.equal(tourredCareer.career.unlockedSetIds.length >= 3, true)
-    assert.ok(getAvailablePressureModifierIds(tourredCareer).length > 0)
+    assert.equal(touredCareer().career.unlockedSetIds.length >= 3, true)
+    assert.ok(getAvailablePressureModifierIds(touredCareer()).length > 0)
   })
 
   it('earns and persists exactly one Legendary from a completed Finale', () => {
     // Seven completed Finales, all `regional_headliner`, and the mapped
     // Legendary is owned once: the run-scoped claim guard is what stops the
     // other six from awarding anything.
-    assert.deepEqual(tourredCareer.career.legendaryIds, ['safe_harbor'])
-    assert.equal(tourredCareer.career.legendaryClaimedRunIds.length, 1)
+    assert.deepEqual(touredCareer().career.legendaryIds, ['safe_harbor'])
+    assert.equal(touredCareer().career.legendaryClaimedRunIds.length, 1)
     // Its durable marker is the one the persistence barrier writes.
     assert.equal(
       getExpeditionLegendaryMarkerId('safe_harbor'),
@@ -331,7 +320,7 @@ describe('G5 evidence — a real Career earns its rank and its meta', () => {
   })
 
   it('logs what the Tours met without granting anything for it', () => {
-    const archive = tourredCareer.career.archiveByCategory
+    const archive = touredCareer().career.archiveByCategory
     assert.deepEqual(archive.region.slice().sort(), [
       'home_turf',
       'industrial_belt'
@@ -339,7 +328,7 @@ describe('G5 evidence — a real Career earns its rank and its meta', () => {
     assert.deepEqual(archive.finale, ['regional_headliner'])
     // The log is not a capability: the Career owns exactly the sets it bought.
     assert.equal(
-      tourredCareer.career.unlockedSetIds.length,
+      touredCareer().career.unlockedSetIds.length,
       3,
       'the Archive must not have granted a set'
     )
@@ -349,16 +338,16 @@ describe('G5 evidence — a real Career earns its rank and its meta', () => {
 describe('G5 evidence — Region and Tour identity is not just numbers', () => {
   it('alters the production map, the offer count and the Rival choice', () => {
     const runIn = (regionId, tourTypeId) => ({
-      ...tourredCareer,
+      ...touredCareer(),
       expedition: {
-        ...tourredCareer.expedition,
+        ...touredCareer().expedition,
         status: 'active',
         loadout: loadoutFor(regionId, tourTypeId)
       }
     })
 
     // The map: same seed, different Region and Tour, different route.
-    const seed = tourredCareer.runSeed
+    const seed = touredCareer().runSeed
     const home = buildExpeditionMap(seed, 'standard_tour', 'home_turf')
     const corporate = buildExpeditionMap(
       seed,
@@ -436,10 +425,10 @@ describe('G5 evidence — Region and Tour identity is not just numbers', () => {
 describe('G5 evidence — Fame is access and pressure, never permanent power', () => {
   it('moves expectation, Sponsor quality and high-profile access only', () => {
     const atFame = fame => ({
-      ...tourredCareer,
-      player: { ...tourredCareer.player, fame },
+      ...touredCareer(),
+      player: { ...touredCareer().player, fame },
       expedition: {
-        ...tourredCareer.expedition,
+        ...touredCareer().expedition,
         status: 'active',
         loadout: loadoutFor('home_turf', 'standard_tour')
       }
@@ -527,7 +516,7 @@ describe('G5 evidence — legacy Van and HQ items cannot bypass the meta gate', 
     // makes the gate a gate rather than a wall.
     const openToTouring = getUnifiedUpgradeCatalog().filter(item =>
       isExpeditionLegacyHqPurchaseAllowed(
-        tourredCareer.career,
+        touredCareer().career,
         'idle',
         String(item.id)
       )
@@ -542,10 +531,10 @@ describe('G5 evidence — the next Tour waits for what the last one owes', () =>
     // subject here is the state in between.
     const prepId = 'integration_gate'
     let state = {
-      ...tourredCareer,
+      ...touredCareer(),
       player: {
-        ...tourredCareer.player,
-        van: { ...tourredCareer.player.van, fuel: 100, condition: 40 }
+        ...touredCareer().player,
+        van: { ...touredCareer().player.van, fuel: 100, condition: 40 }
       }
     }
     state = gameReducer(state, {
@@ -640,12 +629,12 @@ describe('G5 evidence — Crew consequences target deterministically', () => {
   const settledWithCrew = careerOverrides => {
     const prepId = 'integration_crew'
     let state = {
-      ...tourredCareer,
+      ...touredCareer(),
       player: {
-        ...tourredCareer.player,
-        van: { ...tourredCareer.player.van, fuel: 100, condition: 100 }
+        ...touredCareer().player,
+        van: { ...touredCareer().player.van, fuel: 100, condition: 100 }
       },
-      career: { ...tourredCareer.career, ...careerOverrides }
+      career: { ...touredCareer().career, ...careerOverrides }
     }
     state = gameReducer(state, {
       type: ActionTypes.PREPARE_EXPEDITION_RUN,
@@ -736,10 +725,10 @@ describe('G5 evidence — Crew consequences target deterministically', () => {
     // Both Crew eligible: the set is owned, the facility is built, and both
     // have the loyalty and story progress the trait requires.
     const { state, runId } = settledWithCrew({
-      unlockedSetIds: [...tourredCareer.career.unlockedSetIds, 'crew_network'],
+      unlockedSetIds: [...touredCareer().career.unlockedSetIds, 'crew_network'],
       hqFacilityLevels: Object.assign(
         Object.create(null),
-        tourredCareer.career.hqFacilityLevels,
+        touredCareer().career.hqFacilityLevels,
         { crew_lounge: 1 }
       )
     })
