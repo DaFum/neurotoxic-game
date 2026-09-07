@@ -248,4 +248,176 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
       false
     )
   })
+
+  it('rejects PREPARE_EXPEDITION_SPONSOR_OFFERS for locked or invalid route and perks', () => {
+    const prep = preparedState()
+
+    // Invalid region
+    const rejectInvalidRegion = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        'nonexistent_region',
+        FIXTURE_TOUR_ID
+      )
+    )
+    assert.equal(rejectInvalidRegion, prep)
+    assert.deepEqual(rejectInvalidRegion.expedition.preparedSponsorOffers, [])
+
+    // Locked region (fresh Career lacks region_industrial_belt)
+    const rejectLockedRegion = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        'industrial_belt',
+        FIXTURE_TOUR_ID
+      )
+    )
+    assert.equal(rejectLockedRegion, prep)
+
+    // Invalid tour type
+    const rejectInvalidTour = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        FIXTURE_REGION_ID,
+        'nonexistent_tour'
+      )
+    )
+    assert.equal(rejectInvalidTour, prep)
+
+    // Locked tour type
+    const rejectLockedTour = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        FIXTURE_REGION_ID,
+        'survival_tour'
+      )
+    )
+    assert.equal(rejectLockedTour, prep)
+
+    // Invalid starter perk
+    const rejectInvalidPerk = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        FIXTURE_REGION_ID,
+        FIXTURE_TOUR_ID,
+        'nonexistent_perk'
+      )
+    )
+    assert.equal(rejectInvalidPerk, prep)
+
+    // Locked starter perk (fresh Career lacks any perk unlock)
+    const rejectLockedPerk = gameReducer(
+      prep,
+      createPrepareExpeditionSponsorOffersAction(
+        FIXTURE_RUN_SEED,
+        FIXTURE_REGION_ID,
+        FIXTURE_TOUR_ID,
+        'press_pass'
+      )
+    )
+    assert.equal(rejectLockedPerk, prep)
+  })
+
+  it('rejects START_EXPEDITION if preparedSponsorProvenance mismatches candidate build route or perk', () => {
+    const prep = preparedState()
+    const stagedState = gameReducer(
+      prep,
+      prepareExpeditionSponsorOffers(prep, FIXTURE_REGION_ID, FIXTURE_TOUR_ID)
+    )
+    const validOffer = stagedState.expedition.preparedSponsorOffers[0]
+    assert.ok(validOffer)
+    assert.deepEqual(stagedState.expedition.preparedSponsorProvenance, {
+      regionId: FIXTURE_REGION_ID,
+      tourTypeId: FIXTURE_TOUR_ID,
+      starterPerkId: null
+    })
+
+    // Mismatched region in provenance
+    const tamperedRegionState = {
+      ...stagedState,
+      expedition: {
+        ...stagedState.expedition,
+        preparedSponsorProvenance: {
+          ...stagedState.expedition.preparedSponsorProvenance,
+          regionId: 'industrial_belt'
+        }
+      }
+    }
+    const loadout = fixtureLoadout({
+      build: { sponsorOfferId: validOffer.offerId }
+    })
+    const rejectRegion = gameReducer(tamperedRegionState, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout
+      }
+    })
+    assert.equal(rejectRegion, tamperedRegionState)
+
+    // Mismatched tourTypeId in provenance
+    const tamperedTourState = {
+      ...stagedState,
+      expedition: {
+        ...stagedState.expedition,
+        preparedSponsorProvenance: {
+          ...stagedState.expedition.preparedSponsorProvenance,
+          tourTypeId: 'survival_tour'
+        }
+      }
+    }
+    const rejectTour = gameReducer(tamperedTourState, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout
+      }
+    })
+    assert.equal(rejectTour, tamperedTourState)
+
+    // Mismatched starterPerkId in provenance
+    const tamperedPerkState = {
+      ...stagedState,
+      expedition: {
+        ...stagedState.expedition,
+        preparedSponsorProvenance: {
+          ...stagedState.expedition.preparedSponsorProvenance,
+          starterPerkId: 'press_pass'
+        }
+      }
+    }
+    const rejectPerk = gameReducer(tamperedPerkState, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout
+      }
+    })
+    assert.equal(rejectPerk, tamperedPerkState)
+
+    // Missing provenance entirely while sponsorOfferId is present
+    const missingProvenanceState = {
+      ...stagedState,
+      expedition: {
+        ...stagedState.expedition,
+        preparedSponsorProvenance: undefined
+      }
+    }
+    const rejectMissingProvenance = gameReducer(missingProvenanceState, {
+      type: ActionTypes.START_EXPEDITION,
+      payload: {
+        prepId: 'run_fixture',
+        expectedRunSeed: FIXTURE_RUN_SEED,
+        loadout
+      }
+    })
+    assert.equal(rejectMissingProvenance, missingProvenanceState)
+  })
 })

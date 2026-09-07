@@ -146,10 +146,17 @@ same prepared state -> identical offers/order
 Action:
 
 ```ts
-PREPARE_EXPEDITION_SPONSOR_OFFERS { expectedRunSeed: number }
+PREPARE_EXPEDITION_SPONSOR_OFFERS {
+  expectedRunSeed: number
+  regionId?: string
+  tourTypeId?: string
+  starterPerkId?: string | null
+}
 ```
 
-Reducer recomputes the pure offer snapshot from canonical state; caller does not submit generated offers.
+Reducer validates candidate route (`regionId`, `tourTypeId`) and `starterPerkId` against canonical availability (`getAvailableExpeditionRegionIds`, `getAvailableExpeditionTourTypeIds`, `getAvailableStarterPerkIds`) and rejects locked or invalid inputs. It recomputes the pure offer snapshot from canonical state and persists `preparedSponsorOffers` along with `preparedSponsorProvenance: { regionId, tourTypeId, starterPerkId }`; caller does not submit generated offers.
+
+The provenance carries no seed of its own. G1 makes the root `runSeed` the single owner and the persisted Expedition slice declares no seed field, so START compares the staged offer's `runSeed` against `state.runSeed` instead of against a second stored copy.
 
 G1 build commits `sponsorOfferId`, not an already accepted deal id.
 
@@ -176,11 +183,11 @@ At `START_EXPEDITION`, G4:
 
 ```text
 1. verifies committed sponsorOfferId exists in persisted preparedSponsorOffers
-2. verifies root runSeed and canonicalTermsHash still match
+2. verifies root runSeed, canonicalTermsHash, and exact preparedSponsorProvenance (regionId, tourTypeId, starterPerkId) match
 3. invokes resolveBrandDealAcceptance exactly once
 4. applies Money/item/Social/Quest effects in the same root transaction
 5. materializes one zero-native-payout linked Sponsor obligation by runId+dealId
-6. clears preparedSponsorOffers after successful START
+6. clears preparedSponsorOffers and preparedSponsorProvenance after successful START
 ```
 
 If START fails validation, no Sponsor effect occurs. Replaying START cannot pay/award twice.

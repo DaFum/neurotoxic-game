@@ -101,9 +101,16 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
       merch: [],
       contraband: [],
       sponsorOfferId: null,
+      // A build may only top the tank up, never siphon it, so a Career that
+      // ended its last Tour above the profile's target commits that higher
+      // level rather than an illegal one.
       startingFuelTarget: Math.min(
         100,
-        Math.max(50, profile.startingFuelTarget)
+        Math.max(
+          50,
+          profile.startingFuelTarget,
+          Math.ceil(finiteNumberOr(state.player.van?.fuel, 0))
+        )
       ),
       protectedCareerCash: 0
     }
@@ -120,7 +127,10 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
  * @returns {{
  *   profileId: string,
  *   sequenceSeed: number,
+ *   runsRequested: number,
  *   runsCompleted: number,
+ *   haltedAtRun: number | null,
+ *   haltReason: string | null,
  *   finalRank: string,
  *   metrics: {
  *     firstRoadtestedRun: number | null,
@@ -146,14 +156,11 @@ export const runFreshCareerSequence = (
   sequenceSeed,
   totalRuns = 6
 ) => {
+  // Money and Fame stay at whatever a fresh Career actually starts with. The
+  // sequence exists to show how a Career climbs from nothing, so topping the
+  // player up before run 1 would hide exactly the constraint it measures.
   let state = {
     ...initialState,
-    player: {
-      ...initialState.player,
-      money: Math.max(1500, finiteNumberOr(initialState.player.money, 1500)),
-      fame: Math.max(100, finiteNumberOr(initialState.player.fame, 100)),
-      van: { ...initialState.player.van, fuel: 100, condition: 100 }
-    },
     career: {
       ...initialState.career,
       tourTokens: 0,
@@ -183,6 +190,10 @@ export const runFreshCareerSequence = (
 
   const runOutcomes = []
   let totalBetweenTourDecisions = 0
+  /** @type {number | null} */
+  let haltedAtRun = null
+  /** @type {string | null} */
+  let haltReason = null
 
   for (let runIdx = 1; runIdx <= totalRuns; runIdx++) {
     // Assert strictly zero fixture capabilities seeded
@@ -200,23 +211,12 @@ export const runFreshCareerSequence = (
     // 2. Build legal approximation of loadout
     const legalLoadout = buildLegalLoadoutApproximation(state, profile)
 
-    // Restock fuel to targetFuel between tours like a hub visit so upfront fuel cost is zero
-    const targetFuel = Math.min(
-      100,
-      Math.max(50, profile.startingFuelTarget ?? 90)
-    )
-    state = {
-      ...state,
-      player: {
-        ...state.player,
-        van: {
-          ...state.player.van,
-          fuel: targetFuel,
-          condition: 100
-        }
-      }
-    }
-
+    // No between-tour restock. The tank is filled by the build's own
+    // `startingFuelTarget`, which START charges for through
+    // `getExpeditionFuelTopUpCost` - the legal production top-up. Van
+    // condition likewise carries over: in-run repairs are the only legal way
+    // to recover it, and handing the Career a free rebuild between tours would
+    // erase the wear the sequence is meant to accumulate.
     const preparedMap = buildExpeditionMap(
       state.runSeed,
       legalLoadout.tourTypeId,
@@ -227,10 +227,13 @@ export const runFreshCareerSequence = (
       legalLoadout,
       preparedMap
     )
+    // A Career that can no longer fund a legal build has not hit a simulator
+    // bug - it has run out of road. Recorded and reported rather than thrown,
+    // so the sequence's own economy is the finding instead of a crash.
     if (!validation.valid) {
-      throw new Error(
-        `Fresh career run ${runIdx} loadout rejected: ${validation.reason}`
-      )
+      haltedAtRun = runIdx
+      haltReason = `loadout_rejected:${validation.reason}`
+      break
     }
 
     // 3. Start run
@@ -244,9 +247,9 @@ export const runFreshCareerSequence = (
     })
 
     if (state.expedition.status !== 'active') {
-      throw new Error(
-        `Fresh career run ${runIdx} failed to start for profile ${profile.id}`
-      )
+      haltedAtRun = runIdx
+      haltReason = 'start_refused_insufficient_career_funds'
+      break
     }
 
     // 4. Run through simulation
@@ -395,12 +398,17 @@ export const runFreshCareerSequence = (
     }
   }
 
-  metrics.betweenTourDecisionMean = totalBetweenTourDecisions / totalRuns
+  const runsCompleted = runOutcomes.length
+  metrics.betweenTourDecisionMean =
+    runsCompleted === 0 ? 0 : totalBetweenTourDecisions / runsCompleted
 
   return {
     profileId: profile.id,
     sequenceSeed,
-    runsCompleted: totalRuns,
+    runsRequested: totalRuns,
+    runsCompleted,
+    haltedAtRun,
+    haltReason,
     finalRank: deriveExpeditionCareerRank(state.career),
     metrics,
     runOutcomes,

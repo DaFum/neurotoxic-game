@@ -16,14 +16,17 @@ import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
 import {
-  BASE_EXPEDITION_REGION_ID,
   BASE_EXPEDITION_TOUR_TYPE_ID,
+  FREE_EXPEDITION_REGION_ID,
   createDefaultExpeditionState
 } from '../../domain/expedition/defaults'
 import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
   canSpendExpeditionCash,
+  getAvailableExpeditionRegionIds,
+  getAvailableExpeditionTourTypeIds,
+  getAvailableStarterPerkIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -270,18 +273,55 @@ export const handlePrepareExpeditionSponsorOffers = (
     return state
   }
 
+  const targetRegionId = regionId ?? FREE_EXPEDITION_REGION_ID
+  const targetTourTypeId = tourTypeId ?? BASE_EXPEDITION_TOUR_TYPE_ID
+  const targetPerkId = starterPerkId ?? null
+
+  const availableRegions = getAvailableExpeditionRegionIds(state)
+  if (
+    typeof targetRegionId !== 'string' ||
+    !availableRegions.includes(targetRegionId)
+  ) {
+    return state
+  }
+
+  const availableTours = getAvailableExpeditionTourTypeIds(state)
+  if (
+    typeof targetTourTypeId !== 'string' ||
+    !availableTours.includes(targetTourTypeId)
+  ) {
+    return state
+  }
+
+  if (targetPerkId !== null) {
+    const availablePerks = getAvailableStarterPerkIds(state)
+    if (
+      typeof targetPerkId !== 'string' ||
+      !availablePerks.includes(targetPerkId)
+    ) {
+      return state
+    }
+  }
+
   const preparedSponsorOffers = buildPreparedExpeditionSponsorOffers(
     state,
-    regionId ?? BASE_EXPEDITION_REGION_ID,
-    tourTypeId ?? BASE_EXPEDITION_TOUR_TYPE_ID,
-    starterPerkId ?? null
+    targetRegionId,
+    targetTourTypeId,
+    targetPerkId
   )
+
+  const preparedSponsorProvenance = {
+    regionId: targetRegionId,
+    tourTypeId: targetTourTypeId,
+    starterPerkId: targetPerkId
+  }
 
   return {
     ...state,
     expedition: {
       ...state.expedition,
-      preparedSponsorOffers
+      preparedSponsorOffers,
+      preparedSponsorProvenance
     }
   }
 }
@@ -352,19 +392,27 @@ export const handleStartExpedition = (
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
   const sponsorOfferId = normalized.build.sponsorOfferId
   // Must exist in the persisted preparedSponsorOffers snapshot staged for
-  // this run, verifying both root runSeed and canonical terms hash.
+  // this run, verifying root runSeed, canonical terms hash, and exact
+  // staging provenance (regionId, tourTypeId, starterPerkId). The seed is
+  // compared against the root `state.runSeed` rather than stored a second time
+  // on the slice: G1 makes the root the single run-seed owner.
   const stagedSponsor =
     sponsorOfferId === null
       ? null
       : ((state.expedition.preparedSponsorOffers ?? []).find(
           offer => offer.offerId === sponsorOfferId
         ) ?? null)
+  const sponsorProvenance = state.expedition.preparedSponsorProvenance
   if (
     sponsorOfferId !== null &&
     (!stagedSponsor ||
       stagedSponsor.runSeed !== state.runSeed ||
       getCanonicalBrandDealTermsHash(stagedSponsor.dealId) !==
-        stagedSponsor.canonicalTermsHash)
+        stagedSponsor.canonicalTermsHash ||
+      !sponsorProvenance ||
+      sponsorProvenance.regionId !== normalized.regionId ||
+      sponsorProvenance.tourTypeId !== normalized.tourTypeId ||
+      sponsorProvenance.starterPerkId !== (normalized.starterPerkId ?? null))
   )
     return state
   const sponsorAcceptance = stagedSponsor
@@ -532,6 +580,7 @@ export const handleStartExpedition = (
       },
       technicalCondition: createDefaultTechnicalCondition(),
       preparedSponsorOffers: [],
+      preparedSponsorProvenance: undefined,
       activeObligations
     }
   }

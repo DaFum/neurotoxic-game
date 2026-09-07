@@ -53,8 +53,21 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
 
     const result = runFreshCareerSequence(undefined, profile, sequenceSeed, 6)
 
-    assert.equal(result.runsCompleted, 6)
-    assert.equal(result.runOutcomes.length, 6)
+    // A fresh Career is not guaranteed six runs. It starts on the baseline
+    // `initialState` purse with no meta, pays the real fuel top-up at every
+    // START, and carries its van wear between Tours - so the sequence runs as
+    // far as the economy funds it and records where it stopped. Asserting a
+    // flat six would only hold by seeding the Career money it has not earned.
+    assert.equal(result.runsRequested, 6)
+    assert.ok(result.runsCompleted >= 1)
+    assert.ok(result.runsCompleted <= 6)
+    assert.equal(result.runOutcomes.length, result.runsCompleted)
+    if (result.runsCompleted < 6) {
+      assert.equal(result.haltedAtRun, result.runsCompleted + 1)
+      assert.ok(typeof result.haltReason === 'string')
+    } else {
+      assert.equal(result.haltedAtRun, null)
+    }
 
     // Verify task 12 assertions
     assert.notEqual(result.metrics.firstMetaFacilityRun, 0)

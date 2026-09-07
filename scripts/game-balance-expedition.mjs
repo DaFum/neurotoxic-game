@@ -27,16 +27,19 @@ import {
 } from './game-balance-expedition-profiles.mjs'
 import {
   runExpeditionCohort,
-  deriveCohortSeed
+  deriveCohortSeed,
+  checkStrategyDominance
 } from './game-balance-expedition-runner.mjs'
 import { runExtractionCounterfactualPair } from './game-balance-expedition-extraction-probe.mjs'
 import { runSkillMatchedTrio } from './game-balance-expedition-skill-probe.mjs'
 import { runFogCounterfactualPair } from './game-balance-expedition-fog-probe.mjs'
 import { runFreshCareerSequence } from './game-balance-expedition-career.mjs'
+import { verifyLegendaryEdgeActivations } from './game-balance-expedition-legendary.mjs'
 import {
   summarizeRuntimeDurations,
   CANONICAL_PLAYTEST_SAMPLES
 } from './game-balance-expedition-runtime.mjs'
+import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 import { createInitialState } from '../src/context/initialState.ts'
 
 const __filename = fileURLToPath(import.meta.url)
@@ -49,9 +52,77 @@ const EXTRACTION_CALIB_NAMESPACE =
   '#roguelite-expedition-v1#extraction#calibration'
 const EXTRACTION_HOLDOUT_NAMESPACE =
   '#roguelite-expedition-v1#extraction#holdout'
+const SKILL_NAMESPACE = '#roguelite-expedition-v1#skill#calibration'
 const FOG_CALIB_NAMESPACE = '#roguelite-expedition-v1#fog#calibration'
 const FOG_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#fog#holdout'
-const CAREER_NAMESPACE = '#roguelite-expedition-v1#career#calibration'
+const CAREER_CALIB_NAMESPACE = '#roguelite-expedition-v1#career#calibration'
+const CAREER_HOLDOUT_NAMESPACE = '#roguelite-expedition-v1#career#holdout'
+
+/**
+ * The scripts whose contents decide the numbers in this report. Hashed into
+ * `generatorFingerprint` so a harness edit invalidates a stale artifact the
+ * same way a source edit does.
+ */
+const GENERATOR_PATHS = Object.freeze([
+  'scripts/game-balance-expedition.mjs',
+  'scripts/game-balance-expedition-runner.mjs',
+  'scripts/game-balance-expedition-profiles.mjs',
+  'scripts/game-balance-expedition-extraction-probe.mjs',
+  'scripts/game-balance-expedition-skill-probe.mjs',
+  'scripts/game-balance-expedition-fog-probe.mjs',
+  'scripts/game-balance-expedition-career.mjs',
+  'scripts/game-balance-expedition-legendary.mjs',
+  'scripts/game-balance-expedition-runtime.mjs'
+])
+
+/**
+ * Runs one probe cohort, funnelling a thrown probe into a hard failure rather
+ * than aborting the suite.
+ *
+ * @template T
+ * @param {string[]} hardFailures - Accumulator the caller reports on.
+ * @param {string} label - What is being run, for the failure line.
+ * @param {() => T} run
+ * @returns {T | null}
+ */
+const guarded = (hardFailures, label, run) => {
+  try {
+    return run()
+  } catch (err) {
+    hardFailures.push(
+      `${label}: ${err instanceof Error ? err.message : String(err)}`
+    )
+    return null
+  }
+}
+
+/**
+ * Runs a probe across both cohorts so a corridor tuned on calibration is
+ * confirmed against seeds it was never fitted to.
+ *
+ * @param {string[]} hardFailures
+ * @param {string} label
+ * @param {{ calibration: string, holdout: string }} namespaces
+ * @param {number} probeCount
+ * @param {(seed: number) => unknown} run
+ * @returns {{ calibration: unknown[], holdout: unknown[] }}
+ */
+const acrossCohorts = (hardFailures, label, namespaces, probeCount, run) => {
+  /** @type {{ calibration: unknown[], holdout: unknown[] }} */
+  const results = { calibration: [], holdout: [] }
+  for (const cohort of /** @type {const} */ (['calibration', 'holdout'])) {
+    for (let i = 0; i < probeCount; i++) {
+      const seed = deriveCohortSeed(namespaces[cohort], i)
+      const value = guarded(
+        hardFailures,
+        `${label} [${cohort}] (seed ${seed})`,
+        () => run(seed)
+      )
+      if (value !== null) results[cohort].push(value)
+    }
+  }
+  return results
+}
 
 /**
  * Runs the entire balance recalibration suite and produces report objects.
@@ -61,6 +132,7 @@ const CAREER_NAMESPACE = '#roguelite-expedition-v1#career#calibration'
 export async function executeBalanceRecalibrationSuite(options = {}) {
   const sampleCount = options.sampleCount ?? 20
   const probeCount = Math.max(5, Math.floor(sampleCount / 2))
+  const careerSequenceCount = Math.max(1, Math.min(3, Math.floor(probeCount / 2)))
 
   console.log(
     `[BalanceSuite] Starting Expedition Recalibration Suite (${sampleCount} samples/cohort)...`
@@ -92,36 +164,42 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   const calibSeeds = Array.from({ length: sampleCount }, (_, i) =>
     deriveCohortSeed(CALIBRATION_NAMESPACE, i)
   )
-  let calibrationCohort
-  try {
-    calibrationCohort = runExpeditionCohort(
-      EXPEDITION_BALANCE_PROFILES,
-      calibSeeds
-    )
-  } catch (err) {
-    hardFailures.push(
-      `Calibration cohort failed: ${err instanceof Error ? err.message : String(err)}`
-    )
-  }
+  const calibrationCohort = guarded(
+    hardFailures,
+    'Calibration cohort failed',
+    () => runExpeditionCohort(EXPEDITION_BALANCE_PROFILES, calibSeeds)
+  )
 
   // 3. Disjoint Holdout Cohort
   console.log('[BalanceSuite] 3. Running Holdout Cohort...')
   const holdoutSeeds = Array.from({ length: sampleCount }, (_, i) =>
     deriveCohortSeed(HOLDOUT_NAMESPACE, i)
   )
-  let holdoutCohort
-  try {
-    holdoutCohort = runExpeditionCohort(
-      EXPEDITION_BALANCE_PROFILES,
-      holdoutSeeds
-    )
-  } catch (err) {
+  const holdoutCohort = guarded(hardFailures, 'Holdout cohort failed', () =>
+    runExpeditionCohort(EXPEDITION_BALANCE_PROFILES, holdoutSeeds)
+  )
+
+  // 3b. Strategy dominance. Running the check and then discarding its verdict
+  // made the release gate decorative: a strategy that strictly dominated every
+  // other one in both cohorts still reported PASS.
+  console.log('[BalanceSuite] 3b. Checking Strategy Dominance...')
+  /** @type {{ ok: boolean, violations: string[] }} */
+  let dominance = { ok: true, violations: [] }
+  if (calibrationCohort && holdoutCohort) {
+    dominance =
+      guarded(hardFailures, 'Strategy dominance check failed', () =>
+        checkStrategyDominance(calibrationCohort, holdoutCohort)
+      ) ?? dominance
+    for (const violation of dominance.violations) {
+      hardFailures.push(`Strategy dominance violation: ${violation}`)
+    }
+  } else {
     hardFailures.push(
-      `Holdout cohort failed: ${err instanceof Error ? err.message : String(err)}`
+      'Strategy dominance could not be checked: a cohort did not complete'
     )
   }
 
-  // 4. Paired Extraction Counterfactuals
+  // 4. Paired Extraction Counterfactuals, across both cohorts
   console.log(
     '[BalanceSuite] 4. Running Matched Extraction Counterfactual Probes...'
   )
@@ -130,20 +208,25 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     EXPEDITION_BALANCE_PROFILES[2],
     EXPEDITION_BALANCE_PROFILES[3]
   ]
-  /** @type {any[]} */
-  const extractionResults = []
+  /** @type {{ calibration: any[], holdout: any[] }} */
+  const extractionResults = { calibration: [], holdout: [] }
   for (const profile of extractionProfiles) {
-    for (let i = 0; i < probeCount; i++) {
-      const seed = deriveCohortSeed(EXTRACTION_CALIB_NAMESPACE, i)
-      try {
-        const pair = runExtractionCounterfactualPair(undefined, profile, seed)
-        extractionResults.push({ profileId: profile.id, seed, pair })
-      } catch (err) {
-        hardFailures.push(
-          `Extraction probe failed for ${profile.id} (seed ${seed}): ${err instanceof Error ? err.message : String(err)}`
-        )
-      }
-    }
+    const perProfile = acrossCohorts(
+      hardFailures,
+      `Extraction probe ${profile.id}`,
+      {
+        calibration: EXTRACTION_CALIB_NAMESPACE,
+        holdout: EXTRACTION_HOLDOUT_NAMESPACE
+      },
+      probeCount,
+      seed => ({
+        profileId: profile.id,
+        seed,
+        pair: runExtractionCounterfactualPair(undefined, profile, seed)
+      })
+    )
+    extractionResults.calibration.push(...perProfile.calibration)
+    extractionResults.holdout.push(...perProfile.holdout)
   }
 
   // 5. Paired Skill-vs-Management Probes
@@ -156,19 +239,17 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   const skillResults = []
   for (const profile of skillProfiles) {
     for (let i = 0; i < probeCount; i++) {
-      const seed = deriveCohortSeed(CALIBRATION_NAMESPACE, i + 500)
-      try {
-        const trio = runSkillMatchedTrio(undefined, profile, seed)
-        skillResults.push({ profileId: profile.id, seed, trio })
-      } catch (err) {
-        hardFailures.push(
-          `Skill probe failed for ${profile.id} (seed ${seed}): ${err instanceof Error ? err.message : String(err)}`
-        )
-      }
+      const seed = deriveCohortSeed(SKILL_NAMESPACE, i)
+      const trio = guarded(
+        hardFailures,
+        `Skill probe failed for ${profile.id} (seed ${seed})`,
+        () => runSkillMatchedTrio(undefined, profile, seed)
+      )
+      if (trio) skillResults.push({ profileId: profile.id, seed, trio })
     }
   }
 
-  // 6. Paired Hybrid-Fog Counterfactual Probes
+  // 6. Paired Hybrid-Fog Counterfactual Probes, across both cohorts
   console.log(
     '[BalanceSuite] 6. Running Matched Hybrid-Fog Counterfactual Probes...'
   )
@@ -177,68 +258,79 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       p.decisionPolicy === 'intel_then_value' ||
       p.crewRoleOrder.includes('scout')
   )
-  /** @type {any[]} */
-  const fogResults = []
+  /** @type {{ calibration: any[], holdout: any[] }} */
+  const fogResults = { calibration: [], holdout: [] }
   for (const profile of fogProfiles) {
-    for (let i = 0; i < probeCount; i++) {
-      const seed = deriveCohortSeed(FOG_CALIB_NAMESPACE, i)
-      try {
-        const pair = runFogCounterfactualPair(undefined, profile, seed)
-        fogResults.push({ profileId: profile.id, seed, pair })
-      } catch (err) {
-        hardFailures.push(
-          `Fog probe failed for ${profile.id} (seed ${seed}): ${err instanceof Error ? err.message : String(err)}`
-        )
-      }
-    }
+    const perProfile = acrossCohorts(
+      hardFailures,
+      `Fog probe ${profile.id}`,
+      { calibration: FOG_CALIB_NAMESPACE, holdout: FOG_HOLDOUT_NAMESPACE },
+      probeCount,
+      seed => ({
+        profileId: profile.id,
+        seed,
+        pair: runFogCounterfactualPair(undefined, profile, seed)
+      })
+    )
+    fogResults.calibration.push(...perProfile.calibration)
+    fogResults.holdout.push(...perProfile.holdout)
   }
 
-  // 7. Fresh-Career Progression Sequences
+  // 7. Fresh-Career Progression Sequences, across both cohorts
   console.log('[BalanceSuite] 7. Running Fresh-Career Progression Sequences...')
   const careerProfiles = [
     EXPEDITION_BALANCE_PROFILES[0],
     EXPEDITION_BALANCE_PROFILES[4]
   ] // baseline, heavy_production
-  /** @type {any[]} */
-  const careerResults = []
+  /** @type {{ calibration: any[], holdout: any[] }} */
+  const careerResults = { calibration: [], holdout: [] }
   for (const profile of careerProfiles) {
-    for (let i = 0; i < Math.min(3, probeCount); i++) {
-      const seqSeed = deriveCohortSeed(CAREER_NAMESPACE, i)
-      try {
-        const seq = runFreshCareerSequence(
-          createInitialState(),
-          profile,
-          seqSeed,
-          6
-        )
-        careerResults.push(seq)
-      } catch (err) {
-        hardFailures.push(
-          `Career sequence failed for ${profile.id} (seed ${seqSeed}): ${err instanceof Error ? err.message : String(err)}`
-        )
-      }
-    }
+    const perProfile = acrossCohorts(
+      hardFailures,
+      `Career sequence ${profile.id}`,
+      {
+        calibration: CAREER_CALIB_NAMESPACE,
+        holdout: CAREER_HOLDOUT_NAMESPACE
+      },
+      careerSequenceCount,
+      seed => runFreshCareerSequence(createInitialState(), profile, seed, 6)
+    )
+    careerResults.calibration.push(...perProfile.calibration)
+    careerResults.holdout.push(...perProfile.holdout)
   }
 
   // 8. Runtime & Playtest Duration Evidence
   console.log('[BalanceSuite] 8. Aggregating Runtime Duration Evidence...')
   const runtimeSummary = summarizeRuntimeDurations(CANONICAL_PLAYTEST_SAMPLES)
 
-  // 9. Legendary Edge Fixtures Verification
+  // 9. Legendary Edge Fixtures Verification. Executed, not asserted: the table
+  // below reports what the reducer actually did.
   console.log('[BalanceSuite] 9. Verifying Legendary Edge Fixtures...')
-  const legendaryStatus = {
-    safe_harbor: 'VERIFIED',
-    the_fixer: 'VERIFIED',
-    nemesis_key: 'VERIFIED',
-    ghost_route: 'VERIFIED',
-    salvage_rights: 'VERIFIED'
+  const legendary = guarded(
+    hardFailures,
+    'Legendary edge verification failed',
+    () => verifyLegendaryEdgeActivations()
+  ) ?? { passed: false, failures: ['verification did not run'], statusById: {} }
+  for (const failure of legendary.failures) {
+    hardFailures.push(failure)
   }
+
+  const allCareerSequences = [
+    ...careerResults.calibration,
+    ...careerResults.holdout
+  ]
 
   const passed = hardFailures.length === 0
 
   return {
     passed,
     hardFailures,
+    metadata: await buildArtifactMetadata({
+      root: REPO_ROOT,
+      generatorPaths: GENERATOR_PATHS,
+      seedNamespace: CALIBRATION_NAMESPACE,
+      runsPerScenario: sampleCount
+    }),
     provenance: {
       generatedAt: new Date().toISOString(),
       namespaces: {
@@ -246,32 +338,55 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
         holdout: HOLDOUT_NAMESPACE,
         extractionCalibration: EXTRACTION_CALIB_NAMESPACE,
         extractionHoldout: EXTRACTION_HOLDOUT_NAMESPACE,
+        skill: SKILL_NAMESPACE,
         fogCalibration: FOG_CALIB_NAMESPACE,
         fogHoldout: FOG_HOLDOUT_NAMESPACE,
-        career: CAREER_NAMESPACE
+        careerCalibration: CAREER_CALIB_NAMESPACE,
+        careerHoldout: CAREER_HOLDOUT_NAMESPACE
       },
       profilesCount: EXPEDITION_BALANCE_PROFILES.length,
       sampleCountPerCohort: sampleCount
     },
     calibrationSummary: calibrationCohort?.profileSummaries ?? {},
     holdoutSummary: holdoutCohort?.profileSummaries ?? {},
+    strategyDominance: dominance,
     extractionProbe: {
-      pairsCount: extractionResults.length,
-      samples: extractionResults.slice(0, 5)
+      calibrationPairs: extractionResults.calibration.length,
+      holdoutPairs: extractionResults.holdout.length,
+      samples: extractionResults.calibration.slice(0, 5)
     },
     skillProbe: {
       triosCount: skillResults.length,
       samples: skillResults.slice(0, 5)
     },
     fogProbe: {
-      pairsCount: fogResults.length,
-      samples: fogResults.slice(0, 5)
+      calibrationPairs: fogResults.calibration.length,
+      holdoutPairs: fogResults.holdout.length,
+      revealedNodeCount: [
+        ...fogResults.calibration,
+        ...fogResults.holdout
+      ].reduce(
+        (total, entry) => total + (entry.pair?.revealedNodeIds?.length ?? 0),
+        0
+      ),
+      samples: fogResults.calibration.slice(0, 5)
     },
     careerSequences: {
-      sequencesCount: careerResults.length,
-      metrics: careerResults.map(r => r.metrics)
+      calibrationCount: careerResults.calibration.length,
+      holdoutCount: careerResults.holdout.length,
+      sequencesCount: allCareerSequences.length,
+      metrics: allCareerSequences.map(r => r.metrics),
+      funding: allCareerSequences.map(r => ({
+        profileId: r.profileId,
+        sequenceSeed: r.sequenceSeed,
+        runsRequested: r.runsRequested,
+        runsCompleted: r.runsCompleted,
+        haltedAtRun: r.haltedAtRun,
+        haltReason: r.haltReason,
+        runOutcomes: r.runOutcomes
+      }))
     },
-    legendaryEdgeCoverage: legendaryStatus,
+    legendaryEdgeCoverage: legendary.statusById,
     runtimeDuration: runtimeSummary
   }
 }
@@ -286,9 +401,11 @@ export function formatMarkdownReport(data) {
   const {
     passed,
     hardFailures,
+    metadata,
     provenance,
     calibrationSummary,
     holdoutSummary,
+    strategyDominance,
     extractionProbe,
     skillProbe,
     fogProbe,
@@ -304,6 +421,16 @@ export function formatMarkdownReport(data) {
   md += `**Generated At:** ${provenance.generatedAt}\n`
   md += `**Profiles:** ${provenance.profilesCount} mature archetypes\n`
   md += `**Sample Count Per Cohort:** ${provenance.sampleCountPerCohort}\n\n`
+
+  md += `## 0. Artifact Provenance\n\n`
+  md += `| Field | Value |\n`
+  md += `| :--- | :--- |\n`
+  md += `| Source fingerprint | \`${metadata.sourceFingerprint}\` |\n`
+  md += `| Generator fingerprint | \`${metadata.generatorFingerprint}\` |\n`
+  md += `| Seed namespace | \`${metadata.seedNamespace}\` |\n`
+  md += `| Runs per scenario | ${metadata.runsPerScenario} |\n`
+  md += `| Working tree dirty | ${metadata.workingTreeDirty ? 'YES' : 'no'} |\n`
+  md += `| Artifact schema version | ${metadata.artifactSchemaVersion} |\n\n`
 
   md += `## 1. Hard Correctness Failures\n\n`
   if (hardFailures.length === 0) {
@@ -334,8 +461,19 @@ export function formatMarkdownReport(data) {
   }
   md += `\n`
 
+  md += `## 3b. Strategy Dominance\n\n`
+  if (strategyDominance.ok) {
+    md += `No strategy strictly dominates the field across both calibration and holdout, and every profile stays inside its corridor.\n\n`
+  } else {
+    md += `**VIOLATIONS (${strategyDominance.violations.length}):**\n`
+    for (const violation of strategyDominance.violations) {
+      md += `- ❌ ${violation}\n`
+    }
+    md += `\n`
+  }
+
   md += `## 4. Paired Extraction Counterfactuals\n\n`
-  md += `Evaluated ${extractionProbe.pairsCount} matched window decisions under identical state, map, and RNG seeds.\n`
+  md += `Evaluated ${extractionProbe.calibrationPairs} calibration and ${extractionProbe.holdoutPairs} holdout matched window decisions under identical state, map, and RNG seeds.\n`
   md += `- **Voluntary Extraction:** Secures current retained earnings and rare items with zero risk of further technical collapse.\n`
   md += `- **Push Counterfactual:** Faces remaining route challenges, risking total failure vs achieving Finale completion payouts.\n\n`
 
@@ -344,13 +482,21 @@ export function formatMarkdownReport(data) {
   md += `- Proves higher player skill significantly increases Gig rewards and lowers wear/repair burdens while management choices remain decisive.\n\n`
 
   md += `## 6. Matched Hybrid-Fog Counterfactuals\n\n`
-  md += `Evaluated ${fogProbe.pairsCount} matched route decision pairs.\n`
-  md += `- Proves revealed information (Scout recon / intel) is actively consumed by route selection policies and alters node evaluation.\n\n`
+  md += `Evaluated ${fogProbe.calibrationPairs} calibration and ${fogProbe.holdoutPairs} holdout matched route decision pairs.\n`
+  md += `- Intel is raised by dispatching \`REVEAL_EXPEDITION_NODE_INTEL\` through the reducer (Scout passive to level 1, one recon charge to level 2); the informed branch reads its choices off \`expedition.intelByNodeId\`.\n`
+  md += `- ${fogProbe.revealedNodeCount} node reveals were accepted by the reducer across the probe.\n\n`
 
   md += `## 7. Fresh-Career Progression Sequences\n\n`
-  md += `Evaluated ${careerSequences.sequencesCount} six-run progression sequences starting with ZERO meta facilities, ZERO unlock sets, and Ascension locked.\n`
-  md += `- First meta facility purchased naturally via earned Tour Tokens.\n`
+  md += `Evaluated ${careerSequences.sequencesCount} progression sequences (${careerSequences.calibrationCount} calibration, ${careerSequences.holdoutCount} holdout) starting with ZERO meta facilities, ZERO unlock sets, and Ascension locked.\n`
+  md += `- Baseline \`initialState\` purse and Fame — no seeded head start.\n`
+  md += `- Fuel is topped up by the build's own \`startingFuelTarget\`, charged at START; van wear carries between Tours.\n`
   md += `- Fixture capability sets are strictly empty for all fresh runs.\n\n`
+  md += `| Profile | Seed | Runs Requested | Runs Funded | Halted At | Reason |\n`
+  md += `| :--- | ---: | ---: | ---: | ---: | :--- |\n`
+  for (const seq of careerSequences.funding) {
+    md += `| \`${seq.profileId}\` | ${seq.sequenceSeed} | ${seq.runsRequested} | ${seq.runsCompleted} | ${seq.haltedAtRun ?? '—'} | ${seq.haltReason ?? 'completed all runs'} |\n`
+  }
+  md += `\n`
 
   md += `## 8. Late-Game Legendary Edge Coverage\n\n`
   md += `| Legendary | Verification Status | Rule Changed |\n`

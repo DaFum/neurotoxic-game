@@ -698,6 +698,11 @@ export interface ExpeditionState {
   resolvedObligationSignalIds: string[]
   pressure: ExpeditionPressureState
   preparedSponsorOffers: ExpeditionPreparedSponsorOffer[]
+  preparedSponsorProvenance?: {
+    regionId: string
+    tourTypeId: string
+    starterPerkId: string | null
+  }
   activeObligations: ActiveObligationState[]
   runDraftTraitIds: ExpeditionRunDraftTraitId[]
   pendingRunDraftOffer: ExpeditionRunDraftOffer | null
