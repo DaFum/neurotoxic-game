@@ -82,8 +82,12 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const [selectedGearItemIds, setSelectedGearItemIds] = useState<string[]>([])
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([])
+  // Ceil, not round: production Fuel is deliberately fractional and the
+  // loadout rule is `startingFuelTarget >= currentFuel`. At 44.1 in the tank,
+  // rounding hands the validator 44 and Tour Prep opens on an invalid build
+  // the player never touched, with `handleCommit` refusing on the first click.
   const [startingFuelTarget, setStartingFuelTarget] = useState<number>(() =>
-    Math.round(currentFuel)
+    Math.ceil(currentFuel)
   )
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
@@ -615,7 +619,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           {t('ui:expedition.prep.fuelTarget', { value: startingFuelTarget })}
           <input
             type='range'
-            min={Math.round(currentFuel)}
+            min={Math.ceil(currentFuel)}
             max={100}
             step={1}
             value={startingFuelTarget}

@@ -464,7 +464,18 @@ export const runFreshCareerSequence = (
     runOutcomes.push(simResult.outcome)
 
     const runId = state.expedition.outcome?.runId
-    if (runId) {
+    if (!runId) {
+      // No terminal `runId` means the run never reached a terminal transition,
+      // so Legendary commitment, both Career settlements, meta progression and
+      // `PREPARE_NEXT_EXPEDITION` are all skipped. Left unrecorded, the *next*
+      // iteration refuses to start and the sequence reports
+      // `start_refused_insufficient_career_funds` - blaming the economy for a
+      // run that simply never settled. Halt here and name the real cause.
+      haltedAtRun = runIdx
+      haltReason = `no_terminal_run_id:${simResult.outcome}`
+      break
+    }
+    {
       // Step A: Commit naturally eligible Legendary if resolved
       const legendaryCand = resolveExpeditionLegendaryCandidate(state, runId)
       if (legendaryCand) {

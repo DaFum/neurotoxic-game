@@ -966,7 +966,7 @@ export const evaluateCandidateNode = (
  * pick is a persona decision. Falls back down the list when an option is not
  * legal right now (no Rival on state, an option whose own condition fails).
  */
-const SOCIAL_RESULT_PREFERENCE = {
+export const SOCIAL_RESULT_PREFERENCE = {
   safe_value: ['monetize', 'suppress'],
   push_heat: ['push', 'weaponize'],
   repair_first: ['monetize', 'suppress'],
@@ -1085,7 +1085,7 @@ const playPendingSocialPost = (state, profile, seed, telemetry) => {
  * the choice is a real persona decision rather than a coin flip: a Heat-averse
  * Sponsor tour takes the long way, an Underground run takes the address.
  */
-const PRESSURE_EVENT_OPTION_PREFERENCE = {
+export const PRESSURE_EVENT_OPTION_PREFERENCE = {
   safe_value: ['take_the_long_way', 'stay_clean'],
   push_heat: ['wave_through', 'take_the_address'],
   repair_first: ['take_the_address', 'take_the_long_way', 'stay_clean'],
@@ -1169,7 +1169,7 @@ const playPendingPressureEvent = (state, profile, telemetry) => {
  * itself weighs its event pool with, so the policy and the game read the run
  * through the same lens.
  */
-const EXTRACTION_POLICY_WEIGHTS = {
+export const EXTRACTION_POLICY_WEIGHTS = {
   safe_value: {
     survival: 1,
     heat: 1,

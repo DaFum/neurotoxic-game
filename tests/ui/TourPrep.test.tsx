@@ -378,6 +378,21 @@ describe('TourPrep scene', () => {
     )
   })
 
+  it('opens on a fuel target a fractional tank can actually satisfy', () => {
+    // Production Fuel is deliberately fractional and the loadout rule is
+    // `startingFuelTarget >= currentFuel`. Rounding 44.1 down to 44 opened
+    // Tour Prep on a build the validator already rejected, so the first
+    // commit failed on a screen the player had not touched.
+    state.current = buildState({ fuel: 44.1 })
+    render(<TourPrep />)
+
+    const slider = screen.getByTestId('expedition-prep-fuel-target')
+    expect(slider).toHaveAttribute('min', '45')
+    expect(Number((slider as HTMLInputElement).value)).toBeGreaterThanOrEqual(
+      44.1
+    )
+  })
+
   it('keeps a route back to the menu', () => {
     state.current = buildState()
     render(<TourPrep />)
