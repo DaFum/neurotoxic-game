@@ -141,6 +141,19 @@ export const getExpeditionRoutePressureProfile = (
   // A feud the Career has actually driven pulls the route toward the Rival,
   // one tenth per tier, rather than switching to a different route shape.
   const nemesisRivalWeight = 1 + Math.max(0, Math.min(4, nemesisLevel)) * 0.1
+  // The lean a Between-Tour decision left, for this Rival only, and for one
+  // Tour: `confront` pulls the route toward the encounter, `cool_down` pushes
+  // it away. Bounded and single-slot on the Career, so it cannot stack into
+  // permanent power, and it composes rather than replacing the Nemesis tier -
+  // a Career cannot cool its way out of a feud it has already driven to the
+  // top, where `forcedRival` holds regardless.
+  const preference = state.career?.nextTourPreferences?.rival
+  const stanceRivalWeight =
+    preference && state.rivalBand?.id === preference.rivalId
+      ? preference.stance === 'confront'
+        ? 1.25
+        : 0.75
+      : 1
 
   return {
     ...stable,
@@ -152,7 +165,7 @@ export const getExpeditionRoutePressureProfile = (
         fame.highProfileNodeWeightMultiplier
     ),
     rivalNodeWeightMultiplier: clampWeight(
-      stable.rivalNodeWeightMultiplier * nemesisRivalWeight
+      stable.rivalNodeWeightMultiplier * nemesisRivalWeight * stanceRivalWeight
     ),
     // A Tour that hunts the Rival forces the encounter; a Nemesis the Career
     // has driven to the top tier does the same, because at that point the feud

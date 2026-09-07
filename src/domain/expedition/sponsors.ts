@@ -119,21 +119,35 @@ export const buildPreparedExpeditionSponsorOffers = (
   // match on top - capped, so stacking them cannot promote more real matches
   // than the design allows. The staged offer count is untouched either way, so
   // neither buys extra offers or extra payout.
+  // The lean a Between-Tour `sponsor_follow_up` left, for that deal only:
+  // keeping the relationship is worth one more genuine match, walking away one
+  // fewer. Single-slot on the Career and overwritten by the next Tour's
+  // decision, so it is a lean rather than a purchase.
+  const sponsorPreference = state.career?.nextTourPreferences?.sponsor
+  const preferenceBias =
+    sponsorPreference &&
+    generated.some(offer => offer.id === sponsorPreference.dealId)
+      ? sponsorPreference.bias
+      : 0
   const promoted = genuine.slice(
     0,
-    Math.min(
-      MAX_EXPEDITION_SPONSOR_QUALITY_BIAS,
-      getExpeditionFameProfile(state).sponsorQualityBias +
-        (isExpeditionCapabilityUnlocked(
-          state.career?.unlockedSetIds,
-          'premium_sponsor_pool'
-        )
-          ? 1
-          : 0) +
-        Math.max(
-          0,
-          getExpeditionStarterPerk(starterPerkId)?.sponsorQualityBias ?? 0
-        )
+    Math.max(
+      0,
+      Math.min(
+        MAX_EXPEDITION_SPONSOR_QUALITY_BIAS,
+        preferenceBias +
+          getExpeditionFameProfile(state).sponsorQualityBias +
+          (isExpeditionCapabilityUnlocked(
+            state.career?.unlockedSetIds,
+            'premium_sponsor_pool'
+          )
+            ? 1
+            : 0) +
+          Math.max(
+            0,
+            getExpeditionStarterPerk(starterPerkId)?.sponsorQualityBias ?? 0
+          )
+      )
     )
   )
   const promotedIds = new Set(promoted.map(offer => offer.id))

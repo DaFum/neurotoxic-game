@@ -304,6 +304,12 @@ type BaseGameDispatchActions = {
     id: string,
     sourceId: string
   ) => void
+  generateExpeditionBetweenTourDecisions: (runId: string) => void
+  resolveExpeditionBetweenTourDecision: (
+    runId: string,
+    decisionId: string,
+    optionId: string
+  ) => void
   acquireExpeditionCrewSignature: (
     crewId: string,
     expectedTraitId: string,

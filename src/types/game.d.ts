@@ -472,6 +472,14 @@ export type GameAction =
       import('./actions').RecordExpeditionArchiveDiscoveryPayload
     >
   | Action<
+      ActionTypes['GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS'],
+      import('./actions').GenerateExpeditionBetweenTourDecisionsPayload
+    >
+  | Action<
+      ActionTypes['RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION'],
+      import('./actions').ResolveExpeditionBetweenTourDecisionPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

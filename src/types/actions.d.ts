@@ -251,6 +251,32 @@ export interface RecordExpeditionArchiveDiscoveryPayload {
   id: string
   sourceId: string
 }
+
+/**
+ * Generates the Between-Tour decisions one finalized run leaves behind.
+ *
+ * @remarks
+ * Names the run only. The decision set is derived in the reducer from state
+ * both settlements have already advanced, and a run that already has a stored
+ * set is refused, so this cannot ask the same Tour twice.
+ */
+export interface GenerateExpeditionBetweenTourDecisionsPayload {
+  runId: string
+}
+
+/**
+ * Answers one stored Between-Tour decision.
+ *
+ * @remarks
+ * Carries no amounts and no target. Every value is derived from the stored
+ * decision plus the registry, so a caller can pick an option but never what it
+ * costs or who it acts on.
+ */
+export interface ResolveExpeditionBetweenTourDecisionPayload {
+  runId: string
+  decisionId: string
+  optionId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

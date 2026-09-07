@@ -65,6 +65,7 @@ import {
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
 import { recordExpeditionArchiveObservations } from './careerReducer'
+import { areBetweenTourDecisionsResolved } from '../../domain/expedition/betweenTour'
 import {
   applyExpeditionSalvageRights,
   consumeExpeditionLegendary,
@@ -1210,6 +1211,11 @@ export const handlePrepareNextExpedition = (
       !entry.materialized
   )
   if (unsettled) return state
+  // Every Between-Tour question the Tour asked must be answered first: the
+  // decisions read the Career the settlements advanced, and returning to idle
+  // clears the outcome they were derived from. An unanswered set would be
+  // stranded - permanently open on a run whose evidence is gone.
+  if (!areBetweenTourDecisionsResolved(state, runId)) return state
 
   return { ...state, expedition: createDefaultExpeditionState() }
 }

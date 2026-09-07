@@ -28,7 +28,11 @@ export const createInitialCareerState = (): CareerState => ({
   ascensionUnlocked: false,
   legendaryIds: [],
   legendaryClaimedRunIds: [],
-  archiveByCategory: createEmptyExpeditionArchive()
+  archiveByCategory: createEmptyExpeditionArchive(),
+  bandConsequenceByMemberId: Object.create(
+    null
+  ) as CareerState['bandConsequenceByMemberId'],
+  nextTourPreferences: { rival: null, sponsor: null }
 })
 
 export const createCrewDevelopmentEligibilityProof = (

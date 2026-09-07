@@ -1,4 +1,7 @@
-import type { ExpeditionRelationshipTier } from './expedition'
+import type {
+  ExpeditionBandInjuryStage,
+  ExpeditionRelationshipTier
+} from './expedition'
 
 export interface CrewCareerState {
   loyalty: number
@@ -132,6 +135,61 @@ export type ExpeditionLegendaryId =
   'safe_harbor' | 'the_fixer' | 'nemesis_key' | 'ghost_route' | 'salvage_rights'
 
 /**
+ * The Between-Tour decision families, in the priority order they are chosen.
+ */
+export type BetweenTourDecisionType =
+  | 'injury_rehab'
+  | 'crew_debrief'
+  | 'rival_response'
+  | 'sponsor_follow_up'
+  | 'vehicle_repair'
+  | 'network_contact'
+
+/**
+ * The actor one decision is about.
+ *
+ * @remarks
+ * Stored with the decision rather than re-derived at resolve time: the state
+ * the target was chosen from is gone by then - the run's outcome is cleared,
+ * the injury may have been resolved by another decision - so a resolve that
+ * re-derived would silently act on a different actor.
+ */
+export type BetweenTourTarget =
+  | { kind: 'crew'; id: string }
+  | { kind: 'band'; id: string }
+  | { kind: 'rival'; id: string }
+  | { kind: 'sponsor'; id: string }
+  | { kind: 'vehicle'; id: 'active_van' }
+  | { kind: 'archive'; id: string }
+
+/** One generated decision, with the options it actually offers. */
+export interface BetweenTourDecisionInstance {
+  id: string
+  type: BetweenTourDecisionType
+  target: BetweenTourTarget
+  optionIds: string[]
+}
+
+/** Every Between-Tour decision one finalized run generated, and its answers. */
+export interface BetweenTourRunState {
+  runId: string
+  decisions: BetweenTourDecisionInstance[]
+  resolvedOptionByDecisionId: Record<string, string>
+}
+
+/**
+ * A preference one Between-Tour decision leaves for the next Tour.
+ *
+ * @remarks
+ * Bounded and single-slot on purpose: the decision is a lean, not a purchase,
+ * so it cannot accumulate across Tours into permanent power.
+ */
+export interface BetweenTourNextTourPreferences {
+  rival: { rivalId: string; stance: 'confront' | 'cool_down' } | null
+  sponsor: { dealId: string; bias: 1 | -1 } | null
+}
+
+/**
  * The Tour Archive's categories.
  *
  * @remarks
@@ -184,7 +242,7 @@ export interface CareerState {
   crewRecoveryDebtById: Record<string, CrewRecoveryDebt>
   settledCrewRunIds: string[]
   rivalsById: Record<string, CareerRivalRecord>
-  betweenTourByRunId: Record<string, never>
+  betweenTourByRunId: Record<string, BetweenTourRunState>
   tourTokens: number
   finalizedExpeditionRuns: number
   completedExpeditionRuns: number
@@ -223,4 +281,16 @@ export interface CareerState {
    * nothing consults it for permission either.
    */
   archiveByCategory: Record<ExpeditionArchiveCategory, string[]>
+  /**
+   * Band consequences that outlive the run that caused them.
+   *
+   * @remarks
+   * The run's own `bandInjuryByMemberId` is cleared by
+   * `PREPARE_NEXT_EXPEDITION`, so a consequence a Between-Tour decision is
+   * meant to treat has to be carried into the Career at settlement or there is
+   * nothing left to treat.
+   */
+  bandConsequenceByMemberId: Record<string, ExpeditionBandInjuryStage>
+  /** What the last Between-Tour decisions left for the next Tour. */
+  nextTourPreferences: BetweenTourNextTourPreferences
 }

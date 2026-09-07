@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useMemo } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
@@ -22,56 +22,61 @@ export const RunSummary = () => {
     settleExpeditionCareerResult,
     claimExpeditionLegendaryReward,
     unlockExpeditionAscension,
+    generateExpeditionBetweenTourDecisions,
+    resolveExpeditionBetweenTourDecision,
     changeScene,
     saveGameAfterStateCommit
   } = useGameActions()
   const outcome = useGameSelector(state => state.expedition.outcome)
+  const betweenTour = useGameSelector(state =>
+    outcome && Object.hasOwn(state.career.betweenTourByRunId, outcome.runId)
+      ? state.career.betweenTourByRunId[outcome.runId]
+      : undefined
+  )
+
+  // Settle, then ask. The decisions read the Career both settlements advanced,
+  // so generating before them would ask about an injury the settlement was
+  // about to record - and generating is refused until both have run, which is
+  // why this effect can safely re-run until it takes.
+  useEffect(() => {
+    if (!outcome) return
+    claimExpeditionLegendaryReward(outcome.runId)
+    settleExpeditionCrewCareer(outcome.runId)
+    settleExpeditionCareerResult(outcome.runId)
+    unlockExpeditionAscension(outcome.runId)
+    generateExpeditionBetweenTourDecisions(outcome.runId)
+  }, [
+    claimExpeditionLegendaryReward,
+    generateExpeditionBetweenTourDecisions,
+    outcome,
+    settleExpeditionCareerResult,
+    settleExpeditionCrewCareer,
+    unlockExpeditionAscension
+  ])
+
+  const openDecisions = useMemo(
+    () =>
+      (betweenTour?.decisions ?? []).filter(
+        decision =>
+          !Object.hasOwn(
+            betweenTour?.resolvedOptionByDecisionId ?? {},
+            decision.id
+          )
+      ),
+    [betweenTour]
+  )
 
   const handleContinue = useCallback(() => {
-    // Settled before the ledger it is derived from is cleared, and never after:
-    // `PREPARE_NEXT_EXPEDITION` drops the finalized outcome, and the settlement
-    // guard proves the award against exactly that outcome, so the reverse order
-    // would silently pay nothing for every run the Career ever finishes. The
-    // reducer is still the authority - it names no amount, only the run - and
-    // refuses a run it has already settled, so acknowledging twice pays once.
-    if (outcome) {
-      // The Legendary barrier comes before either settlement: its durable
-      // marker has to be persisted before the run's progression is minted, so
-      // a failed write leaves a run that can still be acknowledged again
-      // rather than a Career that advanced without the award it earned. The
-      // command derives the candidate itself and is an identity no-op for
-      // every run that earned nothing.
-      claimExpeditionLegendaryReward(outcome.runId)
-      // Crew first, then Career: the two settlements own different slices and
-      // carry their own replay guards (`settledCrewRunIds` versus
-      // `settledExpeditionRunIds`), so neither can pay for the other's run and
-      // a second acknowledgement is an identity no-op for both.
-      settleExpeditionCrewCareer(outcome.runId)
-      settleExpeditionCareerResult(outcome.runId)
-      // Ascension is checked against the Career the settlement just advanced,
-      // and against this run's id while it is still settled evidence -
-      // `PREPARE_NEXT_EXPEDITION` below clears the outcome. The reducer
-      // recomputes every term and refuses when they do not hold, so calling
-      // this after every finalized run is an identity no-op until the run that
-      // actually earns it.
-      unlockExpeditionAscension(outcome.runId)
-    }
+    // Everything the run owes has already been settled by the effect above,
+    // and `PREPARE_NEXT_EXPEDITION` refuses while a Between-Tour decision is
+    // still open, so this only ever runs on a Tour that is genuinely finished.
     prepareNextExpedition()
     // Autosave covers only the gig transitions, so acknowledging a finalized
     // run has to persist itself: otherwise quitting from the menu restores the
     // terminal Expedition and routes the player back through this summary.
     saveGameAfterStateCommit()
     changeScene(GAME_PHASES.MENU)
-  }, [
-    changeScene,
-    claimExpeditionLegendaryReward,
-    outcome,
-    prepareNextExpedition,
-    saveGameAfterStateCommit,
-    settleExpeditionCareerResult,
-    settleExpeditionCrewCareer,
-    unlockExpeditionAscension
-  ])
+  }, [changeScene, prepareNextExpedition, saveGameAfterStateCommit])
 
   if (!outcome) {
     return (
@@ -136,12 +141,51 @@ export const RunSummary = () => {
           </dd>
         </dl>
 
-        <ActionButton
-          onClick={handleContinue}
-          data-testid='expedition-run-summary-continue'
-        >
-          {t('ui:expedition.summary.continue')}
-        </ActionButton>
+        {openDecisions.length > 0 ? (
+          <div
+            className='flex flex-col gap-3 border-t border-steel-gray pt-3'
+            data-testid='expedition-between-tour'
+          >
+            <h3 className='text-xs uppercase tracking-widest text-toxic-green'>
+              {t('ui:expedition.betweenTour.title')}
+            </h3>
+            {openDecisions.map(decision => (
+              <div key={decision.id} className='flex flex-col gap-2'>
+                <p className='text-xs font-mono text-ash-gray'>
+                  {t(`ui:expedition.betweenTour.${decision.type}`, {
+                    target: decision.target.id
+                  })}
+                </p>
+                <div className='flex flex-wrap gap-2'>
+                  {decision.optionIds.map(optionId => (
+                    <button
+                      key={optionId}
+                      type='button'
+                      data-testid={`expedition-between-tour-${decision.type}-${optionId}`}
+                      onClick={() =>
+                        resolveExpeditionBetweenTourDecision(
+                          outcome.runId,
+                          decision.id,
+                          optionId
+                        )
+                      }
+                      className='min-h-11 px-3 py-2 text-xs font-mono uppercase border border-steel-gray text-ash-gray hover:border-toxic-green transition-colors'
+                    >
+                      {t(`ui:expedition.betweenTour.option.${optionId}`)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ActionButton
+            onClick={handleContinue}
+            data-testid='expedition-run-summary-continue'
+          >
+            {t('ui:expedition.summary.continue')}
+          </ActionButton>
+        )}
       </div>
     </div>
   )

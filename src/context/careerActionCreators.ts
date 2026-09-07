@@ -183,3 +183,47 @@ export const createRecordExpeditionArchiveDiscoveryAction = (
   type: ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY,
   payload: { category, id, sourceId }
 })
+
+/**
+ * Generates the Between-Tour decisions a finalized run leaves behind.
+ *
+ * @param runId - The finalized run.
+ * @returns The typed action.
+ *
+ * @remarks
+ * Carries the run and nothing else: the reducer derives the whole decision set
+ * from the settled Career, and refuses a run that already has one.
+ */
+export const createGenerateExpeditionBetweenTourDecisionsAction = (
+  runId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS }
+> => ({
+  type: ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS,
+  payload: { runId }
+})
+
+/**
+ * Answers one stored Between-Tour decision.
+ *
+ * @param runId - The run the decision belongs to.
+ * @param decisionId - The stored decision.
+ * @param optionId - The option being taken.
+ * @returns The typed action.
+ *
+ * @remarks
+ * No amount and no target: the reducer reads both off the stored decision, so
+ * a caller cannot choose what the option costs or who it treats.
+ */
+export const createResolveExpeditionBetweenTourDecisionAction = (
+  runId: string,
+  decisionId: string,
+  optionId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION }
+> => ({
+  type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
+  payload: { runId, decisionId, optionId }
+})

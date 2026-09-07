@@ -114,6 +114,8 @@ import {
   handleUnlockExpeditionAscension,
   handleCommitExpeditionLegendaryReward,
   handleRecordExpeditionArchiveDiscovery,
+  handleGenerateExpeditionBetweenTourDecisions,
+  handleResolveExpeditionBetweenTourDecision,
   handleSettleExpeditionCrewCareer,
   handleSettleExpeditionCareerResult,
   handlePurchaseExpeditionHqFacility,
@@ -292,6 +294,10 @@ const reducerMap: ReducerMap = {
     handleCommitExpeditionLegendaryReward,
   [ActionTypes.RECORD_EXPEDITION_ARCHIVE_DISCOVERY]:
     handleRecordExpeditionArchiveDiscovery,
+  [ActionTypes.GENERATE_EXPEDITION_BETWEEN_TOUR_DECISIONS]:
+    handleGenerateExpeditionBetweenTourDecisions,
+  [ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION]:
+    handleResolveExpeditionBetweenTourDecision,
   [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
     handleAcquireExpeditionCrewSignature,
   [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant,

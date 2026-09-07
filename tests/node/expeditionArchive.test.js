@@ -388,6 +388,10 @@ describe('G5 — the Archive survives a load without becoming authority', () => 
           file.endsWith('expedition/archive.ts') ||
           // The initial-Career factory builds the empty log; it reads nothing.
           file.endsWith('expedition/career.ts') ||
+          // Between-Tour reads the Region log to pick a *decision target* and
+          // writes one back when the lead is followed. Neither is authority:
+          // it decides what the Career is asked, never what it may do.
+          file.endsWith('expedition/betweenTour.ts') ||
           file.endsWith('reducers/careerReducer.ts') ||
           file.endsWith('reducers/careerSanitizers.ts')
         ) {

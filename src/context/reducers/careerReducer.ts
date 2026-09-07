@@ -1,7 +1,9 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
   CommitExpeditionLegendaryRewardPayload,
+  GenerateExpeditionBetweenTourDecisionsPayload,
   RecordExpeditionArchiveDiscoveryPayload,
+  ResolveExpeditionBetweenTourDecisionPayload,
   ExpeditionUnlockPurchasePayload,
   PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
@@ -30,6 +32,19 @@ import {
   sweepExpeditionArchiveObservations
 } from '../../domain/expedition/archive'
 import { isExpeditionArchiveCategory } from '../../data/expedition/archive'
+import {
+  applyBetweenTourDecisionOption,
+  generateBetweenTourDecisions
+} from '../../domain/expedition/betweenTour'
+import { resolveCrewRecoveryDebt } from '../../domain/expedition/injuries'
+
+/** Band consequence stages, weakest first, for keeping only the worse one. */
+const BAND_CONSEQUENCE_SEVERITY = [
+  'none',
+  'light',
+  'serious',
+  'critical'
+] as const
 
 export const handleSettleExpeditionCrewCareer = (
   state: GameState,
@@ -104,12 +119,34 @@ export const handleSettleExpeditionCrewCareer = (
         toursRemaining: 1
       }
   }
+  // The run's band injuries are run-scoped and `PREPARE_NEXT_EXPEDITION` drops
+  // them, so a consequence that is meant to outlive the Tour has to be carried
+  // into the Career here. Only the worse stage is kept: a light night does not
+  // heal a serious one.
+  const bandConsequenceByMemberId = Object.assign(
+    Object.create(null),
+    state.career.bandConsequenceByMemberId
+  ) as GameState['career']['bandConsequenceByMemberId']
+  for (const [memberId, stage] of Object.entries(
+    state.expedition.bandInjuryByMemberId ?? {}
+  )) {
+    if (stage === 'none') continue
+    const prior = bandConsequenceByMemberId[memberId] ?? 'none'
+    if (
+      BAND_CONSEQUENCE_SEVERITY.indexOf(stage) >
+      BAND_CONSEQUENCE_SEVERITY.indexOf(prior)
+    ) {
+      bandConsequenceByMemberId[memberId] = stage
+    }
+  }
+
   return {
     ...state,
     career: {
       ...state.career,
       crewById,
       crewRecoveryDebtById,
+      bandConsequenceByMemberId,
       settledCrewRunIds: [...state.career.settledCrewRunIds, payload.runId]
       // The run counters are deliberately not touched here. They have exactly
       // one owner - `handleSettleExpeditionCareerResult` - because the two
@@ -509,6 +546,151 @@ export const handleAcquireExpeditionCrewSignature = (
       crewById: {
         ...state.career.crewById,
         [payload.crewId]: { ...prior, signatureTraitId: traitId }
+      }
+    }
+  }
+}
+
+/**
+ * Generates the Between-Tour decisions one finalized run leaves behind.
+ *
+ * @param state - Current game state.
+ * @param payload - Names the run.
+ * @returns Next state, or the identical reference when nothing is generated.
+ *
+ * @remarks
+ * Runs after both settlements and refuses a run that already has a stored set,
+ * so a repeated dispatch is an identity no-op rather than a second round of
+ * questions about the same Tour.
+ *
+ * The recovery-debt expiry happens here too, and before the decisions are
+ * derived: a debt whose Crew sat this Tour out has served it, so it is cleared
+ * and no longer generates a rehab decision. A Crew that was *selected* keeps
+ * its debt - it did not skip the Tour it owed.
+ */
+export const handleGenerateExpeditionBetweenTourDecisions = (
+  state: GameState,
+  payload: GenerateExpeditionBetweenTourDecisionsPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.runId !== 'string'
+  ) {
+    return state
+  }
+  const expired = expireServedCrewRecoveryDebts(state, payload.runId)
+  const generated = generateBetweenTourDecisions(expired, payload.runId)
+  if (!generated) return state
+  return {
+    ...expired,
+    career: {
+      ...expired.career,
+      betweenTourByRunId: {
+        ...expired.career.betweenTourByRunId,
+        [payload.runId]: generated
+      }
+    }
+  }
+}
+
+/**
+ * Clears every recovery debt whose Crew sat the finalized Tour out.
+ *
+ * @param state - Current game state.
+ * @param runId - The just-finalized run.
+ * @returns Next state, or the identical reference when nothing expired.
+ *
+ * @remarks
+ * A debt is one skipped Tour, so the Tour that just finished either was the
+ * skipped one or was not. Crew the run selected keep their debt - including
+ * Crew that came back injured again, whose debt the settlement has just
+ * re-created. The debt created *by this very run* is excluded by the same
+ * rule, since its Crew was on the road.
+ */
+const expireServedCrewRecoveryDebts = (
+  state: GameState,
+  runId: string
+): GameState => {
+  if (!state.career.settledCrewRunIds.includes(runId)) return state
+  const selected = new Set(state.expedition?.loadout?.crewIds ?? [])
+  let career = state.career
+  for (const debt of Object.values(state.career.crewRecoveryDebtById)) {
+    if (selected.has(debt.crewId)) continue
+    career = resolveCrewRecoveryDebt(
+      career,
+      debt.crewId,
+      'served_unavailable_tour'
+    )
+  }
+  return career === state.career ? state : { ...state, career }
+}
+
+/**
+ * Answers one stored Between-Tour decision.
+ *
+ * @param state - Current game state.
+ * @param payload - The run, the decision and the option taken.
+ * @returns Next state, or the identical reference when nothing is applied.
+ *
+ * @remarks
+ * The stored decision is the authority on the target and the registry on the
+ * cost, so the payload names an option and nothing else. A money option is
+ * re-checked for affordability *here* rather than at generation: the Career may
+ * have spent the Cash on an earlier decision of the same Tour, and an option
+ * priced when it was offered would let both be taken.
+ *
+ * A second resolve of the same decision is an identity no-op - the recorded
+ * answer is the guard, so a replayed dispatch cannot pay twice or treat twice.
+ */
+export const handleResolveExpeditionBetweenTourDecision = (
+  state: GameState,
+  payload: ResolveExpeditionBetweenTourDecisionPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.runId !== 'string' ||
+    typeof payload.decisionId !== 'string' ||
+    typeof payload.optionId !== 'string'
+  ) {
+    return state
+  }
+  const stored = Object.hasOwn(state.career.betweenTourByRunId, payload.runId)
+    ? state.career.betweenTourByRunId[payload.runId]
+    : undefined
+  if (!stored) return state
+  if (Object.hasOwn(stored.resolvedOptionByDecisionId, payload.decisionId)) {
+    return state
+  }
+  const decision = stored.decisions.find(
+    entry => entry.id === payload.decisionId
+  )
+  if (!decision || !decision.optionIds.includes(payload.optionId)) return state
+
+  const applied = applyBetweenTourDecisionOption(
+    state,
+    decision,
+    payload.optionId
+  )
+  // `null` means the option could not be taken after all - most often an
+  // affordability check that no longer holds - and an unanswerable option must
+  // leave the decision open rather than consume it.
+  if (!applied) return state
+
+  return {
+    ...applied,
+    career: {
+      ...applied.career,
+      betweenTourByRunId: {
+        ...applied.career.betweenTourByRunId,
+        [payload.runId]: {
+          ...stored,
+          resolvedOptionByDecisionId: {
+            ...stored.resolvedOptionByDecisionId,
+            [payload.decisionId]: payload.optionId
+          }
+        }
       }
     }
   }
