@@ -601,6 +601,24 @@ export function useGameDispatchActions({
   })
   const careerActions = useCareerDispatchActions(dispatch)
 
+  // A resolved decision is persisted Career state that changes nothing about
+  // the scene, so the write has to travel with the dispatch: the autosave the
+  // player would otherwise wait for fires on a scene transition, and a crash
+  // after paying for rehab but before the last answer restored the open
+  // decision and let the same choice be taken twice. Answering is the command,
+  // so the save belongs here rather than in the one scene that renders it.
+  const resolveExpeditionBetweenTourDecision = useCallback(
+    (runId: string, decisionId: string, optionId: string) => {
+      careerActions.resolveExpeditionBetweenTourDecision(
+        runId,
+        decisionId,
+        optionId
+      )
+      saveGameAfterStateCommit()
+    },
+    [careerActions, saveGameAfterStateCommit]
+  )
+
   // The committed state a purchase was last computed from. `dispatch` does not
   // update `stateRef` synchronously, so a second purchase in the same batch
   // would judge its own legality against a snapshot that predates the first
@@ -698,6 +716,7 @@ export function useGameDispatchActions({
       ...assetActions,
       ...expeditionActions,
       ...careerActions,
+      resolveExpeditionBetweenTourDecision,
       purchaseExpeditionUnlockSet,
       claimExpeditionLegendaryReward
     }),
@@ -723,6 +742,7 @@ export function useGameDispatchActions({
       assetActions,
       expeditionActions,
       careerActions,
+      resolveExpeditionBetweenTourDecision,
       purchaseExpeditionUnlockSet,
       claimExpeditionLegendaryReward
     ]
