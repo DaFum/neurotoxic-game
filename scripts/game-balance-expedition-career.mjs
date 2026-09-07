@@ -25,6 +25,7 @@ import {
   getAvailablePressureModifierIds,
   getAvailableStarterPerkIds,
   getAvailableCrewIds,
+  getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../src/domain/expedition/loadout.ts'
 import { getExpeditionOwnedPerformanceGear } from '../src/domain/expedition/equipment.ts'
@@ -225,6 +226,30 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
 }
 
 /**
+ * Cost of the cheapest legal next Expedition this Career could commit.
+ *
+ * @param {import('../src/types').GameState} state
+ * @param {import('./game-balance-expedition-profiles.mjs').ExpeditionBalanceProfile} profile
+ * @returns {number}
+ *
+ * @remarks
+ * The Fuel top-up is the whole discretionary floor for a fresh Career: it owns
+ * no chassis, no gear and no cargo, so START's `getExpeditionFuelTopUpCost` is
+ * what it has to be able to pay. Reported next to `cashAfterRun` so a funding
+ * halt can be read as the gap it is rather than inferred.
+ */
+const estimateMinimumNextRunCost = (state, profile) => {
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
+  // A build may only top up, so the cheapest legal target is the current level
+  // when it already exceeds the profile's, and the profile's otherwise.
+  const target = Math.min(
+    100,
+    Math.max(50, profile.startingFuelTarget, Math.ceil(currentFuel))
+  )
+  return getExpeditionFuelTopUpCost(currentFuel, target)
+}
+
+/**
  * Runs a 6-run fresh career progression sequence for a persona profile.
  *
  * @param {import('../src/types').GameState} [initialState]
@@ -309,6 +334,8 @@ export const runFreshCareerSequence = (
   let totalBetweenTourDecisions = 0
   /** @type {Map<string, number>} Crew id -> run its recovery debt opened in. */
   const crewRecoveryDebtOpenedAt = new Map()
+  /** @type {any[]} Per-run cashflow, so a funding halt can be localized. */
+  const cashflowByRun = []
   /** @type {number | null} */
   let haltedAtRun = null
   /** @type {string | null} */
@@ -356,6 +383,11 @@ export const runFreshCareerSequence = (
     }
 
     // 3. Start run
+    const cashBeforeRun = finiteNumberOr(state.player.money, 0)
+    const fuelBeforeRun = finiteNumberOr(state.player.van?.fuel, 0)
+    const vanConditionBeforeRun = finiteNumberOr(
+      state.player.van?.condition, 0
+    )
     state = gameReducer(state, {
       type: ActionTypes.START_EXPEDITION,
       payload: {
@@ -366,15 +398,34 @@ export const runFreshCareerSequence = (
     })
 
     if (state.expedition.status !== 'active') {
+      // The halt is the finding, so record what the Career could not afford.
+      // Without these components the report could say a sequence stopped for
+      // lack of money but not whether prep, repairs, travel or the settlement
+      // was responsible.
+      cashflowByRun.push({
+        run: runIdx,
+        cashBeforeRun,
+        fuelBeforeRun,
+        vanConditionBeforeRun,
+        prepSpend: null,
+        repairSpend: null,
+        settlement: null,
+        cashAfterRun: cashBeforeRun,
+        nextRunMinimumCost: estimateMinimumNextRunCost(state, profile),
+        halted: true
+      })
       haltedAtRun = runIdx
       haltReason = 'start_refused_insufficient_career_funds'
       break
     }
+    // START charges the whole upfront commitment in one transaction.
+    const prepSpend = cashBeforeRun - finiteNumberOr(state.player.money, 0)
 
     // 4. Run through simulation
     const simResult = runExpeditionSimulation(state, profile, runSeed, {
       isFreshCareer: true
     })
+    const cashAtTerminal = finiteNumberOr(simResult.finalState.player.money, 0)
     state = simResult.finalState
     runOutcomes.push(simResult.outcome)
 
@@ -574,6 +625,25 @@ export const runFreshCareerSequence = (
       })
     }
 
+    // Close the run's cashflow row. The settlement is what the terminal
+    // transition and the Career settlements moved after the run itself ended,
+    // which is the component that decides whether a Tour funds the next one.
+    const cashAfterRun = finiteNumberOr(state.player.money, 0)
+    cashflowByRun.push({
+      run: runIdx,
+      cashBeforeRun,
+      fuelBeforeRun,
+      vanConditionBeforeRun,
+      prepSpend,
+      repairSpend: simResult.telemetry.repairSpend,
+      inRunDelta: cashAtTerminal - (cashBeforeRun - prepSpend),
+      settlement: cashAfterRun - cashAtTerminal,
+      cashAfterRun,
+      nextRunMinimumCost: estimateMinimumNextRunCost(state, profile),
+      outcome: simResult.outcome,
+      halted: false
+    })
+
     // Record rank milestones
     const rank = deriveExpeditionCareerRank(state.career)
     if (rank === 'roadtested' && metrics.firstRoadtestedRun === null) {
@@ -604,6 +674,7 @@ export const runFreshCareerSequence = (
     runsCompleted,
     haltedAtRun,
     haltReason,
+    cashflowByRun,
     finalRank: deriveExpeditionCareerRank(state.career),
     metrics,
     runOutcomes,
