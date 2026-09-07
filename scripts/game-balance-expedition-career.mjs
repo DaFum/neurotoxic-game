@@ -39,6 +39,13 @@ import { getAvailableNativeContractTemplateIds } from '../src/domain/expedition/
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../src/data/expedition/unlockSets.ts'
 import { getExpeditionHqFacilityLevelCost } from '../src/data/expedition/hqFacilities.ts'
+import {
+  createBeginExpeditionUnlockPurchaseAction,
+  createCompleteExpeditionUnlockPurchaseAction,
+  createPurchaseExpeditionHqFacilityAction
+} from '../src/context/careerActionCreators.ts'
+import { prepareExpeditionSponsorOffers } from '../src/context/expeditionActionCreators.ts'
+import { getExpeditionInsurancePremium } from '../src/domain/expedition/insurance.ts'
 import { doesLegacyHqItemTouchExpedition } from '../src/domain/expedition/legacyHqPolicy.ts'
 import { ALL_HQ_ITEMS } from '../src/data/hqItems.ts'
 import { SONGS_BY_ID } from '../src/data/songs.ts'
@@ -91,13 +98,13 @@ export const purchaseNextPersonaMeta = (state, profile) => {
     )
     if (cost === null || finiteNumberOr(state.career.tourTokens, 0) < cost)
       return { state, purchaseType: null }
-    const nextState = gameReducer(state, {
-      type: ActionTypes.PURCHASE_EXPEDITION_HQ_FACILITY,
-      payload: {
-        facilityId: set.requiredFacility.id,
-        expectedLevel: currentLevel
-      }
-    })
+    const nextState = gameReducer(
+      state,
+      createPurchaseExpeditionHqFacilityAction(
+        set.requiredFacility.id,
+        currentLevel
+      )
+    )
     return {
       state: nextState,
       purchaseType: nextState === state ? null : 'facility'
@@ -105,17 +112,14 @@ export const purchaseNextPersonaMeta = (state, profile) => {
   }
   if (finiteNumberOr(state.career.tourTokens, 0) < set.cost)
     return { state, purchaseType: null }
-  const begun = gameReducer(state, {
-    type: ActionTypes.BEGIN_EXPEDITION_UNLOCK_PURCHASE,
-    payload: { setId }
-  })
+  const begun = gameReducer(
+    state,
+    createBeginExpeditionUnlockPurchaseAction(setId)
+  )
   const completed =
     begun === state
       ? state
-      : gameReducer(begun, {
-          type: ActionTypes.COMPLETE_EXPEDITION_UNLOCK_PURCHASE,
-          payload: { setId }
-        })
+      : gameReducer(begun, createCompleteExpeditionUnlockPurchaseAction(setId))
   return { state: completed, purchaseType: completed === begun ? null : 'set' }
 }
 
@@ -128,6 +132,7 @@ export const summarizeCareerCashflow = sequences => {
         samples: 0,
         halted: 0,
         prepSpend: 0,
+        sponsorIncome: 0,
         repairSpend: 0,
         inRunDelta: 0,
         settlement: 0,
@@ -138,6 +143,7 @@ export const summarizeCareerCashflow = sequences => {
       aggregate.halted += entry.halted ? 1 : 0
       for (const key of [
         'prepSpend',
+        'sponsorIncome',
         'repairSpend',
         'inRunDelta',
         'settlement',
@@ -154,6 +160,7 @@ export const summarizeCareerCashflow = sequences => {
       samples: entry.samples,
       halted: entry.halted,
       meanPrepSpend: entry.prepSpend / entry.samples,
+      meanSponsorIncome: entry.sponsorIncome / entry.samples,
       meanRepairSpend: entry.repairSpend / entry.samples,
       meanInRunDelta: entry.inRunDelta / entry.samples,
       meanSettlement: entry.settlement / entry.samples,
@@ -463,6 +470,7 @@ export const runFreshCareerSequence = (
     crewRecoveryDebtDurations: [],
     sponsorAdvancesTaken: 0,
     sponsorOffersStaged: 0,
+    sponsorOffersSelected: 0,
     sponsorOffersAccepted: 0,
     normalTerminals: 0,
     solventAfterNormalTerminal: 0,
@@ -502,15 +510,15 @@ export const runFreshCareerSequence = (
 
     // 2. Build legal approximation of loadout
     let legalLoadout = buildLegalLoadoutApproximation(state, profile)
-    state = gameReducer(state, {
-      type: ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS,
-      payload: {
-        expectedRunSeed: state.runSeed,
-        regionId: legalLoadout.regionId,
-        tourTypeId: legalLoadout.tourTypeId,
-        starterPerkId: legalLoadout.starterPerkId
-      }
-    })
+    state = gameReducer(
+      state,
+      prepareExpeditionSponsorOffers(
+        state,
+        legalLoadout.regionId,
+        legalLoadout.tourTypeId,
+        legalLoadout.starterPerkId
+      )
+    )
     metrics.sponsorOffersStaged += state.expedition.preparedSponsorOffers.length
     const sponsor =
       profile.sponsorPolicy === 'none'
@@ -521,7 +529,7 @@ export const runFreshCareerSequence = (
             state.rivalBand?.alignment ?? null
           )
     if (sponsor) {
-      metrics.sponsorOffersAccepted += 1
+      metrics.sponsorOffersSelected += 1
       legalLoadout = {
         ...legalLoadout,
         build: { ...legalLoadout.build, sponsorOfferId: sponsor.offerId }
@@ -579,6 +587,8 @@ export const runFreshCareerSequence = (
         fuelBeforeRun,
         vanConditionBeforeRun,
         prepSpend: null,
+        sponsorIncome: null,
+        cashBeforeSimulation: null,
         repairSpend: null,
         settlement: null,
         cashAfterRun: cashBeforeRun,
@@ -589,8 +599,23 @@ export const runFreshCareerSequence = (
       haltReason = 'start_refused_insufficient_career_funds'
       break
     }
-    // START charges the whole upfront commitment in one transaction.
-    const prepSpend = cashBeforeRun - finiteNumberOr(state.player.money, 0)
+    const prepSpend =
+      getExpeditionFuelTopUpCost(
+        fuelBeforeRun,
+        validation.normalized.build.startingFuelTarget
+      ) + getExpeditionInsurancePremium(validation.normalized.insurancePolicyId)
+    const cashBeforeSimulation = finiteNumberOr(state.player.money, 0)
+    const sponsorIncome = cashBeforeSimulation - (cashBeforeRun - prepSpend)
+    if (
+      sponsor &&
+      state.expedition.activeObligations.some(
+        obligation =>
+          obligation.sourceType === 'brandDeal' &&
+          obligation.sourceId === sponsor.dealId
+      )
+    ) {
+      metrics.sponsorOffersAccepted += 1
+    }
 
     // 4. Run through simulation
     const simResult = runExpeditionSimulation(state, profile, runSeed, {
@@ -794,8 +819,10 @@ export const runFreshCareerSequence = (
       fuelBeforeRun,
       vanConditionBeforeRun,
       prepSpend,
+      sponsorIncome,
+      cashBeforeSimulation,
       repairSpend: simResult.telemetry.repairSpend,
-      inRunDelta: cashAtTerminal - (cashBeforeRun - prepSpend),
+      inRunDelta: cashAtTerminal - cashBeforeSimulation,
       settlement: cashAfterRun - cashAtTerminal,
       cashAfterRun,
       nextRunMinimumCost: estimateMinimumNextRunCost(state, profile),

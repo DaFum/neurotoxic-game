@@ -148,6 +148,7 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
             {
               run: 1,
               prepSpend: 10,
+              sponsorIncome: 15,
               repairSpend: 20,
               inRunDelta: 30,
               settlement: 40,
@@ -164,6 +165,7 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
           samples: 1,
           halted: 0,
           meanPrepSpend: 10,
+          meanSponsorIncome: 15,
           meanRepairSpend: 20,
           meanInRunDelta: 30,
           meanSettlement: 40,
@@ -171,6 +173,38 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
           meanNextRunMinimumCost: 60
         }
       ]
+    )
+  })
+
+  it('does not count a selected sponsor offer when START refuses the run', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES.find(
+      entry => entry.id === 'high_exposure_performance'
+    )
+    const result = runFreshCareerSequence(undefined, profile, 13, 6)
+
+    assert.equal(result.haltReason, 'start_refused_insufficient_career_funds')
+    assert.ok(result.metrics.sponsorOffersStaged > 0)
+    assert.ok(
+      result.metrics.sponsorOffersSelected >
+        result.metrics.sponsorOffersAccepted
+    )
+    assert.ok(result.metrics.sponsorOffersAccepted <= result.runsCompleted)
+  })
+
+  it('reports sponsor income separately from production prep spend', () => {
+    const result = runFreshCareerSequence(
+      undefined,
+      EXPEDITION_BALANCE_PROFILES[0],
+      9001,
+      1
+    )
+    const cashflow = result.cashflowByRun[0]
+
+    assert.ok(cashflow.prepSpend >= 0)
+    assert.ok(cashflow.sponsorIncome > 0)
+    assert.equal(
+      cashflow.cashBeforeRun - cashflow.prepSpend + cashflow.sponsorIncome,
+      cashflow.cashBeforeSimulation
     )
   })
 
