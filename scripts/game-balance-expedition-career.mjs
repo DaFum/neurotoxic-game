@@ -275,6 +275,9 @@ const estimateMinimumNextRunCost = (state, profile) => {
  *     firstAscensionUnlockRun: number | null,
  *     firstNaturalLegendaryRun: number | null,
  *     signatureTraitUnlockRun: number | null,
+ *     normalTerminals: number,
+ *     solventAfterNormalTerminal: number,
+ *     nextRunSolvencyRate: number | null,
  *     crewRecoveryDebtDurations: Array<{ crewId: string, openedAtRun: number, clearedAtRun: number, tours: number }>,
  *     rivalIdsByRun: string[],
  *     sameRivalReturnRate: number,
@@ -322,6 +325,10 @@ export const runFreshCareerSequence = (
     firstNaturalLegendaryRun: null,
     signatureTraitUnlockRun: null,
     crewRecoveryDebtDurations: [],
+    normalTerminals: 0,
+    solventAfterNormalTerminal: 0,
+    insolventAfterNormalTerminalRuns: [],
+    nextRunSolvencyRate: null,
     rivalIdsByRun: [],
     sameRivalReturnRate: 0,
     maxNemesisLevel: 0,
@@ -625,6 +632,28 @@ export const runFreshCareerSequence = (
       })
     }
 
+    // Phase A solvency invariant: after a *normal* terminal - a Completion or
+    // a voluntary Extraction - the Career must be able to fund the cheapest
+    // legal next Expedition. Failure is allowed to break the guarantee; that
+    // is what makes it a failure. Measured rather than assumed, so the gate
+    // reports how often the loop actually stays playable.
+    const normalTerminal =
+      simResult.outcome === 'completed' || simResult.outcome === 'extracted'
+    const nextCost = estimateMinimumNextRunCost(state, profile)
+    if (normalTerminal) {
+      metrics.normalTerminals += 1
+      if (finiteNumberOr(state.player.money, 0) >= nextCost) {
+        metrics.solventAfterNormalTerminal += 1
+      } else {
+        metrics.insolventAfterNormalTerminalRuns.push({
+          run: runIdx,
+          outcome: simResult.outcome,
+          cash: finiteNumberOr(state.player.money, 0),
+          nextRunMinimumCost: nextCost
+        })
+      }
+    }
+
     // Close the run's cashflow row. The settlement is what the terminal
     // transition and the Career settlements moved after the run itself ended,
     // which is the component that decides whether a Tour funds the next one.
@@ -662,6 +691,11 @@ export const runFreshCareerSequence = (
       rivalIds.slice(1).filter(id => id === first).length /
       (rivalIds.length - 1)
   }
+
+  metrics.nextRunSolvencyRate =
+    metrics.normalTerminals === 0
+      ? null
+      : metrics.solventAfterNormalTerminal / metrics.normalTerminals
 
   const runsCompleted = runOutcomes.length
   metrics.betweenTourDecisionMean =

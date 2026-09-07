@@ -836,8 +836,8 @@ test('reckless_encore trades extraction retention for its Finale multiplier', ()
 
   const base = settleExpedition(state, 'extracted')
   const withDraft = settleExpedition(drafted, 'extracted')
-  assert.equal(base.retentionRate, 0.6)
-  assert.equal(withDraft.retentionRate, 0.6 * 0.85)
+  assert.equal(base.retentionRate, 0.7)
+  assert.equal(withDraft.retentionRate, 0.7 * 0.85)
   assert.ok(withDraft.moneyRetained < base.moneyRetained)
   assert.ok(withDraft.fameRetained < base.fameRetained)
 
