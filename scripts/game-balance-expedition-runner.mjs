@@ -33,6 +33,7 @@ import { getExpeditionCargoView } from '../src/domain/expedition/cargo.ts'
 import { getExpeditionNodeFogByNodeId } from '../src/domain/expedition/nodeFog.ts'
 import { isExpeditionSafeHarborWindow } from '../src/domain/expedition/legendaries.ts'
 import { ALL_VENUES } from '../src/data/venues.ts'
+import { SONGS_BY_ID } from '../src/data/songs.ts'
 import {
   buildGigStatsSnapshot,
   calculateAccuracy
@@ -63,6 +64,15 @@ import {
 } from '../src/context/actionCreators.ts'
 import { areBetweenTourDecisionsResolved } from '../src/domain/expedition/betweenTour.ts'
 import { getActiveAssetModifiers } from '../src/utils/assetSelectors.ts'
+import { deriveFinancials } from '../src/utils/postGig/derivations.ts'
+import { calculateContinueStats } from '../src/utils/postGig/performanceLogic.ts'
+import {
+  BALANCE_CONSTANTS,
+  calculateFameGain,
+  calculateFameLevel,
+  clampPlayerFame,
+  clampPlayerMoney
+} from '../src/utils/gameState/index.ts'
 import {
   calculateTravelExpenses,
   calculateTravelMinigameResult
@@ -591,8 +601,16 @@ export const revealCandidateIntel = (state, candidateNodeIds) => {
   }
 }
 
-/** Notes a simulated Gig attempts, fixed so a tier's miss count reflects its accuracy. */
-const SIMULATED_GIG_NOTE_COUNT = 200
+/**
+ * Fallback note count when a Gig has no resolvable setlist song.
+ *
+ * @remarks
+ * The real count comes from the committed song's own chart. A fixed number
+ * here would decide the miss total, and `MISS_TOLERANCE` is 8 against charts of
+ * 180-375 notes, so the note count drives the production performance penalty
+ * more than anything else the tier does.
+ */
+const FALLBACK_GIG_NOTE_COUNT = 200
 
 /** Spacing between simulated notes, in ms. Only relative timing matters here. */
 const SIMULATED_NOTE_SPACING_MS = 250
@@ -641,6 +659,12 @@ export const resolveSimulatedGigPerformance = (
   const baseHitWindow = rules.baseHitWindow ?? 120
   const guitarDifficulty = rules.guitarDifficulty ?? 1
   const crowdDecay = rules.crowdDecay ?? 1
+  // The chart the Gig actually plays decides the miss total, and the miss total
+  // dominates the production performance penalty.
+  const noteCount = Math.max(
+    1,
+    Math.round(finiteNumberOr(rules.noteCount, FALLBACK_GIG_NOTE_COUNT))
+  )
 
   const clampedAccuracy = Math.max(0, Math.min(100, gigAccuracy))
 
@@ -660,7 +684,7 @@ export const resolveSimulatedGigPerformance = (
   let failed = false
   let realizedHypeComboBonus = 0
 
-  for (let index = 0; index < SIMULATED_GIG_NOTE_COUNT; index++) {
+  for (let index = 0; index < noteCount; index++) {
     const laneIndex = SIMULATED_LANES[index % SIMULATED_LANES.length]
     const noteTime = index * SIMULATED_NOTE_SPACING_MS
     const hitWindow = calculateDynamicHitWindow(
@@ -1041,6 +1065,7 @@ export const runExpeditionSimulation = (
     crewStressMax: 0,
     crowdHypeMax: state.expedition.pressure?.crowdHype ?? 0,
     realizedHypeComboBonusTotal: 0,
+    gigNetTotal: 0,
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
     maxComboBest: 0,
@@ -1206,9 +1231,16 @@ export const runExpeditionSimulation = (
       // 2. SET_LAST_GIG_STATS, from the production snapshot builder so the
       // downstream reducers see hits, misses, combo and Hype rather than a
       // bare accuracy number.
+      // The song the build actually committed, so the miss count is a property
+      // of the chart the Gig plays rather than of a harness constant.
+      const playedSongId = state.setlist?.[0]?.id
+      const playedSong = playedSongId
+        ? SONGS_BY_ID.get(playedSongId)
+        : undefined
       const performance = resolveSimulatedGigPerformance(
         gigAccuracy,
-        state.expedition.routeStep
+        state.expedition.routeStep,
+        { noteCount: playedSong?.notes?.length }
       )
       const gigStats = performance.stats
       // Measured, not assumed: the score the combo term actually contributed
@@ -1223,14 +1255,68 @@ export const runExpeditionSimulation = (
       )
       state = gameReducer(state, {
         type: ActionTypes.SET_LAST_GIG_STATS,
-        payload: {
-          ...gigStats,
-          cashEarned: gigStats.failed ? 50 : 250,
-          fansEarned: gigStats.failed ? 0 : 50
-        }
+        payload: gigStats
       })
 
-      // 3. Obligations signal
+      // 3. Settle the Gig through the production payout owners.
+      //
+      // This was missing entirely. The runner staged a Gig and then moved on,
+      // so no Expedition run ever earned anything: `settlement` was 0 on every
+      // Career run and each Tour was pure cost. The `cashEarned: 250` the
+      // payload used to carry is read by nothing in `src/` - it simply
+      // evaporated - which made a release metric (Career solvency) depend on a
+      // formula the simulator never executed. `deriveFinancials` is the same
+      // owner the v14 harness and `usePostGigDerivations` both use, and
+      // `calculateContinueStats` is what turns it into money and Fame.
+      const financials = deriveFinancials({
+        currentGig: venue,
+        lastGigStats: gigStats,
+        perfScore: gigAccuracy,
+        gigModifiers: state.gigModifiers,
+        bandInventory: state.band.inventory,
+        bandMerchPrices: state.band.merchPrices ?? {},
+        bandGigModifier: state.band.gigModifier,
+        player: state.player,
+        social: state.social,
+        reputationByRegion: state.reputationByRegion ?? {},
+        activeStoryFlags: [],
+        gigContext: {
+          daysSinceLastGig:
+            finiteNumberOr(state.player.day, 0) -
+            finiteNumberOr(state.social.lastGigDay, state.player.day),
+          lastGigDifficulty: state.social.lastGigDifficulty ?? null
+        },
+        cityTraits: [],
+        assetModifiers: getActiveAssetModifiers(state.assets ?? []),
+        repeatDemandContext: undefined
+      })
+
+      if (financials) {
+        const continueStats = calculateContinueStats({
+          player: state.player,
+          perfScore: gigAccuracy,
+          financials,
+          misses: gigStats.misses,
+          bandStyle: state.band.style,
+          calculateFameGain,
+          calculateFameLevel,
+          clampPlayerFame,
+          clampPlayerMoney,
+          BALANCE_CONSTANTS
+        })
+        telemetry.gigNetTotal += finiteNumberOr(financials.net, 0)
+        state = {
+          ...state,
+          player: {
+            ...state.player,
+            money: continueStats.newMoney,
+            fame: continueStats.newFame,
+            fameLevel: continueStats.fameLevel
+          }
+        }
+      }
+
+      // 4. Obligations signal
       state = gameReducer(state, {
         type: ActionTypes.RECORD_EXPEDITION_OBLIGATION_SIGNAL,
         payload: {

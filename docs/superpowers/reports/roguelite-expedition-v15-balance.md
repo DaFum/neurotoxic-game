@@ -3,7 +3,7 @@
 **Correctness:** ❌ FAIL
 **Release evidence:** ⚠️ NOT RELEASE EVIDENCE
 **Release blocked by:** 2 hard correctness failure(s); run size 20 is below the release size 2000; 2 coverage shortfall(s); no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 4 unresolved balance corridor finding(s)
-**Generated At:** 2026-09-07T16:24:06.126Z
+**Generated At:** 2026-09-07T17:02:14.682Z
 **Profiles:** 6 mature archetypes
 **Sample Count Per Cohort:** 20
 
@@ -11,8 +11,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| Source fingerprint | `705d88d8be82d4dcd5f208cf0f0da6814e47e587243572a4348f1589dc7ac132` |
-| Generator fingerprint | `6062c1636e29dffdd68bf8efda15c8f3cf66dbb8b5445d51f01fa9f4ba15408d` |
+| Source fingerprint | `9aa9314440f71caf64537340c6420d1ebe29f95d1c76b56bb17bf4bf6c733b3e` |
+| Generator fingerprint | `791890da83cbc9cb984dfd042a09448223607058d511f31de50be1aa9758a183` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
 | Runs per scenario | 20 |
 | Working tree dirty | YES |
@@ -34,8 +34,8 @@ Every fixture value that can move a balance number, declared on the profile rath
 ## 1. Hard Correctness Failures
 
 **FAILURES DETECTED (2):**
-- ❌ Coverage shortfall: Task 12 six-run fresh-Career sequences (calibration) produced 1 of the expected 60 (59 of 60 sequences halted early: 59x start_refused_insufficient_career_funds)
-- ❌ Coverage shortfall: Task 12 six-run fresh-Career sequences (holdout) produced 0 of the expected 60 (60 of 60 sequences halted early: 60x start_refused_insufficient_career_funds)
+- ❌ Coverage shortfall: Task 12 six-run fresh-Career sequences (calibration) produced 10 of the expected 60 (50 of 60 sequences halted early: 50x start_refused_insufficient_career_funds)
+- ❌ Coverage shortfall: Task 12 six-run fresh-Career sequences (holdout) produced 6 of the expected 60 (54 of 60 sequences halted early: 54x start_refused_insufficient_career_funds)
 
 ## 1b. Soft Findings (tuneable, non-blocking)
 
@@ -70,10 +70,10 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 | Task 10 skill trios (holdout) | 120 | 120 |
 | Task 11 fog pairs (calibration, both sources) | 200 | 200 |
 | Task 11 fog pairs (holdout, both sources) | 200 | 200 |
-| Task 12 six-run fresh-Career sequences (calibration) | 1 | 60 |
-| ↳ *59 of 60 sequences halted early: 59x start_refused_insufficient_career_funds* | | |
-| Task 12 six-run fresh-Career sequences (holdout) | 0 | 60 |
-| ↳ *60 of 60 sequences halted early: 60x start_refused_insufficient_career_funds* | | |
+| Task 12 six-run fresh-Career sequences (calibration) | 10 | 60 |
+| ↳ *50 of 60 sequences halted early: 50x start_refused_insufficient_career_funds* | | |
+| Task 12 six-run fresh-Career sequences (holdout) | 6 | 60 |
+| ↳ *54 of 60 sequences halted early: 54x start_refused_insufficient_career_funds* | | |
 
 ## 2. Single-Run Calibration Corridors
 
@@ -81,12 +81,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 45.0% | 55.0% | 0.0% | 6.7 | $489355 | 150 |
-| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487028 | 150 |
-| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.2 | $493167 | 150 |
-| `scout_intel` | 30.0% | 70.0% | 0.0% | 6.0 | $493275 | 150 |
-| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491346 | 777 |
-| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.7 | $493852 | 150 |
+| `clean_sponsor` | 45.0% | 55.0% | 0.0% | 6.7 | $490351 | 7119 |
+| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $482626 | 21443 |
+| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.2 | $493112 | 4485 |
+| `scout_intel` | 30.0% | 70.0% | 0.0% | 6.0 | $493865 | 7975 |
+| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $487800 | 15753 |
+| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.7 | $490353 | 10751 |
 
 ## 3. Single-Run Holdout Confirmation
 
@@ -94,12 +94,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 60.0% | 40.0% | 0.0% | 7.2 | $489398 | 150 |
-| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $487091 | 150 |
-| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.3 | $492983 | 150 |
-| `scout_intel` | 25.0% | 75.0% | 0.0% | 6.0 | $493251 | 150 |
-| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $491400 | 777 |
-| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.8 | $493873 | 150 |
+| `clean_sponsor` | 60.0% | 40.0% | 0.0% | 7.2 | $490760 | 8604 |
+| `underground_heat` | 100.0% | 0.0% | 0.0% | 8.0 | $482888 | 21208 |
+| `diy_repair` | 0.0% | 100.0% | 0.0% | 4.3 | $492950 | 4485 |
+| `scout_intel` | 25.0% | 75.0% | 0.0% | 6.0 | $493750 | 8051 |
+| `high_exposure_performance` | 100.0% | 0.0% | 0.0% | 6.0 | $488188 | 15211 |
+| `rival_hunter` | 40.0% | 60.0% | 0.0% | 6.8 | $490058 | 11619 |
 
 ## 3b. Strategy Dominance
 
@@ -121,7 +121,7 @@ Evaluated 120 calibration and 120 holdout matched window decisions under identic
 
 ## 5. Matched Skill-vs-Management Probe
 
-Evaluated undefined matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).
+Evaluated 120 calibration and 120 holdout matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).
 - Proves higher player skill significantly increases Gig rewards and lowers wear/repair burdens while management choices remain decisive.
 
 ## 6. Matched Hybrid-Fog Counterfactuals
@@ -145,126 +145,126 @@ Evaluated 120 progression sequences (60 calibration, 60 holdout) starting with Z
 
 | Profile | Seed | Runs Requested | Runs Funded | Halted At | Reason |
 | :--- | ---: | ---: | ---: | ---: | :--- |
-| `clean_sponsor` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1084131028 | 6 | 6 | — | completed all runs |
 | `clean_sponsor` | 1100908647 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 1117686266 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 1134463885 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 1017020552 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 1033798171 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1134463885 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 1033798171 | 6 | 6 | — | completed all runs |
 | `clean_sponsor` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 1067353409 | 6 | 6 | — | completed all runs |
+| `clean_sponsor` | 1067353409 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 966687695 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1100908647 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1117686266 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1134463885 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1033798171 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 1084131028 | 6 | 6 | — | completed all runs |
+| `underground_heat` | 1100908647 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 1134463885 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 1017020552 | 6 | 6 | — | completed all runs |
+| `underground_heat` | 1033798171 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `underground_heat` | 1050575790 | 6 | 6 | — | completed all runs |
 | `underground_heat` | 1067353409 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `underground_heat` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 966687695 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 1084131028 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `diy_repair` | 1100908647 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `underground_heat` | 949910076 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `underground_heat` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `diy_repair` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 1100908647 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
 | `diy_repair` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `diy_repair` | 1134463885 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 1134463885 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `diy_repair` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `diy_repair` | 1033798171 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `diy_repair` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 1067353409 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `diy_repair` | 1067353409 | 6 | 6 | — | completed all runs |
 | `diy_repair` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 966687695 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `scout_intel` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `scout_intel` | 1100908647 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 1117686266 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `scout_intel` | 1100908647 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `scout_intel` | 1134463885 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `scout_intel` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `scout_intel` | 1033798171 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 1050575790 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `scout_intel` | 1033798171 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `scout_intel` | 1067353409 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 949910076 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 966687695 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1100908647 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1117686266 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1134463885 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1017020552 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1033798171 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1050575790 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 1067353409 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1084131028 | 6 | 6 | — | completed all runs |
+| `high_exposure_performance` | 1100908647 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1134463885 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1033798171 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 1067353409 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 966687695 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1084131028 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1100908647 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1117686266 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1134463885 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1017020552 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1033798171 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 1050575790 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 1084131028 | 6 | 6 | — | completed all runs |
+| `rival_hunter` | 1100908647 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 1117686266 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 1134463885 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 1017020552 | 6 | 6 | — | completed all runs |
+| `rival_hunter` | 1033798171 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 1050575790 | 6 | 6 | — | completed all runs |
 | `rival_hunter` | 1067353409 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 949910076 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 966687695 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 949910076 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 966687695 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `clean_sponsor` | 214858220 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 265191077 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 164525363 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 147747744 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 198080601 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 181302982 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 365856791 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `clean_sponsor` | 349079172 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `underground_heat` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 214858220 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 265191077 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 164525363 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 365856791 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `clean_sponsor` | 349079172 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `underground_heat` | 231635839 | 6 | 6 | — | completed all runs |
+| `underground_heat` | 214858220 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `underground_heat` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `underground_heat` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 164525363 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `underground_heat` | 147747744 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 181302982 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 365856791 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `underground_heat` | 349079172 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `underground_heat` | 164525363 | 6 | 6 | — | completed all runs |
+| `underground_heat` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 198080601 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `underground_heat` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `underground_heat` | 365856791 | 6 | 6 | — | completed all runs |
+| `underground_heat` | 349079172 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `diy_repair` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 214858220 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 265191077 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 214858220 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `diy_repair` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `diy_repair` | 248413458 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `diy_repair` | 164525363 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `diy_repair` | 147747744 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `diy_repair` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `diy_repair` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `diy_repair` | 365856791 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `diy_repair` | 349079172 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `scout_intel` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `diy_repair` | 365856791 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `diy_repair` | 349079172 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `scout_intel` | 231635839 | 6 | 6 | — | completed all runs |
 | `scout_intel` | 214858220 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `scout_intel` | 265191077 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 164525363 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 147747744 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `scout_intel` | 198080601 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `scout_intel` | 181302982 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `scout_intel` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 164525363 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `scout_intel` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `scout_intel` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 | `scout_intel` | 365856791 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `scout_intel` | 349079172 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 231635839 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 214858220 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 265191077 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 214858220 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
 | `high_exposure_performance` | 164525363 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 147747744 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 181302982 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 365856791 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `high_exposure_performance` | 349079172 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 231635839 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 214858220 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 265191077 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 248413458 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 164525363 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 147747744 | 6 | 3 | 4 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 198080601 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 181302982 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 365856791 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
-| `rival_hunter` | 349079172 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 198080601 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 365856791 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `high_exposure_performance` | 349079172 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 231635839 | 6 | 6 | — | completed all runs |
+| `rival_hunter` | 214858220 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 265191077 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 248413458 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 164525363 | 6 | 2 | 3 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 147747744 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 198080601 | 6 | 5 | 6 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 181302982 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
+| `rival_hunter` | 365856791 | 6 | 6 | — | completed all runs |
+| `rival_hunter` | 349079172 | 6 | 1 | 2 | start_refused_insufficient_career_funds |
 
 ## 8. Late-Game Legendary Edge Coverage
 
