@@ -38,7 +38,7 @@ import { validateExpeditionBuildCommitment } from '../../src/domain/expedition/l
 import { isCrewAvailable } from '../../src/domain/expedition/crew'
 import { buildPreparedExpeditionSponsorOffers } from '../../src/domain/expedition/sponsors'
 import { resolveExpeditionInspection } from '../../src/domain/expedition/inspections'
-import { applyExpeditionPressureEventResolution } from '../../src/domain/expedition/pressure'
+import { resolveExpeditionPressureDirectorStep } from '../../src/domain/expedition/pressure'
 import { selectExpeditionRivalForRun } from '../../src/domain/expedition/rivals'
 import { startedState } from '../expeditionLifecycleFixture.js'
 
@@ -76,7 +76,12 @@ const CAPABILITY_CONSUMERS = new Map([
   ['advanced_inspection', resolveExpeditionInspection],
   ['premium_sponsor_pool', buildPreparedExpeditionSponsorOffers],
   ['performance_contract_pool', getAvailableNativeContractTemplateIds],
-  ['black_market_content', applyExpeditionPressureEventResolution],
+  // The *pre-selection* gate, not the resolution-side one: the Director filters
+  // `isEligible` before it spends the step's single draw, so a fresh Career
+  // never has the Underground invite surfaced at all. Checking only at
+  // resolution would let the event be selected and shown first, which is the
+  // content `underground_network` is charging for.
+  ['black_market_content', resolveExpeditionPressureDirectorStep],
   ['rival_quest_continuation', selectExpeditionRivalForRun]
 ])
 
@@ -437,6 +442,47 @@ describe('G5 — every sold capability is authoritative somewhere', () => {
         )
       }
     }
+  })
+
+  it('never surfaces the Underground invite to a fresh Career', () => {
+    // The binding above names the Director, so this asserts the Director's own
+    // behaviour: the invite is filtered out *before* the step's single draw,
+    // not refused after being shown. Every seed and step, because the pool
+    // gate is seeded and a single sample would prove nothing.
+    const invite = 'expedition_underground_invite'
+    const runIn = setIds => {
+      const base = startedState({ money: 5000 })
+      return {
+        ...base,
+        career: { ...base.career, unlockedSetIds: setIds }
+      }
+    }
+    const surfaced = (state, routeStep) =>
+      resolveExpeditionPressureDirectorStep({
+        ...state,
+        expedition: { ...state.expedition, routeStep }
+      }).pendingDirectorEventId
+
+    const fresh = runIn([])
+    for (let routeStep = 0; routeStep < 9; routeStep += 1) {
+      assert.notEqual(
+        surfaced(fresh, routeStep),
+        invite,
+        `step ${routeStep} surfaced the invite to a Career that owns nothing`
+      )
+    }
+    // Owned, and the Director may spend a step on it. Asserted as "some step
+    // can" rather than "this step does": selection is weighted, so pinning one
+    // step would test the seed instead of the gate.
+    const owning = runIn(['underground_network'])
+    const steps = []
+    for (let routeStep = 0; routeStep < 40; routeStep += 1) {
+      steps.push(surfaced(owning, routeStep))
+    }
+    assert.ok(
+      steps.includes(invite),
+      'the invite must be reachable once the set is owned'
+    )
   })
 
   it('gates industrial_belt rather than handing it out free', () => {
