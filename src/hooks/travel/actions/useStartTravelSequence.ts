@@ -16,15 +16,16 @@ interface UseStartTravelSequenceParams
 }
 
 /**
- * Initializes and executes a node-to-node travel sequence.
+ * Prepares travel initiation and hands off control to the travel minigame.
  *
  * @remarks
- * Verifies audio context availability before emitting travel sound effects, then
- * transitions the game map out of idle state into the active minigame. Gracefully
- * catches setup errors and resets travel flags.
+ * Applies a local UI lock and asynchronously attempts to emit travel SFX,
+ * immediately calling `onStartTravelMinigame` to initiate the actual travel
+ * minigame. Note that fuel, cost, and location settlement are strictly handled
+ * later by `handleCompleteTravelMinigame`.
  *
  * @param params - Configuration parameters injecting map references, setters, and external callbacks.
- * @returns A callback that triggers the travel transition to the specified target node.
+ * @returns A callback that triggers the minigame handoff for the specified target node.
  */
 export const useStartTravelSequence = ({
   refs,
