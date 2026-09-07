@@ -425,6 +425,70 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   // evidence matrix was still missing - the counts are part of the claim, not
   // an implementation detail of how long the run took.
   const profileCount = EXPEDITION_BALANCE_PROFILES.length
+
+  /**
+   * Extraction coverage counted per profile and per legal window.
+   *
+   * @param {'calibration' | 'holdout'} cohort
+   */
+  const extractionCoverageFor = cohort =>
+    extractionProfiles.map(profile => {
+      const entries = extractionResults[cohort].filter(
+        entry => entry.profileId === profile.id
+      )
+      /** @type {Map<number, number>} */
+      const byWindow = new Map()
+      for (const entry of entries) {
+        for (const window of entry.pair?.windows ?? []) {
+          byWindow.set(
+            window.windowRouteStep,
+            (byWindow.get(window.windowRouteStep) ?? 0) + 1
+          )
+        }
+      }
+      // The scarcest window decides the profile's coverage: a requirement met
+      // only at the window every run happens to reach is not met.
+      const scarcest =
+        byWindow.size === 0 ? 0 : Math.min(...byWindow.values())
+      return {
+        label: `Task 9 extraction pairs (${cohort}, ${profile.id}, scarcest of ${byWindow.size} window(s))`,
+        actual: scarcest,
+        expected: probeCount
+      }
+    })
+
+  const extractionWindowCoverage = [
+    ...extractionCoverageFor('calibration'),
+    ...extractionCoverageFor('holdout')
+  ]
+
+  const careerCompletionCoverage = ['calibration', 'holdout'].map(cohort => {
+    const sequences = careerResults[cohort]
+    const complete = sequences.filter(
+      sequence => sequence.runsCompleted === sequence.runsRequested
+    )
+    // A shortfall here is an economy result, not a harness misconfiguration:
+    // the sequences ran, they just could not fund six Tours. Naming the halt
+    // reason keeps the report from reading like a broken generator.
+    const halts = new Map()
+    for (const sequence of sequences) {
+      if (sequence.haltReason === null) continue
+      halts.set(sequence.haltReason, (halts.get(sequence.haltReason) ?? 0) + 1)
+    }
+    const haltSummary = [...halts.entries()]
+      .map(([reason, count]) => `${count}x ${reason}`)
+      .join(', ')
+    return {
+      label: `Task 12 six-run fresh-Career sequences (${cohort})`,
+      actual: complete.length,
+      expected: careerSequenceCount * careerProfiles.length,
+      note:
+        halts.size === 0
+          ? null
+          : `${sequences.length - complete.length} of ${sequences.length} sequences halted early: ${haltSummary}`
+    }
+  })
+
   const expectedCoverage = [
     {
       label: 'Task 8 calibration cohort',
@@ -436,16 +500,11 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       actual: holdoutCohort ? sampleCount : 0,
       expected: sampleCount
     },
-    {
-      label: 'Task 9 extraction pairs (calibration)',
-      actual: extractionResults.calibration.length,
-      expected: probeCount * extractionProfiles.length
-    },
-    {
-      label: 'Task 9 extraction pairs (holdout)',
-      actual: extractionResults.holdout.length,
-      expected: probeCount * extractionProfiles.length
-    },
+    // Task 9 binds 2,000 matched pairs per profile *per window*, not per seed.
+    // Counting result objects reported full coverage even when a legal
+    // extraction window had almost no pairs behind it, because one object can
+    // carry anywhere from zero to several windows.
+    ...extractionWindowCoverage,
     {
       label: 'Task 10 skill trios (calibration)',
       actual: skillResults.calibration.length,
@@ -466,23 +525,18 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       actual: fogResults.holdout.length,
       expected: probeCount * fogProfiles.length * 2
     },
-    {
-      label: 'Task 12 fresh-Career sequences (calibration)',
-      actual: careerResults.calibration.length,
-      expected: careerSequenceCount * careerProfiles.length
-    },
-    {
-      label: 'Task 12 fresh-Career sequences (holdout)',
-      actual: careerResults.holdout.length,
-      expected: careerSequenceCount * careerProfiles.length
-    }
+    // Task 12 binds 1,000 *six-run* sequences. A Career that halts after run 2
+    // is a real finding, but it is not one of the six-run sequences the
+    // progression-timing evidence is made of, so it cannot count toward the
+    // requirement.
+    ...careerCompletionCoverage
   ]
   const coverageShortfalls = expectedCoverage.filter(
     entry => entry.actual < entry.expected
   )
   for (const shortfall of coverageShortfalls) {
     hardFailures.push(
-      `Coverage shortfall: ${shortfall.label} produced ${shortfall.actual} of the expected ${shortfall.expected}`
+      `Coverage shortfall: ${shortfall.label} produced ${shortfall.actual} of the expected ${shortfall.expected}${shortfall.note ? ` (${shortfall.note})` : ''}`
     )
   }
   // A reduced matrix is legitimate under `--quick`. It is not a correctness
@@ -700,6 +754,9 @@ export function formatMarkdownReport(data) {
   md += `| :--- | ---: | ---: |\n`
   for (const entry of coverage.expected) {
     md += `| ${entry.label} | ${entry.actual} | ${entry.expected} |\n`
+    if (entry.note) {
+      md += `| ↳ *${entry.note}* | | |\n`
+    }
   }
   md += `\n`
 

@@ -198,7 +198,8 @@ describe('Expedition Balance Profiles (G6 Tasks 1-3)', () => {
         money: 500000,
         fame: 150,
         memberSkills: { tech: 5, technical: 5, charisma: 5 },
-        vanUpgrades: []
+        vanUpgrades: [],
+        startingVanFuel: 70
       }
     }
 
@@ -245,6 +246,40 @@ describe('Expedition Balance Profiles (G6 Tasks 1-3)', () => {
       assert.equal(profile.matureFixture.version, MATURE_FIXTURE_VERSION)
       assert.ok(profile.matureFixture.money >= 0)
       assert.ok(Array.isArray(profile.matureFixture.vanUpgrades))
+      // Fuel is one of the inputs Task 2 forbids defaulting, and it has to
+      // leave room for the build's own top-up to be a real charge.
+      assert.ok(
+        profile.matureFixture.startingVanFuel <= profile.startingFuelTarget
+      )
+    }
+  })
+
+  it('rejects an undeclared or illegal starting fuel', () => {
+    const base = EXPEDITION_BALANCE_PROFILES[0]
+    const withoutFuel = { ...base, matureFixture: { ...base.matureFixture } }
+    delete withoutFuel.matureFixture.startingVanFuel
+    assert.throws(
+      () => validateExpeditionBalanceProfile(withoutFuel),
+      /startingVanFuel must be a finite number/
+    )
+    assert.throws(
+      () =>
+        validateExpeditionBalanceProfile({
+          ...base,
+          matureFixture: { ...base.matureFixture, startingVanFuel: 100 },
+          startingFuelTarget: 90
+        }),
+      /exceeds startingFuelTarget/
+    )
+  })
+
+  it('starts the mature van at exactly the declared fuel', () => {
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      const active = buildProductionSimulationLoadout(null, profile, 4242)
+      assert.equal(
+        active.expedition.provenance.matureFixture.startingVanFuel,
+        profile.matureFixture.startingVanFuel
+      )
     }
   })
 

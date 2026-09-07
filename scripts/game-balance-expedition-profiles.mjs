@@ -230,6 +230,22 @@ export const validateExpeditionBalanceProfile = profile => {
       `Profile ${profile.id}: matureFixture.vanUpgrades must be an array of strings`
     )
   }
+  if (
+    !isFiniteNumber(fixture.startingVanFuel) ||
+    fixture.startingVanFuel < 0 ||
+    fixture.startingVanFuel > 100
+  ) {
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.startingVanFuel must be a finite number in 0..100`
+    )
+  }
+  // A build may only top the tank up, so a declared level above the committed
+  // target would make the loadout illegal rather than merely odd.
+  if (fixture.startingVanFuel > profile.startingFuelTarget) {
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.startingVanFuel ${fixture.startingVanFuel} exceeds startingFuelTarget ${profile.startingFuelTarget}`
+    )
+  }
 
   if (!Array.isArray(profile.requiredModuleIds)) {
     throw new Error(`Profile ${profile.id}: requiredModuleIds must be an array`)
@@ -381,6 +397,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 80,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -426,6 +448,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 85,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -472,6 +500,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 75,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -509,6 +543,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 70,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -557,6 +597,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 80,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -603,6 +649,12 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
       money: 500000,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
+      // Declared, not derived. Task 2 lists Fuel among the inputs that may
+      // not have a hidden builder default: this value decides the START
+      // top-up charge and therefore retained Cash. It is the committed
+      // target minus the 10 litres the builder used to subtract
+      // implicitly, so the balance corridors are unchanged.
+      startingVanFuel: 85,
       vanUpgrades: Object.freeze([
         'stage_monitors',
         'amp_overdrive',
@@ -678,14 +730,12 @@ export const buildProductionSimulationLoadout = (
   state.player.money = matureFixture.money
   state.player.fame = matureFixture.fame
   if (!state.player.van) {
-    state.player.van = { fuel: 50, condition: 100, maxFuel: 100, upgrades: [] }
+    state.player.van = { fuel: 0, condition: 100, maxFuel: 100, upgrades: [] }
   }
-  // Below the committed target, so START's top-up is a real charge rather than
-  // a no-op against an already-full tank.
-  state.player.van.fuel = Math.min(
-    state.player.van.fuel ?? 50,
-    profile.startingFuelTarget - 10
-  )
+  // Applied exactly as declared. Deriving `target - 10` here made the START
+  // top-up charge - and so retained Cash - depend on a constant the profile
+  // never stated.
+  state.player.van.fuel = matureFixture.startingVanFuel
   if (state.band?.members) {
     for (const member of state.band.members) {
       if (member) {
@@ -1091,6 +1141,7 @@ export const buildProductionSimulationLoadout = (
       fame: matureFixture.fame,
       memberSkills: { ...matureFixture.memberSkills },
       vanUpgrades: [...matureFixture.vanUpgrades],
+      startingVanFuel: matureFixture.startingVanFuel,
       resolvedVanUpgrades: [...(state.player?.van?.upgrades ?? [])],
       resolvedStartingVanFuel: state.player?.van?.fuel ?? null
     }

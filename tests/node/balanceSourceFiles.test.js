@@ -64,7 +64,37 @@ const REQUIRED_SOURCES = [
   // semantics decide which venues are reached and which arrivals pay at all.
   'src/utils/mapGenerator.ts',
   'src/utils/arrivalUtils.ts',
-  'src/data/venues.ts'
+  'src/data/venues.ts',
+  // Roguelite Expedition (G1-G5). The v15 report and the runtime pacing gate
+  // are fingerprinted against this hash, so an Expedition owner that can move
+  // pacing or retained Cash has to be in it - otherwise a captured playtest
+  // stays "current" across a change that invalidated it.
+  'src/domain/expedition/map.ts',
+  'src/domain/expedition/travel.ts',
+  'src/domain/expedition/loadout.ts',
+  'src/domain/expedition/condition.ts',
+  'src/domain/expedition/repairs.ts',
+  'src/domain/expedition/cargo.ts',
+  'src/domain/expedition/effectiveRules.ts',
+  'src/domain/expedition/routeProfile.ts',
+  'src/domain/expedition/nodeFog.ts',
+  'src/domain/expedition/nodeIntel.ts',
+  'src/domain/expedition/extraction.ts',
+  'src/domain/expedition/pressure.ts',
+  'src/domain/expedition/sponsors.ts',
+  'src/domain/expedition/contracts.ts',
+  'src/domain/expedition/legendaries.ts',
+  'src/domain/expedition/meta.ts',
+  'src/data/expedition/tourTypes.ts',
+  'src/data/expedition/regions.ts',
+  'src/data/expedition/contracts.ts',
+  'src/data/expedition/crew.ts',
+  'src/data/expedition/unlockSets.ts',
+  'src/data/expedition/hqFacilities.ts',
+  'src/data/expedition/starterPerks.ts',
+  'src/context/reducers/expeditionReducer.ts',
+  'src/context/reducers/minigameReducer.ts',
+  'src/utils/gigStats.ts'
 ]
 
 REQUIRED_SOURCES.forEach(relativePath => {
@@ -277,4 +307,32 @@ test('the working-tree flag ignores pending report artifacts', t => {
     true,
     'An uncommitted source edit must mark the tree dirty'
   )
+})
+
+test('an edit to an Expedition owner changes the published source hash', async () => {
+  // The concrete risk the list exists to close: `travel.ts` decides fuel and
+  // vehicle wear per leg, so it moves pacing and retained Cash. If it were
+  // unhashed, a captured playtest cohort would keep validating against a build
+  // whose travel economy had already changed.
+  const target = path.join(ROOT, 'src/domain/expedition/travel.ts')
+  const original = await fs.promises.readFile(target, 'utf8')
+  const before = await getBalanceSourceHash(ROOT)
+  try {
+    await fs.promises.writeFile(
+      target,
+      `${original}
+// balance-hash probe
+`,
+      'utf8'
+    )
+    const after = await getBalanceSourceHash(ROOT)
+    assert.notEqual(
+      after,
+      before,
+      'editing src/domain/expedition/travel.ts must change the balance source hash'
+    )
+  } finally {
+    await fs.promises.writeFile(target, original, 'utf8')
+  }
+  assert.equal(await getBalanceSourceHash(ROOT), before)
 })
