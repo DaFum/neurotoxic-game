@@ -1030,8 +1030,11 @@ export const runExpeditionSimulation = (
     repairSpend: 0,
     defectsRevealed: 0,
     defectsTriggered: 0,
+    // What the profile asked for vs what the committed build actually holds.
+    // Reporting the request as the purchase meant a profile whose insurance
+    // never made it into the loadout still read as insured.
     insuranceOffered: Boolean(profile.insurancePolicyId),
-    insuranceBought: Boolean(profile.insurancePolicyId),
+    insuranceBought: Boolean(state.expedition.loadout?.insurancePolicyId),
     insuranceClaimed: false,
     authoritySafeExitsOffered: 0,
     authoritySafeExitsUsed: 0,
@@ -1041,7 +1044,9 @@ export const runExpeditionSimulation = (
     toxicModeTriggers: 0,
     gigMissesTotal: 0,
     maxComboBest: 0,
-    sponsorAccepted: Boolean(profile.sponsorPolicy !== 'none'),
+    sponsorAccepted: (state.expedition.activeObligations ?? []).some(
+      obligation => obligation.sourceType === 'brandDeal'
+    ),
     rivalId: state.rivalBand?.id ?? null,
     meaningfulNodesVisited: 0,
     routeDepth: 0,

@@ -17,6 +17,9 @@ import { gameReducer } from '../src/context/gameReducer.ts'
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { revealExpeditionNodeIntel } from '../src/context/expeditionActionCreators.ts'
 import { getExpeditionNodeFogByNodeId } from '../src/domain/expedition/nodeFog.ts'
+// The production threshold itself, not a copy: a probe that hardcoded 50 would
+// keep reporting a "reputation counterfactual" after the real gate moved.
+import { REGION_FAMILIARITY_REPUTATION } from '../src/domain/expedition/nodeIntel.ts'
 import {
   evaluateCandidateNode,
   runExpeditionSimulation
@@ -33,16 +36,6 @@ export const FOG_REPUTATION_HOLDOUT_NAMESPACE =
 
 /** The two intel sources Task 11 requires a separate cohort for. */
 export const FOG_INTEL_SOURCES = Object.freeze(['scout_recon', 'reputation'])
-
-/**
- * Region reputation at or above which one node per route step reads at level 1.
- *
- * @remarks
- * Mirrors `REGION_FAMILIARITY_REPUTATION` in `src/domain/expedition/nodeIntel.ts`,
- * which is not exported. The probe asserts the production capability actually
- * flips across this value rather than trusting the constant.
- */
-const REGION_FAMILIARITY_REPUTATION = 50
 
 /**
  * The projection fields a given intel level actually exposes.
@@ -308,12 +301,18 @@ export const runFogProbeCohort = (profiles, seeds, source = 'scout_recon') => {
     }
   }
 
-  const n = pairs.length || 1
+  // Unmatched pairs (fewer than two candidates at the decision point) are
+  // skipped by the `continue` above, so counting them in the denominator
+  // reported a near-zero information effect that was purely an artifact of how
+  // many seeds produced a branch at all.
+  const matchedPairs = pairs.filter(pair => pair.matchedDecisionFound).length
+  const n = matchedPairs || 1
   return {
     source,
     totalPairs: pairs.length,
+    matchedPairs,
     routeChangedCount,
-    routeChangedRate: routeChangedCount / n,
+    routeChangedRate: matchedPairs === 0 ? null : routeChangedCount / n,
     revealUsedCount,
     revealAtDecisionCount,
     // Task 11's blocking fidelity signal: the reveal system produced
@@ -324,8 +323,8 @@ export const runFogProbeCohort = (profiles, seeds, source = 'scout_recon') => {
       revealAtDecisionCount === 0
         ? 0
         : revealUsedRouteUnchangedCount / revealAtDecisionCount,
-    meanDeltaMoney: totalDeltaMoney / n,
-    meanDeltaFame: totalDeltaFame / n,
+    meanDeltaMoney: matchedPairs === 0 ? null : totalDeltaMoney / n,
+    meanDeltaFame: matchedPairs === 0 ? null : totalDeltaFame / n,
     pairs
   }
 }

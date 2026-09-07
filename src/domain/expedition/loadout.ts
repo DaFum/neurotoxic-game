@@ -47,7 +47,8 @@ import type {
   ExpeditionBuildRejectionReason,
   ExpeditionBuildValidation,
   ExpeditionLoadout,
-  ExpeditionMap
+  ExpeditionMap,
+  ExpeditionSponsorStagingProvenance
 } from '../../types/expedition'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { buildPreparedExpeditionSponsorOffers } from './sponsors'
@@ -251,9 +252,7 @@ export const getAvailableExpeditionRegionIds = (
  */
 export const isExpeditionStagingRouteAvailable = (
   state: GameState,
-  provenance:
-    | { regionId: string; tourTypeId: string; starterPerkId: string | null }
-    | undefined
+  provenance: ExpeditionSponsorStagingProvenance | undefined
 ): boolean => {
   if (!provenance) return false
   if (!getAvailableExpeditionRegionIds(state).includes(provenance.regionId)) {

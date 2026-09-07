@@ -219,11 +219,19 @@ describe('TourPrep scene', () => {
     // Tour and one Region, so every click on those buttons silently discarded
     // the player's picks.
     const base = buildState()
+    base.career = { ...base.career, unlockedSetIds: ['festival_network'] }
+    // Staged for the route the scene actually opens on. Calling the builder
+    // with only `state` resolves the baseline profile, which is exactly the
+    // mismatch its own docstring warns about.
     base.expedition = {
       ...base.expedition,
-      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(
+        base,
+        'home_turf',
+        'standard_tour',
+        null
+      )
     }
-    base.career = { ...base.career, unlockedSetIds: ['festival_network'] }
     state.current = base
     render(<TourPrep />)
 

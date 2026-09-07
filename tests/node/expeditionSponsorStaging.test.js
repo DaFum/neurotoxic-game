@@ -19,7 +19,15 @@ import {
   createPrepareExpeditionSponsorOffersAction,
   prepareExpeditionSponsorOffers
 } from '../../src/context/expeditionActionCreators.ts'
-import { getCanonicalBrandDealTermsHash } from '../../src/domain/expedition/sponsors.ts'
+import {
+  getCanonicalBrandDealTermsHash,
+  buildPreparedExpeditionSponsorOffers,
+  MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS
+} from '../../src/domain/expedition/sponsors.ts'
+import {
+  getAvailableExpeditionRegionIds,
+  getAvailableExpeditionTourTypeIds
+} from '../../src/domain/expedition/loadout.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../../src/data/expedition/unlockSets.ts'
 import {
   FIXTURE_REGION_ID,
@@ -340,6 +348,36 @@ describe('G4 Sponsor Offer Staging & Snapshot Validation', () => {
 
     assert.deepEqual(loaded.expedition.preparedSponsorOffers, [])
     assert.equal(loaded.expedition.preparedSponsorProvenance, undefined)
+  })
+
+  it('sanitizes up to the producer ceiling, not a smaller literal', () => {
+    // The load sanitizer used to truncate at a hardcoded 3 while
+    // `buildPreparedExpeditionSponsorOffers` can compute a count of 4 (base 3
+    // plus one on a Contract-heavy route). Today's deal pool never reaches 4,
+    // so nothing is being truncated - but the coupling was latent: the moment
+    // it did, the reloaded snapshot would fail its own reproduction check and
+    // `validatePreparedExpeditionSponsorOffers` would clear the staging and
+    // provenance outright.
+    assert.ok(MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS >= 4)
+
+    const prep = withExpeditionCapabilities(
+      preparedState(),
+      Object.keys(EXPEDITION_UNLOCK_SETS)
+    )
+    for (const regionId of getAvailableExpeditionRegionIds(prep)) {
+      for (const tourTypeId of getAvailableExpeditionTourTypeIds(prep)) {
+        const staged = buildPreparedExpeditionSponsorOffers(
+          prep,
+          regionId,
+          tourTypeId,
+          null
+        )
+        assert.ok(
+          staged.length <= MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS,
+          `${regionId}/${tourTypeId} stages ${staged.length}, above the sanitizer bound`
+        )
+      }
+    }
   })
 
   it('rejects PREPARE_EXPEDITION_SPONSOR_OFFERS for locked or invalid route and perks', () => {

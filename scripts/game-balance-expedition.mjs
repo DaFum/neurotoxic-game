@@ -42,7 +42,10 @@ import { verifyLegendaryEdgeActivations } from './game-balance-expedition-legend
 import {
   summarizeRuntimeDurations,
   loadCapturedRuntimeEvidence,
-  RUNTIME_EVIDENCE_RELATIVE_PATH
+  RUNTIME_EVIDENCE_RELATIVE_PATH,
+  MIN_RUNTIME_SAMPLES,
+  TARGET_CORRIDOR_MIN_MINUTES,
+  TARGET_CORRIDOR_MAX_MINUTES
 } from './game-balance-expedition-runtime.mjs'
 import { buildArtifactMetadata } from './utils/balance-report-metadata.mjs'
 import { createInitialState } from '../src/context/initialState.ts'
@@ -557,15 +560,52 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   // is release evidence only once the full matrix and real pacing samples back
   // it.
   const passed = hardFailures.length === 0
-  const releaseEligible =
-    passed &&
-    isReleaseRun &&
-    coverageShortfalls.length === 0 &&
-    capturedRuntime.ok
+  // Enumerated rather than a boolean chain, so the artifact can say which
+  // condition is missing. `capturedRuntime.ok` alone only proves the evidence
+  // file is well-formed and fingerprint-matched - it accepts a single sample -
+  // so on its own it let one runtime row flip the verdict while the corridor
+  // findings still stood and the median sat outside the target window.
+  /** @type {string[]} */
+  const releaseBlockers = []
+  if (!passed) {
+    releaseBlockers.push(
+      `${hardFailures.length} hard correctness failure(s)`
+    )
+  }
+  if (!isReleaseRun) {
+    releaseBlockers.push(
+      `run size ${sampleCount} is below the release size ${RELEASE_SAMPLE_COUNT}`
+    )
+  }
+  if (coverageShortfalls.length > 0) {
+    releaseBlockers.push(
+      `${coverageShortfalls.length} coverage shortfall(s)`
+    )
+  }
+  if (!capturedRuntime.ok) {
+    releaseBlockers.push(`no usable pacing evidence: ${capturedRuntime.reason}`)
+  } else if (capturedRuntime.samples.length < MIN_RUNTIME_SAMPLES) {
+    // The master plan holds the real-duration target soft "until at least 20
+    // valid runtime samples exist", so fewer than that is not yet evidence.
+    releaseBlockers.push(
+      `only ${capturedRuntime.samples.length} captured runtime sample(s), ${MIN_RUNTIME_SAMPLES} required`
+    )
+  } else if (!runtimeSummary.inTargetCorridor) {
+    releaseBlockers.push(
+      `median ${runtimeSummary.medianMinutes} min is outside the ${TARGET_CORRIDOR_MIN_MINUTES}-${TARGET_CORRIDOR_MAX_MINUTES} min corridor (${runtimeSummary.corridorStatus})`
+    )
+  }
+  if (dominance.corridorFindings.length > 0) {
+    releaseBlockers.push(
+      `${dominance.corridorFindings.length} unresolved balance corridor finding(s)`
+    )
+  }
+  const releaseEligible = releaseBlockers.length === 0
 
   return {
     passed,
     releaseEligible,
+    releaseBlockers,
     hardFailures,
     softFindings,
     metadata,
@@ -672,6 +712,7 @@ export function formatMarkdownReport(data) {
   const {
     passed,
     releaseEligible,
+    releaseBlockers,
     hardFailures,
     softFindings,
     coverage,
@@ -701,6 +742,9 @@ export function formatMarkdownReport(data) {
   let md = `# Roguelite Expedition v1.5 Balance Recalibration Report\n\n`
   md += `**Correctness:** ${statusBadge}\n`
   md += `**Release evidence:** ${releaseBadge}\n`
+  if (releaseBlockers.length > 0) {
+    md += `**Release blocked by:** ${releaseBlockers.join('; ')}\n`
+  }
   md += `**Generated At:** ${provenance.generatedAt}\n`
   md += `**Profiles:** ${provenance.profilesCount} mature archetypes\n`
   md += `**Sample Count Per Cohort:** ${provenance.sampleCountPerCohort}\n\n`
@@ -803,7 +847,7 @@ export function formatMarkdownReport(data) {
   md += `- **Push Counterfactual:** Faces remaining route challenges, risking total failure vs achieving Finale completion payouts.\n\n`
 
   md += `## 5. Matched Skill-vs-Management Probe\n\n`
-  md += `Evaluated ${skillProbe.triosCount} matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).\n`
+  md += `Evaluated ${skillProbe.calibrationTrios} calibration and ${skillProbe.holdoutTrios} holdout matched trios comparing Low Skill (45/0.35), Competent (70/0.70), and High Skill (90/0.95).\n`
   md += `- Proves higher player skill significantly increases Gig rewards and lowers wear/repair burdens while management choices remain decisive.\n\n`
 
   md += `## 6. Matched Hybrid-Fog Counterfactuals\n\n`
@@ -897,7 +941,7 @@ async function main() {
   console.log(
     reportData.releaseEligible
       ? '[BalanceSuite] ✅ Artifact qualifies as release evidence.'
-      : `[BalanceSuite] ⚠️  Artifact is NOT release evidence (${reportData.softFindings.length} soft finding(s)).`
+      : `[BalanceSuite] ⚠️  Artifact is NOT release evidence: ${reportData.releaseBlockers.join('; ')}`
   )
 }
 

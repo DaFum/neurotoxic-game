@@ -43,6 +43,18 @@ import { systemClock } from '../src/utils/clock.ts'
  * @property {string} corridorStatus
  */
 
+/**
+ * Valid captured samples a release pacing claim needs.
+ *
+ * @remarks
+ * The master plan holds the real-duration target soft "until at least 20 valid
+ * runtime samples exist", so a cohort below this is reported but never counted
+ * as release evidence. The loader deliberately accepts smaller cohorts - a
+ * partial capture is still worth summarizing - and the release gate is what
+ * enforces the floor.
+ */
+export const MIN_RUNTIME_SAMPLES = 20
+
 /** Target product corridor in minutes: 20-30 minutes */
 export const TARGET_CORRIDOR_MIN_MINUTES = 20
 export const TARGET_CORRIDOR_MAX_MINUTES = 30

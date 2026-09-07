@@ -44,7 +44,11 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
     const seed = 8001
     const pair = runFogCounterfactualPair(undefined, profile, seed)
 
-    if (pair.matchedDecisionFound) {
+    // Asserted, not guarded: on a fixed seed the precondition is part of
+    // the contract, and an `if` let the proof vanish silently the day the
+    // probe stopped producing a branch point.
+    assert.equal(pair.matchedDecisionFound, true)
+    {
       assert.ok(pair.candidateCount >= 2)
       assert.ok(typeof pair.chosenNodeA === 'string')
       assert.ok(typeof pair.chosenNodeB === 'string')
@@ -105,7 +109,11 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
       'reputation'
     )
     assert.equal(pair.source, 'reputation')
-    if (pair.matchedDecisionFound) {
+    // Asserted, not guarded: on a fixed seed the precondition is part of
+    // the contract, and an `if` let the proof vanish silently the day the
+    // probe stopped producing a branch point.
+    assert.equal(pair.matchedDecisionFound, true)
+    {
       // Crossing the threshold must grant the bounded level-1 read somewhere
       // on the forward route, even when it does not land on a candidate.
       assert.ok(pair.revealUsed)
@@ -131,6 +139,12 @@ describe('Hybrid-Fog Counterfactual Probe (G6 Task 11)', () => {
     // Task 11's blocking fidelity failure is the policy never consuming a
     // reveal it was actually shown. Recorded per source so the report can
     // state it rather than imply it.
+    assert.ok(cohort.matchedPairs > 0)
+    // Rates are per matched pair; unmatched seeds must not dilute them.
+    assert.equal(
+      cohort.routeChangedRate,
+      cohort.routeChangedCount / cohort.matchedPairs
+    )
     assert.ok(cohort.revealUsedCount > 0)
     assert.ok(Number.isFinite(cohort.revealUsedRouteUnchangedRate))
     assert.ok(

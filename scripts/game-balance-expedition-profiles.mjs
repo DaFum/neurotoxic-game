@@ -674,8 +674,13 @@ export const getExpeditionBalanceProfile = id =>
 
 /**
  * Selects a staged sponsor offer according to profile policy.
+ *
+ * @param {Array<{ dealId: string, offerId: string }>} stagedOffers
+ * @param {string} policy
+ * @param {string | null} [rivalAlignment] - Brand alignment of the active
+ * Rival, which `highest_nonrival_value` steers away from.
  */
-export const pickSponsorOffer = (stagedOffers, policy) => {
+export const pickSponsorOffer = (stagedOffers, policy, rivalAlignment = null) => {
   if (!Array.isArray(stagedOffers) || stagedOffers.length === 0) return null
   if (policy === 'none') return null
   const scored = stagedOffers.map(offer => {
@@ -692,7 +697,15 @@ export const pickSponsorOffer = (stagedOffers, policy) => {
         score =
           upfront + perGig + ((deal.requirements?.followers ?? 0) > 0 ? 100 : 0)
       } else if (policy === 'highest_nonrival_value') {
-        score = upfront + perGig
+        // "Non-rival" has to mean something. A Rival's `style` is its brand
+        // alignment (`rivals.ts` stores `String(rivalBand.alignment)`), so a
+        // deal sharing that alignment is the one that walks the Career into
+        // the Rival's territory. Without this the policy scored exactly like a
+        // plain value policy and `rival_hunter`'s declared Sponsor strategy
+        // was a label with no behaviour.
+        const sharesRivalAlignment =
+          rivalAlignment !== null && deal.alignment === rivalAlignment
+        score = upfront + perGig - (sharesRivalAlignment ? 10000 : 0)
       }
     }
     return { offer, score }
@@ -907,15 +920,18 @@ export const buildProductionSimulationLoadout = (
   }
 
   // 8. Equipment: current_selection vs best_owned_selection
-  if ((state.player?.van?.upgrades ?? []).length === 0) {
-    state = {
-      ...state,
-      player: {
-        ...state.player,
-        van: {
-          ...state.player.van,
-          upgrades: [...matureFixture.vanUpgrades]
-        }
+  //
+  // The declared list is applied unconditionally, like the rest of the mature
+  // fixture. Applying it only when the state happened to have no upgrades meant
+  // a linked fixture carrying its own set silently overrode the profile's
+  // declaration - the hidden-input problem this block exists to close.
+  state = {
+    ...state,
+    player: {
+      ...state.player,
+      van: {
+        ...state.player.van,
+        upgrades: [...matureFixture.vanUpgrades]
       }
     }
   }
@@ -995,7 +1011,11 @@ export const buildProductionSimulationLoadout = (
   let selectedSponsorOfferId = null
   let acceptedSponsorDealId = null
   if (profile.sponsorPolicy !== 'none' && stagedOffers.length > 0) {
-    const selectedOffer = pickSponsorOffer(stagedOffers, profile.sponsorPolicy)
+    const selectedOffer = pickSponsorOffer(
+      stagedOffers,
+      profile.sponsorPolicy,
+      state.rivalBand?.alignment ?? null
+    )
     if (selectedOffer) {
       selectedSponsorOfferId = selectedOffer.offerId
       acceptedSponsorDealId = selectedOffer.dealId

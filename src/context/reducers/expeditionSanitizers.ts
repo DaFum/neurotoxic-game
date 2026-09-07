@@ -27,7 +27,10 @@ import { buildExpeditionMap } from '../../domain/expedition/map'
 import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
 import { deriveExpeditionGhostRouteTargetFrom } from '../../domain/expedition/legendaries'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
-import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
+import {
+  getCanonicalBrandDealTermsHash,
+  MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS
+} from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
@@ -1212,7 +1215,7 @@ const sanitizePreparedSponsorOffers = (
   if (!Array.isArray(value) || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['preparedSponsorOffers'] = []
   const seen = new Set<string>()
-  for (const raw of value.slice(0, 3)) {
+  for (const raw of value.slice(0, MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS)) {
     if (!isLooseRecord(raw)) continue
     const { offerId, dealId, canonicalTermsHash } = raw
     if (

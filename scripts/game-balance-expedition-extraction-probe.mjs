@@ -198,8 +198,14 @@ export const runExtractionProbeCohort = (profiles, seeds, options = {}) => {
 
       if (pair.windowEncountered && pair.branchA && pair.branchB) {
         windowsEncounteredCount += pair.windowCount
-        totalDeltaMoney += pair.deltaMoney
-        totalDeltaFame += pair.deltaFame
+        // One delta per window, matching the denominator. Adding only the
+        // first window's delta while counting every window pulled both means
+        // toward zero as route depth grew, so a deeper Tour looked like a
+        // smaller extraction gap than it was.
+        for (const window of pair.windows) {
+          totalDeltaMoney += window.deltaMoney
+          totalDeltaFame += window.deltaFame
+        }
 
         if (pair.branchB.outcome === 'completed') laterCompletedCount++
         else if (pair.branchB.outcome === 'failed') laterFailedCount++

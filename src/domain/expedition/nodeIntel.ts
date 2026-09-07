@@ -113,7 +113,7 @@ export const BASE_EXPEDITION_INTEL_CAPABILITY: ExpeditionIntelCapability = {
  * @remarks
  * The G5 Task-4 contract names this threshold exactly.
  */
-const REGION_FAMILIARITY_REPUTATION = 50
+export const REGION_FAMILIARITY_REPUTATION = 50
 
 /**
  * Whether the run's Region has earned its one free reveal per route step.

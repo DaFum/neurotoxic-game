@@ -273,14 +273,40 @@ describe('Expedition Balance Profiles (G6 Tasks 1-3)', () => {
     )
   })
 
-  it('starts the mature van at exactly the declared fuel', () => {
+  it('applies the declared mature fixture rather than reporting it', () => {
+    // Provenance echoing the declared values proves nothing on its own - the
+    // builder has to actually apply them. Van upgrades in particular used to
+    // be applied only when the incoming state had none, so a linked fixture
+    // with its own set silently won.
     for (const profile of EXPEDITION_BALANCE_PROFILES) {
       const active = buildProductionSimulationLoadout(null, profile, 4242)
+      const resolved = active.expedition.provenance.matureFixture
       assert.equal(
-        active.expedition.provenance.matureFixture.startingVanFuel,
+        resolved.startingVanFuel,
         profile.matureFixture.startingVanFuel
       )
+      assert.deepEqual(resolved.resolvedVanUpgrades, [
+        ...profile.matureFixture.vanUpgrades
+      ])
+      assert.equal(resolved.money, profile.matureFixture.money)
+      assert.equal(resolved.fame, profile.matureFixture.fame)
     }
+  })
+
+  it('overrides a linked fixture that carries its own van upgrades', () => {
+    const profile = EXPEDITION_BALANCE_PROFILES[0]
+    const linked = createInitialState()
+    linked.player.van = {
+      ...linked.player.van,
+      upgrades: ['some_other_upgrade']
+    }
+
+    const active = buildProductionSimulationLoadout(linked, profile, 4242)
+    assert.deepEqual(
+      active.player.van.upgrades,
+      [...profile.matureFixture.vanUpgrades],
+      'the profile declaration must win over whatever the fixture carried'
+    )
   })
 
   describe('buildProductionSimulationLoadout (G6 Task 4)', () => {

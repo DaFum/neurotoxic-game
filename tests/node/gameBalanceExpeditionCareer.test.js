@@ -114,8 +114,17 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     }
 
     // Verify task 12 assertions
-    assert.notEqual(result.metrics.firstMetaFacilityRun, 0)
-    assert.notEqual(result.metrics.firstPermanentExpeditionCapabilityRun, 0)
+    // `notEqual(x, 0)` passed for every value this helper can produce - it
+    // assigns `runIdx`, which starts at 1, or leaves `null`. These check the
+    // real contract: a recorded run index falls inside the sequence.
+    for (const run of [
+      result.metrics.firstMetaFacilityRun,
+      result.metrics.firstPermanentExpeditionCapabilityRun
+    ]) {
+      if (run === null) continue
+      assert.ok(Number.isInteger(run))
+      assert.ok(run >= 1 && run <= result.runsCompleted)
+    }
 
     for (const fixtureSets of result.metrics.fixtureCapabilitySetIds) {
       assert.deepEqual(
@@ -143,10 +152,35 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     )
     const metrics = result.metrics
 
-    assert.ok(
-      metrics.signatureTraitUnlockRun === null ||
-        Number.isInteger(metrics.signatureTraitUnlockRun)
-    )
+    // A `x === null || Number.isInteger(x)` check passes for anything, so it
+    // proved nothing. These assert the metric's actual contract instead: a run
+    // index is within the sequence, and it is set exactly when the underlying
+    // Career state says so.
+    const anyTrait = Object.values(
+      result.finalState.career.crewById ?? {}
+    ).some(crew => crew?.signatureTraitId)
+    if (metrics.signatureTraitUnlockRun === null) {
+      assert.equal(
+        anyTrait,
+        false,
+        'no unlock run recorded while a signature trait is owned'
+      )
+    } else {
+      assert.equal(anyTrait, true)
+      assert.ok(metrics.signatureTraitUnlockRun >= 1)
+      assert.ok(metrics.signatureTraitUnlockRun <= result.runsCompleted)
+    }
+
+    // Same contract for the legacy Expedition-affecting HQ path.
+    if (metrics.firstLegacyExpeditionAffectingHqPurchaseRun === null) {
+      assert.equal(metrics.run1LegacyExpeditionAffectingHqPurchaseRate, false)
+    } else {
+      assert.ok(metrics.firstLegacyExpeditionAffectingHqPurchaseRun >= 1)
+      assert.equal(
+        metrics.run1LegacyExpeditionAffectingHqPurchaseRate,
+        metrics.firstLegacyExpeditionAffectingHqPurchaseRun === 1
+      )
+    }
     assert.ok(Array.isArray(metrics.crewRecoveryDebtDurations))
     for (const entry of metrics.crewRecoveryDebtDurations) {
       assert.equal(typeof entry.crewId, 'string')
@@ -163,5 +197,16 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     )
     assert.ok(Number.isInteger(metrics.maxNemesisLevel))
     assert.ok(Array.isArray(metrics.nemesisLevelAdvancedRuns))
+    // The rate is derived from the recorded ids, so it has to agree with them.
+    const ids = metrics.rivalIdsByRun
+    const expectedRate =
+      ids.length > 1
+        ? ids.slice(1).filter(id => id === ids[0]).length / (ids.length - 1)
+        : 0
+    assert.equal(metrics.sameRivalReturnRate, expectedRate)
+    for (const entry of metrics.nemesisLevelAdvancedRuns) {
+      assert.ok(entry.run >= 1 && entry.run <= result.runsCompleted)
+      assert.ok(entry.level > 0 && entry.level <= metrics.maxNemesisLevel)
+    }
   })
 })

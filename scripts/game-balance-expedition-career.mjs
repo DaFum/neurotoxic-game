@@ -38,6 +38,8 @@ import { getAvailableNativeContractTemplateIds } from '../src/domain/expedition/
 import { buildExpeditionMap } from '../src/domain/expedition/map.ts'
 import { EXPEDITION_UNLOCK_SETS } from '../src/data/expedition/unlockSets.ts'
 import { HQ_FACILITY_IDS } from '../src/data/expedition/hqFacilities.ts'
+import { doesLegacyHqItemTouchExpedition } from '../src/domain/expedition/legacyHqPolicy.ts'
+import { ALL_HQ_ITEMS } from '../src/data/hqItems.ts'
 import { SONGS_BY_ID } from '../src/data/songs.ts'
 import {
   toCanonicalRegionId,
@@ -410,6 +412,26 @@ export const runFreshCareerSequence = (
         )
       ) {
         metrics.signatureTraitUnlockRun = runIdx
+      }
+
+      // Legacy Expedition-affecting HQ ownership. G5 requires the old
+      // automatic Day-1 HQ snowball to stop being the dominant fresh-Career
+      // path, so this is observed from `player.hqUpgrades` rather than
+      // declared: these two fields used to report their initial `false`/`null`
+      // as if they were measurements.
+      const ownedHqIds = new Set(state.player.hqUpgrades ?? [])
+      const ownsLegacyExpeditionHq = ALL_HQ_ITEMS.some(
+        item =>
+          ownedHqIds.has(item.id) && doesLegacyHqItemTouchExpedition(item)
+      )
+      if (
+        ownsLegacyExpeditionHq &&
+        metrics.firstLegacyExpeditionAffectingHqPurchaseRun === null
+      ) {
+        metrics.firstLegacyExpeditionAffectingHqPurchaseRun = runIdx
+        if (runIdx === 1) {
+          metrics.run1LegacyExpeditionAffectingHqPurchaseRate = true
+        }
       }
 
       // Crew recovery debt: how many Tours a serious injury actually costs.

@@ -35,6 +35,17 @@ import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
  */
 const MAX_EXPEDITION_SPONSOR_QUALITY_BIAS = 3
 
+/**
+ * The most offers {@link buildPreparedExpeditionSponsorOffers} can ever stage.
+ *
+ * @remarks
+ * Three by default, plus one on a Region or Tour that runs on Contracts. The
+ * load sanitizer bounds the persisted snapshot by this rather than by its own
+ * literal: truncating below the producer's ceiling made the reloaded snapshot
+ * fail its own reproduction check, which cleared the staging outright.
+ */
+export const MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS = 4
+
 const sponsorSeed = (seed: number): number =>
   Number.parseInt(
     hashExpeditionRoute(`${seed}:expedition-sponsor-offers`),

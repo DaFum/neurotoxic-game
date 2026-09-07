@@ -38,7 +38,17 @@ describe('Extraction Counterfactual Probe (G6 Task 9)', () => {
 
     const result = runExtractionCounterfactualPair(undefined, profile, seed)
 
-    if (result.windowEncountered) {
+    // Asserted rather than guarded: on a fixed seed the precondition is part
+    // of the contract, and `if (windowEncountered)` let the counterfactual go
+    // unverified the moment the probe stopped producing a window.
+    assert.equal(
+      result.windowEncountered,
+      true,
+      'the pinned seed must reach at least one legal extraction window'
+    )
+    assert.ok(result.windowCount >= 1)
+    assert.equal(result.windows.length, result.windowCount)
+    {
       assert.ok(result.branchA)
       assert.equal(result.branchA.outcome, 'extracted')
       assert.ok(Number.isFinite(result.branchA.retainedMoney))
@@ -62,5 +72,17 @@ describe('Extraction Counterfactual Probe (G6 Task 9)', () => {
     assert.equal(summary.totalPairsEvaluated, 6)
     assert.ok(Number.isFinite(summary.meanDeltaMoney))
     assert.ok(Number.isFinite(summary.meanDeltaFame))
+    // The means are per window, so the denominator has to be the window count
+    // the deltas were summed over. Summing only the first window's delta while
+    // counting every window pulled both means toward zero with route depth.
+    assert.ok(summary.windowsEncounteredCount >= summary.totalPairsEvaluated)
+    const perWindowDeltas = summary.pairs.flatMap(pair =>
+      (pair.windows ?? []).map(window => window.deltaMoney)
+    )
+    assert.equal(perWindowDeltas.length, summary.windowsEncounteredCount)
+    const expectedMean =
+      perWindowDeltas.reduce((total, delta) => total + delta, 0) /
+      summary.windowsEncounteredCount
+    assert.ok(Math.abs(summary.meanDeltaMoney - expectedMean) < 1e-9)
   })
 })

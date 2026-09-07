@@ -178,6 +178,10 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     prepareExpeditionSponsorOffers,
     preparedMap.regionId,
     preparedMap.tourTypeId,
+    // Not read in the body - the creator reads `stateRef.current.runSeed` - but
+    // the staged `offerId` is seed-derived, so entering Prep with a new seed
+    // has to restage even when the route is unchanged. Removing it as an
+    // "unused" dependency would leave the previous run's offers on screen.
     runSeed,
     starterPerkId
   ])

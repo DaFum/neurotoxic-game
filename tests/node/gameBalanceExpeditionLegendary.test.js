@@ -157,8 +157,15 @@ describe('Late-Game Legendary Edge Activation (G6 Task 13)', () => {
     const map = buildExpeditionMap(SEED, 'standard_tour', 'home_turf')
     assert.ok(isExpeditionLegendaryAvailable(state, 'nemesis_key'))
 
+    // Asserted, not guarded. `if (target)` let the whole activation proof
+    // silently vanish the day the pinned seed stopped offering a Rival
+    // Encounter two steps ahead.
     const target = deriveExpeditionNemesisKeyTarget(state, map)
-    if (target) {
+    assert.ok(
+      typeof target === 'string' && target.length > 0,
+      `seed ${SEED} no longer offers a Rival Encounter two steps ahead`
+    )
+    {
       const advanced = gameReducer(state, advanceExpeditionRoute(state, target))
       assert.equal(advanced.player.currentNodeId, target)
       assert.equal(
