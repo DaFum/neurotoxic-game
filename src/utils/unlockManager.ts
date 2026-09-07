@@ -188,14 +188,16 @@ const writeUnlockMarker = (
 
   if (!cache) return { added: false, persistence: 'failed' }
 
-  // Prevent duplicates in O(1) time
-  if (cache.has(unlockId)) {
-    return {
-      added: false,
-      persistence: getCache(adapter).sessionOnly.has(unlockId)
-        ? 'session_only'
-        : 'persisted'
-    }
+  const sessionOnly = getCache(adapter).sessionOnly
+  // Prevent duplicates in O(1) time - but only for a marker that is actually
+  // durable. An id whose write was refused is present in the set and still
+  // lost on the next load, so reporting the old verdict would make every
+  // retry return `session_only` for the rest of the session: the caller that
+  // offers the retry could never take it. Storage may have recovered since,
+  // and the only way to find out is to write again.
+  const known = cache.has(unlockId)
+  if (known && !sessionOnly.has(unlockId)) {
+    return { added: false, persistence: 'persisted' }
   }
 
   // `writeStorageItem` returns false when the marker was kept in the session
@@ -215,15 +217,18 @@ const writeUnlockMarker = (
 
   if (markerWrite === null) return { added: false, persistence: 'failed' }
 
-  cache.add(unlockId)
-  currentUnlocks.push(unlockId)
-  const sessionOnly = getCache(adapter).sessionOnly
+  if (!known) {
+    cache.add(unlockId)
+    currentUnlocks.push(unlockId)
+  }
   if (markerWrite) sessionOnly.delete(unlockId)
   else sessionOnly.add(unlockId)
 
   // Keep the legacy aggregate for existing saves and callers. The per-unlock
   // marker is authoritative for cross-tab safety: distinct marker keys cannot
   // overwrite each other when two tabs unlock different items concurrently.
+  // Rewritten on a retry too: the aggregate write is refused by the same
+  // storage that refused the marker.
   safeStorageOperation<boolean>(
     'saveUnlocks',
     () =>
@@ -233,7 +238,9 @@ const writeUnlockMarker = (
   getCache(adapter).lastStorageSnapshot = null
 
   return {
-    added: true,
+    // A retry of an id the set already holds adds nothing, however far the
+    // write reached.
+    added: !known,
     persistence: markerWrite ? 'persisted' : 'session_only'
   }
 }
@@ -249,8 +256,9 @@ const writeUnlockMarker = (
  * @remarks
  * Use this instead of {@link addUnlock} when the caller grants something it
  * cannot take back, and so must not act on a marker that a reload would lose.
- * An id already in the set reports the durability of the write that put it
- * there, not `persisted` by default.
+ * An id already in the set reports `persisted` only if its own write landed;
+ * one that is present but session-only is written again, so a caller offering
+ * a retry can actually clear the barrier once storage recovers.
  */
 export const addUnlockWithPersistence = (
   unlockId: string,

@@ -228,7 +228,7 @@ test('UnlockManager Unit Tests', async t => {
   )
 
   await t.test(
-    'an already-present id reports the durability of the write that added it',
+    'a present but session-only id is written again, so a retry can land',
     () => {
       const originalSetItem = mockStorage.setItem
       mockStorage.setItem = () => {
@@ -236,15 +236,30 @@ test('UnlockManager Unit Tests', async t => {
       }
       try {
         assert.equal(addUnlockWithPersistence('again'), 'session_only')
+        // Still refused, so still not durable - and the answer must not
+        // improve just because the id is now in the set.
+        assert.equal(addUnlockWithPersistence('again'), 'session_only')
       } finally {
         mockStorage.setItem = originalSetItem
       }
 
-      // Present in the set now, so nothing is written - but it is still not
-      // durable, and reporting `persisted` here would reopen the hole.
-      assert.equal(addUnlockWithPersistence('again'), 'session_only')
+      // Storage recovered. The marker is present but was never durable, so
+      // the retry writes it rather than reporting the old verdict: a caller
+      // whose barrier offers a retry could otherwise never clear it.
+      assert.equal(addUnlockWithPersistence('again'), 'persisted')
+      assert.equal(
+        Object.hasOwn(mockStorage.store, 'neurotoxic_unlock:again'),
+        true
+      )
+      // The retry granted nothing new, however far its write reached.
+      assert.equal(addUnlock('again'), false)
+      // And it is in the set once, not twice.
+      assert.deepEqual(
+        getUnlocks().filter(id => id === 'again'),
+        ['again']
+      )
 
-      // A durable write for the same id supersedes the buffered one.
+      // A durable write is not re-attempted at all.
       assert.equal(addUnlockWithPersistence('durable_now'), 'persisted')
       assert.equal(addUnlockWithPersistence('durable_now'), 'persisted')
     }
