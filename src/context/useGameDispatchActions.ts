@@ -23,7 +23,7 @@ import {
   writeGlobalSettings
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
-import { addUnlock, getUnlocks } from '../utils/unlockManager'
+import { addUnlockWithPersistence, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
@@ -39,6 +39,7 @@ import {
   createCompleteExpeditionUnlockPurchaseAction,
   createRollbackExpeditionUnlockPurchaseAction
 } from './careerActionCreators'
+import type { ExpeditionLegendaryClaim } from '../types/expedition'
 import { getExpeditionLegendaryMarkerId } from '../data/expedition/legendaries'
 import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
 import {
@@ -335,11 +336,16 @@ type BaseGameDispatchActions = {
    * @remarks
    * The durable marker is the barrier: it is written before anything is
    * granted, and a failed write mints nothing at all, so the caller may offer
-   * a retry rather than having to reconcile a half-award. Returns whether the
-   * Legendary was actually claimed - `false` covers both "nothing was owed"
-   * and "the marker could not be persisted".
+   * a retry rather than having to reconcile a half-award.
+   *
+   * The three outcomes are deliberately distinguishable, because a caller has
+   * to treat two of them differently from each other and from success: a run
+   * that owes nothing (`not_applicable`) may settle at once, while a run that
+   * owes a Legendary it could not durably record (`persistence_failed`) must
+   * not be settled at all until the claim succeeds. Collapsing those two into
+   * one falsy answer is what let settlement proceed over a lost award.
    */
-  claimExpeditionLegendaryReward: (runId: string) => boolean
+  claimExpeditionLegendaryReward: (runId: string) => ExpeditionLegendaryClaim
 }
 
 /**
@@ -628,30 +634,27 @@ export function useGameDispatchActions({
   )
 
   const claimExpeditionLegendaryReward = useCallback(
-    (runId: string): boolean => {
+    (runId: string): ExpeditionLegendaryClaim => {
       const base = stateRef.current
       // Derived here only to know *which* marker to write. The reducer derives
       // it again from the same outcome and refuses a mismatch, so this read
       // cannot choose the award - a stale one simply claims nothing.
       const candidate = resolveExpeditionLegendaryCandidate(base, runId)
-      if (candidate === null) return false
+      if (candidate === null) return 'not_applicable'
       // Persistence first, and it is a hard barrier: a Legendary that exists
       // only in this session's state would be silently gone on the next load,
-      // and the Career would have spent its one claim on the run. `addUnlock`
-      // returns false when the marker could not be written *or* when it is
-      // already there, so an already-persisted marker is not treated as a
-      // failure - the reducer's own guards decide whether anything is owed.
+      // and the Career would have spent its one claim on the run. A marker
+      // kept in the session fallback is exactly that loss, so `session_only`
+      // is refused here even though the unlock stays readable this session -
+      // only a durable marker may buy the irreversible commit.
       const markerId = getExpeditionLegendaryMarkerId(candidate)
-      if (
-        !addUnlock(markerId, storage) &&
-        !getUnlocks(storage).includes(markerId)
-      ) {
-        return false
+      if (addUnlockWithPersistence(markerId, storage) !== 'persisted') {
+        return 'persistence_failed'
       }
       dispatch(createAddUnlockAction(markerId))
       dispatch(createCommitExpeditionLegendaryRewardAction(runId, candidate))
       saveGameAfterStateCommit()
-      return true
+      return 'claimed'
     },
     [dispatch, saveGameAfterStateCommit, stateRef, storage]
   )

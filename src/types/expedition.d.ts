@@ -12,6 +12,21 @@ export type ExpeditionStatus =
   'idle' | 'prepared' | 'active' | 'extracted' | 'completed' | 'failed'
 
 /**
+ * Outcome of attempting the one Legendary claim a finalized run may owe.
+ *
+ * @remarks
+ * The claim is a persistence barrier, so its result has to say more than
+ * whether something happened: `not_applicable` is a run that owes no
+ * Legendary and may settle immediately, `claimed` is a durable marker plus the
+ * committed award, and `persistence_failed` is a run that owes one and could
+ * not durably record it. A caller must not settle the run on
+ * `persistence_failed` - the Career would spend its single claim on an award
+ * the next load would not have.
+ */
+export type ExpeditionLegendaryClaim =
+  'not_applicable' | 'claimed' | 'persistence_failed'
+
+/**
  * Identity of the prepared-but-not-started run.
  *
  * @remarks

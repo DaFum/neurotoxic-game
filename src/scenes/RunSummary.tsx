@@ -1,9 +1,10 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useGameActions, useGameSelector } from '../context/GameState'
 import { GAME_PHASES } from '../context/gameConstants'
 import { ActionButton } from '../ui/shared/ActionButton'
 import { formatCurrency } from '../utils/numberUtils'
+import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
 
 /**
  * Reports a finalized run's settlement and returns the player to the hub.
@@ -25,7 +26,8 @@ export const RunSummary = () => {
     generateExpeditionBetweenTourDecisions,
     resolveExpeditionBetweenTourDecision,
     changeScene,
-    saveGameAfterStateCommit
+    saveGameAfterStateCommit,
+    addToast
   } = useGameActions()
   const outcome = useGameSelector(state => state.expedition.outcome)
   const betweenTour = useGameSelector(state =>
@@ -34,23 +36,51 @@ export const RunSummary = () => {
       : undefined
   )
 
+  // Whether this run still owes an unclaimed Legendary, read from the Career
+  // rather than tracked locally: a successful claim records the run id, so the
+  // same predicate the barrier uses also reports when the barrier has cleared.
+  // Deriving it keeps the blocked state out of `useState` in an effect, which
+  // would re-render for a fact the store already holds.
+  const owedLegendary = useGameSelector(
+    state =>
+      outcome !== null &&
+      resolveExpeditionLegendaryCandidate(state, outcome.runId) !== null
+  )
+  // Bumped only from the retry button, so re-running the barrier is an event
+  // rather than a render effect.
+  const [claimAttempt, setClaimAttempt] = useState(0)
+
   // Settle, then ask. The decisions read the Career both settlements advanced,
   // so generating before them would ask about an injury the settlement was
   // about to record - and generating is refused until both have run, which is
   // why this effect can safely re-run until it takes.
   useEffect(() => {
     if (!outcome) return
-    claimExpeditionLegendaryReward(outcome.runId)
+    // The Legendary barrier comes first and is absolute. `persistence_failed`
+    // means the Career owes an award the next load would not have, and its one
+    // claim for this run is still unspent - so nothing downstream may run.
+    // Settling here would advance the Career past a Legendary it never got.
+    if (
+      claimExpeditionLegendaryReward(outcome.runId) === 'persistence_failed'
+    ) {
+      // The toast is what makes the failure legible; the panel below is driven
+      // by the Career still owing the award, so it needs no local flag.
+      addToast(t('ui:expedition.summary.legendaryClaimFailed'), 'error')
+      return
+    }
     settleExpeditionCrewCareer(outcome.runId)
     settleExpeditionCareerResult(outcome.runId)
     unlockExpeditionAscension(outcome.runId)
     generateExpeditionBetweenTourDecisions(outcome.runId)
   }, [
+    addToast,
+    claimAttempt,
     claimExpeditionLegendaryReward,
     generateExpeditionBetweenTourDecisions,
     outcome,
     settleExpeditionCareerResult,
     settleExpeditionCrewCareer,
+    t,
     unlockExpeditionAscension
   ])
 
@@ -141,7 +171,22 @@ export const RunSummary = () => {
           </dd>
         </dl>
 
-        {openDecisions.length > 0 ? (
+        {owedLegendary ? (
+          <div
+            className='flex flex-col gap-2 border-t border-blood-red pt-3'
+            data-testid='expedition-legendary-claim-blocked'
+          >
+            <p className='text-xs font-mono uppercase text-blood-red'>
+              {t('ui:expedition.summary.legendaryClaimPending')}
+            </p>
+            <ActionButton
+              onClick={() => setClaimAttempt(attempt => attempt + 1)}
+              data-testid='expedition-legendary-claim-retry'
+            >
+              {t('ui:expedition.summary.legendaryClaimRetry')}
+            </ActionButton>
+          </div>
+        ) : openDecisions.length > 0 ? (
           <div
             className='flex flex-col gap-3 border-t border-steel-gray pt-3'
             data-testid='expedition-between-tour'
