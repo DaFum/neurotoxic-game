@@ -40,6 +40,7 @@ import { normalizeSetlistForSave } from '../../utils/gameState'
 import { isExpeditionSetlistDrift } from '../../domain/expedition/buildCommitment'
 import { getEffectiveExpeditionRules } from '../../domain/expedition/effectiveRules'
 import { getExpeditionStarterPerk } from '../../data/expedition/starterPerks'
+import { applyExpeditionSalvageRights } from '../../domain/expedition/legendaries'
 import {
   applyExpeditionSetupProtection,
   applyTechnicalWear,
@@ -583,6 +584,10 @@ export const handleSetLastGigStats = (
             : null
       }
     }
+    // Between the wear and the boundary: Salvage Rights answers the group the
+    // *gig* just wiped, and a defect that surfaces afterwards is a separate
+    // loss the Legendary has already been spent on.
+    nextState = applyExpeditionSalvageRights(nextState, currentCondition)
     // The gig's own wear lands first, then the `post_gig` boundary: a defect
     // planted by an earlier improvised repair is meant to surface as the show
     // ends, not to be pre-empted by it.

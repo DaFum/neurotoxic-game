@@ -16,6 +16,10 @@ import type {
   ExpeditionSpecialNodeSubtype
 } from '../../types/expedition'
 import { hashExpeditionRoute } from './map'
+import {
+  deriveExpeditionGhostRouteTarget,
+  deriveExpeditionNemesisKeyTarget
+} from './legendaries'
 
 /**
  * The route as the run may actually travel it right now.
@@ -104,12 +108,16 @@ export const deriveExpeditionOverlayTargetFrom = (
  * @returns Base edges plus the active overlay, and the subtypes it adds.
  *
  * @remarks
- * Two sources contribute today. A high-Heat Underground invite opens the
- * detour the Pressure Director banked, which is what turns Heat into an
- * opportunity rather than only a penalty. A Rival at Nemesis level 2 or above
- * opens a Rival shortcut, which is the tier's "changes real rules" effect.
- * Both are additive: an overlay never removes a base edge, so it cannot strand
- * a run.
+ * Four sources contribute. A high-Heat Underground invite opens the detour the
+ * Pressure Director banked, which is what turns Heat into an opportunity
+ * rather than only a penalty. A Rival at Nemesis level 2 or above opens a
+ * Rival shortcut, which is the tier's "changes real rules" effect. The Ghost
+ * Route Legendary opens the Underground way out of an Authority crisis, and
+ * the Nemesis Key Legendary opens the only two-step jump in the run.
+ *
+ * Every one of them is additive: an overlay never removes a base edge, so it
+ * cannot strand a run. None of them reaches `buildExpeditionMap`, so `mapHash`
+ * is the same with and without them.
  */
 export const getEffectiveExpeditionRoute = (
   state: GameState,
@@ -130,12 +138,13 @@ export const getEffectiveExpeditionRoute = (
 
   const addOverlay = (
     nodeId: string | null,
-    subtype: ExpeditionSpecialNodeSubtype
+    subtype: ExpeditionSpecialNodeSubtype,
+    stepsAhead = 1
   ): void => {
     if (
       nodeId === null ||
       !Object.hasOwn(map.meta, nodeId) ||
-      map.meta[nodeId]?.routeStep !== state.expedition.routeStep + 1 ||
+      map.meta[nodeId]?.routeStep !== state.expedition.routeStep + stepsAhead ||
       Object.hasOwn(subtypeByNodeId, nodeId)
     ) {
       return
@@ -160,6 +169,15 @@ export const getEffectiveExpeditionRoute = (
       'RIVAL_ENCOUNTER'
     )
   }
+
+  // Ghost Route before Nemesis Key: the Authority crisis is the more urgent
+  // of the two, and a node claimed by one overlay is not re-claimed by the
+  // other, so an escape is never traded for a jump.
+  addOverlay(deriveExpeditionGhostRouteTarget(state, map), 'UNDERGROUND_MARKET')
+  // Two steps ahead: the only overlay in the run that skips a layer, which is
+  // what makes the Legendary different in kind from the Nemesis tier shortcut
+  // above rather than a stronger version of it.
+  addOverlay(deriveExpeditionNemesisKeyTarget(state, map), 'RIVAL_ENCOUNTER', 2)
 
   return {
     connections:

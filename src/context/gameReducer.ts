@@ -112,6 +112,7 @@ import { handleTradeVoidItem } from './reducers/tradeReducer'
 import {
   handleAcquireExpeditionCrewSignature,
   handleUnlockExpeditionAscension,
+  handleCommitExpeditionLegendaryReward,
   handleSettleExpeditionCrewCareer,
   handleSettleExpeditionCareerResult,
   handlePurchaseExpeditionHqFacility,
@@ -286,6 +287,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.ROLLBACK_EXPEDITION_UNLOCK_PURCHASE]:
     handleRollbackExpeditionUnlockPurchase,
   [ActionTypes.UNLOCK_EXPEDITION_ASCENSION]: handleUnlockExpeditionAscension,
+  [ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD]:
+    handleCommitExpeditionLegendaryReward,
   [ActionTypes.ACQUIRE_EXPEDITION_CREW_SIGNATURE]:
     handleAcquireExpeditionCrewSignature,
   [ActionTypes.CREATE_CONTACT_INTEL_GRANT]: handleCreateContactIntelGrant,

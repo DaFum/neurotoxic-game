@@ -29,6 +29,7 @@ import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEvent
 import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
+import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
 import { POST_OPTIONS } from '../../data/postOptions'
 import { deriveExpeditionSocialResultId } from '../../domain/expedition/social'
 import { getExpeditionFinaleRewardId } from '../../domain/expedition/finales'
@@ -831,6 +832,12 @@ export const sanitizeExpeditionState = (
       : readCount(value, 'protectedCareerCash', 0),
     rewardLedger,
     extractionWindowsSeen: sanitizeIntegerList(value.extractionWindowsSeen),
+    // Narrowed to the registry only: an over-claimed consumption can never
+    // grant anything, it can only spend a Legendary the run already owns, so
+    // the save is allowed to say a run has used one.
+    consumedLegendaryIds: Array.isArray(value.consumedLegendaryIds)
+      ? [...new Set(value.consumedLegendaryIds.filter(isExpeditionLegendaryId))]
+      : [],
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
     // A carried shortfall is a debt, so a save cannot make it negative and
     // quietly turn it into credit.

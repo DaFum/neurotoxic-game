@@ -223,6 +223,20 @@ export interface ExpeditionUnlockPurchasePayload {
 export interface UnlockExpeditionAscensionPayload {
   runId: string
 }
+
+/**
+ * Claims the Legendary one finalized Finale earned.
+ *
+ * @remarks
+ * `expectedCapabilityId` is a stale guard, not a request: the reducer
+ * recomputes the candidate from the finalized outcome and the Career's rank
+ * and holdings, and refuses when the two disagree. That is what stops a caller
+ * from naming the Legendary it would rather have.
+ */
+export interface CommitExpeditionLegendaryRewardPayload {
+  runId: string
+  expectedCapabilityId: string
+}
 export interface AcquireExpeditionCrewSignaturePayload {
   crewId: string
   expectedTraitId: string

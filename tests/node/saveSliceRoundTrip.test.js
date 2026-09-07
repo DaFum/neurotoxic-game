@@ -244,6 +244,7 @@ const buildPopulatedState = () => {
       }
     ],
     extractionWindowsSeen: [2],
+    consumedLegendaryIds: ['the_fixer'],
     pendingFailure: null,
     unpaidDailyObligation: 0,
     outcome: null,

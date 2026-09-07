@@ -18,6 +18,7 @@ import {
   isExpeditionHqFacilityId
 } from '../../data/expedition/hqFacilities'
 import { EXPEDITION_CREW_SIGNATURE_BY_ROLE } from '../../data/expedition/crewSignatureTraits'
+import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
 
 const safeRecord = <T>(
   value: unknown,
@@ -261,6 +262,23 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     pendingUnlockPurchase: sanitizePendingUnlockPurchase(
       value.pendingUnlockPurchase
     ),
-    ascensionUnlocked: value.ascensionUnlocked === true
+    ascensionUnlocked: value.ascensionUnlocked === true,
+    // Narrowed to the registry, but not re-derived: unlike Ascension, a
+    // Legendary's evidence is a Finale from a run whose outcome
+    // `PREPARE_NEXT_EXPEDITION` has already cleared, so there is nothing left
+    // on load to recompute it against. The award itself is guarded at the
+    // moment it is claimed, against the finalized outcome and the run id.
+    legendaryIds: Array.isArray(value.legendaryIds)
+      ? [...new Set(value.legendaryIds.filter(isExpeditionLegendaryId))]
+      : [],
+    legendaryClaimedRunIds: Array.isArray(value.legendaryClaimedRunIds)
+      ? [
+          ...new Set(
+            value.legendaryClaimedRunIds.filter(
+              (id): id is string => typeof id === 'string'
+            )
+          )
+        ]
+      : []
   }
 }

@@ -120,6 +120,18 @@ export type ExpeditionCapabilityId =
   | 'rival_quest_continuation'
 
 /**
+ * The five Legendary capabilities.
+ *
+ * @remarks
+ * Separate from {@link ExpeditionCapabilityId} on purpose: a capability is
+ * bought with Tokens and is permanently on, while a Legendary is earned by a
+ * Finale and changes one rule once per run. Sharing the union would let an
+ * unlock set sell one.
+ */
+export type ExpeditionLegendaryId =
+  'safe_harbor' | 'the_fixer' | 'nemesis_key' | 'ghost_route' | 'salvage_rights'
+
+/**
  * One unlock set: what it costs, what it needs, and what it is worth.
  */
 export interface ExpeditionUnlockSetDefinition {
@@ -171,4 +183,15 @@ export interface CareerState {
   unlockedSetIds: string[]
   pendingUnlockPurchase: ExpeditionPendingUnlockPurchase | null
   ascensionUnlocked: boolean
+  /** Legendaries the Career owns, each earned by one finalized Finale. */
+  legendaryIds: ExpeditionLegendaryId[]
+  /**
+   * Runs that have already claimed a Legendary.
+   *
+   * @remarks
+   * Run-scoped, like `settledExpeditionRunIds`: a run earns at most one
+   * Legendary, and the claim has to be provable against the run rather than
+   * against the owned list, which cannot tell a second claim from the first.
+   */
+  legendaryClaimedRunIds: string[]
 }

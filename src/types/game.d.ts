@@ -464,6 +464,10 @@ export type GameAction =
       import('./actions').UnlockExpeditionAscensionPayload
     >
   | Action<
+      ActionTypes['COMMIT_EXPEDITION_LEGENDARY_REWARD'],
+      import('./actions').CommitExpeditionLegendaryRewardPayload
+    >
+  | Action<
       ActionTypes['ACQUIRE_EXPEDITION_CREW_SIGNATURE'],
       import('./actions').AcquireExpeditionCrewSignaturePayload
     >

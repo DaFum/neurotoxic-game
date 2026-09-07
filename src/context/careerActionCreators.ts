@@ -135,3 +135,26 @@ export const createUnlockExpeditionAscensionAction = (
   GameAction,
   { type: typeof ActionTypes.UNLOCK_EXPEDITION_ASCENSION }
 > => ({ type: ActionTypes.UNLOCK_EXPEDITION_ASCENSION, payload: { runId } })
+
+/**
+ * Claims the Legendary a finalized Finale earned.
+ *
+ * @param runId - The finalized run standing as evidence.
+ * @param expectedCapabilityId - The Legendary the caller believes is owed.
+ * @returns The typed action.
+ *
+ * @remarks
+ * The capability id travels as a stale guard: the reducer derives the
+ * candidate from the outcome's Finale and refuses a mismatch, so a caller that
+ * read a stale summary claims nothing rather than the wrong Legendary.
+ */
+export const createCommitExpeditionLegendaryRewardAction = (
+  runId: string,
+  expectedCapabilityId: string
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD }
+> => ({
+  type: ActionTypes.COMMIT_EXPEDITION_LEGENDARY_REWARD,
+  payload: { runId, expectedCapabilityId }
+})

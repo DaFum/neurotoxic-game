@@ -611,6 +611,15 @@ export interface ExpeditionState {
   protectedCareerCash: number
   rewardLedger: ExpeditionRewardLedgerEntry[]
   extractionWindowsSeen: number[]
+  /**
+   * Legendaries this run has already spent.
+   *
+   * @remarks
+   * Run-scoped and reset by `START_EXPEDITION`: a Legendary is owned forever
+   * but acts once per run, so ownership and consumption are different facts
+   * living in different slices.
+   */
+  consumedLegendaryIds: string[]
   pendingFailure: PendingExpeditionFailure | null
   /**
    * Mandatory daily obligation a previous day could not pay from the run's

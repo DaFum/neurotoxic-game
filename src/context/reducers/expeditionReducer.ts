@@ -65,6 +65,14 @@ import {
   type ExpeditionTerminalKind
 } from '../../domain/expedition/extraction'
 import {
+  applyExpeditionSalvageRights,
+  consumeExpeditionLegendary,
+  deriveExpeditionGhostRouteTarget,
+  deriveExpeditionNemesisKeyTarget,
+  isExpeditionLegendaryAvailable,
+  isExpeditionSafeHarborWindow
+} from '../../domain/expedition/legendaries'
+import {
   EXPEDITION_TOW_COST,
   EXPEDITION_TOW_FUEL_RESTORED,
   deriveExpeditionPendingFailure,
@@ -576,17 +584,23 @@ export const applyExpeditionRouteAdvance = (
   )
   if (!Object.hasOwn(map.meta, nodeId)) return state
   const target = map.meta[nodeId]
-  if (!target || target.routeStep !== state.expedition.routeStep + 1) {
-    return state
-  }
+  // One step, or the two the Nemesis Key jump covers. The edge check below is
+  // what actually authorizes the longer move: every base connection spans one
+  // layer, so a two-step arrival is only ever reachable through an overlay.
+  const stepsAhead = target
+    ? target.routeStep - state.expedition.routeStep
+    : Number.NaN
+  if (!target || (stepsAhead !== 1 && stepsAhead !== 2)) return state
 
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof currentNodeId !== 'string') return state
-  // The effective route, not the base map: a high-Heat Underground invite or a
-  // Nemesis shortcut is only a real opportunity if the run can actually travel
-  // it. Overlays are additive, so this never removes a legal base move.
-  const isNeighbour = getEffectiveExpeditionRoute(state, map).connections.some(
+  // The effective route, not the base map: a high-Heat Underground invite, a
+  // Nemesis shortcut or a Legendary overlay is only a real opportunity if the
+  // run can actually travel it. Overlays are additive, so this never removes a
+  // legal base move.
+  const effectiveRoute = getEffectiveExpeditionRoute(state, map)
+  const isNeighbour = effectiveRoute.connections.some(
     edge => edge.from === currentNodeId && edge.to === nodeId
   )
   if (!isNeighbour) return state
@@ -621,7 +635,7 @@ export const applyExpeditionRouteAdvance = (
           pendingDirectorEventId: null
         }
 
-  const arrived: GameState = {
+  let arrived: GameState = {
     ...state,
     player: { ...state.player, currentNodeId: nodeId },
     expedition: {
@@ -631,6 +645,20 @@ export const applyExpeditionRouteAdvance = (
       extractionWindowsSeen,
       pressure: pressureAfterMove
     }
+  }
+
+  // A Legendary overlay is spent by being travelled, and only then: offering
+  // the opportunity costs nothing, and a run that declined it still holds the
+  // Legendary. Ghost Route is checked against the *pre-move* state because its
+  // trigger is the Authority pressure the run was standing in.
+  if (
+    stepsAhead === 2 &&
+    isExpeditionLegendaryAvailable(state, 'nemesis_key') &&
+    deriveExpeditionNemesisKeyTarget(state, map) === nodeId
+  ) {
+    arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
+  } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
+    arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
   }
 
   // One Director step per route step, composed here rather than dispatched:
@@ -931,10 +959,14 @@ export const handleExtractExpedition = (
   )
   const currentNodeId =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
+  // Safe Harbor is an *extra* opportunity, so it is composed with the base
+  // window rather than replacing it: the route's own windows are unchanged and
+  // the Legendary only ever adds the one node after the second of them.
   const atWindow =
-    typeof currentNodeId === 'string' &&
-    Object.hasOwn(map.meta, currentNodeId) &&
-    map.meta[currentNodeId]?.isExtractionWindow === true
+    (typeof currentNodeId === 'string' &&
+      Object.hasOwn(map.meta, currentNodeId) &&
+      map.meta[currentNodeId]?.isExtractionWindow === true) ||
+    isExpeditionSafeHarborWindow(state, map)
   if (!canExtractExpedition(state, atWindow)) return state
 
   const explicitRareRewardIds = Array.isArray(payload.explicitRareRewardIds)
@@ -1805,10 +1837,18 @@ export const handleApplyExpeditionEventDelta = (
     }
   }
 
-  const nextState =
+  const withEventWear =
     nextExpedition === state.expedition
       ? state
       : { ...state, expedition: nextExpedition }
+  // The same rescue the post-gig wear gets: a group an event took to zero is
+  // the same loss whether a show or a breakdown caused it.
+  const nextState = hasWear
+    ? applyExpeditionSalvageRights(
+        withEventWear,
+        getExpeditionTechnicalCondition(state)
+      )
+    : withEventWear
 
   const withCrewOutcome = applyResolvedCrewEventOutcome(
     nextState,
@@ -1960,6 +2000,9 @@ export const handleRecordExpeditionObligationSignal = (
   let fameDelta = 0
   let heatDelta = 0
   let controversyDelta = 0
+  // One excuse per run, and one per signal: two Contracts failing on the same
+  // signal must not both be waived by a single Legendary.
+  let fixerSpent = false
   const effectiveRules = getEffectiveExpeditionRules(state).numeric
   const activeObligations = state.expedition.activeObligations.map(
     obligation => {
@@ -2060,6 +2103,17 @@ export const handleRecordExpeditionObligationSignal = (
               effectiveRules.contractRewardMultiplier
             moneyDelta += Math.round(template.reward.money * multiplier)
             fameDelta += Math.round(template.reward.fame * multiplier)
+          } else if (
+            // The Fixer excuses exactly one failed Contract, and never the
+            // kind that ends the tour: a breach the run cannot survive is not
+            // a bad night the Career can make a phone call about. There is no
+            // payout either - the Contract still failed, the penalty simply
+            // does not land.
+            !template.tourEndingOnFailure &&
+            !fixerSpent &&
+            isExpeditionLegendaryAvailable(state, 'the_fixer')
+          ) {
+            fixerSpent = true
           } else {
             heatDelta += Math.round(
               (template.failure.heat + (doubleDown?.failureHeatBonus ?? 0)) *
@@ -2125,7 +2179,12 @@ export const handleRecordExpeditionObligationSignal = (
         ...state.expedition.resolvedObligationSignalIds,
         signalId
       ],
-      gigOutcomeByStep
+      gigOutcomeByStep,
+      // Recorded on the same commit that skipped the penalty, so a reload
+      // cannot separate the waiver from the fact that it was spent.
+      consumedLegendaryIds: fixerSpent
+        ? [...state.expedition.consumedLegendaryIds, 'the_fixer']
+        : state.expedition.consumedLegendaryIds
     }
   }
   // A completed native Contract's item reward goes through the G1 ledger, so

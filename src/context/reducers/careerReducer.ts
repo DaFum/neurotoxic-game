@@ -1,5 +1,6 @@
 import type {
   AcquireExpeditionCrewSignaturePayload,
+  CommitExpeditionLegendaryRewardPayload,
   ExpeditionUnlockPurchasePayload,
   PurchaseExpeditionHqFacilityPayload,
   SettleExpeditionCareerResultPayload,
@@ -22,6 +23,7 @@ import {
 import { getExpeditionUnlockSet } from '../../data/expedition/unlockSets'
 import { hasExpeditionCareerRank } from '../../domain/expedition/meta'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
+import { resolveExpeditionLegendaryCandidate } from '../../domain/expedition/legendaries'
 
 export const handleSettleExpeditionCrewCareer = (
   state: GameState,
@@ -360,6 +362,54 @@ export const handleUnlockExpeditionAscension = (
   return {
     ...state,
     career: { ...state.career, ascensionUnlocked: true }
+  }
+}
+
+/**
+ * Awards the Legendary a finalized Finale earned.
+ *
+ * @param state - Current game state.
+ * @param payload - The run being claimed and the Legendary the caller expects.
+ * @returns Next state, or the identical reference when nothing is owed.
+ *
+ * @remarks
+ * Every term is recomputed: the outcome must be a *completed* run with a
+ * resolved Finale result, the Career must be at `headliner`, the run must not
+ * have claimed already, and the Legendary the Finale maps to must not be owned.
+ * `expectedCapabilityId` is only a stale guard on top of that derivation, so a
+ * caller reading an old summary claims nothing rather than the wrong award.
+ *
+ * The run id goes into `legendaryClaimedRunIds` even though the owned list
+ * already grew: `contract_special` awards whatever is unowned, so without the
+ * run-scoped guard one run could walk the whole registry by dispatching five
+ * times.
+ */
+export const handleCommitExpeditionLegendaryReward = (
+  state: GameState,
+  payload: CommitExpeditionLegendaryRewardPayload
+): GameState => {
+  if (
+    !payload ||
+    typeof payload !== 'object' ||
+    typeof payload.runId !== 'string' ||
+    typeof payload.expectedCapabilityId !== 'string'
+  ) {
+    return state
+  }
+  const candidate = resolveExpeditionLegendaryCandidate(state, payload.runId)
+  if (candidate === null || candidate !== payload.expectedCapabilityId) {
+    return state
+  }
+  return {
+    ...state,
+    career: {
+      ...state.career,
+      legendaryIds: [...state.career.legendaryIds, candidate],
+      legendaryClaimedRunIds: [
+        ...state.career.legendaryClaimedRunIds,
+        payload.runId
+      ]
+    }
   }
 }
 

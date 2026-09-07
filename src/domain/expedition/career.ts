@@ -24,7 +24,9 @@ export const createInitialCareerState = (): CareerState => ({
   hqFacilityLevels: Object.create(null) as CareerState['hqFacilityLevels'],
   unlockedSetIds: [],
   pendingUnlockPurchase: null,
-  ascensionUnlocked: false
+  ascensionUnlocked: false,
+  legendaryIds: [],
+  legendaryClaimedRunIds: []
 })
 
 export const createCrewDevelopmentEligibilityProof = (

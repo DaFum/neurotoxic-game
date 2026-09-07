@@ -23,7 +23,7 @@ import {
   writeGlobalSettings
 } from '../utils/storage'
 import { handleError, StateError } from '../utils/errorHandler'
-import { getUnlocks } from '../utils/unlockManager'
+import { addUnlock, getUnlocks } from '../utils/unlockManager'
 import { useStorage } from './StorageContext'
 import { sanitizeSettingsPayload } from '../utils/settingsSanitizer'
 import { usePersistence } from './usePersistence'
@@ -35,9 +35,12 @@ import { gameReducer } from './gameReducer'
 import { useCareerDispatchActions } from './useCareerDispatchActions'
 import {
   createBeginExpeditionUnlockPurchaseAction,
+  createCommitExpeditionLegendaryRewardAction,
   createCompleteExpeditionUnlockPurchaseAction,
   createRollbackExpeditionUnlockPurchaseAction
 } from './careerActionCreators'
+import { getExpeditionLegendaryMarkerId } from '../data/expedition/legendaries'
+import { resolveExpeditionLegendaryCandidate } from '../domain/expedition/legendaries'
 import {
   useFacilityDispatchActions,
   type FacilityDispatchActions
@@ -81,6 +84,7 @@ import {
   createSetPendingSupplyStopInventoryAction,
   dismissForeclosureNotice as dismissForeclosureNoticeAction,
   createSetPendingRiskEventAction,
+  createAddUnlockAction,
   toggleNeuroDecimator as createToggleNeuroDecimatorAction
 } from './actionCreators'
 import {
@@ -314,6 +318,17 @@ type BaseGameDispatchActions = {
    * recoverable rather than reachable.
    */
   purchaseExpeditionUnlockSet: (setId: string) => boolean
+  /**
+   * Claims the Legendary a finalized Finale earned.
+   *
+   * @remarks
+   * The durable marker is the barrier: it is written before anything is
+   * granted, and a failed write mints nothing at all, so the caller may offer
+   * a retry rather than having to reconcile a half-award. Returns whether the
+   * Legendary was actually claimed - `false` covers both "nothing was owed"
+   * and "the marker could not be persisted".
+   */
+  claimExpeditionLegendaryReward: (runId: string) => boolean
 }
 
 /**
@@ -601,6 +616,35 @@ export function useGameDispatchActions({
     [dispatch, saveGame, saveGameAfterStateCommit, stateRef]
   )
 
+  const claimExpeditionLegendaryReward = useCallback(
+    (runId: string): boolean => {
+      const base = stateRef.current
+      // Derived here only to know *which* marker to write. The reducer derives
+      // it again from the same outcome and refuses a mismatch, so this read
+      // cannot choose the award - a stale one simply claims nothing.
+      const candidate = resolveExpeditionLegendaryCandidate(base, runId)
+      if (candidate === null) return false
+      // Persistence first, and it is a hard barrier: a Legendary that exists
+      // only in this session's state would be silently gone on the next load,
+      // and the Career would have spent its one claim on the run. `addUnlock`
+      // returns false when the marker could not be written *or* when it is
+      // already there, so an already-persisted marker is not treated as a
+      // failure - the reducer's own guards decide whether anything is owed.
+      const markerId = getExpeditionLegendaryMarkerId(candidate)
+      if (
+        !addUnlock(markerId, storage) &&
+        !getUnlocks(storage).includes(markerId)
+      ) {
+        return false
+      }
+      dispatch(createAddUnlockAction(markerId))
+      dispatch(createCommitExpeditionLegendaryRewardAction(runId, candidate))
+      saveGameAfterStateCommit()
+      return true
+    },
+    [dispatch, saveGameAfterStateCommit, stateRef, storage]
+  )
+
   return useMemo(
     () => ({
       changeScene,
@@ -624,7 +668,8 @@ export function useGameDispatchActions({
       ...assetActions,
       ...expeditionActions,
       ...careerActions,
-      purchaseExpeditionUnlockSet
+      purchaseExpeditionUnlockSet,
+      claimExpeditionLegendaryReward
     }),
     [
       changeScene,
@@ -648,7 +693,8 @@ export function useGameDispatchActions({
       assetActions,
       expeditionActions,
       careerActions,
-      purchaseExpeditionUnlockSet
+      purchaseExpeditionUnlockSet,
+      claimExpeditionLegendaryReward
     ]
   )
 }

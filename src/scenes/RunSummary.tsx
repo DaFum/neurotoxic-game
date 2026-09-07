@@ -20,6 +20,7 @@ export const RunSummary = () => {
     prepareNextExpedition,
     settleExpeditionCrewCareer,
     settleExpeditionCareerResult,
+    claimExpeditionLegendaryReward,
     unlockExpeditionAscension,
     changeScene,
     saveGameAfterStateCommit
@@ -34,6 +35,13 @@ export const RunSummary = () => {
     // reducer is still the authority - it names no amount, only the run - and
     // refuses a run it has already settled, so acknowledging twice pays once.
     if (outcome) {
+      // The Legendary barrier comes before either settlement: its durable
+      // marker has to be persisted before the run's progression is minted, so
+      // a failed write leaves a run that can still be acknowledged again
+      // rather than a Career that advanced without the award it earned. The
+      // command derives the candidate itself and is an identity no-op for
+      // every run that earned nothing.
+      claimExpeditionLegendaryReward(outcome.runId)
       // Crew first, then Career: the two settlements own different slices and
       // carry their own replay guards (`settledCrewRunIds` versus
       // `settledExpeditionRunIds`), so neither can pay for the other's run and
@@ -56,6 +64,7 @@ export const RunSummary = () => {
     changeScene(GAME_PHASES.MENU)
   }, [
     changeScene,
+    claimExpeditionLegendaryReward,
     outcome,
     prepareNextExpedition,
     saveGameAfterStateCommit,
