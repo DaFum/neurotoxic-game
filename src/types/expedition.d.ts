@@ -477,16 +477,27 @@ export interface ExpeditionTemporaryRouteOpportunity {
   createdAtRouteStep: number
 }
 
+/** What opened an overlay: each one has its own evidence and its own gate. */
+export type ExpeditionOverlaySource =
+  'underground_invite' | 'nemesis_shortcut' | 'ghost_route' | 'nemesis_key'
+
 /**
  * The overlay a move travelled, and the node it landed on.
  *
  * @remarks
  * `subtype` is what the overlay advertised, which is not always what the base
- * node is: Ghost Route converts an ordinary node into the Underground way out.
+ * node is: a Ghost Route escape, a high-Heat Underground invite and a Nemesis
+ * shortcut all convert an ordinary node.
+ *
+ * `source` is carried because that is what makes the record checkable. Each
+ * source is re-derived against different evidence on load, and the one whose
+ * gate lives outside this slice - the Nemesis tier - is re-checked wherever
+ * the effective route is read.
  */
 export interface ExpeditionArrivedOverlay {
   nodeId: string
   subtype: ExpeditionSpecialNodeSubtype
+  source: ExpeditionOverlaySource
 }
 
 export interface ExpeditionPressureState {

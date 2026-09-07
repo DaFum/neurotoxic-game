@@ -668,6 +668,18 @@ export const sanitizeExpeditionState = (
     ? [...new Set(value.consumedLegendaryIds.filter(isExpeditionLegendaryId))]
     : []
 
+  // Sanitized ahead of the slice it belongs to, because the travelled overlay
+  // is checked against the run's Heat and must read the clamped value rather
+  // than whatever the save claimed.
+  const pressure = sanitizeExpeditionPressure(
+    value.pressure,
+    runId,
+    routeStep,
+    runSeed,
+    preparedMap,
+    validVisitedPath[validVisitedPath.length - 1]
+  )
+
   const hasCanonicalContactEvidence = (sourceId: string): boolean => {
     const outcome = getCrewEventOutcomeBySourceId(sourceId)
     const rawIntelGrants = value.intelGrants
@@ -886,7 +898,8 @@ export const sanitizeExpeditionState = (
       validVisitedPath,
       runSeed,
       preparedMap,
-      consumedLegendaryIds
+      consumedLegendaryIds,
+      pressure.heat
     ),
     pendingFailure: sanitizePendingFailure(value.pendingFailure),
     // A carried shortfall is a debt, so a save cannot make it negative and
@@ -928,14 +941,7 @@ export const sanitizeExpeditionState = (
     resolvedObligationSignalIds: sanitizeUniqueStrings(
       value.resolvedObligationSignalIds
     ),
-    pressure: sanitizeExpeditionPressure(
-      value.pressure,
-      runId,
-      routeStep,
-      runSeed,
-      preparedMap,
-      validVisitedPath[validVisitedPath.length - 1]
-    ),
+    pressure,
     preparedSponsorOffers: sanitizePreparedSponsorOffers(
       value.preparedSponsorOffers,
       runSeed
@@ -1061,40 +1067,87 @@ const sanitizeTemporaryRouteOpportunity = (
  * @param runSeed - The run's seed.
  * @param map - The canonical route, when it could be built.
  * @param consumedLegendaryIds - Legendaries the run has spent.
+ * @param heat - The run's sanitized Authority Heat.
  * @returns The conversion the run could actually have travelled, or `null`.
  *
  * @remarks
- * Re-derived rather than trusted, because arrival resolves this instead of the
- * node's own class: a forged record would hand the run an Underground stop in
- * place of the Gig the route put there.
+ * Re-derived rather than trusted, because readers resolve this instead of the
+ * node's own class: a forged record would hand the run an Underground stop, or
+ * a Rival encounter, in place of what the route put there.
  *
- * Ghost Route is the only overlay that converts a node the base map does not
- * already make special - the Nemesis Key jump targets a real Rival Encounter -
- * so this accepts nothing else, and only from a run whose Legendary is spent
- * and whose previous node really does seed this one.
+ * Every source is checked against its own evidence - the node the run came
+ * from has to seed exactly this target under that source's salt, and the
+ * Legendary ones have to be spent. The Nemesis shortcut's own gate is the
+ * Rival's tier, which lives in the Career rather than here, so this accepts
+ * the seeded target and `getEffectiveExpeditionRoute` re-checks the tier
+ * wherever the record is read.
  */
 const sanitizeArrivedOverlay = (
   value: unknown,
   visitedPath: readonly string[],
   runSeed: number | undefined,
   map: ExpeditionMap | null,
-  consumedLegendaryIds: readonly string[]
+  consumedLegendaryIds: readonly string[],
+  heat: number
 ): ExpeditionState['arrivedOverlay'] => {
   if (!isLooseRecord(value) || !map) return null
-  if (value.subtype !== 'UNDERGROUND_MARKET') return null
-  if (!consumedLegendaryIds.includes('ghost_route')) return null
   const nodeId = readString(value, 'nodeId')
   if (!nodeId || nodeId !== visitedPath.at(-1)) return null
   const from = visitedPath.at(-2)
   const fromStep = from === undefined ? undefined : map.meta[from]?.routeStep
-  if (fromStep === undefined) return null
-  if (
-    deriveExpeditionGhostRouteTargetFrom(from, fromStep, runSeed, map) !==
-    nodeId
-  ) {
-    return null
+  const step = map.meta[nodeId]?.routeStep
+  if (fromStep === undefined || step === undefined) return null
+
+  const { subtype, source } = value
+  const seeded = (salt: string): boolean =>
+    step === fromStep + 1 &&
+    deriveExpeditionOverlayTargetFrom(from, fromStep, runSeed, map, salt) ===
+      nodeId
+
+  switch (source) {
+    case 'ghost_route':
+      // Its own derivation, which prefers a real Underground node and
+      // otherwise converts one, so it does not share the salted helper.
+      if (
+        subtype !== 'UNDERGROUND_MARKET' ||
+        !consumedLegendaryIds.includes('ghost_route') ||
+        step !== fromStep + 1 ||
+        deriveExpeditionGhostRouteTargetFrom(from, fromStep, runSeed, map) !==
+          nodeId
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'nemesis_key':
+      // The only two-layer move, and it lands on a Rival Encounter the base
+      // map already carries - so the map itself is the evidence here.
+      if (
+        subtype !== 'RIVAL_ENCOUNTER' ||
+        !consumedLegendaryIds.includes('nemesis_key') ||
+        step !== fromStep + 2 ||
+        map.meta[nodeId]?.specialSubtype !== 'RIVAL_ENCOUNTER'
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'underground_invite':
+      // Heat below the invite's own threshold could not have produced one.
+      if (
+        subtype !== 'UNDERGROUND_MARKET' ||
+        heat < 60 ||
+        !seeded('underground_invite')
+      ) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    case 'nemesis_shortcut':
+      if (subtype !== 'RIVAL_ENCOUNTER' || !seeded('nemesis_shortcut')) {
+        return null
+      }
+      return { nodeId, subtype, source }
+    default:
+      return null
   }
-  return { nodeId, subtype: 'UNDERGROUND_MARKET' }
 }
 
 const sanitizeExpeditionPressure = (

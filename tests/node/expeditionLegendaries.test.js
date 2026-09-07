@@ -609,7 +609,8 @@ describe('G5 — Ghost Route is the Underground way out', () => {
     })
     assert.deepEqual(escaped.expedition.arrivedOverlay, {
       nodeId: target,
-      subtype: 'UNDERGROUND_MARKET'
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'ghost_route'
     })
 
     // It describes the node the run stands on, so the next move drops it.
@@ -631,7 +632,8 @@ describe('G5 — Ghost Route is the Underground way out', () => {
     )
     assert.deepEqual(reloaded.arrivedOverlay, {
       nodeId: target,
-      subtype: 'UNDERGROUND_MARKET'
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'ghost_route'
     })
 
     // A save that claims the conversion without having spent the Legendary is
@@ -652,7 +654,8 @@ describe('G5 — Ghost Route is the Underground way out', () => {
           ...escaped.expedition,
           arrivedOverlay: {
             nodeId: escaped.expedition.visitedNodeIds[0],
-            subtype: 'UNDERGROUND_MARKET'
+            subtype: 'UNDERGROUND_MARKET',
+            source: 'ghost_route'
           }
         })
       ),

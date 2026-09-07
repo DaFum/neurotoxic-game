@@ -669,16 +669,27 @@ export const applyExpeditionRouteAdvance = (
     arrived = consumeExpeditionLegendary(arrived, 'nemesis_key')
   } else if (deriveExpeditionGhostRouteTarget(state, map) === nodeId) {
     arrived = consumeExpeditionLegendary(arrived, 'ghost_route')
-    // The conversion has to outlive the move. Every overlay is derived from
-    // the node the run is leaving, so it is gone by the time arrival resolves
-    // - and arrival routes on the node's own class, which would play the Gig
-    // this Legendary was the escape from. Recorded here, the one point at
-    // which both the overlay and its destination are known.
+  }
+
+  // The overlay has to outlive the move. Every one of them is derived from the
+  // node the run is leaving, so the conversion is gone by the time arrival
+  // resolves - and arrival routes on the node's own class, which is the flow
+  // the overlay was offered *instead of*: a Ghost Route escape would play the
+  // Gig it was the escape from, and a Rival shortcut would arrive at a Rest
+  // Stop. Recorded here, the one point at which both the overlay and its
+  // destination are known.
+  const travelledSubtype = effectiveRoute.subtypeByNodeId[nodeId]
+  const travelledSource = effectiveRoute.sourceByNodeId[nodeId]
+  if (travelledSubtype && travelledSource) {
     arrived = {
       ...arrived,
       expedition: {
         ...arrived.expedition,
-        arrivedOverlay: { nodeId, subtype: 'UNDERGROUND_MARKET' }
+        arrivedOverlay: {
+          nodeId,
+          subtype: travelledSubtype,
+          source: travelledSource
+        }
       }
     }
   }

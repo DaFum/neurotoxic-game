@@ -981,6 +981,38 @@ test('the Underground detour opens only once the player resolves the invite', ()
   )
   assert.equal(travelled.player.currentNodeId, opportunity.targetNodeId)
   assert.equal(travelled.expedition.pressure.temporaryRouteOpportunity, null)
+  // The invite converted an ordinary node too, and the same rule applies: the
+  // detour has to outlive the move or arrival plays the node's own class.
+  assert.deepEqual(travelled.expedition.arrivedOverlay, {
+    nodeId: opportunity.targetNodeId,
+    subtype: 'UNDERGROUND_MARKET',
+    source: 'underground_invite'
+  })
+  // A reload keeps it only while the Heat that could have produced the invite
+  // still holds; below that gate the save is claiming a detour it never had.
+  assert.deepEqual(
+    sanitizeExpeditionState(
+      JSON.parse(JSON.stringify(travelled.expedition)),
+      travelled.runSeed
+    ).arrivedOverlay,
+    {
+      nodeId: opportunity.targetNodeId,
+      subtype: 'UNDERGROUND_MARKET',
+      source: 'underground_invite'
+    }
+  )
+  assert.equal(
+    sanitizeExpeditionState(
+      JSON.parse(
+        JSON.stringify({
+          ...travelled.expedition,
+          pressure: { ...travelled.expedition.pressure, heat: 59 }
+        })
+      ),
+      travelled.runSeed
+    ).arrivedOverlay,
+    null
+  )
 
   // Below the Heat gate resolving the same invite opens nothing.
   const cold = {
@@ -1128,9 +1160,45 @@ test('a Nemesis at level 2 opens a Rival shortcut the base route lacks', () => {
     getEffectiveExpeditionRoute(atTierTwo, map).connections,
     effective.connections
   )
-  assert.notStrictEqual(
-    applyExpeditionRouteAdvance(atTierTwo, shortcutNodeId),
-    atTierTwo
+  const travelled = applyExpeditionRouteAdvance(atTierTwo, shortcutNodeId)
+  assert.notStrictEqual(travelled, atTierTwo)
+  // The shortcut converted an ordinary node, so the conversion has to outlive
+  // the move: every reader after it - arrival, and the Rival-encounter proof a
+  // Run Draft needs - would otherwise fall back to the node's own class and
+  // resolve the Rest Stop the shortcut was offered instead of.
+  assert.deepEqual(travelled.expedition.arrivedOverlay, {
+    nodeId: shortcutNodeId,
+    subtype: 'RIVAL_ENCOUNTER',
+    source: 'nemesis_shortcut'
+  })
+  assert.equal(
+    getEffectiveExpeditionRoute(travelled, map).subtypeByNodeId[shortcutNodeId],
+    'RIVAL_ENCOUNTER'
+  )
+  // The tier is the shortcut's own gate and it lives in the Career, where the
+  // Expedition load path cannot see it - so it is re-checked on every read: a
+  // run no longer at the tier stands on a plain node again.
+  const droppedTier = {
+    ...travelled,
+    career: {
+      ...travelled.career,
+      rivalsById: {
+        ...travelled.career.rivalsById,
+        [started.rivalBand.id]: {
+          ...travelled.career.rivalsById[started.rivalBand.id],
+          history: {
+            ...travelled.career.rivalsById[started.rivalBand.id].history,
+            nemesisLevel: 1
+          }
+        }
+      }
+    }
+  }
+  assert.equal(
+    getEffectiveExpeditionRoute(droppedTier, map).subtypeByNodeId[
+      shortcutNodeId
+    ],
+    undefined
   )
 })
 

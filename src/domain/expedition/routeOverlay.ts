@@ -13,6 +13,7 @@
 import type { GameState } from '../../types'
 import type {
   ExpeditionMap,
+  ExpeditionOverlaySource,
   ExpeditionSpecialNodeSubtype
 } from '../../types/expedition'
 import { hashExpeditionRoute } from './map'
@@ -29,6 +30,8 @@ export interface ExpeditionEffectiveRoute {
   connections: ReadonlyArray<{ from: string; to: string }>
   /** Subtypes the overlay adds, keyed by node. The base meta is untouched. */
   subtypeByNodeId: Readonly<Record<string, ExpeditionSpecialNodeSubtype>>
+  /** What opened each of those subtypes, so a move can record its own source. */
+  sourceByNodeId: Readonly<Record<string, ExpeditionOverlaySource>>
 }
 
 /**
@@ -124,21 +127,37 @@ export const getEffectiveExpeditionRoute = (
   map: ExpeditionMap
 ): ExpeditionEffectiveRoute => {
   if (state.expedition?.status !== 'active') {
-    return { connections: map.connections, subtypeByNodeId: {} }
+    return {
+      connections: map.connections,
+      subtypeByNodeId: {},
+      sourceByNodeId: {}
+    }
   }
   const from =
     state.expedition.visitedNodeIds[state.expedition.visitedNodeIds.length - 1]
   if (typeof from !== 'string') {
-    return { connections: map.connections, subtypeByNodeId: {} }
+    return {
+      connections: map.connections,
+      subtypeByNodeId: {},
+      sourceByNodeId: {}
+    }
   }
 
   const extraConnections: Array<{ from: string; to: string }> = []
   const subtypeByNodeId: Record<string, ExpeditionSpecialNodeSubtype> =
     Object.create(null)
+  const sourceByNodeId: Record<string, ExpeditionOverlaySource> =
+    Object.create(null)
+
+  const rivalRecord = state.rivalBand
+    ? state.career.rivalsById[state.rivalBand.id]
+    : undefined
+  const nemesisTierReached = (rivalRecord?.history.nemesisLevel ?? 0) >= 2
 
   const addOverlay = (
     nodeId: string | null,
     subtype: ExpeditionSpecialNodeSubtype,
+    source: ExpeditionOverlaySource,
     stepsAhead = 1
   ): void => {
     if (
@@ -153,37 +172,71 @@ export const getEffectiveExpeditionRoute = (
     // route could not already get there, so an overlay never duplicates an
     // existing connection.
     subtypeByNodeId[nodeId] = subtype
+    sourceByNodeId[nodeId] = source
     if (!map.connections.some(edge => edge.from === from && edge.to === nodeId))
       extraConnections.push({ from, to: nodeId })
   }
 
-  const opportunity = state.expedition.pressure.temporaryRouteOpportunity
-  if (opportunity) addOverlay(opportunity.targetNodeId, opportunity.subtype)
+  // The overlay the run already travelled, for the node it is standing on.
+  // Every source below is derived from the node the run is *leaving*, so
+  // without this the conversion would vanish the moment the move landed and
+  // every reader would fall back to the node's own class - which is the flow
+  // the overlay was offered instead of.
+  //
+  // The Nemesis shortcut's gate is the only one that lives outside the
+  // Expedition slice, so the load path cannot check it and it is re-checked
+  // here: a run that is no longer at the tier reads its own node plainly.
+  const arrived = state.expedition.arrivedOverlay
+  if (
+    arrived &&
+    arrived.nodeId === from &&
+    (arrived.source !== 'nemesis_shortcut' || nemesisTierReached)
+  ) {
+    subtypeByNodeId[arrived.nodeId] = arrived.subtype
+    sourceByNodeId[arrived.nodeId] = arrived.source
+  }
 
-  const rivalRecord = state.rivalBand
-    ? state.career.rivalsById[state.rivalBand.id]
-    : undefined
-  if ((rivalRecord?.history.nemesisLevel ?? 0) >= 2) {
+  const opportunity = state.expedition.pressure.temporaryRouteOpportunity
+  if (opportunity) {
+    addOverlay(
+      opportunity.targetNodeId,
+      opportunity.subtype,
+      'underground_invite'
+    )
+  }
+
+  if (nemesisTierReached) {
     addOverlay(
       deriveExpeditionOverlayTarget(state, map, 'nemesis_shortcut'),
-      'RIVAL_ENCOUNTER'
+      'RIVAL_ENCOUNTER',
+      'nemesis_shortcut'
     )
   }
 
   // Ghost Route before Nemesis Key: the Authority crisis is the more urgent
   // of the two, and a node claimed by one overlay is not re-claimed by the
   // other, so an escape is never traded for a jump.
-  addOverlay(deriveExpeditionGhostRouteTarget(state, map), 'UNDERGROUND_MARKET')
+  addOverlay(
+    deriveExpeditionGhostRouteTarget(state, map),
+    'UNDERGROUND_MARKET',
+    'ghost_route'
+  )
   // Two steps ahead: the only overlay in the run that skips a layer, which is
   // what makes the Legendary different in kind from the Nemesis tier shortcut
   // above rather than a stronger version of it.
-  addOverlay(deriveExpeditionNemesisKeyTarget(state, map), 'RIVAL_ENCOUNTER', 2)
+  addOverlay(
+    deriveExpeditionNemesisKeyTarget(state, map),
+    'RIVAL_ENCOUNTER',
+    'nemesis_key',
+    2
+  )
 
   return {
     connections:
       extraConnections.length === 0
         ? map.connections
         : [...map.connections, ...extraConnections],
-    subtypeByNodeId
+    subtypeByNodeId,
+    sourceByNodeId
   }
 }
