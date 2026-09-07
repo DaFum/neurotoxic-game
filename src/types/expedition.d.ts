@@ -984,7 +984,7 @@ export interface ExpeditionRoutePressureProfile {
  * One Region's contribution, as data.
  */
 export interface ExpeditionRegionDefinition {
-  id: string
+  id: ExpeditionRegionId
   labelKey: string
   numeric: Partial<ExpeditionNumericRules>
   route: Partial<Omit<ExpeditionRoutePressureProfile, 'forcedRival'>>
@@ -996,7 +996,7 @@ export interface ExpeditionRegionDefinition {
  * One Tour Type's contribution, as data.
  */
 export interface ExpeditionTourTypeDefinition {
-  id: string
+  id: ExpeditionTourTypeId
   labelKey: string
   /** Meaningful route steps between the start and the Finale. */
   depth: number

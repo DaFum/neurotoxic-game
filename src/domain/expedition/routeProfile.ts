@@ -49,8 +49,35 @@ const MAX_WEIGHT = 3.0
 const clampWeight = (value: number): number =>
   Math.max(MIN_WEIGHT, Math.min(MAX_WEIGHT, value))
 
+/** Every composable weight on the profile. */
+type WeightKey = keyof Omit<ExpeditionRoutePressureProfile, 'forcedRival'>
+
+/**
+ * Accepts a weight-key tuple only when it lists every {@link WeightKey}.
+ *
+ * @param keys - The tuple to check.
+ * @returns The same tuple, typed as passed.
+ *
+ * @remarks
+ * `satisfies readonly WeightKey[]` proves every *listed* key is real, not that
+ * every real key is listed - and the composition below builds its result
+ * through a `{} as ExpeditionRoutePressureProfile` cast, which suppresses the
+ * missing-property error that would otherwise catch the gap. A weight added to
+ * the profile type and forgotten here would be skipped by the loop and reach
+ * the map builder as `undefined` where the type promises `number`.
+ *
+ * The check has to run through inference to work: writing the constraint as a
+ * `satisfies` with an explicit type argument makes `T[number]` the whole
+ * `WeightKey` union, `Exclude` trivially `never`, and the guard a no-op. Here
+ * `T` is inferred from the argument, so `T[number]` is the literal union the
+ * tuple actually contains.
+ */
+const exhaustiveWeightKeys = <const T extends readonly WeightKey[]>(
+  keys: Exclude<WeightKey, T[number]> extends never ? T : never
+): T => keys
+
 /** The weight keys, so composition never misses one a type later adds. */
-const WEIGHT_KEYS = [
+const WEIGHT_KEYS = exhaustiveWeightKeys([
   'supplyNodeWeightMultiplier',
   'technicalNodeWeightMultiplier',
   'festivalHighProfileNodeWeightMultiplier',
@@ -59,10 +86,7 @@ const WEIGHT_KEYS = [
   'rivalNodeWeightMultiplier',
   'gigNodeWeightMultiplier',
   'recoveryNodeWeightMultiplier'
-] as const satisfies readonly (keyof Omit<
-  ExpeditionRoutePressureProfile,
-  'forcedRival'
->)[]
+])
 
 /**
  * The run-stable half: Region and Tour only.

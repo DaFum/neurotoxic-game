@@ -101,6 +101,35 @@ describe('G5 — Career rank is derived from accomplishments', () => {
     assert.equal(deriveExpeditionCareerRank(withFeud), 'cult_legend')
   })
 
+  it('fails closed on non-finite counters instead of deriving a rank', () => {
+    // `Infinity` satisfies every threshold and `NaN` none, and neither is a
+    // number of completed runs. This derivation is the gate Ascension, the
+    // Legendary candidate and the legacy HQ policy all read, so it normalizes
+    // its own inputs rather than trusting the load path to have done it.
+    for (const poison of [Infinity, -Infinity, NaN]) {
+      assert.equal(
+        deriveExpeditionCareerRank(
+          career({
+            finalizedExpeditionRuns: poison,
+            completedExpeditionRuns: poison,
+            completedExpeditionRegionIds: ['a', 'b', 'c', 'd']
+          })
+        ),
+        'rookie',
+        String(poison)
+      )
+    }
+    // And a poisoned feud depth is not a driven feud.
+    const base = career({
+      finalizedExpeditionRuns: 14,
+      completedExpeditionRuns: 10,
+      completedExpeditionRegionIds: ['a', 'b', 'c', 'd'],
+      rivalsById: { rival_1: rivalAt(Infinity) }
+    })
+    assert.equal(getMaxPersistentNemesisLevel(base), 0)
+    assert.equal(deriveExpeditionCareerRank(base), 'headliner')
+  })
+
   it('compares ranks in order for a gate', () => {
     const state = {
       career: career({ finalizedExpeditionRuns: 2, completedExpeditionRuns: 1 })

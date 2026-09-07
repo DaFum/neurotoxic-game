@@ -87,7 +87,7 @@ export const EXPEDITION_TOUR_TYPES = {
     },
     forcedRival: false
   }
-} as const satisfies Record<string, ExpeditionTourTypeDefinition>
+} as const satisfies Record<ExpeditionTourTypeId, ExpeditionTourTypeDefinition>
 
 /** Reads a Tour definition, or `null` for an id the registry does not have. */
 export const getExpeditionTourType = (

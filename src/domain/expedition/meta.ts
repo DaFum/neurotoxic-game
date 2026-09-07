@@ -43,8 +43,11 @@ const META_UNLOCK_QUEST_TOKEN = 1 as const
 export const getMaxPersistentNemesisLevel = (career: CareerState): number => {
   let max = 0
   for (const record of Object.values(career.rivalsById)) {
-    const level = record?.history?.nemesisLevel
-    if (typeof level === 'number' && level > max) max = level
+    // `typeof level === 'number'` admits NaN and Infinity, and Infinity wins
+    // every comparison below - so a poisoned save would report an unearned
+    // feud depth to the rank gate.
+    const level = finiteNumberOr(record?.history?.nemesisLevel, 0)
+    if (level > max) max = level
   }
   return max
 }
@@ -64,7 +67,20 @@ export const getMaxPersistentNemesisLevel = (career: CareerState): number => {
 export const deriveExpeditionCareerRank = (
   career: CareerState
 ): ExpeditionCareerRank => {
-  const completed = career.completedExpeditionRuns
+  // Normalized here rather than trusted from the save: `sanitizeCareerState`
+  // clamps these on the normal load path, but this derivation is the gate that
+  // `isExpeditionAscensionEligible`, `resolveExpeditionLegendaryCandidate` and
+  // `isExpeditionLegacyHqPurchaseAllowed` all read, so it fails closed on its
+  // own inputs. `Infinity` satisfies every threshold below and would derive
+  // `cult_legend` from a Career that has finished nothing.
+  const completed = Math.max(
+    0,
+    Math.floor(finiteNumberOr(career.completedExpeditionRuns, 0))
+  )
+  const finalized = Math.max(
+    0,
+    Math.floor(finiteNumberOr(career.finalizedExpeditionRuns, 0))
+  )
   const regions = career.completedExpeditionRegionIds.length
   if (
     completed >= 10 &&
@@ -74,7 +90,7 @@ export const deriveExpeditionCareerRank = (
     return 'cult_legend'
   }
   if (completed >= 5 && regions >= 2) return 'headliner'
-  if (career.finalizedExpeditionRuns >= 2 && completed >= 1) {
+  if (finalized >= 2 && completed >= 1) {
     return 'roadtested'
   }
   return 'rookie'

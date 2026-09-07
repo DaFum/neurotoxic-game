@@ -80,7 +80,7 @@ export const EXPEDITION_REGIONS = {
       recoveryNodeWeightMultiplier: 0.9
     }
   }
-} as const satisfies Record<string, ExpeditionRegionDefinition>
+} as const satisfies Record<ExpeditionRegionId, ExpeditionRegionDefinition>
 
 /** Reads a Region definition, or `null` for an id the registry does not have. */
 export const getExpeditionRegion = (
