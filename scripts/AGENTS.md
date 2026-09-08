@@ -9,6 +9,27 @@
 - `gigGapDays` controls frequency; `SHIPPED_GIG_CADENCE_POLICY` controls eligible days and belongs in the harness. Main reports use 2,000 runs and `SIMULATION_CONSTANTS.seedNamespace`; changing the namespace creates unpaired cohorts.
 - Diagnose insolvency before and after the first gig separately through `run.earlyRunway`. Sample `observeEarlyRunwayMoney()` after every money-moving call; sampling only after a group can hide an intermediate trough.
 
+## Fixture Construction
+
+- A balance harness may set its own fixture state directly. The root
+  `AGENTS.md` rule that all state updates go through typed action creators
+  governs production; a `SEED_*` action that sets arbitrary Money, Fame, member
+  skills or capability sets would ship in the bundle, and no reducer clamp can
+  distinguish the simulator from a crafted save or a console call - which is
+  precisely what `sanitizeCareerState` and the Expedition load sanitizers exist
+  to stop.
+- The exception covers fixture *construction* only. Every simulated gameplay
+  transition must still go through production: the chassis via the purchase
+  path, modules via `INSTALL_MODULE`, Crew via `isCrewAvailable`, the run via
+  `PREPARE_EXPEDITION_RUN` and `START_EXPEDITION`, the post-Gig payout via
+  `UPDATE_PLAYER`, and every terminal through its own action. A harness that
+  writes a gameplay outcome straight into state is describing a game the code
+  does not implement - that is how the Gig payout came to bypass
+  `enforceExpeditionCashFloor`.
+- Anything the fixture declares must be validated and serialized into
+  `provenance`, so the artifact reproduces a run without reading builder
+  internals.
+
 ## Script Format
 
 - The package is `"type": "module"`, so an ad-hoc script that uses `require()` must be named `.cjs` (see `scripts/benchmark-fast-paths.cjs`).
