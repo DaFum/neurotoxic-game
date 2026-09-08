@@ -769,7 +769,7 @@ Two items withhold release evidence, and three findings sit behind them.
    been run against this build. Capturing at least 20 valid samples is a human
    step. This is the only blocker no code change can clear.
 
-2. **12 open outcome-mix corridor findings**, every one of them the same
+2. **10 open outcome-mix corridor findings**, every one of them the same
    metric: `failedRate` at 0.0% for all six profiles in both cohorts,
    against a 2-50% corridor.
 
@@ -778,20 +778,22 @@ Two items withhold release evidence, and three findings sit behind them.
    without a buff, once the extraction policy stopped treating van condition as
    a lethal threat the game does not implement.
 
-   `failedRate` is the finding that remains, and it is a real one. Production
-   has three lethal paths - `technical_shutdown`, `fuel_stranded`, `bankruptcy`
-   - and a mature run presses none of them: technical condition sits at 60-66
-   at every window. A *fresh* Career fails 0-81% of its runs depending on
-   persona, so the tail is not missing from the game, only from the
-   mature-fixture runs. The curve is inverted, and closing it is a G2 question
-   about technical wear rates rather than an extraction-policy one.
+   `failedRate` is the finding that remains, and two profiles have now left it:
+   `underground_heat` fails 4.3% / 4.5% and `rival_hunter` 1.1% / 0.9%, the
+   first non-zero mature failure rates this gate has produced. Both arrived
+   when the mature fixture stopped carrying 500,000 Cash, which had disarmed
+   `bankruptcy` and `fuel_stranded` by construction.
 
-3. **Fresh-Career run failure is too high on two personas.** `scout_intel` and
-   `underground_heat` both lose 80.8% of their runs; `high_exposure_performance`
-   44.2% and `rival_hunter` 38.1% are defensible, and `clean_sponsor` and
-   `diy_repair` now lose none. Every Career survives all six Tours, but for the
-   first two most of those Tours are lost. Coverage is no longer the
-   constraint; the risk curve is.
+   The other four still read 0.0%. They complete or extract before anything can
+   kill them, and the remaining lethal path - `technical_shutdown` - needs a
+   condition group at 0 while technical condition sits at 60-66 at every
+   window. That last part is a G2 question about wear rates.
+
+3. **Fresh-Career risk is now a curve rather than a cliff.** Across 12,000
+   sequences the run outcome mix is 36.3% completed, 23.9% extracted, 39.8%
+   failed - against 14.7 / 68.3 / 17.0 before this gate's economy work. Every
+   Career still survives all six Tours with zero halts and zero insolvencies
+   after a normal terminal.
 
 4. **The Sponsor advance is now unreachable.** It is generated only for a
    Career that `isExpeditionCareerInsolvent`, and the road fund guarantees
@@ -800,9 +802,12 @@ Two items withhold release evidence, and three findings sit behind them.
    has been replaced by a stricter guarantee, but the decision family is dead
    content now and needs either a new trigger or removal from the G5 contract.
 
-5. **Permanent progression has not kept pace with coverage.** Complete Careers
-   went 7,517 -> 12,000 while permanent-capability acquisition moved 5,480 ->
-   5,467. Headliner and a naturally earned Legendary sit at 449 of 12,000;
+5. **Permanent progression has caught up.** Complete Careers went 7,517 ->
+   12,000 and permanent-capability acquisition 5,480 -> 6,283. Headliner moved
+   449 -> 3,149 of 12,000 - a Career now finishes enough Tours to reach the
+   rank rather than merely surviving six. Sponsor advances fired 990 times
+   after the insolvency threshold stopped testing the one cost the road fund
+   guarantees;
    Ascension, crew signature traits and cleared Crew recovery debt remain at 0;
    `sameRivalReturnRate` is still 0 across all 12,000, so Nemesis levels
    advance but no Rival ever returns. More Tours are being played without more

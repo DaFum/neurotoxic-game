@@ -2,8 +2,8 @@
 
 **Correctness:** ✅ PASS
 **Release evidence:** ⚠️ NOT RELEASE EVIDENCE
-**Release blocked by:** no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 12 unresolved balance corridor finding(s)
-**Generated At:** 2026-09-08T13:24:07.760Z
+**Release blocked by:** no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 10 unresolved balance corridor finding(s)
+**Generated At:** 2026-09-08T15:52:08.214Z
 **Profiles:** 6 mature archetypes
 **Sample Count Per Cohort:** 2000
 
@@ -11,8 +11,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| Source fingerprint | `8563a667c89aa4786bf02a797cfd46f95848e304b7a906db2a47894de4b1af02` |
-| Generator fingerprint | `180542684911065555e2ef6b45d8286239e5af9fe83db77ef5c3b73311627936` |
+| Source fingerprint | `9b5c40d7fc2de55e73e1ade7952e9c3d3baa527c3d56dc2aae33f42994b2546f` |
+| Generator fingerprint | `1ca65dee56b91dc31f52df2556f1b276b48b2b7fcb676558539b1fd19c813981` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
 | Runs per scenario | 2000 |
 | Working tree dirty | no |
@@ -40,17 +40,15 @@ All 14 Hard Correctness Gates passed with 0 invariant violations across all coho
 G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treats the 20–30 minute window as a product corridor rather than a synthetic hard gate. These do not fail correctness, but they do hold back release evidence.
 
 - ⚠️ Balance corridor: Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Balance corridor: Profile underground_heat failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile diy_repair failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile scout_intel failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Balance corridor: Profile rival_hunter failedRate 0.0% outside 2-50% corridor in calibration
+- ⚠️ Balance corridor: Profile rival_hunter failedRate 1.1% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Balance corridor: Profile underground_heat failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile diy_repair failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile scout_intel failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Balance corridor: Profile rival_hunter failedRate 0.0% outside 2-50% corridor in holdout
+- ⚠️ Balance corridor: Profile rival_hunter failedRate 0.9% outside 2-50% corridor in holdout
 - ⚠️ Runtime pacing evidence unusable: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json. Capture a playtest cohort into docs/superpowers/reports/roguelite-expedition-runtime-evidence.json for this source fingerprint.
 
 ### Release coverage
@@ -59,18 +57,18 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 | :--- | ---: | ---: |
 | Task 8 calibration cohort | 2000 | 2000 |
 | Task 8 holdout cohort | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, clean_sponsor, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, underground_heat, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, diy_repair, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, scout_intel, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, high_exposure_performance, scarcest of 3 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (calibration, rival_hunter, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, clean_sponsor, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, underground_heat, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, diy_repair, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, scout_intel, scarcest of 4 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, high_exposure_performance, scarcest of 3 window(s)) | 2000 | 2000 |
-| Task 9 extraction pairs (holdout, rival_hunter, scarcest of 4 window(s)) | 2000 | 2000 |
+| Task 9 extraction pairs (calibration, clean_sponsor, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (calibration, underground_heat, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (calibration, diy_repair, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (calibration, scout_intel, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (calibration, high_exposure_performance, scarcest of 3 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (calibration, rival_hunter, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, clean_sponsor, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, underground_heat, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, diy_repair, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, scout_intel, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, high_exposure_performance, scarcest of 3 window(s), 0 run(s) reached it) | 0 | 0 |
+| Task 9 extraction pairs (holdout, rival_hunter, scarcest of 4 window(s), 0 run(s) reached it) | 0 | 0 |
 | Task 10 skill trios (calibration) | 12000 | 12000 |
 | Task 10 skill trios (holdout) | 12000 | 12000 |
 | Task 11 fog pairs (calibration, both sources) | 20000 | 20000 |
@@ -84,12 +82,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 40.4% | 59.6% | 0.0% | 6.7 | $492063 | 7649 |
-| `underground_heat` | 37.0% | 63.0% | 0.0% | 6.7 | $482902 | 14871 |
-| `diy_repair` | 86.4% | 13.6% | 0.0% | 8.7 | $498239 | 15824 |
-| `scout_intel` | 68.8% | 31.1% | 0.0% | 7.4 | $494345 | 12287 |
-| `high_exposure_performance` | 82.6% | 17.4% | 0.0% | 5.7 | $487992 | 14299 |
-| `rival_hunter` | 42.4% | 57.6% | 0.0% | 6.7 | $489917 | 12940 |
+| `clean_sponsor` | 54.4% | 45.6% | 0.0% | 7.0 | $9405 | 8586 |
+| `underground_heat` | 71.9% | 23.8% | 4.3% | 7.4 | $1658 | 13862 |
+| `diy_repair` | 65.1% | 34.8% | 0.0% | 8.2 | $9058 | 13389 |
+| `scout_intel` | 68.8% | 31.1% | 0.0% | 7.4 | $5895 | 12287 |
+| `high_exposure_performance` | 82.0% | 18.1% | 0.0% | 5.6 | $5154 | 14255 |
+| `rival_hunter` | 41.1% | 57.7% | 1.1% | 6.7 | $2410 | 12346 |
 
 ## 3. Single-Run Holdout Confirmation
 
@@ -97,12 +95,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 40.8% | 59.2% | 0.0% | 6.7 | $492077 | 7629 |
-| `underground_heat` | 36.3% | 63.7% | 0.0% | 6.6 | $482932 | 14509 |
-| `diy_repair` | 85.3% | 14.7% | 0.0% | 8.7 | $498187 | 15278 |
-| `scout_intel` | 64.1% | 35.9% | 0.0% | 7.3 | $494263 | 11767 |
-| `high_exposure_performance` | 82.0% | 18.1% | 0.0% | 5.6 | $488016 | 13976 |
-| `rival_hunter` | 40.6% | 59.4% | 0.0% | 6.6 | $489944 | 12506 |
+| `clean_sponsor` | 55.5% | 44.5% | 0.0% | 7.0 | $9446 | 8512 |
+| `underground_heat` | 70.0% | 25.5% | 4.5% | 7.3 | $1652 | 13549 |
+| `diy_repair` | 63.8% | 36.2% | 0.0% | 8.1 | $8997 | 12851 |
+| `scout_intel` | 64.1% | 35.9% | 0.0% | 7.3 | $5811 | 11767 |
+| `high_exposure_performance` | 81.3% | 18.8% | 0.0% | 5.6 | $5180 | 13925 |
+| `rival_hunter` | 39.4% | 59.7% | 0.9% | 6.6 | $2408 | 12016 |
 
 ## 3b. Strategy Dominance
 
@@ -110,19 +108,17 @@ Dominance blocks only when the same conclusion reproduces in disjoint calibratio
 
 No strategy strictly dominates the field across both cohorts.
 
-**Corridor findings (12, non-blocking):**
+**Corridor findings (10, non-blocking):**
 - ⚠️ Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Profile underground_heat failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile diy_repair failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile scout_intel failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Profile rival_hunter failedRate 0.0% outside 2-50% corridor in calibration
+- ⚠️ Profile rival_hunter failedRate 1.1% outside 2-50% corridor in calibration
 - ⚠️ Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Profile underground_heat failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile diy_repair failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile scout_intel failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Profile rival_hunter failedRate 0.0% outside 2-50% corridor in holdout
+- ⚠️ Profile rival_hunter failedRate 0.9% outside 2-50% corridor in holdout
 
 ## 4. Paired Extraction Counterfactuals
 
