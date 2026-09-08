@@ -900,6 +900,23 @@ export const enforceExpeditionCashFloor = (
     `Rejected a spend that would cross the protected Career Cash floor (${actionType})`,
     { before, after, floor }
   )
+
+  // A reverted travel settlement leaves no trace, and a run that cannot pay
+  // for any leg is then stuck with no crisis: `checkSoftlock` prices legs
+  // through the career travel gate and knows nothing about this floor, so
+  // `getExpeditionMobilityFailureSignal` stays silent and `accept_failure` -
+  // the unconditional choice that is supposed to make a softlock impossible -
+  // is never offered. Record the refusal as realized evidence, exactly as
+  // `unpaidDailyObligation` records a day tick that could not pay.
+  if (actionType === ActionTypes.COMPLETE_TRAVEL_MINIGAME) {
+    return {
+      ...previousState,
+      expedition: {
+        ...previousState.expedition,
+        blockedTravelAtRouteStep: previousState.expedition.routeStep
+      }
+    }
+  }
   return previousState
 }
 

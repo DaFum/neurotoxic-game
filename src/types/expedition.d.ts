@@ -699,6 +699,18 @@ export interface ExpeditionState {
    * later day can pay it.
    */
   unpaidDailyObligation: number
+  /**
+   * Route step at which the protected Cash floor refused a travel settlement.
+   *
+   * @remarks
+   * Realized evidence, in the same sense as {@link unpaidDailyObligation}: the
+   * run actually tried to leave and the floor reverted it. Without a record,
+   * the reverted action leaves no trace and the mobility signal cannot see
+   * that the run is stuck, so no crisis is raised and `accept_failure` - the
+   * unconditional choice that is supposed to make a softlock impossible - is
+   * never offered.
+   */
+  blockedTravelAtRouteStep: number | null
   outcome: ExpeditionOutcome | null
   cargo?: ExpeditionCargoState | null
   technicalCondition?: ExpeditionTechnicalCondition | null

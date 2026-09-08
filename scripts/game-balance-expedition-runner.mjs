@@ -38,7 +38,10 @@ import {
   getExplicitExtractionRareCarrySlots,
   settleExpedition
 } from '../src/domain/expedition/extraction.ts'
-import { canSpendExpeditionCash } from '../src/domain/expedition/loadout.ts'
+import {
+  canSpendExpeditionCash,
+  getExpeditionSpendableCash
+} from '../src/domain/expedition/loadout.ts'
 import { getExpeditionCargoView } from '../src/domain/expedition/cargo.ts'
 import { getExpeditionNodeFogByNodeId } from '../src/domain/expedition/nodeFog.ts'
 import { isExpeditionSafeHarborWindow } from '../src/domain/expedition/legendaries.ts'
@@ -251,18 +254,21 @@ export const verifyHardCorrectnessGates = (
     }
   }
 
-  // Gate 5 used to assert `money >= protectedCareerCash` at every stage. It
-  // now lives in `verifyProtectedCashNotSpent`, called after each guarded
-  // spend, because the blanket form asserted something production does not
-  // guarantee: `canSpendExpeditionCash` gates *discretionary spends* -
-  // repairs, services, Authority exits, crisis recovery - and nothing gates a
-  // Gig whose `deriveFinancials` net is negative, or a travel settlement. G2's
-  // own exit criterion is narrower too: it names `ADVANCE_DAY`, not every
-  // stage. The stage-wide check only ever passed because the mature fixture
-  // carried 500,000 Cash and no run could spend far enough to reach its own
-  // floor - so the gate was never exercised, and the first three attempts to
-  // give a build a meaningful protected slice were all stopped by it rather
-  // than by a defect.
+  // Gate 5: no in-run spend crosses protectedCareerCash.
+  //
+  // This is production's guarantee, not a stricter harness rule:
+  // `enforceExpeditionCashFloor` runs inside `gameReducer` for *every* action
+  // during an active run and reverts any that lowers Cash past the floor,
+  // exempting only `ADVANCE_DAY`, the load/reset paths and the four terminals.
+  // The gate had never fired because the mature fixture carried 500,000 Cash
+  // and no run could spend far enough to reach its own floor.
+  const protectedCash =
+    state.expedition.loadout?.build?.protectedCareerCash ?? 0
+  if (finiteNumberOr(state.player.money, 0) < protectedCash) {
+    throw new Error(
+      `[HardGate5] Player money ${state.player.money} breached protected cash ${protectedCash} at stage ${stage}`
+    )
+  }
 
   // Gate 6 is a per-leg invariant and lives in
   // `verifyTravelWearSingleSettlement`, called by the traversal loop where the
@@ -1776,15 +1782,24 @@ export const runExpeditionSimulation = (
           BALANCE_CONSTANTS
         })
         telemetry.gigNetTotal += finiteNumberOr(financials.net, 0)
-        state = {
-          ...state,
-          player: {
-            ...state.player,
+        // Through the reducer, not into state.
+        //
+        // `useContinueHandler` applies the post-Gig payout with
+        // `updatePlayer({ money, fame, fameLevel })`, so in production it
+        // passes `gameReducer` and therefore `enforceExpeditionCashFloor` -
+        // the central guard that reverts any action lowering Cash past the
+        // protected slice. Writing the same fields straight into state made
+        // the Gig the one money movement in the run that could cross the
+        // floor, which is not a rule the game has. The simulation has to
+        // reflect the code.
+        state = gameReducer(state, {
+          type: ActionTypes.UPDATE_PLAYER,
+          payload: {
             money: continueStats.newMoney,
             fame: continueStats.newFame,
             fameLevel: continueStats.fameLevel
           }
-        }
+        })
       }
 
       // 3b. Post about the show. The Gig opened a Social settlement window at
@@ -1927,28 +1942,61 @@ export const runExpeditionSimulation = (
         0
       ) / 4294967296
 
-    state = gameReducer(state, createStartTravelMinigameAction(chosenNextId))
-    state = gameReducer(
-      state,
-      createCompleteTravelMinigameAction(minigameDamage, [], travelRng)
-    )
+    // A leg the run cannot pay for is refused by the travel settlement -
+    // `getExpeditionSpendableCash` subtracts the protected slice, so the
+    // reserve is not available to it. A player in that position takes a
+    // cheaper road, and production agrees: `checkSoftlock` only calls the run
+    // stranded when *no* legal move remains. Trying one edge and giving up
+    // reported a strand the game does not, so every affordable candidate is
+    // tried in preference order before the run is called over.
+    const orderedCandidates = [
+      chosenNextId,
+      ...candidateNodeIds.filter(id => id !== chosenNextId)
+    ]
+    let travelled = false
+    for (const candidateId of orderedCandidates) {
+      const attempt = gameReducer(
+        gameReducer(preTravelState, createStartTravelMinigameAction(candidateId)),
+        createCompleteTravelMinigameAction(minigameDamage, [], travelRng)
+      )
+      if (attempt.player.currentNodeId === candidateId) {
+        state = attempt
+        chosenNextId = candidateId
+        travelled = true
+        break
+      }
+      // Keep the refused attempt. `enforceExpeditionCashFloor` records the
+      // refusal on it as realized evidence, and discarding the state would
+      // throw that away - leaving the failure system unable to see that the
+      // run is stuck, which is the softlock this evidence exists to close.
+      state = attempt
+    }
 
-    if (state.player.currentNodeId !== chosenNextId) {
-      // A build that rings off Career Cash can reach a leg it cannot pay for:
-      // `getExpeditionSpendableCash` subtracts the protected slice, so the
-      // travel settlement is refused rather than allowed to spend the reserve.
-      // That is the protection working, not a simulator bug - the run is
-      // stranded and the Career keeps its next start. Accept the terminal the
-      // production failure system already models instead of throwing.
+    if (!travelled) {
+      // No affordable road out. That is the strand production models, so take
+      // the terminal it derives rather than inventing one.
       const stranded = acceptExpeditionFailure(state)
       if (stranded) {
         state = gameReducer(state, stranded)
         telemetry.terminalKind = 'failed'
-        telemetry.terminalSource = 'travel_refused_protected_cash'
+        telemetry.terminalSource = 'travel_unaffordable'
         break
       }
+      // Reachable softlock, not a simulator bug.
+      //
+      // `enforceExpeditionCashFloor` reverts any action that lowers Cash past
+      // `protectedCareerCash`, travel included, so a run can reach a node
+      // where every outgoing leg is refused. Production does not call that a
+      // strand: `getExpeditionMobilityFailureSignal` asks `checkSoftlock`,
+      // which prices legs through `checkTravelPrerequisites` and knows nothing
+      // about the Expedition cash floor. No signal means no crisis, and
+      // `accept_failure` - documented as unconditional precisely so no run can
+      // softlock - is never offered. The run cannot move and cannot end.
+      //
+      // Reproduces on the forced-continue branch of the Task 9 probe, which is
+      // what a player who declines every extraction window is doing.
       throw new Error(
-        `Route advance to ${chosenNextId} was refused at step ${preTravelState.expedition.routeStep}`
+        `[Softlock] Every leg out of ${state.player.currentNodeId} is refused by the protected Career Cash floor at step ${preTravelState.expedition.routeStep}, and production derives no failure signal: spendable ${getExpeditionSpendableCash(state)}, floor ${state.expedition.protectedCareerCash}. checkSoftlock does not model the Expedition cash floor.`
       )
     }
 

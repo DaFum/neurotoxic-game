@@ -912,6 +912,9 @@ export const sanitizeExpeditionState = (
     // A carried shortfall is a debt, so a save cannot make it negative and
     // quietly turn it into credit.
     unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
+    blockedTravelAtRouteStep: isFiniteNumber(value.blockedTravelAtRouteStep)
+      ? Math.max(0, Math.floor(value.blockedTravelAtRouteStep))
+      : null,
     outcome,
     insurancePolicyId:
       getExpeditionInsurancePolicy(
