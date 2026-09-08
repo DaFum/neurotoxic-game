@@ -73,6 +73,13 @@ describe('the G6 close-out matches the committed artifact', () => {
     const report = artifact()
     const section = closeOut()
 
+    if (report.passed === true) {
+      assert.doesNotMatch(
+        section,
+        /not green/,
+        'the artifact passes, so the close-out may not call correctness not green'
+      )
+    }
     if (report.passed !== true) {
       assert.doesNotMatch(
         section,
@@ -91,21 +98,36 @@ describe('the G6 close-out matches the committed artifact', () => {
     const report = artifact()
     const section = closeOut()
     const counts = taskTwelveCounts(report)
-    assert.ok(
-      counts.length > 0,
-      'no Task 12 shortfall in the artifact - if the economy is fixed, rewrite this section and this test together'
-    )
 
-    for (const { cohort, produced, expected } of counts) {
-      assert.ok(
-        section.includes(`${produced} / ${expected}`),
-        `the close-out does not state the ${cohort} count ${produced} / ${expected}`
+    if (counts.length > 0) {
+      // Still short: every produced/expected pair has to appear verbatim.
+      for (const { cohort, produced, expected } of counts) {
+        assert.ok(
+          section.includes(`${produced} / ${expected}`),
+          `the close-out does not state the ${cohort} count ${produced} / ${expected}`
+        )
+      }
+    } else {
+      // Covered: the section must say so with the full counts, not merely stop
+      // mentioning a shortfall. Silence would read as a stale section.
+      const rows = report.coverage?.expected ?? []
+      for (const row of rows) {
+        if (!String(row.label ?? '').includes('Task 12')) continue
+        assert.ok(
+          section.includes(`${row.actual} / ${row.expected}`),
+          `Task 12 is fully covered at ${row.actual} / ${row.expected}; the close-out has to state it`
+        )
+      }
+      assert.match(
+        section,
+        /Correctness is green/,
+        'the artifact passes and the close-out has to say so'
       )
     }
 
-    // The stale figures that made this test necessary. Named explicitly so a
-    // copy-paste of the old section fails loudly rather than reading plausibly.
-    for (const stale of ['44 of 6,000', '37 of 6,000']) {
+    // The superseded figures that made this test necessary, named so a
+    // copy-paste of an older section fails loudly rather than reading well.
+    for (const stale of ['44 of 6,000', '37 of 6,000', '3768 / 6000']) {
       assert.ok(
         !section.includes(stale),
         `the close-out still carries the superseded count "${stale}"`

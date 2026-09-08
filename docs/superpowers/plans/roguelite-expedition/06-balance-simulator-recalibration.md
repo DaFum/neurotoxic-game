@@ -741,78 +741,64 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 
 ## Open at G6 close
 
-**G6 is not green, and correctness is not green.** The committed v15 artifact
-reports `passed: false` and `releaseEligible: false`. This section is read back
-from that artifact by `tests/node/expeditionG6CloseOut.test.js`, so it cannot
-drift from it again: an earlier revision of this section claimed correctness was
-green while carrying counts from a run three economy passes old.
-
-Current verdict, from
-`docs/superpowers/reports/roguelite-expedition-v15-balance.json` at 2,000 runs
-per scenario:
+**Correctness is green. G6 is not release-eligible.** The committed v15
+artifact reports `passed: true` with zero hard correctness failures and
+`releaseEligible: false`. This section is read back from that artifact by
+`tests/node/expeditionG6CloseOut.test.js`, so it cannot drift from it.
 
 ```text
-hard correctness failures   2   (both Task 12 coverage)
-release blockers            4
-Task 12 calibration      4627 / 6000 complete six-run Careers
-Task 12 holdout          4616 / 6000
+hard correctness failures   0
+release blockers            2
+Task 12 calibration      6000 / 6000 complete six-run Careers
+Task 12 holdout          6000 / 6000
 ```
 
-1. **A fresh Career still cannot reliably fund six Tours, so Task 12's binding
-   evidence is incomplete.** 1,373 of 6,000 calibration and 1,384 of 6,000
-   holdout sequences halt on `start_refused_insufficient_career_funds`. This is
-   the gate's one **hard** coverage shortfall and the reason G6 stays open.
+Task 12's coverage shortfall is closed. The arc, across both cohorts: 44 of
+12,000 complete six-run Careers when the harness staged Gigs without paying
+for them, 954 once `deriveFinancials` was wired in, 7,517 after the Phase A
+economy pass, 9,243 once a Career could repair its van and answer every
+Between-Tour question, and 12,000 now that `SETTLE_EXPEDITION_CAREER_RESULT`
+guarantees the price of the next start. Insolvency after a normal terminal is
+0 of 41,012.
 
-   What remains is economic, not technical. The Career-recovery fixes removed
-   every `status_not_prepared` halt - a Career ended by a lost Tour rather than
-   a broke one - and six-run coverage tracks the Career failure rate almost
-   exactly: clean_sponsor fails 0% of runs and completes 100.0% of sequences,
-   scout_intel fails 70% and completes 50.1%. A failed Tour retains 0.25 and
-   the Career frequently cannot rebuild from it.
+Two items withhold release evidence, and three findings sit behind them.
 
-   The economy work moved it a long way. Across both cohorts the completion
-   count was 44 of 12,000 when the harness staged Gigs without paying for
-   them, 954 of 12,000 once `deriveFinancials` was wired in, and is 7,517 of
-   12,000 after extraction retention 0.60 to 0.70, adaptive Fuel targets, the
-   Sponsor advance and the #2924 Career fixes, and is 9,243 of 12,000 now that
-   a Career can repair its van and answer every Between-Tour question. "A long
-   way" is still not "resolved".
-   The sequences themselves are correct: they build each persona's best legal
-   loadout and settle through production transitions. The Career runs out of
-   money. The remaining fix is an economy decision, not a harness change.
-
-2. **No captured pacing cohort.** Ingestion, fingerprint validation and the
+1. **No captured pacing cohort.** Ingestion, fingerprint validation and the
    rejection paths are implemented and tested, but
    `roguelite-expedition-runtime-evidence.json` does not exist: no playtest has
    been run against this build. Capturing at least 20 valid samples is a human
-   step, and the master plan holds the real-duration target soft until it
-   happens.
+   step. This is the only blocker no code change can clear.
 
-3. **16 open outcome-mix corridor findings**, all tuneable and all
-   gameplay rather than harness:
+2. **16 open outcome-mix corridor findings**, all in the mature single-run
+   cohorts, all tuneable and all gameplay rather than harness:
 
-   - **No profile ever fails.** `failedRate` is 0.0% for all six profiles in
-     both cohorts, against a 2-50% corridor. Six failure reasons are
-     implemented; nothing in a run currently threatens a band that keeps its
-     van alive. Phase B established that this is not reachable from the
-     extraction policy - the policy already bails on survival pressure long
-     before a run can die.
-   - **`diy_repair` cannot survive its own route.** It completes 2.7% /
-     2.5% against a 20-90% corridor and extracts on 97.3% / 97.5% against
-     5-90%. Its median van condition at an extraction window is 9. That is
-     road wear or repair economy, not a threshold.
+   - **No mature profile ever fails.** `failedRate` is 0.0% for all six in both
+     cohorts against a 2-50% corridor. That is now a sharper finding than it
+     looks: a *fresh* Career fails 0.1-82% of its runs depending on persona, so
+     the failure tail is not missing from the game, only from the
+     mature-fixture runs. The curve is inverted - fresh Careers are fragile and
+     mature ones invulnerable, the opposite of the intended roguelite shape.
+   - **`diy_repair` cannot survive its own route**, completing 2.7% / 2.5%
+     against 20-90% and extracting on 97.3% / 97.5% against 5-90%. Its median
+     van condition at an extraction window is 9.
 
-   The two profiles that previously completed 100% of seeds no longer do:
-   `underground_heat` reads 79.8% / 79.1% and `high_exposure_performance`
-   61.6% / 60.1%, both inside their corridors, after the Phase B pass wired the
-   Pressure Director and the Social post and made the extraction policy
-   multi-dimensional. Calibration and holdout agree within 1.5pp on every
-   profile.
+3. **Fresh-Career run failure is too high on three personas.** `scout_intel`
+   82.1%, `underground_heat` 78.0%, `high_exposure_performance` 64.1% of runs
+   fail. Every Career now survives all six Tours, but for these personas most
+   of those Tours are lost. Coverage is no longer the constraint; the risk
+   curve is.
 
-4. **Same-Rival return rate still reads 0**, now measured across 12,000
-   sequences rather than inferred. So do Ascension, crew signature-trait
-   unlocks, cleared crew recovery debt and legacy HQ purchases; Headliner rank
-   and a naturally earned Legendary reach 1.3%. The persistent-progression tier
-   is implemented and translated but sits behind (1): a Career that halts after
-   two to four Tours never arrives. These become meaningful once (1) is
-   resolved.
+4. **The Sponsor advance is now unreachable.** It is generated only for a
+   Career that `isExpeditionCareerInsolvent`, and the road fund guarantees
+   exactly the cost that predicate tests, so the condition can never hold: it
+   fired 3,048 times before the change and 0 after. The recovery it provided
+   has been replaced by a stricter guarantee, but the decision family is dead
+   content now and needs either a new trigger or removal from the G5 contract.
+
+5. **Permanent progression has not kept pace with coverage.** Complete Careers
+   went 7,517 -> 12,000 while permanent-capability acquisition moved 5,480 ->
+   5,467. Headliner and a naturally earned Legendary sit at 449 of 12,000;
+   Ascension, crew signature traits and cleared Crew recovery debt remain at 0;
+   `sameRivalReturnRate` is still 0 across all 12,000, so Nemesis levels
+   advance but no Rival ever returns. More Tours are being played without more
+   being earned.
