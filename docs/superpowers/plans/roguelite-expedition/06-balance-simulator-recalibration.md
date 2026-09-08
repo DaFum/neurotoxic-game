@@ -754,21 +754,29 @@ per scenario:
 ```text
 hard correctness failures   2   (both Task 12 coverage)
 release blockers            4
-Task 12 calibration      3768 / 6000 complete six-run Careers
-Task 12 holdout          3749 / 6000
+Task 12 calibration      4627 / 6000 complete six-run Careers
+Task 12 holdout          4616 / 6000
 ```
 
 1. **A fresh Career still cannot reliably fund six Tours, so Task 12's binding
-   evidence is incomplete.** 2,232 of 6,000 calibration and 2,251 of 6,000
+   evidence is incomplete.** 1,373 of 6,000 calibration and 1,384 of 6,000
    holdout sequences halt on `start_refused_insufficient_career_funds`. This is
    the gate's one **hard** coverage shortfall and the reason G6 stays open.
+
+   What remains is economic, not technical. The Career-recovery fixes removed
+   every `status_not_prepared` halt - a Career ended by a lost Tour rather than
+   a broke one - and six-run coverage tracks the Career failure rate almost
+   exactly: clean_sponsor fails 0% of runs and completes 100.0% of sequences,
+   scout_intel fails 70% and completes 50.1%. A failed Tour retains 0.25 and
+   the Career frequently cannot rebuild from it.
 
    The economy work moved it a long way. Across both cohorts the completion
    count was 44 of 12,000 when the harness staged Gigs without paying for
    them, 954 of 12,000 once `deriveFinancials` was wired in, and is 7,517 of
-   12,000 now, after extraction retention 0.60 to 0.70, adaptive Fuel targets,
-   the Sponsor advance and the #2924 Career fixes. "A long way" is still not
-   "resolved".
+   12,000 after extraction retention 0.60 to 0.70, adaptive Fuel targets, the
+   Sponsor advance and the #2924 Career fixes, and is 9,243 of 12,000 now that
+   a Career can repair its van and answer every Between-Tour question. "A long
+   way" is still not "resolved".
    The sequences themselves are correct: they build each persona's best legal
    loadout and settle through production transitions. The Career runs out of
    money. The remaining fix is an economy decision, not a harness change.
