@@ -13,6 +13,10 @@
 
 - The package is `"type": "module"`, so an ad-hoc script that uses `require()` must be named `.cjs` (see `scripts/benchmark-fast-paths.cjs`).
 
+## Test Runners
+
+- `test:all` deliberately oversubscribes process-isolated `node:test` files to overlap Node/TSX startup latency, with a fixed cap to bound memory. Preserve explicit `NODE_TEST_CONCURRENCY` overrides and benchmark the same representative file cohort before changing the multiplier or cap.
+
 ## Experiment Integrity
 
 - Keep `calibration`, `selection`, and `validation` seed streams disjoint. Search candidates on `selection`; measure `validation` exactly once on the already-selected combination. A validation breach yields `no-production-recommendation-final-validation-failed`; never search for a replacement on that stream.
