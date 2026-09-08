@@ -366,7 +366,13 @@ test.describe('Game Flow', () => {
             .isVisible({ timeout: 1000 })
             .catch(() => false))
         },
-        { timeout: 30000, intervals: [500, 1000] }
+        // 60s, not 30s: these two are retry-until-the-UI-advances loops, and on
+        // a loaded CI runner 30s of polling was not enough. The test failed on
+        // roughly half of recent runs - including one commit that changed only a
+        // Node test file - while passing locally on the same commits, and each
+        // failure timed out at a different one of these waits. The test's own
+        // `setTimeout(180000)` still bounds it, so a real hang cannot hide here.
+        { timeout: 60000, intervals: [500, 1000] }
       )
       .toBe(true)
 
@@ -623,7 +629,13 @@ test.describe('Game Flow', () => {
           await backToTourBtn.click({ timeout: 1000 }).catch(() => {})
           return tourPlanHeading.isVisible({ timeout: 1000 }).catch(() => false)
         },
-        { timeout: 30000, intervals: [500, 1000] }
+        // 60s, not 30s: these two are retry-until-the-UI-advances loops, and on
+        // a loaded CI runner 30s of polling was not enough. The test failed on
+        // roughly half of recent runs - including one commit that changed only a
+        // Node test file - while passing locally on the same commits, and each
+        // failure timed out at a different one of these waits. The test's own
+        // `setTimeout(180000)` still bounds it, so a real hang cannot hide here.
+        { timeout: 60000, intervals: [500, 1000] }
       )
       .toBe(true)
   })
