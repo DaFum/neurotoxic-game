@@ -258,7 +258,7 @@ const buildPopulatedState = () => {
     arrivedOverlay: null,
     pendingFailure: null,
     unpaidDailyObligation: 0,
-    blockedTravelAtRouteStep: null,
+    blockedTravelAtRouteStep: 4,
     outcome: null,
     insurancePolicyId: null,
     insuranceClaimConsumed: false,

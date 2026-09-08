@@ -567,6 +567,14 @@ export const applyBetweenTourDecisionOption = (
       // an advance it no longer needs is not one it may take.
       if (state.career.sponsorAdvance !== null) return null
       if (!isExpeditionCareerInsolvent(state)) return null
+      // The whole target, re-derived. Checking only solvency let a crafted
+      // persisted decision credit the advance after a run that *completed* or
+      // extracted, and name any Sponsor id it liked: the failed-run and
+      // canonical-Sponsor conditions live in the resolver, and were only ever
+      // enforced at generation time.
+      const canonicalTarget = resolveSponsorAdvanceTarget(state)
+      if (!canonicalTarget) return null
+      if (canonicalTarget.id !== decision.target.id) return null
       const runId = state.expedition.outcome?.runId
       if (typeof runId !== 'string') return null
       return {

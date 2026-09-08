@@ -1139,10 +1139,18 @@ const playPendingPressureEvent = (state, profile, telemetry) => {
 
   const preferences =
     PRESSURE_EVENT_OPTION_PREFERENCE[profile.decisionPolicy] ?? []
+  // Walk the preference list, not the definition's own order. `find` over the
+  // definition returned whichever option the event happened to list first
+  // among the preferred ones, so a persona that ranks `take_the_address` above
+  // `take_the_long_way` still took the long way when the event listed it first
+  // - and the Heat and Condition telemetry the report reads as persona
+  // evidence was the event's ordering, not the persona's.
   const option =
-    definition.options.find(candidate =>
-      preferences.includes(candidate.id)
-    ) ?? definition.options[0]
+    preferences
+      .map(optionId =>
+        definition.options.find(candidate => candidate.id === optionId)
+      )
+      .find(Boolean) ?? definition.options[0]
   if (!option) return state
 
   const heatBefore = finiteNumberOr(next.expedition.pressure.heat, 0)
@@ -1965,10 +1973,14 @@ export const runExpeditionSimulation = (
         travelled = true
         break
       }
-      // Keep the refused attempt. `enforceExpeditionCashFloor` records the
-      // refusal on it as realized evidence, and discarding the state would
-      // throw that away - leaving the failure system unable to see that the
-      // run is stuck, which is the softlock this evidence exists to close.
+      // Keep the refused attempt for its evidence.
+      //
+      // Every attempt derives from `preTravelState`, so this replaces rather
+      // than accumulates - which is correct here and deliberately so: each
+      // refusal records the *same* `blockedTravelAtRouteStep`, the step the run
+      // is stuck at, so one surviving record carries everything the failure
+      // system needs. Discarding it entirely is what left the run unable to
+      // end.
       state = attempt
     }
 
@@ -2213,7 +2225,9 @@ export const checkStrategyDominance = (calibrationResults, holdoutResults) => {
         EXPEDITION_OUTCOME_RATE_CORRIDORS
       )) {
         const rate = summary[rateName]
-        if (rate < corridor[0] || rate > corridor[1])
+        // A missing rate compares false against both bounds, which reported
+        // no finding for a cohort that never produced the number at all.
+        if (!Number.isFinite(rate) || rate < corridor[0] || rate > corridor[1])
           corridorFindings.push(
             `Profile ${id} ${rateName} ${(rate * 100).toFixed(1)}% outside ${(corridor[0] * 100).toFixed(0)}-${(corridor[1] * 100).toFixed(0)}% corridor in ${cohortName}`
           )

@@ -804,6 +804,7 @@ repayment   applyExpeditionSettlement subtracts from what a LATER run
             so a debt cannot bankrupt a Career between Tours
 
 exit        cleared when outstanding reaches 0; the record is then null
+            on load as well as in memory - a persisted zero would keep
             and a new advance may be offered again
 
 re-check    both `sponsorAdvance === null` and insolvency are re-derived
@@ -813,7 +814,8 @@ re-check    both `sponsorAdvance === null` and insolvency are re-derived
 
 load        an advance is dropped, never repaired, unless dealId is in the
             canonical Sponsor registry, amount is exactly €400, and
-            outstanding is an integer in [0, 500]
+            outstanding is an integer in [1, 500]; a cleared advance
+            serializes as null, never as a zero balance
 ```
 
 Dependent evidence that moves with this family:

@@ -436,7 +436,11 @@ const sanitizeSponsorAdvance = (
   // `isFiniteNumber` rather than coercion: a numeric string or a boolean is a
   // malformed debt, not a small one.
   if (!isFiniteNumber(amount) || amount <= 0) return null
-  if (!isFiniteNumber(outstanding) || outstanding < 0) return null
+  // Zero is cleared, and cleared is `null`. Preserving a zero-balance record
+  // would leave `sponsorAdvance` non-null forever, and both generation and
+  // application require it to be null - so a Career that had repaid its debt
+  // could never be offered another advance.
+  if (!isFiniteNumber(outstanding) || outstanding <= 0) return null
   // One canonical principal. A save carrying any other figure did not get it
   // from `applyBetweenTourDecision`.
   if (amount !== BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT) return null

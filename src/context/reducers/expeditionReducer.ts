@@ -972,12 +972,15 @@ const applyExpeditionSettlement = (
       finiteNumberOr(settlement.moneyRetained, 0)
     )
   )
+  // Normalized once and reused: a persisted `NaN` or `Infinity` compared and
+  // subtracted raw would write an invalid balance straight back into state.
+  const outstanding = finiteNumberOr(advance?.outstanding, 0)
   const nextAdvance =
     advance === null
       ? null
-      : repayable >= advance.outstanding
+      : repayable >= outstanding
         ? null
-        : { ...advance, outstanding: advance.outstanding - repayable }
+        : { ...advance, outstanding: outstanding - repayable }
 
   return {
     ...state,

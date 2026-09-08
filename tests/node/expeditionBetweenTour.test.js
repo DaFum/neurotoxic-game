@@ -978,6 +978,23 @@ describe('G5 - Sponsor advance rescues an insolvent Career', () => {
     }
   })
 
+  it('drops a cleared advance instead of preserving a zero balance', () => {
+    // Zero outstanding means repaid, and repaid means `null`. A preserved
+    // zero-balance record keeps `sponsorAdvance` non-null forever, and both
+    // generation and application require null - so the Career could never be
+    // offered another advance after clearing one.
+    const cleared = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 0,
+      takenAfterRunId: 'run_a'
+    }
+    assert.equal(
+      sanitizeCareerState({ sponsorAdvance: cleared }).sponsorAdvance,
+      null
+    )
+  })
+
   it('refuses a debt production could never have created', () => {
     const advance = {
       dealId: 'basement_zine',
@@ -1006,8 +1023,10 @@ describe('G5 - Sponsor advance rescues an insolvent Career', () => {
     }
 
     // The ceiling itself and a part-repaid balance both survive: the guard
-    // rejects what production cannot mint, not every debt.
-    for (const outstanding of [500, 250, 0]) {
+    // rejects what production cannot mint, not every debt. Zero is excluded
+    // deliberately - a cleared advance serializes as `null`, asserted just
+    // above - because a zero-balance record would block every later advance.
+    for (const outstanding of [500, 250, 1]) {
       assert.deepEqual(
         sanitizeCareerState({ sponsorAdvance: { ...advance, outstanding } })
           .sponsorAdvance,
