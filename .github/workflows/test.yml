@@ -21,7 +21,6 @@ env:
   MAX_FAILURE_LINES: '500'
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
   NEUROTOXIC_LOG_LEVEL: '3'
-  PNPM_VERSION: '11.18.0'
 
 jobs:
   node-tests:
@@ -41,8 +40,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run node:test suite (shard ${{ matrix.shard }}/2)
         id: run-tests
@@ -86,8 +83,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run Vitest Logic suite
         id: run-vitest-logic
@@ -134,8 +129,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run tooling tests
         run: pnpm run test:tooling
@@ -153,8 +146,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run Vitest UI suite
         id: run-vitest-ui
@@ -185,10 +176,10 @@ jobs:
         if: ${{ always() && steps.run-vitest-ui.outputs.exit_code != '0' }}
         run: exit 1
 
-  ts-nocheck-guard:
-    name: TS Nocheck Guard
+  fast-validation:
+    name: Fast Validation
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 20
     # Read-only job: does not comment on the PR.
     permissions:
       contents: read
@@ -201,30 +192,9 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Ensure no new @ts-nocheck debt in src
         run: pnpm run guard:nocheck
-
-  typecheck:
-    name: Typecheck
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # Read-only job: does not comment on the PR.
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run core TypeScript checks
         run: pnpm run typecheck:core
@@ -234,6 +204,15 @@ jobs:
 
       - name: Run reducer TypeScript checks
         run: pnpm run typecheck
+
+      - name: Run locale smoke tests
+        run: pnpm run test:locale:smoke
+
+      - name: Run locale full tests
+        run: pnpm run test:locale:full
+
+      - name: Build production bundle
+        run: pnpm run build
 
   playwright-e2e:
     name: Playwright E2E
@@ -252,76 +231,12 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
       - name: Run Playwright E2E suite
         run: pnpm run test:e2e
-
-  locale-smoke-tests:
-    name: Locale Smoke Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    # Read-only job: does not comment on the PR.
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
-
-      - name: Run locale smoke tests
-        id: run-locale
-        shell: bash
-        run: |
-          rc=0
-          pnpm test:locale:smoke || rc=$?
-          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
-
-      - name: Fail if tests failed
-        if: ${{ always() && steps.run-locale.outputs.exit_code != '0' }}
-        run: exit 1
-
-  locale-full-tests:
-    name: Locale Full Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 5
-    # Read-only job: does not comment on the PR.
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
-
-      - name: Run locale full tests
-        id: run-locale-full
-        shell: bash
-        run: |
-          rc=0
-          pnpm test:locale:full || rc=$?
-          echo "exit_code=$rc" >> "$GITHUB_OUTPUT"
-
-      - name: Fail if tests failed
-        if: ${{ always() && steps.run-locale-full.outputs.exit_code != '0' }}
-        run: exit 1
 
   performance-tests:
     name: Performance Tests
@@ -339,8 +254,6 @@ jobs:
 
       - name: Setup Node.js and pnpm
         uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
 
       - name: Run performance tests
         id: run-perf
@@ -353,25 +266,3 @@ jobs:
       - name: Fail if tests failed
         if: ${{ always() && steps.run-perf.outputs.exit_code != '0' }}
         run: exit 1
-
-  build:
-    name: Production Build
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    # Read-only job: does not comment on the PR.
-    permissions:
-      contents: read
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
-
-      - name: Setup Node.js and pnpm
-        uses: ./.github/actions/setup-node-pnpm
-        with:
-          pnpm-version: ${{ env.PNPM_VERSION }}
-
-      - name: Build production bundle
-        run: pnpm run build
