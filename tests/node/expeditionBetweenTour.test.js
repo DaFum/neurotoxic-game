@@ -415,6 +415,53 @@ describe('G5 — answering derives every value from the stored decision', () => 
     assert.equal(carried.player.money, generated.player.money)
   })
 
+  it('buys the repair the Career can afford instead of refusing outright', () => {
+    // All-or-nothing was a Career-ender: a wrecked van costs EUR 1,200 to
+    // rebuild, a Career between Tours holds a few hundred, so the decision
+    // was refused and the van never recovered - every later Tour bailed out
+    // at its first window and nothing ever earned the EUR 1,200.
+    const base = settled()
+    const brokeAndWrecked = {
+      ...base,
+      player: {
+        ...base.player,
+        money: 240,
+        van: { ...base.player.van, condition: 0 }
+      }
+    }
+    const generated = generate(brokeAndWrecked)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision, 'a wrecked van must still be offered a repair')
+
+    const repaired = resolve(generated, decision.id, 'pay_repair')
+    const points = Math.floor(240 / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
+    assert.equal(repaired.player.van.condition, points)
+    assert.equal(
+      repaired.player.money,
+      240 - points * BETWEEN_TOUR_REPAIR_COST_PER_POINT,
+      'a partial repair is charged at the same price per point as a full one'
+    )
+    assert.ok(repaired.player.money >= 0)
+  })
+
+  it('refuses a repair the Career cannot buy a single point of', () => {
+    const base = settled()
+    const penniless = {
+      ...base,
+      player: {
+        ...base.player,
+        money: BETWEEN_TOUR_REPAIR_COST_PER_POINT - 1,
+        van: { ...base.player.van, condition: 30 }
+      }
+    }
+    const generated = generate(penniless)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision)
+    // Below one point the option does nothing rather than charging for
+    // nothing, and the decision stays unanswered.
+    assert.equal(resolve(generated, decision.id, 'pay_repair'), generated)
+  })
+
   it('refuses a second answer to the same decision', () => {
     const base = settled()
     const damaged = {

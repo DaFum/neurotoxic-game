@@ -39,7 +39,10 @@ import { getEligibleCrewSignatureTrait } from './career'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { hashExpeditionRoute } from './map'
 import { resolveCrewRecoveryDebt } from './injuries'
-import { clampPlayerMoney } from '../../utils/gameState/clamps'
+import {
+  clampPlayerMoney,
+  clampVanCondition
+} from '../../utils/gameState/clamps'
 import {
   getExpeditionFuelTopUpCost,
   EXPEDITION_MAX_STARTING_FUEL
@@ -618,16 +621,32 @@ export const applyBetweenTourDecisionOption = (
         0,
         Math.min(100, finiteNumberOr(state.player.van?.condition, 100))
       )
-      const cost = Math.ceil(
-        (100 - condition) * BETWEEN_TOUR_REPAIR_COST_PER_POINT
+      const missingPoints = 100 - condition
+      if (missingPoints <= 0) return null
+      // Partial repair, priced per point. All-or-nothing was a Career-ender:
+      // a van at condition 0 costs 1200 to rebuild, a Career between Tours
+      // holds a few hundred, and the decision then refused outright - so the
+      // van stayed at 0 for every remaining Tour, each run bailed out at its
+      // first extraction window, and nothing ever earned the 1200. A garage
+      // that will not sell twenty points of repair to a band with 240 in hand
+      // is not a harder game, it is a dead one.
+      const affordablePoints = Math.min(
+        missingPoints,
+        Math.floor(money / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
       )
-      if (cost <= 0 || money < cost) return null
+      if (affordablePoints <= 0) return null
+      // Charged for exactly the points restored, so partial repair cannot be
+      // cheaper per point than paying for the whole job.
+      const cost = affordablePoints * BETWEEN_TOUR_REPAIR_COST_PER_POINT
       return {
         ...state,
         player: {
           ...state.player,
           money: clampPlayerMoney(money - cost),
-          van: { ...state.player.van, condition: 100 }
+          van: {
+            ...state.player.van,
+            condition: clampVanCondition(condition + affordablePoints)
+          }
         }
       }
     }

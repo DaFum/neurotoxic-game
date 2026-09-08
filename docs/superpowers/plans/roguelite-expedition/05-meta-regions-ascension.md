@@ -719,6 +719,25 @@ Decision selection priority and target rules:
 
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
 
+### `vehicle_repair` is partial — changed by the G6 Task 12 economy fix
+
+`pay_repair` originally charged `ceil((100 - condition) * €12)` and set the
+van to 100, refusing outright when the Career could not pay the whole bill.
+That made it a Career-ender rather than a repair. A van at condition 0 costs
+€1,200 to rebuild; a Career between Tours holds a few hundred, so the decision
+was refused, the van stayed at 0 for every remaining Tour, every run bailed out
+at its first extraction window on survival pressure, and nothing ever earned
+the €1,200.
+
+Measured across 150 fresh-Career sequences before the change, median van
+condition at the start of a Tour ran 100, 22, 0, 0, 0, 0. From Tour 3 onward
+the Career toured a wreck.
+
+It now buys what it can afford at the same price per point. Nothing else moves:
+the rate is unchanged, the offer still triggers below
+`BETWEEN_TOUR_REPAIR_CONDITION_CEILING` (75), and a Career that can pay the
+whole bill gets exactly the repair it used to get.
+
 ### `sponsor_advance` — added by the G6 Phase A economy pass
 
 G5 first closed with six families. `sponsor_advance` is the seventh, and this
@@ -794,7 +813,9 @@ sponsor_follow_up
   walk_away -> clear preference; next Sponsor obligation pressure -1 bounded tier
 
 vehicle_repair
-  pay_repair -> ceil((100-condition)*€12), set canonical van condition 100
+  pay_repair -> buy as many condition points as the Career can afford at
+                €12/point, up to the 100 - condition it is missing;
+                charge exactly points_bought * €12
   carry_damage -> no change
 
 network_contact

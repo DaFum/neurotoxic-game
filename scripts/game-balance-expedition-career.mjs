@@ -66,9 +66,40 @@ const DEFAULT_BETWEEN_TOUR_POLICY = Object.freeze({
   crew_debrief: ['rest_band', 'develop_signature'],
   rival_response: ['cool_down', 'confront'],
   sponsor_follow_up: ['walk_away', 'keep_relationship'],
-  vehicle_repair: ['carry_damage', 'pay_repair'],
+  // Repair first. `carry_damage` was the default and no persona overrode it,
+  // so no simulated Career ever repaired its van at any price: median van
+  // condition at the start of a Tour ran 100, 22, 0, 0, 0, 0, every later run
+  // bailed out at its first window on survival pressure, and the sequence then
+  // halted for lack of funds it could no longer earn. A player with a wrecked
+  // van and money in hand repairs it; modelling one who never does made the
+  // Career economy look broken when the simulated decision was.
+  vehicle_repair: ['pay_repair', 'carry_damage'],
   network_contact: ['cash_out', 'follow_lead']
 })
+
+/**
+ * The persona's option preferences for one decision, most-wanted first.
+ *
+ * @param decision - The generated decision instance.
+ * @param personaPolicy - The persona's declared meta policy.
+ * @returns Every option the instance offers, in preference order.
+ *
+ * @remarks
+ * The same order {@link selectBetweenTourOption} takes its single pick from,
+ * exposed in full so a caller can fall through to the next choice when an
+ * earlier one is refused at apply time.
+ */
+export const orderedBetweenTourOptions = (decision, personaPolicy) => {
+  const preferences =
+    personaPolicy?.[decision.type] ??
+    DEFAULT_BETWEEN_TOUR_POLICY[decision.type] ??
+    []
+  const ordered = preferences.filter(id => decision.optionIds.includes(id))
+  for (const id of decision.optionIds) {
+    if (!ordered.includes(id)) ordered.push(id)
+  }
+  return ordered
+}
 
 export const selectBetweenTourOption = (decision, personaPolicy) => {
   const preferences =
@@ -393,6 +424,54 @@ const estimateMinimumNextRunCost = (state, profile) => {
 }
 
 /**
+ * Names the guard that actually refused `START_EXPEDITION`.
+ *
+ * @param {import('../src/types').GameState} state - State after the refused dispatch.
+ * @param {string} statusBeforeStart - Expedition status the dispatch saw.
+ * @param {string | null} preparedIdBeforeStart - Prep id on state before the dispatch.
+ * @param {string} prepId - Prep id the payload carried.
+ * @param {object} normalized - The normalized build the payload carried.
+ * @returns {string} A reason code naming the guard, not a guess at one.
+ *
+ * @remarks
+ * This used to report `start_refused_insufficient_career_funds` for every
+ * refusal, whatever the cause. That single label put 2,232 of 6,000 halts
+ * down to the Career economy while the mean Career held 40x the next run's
+ * minimum cost - a contradiction that stood in the artifact for as long as the
+ * label was a guess. `handleStartExpedition` has four ways to refuse and only
+ * the last is about money; each is checked here in the reducer's own order.
+ */
+const classifyStartRefusal = (
+  state,
+  statusBeforeStart,
+  preparedIdBeforeStart,
+  prepId,
+  normalized
+) => {
+  if (statusBeforeStart !== 'prepared') {
+    // The run before this one never released the slice, so PREPARE could not
+    // claim it and START had nothing to begin.
+    return `start_refused_status_not_prepared:${statusBeforeStart}`
+  }
+  if (preparedIdBeforeStart !== prepId) {
+    return 'start_refused_prep_id_mismatch'
+  }
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
+  const upfrontCost =
+    getExpeditionFuelTopUpCost(currentFuel, normalized.build.startingFuelTarget) +
+    getExpeditionInsurancePremium(normalized.insurancePolicyId)
+  const money = finiteNumberOr(state.player.money, 0)
+  const protectedCash = finiteNumberOr(normalized.build.protectedCareerCash, 0)
+  if (money - upfrontCost < protectedCash) {
+    return 'start_refused_insufficient_career_funds'
+  }
+  // Every guard the reducer states was satisfied and it still refused, so the
+  // cause is somewhere this classifier does not model. Say so rather than
+  // reaching for the nearest plausible label.
+  return 'start_refused_unclassified'
+}
+
+/**
  * Runs a 6-run fresh career progression sequence for a persona profile.
  *
  * @param {import('../src/types').GameState} [initialState]
@@ -562,6 +641,8 @@ export const runFreshCareerSequence = (
     }
 
     // 3. Start run
+    const statusBeforeStart = state.expedition.status
+    const preparedIdBeforeStart = state.expedition.prep?.prepId ?? null
     const cashBeforeRun = finiteNumberOr(state.player.money, 0)
     const fuelBeforeRun = finiteNumberOr(state.player.van?.fuel, 0)
     const vanConditionBeforeRun = finiteNumberOr(
@@ -596,7 +677,13 @@ export const runFreshCareerSequence = (
         halted: true
       })
       haltedAtRun = runIdx
-      haltReason = 'start_refused_insufficient_career_funds'
+      haltReason = classifyStartRefusal(
+        state,
+        statusBeforeStart,
+        preparedIdBeforeStart,
+        prepId,
+        validation.normalized
+      )
       break
     }
     const prepSpend =
@@ -738,12 +825,30 @@ export const runFreshCareerSequence = (
         // Resolve every generated family through the persona's declared meta
         // preferences. The generated instance remains authoritative: a policy
         // can only choose an option that Production actually offered.
-        const free = selectBetweenTourOption(dec, profile.betweenTourMetaPolicy)
+        //
+        // Down the preference order until one is actually accepted. A preferred
+        // option can be legal to offer and still be refused at apply time -
+        // `pay_repair` with less than one point's worth of cash, `take_advance`
+        // once an earlier decision in the same set made the Career solvent -
+        // and a refused resolve leaves the decision unanswered. That is not a
+        // cosmetic miss: `PREPARE_NEXT_EXPEDITION` requires every decision to
+        // be answered, so one stranded question keeps the slice out of `idle`
+        // and every later Tour is refused at START. The sequence then reports
+        // a funding halt for a Career that was never asked for money.
         const beforeAdvance = state.career.sponsorAdvance
-        state = gameReducer(state, {
-          type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
-          payload: { runId, decisionId: dec.id, optionId: free }
-        })
+        for (const optionId of orderedBetweenTourOptions(
+          dec,
+          profile.betweenTourMetaPolicy
+        )) {
+          const next = gameReducer(state, {
+            type: ActionTypes.RESOLVE_EXPEDITION_BETWEEN_TOUR_DECISION,
+            payload: { runId, decisionId: dec.id, optionId }
+          })
+          if (next !== state) {
+            state = next
+            break
+          }
+        }
         if (beforeAdvance === null && state.career.sponsorAdvance !== null) {
           metrics.sponsorAdvancesTaken += 1
         }
@@ -822,6 +927,15 @@ export const runFreshCareerSequence = (
       sponsorIncome,
       cashBeforeSimulation,
       repairSpend: simResult.telemetry.repairSpend,
+      // The two halves of `inRunDelta`, which on its own cannot say whether a
+      // Tour lost money because the Gigs paid badly or because the road was
+      // expensive. `gigNet` is the production `deriveFinancials` net summed
+      // over the run's Gigs; `roadSpend` is everything else the run moved.
+      gigNet: simResult.telemetry.gigNetTotal,
+      roadSpend:
+        cashAtTerminal -
+        cashBeforeSimulation -
+        finiteNumberOr(simResult.telemetry.gigNetTotal, 0),
       inRunDelta: cashAtTerminal - cashBeforeSimulation,
       settlement: cashAfterRun - cashAtTerminal,
       cashAfterRun,
