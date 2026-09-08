@@ -222,26 +222,30 @@ const resolveRivalResponseTarget = (
  * list outlives the Tour.
  */
 /**
- * Whether the Career can no longer fund the cheapest legal next Expedition.
+ * Whether the Career can no longer fund a Tour worth starting.
  *
  * @param state - State the settlements have already advanced.
- * @returns True when even a minimal build is unaffordable.
+ * @returns True when the band cannot fuel up to half a tank.
  *
  * @remarks
- * The Fuel top-up is the whole discretionary floor: a Career between Tours owns
- * whatever chassis and gear it already has, so `getExpeditionFuelTopUpCost` at
- * the minimum legal target is what START would actually charge. Deliberately
- * not a fixed threshold - the floor moves with how much Fuel the last Tour left
- * in the tank.
+ * This used to ask whether the Career could pay the *cheapest legal* build,
+ * which is the rounding-up of the tank the last Tour left - a euro or two.
+ * `SETTLE_EXPEDITION_CAREER_RESULT` now guarantees exactly that amount, so the
+ * predicate could never hold again and `sponsor_advance` stopped being
+ * generated: 3,048 advances before the guarantee, 0 after. A rescue whose
+ * trigger is 'cannot pay two euros' is a rescue that never arrives.
+ *
+ * Half a tank is the threshold because it is what separates a Tour from a
+ * gesture: below it the band cannot reach the far half of any route, so the
+ * run it could legally book is one it cannot finish. Derived from
+ * `EXPEDITION_MAX_STARTING_FUEL` and the production pump price rather than
+ * fixed, so retuning either moves the rescue with it.
  */
 export const isExpeditionCareerInsolvent = (state: GameState): boolean => {
   const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
-  // A build may only top up and the target is an integer, so the cheapest
-  // legal target is the current level rounded up. That is a small charge, but
-  // a Career sitting at exactly zero cannot pay even that - which is the shape
-  // the funding cliff actually takes.
-  const target = Math.min(EXPEDITION_MAX_STARTING_FUEL, Math.ceil(currentFuel))
-  const cost = getExpeditionFuelTopUpCost(currentFuel, target)
+  const viableTarget = Math.floor(EXPEDITION_MAX_STARTING_FUEL / 2)
+  if (currentFuel >= viableTarget) return false
+  const cost = getExpeditionFuelTopUpCost(currentFuel, viableTarget)
   return finiteNumberOr(state.player.money, 0) < cost
 }
 

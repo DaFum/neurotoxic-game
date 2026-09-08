@@ -886,30 +886,39 @@ describe('G5 — the decisions survive a load', () => {
 })
 
 describe('G5 - Sponsor advance rescues an insolvent Career', () => {
-  it('is offered only when the Career cannot pay even the minimum top-up', () => {
-    // Re-derived from the tank, never a fixed threshold: a build may only top
-    // up and the target is an integer, so the floor moves with what the last
-    // Tour left behind.
+  it('is offered only when the Career cannot fuel a Tour worth starting', () => {
+    // Half a tank, not the cheapest legal build. The predicate used to ask
+    // whether the Career could pay the rounding-up of the tank it already had
+    // - a euro or two - and `SETTLE_EXPEDITION_CAREER_RESULT` now guarantees
+    // exactly that, so the rescue could never trigger again: 3,048 advances
+    // before the guarantee, 0 after.
     assert.equal(
       isExpeditionCareerInsolvent({
-        player: { money: 5000, van: { fuel: 50 } }
+        player: { money: 5000, van: { fuel: 10 } }
       }),
-      false
+      false,
+      'a Career that can fuel up is not owed a rescue'
     )
-    // Cash at exactly zero cannot pay the rounding-up charge. This is the
-    // shape the funding cliff actually takes: 81% of fresh-Career halts follow
-    // a failure that left the balance here.
+    // Broke and near empty: cannot reach the far half of any route.
     assert.equal(
       isExpeditionCareerInsolvent({
-        player: { money: 0, van: { fuel: 76.8 } }
+        player: { money: 0, van: { fuel: 10 } }
       }),
       true
     )
-    // A full tank costs nothing to top up, so arithmetic alone never locks a
-    // Career out.
+    // The guaranteed road fund must not read as solvency. Two euros pays the
+    // rounding charge and nothing else.
     assert.equal(
       isExpeditionCareerInsolvent({
-        player: { money: 0, van: { fuel: 100 } }
+        player: { money: 2, van: { fuel: 12.4 } }
+      }),
+      true,
+      'affording the minimum legal start is not affording a Tour'
+    )
+    // Already past half a tank: nothing to rescue, whatever the balance.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 90 } }
       }),
       false
     )

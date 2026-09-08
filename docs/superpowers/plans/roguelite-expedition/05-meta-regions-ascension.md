@@ -688,7 +688,9 @@ Decision selection priority and target rules:
 ```text
 0. sponsor_advance
    only when ALL THREE hold: the run's terminal kind is 'failed',
-   career.sponsorAdvance is null, and isExpeditionCareerInsolvent(state);
+   career.sponsorAdvance is null, and isExpeditionCareerInsolvent(state) -
+   which means the band cannot fuel to half a tank, not that it cannot pay
+   the cheapest legal build;
    target is the Sponsor the failed run carried, else the lowest-upfront
    deal in the registry, id lexical on a tie
 
@@ -718,6 +720,13 @@ Decision selection priority and target rules:
 ```
 
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
+
+Insolvency is measured against half a tank because the road fund guarantees
+the cheapest legal start. Asking whether the Career can pay *that* would make
+the rescue unreachable by construction - it fired 3,048 times before the
+guarantee and 0 after, until the threshold moved. Half a tank is what
+separates a Tour from a gesture: below it the band cannot reach the far half
+of any route, so the run it could legally book is one it cannot finish.
 
 ### The road fund — added by the G6 Task 12 recovery pass
 
