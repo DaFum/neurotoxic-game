@@ -394,11 +394,14 @@ describe('TourPrep scene', () => {
     state.current = buildState({ fuel: 44.1 })
     render(<TourPrep />)
 
-    const slider = screen.getByTestId('expedition-prep-fuel-target')
+    const slider = screen.getByTestId(
+      'expedition-prep-fuel-target'
+    ) as HTMLInputElement
     expect(slider).toHaveAttribute('min', '45')
-    expect(Number((slider as HTMLInputElement).value)).toBeGreaterThanOrEqual(
-      44.1
-    )
+    // Against the control's own minimum, not against the tank. Comparing to
+    // 44.1 admitted an initial value the slider itself forbids, so a
+    // regression that opened the screen below its allowed range would pass.
+    expect(Number(slider.value)).toBeGreaterThanOrEqual(Number(slider.min))
   })
 
   it('keeps a route back to the menu', () => {
