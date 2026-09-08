@@ -30,7 +30,10 @@ import {
   deriveCohortSeed,
   checkStrategyDominance
 } from './game-balance-expedition-runner.mjs'
-import { runExtractionCounterfactualPair } from './game-balance-expedition-extraction-probe.mjs'
+import {
+  runExtractionCounterfactualPair,
+  summarizeExtractionRegret
+} from './game-balance-expedition-extraction-probe.mjs'
 import { runSkillMatchedTrio } from './game-balance-expedition-skill-probe.mjs'
 import {
   runFogCounterfactualPair,
@@ -643,6 +646,16 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
     extractionProbe: {
       calibrationPairs: extractionResults.calibration.length,
       holdoutPairs: extractionResults.holdout.length,
+      // Restricted to the windows the *policy* chooses. Without these the
+      // artifact prices every legal window and still cannot say whether the
+      // agent's own decisions were any good - the question that separates a
+      // profile which is too weak from one that quits a race it is winning.
+      calibrationRegret: summarizeExtractionRegret(
+        extractionResults.calibration.map(entry => entry.pair)
+      ),
+      holdoutRegret: summarizeExtractionRegret(
+        extractionResults.holdout.map(entry => entry.pair)
+      ),
       samples: extractionResults.calibration.slice(0, 5)
     },
     skillProbe: {

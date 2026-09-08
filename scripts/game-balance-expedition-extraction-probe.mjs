@@ -204,7 +204,7 @@ const percentile = (values, p) => {
  * rate is an agent leaving money on the table, and the reverse is an agent
  * doing its job.
  */
-const summarizeExtractionRegret = pairs => {
+export const summarizeExtractionRegret = pairs => {
   const regretMoney = []
   const regretFame = []
   let chosenWindows = 0
