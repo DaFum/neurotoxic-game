@@ -186,7 +186,15 @@ describe('TourPrep scene', () => {
     const base = buildState()
     base.expedition = {
       ...base.expedition,
-      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
+      // The same route the scene opens on. Calling with only `state` resolves
+      // the baseline pressure profile, which stages a different offer count
+      // from the one Tour Prep actually shows.
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(
+        base,
+        'home_turf',
+        'standard_tour',
+        null
+      )
     }
     // `contract_three_good_gigs` is a performance Contract, and that pool is
     // what `festival_network` sells. The subject here is the commit, not the
