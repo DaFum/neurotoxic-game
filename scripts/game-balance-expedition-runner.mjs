@@ -1172,6 +1172,7 @@ const playPendingPressureEvent = (state, profile, telemetry) => {
 export const EXTRACTION_POLICY_WEIGHTS = {
   safe_value: {
     survival: 1,
+    vanWear: 0.7,
     heat: 1,
     exposure: 0.5,
     crewStress: 0.6,
@@ -1180,10 +1181,11 @@ export const EXTRACTION_POLICY_WEIGHTS = {
     depth: 0.4,
     value: 0.9,
     cash: 0.8,
-    tolerance: 26
+    tolerance: 22.5
   },
   push_heat: {
     survival: 0.8,
+    vanWear: 0.35,
     heat: 0.25,
     exposure: 0.4,
     crewStress: 0.3,
@@ -1192,10 +1194,11 @@ export const EXTRACTION_POLICY_WEIGHTS = {
     depth: 0.2,
     value: 0.4,
     cash: 0.5,
-    tolerance: 37.5
+    tolerance: 31.5
   },
   repair_first: {
     survival: 1,
+    vanWear: 0.8,
     heat: 0.4,
     exposure: 0.2,
     crewStress: 0.5,
@@ -1208,6 +1211,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
   },
   intel_then_value: {
     survival: 0.7,
+    vanWear: 0.5,
     heat: 0.5,
     exposure: 0.4,
     crewStress: 0.4,
@@ -1220,6 +1224,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
   },
   performance_push: {
     survival: 0.8,
+    vanWear: 0.4,
     heat: 0.6,
     exposure: 1,
     crewStress: 0.7,
@@ -1232,6 +1237,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
   },
   rival_pressure: {
     survival: 0.9,
+    vanWear: 0.5,
     heat: 0.5,
     exposure: 0.3,
     crewStress: 0.4,
@@ -1240,7 +1246,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
     depth: 0.3,
     value: 0.5,
     cash: 0.6,
-    tolerance: 39
+    tolerance: 33
   }
 }
 
@@ -1249,6 +1255,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
  */
 const DEFAULT_EXTRACTION_POLICY_WEIGHTS = {
   survival: 1,
+  vanWear: 0.6,
   heat: 0.5,
   exposure: 0.4,
   crewStress: 0.4,
@@ -1310,13 +1317,27 @@ export const explainExtractionDecision = (state, profile) => {
   const bounded = value => Math.max(0, Math.min(100, finiteNumberOr(value, 0)))
 
   const pressures = {
+    // Only the axes that can actually end a run.
+    //
+    // Production has exactly three lethal paths: `technical_shutdown` when a
+    // technical group hits 0 with no legal recovery, `fuel_stranded` from the
+    // mobility softlock, and `bankruptcy`. Van condition is on none of them -
+    // spec 11.10 has condition zero disable an asset for the run rather than
+    // end it. Folding `100 - vanCondition` in here made the policy bail on a
+    // threat the game does not implement, and it dominated: all 129 regretted
+    // windows were chosen by this dimension, `diy_repair` walked away from a
+    // median 4,443 EUR at van condition 0, and 115 forced continuations across
+    // every profile produced zero failures. Van condition is a cost, and it is
+    // priced as one below.
     // Fuel is scaled so a half tank reads as no pressure and a quarter tank as
     // half: below that the run is choosing between a Supply Stop and a tow.
     survival: Math.max(
-      bounded(100 - vanCond),
       context.technicalConditionPressure,
       bounded(100 - vanFuel * 2)
     ),
+    // What a battered van actually costs: repairs, slower legs, worse travel
+    // outcomes. Real, and worth weighing - just not fatal.
+    vanWear: bounded(100 - vanCond),
     heat: context.heat,
     exposure: context.exposure,
     crewStress: context.crewStressPressure,
