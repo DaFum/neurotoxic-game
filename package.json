@@ -47,6 +47,7 @@
     "test:node:heavy": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs --only-heavy",
     "test:node:quick": "node --max-old-space-size=4096 ./scripts/run-node-tests.mjs --skip-heavy",
     "test:perf": "vitest run --config vitest.config.perf.js tests/performance",
+    "test:tooling": "node ./scripts/run-node-tests.mjs --only-tooling && pnpm exec vitest run --config vitest.config.tooling.js",
     "test:ui": "pnpm run test:vitest:ui",
     "test:ui:file": "pnpm exec vitest run",
     "test:vitest": "pnpm run test:vitest:node && pnpm run test:vitest:ui",
