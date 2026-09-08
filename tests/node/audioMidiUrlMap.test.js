@@ -5,7 +5,10 @@ import { buildAssetUrlMap } from '../../src/utils/audio/playbackUtils'
 // --- Mocks ---
 
 const mockLogger = {
-  warn: mock.fn()
+  warn: mock.fn(),
+  debug: mock.fn(),
+  info: mock.fn(),
+  error: mock.fn()
 }
 mock.module(new URL('../../src/utils/logger.ts', import.meta.url).href, {
   namedExports: { logger: mockLogger }

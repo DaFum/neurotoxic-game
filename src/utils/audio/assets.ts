@@ -73,6 +73,13 @@ if (oggCandidates.length > 0) {
     'AudioEngine',
     `Bundled ${oggCandidates.length} OGG asset(s): ${oggCandidates.join(', ')}`
   )
+} else if (process?.env?.NODE_ENV === 'test') {
+  if (typeof logger.debug === 'function') {
+    logger.debug(
+      'AudioEngine',
+      'No OGG assets bundled. Gig audio will fall back to MIDI playback.'
+    )
+  }
 } else {
   logger.warn(
     'AudioEngine',

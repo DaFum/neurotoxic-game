@@ -62,6 +62,7 @@ const testConcurrency = hasExplicitConcurrency
 
 const commandArgs = [
   '--test',
+  '--no-warnings=ExperimentalWarning',
   '--import',
   'tsx',
   '--experimental-test-module-mocks',
