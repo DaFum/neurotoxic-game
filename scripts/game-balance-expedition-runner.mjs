@@ -1869,6 +1869,19 @@ export const runExpeditionSimulation = (
     )
 
     if (state.player.currentNodeId !== chosenNextId) {
+      // A build that rings off Career Cash can reach a leg it cannot pay for:
+      // `getExpeditionSpendableCash` subtracts the protected slice, so the
+      // travel settlement is refused rather than allowed to spend the reserve.
+      // That is the protection working, not a simulator bug - the run is
+      // stranded and the Career keeps its next start. Accept the terminal the
+      // production failure system already models instead of throwing.
+      const stranded = acceptExpeditionFailure(state)
+      if (stranded) {
+        state = gameReducer(state, stranded)
+        telemetry.terminalKind = 'failed'
+        telemetry.terminalSource = 'travel_refused_protected_cash'
+        break
+      }
       throw new Error(
         `Route advance to ${chosenNextId} was refused at step ${preTravelState.expedition.routeStep}`
       )

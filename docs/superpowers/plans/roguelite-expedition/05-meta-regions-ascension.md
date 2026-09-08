@@ -719,6 +719,31 @@ Decision selection priority and target rules:
 
 Choose 1–3 distinct instances in priority order. Run seed only breaks genuinely equal lower-priority choices.
 
+### The road fund — added by the G6 Task 12 recovery pass
+
+`SETTLE_EXPEDITION_CAREER_RESULT` raises Career Cash to
+`getExpeditionMinimumNextStartCost(state)` when it sits below it. That figure
+is the *unavoidable* charge for booking again: a build may only top the tank
+up, so the cheapest legal `startingFuelTarget` is the tank the Tour left
+rounded up, and the cost is that rounding - a euro or two.
+
+The invariant it establishes: **whatever a Tour ends as - completed, extracted
+or failed - the Career can book the next one.** Not with high probability;
+always. A Tour that ended two euros short of topping off a tank it already
+had was ending Careers on an accounting edge, and that accounted for 2,757 of
+12,000 release sequences dropping out before six runs.
+
+It is deliberately not an income floor. It buys no Fuel above what a build
+must commit, no repairs and no cargo, and any real Tour income dwarfs it, so a
+Career that is merely poor stays poor and every other consequence of a bad
+Tour is untouched. `vehicle_repair` respects the same floor for the same
+reason: a repaired van the band cannot drive anywhere is the wreck in a
+different shape.
+
+Failure is still allowed to cost the Career dearly - retention stays 0.25, the
+van keeps its damage, Crew debt and Sponsor dependence all persist. What it may
+no longer do is end the Career technically.
+
 ### `vehicle_repair` is partial — changed by the G6 Task 12 economy fix
 
 `pay_repair` originally charged `ceil((100 - condition) * €12)` and set the

@@ -126,6 +126,28 @@ export const canSpendExpeditionCash = (
   getExpeditionSpendableCash(state) >= amount
 
 /**
+ * What START will charge for the cheapest legal next Expedition.
+ *
+ * @param state - Career state between Tours.
+ * @returns The unavoidable cost of booking again, in euros.
+ *
+ * @remarks
+ * A build may only top the tank up, never siphon it, so the cheapest legal
+ * `startingFuelTarget` is the tank the last Tour left rounded up - and the only
+ * unavoidable charge is that rounding. It is a euro or two, which is exactly
+ * why a Career stranded just below it reads as absurd: the band cannot book a
+ * Tour because it is two euros short of topping off a tank it already has.
+ */
+export const getExpeditionMinimumNextStartCost = (state: GameState): number => {
+  const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
+  const cheapestTarget = Math.min(
+    EXPEDITION_MAX_STARTING_FUEL,
+    Math.ceil(Math.max(0, currentFuel))
+  )
+  return getExpeditionFuelTopUpCost(currentFuel, cheapestTarget)
+}
+
+/**
  * Cost of topping the van up from its current level to a target level.
  *
  * @param currentFuel - Current `player.van.fuel`.

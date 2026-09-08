@@ -339,6 +339,8 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
   const cargoBudget = profile.cargoPolicy === 'safe' ? 0.1 : 0.05
   const spareParts = spendable > 400 ? Math.floor(cargoBudget * 10) : 0
 
+  const fuelTarget = affordableFuelTarget(state, profile)
+
   const setlistSongIds = [...SONGS_BY_ID.keys()].slice(0, 4)
 
   return {
@@ -366,7 +368,7 @@ export const buildLegalLoadoutApproximation = (state, profile) => {
       // "best currently legal approximation" includes affordable. Insisting on
       // the preferred target while broke made the builder refuse Tours a real
       // player would simply book with a smaller top-up.
-      startingFuelTarget: affordableFuelTarget(state, profile),
+      startingFuelTarget: fuelTarget,
       protectedCareerCash: 0
     }
   }
@@ -399,6 +401,18 @@ const affordableFuelTarget = (state, profile) => {
   return floor
 }
 
+// A build that rings off Career Cash would make next-run solvency structural:
+// `getExpeditionSpendableCash` subtracts the slice from every in-run spend and
+// `settleExpedition` never confiscates it, on any terminal kind. Setting it
+// here is blocked by Gate 5, which asserts `money >= protectedCareerCash` at
+// every stage of an active run - stricter than production, which lets a Gig
+// with a negative net reduce Career Cash without consulting the floor. With a
+// reserve of 2 the gate fires reproducibly on `underground_heat` and
+// `scout_intel`. The gate has never been exercised before because this builder
+// always committed 0, so which of the two is wrong is a design decision rather
+// than a fix: either the gate means discretionary spends only, or the
+// guarantee belongs in `settleExpedition` instead of the build. Recorded here
+// rather than resolved unilaterally.
 /**
  * Cost of the cheapest legal next Expedition this Career could commit.
  *
@@ -414,13 +428,16 @@ const affordableFuelTarget = (state, profile) => {
  */
 const estimateMinimumNextRunCost = (state, profile) => {
   const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
-  // A build may only top up, so the cheapest legal target is the current level
-  // when it already exceeds the profile's, and the profile's otherwise.
-  const target = Math.min(
-    100,
-    Math.max(50, profile.startingFuelTarget, Math.ceil(currentFuel))
+  // Priced through `affordableFuelTarget`, the same rule the build commits by.
+  // This used to floor the target at 50 and at the persona's preference, which
+  // priced a build a poor Career would never commit: it reported 161
+  // post-extraction shortfalls where only 19 sequences actually halted, and
+  // 461 post-failure where only 29 did. A cheapest-legal cost has to be the
+  // cheapest *legal* one - backing off to the tank the Tour left behind.
+  return getExpeditionFuelTopUpCost(
+    currentFuel,
+    affordableFuelTarget(state, profile)
   )
-  return getExpeditionFuelTopUpCost(currentFuel, target)
 }
 
 /**

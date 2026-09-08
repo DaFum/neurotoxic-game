@@ -176,26 +176,24 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
     )
   })
 
-  it('does not count a selected sponsor offer when START refuses the run', () => {
-    // Re-pinned from `high_exposure_performance` seed 13, which stopped
-    // halting once the Career could repair its van: that sequence now runs all
-    // six Tours and accepts every offer it picks, so it no longer reaches the
-    // accounting path this test is about. `rival_hunter` seed 20 still does -
-    // it picks two Sponsors, has one accepted, and is refused at START on Tour
-    // 6 - which is exactly the shape the counters have to get right.
-    const profile = EXPEDITION_BALANCE_PROFILES.find(
-      entry => entry.id === 'rival_hunter'
-    )
-    const result = runFreshCareerSequence(undefined, profile, 20, 6)
-
-    assert.equal(result.haltReason, 'start_refused_insufficient_career_funds')
-    assert.ok(result.metrics.sponsorOffersStaged > 0)
-    assert.ok(
-      result.metrics.sponsorOffersSelected >
-        result.metrics.sponsorOffersAccepted,
-      'a Sponsor picked for a Tour that never started is selected, not accepted'
-    )
-    assert.ok(result.metrics.sponsorOffersAccepted <= result.runsCompleted)
+  it('never strands a Career that finished, bailed out or lost a Tour', () => {
+    // The Task 12 guarantee, asserted rather than hoped for. Two seeds used to
+    // be pinned here to a `start_refused_insufficient_career_funds` halt; both
+    // stopped halting once the Career kept its fuel money, and pinning a seed
+    // to a failure mode makes the fix look like the regression. What matters
+    // is the invariant: whatever a Tour ends as, the next one can be booked.
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      for (let i = 0; i < 6; i++) {
+        const seed = (700000 + i * 7919) >>> 0
+        const result = runFreshCareerSequence(undefined, profile, seed, 6)
+        assert.equal(
+          result.haltReason,
+          null,
+          `${profile.id}/${seed} halted at run ${result.haltedAtRun}: ${result.haltReason}`
+        )
+        assert.equal(result.runsCompleted, 6)
+      }
+    }
   })
 
   it('never counts more Sponsors accepted than were selected or staged', () => {

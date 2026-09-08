@@ -43,6 +43,7 @@ import {
   clampPlayerMoney,
   clampVanCondition
 } from '../../utils/gameState/clamps'
+import { getExpeditionMinimumNextStartCost } from './loadout'
 import {
   getExpeditionFuelTopUpCost,
   EXPEDITION_MAX_STARTING_FUEL
@@ -630,9 +631,17 @@ export const applyBetweenTourDecisionOption = (
       // first extraction window, and nothing ever earned the 1200. A garage
       // that will not sell twenty points of repair to a band with 240 in hand
       // is not a harder game, it is a dead one.
+      // Fuel money is not spendable on bodywork. The Career settlement
+      // guarantees enough to book the next Tour; letting the garage take it
+      // would hand the wreck back in a different shape - a repaired van the
+      // band cannot drive anywhere.
+      const spendable = Math.max(
+        0,
+        money - getExpeditionMinimumNextStartCost(state)
+      )
       const affordablePoints = Math.min(
         missingPoints,
-        Math.floor(money / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
+        Math.floor(spendable / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
       )
       if (affordablePoints <= 0) return null
       // Charged for exactly the points restored, so partial repair cannot be
