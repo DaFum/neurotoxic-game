@@ -511,6 +511,11 @@ export interface CareerRivalHistory {
   encounterCount: number
   lastOutcome: 'hostile_win' | 'hostile_loss' | 'respect' | 'alliance' | null
   lastSeenRunId: string | null
+  // Run in which this Rival's Nemesis level last advanced. Distinct from
+  // `lastSeenRunId`, which START stamps on selection and therefore already
+  // equals the current run id; this is the per-run guard that keeps the ladder
+  // a cross-run relationship instead of something one Tour can farm.
+  lastNemesisAdvanceRunId: string | null
 }
 
 export interface CareerRivalRecord {
@@ -524,12 +529,40 @@ G4 replaces G3's placeholder `career.rivalsById` type with `Record<string,Career
 `selectExpeditionRivalForRun(state, preparedMap, routeProfile)`:
 
 ```text
-choose eligible persistent record first
-sort by nemesisLevel desc, encounterCount desc, id lexical
-rehydrate state.rivalBand from stored snapshot without generateRivalBand()
-only if no existing eligible record may current generator create a new Rival
-snapshot new Rival once
+only when the Career owns the `rival_quest_continuation` capability:
+  choose eligible persistent record first
+  sort by nemesisLevel desc, encounterCount desc, id lexical
+  rehydrate state.rivalBand from stored snapshot without generateRivalBand()
+otherwise, and when no existing eligible record matches:
+  current generator creates a new Rival, snapshotted once
 ```
+
+**The capability gate is real and it is load-bearing.** `rival_network` sells
+`rival_quest_continuation` for 5 Tour Tokens at `headliner` rank with
+`management_office` level 2. Until a Career owns it, every run draws a fresh
+Rival, and `tests/node/expeditionUnlockSets.test.js` asserts
+`selectExpeditionRivalForRun` as its production consumer - so this is deliberate
+design, not an accident. It went undeclared here until the G6 review, which is
+the drift being corrected: production carried a rule stricter than its own
+contract, and the contract's `only if no existing eligible record` read as
+unconditional.
+
+Two consequences are worth stating rather than discovering again:
+
+- The exit criterion "Persistent Rival reuses the same identity across runs" is
+  **not satisfiable inside a six-run fresh Career**. Measured over 12,000
+  release sequences, `sameRivalReturnRate` is 0 in every one of them, because
+  `headliner` is reached by 449 and the set is bought by fewer still. Nemesis
+  levels do advance - 1,962 sequences reach level 1 - but on a different Rival
+  each time, and the per-run advance guard caps a fresh Rival at level 1.
+- That also puts `cult_legend` out of reach on this horizon, since it requires
+  `getMaxPersistentNemesisLevel >= 3` on top of 10 completed runs in 4 Regions.
+  Not a defect: six runs is simply shorter than that ladder.
+
+A G4 exit criterion depending on a G5 unlock set inverts the gate order the
+master plan requires. Whether the gate should move, the criterion should be
+reworded, or the horizon should lengthen is a design decision and is recorded
+here unresolved.
 
 Nemesis:
 
@@ -680,7 +713,7 @@ Expected: PASS.
 - Crowd Hype rewards active execution without auto-winning.
 - Pressure Director includes Heat, Exposure, Fame expectation, Cash, Condition, Crew Stress, obligations, Rival and route depth plus cross-family relief.
 - High Heat can create a real Underground opportunity.
-- Persistent Rival reuses the same identity across runs and Nemesis levels change real rules.
+- Persistent Rival reuses the same identity across runs once the Career owns `rival_quest_continuation`, and Nemesis levels change real rules. See Task 10: this is unreachable inside a six-run Career and the ordering is unresolved.
 - Expedition quests use existing quest owners.
 - Every Finale type has a concrete production profile.
 - Run Draft offers are source-proven/reducer-generated.
