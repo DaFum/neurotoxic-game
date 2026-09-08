@@ -19,6 +19,7 @@
     "prepare": "husky",
     "preview": "vite preview",
     "balance:expedition": "node --import tsx scripts/game-balance-expedition.mjs",
+    "balance:expedition:quick": "node --import tsx scripts/game-balance-expedition.mjs --quick",
     "simulate:balance": "node --import tsx scripts/game-balance-simulation.mjs",
     "simulate:balance:experiments": "node --import tsx scripts/game-balance-experiments.mjs",
     "simulate:balance:tension": "node --import tsx scripts/game-balance-tension-report.mjs",
