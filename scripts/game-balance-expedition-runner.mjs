@@ -251,14 +251,18 @@ export const verifyHardCorrectnessGates = (
     }
   }
 
-  // Gate 5: active expense crosses protectedCareerCash
-  const protectedCash =
-    state.expedition.loadout?.build?.protectedCareerCash ?? 0
-  if (finiteNumberOr(state.player.money, 0) < protectedCash) {
-    throw new Error(
-      `[HardGate5] Player money ${state.player.money} breached protected cash ${protectedCash} at stage ${stage}`
-    )
-  }
+  // Gate 5 used to assert `money >= protectedCareerCash` at every stage. It
+  // now lives in `verifyProtectedCashNotSpent`, called after each guarded
+  // spend, because the blanket form asserted something production does not
+  // guarantee: `canSpendExpeditionCash` gates *discretionary spends* -
+  // repairs, services, Authority exits, crisis recovery - and nothing gates a
+  // Gig whose `deriveFinancials` net is negative, or a travel settlement. G2's
+  // own exit criterion is narrower too: it names `ADVANCE_DAY`, not every
+  // stage. The stage-wide check only ever passed because the mature fixture
+  // carried 500,000 Cash and no run could spend far enough to reach its own
+  // floor - so the gate was never exercised, and the first three attempts to
+  // give a build a meaningful protected slice were all stopped by it rather
+  // than by a defect.
 
   // Gate 6 is a per-leg invariant and lives in
   // `verifyTravelWearSingleSettlement`, called by the traversal loop where the
@@ -1181,7 +1185,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
     depth: 0.4,
     value: 0.9,
     cash: 0.8,
-    tolerance: 22.5
+    tolerance: 25.5
   },
   push_heat: {
     survival: 0.8,
@@ -1194,7 +1198,7 @@ export const EXTRACTION_POLICY_WEIGHTS = {
     depth: 0.2,
     value: 0.4,
     cash: 0.5,
-    tolerance: 31.5
+    tolerance: 35
   },
   repair_first: {
     survival: 1,
@@ -1412,6 +1416,38 @@ export const explainExtractionDecision = (state, profile) => {
 }
 
 /**
+ * Gate 5: a guarded spend may never cross the protected Career Cash floor.
+ *
+ * @param {import('../src/types').GameState} before - State before the spend.
+ * @param {import('../src/types').GameState} after - State the reducer returned.
+ * @param {string} label - The spend, for the failure message.
+ * @throws When a guarded spend took money below the build's protected slice.
+ *
+ * @remarks
+ * This is the invariant production actually owns.
+ * `getExpeditionSpendableCash` subtracts the protected slice and every
+ * discretionary spender checks it through `canSpendExpeditionCash`, so a
+ * guarded spend that crosses the floor means a call site bypassed the guard.
+ * Money moving below the floor by other means - a Gig that lost money, a
+ * travel settlement - is legal, and asserting otherwise made the simulation
+ * describe a stricter game than the one in `src/`.
+ */
+const verifyProtectedCashNotSpent = (before, after, label) => {
+  const protectedCash = finiteNumberOr(
+    after.expedition?.loadout?.build?.protectedCareerCash,
+    0
+  )
+  if (protectedCash <= 0) return
+  const moneyBefore = finiteNumberOr(before.player.money, 0)
+  const moneyAfter = finiteNumberOr(after.player.money, 0)
+  if (moneyAfter >= moneyBefore) return
+  if (moneyAfter >= protectedCash) return
+  throw new Error(
+    `[HardGate5] ${label} spent Career Cash below the protected floor: ${moneyBefore} -> ${moneyAfter}, floor ${protectedCash}`
+  )
+}
+
+/**
  * Runs a single Expedition simulation from production loadout creation to terminal settlement.
  *
  * @param {import('../src/types').GameState} fixtureState
@@ -1556,7 +1592,9 @@ export const runExpeditionSimulation = (
       ) {
         const refuelAction = resolveExpeditionCrisis(state, 'refuel')
         if (refuelAction) {
+          const beforeSpend = state
           state = gameReducer(state, refuelAction)
+          verifyProtectedCashNotSpent(beforeSpend, state, 'refuel')
           resolved = true
         }
       } else if (
@@ -1565,13 +1603,17 @@ export const runExpeditionSimulation = (
       ) {
         const towAction = resolveExpeditionCrisis(state, 'tow')
         if (towAction) {
+          const beforeSpend = state
           state = gameReducer(state, towAction)
+          verifyProtectedCashNotSpent(beforeSpend, state, 'tow')
           resolved = true
         }
       } else if (pendingFailure.choices.includes('insurance_claim')) {
         const claimAction = resolveExpeditionCrisis(state, 'insurance_claim')
         if (claimAction) {
+          const beforeSpend = state
           state = gameReducer(state, claimAction)
+          verifyProtectedCashNotSpent(beforeSpend, state, 'insurance_claim')
           telemetry.insuranceClaimed = true
           resolved = true
         }
@@ -1631,7 +1673,9 @@ export const runExpeditionSimulation = (
         if (resolution.ok) {
           const action = executeExpeditionRepair(state, intent)
           if (action) {
+            const beforeRepair = state
             state = gameReducer(state, action)
+            verifyProtectedCashNotSpent(beforeRepair, state, `repair:${intent.mode}`)
             telemetry.repairsCount++
             telemetry.repairSpend += resolution.result.cashCost
           }

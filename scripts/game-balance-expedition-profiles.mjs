@@ -368,6 +368,26 @@ export const validateExpeditionBalanceProfile = profile => {
  * Bumped whenever a field is added or its meaning changes, so an artifact
  * generated against an older shape cannot be mistaken for current evidence.
  */
+/**
+ * Career Cash a mature fixture actually tours with, after construction.
+ *
+ * @remarks
+ * Measured, not chosen: 5,682 (calibration) and 5,601 (holdout) is the mean
+ * Career balance after six Tours across 12,000 release sequences, so this is
+ * what a Career that has played the game holds.
+ *
+ * `matureFixture.money` stays a *construction* budget - steps 4-8 buy the
+ * chassis, install modules and stock cargo through the real purchase paths,
+ * and those cost real money. What it must not also be is the balance the run
+ * operates on. Leaving 500,000 in the account disarmed two of production's
+ * three lethal paths by construction: `bankruptcy` reads
+ * `shouldTriggerBankruptcy` against spendable Cash, and `fuel_stranded` runs
+ * `checkSoftlock` over the same view, where a refuel or a tow is always
+ * affordable. That was the whole of the 0.0% `failedRate` across all six
+ * mature profiles - not a wear curve, a fixture that could not go broke.
+ */
+export const MATURE_FIXTURE_OPERATING_CASH = 5600
+
 export const MATURE_FIXTURE_VERSION = 1
 
 export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
@@ -1013,6 +1033,13 @@ export const buildProductionSimulationLoadout = (
     sortedSongs.sort((a, b) => a.id.localeCompare(b.id))
   }
   const setlistSongIds = sortedSongs.slice(0, 4).map(s => s.id)
+
+  // 9b. Hand the fixture the Cash a Career actually tours with, now that the
+  // construction budget has bought everything the build declares.
+  state = {
+    ...state,
+    player: { ...state.player, money: MATURE_FIXTURE_OPERATING_CASH }
+  }
 
   // 10. Dispatch G1 PREPARE_EXPEDITION_RUN with seed; assert root state.runSeed === seed
   const prepId = `prep_${profile.id}_${seed}`
