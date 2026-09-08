@@ -2,8 +2,8 @@
 
 **Correctness:** ✅ PASS
 **Release evidence:** ⚠️ NOT RELEASE EVIDENCE
-**Release blocked by:** no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 16 unresolved balance corridor finding(s)
-**Generated At:** 2026-09-08T12:29:46.118Z
+**Release blocked by:** no usable pacing evidence: no captured playtest evidence at docs/superpowers/reports/roguelite-expedition-runtime-evidence.json; 12 unresolved balance corridor finding(s)
+**Generated At:** 2026-09-08T13:24:07.760Z
 **Profiles:** 6 mature archetypes
 **Sample Count Per Cohort:** 2000
 
@@ -11,8 +11,8 @@
 
 | Field | Value |
 | :--- | :--- |
-| Source fingerprint | `3ee91297898b971215a15e572f56cef0fcc8b7599957362a0860780635d97873` |
-| Generator fingerprint | `86fdef320c621671bd221a52938176675dfc93ac146e63f9d0cf7906077f3d3a` |
+| Source fingerprint | `8563a667c89aa4786bf02a797cfd46f95848e304b7a906db2a47894de4b1af02` |
+| Generator fingerprint | `180542684911065555e2ef6b45d8286239e5af9fe83db77ef5c3b73311627936` |
 | Seed namespace | `#roguelite-expedition-v1#calibration` |
 | Runs per scenario | 2000 |
 | Working tree dirty | no |
@@ -41,16 +41,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 - ⚠️ Balance corridor: Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile underground_heat failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Balance corridor: Profile diy_repair completedRate 2.7% outside 20-90% corridor in calibration
-- ⚠️ Balance corridor: Profile diy_repair extractedRate 97.3% outside 5-90% corridor in calibration
 - ⚠️ Balance corridor: Profile diy_repair failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile scout_intel failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile rival_hunter failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Balance corridor: Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile underground_heat failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Balance corridor: Profile diy_repair completedRate 2.5% outside 20-90% corridor in holdout
-- ⚠️ Balance corridor: Profile diy_repair extractedRate 97.5% outside 5-90% corridor in holdout
 - ⚠️ Balance corridor: Profile diy_repair failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile scout_intel failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Balance corridor: Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in holdout
@@ -88,12 +84,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 52.9% | 47.0% | 0.0% | 7.0 | $492578 | 8597 |
-| `underground_heat` | 79.8% | 20.3% | 0.0% | 7.6 | $482808 | 19386 |
-| `diy_repair` | 2.7% | 97.3% | 0.0% | 6.3 | $494458 | 6710 |
-| `scout_intel` | 30.3% | 69.7% | 0.0% | 6.5 | $493654 | 9589 |
-| `high_exposure_performance` | 61.6% | 38.5% | 0.0% | 5.2 | $487955 | 12696 |
-| `rival_hunter` | 44.6% | 55.4% | 0.0% | 6.8 | $489810 | 13295 |
+| `clean_sponsor` | 40.4% | 59.6% | 0.0% | 6.7 | $492063 | 7649 |
+| `underground_heat` | 37.0% | 63.0% | 0.0% | 6.7 | $482902 | 14871 |
+| `diy_repair` | 86.4% | 13.6% | 0.0% | 8.7 | $498239 | 15824 |
+| `scout_intel` | 68.8% | 31.1% | 0.0% | 7.4 | $494345 | 12287 |
+| `high_exposure_performance` | 82.6% | 17.4% | 0.0% | 5.7 | $487992 | 14299 |
+| `rival_hunter` | 42.4% | 57.6% | 0.0% | 6.7 | $489917 | 12940 |
 
 ## 3. Single-Run Holdout Confirmation
 
@@ -101,12 +97,12 @@ G6 Task 7 treats the balance corridors as tuneable hypotheses, and Task 14 treat
 
 | Profile | Completed % | Extracted % | Failed % | Mean Depth | Mean Retained Cash | Mean Retained Fame |
 | :--- | :---: | :---: | :---: | :---: | :---: | :---: |
-| `clean_sponsor` | 53.5% | 46.5% | 0.0% | 7.1 | $492592 | 8476 |
-| `underground_heat` | 79.1% | 20.8% | 0.0% | 7.6 | $482813 | 18988 |
-| `diy_repair` | 2.5% | 97.5% | 0.0% | 6.3 | $494445 | 6631 |
-| `scout_intel` | 29.0% | 71.0% | 0.0% | 6.5 | $493620 | 9417 |
-| `high_exposure_performance` | 60.1% | 39.9% | 0.0% | 5.2 | $487987 | 12309 |
-| `rival_hunter` | 43.5% | 56.5% | 0.0% | 6.8 | $489827 | 12936 |
+| `clean_sponsor` | 40.8% | 59.2% | 0.0% | 6.7 | $492077 | 7629 |
+| `underground_heat` | 36.3% | 63.7% | 0.0% | 6.6 | $482932 | 14509 |
+| `diy_repair` | 85.3% | 14.7% | 0.0% | 8.7 | $498187 | 15278 |
+| `scout_intel` | 64.1% | 35.9% | 0.0% | 7.3 | $494263 | 11767 |
+| `high_exposure_performance` | 82.0% | 18.1% | 0.0% | 5.6 | $488016 | 13976 |
+| `rival_hunter` | 40.6% | 59.4% | 0.0% | 6.6 | $489944 | 12506 |
 
 ## 3b. Strategy Dominance
 
@@ -114,19 +110,15 @@ Dominance blocks only when the same conclusion reproduces in disjoint calibratio
 
 No strategy strictly dominates the field across both cohorts.
 
-**Corridor findings (16, non-blocking):**
+**Corridor findings (12, non-blocking):**
 - ⚠️ Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile underground_heat failedRate 0.0% outside 2-50% corridor in calibration
-- ⚠️ Profile diy_repair completedRate 2.7% outside 20-90% corridor in calibration
-- ⚠️ Profile diy_repair extractedRate 97.3% outside 5-90% corridor in calibration
 - ⚠️ Profile diy_repair failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile scout_intel failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile rival_hunter failedRate 0.0% outside 2-50% corridor in calibration
 - ⚠️ Profile clean_sponsor failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile underground_heat failedRate 0.0% outside 2-50% corridor in holdout
-- ⚠️ Profile diy_repair completedRate 2.5% outside 20-90% corridor in holdout
-- ⚠️ Profile diy_repair extractedRate 97.5% outside 5-90% corridor in holdout
 - ⚠️ Profile diy_repair failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile scout_intel failedRate 0.0% outside 2-50% corridor in holdout
 - ⚠️ Profile high_exposure_performance failedRate 0.0% outside 2-50% corridor in holdout

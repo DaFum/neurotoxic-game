@@ -769,24 +769,29 @@ Two items withhold release evidence, and three findings sit behind them.
    been run against this build. Capturing at least 20 valid samples is a human
    step. This is the only blocker no code change can clear.
 
-2. **16 open outcome-mix corridor findings**, all in the mature single-run
-   cohorts, all tuneable and all gameplay rather than harness:
+2. **12 open outcome-mix corridor findings**, every one of them the same
+   metric: `failedRate` at 0.0% for all six profiles in both cohorts,
+   against a 2-50% corridor.
 
-   - **No mature profile ever fails.** `failedRate` is 0.0% for all six in both
-     cohorts against a 2-50% corridor. That is now a sharper finding than it
-     looks: a *fresh* Career fails 0.1-82% of its runs depending on persona, so
-     the failure tail is not missing from the game, only from the
-     mature-fixture runs. The curve is inverted - fresh Careers are fragile and
-     mature ones invulnerable, the opposite of the intended roguelite shape.
-   - **`diy_repair` cannot survive its own route**, completing 2.7% / 2.5%
-     against 20-90% and extracting on 97.3% / 97.5% against 5-90%. Its median
-     van condition at an extraction window is 9.
+   Completion and extraction are now inside their corridors for every profile,
+   which they had never been: `diy_repair` went from 2.7% completion to 86.4%
+   without a buff, once the extraction policy stopped treating van condition as
+   a lethal threat the game does not implement.
 
-3. **Fresh-Career run failure is too high on three personas.** `scout_intel`
-   82.1%, `underground_heat` 78.0%, `high_exposure_performance` 64.1% of runs
-   fail. Every Career now survives all six Tours, but for these personas most
-   of those Tours are lost. Coverage is no longer the constraint; the risk
-   curve is.
+   `failedRate` is the finding that remains, and it is a real one. Production
+   has three lethal paths - `technical_shutdown`, `fuel_stranded`, `bankruptcy`
+   - and a mature run presses none of them: technical condition sits at 60-66
+   at every window. A *fresh* Career fails 0-81% of its runs depending on
+   persona, so the tail is not missing from the game, only from the
+   mature-fixture runs. The curve is inverted, and closing it is a G2 question
+   about technical wear rates rather than an extraction-policy one.
+
+3. **Fresh-Career run failure is too high on two personas.** `scout_intel` and
+   `underground_heat` both lose 80.8% of their runs; `high_exposure_performance`
+   44.2% and `rival_hunter` 38.1% are defensible, and `clean_sponsor` and
+   `diy_repair` now lose none. Every Career survives all six Tours, but for the
+   first two most of those Tours are lost. Coverage is no longer the
+   constraint; the risk curve is.
 
 4. **The Sponsor advance is now unreachable.** It is generated only for a
    Career that `isExpeditionCareerInsolvent`, and the road fund guarantees
