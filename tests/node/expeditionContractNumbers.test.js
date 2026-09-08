@@ -42,7 +42,7 @@ const planText = name =>
       name
     ),
     'utf8'
-  )
+  ).replaceAll('\r\n', '\n')
 
 describe('production matches its owning plan contract', () => {
   it('G1 Task 7 declares the retention rates the code settles at', () => {

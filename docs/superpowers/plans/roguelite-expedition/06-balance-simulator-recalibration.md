@@ -741,31 +741,70 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 
 ## Open at G6 close
 
-Correctness is green. Two items withhold **release evidence** and are tracked
-here rather than in a new amendment file:
+**G6 is not green, and correctness is not green.** The committed v15 artifact
+reports `passed: false` and `releaseEligible: false`. This section is read back
+from that artifact by `tests/node/expeditionG6CloseOut.test.js`, so it cannot
+drift from it again: an earlier revision of this section claimed correctness was
+green while carrying counts from a run three economy passes old.
 
-1. **A fresh Career cannot fund six Tours, so Task 12's binding evidence does
-   not exist.** At release size only 44 of 6,000 calibration and 37 of 6,000
-   holdout sequences complete all six runs; the rest halt on
-   `start_refused_insufficient_career_funds` after two to four Tours. The
-   sequences themselves are correct - they build each persona's best currently
-   legal loadout and settle through production transitions - the Career simply
-   runs out of money. This is the one **hard** coverage shortfall, and the fix
-   is an economy decision (starting purse, payouts, or per-Tour cost), not a
-   harness change.
-2. **No captured pacing cohort.** The ingestion, fingerprint validation and
+Current verdict, from
+`docs/superpowers/reports/roguelite-expedition-v15-balance.json` at 2,000 runs
+per scenario:
+
+```text
+hard correctness failures   2   (both Task 12 coverage)
+release blockers            4
+Task 12 calibration      3768 / 6000 complete six-run Careers
+Task 12 holdout          3749 / 6000
+```
+
+1. **A fresh Career still cannot reliably fund six Tours, so Task 12's binding
+   evidence is incomplete.** 2,232 of 6,000 calibration and 2,251 of 6,000
+   holdout sequences halt on `start_refused_insufficient_career_funds`. This is
+   the gate's one **hard** coverage shortfall and the reason G6 stays open.
+
+   The economy work moved it a long way. Across both cohorts the completion
+   count was 44 of 12,000 when the harness staged Gigs without paying for
+   them, 954 of 12,000 once `deriveFinancials` was wired in, and is 7,517 of
+   12,000 now, after extraction retention 0.60 to 0.70, adaptive Fuel targets,
+   the Sponsor advance and the #2924 Career fixes. "A long way" is still not
+   "resolved".
+   The sequences themselves are correct: they build each persona's best legal
+   loadout and settle through production transitions. The Career runs out of
+   money. The remaining fix is an economy decision, not a harness change.
+
+2. **No captured pacing cohort.** Ingestion, fingerprint validation and the
    rejection paths are implemented and tested, but
    `roguelite-expedition-runtime-evidence.json` does not exist: no playtest has
    been run against this build. Capturing at least 20 valid samples is a human
-   step, and the master plan already holds the real-duration target soft until
-   it happens.
-3. **Two profiles sit outside the outcome-mix corridor.** `underground_heat`
-   and `high_exposure_performance` complete the Finale on 100% of seeds in both
-   calibration and holdout, and no profile fails on any seed. Neither dominates
-   the field, so neither blocks, but the corridor hypothesis "avoids
-   near-certain single outcome" does not currently hold and the numbers want
-   retuning. This is a design decision, not a correctness fix.
-4. **Same-Rival return rate reads 0.** With sequences ending after two or three
-   Tours, the persistent-Nemesis observable has almost no runway to show
-   reuse. It is now measured per run rather than absent, so it will become
-   meaningful once (1) is resolved.
+   step, and the master plan holds the real-duration target soft until it
+   happens.
+
+3. **16 open outcome-mix corridor findings**, all tuneable and all
+   gameplay rather than harness:
+
+   - **No profile ever fails.** `failedRate` is 0.0% for all six profiles in
+     both cohorts, against a 2-50% corridor. Six failure reasons are
+     implemented; nothing in a run currently threatens a band that keeps its
+     van alive. Phase B established that this is not reachable from the
+     extraction policy - the policy already bails on survival pressure long
+     before a run can die.
+   - **`diy_repair` cannot survive its own route.** It completes 2.7% /
+     2.5% against a 20-90% corridor and extracts on 97.3% / 97.5% against
+     5-90%. Its median van condition at an extraction window is 9. That is
+     road wear or repair economy, not a threshold.
+
+   The two profiles that previously completed 100% of seeds no longer do:
+   `underground_heat` reads 79.8% / 79.1% and `high_exposure_performance`
+   61.6% / 60.1%, both inside their corridors, after the Phase B pass wired the
+   Pressure Director and the Social post and made the extraction policy
+   multi-dimensional. Calibration and holdout agree within 1.5pp on every
+   profile.
+
+4. **Same-Rival return rate still reads 0**, now measured across 12,000
+   sequences rather than inferred. So do Ascension, crew signature-trait
+   unlocks, cleared crew recovery debt and legacy HQ purchases; Headliner rank
+   and a naturally earned Legendary reach 1.3%. The persistent-progression tier
+   is implemented and translated but sits behind (1): a Career that halts after
+   two to four Tours never arrives. These become meaningful once (1) is
+   resolved.
