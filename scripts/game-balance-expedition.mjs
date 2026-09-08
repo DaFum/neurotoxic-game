@@ -183,6 +183,200 @@ export const computeReleaseBlockers = ({
 }
 
 /**
+ * Formats a raw extraction probe result into a compact sample according to report schema.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactExtractionSample = entry => {
+  const pair = entry.pair ?? {}
+  const firstWindow = pair.windows?.[0] ?? {}
+  const branchA = firstWindow.branchA ?? {}
+  const branchB = pair.branchB ?? {}
+  const decision = firstWindow.policyWouldExtract ? 'extract' : 'continue'
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    window: firstWindow.windowRouteStep ?? null,
+    decision,
+    extract: {
+      money: branchA.retainedMoney ?? null,
+      fame: branchA.retainedFame ?? null,
+      vanCondition: firstWindow.vanCondition ?? null
+    },
+    continue: {
+      outcome: branchB.outcome ?? null,
+      money: branchB.retainedMoney ?? null,
+      fame: branchB.retainedFame ?? null,
+      vanCondition: branchB.minVanCondition ?? null
+    },
+    delta: {
+      money:
+        firstWindow.deltaMoney ??
+        (branchB.retainedMoney != null && branchA.retainedMoney != null
+          ? branchB.retainedMoney - branchA.retainedMoney
+          : null),
+      fame:
+        firstWindow.deltaFame ??
+        (branchB.retainedFame != null && branchA.retainedFame != null
+          ? branchB.retainedFame - branchA.retainedFame
+          : null)
+    }
+  }
+}
+
+/**
+ * Formats a raw skill probe result into a compact sample according to report schema.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactSkillSample = entry => {
+  const trio = entry.trio ?? {}
+  const low = trio.low ?? {}
+  const comp = trio.competent ?? {}
+  const high = trio.high ?? {}
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    low: {
+      outcome: low.outcome ?? null,
+      money: low.telemetry?.retainedMoney ?? null,
+      fame: low.telemetry?.retainedFame ?? null,
+      minCondition: low.telemetry?.minTechnicalCondition ?? null
+    },
+    competent: {
+      outcome: comp.outcome ?? null,
+      money: comp.telemetry?.retainedMoney ?? null,
+      fame: comp.telemetry?.retainedFame ?? null,
+      minCondition: comp.telemetry?.minTechnicalCondition ?? null
+    },
+    high: {
+      outcome: high.outcome ?? null,
+      money: high.telemetry?.retainedMoney ?? null,
+      fame: high.telemetry?.retainedFame ?? null,
+      minCondition: high.telemetry?.minTechnicalCondition ?? null
+    },
+    delta: {
+      money:
+        high.telemetry?.retainedMoney != null &&
+        low.telemetry?.retainedMoney != null
+          ? high.telemetry.retainedMoney - low.telemetry.retainedMoney
+          : null,
+      fame:
+        high.telemetry?.retainedFame != null &&
+        low.telemetry?.retainedFame != null
+          ? high.telemetry.retainedFame - low.telemetry.retainedFame
+          : null
+    }
+  }
+}
+
+/**
+ * Formats a raw fog probe result into a compact sample according to report schema.
+ *
+ * @param {any} entry
+ * @returns {object}
+ */
+const compactFogSample = entry => {
+  const pair = entry.pair ?? {}
+  const branchA = pair.branchA ?? {}
+  const branchB = pair.branchB ?? {}
+  return {
+    profileId: entry.profileId,
+    seed: entry.seed,
+    source: pair.source ?? null,
+    decisionRouteStep: pair.decisionRouteStep ?? null,
+    revealUsed: pair.revealUsed ?? false,
+    routeChanged: pair.routeChanged ?? false,
+    branchA: {
+      outcome: branchA.outcome ?? null,
+      money: branchA.retainedMoney ?? null,
+      fame: branchA.retainedFame ?? null
+    },
+    branchB: {
+      outcome: branchB.outcome ?? null,
+      money: branchB.retainedMoney ?? null,
+      fame: branchB.retainedFame ?? null
+    },
+    delta: {
+      money:
+        branchB.retainedMoney != null && branchA.retainedMoney != null
+          ? branchB.retainedMoney - branchA.retainedMoney
+          : null,
+      fame:
+        branchB.retainedFame != null && branchA.retainedFame != null
+          ? branchB.retainedFame - branchA.retainedFame
+          : null
+    }
+  }
+}
+
+/**
+ * Formats a career sequence result into a compact sample according to report schema.
+ *
+ * @param {any} sequence
+ * @returns {object}
+ */
+const compactCareerSample = sequence => {
+  return {
+    profileId: sequence.profileId,
+    sequenceSeed: sequence.sequenceSeed,
+    runsRequested: sequence.runsRequested,
+    runsCompleted: sequence.runsCompleted,
+    haltedAtRun: sequence.haltedAtRun ?? null,
+    haltReason: sequence.haltReason ?? null,
+    runOutcomes: sequence.runOutcomes ?? []
+  }
+}
+
+/**
+ * Summarizes career sequence outcomes by profile across sequences.
+ *
+ * @param {any[]} sequences
+ * @returns {Record<string, {
+ *   sequences: number,
+ *   completedAllRunsRate: number,
+ *   meanRunsCompleted: number,
+ *   haltReasons: Record<string, number>
+ * }>}
+ */
+const summarizeCareerSequencesByProfile = sequences => {
+  const byProfile = Object.create(null)
+  for (const seq of sequences) {
+    const id = seq.profileId
+    if (!byProfile[id]) {
+      byProfile[id] = {
+        total: 0,
+        completedAll: 0,
+        completedRunsSum: 0,
+        haltReasons: Object.create(null)
+      }
+    }
+    const cell = byProfile[id]
+    cell.total += 1
+    cell.completedRunsSum += seq.runsCompleted
+    if (seq.runsCompleted === seq.runsRequested) {
+      cell.completedAll += 1
+    } else if (seq.haltReason) {
+      cell.haltReasons[seq.haltReason] =
+        (cell.haltReasons[seq.haltReason] ?? 0) + 1
+    }
+  }
+
+  const result = Object.create(null)
+  for (const [id, cell] of Object.entries(byProfile)) {
+    result[id] = {
+      sequences: cell.total,
+      completedAllRunsRate: cell.total === 0 ? 0 : cell.completedAll / cell.total,
+      meanRunsCompleted: cell.total === 0 ? 0 : cell.completedRunsSum / cell.total,
+      haltReasons: { ...cell.haltReasons }
+    }
+  }
+  return result
+}
+
+/**
  * Runs one probe cohort, funnelling a thrown probe into a hard failure rather
  * than aborting the suite.
  *
@@ -722,12 +916,12 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
       holdoutRegret: summarizeExtractionRegret(
         extractionResults.holdout.map(entry => entry.pair)
       ),
-      samples: extractionResults.calibration.slice(0, 5)
+      samples: extractionResults.calibration.slice(0, 5).map(compactExtractionSample)
     },
     skillProbe: {
       calibrationTrios: skillResults.calibration.length,
       holdoutTrios: skillResults.holdout.length,
-      samples: skillResults.calibration.slice(0, 5)
+      samples: skillResults.calibration.slice(0, 5).map(compactSkillSample)
     },
     fogProbe: {
       calibrationPairs: fogResults.calibration.length,
@@ -754,7 +948,7 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
           ]
         })
       ),
-      samples: fogResults.calibration.slice(0, 5)
+      samples: fogResults.calibration.slice(0, 5).map(compactFogSample)
     },
     careerSequences: {
       calibrationCount: careerResults.calibration.length,
@@ -764,16 +958,11 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
         calibration: summarizeCareerCashflow(careerResults.calibration),
         holdout: summarizeCareerCashflow(careerResults.holdout)
       },
-      metrics: allCareerSequences.map(r => r.metrics),
-      funding: allCareerSequences.map(r => ({
-        profileId: r.profileId,
-        sequenceSeed: r.sequenceSeed,
-        runsRequested: r.runsRequested,
-        runsCompleted: r.runsCompleted,
-        haltedAtRun: r.haltedAtRun,
-        haltReason: r.haltReason,
-        runOutcomes: r.runOutcomes
-      }))
+      summaryByProfile: {
+        calibration: summarizeCareerSequencesByProfile(careerResults.calibration),
+        holdout: summarizeCareerSequencesByProfile(careerResults.holdout)
+      },
+      samples: careerResults.calibration.slice(0, 5).map(compactCareerSample)
     },
     legendaryEdgeCoverage: legendary.statusById,
     runtimeDuration: runtimeSummary,
@@ -956,9 +1145,23 @@ export function formatMarkdownReport(data) {
   md += `- Baseline \`initialState\` purse and Fame — no seeded head start.\n`
   md += `- Fuel is topped up by the build's own \`startingFuelTarget\`, charged at START; van wear carries between Tours.\n`
   md += `- Fixture capability sets are strictly empty for all fresh runs.\n\n`
-  md += `| Profile | Seed | Runs Requested | Runs Funded | Halted At | Reason |\n`
+  md += `### Summary by Profile (Calibration)\n\n`
+  md += `| Profile | Sequences | Completed All 6 % | Mean Runs Completed | Primary Halt Reasons |\n`
+  md += `| :--- | ---: | ---: | ---: | :--- |\n`
+  if (careerSequences.summaryByProfile?.calibration) {
+    for (const [id, stats] of Object.entries(careerSequences.summaryByProfile.calibration)) {
+      const halts =
+        Object.entries(stats.haltReasons || {})
+          .map(([r, c]) => `${c}x ${r}`)
+          .join(', ') || 'None'
+      md += `| \`${id}\` | ${stats.sequences} | ${(stats.completedAllRunsRate * 100).toFixed(1)}% | ${stats.meanRunsCompleted.toFixed(2)} | ${halts} |\n`
+    }
+  }
+  md += `\n`
+  md += `### Compact Sequence Samples\n\n`
+  md += `| Profile | Seed | Runs Requested | Runs Completed | Halted At | Reason |\n`
   md += `| :--- | ---: | ---: | ---: | ---: | :--- |\n`
-  for (const seq of careerSequences.funding) {
+  for (const seq of careerSequences.samples || []) {
     md += `| \`${seq.profileId}\` | ${seq.sequenceSeed} | ${seq.runsRequested} | ${seq.runsCompleted} | ${seq.haltedAtRun ?? '—'} | ${seq.haltReason ?? 'completed all runs'} |\n`
   }
   md += `\n`
