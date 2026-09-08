@@ -2,14 +2,27 @@ import { register } from 'node:module'
 
 process.env.NODE_ENV = 'test'
 
-// Suppress Node's internal experimental feature warnings in test runs (e.g. module mocking, mock timers)
+// Suppress the two experimental warnings the node:test runner emits for
+// features this suite deliberately uses.
+//
+// Matched by message rather than by `name === 'ExperimentalWarning'` alone:
+// the blanket form swallowed every experimental warning, including one a
+// dependency or a future Node release might raise about something we are not
+// opting into - exactly the signal a test run should surface.
+const SUPPRESSED_EXPERIMENTAL_WARNINGS = [
+  'Module mocking',
+  'The MockTimers API'
+]
 const originalEmit = process.emit
 process.emit = function (name, data, ...args) {
   if (
     name === 'warning' &&
     typeof data === 'object' &&
     data !== null &&
-    data.name === 'ExperimentalWarning'
+    data.name === 'ExperimentalWarning' &&
+    SUPPRESSED_EXPERIMENTAL_WARNINGS.some(known =>
+      String(data.message ?? '').includes(known)
+    )
   ) {
     return false
   }

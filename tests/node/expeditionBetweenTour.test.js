@@ -925,9 +925,12 @@ describe('G5 - Sponsor advance rescues an insolvent Career', () => {
   })
 
   it('repays out of what a later run retains, never out of the balance', () => {
-    const withAdvance = (outstanding, money) => {
-      const base = settled({ money })
-      return {
+    // The debt has to exist *before* the terminal transition, because that is
+    // what runs the repayment. Setting it on an already-settled state asserted
+    // the input back to itself and passed whether or not repayment worked.
+    const settleWithDebt = (outstanding, money, earned) => {
+      const base = startedState({ money }, { crewIds: FIXTURE_CREW_IDS })
+      const indebted = {
         ...base,
         career: {
           ...base.career,
@@ -935,20 +938,66 @@ describe('G5 - Sponsor advance rescues an insolvent Career', () => {
             dealId: 'basement_zine',
             amount: 400,
             outstanding,
+            // A different run: the debt was taken on an earlier Tour, which
+            // is the only shape that can be repaid by this one.
             takenAfterRunId: 'run_earlier'
           }
         }
       }
+      const atFinale = walkToFinale(indebted)
+      // The Tour has to have *earned* something, because retention applies to
+      // `money - startingMoney` and the walk alone earns nothing - which is
+      // why the previous version of this test could not exercise repayment at
+      // all.
+      const resolved = {
+        ...atFinale,
+        player: {
+          ...atFinale.player,
+          money: atFinale.expedition.startingMoney + earned
+        },
+        currentGig: { id: 'finale_venue' },
+        lastGigStats: { score: 9000, accuracy: 85, failed: false },
+        expedition: {
+          ...atFinale.expedition,
+          lastGigResolvedAtRouteStep: atFinale.expedition.routeStep
+        }
+      }
+      const startingMoney = atFinale.expedition.startingMoney
+      const completed = gameReducer(resolved, {
+        type: ActionTypes.COMPLETE_EXPEDITION,
+        payload: {
+          finaleResultId: 'finale_result_between_tour',
+          expectedRouteStep: resolved.expedition.routeStep
+        }
+      })
+      assert.equal(completed.expedition.status, 'completed')
+      return { completed, startingMoney }
     }
 
-    // The settled fixture retains money, so the debt is paid down by exactly
-    // what the settlement retained, capped at the outstanding balance.
-    const cleared = withAdvance(1, 5000)
-    assert.equal(cleared.career.sponsorAdvance.outstanding, 1)
+    // A debt smaller than what the run retains is cleared outright, and the
+    // record goes to null rather than lingering at zero.
+    const small = settleWithDebt(1, 5000, 2000)
+    assert.equal(small.completed.career.sponsorAdvance, null)
 
-    // A debt larger than anything one run retains survives, reduced.
-    const large = withAdvance(1_000_000, 5000)
-    assert.ok(large.career.sponsorAdvance.outstanding > 0)
+    // A debt larger than one run's retained Cash survives, reduced - and the
+    // repayment came out of what the run retained, never out of the balance
+    // the Career already had.
+    const large = settleWithDebt(500, 5000, 200)
+    const remaining = large.completed.career.sponsorAdvance
+    assert.ok(remaining, 'a Tour retaining 200 cannot clear a 500 debt')
+    assert.ok(remaining.outstanding > 0)
+    assert.ok(
+      remaining.outstanding < 500,
+      'the debt has to actually go down - this is the assertion the previous version could not make'
+    )
+    // The claim the docstring makes: repayment comes out of what the run
+    // *retained*, so the balance the Career walked in with is never dipped
+    // into. The settlement also forfeits the non-retained share, so comparing
+    // against the pre-terminal balance would be the wrong bar.
+    assert.ok(
+      large.completed.player.money >= large.startingMoney,
+      'repayment must never reach below the balance the Career started the Tour with'
+    )
   })
 
   it('survives a save reload and drops a malformed one', () => {

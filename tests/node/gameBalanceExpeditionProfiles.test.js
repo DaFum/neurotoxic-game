@@ -196,6 +196,7 @@ describe('Expedition Balance Profiles (G6 Tasks 1-3)', () => {
       matureFixture: {
         version: MATURE_FIXTURE_VERSION,
         money: 500000,
+        operatingCash: 5600,
         fame: 150,
         memberSkills: { tech: 5, technical: 5, charisma: 5 },
         vanUpgrades: [],

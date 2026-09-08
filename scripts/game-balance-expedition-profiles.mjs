@@ -209,6 +209,16 @@ export const validateExpeditionBalanceProfile = profile => {
   if (!isFiniteNumber(fixture.money) || fixture.money < 0) {
     throw new Error(`Profile ${profile.id}: matureFixture.money must be a non-negative finite number`)
   }
+
+  // Declared per profile and serialized into provenance, so the artifact
+  // reproduces the run without reading builder internals. It changes
+  // `protectedCareerCash`, refuel capacity and bankruptcy reachability, which
+  // is far too much for a shared constant nobody can see from the profile.
+  if (!isFiniteNumber(fixture.operatingCash) || fixture.operatingCash < 0) {
+    throw new Error(
+      `Profile ${profile.id}: matureFixture.operatingCash must be a non-negative finite number`
+    )
+  }
   if (!isFiniteNumber(fixture.fame) || fixture.fame < 0) {
     throw new Error(`Profile ${profile.id}: matureFixture.fame must be a non-negative finite number`)
   }
@@ -426,6 +436,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -482,6 +493,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -539,6 +551,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -587,6 +600,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -646,6 +660,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -703,6 +718,7 @@ export const EXPEDITION_BALANCE_PROFILES = Object.freeze([
     matureFixture: Object.freeze({
       version: 1,
       money: 500000,
+      operatingCash: MATURE_FIXTURE_OPERATING_CASH,
       fame: 150,
       memberSkills: Object.freeze({ tech: 5, technical: 5, charisma: 5 }),
       // Declared, not derived. Task 2 lists Fuel among the inputs that may
@@ -1038,7 +1054,7 @@ export const buildProductionSimulationLoadout = (
   // construction budget has bought everything the build declares.
   state = {
     ...state,
-    player: { ...state.player, money: MATURE_FIXTURE_OPERATING_CASH }
+    player: { ...state.player, money: matureFixture.operatingCash }
   }
 
   // 10. Dispatch G1 PREPARE_EXPEDITION_RUN with seed; assert root state.runSeed === seed
@@ -1221,6 +1237,8 @@ export const buildProductionSimulationLoadout = (
     matureFixture: {
       version: matureFixture.version,
       money: matureFixture.money,
+      operatingCash: matureFixture.operatingCash,
+      resolvedOperatingCash: state.player?.money ?? null,
       fame: matureFixture.fame,
       memberSkills: { ...matureFixture.memberSkills },
       vanUpgrades: [...matureFixture.vanUpgrades],

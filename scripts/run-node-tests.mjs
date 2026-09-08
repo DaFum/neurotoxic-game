@@ -226,6 +226,25 @@ const applyShard = testFiles => {
   return sorted.filter((_, idx) => idx % shardTotal === shardIndex - 1)
 }
 
+// An explicit path is filtered by the same rule as a discovered one. Without
+// this, `--only-tooling tests/node/actionCreators.test.js` ran a test the flag
+// exists to exclude - the mode silently did not apply to the one invocation
+// that names its files.
+if (isSpecificFile && flagOnlyTooling) {
+  const mismatched = specificTestFileArgs.filter(testFile => {
+    const relativePath = path
+      .relative(REPO_ROOT, path.resolve(REPO_ROOT, testFile))
+      .replaceAll('\\', '/')
+    return isToolingNodeTest(relativePath) !== flagOnlyTooling
+  })
+  if (mismatched.length > 0) {
+    console.error(
+      `Invalid node-test selection: ${mismatched.join(', ')} is not a tooling test.`
+    )
+    process.exit(1)
+  }
+}
+
 const finalArgs = isSpecificFile
   ? [...commandArgs, ...reporterArgs, ...remainingNodeTestArgs]
   : [
