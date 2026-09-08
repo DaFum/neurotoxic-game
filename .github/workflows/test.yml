@@ -118,6 +118,28 @@ jobs:
         if: ${{ always() && steps.run-vitest-logic.outputs.exit_code != '0' }}
         run: exit 1
 
+  tooling-tests:
+    name: Tooling Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Read-only job: does not comment on the PR.
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup Node.js and pnpm
+        uses: ./.github/actions/setup-node-pnpm
+        with:
+          pnpm-version: ${{ env.PNPM_VERSION }}
+
+      - name: Run tooling tests
+        run: pnpm run test:tooling
+
   vitest-ui:
     name: Vitest UI
     runs-on: ubuntu-latest
