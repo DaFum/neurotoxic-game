@@ -2,6 +2,20 @@ import { register } from 'node:module'
 
 process.env.NODE_ENV = 'test'
 
+// Suppress Node's internal experimental feature warnings in test runs (e.g. module mocking, mock timers)
+const originalEmit = process.emit
+process.emit = function (name, data, ...args) {
+  if (
+    name === 'warning' &&
+    typeof data === 'object' &&
+    data !== null &&
+    data.name === 'ExperimentalWarning'
+  ) {
+    return false
+  }
+  return Reflect.apply(originalEmit, this, [name, data, ...args])
+}
+
 // Register the loader relative to this file
 register('./loader.mjs', import.meta.url)
 

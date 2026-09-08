@@ -3,7 +3,10 @@ import path from 'node:path'
 import { spawnSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { computeWorkerCount } from './utils/parallelism.mjs'
-import { NODE_TEST_DIRS } from './utils/node-test-dirs.mjs'
+import {
+  NODE_TEST_DIRS,
+  isToolingNodeTest
+} from './utils/node-test-dirs.mjs'
 
 const rawArgs = process.argv.slice(2)
 const normalizedArgs = rawArgs[0] === '--' ? rawArgs.slice(1) : rawArgs
@@ -12,6 +15,7 @@ const hasFlag = flag => normalizedArgs.includes(flag)
 
 const flagSkipHeavy = hasFlag('--skip-heavy')
 const flagOnlyHeavy = hasFlag('--only-heavy')
+const flagOnlyTooling = hasFlag('--only-tooling')
 
 // Optional sharding: --shard=<index>/<total> (1-based index). Splits the
 // discovered test-file list into <total> deterministic shards so CI can run
@@ -41,6 +45,7 @@ const nodeTestArgs = normalizedArgs.filter(
   arg =>
     arg !== '--skip-heavy' &&
     arg !== '--only-heavy' &&
+    arg !== '--only-tooling' &&
     !arg.startsWith('--shard=') &&
     !arg.startsWith('--test-concurrency')
 )
@@ -57,6 +62,7 @@ const testConcurrency = hasExplicitConcurrency
 
 const commandArgs = [
   '--test',
+  '--no-warnings=ExperimentalWarning',
   '--import',
   'tsx',
   '--experimental-test-module-mocks',
@@ -134,12 +140,23 @@ const shouldOnlyHeavy =
 const shouldSkipHeavy =
   process.env.NODE_TEST_SKIP_HEAVY === '1' || flagSkipHeavy
 
-if (shouldOnlyHeavy && shouldSkipHeavy) {
+if (
+  (shouldOnlyHeavy && shouldSkipHeavy) ||
+  (flagOnlyTooling && (shouldOnlyHeavy || shouldSkipHeavy))
+) {
   console.error(
-    'Invalid node-test heavy mode: --only-heavy and --skip-heavy cannot be used together.'
+    'Invalid node-test selection: --only-tooling, --only-heavy, and --skip-heavy cannot be combined.'
   )
   process.exit(1)
 }
+
+const filterByToolingMode = testFiles =>
+  testFiles.filter(testFile => {
+    const relativePath = path
+      .relative(REPO_ROOT, testFile)
+      .replaceAll('\\', '/')
+    return isToolingNodeTest(relativePath) === flagOnlyTooling
+  })
 
 const filterByHeavyMode = testFiles => {
   if (shouldOnlyHeavy) {
@@ -214,7 +231,9 @@ const finalArgs = isSpecificFile
   : [
       ...commandArgs,
       ...reporterArgs,
-      ...applyShard(filterByHeavyMode(getRemainingTestFiles())),
+      ...applyShard(
+        filterByHeavyMode(filterByToolingMode(getRemainingTestFiles()))
+      ),
       ...remainingNodeTestArgs
     ]
 
