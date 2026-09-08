@@ -85,4 +85,45 @@ describe('Extraction Counterfactual Probe (G6 Task 9)', () => {
       summary.windowsEncounteredCount
     assert.ok(Math.abs(summary.meanDeltaMoney - expectedMean) < 1e-9)
   })
+
+  it('prices the windows the policy actually chooses, not just every legal one', () => {
+    // The cohort could always price a window; it could not say whether the
+    // *agent* was wrong, because it never recorded which windows the agent
+    // takes. Restricted to those, `diy_repair` shows a median regret above
+    // 4,000 with a 0% forced-continue failure rate - it bails at van condition
+    // 0 on a threat that never materialises.
+    const profile = EXPEDITION_BALANCE_PROFILES.find(
+      entry => entry.id === 'diy_repair'
+    )
+    const seeds = Array.from({ length: 8 }, (_, i) => 810000 + i * 6151)
+    const cohort = runExtractionProbeCohort([profile], seeds)
+
+    const regret = cohort.extractionRegret
+    assert.ok(regret, 'the cohort must report extraction regret')
+    assert.ok(
+      regret.chosenWindows > 0,
+      'the policy has to take at least one window for regret to mean anything'
+    )
+    assert.equal(
+      regret.betterToContinueCount +
+        (regret.chosenWindows - regret.betterToContinueCount),
+      regret.chosenWindows
+    )
+    assert.ok(Number.isFinite(regret.moneyP50))
+    // Every chosen window carries the reason that chose it, so a regret figure
+    // can always be attributed to a pressure dimension.
+    const reasonTotal = Object.values(regret.reasonCounts).reduce(
+      (a, b) => a + b,
+      0
+    )
+    assert.equal(reasonTotal, regret.chosenWindows)
+
+    const forced = cohort.forcedContinueOutcome
+    assert.ok(forced.runs > 0)
+    assert.equal(
+      forced.completed + forced.extracted + forced.failed,
+      forced.runs,
+      'every forced continuation has to land in exactly one outcome'
+    )
+  })
 })

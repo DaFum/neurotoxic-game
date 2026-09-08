@@ -10,7 +10,10 @@ import { gameReducer } from '../src/context/gameReducer.ts'
 import { ActionTypes } from '../src/context/actionTypes.ts'
 import { extractExpedition } from '../src/context/expeditionActionCreators.ts'
 import { getExplicitExtractionRareCarrySlots } from '../src/domain/expedition/extraction.ts'
-import { runExpeditionSimulation } from './game-balance-expedition-runner.mjs'
+import {
+  runExpeditionSimulation,
+  explainExtractionDecision
+} from './game-balance-expedition-runner.mjs'
 
 export const EXTRACTION_CALIBRATION_NAMESPACE =
   '#roguelite-expedition-v1#extraction#calibration'
@@ -62,9 +65,19 @@ export const runExtractionCounterfactualPair = (
     ...options,
     extractionDecisionSpy: (canExtract, state) => {
       if (canExtract) {
+        // What the live policy would have done here, recorded before it is
+        // overridden. Without it the probe can price every window but cannot
+        // say which ones the agent actually takes - and the question that
+        // matters is not whether extracting is ever wrong, it is whether the
+        // policy is wrong on the windows it chooses.
+        const decision = explainExtractionDecision(state, profile)
         capturedWindows.push({
           state: structuredClone(state),
-          routeStep: state.expedition.routeStep
+          routeStep: state.expedition.routeStep,
+          policyWouldExtract: decision.extract,
+          policyReason: decision.reason,
+          policyScore: decision.score,
+          policyTolerance: decision.tolerance
         })
       }
       // Always continue: branch B is the single downstream continuation every
@@ -121,6 +134,10 @@ export const runExtractionCounterfactualPair = (
     return {
       windowRouteStep: window.routeStep,
       branchA,
+      policyWouldExtract: window.policyWouldExtract,
+      policyReason: window.policyReason,
+      policyScore: window.policyScore,
+      policyTolerance: window.policyTolerance,
       deltaMoney: branchB.retainedMoney - branchA.retainedMoney,
       deltaFame: branchB.retainedFame - branchA.retainedFame
     }
@@ -153,6 +170,88 @@ export const runExtractionCounterfactualPair = (
     branchB,
     deltaMoney: first.deltaMoney,
     deltaFame: first.deltaFame
+  }
+}
+
+/** Percentile of a numeric sample, or `null` when the sample is empty. */
+const percentile = (values, p) => {
+  if (values.length === 0) return null
+  const sorted = [...values].sort((a, b) => a - b)
+  const index = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))
+  return Math.round(sorted[index])
+}
+
+/**
+ * Prices the policy's own extraction decisions against continuing.
+ *
+ * @param {Array<any>} pairs - Every evaluated pair, with per-window decisions.
+ * @returns {{
+ *   extractionRegret: Record<string, unknown>,
+ *   forcedContinueOutcome: Record<string, unknown>
+ * }}
+ *
+ * @remarks
+ * The cohort already priced every legal window. What it could not say is
+ * whether the *agent* is wrong, because it never recorded which windows the
+ * agent would actually take. Both figures below are restricted to those.
+ *
+ * `extractionRegret` is `branchB.retained - branchA.retained` on the windows
+ * the policy chose: positive means continuing would have paid more, so the
+ * bail-out cost the Career money. `forcedContinueOutcome` is what became of
+ * those same runs when they were made to continue - the risk the policy
+ * bought its way out of. Read together they answer whether a defensive
+ * profile is defensive for a reason: high regret with a low forced-failure
+ * rate is an agent leaving money on the table, and the reverse is an agent
+ * doing its job.
+ */
+const summarizeExtractionRegret = pairs => {
+  const regretMoney = []
+  const regretFame = []
+  let chosenWindows = 0
+  let regretPositive = 0
+  const reasons = Object.create(null)
+  const forced = Object.create(null)
+  let forcedTotal = 0
+
+  for (const pair of pairs) {
+    if (!pair.windowEncountered || !pair.branchB) continue
+    let policyTookAWindow = false
+    for (const window of pair.windows ?? []) {
+      if (!window.policyWouldExtract) continue
+      policyTookAWindow = true
+      chosenWindows += 1
+      regretMoney.push(window.deltaMoney)
+      regretFame.push(window.deltaFame)
+      if (window.deltaMoney > 0) regretPositive += 1
+      const reason = String(window.policyReason ?? 'unknown')
+      reasons[reason] = (reasons[reason] ?? 0) + 1
+    }
+    if (policyTookAWindow) {
+      forced[pair.branchB.outcome] = (forced[pair.branchB.outcome] ?? 0) + 1
+      forcedTotal += 1
+    }
+  }
+
+  return {
+    extractionRegret: {
+      chosenWindows,
+      betterToContinueCount: regretPositive,
+      betterToContinueRate: chosenWindows === 0 ? null : regretPositive / chosenWindows,
+      moneyP10: percentile(regretMoney, 10),
+      moneyP25: percentile(regretMoney, 25),
+      moneyP50: percentile(regretMoney, 50),
+      moneyP75: percentile(regretMoney, 75),
+      moneyP90: percentile(regretMoney, 90),
+      fameP50: percentile(regretFame, 50),
+      reasonCounts: { ...reasons }
+    },
+    forcedContinueOutcome: {
+      runs: forcedTotal,
+      completed: forced.completed ?? 0,
+      extracted: forced.extracted ?? 0,
+      failed: forced.failed ?? 0,
+      failureRate: forcedTotal === 0 ? null : (forced.failed ?? 0) / forcedTotal
+    }
   }
 }
 
@@ -223,6 +322,7 @@ export const runExtractionProbeCohort = (profiles, seeds, options = {}) => {
     laterCompletedCount,
     laterFailedCount,
     laterExtractedCount,
+    ...summarizeExtractionRegret(pairs),
     pairs
   }
 }

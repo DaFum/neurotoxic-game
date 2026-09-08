@@ -1284,7 +1284,7 @@ const DEFAULT_EXTRACTION_POLICY_WEIGHTS = {
  *   moneyAtRisk: number
  * }}
  */
-const explainExtractionDecision = (state, profile) => {
+export const explainExtractionDecision = (state, profile) => {
   const vanCond = finiteNumberOr(state.player.van.condition, 100)
   const vanFuel = finiteNumberOr(state.player.van.fuel, 100)
   const techCond = getExpeditionConditionSummary(state)
