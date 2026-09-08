@@ -177,18 +177,54 @@ describe('Fresh-Career Progression Sequences (G6 Task 12)', () => {
   })
 
   it('does not count a selected sponsor offer when START refuses the run', () => {
+    // Re-pinned from `high_exposure_performance` seed 13, which stopped
+    // halting once the Career could repair its van: that sequence now runs all
+    // six Tours and accepts every offer it picks, so it no longer reaches the
+    // accounting path this test is about. `rival_hunter` seed 20 still does -
+    // it picks two Sponsors, has one accepted, and is refused at START on Tour
+    // 6 - which is exactly the shape the counters have to get right.
     const profile = EXPEDITION_BALANCE_PROFILES.find(
-      entry => entry.id === 'high_exposure_performance'
+      entry => entry.id === 'rival_hunter'
     )
-    const result = runFreshCareerSequence(undefined, profile, 13, 6)
+    const result = runFreshCareerSequence(undefined, profile, 20, 6)
 
     assert.equal(result.haltReason, 'start_refused_insufficient_career_funds')
     assert.ok(result.metrics.sponsorOffersStaged > 0)
     assert.ok(
       result.metrics.sponsorOffersSelected >
-        result.metrics.sponsorOffersAccepted
+        result.metrics.sponsorOffersAccepted,
+      'a Sponsor picked for a Tour that never started is selected, not accepted'
     )
     assert.ok(result.metrics.sponsorOffersAccepted <= result.runsCompleted)
+  })
+
+  it('never counts more Sponsors accepted than were selected or staged', () => {
+    // The counting invariant behind the seed above, asserted directly rather
+    // than through whichever sequence happens to exercise it. Pinning one seed
+    // to an economy outcome makes an economy fix look like a counter
+    // regression, which is how the previous version of this test failed.
+    for (const profile of EXPEDITION_BALANCE_PROFILES) {
+      for (let seed = 1; seed <= 8; seed++) {
+        const { metrics, runsCompleted } = runFreshCareerSequence(
+          undefined,
+          profile,
+          seed,
+          6
+        )
+        assert.ok(
+          metrics.sponsorOffersAccepted <= metrics.sponsorOffersSelected,
+          `${profile.id}/${seed}: accepted ${metrics.sponsorOffersAccepted} exceeds selected ${metrics.sponsorOffersSelected}`
+        )
+        assert.ok(
+          metrics.sponsorOffersSelected <= metrics.sponsorOffersStaged,
+          `${profile.id}/${seed}: selected ${metrics.sponsorOffersSelected} exceeds staged ${metrics.sponsorOffersStaged}`
+        )
+        assert.ok(
+          metrics.sponsorOffersAccepted <= runsCompleted,
+          `${profile.id}/${seed}: accepted ${metrics.sponsorOffersAccepted} on ${runsCompleted} completed run(s)`
+        )
+      }
+    }
   })
 
   it('reports sponsor income separately from production prep spend', () => {
