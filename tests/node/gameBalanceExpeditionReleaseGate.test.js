@@ -28,6 +28,7 @@ import {
   TARGET_CORRIDOR_MAX_MINUTES
 } from '../../scripts/game-balance-expedition-runtime.mjs'
 import { checkStrategyDominance } from '../../scripts/game-balance-expedition-runner.mjs'
+import { computeReleaseBlockers } from '../../scripts/game-balance-expedition.mjs'
 
 const FINGERPRINT = 'c'.repeat(64)
 
@@ -79,31 +80,32 @@ const withEvidence = async samples => {
 }
 
 /**
- * Mirrors the suite's release predicate over the parts a test can construct.
+ * The shipped predicate, over the parts a test can construct.
  *
- * @param {{
- *   captured: Awaited<ReturnType<typeof loadCapturedRuntimeEvidence>>,
- *   corridorFindings?: string[]
- * }} input
+ * @remarks
+ * `computeReleaseBlockers` is imported rather than mirrored. The previous
+ * version reimplemented the blocker logic, so the suite could have dropped the
+ * sample-count or corridor check and every assertion here would still pass
+ * while the artifact regained a false `releaseEligible` - a test pinning its
+ * own copy of the gate rather than the gate.
  */
-const releaseBlockersFor = ({ captured, corridorFindings = [] }) => {
-  const blockers = []
-  if (!captured.ok) {
-    blockers.push(`no usable pacing evidence: ${captured.reason}`)
-  } else if (captured.samples.length < MIN_RUNTIME_SAMPLES) {
-    blockers.push(
-      `only ${captured.samples.length} captured runtime sample(s), ${MIN_RUNTIME_SAMPLES} required`
-    )
-  } else if (!summarizeRuntimeDurations(captured.samples).inTargetCorridor) {
-    blockers.push('median is outside the target corridor')
-  }
-  if (corridorFindings.length > 0) {
-    blockers.push(
-      `${corridorFindings.length} unresolved balance corridor finding(s)`
-    )
-  }
-  return blockers
-}
+const releaseBlockersFor = ({ captured, corridorFindings = [] }) =>
+  computeReleaseBlockers({
+    passed: true,
+    hardFailures: [],
+    isReleaseRun: true,
+    sampleCount: 2000,
+    coverageShortfalls: [],
+    capturedRuntime: captured,
+    runtimeSummary: captured.ok
+      ? summarizeRuntimeDurations(captured.samples)
+      : {
+          inTargetCorridor: false,
+          medianMinutes: 0,
+          corridorStatus: 'no_samples'
+        },
+    corridorFindings
+  })
 
 test('one valid runtime sample is not release evidence', async () => {
   const root = await withEvidence([sampleOf(0, 25)])
@@ -134,7 +136,10 @@ test('a full cohort outside the pacing corridor is not release evidence', async 
   assert.equal(summary.corridorStatus, 'slow')
 
   const blockers = releaseBlockersFor({ captured })
-  assert.deepEqual(blockers, ['median is outside the target corridor'])
+  // The shipped wording, not a paraphrase of it. Pinning 'median is outside
+  // the target corridor' was only ever pinning this test's own copy.
+  assert.equal(blockers.length, 1)
+  assert.match(blockers[0], /median .* is outside the .* corridor \(slow\)/)
 })
 
 test('a full in-corridor cohort clears the pacing condition', async () => {

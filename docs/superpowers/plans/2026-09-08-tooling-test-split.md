@@ -27,7 +27,7 @@ Add `tests/utils/scenario-seeds.test.js` to `vitest.config.node.js`'s `exclude` 
 
 - [x] **Step 3: Run the focused test and confirm the missing export fails**
 
-Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/nodeTestDiscovery.test.js`
+Run: `pnpm exec node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/nodeTestDiscovery.test.js`
 
 Expected: FAIL because `TOOLING_NODE_TESTS` is not exported yet.
 
@@ -48,7 +48,7 @@ Parse `--only-tooling`, remove it from forwarded Node arguments, reject combinat
 
 - [x] **Step 3: Run the focused discovery test**
 
-Run: `node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/nodeTestDiscovery.test.js`
+Run: `pnpm exec node --test --import tsx --experimental-test-module-mocks --import ./tests/setup.mjs tests/node/nodeTestDiscovery.test.js`
 
 Expected: PASS.
 

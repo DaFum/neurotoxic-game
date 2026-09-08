@@ -114,6 +114,75 @@ const GENERATOR_PATHS = Object.freeze([
 ])
 
 /**
+ * Every reason this artifact is not release evidence.
+ *
+ * @param {{
+ *   passed: boolean,
+ *   hardFailures: string[],
+ *   isReleaseRun: boolean,
+ *   sampleCount: number,
+ *   coverageShortfalls: unknown[],
+ *   capturedRuntime: { ok: boolean, reason?: string, samples?: unknown[] },
+ *   runtimeSummary: { inTargetCorridor: boolean, medianMinutes: number, corridorStatus: string },
+ *   corridorFindings: string[]
+ * }} input
+ * @returns {string[]} Blockers, empty when the artifact is release evidence.
+ *
+ * @remarks
+ * Exported so `tests/node/gameBalanceExpeditionReleaseGate.test.js` pins the
+ * shipped predicate rather than a copy of it. The test used to mirror this
+ * logic, which meant the suite could drop the sample-count or corridor check
+ * and every assertion in that file would still pass while the artifact
+ * regained a false `releaseEligible`.
+ */
+export const computeReleaseBlockers = ({
+  passed,
+  hardFailures,
+  isReleaseRun,
+  sampleCount,
+  coverageShortfalls,
+  capturedRuntime,
+  runtimeSummary,
+  corridorFindings
+}) => {
+  const releaseBlockers = []
+  if (!passed) {
+    releaseBlockers.push(
+      `${hardFailures.length} hard correctness failure(s)`
+    )
+  }
+  if (!isReleaseRun) {
+    releaseBlockers.push(
+      `run size ${sampleCount} is below the release size ${RELEASE_SAMPLE_COUNT}`
+    )
+  }
+  if (coverageShortfalls.length > 0) {
+    releaseBlockers.push(
+      `${coverageShortfalls.length} coverage shortfall(s)`
+    )
+  }
+  if (!capturedRuntime.ok) {
+    releaseBlockers.push(`no usable pacing evidence: ${capturedRuntime.reason}`)
+  } else if (capturedRuntime.samples.length < MIN_RUNTIME_SAMPLES) {
+    // The master plan holds the real-duration target soft "until at least 20
+    // valid runtime samples exist", so fewer than that is not yet evidence.
+    releaseBlockers.push(
+      `only ${capturedRuntime.samples.length} captured runtime sample(s), ${MIN_RUNTIME_SAMPLES} required`
+    )
+  } else if (!runtimeSummary.inTargetCorridor) {
+    releaseBlockers.push(
+      `median ${runtimeSummary.medianMinutes} min is outside the ${TARGET_CORRIDOR_MIN_MINUTES}-${TARGET_CORRIDOR_MAX_MINUTES} min corridor (${runtimeSummary.corridorStatus})`
+    )
+  }
+  if (corridorFindings.length > 0) {
+    releaseBlockers.push(
+      `${corridorFindings.length} unresolved balance corridor finding(s)`
+    )
+  }
+  return releaseBlockers
+}
+
+/**
  * Runs one probe cohort, funnelling a thrown probe into a hard failure rather
  * than aborting the suite.
  *
@@ -593,41 +662,16 @@ export async function executeBalanceRecalibrationSuite(options = {}) {
   // file is well-formed and fingerprint-matched - it accepts a single sample -
   // so on its own it let one runtime row flip the verdict while the corridor
   // findings still stood and the median sat outside the target window.
-  /** @type {string[]} */
-  const releaseBlockers = []
-  if (!passed) {
-    releaseBlockers.push(
-      `${hardFailures.length} hard correctness failure(s)`
-    )
-  }
-  if (!isReleaseRun) {
-    releaseBlockers.push(
-      `run size ${sampleCount} is below the release size ${RELEASE_SAMPLE_COUNT}`
-    )
-  }
-  if (coverageShortfalls.length > 0) {
-    releaseBlockers.push(
-      `${coverageShortfalls.length} coverage shortfall(s)`
-    )
-  }
-  if (!capturedRuntime.ok) {
-    releaseBlockers.push(`no usable pacing evidence: ${capturedRuntime.reason}`)
-  } else if (capturedRuntime.samples.length < MIN_RUNTIME_SAMPLES) {
-    // The master plan holds the real-duration target soft "until at least 20
-    // valid runtime samples exist", so fewer than that is not yet evidence.
-    releaseBlockers.push(
-      `only ${capturedRuntime.samples.length} captured runtime sample(s), ${MIN_RUNTIME_SAMPLES} required`
-    )
-  } else if (!runtimeSummary.inTargetCorridor) {
-    releaseBlockers.push(
-      `median ${runtimeSummary.medianMinutes} min is outside the ${TARGET_CORRIDOR_MIN_MINUTES}-${TARGET_CORRIDOR_MAX_MINUTES} min corridor (${runtimeSummary.corridorStatus})`
-    )
-  }
-  if (dominance.corridorFindings.length > 0) {
-    releaseBlockers.push(
-      `${dominance.corridorFindings.length} unresolved balance corridor finding(s)`
-    )
-  }
+  const releaseBlockers = computeReleaseBlockers({
+    passed,
+    hardFailures,
+    isReleaseRun,
+    sampleCount,
+    coverageShortfalls,
+    capturedRuntime,
+    runtimeSummary,
+    corridorFindings: dominance.corridorFindings
+  })
   const releaseEligible = releaseBlockers.length === 0
 
   return {
