@@ -1770,6 +1770,7 @@
   "quests.dramaPost.description": "Heize die Timeline an. 300 neue Follower in vier Tagen — oder iss die Kontroverse.",
   "quests.dramaPost.title": "DRAMA POST",
   "quests.empty": "Keine aktiven Quests. Geh auf Tour, um welche zu finden!",
+  "quests.explore": "[ AUF DIE STRASSE ]",
   "quests.hint.deadline.lastChance": "Letzte Chance: noch 1 Tag",
   "quests.hint.deadline.overdue": "Überfällig",
   "quests.hint.deadline.safe": "Noch {{count}} Tage",

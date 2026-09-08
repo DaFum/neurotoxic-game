@@ -25,6 +25,21 @@ describe('QuestsModal', () => {
     await waitFor(() => expect(onClose).toHaveBeenCalled())
   })
 
+  it('renders empty state CTA button when activeQuests is empty and triggers onClose when clicked', async () => {
+    const user = userEvent.setup()
+    const onClose = vi.fn()
+    render(
+      <QuestsModal onClose={onClose} player={{ day: 1 }} activeQuests={[]} />
+    )
+
+    expect(screen.getByText('ui:quests.empty')).toBeInTheDocument()
+    const ctaButton = screen.getByRole('button', { name: /HIT THE ROAD/i })
+    expect(ctaButton).toBeInTheDocument()
+
+    await user.click(ctaButton)
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+
   it('renders translated accepted quests and progress', () => {
     render(
       <QuestsModal
