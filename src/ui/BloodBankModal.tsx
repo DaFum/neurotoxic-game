@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { ActionButton } from './shared/ActionButton'
+import { Tooltip } from './shared/Tooltip'
 import { IMG_PROMPTS, resolveGenImageUrl } from '../utils/imageGen'
 import { formatCurrency } from '../utils/numberUtils'
 
@@ -139,6 +140,20 @@ const DonationCard = ({
   language
 }: DonationCardProps) => {
   const v = DONATION_VARIANTS[variant]
+  const disabledReason = !canDonate
+    ? t('ui:blood_bank.warning', { defaultValue: 'TOO WEAK' })
+    : undefined
+
+  const actionBtn = (
+    <ActionButton
+      onClick={onDonate}
+      disabled={!canDonate}
+      className={`w-full ${canDonate ? v.buttonEnabled : ''}`}
+    >
+      {t(v.actionKey, { defaultValue: v.actionDefault })}
+    </ActionButton>
+  )
+
   return (
     <div
       className={`flex flex-col gap-3 sm:gap-4 ${v.container} p-3 sm:p-4 bg-void-black/80`}
@@ -161,13 +176,11 @@ const DonationCard = ({
       <DonationCosts config={config} pulseCosts={v.pulseCosts} t={t} />
 
       <div className='mt-auto pt-4'>
-        <ActionButton
-          onClick={onDonate}
-          disabled={!canDonate}
-          className={`w-full ${canDonate ? v.buttonEnabled : ''}`}
-        >
-          {t(v.actionKey, { defaultValue: v.actionDefault })}
-        </ActionButton>
+        {disabledReason ? (
+          <Tooltip content={disabledReason}>{actionBtn}</Tooltip>
+        ) : (
+          actionBtn
+        )}
         {!canDonate && (
           <p
             className={`text-xs font-mono uppercase tracking-wider text-center mt-2 ${v.warning}`}
