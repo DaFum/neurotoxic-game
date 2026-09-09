@@ -54,24 +54,31 @@ Post one concise top-level summary after inline comments.
 ## Code Review
 
 ### Summary
+
 [1–3 sentences: PR intent, overall technical read, and draft note if applicable.]
 
 ### Critical
+
 - **[Short title]** — `path/to/file.ts:line` — [failure mode and required fix direction]
 
 ### Important
+
 - **[Short title]** — `path/to/file.ts:line` — [failure mode and required fix direction]
 
 ### Minor
+
 - **[Short title]** — `path/to/file.ts:line` — [brief non-blocking repo-rule issue]
 
 ### Coverage
+
 [Include only for partial/large reviews: fully reviewed / spot-checked / not reviewed by area.]
 
 ### Limitations
+
 [Include only when unresolved evidence gaps materially constrain the conclusion. Do not disguise contingent concerns as findings.]
 
 ### Verdict
+
 **[Approve / Request changes / Comment]** — [one sentence tied to the strongest unresolved finding and coverage.]
 ```
 
@@ -125,14 +132,14 @@ When severity is ambiguous, choose the lower severity unless a persistence, secu
 
 ## Tone Guide
 
-| Situation | Write this | Avoid |
-|-----------|------------|-------|
-| Confirmed defect | "This allows a stale replay to charge the player a second time." | "This might possibly be risky." |
-| Concrete fix | "Return the original state when the slot is already occupied." | "Consider refactoring this area." |
-| Boundary issue | "Validate the parsed value before casting/using it." | "TypeScript could be stronger here." |
-| Contingent concern | "I can't confirm this without the caller that supplies `id`; I left it out of the blocking findings." | Flagging it as Important anyway |
-| Clean code | "The changed path preserves the action-creator -> reducer contract and no-op identity." | "Looks good!" with no evidence |
-| Low-priority style | Omit, unless an explicit repo rule is broken | Turning taste into a Minor/Important finding |
+| Situation          | Write this                                                                                            | Avoid                                        |
+| ------------------ | ----------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| Confirmed defect   | "This allows a stale replay to charge the player a second time."                                      | "This might possibly be risky."              |
+| Concrete fix       | "Return the original state when the slot is already occupied."                                        | "Consider refactoring this area."            |
+| Boundary issue     | "Validate the parsed value before casting/using it."                                                  | "TypeScript could be stronger here."         |
+| Contingent concern | "I can't confirm this without the caller that supplies `id`; I left it out of the blocking findings." | Flagging it as Important anyway              |
+| Clean code         | "The changed path preserves the action-creator -> reducer contract and no-op identity."               | "Looks good!" with no evidence               |
+| Low-priority style | Omit, unless an explicit repo rule is broken                                                          | Turning taste into a Minor/Important finding |
 
 ---
 
@@ -142,18 +149,23 @@ When severity is ambiguous, choose the lower severity unless a persistence, secu
 ## Code Review
 
 ### Summary
+
 Adds a daily obligation tracker used by the bankruptcy path. The main flow is aligned with the asset architecture, but two confirmed state-safety issues block merge.
 
 ### Critical
+
 - **Direct state mutation in tick** — `src/context/reducers/assetReducer.ts:203` — mutates a persisted liability in place, breaking reducer identity guarantees and allowing state updates to bypass the normal immutable transition contract.
 
 ### Important
+
 - **Unsafe persisted-number arithmetic** — `src/context/reducers/assetReducer.ts:198` — uses the stored balance without `finiteNumberOr`, so a corrupted non-finite save value can poison the computed balance.
 
 ### Minor
+
 - **Missing German locale key** — `public/locales/en/economy.json:44` — the matching German key is absent, so this copy can fall back unexpectedly.
 
 ### Verdict
+
 **Request changes** — Fix the mutation and persisted-number handling before merge; the locale mismatch is non-blocking.
 ```
 
@@ -165,9 +177,11 @@ Adds a daily obligation tracker used by the bankruptcy path. The main flow is al
 ## Code Review
 
 ### Summary
+
 Replaces direct location reads with `getRegionKeyForLocation(player.location)` in the changed selectors. I reviewed all changed files and the new path preserves the existing region-key contract.
 
 ### Verdict
+
 **Approve** — No Critical, Important, or actionable Minor findings in the fully reviewed diff.
 ```
 
@@ -179,12 +193,15 @@ Replaces direct location reads with `getRegionKeyForLocation(player.location)` i
 ## Code Review
 
 ### Summary
+
 The reducer/action/persistence paths I reviewed are internally consistent and I found no blocking defect.
 
 ### Coverage
+
 - State/reducer paths: fully reviewed
 - UI/locale/test-only changes: spot-checked
 
 ### Verdict
+
 **Comment** — No blocking finding in the reviewed areas, but coverage was partial so this is not an approval.
 ```

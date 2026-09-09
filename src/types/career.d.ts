@@ -138,6 +138,7 @@ export type ExpeditionLegendaryId =
  * The Between-Tour decision families, in the priority order they are chosen.
  */
 export type BetweenTourDecisionType =
+  | 'sponsor_advance'
   | 'injury_rehab'
   | 'crew_debrief'
   | 'rival_response'
@@ -168,6 +169,22 @@ export interface BetweenTourDecisionInstance {
   type: BetweenTourDecisionType
   target: BetweenTourTarget
   optionIds: string[]
+}
+
+/**
+ * An advance a Sponsor paid against a Career that could not fund its next Tour.
+ *
+ * @remarks
+ * Single-slot: a Career carries at most one outstanding advance, so a run of
+ * bad Tours cannot compound into an unrepayable stack. It is repaid out of the
+ * next settlement that actually retains money, which is why the debt is stored
+ * rather than deducted immediately - a failed run has nothing to take it from.
+ */
+export interface ExpeditionSponsorAdvance {
+  dealId: string
+  amount: number
+  outstanding: number
+  takenAfterRunId: string
 }
 
 /** Every Between-Tour decision one finalized run generated, and its answers. */
@@ -243,6 +260,7 @@ export interface CareerState {
   settledCrewRunIds: string[]
   rivalsById: Record<string, CareerRivalRecord>
   betweenTourByRunId: Record<string, BetweenTourRunState>
+  sponsorAdvance: ExpeditionSponsorAdvance | null
   tourTokens: number
   finalizedExpeditionRuns: number
   completedExpeditionRuns: number

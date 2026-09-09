@@ -161,12 +161,7 @@ Expected: PASS before Task 1 starts.
 
 ```ts
 export type ExpeditionCrewRole =
-  | 'technician'
-  | 'roadie'
-  | 'driver'
-  | 'manager'
-  | 'scout'
-  | 'security'
+  'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'
 
 export interface ExpeditionCrewDefinition {
   id: string
@@ -293,8 +288,7 @@ Stress bands:
 
 ```ts
 export type ExpeditionRelationshipActorRef =
-  | { kind: 'crew'; id: string }
-  | { kind: 'band'; id: string }
+  { kind: 'crew'; id: string } | { kind: 'band'; id: string }
 
 export type ExpeditionRelationshipTier = -2 | -1 | 0 | 1 | 2
 ```
@@ -329,7 +323,8 @@ At least one initial event must exercise Band↔Crew, not only Crew↔Crew.
 ## Task 5: Add staged Band injuries that affect active performance
 
 ```ts
-export type ExpeditionBandInjuryStage = 'none' | 'light' | 'serious' | 'critical'
+export type ExpeditionBandInjuryStage =
+  'none' | 'light' | 'serious' | 'critical'
 
 export interface ExpeditionInjuryPerformanceProfile {
   staminaDrainMultiplier: number

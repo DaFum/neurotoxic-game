@@ -15,11 +15,18 @@ import { isFiniteNumber } from '../../utils/finiteNumber'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { clampPlayerFame, clampPlayerMoney } from '../../utils/gameState'
-import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
+import {
+  BASE_EXPEDITION_TOUR_TYPE_ID,
+  FREE_EXPEDITION_REGION_ID,
+  createDefaultExpeditionState
+} from '../../domain/expedition/defaults'
 import { deriveExpeditionRouteProfile } from '../../domain/expedition/routeProfile'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import {
   canSpendExpeditionCash,
+  getAvailableExpeditionRegionIds,
+  getAvailableExpeditionTourTypeIds,
+  getAvailableStarterPerkIds,
   getExpeditionFuelTopUpCost,
   validateExpeditionBuildCommitment
 } from '../../domain/expedition/loadout'
@@ -112,6 +119,7 @@ import type {
   ExecuteExpeditionInspectionPayload,
   ExtractExpeditionPayload,
   PrepareExpeditionRunPayload,
+  PrepareExpeditionSponsorOffersPayload,
   PrepareNextExpeditionPayload,
   ResolveExpeditionCrisisPayload,
   ResolveExpeditionDefectPayload,
@@ -242,6 +250,83 @@ export const handlePrepareExpeditionRun = (
 }
 
 /**
+ * Stages deterministic Sponsor offers for a prepared run.
+ *
+ * @param state - Current game state.
+ * @param payload - Expected root run seed and candidate route parameters.
+ * @returns Next state with staged sponsor offers, or identical state reference.
+ *
+ * @remarks
+ * Staged offers are computed deterministically from the root run seed and
+ * stored on the prepared state snapshot. START revalidates that the committed
+ * sponsor offer came from this exact snapshot.
+ */
+export const handlePrepareExpeditionSponsorOffers = (
+  state: GameState,
+  payload: PrepareExpeditionSponsorOffersPayload
+): GameState => {
+  if (state.expedition.status !== 'prepared') return state
+  if (payload === null || typeof payload !== 'object') return state
+
+  const { expectedRunSeed, regionId, tourTypeId, starterPerkId } = payload
+  if (!isFiniteNumber(expectedRunSeed) || expectedRunSeed !== state.runSeed) {
+    return state
+  }
+
+  const targetRegionId = regionId ?? FREE_EXPEDITION_REGION_ID
+  const targetTourTypeId = tourTypeId ?? BASE_EXPEDITION_TOUR_TYPE_ID
+  const targetPerkId = starterPerkId ?? null
+
+  const availableRegions = getAvailableExpeditionRegionIds(state)
+  if (
+    typeof targetRegionId !== 'string' ||
+    !availableRegions.includes(targetRegionId)
+  ) {
+    return state
+  }
+
+  const availableTours = getAvailableExpeditionTourTypeIds(state)
+  if (
+    typeof targetTourTypeId !== 'string' ||
+    !availableTours.includes(targetTourTypeId)
+  ) {
+    return state
+  }
+
+  if (targetPerkId !== null) {
+    const availablePerks = getAvailableStarterPerkIds(state)
+    if (
+      typeof targetPerkId !== 'string' ||
+      !availablePerks.includes(targetPerkId)
+    ) {
+      return state
+    }
+  }
+
+  const preparedSponsorOffers = buildPreparedExpeditionSponsorOffers(
+    state,
+    targetRegionId,
+    targetTourTypeId,
+    targetPerkId
+  )
+
+  const preparedSponsorProvenance = {
+    regionId: targetRegionId,
+    tourTypeId: targetTourTypeId,
+    starterPerkId: targetPerkId
+  }
+
+  return {
+    ...state,
+    expedition: {
+      ...state.expedition,
+      preparedSponsorOffers,
+      preparedSponsorProvenance
+    }
+  }
+}
+
+/**
  * Starts the prepared run as one transaction.
  *
  * @param state - Current game state.
@@ -285,8 +370,8 @@ export const handleStartExpedition = (
     preparedMap
   )
   if (!validation.valid) return state
-  const normalized = validation.normalized
 
+  const { normalized } = validation
   const currentFuel = isFiniteNumber(state.player.van?.fuel)
     ? state.player.van.fuel
     : 0
@@ -306,23 +391,28 @@ export const handleStartExpedition = (
   const nextMoney = money - upfrontCost
   const fame = isFiniteNumber(state.player.fame) ? state.player.fame : 0
   const sponsorOfferId = normalized.build.sponsorOfferId
-  // Derived from the Region and Tour this run is actually committing to, so a
-  // non-baseline route stages the offer count its profile calls for.
+  // Must exist in the persisted preparedSponsorOffers snapshot staged for
+  // this run, verifying root runSeed, canonical terms hash, and exact
+  // staging provenance (regionId, tourTypeId, starterPerkId). The seed is
+  // compared against the root `state.runSeed` rather than stored a second time
+  // on the slice: G1 makes the root the single run-seed owner.
   const stagedSponsor =
     sponsorOfferId === null
       ? null
-      : buildPreparedExpeditionSponsorOffers(
-          state,
-          regionId,
-          tourTypeId,
-          normalized.starterPerkId
-        ).find(offer => offer.offerId === sponsorOfferId)
+      : ((state.expedition.preparedSponsorOffers ?? []).find(
+          offer => offer.offerId === sponsorOfferId
+        ) ?? null)
+  const sponsorProvenance = state.expedition.preparedSponsorProvenance
   if (
     sponsorOfferId !== null &&
     (!stagedSponsor ||
       stagedSponsor.runSeed !== state.runSeed ||
       getCanonicalBrandDealTermsHash(stagedSponsor.dealId) !==
-        stagedSponsor.canonicalTermsHash)
+        stagedSponsor.canonicalTermsHash ||
+      !sponsorProvenance ||
+      sponsorProvenance.regionId !== normalized.regionId ||
+      sponsorProvenance.tourTypeId !== normalized.tourTypeId ||
+      sponsorProvenance.starterPerkId !== (normalized.starterPerkId ?? null))
   )
     return state
   const sponsorAcceptance = stagedSponsor
@@ -490,6 +580,7 @@ export const handleStartExpedition = (
       },
       technicalCondition: createDefaultTechnicalCondition(),
       preparedSponsorOffers: [],
+      preparedSponsorProvenance: undefined,
       activeObligations
     }
   }
@@ -868,12 +959,39 @@ const applyExpeditionSettlement = (
     finiteNumberOr(state.player.fame, 0) + fameDelta
   )
 
+  // A Sponsor advance is repaid out of what this run actually retains, never
+  // out of the Career's standing balance: the Tour that recovers pays for the
+  // Tour that failed, and a run that retained nothing simply carries the debt
+  // forward. Taking it from the balance instead could push a Career that just
+  // failed straight back below the booking floor the advance existed to clear.
+  const advance = state.career.sponsorAdvance
+  const repayable = Math.max(
+    0,
+    Math.min(
+      finiteNumberOr(advance?.outstanding, 0),
+      finiteNumberOr(settlement.moneyRetained, 0)
+    )
+  )
+  // Normalized once and reused: a persisted `NaN` or `Infinity` compared and
+  // subtracted raw would write an invalid balance straight back into state.
+  const outstanding = finiteNumberOr(advance?.outstanding, 0)
+  const nextAdvance =
+    advance === null
+      ? null
+      : repayable >= outstanding
+        ? null
+        : { ...advance, outstanding: outstanding - repayable }
+
   return {
     ...state,
+    career:
+      advance === nextAdvance
+        ? state.career
+        : { ...state.career, sponsorAdvance: nextAdvance },
     player: {
       ...state.player,
       money: clampPlayerMoney(
-        finiteNumberOr(state.player.money, 0) + moneyDelta
+        finiteNumberOr(state.player.money, 0) + moneyDelta - repayable
       ),
       fame: nextFame,
       // `fameLevel` is derived from `fame`, so writing one without the other

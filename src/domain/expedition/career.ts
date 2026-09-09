@@ -16,6 +16,7 @@ export const createInitialCareerState = (): CareerState => ({
   ) as CareerState['crewRecoveryDebtById'],
   settledCrewRunIds: [],
   rivalsById: Object.create(null) as CareerState['rivalsById'],
+  sponsorAdvance: null,
   betweenTourByRunId: Object.create(null) as CareerState['betweenTourByRunId'],
   tourTokens: 0,
   finalizedExpeditionRuns: 0,

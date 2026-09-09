@@ -59,7 +59,33 @@ export const derivePressureDirectorContext = (
   const conditionAverage = condition
     ? (condition.pa + condition.instruments + condition.stageGear) / 3
     : 100
-  const stresses = Object.values(state.expedition.crew?.stressByCrewId ?? {})
+
+  // ⚡ BOLT OPTIMIZATION: Avoid intermediate array allocations on pressure context derivation.
+  // Why: Object.values() allocates an array for crew stress, and .filter().length allocates an array for obligations.
+  // Impact: Eliminates GC pressure during active expedition updates and step advances.
+  let maxCrewStress = 0
+  const stressByCrewId = state.expedition.crew?.stressByCrewId
+  if (stressByCrewId) {
+    for (const crewId in stressByCrewId) {
+      if (Object.hasOwn(stressByCrewId, crewId)) {
+        const stressVal = finiteNumberOr(stressByCrewId[crewId], 0)
+        if (stressVal > maxCrewStress) {
+          maxCrewStress = stressVal
+        }
+      }
+    }
+  }
+
+  let activeObligationsCount = 0
+  const activeObligations = state.expedition.activeObligations
+  if (activeObligations) {
+    for (let i = 0; i < activeObligations.length; i++) {
+      if (activeObligations[i]?.status === 'active') {
+        activeObligationsCount++
+      }
+    }
+  }
+
   return {
     heat: bounded(state.expedition.pressure.heat),
     exposure: bounded(state.expedition.pressure.exposure),
@@ -72,12 +98,8 @@ export const derivePressureDirectorContext = (
       state.player.money <= state.expedition.protectedCareerCash ? 100 : 0
     ),
     technicalConditionPressure: bounded(100 - conditionAverage),
-    crewStressPressure: bounded(stresses.length ? Math.max(...stresses) : 0),
-    activeObligationPressure: bounded(
-      state.expedition.activeObligations.filter(
-        item => item.status === 'active'
-      ).length * 25
-    ),
+    crewStressPressure: bounded(maxCrewStress),
+    activeObligationPressure: bounded(activeObligationsCount * 25),
     rivalPressure: bounded(state.rivalBand?.powerLevel ?? 0),
     routeDepthPressure: bounded(state.expedition.routeStep * 10)
   }

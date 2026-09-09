@@ -95,7 +95,7 @@ const inferLoadedMapNodeLayer = (
   const layerMatch = /^node_(\d+)_/.exec(boundedId)
   const rawLayer = layerMatch?.[1]
   if (rawLayer !== undefined) {
-    const parsedLayer = Number(rawLayer)
+    const parsedLayer = parseInt(rawLayer, 10)
     if (isFiniteNumber(parsedLayer)) return parsedLayer
   }
 

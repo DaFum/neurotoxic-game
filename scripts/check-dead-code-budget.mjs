@@ -7,7 +7,7 @@
  * baseline so the check is report-only today, and promotion to a blocking gate is
  * a matter of lowering `max` after triage.
  */
-import { execFileSync } from 'node:child_process'
+import { execSync } from 'node:child_process'
 import fs from 'node:fs'
 import { collectFindings } from './summarize-dead-code.mjs'
 
@@ -17,7 +17,7 @@ function runKnip() {
   try {
     // knip exits non-zero when it has findings, which is the normal case here;
     // only a missing/garbled report is a real failure.
-    return execFileSync('pnpm', ['exec', 'knip', '--reporter', 'json'], {
+    return execSync('pnpm exec knip --reporter json', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'pipe'],
       maxBuffer: 32 * 1024 * 1024

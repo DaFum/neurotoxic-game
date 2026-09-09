@@ -21,7 +21,12 @@ import { getEffectiveExpeditionRules } from './effectiveRules'
  * Base Cash/Fame retention per terminal kind, before G5 multipliers.
  */
 export const EXPEDITION_BASE_RETENTION = {
-  extracted: 0.6,
+  // 0.70 rather than 0.60: a bail-out keeps most of what the run banked, so
+  // the choice at an extraction window is between a good outcome now and a
+  // better one deeper in, not between a good outcome and a gutted one. The
+  // Finale still pays strictly more (1.0 plus the Tour's completion bonus),
+  // which is what keeps pushing on attractive.
+  extracted: 0.7,
   failed: 0.25,
   completed: 1
 } as const satisfies Record<'extracted' | 'failed' | 'completed', number>

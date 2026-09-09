@@ -81,7 +81,7 @@ const extract = (state, payload) =>
 describe('base retention terms', () => {
   it('matches the approved base rates', () => {
     assert.deepEqual(EXPEDITION_BASE_RETENTION, {
-      extracted: 0.6,
+      extracted: 0.7,
       failed: 0.25,
       completed: 1
     })
@@ -173,10 +173,10 @@ describe('settlement arithmetic', () => {
     const state = earn(startedState({ money: 5000, fame: 100 }), 1000, 50)
     const settlement = settleExpedition(state, 'extracted')
     assert.equal(settlement.moneyEarned, 1000)
-    assert.equal(settlement.moneyRetained, 600)
-    assert.equal(settlement.moneyForfeited, 400)
+    assert.equal(settlement.moneyRetained, 700)
+    assert.equal(settlement.moneyForfeited, 300)
     assert.equal(settlement.fameEarned, 50)
-    assert.equal(settlement.fameRetained, 30)
+    assert.equal(settlement.fameRetained, 35)
   })
 
   it('forfeits nothing when the run lost money', () => {
@@ -200,7 +200,7 @@ describe('EXTRACT_EXPEDITION', () => {
   const atWindow = (options = {}) =>
     walkTo(startedState({ money: 5000, fame: 100, ...options }), WINDOW_STEP)
 
-  it('extracts at a legal window and keeps 60% of run income', () => {
+  it('extracts at a legal window and keeps 70% of run income', () => {
     const state = earn(atWindow(), 1000, 50)
     const next = extract(state, {
       expectedRouteStep: WINDOW_STEP,
@@ -208,24 +208,24 @@ describe('EXTRACT_EXPEDITION', () => {
     })
     assert.equal(next.expedition.status, 'extracted')
     assert.equal(next.expedition.outcome?.kind, 'extracted')
-    assert.equal(next.expedition.outcome?.settlement.retentionRate, 0.6)
-    assert.equal(next.player.money, 5000 + 600)
-    assert.equal(next.player.fame, 100 + 30)
+    assert.equal(next.expedition.outcome?.settlement.retentionRate, 0.7)
+    assert.equal(next.player.money, 5000 + 700)
+    assert.equal(next.player.fame, 100 + 35)
   })
 
   it('recomputes fameLevel with the Fame the settlement writes', () => {
     // `fameLevel` is derived from `fame`, so a settlement that moves Fame
     // without recomputing the rank leaves later Fame-level-dependent costs
     // reading the old one.
-    // Earned Fame large enough that the retained 60% crosses a band:
-    // fameLevel is floor(sqrt(fame / 200)), so 100 -> 280 moves 0 -> 1.
+    // Earned Fame large enough that the retained 70% crosses a band:
+    // fameLevel is floor(sqrt(fame / 200)), so 100 -> 310 moves 0 -> 1.
     const state = earn(atWindow(), 1000, 300)
     const before = state.player.fameLevel
     const next = extract(state, {
       expectedRouteStep: WINDOW_STEP,
       explicitRareRewardIds: []
     })
-    assert.equal(next.player.fame, 100 + 180)
+    assert.equal(next.player.fame, 100 + 210)
     assert.equal(next.player.fameLevel, calculateFameLevel(next.player.fame))
     // The fixture has to actually cross a band, or the assertion above holds
     // for a stale value too.

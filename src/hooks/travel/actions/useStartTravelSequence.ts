@@ -6,13 +6,27 @@ import { handleError } from '../../../utils/errorHandler'
 import { audioService } from '../../../utils/audio/audioEngine'
 import type { TravelActionsParams } from '../types'
 
-interface UseStartTravelSequenceParams extends Pick<
-  TravelActionsParams,
-  'refs' | 'setters' | 'params'
-> {
+/**
+ * Configuration for the start travel sequence action hook.
+ */
+interface UseStartTravelSequenceParams
+  extends Pick<TravelActionsParams, 'refs' | 'setters' | 'params'> {
+  /** Callback to reset any travel preparations that may have been configured but not finalized. */
   clearPendingTravel: () => void
 }
 
+/**
+ * Prepares travel initiation and hands off control to the travel minigame.
+ *
+ * @remarks
+ * Applies a local UI lock and asynchronously attempts to emit travel SFX,
+ * immediately calling `onStartTravelMinigame` to initiate the actual travel
+ * minigame. Note that fuel, cost, and location settlement are strictly handled
+ * later by `handleCompleteTravelMinigame`.
+ *
+ * @param params - Configuration parameters injecting map references, setters, and external callbacks.
+ * @returns A callback that triggers the minigame handoff for the specified target node.
+ */
 export const useStartTravelSequence = ({
   refs,
   setters,

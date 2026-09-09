@@ -3,13 +3,40 @@
 ## Balance Simulations
 
 - Balance harnesses must import canonical reducers, action creators, configs, economy/fame helpers, event data, and minigame logic instead of reimplementing mechanics. A PreGig run executes exactly one setup minigame; simulating all three triples its stress effects.
-- A run follows the generated map's ten-hop horizon. Keep `SIMULATION_CONSTANTS.daysPerRun` and progression checkpoints within that horizon. Recalibrate `KPI_TARGETS`, progression bands, Fame-per-gig bands, and solvent-money caps after changing the horizon, `GLOBAL_PAYOUT_NERF`, or `FAME_PROGRESS_CONSTANTS`.
+- The v14 historical harness keeps its 10-hop/daysPerRun semantics. Keep `SIMULATION_CONSTANTS.daysPerRun` and progression checkpoints within that horizon for v14.
+- The v15 Expedition harness must not use `daysPerRun` as a terminal condition; route-step checkpoints replace day checkpoints, and terminal outcomes are strictly `extracted`, `completed`, or `failed` derived from production `TourTypeDefinition` route depth and extraction windows.
+- All production RNG/provenance/reproducibility rules remain mandatory.
 - `gigGapDays` controls frequency; `SHIPPED_GIG_CADENCE_POLICY` controls eligible days and belongs in the harness. Main reports use 2,000 runs and `SIMULATION_CONSTANTS.seedNamespace`; changing the namespace creates unpaired cohorts.
 - Diagnose insolvency before and after the first gig separately through `run.earlyRunway`. Sample `observeEarlyRunwayMoney()` after every money-moving call; sampling only after a group can hide an intermediate trough.
+
+## Fixture Construction
+
+- A balance harness may set its own fixture state directly. The root
+  `AGENTS.md` rule that all state updates go through typed action creators
+  governs production; a `SEED_*` action that sets arbitrary Money, Fame, member
+  skills or capability sets would ship in the bundle, and no reducer clamp can
+  distinguish the simulator from a crafted save or a console call - which is
+  precisely what `sanitizeCareerState` and the Expedition load sanitizers exist
+  to stop.
+- The exception covers fixture *construction* only. Every simulated gameplay
+  transition must still go through production: the chassis via the purchase
+  path, modules via `INSTALL_MODULE`, Crew via `isCrewAvailable`, the run via
+  `PREPARE_EXPEDITION_RUN` and `START_EXPEDITION`, the post-Gig payout via
+  `UPDATE_PLAYER`, and every terminal through its own action. A harness that
+  writes a gameplay outcome straight into state is describing a game the code
+  does not implement - that is how the Gig payout came to bypass
+  `enforceExpeditionCashFloor`.
+- Anything the fixture declares must be validated and serialized into
+  `provenance`, so the artifact reproduces a run without reading builder
+  internals.
 
 ## Script Format
 
 - The package is `"type": "module"`, so an ad-hoc script that uses `require()` must be named `.cjs` (see `scripts/benchmark-fast-paths.cjs`).
+
+## Test Runners
+
+- `test:all` deliberately oversubscribes process-isolated `node:test` files to overlap Node/TSX startup latency, with a fixed cap to bound memory. Preserve explicit `NODE_TEST_CONCURRENCY` overrides and benchmark the same representative file cohort before changing the multiplier or cap.
 
 ## Experiment Integrity
 
@@ -21,7 +48,8 @@
 ## Reports and Provenance
 
 - Generated artifacts include `sourceFingerprint`, `generatorFingerprint`, `seedNamespace`, `runsPerScenario`, `workingTreeDirty`, and `artifactSchemaVersion`. Matching recomputed fingerprints are authoritative; a clean tree or reports-only commit is not required.
-- `BALANCE_SOURCE_FILES` in `scripts/utils/balance-report-metadata.mjs` must include every source capable of changing report numbers, including RNG batching in `src/utils/crypto.ts`.
+- `BALANCE_SOURCE_FILES` in `scripts/utils/balance-report-metadata.mjs` must include every source capable of changing report numbers, including RNG batching in `src/utils/crypto.ts` and the Expedition owners under `src/domain/expedition/` and `src/data/expedition/`. The v15 runtime-pacing gate validates captured playtest evidence against this hash, so an unhashed owner lets a stale cohort keep passing after the mechanic it measured has changed.
+- Changing `SIMULATION_CONSTANTS.daysPerRun`, `GLOBAL_PAYOUT_NERF` or `FAME_PROGRESS_CONSTANTS` invalidates the v14 acceptance bands. Re-run the v14 control calibration and re-derive `KPI_TARGETS`, the Fame-per-gig bands, the progression bands and the solvent-money caps in the same change; stale bands turn the v14 gates into checks against a horizon that no longer exists.
 - Derive verdict targets from live configuration. `MAX_GIG_NET` is applied after `GLOBAL_PAYOUT_NERF`; scale it with the nerf to preserve the same clipping threshold, or document intentional extra damping.
 - Treat `GLOBAL_PAYOUT_NERF`, `FAME_PROGRESS_CONSTANTS`, and the one-off catalogue as coupled: a full tour must still fund the catalogue. Exclude grant-priced entries such as `label_contact` when rescaling costs unless their grants also change.
 - Report quest/event lifecycle coverage as `insufficient_evidence` when the simulator does not execute offers, progress, completion, expiry, and rewards. Use the ten-hop tour or reached trigger opportunities—not registry inventory—as the frequency denominator.

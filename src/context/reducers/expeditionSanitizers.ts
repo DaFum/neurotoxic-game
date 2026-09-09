@@ -27,7 +27,10 @@ import { buildExpeditionMap } from '../../domain/expedition/map'
 import { deriveExpeditionOverlayTargetFrom } from '../../domain/expedition/routeOverlay'
 import { deriveExpeditionGhostRouteTargetFrom } from '../../domain/expedition/legendaries'
 import { getCrewEventOutcomeBySourceId } from '../../domain/expedition/crewEventOutcomes'
-import { getCanonicalBrandDealTermsHash } from '../../domain/expedition/sponsors'
+import {
+  getCanonicalBrandDealTermsHash,
+  MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS
+} from '../../domain/expedition/sponsors'
 import { EXPEDITION_RUN_DRAFT_TRAITS } from '../../domain/expedition/runDrafts'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { isExpeditionLegendaryId } from '../../data/expedition/legendaries'
@@ -680,6 +683,10 @@ export const sanitizeExpeditionState = (
     validVisitedPath[validVisitedPath.length - 1]
   )
 
+  const preparedSponsorProvenance = sanitizePreparedSponsorProvenance(
+    value.preparedSponsorProvenance
+  )
+
   const hasCanonicalContactEvidence = (sourceId: string): boolean => {
     const outcome = getCrewEventOutcomeBySourceId(sourceId)
     const rawIntelGrants = value.intelGrants
@@ -905,6 +912,9 @@ export const sanitizeExpeditionState = (
     // A carried shortfall is a debt, so a save cannot make it negative and
     // quietly turn it into credit.
     unpaidDailyObligation: readCount(value, 'unpaidDailyObligation', 0),
+    blockedTravelAtRouteStep: isFiniteNumber(value.blockedTravelAtRouteStep)
+      ? Math.max(0, Math.floor(value.blockedTravelAtRouteStep))
+      : null,
     outcome,
     insurancePolicyId:
       getExpeditionInsurancePolicy(
@@ -946,6 +956,12 @@ export const sanitizeExpeditionState = (
       value.preparedSponsorOffers,
       runSeed
     ),
+    // The staged offers are only re-derivable from the route they were staged
+    // for, so the provenance has to survive the load with them. Dropping it
+    // here left a prepared save holding offers START could no longer accept.
+    ...(preparedSponsorProvenance === undefined
+      ? {}
+      : { preparedSponsorProvenance }),
     runDraftTraitIds: sanitizeRunDraftTraitIds(value.runDraftTraitIds),
     ...(value.consumedRunDraftSourceKeys !== undefined
       ? {
@@ -1202,7 +1218,7 @@ const sanitizePreparedSponsorOffers = (
   if (!Array.isArray(value) || !isFiniteNumber(runSeed)) return []
   const result: ExpeditionState['preparedSponsorOffers'] = []
   const seen = new Set<string>()
-  for (const raw of value.slice(0, 3)) {
+  for (const raw of value.slice(0, MAX_PREPARED_EXPEDITION_SPONSOR_OFFERS)) {
     if (!isLooseRecord(raw)) continue
     const { offerId, dealId, canonicalTermsHash } = raw
     if (
@@ -1218,6 +1234,44 @@ const sanitizePreparedSponsorOffers = (
     result.push({ offerId, dealId, runSeed, canonicalTermsHash })
   }
   return result
+}
+
+/**
+ * Narrows the persisted Sponsor staging provenance to its declared shape.
+ *
+ * @param value - Raw persisted provenance.
+ * @returns The narrowed provenance, or `undefined` when the save carries none
+ * or carries a malformed one.
+ *
+ * @remarks
+ * Shape only. Whether the Region, Tour and perk are still *available* to this
+ * Career is decided by `validatePreparedExpeditionSponsorOffers`, which has the
+ * whole `GameState` to answer it with; a sanitizer that guessed here would
+ * either drop a legal staging or admit a locked one.
+ */
+const sanitizePreparedSponsorProvenance = (
+  value: unknown
+): ExpeditionState['preparedSponsorProvenance'] => {
+  if (!isLooseRecord(value)) return undefined
+  const { regionId, tourTypeId, starterPerkId } = value
+  if (
+    typeof regionId !== 'string' ||
+    typeof tourTypeId !== 'string' ||
+    isForbiddenKey(regionId) ||
+    isForbiddenKey(tourTypeId)
+  )
+    return undefined
+  if (
+    starterPerkId !== null &&
+    starterPerkId !== undefined &&
+    (typeof starterPerkId !== 'string' || isForbiddenKey(starterPerkId))
+  )
+    return undefined
+  return {
+    regionId,
+    tourTypeId,
+    starterPerkId: typeof starterPerkId === 'string' ? starterPerkId : null
+  }
 }
 
 const sanitizeRunDraftTraitIds = (

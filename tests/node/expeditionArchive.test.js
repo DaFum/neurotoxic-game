@@ -392,7 +392,7 @@ describe('G5 — the Archive survives a load without becoming authority', () => 
       for (const name of readdirSync(join(REPO_ROOT, root), {
         recursive: true
       })) {
-        const file = String(name)
+        const file = String(name).replaceAll('\\', '/')
         if (!/\.tsx?$/.test(file)) continue
         if (
           file.endsWith('expedition/archive.ts') ||

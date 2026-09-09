@@ -32,8 +32,12 @@ export const ActionButton = memo(
   }: ActionButtonProps) => {
     const baseStyles = `min-h-11 font-bold uppercase
                 touch-manipulation text-center transition
-                focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-toxic-green-20
+                focus-visible:outline-none
                 disabled:opacity-50 disabled:cursor-not-allowed`
+    const defaultFocusRing =
+      variant !== 'custom'
+        ? 'focus-visible:ring-4 focus-visible:ring-toxic-green-20'
+        : ''
     const variantStyles =
       variant === 'primary'
         ? `px-8 py-4 bg-toxic-green text-void-black
@@ -45,7 +49,7 @@ export const ActionButton = memo(
         ref={ref}
         type={type}
         onClick={onClick}
-        className={`${baseStyles} ${variantStyles} ${className}`}
+        className={`${baseStyles} ${defaultFocusRing} ${variantStyles} ${className}`}
         {...rest}
       >
         {children}

@@ -332,9 +332,26 @@ test('persisted sponsor offers must equal the deterministic canonical offer set'
   assert.ok(canonical.length > 0)
   const forged = structuredClone(canonical)
   forged.reverse()
+  // Offers and provenance are cleared together: a snapshot that no longer
+  // reproduces leaves nothing behind for START to validate against.
+  const provenance = {
+    regionId: BASE_EXPEDITION_REGION_ID,
+    tourTypeId: BASE_EXPEDITION_TOUR_TYPE_ID,
+    starterPerkId: null
+  }
   assert.deepEqual(
-    validatePreparedExpeditionSponsorOffers(prepared, forged),
-    []
+    validatePreparedExpeditionSponsorOffers(prepared, forged, provenance),
+    { offers: [], provenance: undefined }
+  )
+  // The canonical set staged for that same provenance survives intact.
+  assert.deepEqual(
+    validatePreparedExpeditionSponsorOffers(prepared, canonical, provenance),
+    { offers: canonical, provenance }
+  )
+  // No provenance means nothing is re-derivable, so nothing is kept.
+  assert.deepEqual(
+    validatePreparedExpeditionSponsorOffers(prepared, canonical, undefined),
+    { offers: [], provenance: undefined }
   )
 })
 
@@ -819,8 +836,8 @@ test('reckless_encore trades extraction retention for its Finale multiplier', ()
 
   const base = settleExpedition(state, 'extracted')
   const withDraft = settleExpedition(drafted, 'extracted')
-  assert.equal(base.retentionRate, 0.6)
-  assert.equal(withDraft.retentionRate, 0.6 * 0.85)
+  assert.equal(base.retentionRate, 0.7)
+  assert.equal(withDraft.retentionRate, 0.7 * 0.85)
   assert.ok(withDraft.moneyRetained < base.moneyRetained)
   assert.ok(withDraft.fameRetained < base.fameRetained)
 

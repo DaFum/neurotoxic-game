@@ -98,12 +98,7 @@ The existing required root field `GameState.runSeed` remains the **single canoni
 
 ```ts
 export type ExpeditionStatus =
-  | 'idle'
-  | 'prepared'
-  | 'active'
-  | 'extracted'
-  | 'completed'
-  | 'failed'
+  'idle' | 'prepared' | 'active' | 'extracted' | 'completed' | 'failed'
 
 export interface ExpeditionPrepState {
   prepId: string
@@ -322,8 +317,13 @@ export const getExpeditionSpendableCash = (state: GameState): number =>
     ? Math.max(0, state.player.money - state.expedition.protectedCareerCash)
     : Math.max(0, state.player.money)
 
-export const canSpendExpeditionCash = (state: GameState, amount: number): boolean =>
-  Number.isFinite(amount) && amount >= 0 && getExpeditionSpendableCash(state) >= amount
+export const canSpendExpeditionCash = (
+  state: GameState,
+  amount: number
+): boolean =>
+  Number.isFinite(amount) &&
+  amount >= 0 &&
+  getExpeditionSpendableCash(state) >= amount
 ```
 
 Every active Expedition repair/refuel/bribe/insurance/rescue/purchase and negative event Money effect must use this boundary. G2 owns the active-Expedition `ADVANCE_DAY` policy for mandatory daily obligations and legacy wear.
@@ -363,9 +363,7 @@ G1B extends the same START transaction after G2-G4 exist with cargo/insurance/Sp
 
 ```ts
 export type ExpeditionSpecialNodeSubtype =
-  | 'RIVAL_ENCOUNTER'
-  | 'UNDERGROUND_MARKET'
-  | 'BLACK_MARKET'
+  'RIVAL_ENCOUNTER' | 'UNDERGROUND_MARKET' | 'BLACK_MARKET'
 ```
 
 `buildExpeditionMap(state.runSeed, tourType, region, routeProfile)` is the only Expedition route builder. G5 supplies the typed Region/Tour route profile later; G1 baseline uses neutral weights.
@@ -464,10 +462,30 @@ finale_nonlegendary     definition-owned security rule
 Base settlement retention before G5 multipliers:
 
 ```text
-extracted  Money/Fame 0.60
+extracted  Money/Fame 0.70
 failed     Money/Fame 0.25
 completed  Money/Fame 1.00
 ```
+
+`extracted` was `0.60` when G1 first closed. It is `0.70` from the G6 Phase A
+economy pass onward, and this contract - not the production constant - is the
+change of record.
+
+The spec (section 8) sets the design range at *roughly 50-70% of run Cash/Fame
+secured*, so `0.70` stays inside the approved band; what moved is which point
+in that band this build binds. The reason is measured rather than aesthetic:
+at `0.60` a voluntary extraction returned so little that a fresh Career could
+not fund its next Tour from one, and 99.1% of six-run sequences halted on
+insufficient Career funds. `0.70` is one of four Phase A levers against that
+cliff, alongside real Gig payouts, adaptive Fuel targets and the Sponsor
+advance.
+
+Dependent evidence that moves with this number, and must be regenerated rather
+than inherited when it changes again:
+
+- `tests/ui/ExtractionDialog.test.tsx` - the shown retained/forfeited split
+- `docs/superpowers/reports/roguelite-expedition-v15-balance.{md,json}` - every
+  retained-Cash and retained-Fame figure in the v15 artifact
 
 Voluntary extraction may explicitly carry one eligible unsecured rare reward by default. `getEffectiveExpeditionRules(state).numeric.explicitExtractionRareCarrySlots` may raise the cap to at most 3. Failure keeps secured rare rewards only. Completion keeps all.
 

@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { BloodBankModal } from '../../src/ui/BloodBankModal'
 
 vi.mock('../../src/utils/imageGen', () => ({
@@ -42,5 +42,18 @@ describe('BloodBankModal', () => {
     expect(content).toHaveClass('overflow-y-auto')
     expect(closeButton).toHaveClass('w-full')
     expect(closeButton).toHaveClass('sm:w-auto')
+  })
+
+  it('wraps disabled donation action buttons in a Tooltip explaining why it is disabled', () => {
+    render(<BloodBankModal {...baseProps} canDonate={false} />)
+
+    const donateButton = screen.getByRole('button', { name: /donate blood/i })
+    expect(donateButton).toBeDisabled()
+
+    const wrapper = donateButton.parentElement
+    expect(wrapper).toBeInTheDocument()
+
+    fireEvent.mouseEnter(wrapper)
+    expect(screen.getByRole('tooltip', { name: /too weak/i })).toBeInTheDocument()
   })
 })

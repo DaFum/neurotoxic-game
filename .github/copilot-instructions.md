@@ -73,6 +73,7 @@ Strong success criteria let you loop independently. Weak criteria ("make it work
 - `docs/superpowers/plans/` and `docs/superpowers/specs/` are the binding contract for planned gate work. Read the task's own section before implementing it; a paraphrase drifts from the approved design and the drift surfaces in review, not in the tests.
 - Keep changes surgical. Do not refactor, reformat, upgrade dependencies, or remove pre-existing dead code outside the request.
 - Use `pnpm` only. Dependencies are pinned; discuss changes first. Never add Howler.js—the audio stack is Tone.js through `src/utils/audio/audioEngine.ts`.
+- `package.json#packageManager` is the sole pnpm version source; CI setup must derive and validate the version instead of duplicating it in workflow inputs or environment variables.
 
 ## Critical Commands
 

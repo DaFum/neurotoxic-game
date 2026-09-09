@@ -16,6 +16,10 @@ export const MAX_BETWEEN_TOUR_DECISIONS = 3
 
 /** The families, in the order they are chosen. */
 export const BETWEEN_TOUR_DECISION_PRIORITY = [
+  // First, because an insolvent Career has no next Tour to spend the other
+  // decisions on. It only generates when the Career actually cannot fund the
+  // cheapest legal build, so a solvent Career never sees it.
+  'sponsor_advance',
   'injury_rehab',
   'crew_debrief',
   'rival_response',
@@ -35,6 +39,7 @@ export const BETWEEN_TOUR_DECISION_PRIORITY = [
 export const BETWEEN_TOUR_OPTIONS: Readonly<
   Record<BetweenTourDecisionType, readonly string[]>
 > = {
+  sponsor_advance: ['take_advance', 'decline_advance'],
   injury_rehab: ['pay_rehab', 'accept_unavailability'],
   crew_debrief: ['rest_band', 'develop_signature'],
   rival_response: ['confront', 'cool_down'],
@@ -61,3 +66,22 @@ export const BETWEEN_TOUR_REPAIR_COST_PER_POINT = 12
 
 /** Van condition at or above which no repair decision is offered. */
 export const BETWEEN_TOUR_REPAIR_CONDITION_CEILING = 75
+
+/**
+ * Cash a Sponsor advance pays an insolvent Career.
+ *
+ * @remarks
+ * Sized to clear the cheapest legal next build with room for one leg of
+ * travel, not to restore a comfortable balance: the advance buys another
+ * attempt, not a fresh start.
+ */
+export const BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT = 400
+
+/**
+ * What the advance costs when it is repaid.
+ *
+ * @remarks
+ * Taken off the next settlement that actually retains money, so the Tour that
+ * recovers pays for the Tour that failed.
+ */
+export const BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE = 1.25

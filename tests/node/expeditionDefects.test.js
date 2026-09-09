@@ -321,10 +321,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       let state = createActiveStateWithDefects([defect], { pa: 80 })
 
       // 1. revealExpeditionDefect
-      const revealAction = revealExpeditionDefect(
-        state,
-        'defect_pa_test'
-      )
+      const revealAction = revealExpeditionDefect(state, 'defect_pa_test')
       assert.ok(revealAction)
       assert.equal(revealAction.type, 'REVEAL_EXPEDITION_DEFECT')
       state = gameReducer(state, revealAction)
@@ -349,10 +346,7 @@ test('Task 7: Hidden-Defect Lifecycle', async t => {
       assert.equal(state.expedition.technicalCondition.pa, 65) // 80 - 15
 
       // 3. resolveExpeditionDefect
-      const resolveAction = resolveExpeditionDefect(
-        state,
-        'defect_pa_test'
-      )
+      const resolveAction = resolveExpeditionDefect(state, 'defect_pa_test')
       assert.ok(resolveAction)
       assert.equal(resolveAction.type, 'RESOLVE_EXPEDITION_DEFECT')
       state = gameReducer(state, resolveAction)
