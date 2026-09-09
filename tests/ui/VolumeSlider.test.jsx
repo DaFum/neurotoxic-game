@@ -24,7 +24,8 @@ describe('VolumeSlider', () => {
     expect(input.tagName).toBe('INPUT')
     expect(input.type).toBe('range')
 
-    // Also verify aria-valuetext if we implement it
-    // expect(input.getAttribute('aria-valuetext')).toBe('50%')
+    expect(input.getAttribute('aria-valuetext')).toBe('50%')
+    expect(input.getAttribute('aria-valuenow')).toBe('0.5')
+    expect(input.getAttribute('aria-orientation')).toBe('horizontal')
   })
 })

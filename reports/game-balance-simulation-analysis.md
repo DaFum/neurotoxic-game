@@ -1,12 +1,12 @@
 # Game Balance Simulation – Analyse
 
-Erstellt am: 2026-09-03T03:19:20.301Z
+Erstellt am: 2026-09-03T20:09:22.985Z
 
 ## Reproduzierbarkeit
 
 - Report-Version: 14
-- Source-Fingerprint: e49a844fba5a371104502fd2edc6e18cb85f5619d2e8dfb586766169f0eb4b7d
-- Generator-Fingerprint: 3771cc61f9ae99152cd11389e04e6d0189eb0ffdee0c16e855ba2484d0b5c5f7
+- Source-Fingerprint: 657deca419501eab1be193de48a3849e19a1429faca0fb4ff35629f8409f083f
+- Generator-Fingerprint: afb37e280e40c0e73e3ae95a62fc81f7cdf970cf98cfff45c49a7ce08d8abf2b
 - Artefaktschema: 1
 - Seed-Namensraum: #first-income-full-reports-v1
 - Runs je Szenario: 2000
