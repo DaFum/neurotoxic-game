@@ -39,7 +39,7 @@ const MODES: readonly AcquisitionMode[] = ['cash', 'loan', 'crowdfund']
  * A critical business rule restricts combining 'diy' flavor assets with 'loan' acquisition
  * modes to prevent exploitative debt loops. This constraint is enforced defensively in the UI
  * by disabling the respective form controls, and backed up by strict validation within the
- * `purchaseChassis` reducer which rejects the state transition.
+ * `assetActionCreators.purchaseChassis` action creator which returns `PURCHASE_CHASSIS_FAILED` with `DIY_LOAN_NOT_ALLOWED`.
  *
  * @param props - Configuration properties detailing the asset scope and modal lifecycle hooks.
  * @returns The rendered modal dialog and embedded crowdfund configuration child modal if triggered.
