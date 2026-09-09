@@ -21,7 +21,9 @@ export interface BuildCommitmentPanelProps {
   validation: ExpeditionBuildValidation
   /** Cost of the committed fuel top-up. */
   fuelCost: number
-  /** Cash left after the top-up, excluding the protected slice. */
+  /** Cost of the selected insurance policy premium (if any). */
+  insurancePremium?: number
+  /** Cash left after upfront costs, excluding the protected slice. */
   spendableAfterCommit: number
   /** Commits the build and starts the run. */
   onCommit: () => void
@@ -41,6 +43,7 @@ export const BuildCommitmentPanel = memo(function BuildCommitmentPanel({
   preparedMap,
   validation,
   fuelCost,
+  insurancePremium = 0,
   spendableAfterCommit,
   onCommit
 }: BuildCommitmentPanelProps) {
@@ -88,6 +91,28 @@ export const BuildCommitmentPanel = memo(function BuildCommitmentPanel({
         <dd className='text-star-white' data-testid='expedition-prep-fuel-cost'>
           {formatCurrency(fuelCost, i18n.language)}
         </dd>
+        {insurancePremium > 0 && (
+          <>
+            <dt className='text-ash-gray uppercase'>
+              {t('ui:expedition.prep.insurancePremium')}
+            </dt>
+            <dd
+              className='text-star-white'
+              data-testid='expedition-prep-insurance-cost'
+            >
+              {formatCurrency(insurancePremium, i18n.language)}
+            </dd>
+            <dt className='text-ash-gray uppercase'>
+              {t('ui:expedition.prep.totalUpfrontCost')}
+            </dt>
+            <dd
+              className='text-star-white font-bold'
+              data-testid='expedition-prep-upfront-cost'
+            >
+              {formatCurrency(fuelCost + insurancePremium, i18n.language)}
+            </dd>
+          </>
+        )}
         <dt className='text-ash-gray uppercase'>
           {t('ui:expedition.prep.spendableAfter')}
         </dt>
