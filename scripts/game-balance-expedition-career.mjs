@@ -475,8 +475,10 @@ const classifyStartRefusal = (
   }
   const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
   const upfrontCost =
-    getExpeditionFuelTopUpCost(currentFuel, normalized.build.startingFuelTarget) +
-    getExpeditionInsurancePremium(normalized.insurancePolicyId)
+    getExpeditionFuelTopUpCost(
+      currentFuel,
+      normalized.build.startingFuelTarget
+    ) + getExpeditionInsurancePremium(normalized.insurancePolicyId)
   const money = finiteNumberOr(state.player.money, 0)
   const protectedCash = finiteNumberOr(normalized.build.protectedCareerCash, 0)
   if (money - upfrontCost < protectedCash) {
@@ -662,9 +664,7 @@ export const runFreshCareerSequence = (
     const preparedIdBeforeStart = state.expedition.prep?.prepId ?? null
     const cashBeforeRun = finiteNumberOr(state.player.money, 0)
     const fuelBeforeRun = finiteNumberOr(state.player.van?.fuel, 0)
-    const vanConditionBeforeRun = finiteNumberOr(
-      state.player.van?.condition, 0
-    )
+    const vanConditionBeforeRun = finiteNumberOr(state.player.van?.condition, 0)
     state = gameReducer(state, {
       type: ActionTypes.START_EXPEDITION,
       payload: {
@@ -783,8 +783,7 @@ export const runFreshCareerSequence = (
       // as if they were measurements.
       const ownedHqIds = new Set(state.player.hqUpgrades ?? [])
       const ownsLegacyExpeditionHq = ALL_HQ_ITEMS.some(
-        item =>
-          ownedHqIds.has(item.id) && doesLegacyHqItemTouchExpedition(item)
+        item => ownedHqIds.has(item.id) && doesLegacyHqItemTouchExpedition(item)
       )
       if (
         ownsLegacyExpeditionHq &&

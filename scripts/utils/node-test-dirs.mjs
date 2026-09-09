@@ -30,8 +30,8 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/game-balance-experiments.test.js',
   'tests/node/game-balance-simulation.test.js',
   'tests/node/game-balance-tension-report.test.js',
-    'tests/node/expeditionContractNumbers.test.js',
-    'tests/node/expeditionG6CloseOut.test.js',
+  'tests/node/expeditionContractNumbers.test.js',
+  'tests/node/expeditionG6CloseOut.test.js',
   'tests/node/gameBalanceExpeditionCareer.test.js',
   'tests/node/gameBalanceExpeditionExtractionProbe.test.js',
   'tests/node/gameBalanceExpeditionFogProbe.test.js',
@@ -45,7 +45,6 @@ export const TOOLING_NODE_TESTS = Object.freeze([
   'tests/node/nodeTestDiscovery.test.js',
   'tests/node/parallelism.test.js',
   'tests/node/playwright-screenshot-fixture-validation.test.js',
-  'tests/node/skillSync.test.js',
   'tests/node/updateSymbols.test.js',
   'tests/node/vitePwaConfig.test.js'
 ])

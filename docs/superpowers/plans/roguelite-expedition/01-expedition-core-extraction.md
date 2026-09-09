@@ -471,8 +471,8 @@ completed  Money/Fame 1.00
 economy pass onward, and this contract - not the production constant - is the
 change of record.
 
-The spec (section 8) sets the design range at *roughly 50-70% of run Cash/Fame
-secured*, so `0.70` stays inside the approved band; what moved is which point
+The spec (section 8) sets the design range at _roughly 50-70% of run Cash/Fame
+secured_, so `0.70` stays inside the approved band; what moved is which point
 in that band this build binds. The reason is measured rather than aesthetic:
 at `0.60` a voluntary extraction returned so little that a fresh Career could
 not fund its next Tour from one, and 99.1% of six-run sequences halted on

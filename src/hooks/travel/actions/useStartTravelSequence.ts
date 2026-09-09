@@ -9,8 +9,10 @@ import type { TravelActionsParams } from '../types'
 /**
  * Configuration for the start travel sequence action hook.
  */
-interface UseStartTravelSequenceParams
-  extends Pick<TravelActionsParams, 'refs' | 'setters' | 'params'> {
+interface UseStartTravelSequenceParams extends Pick<
+  TravelActionsParams,
+  'refs' | 'setters' | 'params'
+> {
   /** Callback to reset any travel preparations that may have been configured but not finalized. */
   clearPendingTravel: () => void
 }

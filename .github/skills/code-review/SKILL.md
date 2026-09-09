@@ -23,7 +23,6 @@ license: 'Proprietary. See LICENSE.txt for terms'
      Edit .agents/skills/github-code-review/SKILL.md, then run: pnpm run sync:skills
      tests/node/skillSync.test.js fails if these drift. -->
 
-
 # GitHub Code Review
 
 Review Neurotoxic changes with evidence-first, risk-weighted depth. Lead with actionable inline comments on confirmed Important or Critical defects, then submit one concise top-level verdict.

@@ -12,7 +12,7 @@
 
 ## Reward proof
 
-- A seeded gate proves an event *could* occur at a route step, never that it did. `sourceId`, `resolvedEventSourceIds`, `materialized` and the ledger entries themselves are all save-authored and cannot authenticate a reward. Every `event_rare` entry is dropped on load for that reason; do not re-admit them without reducer-authored evidence a save cannot construct.
+- A seeded gate proves an event _could_ occur at a route step, never that it did. `sourceId`, `resolvedEventSourceIds`, `materialized` and the ledger entries themselves are all save-authored and cannot authenticate a reward. Every `event_rare` entry is dropped on load for that reason; do not re-admit them without reducer-authored evidence a save cannot construct.
 - A settlement bonus needs run-scoped evidence. `completedQuestIds` only ever grows, so it proves history, not that a milestone happened in the run being settled.
 
 ## Composition

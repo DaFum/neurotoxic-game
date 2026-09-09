@@ -19,7 +19,7 @@
 
 ## Expedition Registries
 
-- An `EXPEDITION_REGIONS` or `EXPEDITION_TOUR_TYPES` entry is unreachable in gameplay until `getAvailableExpeditionRegionIds` / `getAvailableExpeditionTourTypeIds` (`src/domain/expedition/loadout.ts`) list it *and* the Tour Prep selection UI offers it; `validateExpeditionBuildCommitment` otherwise rejects the candidate as `TOUR_OR_REGION_UNKNOWN`.
+- An `EXPEDITION_REGIONS` or `EXPEDITION_TOUR_TYPES` entry is unreachable in gameplay until `getAvailableExpeditionRegionIds` / `getAvailableExpeditionTourTypeIds` (`src/domain/expedition/loadout.ts`) list it _and_ the Tour Prep selection UI offers it; `validateExpeditionBuildCommitment` otherwise rejects the candidate as `TOUR_OR_REGION_UNKNOWN`.
 - A `numeric` or `route` field with no production consumer is inert config. Wire the consumer in the same change or leave the field out — a published multiplier that nothing reads looks implemented and is not.
 - A declared Tour `depth` is honoured only down to `MIN_EXPEDITION_DECLARED_MEANINGFUL_NODES`. A lower value is clamped, and the registry then states a route length the builder never produces.
 

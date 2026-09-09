@@ -1778,12 +1778,8 @@
         "scoreB": 60,
         "routeChanged": false,
         "revealUsed": true,
-        "revealedNodeIds": [
-          "exp_1_0"
-        ],
-        "revealedCandidateIds": [
-          "exp_1_0"
-        ],
+        "revealedNodeIds": ["exp_1_0"],
+        "revealedCandidateIds": ["exp_1_0"],
         "intelLevelsA": {
           "exp_1_0": 0,
           "exp_1_1": 0
@@ -1792,11 +1788,7 @@
           "exp_1_0": 1,
           "exp_1_1": 0
         },
-        "inspectedFieldsA": [
-          "dangerTier",
-          "nodeClass",
-          "rewardTier"
-        ],
+        "inspectedFieldsA": ["dangerTier", "nodeClass", "rewardTier"],
         "inspectedFieldsB": [
           "dangerTier",
           "exactPayout",
@@ -1834,12 +1826,8 @@
         "scoreB": 90,
         "routeChanged": false,
         "revealUsed": true,
-        "revealedNodeIds": [
-          "exp_1_0"
-        ],
-        "revealedCandidateIds": [
-          "exp_1_0"
-        ],
+        "revealedNodeIds": ["exp_1_0"],
+        "revealedCandidateIds": ["exp_1_0"],
         "intelLevelsA": {
           "exp_1_0": 0,
           "exp_1_1": 0,
@@ -1850,11 +1838,7 @@
           "exp_1_1": 0,
           "exp_1_2": 0
         },
-        "inspectedFieldsA": [
-          "dangerTier",
-          "nodeClass",
-          "rewardTier"
-        ],
+        "inspectedFieldsA": ["dangerTier", "nodeClass", "rewardTier"],
         "inspectedFieldsB": [
           "dangerTier",
           "exactPayout",
@@ -1892,12 +1876,8 @@
         "scoreB": 90,
         "routeChanged": false,
         "revealUsed": true,
-        "revealedNodeIds": [
-          "exp_1_0"
-        ],
-        "revealedCandidateIds": [
-          "exp_1_0"
-        ],
+        "revealedNodeIds": ["exp_1_0"],
+        "revealedCandidateIds": ["exp_1_0"],
         "intelLevelsA": {
           "exp_1_0": 0,
           "exp_1_1": 0
@@ -1906,11 +1886,7 @@
           "exp_1_0": 1,
           "exp_1_1": 0
         },
-        "inspectedFieldsA": [
-          "dangerTier",
-          "nodeClass",
-          "rewardTier"
-        ],
+        "inspectedFieldsA": ["dangerTier", "nodeClass", "rewardTier"],
         "inspectedFieldsB": [
           "dangerTier",
           "exactPayout",
@@ -1948,12 +1924,8 @@
         "scoreB": 90,
         "routeChanged": false,
         "revealUsed": true,
-        "revealedNodeIds": [
-          "exp_1_0"
-        ],
-        "revealedCandidateIds": [
-          "exp_1_0"
-        ],
+        "revealedNodeIds": ["exp_1_0"],
+        "revealedCandidateIds": ["exp_1_0"],
         "intelLevelsA": {
           "exp_1_0": 0,
           "exp_1_1": 0,
@@ -1964,11 +1936,7 @@
           "exp_1_1": 0,
           "exp_1_2": 0
         },
-        "inspectedFieldsA": [
-          "dangerTier",
-          "nodeClass",
-          "rewardTier"
-        ],
+        "inspectedFieldsA": ["dangerTier", "nodeClass", "rewardTier"],
         "inspectedFieldsB": [
           "dangerTier",
           "exactPayout",
@@ -2006,12 +1974,8 @@
         "scoreB": 60,
         "routeChanged": false,
         "revealUsed": true,
-        "revealedNodeIds": [
-          "exp_1_0"
-        ],
-        "revealedCandidateIds": [
-          "exp_1_0"
-        ],
+        "revealedNodeIds": ["exp_1_0"],
+        "revealedCandidateIds": ["exp_1_0"],
         "intelLevelsA": {
           "exp_1_0": 0,
           "exp_1_1": 0
@@ -2020,11 +1984,7 @@
           "exp_1_0": 1,
           "exp_1_1": 0
         },
-        "inspectedFieldsA": [
-          "dangerTier",
-          "nodeClass",
-          "rewardTier"
-        ],
+        "inspectedFieldsA": ["dangerTier", "nodeClass", "rewardTier"],
         "inspectedFieldsB": [
           "dangerTier",
           "exactPayout",
@@ -3000,11 +2960,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 80,
       "resolvedVanUpgrades": [
         "stage_monitors",
@@ -3025,11 +2981,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 85,
       "resolvedVanUpgrades": [
         "stage_monitors",
@@ -3050,11 +3002,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 75,
       "resolvedVanUpgrades": [
         "stage_monitors",
@@ -3075,11 +3023,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 70,
       "resolvedVanUpgrades": [
         "stage_monitors",
@@ -3100,11 +3044,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 80,
       "resolvedVanUpgrades": [
         "stage_monitors",
@@ -3125,11 +3065,7 @@
         "technical": 5,
         "charisma": 5
       },
-      "vanUpgrades": [
-        "stage_monitors",
-        "amp_overdrive",
-        "effects_rack"
-      ],
+      "vanUpgrades": ["stage_monitors", "amp_overdrive", "effects_rack"],
       "startingVanFuel": 85,
       "resolvedVanUpgrades": [
         "stage_monitors",

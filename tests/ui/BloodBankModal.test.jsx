@@ -54,6 +54,8 @@ describe('BloodBankModal', () => {
     expect(wrapper).toBeInTheDocument()
 
     fireEvent.mouseEnter(wrapper)
-    expect(screen.getByRole('tooltip', { name: /too weak/i })).toBeInTheDocument()
+    expect(
+      screen.getByRole('tooltip', { name: /too weak/i })
+    ).toBeInTheDocument()
   })
 })
