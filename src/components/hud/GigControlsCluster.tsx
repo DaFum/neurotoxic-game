@@ -31,6 +31,7 @@ const BUTTON_BASE =
  * The keyboard shortcuts (M to mute, ESC to pause) keep working regardless of
  * whether the cluster is expanded; this only hides the visual buttons.
  *
+ * @param props - The properties for the GigControlsCluster component.
  * @returns The collapsed controls cluster for the gig HUD.
  */
 export const GigControlsCluster = memo(function GigControlsCluster({
