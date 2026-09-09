@@ -40,7 +40,10 @@ import {
   calculateExpeditionCargoCapacity,
   calculateExpeditionCargoUsage
 } from './cargo'
-import { getAvailableInsurancePolicyIds } from './insurance'
+import {
+  getAvailableInsurancePolicyIds,
+  getExpeditionInsurancePremium
+} from './insurance'
 import type { GameState } from '../../types'
 import type { LongTermAsset } from '../../types/assets'
 import type {
@@ -795,6 +798,17 @@ export const validateExpeditionBuildCommitment = (
     protectedCareerCash > playerMoney
   ) {
     return reject('PROTECTED_CASH_OUT_OF_RANGE')
+  }
+
+  const fuelCost = getExpeditionFuelTopUpCost(
+    currentFuel,
+    startingFuelTarget
+  )
+  const insurancePremium = getExpeditionInsurancePremium(
+    normalizedInsurancePolicyId
+  )
+  if (playerMoney - (fuelCost + insurancePremium) < protectedCareerCash) {
+    return reject('UPFRONT_COST_UNAFFORDABLE')
   }
 
   return {

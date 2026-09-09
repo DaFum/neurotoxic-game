@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next'
 import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
 import { formatCurrency } from '../../utils/numberUtils'
+import { finiteNumberOr } from '../../utils/finiteNumber'
 import { SONGS_BY_ID } from '../../data/songs'
 import {
   FREE_EXPEDITION_REGION_ID,
@@ -42,6 +43,7 @@ import {
 } from '../../domain/expedition/insurance'
 import { getExpeditionChassisProfile } from '../../domain/expedition/chassis'
 import { MERCH_PROFILES } from '../../data/merch'
+import { isExpeditionCapabilityUnlocked } from '../../data/expedition/unlockSets'
 import { CONTRABAND_BY_ID } from '../../data/contraband'
 import { MAX_NATIVE_EXPEDITION_CONTRACTS } from '../../data/expedition/contracts'
 import { BRAND_DEALS } from '../../data/brandDeals'
@@ -96,6 +98,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const money = useGameSelector(state => state.player.money)
   const currentFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
   const ownedGearItemIds = useGameSelector(getExpeditionOwnedPerformanceGear)
+  const career = useGameSelector(state => state.career)
   const state = useGameSelector(current => current)
 
   const [activeTab, setActiveTab] = useState<BuildTabCategory>(
@@ -728,23 +731,37 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 {ownedTourbusAssets.map(asset => {
                   const isSelected = activeTourbusAssetId === asset.id
                   const profile = getExpeditionChassisProfile(asset)
+                  const isTierLocked =
+                    Math.floor(finiteNumberOr(asset.chassisTier, 1)) > 1 &&
+                    !isExpeditionCapabilityUnlocked(
+                      career?.unlockedSetIds,
+                      'chassis_higher_tier'
+                    )
                   return (
                     <button
                       key={asset.id}
                       type='button'
+                      disabled={isTierLocked}
                       aria-pressed={isSelected}
-                      onClick={() => setActiveTourbusAssetId(asset.id)}
+                      onClick={() => !isTierLocked && setActiveTourbusAssetId(asset.id)}
                       data-testid={`expedition-prep-tourbus-${asset.id}`}
                       className={`min-h-11 px-3 py-2 text-left text-xs font-mono uppercase border transition-colors ${
-                        isSelected
+                        isTierLocked
+                          ? 'border-steel-gray/30 text-steel-gray opacity-60 cursor-not-allowed'
+                          : isSelected
                           ? 'border-toxic-green bg-toxic-green/20 text-star-white'
                           : 'border-steel-gray text-ash-gray hover:border-toxic-green'
                       }`}
                     >
-                      <strong>{asset.name ?? asset.id}</strong>
+                      <strong>{asset.id}</strong>
                       <span className='block normal-case text-ash-gray'>
                         Archetype: {profile.archetype} | Cargo Bonus: +
                         {profile.cargoCapacityBonus}
+                        {isTierLocked && (
+                          <span className='block text-signal-red text-[10px] mt-0.5'>
+                            ({t('ui:expedition.prep.reject.CHASSIS_TIER_LOCKED')})
+                          </span>
+                        )}
                       </span>
                     </button>
                   )
@@ -1029,18 +1046,14 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                       m => m.inventoryKey === item.inventoryKey
                     )
                     const currentQty = currentSelection?.quantity ?? 0
-                    const merchProfile = MERCH_PROFILES[item.inventoryKey]
+                    const merchProfile = MERCH_PROFILES[item.inventoryKey as keyof typeof MERCH_PROFILES]
                     return (
                       <label
                         key={item.inventoryKey}
                         className='flex flex-col gap-1 text-xs font-mono uppercase text-ash-gray border border-steel-gray/40 p-2'
                       >
                         <div className='flex justify-between text-star-white'>
-                          <span>
-                            {merchProfile?.nameKey
-                              ? t(merchProfile.nameKey)
-                              : item.inventoryKey}
-                          </span>
+                          <span>{item.inventoryKey}</span>
                           <span>
                             {currentQty} / {item.ownedQuantity} Items
                           </span>

@@ -111,7 +111,8 @@ export const usePostGigLogic = () => {
       cityStates,
       triggerEvent,
       isScreenshotMode,
-      gigRewardMultiplier: finaleRewardMultiplier
+      gigRewardMultiplier: finaleRewardMultiplier,
+      expedition
     })
 
   // 3. Handlers

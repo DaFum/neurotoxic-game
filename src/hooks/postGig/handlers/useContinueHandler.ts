@@ -92,6 +92,15 @@ export function useContinueHandler({
         updateBand((prevBand: BandState) => ({
           inventory: buildSoldMerchInventory(prevBand.inventory, soldMerch)
         }))
+        if (expedition?.status === 'active' && Array.isArray(expedition.cargo?.merch)) {
+          expedition.cargo.merch = expedition.cargo.merch.map(item => {
+            const soldQty = soldMerch[item.inventoryKey] ?? 0
+            return {
+              ...item,
+              quantity: Math.max(0, item.quantity - soldQty)
+            }
+          })
+        }
       }
 
       const stats = calculateContinueStats({
