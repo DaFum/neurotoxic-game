@@ -652,9 +652,7 @@
     {
       "title": "ui:featureList.sec6.title",
       "type": "bullets",
-      "items": [
-        "ui:featureList.sec6.items.0"
-      ],
+      "items": ["ui:featureList.sec6.items.0"],
       "description": "ui:featureList.sec6.description"
     },
     {
@@ -1770,6 +1768,7 @@
   "quests.dramaPost.description": "Stir the timeline. 300 new followers in four days — or eat the controversy.",
   "quests.dramaPost.title": "DRAMA POST",
   "quests.empty": "No active quests. Hit the road to find some!",
+  "quests.explore": "[ HIT THE ROAD ]",
   "quests.hint.deadline.lastChance": "Last chance: 1 day left",
   "quests.hint.deadline.overdue": "Overdue",
   "quests.hint.deadline.safe": "{{count}} days left",

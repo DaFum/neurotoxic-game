@@ -1,12 +1,15 @@
 import { Container, Graphics, Sprite, Texture } from 'pixi.js'
 import { EffectManager } from './EffectManager'
 
+/**
+ * Represents an item carried by the roadie player.
+ */
 type RoadieCarriedItem = {
   type: string
 }
 
 /**
- * State shape for Roadie Render.
+ * Defines the state required to render the roadie player.
  */
 export type RoadieRenderState = {
   playerPos: { x: number; y: number }
@@ -15,7 +18,12 @@ export type RoadieRenderState = {
 }
 
 /**
- * Manages Roadie Player rendering resources and state.
+ * Manages rendering resources and state for the roadie player.
+ *
+ * @remarks
+ * Encapsulates the PixiJS containers, sprites, and visual effects associated
+ * with the roadie character during a minigame sequence. It handles positioning,
+ * carrying state visuals, and damage feedback.
  */
 export class RoadiePlayerManager {
   playerContainer: Container | null
@@ -34,6 +42,12 @@ export class RoadiePlayerManager {
     toxicGreen: number
   }
 
+  /**
+   * Initializes a new instance of the RoadiePlayerManager.
+   *
+   * @param textures - The textures for the roadie and carried items.
+   * @param colors - The color palette for visual effects and tinting.
+   */
   constructor(
     textures: {
       roadie: import('pixi.js').Texture | null
@@ -55,6 +69,13 @@ export class RoadiePlayerManager {
     this.colors = colors
   }
 
+  /**
+   * Initializes the player container and sprites, attaching them to the parent container.
+   *
+   * @param container - The parent container to which the player elements are added.
+   * @param cellW - The width of a single grid cell.
+   * @param cellH - The height of a single grid cell.
+   */
   setup(container: Container, cellW: number, cellH: number) {
     // Player Container (Groups body + item)
     this.playerContainer = new Container()
@@ -86,10 +107,22 @@ export class RoadiePlayerManager {
     this.playerContainer.addChild(this.itemSprite)
   }
 
+  /**
+   * Assigns an effect manager for spawning visual feedback, such as hit particles.
+   *
+   * @param effectManager - The effect manager instance to use.
+   */
   setEffectManager(effectManager: EffectManager) {
     this.effectManager = effectManager
   }
 
+  /**
+   * Updates the spatial coordinates of the player container based on the grid state.
+   *
+   * @param state - The current render state containing the player's logical position.
+   * @param cellW - The width of a single grid cell.
+   * @param cellH - The height of a single grid cell.
+   */
   updatePlayerPosition(state: RoadieRenderState, cellW: number, cellH: number) {
     if (this.playerContainer) {
       this.playerContainer.x = (state.playerPos.x + 0.5) * cellW
@@ -97,6 +130,13 @@ export class RoadiePlayerManager {
     }
   }
 
+  /**
+   * Synchronizes the visibility, texture, and tinting of the carried item sprite based on state.
+   *
+   * @param state - The current render state detailing what item is being carried.
+   * @param cellW - The width of a single grid cell.
+   * @param cellH - The height of a single grid cell.
+   */
   updateCarryingVisuals(
     state: RoadieRenderState,
     cellW: number,
@@ -137,6 +177,11 @@ export class RoadiePlayerManager {
     }
   }
 
+  /**
+   * Detects increases in equipment damage to trigger visual hit effects and sprite flashing.
+   *
+   * @param state - The current render state containing the accumulated damage value.
+   */
   checkDamageTriggers(state: RoadieRenderState) {
     if (state.equipmentDamage > this.lastDamage) {
       // Trigger Hit Effect
@@ -167,6 +212,9 @@ export class RoadiePlayerManager {
     }
   }
 
+  /**
+   * Cleans up all managed PixiJS display objects and clears active timeouts.
+   */
   dispose() {
     if (this._flashTimeout) {
       clearTimeout(this._flashTimeout)

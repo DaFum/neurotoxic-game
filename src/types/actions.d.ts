@@ -178,6 +178,16 @@ export interface PrepareExpeditionRunPayload {
   runSeed: number
 }
 
+/**
+ * Payload staging deterministic Sponsor offers for a prepared run.
+ */
+export interface PrepareExpeditionSponsorOffersPayload {
+  expectedRunSeed: number
+  regionId?: string
+  tourTypeId?: string
+  starterPerkId?: string | null
+}
+
 export interface ExpeditionInjurySourcePayload {
   targetId: string
   sourceId: string

@@ -45,10 +45,18 @@ export const ExpeditionCrewPicker = memo(function ExpeditionCrewPicker({
                     : [...selectedCrewIds, crew.id]
                 )
               }
-              className='min-h-11 border-2 border-steel-gray bg-charcoal-gray p-2 text-left font-mono uppercase text-star-white shadow-[3px_3px_0_var(--color-toxic-green)] disabled:opacity-40'
+              className={`min-h-11 border-2 p-2 text-left font-mono uppercase shadow-[3px_3px_0_var(--color-toxic-green)] transition-colors disabled:opacity-40 ${
+                selected
+                  ? 'border-toxic-green bg-toxic-green/20 text-star-white'
+                  : 'border-steel-gray bg-charcoal-gray text-ash-gray hover:border-toxic-green'
+              }`}
             >
               <strong>{t(crew.displayNameKey)}</strong>
-              <span className='block text-xs text-ash-gray'>
+              <span
+                className={`block text-xs ${
+                  selected ? 'text-star-white' : 'text-ash-gray'
+                }`}
+              >
                 {t(`ui:expedition.crew.role.${crew.role}`)}
               </span>
             </button>

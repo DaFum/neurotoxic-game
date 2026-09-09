@@ -17,6 +17,11 @@ import { isFiniteNumber, isLooseRecord } from '../../utils/gameState'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import { createInitialCareerState } from '../../domain/expedition/career'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
+import {
+  BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT,
+  BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE
+} from '../../data/expedition/betweenTour'
 import {
   getExpeditionUnlockSet,
   isExpeditionUnlockSetId
@@ -310,6 +315,7 @@ export const sanitizeCareerState = (value: unknown): CareerState => {
     // set counts as resolved, so that loss also let the next Tour open on a
     // run whose questions were never asked.
     betweenTourByRunId: sanitizeBetweenTourByRunId(value.betweenTourByRunId),
+    sponsorAdvance: sanitizeSponsorAdvance(value.sponsorAdvance),
     bandConsequenceByMemberId: sanitizeBandConsequences(
       value.bandConsequenceByMemberId
     ),
@@ -397,6 +403,64 @@ const sanitizeBetweenTourDecision = (
  * consequences they were about. The entry's `runId` must match its own key, or
  * a resolve addressed by run id would act on a different set.
  */
+/**
+ * Narrows a persisted Sponsor advance.
+ *
+ * @param value - Raw persisted advance.
+ * @returns The narrowed advance, or `null`.
+ *
+ * @remarks
+ * An advance is a debt, so a malformed one is dropped rather than repaired:
+ * inventing an `outstanding` a save did not carry would either forgive a real
+ * debt or charge one the Career never took.
+ *
+ * Every field is checked against what production can actually mint, not merely
+ * against its own type. `applyExpeditionSettlement` subtracts `outstanding`
+ * from the Cash a run retains, so a finite-but-arbitrary balance is not a
+ * cosmetic defect: a forged save carrying `outstanding: 1000000` would drain
+ * every future settlement, and dropping malformed debt is this sanitizer's
+ * whole contract. There is exactly one legal principal and one legal ceiling,
+ * both derived from the constants the generator itself uses.
+ */
+const sanitizeSponsorAdvance = (
+  value: unknown
+): CareerState['sponsorAdvance'] => {
+  if (!isLooseRecord(value)) return null
+  const { dealId, takenAfterRunId } = value
+  if (typeof dealId !== 'string' || isForbiddenKey(dealId)) return null
+  // The advance names the Sponsor fronting it, and production resolves that
+  // from the registry. An unknown id is a debt owed to nobody.
+  if (!BRAND_DEALS_BY_ID.has(dealId)) return null
+  if (typeof takenAfterRunId !== 'string') return null
+  const { amount, outstanding } = value
+  // `isFiniteNumber` rather than coercion: a numeric string or a boolean is a
+  // malformed debt, not a small one.
+  if (!isFiniteNumber(amount) || amount <= 0) return null
+  // Zero is cleared, and cleared is `null`. Preserving a zero-balance record
+  // would leave `sponsorAdvance` non-null forever, and both generation and
+  // application require it to be null - so a Career that had repaid its debt
+  // could never be offered another advance.
+  if (!isFiniteNumber(outstanding) || outstanding <= 0) return null
+  // One canonical principal. A save carrying any other figure did not get it
+  // from `applyBetweenTourDecision`.
+  if (amount !== BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT) return null
+  // The opening balance is the whole legal ceiling: repayment only ever
+  // subtracts, so no real Career can owe more than it started owing.
+  const maxOutstanding = Math.round(
+    BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT *
+      BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE
+  )
+  if (!Number.isInteger(outstanding) || outstanding > maxOutstanding) {
+    return null
+  }
+  return {
+    dealId,
+    amount,
+    outstanding,
+    takenAfterRunId
+  }
+}
+
 const sanitizeBetweenTourByRunId = (
   value: unknown
 ): Record<string, BetweenTourRunState> =>

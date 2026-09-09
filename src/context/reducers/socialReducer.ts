@@ -83,24 +83,30 @@ const parseZealotryActionPayload = (
   optionalGainFields = false
 ): ZealotryPayloadParsed | null => {
   if (!payload || typeof payload !== 'object') return null
-  const parsedCost = Number(payload.cost)
-  const parsedFameGain = Number(payload.fameGain)
-  const parsedZealotryGain = Number(payload.zealotryGain)
-  const parsedControversyGain = Number(payload.controversyGain)
-  const parsedHarmonyCost = Number(payload.harmonyCost)
+  const parsedCost = payload.cost as number
+  const parsedFameGain = (
+    payload.fameGain === undefined ? 0 : payload.fameGain
+  ) as number
+  const parsedZealotryGain = (
+    payload.zealotryGain === undefined ? 0 : payload.zealotryGain
+  ) as number
+  const parsedControversyGain = (
+    payload.controversyGain === undefined ? 0 : payload.controversyGain
+  ) as number
+  const parsedHarmonyCost = payload.harmonyCost as number
 
-  const requireGain = (raw: unknown, parsed: number): boolean =>
+  const requireGain = (raw: unknown): boolean =>
     optionalGainFields
-      ? raw != null && (!Number.isFinite(parsed) || parsed < 0)
-      : !Number.isFinite(parsed) || parsed < 0
+      ? raw != null && (!isFiniteNumber(raw) || raw < 0)
+      : !isFiniteNumber(raw) || raw < 0
 
   if (
-    !Number.isFinite(parsedCost) ||
+    !isFiniteNumber(parsedCost) ||
     parsedCost < 0 ||
-    requireGain(payload.fameGain, parsedFameGain) ||
-    requireGain(payload.zealotryGain, parsedZealotryGain) ||
-    requireGain(payload.controversyGain, parsedControversyGain) ||
-    !Number.isFinite(parsedHarmonyCost) ||
+    requireGain(payload.fameGain) ||
+    requireGain(payload.zealotryGain) ||
+    requireGain(payload.controversyGain) ||
+    !isFiniteNumber(parsedHarmonyCost) ||
     parsedHarmonyCost < 0
   ) {
     return null

@@ -19,6 +19,7 @@ import {
   executeExpeditionRepair as executeExpeditionRepairAction,
   extractExpedition as extractExpeditionAction,
   prepareExpeditionRun as prepareExpeditionRunAction,
+  prepareExpeditionSponsorOffers as prepareExpeditionSponsorOffersAction,
   prepareNextExpedition as prepareNextExpeditionAction,
   resolveExpeditionCrisis as resolveExpeditionCrisisAction,
   revealExpeditionNodeIntel as revealExpeditionNodeIntelAction,
@@ -44,6 +45,7 @@ import type { GameDispatchActions } from './useGameDispatchActions'
 export type ExpeditionDispatchActions = Pick<
   GameDispatchActions,
   | 'prepareExpeditionRun'
+  | 'prepareExpeditionSponsorOffers'
   | 'startExpedition'
   | 'advanceExpeditionRoute'
   | 'revealExpeditionNodeIntel'
@@ -95,6 +97,19 @@ export function useExpeditionDispatchActions({
     () => ({
       prepareExpeditionRun: () =>
         dispatch(prepareExpeditionRunAction(stateRef.current)),
+      prepareExpeditionSponsorOffers: (
+        regionId?: string,
+        tourTypeId?: string,
+        starterPerkId?: string | null
+      ) =>
+        dispatch(
+          prepareExpeditionSponsorOffersAction(
+            stateRef.current,
+            regionId,
+            tourTypeId,
+            starterPerkId
+          )
+        ),
       startExpedition: (loadout: ExpeditionLoadout) =>
         dispatch(startExpeditionAction(stateRef.current, loadout)),
       advanceExpeditionRoute: (nodeId: string) =>

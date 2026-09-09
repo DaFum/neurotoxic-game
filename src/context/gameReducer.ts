@@ -76,6 +76,7 @@ import {
   handleExecuteExpeditionRepair,
   handleExtractExpedition,
   handlePrepareExpeditionRun,
+  handlePrepareExpeditionSponsorOffers,
   handlePrepareNextExpedition,
   handleResolveExpeditionCrisis,
   handleResolveExpeditionDefect,
@@ -251,6 +252,8 @@ const reducerMap: ReducerMap = {
   [ActionTypes.START_CROWDFUND_FAILED]: handleAssetFailedAction,
   [ActionTypes.ASSET_FORECLOSED]: handleAssetForeclosed,
   [ActionTypes.PREPARE_EXPEDITION_RUN]: handlePrepareExpeditionRun,
+  [ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS]:
+    handlePrepareExpeditionSponsorOffers,
   [ActionTypes.START_EXPEDITION]: handleStartExpedition,
   [ActionTypes.ADVANCE_EXPEDITION_ROUTE]: handleAdvanceExpeditionRoute,
   [ActionTypes.REVEAL_EXPEDITION_NODE_INTEL]: handleRevealExpeditionNodeIntel,

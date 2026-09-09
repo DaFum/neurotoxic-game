@@ -3,6 +3,7 @@
 ## Runner split
 
 - Node split for triage: `pnpm run test:node:quick` and `pnpm run test:node:heavy`.
+- Tests whose primary subject is repository tooling belong in `TOOLING_NODE_TESTS` (or the focused tooling Vitest config) and run through `pnpm run test:tooling`, not the production-oriented test commands.
 - Never place `node:test` suites directly under `tests/`: `run-node-tests.mjs` only discovers `.test.js` / `.spec.js` files in `tests/{node,components,context,events,golden-path,reducers}/**`; the two locale suites live under `tests/locale/` and use the locale scripts. `tests/node/nodeTestDiscovery.test.js` enforces these ownership boundaries.
 
 ## Mock gotchas: Pixi / stage

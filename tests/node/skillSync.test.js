@@ -41,8 +41,14 @@ describe('generated code-review skill file', () => {
       let frontmatter = frontmatterMatch[1]
       const body = source.slice(frontmatter.length)
 
-      frontmatter = frontmatter.replace(/^name:\s*github-code-review$/m, 'name: code-review')
-      frontmatter = frontmatter.replace(/^description:\s*>[\s\S]*?(?=^compatibility:)/m, `${HOST_DESCRIPTION}\n`)
+      frontmatter = frontmatter.replace(
+        /^name:\s*github-code-review$/m,
+        'name: code-review'
+      )
+      frontmatter = frontmatter.replace(
+        /^description:\s*>[\s\S]*?(?=^compatibility:)/m,
+        `${HOST_DESCRIPTION}\n`
+      )
 
       expectedGenerated = `${frontmatter}\n${EXPECTED_HEADER}\n${body}`
     } else {

@@ -352,6 +352,10 @@ export type GameAction =
       import('./actions').PrepareExpeditionRunPayload
     >
   | Action<
+      ActionTypes['PREPARE_EXPEDITION_SPONSOR_OFFERS'],
+      import('./actions').PrepareExpeditionSponsorOffersPayload
+    >
+  | Action<
       ActionTypes['START_EXPEDITION'],
       import('./actions').StartExpeditionPayload
     >

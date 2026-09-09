@@ -77,7 +77,13 @@ Hard test fails if v15 imports/reads the old day-horizon constant for terminatio
 ```ts
 export interface ExpeditionBalanceProfile {
   id: string
-  tourTypeId: 'standard' | 'blitz' | 'underground' | 'corporate' | 'rival_hunt' | 'survival'
+  tourTypeId:
+    | 'standard'
+    | 'blitz'
+    | 'underground'
+    | 'corporate'
+    | 'rival_hunt'
+    | 'survival'
   regionId: 'home' | 'industrial' | 'festival' | 'corporate' | 'underground'
   chassisSpec: {
     flavor: 'legit' | 'diy'
@@ -85,14 +91,32 @@ export interface ExpeditionBalanceProfile {
     expectedArchetype: 'compact' | 'diy' | 'coach' | 'armored_hauler'
   }
   requiredModuleIds: string[]
-  crewRoleOrder: Array<'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'>
-  starterPerkId: null | 'mechanic_kit' | 'press_pass' | 'underground_contact' | 'rehearsed_set'
+  crewRoleOrder: Array<
+    'technician' | 'roadie' | 'driver' | 'manager' | 'scout' | 'security'
+  >
+  starterPerkId:
+    | null
+    | 'mechanic_kit'
+    | 'press_pass'
+    | 'underground_contact'
+    | 'rehearsed_set'
   insurancePolicyId: null | 'roadside' | 'equipment' | 'touring'
-  pressureModifierIds: Array<'bad_roads' | 'media_frenzy' | 'no_safety_net' | 'union_trouble' | 'hostile_territory'>
+  pressureModifierIds: Array<
+    | 'bad_roads'
+    | 'media_frenzy'
+    | 'no_safety_net'
+    | 'union_trouble'
+    | 'hostile_territory'
+  >
   nativeContractPreferenceIds: string[]
-  sponsorPolicy: 'none' | 'highest_clean_value' | 'highest_exposure_value' | 'highest_nonrival_value'
+  sponsorPolicy:
+    | 'none'
+    | 'highest_clean_value'
+    | 'highest_exposure_value'
+    | 'highest_nonrival_value'
   cargoPolicy: 'safe' | 'balanced' | 'merch' | 'contraband'
-  setlistPolicy: 'balanced_four' | 'lowest_difficulty_four' | 'highest_energy_four'
+  setlistPolicy:
+    'balanced_four' | 'lowest_difficulty_four' | 'highest_energy_four'
   equipmentPolicy: 'current_selection' | 'best_owned_selection'
   startingFuelTarget: number
   protectedCashRatio: number
@@ -120,13 +144,16 @@ export const EXPEDITION_BALANCE_PROFILES = [
     starterPerkId: 'press_pass',
     insurancePolicyId: 'touring',
     pressureModifierIds: [],
-    nativeContractPreferenceIds: ['contract_keep_it_clean', 'contract_three_good_gigs'],
+    nativeContractPreferenceIds: [
+      'contract_keep_it_clean',
+      'contract_three_good_gigs'
+    ],
     sponsorPolicy: 'highest_clean_value',
     cargoPolicy: 'safe',
     setlistPolicy: 'balanced_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 90,
-    protectedCashRatio: 0.40,
+    protectedCashRatio: 0.4,
     requiredCapabilitySetIds: ['industry_network', 'chassis_network'],
     requiresAscension: false,
     decisionPolicy: 'safe_value'
@@ -135,7 +162,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     id: 'underground_heat',
     tourTypeId: 'underground',
     regionId: 'underground',
-    chassisSpec: { flavor: 'diy', tier: 3, expectedArchetype: 'armored_hauler' },
+    chassisSpec: {
+      flavor: 'diy',
+      tier: 3,
+      expectedArchetype: 'armored_hauler'
+    },
     requiredModuleIds: ['tb_gps_jammer', 'tb_trailer_hitch', 'tb_roof_rack'],
     crewRoleOrder: ['security', 'driver', 'scout'],
     starterPerkId: 'underground_contact',
@@ -148,7 +179,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 95,
     protectedCashRatio: 0.15,
-    requiredCapabilitySetIds: ['underground_network', 'chassis_network', 'mechanic_network'],
+    requiredCapabilitySetIds: [
+      'underground_network',
+      'chassis_network',
+      'mechanic_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'push_heat'
   },
@@ -157,7 +192,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'survival',
     regionId: 'industrial',
     chassisSpec: { flavor: 'diy', tier: 2, expectedArchetype: 'diy' },
-    requiredModuleIds: ['tb_cb_radio_mesh', 'tb_roof_rack', 'tb_sleeping_bunks'],
+    requiredModuleIds: [
+      'tb_cb_radio_mesh',
+      'tb_roof_rack',
+      'tb_sleeping_bunks'
+    ],
     crewRoleOrder: ['technician', 'roadie', 'driver'],
     starterPerkId: 'mechanic_kit',
     insurancePolicyId: 'equipment',
@@ -168,8 +207,12 @@ export const EXPEDITION_BALANCE_PROFILES = [
     setlistPolicy: 'lowest_difficulty_four',
     equipmentPolicy: 'current_selection',
     startingFuelTarget: 85,
-    protectedCashRatio: 0.30,
-    requiredCapabilitySetIds: ['mechanic_network', 'industry_network', 'crew_network'],
+    protectedCashRatio: 0.3,
+    requiredCapabilitySetIds: [
+      'mechanic_network',
+      'industry_network',
+      'crew_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'repair_first'
   },
@@ -199,19 +242,30 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'blitz',
     regionId: 'festival',
     chassisSpec: { flavor: 'legit', tier: 2, expectedArchetype: 'coach' },
-    requiredModuleIds: ['tb_subwoofer_stack', 'tb_side_graphics', 'tb_sleeping_bunks'],
+    requiredModuleIds: [
+      'tb_subwoofer_stack',
+      'tb_side_graphics',
+      'tb_sleeping_bunks'
+    ],
     crewRoleOrder: ['roadie', 'manager', 'scout'],
     starterPerkId: 'rehearsed_set',
     insurancePolicyId: 'equipment',
     pressureModifierIds: ['media_frenzy'],
-    nativeContractPreferenceIds: ['contract_three_good_gigs', 'contract_no_rest_finale'],
+    nativeContractPreferenceIds: [
+      'contract_three_good_gigs',
+      'contract_no_rest_finale'
+    ],
     sponsorPolicy: 'highest_exposure_value',
     cargoPolicy: 'merch',
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 90,
     protectedCashRatio: 0.25,
-    requiredCapabilitySetIds: ['festival_network', 'industry_network', 'chassis_network'],
+    requiredCapabilitySetIds: [
+      'festival_network',
+      'industry_network',
+      'chassis_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'performance_push'
   },
@@ -220,7 +274,11 @@ export const EXPEDITION_BALANCE_PROFILES = [
     tourTypeId: 'rival_hunt',
     regionId: 'festival',
     chassisSpec: { flavor: 'diy', tier: 2, expectedArchetype: 'diy' },
-    requiredModuleIds: ['tb_gps_jammer', 'tb_subwoofer_stack', 'tb_side_graphics'],
+    requiredModuleIds: [
+      'tb_gps_jammer',
+      'tb_subwoofer_stack',
+      'tb_side_graphics'
+    ],
     crewRoleOrder: ['security', 'scout', 'driver'],
     starterPerkId: 'rehearsed_set',
     insurancePolicyId: 'touring',
@@ -231,8 +289,12 @@ export const EXPEDITION_BALANCE_PROFILES = [
     setlistPolicy: 'highest_energy_four',
     equipmentPolicy: 'best_owned_selection',
     startingFuelTarget: 95,
-    protectedCashRatio: 0.20,
-    requiredCapabilitySetIds: ['festival_network', 'underground_network', 'rival_network'],
+    protectedCashRatio: 0.2,
+    requiredCapabilitySetIds: [
+      'festival_network',
+      'underground_network',
+      'rival_network'
+    ],
     requiresAscension: true,
     decisionPolicy: 'rival_pressure'
   }
@@ -263,11 +325,8 @@ requiresAscension === true -> requiredCapabilitySetIds.length >= 3
 ## Task 4: Build mature single-run loadouts through production owners only
 
 ```js
-export const buildProductionSimulationLoadout = (
-  fixtureState,
-  profile,
-  seed
-) => validatedActiveState
+export const buildProductionSimulationLoadout = (fixtureState, profile, seed) =>
+  validatedActiveState
 ```
 
 This builder is for mature single-run strategy comparisons only.
@@ -313,7 +372,7 @@ Resolved provenance includes:
   "seed": 123,
   "tourTypeId": "...",
   "regionId": "...",
-  "chassis": {"flavor":"...","tier":2,"archetype":"..."},
+  "chassis": { "flavor": "...", "tier": 2, "archetype": "..." },
   "moduleIds": ["..."],
   "crewIds": ["..."],
   "selectedGearItemIds": ["..."],
@@ -322,8 +381,8 @@ Resolved provenance includes:
   "pressureModifierIds": ["..."],
   "sponsorOfferId": "...",
   "acceptedSponsorDealId": "...",
-  "nativeContracts": [{"templateId":"...","targetNodeId":"..."}],
-  "cargo": {"...":"materialized manifest summary"},
+  "nativeContracts": [{ "templateId": "...", "targetNodeId": "..." }],
+  "cargo": { "...": "materialized manifest summary" },
   "setlistSongIds": ["..."],
   "startingFuelTarget": 90,
   "protectedCareerCash": 1234,
@@ -679,6 +738,37 @@ real runtime/playtest samples
 
 The final report must include full resolved build provenance, capability provenance and cohort seed namespaces.
 
+### Two verdicts
+
+The report carries **correctness** and **release eligibility** separately, because
+they fail for different reasons and a reader who conflates them cannot act on
+either:
+
+```text
+correctness      = no hard failures
+                   (the 14 gates, forged sources, a dominance conclusion
+                    reproduced in BOTH cohorts, a probe that threw, a coverage
+                    shortfall at release size)
+
+release evidence = correctness
+                   AND the run was at RELEASE_SAMPLE_COUNT
+                   AND every Task's expected coverage count was produced
+                   AND captured runtime pacing evidence validated against this
+                       report's own sourceFingerprint
+```
+
+Task 7's corridors and Task 14's 20–30 minute window are **soft findings**: they
+are reported in full and they withhold release evidence, but they are tuning
+hypotheses, not correctness violations. The process exit code follows
+correctness.
+
+Pacing evidence is read only from
+`docs/superpowers/reports/roguelite-expedition-runtime-evidence.json`, which a
+playtest harness writes and this suite only reads. Missing, malformed or
+stale-fingerprint evidence is rejected rather than summarized: the report states
+that no median has been measured instead of quoting one. Synthetic samples are
+unit-test fixtures and unreachable from the release path.
+
 Run:
 
 ```bash
@@ -705,3 +795,79 @@ Expected: PASS with no hard correctness failures before balance conclusions are 
 - Fame signal, optional safety choices, exact chassis/module/Crew/gear combinations and same-Rival history are observable.
 - Natural Ascension/Legendary timing is measurable without synthetic contamination.
 - Real 20–30 minute pacing evidence comes only from actual runtime/playtest samples.
+
+---
+
+## Open at G6 close
+
+**Correctness is green. G6 is not release-eligible.** The committed v15
+artifact reports `passed: true` with zero hard correctness failures and
+`releaseEligible: false`. This section is read back from that artifact by
+`tests/node/expeditionG6CloseOut.test.js`, so it cannot drift from it.
+
+```text
+hard correctness failures   0
+release blockers            2
+Task 12 calibration      6000 / 6000 complete six-run Careers
+Task 12 holdout          6000 / 6000
+```
+
+Task 12's coverage shortfall is closed. The arc, across both cohorts: 44 of
+12,000 complete six-run Careers when the harness staged Gigs without paying
+for them, 954 once `deriveFinancials` was wired in, 7,517 after the Phase A
+economy pass, 9,243 once a Career could repair its van and answer every
+Between-Tour question, and 12,000 now that `SETTLE_EXPEDITION_CAREER_RESULT`
+guarantees the price of the next start. Insolvency after a normal terminal is
+0 of 41,012.
+
+Two items withhold release evidence, and three findings sit behind them.
+
+1. **No captured pacing cohort.** Ingestion, fingerprint validation and the
+   rejection paths are implemented and tested, but
+   `roguelite-expedition-runtime-evidence.json` does not exist: no playtest has
+   been run against this build. Capturing at least 20 valid samples is a human
+   step. This is the only blocker no code change can clear.
+
+2. **10 open outcome-mix corridor findings**, every one of them the same
+   metric: `failedRate` at 0.0% for all six profiles in both cohorts,
+   against a 2-50% corridor.
+
+   Completion and extraction are now inside their corridors for every profile,
+   which they had never been: `diy_repair` went from 2.7% completion to 86.4%
+   without a buff, once the extraction policy stopped treating van condition as
+   a lethal threat the game does not implement.
+
+   `failedRate` is the finding that remains, and two profiles have now left it:
+   `underground_heat` fails 4.3% / 4.5% and `rival_hunter` 1.1% / 0.9%, the
+   first non-zero mature failure rates this gate has produced. Both arrived
+   when the mature fixture stopped carrying 500,000 Cash, which had disarmed
+   `bankruptcy` and `fuel_stranded` by construction.
+
+   The other four still read 0.0%. They complete or extract before anything can
+   kill them, and the remaining lethal path - `technical_shutdown` - needs a
+   condition group at 0 while technical condition sits at 60-66 at every
+   window. That last part is a G2 question about wear rates.
+
+3. **Fresh-Career risk is now a curve rather than a cliff.** Across 12,000
+   sequences the run outcome mix is 36.3% completed, 23.9% extracted, 39.8%
+   failed - against 14.7 / 68.3 / 17.0 before this gate's economy work. Every
+   Career still survives all six Tours with zero halts and zero insolvencies
+   after a normal terminal.
+
+4. **The Sponsor advance is now unreachable.** It is generated only for a
+   Career that `isExpeditionCareerInsolvent`, and the road fund guarantees
+   exactly the cost that predicate tests, so the condition can never hold: it
+   fired 3,048 times before the change and 0 after. The recovery it provided
+   has been replaced by a stricter guarantee, but the decision family is dead
+   content now and needs either a new trigger or removal from the G5 contract.
+
+5. **Permanent progression has caught up.** Complete Careers went 7,517 ->
+   12,000 and permanent-capability acquisition 5,480 -> 6,283. Headliner moved
+   449 -> 3,149 of 12,000 - a Career now finishes enough Tours to reach the
+   rank rather than merely surviving six. Sponsor advances fired 990 times
+   after the insolvency threshold stopped testing the one cost the road fund
+   guarantees;
+   Ascension, crew signature traits and cleared Crew recovery debt remain at 0;
+   `sameRivalReturnRate` is still 0 across all 12,000, so Nemesis levels
+   advance but no Rival ever returns. More Tours are being played without more
+   being earned.

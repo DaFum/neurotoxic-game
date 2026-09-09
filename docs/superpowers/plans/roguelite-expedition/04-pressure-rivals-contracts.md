@@ -146,10 +146,17 @@ same prepared state -> identical offers/order
 Action:
 
 ```ts
-PREPARE_EXPEDITION_SPONSOR_OFFERS { expectedRunSeed: number }
+PREPARE_EXPEDITION_SPONSOR_OFFERS {
+  expectedRunSeed: number
+  regionId?: string
+  tourTypeId?: string
+  starterPerkId?: string | null
+}
 ```
 
-Reducer recomputes the pure offer snapshot from canonical state; caller does not submit generated offers.
+Reducer validates candidate route (`regionId`, `tourTypeId`) and `starterPerkId` against canonical availability (`getAvailableExpeditionRegionIds`, `getAvailableExpeditionTourTypeIds`, `getAvailableStarterPerkIds`) and rejects locked or invalid inputs. It recomputes the pure offer snapshot from canonical state and persists `preparedSponsorOffers` along with `preparedSponsorProvenance: { regionId, tourTypeId, starterPerkId }`; caller does not submit generated offers.
+
+The provenance carries no seed of its own. G1 makes the root `runSeed` the single owner and the persisted Expedition slice declares no seed field, so START compares the staged offer's `runSeed` against `state.runSeed` instead of against a second stored copy.
 
 G1 build commits `sponsorOfferId`, not an already accepted deal id.
 
@@ -176,11 +183,11 @@ At `START_EXPEDITION`, G4:
 
 ```text
 1. verifies committed sponsorOfferId exists in persisted preparedSponsorOffers
-2. verifies root runSeed and canonicalTermsHash still match
+2. verifies root runSeed, canonicalTermsHash, and exact preparedSponsorProvenance (regionId, tourTypeId, starterPerkId) match
 3. invokes resolveBrandDealAcceptance exactly once
 4. applies Money/item/Social/Quest effects in the same root transaction
 5. materializes one zero-native-payout linked Sponsor obligation by runId+dealId
-6. clears preparedSponsorOffers after successful START
+6. clears preparedSponsorOffers and preparedSponsorProvenance after successful START
 ```
 
 If START fails validation, no Sponsor effect occurs. Replaying START cannot pay/award twice.
@@ -211,7 +218,12 @@ Template constraints are distinct from active materialized constraints:
 
 ```ts
 export type ExpeditionContractConstraintTemplate =
-  | { id: string; kind: 'gig_accuracy_count'; minAccuracy: number; requiredCount: number }
+  | {
+      id: string
+      kind: 'gig_accuracy_count'
+      minAccuracy: number
+      requiredCount: number
+    }
   | { id: string; kind: 'max_heat'; maxHeat: number }
   | {
       id: string
@@ -224,10 +236,17 @@ export type ExpeditionContractConstraintTemplate =
   | { id: string; kind: 'no_rest_before_finale' }
   | { id: string; kind: 'finale_completed'; minHeatAtFinale: number | null }
   | { id: string; kind: 'social_post_count'; requiredCount: number }
-  | { id: string; kind: 'special_finale'; profileId: ExpeditionContractSpecialFinaleProfileId }
+  | {
+      id: string
+      kind: 'special_finale'
+      profileId: ExpeditionContractSpecialFinaleProfileId
+    }
 
 export type ExpeditionContractConstraint =
-  | Exclude<ExpeditionContractConstraintTemplate, { kind: 'visit_matching_node' }>
+  | Exclude<
+      ExpeditionContractConstraintTemplate,
+      { kind: 'visit_matching_node' }
+    >
   | { id: string; kind: 'visit_node'; targetNodeId: string }
 
 export type ExpeditionContractSpecialFinaleProfileId = 'all_in_showcase'
@@ -342,12 +361,15 @@ Payload contains no accuracy/Heat/progress/result. Reducer reads canonical just-
 Settlement:
 
 ```ts
-stackMultiplier = Math.min(1.4, 1 + Math.max(0, activeConstraintCount - 1) * 0.1)
+stackMultiplier = Math.min(
+  1.4,
+  1 + Math.max(0, activeConstraintCount - 1) * 0.1
+)
 finalRewardMultiplier =
-  template.reward.rewardMultiplier
-  * stackMultiplier
-  * (obligation.doubleDown?.rewardMultiplier ?? 1)
-  * getEffectiveExpeditionRules(state).numeric.contractRewardMultiplier
+  template.reward.rewardMultiplier *
+  stackMultiplier *
+  (obligation.doubleDown?.rewardMultiplier ?? 1) *
+  getEffectiveExpeditionRules(state).numeric.contractRewardMultiplier
 ```
 
 Only positive Contract reward is multiplied. Failure penalty uses `contractPenaltyMultiplier` once. Direct Money/Fame income emits existing Money/Fame quest events.
@@ -393,9 +415,7 @@ Major/high-profile successful Gig may add +10 Hype; poor Gig may subtract 10.
 
 ```ts
 getExpeditionCrowdHypeProfile(hype).comboBonusMultiplier =
-  hype >= 90 ? 1.25 :
-  hype >= 70 ? 1.18 :
-  hype >= 40 ? 1.10 : 1.00
+  hype >= 90 ? 1.25 : hype >= 70 ? 1.18 : hype >= 40 ? 1.1 : 1.0
 ```
 
 Apply only to combo-derived bonus after successful hits. Never widen timing, raise base accuracy, prevent misses or auto-award score.
@@ -448,7 +468,12 @@ Events declare:
 
 ```ts
 severity: 'normal' | 'severe'
-pressureFamily: 'authority' | 'crew' | 'contract' | 'rival' | 'social' | 'technical'
+pressureFamily: 'authority' |
+  'crew' |
+  'contract' |
+  'rival' |
+  'social' |
+  'technical'
 ```
 
 Director:
@@ -499,11 +524,17 @@ export interface CareerRivalSnapshot {
 }
 
 export interface CareerRivalHistory {
-  relationship: 'unknown' | 'competitive' | 'rival' | 'nemesis' | 'respect' | 'alliance'
+  relationship:
+    'unknown' | 'competitive' | 'rival' | 'nemesis' | 'respect' | 'alliance'
   nemesisLevel: 0 | 1 | 2 | 3 | 4
   encounterCount: number
   lastOutcome: 'hostile_win' | 'hostile_loss' | 'respect' | 'alliance' | null
   lastSeenRunId: string | null
+  // Run in which this Rival's Nemesis level last advanced. Distinct from
+  // `lastSeenRunId`, which START stamps on selection and therefore already
+  // equals the current run id; this is the per-run guard that keeps the ladder
+  // a cross-run relationship instead of something one Tour can farm.
+  lastNemesisAdvanceRunId: string | null
 }
 
 export interface CareerRivalRecord {
@@ -517,12 +548,40 @@ G4 replaces G3's placeholder `career.rivalsById` type with `Record<string,Career
 `selectExpeditionRivalForRun(state, preparedMap, routeProfile)`:
 
 ```text
-choose eligible persistent record first
-sort by nemesisLevel desc, encounterCount desc, id lexical
-rehydrate state.rivalBand from stored snapshot without generateRivalBand()
-only if no existing eligible record may current generator create a new Rival
-snapshot new Rival once
+only when the Career owns the `rival_quest_continuation` capability:
+  choose eligible persistent record first
+  sort by nemesisLevel desc, encounterCount desc, id lexical
+  rehydrate state.rivalBand from stored snapshot without generateRivalBand()
+otherwise, and when no existing eligible record matches:
+  current generator creates a new Rival, snapshotted once
 ```
+
+**The capability gate is real and it is load-bearing.** `rival_network` sells
+`rival_quest_continuation` for 5 Tour Tokens at `headliner` rank with
+`management_office` level 2. Until a Career owns it, every run draws a fresh
+Rival, and `tests/node/expeditionUnlockSets.test.js` asserts
+`selectExpeditionRivalForRun` as its production consumer - so this is deliberate
+design, not an accident. It went undeclared here until the G6 review, which is
+the drift being corrected: production carried a rule stricter than its own
+contract, and the contract's `only if no existing eligible record` read as
+unconditional.
+
+Two consequences are worth stating rather than discovering again:
+
+- The exit criterion "Persistent Rival reuses the same identity across runs" is
+  **not satisfiable inside a six-run fresh Career**. Measured over 12,000
+  release sequences, `sameRivalReturnRate` is 0 in every one of them, because
+  `headliner` is reached by 449 and the set is bought by fewer still. Nemesis
+  levels do advance - 1,962 sequences reach level 1 - but on a different Rival
+  each time, and the per-run advance guard caps a fresh Rival at level 1.
+- That also puts `cult_legend` out of reach on this horizon, since it requires
+  `getMaxPersistentNemesisLevel >= 3` on top of 10 completed runs in 4 Regions.
+  Not a defect: six runs is simply shorter than that ladder.
+
+A G4 exit criterion depending on a G5 unlock set inverts the gate order the
+master plan requires. Whether the gate should move, the criterion should be
+reworded, or the horizon should lengthen is a design decision and is recorded
+here unresolved.
 
 Nemesis:
 
@@ -673,7 +732,7 @@ Expected: PASS.
 - Crowd Hype rewards active execution without auto-winning.
 - Pressure Director includes Heat, Exposure, Fame expectation, Cash, Condition, Crew Stress, obligations, Rival and route depth plus cross-family relief.
 - High Heat can create a real Underground opportunity.
-- Persistent Rival reuses the same identity across runs and Nemesis levels change real rules.
+- Persistent Rival reuses the same identity across runs once the Career owns `rival_quest_continuation`, and Nemesis levels change real rules. See Task 10: this is unreachable inside a six-run Career and the ordering is unresolved.
 - Expedition quests use existing quest owners.
 - Every Finale type has a concrete production profile.
 - Run Draft offers are source-proven/reducer-generated.

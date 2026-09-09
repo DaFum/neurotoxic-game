@@ -30,7 +30,10 @@ import {
   MAX_BETWEEN_TOUR_DECISIONS,
   isBetweenTourDecisionType
 } from '../../src/data/expedition/betweenTour'
-import { areBetweenTourDecisionsResolved } from '../../src/domain/expedition/betweenTour'
+import {
+  areBetweenTourDecisionsResolved,
+  isExpeditionCareerInsolvent
+} from '../../src/domain/expedition/betweenTour'
 import { EXPEDITION_CREW_BY_ID } from '../../src/data/expedition/crew'
 import { startedState, walkToFinale } from '../expeditionLifecycleFixture.js'
 
@@ -102,8 +105,10 @@ const decisionOf = (state, type) =>
   stored(state)?.decisions.find(decision => decision.type === type)
 
 describe('G5 — the registry fixes the families and their options', () => {
-  it('lists six families in priority order and caps at three', () => {
+  it('lists seven families in priority order and caps at three', () => {
     assert.deepEqual(BETWEEN_TOUR_DECISION_PRIORITY, [
+      // First: an insolvent Career has no next Tour to spend the rest on.
+      'sponsor_advance',
       'injury_rehab',
       'crew_debrief',
       'rival_response',
@@ -408,6 +413,53 @@ describe('G5 — answering derives every value from the stored decision', () => 
     const carried = resolve(generated, decision.id, 'carry_damage')
     assert.equal(carried.player.van.condition, 40)
     assert.equal(carried.player.money, generated.player.money)
+  })
+
+  it('buys the repair the Career can afford instead of refusing outright', () => {
+    // All-or-nothing was a Career-ender: a wrecked van costs EUR 1,200 to
+    // rebuild, a Career between Tours holds a few hundred, so the decision
+    // was refused and the van never recovered - every later Tour bailed out
+    // at its first window and nothing ever earned the EUR 1,200.
+    const base = settled()
+    const brokeAndWrecked = {
+      ...base,
+      player: {
+        ...base.player,
+        money: 240,
+        van: { ...base.player.van, condition: 0 }
+      }
+    }
+    const generated = generate(brokeAndWrecked)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision, 'a wrecked van must still be offered a repair')
+
+    const repaired = resolve(generated, decision.id, 'pay_repair')
+    const points = Math.floor(240 / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
+    assert.equal(repaired.player.van.condition, points)
+    assert.equal(
+      repaired.player.money,
+      240 - points * BETWEEN_TOUR_REPAIR_COST_PER_POINT,
+      'a partial repair is charged at the same price per point as a full one'
+    )
+    assert.ok(repaired.player.money >= 0)
+  })
+
+  it('refuses a repair the Career cannot buy a single point of', () => {
+    const base = settled()
+    const penniless = {
+      ...base,
+      player: {
+        ...base.player,
+        money: BETWEEN_TOUR_REPAIR_COST_PER_POINT - 1,
+        van: { ...base.player.van, condition: 30 }
+      }
+    }
+    const generated = generate(penniless)
+    const decision = decisionOf(generated, 'vehicle_repair')
+    assert.ok(decision)
+    // Below one point the option does nothing rather than charging for
+    // nothing, and the decision stays unanswered.
+    assert.equal(resolve(generated, decision.id, 'pay_repair'), generated)
   })
 
   it('refuses a second answer to the same decision', () => {
@@ -830,5 +882,205 @@ describe('G5 — the decisions survive a load', () => {
       rival: null,
       sponsor: null
     })
+  })
+})
+
+describe('G5 - Sponsor advance rescues an insolvent Career', () => {
+  it('is offered only when the Career cannot fuel a Tour worth starting', () => {
+    // Half a tank, not the cheapest legal build. The predicate used to ask
+    // whether the Career could pay the rounding-up of the tank it already had
+    // - a euro or two - and `SETTLE_EXPEDITION_CAREER_RESULT` now guarantees
+    // exactly that, so the rescue could never trigger again: 3,048 advances
+    // before the guarantee, 0 after.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 5000, van: { fuel: 10 } }
+      }),
+      false,
+      'a Career that can fuel up is not owed a rescue'
+    )
+    // Broke and near empty: cannot reach the far half of any route.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 10 } }
+      }),
+      true
+    )
+    // The guaranteed road fund must not read as solvency. Two euros pays the
+    // rounding charge and nothing else.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 2, van: { fuel: 12.4 } }
+      }),
+      true,
+      'affording the minimum legal start is not affording a Tour'
+    )
+    // Already past half a tank: nothing to rescue, whatever the balance.
+    assert.equal(
+      isExpeditionCareerInsolvent({
+        player: { money: 0, van: { fuel: 90 } }
+      }),
+      false
+    )
+  })
+
+  it('repays out of what a later run retains, never out of the balance', () => {
+    // The debt has to exist *before* the terminal transition, because that is
+    // what runs the repayment. Setting it on an already-settled state asserted
+    // the input back to itself and passed whether or not repayment worked.
+    const settleWithDebt = (outstanding, money, earned) => {
+      const base = startedState({ money }, { crewIds: FIXTURE_CREW_IDS })
+      const indebted = {
+        ...base,
+        career: {
+          ...base.career,
+          sponsorAdvance: {
+            dealId: 'basement_zine',
+            amount: 400,
+            outstanding,
+            // A different run: the debt was taken on an earlier Tour, which
+            // is the only shape that can be repaid by this one.
+            takenAfterRunId: 'run_earlier'
+          }
+        }
+      }
+      const atFinale = walkToFinale(indebted)
+      // The Tour has to have *earned* something, because retention applies to
+      // `money - startingMoney` and the walk alone earns nothing - which is
+      // why the previous version of this test could not exercise repayment at
+      // all.
+      const resolved = {
+        ...atFinale,
+        player: {
+          ...atFinale.player,
+          money: atFinale.expedition.startingMoney + earned
+        },
+        currentGig: { id: 'finale_venue' },
+        lastGigStats: { score: 9000, accuracy: 85, failed: false },
+        expedition: {
+          ...atFinale.expedition,
+          lastGigResolvedAtRouteStep: atFinale.expedition.routeStep
+        }
+      }
+      const startingMoney = atFinale.expedition.startingMoney
+      const completed = gameReducer(resolved, {
+        type: ActionTypes.COMPLETE_EXPEDITION,
+        payload: {
+          finaleResultId: 'finale_result_between_tour',
+          expectedRouteStep: resolved.expedition.routeStep
+        }
+      })
+      assert.equal(completed.expedition.status, 'completed')
+      return { completed, startingMoney }
+    }
+
+    // A debt smaller than what the run retains is cleared outright, and the
+    // record goes to null rather than lingering at zero.
+    const small = settleWithDebt(1, 5000, 2000)
+    assert.equal(small.completed.career.sponsorAdvance, null)
+
+    // A debt larger than one run's retained Cash survives, reduced - and the
+    // repayment came out of what the run retained, never out of the balance
+    // the Career already had.
+    const large = settleWithDebt(500, 5000, 200)
+    const remaining = large.completed.career.sponsorAdvance
+    assert.ok(remaining, 'a Tour retaining 200 cannot clear a 500 debt')
+    assert.ok(remaining.outstanding > 0)
+    assert.ok(
+      remaining.outstanding < 500,
+      'the debt has to actually go down - this is the assertion the previous version could not make'
+    )
+    // The claim the docstring makes: repayment comes out of what the run
+    // *retained*, so the balance the Career walked in with is never dipped
+    // into. The settlement also forfeits the non-retained share, so comparing
+    // against the pre-terminal balance would be the wrong bar.
+    assert.ok(
+      large.completed.player.money >= large.startingMoney,
+      'repayment must never reach below the balance the Career started the Tour with'
+    )
+  })
+
+  it('survives a save reload and drops a malformed one', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+    assert.deepEqual(
+      sanitizeCareerState({ sponsorAdvance: advance }).sponsorAdvance,
+      advance
+    )
+    // A debt is not repaired into existence: a malformed one is dropped rather
+    // than defaulted, so a save can neither forgive a real debt nor invent one.
+    for (const bad of [
+      { ...advance, amount: '400' },
+      { ...advance, outstanding: Number.NaN },
+      { ...advance, dealId: 42 },
+      null,
+      'nope'
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null
+      )
+    }
+  })
+
+  it('drops a cleared advance instead of preserving a zero balance', () => {
+    // Zero outstanding means repaid, and repaid means `null`. A preserved
+    // zero-balance record keeps `sponsorAdvance` non-null forever, and both
+    // generation and application require null - so the Career could never be
+    // offered another advance after clearing one.
+    const cleared = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 0,
+      takenAfterRunId: 'run_a'
+    }
+    assert.equal(
+      sanitizeCareerState({ sponsorAdvance: cleared }).sponsorAdvance,
+      null
+    )
+  })
+
+  it('refuses a debt production could never have created', () => {
+    const advance = {
+      dealId: 'basement_zine',
+      amount: 400,
+      outstanding: 500,
+      takenAfterRunId: 'run_a'
+    }
+
+    // `applyExpeditionSettlement` subtracts `outstanding` from the Cash a run
+    // retains, so a finite-but-arbitrary balance is not cosmetic: it would
+    // quietly drain every future settlement. There is one legal principal and
+    // one legal ceiling, and the load path is where a forged save is stopped.
+    for (const [label, bad] of [
+      ['an unknown Sponsor', { ...advance, dealId: 'no_such_sponsor' }],
+      ['a drained balance', { ...advance, outstanding: 1_000_000 }],
+      ['one cent over the ceiling', { ...advance, outstanding: 501 }],
+      ['a fractional debt', { ...advance, outstanding: 499.5 }],
+      ['a principal nobody offers', { ...advance, amount: 100_000 }],
+      ['a rounded-looking principal', { ...advance, amount: 401 }]
+    ]) {
+      assert.equal(
+        sanitizeCareerState({ sponsorAdvance: bad }).sponsorAdvance,
+        null,
+        `${label} must be dropped, not repaired`
+      )
+    }
+
+    // The ceiling itself and a part-repaid balance both survive: the guard
+    // rejects what production cannot mint, not every debt. Zero is excluded
+    // deliberately - a cleared advance serializes as `null`, asserted just
+    // above - because a zero-balance record would block every later advance.
+    for (const outstanding of [500, 250, 1]) {
+      assert.deepEqual(
+        sanitizeCareerState({ sponsorAdvance: { ...advance, outstanding } })
+          .sponsorAdvance,
+        { ...advance, outstanding }
+      )
+    }
   })
 })

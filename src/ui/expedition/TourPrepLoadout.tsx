@@ -2,7 +2,7 @@
  * The constrained pre-tour build surface.
  */
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { MAX_EXPEDITION_PRESSURE_MODIFIERS } from '../../data/expedition/pressureModifiers'
 import { useGameActions, useGameSelector } from '../../context/GameState'
@@ -68,7 +68,7 @@ const toggleBounded = (
  */
 export const TourPrepLoadout = memo(function TourPrepLoadout() {
   const { t, i18n } = useTranslation('ui')
-  const { startExpedition } = useGameActions()
+  const { startExpedition, prepareExpeditionSponsorOffers } = useGameActions()
   const runSeed = useGameSelector(state => state.runSeed)
   const money = useGameSelector(state => state.player.money)
   const currentFuel = useGameSelector(state => state.player.van?.fuel ?? 0)
@@ -82,8 +82,12 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   )
   const [selectedGearItemIds, setSelectedGearItemIds] = useState<string[]>([])
   const [selectedCrewIds, setSelectedCrewIds] = useState<string[]>([])
+  // Ceil, not round: production Fuel is deliberately fractional and the
+  // loadout rule is `startingFuelTarget >= currentFuel`. At 44.1 in the tank,
+  // rounding hands the validator 44 and Tour Prep opens on an invalid build
+  // the player never touched, with `handleCommit` refusing on the first click.
   const [startingFuelTarget, setStartingFuelTarget] = useState<number>(() =>
-    Math.round(currentFuel)
+    Math.ceil(currentFuel)
   )
   const [protectedCareerCash, setProtectedCareerCash] = useState(0)
   const [sponsorOfferId, setSponsorOfferId] = useState<string | null>(null)
@@ -102,11 +106,21 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
   // The button would then vanish from the screen while the id stayed in the
   // candidate, so the commit would carry an offer this route never staged or a
   // Contract whose target node belongs to a different map.
-  const selectRoute = useCallback((apply: () => void) => {
-    apply()
-    setSponsorOfferId(null)
-    setContractTemplateIds([])
-  }, [])
+  // Sponsor offers and native Contracts are staged for a specific Region and
+  // Tour, so an actual route change has to drop both. A click that re-picks
+  // the route already active is not a change: it used to clear them anyway,
+  // and since a fresh Career has exactly one Tour and one Region, every click
+  // on those buttons silently discarded the player's Contract and Sponsor
+  // picks.
+  const selectRoute = useCallback(
+    (currentId: string, nextId: string, apply: () => void) => {
+      if (currentId === nextId) return
+      apply()
+      setSponsorOfferId(null)
+      setContractTemplateIds([])
+    },
+    []
+  )
 
   // The perk restages the Sponsor pool for the same reason: `press_pass`
   // promotes one more genuine match, so the offer order changes and a picked
@@ -141,19 +155,41 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
     [regionId, runSeed, tourTypeId]
   )
 
-  // Derived from the selected Region and Tour, not read from persisted state:
+  // Derived from the selected Region and Tour, or staged in state:
   // PREPARE happens on scene entry before either is chosen, so a stored set
   // would always describe the baseline route rather than the one being built.
   const sponsorOffers = useMemo(
     () =>
-      buildPreparedExpeditionSponsorOffers(
-        state,
-        preparedMap.regionId,
-        preparedMap.tourTypeId,
-        starterPerkId
-      ),
+      state.expedition.preparedSponsorOffers &&
+      state.expedition.preparedSponsorOffers.length > 0
+        ? state.expedition.preparedSponsorOffers
+        : buildPreparedExpeditionSponsorOffers(
+            state,
+            preparedMap.regionId,
+            preparedMap.tourTypeId,
+            starterPerkId
+          ),
     [preparedMap, starterPerkId, state]
   )
+
+  useEffect(() => {
+    prepareExpeditionSponsorOffers?.(
+      preparedMap.regionId,
+      preparedMap.tourTypeId,
+      starterPerkId
+    )
+  }, [
+    prepareExpeditionSponsorOffers,
+    preparedMap.regionId,
+    preparedMap.tourTypeId,
+    // Not read in the body - the creator reads `stateRef.current.runSeed` - but
+    // the staged `offerId` is seed-derived, so entering Prep with a new seed
+    // has to restage even when the route is unchanged. Removing it as an
+    // "unused" dependency would leave the previous run's offers on screen.
+    runSeed,
+    starterPerkId
+  ])
+
   const availableSponsorOfferIds = useMemo(
     () => sponsorOffers.map(offer => offer.offerId),
     [sponsorOffers]
@@ -224,8 +260,13 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
 
   const handleCommit = useCallback(() => {
     if (!validation.valid) return
+    prepareExpeditionSponsorOffers?.(
+      validation.normalized.regionId,
+      validation.normalized.tourTypeId,
+      validation.normalized.starterPerkId
+    )
     startExpedition(validation.normalized)
-  }, [startExpedition, validation])
+  }, [prepareExpeditionSponsorOffers, startExpedition, validation])
 
   const toggleSong = useCallback((songId: string) => {
     setSetlistSongIds(current =>
@@ -300,7 +341,9 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => selectRoute(() => setTourTypeId(id))}
+                onClick={() =>
+                  selectRoute(tourTypeId, id, () => setTourTypeId(id))
+                }
                 data-testid={`expedition-prep-tour-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected
@@ -321,7 +364,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
                 key={id}
                 type='button'
                 aria-pressed={isSelected}
-                onClick={() => selectRoute(() => setRegionId(id))}
+                onClick={() => selectRoute(regionId, id, () => setRegionId(id))}
                 data-testid={`expedition-prep-region-${id}`}
                 className={`min-h-11 px-3 py-2 text-xs font-mono uppercase border transition-colors ${
                   isSelected
@@ -576,7 +619,7 @@ export const TourPrepLoadout = memo(function TourPrepLoadout() {
           {t('ui:expedition.prep.fuelTarget', { value: startingFuelTarget })}
           <input
             type='range'
-            min={Math.round(currentFuel)}
+            min={Math.ceil(currentFuel)}
             max={100}
             step={1}
             value={startingFuelTarget}

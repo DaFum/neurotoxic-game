@@ -92,7 +92,7 @@ export const UplinkButton = memo(
         onClick={handleClick}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
-        className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden'
+        className='relative shrink-0 w-full block border-2 border-toxic-green/30 bg-void-black hover:border-toxic-green transition-colors duration-100 group overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-toxic-green focus-visible:ring-offset-2 focus-visible:ring-offset-void-black'
       >
         {/* Glitch Background on Hover */}
         {isHovered && (
@@ -423,7 +423,9 @@ export const CrisisModal = memo(
                   key={action.id}
                   type='button'
                   onClick={action.onClick ?? onClose}
-                  aria-label={action.label}
+                  aria-label={
+                    action.meta ? `${action.label} - ${action.meta}` : undefined
+                  }
                   className={getActionClassName(action.variant)}
                 >
                   <span>{action.label}</span>

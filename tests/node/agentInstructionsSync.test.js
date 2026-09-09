@@ -12,6 +12,19 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import { readFileSync } from 'node:fs'
 
+/**
+ * Reads a repository file with its line endings normalised.
+ *
+ * @remarks
+ * Both files are committed with LF and `core.autocrlf` hands a Windows
+ * checkout CRLF, so comparing the raw bytes passed on CI and failed for every
+ * Windows developer - making `pnpm run test:tooling` unrunnable there for a
+ * drift that did not exist. Normalising both sides keeps the guard exact: a
+ * reworded header or a changed line still fails.
+ */
+const readNormalised = path =>
+  readFileSync(path, 'utf8').replaceAll('\r\n', '\n')
+
 const GENERATED = '.github/copilot-instructions.md'
 const SOURCE = 'AGENTS.md'
 
@@ -29,8 +42,8 @@ const HEADER_LINES = EXPECTED_HEADER.split('\n').length
 
 describe('generated agent instruction files', () => {
   it('keeps the Copilot file byte-identical to AGENTS.md below its header', () => {
-    const generated = readFileSync(GENERATED, 'utf8')
-    const source = readFileSync(SOURCE, 'utf8')
+    const generated = readNormalised(GENERATED)
+    const source = readNormalised(SOURCE)
     const body = generated.split('\n').slice(HEADER_LINES).join('\n')
 
     assert.equal(
@@ -41,7 +54,7 @@ describe('generated agent instruction files', () => {
   })
 
   it('opens with the exact generated-file header', () => {
-    const generated = readFileSync(GENERATED, 'utf8')
+    const generated = readNormalised(GENERATED)
 
     assert.equal(
       generated.slice(0, EXPECTED_HEADER.length),

@@ -4,7 +4,9 @@ import { describe, it } from 'node:test'
 import assert from 'node:assert/strict'
 import {
   NODE_TEST_DIRS,
-  NODE_TEST_FILE_PATTERN
+  NODE_TEST_FILE_PATTERN,
+  TOOLING_NODE_TESTS,
+  isToolingNodeTest
 } from '../../scripts/utils/node-test-dirs.mjs'
 
 const repoRoot = process.cwd()
@@ -48,6 +50,18 @@ const findTestFiles = directory => {
 }
 
 describe('node:test discovery ownership', () => {
+  it('keeps the explicit tooling suite unique and runner-owned', () => {
+    assert.equal(new Set(TOOLING_NODE_TESTS).size, TOOLING_NODE_TESTS.length)
+
+    for (const relativePath of TOOLING_NODE_TESTS) {
+      assert.equal(fs.existsSync(relativePath), true, `${relativePath} missing`)
+      assert.equal(isRunnerOwned(relativePath), true, `${relativePath} unowned`)
+      assert.equal(isToolingNodeTest(relativePath), true)
+    }
+
+    assert.equal(isToolingNodeTest('tests/node/actionCreators.test.js'), false)
+  })
+
   it('matches the file names supported by each owning runner', () => {
     assert.equal(isRunnerOwned('tests/node/example.test.js'), true)
     assert.equal(isRunnerOwned('tests/events/example.spec.js'), true)

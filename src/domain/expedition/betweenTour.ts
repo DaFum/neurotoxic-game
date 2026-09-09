@@ -27,16 +27,27 @@ import {
   BETWEEN_TOUR_DECISION_PRIORITY,
   BETWEEN_TOUR_OPTIONS,
   BETWEEN_TOUR_REHAB_COST,
+  BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT,
+  BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE,
   BETWEEN_TOUR_REPAIR_CONDITION_CEILING,
   BETWEEN_TOUR_REPAIR_COST_PER_POINT,
   MAX_BETWEEN_TOUR_DECISIONS
 } from '../../data/expedition/betweenTour'
 import { EXPEDITION_CREW_BY_ID } from '../../data/expedition/crew'
+import { BRAND_DEALS_BY_ID } from '../../data/brandDeals'
 import { getEligibleCrewSignatureTrait } from './career'
 import { finiteNumberOr } from '../../utils/finiteNumber'
 import { hashExpeditionRoute } from './map'
 import { resolveCrewRecoveryDebt } from './injuries'
-import { clampPlayerMoney } from '../../utils/gameState/clamps'
+import {
+  clampPlayerMoney,
+  clampVanCondition
+} from '../../utils/gameState/clamps'
+import { getExpeditionMinimumNextStartCost } from './loadout'
+import {
+  getExpeditionFuelTopUpCost,
+  EXPEDITION_MAX_STARTING_FUEL
+} from './loadout'
 
 /** Band consequence stages, weakest first. */
 const BAND_CONSEQUENCE_ORDER = ['none', 'light', 'serious', 'critical'] as const
@@ -193,6 +204,77 @@ const resolveRivalResponseTarget = (
  * is a Contract the route offered, not a Sponsor. The lexical pick only ever
  * breaks a tie between several the same run really carried.
  */
+/**
+ * The `sponsor_advance` target: the Sponsor willing to front an insolvent Career.
+ *
+ * @param state - State the settlements have already advanced.
+ * @returns The Sponsor the failed run was carrying, or `null`.
+ *
+ * @remarks
+ * Generated only when all three hold: the run actually failed, the Career
+ * cannot fund the cheapest legal next build, and no advance is already
+ * outstanding. A Career that bailed out voluntarily is not owed a rescue, and
+ * one that can still afford a Tour does not need one - 81% of fresh-Career
+ * funding halts follow a failure, which is the case this exists for.
+ *
+ * The Sponsor is the one the failed run carried, read from the run's own frozen
+ * obligations for the same reason `sponsor_follow_up` does: the Career's deal
+ * list outlives the Tour.
+ */
+/**
+ * Whether the Career can no longer fund a Tour worth starting.
+ *
+ * @param state - State the settlements have already advanced.
+ * @returns True when the band cannot fuel up to half a tank.
+ *
+ * @remarks
+ * This used to ask whether the Career could pay the *cheapest legal* build,
+ * which is the rounding-up of the tank the last Tour left - a euro or two.
+ * `SETTLE_EXPEDITION_CAREER_RESULT` now guarantees exactly that amount, so the
+ * predicate could never hold again and `sponsor_advance` stopped being
+ * generated: 3,048 advances before the guarantee, 0 after. A rescue whose
+ * trigger is 'cannot pay two euros' is a rescue that never arrives.
+ *
+ * Half a tank is the threshold because it is what separates a Tour from a
+ * gesture: below it the band cannot reach the far half of any route, so the
+ * run it could legally book is one it cannot finish. Derived from
+ * `EXPEDITION_MAX_STARTING_FUEL` and the production pump price rather than
+ * fixed, so retuning either moves the rescue with it.
+ */
+export const isExpeditionCareerInsolvent = (state: GameState): boolean => {
+  const currentFuel = finiteNumberOr(state.player.van?.fuel, 0)
+  const viableTarget = Math.floor(EXPEDITION_MAX_STARTING_FUEL / 2)
+  if (currentFuel >= viableTarget) return false
+  const cost = getExpeditionFuelTopUpCost(currentFuel, viableTarget)
+  return finiteNumberOr(state.player.money, 0) < cost
+}
+
+const resolveSponsorAdvanceTarget = (
+  state: GameState
+): BetweenTourTarget | null => {
+  if (state.expedition.outcome?.kind !== 'failed') return null
+  if (state.career.sponsorAdvance !== null) return null
+  if (!isExpeditionCareerInsolvent(state)) return null
+
+  // The Sponsor the failed run carried, when it carried one. Most Careers that
+  // reach this point toured sponsorless - that is part of why they are broke -
+  // so a deal the run never had is the fallback rather than a reason to offer
+  // nothing. It is the lowest-upfront deal in the registry, resolved
+  // deterministically: the band that just failed is not being courted by
+  // anyone good.
+  const carried = resolveSponsorFollowUpTarget(state)
+  if (carried) return carried
+
+  const cheapest = [...BRAND_DEALS_BY_ID.values()]
+    .slice()
+    .sort(
+      (a, b) =>
+        finiteNumberOr(a.offer?.upfront, 0) -
+          finiteNumberOr(b.offer?.upfront, 0) || a.id.localeCompare(b.id)
+    )[0]
+  return cheapest ? { kind: 'sponsor', id: cheapest.id } : null
+}
+
 const resolveSponsorFollowUpTarget = (
   state: GameState
 ): BetweenTourTarget | null => {
@@ -292,6 +374,9 @@ export const generateBetweenTourDecisions = (
         break
       case 'rival_response':
         add(type, withAllOptions(type, resolveRivalResponseTarget(state)))
+        break
+      case 'sponsor_advance':
+        add(type, withAllOptions(type, resolveSponsorAdvanceTarget(state)))
         break
       case 'sponsor_follow_up':
         add(type, withAllOptions(type, resolveSponsorFollowUpTarget(state)))
@@ -473,6 +558,48 @@ export const applyBetweenTourDecisionOption = (
       }
     }
 
+    case 'sponsor_advance': {
+      if (decision.target.kind !== 'sponsor') return null
+      if (optionId === 'decline_advance') return state
+      if (optionId !== 'take_advance') return null
+      // Re-derived, never trusted from the decision: the Career may have been
+      // made solvent by an earlier decision in the same Between-Tour set, and
+      // an advance it no longer needs is not one it may take.
+      if (state.career.sponsorAdvance !== null) return null
+      if (!isExpeditionCareerInsolvent(state)) return null
+      // The whole target, re-derived. Checking only solvency let a crafted
+      // persisted decision credit the advance after a run that *completed* or
+      // extracted, and name any Sponsor id it liked: the failed-run and
+      // canonical-Sponsor conditions live in the resolver, and were only ever
+      // enforced at generation time.
+      const canonicalTarget = resolveSponsorAdvanceTarget(state)
+      if (!canonicalTarget) return null
+      if (canonicalTarget.id !== decision.target.id) return null
+      const runId = state.expedition.outcome?.runId
+      if (typeof runId !== 'string') return null
+      return {
+        ...state,
+        player: {
+          ...state.player,
+          money: clampPlayerMoney(
+            finiteNumberOr(state.player.money, 0) +
+              BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT
+          )
+        },
+        career: {
+          ...state.career,
+          sponsorAdvance: {
+            dealId: decision.target.id,
+            amount: BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT,
+            outstanding: Math.round(
+              BETWEEN_TOUR_SPONSOR_ADVANCE_AMOUNT *
+                BETWEEN_TOUR_SPONSOR_ADVANCE_REPAYMENT_RATE
+            ),
+            takenAfterRunId: runId
+          }
+        }
+      }
+    }
     case 'sponsor_follow_up': {
       if (decision.target.kind !== 'sponsor') return null
       if (optionId === 'keep_relationship') {
@@ -507,16 +634,40 @@ export const applyBetweenTourDecisionOption = (
         0,
         Math.min(100, finiteNumberOr(state.player.van?.condition, 100))
       )
-      const cost = Math.ceil(
-        (100 - condition) * BETWEEN_TOUR_REPAIR_COST_PER_POINT
+      const missingPoints = 100 - condition
+      if (missingPoints <= 0) return null
+      // Partial repair, priced per point. All-or-nothing was a Career-ender:
+      // a van at condition 0 costs 1200 to rebuild, a Career between Tours
+      // holds a few hundred, and the decision then refused outright - so the
+      // van stayed at 0 for every remaining Tour, each run bailed out at its
+      // first extraction window, and nothing ever earned the 1200. A garage
+      // that will not sell twenty points of repair to a band with 240 in hand
+      // is not a harder game, it is a dead one.
+      // Fuel money is not spendable on bodywork. The Career settlement
+      // guarantees enough to book the next Tour; letting the garage take it
+      // would hand the wreck back in a different shape - a repaired van the
+      // band cannot drive anywhere.
+      const spendable = Math.max(
+        0,
+        money - getExpeditionMinimumNextStartCost(state)
       )
-      if (cost <= 0 || money < cost) return null
+      const affordablePoints = Math.min(
+        missingPoints,
+        Math.floor(spendable / BETWEEN_TOUR_REPAIR_COST_PER_POINT)
+      )
+      if (affordablePoints <= 0) return null
+      // Charged for exactly the points restored, so partial repair cannot be
+      // cheaper per point than paying for the whole job.
+      const cost = affordablePoints * BETWEEN_TOUR_REPAIR_COST_PER_POINT
       return {
         ...state,
         player: {
           ...state.player,
           money: clampPlayerMoney(money - cost),
-          van: { ...state.player.van, condition: 100 }
+          van: {
+            ...state.player.van,
+            condition: clampVanCondition(condition + affordablePoints)
+          }
         }
       }
     }

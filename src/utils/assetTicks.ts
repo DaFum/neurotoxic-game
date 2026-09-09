@@ -170,7 +170,9 @@ export const processAssetTick = (state: GameState): GameState => {
     ...state,
     assets: nextAssets,
     player: nextPlayer,
-    ...(nextExpedition !== state.expedition ? { expedition: nextExpedition } : {}),
+    ...(nextExpedition !== state.expedition
+      ? { expedition: nextExpedition }
+      : {}),
     ...(nextBand !== state.band ? { band: nextBand } : {})
   }
 }
@@ -215,7 +217,10 @@ export const processLiabilityTick = (
 
     if (state.expedition?.status === 'active') {
       const policy = getExpeditionDayPolicy(state)
-      const availableCash = Math.max(0, currentMoney - policy.protectedCareerCash)
+      const availableCash = Math.max(
+        0,
+        currentMoney - policy.protectedCareerCash
+      )
       const payable = Math.min(payment, availableCash)
       const unpaid = payment - payable
 
@@ -340,7 +345,9 @@ export const processLiabilityTick = (
       },
       assets: nextAssets,
       liabilities: finalLiabilities,
-      ...(nextExpedition !== state.expedition ? { expedition: nextExpedition } : {})
+      ...(nextExpedition !== state.expedition
+        ? { expedition: nextExpedition }
+        : {})
     },
     foreclosedKinds
   }

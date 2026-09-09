@@ -10,6 +10,7 @@
 
 import { getSafeUUID } from '../utils/crypto'
 import { nextSeed } from '../utils/seededRng'
+import { isFiniteNumber } from '../utils/finiteNumber'
 import { ActionTypes } from './actionTypes'
 import { deriveExpeditionPendingFailure } from '../domain/expedition/failure'
 import type { GameAction, GameState } from '../types'
@@ -137,6 +138,63 @@ export const prepareExpeditionRun = (
     runSeed: nextSeed(state.runSeed)
   }
 })
+
+/**
+ * Builds the action staging deterministic Sponsor offers for a prepared run.
+ *
+ * @param expectedRunSeed - Stale guard matching the root run seed.
+ * @param regionId - Optional candidate Region id.
+ * @param tourTypeId - Optional candidate Tour Type id.
+ * @param starterPerkId - Optional candidate starter perk id.
+ * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action.
+ */
+export const createPrepareExpeditionSponsorOffersAction = (
+  expectedRunSeed: unknown,
+  regionId?: unknown,
+  tourTypeId?: unknown,
+  starterPerkId?: unknown
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS }
+> => {
+  if (!isFiniteNumber(expectedRunSeed)) {
+    throw new TypeError('Expected runSeed must be a finite number')
+  }
+  return {
+    type: ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS,
+    payload: {
+      expectedRunSeed: Number(expectedRunSeed),
+      regionId: typeof regionId === 'string' ? regionId : undefined,
+      tourTypeId: typeof tourTypeId === 'string' ? tourTypeId : undefined,
+      starterPerkId: typeof starterPerkId === 'string' ? starterPerkId : null
+    }
+  }
+}
+
+/**
+ * Stages deterministic Sponsor offers against the prepared run.
+ *
+ * @param state - Current game state.
+ * @param regionId - Candidate region id.
+ * @param tourTypeId - Candidate tour type id.
+ * @param starterPerkId - Candidate starter perk id.
+ * @returns Typed `PREPARE_EXPEDITION_SPONSOR_OFFERS` action.
+ */
+export const prepareExpeditionSponsorOffers = (
+  state: GameState,
+  regionId?: string,
+  tourTypeId?: string,
+  starterPerkId?: string | null
+): Extract<
+  GameAction,
+  { type: typeof ActionTypes.PREPARE_EXPEDITION_SPONSOR_OFFERS }
+> =>
+  createPrepareExpeditionSponsorOffersAction(
+    state.runSeed,
+    regionId,
+    tourTypeId,
+    starterPerkId
+  )
 
 /**
  * Builds the START action for the prepared run.
