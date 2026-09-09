@@ -350,115 +350,138 @@ const compactCareerSample = sequence => {
 }
 
 /**
- * Summarizes skill probe results across a cohort for all three skill tiers.
+ * Summarizes skill probe results across a cohort for all three skill tiers, overall and by profile.
  *
  * @param {any[]} results
  * @returns {object}
  */
 const summarizeSkillCohort = results => {
-  const n = results.length || 1
-  let moneyLow = 0,
-    moneyComp = 0,
-    moneyHigh = 0
-  let fameLow = 0,
-    fameComp = 0,
-    fameHigh = 0
-  let condLow = 0,
-    condComp = 0,
-    condHigh = 0
-  let repairLow = 0,
-    repairComp = 0,
-    repairHigh = 0
-  let gigNetLow = 0,
-    gigNetComp = 0,
-    gigNetHigh = 0
-  let hypeLow = 0,
-    hypeComp = 0,
-    hypeHigh = 0
-  let missesLow = 0,
-    missesComp = 0,
-    missesHigh = 0
-  let compLow = 0,
-    compComp = 0,
-    compHigh = 0
+  const summarizeList = list => {
+    const total = list.length || 1
+    let moneyLow = 0,
+      moneyComp = 0,
+      moneyHigh = 0
+    let fameLow = 0,
+      fameComp = 0,
+      fameHigh = 0
+    let condLow = 0,
+      condComp = 0,
+      condHigh = 0
+    let repairLow = 0,
+      repairComp = 0,
+      repairHigh = 0
+    let gigNetLow = 0,
+      gigNetComp = 0,
+      gigNetHigh = 0
+    let hypeLow = 0,
+      hypeComp = 0,
+      hypeHigh = 0
+    let missesLow = 0,
+      missesComp = 0,
+      missesHigh = 0
+    let compLow = 0,
+      compComp = 0,
+      compHigh = 0
 
+    for (const entry of list) {
+      const trio = entry.trio ?? {}
+      const low = trio.low?.telemetry ?? {}
+      const comp = trio.competent?.telemetry ?? {}
+      const high = trio.high?.telemetry ?? {}
+
+      moneyLow += low.retainedMoney ?? 0
+      moneyComp += comp.retainedMoney ?? 0
+      moneyHigh += high.retainedMoney ?? 0
+
+      fameLow += low.retainedFame ?? 0
+      fameComp += comp.retainedFame ?? 0
+      fameHigh += high.retainedFame ?? 0
+
+      condLow += low.minTechnicalCondition ?? 0
+      condComp += comp.minTechnicalCondition ?? 0
+      condHigh += high.minTechnicalCondition ?? 0
+
+      repairLow += low.repairSpend ?? 0
+      repairComp += comp.repairSpend ?? 0
+      repairHigh += high.repairSpend ?? 0
+
+      gigNetLow += low.gigNetTotal ?? 0
+      gigNetComp += comp.gigNetTotal ?? 0
+      gigNetHigh += high.gigNetTotal ?? 0
+
+      hypeLow += low.realizedHypeComboBonusTotal ?? 0
+      hypeComp += comp.realizedHypeComboBonusTotal ?? 0
+      hypeHigh += high.realizedHypeComboBonusTotal ?? 0
+
+      missesLow += low.gigMissesTotal ?? 0
+      missesComp += comp.gigMissesTotal ?? 0
+      missesHigh += high.gigMissesTotal ?? 0
+
+      if (trio.low?.outcome === 'completed') compLow++
+      if (trio.competent?.outcome === 'completed') compComp++
+      if (trio.high?.outcome === 'completed') compHigh++
+    }
+
+    return {
+      triosCount: total,
+      completionRate: {
+        low: compLow / total,
+        competent: compComp / total,
+        high: compHigh / total
+      },
+      meanMoney: {
+        low: moneyLow / total,
+        competent: moneyComp / total,
+        high: moneyHigh / total
+      },
+      meanFame: {
+        low: fameLow / total,
+        competent: fameComp / total,
+        high: fameHigh / total
+      },
+      meanMinCondition: {
+        low: condLow / total,
+        competent: condComp / total,
+        high: condHigh / total
+      },
+      meanRepairSpend: {
+        low: repairLow / total,
+        competent: repairComp / total,
+        high: repairHigh / total
+      },
+      meanGigNet: {
+        low: gigNetLow / total,
+        competent: gigNetComp / total,
+        high: gigNetHigh / total
+      },
+      meanRealizedHypeBonus: {
+        low: hypeLow / total,
+        competent: hypeComp / total,
+        high: hypeHigh / total
+      },
+      meanGigMisses: {
+        low: missesLow / total,
+        competent: missesComp / total,
+        high: missesHigh / total
+      }
+    }
+  }
+
+  const byProfileList = Object.create(null)
   for (const entry of results) {
-    const trio = entry.trio ?? {}
-    const low = trio.low?.telemetry ?? {}
-    const comp = trio.competent?.telemetry ?? {}
-    const high = trio.high?.telemetry ?? {}
+    const pid = entry.profileId ?? 'unknown'
+    if (!byProfileList[pid]) byProfileList[pid] = []
+    byProfileList[pid].push(entry)
+  }
 
-    moneyLow += low.retainedMoney ?? 0
-    moneyComp += comp.retainedMoney ?? 0
-    moneyHigh += high.retainedMoney ?? 0
-
-    fameLow += low.retainedFame ?? 0
-    fameComp += comp.retainedFame ?? 0
-    fameHigh += high.retainedFame ?? 0
-
-    condLow += low.minTechnicalCondition ?? 0
-    condComp += comp.minTechnicalCondition ?? 0
-    condHigh += high.minTechnicalCondition ?? 0
-
-    repairLow += low.repairSpend ?? 0
-    repairComp += comp.repairSpend ?? 0
-    repairHigh += high.repairSpend ?? 0
-
-    gigNetLow += low.gigNetTotal ?? 0
-    gigNetComp += comp.gigNetTotal ?? 0
-    gigNetHigh += high.gigNetTotal ?? 0
-
-    hypeLow += low.realizedHypeComboBonusTotal ?? 0
-    hypeComp += comp.realizedHypeComboBonusTotal ?? 0
-    hypeHigh += high.realizedHypeComboBonusTotal ?? 0
-
-    missesLow += low.gigMissesTotal ?? 0
-    missesComp += comp.gigMissesTotal ?? 0
-    missesHigh += high.gigMissesTotal ?? 0
-
-    if (trio.low?.outcome === 'completed') compLow++
-    if (trio.competent?.outcome === 'completed') compComp++
-    if (trio.high?.outcome === 'completed') compHigh++
+  const byProfile = Object.create(null)
+  for (const [pid, list] of Object.entries(byProfileList)) {
+    byProfile[pid] = summarizeList(list)
   }
 
   return {
-    triosCount: n,
-    completionRate: {
-      low: compLow / n,
-      competent: compComp / n,
-      high: compHigh / n
-    },
-    meanMoney: {
-      low: moneyLow / n,
-      competent: moneyComp / n,
-      high: moneyHigh / n
-    },
-    meanFame: { low: fameLow / n, competent: fameComp / n, high: fameHigh / n },
-    meanMinCondition: {
-      low: condLow / n,
-      competent: condComp / n,
-      high: condHigh / n
-    },
-    meanRepairSpend: {
-      low: repairLow / n,
-      competent: repairComp / n,
-      high: repairHigh / n
-    },
-    meanGigNet: {
-      low: gigNetLow / n,
-      competent: gigNetComp / n,
-      high: gigNetHigh / n
-    },
-    meanRealizedHypeBonus: {
-      low: hypeLow / n,
-      competent: hypeComp / n,
-      high: hypeHigh / n
-    },
-    meanGigMisses: {
-      low: missesLow / n,
-      competent: missesComp / n,
-      high: missesHigh / n
-    }
+    ...summarizeList(results),
+    byProfile
   }
 }
 
@@ -511,154 +534,173 @@ const summarizeCareerSequencesByProfile = sequences => {
 }
 
 /**
- * Summarizes progression metrics across fresh-career sequences.
+ * Summarizes progression metrics across fresh-career sequences, overall and by profile.
  *
  * @param {any[]} sequences
  * @returns {object}
  */
 const summarizeCareerProgressionMetrics = sequences => {
-  const n = sequences.length || 1
+  const summarizeList = list => {
+    const n = list.length || 1
 
-  let roadtestedSum = 0,
-    roadtestedCount = 0
-  let headlinerSum = 0,
-    headlinerCount = 0
-  let facilitySum = 0,
-    facilityCount = 0
-  let capabilitySum = 0,
-    capabilityCount = 0
-  let run1CapabilityCount = 0
-  let run1HqCount = 0
-  let legacyHqSum = 0,
-    legacyHqCount = 0
-  let ascensionSum = 0,
-    ascensionCount = 0
-  let legendarySum = 0,
-    legendaryCount = 0
-  let signatureTraitSum = 0,
-    signatureTraitCount = 0
-  let totalAdvances = 0,
-    totalStaged = 0,
-    totalSelected = 0,
-    totalAccepted = 0
-  let totalNormalTerminals = 0,
-    totalSolventAfterNormal = 0
-  let maxNemesisSum = 0,
-    sameRivalReturnSum = 0,
-    sameRivalReturnCount = 0
-  let recoveryDebtCount = 0
+    let roadtestedSum = 0,
+      roadtestedCount = 0
+    let headlinerSum = 0,
+      headlinerCount = 0
+    let facilitySum = 0,
+      facilityCount = 0
+    let capabilitySum = 0,
+      capabilityCount = 0
+    let run1CapabilityCount = 0
+    let run1HqCount = 0
+    let legacyHqSum = 0,
+      legacyHqCount = 0
+    let ascensionSum = 0,
+      ascensionCount = 0
+    let legendarySum = 0,
+      legendaryCount = 0
+    let signatureTraitSum = 0,
+      signatureTraitCount = 0
+    let totalAdvances = 0,
+      totalStaged = 0,
+      totalSelected = 0,
+      totalAccepted = 0
+    let totalNormalTerminals = 0,
+      totalSolventAfterNormal = 0
+    let maxNemesisSum = 0,
+      sameRivalReturnSum = 0,
+      sameRivalReturnCount = 0
+    let recoveryDebtCount = 0
 
+    for (const seq of list) {
+      const m = seq.metrics ?? {}
+      if (m.firstRoadtestedRun != null) {
+        roadtestedSum += m.firstRoadtestedRun
+        roadtestedCount++
+      }
+      if (m.firstHeadlinerRun != null) {
+        headlinerSum += m.firstHeadlinerRun
+        headlinerCount++
+      }
+      if (m.firstMetaFacilityRun != null) {
+        facilitySum += m.firstMetaFacilityRun
+        facilityCount++
+      }
+      if (m.firstPermanentExpeditionCapabilityRun != null) {
+        capabilitySum += m.firstPermanentExpeditionCapabilityRun
+        capabilityCount++
+      }
+      if (m.run1PermanentCapabilityPurchaseRate) run1CapabilityCount++
+      if (m.run1LegacyExpeditionAffectingHqPurchaseRate) run1HqCount++
+      if (m.firstLegacyExpeditionAffectingHqPurchaseRun != null) {
+        legacyHqSum += m.firstLegacyExpeditionAffectingHqPurchaseRun
+        legacyHqCount++
+      }
+      if (m.firstAscensionUnlockRun != null) {
+        ascensionSum += m.firstAscensionUnlockRun
+        ascensionCount++
+      }
+      if (m.firstNaturalLegendaryRun != null) {
+        legendarySum += m.firstNaturalLegendaryRun
+        legendaryCount++
+      }
+      if (m.signatureTraitUnlockRun != null) {
+        signatureTraitSum += m.signatureTraitUnlockRun
+        signatureTraitCount++
+      }
+
+      totalAdvances += m.sponsorAdvancesTaken ?? 0
+      totalStaged += m.sponsorOffersStaged ?? 0
+      totalSelected += m.sponsorOffersSelected ?? 0
+      totalAccepted += m.sponsorOffersAccepted ?? 0
+
+      totalNormalTerminals += m.normalTerminals ?? 0
+      totalSolventAfterNormal += m.solventAfterNormalTerminal ?? 0
+
+      maxNemesisSum += m.maxNemesisLevel ?? 0
+      if (m.sameRivalReturnRate != null) {
+        sameRivalReturnSum += m.sameRivalReturnRate
+        sameRivalReturnCount++
+      }
+      if (m.crewRecoveryDebtDurations)
+        recoveryDebtCount += m.crewRecoveryDebtDurations.length
+    }
+
+    return {
+      sequencesCount: n,
+      ranks: {
+        roadtestedReachedRate: roadtestedCount / n,
+        meanFirstRoadtestedRun:
+          roadtestedCount === 0 ? null : roadtestedSum / roadtestedCount,
+        headlinerReachedRate: headlinerCount / n,
+        meanFirstHeadlinerRun:
+          headlinerCount === 0 ? null : headlinerSum / headlinerCount
+      },
+      metaAndFacilities: {
+        facilityPurchaseRate: facilityCount / n,
+        meanFirstFacilityRun:
+          facilityCount === 0 ? null : facilitySum / facilityCount,
+        permanentCapabilityPurchaseRate: capabilityCount / n,
+        meanFirstCapabilityRun:
+          capabilityCount === 0 ? null : capabilitySum / capabilityCount,
+        run1PermanentCapabilityPurchaseRate: run1CapabilityCount / n,
+        run1LegacyHqPurchaseRate: run1HqCount / n,
+        meanFirstLegacyHqRun:
+          legacyHqCount === 0 ? null : legacyHqSum / legacyHqCount
+      },
+      milestones: {
+        ascensionUnlockRate: ascensionCount / n,
+        meanFirstAscensionRun:
+          ascensionCount === 0 ? null : ascensionSum / ascensionCount,
+        naturalLegendaryRate: legendaryCount / n,
+        meanFirstLegendaryRun:
+          legendaryCount === 0 ? null : legendarySum / legendaryCount,
+        signatureTraitUnlockRate: signatureTraitCount / n,
+        meanSignatureTraitRun:
+          signatureTraitCount === 0
+            ? null
+            : signatureTraitSum / signatureTraitCount,
+        crewRecoveryDebtEventsTotal: recoveryDebtCount
+      },
+      sponsors: {
+        advancesTakenTotal: totalAdvances,
+        meanOffersStagedPerSequence: totalStaged / n,
+        meanOffersSelectedPerSequence: totalSelected / n,
+        meanOffersAcceptedPerSequence: totalAccepted / n
+      },
+      solvency: {
+        normalTerminalsTotal: totalNormalTerminals,
+        solventAfterNormalTerminalTotal: totalSolventAfterNormal,
+        solvencyRate:
+          totalNormalTerminals === 0
+            ? null
+            : totalSolventAfterNormal / totalNormalTerminals
+      },
+      rivals: {
+        meanMaxNemesisLevel: maxNemesisSum / n,
+        meanSameRivalReturnRate:
+          sameRivalReturnCount === 0
+            ? null
+            : sameRivalReturnSum / sameRivalReturnCount
+      }
+    }
+  }
+
+  const byProfileList = Object.create(null)
   for (const seq of sequences) {
-    const m = seq.metrics ?? {}
-    if (m.firstRoadtestedRun != null) {
-      roadtestedSum += m.firstRoadtestedRun
-      roadtestedCount++
-    }
-    if (m.firstHeadlinerRun != null) {
-      headlinerSum += m.firstHeadlinerRun
-      headlinerCount++
-    }
-    if (m.firstMetaFacilityRun != null) {
-      facilitySum += m.firstMetaFacilityRun
-      facilityCount++
-    }
-    if (m.firstPermanentExpeditionCapabilityRun != null) {
-      capabilitySum += m.firstPermanentExpeditionCapabilityRun
-      capabilityCount++
-    }
-    if (m.run1PermanentCapabilityPurchaseRate) run1CapabilityCount++
-    if (m.run1LegacyExpeditionAffectingHqPurchaseRate) run1HqCount++
-    if (m.firstLegacyExpeditionAffectingHqPurchaseRun != null) {
-      legacyHqSum += m.firstLegacyExpeditionAffectingHqPurchaseRun
-      legacyHqCount++
-    }
-    if (m.firstAscensionUnlockRun != null) {
-      ascensionSum += m.firstAscensionUnlockRun
-      ascensionCount++
-    }
-    if (m.firstNaturalLegendaryRun != null) {
-      legendarySum += m.firstNaturalLegendaryRun
-      legendaryCount++
-    }
-    if (m.signatureTraitUnlockRun != null) {
-      signatureTraitSum += m.signatureTraitUnlockRun
-      signatureTraitCount++
-    }
+    const pid = seq.profileId ?? 'unknown'
+    if (!byProfileList[pid]) byProfileList[pid] = []
+    byProfileList[pid].push(seq)
+  }
 
-    totalAdvances += m.sponsorAdvancesTaken ?? 0
-    totalStaged += m.sponsorOffersStaged ?? 0
-    totalSelected += m.sponsorOffersSelected ?? 0
-    totalAccepted += m.sponsorOffersAccepted ?? 0
-
-    totalNormalTerminals += m.normalTerminals ?? 0
-    totalSolventAfterNormal += m.solventAfterNormalTerminal ?? 0
-
-    maxNemesisSum += m.maxNemesisLevel ?? 0
-    if (m.sameRivalReturnRate != null) {
-      sameRivalReturnSum += m.sameRivalReturnRate
-      sameRivalReturnCount++
-    }
-    if (m.crewRecoveryDebtDurations)
-      recoveryDebtCount += m.crewRecoveryDebtDurations.length
+  const byProfile = Object.create(null)
+  for (const [pid, list] of Object.entries(byProfileList)) {
+    byProfile[pid] = summarizeList(list)
   }
 
   return {
-    sequencesCount: n,
-    ranks: {
-      roadtestedReachedRate: roadtestedCount / n,
-      meanFirstRoadtestedRun:
-        roadtestedCount === 0 ? null : roadtestedSum / roadtestedCount,
-      headlinerReachedRate: headlinerCount / n,
-      meanFirstHeadlinerRun:
-        headlinerCount === 0 ? null : headlinerSum / headlinerCount
-    },
-    metaAndFacilities: {
-      facilityPurchaseRate: facilityCount / n,
-      meanFirstFacilityRun:
-        facilityCount === 0 ? null : facilitySum / facilityCount,
-      permanentCapabilityPurchaseRate: capabilityCount / n,
-      meanFirstCapabilityRun:
-        capabilityCount === 0 ? null : capabilitySum / capabilityCount,
-      run1PermanentCapabilityPurchaseRate: run1CapabilityCount / n,
-      run1LegacyHqPurchaseRate: run1HqCount / n,
-      meanFirstLegacyHqRun:
-        legacyHqCount === 0 ? null : legacyHqSum / legacyHqCount
-    },
-    milestones: {
-      ascensionUnlockRate: ascensionCount / n,
-      meanFirstAscensionRun:
-        ascensionCount === 0 ? null : ascensionSum / ascensionCount,
-      naturalLegendaryRate: legendaryCount / n,
-      meanFirstLegendaryRun:
-        legendaryCount === 0 ? null : legendarySum / legendaryCount,
-      signatureTraitUnlockRate: signatureTraitCount / n,
-      meanSignatureTraitRun:
-        signatureTraitCount === 0
-          ? null
-          : signatureTraitSum / signatureTraitCount,
-      crewRecoveryDebtEventsTotal: recoveryDebtCount
-    },
-    sponsors: {
-      advancesTakenTotal: totalAdvances,
-      meanOffersStagedPerSequence: totalStaged / n,
-      meanOffersSelectedPerSequence: totalSelected / n,
-      meanOffersAcceptedPerSequence: totalAccepted / n
-    },
-    solvency: {
-      normalTerminalsTotal: totalNormalTerminals,
-      solventAfterNormalTerminalTotal: totalSolventAfterNormal,
-      solvencyRate:
-        totalNormalTerminals === 0
-          ? null
-          : totalSolventAfterNormal / totalNormalTerminals
-    },
-    rivals: {
-      meanMaxNemesisLevel: maxNemesisSum / n,
-      meanSameRivalReturnRate:
-        sameRivalReturnCount === 0
-          ? null
-          : sameRivalReturnSum / sameRivalReturnCount
-    }
+    ...summarizeList(sequences),
+    byProfile
   }
 }
 

@@ -74,6 +74,7 @@ export const runExtractionCounterfactualPair = (
         capturedWindows.push({
           state: structuredClone(state),
           routeStep: state.expedition.routeStep,
+          vanCondition: state.player.van?.condition ?? 100,
           policyWouldExtract: decision.extract,
           policyReason: decision.reason,
           policyScore: decision.score,
@@ -91,6 +92,7 @@ export const runExtractionCounterfactualPair = (
     outcome: initialResult.outcome,
     retainedMoney: initialResult.telemetry.retainedMoney,
     retainedFame: initialResult.telemetry.retainedFame,
+    minVanCondition: initialResult.telemetry.minVanCondition,
     securedRares: initialResult.telemetry.securedRares,
     explicitlyExtractedRares: initialResult.telemetry.explicitlyExtractedRares,
     abandonedRares: initialResult.telemetry.abandonedRares
@@ -129,11 +131,13 @@ export const runExtractionCounterfactualPair = (
       outcome: /** @type {'extracted'} */ ('extracted'),
       retainedMoney: stateA.player.money,
       retainedFame: stateA.player.fame,
+      vanCondition: window.vanCondition,
       explicitlyExtractedRares: unmaterializedRares.length
     }
     return {
       windowRouteStep: window.routeStep,
       branchA,
+      vanCondition: window.vanCondition,
       policyWouldExtract: window.policyWouldExtract,
       policyReason: window.policyReason,
       policyScore: window.policyScore,
@@ -177,7 +181,10 @@ export const runExtractionCounterfactualPair = (
 const percentile = (values, p) => {
   if (values.length === 0) return null
   const sorted = [...values].sort((a, b) => a - b)
-  const index = Math.min(sorted.length - 1, Math.floor((p / 100) * sorted.length))
+  const index = Math.min(
+    sorted.length - 1,
+    Math.floor((p / 100) * sorted.length)
+  )
   return Math.round(sorted[index])
 }
 
@@ -236,7 +243,8 @@ export const summarizeExtractionRegret = pairs => {
     extractionRegret: {
       chosenWindows,
       betterToContinueCount: regretPositive,
-      betterToContinueRate: chosenWindows === 0 ? null : regretPositive / chosenWindows,
+      betterToContinueRate:
+        chosenWindows === 0 ? null : regretPositive / chosenWindows,
       moneyP10: percentile(regretMoney, 10),
       moneyP25: percentile(regretMoney, 25),
       moneyP50: percentile(regretMoney, 50),
