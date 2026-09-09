@@ -47,7 +47,8 @@ import type {
   ExpeditionBuildRejectionReason,
   ExpeditionBuildValidation,
   ExpeditionLoadout,
-  ExpeditionMap
+  ExpeditionMap,
+  ExpeditionSponsorStagingProvenance
 } from '../../types/expedition'
 import { EXPEDITION_CONTRACTS_BY_ID } from '../../data/expedition/contracts'
 import { buildPreparedExpeditionSponsorOffers } from './sponsors'
@@ -69,7 +70,16 @@ import {
 /**
  * Highest fuel level the van can be topped up to before departure.
  */
-const MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+/**
+ * Ceiling on a committed starting Fuel target.
+ *
+ * @remarks
+ * Exported so callers that need to reason about the cheapest legal build - the
+ * Between-Tour insolvency check, the balance harness - use the same ceiling the
+ * validator enforces rather than a literal of their own.
+ */
+export const EXPEDITION_MAX_STARTING_FUEL = EXPENSE_CONSTANTS.TRANSPORT.MAX_FUEL
+const MAX_STARTING_FUEL = EXPEDITION_MAX_STARTING_FUEL
 
 /**
  * Cash the player may spend inside an active Expedition.
@@ -114,6 +124,28 @@ export const canSpendExpeditionCash = (
   isFiniteNumber(amount) &&
   amount >= 0 &&
   getExpeditionSpendableCash(state) >= amount
+
+/**
+ * What START will charge for the cheapest legal next Expedition.
+ *
+ * @param state - Career state between Tours.
+ * @returns The unavoidable cost of booking again, in euros.
+ *
+ * @remarks
+ * A build may only top the tank up, never siphon it, so the cheapest legal
+ * `startingFuelTarget` is the tank the last Tour left rounded up - and the only
+ * unavoidable charge is that rounding. It is a euro or two, which is exactly
+ * why a Career stranded just below it reads as absurd: the band cannot book a
+ * Tour because it is two euros short of topping off a tank it already has.
+ */
+export const getExpeditionMinimumNextStartCost = (state: GameState): number => {
+  const currentFuel = finiteNumberOr(state.player?.van?.fuel, 0)
+  const cheapestTarget = Math.min(
+    EXPEDITION_MAX_STARTING_FUEL,
+    Math.ceil(Math.max(0, currentFuel))
+  )
+  return getExpeditionFuelTopUpCost(currentFuel, cheapestTarget)
+}
 
 /**
  * Cost of topping the van up from its current level to a target level.
@@ -234,6 +266,39 @@ export const getAvailableExpeditionRegionIds = (
       isAvailableById(state, id, REGION_CAPABILITY)
   )
 ]
+
+/**
+ * Whether a persisted Sponsor staging still names a Region, Tour and perk this
+ * Career may actually book.
+ *
+ * @param state - Loaded game state.
+ * @param provenance - The staging provenance a save carried.
+ * @returns `true` when every axis is still available to this Career.
+ *
+ * @remarks
+ * The sanitizer only narrows the provenance's shape; availability needs the
+ * whole Career, so it is re-derived here on load. Without it a hand-edited save
+ * could stage offers for a Region or perk it never unlocked and have START
+ * honour them.
+ */
+export const isExpeditionStagingRouteAvailable = (
+  state: GameState,
+  provenance: ExpeditionSponsorStagingProvenance | undefined
+): boolean => {
+  if (!provenance) return false
+  if (!getAvailableExpeditionRegionIds(state).includes(provenance.regionId)) {
+    return false
+  }
+  if (
+    !getAvailableExpeditionTourTypeIds(state).includes(provenance.tourTypeId)
+  ) {
+    return false
+  }
+  return (
+    provenance.starterPerkId === null ||
+    getAvailableStarterPerkIds(state).includes(provenance.starterPerkId)
+  )
+}
 
 /**
  * Crew ids the player may commit.
@@ -835,6 +900,23 @@ export const enforceExpeditionCashFloor = (
     `Rejected a spend that would cross the protected Career Cash floor (${actionType})`,
     { before, after, floor }
   )
+
+  // A reverted travel settlement leaves no trace, and a run that cannot pay
+  // for any leg is then stuck with no crisis: `checkSoftlock` prices legs
+  // through the career travel gate and knows nothing about this floor, so
+  // `getExpeditionMobilityFailureSignal` stays silent and `accept_failure` -
+  // the unconditional choice that is supposed to make a softlock impossible -
+  // is never offered. Record the refusal as realized evidence, exactly as
+  // `unpaidDailyObligation` records a day tick that could not pay.
+  if (actionType === ActionTypes.COMPLETE_TRAVEL_MINIGAME) {
+    return {
+      ...previousState,
+      expedition: {
+        ...previousState.expedition,
+        blockedTravelAtRouteStep: previousState.expedition.routeStep
+      }
+    }
+  }
   return previousState
 }
 

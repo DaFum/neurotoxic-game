@@ -124,6 +124,7 @@ export const createDefaultExpeditionState = (): ExpeditionState => ({
   arrivedOverlay: null,
   pendingFailure: null,
   unpaidDailyObligation: 0,
+  blockedTravelAtRouteStep: null,
   outcome: null,
   crew: {
     stressByCrewId: Object.create(null) as Record<string, number>,

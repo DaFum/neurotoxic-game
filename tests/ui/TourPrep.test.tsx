@@ -12,6 +12,7 @@ const state: { current: GameState } = vi.hoisted(
 )
 const actions = vi.hoisted(() => ({
   prepareExpeditionRun: vi.fn(),
+  prepareExpeditionSponsorOffers: vi.fn(),
   startExpedition: vi.fn(),
   changeScene: vi.fn(),
   saveGameAfterStateCommit: vi.fn()
@@ -185,7 +186,15 @@ describe('TourPrep scene', () => {
     const base = buildState()
     base.expedition = {
       ...base.expedition,
-      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(base)
+      // The same route the scene opens on. Calling with only `state` resolves
+      // the baseline pressure profile, which stages a different offer count
+      // from the one Tour Prep actually shows.
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(
+        base,
+        'home_turf',
+        'standard_tour',
+        null
+      )
     }
     // `contract_three_good_gigs` is a performance Contract, and that pool is
     // what `festival_network` sells. The subject here is the commit, not the
@@ -202,6 +211,51 @@ describe('TourPrep scene', () => {
     fireEvent.click(
       screen.getByTestId('expedition-prep-contract-contract_three_good_gigs')
     )
+    fireEvent.click(screen.getByTestId('expedition-prep-commit'))
+
+    const committed = actions.startExpedition.mock.calls[0][0]
+    expect(committed.build.sponsorOfferId).toBe(offer.offerId)
+    expect(committed.nativeContracts).toEqual([
+      { templateId: 'contract_three_good_gigs', targetNodeId: null }
+    ])
+  })
+
+  it('keeps Sponsor and Contract picks when the route is re-picked unchanged', () => {
+    // Sponsor offers and Contracts are staged per Region/Tour, so a real route
+    // change must drop them - but re-picking the route already active is not a
+    // change. It used to clear both anyway, and a fresh Career has exactly one
+    // Tour and one Region, so every click on those buttons silently discarded
+    // the player's picks.
+    const base = buildState()
+    base.career = { ...base.career, unlockedSetIds: ['festival_network'] }
+    // Staged for the route the scene actually opens on. Calling the builder
+    // with only `state` resolves the baseline profile, which is exactly the
+    // mismatch its own docstring warns about.
+    base.expedition = {
+      ...base.expedition,
+      preparedSponsorOffers: buildPreparedExpeditionSponsorOffers(
+        base,
+        'home_turf',
+        'standard_tour',
+        null
+      )
+    }
+    state.current = base
+    render(<TourPrep />)
+
+    const offer = base.expedition.preparedSponsorOffers[0]
+    expect(offer).toBeDefined()
+    fireEvent.click(
+      screen.getByTestId(`expedition-prep-sponsor-${offer.offerId}`)
+    )
+    fireEvent.click(
+      screen.getByTestId('expedition-prep-contract-contract_three_good_gigs')
+    )
+
+    // Re-pick the Tour and Region that are already active.
+    fireEvent.click(screen.getByTestId('expedition-prep-tour-standard_tour'))
+    fireEvent.click(screen.getByTestId('expedition-prep-region-home_turf'))
+
     fireEvent.click(screen.getByTestId('expedition-prep-commit'))
 
     const committed = actions.startExpedition.mock.calls[0][0]
@@ -330,6 +384,24 @@ describe('TourPrep scene', () => {
     expect(screen.getByTestId('expedition-prep-spendable')).toHaveTextContent(
       '3000 EUR'
     )
+  })
+
+  it('opens on a fuel target a fractional tank can actually satisfy', () => {
+    // Production Fuel is deliberately fractional and the loadout rule is
+    // `startingFuelTarget >= currentFuel`. Rounding 44.1 down to 44 opened
+    // Tour Prep on a build the validator already rejected, so the first
+    // commit failed on a screen the player had not touched.
+    state.current = buildState({ fuel: 44.1 })
+    render(<TourPrep />)
+
+    const slider = screen.getByTestId(
+      'expedition-prep-fuel-target'
+    ) as HTMLInputElement
+    expect(slider).toHaveAttribute('min', '45')
+    // Against the control's own minimum, not against the tank. Comparing to
+    // 44.1 admitted an initial value the slider itself forbids, so a
+    // regression that opened the screen below its allowed range would pass.
+    expect(Number(slider.value)).toBeGreaterThanOrEqual(Number(slider.min))
   })
 
   it('keeps a route back to the menu', () => {

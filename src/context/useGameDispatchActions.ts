@@ -227,6 +227,11 @@ type BaseGameDispatchActions = {
   // reducer validates against, so a prepared run's seed and the previewed map
   // cannot diverge.
   prepareExpeditionRun: () => void
+  prepareExpeditionSponsorOffers: (
+    regionId?: string,
+    tourTypeId?: string,
+    starterPerkId?: string | null
+  ) => void
   startExpedition: (
     loadout: import('../types/expedition').ExpeditionLoadout
   ) => void

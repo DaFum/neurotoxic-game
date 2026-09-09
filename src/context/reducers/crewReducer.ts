@@ -144,6 +144,10 @@ export const handleRecordExpeditionRelationshipOutcome = (
   payload: ExpeditionRelationshipOutcomeIntent
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
+  // `sourceId` is read before `acceptsSource` gets to it, so it is narrowed
+  // here: a payload without one would otherwise reach the registry lookup as
+  // `undefined` and throw out of the root reducer instead of being rejected.
+  if (typeof payload.sourceId !== 'string') return state
   const outcome = getCrewEventOutcomeBySourceId(payload.sourceId)
   const replayId = `${payload.sourceId}:relationship`
   if (
@@ -198,6 +202,10 @@ export const handleAdvanceExpeditionCrewInjury = (
   payload: ExpeditionInjurySourcePayload
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
+  // `sourceId` is read before `acceptsSource` gets to it, so it is narrowed
+  // here: a payload without one would otherwise reach the registry lookup as
+  // `undefined` and throw out of the root reducer instead of being rejected.
+  if (typeof payload.sourceId !== 'string') return state
   const outcome = getCrewEventOutcomeBySourceId(payload.sourceId)
   const replayId = `${payload.sourceId}:crew-injury:${payload.targetId}`
   if (
@@ -233,6 +241,10 @@ export const handleAdvanceExpeditionBandInjury = (
   payload: ExpeditionInjurySourcePayload
 ): GameState => {
   if (!payload || typeof payload !== 'object') return state
+  // `sourceId` is read before `acceptsSource` gets to it, so it is narrowed
+  // here: a payload without one would otherwise reach the registry lookup as
+  // `undefined` and throw out of the root reducer instead of being rejected.
+  if (typeof payload.sourceId !== 'string') return state
   const outcome = getCrewEventOutcomeBySourceId(payload.sourceId)
   const replayId = `${payload.sourceId}:band-injury:${payload.targetId}`
   if (

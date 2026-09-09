@@ -86,7 +86,10 @@ import {
 import { sanitizeExpeditionState } from './expeditionSanitizers'
 import { validatePreparedExpeditionSponsorOffers } from '../../domain/expedition/sponsors'
 import { createDefaultExpeditionState } from '../../domain/expedition/defaults'
-import { getExpeditionDayPolicy } from '../../domain/expedition/loadout'
+import {
+  getExpeditionDayPolicy,
+  isExpeditionStagingRouteAvailable
+} from '../../domain/expedition/loadout'
 import { buildExpeditionMap } from '../../domain/expedition/map'
 import { isFiniteNumber } from '../../utils/finiteNumber'
 import type { RiskEventDescriptor } from '../../types/assets'
@@ -364,15 +367,28 @@ export const handleLoadGame = (
       safeState.completedQuestScopes,
       scope => scope.questId
     ),
+    // A prepared save re-derives its Sponsor staging against the route it was
+    // staged for. Offers and provenance survive or are dropped together: an
+    // offer set START can no longer validate is worse than none.
     expedition:
       safeState.expedition.status === 'prepared'
-        ? {
-            ...safeState.expedition,
-            preparedSponsorOffers: validatePreparedExpeditionSponsorOffers(
+        ? (() => {
+            const staged = validatePreparedExpeditionSponsorOffers(
               safeState,
-              safeState.expedition.preparedSponsorOffers
+              safeState.expedition.preparedSponsorOffers,
+              isExpeditionStagingRouteAvailable(
+                safeState,
+                safeState.expedition.preparedSponsorProvenance
+              )
+                ? safeState.expedition.preparedSponsorProvenance
+                : undefined
             )
-          }
+            return {
+              ...safeState.expedition,
+              preparedSponsorOffers: staged.offers,
+              preparedSponsorProvenance: staged.provenance
+            }
+          })()
         : safeState.expedition
   }
 

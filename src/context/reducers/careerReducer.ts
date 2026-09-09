@@ -18,6 +18,8 @@ import {
   resolveExpeditionCareerSettlement
 } from '../../domain/expedition/meta'
 import { finiteNumberOr } from '../../utils/finiteNumber'
+import { getExpeditionMinimumNextStartCost } from '../../domain/expedition/loadout'
+import { clampPlayerMoney } from '../../utils/gameState/clamps'
 import { isForbiddenKey } from '../../utils/objectUtils'
 import {
   getExpeditionHqFacilityLevelCost,
@@ -182,8 +184,25 @@ export const handleSettleExpeditionCareerResult = (
     return state
   const settlement = resolveExpeditionCareerSettlement(state, payload.runId)
   if (!settlement) return state
+  // The road fund: the Career always leaves a Tour able to book the next one.
+  //
+  // A Tour can end with the band holding less than the rounding-up of the tank
+  // it is already sitting on - a euro or two - and `START_EXPEDITION` then
+  // refuses every future Tour. That is not a difficulty curve, it is a Career
+  // that ended on an accounting edge, and it accounted for 2,757 of 12,000
+  // release sequences dropping out before six runs. The floor is the
+  // *unavoidable* charge only: it buys no Fuel above what a build must commit,
+  // no repairs, no cargo, and it is dwarfed by any real Tour income, so it
+  // cannot substitute for earning. A Career that is merely poor stays poor.
+  const minimumNextStart = getExpeditionMinimumNextStartCost(state)
+  const money = finiteNumberOr(state.player.money, 0)
+  const roadFund = Math.max(0, minimumNextStart - money)
   return {
     ...state,
+    player:
+      roadFund > 0
+        ? { ...state.player, money: clampPlayerMoney(money + roadFund) }
+        : state.player,
     career: {
       ...state.career,
       // The stored balance is a persisted addend, so it is narrowed before the

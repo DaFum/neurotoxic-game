@@ -11,6 +11,7 @@ import {
   loadTextures,
   getOptimalResolution
 } from '../../src/components/stage/stageRenderUtils'
+import { logger } from '../../src/utils/logger'
 import { setupJSDOM, teardownJSDOM } from '../testUtils'
 
 test('stage utils', async t => {
@@ -206,6 +207,18 @@ test('stage utils', async t => {
 
     await sub.test('handles non-extension URL image load error', async () => {
       const OriginalImage = globalThis.Image
+      const origWarn = logger.warn
+      let warnCalled = false
+      logger.warn = (channel, msg, ...rest) => {
+        if (
+          channel === 'loadTexture' &&
+          String(msg).includes('Failed to load image')
+        ) {
+          warnCalled = true
+          return
+        }
+        origWarn.call(logger, channel, msg, ...rest)
+      }
 
       globalThis.Image = class {
         constructor() {
@@ -215,12 +228,15 @@ test('stage utils', async t => {
         }
       }
 
-      const texture = await loadTexture('https://example.com/api/error')
-
-      // Should resolve to null on error
-      assert.equal(texture, null)
-
-      globalThis.Image = OriginalImage
+      try {
+        const texture = await loadTexture('https://example.com/api/error')
+        // Should resolve to null on error
+        assert.equal(texture, null)
+        assert.equal(warnCalled, true)
+      } finally {
+        logger.warn = origWarn
+        globalThis.Image = OriginalImage
+      }
     })
 
     await sub.test(
@@ -291,12 +307,30 @@ test('stage utils', async t => {
       'returns null when Image fallback is unavailable',
       async () => {
         const OriginalImage = globalThis.Image
+        const origWarn = logger.warn
+        let warnCalled = false
+        logger.warn = (channel, msg, ...rest) => {
+          if (
+            channel === 'loadTexture' &&
+            String(msg).includes('Image fallback unavailable')
+          ) {
+            warnCalled = true
+            return
+          }
+          origWarn.call(logger, channel, msg, ...rest)
+        }
+
         globalThis.Image = undefined
-        const texture = await loadTexture(
-          'https://example.com/no-extension-endpoint'
-        )
-        assert.equal(texture, null)
-        globalThis.Image = OriginalImage
+        try {
+          const texture = await loadTexture(
+            'https://example.com/no-extension-endpoint'
+          )
+          assert.equal(texture, null)
+          assert.equal(warnCalled, true)
+        } finally {
+          logger.warn = origWarn
+          globalThis.Image = OriginalImage
+        }
       }
     )
 
@@ -308,6 +342,18 @@ test('stage utils', async t => {
         })
 
         const OriginalImage = globalThis.Image
+        const origWarn = logger.warn
+        let warnCalled = false
+        logger.warn = (channel, msg, ...rest) => {
+          if (
+            channel === 'loadTexture' &&
+            String(msg).includes('Pixi Assets load failed')
+          ) {
+            warnCalled = true
+            return
+          }
+          origWarn.call(logger, channel, msg, ...rest)
+        }
 
         let createdImage = null
         globalThis.Image = class {
@@ -319,20 +365,24 @@ test('stage utils', async t => {
           }
         }
 
-        const texture = await loadTexture(
-          'https://example.com/image_error_fallback.png'
-        )
+        try {
+          const texture = await loadTexture(
+            'https://example.com/image_error_fallback.png'
+          )
 
-        assert.equal(mockAssetsLoad.mock.calls.length, 1)
-        assert.ok(texture)
-        assert.ok(createdImage)
-        assert.equal(
-          createdImage.src,
-          'https://example.com/image_error_fallback.png'
-        )
-
-        mockAssetsLoad.mock.restore()
-        globalThis.Image = OriginalImage
+          assert.equal(mockAssetsLoad.mock.calls.length, 1)
+          assert.ok(texture)
+          assert.ok(createdImage)
+          assert.equal(
+            createdImage.src,
+            'https://example.com/image_error_fallback.png'
+          )
+          assert.equal(warnCalled, true)
+        } finally {
+          mockAssetsLoad.mock.restore()
+          logger.warn = origWarn
+          globalThis.Image = OriginalImage
+        }
       }
     )
   })
