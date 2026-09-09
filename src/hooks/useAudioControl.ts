@@ -15,12 +15,14 @@ import type {
 /**
  * Provides reactive audio state and control handlers backed by `audioService`.
  *
+ * @remarks
  * Consumers can pass a selector to subscribe to a focused state slice. Polling
  * remains active when the service lacks native subscriptions.
  *
+ * @typeParam TSelected - The type of the selected audio state slice.
  * @param selector - Optional selector to read a focused slice of audio state.
  * @param options - Optional polling configuration.
- * @returns Selected audio state and control handlers.
+ * @returns An object containing the selected audio state and control handlers.
  */
 export function useAudioControl(
   selector?: null,
